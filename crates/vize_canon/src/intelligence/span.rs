@@ -61,13 +61,13 @@ mod tests {
     #[test]
     fn span_is_half_open() {
         let span = Span::new(10, 20);
-        assert!(!span.contains(9));
-        assert!(span.contains(10));
-        assert!(span.contains(19));
-        assert!(!span.contains(20));
+        let membership: Vec<bool> = [9, 10, 19, 20]
+            .into_iter()
+            .map(|offset| span.contains(offset))
+            .collect();
+        assert_eq!(membership, [false, true, true, false]);
         assert_eq!(span.len(), 10);
-        assert!(!span.is_empty());
-        assert!(Span::new(4, 4).is_empty());
+        assert_eq!((span.is_empty(), Span::new(4, 4).is_empty()), (false, true));
     }
 
     #[test]

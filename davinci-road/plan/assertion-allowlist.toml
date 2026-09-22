@@ -168,7 +168,6 @@ paths = [
   "crates/vize_canon/src/batch/virtual_project/identity.rs",
   "crates/vize_canon/src/batch/virtual_project/passthrough_resolution.rs",
   "crates/vize_canon/src/lsp_client/materialized_refresh.rs",
-  "crates/vize_canon/src/source_map.rs",
   "crates/vize_canon/src/tests.rs",
   "crates/vize_canon/src/virtual_ts/generator/script_module.rs",
   "crates/vize_canon/src/virtual_ts/generator/setup_type_exports.rs",
