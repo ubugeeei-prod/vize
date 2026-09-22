@@ -133,17 +133,9 @@ diagnoses (CDATA, self-closed or implicitly closed elements, empty modifiers)
 stays legacy, checked over fixture prefixes and deletions. With dense admission
 tables the native route is 13% faster than the retained lane on expressions
 and 3% on components, 7–9% slower on text, events and control flow.
-_Template carriers 2026-09-22:_ `<template v-if>`/`<template v-for>` fragment
-bodies (text, components and nested control flow included) and loop-wrapper
-keys are native, byte-identical to the retained lane; branch keys, `v-once`
-chains and other wrapper attributes stay `legacy.control_flow`.
-_Named and scoped slots 2026-09-22:_ static-named `<template #x>` slots and a
-component's own default `v-slot` with identifier or flat destructured params
-are native; `v-slot="p"` now reads `p.x` (not `_slotProps0.p.x`) in both lanes.
-_Inputs and element vocabulary 2026-09-22:_ `v-model` on inputs (text,
-checkbox, radio, `.lazy`/`.number`/`.trim`) and `p`, `a`, `form`, `h1`-`h6` are
-native; the P3-4 mounted model references now run through the native lane.
-`<component :is>` is native too (`createDynamicComponent`).
+_Carriers, slots, inputs, elements 2026-09-22:_ template carriers, named/scoped
+slots, input models, `p`/`a`/`form`/headings and `<component :is>` are native and
+byte-identical to the retained lane (see the P3-6 record).
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
 lattice-fact consumption; flags become explicit S3 decisions (or S2→S4
