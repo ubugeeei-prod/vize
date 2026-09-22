@@ -175,4 +175,7 @@ pub(super) const ADMITTED: &[(&str, &str)] = &[
     ("outlet-v-html", r#"<slot v-html="rawHtml"></slot>"#),
     ("outlet-v-text", r#"<slot v-text="textContent"></slot>"#),
     ("outlet-v-cloak", "<slot v-cloak></slot>"),
+    ("outlet-v-show", r#"<slot v-show="shown">fallback</slot>"#),
+    ("outlet-v-once", "<slot v-once>fallback</slot>"),
+    ("outlet-v-memo", r#"<slot v-memo="[dep]">{{ dep }}</slot>"#),
 ];

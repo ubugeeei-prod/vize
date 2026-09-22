@@ -200,9 +200,15 @@ fn lower_and_emit(
             if !emission_supported(request) {
                 return Err(LegacyReason::Options);
             }
-            if !s2.diagnostics.is_empty()
+            // An Error still means the lowering refused a shape. Info is a
+            // deferral the legacy SSR walker does not render, so it does not
+            // by itself keep the template on that walker.
+            if s2
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.severity() != vize_davinci::diagnostic::Severity::Info)
                 || s2.provenance.iter().any(|record| {
-                    !ADMITTED_RULES.contains(&record.rule.as_str()) || drops_directive(record)
+                    !admitted_rule(record) || drops_directive(record)
                 })
             {
                 return Err(LegacyReason::SurfaceSemantics);
@@ -215,6 +221,18 @@ fn lower_and_emit(
             ))
         },
     )
+}
+
+/// Whether one S2 lowering rule is reproduced by the plan emitter.
+///
+/// `defer.slot-directive` is the Info recorded for a directive the legacy
+/// slot walker does not render. `v-pre` is the exception: it freezes the
+/// outlet fallback as text, which the plan still interpolates.
+fn admitted_rule(record: &vize_s2::provenance::ProvenanceRecord) -> bool {
+    if record.rule.as_str() == "defer.slot-directive" {
+        return !record.before.as_str().contains("v-pre");
+    }
+    ADMITTED_RULES.contains(&record.rule.as_str())
 }
 
 /// The legacy parser keeps `@vize:` directive comments with `comments` off

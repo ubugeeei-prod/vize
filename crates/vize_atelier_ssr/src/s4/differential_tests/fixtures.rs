@@ -207,6 +207,10 @@ pub(super) const REFUSED: &[(&str, &str)] = &[
     ),
     ("slot-name-twice", r#"<div><slot name :name="n" /></div>"#),
     (
+        "outlet-v-pre",
+        "<slot v-pre>{{ not }} an interpolation</slot>",
+    ),
+    (
         "directive-complex-arg",
         r#"<div><p v-focus:[a+b]="x"></p></div>"#,
     ),
