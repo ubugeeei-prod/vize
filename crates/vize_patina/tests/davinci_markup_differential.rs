@@ -23,7 +23,7 @@
 use std::fs;
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_patina::markup::differential::{self, compare_template};
+use vize_patina::markup::differential::{self, TemplateComparison, compare_template};
 
 #[test]
 fn markup_facade_observes_one_document() {
@@ -50,6 +50,7 @@ fn markup_facade_observes_one_document() {
     let mut lines = 0u64;
     let mut without_template = 0u64;
     let mut unreadable = 0u64;
+    let mut restructured = 0u64;
     for file in files {
         let Ok(source) = fs::read_to_string(file) else {
             unreadable += 1;
@@ -64,7 +65,8 @@ fn markup_facade_observes_one_document() {
             continue;
         };
         match compare_template(&template.content) {
-            Ok(count) => lines += count as u64,
+            Ok(TemplateComparison::Compared(count)) => lines += count as u64,
+            Ok(TemplateComparison::Restructured) => restructured += 1,
             Err(divergence) => panic!(
                 "{}: markup facade diverged at trace line {}\n  relief: {:?}\n  s2:     {:?}",
                 file.display(),
@@ -78,12 +80,13 @@ fn markup_facade_observes_one_document() {
     assert!(compared > 0, "corpus sweep compared no template");
     eprintln!(
         "davinci markup differential corpus sweep: scope={} closure_evidence={} files={} \
-         compared={} trace_lines={} without_template={} unreadable={}",
+         compared={} trace_lines={} restructured={} without_template={} unreadable={}",
         sweep.scope_label(),
         sweep.closure_evidence(),
         files.len(),
         compared,
         lines,
+        restructured,
         without_template,
         unreadable
     );
