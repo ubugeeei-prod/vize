@@ -157,6 +157,7 @@ fn equal_content_at_another_path_is_another_project() {
 }
 
 #[test]
+#[cfg(unix)]
 fn a_symlinked_tsconfig_is_the_same_project() {
     let dir = tempfile::tempdir().unwrap();
     let config = dir.path().join("tsconfig.json");
