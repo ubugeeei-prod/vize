@@ -16,6 +16,16 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_croquis::Croquis;
+use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
+
+/// The batch generator's template-binding emission reads bindings through a
+/// declared demand.
+struct BatchTemplateBindings;
+
+impl FactConsumer for BatchTemplateBindings {
+    const NAME: &'static str = "canon/batch-template-bindings";
+    const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
+}
 
 /// Result of virtual TypeScript generation.
 #[derive(Debug)]
@@ -195,7 +205,12 @@ impl VirtualTsGenerator {
 
     /// Emit template binding references.
     fn emit_template_bindings(&self, code: &mut String, analysis: &Croquis) {
-        for (name, _) in analysis.bindings.iter() {
+        let mut facts = CroquisFacts::new(analysis);
+        let bindings = facts
+            .prepare::<BatchTemplateBindings>()
+            .get::<Bindings>()
+            .expect("declared demand");
+        for (name, _) in bindings.typed() {
             append!(*code, "    void {name};\n");
         }
     }

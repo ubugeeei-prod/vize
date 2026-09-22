@@ -622,7 +622,7 @@ linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_multiple_template_roo
 linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_multiple_template_root/tests.rs	13	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_mutating_props.rs	35	s0	S0	stage	vize_s0	preferred	3
 linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_mutating_props.rs	35	old_ast	old AST/parser	old	vize_relief	legacy	2
-linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_mutating_props.rs	35	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	test/dev	crates/vize_patina/src/rules/vue/no_mutating_props.rs	35	croquis	Croquis analysis	old	vize_croquis	legacy	2
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_mutating_props/handlers.rs	42	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_mutating_props/handlers.rs	42	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_mutating_props/handlers.rs	42	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
@@ -655,6 +655,7 @@ linter	Linter	source	crates/vize_patina/src/rules/vue/no_template_target_blank.r
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_textarea_mustache.rs	24	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_undefined_refs.rs	8	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_undefined_refs.rs	8	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/rules/vue/no_undefined_refs.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_unsafe_url.rs	46	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_unsafe_url.rs	46	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/vue/no_unsafe_url.rs	46	raw_oxc	raw OXC	raw	oxc_ast	raw	1

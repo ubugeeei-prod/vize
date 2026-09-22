@@ -6,7 +6,20 @@ use oxc_ast::ast::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{FxHashSet, String};
+use vize_croquis::facts::{
+    Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup, FactTable,
+    UndefinedRefs,
+};
 use vize_croquis::{BindingType, Croquis, OptionGroup};
+
+/// The Options API setup-spread projection input reads bindings and the
+/// template's unresolved reads through a declared demand.
+struct SetupSpreadBindings;
+
+impl FactConsumer for SetupSpreadBindings {
+    const NAME: &'static str = "canon/options-api-setup-spread";
+    const DEMAND: Demand = Demand::NONE.with(Bindings::ID).with(UndefinedRefs::ID);
+}
 
 pub(crate) fn suppresses_template_undefined_refs(
     options_api_enabled: bool,
@@ -21,9 +34,13 @@ pub(crate) fn collect_template_setup_bindings(
     template_referenced_names: Option<&FxHashSet<String>>,
     script_content: Option<&str>,
 ) -> Vec<String> {
-    let mut names = collect_descriptor_setup_bindings(summary, options_api);
+    let mut facts = CroquisFacts::new(summary);
+    let view = facts.prepare::<SetupSpreadBindings>();
+    let bindings = view.get::<Bindings>().expect("declared demand");
+    let mut names = collect_descriptor_setup_bindings(summary, bindings, options_api);
     if suppresses_template_undefined_refs(options_api, script_content) {
-        extend_spread_bindings(&mut names, summary, template_referenced_names);
+        let undefined = view.get::<UndefinedRefs>().expect("declared demand");
+        extend_spread_bindings(&mut names, bindings, undefined, template_referenced_names);
     }
     if let Some(template_referenced_names) = template_referenced_names {
         names.retain(|name| template_referenced_names.contains(name.as_str()));
@@ -51,8 +68,12 @@ fn setup_return_has_spread(script: &str) -> bool {
     setup_return_object_from_expression(setup).is_some_and(object_has_spread)
 }
 
-fn collect_descriptor_setup_bindings(summary: &Croquis, options_api: bool) -> Vec<String> {
-    if !options_api || summary.bindings.is_script_setup {
+fn collect_descriptor_setup_bindings(
+    summary: &Croquis,
+    bindings: &FactTable<Bindings>,
+    options_api: bool,
+) -> Vec<String> {
+    if !options_api || bindings.is_script_setup() {
         return Vec::new();
     }
     let Some(descriptor) = summary.options_descriptor.as_ref() else {
@@ -64,7 +85,7 @@ fn collect_descriptor_setup_bindings(summary: &Croquis, options_api: bool) -> Ve
         .filter(|name| {
             is_safe_value_identifier(name)
                 && matches!(
-                    summary.bindings.get(name),
+                    bindings.binding_type(name),
                     Some(BindingType::SetupMaybeRef | BindingType::SetupRef)
                 )
         })
@@ -74,31 +95,32 @@ fn collect_descriptor_setup_bindings(summary: &Croquis, options_api: bool) -> Ve
 
 fn extend_spread_bindings(
     names: &mut Vec<String>,
-    summary: &Croquis,
+    bindings: &FactTable<Bindings>,
+    undefined: &FactTable<UndefinedRefs>,
     template_referenced_names: Option<&FxHashSet<String>>,
 ) {
     if let Some(template_referenced_names) = template_referenced_names {
         names.extend(
             template_referenced_names
                 .iter()
-                .filter(|name| is_safe_spread_binding(summary, name.as_str()))
+                .filter(|name| is_safe_spread_binding(bindings, name.as_str()))
                 .map(|name| String::from(name.as_str())),
         );
         return;
     }
     names.extend(
-        summary
-            .undefined_refs
+        undefined
             .iter()
+            .map(|(_, reference)| reference)
             .filter(|reference| reference.context == "template expression")
             .map(|reference| reference.name.as_str())
-            .filter(|name| is_safe_spread_binding(summary, name))
+            .filter(|name| is_safe_spread_binding(bindings, name))
             .map(String::from),
     );
 }
 
-fn is_safe_spread_binding(summary: &Croquis, name: &str) -> bool {
-    is_safe_value_identifier(name) && summary.bindings.get(name).is_none()
+fn is_safe_spread_binding(bindings: &FactTable<Bindings>, name: &str) -> bool {
+    is_safe_value_identifier(name) && bindings.binding_type(name).is_none()
 }
 
 fn setup_return_object_from_expression<'a>(

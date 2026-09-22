@@ -14,6 +14,15 @@ mod member_access;
 mod object_literal;
 mod reactive_infer;
 
+/// `maestro/script-completion`'s declared fact demand.
+struct ScriptCompletion;
+
+impl vize_croquis::facts::FactConsumer for ScriptCompletion {
+    const NAME: &'static str = "maestro/script-completion";
+    const DEMAND: vize_croquis::facts::Demand = vize_croquis::facts::Demand::NONE
+        .with(<vize_croquis::facts::Bindings as vize_croquis::facts::FactGroup>::ID);
+}
+
 #[cfg(test)]
 mod tests;
 
@@ -22,6 +31,7 @@ use tower_lsp::lsp_types::{
     MarkupKind,
 };
 use vize_croquis::ScopeKind;
+use vize_croquis::facts::BindingsTable;
 use vize_croquis::{Drawer, DrawerOptions};
 use vize_relief::BindingType;
 
@@ -163,6 +173,11 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
         }
 
         let croquis = analyzer.finish();
+        let mut facts = vize_croquis::facts::CroquisFacts::new(&croquis);
+        let bindings = facts
+            .prepare::<ScriptCompletion>()
+            .get::<vize_croquis::facts::Bindings>()
+            .expect("declared demand");
 
         // Scope-aware completion: include nested bindings (closures, blocks,
         // v-for params, etc.) that are visible at the cursor. We avoid
@@ -170,7 +185,7 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
         let local_offset = ctx.offset.saturating_sub(script_offset) as u32;
         if local_offset <= script_content.len() as u32 {
             for (name, binding, scope_kind) in croquis.scopes.bindings_visible_at(local_offset) {
-                if croquis.bindings.contains(name) {
+                if bindings.contains_binding(name) {
                     continue;
                 }
                 if !is_nested_user_scope(scope_kind) {
@@ -188,7 +203,7 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
         }
 
         // Add bindings with type information
-        for (name, binding_type) in croquis.bindings.iter() {
+        for (name, binding_type) in bindings.typed() {
             let (kind, mut type_detail, mut doc) =
                 items::binding_type_to_completion_info(binding_type);
             let reactive_source = croquis.reactivity.lookup(name);
@@ -237,7 +252,7 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
         // detail, so skip any source whose name is a known binding to avoid
         // listing the same identifier twice.
         for source in croquis.reactivity.sources() {
-            if croquis.bindings.contains(source.name.as_str()) {
+            if bindings.contains_binding(source.name.as_str()) {
                 continue;
             }
             let needs_value = source.kind.needs_value_access();

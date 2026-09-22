@@ -56,8 +56,8 @@ const message = ref('Hello')
 // ========== Template Bindings ==========
 (function __template() {
     void Child;
-    void ref;
     void message;
+    void ref;
 })();
 
 // ========== Component Export ==========

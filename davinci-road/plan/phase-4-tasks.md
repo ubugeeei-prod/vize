@@ -82,8 +82,8 @@
 
 **Steps:**
 
-- [ ] `vize_croquis` gains a `vize_davinci` dependency; groups implement `FactGroup`, keyed as written in the P4-2 schema doc (binding name / `SymbolId`; S2 `NodeId` re-keying waits for S2 to carry script scope)
-- [ ] Declarative spec + naive evaluator in `crates/vize_croquis/src/facts/spec/` (the Polonius discipline); TS-34 compares it with production over the P2-15 matrix plane and a corpus shard (`VIZE_DAVINCI_FACT_CORPUS`, the two test-scripts submodules, skips counted)
+- [x] `vize_croquis` gains a `vize_davinci` dependency; groups implement `FactGroup`, keyed as written in the P4-2 schema doc (binding name / `SymbolId`; S2 `NodeId` re-keying waits for S2 to carry script scope)
+- [x] Declarative spec + naive evaluator in `crates/vize_croquis/src/facts/spec/` (the Polonius discipline); TS-34 compares it with production over the P2-15 matrix plane and a corpus shard (`VIZE_DAVINCI_FACT_CORPUS`, the two test-scripts submodules, skips counted)
 - [ ] Switch readers to `get::<Bindings>()` / `get::<UndefinedRefs>()` **except** `crates/vize_canon/src/virtual_ts/**` and `crates/vize_maestro/src/virtual_code/**` (lane C deletes those readers in P4-5c); the struct fields stay as producer storage until then
 - [ ] Regenerate [croquis-consumption.md](./croquis-consumption.md) (`rust-script tools/commands/davinci/croquis-consumers.rs --write`)
 
@@ -92,6 +92,8 @@
 **Deps:** P4-1a.
 
 **Non-goals:** projection readers (P4-5c); the reactivity lattice (P4-3d); new diagnostics.
+
+**Slice 1 landed 2026-09-22:** both groups, TS-34 exact agreement on every plane (corpus shard 670 + 773 artifacts, zero divergences) and every analysis consumer outside lane C on a declared demand; the compile lane and producer-side writes are slice 2 — see the [P4-3a record](./phase-4-records/p4-3a.md).
 
 ## P4-3b — Component-usage fact groups
 

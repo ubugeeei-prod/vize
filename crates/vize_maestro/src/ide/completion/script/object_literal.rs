@@ -66,7 +66,12 @@ fn receiver_resolves_to_top_level(
         drawer.analyze_script_plain(script);
     }
     let summary = drawer.finish();
-    summary.bindings.contains(receiver)
+    let mut facts = vize_croquis::facts::CroquisFacts::new(&summary);
+    let bindings = facts
+        .prepare::<ObjectLiteralCompletion>()
+        .get::<vize_croquis::facts::Bindings>()
+        .expect("declared demand");
+    vize_croquis::facts::BindingsTable::contains_binding(bindings, receiver)
         && summary
             .scopes
             .bindings_visible_at(offset)
@@ -199,4 +204,13 @@ fn completion_item(receiver: &str, member: StaticMember) -> CompletionItem {
         sort_text: Some(format!("0{}", member.name)),
         ..Default::default()
     }
+}
+
+/// `maestro/object-literal-completion`'s declared fact demand.
+struct ObjectLiteralCompletion;
+
+impl vize_croquis::facts::FactConsumer for ObjectLiteralCompletion {
+    const NAME: &'static str = "maestro/object-literal-completion";
+    const DEMAND: vize_croquis::facts::Demand = vize_croquis::facts::Demand::NONE
+        .with(<vize_croquis::facts::Bindings as vize_croquis::facts::FactGroup>::ID);
 }

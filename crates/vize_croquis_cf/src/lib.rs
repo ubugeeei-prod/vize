@@ -53,6 +53,7 @@
 
 mod analyzer;
 mod diagnostics;
+pub mod facts;
 mod graph;
 mod module_paths;
 mod registry;

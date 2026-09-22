@@ -9,7 +9,13 @@ pub(super) fn add_art_target_component_bindings(
         return;
     }
 
-    let has_component_binding = summary.bindings.bindings.contains_key(target.name.as_str());
+    let mut facts = vize_croquis::facts::CroquisFacts::new(summary);
+    let bindings = facts
+        .prepare::<ArtTargetBindings>()
+        .get::<vize_croquis::facts::Bindings>()
+        .expect("declared demand");
+    let has_component_binding =
+        vize_croquis::facts::BindingsTable::contains_binding(bindings, target.name.as_str());
     let mut component_ref = target.name.clone();
 
     if !has_component_binding {
@@ -175,4 +181,13 @@ fn kebab_case_component_name(name: &str) -> Option<String> {
         kebab.pop();
     }
     (kebab.contains('-') && kebab != name).then_some(kebab)
+}
+
+/// `maestro/art-target-bindings`'s declared fact demand.
+struct ArtTargetBindings;
+
+impl vize_croquis::facts::FactConsumer for ArtTargetBindings {
+    const NAME: &'static str = "maestro/art-target-bindings";
+    const DEMAND: vize_croquis::facts::Demand = vize_croquis::facts::Demand::NONE
+        .with(<vize_croquis::facts::Bindings as vize_croquis::facts::FactGroup>::ID);
 }

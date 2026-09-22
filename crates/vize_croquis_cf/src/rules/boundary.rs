@@ -7,9 +7,11 @@
 //! - Hydration mismatch risks
 
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
+use crate::facts::ErrorBoundaryRule;
 use crate::graph::{DependencyEdge, DependencyGraph};
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashSet};
+use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts};
 
 /// Kind of boundary.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -162,8 +164,11 @@ pub fn analyze_boundaries(
 
 /// Check if a component has onErrorCaptured.
 fn has_error_captured(analysis: &vize_croquis::Croquis) -> bool {
+    let mut facts = CroquisFacts::new(analysis);
+    let view = facts.prepare::<ErrorBoundaryRule>();
     // Check for onErrorCaptured in bindings or scope
-    analysis.bindings.contains("onErrorCaptured")
+    let bindings = view.get::<Bindings>().expect("declared demand");
+    bindings.contains_binding("onErrorCaptured")
         || analysis.scopes.is_defined("onErrorCaptured")
         || analysis
             .template_expressions

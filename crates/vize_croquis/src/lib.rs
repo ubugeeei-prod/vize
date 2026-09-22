@@ -48,6 +48,7 @@ pub mod declaration_ts;
 pub mod display;
 pub mod drawer;
 pub mod effect_graph;
+pub mod facts;
 pub mod hoist;
 pub mod import_resolver;
 pub mod macros;

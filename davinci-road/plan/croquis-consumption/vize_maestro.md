@@ -25,8 +25,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                      | type  | `scope`             |     1 |     1 |
 | `ScopeKind`                    | type  | `scope`             |     9 |    65 |
 | `SlotUsage`                    | type  | `croquis::template` |     2 |     3 |
-| `Croquis.binding_spans`        | field | `croquis`           |     2 |     2 |
-| `Croquis.bindings`             | field | `croquis`           |     5 |     8 |
 | `Croquis.component_shape`      | field | `croquis`           |     1 |     1 |
 | `Croquis.component_usages`     | field | `croquis`           |     6 |     7 |
 | `Croquis.macros`               | field | `croquis`           |     7 |    14 |
@@ -39,7 +37,13 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | item                          | files | sites |
 | ----------------------------- | ----: | ----: |
+| `Bindings`                    |     7 |    14 |
+| `BindingsTable`               |     5 |     5 |
 | `BlockLocation`               |     2 |     2 |
+| `CroquisFacts`                |     7 |     7 |
+| `Demand`                      |     7 |    14 |
+| `FactConsumer`                |     7 |     7 |
+| `FactGroup`                   |     7 |     7 |
 | `ReactiveKind`                |     5 |    41 |
 | `SfcDescriptor`               |     6 |    25 |
 | `SfcScriptBlock`              |     3 |     6 |
@@ -73,8 +77,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Symbol`                      |        0 |    1 |
 | `SymbolId`                    |        0 |    5 |
 | `TemplateExpression`          |        0 |   15 |
-| `Croquis.binding_spans`       |        2 |    3 |
-| `Croquis.bindings`            |        8 |   14 |
+| `Croquis.binding_spans`       |        0 |    1 |
+| `Croquis.bindings`            |        0 |    5 |
 | `Croquis.import_statements`   |        0 |    1 |
 | `Croquis.macros`              |       14 |   24 |
 | `Croquis.pattern_diagnostics` |        3 |    4 |

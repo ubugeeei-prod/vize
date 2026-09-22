@@ -122,7 +122,7 @@ pub enum ComponentShape {
 }
 
 /// An undefined reference in template
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct UndefinedRef {
     /// The identifier name
     pub name: CompactString,

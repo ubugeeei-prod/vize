@@ -3,9 +3,11 @@
 //! Detects unregistered components and unresolved imports.
 
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
+use crate::facts::ComponentResolutionRule;
 use crate::graph::DependencyGraph;
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashSet, String, cstr};
+use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts};
 
 mod paths;
 
@@ -38,6 +40,9 @@ pub enum ComponentResolutionIssueKind {
 /// This analyzer checks:
 /// 1. All components used in templates are properly imported/registered
 /// 2. All import specifiers can be resolved to actual files
+///
+/// Script bindings are read through [`ComponentResolutionRule`]'s declared
+/// demand.
 pub fn analyze_component_resolution(
     registry: &ModuleRegistry,
     _graph: &DependencyGraph,
@@ -49,6 +54,11 @@ pub fn analyze_component_resolution(
     for entry in registry.iter() {
         let file_id = entry.id;
         let analysis = &entry.analysis;
+        let mut facts = CroquisFacts::new(analysis);
+        let bindings = facts
+            .prepare::<ComponentResolutionRule>()
+            .get::<Bindings>()
+            .expect("declared demand");
 
         // Get all imported identifiers from this file
         let imported_identifiers: FxHashSet<&str> = analysis
@@ -79,7 +89,7 @@ pub fn analyze_component_resolution(
             // A component being present somewhere in the project is not enough:
             // local template usage must come from an import/local binding unless
             // a framework-specific global component registry is modeled.
-            let is_available = is_imported || analysis.bindings.contains(component_name.as_str());
+            let is_available = is_imported || bindings.contains_binding(component_name.as_str());
 
             if !is_available {
                 let template_offset =

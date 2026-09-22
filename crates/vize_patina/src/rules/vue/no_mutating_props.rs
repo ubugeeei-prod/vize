@@ -32,6 +32,7 @@ use self::scope::{PropScope, expression_source, push_for_aliases, push_identifie
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
 use vize_croquis::reactivity::ReactiveKind;
 use vize_relief::BindingType;
 use vize_relief::{DirectiveNode, ElementNode, ForNode, PropNode, RootNode, TemplateChildNode};
@@ -51,6 +52,11 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoMutatingProps {
     options: NoMutatingPropsOptions,
+}
+
+impl FactConsumer for NoMutatingProps {
+    const NAME: &'static str = "vue/no-mutating-props";
+    const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
 }
 
 impl NoMutatingProps {
@@ -303,7 +309,12 @@ impl Rule for NoMutatingProps {
                 names.insert(prop.name.to_compact_string());
             }
 
-            for (name, binding_type) in analysis.bindings.iter() {
+            let mut facts = CroquisFacts::new(analysis);
+            let bindings = facts
+                .prepare::<NoMutatingProps>()
+                .get::<Bindings>()
+                .expect("declared demand");
+            for (name, binding_type) in bindings.typed() {
                 if matches!(binding_type, BindingType::Props | BindingType::PropsAliased) {
                     names.insert(name.to_compact_string());
                 } else {

@@ -198,6 +198,17 @@ impl Drawer {
         }
         let idents = &self.ident_cache[content];
         let report_undefined = self.options.detect_undefined && self.script_drawn;
+        // TS-34 input relation for the `UndefinedRefs` spec (debug builds,
+        // armed per thread by `facts::spec::trace::record`).
+        #[cfg(debug_assertions)]
+        if report_undefined && crate::facts::spec::trace::armed() {
+            crate::facts::spec::trace::push(crate::facts::spec::trace::CheckedExpression {
+                content: CompactString::new(content),
+                base_offset,
+                scope_vars: scope_vars.to_vec(),
+                scope: self.croquis.scopes.current,
+            });
+        }
 
         for ident in idents {
             let ident_str = ident.as_str();

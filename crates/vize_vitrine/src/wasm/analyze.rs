@@ -8,6 +8,16 @@
 )]
 
 use super::source_offsets::{ScriptOffsetMapper, to_sfc_utf16_range};
+use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
+
+/// The playground's analysis payload reads bindings through a declared
+/// demand.
+struct AnalyzePayload;
+
+impl FactConsumer for AnalyzePayload {
+    const NAME: &'static str = "vitrine/analyze-sfc";
+    const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
+}
 mod entry;
 mod input;
 mod spolvero;
@@ -98,18 +108,20 @@ pub(super) fn analyze_sfc_json_with_clock(
         .collect();
 
     // Convert binding metadata
-    let bindings: Vec<serde_json::Value> = summary
-        .bindings
-        .bindings
-        .iter()
+    let mut facts = CroquisFacts::new(&summary);
+    let binding_facts = facts
+        .prepare::<AnalyzePayload>()
+        .get::<Bindings>()
+        .expect("declared demand");
+    let bindings: Vec<serde_json::Value> = binding_facts
+        .typed()
         .map(|(name, binding_type)| {
-            let (start, end) = summary
-                .binding_spans
-                .get(name)
-                .map(|(start, end)| script_offset_mapper.to_utf16_range(source, *start, *end))
+            let (start, end) = binding_facts
+                .span(name)
+                .map(|(start, end)| script_offset_mapper.to_utf16_range(source, start, end))
                 .unwrap_or((0, 0));
             serde_json::json!({
-                "name": name.as_str(),
+                "name": name,
                 "type": format!("{:?}", binding_type),
                 "start": start,
                 "end": end,
@@ -276,7 +288,7 @@ pub(super) fn analyze_sfc_json_with_clock(
     let result = serde_json::json!({
         "croquis": {
             "component_name": filename,
-            "is_setup": summary.bindings.is_script_setup,
+            "is_setup": binding_facts.is_script_setup(),
             "scopes": scopes,
             "bindings": bindings,
             "macros": macros,
