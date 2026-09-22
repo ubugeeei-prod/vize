@@ -1,0 +1,186 @@
+//! Catalog of cross-file diagnostic codes, part 3.
+//! See [`crate::i18n_croquis`].
+
+/// `(key, en, ja, zh)`.
+pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
+    (
+        "vize:croquis/cf/reactivity-outside-setup.message",
+        "A reactive API is called outside `setup`.",
+        "reactive API が `setup` の外で呼ばれています。",
+        "响应式 API 在 `setup` 之外被调用。",
+    ),
+    (
+        "vize:croquis/cf/reactivity-outside-setup.help",
+        "Call `ref`, `reactive`, or `computed` inside `setup`.",
+        "`ref`、`reactive`、`computed` は `setup` の中で呼んでください。",
+        "请在 `setup` 内调用 `ref`、`reactive` 或 `computed`。",
+    ),
+    (
+        "vize:croquis/cf/lifecycle-outside-setup.message",
+        "A lifecycle hook is registered outside `setup`.",
+        "ライフサイクルフックが `setup` の外で登録されています。",
+        "生命周期钩子在 `setup` 之外注册。",
+    ),
+    (
+        "vize:croquis/cf/lifecycle-outside-setup.help",
+        "Register the hook inside `setup`.",
+        "フックは `setup` の中で登録してください。",
+        "请在 `setup` 内注册该钩子。",
+    ),
+    (
+        "vize:croquis/cf/lifecycle-without-cleanup.message",
+        "A lifecycle hook starts work and never cleans it up.",
+        "ライフサイクルフックが後片付けなしで処理を始めています。",
+        "生命周期钩子启动了工作但从未清理。",
+    ),
+    (
+        "vize:croquis/cf/lifecycle-without-cleanup.help",
+        "Return a stop handle or register the matching unmount hook.",
+        "停止ハンドルを返すか、対応する unmount フックを登録してください。",
+        "请返回停止句柄，或注册对应的卸载钩子。",
+    ),
+    (
+        "vize:croquis/cf/watcher-outside-setup.message",
+        "`watch` or `watchEffect` is called outside `setup`.",
+        "`watch` または `watchEffect` が `setup` の外で呼ばれています。",
+        "`watch` 或 `watchEffect` 在 `setup` 之外被调用。",
+    ),
+    (
+        "vize:croquis/cf/watcher-outside-setup.help",
+        "Call the watcher inside `setup`.",
+        "ウォッチャは `setup` の中で呼んでください。",
+        "请在 `setup` 内调用该侦听器。",
+    ),
+    (
+        "vize:croquis/cf/di-outside-setup.message",
+        "`provide` or `inject` is called outside `setup`.",
+        "`provide` または `inject` が `setup` の外で呼ばれています。",
+        "`provide` 或 `inject` 在 `setup` 之外被调用。",
+    ),
+    (
+        "vize:croquis/cf/di-outside-setup.help",
+        "Call it inside `setup`.",
+        "`setup` の中で呼んでください。",
+        "请在 `setup` 内调用。",
+    ),
+    (
+        "vize:croquis/cf/composable-outside-setup.message",
+        "A composable is called outside `setup`.",
+        "composable が `setup` の外で呼ばれています。",
+        "组合式函数在 `setup` 之外被调用。",
+    ),
+    (
+        "vize:croquis/cf/composable-outside-setup.help",
+        "Call the composable inside `setup` or another composable.",
+        "composable は `setup` か別の composable の中で呼んでください。",
+        "请在 `setup` 或其他组合式函数内调用它。",
+    ),
+    (
+        "vize:croquis/cf/spread-breaks-reactivity.message",
+        "Spreading a reactive object copies its values and drops the tracking.",
+        "reactive オブジェクトのスプレッドは値をコピーし、追跡を失います。",
+        "展开响应式对象会复制其值并丢失追踪。",
+    ),
+    (
+        "vize:croquis/cf/spread-breaks-reactivity.help",
+        "Pass the reactive object itself, or use `toRefs`.",
+        "reactive オブジェクト自体を渡すか、`toRefs` を使ってください。",
+        "请传递响应式对象本身，或使用 `toRefs`。",
+    ),
+    (
+        "vize:croquis/cf/reassignment-breaks-reactivity.message",
+        "Reassigning a reactive binding replaces it with a plain value.",
+        "reactive な束縛を再代入すると、ただの値に置き換わります。",
+        "重新赋值响应式绑定会把它换成普通值。",
+    ),
+    (
+        "vize:croquis/cf/reassignment-breaks-reactivity.help",
+        "Mutate the existing object, or reassign a `ref`'s `.value`.",
+        "既存のオブジェクトを変更するか、`ref` の `.value` を再代入してください。",
+        "请修改现有对象，或重新赋值 `ref` 的 `.value`。",
+    ),
+    (
+        "vize:croquis/cf/value-extraction-breaks-reactivity.message",
+        "Reading a reactive value out into a local drops later updates.",
+        "reactive な値をローカルへ取り出すと、その後の更新が失われます。",
+        "把响应式值读到局部变量会丢掉后续更新。",
+    ),
+    (
+        "vize:croquis/cf/value-extraction-breaks-reactivity.help",
+        "Keep the `ref` or read it inside a `computed` or effect.",
+        "`ref` のまま持つか、`computed` か effect の中で読んでください。",
+        "请保持 `ref`，或在 `computed` 或 effect 中读取它。",
+    ),
+    (
+        "vize:croquis/cf/destructuring-breaks-reactivity.message",
+        "Destructuring a reactive object copies the fields and drops tracking.",
+        "reactive オブジェクトの分割代入はフィールドをコピーし、追跡を失います。",
+        "解构响应式对象会复制字段并丢失追踪。",
+    ),
+    (
+        "vize:croquis/cf/destructuring-breaks-reactivity.help",
+        "Use `toRefs` before destructuring.",
+        "分割代入の前に `toRefs` を使ってください。",
+        "请在解构前使用 `toRefs`。",
+    ),
+    (
+        "vize:croquis/cf/reference-escapes-scope.message",
+        "A reactive reference escapes the scope that owns its lifetime.",
+        "reactive な参照が、寿命を持つスコープの外へ漏れています。",
+        "响应式引用逃出了拥有其生命周期的作用域。",
+    ),
+    (
+        "vize:croquis/cf/reference-escapes-scope.help",
+        "Keep the reference inside that scope, or return a plain snapshot.",
+        "そのスコープ内に留めるか、ただのスナップショットを返してください。",
+        "请把引用留在该作用域内，或返回普通快照。",
+    ),
+    (
+        "vize:croquis/cf/mutated-after-escape.message",
+        "A reactive object is mutated after it has escaped its owner.",
+        "reactive オブジェクトが、所有者から漏れた後に変更されています。",
+        "响应式对象在逃出所有者之后被修改。",
+    ),
+    (
+        "vize:croquis/cf/mutated-after-escape.help",
+        "Mutate it before returning, or return a new value.",
+        "返す前に変更するか、新しい値を返してください。",
+        "请在返回前修改，或返回一个新值。",
+    ),
+    (
+        "vize:croquis/cf/circular-reactive-dependency.message",
+        "Reactive computations depend on each other in a cycle.",
+        "reactive な計算が互いに循環して依存しています。",
+        "响应式计算彼此循环依赖。",
+    ),
+    (
+        "vize:croquis/cf/circular-reactive-dependency.help",
+        "Break the cycle so one computation does not read the other.",
+        "一方が他方を読まないよう循環を断ってください。",
+        "请打断循环，使其中一个计算不再读取另一个。",
+    ),
+    (
+        "vize:croquis/cf/watch-can-be-computed.message",
+        "A watcher only copies a value into state and can be a computed.",
+        "ウォッチャが値を状態へ写しているだけで、computed にできます。",
+        "侦听器只是把值抄进状态，可以改成 computed。",
+    ),
+    (
+        "vize:croquis/cf/watch-can-be-computed.help",
+        "Replace the watcher with `computed`.",
+        "ウォッチャを `computed` に置き換えてください。",
+        "请用 `computed` 替换该侦听器。",
+    ),
+    (
+        "vize:croquis/cf/dom-access-without-next-tick.message",
+        "The DOM is read before Vue has flushed the update.",
+        "Vue が更新を反映する前に DOM を読んでいます。",
+        "在 Vue 刷新更新之前读取了 DOM。",
+    ),
+    (
+        "vize:croquis/cf/dom-access-without-next-tick.help",
+        "Read the DOM inside `nextTick` or `onMounted`.",
+        "DOM は `nextTick` か `onMounted` の中で読んでください。",
+        "请在 `nextTick` 或 `onMounted` 中读取 DOM。",
+    ),
+];

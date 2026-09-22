@@ -65,6 +65,35 @@ export function canonProblems(
   return problems;
 }
 
+/** Every `vize:croquis/cf/…` code literal in `CrossFileDiagnostic::code`. */
+export function parseCroquisCodes(): string[] {
+  const body = block(
+    read("crates", "vize_croquis_cf", "src", "diagnostics", "rules.rs"),
+    "pub fn code",
+  );
+  return [...new Set([...body.matchAll(/"(vize:croquis\/cf\/[^"]+)"/gu)].map((match) => match[1]))].sort();
+}
+
+/** Croquis codes missing a message or help entry in any locale. */
+export function croquisProblems(codes: string[], entries: Array<[string, Entry]>): string[] {
+  const table = new Map(entries);
+  const problems: string[] = [];
+  for (const code of codes) {
+    for (const part of ["message", "help"]) {
+      const key = `${code}.${part}`;
+      const entry = table.get(key);
+      if (!entry) {
+        problems.push(`\`${key}\` is not catalogued`);
+        continue;
+      }
+      for (const locale of locales) {
+        if (entry[locale].trim() === "") problems.push(`\`${key}\` is empty in ${locale}`);
+      }
+    }
+  }
+  return problems;
+}
+
 /** `ViolationCode::as_str` arms: variant name to `S3V00N`. */
 export function parseS3Codes(): Map<string, string> {
   const source = read("crates", "vize_impeto", "src", "verify", "violation.rs");

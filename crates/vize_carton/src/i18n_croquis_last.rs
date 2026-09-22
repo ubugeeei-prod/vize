@@ -1,0 +1,186 @@
+//! Catalog of cross-file diagnostic codes, part 4.
+//! See [`crate::i18n_croquis`].
+
+/// `(key, en, ja, zh)`.
+pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
+    (
+        "vize:croquis/cf/computed-side-effects.message",
+        "A computed getter writes state or performs another side effect.",
+        "computed の getter が状態を書いたり、他の副作用を起こしています。",
+        "computed 的 getter 写入了状态或产生了其他副作用。",
+    ),
+    (
+        "vize:croquis/cf/computed-side-effects.help",
+        "Keep the getter pure and move the effect into a watcher.",
+        "getter は純粋に保ち、副作用はウォッチャへ移してください。",
+        "请保持 getter 纯净，把副作用移到侦听器中。",
+    ),
+    (
+        "vize:croquis/cf/module-scope-reactive.message",
+        "Reactive state is created at module scope and shared by every caller.",
+        "reactive な状態がモジュールスコープで作られ、すべての呼び出し元で共有されます。",
+        "响应式状态创建在模块作用域，会被所有调用方共享。",
+    ),
+    (
+        "vize:croquis/cf/module-scope-reactive.help",
+        "Create the state inside `setup` so each component instance owns it.",
+        "各コンポーネントインスタンスが持つよう、状態は `setup` の中で作ってください。",
+        "请在 `setup` 中创建状态，让每个组件实例各自拥有它。",
+    ),
+    (
+        "vize:croquis/cf/template-ref-timing.message",
+        "A template ref is read before the component is mounted.",
+        "テンプレート ref が、コンポーネントのマウント前に読まれています。",
+        "模板 ref 在组件挂载之前被读取。",
+    ),
+    (
+        "vize:croquis/cf/template-ref-timing.help",
+        "Read the ref inside `onMounted` or a later hook.",
+        "ref は `onMounted` かそれ以降のフックで読んでください。",
+        "请在 `onMounted` 或更晚的钩子中读取该 ref。",
+    ),
+    (
+        "vize:croquis/cf/async-boundary.message",
+        "Reactive state crosses an async boundary and can be observed stale.",
+        "reactive な状態が async 境界を越え、古い値が見えることがあります。",
+        "响应式状态跨越了异步边界，可能读到过期的值。",
+    ),
+    (
+        "vize:croquis/cf/async-boundary.help",
+        "Await inside the effect, or snapshot the value before the first await.",
+        "effect の中で await するか、最初の await の前に値をスナップショットしてください。",
+        "请在 effect 内 await，或在第一个 await 之前快照该值。",
+    ),
+    (
+        "vize:croquis/cf/injected-async-mutation-race.message",
+        "An injected value is mutated from an async task that can race.",
+        "inject した値が、競合し得る async タスクから変更されています。",
+        "被 inject 的值由可能发生竞争的异步任务修改。",
+    ),
+    (
+        "vize:croquis/cf/injected-async-mutation-race.help",
+        "Mutate it in a single synchronous turn, or serialize the writes.",
+        "単一の同期ターンで変更するか、書き込みを直列化してください。",
+        "请在单个同步回合中修改，或把写入串行化。",
+    ),
+    (
+        "vize:croquis/cf/closure-captures-reactive.message",
+        "A closure captures a reactive value and will not see later updates.",
+        "クロージャが reactive な値を捕捉しており、その後の更新が見えません。",
+        "闭包捕获了响应式值，因而看不到后续更新。",
+    ),
+    (
+        "vize:croquis/cf/closure-captures-reactive.help",
+        "Read the `ref` inside the closure, not before creating it.",
+        "クロージャを作る前ではなく、クロージャの中で `ref` を読んでください。",
+        "请在闭包内部读取 `ref`，而不是在创建闭包之前。",
+    ),
+    (
+        "vize:croquis/cf/object-identity-comparison.message",
+        "A reactive object is compared by identity, which changes across unwraps.",
+        "reactive オブジェクトを同一性で比較していますが、unwrap のたびに同一性は変わります。",
+        "响应式对象按同一性比较，而每次解包后同一性都会变化。",
+    ),
+    (
+        "vize:croquis/cf/object-identity-comparison.help",
+        "Compare a stable id or the raw object from `toRaw`.",
+        "安定した id か、`toRaw` した生のオブジェクトを比較してください。",
+        "请比较稳定的 id，或 `toRaw` 之后的原始对象。",
+    ),
+    (
+        "vize:croquis/cf/reactive-export.message",
+        "Reactive state is exported from the module.",
+        "reactive な状態がモジュールから export されています。",
+        "响应式状态被从模块中 export。",
+    ),
+    (
+        "vize:croquis/cf/reactive-export.help",
+        "Export a factory that creates the state per caller.",
+        "呼び出し元ごとに状態を作るファクトリを export してください。",
+        "请 export 一个为每个调用方创建状态的工厂。",
+    ),
+    (
+        "vize:croquis/cf/shallow-deep-access.message",
+        "A deep property of a `shallowReactive` or `shallowRef` value is read as if it were tracked.",
+        "`shallowReactive` または `shallowRef` の深いプロパティを、追跡されるものとして読んでいます。",
+        "深层属性被当作已追踪的值，从 `shallowReactive` 或 `shallowRef` 中读取。",
+    ),
+    (
+        "vize:croquis/cf/shallow-deep-access.help",
+        "Use `reactive` or `ref` when the nested fields must be tracked.",
+        "ネストしたフィールドを追跡する必要があるときは `reactive` か `ref` を使ってください。",
+        "需要追踪嵌套字段时，请使用 `reactive` 或 `ref`。",
+    ),
+    (
+        "vize:croquis/cf/toraw-mutation.message",
+        "`toRaw` is used and the raw object is then mutated.",
+        "`toRaw` した生のオブジェクトを変更しています。",
+        "使用 `toRaw` 之后又修改了原始对象。",
+    ),
+    (
+        "vize:croquis/cf/toraw-mutation.help",
+        "Mutate the reactive proxy, and use `toRaw` only to read.",
+        "変更は reactive プロキシに対して行い、`toRaw` は読み取り専用にしてください。",
+        "请修改响应式代理，`toRaw` 只用于读取。",
+    ),
+    (
+        "vize:croquis/cf/event-listener-leak.message",
+        "An event listener is registered and never removed.",
+        "イベントリスナーが登録されたまま、解除されていません。",
+        "事件监听器被注册后从未移除。",
+    ),
+    (
+        "vize:croquis/cf/event-listener-leak.help",
+        "Remove the listener in `onUnmounted`.",
+        "`onUnmounted` でリスナーを解除してください。",
+        "请在 `onUnmounted` 中移除该监听器。",
+    ),
+    (
+        "vize:croquis/cf/array-mutation.message",
+        "An array is mutated by index, which a reactive array does not track.",
+        "配列を添字で変更していますが、reactive な配列はそれを追跡しません。",
+        "通过下标修改数组，响应式数组不会追踪这种修改。",
+    ),
+    (
+        "vize:croquis/cf/array-mutation.help",
+        "Use `push`, `splice`, or replace the array.",
+        "`push` か `splice` を使うか、配列自体を置き換えてください。",
+        "请使用 `push`、`splice`，或替换整个数组。",
+    ),
+    (
+        "vize:croquis/cf/pinia-getter.message",
+        "A Pinia getter is read without `storeToRefs`, so it will not stay reactive.",
+        "Pinia の getter を `storeToRefs` なしで読んでおり、reactive のままになりません。",
+        "Pinia 的 getter 没有通过 `storeToRefs` 读取，因此不会保持响应式。",
+    ),
+    (
+        "vize:croquis/cf/pinia-getter.help",
+        "Read the getter through `storeToRefs`.",
+        "getter は `storeToRefs` 経由で読んでください。",
+        "请通过 `storeToRefs` 读取该 getter。",
+    ),
+    (
+        "vize:croquis/cf/watcheffect-async.message",
+        "`watchEffect` starts an async task and cannot clean up the previous run.",
+        "`watchEffect` が async タスクを始め、前回の実行を片付けられません。",
+        "`watchEffect` 启动了异步任务，无法清理上一次运行。",
+    ),
+    (
+        "vize:croquis/cf/watcheffect-async.help",
+        "Use `watch` with an `onCleanup` handle, and await inside the callback.",
+        "`onCleanup` ハンドル付きの `watch` を使い、コールバックの中で await してください。",
+        "请使用带 `onCleanup` 句柄的 `watch`，并在回调内 await。",
+    ),
+    (
+        "vize:croquis/cf/setup-context-violation.message",
+        "Setup context is used in a way Vue does not allow.",
+        "Vue が許さない使い方で setup コンテキストを使っています。",
+        "setup 上下文的用法是 Vue 不允许的。",
+    ),
+    (
+        "vize:croquis/cf/setup-context-violation.help",
+        "Use the setup context only synchronously inside `setup`.",
+        "setup コンテキストは `setup` の中で同期的にだけ使ってください。",
+        "请只在 `setup` 内同步使用 setup 上下文。",
+    ),
+];

@@ -22,7 +22,9 @@ import {
 } from "./davinci-diagnostic-catalog-sources.ts";
 import {
   canonProblems,
+  croquisProblems,
   parseCanonCodes,
+  parseCroquisCodes,
   parseS3Codes,
   s3Problems,
 } from "./davinci-diagnostic-catalog-producers.ts";
@@ -96,6 +98,17 @@ test("TS-53: every Canon type-error code is catalogued in en, ja and zh", () => 
     "`ts/2304.help` has no en catalog text",
     "`ts/2304.help` has no ja catalog text",
     "`ts/2304.help` has no zh catalog text",
+  ]);
+});
+
+test("TS-53: every croquis cross-file code is catalogued in en, ja and zh", () => {
+  const codes = parseCroquisCodes();
+  assert.equal(codes.length, 60, "the parser reads every croquis code literal");
+  const entries = catalogEntries();
+  assert.deepEqual(croquisProblems(codes, entries), []);
+  const dropped = entries.filter(([key]) => key !== "vize:croquis/cf/unused-attrs.message");
+  assert.deepEqual(croquisProblems(codes, dropped), [
+    "`vize:croquis/cf/unused-attrs.message` is not catalogued",
   ]);
 });
 

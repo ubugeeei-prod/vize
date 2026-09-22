@@ -50,6 +50,10 @@ export function catalogEntries(): Array<[string, Entry]> {
     "i18n_rules_script_more.rs",
     "i18n_rules_ecosystem.rs",
     "i18n_s3.rs",
+    "i18n_croquis.rs",
+    "i18n_croquis_more.rs",
+    "i18n_croquis_rest.rs",
+    "i18n_croquis_last.rs",
   ].flatMap((file) => parseEntries(read("crates", "vize_carton", "src", file)));
 }
 

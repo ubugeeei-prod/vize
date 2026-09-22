@@ -15,6 +15,7 @@ pub(crate) fn register(messages: &mut [MessageMap; 3]) {
     crate::i18n_render::register(messages);
     crate::i18n_compiler::register(messages);
     crate::i18n_s3::register(messages);
+    crate::i18n_croquis::register(messages);
     crate::i18n_rules_markup::register(messages);
 }
 
