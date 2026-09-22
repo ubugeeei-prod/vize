@@ -22,7 +22,7 @@ pub(super) async fn references(
     let Some(offset) = position_to_offset(&content, position.line, position.character) else {
         return Ok(None);
     };
-    let ctx = IdeContext::with_content(&server.state, uri, offset, content);
+    let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
 
     #[cfg(feature = "native")]
     if crate::utils::is_jsx_path(uri.path()) {

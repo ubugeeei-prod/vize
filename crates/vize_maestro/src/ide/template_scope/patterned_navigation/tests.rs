@@ -47,7 +47,7 @@ fn classification_separates_local_shared_and_unaffected_symbols() {
         ("row in", Navigation::Local),
     ] {
         let ctx =
-            IdeContext::with_content(&state, &uri, SOURCE.find(needle).unwrap(), SOURCE.into());
+            IdeContext::testing(&state, &uri, SOURCE.find(needle).unwrap(), SOURCE.into());
         assert_eq!(classify(&ctx), expected, "{needle}");
     }
     let unicode = SOURCE.replace("rows", "\u{6570}\u{5024}");
@@ -56,14 +56,14 @@ fn classification_separates_local_shared_and_unaffected_symbols() {
         ("\u{6570}\u{5024}.length }}", Navigation::Local),
     ] {
         let ctx =
-            IdeContext::with_content(&state, &uri, unicode.find(needle).unwrap(), unicode.clone());
+            IdeContext::testing(&state, &uri, unicode.find(needle).unwrap(), unicode.clone());
         assert_eq!(classify(&ctx), expected);
     }
     let malformed = SOURCE.replace("{ const rows }", "{ const rows, const rows }");
     let property = SOURCE.replace("{{ rows.length }}", "{{ rows.row }}");
-    let ctx = IdeContext::with_content(&state, &uri, property.find("row }}").unwrap(), property);
+    let ctx = IdeContext::testing(&state, &uri, property.find("row }}").unwrap(), property);
     assert_eq!(classify(&ctx), Navigation::Shared);
-    let ctx = IdeContext::with_content(
+    let ctx = IdeContext::testing(
         &state,
         &uri,
         malformed.find("rows.length }}").unwrap(),
@@ -77,7 +77,7 @@ fn opt_out_and_pattern_like_text_do_not_change_ordinary_routing() {
     let (project, enabled) = enabled_state();
     let disabled = ServerState::new();
     let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
-    let ctx = IdeContext::with_content(
+    let ctx = IdeContext::testing(
         &disabled,
         &uri,
         SOURCE.find("rows.length }}").unwrap(),
@@ -85,7 +85,7 @@ fn opt_out_and_pattern_like_text_do_not_change_ordinary_routing() {
     );
     assert_eq!(classify(&ctx), Navigation::Ordinary);
     let source = "<script setup>const value = '<template v-match>'; </script><template><!-- v-match=\"value\" -->{{ value }}</template>";
-    let ctx = IdeContext::with_content(
+    let ctx = IdeContext::testing(
         &enabled,
         &uri,
         source.find("value }}").unwrap(),
@@ -93,7 +93,7 @@ fn opt_out_and_pattern_like_text_do_not_change_ordinary_routing() {
     );
     assert_eq!(classify(&ctx), Navigation::Ordinary);
     let uri = Url::from_file_path(project.path().join("plain.ts")).unwrap();
-    let ctx = IdeContext::with_content(&enabled, &uri, 6, "const value = 1".into());
+    let ctx = IdeContext::testing(&enabled, &uri, 6, "const value = 1".into());
     assert_eq!(classify(&ctx), Navigation::Ordinary);
 }
 

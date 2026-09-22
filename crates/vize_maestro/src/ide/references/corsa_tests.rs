@@ -28,7 +28,7 @@ fn patterned_references_and_rename_fail_closed_without_a_checker() {
         state.load_workspace_config(project.path());
         let uri = Url::from_file_path(project.path().join("App.vue")).unwrap();
         let source = "<script setup>const value = 1; const result = { value: 2 };</script>\n<template v-match=\"result\"><p v-when=\"{ const value }\">{{ value }}</p></template>";
-        let ctx = IdeContext::with_content(
+        let ctx = IdeContext::testing(
             &state,
             &uri,
             source.find("value }}").unwrap(),

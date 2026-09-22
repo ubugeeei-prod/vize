@@ -63,7 +63,7 @@ const RESIDENT_REF_SFC: &str = "<script setup lang=\"ts\">\r\n// 雪😀\r\ncons
 
 fn resident_ref_context<'a>(state: &'a ServerState, uri: &'a Url, source: &str) -> IdeContext<'a> {
     let offset = source.rfind("button\"").unwrap() + 1;
-    IdeContext::with_content(state, uri, offset, source.into())
+    IdeContext::testing(state, uri, offset, source.into())
 }
 
 fn resident_ref_responses(ctx: &IdeContext<'_>) -> serde_json::Value {

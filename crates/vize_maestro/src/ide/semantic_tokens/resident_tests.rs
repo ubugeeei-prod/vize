@@ -105,7 +105,7 @@ fn full_and_range_share_one_parse_with_hover() {
     assert!(!ranged.is_empty());
 
     let offset = SFC.find("{{ count").unwrap() + "{{ co".len();
-    let ctx = IdeContext::with_content(&state, &uri, offset, String::from(SFC));
+    let ctx = IdeContext::testing(&state, &uri, offset, String::from(SFC));
     let _hover = HoverService::hover(&ctx);
     assert_eq!(
         state.resident.take_stats(),

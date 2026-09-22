@@ -33,42 +33,57 @@ pub struct IdeContext<'a> {
 }
 
 impl<'a> IdeContext<'a> {
-    /// Create a new IDE context.
+    /// Create a context for an open document.
     ///
-    /// This re-fetches the document from the store and materializes its content.
-    /// Callers that have already materialized the document content should prefer
-    /// [`IdeContext::with_content`] to avoid a redundant document lookup and a
-    /// second full Rope→String allocation.
+    /// The text comes from the document store. `None` when `uri` is not open.
     pub fn new(state: &'a ServerState, uri: &'a Url, offset: usize) -> Option<Self> {
+        Self::read(state, uri, offset, false)
+    }
+
+    /// Completion context for an open document. Script-body ends stay insertion points.
+    pub(crate) fn at_completion(
+        state: &'a ServerState,
+        uri: &'a Url,
+        offset: usize,
+    ) -> Option<Self> {
+        Self::read(state, uri, offset, true)
+    }
+
+    /// A buffer that is not an open document (another file's text, or a test
+    /// fixture). Request handlers use [`Self::new`].
+    pub(crate) fn for_unopened(
+        state: &'a ServerState,
+        uri: &'a Url,
+        offset: usize,
+        content: String,
+    ) -> Self {
+        Self::assemble(state, uri, offset, content, false)
+    }
+
+    /// Publish `content` as the open document and read the context back.
+    /// Tests use this so the store, not a side string, is the source of text.
+    pub fn testing(state: &'a ServerState, uri: &'a Url, offset: usize, content: String) -> Self {
+        state.documents.open(uri.clone(), content, 0, "vue".into());
+        Self::new(state, uri, offset).expect("testing document is open")
+    }
+
+    /// [`Self::testing`] for a completion cursor.
+    pub fn testing_completion(
+        state: &'a ServerState,
+        uri: &'a Url,
+        offset: usize,
+        content: String,
+    ) -> Self {
+        state.documents.open(uri.clone(), content, 0, "vue".into());
+        Self::at_completion(state, uri, offset).expect("testing document is open")
+    }
+
+    fn read(state: &'a ServerState, uri: &'a Url, offset: usize, completion: bool) -> Option<Self> {
         let content = state.documents.text(uri)?;
-        Some(Self::with_content(state, uri, offset, content))
+        Some(Self::assemble(state, uri, offset, content, completion))
     }
 
-    /// Create a new IDE context from already-materialized document content.
-    ///
-    /// Reuses the provided `content` instead of re-reading the document from the
-    /// store, avoiding a redundant `DashMap` lookup and a second full
-    /// Rope→String allocation per request.
-    pub fn with_content(
-        state: &'a ServerState,
-        uri: &'a Url,
-        offset: usize,
-        content: String,
-    ) -> Self {
-        Self::with_content_at_position(state, uri, offset, content, false)
-    }
-
-    /// Create a completion context that includes script-body end insertion points.
-    pub(crate) fn with_content_for_completion(
-        state: &'a ServerState,
-        uri: &'a Url,
-        offset: usize,
-        content: String,
-    ) -> Self {
-        Self::with_content_at_position(state, uri, offset, content, true)
-    }
-
-    fn with_content_at_position(
+    fn assemble(
         state: &'a ServerState,
         uri: &'a Url,
         offset: usize,

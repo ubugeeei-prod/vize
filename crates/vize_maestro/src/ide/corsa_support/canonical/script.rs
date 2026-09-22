@@ -81,7 +81,7 @@ async fn open_script_workspace(
     let (uri, source) = sources
         .into_iter()
         .find(|(uri, _)| !uri.path().ends_with(".art.vue"))?;
-    let host = IdeContext::with_content(ctx.state, &uri, 0, source);
+    let host = IdeContext::for_unopened(ctx.state, &uri, 0, source);
     let mut document = super::open_canonical_virtual_workspace_document(&host, bridge).await?;
     let index = document
         .materialized_sources

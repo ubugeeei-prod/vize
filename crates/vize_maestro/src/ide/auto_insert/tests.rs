@@ -9,7 +9,7 @@ fn context<'a>(
     source: String,
     offset: usize,
 ) -> IdeContext<'a> {
-    IdeContext::with_content(state, uri, offset, source)
+    IdeContext::testing(state, uri, offset, source)
 }
 
 #[test]

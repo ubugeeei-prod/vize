@@ -38,7 +38,7 @@ pub(super) fn rewrite_shorthand_bindings(
                     .text(uri)
                     .or_else(|| document.authored_source(uri).map(str::to_owned))
             }?;
-            let local = IdeContext::with_content(ctx.state, uri, 0, source);
+            let local = IdeContext::for_unopened(ctx.state, uri, 0, source);
             collect(&local, new_name)
         });
         let Some(entries) = entries else {

@@ -131,7 +131,7 @@ class LabelFormatter implements Formatter {
 </script>
 "#;
     let state = ServerState::new();
-    let ctx = IdeContext::with_content(
+    let ctx = IdeContext::testing(
         &state,
         &uri,
         source.find("Formatter").unwrap(),
@@ -201,7 +201,7 @@ fn canonical_location_rejects_deleted_files_but_keeps_open_unsaved_files() {
     let target_uri = Url::from_file_path(workspace.path().join("Deleted.vue")).expect("URI");
     let source = "<template><Deleted /></template>\n";
     let state = ServerState::new();
-    let ctx = IdeContext::with_content(&state, &importer_uri, 11, source.to_string());
+    let ctx = IdeContext::testing(&state, &importer_uri, 11, source.to_string());
     let doc = canonical_doc(&importer_uri, source);
     let location = LspLocation {
         uri: target_uri.to_string(),
@@ -249,7 +249,7 @@ fn canonical_location_maps_exact_package_shadow_and_rejects_synthetic_coordinate
     let shadow_uri = Url::from_file_path(&shadow_path).unwrap();
     let source = "<template />\n";
     let state = ServerState::new();
-    let ctx = IdeContext::with_content(&state, &importer_uri, 0, source.to_string());
+    let ctx = IdeContext::testing(&state, &importer_uri, 0, source.to_string());
     let mut doc = canonical_doc(&importer_uri, source);
     doc.materialized_sources.push(CanonicalMaterializedSource {
         source_uri: authored_uri.clone(),

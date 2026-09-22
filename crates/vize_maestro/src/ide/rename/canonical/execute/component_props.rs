@@ -190,7 +190,7 @@ const greeting = "hello";
             change_annotations: None,
         };
         let state = ServerState::new();
-        let ctx = IdeContext::with_content(&state, &source_uri, 0, SOURCE.to_owned());
+        let ctx = IdeContext::testing(&state, &source_uri, 0, SOURCE.to_owned());
         let mut source_cache = corsa_support::ComponentPropSourceCache::default();
 
         retain_component_prop_edits(

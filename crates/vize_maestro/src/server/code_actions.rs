@@ -31,7 +31,7 @@ pub(super) async fn code_actions(
         crate::ide::JsxCodeActionService::code_actions(&content, uri, range)
     } else {
         let offset = position_to_offset(&content, range.start.line, range.start.character)?;
-        let ctx = IdeContext::with_content(&server.state, uri, offset, content.clone());
+        let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
         CodeActionService::code_actions(&ctx, range)
     };
 
@@ -45,7 +45,7 @@ pub(super) async fn code_actions(
                 })
             {
                 let offset = position_to_offset(&content, range.start.line, range.start.character)?;
-                let ctx = IdeContext::with_content(&server.state, uri, offset, content);
+                let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
                 actions.extend(CodeActionService::native_actions(&ctx, range).await);
             }
             actions

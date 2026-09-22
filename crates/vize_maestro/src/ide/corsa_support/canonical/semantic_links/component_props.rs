@@ -293,7 +293,7 @@ mod tests {
         let props_uri = Url::from_file_path(&props_path).expect("props URI");
         let app_uri = Url::from_file_path(project.path().join("App.vue")).expect("app URI");
         let state = ServerState::new();
-        let ctx = IdeContext::with_content(&state, &app_uri, 0, "<template />".to_owned());
+        let ctx = IdeContext::testing(&state, &app_uri, 0, "<template />".to_owned());
         let document = CanonicalVirtualDocument {
             source_uri: app_uri.clone(),
             request_uri: "file:///project/App.vue.ts".into(),
