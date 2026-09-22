@@ -2,9 +2,11 @@
 //! current virtual-TS generator on the TS-40 matrix.
 //!
 //! Generated text is not compared. A run that compares nothing fails.
-//! `vize check` diagnostic sets are not this binary: P4-5b stays unchecked
-//! until that corpus comparison is attached.
+//! Template diagnostics from `type_check_sfc` (the `vize check` binding
+//! check) on `tests/_fixtures` must sit inside both mappings. Script
+//! diagnostics are outside this projection.
 
+use std::ops::Range;
 use std::path::{Path, PathBuf};
 
 use vize_armature::parse;
@@ -75,6 +77,111 @@ fn compare_template(id: &str, template: &str) -> usize {
         compared += 1;
     }
     compared
+}
+
+/// Measured check diagnostics on `tests/_fixtures` that both mappings cover.
+const CHECK_DIAGNOSTIC_COMPARISONS: usize = 64;
+
+#[test]
+fn check_diagnostics_land_inside_the_projection() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures");
+    let mut files = Vec::new();
+    collect_vue(&root, &mut files);
+    assert!(
+        files.len() > 100,
+        "the vize check fixture corpus shrank to {} files",
+        files.len()
+    );
+    let mut compared = 0usize;
+    let mut divergences = Vec::new();
+    for path in &files {
+        let Ok(source) = std::fs::read_to_string(path) else {
+            continue;
+        };
+        let Ok(descriptor) = parse_sfc(&source, SfcParseOptions::default()) else {
+            continue;
+        };
+        let Some(template) = descriptor.template.as_ref() else {
+            continue;
+        };
+        let body: &str = template.content.as_ref();
+        if body.is_empty() {
+            continue;
+        }
+        let base = template.loc.start as usize;
+        let options = vize_canon::SfcTypeCheckOptions::new(path.display().to_string());
+        let checked = vize_canon::type_check_sfc(&source, &options);
+        let (old, new) = expression_ranges(body);
+        for diagnostic in &checked.diagnostics {
+            let start = diagnostic.start as usize;
+            let end = diagnostic.end as usize;
+            if start < base || end > base + body.len() || start >= end {
+                continue;
+            }
+            let span = (start - base)..(end - base);
+            if !contains(&old, &span) {
+                continue;
+            }
+            if contains(&new, &span) {
+                compared += 1;
+            } else if divergences.len() < 12 {
+                divergences.push(format!(
+                    "{} {:?} {:?}",
+                    path.display(),
+                    diagnostic.code,
+                    body.get(span).unwrap_or("")
+                ));
+            }
+        }
+    }
+    assert!(
+        divergences.is_empty(),
+        "check diagnostics missed by the projection:\n{}",
+        divergences.join("\n")
+    );
+    eprintln!("check diagnostic comparisons={compared}");
+    assert_eq!(
+        compared, CHECK_DIAGNOSTIC_COMPARISONS,
+        "vize check diagnostic comparisons changed; a zero run fails"
+    );
+}
+
+fn expression_ranges(template: &str) -> (Vec<Range<usize>>, Vec<Range<usize>>) {
+    let allocator = Allocator::new();
+    let (root, _errors) = parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let old = generate_virtual_ts(&summary, None, Some(&root), 0);
+    let new = project_template_expressions(template);
+    (old_authored_ranges(&old.mapping), old_authored_ranges(&new))
+}
+
+fn contains(ranges: &[Range<usize>], span: &Range<usize>) -> bool {
+    ranges
+        .iter()
+        .any(|range| range.start <= span.start && span.end <= range.end)
+}
+
+fn collect_vue(dir: &Path, out: &mut Vec<PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            let name = path
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("");
+            if name == "node_modules" || name == "_git" || name == "target" {
+                continue;
+            }
+            collect_vue(&path, out);
+        } else if path.extension().is_some_and(|ext| ext == "vue") {
+            out.push(path);
+        }
+    }
 }
 
 fn old_authored_ranges(
