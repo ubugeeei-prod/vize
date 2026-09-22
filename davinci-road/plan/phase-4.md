@@ -100,7 +100,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P4-10b](./phase-4-tasks-last.md#p4-10b--nuxt-provider-and-projected-route-types) Nuxt provider and projected route types — lane H · startable now (behind P4-5b)
 - [x] [P4-11a](./phase-4-tasks-last.md#p4-11a--content-model-tables-and-exact-per-file-checker) Content-model tables and exact per-file checker — lane I · startable now
 - [ ] [P4-11b](./phase-4-tasks-last.md#p4-11b--composed-cross-component-conformance) Composed cross-component conformance — lane I · startable now
-- [ ] [P4-12a](./phase-4-tasks-last.md#p4-12a--style-specification) Style specification — lane J · startable now
+- [x] [P4-12a](./phase-4-tasks-last.md#p4-12a--style-specification) Style specification — lane J · startable now
 - [ ] [P4-12b](./phase-4-tasks-last.md#p4-12b--glyph-on-s1) Glyph on S1 — lane J · startable now
 - [ ] [P4-12c](./phase-4-tasks-last.md#p4-12c--pug-as-an-s1-dialect) Pug as an S1 dialect — lane K · startable now
 - [x] [P4-13](./phase-4-tasks-last.md#p4-13--musea-onto-s0-and-s1) Musea onto S0 and S1 — lane L · startable now

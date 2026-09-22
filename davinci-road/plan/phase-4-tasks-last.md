@@ -94,14 +94,16 @@
 
 **Steps:**
 
-- [ ] Draft the rules, one fixture pair each
-- [ ] `tests/tooling/davinci-style-spec.test.ts`: every rule id has a fixture pair and every pair a rule
+- [x] Draft the rules, one fixture pair each
+- [x] `tests/tooling/davinci-style-spec.test.ts`: every rule id has a fixture pair and every pair a rule
 
 **Acceptance:** the spec/fixture bijection test green and proven to fail on an orphan fixture. **Review point:** the maintainer signs off the style direction — no direction is pre-committed (charter #41).
 
 **Deps:** none (phase-2 exit).
 
 **Non-goals:** implementing the style (P4-12b); pug layout (P4-12c).
+
+**Landed 2026-09-22:** `style-spec.md` pins S01–S24, each with a fixture pair, and the bijection fails on an injected orphan. Review point open — the maintainer has not signed off the direction (charter #41). See the [P4-12a record](./phase-4-records/p4-12a.md).
 
 ## P4-12b — Glyph on S1
 
