@@ -144,11 +144,56 @@ const value = 1;
 
     let expected = source.rfind("  class").unwrap() as u32;
     let diag = &result.diagnostics[0];
+    assert_eq!(diag.severity, Severity::Warning);
+    assert_eq!(diag.message, "Multiple consecutive spaces");
+    assert_eq!(diag.help, None);
     assert_eq!(
         diag.start, expected,
         "SFC diagnostic must be offset into file coordinates"
     );
     assert_eq!(diag.end, expected + 2);
+    let fix = diag
+        .fix
+        .as_ref()
+        .expect("no-multi-spaces stays fixable on the SFC facade");
+    assert_eq!(fix.message, "Replace multiple spaces with single space");
+    assert_eq!(fix.edits.len(), 1);
+    assert_eq!(fix.edits[0].start, diag.start);
+    assert_eq!(fix.edits[0].end, diag.end);
+    assert_eq!(fix.edits[0].new_text, " ");
+
+    let between = r#"<script setup lang="ts">
+const value = 1;
+</script>
+
+<template>
+  <div class="foo"  id="bar"></div>
+</template>
+"#;
+    let between_result = linter.lint_sfc(between, "test.vue");
+    assert_eq!(
+        diagnostic_rules(&between_result),
+        vec!["vue/no-multi-spaces"]
+    );
+    assert_eq!(diagnostic_slices(between, &between_result), vec!["  "]);
+    assert_eq!(between_result.error_count, 0);
+
+    let suppressed = r#"<script setup lang="ts">
+const value = 1;
+</script>
+
+<template>
+  <!-- eslint-disable-next-line vue/no-multi-spaces -->
+  <div  class="foo"></div>
+</template>
+"#;
+    let suppressed_result = linter.lint_sfc(suppressed, "test.vue");
+    assert_eq!(
+        suppressed_result.warning_count, 0,
+        "eslint-disable-next-line must still suppress the facade rule: {:?}",
+        suppressed_result.diagnostics
+    );
+    assert_eq!(suppressed_result.error_count, 0);
 }
 
 #[test]

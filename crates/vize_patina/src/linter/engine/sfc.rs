@@ -1,3 +1,4 @@
+pub(in crate::linter::engine) mod facade;
 mod pug;
 
 use super::{
@@ -20,6 +21,7 @@ impl Linter {
             TemplateRuleEnv {
                 sfc_descriptor: input.descriptor,
                 dialect: VueDialect::Vue,
+                facade_rule: Some(facade::RULE),
             },
         )
     }
@@ -170,7 +172,7 @@ impl Linter {
             extract_template_fast(source)
         ) {
             Some((content, byte_offset)) => {
-                let mut result = self.lint_template(&content, filename);
+                let mut result = self.lint_sfc_template_source(&content, filename);
                 offset_result(&mut result, byte_offset);
                 Self::merge_lint_results(result, sfc_result)
             }
@@ -181,13 +183,31 @@ impl Linter {
         self.append_sfc_document_rule_diagnostics(source, filename, result)
     }
 
+    /// Template body extracted from an SFC. [`facade::RULE`] runs on the S2 facade.
+    fn lint_sfc_template_source(&self, source: &str, filename: &str) -> LintResult {
+        let capacity = (source.len() * 4).max(self.initial_capacity);
+        let allocator = Allocator::with_capacity(capacity);
+        self.lint_template_with_allocator_config(
+            &allocator,
+            source,
+            filename,
+            true,
+            true,
+            TemplateRuleEnv {
+                sfc_descriptor: None,
+                dialect: VueDialect::Vue,
+                facade_rule: Some(facade::RULE),
+            },
+        )
+    }
+
     fn fast_template_lint_or_empty(&self, source: &str, filename: &str) -> LintResult {
         match profile!(
             "patina.template.extract_fast",
             extract_template_fast(source)
         ) {
             Some((content, byte_offset)) => {
-                let mut fallback = self.lint_template(&content, filename);
+                let mut fallback = self.lint_sfc_template_source(&content, filename);
                 offset_result(&mut fallback, byte_offset);
                 fallback
             }

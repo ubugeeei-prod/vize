@@ -21,9 +21,7 @@ mod template_extract;
 
 pub(crate) use template_extract::extract_template_fast;
 
-use crate::{
-    context::LintContext, diagnostic::LintSummary, preset::LintPreset, visitor::LintVisitor,
-};
+use crate::{context::LintContext, diagnostic::LintSummary, preset::LintPreset};
 use vize_armature::Parser;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
@@ -65,6 +63,19 @@ pub(crate) struct SfcTemplateLintInput<'a> {
 pub(crate) struct TemplateRuleEnv<'a> {
     pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
     pub dialect: VueDialect,
+    /// Markup rule `lint_sfc` runs on the S2 facade instead of the visitor.
+    /// `None` on the raw-template and standalone-HTML lanes.
+    pub facade_rule: Option<&'static str>,
+}
+
+impl<'a> TemplateRuleEnv<'a> {
+    const fn relief(dialect: VueDialect) -> Self {
+        Self {
+            sfc_descriptor: None,
+            dialect,
+            facade_rule: None,
+        }
+    }
 }
 
 pub(crate) fn analyze_descriptor_for_lint(
@@ -250,13 +261,18 @@ impl Linter {
             env.sfc_descriptor
                 .map(|descriptor| descriptor.source.as_ref()),
         );
-        let mut visitor = LintVisitor::new(
+        sfc::facade::dispatch_template_rules(
+            self,
             &mut ctx,
-            &self.registry.rules()[..rule_count],
-            &self.rule_names()[..rule_count],
-            self.registry.has_exit_element_rules(),
+            sfc::facade::Dispatch {
+                allocator,
+                source,
+                root,
+                analysis,
+                rule: env.facade_rule,
+                rule_count,
+            },
         );
-        profile!("patina.template.visit", visitor.visit_root(root));
 
         let error_count = ctx.error_count();
         let warning_count = ctx.warning_count();
@@ -446,7 +462,7 @@ impl Linter {
             filename,
             true,
             true,
-            VueDialect::Vue,
+            TemplateRuleEnv::relief(VueDialect::Vue),
         )
     }
 
@@ -461,7 +477,7 @@ impl Linter {
             filename,
             false,
             true,
-            VueDialect::Vue,
+            TemplateRuleEnv::relief(VueDialect::Vue),
         )
     }
 
@@ -472,7 +488,7 @@ impl Linter {
         filename: &str,
         report_parse_errors: bool,
         gate_semantic_on_fatal_parse: bool,
-        dialect: VueDialect,
+        env: TemplateRuleEnv<'_>,
     ) -> LintResult {
         // Parse the template
         let parser = Parser::new(allocator, source);
@@ -490,10 +506,7 @@ impl Linter {
             } else {
                 TemplateAnalysis::Lazy
             },
-            TemplateRuleEnv {
-                sfc_descriptor: None,
-                dialect,
-            },
+            env,
         );
 
         if report_parse_errors {
@@ -535,7 +548,12 @@ impl Linter {
         // themselves on petite-vue documents.
         let dialect = standalone_html_dialect(None, source);
         let mut result = self.lint_template_with_allocator_config(
-            &allocator, source, filename, false, false, dialect,
+            &allocator,
+            source,
+            filename,
+            false,
+            false,
+            TemplateRuleEnv::relief(dialect),
         );
 
         if super::script_rules::has_active_builtin_script_rules(self) {
