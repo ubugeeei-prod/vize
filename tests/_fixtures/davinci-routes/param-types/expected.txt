@@ -1,0 +1,82 @@
+== route-tree (1 routers)
+router #0 router.ts:10:16-10:92 exports=[default] closed
+  item path=/items/:id parent=- components=[]
+  files path=/files/:segments+ parent=- components=[]
+  docs path=/docs/:rest* parent=- components=[]
+  find path=/find/:q? parent=- components=[]
+== route-params (4 names)
+docs router=#0 declarations=1 params=[rest: (string | number)[] | null | undefined]
+files router=#0 declarations=1 params=[segments: (string | number)[]]
+find router=#0 declarations=1 params=[q: string | number | null | undefined]
+item router=#0 declarations=1 params=[id: string | number]
+== diagnostics (14)
+error[ecosystem/vue-router-param-type] values.ts:20:46-20:56
+  param `id` of route `item` is an array, but `:id` is not repeatable
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:21:46-21:48
+  param `id` of route `item` is an empty string, but `:id` is required
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:22:46-22:48
+  param `id` of route `item` is an empty string, but `:id` is required
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:23:46-23:50
+  param `id` of route `item` is `null`, but `:id` is required
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:24:46-24:55
+  param `id` of route `item` is `undefined`, but `:id` is required
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:25:46-25:52
+  param `id` of route `item` is `undefined`, but `:id` is required
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:26:46-26:50
+  param `id` of route `item` is a boolean, but route params are strings or numbers
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:27:46-27:58
+  param `id` of route `item` is an object, but route params are strings or numbers
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:28:46-28:55
+  param `id` of route `item` is a function, but route params are strings or numbers
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:29:46-29:48
+  param `id` of route `item` is a bigint, but route params are strings or numbers
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:30:46-30:49
+  param `id` of route `item` is a regular expression, but route params are strings or numbers
+  primary: expected string | number
+  help: route `item` is `/items/:id` (router.ts:4:31), params: id: string | number
+  witness: route-params Name("item") @ 89..95
+error[ecosystem/vue-router-param-type] values.ts:31:53-31:55
+  param `segments` of route `files` is an empty array, but `:segments+` needs at least one segment
+  primary: expected (string | number)[]
+  help: route `files` is `/files/:segments+` (router.ts:5:38), params: segments: (string | number)[]
+  witness: route-params Name("files") @ 136..143
+error[ecosystem/vue-router-param-type] values.ts:32:45-32:50
+  param `q` of route `find` is an array, but `:q?` is not repeatable
+  primary: expected string | number | null | undefined
+  help: route `find` is `/find/:q?` (router.ts:7:30), params: q: string | number | null | undefined
+  witness: route-params Name("find") @ 218..224
+error[ecosystem/vue-router-param-type] values.ts:33:45-33:50
+  param `q` of route `find` is a boolean, but route params are strings or numbers
+  primary: expected string | number | null | undefined
+  help: route `find` is `/find/:q?` (router.ts:7:30), params: q: string | number | null | undefined
+  witness: route-params Name("find") @ 218..224

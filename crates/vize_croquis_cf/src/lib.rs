@@ -56,6 +56,7 @@ mod diagnostics;
 pub mod facts;
 mod graph;
 mod module_paths;
+pub mod providers;
 mod registry;
 mod suppression;
 

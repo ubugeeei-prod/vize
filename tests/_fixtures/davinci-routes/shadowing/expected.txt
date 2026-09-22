@@ -1,0 +1,12 @@
+== route-tree (1 routers)
+router #0 router.js:5:16-5:73 exports=[default] closed
+  home path=/ parent=- components=[]
+== route-params (1 names)
+home router=#0 declarations=1 params=[]
+== diagnostics (1)
+error[ecosystem/vue-router-unknown-route] navigation.js:23:26-23:32
+  unknown route name `hmoe`
+  primary: no route has this name
+  help: did you mean `home`?
+  help: known routes: home (router at router.js:5:16)
+  witness: route-tree Index(0) @ 128..185

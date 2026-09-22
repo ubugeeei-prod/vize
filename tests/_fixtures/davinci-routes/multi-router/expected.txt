@@ -1,0 +1,34 @@
+== route-tree (2 routers)
+router #0 admin-router.ts:3:16-9:3 exports=[default] closed
+  dashboard path=/ parent=- components=[]
+  member path=/members/:memberId parent=- components=[]
+router #1 site-router.ts:3:27-9:3 exports=[siteRouter] closed
+  dashboard path=/:locale/dashboard parent=- components=[]
+  pricing path=/pricing parent=- components=[]
+== route-params (3 names)
+dashboard router=#0 declarations=2 params=[]
+member router=#0 declarations=1 params=[memberId: string | number]
+pricing router=#1 declarations=1 params=[]
+== diagnostics (4)
+error[ecosystem/vue-router-unknown-route] navigate.ts:10:23-10:33
+  unknown route name `settings`
+  primary: no route has this name
+  help: known routes: dashboard, member, pricing (router at admin-router.ts:3:16, site-router.ts:3:27)
+  witness: route-tree Index(0) @ 77..241
+  witness: route-tree Index(1) @ 88..251
+error[ecosystem/vue-router-extra-param] navigate.ts:12:43-12:45
+  route `member` has no param `id`
+  primary: not a param of this route
+  help: route `member` is `/members/:memberId` (admin-router.ts:7:41), params: memberId: string | number
+  witness: route-params Name("member") @ 222..230
+warning[ecosystem/vue-router-missing-param] navigate.ts:12:41-12:50
+  navigation to `member` does not pass required param `memberId`
+  primary: `memberId` is not passed here
+  help: Vue Router fills `memberId` only from the current route and throws `Missing required param "memberId"` when it has none
+  help: route `member` is `/members/:memberId` (admin-router.ts:7:41), params: memberId: string | number
+  witness: route-params Name("member") @ 222..230
+error[ecosystem/vue-router-unknown-route] navigate.ts:16:26-16:35
+  unknown route name `pricing`
+  primary: no route has this name
+  help: known routes: dashboard, member (router at admin-router.ts:3:16)
+  witness: route-tree Index(0) @ 77..241

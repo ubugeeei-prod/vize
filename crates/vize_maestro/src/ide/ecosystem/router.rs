@@ -13,12 +13,7 @@ use crate::ide::{IdeContext, offset_to_position};
 const ROUTER_PUSH: &str = "router.push(";
 const ROUTER_REPLACE: &str = "router.replace(";
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct RouteParam {
-    name: String,
-    optional: bool,
-    repeatable: bool,
-}
+pub(crate) use vize_croquis_cf::providers::vue_router::RouteParam;
 
 pub(crate) fn completions(
     ctx: &IdeContext<'_>,
@@ -32,16 +27,40 @@ pub(crate) fn completions(
         return Vec::new();
     }
 
-    route_names(descriptor)
+    // Project routes first - the Vue Router provider's `route-params` group -
+    // then same-file `<route>` / `definePage` names it does not already hold.
+    let project = ctx
+        .uri
+        .to_file_path()
+        .map(|path| super::router_project::project_routes(&path))
+        .unwrap_or_default();
+    let mut seen: FxHashSet<String> = project.iter().map(|route| route.name.clone()).collect();
+    let mut items: Vec<CompletionItem> = project
         .into_iter()
-        .map(|name| CompletionItem {
-            label: name.to_string(),
-            kind: Some(CompletionItemKind::ENUM_MEMBER),
-            detail: Some(std::string::String::from("Vue Router route name")),
-            sort_text: Some(std::string::String::from("0")),
-            ..Default::default()
+        .map(|route| {
+            let detail = match route.path {
+                Some(path) => cstr!("Vue Router route `{path}`"),
+                None => String::from("Vue Router route name"),
+            };
+            route_name_item(&route.name, &detail)
         })
-        .collect()
+        .collect();
+    for name in route_names(descriptor) {
+        if seen.insert(name.clone()) {
+            items.push(route_name_item(&name, "Vue Router route name"));
+        }
+    }
+    items
+}
+
+fn route_name_item(name: &str, detail: &str) -> CompletionItem {
+    CompletionItem {
+        label: name.into(),
+        kind: Some(CompletionItemKind::ENUM_MEMBER),
+        detail: Some(detail.into()),
+        sort_text: Some(std::string::String::from("0")),
+        ..Default::default()
+    }
 }
 
 pub(crate) fn route_names(descriptor: &SfcDescriptor<'_>) -> Vec<String> {
@@ -278,93 +297,13 @@ fn collect_segment_params(
     }
 }
 
+/// Params of a Vue Router path, through the provider's one path grammar.
 fn collect_path_params(path: &str, seen: &mut FxHashSet<String>, params: &mut Vec<RouteParam>) {
-    let bytes = path.as_bytes();
-    let mut cursor = 0usize;
-    while cursor < bytes.len() {
-        let Some(colon_rel) = path[cursor..].find(':') else {
-            break;
-        };
-        let colon = cursor + colon_rel;
-        if colon > 0 && bytes[colon - 1] == b'\\' {
-            cursor = colon + 1;
-            continue;
-        }
-
-        let name_start = colon + 1;
-        let Some((name, name_end)) = route_path_param_name(path, name_start) else {
-            cursor = name_start;
-            continue;
-        };
-
-        let mut modifier_pos = skip_route_path_custom_regex(path, name_end);
-        let modifier = bytes.get(modifier_pos).copied();
-        let optional = matches!(modifier, Some(b'?' | b'*'));
-        let repeatable = matches!(modifier, Some(b'+' | b'*'));
-        if matches!(modifier, Some(b'?' | b'+' | b'*')) {
-            modifier_pos += 1;
-        }
-
-        let name = String::from(name);
-        if seen.insert(name.clone()) {
-            params.push(RouteParam {
-                name,
-                optional,
-                repeatable,
-            });
-        }
-
-        cursor = modifier_pos;
-    }
-}
-
-fn route_path_param_name(path: &str, start: usize) -> Option<(&str, usize)> {
-    let bytes = path.as_bytes();
-    let first = *bytes.get(start)?;
-    if !is_route_path_param_name_byte(first) {
-        return None;
-    }
-
-    let mut end = start + 1;
-    while bytes
-        .get(end)
-        .is_some_and(|byte| is_route_path_param_name_byte(*byte))
-    {
-        end += 1;
-    }
-    Some((&path[start..end], end))
-}
-
-fn is_route_path_param_name_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_'
-}
-
-fn skip_route_path_custom_regex(path: &str, mut pos: usize) -> usize {
-    let bytes = path.as_bytes();
-    if bytes.get(pos).copied() != Some(b'(') {
-        return pos;
-    }
-
-    let mut depth = 1usize;
-    pos += 1;
-    while pos < bytes.len() {
-        match bytes[pos] {
-            b'\\' => pos = pos.saturating_add(2),
-            b'(' => {
-                depth += 1;
-                pos += 1;
-            }
-            b')' => {
-                depth -= 1;
-                pos += 1;
-                if depth == 0 {
-                    break;
-                }
-            }
-            _ => pos += 1,
+    for param in vize_croquis_cf::providers::vue_router::parse_route_params(path) {
+        if seen.insert(param.name.clone()) {
+            params.push(param);
         }
     }
-    pos
 }
 
 fn route_identifiers(content: &str) -> FxHashSet<&str> {

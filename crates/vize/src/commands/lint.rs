@@ -8,6 +8,7 @@ mod entry_rules;
 mod fix;
 mod patterns;
 mod rich;
+mod routes;
 mod stdout;
 
 #[cfg(test)]
@@ -18,10 +19,10 @@ pub use args::LintArgs;
 use crate::profile_support;
 use aggregate::{LintRunAccumulator, should_retain_file_results};
 use collect::{LintIgnoreSet, collect_lint_inputs, resolve_lint_config_path};
-use cross_file::apply_sfc_cross_file_lint;
 use entry_rules::LinterRuleResolver;
 use fix::lint_source_with_optional_fix;
 use rayon::prelude::*;
+use routes::apply_cross_file_lint;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -192,12 +193,7 @@ pub fn run(args: LintArgs) {
     if cross_file_enabled {
         cross_file_report = profile!(
             "cli.lint.cross_file.build",
-            apply_sfc_cross_file_lint(
-                &mut results,
-                help_level,
-                args.cross_file_tree,
-                args.cross_file_complexity
-            )
+            apply_cross_file_lint(&mut results, help_level, &args)
         );
     }
     let cross_file_time = cross_file_start

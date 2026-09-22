@@ -138,22 +138,13 @@ compatibility stays a non-goal.
 
 ## App-level fact provider contract
 
-Route trees, `definePageMeta`, i18n catalogs: in-tree providers cover Vue
-Router and Nuxt (Vue-family scope), but the provider interface should be the
-same one external ecosystems would use. Open: is a convention provider a third
-kind of first-party plug-in (like input dialects), or a consumer of the
-cross-file fact API with write access?
-
-**Recommendation (phase-4 re-cut, 2026-09-21):** neither a new plug-in kind nor
-general write access. A provider is a **project-level population pass in the
-fact demand graph**: it declares its ambient inputs (the files, globs and
-config it reads — exactly what P5-1's key manifests need) and **exclusively
-owns** its output groups (single writer, enforced by the registry), and
-consumers demand those groups like any other fact. In-tree providers compile in
-behind cargo features (charter #15's first tier); external providers use the
-same interface through charter #29's "custom fact providers" hook family.
-Owner: [P4-10a](./plan/phase-4-tasks-last.md#p4-10a--provider-contract-and-vue-router-provider)
-lands the contract with the Vue Router provider and turns this entry into a stub.
+**Recommendation (phase-4 re-cut, 2026-09-21):** a provider is a project-level
+population pass in the fact demand graph that declares its ambient inputs and
+exclusively owns its output groups. **Settled and landed** by
+[P4-10a](./plan/phase-4-tasks-last.md#p4-10a--provider-contract-and-vue-router-provider):
+the contract as built — `vize_croquis_cf::providers`, the const single-writer
+registry and the in-tree Vue Router provider — is recorded in the
+[P4-10a record](./plan/phase-4-records/p4-10a.md).
 
 ## Communications (charter #45) and the Vue Fes Japan 2026 presentation
 

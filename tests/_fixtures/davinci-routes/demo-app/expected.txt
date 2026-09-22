@@ -1,0 +1,52 @@
+== route-tree (1 routers)
+router #0 src/router/index.ts:5:23-25:3 exports=[router] closed
+  home path=/ parent=- components=[src/views/HomeView.vue]
+  (unnamed) path=/users/:userId(\d+) parent=- components=[]
+  user path=/users/:userId(\d+) parent=#1 components=[]
+  user-post path=/users/:userId(\d+)/posts/:postId parent=#1 components=[src/views/UserPost.vue]
+  user-tags path=/users/:userId(\d+)/tags/:tags+ parent=#1 components=[]
+  search path=/search/:query? parent=- components=[]
+  admin path=/admin parent=- components=[]
+  admin-audit path=/admin/audit/:entryId parent=#6 components=[]
+== route-params (7 names)
+admin router=#0 declarations=1 params=[]
+admin-audit router=#0 declarations=1 params=[entryId: string | number]
+home router=#0 declarations=1 params=[]
+search router=#0 declarations=1 params=[query: string | number | null | undefined]
+user router=#0 declarations=1 params=[userId: string | number]
+user-post router=#0 declarations=1 params=[userId: string | number, postId: string | number]
+user-tags router=#0 declarations=1 params=[userId: string | number, tags: (string | number)[]]
+== diagnostics (6)
+error[ecosystem/vue-router-unknown-route] src/components/UserCard.vue:9:23-9:35
+  unknown route name `user-posts`
+  primary: no route has this name
+  help: did you mean `user-post`?
+  help: known routes: home, user, user-post, user-tags, search, admin, admin-audit (router at src/router/index.ts:5:23)
+  witness: route-tree Index(0) @ 169..877
+error[ecosystem/vue-router-extra-param] src/components/UserCard.vue:15:48-15:50
+  route `user` has no param `id`
+  primary: not a param of this route
+  help: route `user` is `/users/:userId(\d+)` (src/router/index.ts:13:27), params: userId: string | number
+  witness: route-params Name("user") @ 425..431
+warning[ecosystem/vue-router-missing-param] src/components/UserCard.vue:15:46-15:61
+  navigation to `user` does not pass required param `userId`
+  primary: `userId` is not passed here
+  help: Vue Router fills `userId` only from the current route and throws `Missing required param "userId"` when it has none
+  help: route `user` is `/users/:userId(\d+)` (src/router/index.ts:13:27), params: userId: string | number
+  witness: route-params Name("user") @ 425..431
+error[ecosystem/vue-router-param-type] src/components/UserCard.vue:19:69-19:83
+  param `query` of route `search` is an array, but `:query?` is not repeatable
+  primary: expected string | number | null | undefined
+  help: route `search` is `/search/:query?` (src/router/index.ts:22:38), params: query: string | number | null | undefined
+  witness: route-params Name("search") @ 786..794
+error[ecosystem/vue-router-extra-param] src/composables/useAdminNav.ts:4:64-4:67
+  route `admin-audit` has no param `tab`
+  primary: not a param of this route
+  help: route `admin-audit` is `/admin/audit/:entryId` (src/router/admin.ts:8:48), params: entryId: string | number
+  witness: route-params Name("admin-audit") @ 245..258
+warning[ecosystem/vue-router-missing-param] src/views/UserPost.vue:7:26-7:32
+  navigation to `user` does not pass required param `userId`
+  primary: `userId` is not passed here
+  help: Vue Router fills `userId` only from the current route and throws `Missing required param "userId"` when it has none
+  help: route `user` is `/users/:userId(\d+)` (src/router/index.ts:13:27), params: userId: string | number
+  witness: route-params Name("user") @ 425..431

@@ -3,10 +3,13 @@
 mod context;
 pub(crate) mod i18n;
 pub(crate) mod router;
+mod router_project;
 pub(crate) mod void;
 
 #[cfg(test)]
 mod router_extension_tests;
+#[cfg(test)]
+mod router_project_tests;
 
 use tower_lsp::lsp_types::{
     CompletionItem, Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url,

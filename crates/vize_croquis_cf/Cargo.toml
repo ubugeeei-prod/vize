@@ -8,6 +8,12 @@ repository.workspace = true
 description = "Cross-file semantic analysis for Vize Croquis"
 metadata.vize.stability = "experimental"
 
+[features]
+default = ["provider-vue-router"]
+# In-tree app-level fact providers compile in behind cargo features (charter
+# #15's first tier, the P4-10a provider contract).
+provider-vue-router = []
+
 [dependencies]
 vize_carton.workspace = true
 vize_croquis.workspace = true
@@ -15,10 +21,13 @@ vize_croquis.workspace = true
 vize_s1_to_s2.workspace = true
 # The P4-1a fact API the template-complexity consumers declare demands on.
 vize_davinci.workspace = true
+vize_s1.workspace = true
 rustc-hash.workspace = true
 oxc_allocator.workspace = true
 oxc_ast.workspace = true
+oxc_ast_visit.workspace = true
 oxc_parser.workspace = true
+oxc_semantic.workspace = true
 oxc_span.workspace = true
 serde.workspace = true
 

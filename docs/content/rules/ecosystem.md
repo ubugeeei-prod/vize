@@ -60,6 +60,37 @@ Good:
 </template>
 ```
 
+## Typed Vue Router navigations (`vize lint --cross-file`)
+
+With `--cross-file`, Vize reads the project's `createRouter({ routes })` records — nested
+children, imported route modules, path params with their modifiers — and checks every named
+navigation against them: `router.push/replace/resolve({ name, params })` on a router from
+`useRouter()`, `this.$router` or the router module, `$router.push(…)` in templates, and
+`<RouterLink :to="{ name, params }">`. Every error names the route declaration it is proven
+against; a router whose routes are not all static (a spread of an unknown value, `addRoute`)
+never produces an unknown-name error.
+
+| Rule                                 | Severity | Reports                                                                                  |
+| ------------------------------------ | -------- | ---------------------------------------------------------------------------------------- |
+| `ecosystem/vue-router-unknown-route` | error    | a route name no reachable router declares, with a "did you mean" suggestion              |
+| `ecosystem/vue-router-extra-param`   | error    | a param the route's path does not declare (Vue Router discards it)                       |
+| `ecosystem/vue-router-param-type`    | error    | an array for a non-repeatable param, an empty or nullish required param, a boolean, ...  |
+| `ecosystem/vue-router-missing-param` | warning  | a required param not passed, which only works while the current route carries it        |
+
+Bad:
+
+```ts
+// routes: { path: "/users/:userId", children: [{ path: "posts/:postId", name: "user-post" }] }
+router.push({ name: "user-posts", params: { userId: 1 } }); // unknown route name
+router.push({ name: "user-post", params: { userId: 1, postId: 2, tab: "a" } }); // no param `tab`
+```
+
+Good:
+
+```ts
+router.push({ name: "user-post", params: { userId: 1, postId: 2 } });
+```
+
 ## `ecosystem/vue-router-prefer-named-push`
 
 Warns on `router.push("/path")`, `router.replace("/path")`, and route objects with a static `path`.

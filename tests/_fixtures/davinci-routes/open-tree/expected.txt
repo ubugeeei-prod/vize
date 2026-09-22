@@ -1,0 +1,13 @@
+== route-tree (1 routers)
+router #0 router.ts:4:23-7:3 exports=[router] open
+  order path=/orders/:orderId parent=- components=[]
+  open: dynamic-routes router.ts:6:60-6:75
+  open: add-route plugins.ts:4:3-4:63
+== route-params (1 names)
+order router=#0 declarations=1 params=[orderId: string | number]
+== diagnostics (1)
+error[ecosystem/vue-router-extra-param] OrderLinks.vue:12:59-12:65
+  route `order` has no param `lineId`
+  primary: not a param of this route
+  help: route `order` is `/orders/:orderId` (router.ts:6:46), params: orderId: string | number
+  witness: route-params Name("order") @ 229..236

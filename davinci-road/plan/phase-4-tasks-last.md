@@ -13,15 +13,17 @@
 
 **Steps:**
 
-- [ ] `crates/vize_croquis_cf/src/providers.rs` (the `Provider` trait: `const INPUTS`, `const OUTPUTS: Demand`, single-writer check in the registry) and `providers/vue_router.rs`
-- [ ] Diagnostics for an unknown route name and missing or extra params; tier `sound` within the declared domain (static route records, literal names)
-- [ ] Maestro's `crates/vize_maestro/src/ide/ecosystem/router.rs` (687 lines) completions read the provider groups
+- [x] `crates/vize_croquis_cf/src/providers.rs` (the `Provider` trait: `const INPUTS`, `const OUTPUTS: Demand`, single-writer check in the registry) and `providers/vue_router.rs`
+- [x] Diagnostics for an unknown route name and missing or extra params; tier `sound` within the declared domain (static route records, literal names)
+- [x] Maestro's `crates/vize_maestro/src/ide/ecosystem/router.rs` (687 lines) completions read the provider groups
 
 **Acceptance:** exact diagnostic snapshots over new fixtures `tests/_fixtures/davinci-routes/` (TS-9); a second writer to `RouteTree` is rejected by the registry with its exact error; TS-35; Maestro router completion tests exact; the open-questions entry becomes a stub pointing at the record.
 
 **Deps:** P4-1a, P4-2, P4-6a.
 
 **Non-goals:** Nuxt (P4-10b); i18n catalog providers; external providers (the JS fact-provider hook family, P6-7).
+
+**Landed 2026-09-22:** `vize_croquis_cf::providers` with the const single-writer registry, the `VueRouterProvider` (`route-tree`, `route-params`), witness-carrying route typing in `vize lint --cross-file` and provider-backed Maestro route-name completions — see the [P4-10a record](./phase-4-records/p4-10a.md).
 
 ## P4-10b — Nuxt provider and projected route types
 
