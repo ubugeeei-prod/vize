@@ -543,8 +543,8 @@ jobs:
         id: cache-wasm
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
-          path: playground/src/wasm
-          key: ${{ runner.os }}-wasm-${{ hashFiles('crates/**/*.rs', 'Cargo.lock') }}
+          path: playground/src/wasm/vize_vitrine* # outputs only; tests/tooling/github-wasm-cache.test.ts
+          key: ${{ runner.os }}-wasm-v2-${{ hashFiles('crates/**/*.rs', 'crates/**/Cargo.toml', 'Cargo.toml', 'Cargo.lock', 'tools/moon/cmd/github/build_vitrine_wasm/**') }}
 
       - name: Install wasm-bindgen-cli
         if: steps.cache-wasm.outputs.cache-hit != 'true'
