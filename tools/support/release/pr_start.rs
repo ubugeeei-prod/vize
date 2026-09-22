@@ -51,9 +51,14 @@ fn worktree(revision: &str, root: &Path) -> Result<PathBuf, String> {
 }
 
 pub fn prepare(bump: &str, work: &Path) -> Result<(), String> {
-    github::run(
-        "moon",
-        &[
+    // The task wrapper can provide workspace-relative MoonBit paths. Resolve
+    // them before changing the child's directory to the isolated worktree.
+    let original = env::current_dir().map_err(|error| error.to_string())?;
+    let bin = env::var("MOON_BIN").ok();
+    let home = env::var("MOON_HOME").ok();
+    let mut command = preparation_command(&original, bin.as_deref(), home.as_deref());
+    let status = command
+        .args([
             "run",
             "--target",
             "native",
@@ -62,9 +67,43 @@ pub fn prepare(bump: &str, work: &Path) -> Result<(), String> {
             bump,
             "-y",
             "--prepare-only",
-        ],
-        work,
-    )
+        ])
+        .current_dir(work)
+        .stdin(std::process::Stdio::null())
+        .status()
+        .map_err(|error| error.to_string())?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(format!("Release preparation failed ({status})"))
+    }
+}
+
+pub fn preparation_command(
+    original: &Path,
+    bin: Option<&str>,
+    home: Option<&str>,
+) -> process::Command {
+    let local = original.join(".cache/moonbit/bin/moon");
+    let bin = bin.filter(|value| !value.is_empty());
+    let program = match bin {
+        Some(value)
+            if Path::new(value).is_relative() && Path::new(value).components().count() > 1 =>
+        {
+            original.join(value)
+        }
+        Some(value) => PathBuf::from(value),
+        None if local.is_file() => local,
+        None => PathBuf::from("moon"),
+    };
+    let mut command = process::Command::new(&program);
+    command.env("MOON_BIN", &program);
+    if let Some(home) = home.filter(|value| !value.is_empty()) {
+        command.env("MOON_HOME", original.join(home));
+    } else if bin.is_none() && program.is_absolute() {
+        command.env("MOON_HOME", original.join(".cache/moonbit"));
+    }
+    command
 }
 
 fn prepare_and_open(bump: &str, repository: &str, work: &Path) -> Result<(), String> {
