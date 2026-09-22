@@ -108,10 +108,8 @@ impl super::DefinitionService {
         if let Some(bridge) = corsa_bridge
             && let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(tmpl) = virtual_docs.art_template(info.variant_index)
-            && let Some(vts_offset) = tmpl.source_map.to_generated(ctx.offset as u32)
+            && let Some(vts_offset) = tmpl.source_map.to_generated(ctx.offset)
         {
-            let vts_offset = vts_offset as usize;
-
             let (line, character) = crate::ide::offset_to_position(&tmpl.content, vts_offset);
 
             if bridge.is_initialized() {

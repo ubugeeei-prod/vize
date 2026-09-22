@@ -44,10 +44,7 @@ const secondaryLabel = ref('secondary')
         matches!(
             find_art_block_at_offset(source, offset),
             Some(BlockType::Art(ArtCursorPosition::VariantTemplate(_)))
-        ) && secondary_template
-            .source_map
-            .to_generated(offset as u32)
-            .is_some()
+        ) && secondary_template.source_map.to_generated(offset).is_some()
     );
 }
 
@@ -86,8 +83,8 @@ const props = defineProps<{ title: string }>()
         let source_offset = source.rfind(marker).unwrap();
         let generated_offset = template
             .source_map
-            .to_generated(source_offset as u32)
-            .expect("typed art template mapping") as usize;
+            .to_generated(source_offset)
+            .expect("typed art template mapping");
         assert_eq!(
             &template.content[generated_offset..generated_offset + marker.len()],
             marker,
@@ -132,13 +129,13 @@ const props = defineProps<{ title: string }>()
             let source_offset = source.rfind(marker).unwrap();
             let generated_offset = template
                 .source_map
-                .to_generated(source_offset as u32)
+                .to_generated(source_offset)
                 .unwrap_or_else(|| {
                     panic!(
                         "missing {endings} mapping for {marker:?}:\n{}",
                         template.content
                     )
-                }) as usize;
+                });
             assert_eq!(
                 &template.content[generated_offset..generated_offset + marker.len()],
                 marker,
@@ -190,12 +187,7 @@ const doubled = computed(() => count.value * 2)
     assert!(!script_setup.content.contains("defineArt"));
 
     let state_offset = source.find("doubled = computed").unwrap();
-    assert!(
-        script_setup
-            .source_map
-            .to_generated(state_offset as u32)
-            .is_some()
-    );
+    assert!(script_setup.source_map.to_generated(state_offset).is_some());
 }
 
 #[test]

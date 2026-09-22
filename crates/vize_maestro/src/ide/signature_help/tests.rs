@@ -103,8 +103,11 @@ fn signature_help_maps_art_variant_template() {
         );
         let generated_offset = template
             .source_map
-            .to_generated_for(offset as u32, |features| features.signature_help)
-            .expect("art signature-help mapping") as usize;
+            .to_generated_for(
+                offset,
+                crate::virtual_code::ProjectionFeatures::SIGNATURE_HELP,
+            )
+            .expect("art signature-help mapping");
         let expected_generated_offset = template.content.find(marker).unwrap() + marker.len();
         assert_eq!(
             generated_offset, expected_generated_offset,

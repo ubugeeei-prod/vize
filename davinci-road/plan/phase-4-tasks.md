@@ -234,9 +234,11 @@
 
 **Steps:**
 
-- [ ] `crates/vize_canon/src/virtual_ts/mapping.rs` owns `ProjectionMapping`; Maestro and Canon source-map types become thin views, then are deleted
+- [x] `crates/vize_canon/src/virtual_ts/mapping.rs` owns `ProjectionMapping`; Maestro and Canon source-map types become thin views, then are deleted
 - [ ] `assemble_diagnostics(finished, &ProjectionMapping)` is the single assembly point; both the CLI batch path and `crates/vize_maestro/src/ide/diagnostics/corsa*` call it
 - [ ] A regression fixture drives one SFC through both entry points and asserts identical diagnostics
+
+**Step 1 landed 2026-09-22:** `ProjectionMapping` with per-row `ProjectionMeta`; Canon's `source_map` module and Maestro's `virtual_code::source_map` deleted, `SfcSourceMap` a thin view, TS-40 byte-identical; a fourth model (`vize_carton::source_range`, Croquis generator only) dies in P4-5c — see the [P4-5a record](./phase-4-records/p4-5a.md).
 
 **Acceptance:** TS-40 digests byte-identical (`node --test tests/tooling/davinci-ts40-projection.test.ts tests/tooling/lsp-davinci-ts40-projection-diagnostics.test.ts`); `grep -rn "virtual_code::source_map::SourceMap" crates` empty; TS-7 LSP smoke; TS-9 check fixtures unchanged; TS-1, TS-13.
 

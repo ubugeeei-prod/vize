@@ -30,7 +30,6 @@
 
 mod generator;
 mod script_code;
-mod source_map;
 mod style_code;
 mod template_code;
 
@@ -43,10 +42,15 @@ pub use generator::{
 };
 pub(crate) use generator::{find_art_block_at_completion_offset, find_block_at_completion_offset};
 pub use script_code::{ScriptCodeGenerator, extract_simple_bindings};
-pub use source_map::{MappingData, MappingFeatures, SourceMap, SourceMapping};
 pub use style_code::{StyleCodeGenerator, StyleMetadata};
 pub use template_code::{
     ExpressionKind, TemplateCodeGenerator, TemplateExpression, extract_expressions,
+};
+/// Every virtual document maps back to its SFC through the one projection
+/// mapping model (P4-5a).
+pub use vize_canon::virtual_ts::{
+    ProjectionFeatures, ProjectionMapping, ProjectionMeta, ProjectionRow, ProjectionSpanKind,
+    VizeMapping,
 };
 
 /// Virtual language types supported by the LSP.
@@ -93,8 +97,8 @@ pub struct VirtualDocument {
     pub content: String,
     /// Virtual language type
     pub language: VirtualLanguage,
-    /// Source mappings for position translation
-    pub source_map: SourceMap,
+    /// Span links for position translation
+    pub source_map: ProjectionMapping,
 }
 
 impl VirtualDocument {
@@ -104,22 +108,22 @@ impl VirtualDocument {
             uri,
             content,
             language,
-            source_map: SourceMap::new(),
+            source_map: ProjectionMapping::new(),
         }
     }
 
-    /// Create with source mappings.
+    /// Create with a projection mapping.
     pub fn with_mappings(
         uri: String,
         content: String,
         language: VirtualLanguage,
-        mappings: Vec<SourceMapping>,
+        source_map: ProjectionMapping,
     ) -> Self {
         Self {
             uri,
             content,
             language,
-            source_map: SourceMap::from_mappings(mappings),
+            source_map,
         }
     }
 }
@@ -186,8 +190,8 @@ impl VirtualDocuments {
     pub fn find_by_source_offset(&self, offset: u32) -> Option<(&VirtualDocument, u32)> {
         // Check each virtual document's source map
         for doc in self.all() {
-            if let Some(gen_offset) = doc.source_map.to_generated(offset) {
-                return Some((doc, gen_offset));
+            if let Some(gen_offset) = doc.source_map.to_generated(offset as usize) {
+                return Some((doc, gen_offset as u32));
             }
         }
         None

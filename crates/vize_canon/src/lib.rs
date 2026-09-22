@@ -58,7 +58,6 @@ mod script_parse;
 pub use script_parse::supports_native_script_syntax;
 mod sfc_diagnostics;
 pub mod sfc_typecheck;
-pub mod source_map;
 pub mod template_diagnostic_directives;
 pub mod template_instance_names;
 mod types;
@@ -104,7 +103,7 @@ pub use sfc_diagnostics::{SfcBlockType, sfc_block_fallback_offset};
 // Re-export Locale for i18n support
 pub use intelligence::{
     Completion, CompletionKind as IntelCompletionKind, CursorContext, Diagnostic,
-    DiagnosticSeverity, HoverInfo, Location, TypeIntelligence,
+    DiagnosticSeverity, HoverInfo, Location, Span, TypeIntelligence,
 };
 pub use package_route::{
     PackageResolutionContext, PackageResolutionMode, PackageRoute, PackageRouteBinding,
@@ -115,10 +114,6 @@ pub use sfc_typecheck::{
     SfcRelatedLocation, SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic,
     SfcTypeSeverity, type_check_sfc, type_check_sfc_with_legacy_vue2,
     type_check_sfc_with_options_api,
-};
-pub use source_map::{
-    Mapping, MappingFlags, MappingKind, Position, SourceMap, Span, offset_to_position,
-    position_to_offset,
 };
 pub use types::{CompletionItem, CompletionKind, TypeInfo, TypeKind};
 pub use vize_s0::i18n::Locale;

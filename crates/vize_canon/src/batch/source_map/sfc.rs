@@ -1,7 +1,7 @@
-//! SFC-specific source maps for virtual TypeScript.
+//! SFC block view over the projection mapping model.
 
 use crate::batch::SfcBlockType;
-use crate::virtual_ts::{VizeMapping, VizeSemanticLink};
+use crate::virtual_ts::{ProjectionMapping, VizeMapping, VizeSemanticLink};
 
 /// Original SFC block span in source coordinates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,13 +21,13 @@ impl SfcBlockRange {
     }
 }
 
-/// Precise source map for SFC virtual TypeScript.
+/// Precise source map for SFC virtual TypeScript: the generator's
+/// [`ProjectionMapping`] plus the coarse SFC block ranges that recover a
+/// position's block type.
 #[derive(Debug, Default)]
 pub struct SfcSourceMap {
-    /// Fine-grained virtual TS mappings emitted by `vize_canon::virtual_ts`.
-    mappings: Vec<VizeMapping>,
-    /// Semantic links emitted by `vize_canon::virtual_ts`.
-    semantic_links: Vec<VizeSemanticLink>,
+    /// Span links and semantic links emitted by `vize_canon::virtual_ts`.
+    projection: ProjectionMapping,
     /// Coarse block ranges used to recover the SFC block type.
     blocks: Vec<SfcBlockRange>,
 }
@@ -46,8 +46,7 @@ impl SfcSourceMap {
     ) -> Self {
         blocks.sort_by_key(|block| block.start);
         Self {
-            mappings,
-            semantic_links,
+            projection: ProjectionMapping::from_parts(mappings, semantic_links),
             blocks,
         }
     }
@@ -67,10 +66,7 @@ impl SfcSourceMap {
     /// content-independent generated column.
     pub fn get_original_position(&self, virtual_offset: u32) -> Option<(u32, u32, SfcBlockType)> {
         let virtual_offset = virtual_offset as usize;
-        let mapping = crate::virtual_ts::mapping::mapping_for_generated_offset(
-            &self.mappings,
-            virtual_offset,
-        )?;
+        let mapping = self.projection.span_at_generated(virtual_offset)?;
         let src_offset =
             crate::virtual_ts::mapping::map_generated_offset_to_source(mapping, virtual_offset);
         let src_offset = u32::try_from(src_offset).ok()?;
@@ -95,7 +91,8 @@ impl SfcSourceMap {
         }
 
         let mapping = self
-            .mappings
+            .projection
+            .spans()
             .iter()
             .find(|mapping| mapping.src_range.contains(&sfc_offset))?;
         let delta = sfc_offset.saturating_sub(mapping.src_range.start);
@@ -103,13 +100,18 @@ impl SfcSourceMap {
         u32::try_from(virtual_offset).ok()
     }
 
+    /// The projection mapping this view reads.
+    pub fn projection(&self) -> &ProjectionMapping {
+        &self.projection
+    }
+
     /// Access the raw virtual TS mappings.
     pub fn mappings(&self) -> &[VizeMapping] {
-        &self.mappings
+        self.projection.spans()
     }
 
     /// Access the raw virtual TS semantic links.
     pub fn semantic_links(&self) -> &[VizeSemanticLink] {
-        &self.semantic_links
+        self.projection.semantic_links()
     }
 }

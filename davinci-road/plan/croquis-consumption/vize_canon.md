@@ -14,7 +14,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `AnalyzerOptions`              | type  | `analyzer`          |    42 |   156 |
 | `BindingMetadata`              | type  | `croquis`           |     2 |     5 |
 | `ComponentUsage`               | type  | `croquis::template` |    20 |    44 |
-| `Croquis`                      | type  | `croquis`           |    89 |   211 |
+| `Croquis`                      | type  | `croquis`           |    90 |   212 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     1 |
@@ -100,7 +100,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `BindingMetadata`         |        5 |    7 |
 | `COMPILER_MACRO_NAMES`    |        0 |    1 |
 | `ComponentUsage`          |       44 |   64 |
-| `Croquis`                 |      211 |  314 |
+| `Croquis`                 |      212 |  315 |
 | `Drawer`                  |        0 |    1 |
 | `EventHandlerScopeData`   |        9 |   16 |
 | `EventListener`           |        3 |    5 |
@@ -113,11 +113,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                 |       22 |   29 |
 | `ScopeKind`               |       59 |   76 |
 | `SlotUsage`               |        1 |    3 |
-| `Span`                    |        0 |   63 |
+| `Span`                    |        0 |   44 |
 | `SpreadProp`              |        6 |   10 |
 | `Symbol`                  |        0 |    4 |
 | `SymbolId`                |        0 |    3 |
-| `TemplateExpression`      |       22 |   32 |
+| `TemplateExpression`      |       22 |   38 |
 | `TemplateExpressionKind`  |       14 |   20 |
 | `TypeExport`              |        9 |   12 |
 | `TypeExportKind`          |        9 |   11 |

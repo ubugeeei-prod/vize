@@ -285,7 +285,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/editor_session
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/editor_session.rs	74	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/script_document.rs	6	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/script_document.rs	159	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/types.rs	13	s0	S0	stage	vize_carton	compat	2
+typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/types.rs	14	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs	237	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build.rs	5	s0	S0	stage	vize_carton	compat	6
@@ -321,9 +321,10 @@ typechecker	Typechecker	source	crates/vize_canon/src/file_uri.rs	3	s0	S0	stage	v
 typechecker	Typechecker	source	crates/vize_canon/src/intelligence.rs	12	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	source	crates/vize_canon/src/intelligence.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/intelligence.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/intelligence.rs	482	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/intelligence.rs	482	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/intelligence.rs	482	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/intelligence.rs	468	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/intelligence.rs	468	old_ast	old AST/parser	old	vize_relief	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/intelligence.rs	468	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/intelligence/span.rs	75	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/legacy.rs	14	old_ast	old AST/parser	old	vize_armature	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/lib.rs	45	s0	S0	stage	vize_s0	preferred	2
 typechecker	Typechecker	source	crates/vize_canon/src/lib.rs	45	s0	S0	stage	vize_carton	compat	1
@@ -395,8 +396,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/template_instance_names.rs	
 typechecker	Typechecker	test/dev	crates/vize_canon/src/tests.rs	11	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/typecheck_service.rs	11	s0	S0	stage	vize_carton	compat	4
 typechecker	Typechecker	source	crates/vize_canon/src/types.rs	3	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	120	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	120	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	124	old_ast	old AST/parser	old	vize_relief	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	124	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	12	s0	S0	stage	vize_carton	compat	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	2
@@ -693,6 +694,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/legacy_vue2_vu
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/legacy_vue2_vuetify_tests.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/macro_type_mappings.rs	5	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/macro_type_mappings.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/mapping/tests.rs	6	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/model_types.rs	3	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/model_types.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/props.rs	21	s0	S0	stage	vize_carton	compat	1
@@ -918,7 +920,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/type_dependencie
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/type_dependencies.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/type_dependencies.rs	3	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/types_tests.rs	2	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/types.rs	9	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/types.rs	8	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	5	s0	S0	stage	vize_carton	compat	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	5	old_ast	old AST/parser	old	vize_armature	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/unknown_props_tests.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1

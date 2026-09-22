@@ -156,10 +156,10 @@ impl SignatureHelpService {
             .virtual_docs
             .as_ref()?
             .art_template(info.variant_index)?;
-        let generated_offset = template
-            .source_map
-            .to_generated_for(ctx.offset as u32, |features| features.signature_help)?
-            as usize;
+        let generated_offset = template.source_map.to_generated_for(
+            ctx.offset,
+            crate::virtual_code::ProjectionFeatures::SIGNATURE_HELP,
+        )?;
         Self::signature_help_in_virtual_document(
             ctx,
             bridge,

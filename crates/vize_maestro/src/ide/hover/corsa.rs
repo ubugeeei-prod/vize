@@ -34,8 +34,7 @@ impl HoverService {
         if crate::utils::is_standalone_html_path(ctx.uri.path()) {
             return template
                 .source_map
-                .to_generated(sfc_offset as u32)
-                .map(|o| o as usize)
+                .to_generated(sfc_offset)
                 .or(Some(sfc_offset));
         }
 
@@ -60,8 +59,7 @@ impl HoverService {
         // Use source map to convert offset
         template
             .source_map
-            .to_generated(relative_offset as u32)
-            .map(|o| o as usize)
+            .to_generated(relative_offset)
             .or(Some(relative_offset))
     }
 
@@ -74,9 +72,9 @@ impl HoverService {
 
         if ctx.uri.path().ends_with(".art.vue")
             && let Some(ref script_setup_doc) = virtual_docs.script_setup
-            && let Some(offset) = script_setup_doc.source_map.to_generated(sfc_offset as u32)
+            && let Some(offset) = script_setup_doc.source_map.to_generated(sfc_offset)
         {
-            return Some(offset as usize);
+            return Some(offset);
         }
 
         let options = vize_atelier_sfc::SfcParseOptions {
@@ -95,8 +93,7 @@ impl HoverService {
             if let Some(ref script_setup_doc) = virtual_docs.script_setup {
                 return script_setup_doc
                     .source_map
-                    .to_generated(relative_offset as u32)
-                    .map(|o| o as usize)
+                    .to_generated(relative_offset)
                     .or(Some(relative_offset));
             }
             return Some(relative_offset);
@@ -111,8 +108,7 @@ impl HoverService {
             if let Some(ref script_doc) = virtual_docs.script {
                 return script_doc
                     .source_map
-                    .to_generated(relative_offset as u32)
-                    .map(|o| o as usize)
+                    .to_generated(relative_offset)
                     .or(Some(relative_offset));
             }
             return Some(relative_offset);
@@ -241,10 +237,8 @@ impl HoverService {
         if let Some(bridge) = corsa_bridge
             && let Some(ref virtual_docs) = ctx.virtual_docs
             && let Some(template) = virtual_docs.art_template(info.variant_index)
-            && let Some(vts_offset) = template.source_map.to_generated(ctx.offset as u32)
+            && let Some(vts_offset) = template.source_map.to_generated(ctx.offset)
         {
-            let vts_offset = vts_offset as usize;
-
             let (line, character) = crate::ide::offset_to_position(&template.content, vts_offset);
 
             // Open/update virtual document

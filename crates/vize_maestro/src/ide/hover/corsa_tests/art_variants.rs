@@ -102,8 +102,8 @@ function format(value: string, precision: number): string {
             );
             let generated_offset = template
                 .source_map
-                .to_generated(offset as u32)
-                .expect("authored art cursor mapping") as usize;
+                .to_generated(offset)
+                .expect("authored art cursor mapping");
             assert_eq!(
                 &template.content[generated_offset - 2..generated_offset - 2 + authored_word.len()],
                 authored_word,

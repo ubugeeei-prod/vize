@@ -61,11 +61,15 @@ pub use helpers::{
 };
 #[cfg(feature = "native")]
 pub(crate) use helpers::{push_ts_string_literal, to_safe_identifier};
+pub use mapping::{
+    ProjectionFeatures, ProjectionMapping, ProjectionMeta, ProjectionRow, ProjectionSpanKind,
+    VizeMapping, VizeSubSpan,
+};
 pub use pattern_diagnostics::is_unreachable_pattern_diagnostic;
 pub use semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 #[cfg(feature = "native")]
 pub(crate) use types::CSS_MODULE_GLOBAL_MARKER;
-pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput, VizeMapping, VizeSubSpan};
+pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput};
 
 /// Shared type-only component contract for plain-TS JSX lowering in batch and
 /// editor paths. Keep one declaration source so the two consumers cannot drift.

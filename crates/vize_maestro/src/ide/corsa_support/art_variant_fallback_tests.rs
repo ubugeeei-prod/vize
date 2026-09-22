@@ -82,7 +82,7 @@ fn art_variant_hover_answers_from_the_authored_template_without_a_generated_offs
         .and_then(|documents| documents.art_template(info.variant_index))
         .expect("typed art template");
     assert!(
-        template.source_map.to_generated(offset as u32).is_none(),
+        template.source_map.to_generated(offset).is_none(),
         "fixture must exercise the unmapped variant offset",
     );
 

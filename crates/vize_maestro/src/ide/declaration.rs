@@ -96,10 +96,10 @@ impl DeclarationService {
             .virtual_docs
             .as_ref()?
             .art_template(info.variant_index)?;
-        let generated_offset = document
-            .source_map
-            .to_generated_for(ctx.offset as u32, |features| features.definition)?
-            as usize;
+        let generated_offset = document.source_map.to_generated_for(
+            ctx.offset,
+            crate::virtual_code::ProjectionFeatures::DEFINITION,
+        )?;
         Self::declaration_in_virtual_document(
             ctx,
             bridge,

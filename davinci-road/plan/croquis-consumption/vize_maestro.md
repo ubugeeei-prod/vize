@@ -70,10 +70,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                     |        1 |    2 |
 | `ScopeKind`                   |       65 |   73 |
 | `SlotUsage`                   |        3 |    6 |
-| `Span`                        |        0 |    9 |
+| `Span`                        |        0 |   12 |
 | `Symbol`                      |        0 |    1 |
 | `SymbolId`                    |        0 |    5 |
-| `TemplateExpression`          |        0 |   14 |
+| `TemplateExpression`          |        0 |   15 |
 | `Croquis.binding_spans`       |        2 |    3 |
 | `Croquis.bindings`            |        8 |   14 |
 | `Croquis.import_statements`   |        0 |    1 |

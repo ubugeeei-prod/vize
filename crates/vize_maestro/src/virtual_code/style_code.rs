@@ -5,9 +5,7 @@
 
 use vize_atelier_sfc::SfcStyleBlock;
 
-use super::{
-    MappingFeatures, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage,
-};
+use super::{ProjectionMapping, SourceRange, VirtualDocument, VirtualLanguage, VizeMapping};
 use vize_s0::cstr;
 
 /// Style code generator.
@@ -36,18 +34,14 @@ impl StyleCodeGenerator {
 
         // Create a single 1:1 mapping for the entire style content
         // This is the most efficient approach for CSS
-        let mappings = if content_len > 0 {
-            vec![SourceMapping::with_features(
-                SourceRange::new(0, content_len),
-                SourceRange::new(0, content_len),
-                MappingFeatures::all(),
-            )]
-        } else {
-            Vec::new()
-        };
-
-        let mut source_map = SourceMap::from_mappings(mappings);
-        source_map.set_block_offset(self.block_offset);
+        let mut source_map = ProjectionMapping::new();
+        if content_len > 0 {
+            source_map.push(VizeMapping::new(
+                0..content_len as usize,
+                0..content_len as usize,
+            ));
+        }
+        source_map.set_authored_base(self.block_offset as usize);
 
         // Determine the language based on the lang attribute
         let extension = style.lang.as_ref().map(|l| l.as_ref()).unwrap_or("css");

@@ -10,15 +10,18 @@ use vize_relief::{
     SimpleExpressionNode, SourceLocation, TemplateChildNode,
 };
 
-use super::{MappingData, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage};
+use super::{
+    ProjectionMapping, ProjectionMeta, ProjectionSpanKind, SourceRange, VirtualDocument,
+    VirtualLanguage, VizeMapping,
+};
 use vize_s0::cstr;
 
 /// Template code generator.
 pub struct TemplateCodeGenerator {
     /// Generated TypeScript output
     output: String,
-    /// Source mappings
-    mappings: Vec<SourceMapping>,
+    /// Span links into the template block
+    mappings: ProjectionMapping,
     /// Current position in the generated output
     gen_offset: u32,
     /// Expression counter for unique variable names
@@ -32,7 +35,7 @@ impl TemplateCodeGenerator {
     pub fn new() -> Self {
         Self {
             output: String::new(),
-            mappings: Vec::new(),
+            mappings: ProjectionMapping::new(),
             gen_offset: 0,
             expr_counter: 0,
             block_offset: 0,
@@ -48,7 +51,7 @@ impl TemplateCodeGenerator {
     pub fn generate<'a>(&mut self, ast: &RootNode<'a>, _source: &str) -> VirtualDocument {
         // Reset state
         self.output.clear();
-        self.mappings.clear();
+        self.mappings = ProjectionMapping::new();
         self.gen_offset = 0;
         self.expr_counter = 0;
 
@@ -67,8 +70,9 @@ impl TemplateCodeGenerator {
         self.visit_children(&ast.children);
 
         // Create virtual document
-        let mut source_map = SourceMap::from_mappings(self.mappings.clone());
-        source_map.set_block_offset(self.block_offset);
+        let mut source_map = std::mem::take(&mut self.mappings);
+        source_map.sort_by_authored();
+        source_map.set_authored_base(self.block_offset as usize);
 
         VirtualDocument {
             uri: String::new(), // Will be set by generator
@@ -193,18 +197,10 @@ impl TemplateCodeGenerator {
         let gen_start = self.gen_offset + expr_start_in_line;
         let gen_end = gen_start + expr.content.len() as u32;
 
-        let source_start = expr.loc.span.start;
-        let source_end = expr.loc.span.end;
-
-        // Create mapping
-        let mapping = SourceMapping::with_data(
-            SourceRange::new(source_start, source_end),
-            SourceRange::new(gen_start, gen_end),
-            MappingData::Expression {
-                text: expr.content.to_string(),
-            },
-        );
-        self.mappings.push(mapping);
+        let source = expr.loc.span.start as usize..expr.loc.span.end as usize;
+        let span = VizeMapping::new(gen_start as usize..gen_end as usize, source);
+        let meta = ProjectionMeta::of_kind(ProjectionSpanKind::TemplateExpression);
+        self.mappings.push_with(span, meta);
 
         // Write the line
         self.write(&line);

@@ -1,10 +1,24 @@
-//! Shared translation of generated virtual-TS offsets back to SFC source.
+//! The one projection mapping model (P4-5a, charter #14).
+//!
+//! [`ProjectionMapping`] is the span-link container every virtual-language
+//! projection hands to its consumers: Corsa/tsgo diagnostics, the
+//! content-mapper protocol and Maestro's editor features. It absorbed Canon's
+//! retired `source_map` module and Maestro's retired virtual-code source map
+//! (both deleted in P4-5a); its rows are the [`VizeMapping`]
+//! span links the generators emit, with [`ProjectionMeta`] carrying the
+//! per-row feature flags and construct kind those two models used to own.
 //!
 //! Both the language server and the batch type checker must place a
 //! diagnostic on the same authored bytes, so the sub-span-aware offset
 //! arithmetic lives here and is consumed by both paths.
 
-use super::types::VizeMapping;
+mod model;
+mod rows;
+
+pub use model::ProjectionMapping;
+pub use rows::{
+    ProjectionFeatures, ProjectionMeta, ProjectionRow, ProjectionSpanKind, VizeMapping, VizeSubSpan,
+};
 
 /// Returns the narrowest mapping whose generated range contains `offset`.
 pub fn mapping_for_generated_offset(
@@ -91,70 +105,4 @@ pub fn map_generated_range_to_source(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::super::types::{VizeMapping, VizeSubSpan};
-    use super::*;
-
-    #[test]
-    fn prefers_exact_expression_sub_spans() {
-        let mapping = VizeMapping {
-            gen_range: 10..80,
-            src_range: 100..140,
-            sub_spans: vec![VizeSubSpan {
-                gen_range: 20..43,
-                src_range: 107..130,
-            }],
-        };
-        assert_eq!(map_generated_offset_to_source(&mapping, 20), 107);
-        assert_eq!(map_generated_offset_to_source(&mapping, 43), 130);
-    }
-
-    #[test]
-    fn clamps_generated_overflow_to_the_authored_range() {
-        let mapping = VizeMapping {
-            gen_range: 0..100,
-            src_range: 10..20,
-            sub_spans: Vec::new(),
-        };
-        assert_eq!(map_generated_offset_to_source(&mapping, 95), 20);
-    }
-
-    #[test]
-    fn selects_the_narrowest_mapping_for_an_offset() {
-        let mappings = [
-            VizeMapping {
-                gen_range: 0..100,
-                src_range: 0..100,
-                sub_spans: Vec::new(),
-            },
-            VizeMapping {
-                gen_range: 40..60,
-                src_range: 200..220,
-                sub_spans: Vec::new(),
-            },
-        ];
-        let mapping = mapping_for_generated_offset(&mappings, 45).expect("mapping");
-        assert_eq!(mapping.src_range, 200..220);
-    }
-
-    #[test]
-    fn maps_ranges_and_keeps_at_least_one_authored_byte() {
-        let mappings = [VizeMapping {
-            gen_range: 10..80,
-            src_range: 100..140,
-            sub_spans: vec![VizeSubSpan {
-                gen_range: 20..43,
-                src_range: 107..130,
-            }],
-        }];
-        assert_eq!(
-            map_generated_range_to_source(&mappings, 20, 43),
-            Some((107, 130))
-        );
-        assert_eq!(
-            map_generated_range_to_source(&mappings, 20, 20),
-            Some((107, 108))
-        );
-        assert_eq!(map_generated_range_to_source(&mappings, 5, 20), None);
-    }
-}
+mod tests;

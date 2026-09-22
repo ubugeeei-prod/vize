@@ -24,9 +24,7 @@ use oxc_span::GetSpan;
 use tower_lsp::lsp_types::Url;
 use vize_atelier_jsx::{JsxLang, parse_module};
 
-use crate::virtual_code::{
-    MappingFeatures, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage,
-};
+use crate::virtual_code::{ProjectionMapping, VirtualDocument, VirtualLanguage, VizeMapping};
 
 /// One JSX `<style scoped>` block's CSS content and its byte range in the
 /// original `.jsx`/`.tsx` source.
@@ -84,20 +82,16 @@ impl JsxScopedStyleService {
 
         // A single 1:1 mapping for the whole CSS body (generated == source
         // bytes), exactly like the SFC `StyleCodeGenerator`.
-        let mappings = if content_len > 0 {
-            vec![SourceMapping::with_features(
-                SourceRange::new(0, content_len),
-                SourceRange::new(0, content_len),
-                MappingFeatures::all(),
-            )]
-        } else {
-            Vec::new()
-        };
-
-        let mut source_map = SourceMap::from_mappings(mappings);
+        let mut source_map = ProjectionMapping::new();
+        if content_len > 0 {
+            source_map.push(VizeMapping::new(
+                0..content_len as usize,
+                0..content_len as usize,
+            ));
+        }
         // The block offset is where the CSS starts in the original source, so the
         // CSS service's positions resolve back to the right `.jsx`/`.tsx` bytes.
-        source_map.set_block_offset(style.start);
+        source_map.set_authored_base(style.start as usize);
 
         VirtualDocument {
             uri: vize_s0::cstr!("{base_path}.__jsx_style_{index}.css").to_string(),
@@ -283,8 +277,8 @@ mod tests {
         assert!(doc.uri.as_str().ends_with(".css"));
         assert_eq!(doc.content, ".box{color:red}");
         // The 1:1 map round-trips: generated offset 0 maps back to the CSS start.
-        let css_start = source.find(".box").unwrap() as u32;
-        assert_eq!(doc.source_map.to_source(0), Some(css_start));
+        let css_start = source.find(".box").unwrap();
+        assert_eq!(doc.source_map.to_authored(0), Some(css_start));
     }
 
     #[test]

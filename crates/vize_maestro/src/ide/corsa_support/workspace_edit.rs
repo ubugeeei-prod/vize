@@ -302,12 +302,15 @@ mod tests {
         document: &crate::virtual_code::VirtualDocument,
         new_text: &str,
     ) -> TextEdit {
-        let source_start = source.rfind("message").unwrap() as u32;
-        let source_start = source_start.saturating_sub(document.source_map.block_offset);
+        let source_start = source.rfind("message").unwrap();
+        let source_start = source_start.saturating_sub(document.source_map.authored_base());
         let generated_start = document
             .source_map
-            .to_generated_for(source_start, |features| features.rename)
-            .expect("generated identifier") as usize;
+            .to_generated_for(
+                source_start,
+                crate::virtual_code::ProjectionFeatures::RENAME,
+            )
+            .expect("generated identifier");
         let generated_end = generated_start + "message".len();
         let (start_line, start_character) = offset_to_position(&document.content, generated_start);
         let (end_line, end_character) = offset_to_position(&document.content, generated_end);

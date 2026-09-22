@@ -7,15 +7,16 @@ use vize_atelier_sfc::SfcScriptBlock;
 use vize_croquis::{Drawer, DrawerOptions};
 
 use super::{
-    MappingFeatures, SourceMap, SourceMapping, SourceRange, VirtualDocument, VirtualLanguage,
+    ProjectionMapping, ProjectionMeta, ProjectionSpanKind, VirtualDocument, VirtualLanguage,
+    VizeMapping,
 };
 
 /// Script code generator.
 pub struct ScriptCodeGenerator {
     /// Generated output
     output: String,
-    /// Source mappings
-    mappings: Vec<SourceMapping>,
+    /// Span links into the script block
+    mappings: ProjectionMapping,
     /// Current position in generated output
     gen_offset: u32,
     /// Block offset in original SFC
@@ -27,7 +28,7 @@ impl ScriptCodeGenerator {
     pub fn new() -> Self {
         Self {
             output: String::new(),
-            mappings: Vec::new(),
+            mappings: ProjectionMapping::new(),
             gen_offset: 0,
             block_offset: 0,
         }
@@ -37,7 +38,7 @@ impl ScriptCodeGenerator {
     pub fn generate(&mut self, script: &SfcScriptBlock, is_setup: bool) -> VirtualDocument {
         // Reset state
         self.output.clear();
-        self.mappings.clear();
+        self.mappings = ProjectionMapping::new();
         self.gen_offset = 0;
         self.block_offset = script.loc.start as u32;
 
@@ -60,11 +61,13 @@ impl ScriptCodeGenerator {
         // Create a mapping for the entire content
         let content_len = content.len() as u32;
         if content_len > 0 {
-            self.mappings.push(SourceMapping::with_features(
-                SourceRange::new(0, content_len),
-                SourceRange::new(content_gen_start, content_gen_start + content_len),
-                MappingFeatures::all(),
-            ));
+            self.mappings.push_with(
+                VizeMapping::new(
+                    content_gen_start as usize..(content_gen_start + content_len) as usize,
+                    0..content_len as usize,
+                ),
+                ProjectionMeta::of_kind(ProjectionSpanKind::Script),
+            );
         }
 
         // Add newline if needed
@@ -73,8 +76,9 @@ impl ScriptCodeGenerator {
         }
 
         // Create source map
-        let mut source_map = SourceMap::from_mappings(self.mappings.clone());
-        source_map.set_block_offset(self.block_offset);
+        let mut source_map = std::mem::take(&mut self.mappings);
+        source_map.sort_by_authored();
+        source_map.set_authored_base(self.block_offset as usize);
 
         VirtualDocument {
             uri: String::new(), // Will be set by generator
@@ -97,7 +101,7 @@ impl ScriptCodeGenerator {
     ) -> VirtualDocument {
         // Reset state
         self.output.clear();
-        self.mappings.clear();
+        self.mappings = ProjectionMapping::new();
         self.gen_offset = 0;
         self.block_offset = script.loc.start as u32;
 
@@ -120,11 +124,13 @@ impl ScriptCodeGenerator {
         // Create mapping for content
         let content_len = content.len() as u32;
         if content_len > 0 {
-            self.mappings.push(SourceMapping::with_features(
-                SourceRange::new(0, content_len),
-                SourceRange::new(content_gen_start, content_gen_start + content_len),
-                MappingFeatures::all(),
-            ));
+            self.mappings.push_with(
+                VizeMapping::new(
+                    content_gen_start as usize..(content_gen_start + content_len) as usize,
+                    0..content_len as usize,
+                ),
+                ProjectionMeta::of_kind(ProjectionSpanKind::Script),
+            );
         }
 
         // Add newline
@@ -142,8 +148,9 @@ impl ScriptCodeGenerator {
         }
 
         // Create source map
-        let mut source_map = SourceMap::from_mappings(self.mappings.clone());
-        source_map.set_block_offset(self.block_offset);
+        let mut source_map = std::mem::take(&mut self.mappings);
+        source_map.sort_by_authored();
+        source_map.set_authored_base(self.block_offset as usize);
 
         VirtualDocument {
             uri: String::new(),

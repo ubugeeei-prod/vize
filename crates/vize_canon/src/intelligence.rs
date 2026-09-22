@@ -14,7 +14,9 @@ use vize_carton::cstr;
 use vize_croquis::Croquis;
 use vize_relief::BindingType;
 
-use crate::source_map::{MappingKind, SourceMap, Span};
+use crate::virtual_ts::ProjectionMapping;
+mod span;
+pub use span::Span;
 
 /// Hover information result.
 #[derive(Debug, Clone)]
@@ -114,22 +116,6 @@ pub enum CursorContext {
     Unknown,
 }
 
-impl From<MappingKind> for CursorContext {
-    fn from(kind: MappingKind) -> Self {
-        match kind {
-            MappingKind::Script => CursorContext::Script,
-            MappingKind::Interpolation => CursorContext::Interpolation,
-            MappingKind::DirectiveExpr => CursorContext::DirectiveExpr,
-            MappingKind::DirectiveArg => CursorContext::DirectiveArg,
-            MappingKind::EventHandler => CursorContext::EventHandler,
-            MappingKind::VForVar => CursorContext::VForVar,
-            MappingKind::SlotBinding => CursorContext::Unknown,
-            MappingKind::ComponentRef => CursorContext::Unknown,
-            MappingKind::Unknown => CursorContext::Unknown,
-        }
-    }
-}
-
 /// Type intelligence provider for Vue SFCs.
 ///
 /// Provides IDE-like features without IDE dependencies.
@@ -139,8 +125,8 @@ pub struct TypeIntelligence<'a> {
     source: &'a str,
     /// Analysis summary from croquis
     summary: &'a Croquis,
-    /// Source map for position mapping
-    source_map: Option<&'a SourceMap>,
+    /// Projection mapping for position mapping
+    source_map: Option<&'a ProjectionMapping>,
     /// Virtual TypeScript content
     virtual_ts: Option<&'a str>,
 }
@@ -157,9 +143,9 @@ impl<'a> TypeIntelligence<'a> {
         }
     }
 
-    /// Set source map for position mapping.
+    /// Set the projection mapping used for position mapping.
     #[inline]
-    pub fn with_source_map(mut self, source_map: &'a SourceMap) -> Self {
+    pub fn with_source_map(mut self, source_map: &'a ProjectionMapping) -> Self {
         self.source_map = Some(source_map);
         self
     }
@@ -175,9 +161,9 @@ impl<'a> TypeIntelligence<'a> {
     #[inline]
     pub fn cursor_context(&self, offset: u32) -> CursorContext {
         if let Some(map) = self.source_map
-            && let Some(mapping) = map.find_by_source(offset)
+            && let Some(row) = map.rows_containing_authored(offset as usize).next()
         {
-            return mapping.kind.into();
+            return row.meta.kind.into();
         }
 
         // Fallback: check if in script block

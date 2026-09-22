@@ -12,9 +12,9 @@ use super::ContentMapperSpanKind;
 /// bit (source definition now rides on `Definition`) and shifted every bit
 /// above it down by one.
 ///
-/// This is deliberately separate from `crate::source_map::MappingFlags`:
-/// that compact Vize-internal type has different bit positions, includes
-/// diagnostics, and represents only seven capabilities. Protocol diagnostics
+/// This is deliberately separate from
+/// `crate::virtual_ts::ProjectionFeatures`: that compact Vize-internal type
+/// has different bit positions and includes diagnostics. Protocol diagnostics
 /// do not have a feature bit, and exact edits additionally require verbatim
 /// geometry in TypeScript.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

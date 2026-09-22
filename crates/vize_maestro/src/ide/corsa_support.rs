@@ -58,7 +58,7 @@ use vize_canon::LspLocation;
 use vize_s0::{String, cstr};
 
 use super::IdeContext;
-use crate::virtual_code::{SourceRange, VirtualDocument};
+use crate::virtual_code::{ProjectionFeatures, VirtualDocument};
 
 pub(crate) fn template_request_path(uri: &Url) -> String {
     cstr!("{}.template.ts", uri.path())
@@ -83,21 +83,21 @@ pub(crate) fn completion_source_offset_to_generated(
     document: &VirtualDocument,
     source_offset: u32,
 ) -> Option<usize> {
+    let source_offset = source_offset as usize;
     document
         .source_map
-        .to_generated_for(source_offset, |features| features.completion)
+        .to_generated_for(source_offset, ProjectionFeatures::COMPLETION)
         .or_else(|| {
             document
                 .source_map
-                .mappings()
-                .iter()
-                .filter(|mapping| {
-                    mapping.features.completion && mapping.source.end == source_offset
+                .rows()
+                .filter(|row| {
+                    row.meta.features.contains(ProjectionFeatures::COMPLETION)
+                        && row.span.src_range.end == source_offset
                 })
-                .min_by_key(|mapping| mapping.source.end.saturating_sub(mapping.source.start))
-                .map(|mapping| mapping.generated.end)
+                .min_by_key(|row| row.span.src_range.len())
+                .map(|row| row.span.gen_range.end)
         })
-        .map(|offset| offset as usize)
 }
 
 pub(crate) fn request_file_uri(path: &str) -> String {
@@ -228,18 +228,14 @@ fn map_virtual_range_for_content(
     let source_range = if generated_end > generated_start {
         document
             .source_map
-            .generated_range_to_source(SourceRange::new(
-                generated_start as u32,
-                generated_end as u32,
-            ))?
+            .generated_range_to_authored(generated_start..generated_end)?
     } else {
-        let source_offset = document.source_map.to_source(generated_start as u32)?;
-        SourceRange::new(source_offset, source_offset)
+        let source_offset = document.source_map.to_authored(generated_start)?;
+        source_offset..source_offset
     };
 
-    let (start_line, start_character) =
-        super::offset_to_position(content, source_range.start as usize);
-    let (end_line, end_character) = super::offset_to_position(content, source_range.end as usize);
+    let (start_line, start_character) = super::offset_to_position(content, source_range.start);
+    let (end_line, end_character) = super::offset_to_position(content, source_range.end);
 
     Some(Range {
         start: tower_lsp::lsp_types::Position {

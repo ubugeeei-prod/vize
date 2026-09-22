@@ -223,8 +223,8 @@ const editedLabel = "edited"
     let source_offset = renamed.rfind("editedLabel").unwrap();
     let generated_offset = renamed_template
         .source_map
-        .to_generated(source_offset as u32)
-        .expect("renamed variant mapping") as usize;
+        .to_generated(source_offset)
+        .expect("renamed variant mapping");
     assert_eq!(
         &renamed_template.content[generated_offset..generated_offset + "editedLabel".len()],
         "editedLabel",

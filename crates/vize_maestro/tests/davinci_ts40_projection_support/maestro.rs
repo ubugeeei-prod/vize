@@ -1,6 +1,7 @@
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_maestro::VirtualCodeGenerator;
-use vize_s0::{SmallVec, String, cstr};
+use vize_maestro::virtual_code::{ProjectionFeatures, ProjectionRow, ProjectionSpanKind};
+use vize_s0::{SmallVec, String, append, cstr};
 
 use super::matrix::Fixture;
 use super::normalize::{ordered_lines, sha256};
@@ -33,46 +34,36 @@ pub(super) fn capture_maestro(fixture: &Fixture, source: &str) -> LaneRecord {
             document.content.len(),
             sha256(&document.content)
         ));
-        for mapping in document.source_map.mappings() {
+        let block_offset = document.source_map.authored_base();
+        for row in document.source_map.rows() {
+            let mapping = row.span;
             mappings.push(cstr!(
-                "{}|block={}|{}:{}>{}:{}|{:?}|{:?}",
+                "{}|block={block_offset}|{}:{}>{}:{}|{}|{}",
                 document.uri,
-                document.source_map.block_offset,
-                mapping.source.start,
-                mapping.source.end,
-                mapping.generated.start,
-                mapping.generated.end,
-                mapping.features,
-                mapping.data
+                mapping.src_range.start,
+                mapping.src_range.end,
+                mapping.gen_range.start,
+                mapping.gen_range.end,
+                features_record(row.meta.features),
+                data_record(row, source, block_offset)
             ));
         }
         for (anchor_index, anchor) in fixture.anchors.iter().enumerate() {
             for (offset, _) in source.match_indices(anchor.as_str()) {
-                let Ok(offset) = u32::try_from(offset) else {
+                let Some(anchor_end) = offset.checked_add(anchor.len()) else {
                     continue;
                 };
-                let Ok(anchor_len) = u32::try_from(anchor.len()) else {
+                let Some(local_offset) = offset.checked_sub(block_offset) else {
                     continue;
                 };
-                let Some(anchor_end) = offset.checked_add(anchor_len) else {
-                    continue;
-                };
-                let Some(local_offset) = offset.checked_sub(document.source_map.block_offset)
-                else {
-                    continue;
-                };
-                for mapping in document.source_map.find_by_source(local_offset) {
-                    let Some(mapping_source_start) = mapping
-                        .source
-                        .start
-                        .checked_add(document.source_map.block_offset)
+                for row in document.source_map.rows_containing_authored(local_offset) {
+                    let mapping = row.span;
+                    let Some(mapping_source_start) =
+                        mapping.src_range.start.checked_add(block_offset)
                     else {
                         continue;
                     };
-                    let Some(mapping_source_end) = mapping
-                        .source
-                        .end
-                        .checked_add(document.source_map.block_offset)
+                    let Some(mapping_source_end) = mapping.src_range.end.checked_add(block_offset)
                     else {
                         continue;
                     };
@@ -81,13 +72,11 @@ pub(super) fn capture_maestro(fixture: &Fixture, source: &str) -> LaneRecord {
                     }
                     authored_anchor_hits[anchor_index] = true;
                     authored_hits.push(cstr!(
-                        "{anchor}@{offset}|{}|{}:{}>{}:{}|{:?}",
+                        "{anchor}@{offset}|{}|{mapping_source_start}:{mapping_source_end}>{}:{}|{}",
                         document.uri,
-                        mapping.source.start + document.source_map.block_offset,
-                        mapping.source.end + document.source_map.block_offset,
-                        mapping.generated.start,
-                        mapping.generated.end,
-                        mapping.features
+                        mapping.gen_range.start,
+                        mapping.gen_range.end,
+                        features_record(row.meta.features)
                     ));
                 }
             }
@@ -126,5 +115,33 @@ pub(super) fn capture_maestro(fixture: &Fixture, source: &str) -> LaneRecord {
         authored_hit_count: authored_hits.lines().count(),
         authored_hits_sha256: sha256(&authored_hits),
         authored_hit_anchors,
+    }
+}
+
+/// The frozen record spelling of a row's feature flags. It predates the
+/// unified model (it is the `Debug` form of Maestro's retired per-row feature
+/// struct), so TS-40 digests stay byte-identical across P4-5a.
+fn features_record(features: ProjectionFeatures) -> String {
+    let mut record = String::from("MappingFeatures { ");
+    for (index, (flag, name)) in ProjectionFeatures::NAMED.into_iter().enumerate() {
+        if index > 0 {
+            record.push_str(", ");
+        }
+        append!(record, "{name}: {}", features.contains(flag));
+    }
+    record.push_str(" }");
+    record
+}
+
+/// The frozen record spelling of a row's construct: a template expression row
+/// records its authored text, every other row records nothing.
+fn data_record(row: ProjectionRow<'_>, source: &str, block_offset: usize) -> String {
+    match row.meta.kind {
+        ProjectionSpanKind::TemplateExpression => {
+            let range = &row.span.src_range;
+            let text = &source[block_offset + range.start..block_offset + range.end];
+            cstr!("Some(Expression {{ text: {text:?} }})")
+        }
+        _ => "None".into(),
     }
 }

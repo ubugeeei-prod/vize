@@ -300,7 +300,7 @@ lsp	LSP	source	crates/vize_maestro/src/server/state/workspace_vue_files.rs	8	s0	
 lsp	LSP	test/dev	crates/vize_maestro/src/server/workspace_files/dependents.rs	133	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/utils/position.rs	72	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	test/dev	crates/vize_maestro/src/utils/position/tests.rs	11	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/virtual_code.rs	228	old_ast	old AST/parser	old	vize_relief	legacy	4
+lsp	LSP	source	crates/vize_maestro/src/virtual_code.rs	232	old_ast	old AST/parser	old	vize_relief	legacy	4
 lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/generator.rs	23	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/generator.rs	23	old_ast	old AST/parser	old	vize_armature	legacy	3
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/art_script.rs	60	croquis	Croquis analysis	old	vize_croquis	legacy	3
@@ -308,14 +308,14 @@ lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/binding.rs	5	croqu
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/block.rs	228	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/generator/tests_semantic_bindings.rs	2	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/script_code.rs	7	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/virtual_code/style_code.rs	11	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/virtual_code/style_code.rs	9	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/template_code_tests.rs	12	s0	S0	stage	vize_s0	preferred	4
 lsp	LSP	test/dev	crates/vize_maestro/src/virtual_code/template_code_tests.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	4
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/template_code.rs	7	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/template_code.rs	7	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/virtual_code/template_code.rs	7	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/canon.rs	7	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/maestro.rs	3	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/maestro.rs	4	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/matrix.rs	4	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/normalize.rs	3	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/tests/davinci_ts40_projection_support/record.rs	1	s0	S0	stage	vize_s0	preferred	1

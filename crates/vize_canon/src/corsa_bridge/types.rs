@@ -10,8 +10,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::path::PathBuf;
 
+use crate::virtual_ts::ProjectionMapping;
 use vize_carton::String;
-use vize_carton::source_range::SourceMap;
 
 mod signature_help;
 
@@ -270,8 +270,8 @@ impl LspDefinitionResponse {
 pub struct TypeCheckResult {
     /// Diagnostics from type checking
     pub diagnostics: Vec<LspDiagnostic>,
-    /// Source map for position translation
-    pub source_map: Option<SourceMap>,
+    /// Projection mapping for position translation
+    pub source_map: Option<ProjectionMapping>,
 }
 
 impl TypeCheckResult {
