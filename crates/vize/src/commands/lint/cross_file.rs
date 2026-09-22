@@ -1,5 +1,6 @@
 //! Opt-in cross-file lint analysis (provide/inject, reactivity flow, race risks).
 
+mod absent_props;
 mod component;
 mod sfc;
 

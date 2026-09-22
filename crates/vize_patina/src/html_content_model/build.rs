@@ -11,8 +11,9 @@ use super::build_helpers::{
     compiler_ns, component_kind, element_node, intrinsic_member_tag, is_dynamic_is, name_span,
     slot_template_name, static_name,
 };
+use super::build_props::PropRecorder;
 use super::facts::Ns;
-use super::skeleton::{BoundaryKind, Element, NodeKind, Skeleton};
+use super::skeleton::{BoundaryKind, Element, NodeKind, PropFacts, Skeleton};
 use crate::ir::TemplateSyntax;
 use crate::markup::{MarkupDocument, MarkupElement, MarkupElementKind, MarkupNode};
 
@@ -25,6 +26,16 @@ use crate::markup::{MarkupDocument, MarkupElement, MarkupElementKind, MarkupNode
 /// and the browser then re-parses — so it reads the Vue-compatible `Quirks`
 /// parse, which performs no repair.
 pub fn authored_skeleton(allocator: &Allocator, source: &str) -> Skeleton {
+    authored(allocator, source, false)
+}
+
+/// [`authored_skeleton`] with the [`PropFacts`](super::skeleton::PropFacts)
+/// composition prunes with.
+pub fn composable_skeleton(allocator: &Allocator, source: &str) -> Skeleton {
+    authored(allocator, source, true)
+}
+
+fn authored(allocator: &Allocator, source: &str, props: bool) -> Skeleton {
     let parser = Parser::with_options_and_template_syntax(
         allocator,
         source,
@@ -32,30 +43,44 @@ pub fn authored_skeleton(allocator: &Allocator, source: &str) -> Skeleton {
         TemplateSyntaxMode::Quirks,
     );
     let (root, _errors) = parser.parse();
-    skeleton(&MarkupDocument::new(&root, TemplateSyntax::Vue))
+    build(&MarkupDocument::new(&root, TemplateSyntax::Vue), props)
 }
 
 /// Build the skeleton of a markup document.
 pub fn skeleton(document: &MarkupDocument<'_>) -> Skeleton {
+    build(document, false)
+}
+
+fn build(document: &MarkupDocument<'_>, props: bool) -> Skeleton {
     // `walk_tree` takes two callbacks; the builder is shared between them.
     // Capacities sized for a typical template: the builder runs on every
     // linted template, and regrowing these is a measurable share of it.
     let builder = RefCell::new(Builder {
         skeleton: Skeleton {
             nodes: Vec::with_capacity(128),
+            props: PropFacts::default(),
         },
         open: Vec::with_capacity(32),
         exits: Vec::with_capacity(32),
         namespaces: Vec::with_capacity(32),
+        props: props.then(PropRecorder::default),
     });
     document.walk_tree(
         &mut |element| {
             let mut builder = builder.borrow_mut();
+            let first = builder.skeleton.nodes.len() as u32;
             let opened = builder.enter(element);
+            let builder = &mut *builder;
+            if let Some(props) = builder.props.as_mut() {
+                props.enter(&element, first, opened, &builder.skeleton);
+            }
             builder.exits.push(opened);
         },
         &mut |_| {
             let mut builder = builder.borrow_mut();
+            if let Some(props) = builder.props.as_mut() {
+                props.exit();
+            }
             builder.namespaces.pop();
             let opened = builder.exits.pop().unwrap_or(0);
             for _ in 0..opened {
@@ -65,7 +90,12 @@ pub fn skeleton(document: &MarkupDocument<'_>) -> Skeleton {
             }
         },
     );
-    builder.into_inner().skeleton
+    let builder = builder.into_inner();
+    let mut skeleton = builder.skeleton;
+    if let Some(props) = builder.props {
+        skeleton.props = props.facts;
+    }
+    skeleton
 }
 
 struct Builder {
@@ -78,6 +108,8 @@ struct Builder {
     /// Per entered element: its compiler namespace, tag, and whether it is an
     /// `annotation-xml` with an HTML encoding.
     namespaces: Vec<(Ns, CompactString, bool)>,
+    /// The prop-fact recorder of a composable skeleton.
+    props: Option<PropRecorder>,
 }
 
 impl Builder {

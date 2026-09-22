@@ -12,20 +12,26 @@ use std::path::{Path, PathBuf};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_croquis_cf::{CrossFileAnalyzer, FileId};
+use vize_patina::html_content_model::witness::{
+    self, CrossComponentNesting, NestingEvidence, witnessed,
+};
 use vize_patina::html_content_model::{
-    ComposedFinding, Family, NodeKind, Skeleton, authored_skeleton, compose,
+    ComposedFinding, Family, NodeKind, Skeleton, composable_skeleton, compose_with,
 };
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
 use vize_s0::i18n::{Locale, t, t_fmt};
-use vize_s0::{Allocator, CompactString, FxHashMap, cstr, line_index::LineIndex};
+use vize_s0::{Allocator, CompactString, FxHashMap, FxHashSet, cstr, line_index::LineIndex};
+
+use super::absent_props::absent_falsy_props;
 
 pub(super) const RULE: &str = "html/cross-component-nesting";
 
-/// One composed template: its skeleton and where the template content starts
-/// in the SFC.
+/// One composed template: its skeleton, where the template content starts
+/// in the SFC, and the guard identifiers an unpassed prop proves falsy.
 struct Template {
     skeleton: Skeleton,
     offset: u32,
+    absent_falsy: FxHashSet<CompactString>,
 }
 
 fn template_of(path: &Path, source: &str) -> Option<Template> {
@@ -40,9 +46,17 @@ fn template_of(path: &Path, source: &str) -> Option<Template> {
     .ok()?;
     let template = descriptor.template.as_ref()?;
     let allocator = Allocator::with_capacity((template.content.len() * 4).max(64 * 1024));
+    let skeleton = composable_skeleton(&allocator, template.content.as_ref());
+    // Only a template with a guard can be pruned; others skip the script.
+    let absent_falsy = if skeleton.props.guards.is_empty() {
+        FxHashSet::default()
+    } else {
+        absent_falsy_props(&descriptor)
+    };
     Some(Template {
-        skeleton: authored_skeleton(&allocator, template.content.as_ref()),
+        skeleton,
         offset: template.loc.start as u32,
+        absent_falsy,
     })
 }
 
@@ -78,7 +92,30 @@ pub(super) fn apply<S: AsRef<str>>(
         let index = *file_indexes.get(&target)?;
         templates[index].as_ref().map(|_| index as u32)
     };
-    for finding in compose(&skeletons, &resolve) {
+    let absent_falsy = |file: u32, prop: &str| {
+        templates[file as usize]
+            .as_ref()
+            .is_some_and(|template| template.absent_falsy.contains(prop))
+    };
+    let findings = compose_with(&skeletons, &resolve, &absent_falsy);
+    // TS-36: a finding is reported only when its witness chain verifies
+    // against the fact base (P4-6b), never on the composer's word alone.
+    let evidence = NestingEvidence::new(&skeletons, &findings);
+    let proofs = witnessed(&evidence, |_| vize_s0::String::default());
+    let verified: Vec<bool> = match witness::facts(&evidence) {
+        Ok(manager) => {
+            let view = manager.view::<CrossComponentNesting>();
+            proofs
+                .iter()
+                .map(|proof| vize_davinci::witness::verify(proof, &view, &witness::CHECKS).is_ok())
+                .collect()
+        }
+        Err(_) => vec![false; proofs.len()],
+    };
+    for (finding, verified) in findings.into_iter().zip(verified) {
+        if !verified {
+            continue;
+        }
         let Some(&(file, usage)) = finding.usages.first() else {
             continue;
         };

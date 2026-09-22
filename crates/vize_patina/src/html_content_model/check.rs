@@ -9,7 +9,8 @@ use super::chain::{Base, Chain, Dispatch, Frame, NsSet};
 use super::class::{Family, ViolationClass};
 use super::content_rules;
 use super::facts::{Ns, facts};
-use super::parser_rules::{Outcome, Subject, foreign_start_tag, html_start_tag};
+use super::parser_rules::{Outcome, Subject};
+use super::parser_verdict::{ParserVerdict, evaluate_element};
 use super::skeleton::{NodeKind, Skeleton};
 use super::table_rules::{html_text, inert_whitespace};
 use super::tri::Tri;
@@ -111,12 +112,27 @@ pub fn check_with(
     composed: bool,
     on_component: &mut dyn FnMut(u32, &Chain),
 ) -> Report {
+    check_pruned(skeleton, skeleton_id, context, composed, &[], on_component)
+}
+
+/// [`check_with`] with the subtrees rooted at `pruned` (ascending node
+/// indices) left out: nodes the usage proves are not rendered. Their
+/// verdicts stay [`Verdict::Skipped`].
+pub fn check_pruned(
+    skeleton: &Skeleton,
+    skeleton_id: u32,
+    context: &Context,
+    composed: bool,
+    pruned: &[u32],
+    on_component: &mut dyn FnMut(u32, &Chain),
+) -> Report {
     let mut walker = Walker {
         skeleton,
         skeleton_id,
         verdicts: vec![Verdict::Skipped; skeleton.nodes.len()],
         parser: vec![None; skeleton.nodes.len()],
         composed,
+        pruned,
         on_component,
     };
     let mut chain = context.chain();
@@ -135,6 +151,7 @@ struct Walker<'s, 'h> {
     verdicts: Vec<Verdict>,
     parser: Vec<Option<bool>>,
     composed: bool,
+    pruned: &'s [u32],
     on_component: &'h mut dyn FnMut(u32, &Chain),
 }
 
@@ -144,6 +161,9 @@ impl Walker<'_, '_> {
     }
 
     fn visit(&mut self, index: u32, chain: &mut Chain) {
+        if self.pruned.binary_search(&index).is_ok() {
+            return;
+        }
         let node = self.skeleton.node(index);
         match &node.kind {
             NodeKind::Element(element) => {
@@ -273,72 +293,5 @@ impl Walker<'_, '_> {
             }
             _ => Verdict::Refuted,
         }
-    }
-}
-
-/// The parser-family verdict for one element.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ParserVerdict {
-    /// Not inserted under its authored parent in any consistent context; the
-    /// deciding chain frame.
-    Diverges(ViolationClass, Option<usize>),
-    /// Inserted faithfully in every consistent context.
-    Stable,
-    /// Depends on something unknown.
-    Unknown,
-}
-
-/// The parser-family verdict for an element, with the namespaces the element
-/// has when it is inserted faithfully.
-pub fn evaluate_element(chain: &mut Chain, subject: &Subject<'_>) -> (ParserVerdict, NsSet) {
-    let Some(top) = chain.frames.last().copied() else {
-        // The mount point is unknown; the declared mount assumption places
-        // the element where its compiled namespace holds.
-        return (
-            ParserVerdict::Unknown,
-            NsSet::one(subject.element.compiler_ns),
-        );
-    };
-    let last = chain.frames.len() - 1;
-    let mut diverged = None;
-    let (mut all_diverge, mut all_stable) = (true, true);
-    let mut ns = NsSet::EMPTY;
-    for (dispatch, parent_ns) in top.dispatches() {
-        chain.frames[last].ns = NsSet::one(parent_ns);
-        let name = subject.element.id(Ns::Html).map(|id| facts().name(id).1);
-        let outcome = match dispatch {
-            Dispatch::Html => html_start_tag(chain, subject, true),
-            Dispatch::HtmlIntegration => html_start_tag(chain, subject, false),
-            Dispatch::MathText if matches!(name, Some("mglyph" | "malignmark")) => {
-                Outcome::Stable(NsSet::one(Ns::MathMl))
-            }
-            Dispatch::MathText => html_start_tag(chain, subject, false),
-            Dispatch::AnnotationXml if name == Some("svg") => html_start_tag(chain, subject, false),
-            Dispatch::AnnotationXml => foreign_start_tag(chain, subject, Ns::MathMl),
-            Dispatch::Foreign(foreign) => foreign_start_tag(chain, subject, foreign),
-        };
-        match outcome {
-            Outcome::Stable(set) => {
-                all_diverge = false;
-                ns = ns.with(set);
-            }
-            Outcome::Unknown(set) => {
-                all_diverge = false;
-                all_stable = false;
-                ns = ns.with(set);
-            }
-            Outcome::Diverge(class, frame) => {
-                all_stable = false;
-                diverged.get_or_insert((class, frame));
-            }
-        }
-    }
-    chain.frames[last].ns = top.ns;
-    match (all_diverge, all_stable, diverged) {
-        (true, _, Some((class, frame))) => {
-            (ParserVerdict::Diverges(class, frame), NsSet::one(Ns::Html))
-        }
-        (false, true, _) => (ParserVerdict::Stable, ns),
-        _ => (ParserVerdict::Unknown, ns),
     }
 }

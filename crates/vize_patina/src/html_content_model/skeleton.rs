@@ -161,14 +161,42 @@ pub struct Node {
     pub end: u32,
 }
 
+/// What composition may prune with (Davinci FP-3); empty unless the skeleton
+/// was built composable.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct PropFacts {
+    /// `(node, identifier)`: the node renders only when the identifier — the
+    /// component's own binding, no scope variable — is truthy (`v-if="copy"`).
+    pub guards: Vec<(u32, CompactString)>,
+    /// `(component node, prop)`: a prop the usage passes, camelized.
+    pub passed: Vec<(u32, CompactString)>,
+    /// Component usages whose passed props are not all known.
+    pub opaque: Vec<u32>,
+}
+
 /// A template's render skeleton, in pre-order.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Skeleton {
     /// Nodes in pre-order; a node's subtree is `index + 1 .. node.end`.
     pub nodes: Vec<Node>,
+    /// Guards and passed props, for composition.
+    pub props: PropFacts,
 }
 
 impl Skeleton {
+    /// Whether the usage at `usage` passes `prop`: `None` when it may.
+    pub fn passes(&self, usage: u32, prop: &str) -> Option<bool> {
+        if self.props.opaque.contains(&usage) {
+            return None;
+        }
+        Some(
+            self.props
+                .passed
+                .iter()
+                .any(|(node, name)| *node == usage && name == prop),
+        )
+    }
+
     /// Indices of the root nodes.
     pub fn roots(&self) -> Children<'_> {
         Children {

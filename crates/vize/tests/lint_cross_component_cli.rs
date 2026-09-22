@@ -75,3 +75,60 @@ fn composition_follows_imports_not_names() {
     assert_eq!(messages, Vec::<&serde_json::Value>::new());
     assert_eq!(output.status.code(), Some(0));
 }
+
+/// FP-3: a child's `<button v-if="copy">` is pruned at a usage that leaves
+/// `copy` unpassed only when the child's script proves the absent value
+/// falsy — a `null` `withDefaults` default or a `false` destructure default —
+/// and checked when the prop is passed or its default is truthy.
+#[test]
+fn unpassed_falsy_props_prune_guarded_branches() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path();
+    let child = |script: &str| {
+        format!(
+            "<script setup lang=\"ts\">\n{script}\nconst pick = () => {{}}\n</script>\n\n<template>\n  <span><button v-if=\"copy\" @click=\"pick\">c</button></span>\n</template>\n"
+        )
+    };
+    let children = [
+        (
+            "src/Kv.vue",
+            "withDefaults(defineProps<{ copy?: string | null; oneline?: boolean }>(), { copy: null, oneline: false })",
+        ),
+        (
+            "src/Kv2.vue",
+            "withDefaults(defineProps<{ copy?: string }>(), { copy: 'yes' })",
+        ),
+        (
+            "src/Kv3.vue",
+            "const { copy = false } = defineProps<{ copy?: boolean }>()",
+        ),
+        (
+            "src/Kv4.vue",
+            "defineProps({ copy: { type: Boolean, default: true } })",
+        ),
+    ];
+    for (path, script) in children {
+        write(root, path, &child(script));
+    }
+    write(
+        root,
+        "src/App.vue",
+        "<script setup>\nimport Kv from './Kv.vue'\nimport Kv2 from './Kv2.vue'\nimport Kv3 from './Kv3.vue'\nimport Kv4 from './Kv4.vue'\n</script>\n\n<template>\n  <button><Kv /></button>\n  <button><Kv copy=\"x\" /></button>\n  <button><Kv2 /></button>\n  <button><Kv3 /></button>\n  <button><Kv4 /></button>\n</template>\n",
+    );
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(root)
+        .args(["lint", "--cross-file", "--format", "json", "src/**/*.vue"])
+        .output()
+        .expect("run vize lint");
+    let stdout = String::from_utf8(output.stdout).expect("utf-8 report");
+    let parsed: serde_json::Value = serde_json::from_str(&stdout).expect("json report");
+    let found: Vec<String> = parsed
+        .as_array()
+        .expect("file list")
+        .iter()
+        .flat_map(|file| file["messages"].as_array().into_iter().flatten())
+        .filter(|message| message["ruleId"] == "html/cross-component-nesting")
+        .map(|message| format!("{}:{}", message["line"], message["column"]))
+        .collect();
+    assert_eq!(found, ["10:11", "11:11", "13:11"]);
+}

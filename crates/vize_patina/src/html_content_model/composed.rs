@@ -14,11 +14,15 @@
 //! name-based fallback, no dynamic `:is`); a `<slot>` pass-through is
 //! unknown — whether fallback content renders depends on what the usage
 //! passes — and slot content keeps its per-file verdicts.
+//!
+//! A child subtree guarded by `v-if="prop"` is left out when the usage does
+//! not pass `prop` and the caller's oracle proves its absent value falsy
+//! (FP-3): that subtree is not rendered at this usage.
 
 use vize_s0::FxHashSet;
 
 use super::chain::Chain;
-use super::check::{Context, Report, Verdict, check, check_with};
+use super::check::{Context, Report, Verdict, check, check_pruned, check_with};
 use super::class::ViolationClass;
 use super::skeleton::{NodeKind, Skeleton};
 
@@ -48,6 +52,17 @@ pub fn compose(
     skeletons: &[Skeleton],
     resolve: &dyn Fn(u32, &str) -> Option<u32>,
 ) -> Vec<ComposedFinding> {
+    compose_with(skeletons, resolve, &|_, _| false)
+}
+
+/// [`compose`] pruning guarded subtrees: `absent_falsy(file, prop)` holds
+/// when an unpassed `prop` of `file` is proven falsy (no default, or a falsy
+/// literal one) and the template identifier `prop` names that prop.
+pub fn compose_with(
+    skeletons: &[Skeleton],
+    resolve: &dyn Fn(u32, &str) -> Option<u32>,
+    absent_falsy: &dyn Fn(u32, &str) -> bool,
+) -> Vec<ComposedFinding> {
     let standalone: Vec<Report> = skeletons
         .iter()
         .enumerate()
@@ -57,6 +72,7 @@ pub fn compose(
         skeletons,
         standalone: &standalone,
         resolve,
+        absent_falsy,
         findings: Vec::new(),
         seen: FxHashSet::default(),
     };
@@ -82,6 +98,7 @@ struct Composer<'a> {
     skeletons: &'a [Skeleton],
     standalone: &'a [Report],
     resolve: &'a dyn Fn(u32, &str) -> Option<u32>,
+    absent_falsy: &'a dyn Fn(u32, &str) -> bool,
     findings: Vec<ComposedFinding>,
     seen: FxHashSet<(Vec<(u32, u32)>, u32)>,
 }
@@ -103,12 +120,20 @@ impl Composer<'_> {
             return;
         }
         let skeleton = &self.skeletons[child as usize];
+        let parent = &self.skeletons[file as usize];
+        let pruned: Vec<u32> = (skeleton.props.guards.iter())
+            .filter(|(_, prop)| {
+                parent.passes(node, prop) == Some(false) && (self.absent_falsy)(child, prop)
+            })
+            .map(|(guard, _)| *guard)
+            .collect();
         let mut nested = Vec::new();
-        let report = check_with(
+        let report = check_pruned(
             skeleton,
             child,
             &Context::Chain(chain),
             true,
+            &pruned,
             &mut |node, chain| {
                 nested.push((node, chain.clone()));
             },

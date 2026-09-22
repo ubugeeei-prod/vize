@@ -29,12 +29,16 @@ pub const EFFECT_GRAPH: AnalysisId = AnalysisId::new(7);
 pub const PROVIDE_INJECT: AnalysisId = AnalysisId::new(8);
 /// `RaceConditions` — async-setup races (P4-3f).
 pub const RACE_CONDITIONS: AnalysisId = AnalysisId::new(9);
+/// `HtmlElements` — authored template elements a nesting witness cites (P4-11b).
+pub const HTML_ELEMENTS: AnalysisId = AnalysisId::new(10);
+/// `HtmlComposedNesting` — nesting proven only in a parent's context (P4-11b).
+pub const HTML_COMPOSED_NESTING: AnalysisId = AnalysisId::new(11);
 
 /// The first id tests and bench fixtures may use.
 pub const FIXTURE_BASE: u8 = 32;
 
 /// Every allocated production id, in id order.
-pub const PRODUCTION: [AnalysisId; 9] = [
+pub const PRODUCTION: [AnalysisId; 11] = [
     BINDINGS,
     UNDEFINED_REFS,
     UNUSED_BINDINGS,
@@ -44,6 +48,8 @@ pub const PRODUCTION: [AnalysisId; 9] = [
     EFFECT_GRAPH,
     PROVIDE_INJECT,
     RACE_CONDITIONS,
+    HTML_ELEMENTS,
+    HTML_COMPOSED_NESTING,
 ];
 
 // Unique, ascending, and below the fixture range.

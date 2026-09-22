@@ -131,11 +131,13 @@ every branch is assumed reachable.
   child's root `<div>` (`MkKeyValue.vue:7:1`) inside `<button>` is reported
   alongside, and that report is justified.
 
-**Disposition:** `deferred-with-issue` — prop-sensitive branch feasibility
-(a child `v-if` over a prop the call site leaves unset) is outside the
-declared P4-11b domain; tracked as the P4-11b follow-up in
-[phase-4-records/p4-11b.md](./phase-4-records/p4-11b.md). The other 7
-findings are `justified-with-witness`: `<div>` roots inside `<button>`
+**Disposition:** `fixed`. Composition now prunes a child `v-if="prop"`
+branch at a usage that leaves `prop` unpassed, when the child's `<script
+setup>` proves the absent value falsy. `MkKeyValue` declares
+`withDefaults(…, { copy: null })`. The rule and its exactness conditions are
+in [phase-4-records/p4-11b.md](./phase-4-records/p4-11b.md) ("Prop-sensitive
+pruning"). Re-running the corpus drops exactly the two witnesses above. The
+other 7 findings are `justified-with-witness`: `<div>` roots inside `<button>`
 (2, the root sites above) and inside `<span>` (3,
 `src/ui/_common_/statusbar-{federation,rss,user-list}.vue:16:4` through
 `MkMarqueeText.vue:7:1`; both content models are phrasing), and a `<canvas>`
