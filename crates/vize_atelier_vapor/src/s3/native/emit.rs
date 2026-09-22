@@ -15,14 +15,15 @@ mod element;
 mod spread;
 mod text;
 
+use oxc_allocator::StringBuilder;
 use vize_atelier_core::{RootNode, SimpleExpressionNode, SourceLocation};
-use vize_carton::{Allocator, Box, String, Vec, ensure_sufficient_stack};
+use vize_carton::{Allocator, Box, Vec, ensure_sufficient_stack};
 
 use super::{Content, Expr, NativeArtifact};
 use crate::ir::{BlockIRNode, ChildRefIRNode, IREffect, NextRefIRNode, OperationNode, RootIRNode};
 
 pub(super) fn emit<'a>(
-    artifact: NativeArtifact<'a>,
+    mut artifact: NativeArtifact<'a>,
     allocator: &'a Allocator,
     source: &'a str,
     scope_id: Option<&str>,
@@ -44,7 +45,8 @@ pub(super) fn emit<'a>(
     };
     // A node is materialized when it or a descendant in the same template is
     // updated, listened to, or anchors an insertion (control flow, slots).
-    let mut dynamic = std::vec![false; artifact.nodes.len()];
+    let mut dynamic = Vec::with_capacity_in(artifact.nodes.len(), &allocator);
+    dynamic.resize(artifact.nodes.len(), false);
     for (index, node) in artifact.nodes.iter().enumerate().rev() {
         dynamic[index] = match node.content {
             Content::Text { dynamic, .. } => dynamic,
@@ -57,7 +59,8 @@ pub(super) fn emit<'a>(
             | Content::Outlet { .. } => true,
         };
     }
-    let roots = artifact.roots.clone();
+    ir.element_template_map.reserve(artifact.nodes.len());
+    let roots = take(allocator, &mut artifact.roots);
     let mut emitter = Emitter {
         allocator,
         artifact,
@@ -74,7 +77,7 @@ pub(super) fn emit<'a>(
 struct Emitter<'a, 'b> {
     allocator: &'a Allocator,
     artifact: NativeArtifact<'a>,
-    dynamic: std::vec::Vec<bool>,
+    dynamic: Vec<'a, bool>,
     ir: &'b mut RootIRNode<'a>,
     next_id: usize,
     scope_id: Option<&'b str>,
@@ -126,11 +129,12 @@ impl<'a> Emitter<'a, '_> {
         id
     }
 
-    fn register(&mut self, id: usize, template: &str) {
+    /// Templates are built in the output arena, so registering copies nothing.
+    fn register(&mut self, id: usize, template: &'a str) {
         self.ir
             .element_template_map
             .insert(id, self.ir.templates.len());
-        self.ir.templates.push(self.allocator.alloc_str(template));
+        self.ir.templates.push(template);
     }
 
     fn child(&mut self, parent_id: usize, offset: usize, block: &mut BlockIRNode<'a>) -> usize {
@@ -177,15 +181,26 @@ impl<'a> Emitter<'a, '_> {
     }
 }
 
-fn escape(output: &mut String, value: &str) {
-    for ch in value.chars() {
-        match ch {
-            '&' => output.push_str("&amp;"),
-            '<' => output.push_str("&lt;"),
-            '>' => output.push_str("&gt;"),
-            '"' => output.push_str("&quot;"),
-            '\'' => output.push_str("&#39;"),
-            ch => output.push(ch),
-        }
+/// Move a payload list out of the artifact; each node is emitted once.
+fn take<'a, T>(allocator: &'a Allocator, list: &mut Vec<'a, T>) -> Vec<'a, T> {
+    std::mem::replace(list, Vec::new_in(&allocator))
+}
+
+/// HTML-escape `value` into `output`, copying unescaped runs whole.
+fn escape(output: &mut StringBuilder<'_>, value: &str) {
+    let mut start = 0;
+    for (index, byte) in value.bytes().enumerate() {
+        let entity = match byte {
+            b'&' => "&amp;",
+            b'<' => "&lt;",
+            b'>' => "&gt;",
+            b'"' => "&quot;",
+            b'\'' => "&#39;",
+            _ => continue,
+        };
+        output.push_str(&value[start..index]);
+        output.push_str(entity);
+        start = index + 1;
     }
+    output.push_str(&value[start..]);
 }

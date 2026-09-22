@@ -3,10 +3,11 @@
 //! numbered before their parent element, which is numbered before its other
 //! dynamic descendants; those follow in document order.
 
-use vize_carton::{String, Vec, ensure_sufficient_stack};
+use oxc_allocator::StringBuilder;
+use vize_carton::{Vec, ensure_sufficient_stack};
 
 use super::super::{BindingKind, Content};
-use super::{Emitter, escape};
+use super::{Emitter, escape, take};
 use crate::ir::{BlockIRNode, InsertNodeIRNode, OperationNode};
 
 impl<'a> Emitter<'a, '_> {
@@ -14,14 +15,15 @@ impl<'a> Emitter<'a, '_> {
     pub(super) fn element(&mut self, index: usize, block: &mut BlockIRNode<'a>) {
         let reserved = self.reserve(index);
         let id = self.id();
-        let mut template = String::default();
+        let mut template = StringBuilder::with_capacity_in(64, self.allocator.as_oxc());
         self.node(index, Some(id), reserved, &mut template, block);
-        self.register(id, &template);
+        self.register(id, template.into_str());
         block.returns.push(id);
     }
 
-    /// Ids for the element's component and outlet children, in order.
-    fn reserve(&mut self, index: usize) -> std::vec::Vec<usize> {
+    /// Ids for the element's component and outlet children, in order: a
+    /// consecutive run minted before the element's own id.
+    fn reserve(&mut self, index: usize) -> std::ops::Range<usize> {
         let count = self.artifact.nodes[index]
             .children
             .iter()
@@ -32,15 +34,17 @@ impl<'a> Emitter<'a, '_> {
                 )
             })
             .count();
-        (0..count).map(|_| self.id()).collect()
+        let first = self.next_id;
+        self.next_id += count;
+        first..self.next_id
     }
 
     fn node(
         &mut self,
         index: usize,
         id: Option<usize>,
-        reserved: std::vec::Vec<usize>,
-        template: &mut String,
+        reserved: std::ops::Range<usize>,
+        template: &mut StringBuilder<'a>,
         block: &mut BlockIRNode<'a>,
     ) {
         ensure_sufficient_stack(|| {
@@ -74,7 +78,7 @@ impl<'a> Emitter<'a, '_> {
                 self.bindings(index, id, block);
             }
             self.children(index, id, reserved, template, block);
-            if !vize_carton::is_void_tag(tag) {
+            if !super::super::validate::admitted_void(tag) {
                 template.push_str("</");
                 template.push_str(tag);
                 template.push('>');
@@ -86,15 +90,16 @@ impl<'a> Emitter<'a, '_> {
         &mut self,
         index: usize,
         parent: Option<usize>,
-        reserved: std::vec::Vec<usize>,
-        template: &mut String,
+        mut reserved: std::ops::Range<usize>,
+        template: &mut StringBuilder<'a>,
         block: &mut BlockIRNode<'a>,
     ) {
-        let children = self.artifact.nodes[index].children.clone();
+        // Children are read in place: nothing below reads its parent's list,
+        // and the list is restored once every child is emitted.
+        let children = take(self.allocator, &mut self.artifact.nodes[index].children);
         // Upstream's fast-remove flag clears the whole parent, so it is sound
         // only when a loop is the parent's sole child.
         let only_child = children.len() == 1;
-        let mut reserved = reserved.into_iter();
         let mut cursor = 0;
         let mut offset = 0;
         // The last referenced element child and its offset: a later element
@@ -119,7 +124,7 @@ impl<'a> Emitter<'a, '_> {
                         previous = Some((id, offset));
                         (Some(id), self.reserve(child))
                     } else {
-                        (None, std::vec::Vec::new())
+                        (None, 0..0)
                     };
                     self.node(child, id, nested, template, block);
                 }
@@ -156,5 +161,6 @@ impl<'a> Emitter<'a, '_> {
             }
             offset += 1;
         }
+        self.artifact.nodes[index].children = children;
     }
 }

@@ -5,10 +5,10 @@
 //! does (and the retained lane mirrors), so the published fixture corpus keeps
 //! its output parity. Ids are names only; no runtime behavior depends on them.
 
-use vize_carton::{Box, ensure_sufficient_stack};
+use vize_carton::{Box, Vec, ensure_sufficient_stack};
 
 use super::super::{Content, Expr};
-use super::Emitter;
+use super::{Emitter, take};
 use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode};
 
 /// Parent element, insertion anchor, and whether the control op is the
@@ -28,16 +28,14 @@ impl<'a> Emitter<'a, '_> {
         let (parent, anchor) = placement.map_or((None, None), |(parent, anchor, _)| {
             (Some(parent), Some(anchor))
         });
-        let operation = match &self.artifact.nodes[index].content {
+        // Each node is emitted once, so its payload moves out of the artifact.
+        let operation = match &mut self.artifact.nodes[index].content {
             Content::If { branches } => {
-                let branches: std::vec::Vec<_> = branches
-                    .iter()
-                    .map(|branch| (branch.condition, branch.roots.clone()))
-                    .collect();
-                let branches: std::vec::Vec<_> = branches
-                    .iter()
-                    .map(|(condition, roots)| (*condition, roots.as_slice()))
-                    .collect();
+                let branches = take(self.allocator, branches);
+                let branches = Vec::from_iter_in(
+                    (branches.iter()).map(|branch| (branch.condition, branch.roots.as_slice())),
+                    &self.allocator,
+                );
                 let (condition, positive) = self.branch(&branches);
                 let negative = self.remaining(&branches[1..], parent, anchor);
                 let node = IfIRNode {
@@ -53,7 +51,7 @@ impl<'a> Emitter<'a, '_> {
             }
             Content::For(body) => {
                 let body = *body;
-                let members = self.artifact.nodes[index].children.clone();
+                let members = take(self.allocator, &mut self.artifact.nodes[index].children);
                 self.id();
                 let render = self.body(&members);
                 let alias = |value: Option<&'a str>| {

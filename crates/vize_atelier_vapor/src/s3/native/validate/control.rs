@@ -6,21 +6,22 @@
 //! those keep the legacy lane rather than being re-derived from text here.
 
 use vize_atelier_core::steps::expression::is_template_global;
-use vize_carton::Span;
+use vize_carton::{Allocator, Span, Vec};
 use vize_s3::{
     op::{OpId, OpKind, Program, RegionId},
     operand::{Operand, OperandRole as Role, ValueKind},
 };
 
 use super::super::{Branch, Content, Expr, Loop};
-use super::{Result, operands::js, operands::one, operands::reference};
+use super::{Result, ident::reference, operands::js, operands::one};
 use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained};
 
 pub(super) fn branches<'a>(
     values: &[Operand<'a>],
     retained: &Retained<'_, 'a>,
 ) -> Result<Content<'a>> {
-    let mut branches: std::vec::Vec<Branch<'a>> = std::vec::Vec::with_capacity(values.len());
+    let alloc = retained.allocator();
+    let mut branches: Vec<'a, Branch<'a>> = Vec::with_capacity_in(values.len(), &alloc);
     for (position, value) in values.iter().enumerate() {
         let Some(region) = value.region else {
             return Err(AdmissionFailure::Invalid("invalid native branch operand"));
@@ -45,7 +46,7 @@ pub(super) fn branches<'a>(
         branches.push(Branch {
             condition,
             region,
-            roots: std::vec::Vec::new(),
+            roots: Vec::new_in(&alloc),
         });
     }
     if branches.is_empty() {
@@ -121,7 +122,7 @@ fn alias(kind: ValueKind, text: &str) -> Result<Option<&str>> {
         ValueKind::Js
             if text.starts_with(|c: char| c.is_ascii_alphabetic())
                 && text.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-                && !oxc_syntax::keyword::is_reserved_keyword(text)
+                && !super::ident::reserved_keyword(text)
                 && !is_template_global(text) =>
         {
             Ok(Some(text))
@@ -134,17 +135,20 @@ fn alias(kind: ValueKind, text: &str) -> Result<Option<&str>> {
 /// S3 partitions every op there as dynamic, so native payload classification
 /// must agree. The verifier rejects duplicate ids, so ids below the region
 /// count index a dense table.
-pub(super) fn controlled_regions(program: &Program<'_>) -> Result<std::vec::Vec<bool>> {
+pub(super) fn controlled_regions<'a>(
+    program: &Program<'_>,
+    alloc: &'a Allocator,
+) -> Result<Vec<'a, bool>> {
     let count = program.regions.len();
-    let mut meta = std::vec![(None, None); count];
+    let mut meta = super::filled(alloc, (None, None), count);
     for region in &program.regions {
         *meta
             .get_mut(region.id.index() as usize)
             .ok_or(AdmissionFailure::Invalid("region ids are not dense"))? =
             (region.parent, region.owner);
     }
-    let mut memo: std::vec::Vec<Option<bool>> = std::vec![None; count];
-    let mut path = std::vec::Vec::new();
+    let mut memo: Vec<'_, Option<bool>> = super::filled(alloc, None, count);
+    let mut path = Vec::new_in(&alloc);
     for region in &program.regions {
         path.clear();
         let mut cursor: Option<RegionId> = Some(region.id);
@@ -178,5 +182,8 @@ pub(super) fn controlled_regions(program: &Program<'_>) -> Result<std::vec::Vec<
             memo[*slot] = Some(controlled);
         }
     }
-    Ok(memo.into_iter().map(|known| known == Some(true)).collect())
+    Ok(Vec::from_iter_in(
+        memo.iter().map(|known| *known == Some(true)),
+        &alloc,
+    ))
 }

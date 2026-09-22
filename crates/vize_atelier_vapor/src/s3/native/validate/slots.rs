@@ -3,6 +3,7 @@
 //! pattern is one the shared generator scopes exactly.
 
 use vize_atelier_core::steps::expression::is_template_global;
+use vize_carton::{Allocator, Vec};
 use vize_s3::{
     op::OpId,
     operand::{Operand, OperandRole as Role, ValueKind},
@@ -12,7 +13,10 @@ use super::super::{Binding, BindingKind, Content, Expr, Node};
 use super::{Result, component::component_prop, operands::one};
 use crate::s3::LegacyReason;
 
-pub(super) fn slot<'a>(values: &[Operand<'a>]) -> Result<(OpId, Binding<'a>)> {
+pub(super) fn slot<'a>(
+    values: &[Operand<'a>],
+    alloc: &'a Allocator,
+) -> Result<(OpId, Binding<'a>)> {
     let kind = one(values, Role::BindingKind)?;
     let name = one(values, Role::Name)?;
     let params = one(values, Role::Params)?;
@@ -43,7 +47,7 @@ pub(super) fn slot<'a>(values: &[Operand<'a>]) -> Result<(OpId, Binding<'a>)> {
             kind: BindingKind::Slot,
             name,
             value: Expr::plain(params),
-            modifiers: std::vec::Vec::new(),
+            modifiers: Vec::new_in(&alloc),
             merge: None,
             position: 0,
         },
@@ -56,7 +60,7 @@ fn pattern(text: &str) -> bool {
     let identifier = |name: &str| {
         name.starts_with(|c: char| c.is_ascii_alphabetic())
             && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
-            && !oxc_syntax::keyword::is_reserved_keyword(name)
+            && !super::ident::reserved_keyword(name)
             && !is_template_global(name)
     };
     let text = text.trim();

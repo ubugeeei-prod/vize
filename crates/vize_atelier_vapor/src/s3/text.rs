@@ -1,7 +1,8 @@
 //! Transfer S2's validated compound-text side facts into owned S3 operands.
 //! Opaque display strings are never parsed or treated as executable JavaScript.
 
-use vize_carton::{Allocator, FxHashMap};
+use oxc_allocator::HashMap;
+use vize_carton::Allocator;
 use vize_s3::operand::{OperandRole, OperandValue, ValueKind};
 
 use super::{AdmissionFailure, LegacyReason, native::validate::reference, retained::Retained};
@@ -12,16 +13,16 @@ pub(super) fn capture<'a>(
     s3: &mut vize_s2_to_s3::Lowered<'a>,
     retained: &mut Retained<'_, 'a>,
 ) -> Result<(), AdmissionFailure> {
-    let facts: FxHashMap<_, _> = s2
-        .provenance
-        .iter()
-        .filter(|record| record.rule == "lower.compound")
-        .filter_map(|record| {
-            s2.texts
-                .get(record.node?)
-                .map(|parts| ((record.span.start, record.span.end), parts))
-        })
-        .collect();
+    let mut facts: HashMap<'_, (u32, u32), _> = HashMap::new_in(allocator.as_oxc());
+    facts.extend(
+        (s2.provenance.iter())
+            .filter(|record| record.rule == "lower.compound")
+            .filter_map(|record| {
+                s2.texts
+                    .get(record.node?)
+                    .map(|parts| ((record.span.start, record.span.end), parts))
+            }),
+    );
     if facts.is_empty() {
         return if s3.program.operands.iter().any(|operand| {
             operand.role == OperandRole::Text

@@ -4,7 +4,8 @@
 //! component/outlet bindings become props in authored order, and a `v-bind`
 //! or `v-on` object on a component becomes a `$` source in that order.
 
-use vize_carton::FxHashSet;
+use oxc_allocator::HashSet;
+use vize_carton::{Allocator, Vec};
 use vize_s3::op::{OpId, RegionId};
 
 use super::super::{Binding, BindingKind, Content, Node, Prop};
@@ -17,30 +18,34 @@ pub(super) fn bindings<'a>(
     nodes: &mut [Node<'a>],
     slots: &Slots,
     parents: &[Option<usize>],
-    bindings: std::vec::Vec<Pending<'a>>,
+    bindings: Vec<'a, Pending<'a>>,
+    alloc: &'a Allocator,
 ) -> Result<()> {
     // Names already bound per native node: static attributes and props first.
-    let mut names = FxHashSet::default();
+    let mut names = HashSet::with_capacity_in(bindings.len() + nodes.len(), alloc.as_oxc());
     for (index, node) in nodes.iter().enumerate() {
         match &node.content {
-            Content::Element { attributes, .. } => names
-                .extend((attributes.iter()).map(|(name, ..)| (index, BindingKind::Prop, *name))),
-            Content::Component { props, .. } | Content::Outlet { props, .. } => {
+            Content::Element { attributes, .. } => {
                 names.extend(
-                    props
-                        .iter()
-                        .map(|prop| (index, BindingKind::Prop, prop.key)),
+                    (attributes.iter()).map(|(name, ..)| (index, BindingKind::Prop, *name)),
                 );
+            }
+            Content::Component { props, .. } | Content::Outlet { props, .. } => {
+                names.extend((props.iter()).map(|prop| (index, BindingKind::Prop, prop.key)));
             }
             _ => {}
         }
     }
     // Elements whose props merge through a `v-bind` object keep every static
     // attribute and `:class`/`:style` as its own ordered source.
-    let spreads: FxHashSet<OpId> = (bindings.iter())
-        .filter(|(.., binding)| binding.kind == BindingKind::Spread)
-        .map(|(target, ..)| *target)
-        .collect();
+    let mut spreads = super::filled(alloc, false, nodes.len());
+    for (target, .., binding) in bindings.iter() {
+        if binding.kind == BindingKind::Spread
+            && let Some(&Some((index, _))) = slots.get(target.index() as usize)
+        {
+            spreads[index] = true;
+        }
+    }
     for (target, region, position, mut binding) in bindings {
         let Some(&Some((index, target_region))) = slots.get(target.index() as usize) else {
             return Err(LegacyReason::Structure.into());
@@ -114,7 +119,7 @@ pub(super) fn bindings<'a>(
                 ));
             }
         }
-        if !fresh && spreads.contains(&target) {
+        if !fresh && spreads[index] {
             // Only a `:class`/`:style` beside its static attribute repeats.
             if binding.kind != BindingKind::Prop
                 || !matches!(binding.name, "class" | "style")
@@ -172,7 +177,7 @@ pub(super) fn bindings<'a>(
 /// A component `:prop` or `@event`, or an outlet `:prop`. Repeated names merge
 /// only for `class`/`style`, which the shared generator normalizes together.
 fn prop<'a>(
-    props: &mut std::vec::Vec<Prop<'a>>,
+    props: &mut Vec<'a, Prop<'a>>,
     binding: Binding<'a>,
     position: u32,
     fresh: bool,

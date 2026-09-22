@@ -1,19 +1,21 @@
 //! Operand schemas for components and slot outlets: the tag or static name,
 //! and static attributes as literal props in authored order.
 
+use oxc_allocator::HashSet;
+use vize_carton::{Allocator, Vec};
 use vize_s3::operand::{Operand, OperandRole as Role, ValueKind};
 
 use super::super::{Content, Expr, Prop};
-use super::{Result, operands::one};
+use super::{Result, ident::Folded, operands::one};
 use crate::s3::LegacyReason;
 
 /// A resolved component: its tag and static attributes (as literal props).
-pub(super) fn component<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
+pub(super) fn component<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Result<Content<'a>> {
     let tag = one(values, Role::Tag)?;
     if tag.value.kind != ValueKind::Literal || !component_tag(tag.value.text) {
         return Err(LegacyReason::Component.into());
     }
-    let props = static_props(values, Role::Tag)?;
+    let props = static_props(values, Role::Tag, alloc)?;
     Ok(Content::Component {
         tag: tag.value.text,
         props,
@@ -22,20 +24,25 @@ pub(super) fn component<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
 }
 
 /// A `<slot>` outlet with a static name and static attribute props.
-pub(super) fn outlet<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
+pub(super) fn outlet<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Result<Content<'a>> {
     let name = one(values, Role::Name)?;
     if name.value.kind != ValueKind::Literal || name.target.is_some() {
         return Err(LegacyReason::Component.into());
     }
-    let props = static_props(values, Role::Name)?;
+    let props = static_props(values, Role::Name, alloc)?;
     Ok(Content::Outlet {
         name: name.value.text,
         props,
     })
 }
 
-fn static_props<'a>(values: &[Operand<'a>], head: Role) -> Result<std::vec::Vec<Prop<'a>>> {
-    let mut props = std::vec::Vec::new();
+fn static_props<'a>(
+    values: &[Operand<'a>],
+    head: Role,
+    alloc: &'a Allocator,
+) -> Result<Vec<'a, Prop<'a>>> {
+    let mut props = Vec::new_in(&alloc);
+    let mut seen = HashSet::with_capacity_in(values.len(), alloc.as_oxc());
     for value in values {
         if value.target.is_some() || value.region.is_some() {
             return Err(LegacyReason::Structure.into());
@@ -45,11 +52,7 @@ fn static_props<'a>(values: &[Operand<'a>], head: Role) -> Result<std::vec::Vec<
             Role::Attribute => {
                 let name = value.name.ok_or(LegacyReason::Binding)?;
                 // The legacy parser reports repeats case-insensitively.
-                if !component_prop(name)
-                    || props
-                        .iter()
-                        .any(|prop: &Prop<'_>| prop.key.eq_ignore_ascii_case(name))
-                {
+                if !component_prop(name) || !seen.insert(Folded(name)) {
                     return Err(LegacyReason::Component.into());
                 }
                 let literal = match value.value.kind {

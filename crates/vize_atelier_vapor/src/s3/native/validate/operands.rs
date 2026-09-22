@@ -1,16 +1,21 @@
 //! Operand schemas for native elements, text runs, and bindings.
 //! Each schema is exact: missing, duplicate, or foreign operands never pass.
 
+use oxc_allocator::HashSet;
+use vize_carton::{Allocator, Vec};
 use vize_s3::{
     op::{OpId, OpKind},
     operand::{Operand, OperandRole as Role, ValueKind},
 };
 
 use super::super::{Binding, BindingKind, Content, Expr, TextPart};
-use super::Result;
+use super::{
+    Result,
+    ident::{Folded, path_root, reference, trimmed},
+};
 use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained};
 
-pub(super) fn element<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
+pub(super) fn element<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Result<Content<'a>> {
     if values.iter().any(|value| value.role == Role::Comment) {
         return Err(LegacyReason::Operation.into());
     }
@@ -34,7 +39,8 @@ pub(super) fn element<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
     {
         return Err(LegacyReason::Element.into());
     }
-    let mut attributes = std::vec::Vec::new();
+    let mut attributes = Vec::new_in(&alloc);
+    let mut seen = HashSet::with_capacity_in(values.len(), alloc.as_oxc());
     for value in values {
         if value.target.is_some() || value.region.is_some() {
             return Err(LegacyReason::Structure.into());
@@ -44,11 +50,7 @@ pub(super) fn element<'a>(values: &[Operand<'a>]) -> Result<Content<'a>> {
             Role::Attribute => {
                 let name = value.name.ok_or(LegacyReason::Binding)?;
                 // The legacy parser reports repeats case-insensitively.
-                if !attribute_name(name)
-                    || attributes
-                        .iter()
-                        .any(|(seen, ..): &(&str, _, _)| seen.eq_ignore_ascii_case(name))
-                {
+                if !attribute_name(name) || !seen.insert(Folded(name)) {
                     return Err(LegacyReason::Binding.into());
                 }
                 let text = match value.value.kind {
@@ -76,7 +78,7 @@ pub(super) fn binding<'a>(
     if (kind, binding.value.kind, binding.value.text)
         == (OpKind::SetProp, ValueKind::Literal, "model")
     {
-        return super::model::model(values);
+        return super::model::model(values, retained.allocator());
     }
     // Generic ops carry several families (SetProp is also model/sync, a
     // Directive op also once/memo/cloak/custom). Select the family first.
@@ -107,16 +109,16 @@ pub(super) fn binding<'a>(
     }
     let value = one(values, Role::Value)?;
     let (name, modifiers) = if matches!(family, BindingKind::Prop | BindingKind::Event) {
-        named(values, family)?
+        named(values, family, retained.allocator())?
     } else if matches!(family, BindingKind::Spread | BindingKind::Handlers) {
         // The object form: an absent name and no modifiers.
         let name = one(values, Role::Name)?;
         if values.len() != 3 || name.value.kind != ValueKind::Absent {
             return Err(LegacyReason::Binding.into());
         }
-        ("", std::vec::Vec::new())
+        ("", Vec::new_in(&retained.allocator()))
     } else if values.len() == 2 {
-        ("", std::vec::Vec::new())
+        ("", Vec::new_in(&retained.allocator()))
     } else {
         return Err(LegacyReason::Binding.into());
     };
@@ -142,10 +144,11 @@ pub(super) fn binding<'a>(
 fn named<'a>(
     values: &[Operand<'a>],
     family: BindingKind,
-) -> Result<(&'a str, std::vec::Vec<&'a str>)> {
+    alloc: &'a Allocator,
+) -> Result<(&'a str, Vec<'a, &'a str>)> {
     let event = family == BindingKind::Event;
     let name = one(values, Role::Name)?;
-    let mut modifiers = std::vec::Vec::new();
+    let mut modifiers = Vec::new_in(&alloc);
     for value in values.iter().filter(|value| value.role == Role::Modifier) {
         if !event || value.value.kind != ValueKind::Literal || !event_name(value.value.text) {
             return Err(LegacyReason::Binding.into());
@@ -181,7 +184,7 @@ pub(super) fn text<'a>(values: &[Operand<'a>], retained: &Retained<'_, 'a>) -> R
     {
         return Err(AdmissionFailure::Invalid("invalid native text run"));
     }
-    let mut parts = std::vec::Vec::new();
+    let mut parts = Vec::new_in(&retained.allocator());
     for operand in values {
         let value = operand.value;
         let (value, dynamic) = match value.kind {
@@ -239,13 +242,12 @@ fn expression<'a>(
                     text: value.text,
                     js: Some(js),
                 },
-                None => Expr::plain(value.text.trim()),
+                None => Expr::plain(trimmed(value.text)),
             },
         );
     }
     // `$event`-rooted paths stay on the legacy lane (see the P3-6 record).
-    let root = value.text.trim().split('.').next().unwrap_or_default();
-    if root == "$event" && value.text.trim().split('.').all(identifier_segment) {
+    if path_root(value.text) == Some("$event") {
         return Err(LegacyReason::ExpressionOrEncoding.into());
     }
     let js = retained
@@ -268,16 +270,6 @@ fn context_reserved(text: &str) -> bool {
             .any(|name| text.contains(name))
 }
 
-fn identifier_segment(part: &str) -> bool {
-    let bytes = part.as_bytes();
-    bytes
-        .first()
-        .is_some_and(|b| b.is_ascii_alphabetic() || *b == b'_' || *b == b'$')
-        && bytes
-            .iter()
-            .all(|b| b.is_ascii_alphanumeric() || *b == b'_' || *b == b'$')
-}
-
 fn event_name(name: &str) -> bool {
     name.starts_with(|c: char| c.is_ascii_alphabetic())
         && name
@@ -294,15 +286,4 @@ fn attribute_name(name: &str) -> bool {
         && name
             .chars()
             .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
-}
-
-pub(in crate::s3) fn reference(value: &str) -> bool {
-    // A deliberately narrower grammar than JavaScript. The S3 producer has
-    // already classified it as JS; no reparsing or opaque reinterpretation.
-    let mut segments = value.trim().split('.');
-    let root = segments.next().unwrap_or_default();
-    identifier_segment(root)
-        && segments.all(identifier_segment)
-        && root != "$event"
-        && !oxc_syntax::keyword::is_reserved_keyword(root)
 }

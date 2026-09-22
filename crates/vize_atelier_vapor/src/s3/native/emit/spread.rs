@@ -26,15 +26,16 @@ impl<'a> Emitter<'a, '_> {
         let Content::Element { ref attributes, .. } = node.content else {
             unreachable!("bindings attach to elements")
         };
-        let mut entries: std::vec::Vec<(u32, Entry<'a>)> = (attributes.iter())
-            .map(|&(name, value, position)| {
+        let mut entries: Vec<'a, (u32, Entry<'a>)> = Vec::from_iter_in(
+            attributes.iter().map(|&(name, value, position)| {
                 // A valueless attribute is the empty string, as upstream binds it.
                 (
                     position,
                     Entry::Prop(name, Expr::plain(value.unwrap_or("")), true),
                 )
-            })
-            .collect();
+            }),
+            &self.allocator,
+        );
         for binding in &node.bindings {
             let entry = match binding.kind {
                 BindingKind::Spread => Entry::Object(binding.value),

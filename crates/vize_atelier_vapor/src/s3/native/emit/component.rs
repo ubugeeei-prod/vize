@@ -5,7 +5,7 @@ use vize_atelier_core::{SimpleExpressionNode, SourceLocation};
 use vize_carton::{Box, String, Vec};
 
 use super::super::{BindingKind, Content, Expr, Node, Prop};
-use super::Emitter;
+use super::{Emitter, take};
 use crate::ir::{
     BlockIRNode, ComponentKind, CreateComponentIRNode, IRProp, IRSlot, OperationNode,
     SlotOutletIRNode,
@@ -21,11 +21,17 @@ impl<'a> Emitter<'a, '_> {
         placement: Option<(usize, usize)>,
         block: &mut BlockIRNode<'a>,
     ) {
-        let Content::Component { tag, ref props, is } = self.artifact.nodes[index].content else {
+        let Content::Component {
+            tag,
+            ref mut props,
+            is,
+        } = self.artifact.nodes[index].content
+        else {
             unreachable!("component payload checked by the caller")
         };
-        let props = props.clone();
-        let children = self.artifact.nodes[index].children.clone();
+        // Each node is emitted once, so its payload moves out of the artifact.
+        let props = take(self.allocator, props);
+        let children = take(self.allocator, &mut self.artifact.nodes[index].children);
         // Named templates each render their content block and then take the
         // template's own id; otherwise the children are one slot, `default`
         // unless the component's own `v-slot` names it.
@@ -36,9 +42,8 @@ impl<'a> Emitter<'a, '_> {
             .is_some_and(|child| slot_of(&self.artifact.nodes[*child]).is_some());
         if named {
             for child in children {
-                let node = &self.artifact.nodes[child];
-                let slot = slot_of(node).expect("validated slot template");
-                let content = node.children.clone();
+                let slot = slot_of(&self.artifact.nodes[child]).expect("validated slot template");
+                let content = take(self.allocator, &mut self.artifact.nodes[child].children);
                 let block = self.block(&content);
                 self.id();
                 slots.push(self.slot(slot, block));
@@ -77,11 +82,15 @@ impl<'a> Emitter<'a, '_> {
     /// A `<slot>` outlet with its already assigned id; the fallback block is
     /// numbered after it.
     pub(super) fn outlet(&mut self, index: usize, id: usize, block: &mut BlockIRNode<'a>) {
-        let Content::Outlet { name, ref props } = self.artifact.nodes[index].content else {
+        let Content::Outlet {
+            name,
+            ref mut props,
+        } = self.artifact.nodes[index].content
+        else {
             unreachable!("outlet payload checked by the caller")
         };
-        let props = props.clone();
-        let children = self.artifact.nodes[index].children.clone();
+        let props = take(self.allocator, props);
+        let children = take(self.allocator, &mut self.artifact.nodes[index].children);
         let fallback = (!children.is_empty()).then(|| self.block(&children));
         let props = self.props(&props, false);
         let name = self.expression(Expr::plain(name), true);

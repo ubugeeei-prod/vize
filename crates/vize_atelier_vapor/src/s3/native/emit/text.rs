@@ -2,8 +2,9 @@
 //! one run with one DOM address. At a block root, a pure mixed run becomes one
 //! standalone text node; otherwise each part is its own node.
 
+use oxc_allocator::StringBuilder;
 use vize_atelier_core::SimpleExpressionNode;
-use vize_carton::{Box, String, Vec};
+use vize_carton::{Box, Vec};
 
 use super::super::{Content, TextPart};
 use super::{Emitter, escape};
@@ -32,10 +33,10 @@ impl<'a> Emitter<'a, '_> {
         {
             return false;
         }
-        let parts: std::vec::Vec<TextPart<'a>> = children
-            .iter()
-            .flat_map(|child| self.parts(*child).iter().copied())
-            .collect();
+        let parts: Vec<'a, TextPart<'a>> = Vec::from_iter_in(
+            (children.iter()).flat_map(|child| self.parts(*child).iter().copied()),
+            &self.allocator,
+        );
         if parts.len() < 2 || !parts.iter().any(|part| part.dynamic) {
             return false;
         }
@@ -64,8 +65,9 @@ impl<'a> Emitter<'a, '_> {
     /// Text parts at a block root: static text is its own template; each
     /// expression is a standalone updated text node.
     pub(super) fn text_roots(&mut self, index: usize, block: &mut BlockIRNode<'a>) {
-        let parts: std::vec::Vec<TextPart<'a>> = self.parts(index).to_vec();
-        for part in parts {
+        let parts: Vec<'a, TextPart<'a>> =
+            Vec::from_iter_in(self.parts(index).iter().copied(), &self.allocator);
+        for &part in parts.iter() {
             let id = self.id();
             if part.dynamic {
                 self.register(id, " ");
@@ -96,20 +98,22 @@ impl<'a> Emitter<'a, '_> {
         start: usize,
         parent: Option<usize>,
         offset: usize,
-        template: &mut String,
+        template: &mut StringBuilder<'a>,
         block: &mut BlockIRNode<'a>,
     ) -> usize {
         let end = children[start..]
             .iter()
             .position(|child| !matches!(self.artifact.nodes[*child].content, Content::Text { .. }))
             .map_or(children.len(), |length| start + length);
-        let parts: std::vec::Vec<TextPart<'a>> = children[start..end]
-            .iter()
-            .flat_map(|child| self.parts(*child).iter().copied())
-            .collect();
+        let parts: Vec<'a, TextPart<'a>> = Vec::from_iter_in(
+            children[start..end]
+                .iter()
+                .flat_map(|child| self.parts(*child).iter().copied()),
+            &self.allocator,
+        );
         let dynamic = parts.iter().any(|part| part.dynamic);
         let mut values: Values<'a> = Vec::new_in(&self.allocator);
-        for part in &parts {
+        for part in parts.iter() {
             if dynamic {
                 values.push(self.expression(part.value, !part.dynamic));
             }

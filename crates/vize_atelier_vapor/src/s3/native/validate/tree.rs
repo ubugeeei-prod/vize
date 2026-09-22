@@ -1,6 +1,7 @@
 //! Region ownership becomes the native tree: element children, branch roots,
 //! and loop bodies. Every owner is accounted for exactly once.
 
+use vize_carton::{Allocator, Vec};
 use vize_s3::op::Program;
 
 use super::super::{Content, Node};
@@ -10,23 +11,24 @@ use crate::s3::{AdmissionFailure, LegacyReason};
 /// Returns each node's owning node. Branch roots and loop bodies are owned by
 /// their control node, whose body starts a separate template. Owned regions
 /// move their members into the owner; the unowned root region stays.
-pub(super) fn assemble(
+pub(super) fn assemble<'a>(
     program: &Program<'_>,
-    nodes: &mut [Node<'_>],
+    nodes: &mut [Node<'a>],
     slots: &Slots,
-    regions: &mut [std::vec::Vec<usize>],
-) -> Result<std::vec::Vec<Option<usize>>> {
-    let mut owned = std::vec![false; nodes.len()];
-    let mut parents = std::vec![None; nodes.len()];
+    regions: &mut [Vec<'a, usize>],
+    alloc: &'a Allocator,
+) -> Result<Vec<'a, Option<usize>>> {
+    let mut owned = super::filled(alloc, false, nodes.len());
+    let mut parents = super::filled(alloc, None, nodes.len());
     for region in &program.regions {
         let Some(owner) = region.owner else { continue };
         let Some(&Some((index, _))) = slots.get(owner.index() as usize) else {
             return Err(LegacyReason::Structure.into());
         };
-        let children = regions
-            .get_mut(region.id.index() as usize)
-            .map(std::mem::take)
-            .unwrap_or_default();
+        let children = regions.get_mut(region.id.index() as usize).map_or_else(
+            || Vec::new_in(&alloc),
+            |members| std::mem::replace(members, Vec::new_in(&alloc)),
+        );
         if children.iter().any(|child| *child <= index) {
             return Err(LegacyReason::Structure.into());
         }
@@ -42,7 +44,7 @@ pub(super) fn assemble(
         match &mut nodes[index].content {
             Content::Element { tag, .. } => {
                 if std::mem::replace(&mut owned[index], true)
-                    || vize_carton::is_void_tag(tag) && !children.is_empty()
+                    || super::ident::admitted_void(tag) && !children.is_empty()
                 {
                     return Err(LegacyReason::Structure.into());
                 }
@@ -78,7 +80,7 @@ pub(super) fn assemble(
         }
         nodes[index].children = children;
     }
-    for (node, owned) in nodes.iter().zip(owned) {
+    for (node, &owned) in nodes.iter().zip(owned.iter()) {
         match &node.content {
             Content::Element { .. } | Content::Component { .. } | Content::Outlet { .. }
                 if !owned =>
@@ -146,8 +148,12 @@ fn closes_paragraph(tag: &str) -> bool {
 /// legacy parser reads authored markup, so the guard follows authored
 /// nesting, not template strings; components and outlets bound the scoped
 /// cases, and branches and loops are transparent. Parents precede children.
-pub(super) fn check_nesting(nodes: &[Node<'_>], parents: &[Option<usize>]) -> Result<()> {
-    let mut open = std::vec![(0_u8, 0_u32); nodes.len()];
+pub(super) fn check_nesting(
+    nodes: &[Node<'_>],
+    parents: &[Option<usize>],
+    alloc: &Allocator,
+) -> Result<()> {
+    let mut open = super::filled(alloc, (0_u8, 0_u32), nodes.len());
     for (index, node) in nodes.iter().enumerate() {
         let (mut flags, depth) = parents[index].map_or((0, 0), |parent| open[parent]);
         if let Some(parent) = parents[index] {

@@ -139,7 +139,7 @@ pub(crate) fn lower_source_for_vapor<'a>(
             return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
         }
         let mut s3 = vize_s2_to_s3::lower(allocator, &s2.root);
-        if markup::legacy_diagnosed(source, &s3.program) {
+        if markup::legacy_diagnosed(allocator, source, &s3.program) {
             return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
         }
         let mut retained = retained::Retained::collect(allocator, &s2.root);

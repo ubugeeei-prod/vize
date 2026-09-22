@@ -2,22 +2,26 @@
 //! element kind S2 recorded, and `lazy`/`number`/`trim` modifiers. The shared
 //! generator picks the text, checkbox or radio helper from the static `type`.
 
+use vize_carton::{Allocator, Vec};
 use vize_s3::{
     op::OpId,
     operand::{Operand, OperandRole as Role, ValueKind},
 };
 
 use super::super::{Binding, BindingKind, Content, Expr, Node};
-use super::{Result, operands::one, operands::reference};
+use super::{Result, ident::reference, operands::one};
 use crate::s3::LegacyReason;
 
-pub(super) fn model<'a>(values: &[Operand<'a>]) -> Result<(OpId, Binding<'a>)> {
+pub(super) fn model<'a>(
+    values: &[Operand<'a>],
+    alloc: &'a Allocator,
+) -> Result<(OpId, Binding<'a>)> {
     let kind = one(values, Role::BindingKind)?;
     let target = kind.target.ok_or(LegacyReason::Structure)?;
     let read = one(values, Role::ModelRead)?.value;
     let write = one(values, Role::ModelWrite)?.value;
     let mut element = None;
-    let mut modifiers = std::vec::Vec::new();
+    let mut modifiers = Vec::new_in(&alloc);
     for value in values {
         if value.target != Some(target) || value.region.is_some() {
             return Err(LegacyReason::Binding.into());

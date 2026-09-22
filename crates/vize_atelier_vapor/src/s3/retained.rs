@@ -9,8 +9,9 @@
 //! path cannot consume byte-equivalently stays on the legacy lane.
 
 use oxc_allocator::CloneIn;
+use oxc_allocator::HashMap;
 use vize_atelier_core::{JsExpression, retained::js_module_compatible};
-use vize_carton::{Allocator, FxHashMap, Span};
+use vize_carton::{Allocator, Span, Vec};
 use vize_s2::{
     expr::{ExprRef, JsExpr},
     op::{BindingOp, Op, Region},
@@ -18,23 +19,29 @@ use vize_s2::{
 
 pub(crate) struct Retained<'s, 'a> {
     allocator: &'a Allocator,
-    source: FxHashMap<(u32, u32), &'s JsExpr<'s>>,
-    parsed: FxHashMap<(u32, u32), JsExpression<'a>>,
+    // Arena tables: one compile owns them, so they never touch the heap.
+    source: HashMap<'a, (u32, u32), &'s JsExpr<'s>>,
+    parsed: HashMap<'a, (u32, u32), JsExpression<'a>>,
 }
 
 impl<'s, 'a> Retained<'s, 'a> {
     pub(crate) fn new(allocator: &'a Allocator) -> Self {
         Self {
             allocator,
-            source: FxHashMap::default(),
-            parsed: FxHashMap::default(),
+            source: HashMap::new_in(allocator.as_oxc()),
+            parsed: HashMap::new_in(allocator.as_oxc()),
         }
+    }
+
+    /// The output arena, which also holds the admitted native payload.
+    pub(crate) const fn allocator(&self) -> &'a Allocator {
+        self.allocator
     }
 
     /// Index every retained expression in positions the native route reads.
     pub(crate) fn collect(allocator: &'a Allocator, root: &'s Region<'s>) -> Self {
         let mut retained = Self::new(allocator);
-        let mut pending = std::vec![root];
+        let mut pending = Vec::from_value_in(root, &allocator);
         while let Some(region) = pending.pop() {
             for op in &region.ops {
                 match op {

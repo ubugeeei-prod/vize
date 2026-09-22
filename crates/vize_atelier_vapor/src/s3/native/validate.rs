@@ -5,6 +5,7 @@
 mod attach;
 mod component;
 mod control;
+mod ident;
 mod model;
 mod operands;
 mod order;
@@ -14,6 +15,7 @@ mod tree;
 
 use std::borrow::Cow;
 
+use vize_carton::{Allocator, Vec};
 use vize_s3::{
     op::{EdgeKind, OpId, OpKind, Phase, Program, RegionId},
     operand::{Operand, OperandRole as Role},
@@ -22,7 +24,7 @@ use vize_s3::{
 use super::{Content, NativeArtifact, Node};
 use crate::s3::{AdmissionFailure, LegacyReason, retained::Retained, templates::TemplateLoop};
 
-pub(in crate::s3) use operands::reference;
+pub(in crate::s3) use ident::{admitted_void, reference};
 
 type Result<T> = core::result::Result<T, AdmissionFailure>;
 
@@ -41,18 +43,23 @@ pub(super) fn admit<'a>(
     if (program.ops.iter().enumerate()).any(|(index, op)| op.id.index() as usize != index) {
         return Err(AdmissionFailure::Invalid("op ids are not dense"));
     }
-    let (operands, starts) = by_op(program)?;
-    let controlled = control::controlled_regions(program)?;
+    // Admission tables and the payload live in the output arena: one compile
+    // owns them, and bump allocation keeps admission off the global heap.
+    let alloc = retained.allocator();
+    let (operands, starts) = by_op(program, alloc)?;
+    let controlled = control::controlled_regions(program, alloc)?;
     let count = program.ops.len();
-    let mut nodes = std::vec::Vec::with_capacity(count);
-    let mut slots = std::vec![None; count];
+    let mut nodes = Vec::with_capacity_in(count, &alloc);
+    let mut slots = filled(alloc, None, count);
     // Node indexes of each region, in source order.
-    let mut regions: std::vec::Vec<std::vec::Vec<usize>> =
-        std::vec![std::vec::Vec::new(); program.regions.len()];
-    let mut bindings = std::vec::Vec::new();
-    let mut edges = std::vec::Vec::with_capacity(program.edges.len());
-    let mut last_in_region: std::vec::Vec<Option<OpId>> = std::vec![None; program.regions.len()];
-    let mut last_binding: std::vec::Vec<Option<OpId>> = std::vec![None; count];
+    let mut regions: Vec<'a, Vec<'a, usize>> = Vec::from_iter_in(
+        (0..program.regions.len()).map(|_| Vec::new_in(&alloc)),
+        &alloc,
+    );
+    let mut bindings = Vec::new_in(&alloc);
+    let mut edges = Vec::with_capacity_in(program.edges.len(), &alloc);
+    let mut last_in_region: Vec<'a, Option<OpId>> = filled(alloc, None, program.regions.len());
+    let mut last_binding: Vec<'a, Option<OpId>> = filled(alloc, None, count);
     let mut last_effect = None;
     for (index, op) in program.ops.iter().enumerate() {
         if op.effect.is_some()
@@ -62,7 +69,7 @@ pub(super) fn admit<'a>(
         }
         let values = &operands[starts[index]..starts[index + 1]];
         let content = match op.kind {
-            OpKind::InsertNode => operands::element(values)?,
+            OpKind::InsertNode => operands::element(values, alloc)?,
             OpKind::SetText if values.iter().all(|value| value.role == Role::Text) => {
                 operands::text(values, retained)?
             }
@@ -79,7 +86,7 @@ pub(super) fn admit<'a>(
                     || values.iter().any(|value| value.role == Role::BindingKind) =>
             {
                 let (target, mut binding) = if op.kind == OpKind::SlotOutlet {
-                    slots::slot(values)?
+                    slots::slot(values, alloc)?
                 } else {
                     operands::binding(values, op.kind, retained)?
                 };
@@ -106,8 +113,8 @@ pub(super) fn admit<'a>(
                     .map(|(_, key)| *key);
                 control::for_loop(values, retained, carrier)?
             }
-            OpKind::CreateComponent => component::component(values)?,
-            OpKind::SlotOutlet => component::outlet(values)?,
+            OpKind::CreateComponent => component::component(values, alloc)?,
+            OpKind::SlotOutlet => component::outlet(values, alloc)?,
             _ => return Err(LegacyReason::Operation.into()),
         };
         let region = op.region.index() as usize;
@@ -139,19 +146,22 @@ pub(super) fn admit<'a>(
         slots[index] = Some((nodes.len(), op.region));
         nodes.push(Node {
             content,
-            children: std::vec::Vec::new(),
-            bindings: std::vec::Vec::new(),
+            children: Vec::new_in(&alloc),
+            bindings: Vec::new_in(&alloc),
         });
     }
-    order::check(program, edges)?;
-    let parents = tree::assemble(program, &mut nodes, &slots, &mut regions)?;
-    attach::bindings(&mut nodes, &slots, &parents, bindings)?;
+    order::check(program, edges, alloc)?;
+    let parents = tree::assemble(program, &mut nodes, &slots, &mut regions, alloc)?;
+    attach::bindings(&mut nodes, &slots, &parents, bindings, alloc)?;
     slots::check(&nodes, &parents)?;
     model::check(&nodes)?;
     spread::check(&nodes)?;
-    tree::check_nesting(&nodes, &parents)?;
+    tree::check_nesting(&nodes, &parents, alloc)?;
     // The root fragment may hold several nodes, text included.
-    let roots = std::mem::take(&mut regions[RegionId::ROOT.index() as usize]);
+    let roots = std::mem::replace(
+        &mut regions[RegionId::ROOT.index() as usize],
+        Vec::new_in(&alloc),
+    );
     if roots.is_empty() {
         return Err(LegacyReason::Structure.into());
     }
@@ -162,8 +172,9 @@ pub(super) fn admit<'a>(
 /// the producer already emitted them by op, else a counting sort.
 fn by_op<'p, 'a>(
     program: &'p Program<'a>,
-) -> Result<(Cow<'p, [Operand<'a>]>, std::vec::Vec<usize>)> {
-    let mut starts = std::vec![0_usize; program.ops.len() + 1];
+    alloc: &'a Allocator,
+) -> Result<(Cow<'p, [Operand<'a>]>, Vec<'a, usize>)> {
+    let mut starts = filled(alloc, 0_usize, program.ops.len() + 1);
     for operand in &program.operands {
         *starts
             .get_mut(operand.op.index() as usize + 1)
@@ -175,7 +186,7 @@ fn by_op<'p, 'a>(
     let operands = if program.operands.is_sorted_by_key(|operand| operand.op) {
         Cow::Borrowed(&program.operands[..])
     } else {
-        let mut cursor = starts.clone();
+        let mut cursor = starts.to_vec();
         let mut placed = program.operands.to_vec();
         for operand in &program.operands {
             let slot = &mut cursor[operand.op.index() as usize];
@@ -185,4 +196,11 @@ fn by_op<'p, 'a>(
         Cow::Owned(placed)
     };
     Ok((operands, starts))
+}
+
+/// `len` copies of `value` in the arena (`vec![value; len]`).
+fn filled<'a, T: Clone>(alloc: &'a Allocator, value: T, len: usize) -> Vec<'a, T> {
+    let mut table = Vec::with_capacity_in(len, &alloc);
+    table.resize(len, value);
+    table
 }

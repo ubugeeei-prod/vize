@@ -1,5 +1,6 @@
 //! Source order must agree with the explicit S3 ordering edges exactly.
 
+use vize_carton::{Allocator, Vec};
 use vize_s3::op::{EdgeKind, OpId, Program};
 
 use super::Result;
@@ -16,12 +17,15 @@ pub(super) fn edge(from: OpId, to: OpId, kind: EdgeKind) -> Edge {
 /// within each region, binding order per target, and effect order. Comparing
 /// sorted multisets consumes each obligation once, so repeating an edge
 /// cannot conceal a missing dependency even when the counts agree.
-pub(super) fn check(program: &Program<'_>, mut expected: std::vec::Vec<Edge>) -> Result<()> {
-    let mut actual: std::vec::Vec<Edge> = program
-        .edges
-        .iter()
-        .map(|state| edge(state.from, state.to, state.kind))
-        .collect();
+pub(super) fn check<'a>(
+    program: &Program<'_>,
+    mut expected: Vec<'a, Edge>,
+    alloc: &'a Allocator,
+) -> Result<()> {
+    let mut actual = Vec::from_iter_in(
+        (program.edges.iter()).map(|state| edge(state.from, state.to, state.kind)),
+        &alloc,
+    );
     expected.sort_unstable();
     actual.sort_unstable();
     if actual != expected {
