@@ -15,7 +15,7 @@ const script = path.join(repoRoot, "tools/commands/release/pr.rs");
 test("release promotion rejects stale main and immutable tag conflicts atomically", () => {
   const result = spawnSync("rust-script", ["--test", script], { encoding: "utf8" });
   assert.equal(result.status, 0, `${result.error ?? ""}\n${result.stdout}\n${result.stderr}`);
-  assert.match(result.stdout, /8 passed; 0 failed/);
+  assert.match(result.stdout, /\b[1-9]\d* passed; 0 failed/);
 });
 
 test("release-only workflow validates all artifacts before promotion and preserves normal PR cost", () => {

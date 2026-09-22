@@ -15,7 +15,9 @@ pub fn validate_release_run(
         let number = title
             .strip_prefix(&prefix)
             .and_then(|s| s.strip_suffix(&suffix));
-        if !number.is_some_and(|n| n.parse::<u64>().is_ok_and(|n| n > 0)) {
+        if !number.is_some_and(|n| {
+            !n.is_empty() && !n.starts_with('0') && n.bytes().all(|byte| byte.is_ascii_digit())
+        }) {
             return Err("Release run does not match the failed exact-tag release contract: invalid candidate title".into());
         }
     }
@@ -107,9 +109,12 @@ pub fn validate_release_jobs(jobs: &[Value]) -> Result<(), String> {
         ));
     }
 
-    let candidate = jobs
-        .iter()
-        .any(|job| job.get("name").and_then(Value::as_str) == Some("Release candidate ready"));
+    let candidate = jobs.iter().any(|job| {
+        matches!(
+            job.get("name").and_then(Value::as_str),
+            Some("Release candidate ready" | "Authorize release candidate")
+        )
+    });
     let required = if candidate {
         &[
             "Build release npm packages",

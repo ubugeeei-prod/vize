@@ -123,7 +123,7 @@ fn prepare_and_open(bump: &str, repository: &str, work: &Path) -> Result<(), Str
     .is_empty()
     {
         return Err(format!(
-            "{branch} already exists; use vp run release --resume <PR>."
+            "{branch} already exists. Find its PR with gh pr list --repo {repository} --head {branch} --state all, then use vp run release --resume <PR>. If creation previously failed and no PR exists, inspect and remove that orphan branch before retrying."
         ));
     }
     github::git(
@@ -151,7 +151,9 @@ fn prepare_and_open(bump: &str, repository: &str, work: &Path) -> Result<(), Str
         work,
     );
     let _ = fs::remove_file(&body);
-    let url = created?;
+    let url = created.map_err(|error| format!(
+        "{error}\nThe pushed branch {branch} is preserved: a failed response does not prove GitHub did not create the PR. Check gh pr list --repo {repository} --head {branch} --state all and resume that PR. If no PR exists, inspect and delete the orphan with git push origin --delete {branch}, then retry."
+    ))?;
     println!("{url}");
     let number = url
         .rsplit('/')

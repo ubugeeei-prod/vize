@@ -89,7 +89,7 @@ validated Release workflow reach a terminal failure at the new package's OIDC pu
 job. Record that Release run ID, then send the fixed `npm-bootstrap` repository
 dispatch:
 
-Freeze `main` from creation of the fresh tag until GitHub has accepted the
+Freeze `main` from the release PR's atomic promotion (which creates its tag) until GitHub has accepted the
 repository dispatch and the bootstrap run has started. Disable PR auto-merge
 and allow neither direct pushes nor other merges during that window. If the
 bootstrap reports that the tag and repository-dispatch SHA differ, stop and
@@ -110,7 +110,9 @@ requires the tag commit to equal that repository-dispatch SHA and to be on
 `origin/main`'s first-parent history. It also binds the tag, workspace, and
 package versions, and queries the supplied Release run before any credential is
 available. The run must be the completed failed `.github/workflows/release.yml`
-tag run for the same SHA. Its package build, release preflight, and tarball smoke
+candidate `workflow_dispatch` run initiated for that release PR and exact SHA,
+with title `Release vX.Y.Z PR #N @ SHA`; promotion creates the tag inside that
+same run. Its package build, candidate authorization, preflight, promotion and tarball smoke
 jobs must be successful, while only the target package publish job is required
 to have failed. The exact package artifact from that run is downloaded,
 identity-checked, manifest-normalized, and smoke-installed again. The workflow

@@ -179,11 +179,29 @@ test("npm bootstrap recovers a promoted PR run only after all candidate gates pa
     conclusion: "skipped",
   });
   assert.doesNotThrow(() => validateReleaseJobs(jobs));
-  for (const name of gates) {
-    assert.throws(
-      () => validateReleaseJobs(jobs.filter((job) => job.name !== name)),
-      /exactly one/,
+  const rustJobs = (candidateJobs: typeof jobs) =>
+    spawnSync(
+      "rust-script",
+      [
+        "--force",
+        path.join(repoRoot, "tools/commands/ci/github/npm-bootstrap-preflight.rs"),
+        "__contract",
+        "release-jobs",
+        JSON.stringify({ jobs: candidateJobs }),
+      ],
+      { encoding: "utf8" },
     );
+  const validJobs = rustJobs(jobs);
+  assert.equal(validJobs.status, 0, validJobs.stderr);
+  for (const name of gates) {
+    const missing = jobs.filter((job) => job.name !== name);
+    const expected = new RegExp(
+      `exactly one ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} job, found 0`,
+    );
+    assert.throws(() => validateReleaseJobs(missing), expected);
+    const rejected = rustJobs(missing);
+    assert.notEqual(rejected.status, 0, name);
+    assert.match(rejected.stderr, expected);
   }
   assert.doesNotThrow(() =>
     validateReleaseArtifact({
@@ -215,6 +233,7 @@ test("Rust recovery accepts the exact promoted candidate and rejects stale ident
     spawnSync(
       "rust-script",
       [
+        "--force",
         command,
         "__contract",
         "release-run",
@@ -228,7 +247,19 @@ test("Rust recovery accepts the exact promoted candidate and rejects stale ident
     { head_sha: "d".repeat(40) },
     { head_branch: "main" },
     { display_title: "manual handoff" },
+    ...["0", "0042", "+42", "42x", "４２"].map((number) => ({
+      display_title: `Release ${tagName} PR #${number} @ ${tagSha}`,
+    })),
   ]) {
-    assert.notEqual(invoke({ ...run, ...changed }).status, 0);
+    assert.throws(() =>
+      validateReleaseRun({
+        run: { ...run, ...changed },
+        releaseRunId,
+        repository,
+        tagName,
+        tagSha,
+      }),
+    );
+    assert.notEqual(invoke({ ...run, ...changed }).status, 0, JSON.stringify(changed));
   }
 });

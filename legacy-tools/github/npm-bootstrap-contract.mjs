@@ -164,7 +164,9 @@ export function validateReleaseJobs(jobs) {
     );
   }
 
-  const candidate = jobs.some((job) => job.name === "Release candidate ready");
+  const candidate = jobs.some(
+    (job) => job.name === "Release candidate ready" || job.name === "Authorize release candidate",
+  );
   const required = candidate
     ? [
         "Build release npm packages",

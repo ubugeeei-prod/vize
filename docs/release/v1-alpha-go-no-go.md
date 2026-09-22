@@ -47,18 +47,22 @@ vp run --filter './npm/builder/vite-musea' build
 vp run --filter './npm/native' build:debug
 ```
 
-## Tag Gate
+## Release PR and Promotion Gate
 
-- [ ] Release captain confirms the worktree is clean and on `main`.
-- [ ] Release captain runs the release preparation script:
+- [ ] Release captain starts the command from an authenticated maintainer/admin checkout:
 
 ```bash
-moon run --target native tools/moon/cmd/release -- alpha -y
+vp run release alpha -y
 ```
 
-- [ ] The release commit is pushed to `main`.
-- [ ] The `vX.Y.Z-alpha.N` tag exists on GitHub and points at the release commit.
-- [ ] The [Release](../../.github/workflows/release.yml) workflow starts from the tag.
+- [ ] The command opens a release PR whose author has the maintain or admin role.
+- [ ] Required PR checks and **Release candidate ready** pass for the exact PR head.
+- [ ] The PR is based on the latest `main` immediately before promotion; if `main` advances,
+      the command refreshes the version commit and repeats validation.
+- [ ] Atomic promotion fast-forwards `main`, merges the PR and creates `vX.Y.Z-alpha.N`
+      at that same validated commit. Do not squash-merge or manually push a release tag.
+- [ ] The original dispatched [Release](../../.github/workflows/release.yml) run observes
+      promotion and publishes its prevalidated artifacts. No tag-triggered run is expected.
 
 ## Publish Gate
 
