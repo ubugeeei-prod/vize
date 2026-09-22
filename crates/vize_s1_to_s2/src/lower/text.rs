@@ -189,7 +189,11 @@ const _: () = {
 ///
 /// [`OpaqueExpr::source`]: vize_s2::expr::OpaqueExpr::source
 pub fn rebuild_source(parts: &[TextPart]) -> String {
-    let mut out = String::default();
+    // `{{ ` and ` }}` add six bytes per expression; one allocation suffices.
+    let capacity = (parts.iter())
+        .map(|part| part.text.len() + if part.dynamic { 6 } else { 0 })
+        .sum();
+    let mut out = String::with_capacity(capacity);
     for part in parts {
         if part.dynamic {
             out.push_str("{{ ");
