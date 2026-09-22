@@ -67,3 +67,23 @@ pub(in crate::emit) fn emit_array_child(
         })
     })
 }
+
+/// A conditional slot entry's branch-root element (`if_branch_root`): the
+/// shipped hoist walk leaves the element itself inline and hoists only its
+/// children (P3-17).
+pub(in crate::emit) fn emit_branch_root_element(
+    cx: &mut EmitCx<'_>,
+    element: &vize_s2::op::ElementOp<'_>,
+) -> Result<(), EmitError> {
+    let id = cx.walk.mint();
+    cx.with_static_vnode_hoist(true, |cx| {
+        cx.walk.skip(element.bindings.len());
+        if super::super::once::emit_hoisted_child(cx, element)? {
+            return Ok(());
+        }
+        cx.slot_if_branch_root = true;
+        let emitted = super::emit_nested(cx, element, id);
+        cx.slot_if_branch_root = false;
+        emitted
+    })
+}

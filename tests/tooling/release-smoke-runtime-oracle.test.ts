@@ -27,7 +27,10 @@ import path from "node:path";
 export function runFreshProjectInitChecks(context) {
   assert.deepEqual([...context.packed.keys()], ["@vizejs/other-platform", "vize"]);
   assert.deepEqual([...context.versions.values()], ["0.0.0-oracle", "0.0.0-oracle"]);
-  for (const tarball of context.packed.values()) assert.ok(fs.statSync(tarball).isFile());
+  for (const tarball of context.packed.values()) {
+    assert.ok(fs.statSync(tarball).isFile());
+    assert.equal(tarball, fs.realpathSync.native(tarball));
+  }
   assert.equal(context.repoRoot, fs.realpathSync(process.env.VIZE_REPO_ROOT));
   assert.equal(context.installDir, process.cwd());
   assert.equal(context.tempDir, path.dirname(context.installDir));

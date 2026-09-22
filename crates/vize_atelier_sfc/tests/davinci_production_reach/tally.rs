@@ -70,7 +70,11 @@ pub struct Tally {
     pub unrecorded_samples: Vec<String>,
     /// `compile_sfc` errors per error code (not templates this shape reached).
     pub sfc_errors: BTreeMap<String, u64>,
-    /// Accepted DOM templates compared against the forced legacy lane.
+    /// Croquis-refused DOM templates S2 emits under the projection
+    /// (`with_croquis_projection`): parity-ready, not yet selected.
+    pub ready: u64,
+    /// DOM templates (accepted or parity-ready) compared against the forced
+    /// legacy lane.
     pub compared: u64,
     /// Byte divergences between the selected and the forced legacy lane.
     pub divergences: Vec<String>,
@@ -98,12 +102,13 @@ impl Tally {
 
     pub fn line(&self, shape: Shape) -> String {
         format!(
-            "davinci production reach: shape={} stage={:?} templates={} accepted={} permille={} legacy={:?} rejected={} unrecorded={} sfc_errors={:?} compared={} divergences={}",
+            "davinci production reach: shape={} stage={:?} templates={} accepted={} permille={} ready={} legacy={:?} rejected={} unrecorded={} sfc_errors={:?} compared={} divergences={}",
             shape.id(),
             shape.stage(),
             self.templates,
             self.accepted,
             self.permille(),
+            self.ready,
             self.legacy,
             self.rejected,
             self.unrecorded,
@@ -118,6 +123,7 @@ impl Tally {
 #[derive(Debug, Clone, Copy)]
 pub struct Floor {
     pub accepted_min: u64,
+    pub ready_min: u64,
     pub templates_min: u64,
 }
 
@@ -149,6 +155,7 @@ pub fn floors() -> BTreeMap<String, Floor> {
             id.clone(),
             Floor {
                 accepted_min: field(entry, id, "accepted_min"),
+                ready_min: field(entry, id, "ready_min"),
                 templates_min: field(entry, id, "templates_min"),
             },
         );

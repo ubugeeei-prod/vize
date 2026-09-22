@@ -11,6 +11,7 @@ use vize_atelier_core::{
 };
 use vize_s0::{Allocator, String};
 
+mod croquis_facts;
 mod inner;
 #[cfg(feature = "davinci-differential")]
 pub(crate) mod legacy;

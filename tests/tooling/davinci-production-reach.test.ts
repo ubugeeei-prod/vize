@@ -45,7 +45,7 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
   const section = reachSection(budgets);
   const entries = [
     ...section.matchAll(
-      /^(?<id>[a-z_]+) = \{ accepted_min = (?<accepted>\d+), templates_min = (?<templates>\d+) \}$/gmu,
+      /^(?<id>[a-z_]+) = \{ accepted_min = (?<accepted>\d+), ready_min = (?<ready>\d+), templates_min = (?<templates>\d+) \}$/gmu,
     ),
   ];
   assert.deepEqual(

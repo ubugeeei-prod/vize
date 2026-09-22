@@ -233,9 +233,15 @@ pub(super) fn emit_slot_object(
         .as_ref()
         .map(|expr| expr.source())
         .filter(|source| !source.is_empty());
-    crate::emit::outlet::with_slot_params(cx, params, |cx| {
+    // `hoist_static_inner` only hoists *inside* a `v-if` branch root, and a
+    // conditional slot template's lone component child is that root.
+    let branch_root = key.is_some() && lone_branch_root_child(&element.children);
+    let previous_branch_root = core::mem::replace(&mut cx.slot_if_branch_root, branch_root);
+    let emitted = crate::emit::outlet::with_slot_params(cx, params, |cx| {
         emit_template_pieces(cx, &element.children, &mut pieces)
-    })?;
+    });
+    cx.slot_if_branch_root = previous_branch_root;
+    emitted?;
     for (i, piece) in pieces.iter().enumerate() {
         if i > 0 {
             cx.buf.push(",");
@@ -315,4 +321,19 @@ fn fold_name(base: &str, modifiers: &[&str]) -> String {
         text.push_str(modifier);
     }
     text
+}
+
+/// `if_branch_root`: a slot template wrapping exactly one non-template
+/// element or component makes that child the branch root.
+fn lone_branch_root_child(region: &vize_s2::op::Region<'_>) -> bool {
+    use vize_s2::op::Op;
+    let mut children = region
+        .ops
+        .iter()
+        .filter(|op| !crate::emit::slots::is_whitespace_text(op));
+    match (children.next(), children.next()) {
+        (Some(Op::Component(_)), None) => true,
+        (Some(Op::Element(element)), None) => element.tag != "template",
+        _ => false,
+    }
 }

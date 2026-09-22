@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -33,5 +34,17 @@ test("native smoke keeps MoonBit out of the npm fresh install path", () => {
   assert.match(freshJob, /vp run --filter '\.\/npm\/cli' build/);
   // Installed-package assertions import the shared semver test helper. The
   // root owns that dependency; selecting only npm package closures misses it.
-  assert.match(freshJob, /vp install --frozen-lockfile --prefer-offline \\\n\s+--filter \. \\/);
+  const parsed = parse(workflow) as {
+    jobs: Record<string, { steps: Array<{ run?: string }> }>;
+  };
+  const install = parsed.jobs["fresh-install-smoke"].steps
+    .map((step) =>
+      step.run
+        ?.replace(/\\\r?\n/gu, " ")
+        .replace(/\s+/gu, " ")
+        .trim(),
+    )
+    .find((command) => command?.startsWith("vp install "));
+  assert.ok(install, "fresh smoke must install its helper dependencies");
+  assert.match(install, /(?:^| )--filter \.(?: |$)/u);
 });

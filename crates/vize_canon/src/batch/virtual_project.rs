@@ -101,6 +101,8 @@ pub use tsconfig_gen::{
     snapshot_tsconfig_compiler_options,
 };
 mod tsconfig_paths;
+// The Corsa session key (P5-8) digests the same `extends` chain.
+pub(crate) use tsconfig_paths::{parse_jsonc_value, resolve_extended_tsconfig_path};
 mod vue_codegen;
 mod vue_compiler_comments;
 
