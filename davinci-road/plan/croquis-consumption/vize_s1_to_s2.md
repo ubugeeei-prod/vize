@@ -19,12 +19,12 @@ _None._
 | product            | resolved | grep |
 | ------------------ | -------: | ---: |
 | `BindingMetadata`  |        0 |    1 |
-| `Croquis`          |        0 |    4 |
+| `Croquis`          |        0 |    5 |
 | `Scope`            |        0 |    2 |
 | `ScopeBinding`     |        0 |   11 |
 | `ScopeChain`       |        0 |    1 |
-| `Span`             |        0 |  166 |
+| `Span`             |        0 |  175 |
 | `Symbol`           |        0 |    1 |
-| `Croquis.bindings` |        0 |  241 |
+| `Croquis.bindings` |        0 |  244 |
 | `Croquis.hoists`   |        0 |    6 |
 | `Croquis.scopes`   |        0 |   10 |
