@@ -4705,7 +4705,7 @@ dependencies = [
  "oxc_span",
  "oxc_syntax",
  "oxc_transformer",
- "sha2",
+ "sha2 0.11.0",
  "smallvec",
  "toml",
  "vize_atelier_core",
