@@ -191,9 +191,8 @@ async function open(
 }
 
 async function published(session: LspSession, uri: string): Promise<Diagnostic[]> {
-  const params = await session.waitForNotification(
-    "textDocument/publishDiagnostics",
-    (value) => isDiagnosticsForUri(value, uri),
+  const params = await session.waitForNotification("textDocument/publishDiagnostics", (value) =>
+    isDiagnosticsForUri(value, uri),
   );
   return (params as { diagnostics: Diagnostic[] }).diagnostics;
 }

@@ -6,7 +6,7 @@ use vize_davinci::diagnostic::Diagnostic;
 use vize_s0::{Allocator, Span};
 use vize_s1::parse;
 use vize_s1_to_s2::lower;
-use vize_s1_to_s2::partial::{partial_facts, HoleFact, HoleKind, PartialFacts, ScopeRole};
+use vize_s1_to_s2::partial::{HoleFact, HoleKind, PartialFacts, ScopeRole, partial_facts};
 
 fn analyze(source: &str) -> (PartialFacts, Vec<Diagnostic>) {
     let allocator = Allocator::new();

@@ -13,7 +13,7 @@ use vize_s2::op::{BindingOp, Op};
 use vize_s2::scope::ScopeOrigin;
 
 use crate::lower::Lowered;
-use crate::pass::walk::{visit_ops, PageWalk};
+use crate::pass::walk::{PageWalk, visit_ops};
 
 use super::{FragmentKind, HoleFact, HoleKind};
 

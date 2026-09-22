@@ -119,7 +119,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                 |       22 |   29 |
 | `ScopeKind`               |       59 |   76 |
 | `SlotUsage`               |        1 |    3 |
-| `Span`                    |        0 |   53 |
+| `Span`                    |        0 |   58 |
 | `SpreadProp`              |        6 |   10 |
 | `Symbol`                  |        0 |    4 |
 | `SymbolId`                |        0 |    3 |
@@ -130,7 +130,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `TypeResolver`            |        0 |    5 |
 | `VForScopeData`           |        4 |    5 |
 | `VSlotScopeData`          |        4 |    5 |
-| `Croquis.bindings`        |       39 |   81 |
+| `Croquis.bindings`        |       39 |   84 |
 | `Croquis.macros`          |       75 |   76 |
 | `Croquis.scopes`          |       59 |   61 |
 | `Croquis.types`           |        9 |   17 |

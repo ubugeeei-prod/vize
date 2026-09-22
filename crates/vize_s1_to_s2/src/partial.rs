@@ -14,11 +14,11 @@ use alloc::vec::Vec;
 
 use vize_davinci::fact::FactManager;
 use vize_s0::{Allocator, Span, String};
-use vize_s1::{parse, SurfaceTree};
+use vize_s1::{SurfaceTree, parse};
 
-use crate::lower::{lower, Lowered};
+use crate::lower::{Lowered, lower};
 
-use facts::{PartialHoles, PartialRegions, PartialScopes, TemplateFacts, REGISTRY};
+use facts::{PartialHoles, PartialRegions, PartialScopes, REGISTRY, TemplateFacts};
 use page::collect;
 
 /// An S1 hole that a kept fragment was lowered beside.

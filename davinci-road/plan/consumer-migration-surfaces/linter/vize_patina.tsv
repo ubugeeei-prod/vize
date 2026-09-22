@@ -63,19 +63,24 @@ linter	Linter	source	crates/vize_patina/src/linter/corsa_session/probe.rs	8	s0	S
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/session.rs	16	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/corsa_session/session/tests.rs	6	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/css_rules.rs	20	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/linter/engine.rs	27	s0	S0	stage	vize_s0	preferred	5
-linter	Linter	source	crates/vize_patina/src/linter/engine.rs	27	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/linter/engine.rs	27	old_ast	old AST/parser	old	vize_armature	legacy	1
-linter	Linter	source	crates/vize_patina/src/linter/engine.rs	27	croquis	Croquis analysis	old	vize_croquis	legacy	1
-linter	Linter	source	crates/vize_patina/src/linter/engine.rs	27	raw_oxc	raw OXC	raw	oxc_allocator	raw	4
+linter	Linter	source	crates/vize_patina/src/linter/engine.rs	25	s0	S0	stage	vize_s0	preferred	5
+linter	Linter	source	crates/vize_patina/src/linter/engine.rs	25	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/engine.rs	25	old_ast	old AST/parser	old	vize_armature	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/engine.rs	25	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/engine.rs	25	raw_oxc	raw OXC	raw	oxc_allocator	raw	4
 linter	Linter	source	crates/vize_patina/src/linter/engine/jsx.rs	12	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize_patina/src/linter/engine/jsx.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/linter/engine/jsx.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
 linter	Linter	source	crates/vize_patina/src/linter/engine/parse_diagnostics.rs	5	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/engine/parse_diagnostics.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/linter/engine/script.rs	1	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/linter/engine/sfc.rs	8	s0	S0	stage	vize_s0	preferred	2
-linter	Linter	source	crates/vize_patina/src/linter/engine/sfc.rs	8	old_ast	old AST/parser	old	vize_armature	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/engine/sfc.rs	9	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize_patina/src/linter/engine/sfc.rs	9	old_ast	old AST/parser	old	vize_armature	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/engine/sfc/facade.rs	11	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/linter/engine/sfc/facade.rs	11	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/engine/sfc/facade.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/engine/sfc/facade/tests.rs	6	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/engine/sfc/facade/tests.rs	6	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/linter/engine/sfc/pug.rs	13	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/engine/template_extract.rs	4	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	test/dev	crates/vize_patina/src/linter/engine/template_extract.rs	113	s0	S0	stage	vize_s0	preferred	1

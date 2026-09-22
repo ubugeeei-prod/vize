@@ -67,13 +67,7 @@ impl InlayHintService {
         let mut hints = Vec::new();
 
         if ecosystem_enabled {
-            ecosystem::i18n::collect_inlay_hints(
-                content,
-                descriptor,
-                Some(uri),
-                range,
-                &mut hints,
-            );
+            ecosystem::i18n::collect_inlay_hints(content, descriptor, Some(uri), range, &mut hints);
         }
 
         // Use the Croquis drawer for proper scope analysis.

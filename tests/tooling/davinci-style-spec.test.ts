@@ -134,9 +134,7 @@ test("a rule without a pair fails the bijection", () => {
 
 test("a pair missing output.vue fails the bijection", () => {
   const { spec, dirs } = load();
-  const broken = dirs.map((dir) =>
-    dir.id === "S01" ? { id: dir.id, files: ["input.vue"] } : dir,
-  );
+  const broken = dirs.map((dir) => (dir.id === "S01" ? { id: dir.id, files: ["input.vue"] } : dir));
   assert.deepEqual(bijectionViolations(spec, broken), ["fixture S01 is missing output.vue"]);
 });
 

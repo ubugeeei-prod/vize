@@ -118,23 +118,7 @@ jobs:
         env:
           BASELINE_REV: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || (github.event_name == 'push' && github.event.before || '') }}
           RUSTUP_TOOLCHAIN: 1.95.0
-        run: |
-          case "$BASELINE_REV" in 0000000000000000000000000000000000000000) BASELINE_REV="";; esac
-          # pull_request checkout is a merge commit. The event's base SHA can
-          # predate commits that landed on the base before this job started.
-          if git rev-parse --verify -q HEAD^2 >/dev/null; then
-            BASELINE_REV="$(git rev-parse HEAD^1)"
-          fi
-          SEMVER_CHANGE_MARKER="$(cat "$RUNNER_TEMP/semver-change-marker.txt")"
-          SEMVER_ARGS=()
-          if printf '%s\n' "$SEMVER_CHANGE_MARKER" | grep -Eq '^[[:alnum:]_-]+(\([^)]+\))?!:|^BREAKING CHANGE:'; then
-            SEMVER_ARGS+=(--release-type major)
-          fi
-          if [ -n "$BASELINE_REV" ]; then
-            cargo semver-checks check-release --package ${{ matrix.crate }} --baseline-rev "$BASELINE_REV" "${SEMVER_ARGS[@]}"
-          else
-            cargo semver-checks check-release --package ${{ matrix.crate }} "${SEMVER_ARGS[@]}"
-          fi
+        run: bash tools/commands/ci/github/check-semver.sh "${{ matrix.crate }}"
   security-audit:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20

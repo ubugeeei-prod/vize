@@ -209,3 +209,7 @@ s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot.rs	1	2	1	4	0	0	0	0
 s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot/consume.rs	1	8	1	6	0	0	0	0
 s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot/group.rs	1	6	1	11	0	0	0	0
 s1_to_s2	pass	crates/vize_s1_to_s2/src/pass/vslot/spell.rs	1	1	1	10	0	0	0	0
+infra	-	crates/vize_davinci/src/render/catalog.rs	0	0	1	1	0	0	0	0
+infra	emit	crates/vize_davinci/src/render/why.rs	1	2	1	6	0	0	0	0
+s1_to_s2	analysis	crates/vize_s1_to_s2/src/partial.rs	1	7	1	1	0	0	0	0
+s1_to_s2	lower	crates/vize_s1_to_s2/src/partial/page.rs	1	12	1	2	0	0	0	0

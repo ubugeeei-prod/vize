@@ -119,7 +119,7 @@ compiler	Compiler	source	crates/vize_atelier_ssr/src/stage_options.rs	14	s0	S0	s
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/src/steps.rs	93	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/component_spread_props.rs	10	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_expr_reparse_floor.rs	20	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus.rs	99	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus.rs	103	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_ssr_corpus/production.rs	53	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_walk_baseline.rs	27	davinci	Davinci	stage	vize_davinci	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_ssr/tests/davinci_walk_baseline.rs	27	s0	S0	stage	vize_s0	preferred	1

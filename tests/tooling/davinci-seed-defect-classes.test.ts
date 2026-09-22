@@ -117,7 +117,9 @@ function nestingClassIds(): string[] {
 
 function writeTable(dir: string, rows: [string, TierName][]): string {
   const file = path.join(dir, "table.rs");
-  const body = rows.map(([name, tier]) => `    row!("${name}", ${tier}, HTML, Warning),`).join("\n");
+  const body = rows
+    .map(([name, tier]) => `    row!("${name}", ${tier}, HTML, Warning),`)
+    .join("\n");
   fs.writeFileSync(file, `${body}\n`);
   return file;
 }
@@ -153,10 +155,7 @@ test("exact/sound rules are classed or triaged, and unclassed rules still fail t
   const scope = scopeOf(check.stdout);
   const snippets = snippetRules();
   assert.deepEqual(ledger, missing);
-  assert.deepEqual(
-    classed,
-    [...new Set([...snippets, "vue/permitted-contents"])].sort(),
-  );
+  assert.deepEqual(classed, [...new Set([...snippets, "vue/permitted-contents"])].sort());
   for (const rule of classed) {
     const tier = tiers.get(rule);
     assert.ok(tier === "exact" || tier === "sound", rule);

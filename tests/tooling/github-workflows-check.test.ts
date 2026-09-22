@@ -89,8 +89,9 @@ test("check workflow only runs SemVer checks with an exact Git event baseline", 
     job,
     /BASELINE_REV:\s*\$\{\{\s*github\.event_name == 'pull_request' && github\.event\.pull_request\.base\.sha \|\| \(github\.event_name == 'push' && github\.event\.before \|\| ''\)\s*\}\}/,
   );
-  assert.match(job, /git rev-parse --verify -q HEAD\^2/);
-  assert.match(job, /BASELINE_REV="\$\(git rev-parse HEAD\^1\)"/);
+  const script = readRepoFile("tools", "commands", "ci", "github", "check-semver.sh");
+  assert.match(script, /git rev-parse --verify -q HEAD\^2/);
+  assert.match(script, /BASELINE_REV="\$\(git rev-parse HEAD\^1\)"/);
 });
 
 test("check workflow comments a detailed PR test report for each head push", () => {

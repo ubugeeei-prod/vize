@@ -104,6 +104,7 @@ assert is not relaxed to count-only or to an optional span.
 **Disposition:** `deferred-with-issue` for each row — no generator yet. Delete a row only by registering its class in the same change.
 
 <!-- p4-15a-unclassed -->
+
 - `a11y/alt-text`
 - `a11y/anchor-is-valid`
 - `a11y/aria-props`
@@ -283,4 +284,6 @@ assert is not relaxed to count-only or to an optional span.
 - `vue/valid-v-text`
 - `vue/warn-custom-block`
 - `vue/warn-custom-directive`
+- `vue/max-template-complexity`
+
 <!-- /p4-15a-unclassed -->

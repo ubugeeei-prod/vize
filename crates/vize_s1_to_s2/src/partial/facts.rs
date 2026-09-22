@@ -4,8 +4,8 @@
 //! a fact only when their introducing fragment was accepted as a region.
 
 use vize_davinci::fact::{
-    ids, Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
-    ProducerEntry,
+    Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
+    ProducerEntry, ids,
 };
 use vize_davinci::pass::AnalysisId;
 use vize_s0::Span;
@@ -153,7 +153,7 @@ mod tests {
     use super::*;
     use crate::lower::lower;
     use crate::partial::page::collect;
-    use vize_davinci::fact::{produced_count, FactManager};
+    use vize_davinci::fact::{FactManager, produced_count};
     use vize_s0::Allocator;
     use vize_s1::parse;
 

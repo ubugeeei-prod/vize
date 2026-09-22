@@ -103,7 +103,9 @@ pub(crate) fn generate_vapor_with_spans(
     ctx.component_name = experimental_options.component_name;
     ctx.experimental_self_component = experimental_options.self_component;
     ctx.spans = spans;
-    ctx.out = EmitDocument::with_capacity(4096, spans.is_some());
+    if spans.is_some() {
+        ctx.out = EmitDocument::with_capacity(4096, true);
+    }
 
     if !ir.templates.is_empty() {
         ctx.use_helper("template");
@@ -186,8 +188,10 @@ pub(crate) fn generate_vapor_with_spans(
         }
     }
 
-    let mut document = EmitDocument::new(spans.is_some());
-    document.push_str(&generate_imports(&ctx));
+    let imports = generate_imports(&ctx);
+    let capacity = imports.len() + template_code.len() + delegate_code.len() + 1 + ctx.out.len();
+    let mut document = EmitDocument::with_capacity(capacity, spans.is_some());
+    document.push_str(&imports);
     document.push_spanned(&template_code);
     document.push_str(&delegate_code);
     if !document.is_empty() {

@@ -36,14 +36,11 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     // Wrap with withModifiers if there are DOM modifiers (stop, prevent, etc.)
     let wrapped_handler = if !set_event.modifiers.non_keys.is_empty() {
         ctx.use_helper("withModifiers");
-        let mods = set_event
-            .modifiers
-            .non_keys
-            .iter()
-            .map(|m| ["\"", m, "\""].concat())
-            .collect::<std::vec::Vec<_>>()
-            .join(",");
-        wrap_handler("_withModifiers(", &invoker_body, &mods)
+        wrap_handler(
+            "_withModifiers(",
+            &invoker_body,
+            &set_event.modifiers.non_keys,
+        )
     } else {
         invoker_body
     };
@@ -51,14 +48,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     // propagation or prevent the default action before it is rejected.
     let wrapped_handler = if !set_event.modifiers.keys.is_empty() {
         ctx.use_helper("withKeys");
-        let keys = set_event
-            .modifiers
-            .keys
-            .iter()
-            .map(|k| ["\"", k, "\""].concat())
-            .collect::<std::vec::Vec<_>>()
-            .join(",");
-        wrap_handler("_withKeys(", &wrapped_handler, &keys)
+        wrap_handler("_withKeys(", &wrapped_handler, &set_event.modifiers.keys)
     } else {
         wrapped_handler
     };
@@ -134,11 +124,21 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
 }
 
 /// `callee` + handler + `, [` + list + `])`, keeping the handler's anchors.
-fn wrap_handler(callee: &str, handler: &EmitDocument, list: &str) -> EmitDocument {
-    let mut out = EmitDocument::plain(callee);
+fn wrap_handler(callee: &str, handler: &EmitDocument, list: &[&str]) -> EmitDocument {
+    let capacity =
+        callee.len() + handler.len() + list.iter().map(|s| s.len() + 3).sum::<usize>() + 5;
+    let mut out = EmitDocument::with_capacity(capacity, handler.is_recording());
+    out.push_str(callee);
     out.push_spanned(handler);
     out.push_str(", [");
-    out.push_str(list);
+    for (index, item) in list.iter().enumerate() {
+        if index > 0 {
+            out.push_str(",");
+        }
+        out.push_str("\"");
+        out.push_str(item);
+        out.push_str("\"");
+    }
     out.push_str("])");
     out
 }

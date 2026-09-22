@@ -115,8 +115,15 @@ test("the P5-6c code-lens slice calls parse_sfc nowhere", () => {
 });
 
 test("the P5-6c annotation and structure request paths call parse_sfc nowhere", () => {
-  const migrated = ["server/annotations/document_color.rs:", "server/document_structure/symbols.rs:", "server/document_structure/folding.rs:"];
-  assert.deepEqual(sites.filter((site) => migrated.some((prefix) => site.startsWith(prefix))), []);
+  const migrated = [
+    "server/annotations/document_color.rs:",
+    "server/document_structure/symbols.rs:",
+    "server/document_structure/folding.rs:",
+  ];
+  assert.deepEqual(
+    sites.filter((site) => migrated.some((prefix) => site.startsWith(prefix))),
+    [],
+  );
 });
 
 test("request-path parse_sfc sites remaining after annotations and structure", () => {

@@ -1,16 +1,19 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
 typechecker	Typechecker	test/dev	crates/vize_canon/benches/package_route.rs	40	s0	S0	stage	vize_s0	preferred	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	davinci	Davinci	stage	vize_davinci	preferred	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	s0	S0	stage	vize_s0	preferred	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	old_ast	old AST/parser	old	vize_armature	legacy	2
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
-typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	25	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	davinci	Davinci	stage	vize_davinci	preferred	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	s0	S0	stage	vize_s0	preferred	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	s1	S1	stage	vize_s1	preferred	2
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	s2	S2	stage	vize_s2	preferred	2
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	2
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	old_ast	old AST/parser	old	vize_relief	legacy	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	old_ast	old AST/parser	old	vize_armature	legacy	2
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
+typechecker	Typechecker	manifest	crates/vize_canon/Cargo.toml	22	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch.rs	66	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/error.rs	4	s0	S0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/batch/executor.rs	20	s0	S0	stage	vize_carton	compat	1
@@ -394,6 +397,14 @@ typechecker	Typechecker	source	crates/vize_canon/src/projection/assemble/keyof/i
 typechecker	Typechecker	source	crates/vize_canon/src/projection/assemble/keyof/index.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/projection/assemble/keyof/index.rs	1	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/projection/assemble/rules.rs	6	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	s1	S1	stage	vize_s1	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	s2	S2	stage	vize_s2	preferred	2
+typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
+typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	2
+typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+typechecker	Typechecker	source	crates/vize_canon/src/projection/expr/bindings.rs	8	s2	S2	stage	vize_s2	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/script_parse.rs	1	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/script_parse.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/script_parse.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1

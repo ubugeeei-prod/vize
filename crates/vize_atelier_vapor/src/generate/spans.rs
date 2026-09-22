@@ -171,12 +171,11 @@ impl GenerateContext<'_> {
     /// A resolved expression node, anchored when maps are on.
     pub(crate) fn spanned_expression_node(&self, node: &SimpleExpressionNode<'_>) -> EmitDocument {
         let resolved = self.resolve_expression_node(node);
-        let mut piece = EmitDocument::default();
-        if self.spans.is_some() {
-            piece.push_expression(&resolved, node.loc.span, self.source);
-        } else {
-            piece.push_str(&resolved);
+        if self.spans.is_none() {
+            return EmitDocument::from(resolved);
         }
+        let mut piece = EmitDocument::default();
+        piece.push_expression(&resolved, node.loc.span, self.source);
         piece
     }
 

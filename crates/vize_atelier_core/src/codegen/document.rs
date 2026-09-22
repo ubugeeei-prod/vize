@@ -253,8 +253,10 @@ impl EmitDocument {
             };
             self.text.push_str(&other.text[start..index]);
             self.text.push_str(to);
-            let total = growth.last().map_or(0, |&(_, total)| total);
-            growth.push((index, total + to.len() - from.len()));
+            if self.recording && !other.links.is_empty() {
+                let total = growth.last().map_or(0, |&(_, total)| total);
+                growth.push((index, total + to.len() - from.len()));
+            }
             index += from.len();
             start = index;
         }

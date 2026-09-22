@@ -22,10 +22,10 @@ pub(crate) fn generate_effect(
     if effect.operations.len() == 1 {
         let op = &effect.operations[0];
         if let Some(op_code) = generate_operation_inline(ctx, op) {
-            let mut line = EmitDocument::plain("_renderEffect(() => ");
-            line.push_spanned(&op_code);
-            line.push_str(")");
-            ctx.push_line_spanned(&line);
+            ctx.push_indent();
+            ctx.push("_renderEffect(() => ");
+            ctx.push_spanned(&op_code);
+            ctx.push(")\n");
             return;
         }
     }
