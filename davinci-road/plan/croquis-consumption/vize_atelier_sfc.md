@@ -40,10 +40,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScriptParseResult`                       |     1 |     1 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     2 |     2 |
-| `SfcDescriptor`                           |    16 |    40 |
-| `SfcError`                                |    21 |    59 |
-| `SfcParseOptions`                         |    14 |   105 |
-| `SfcScriptBlock`                          |     1 |     1 |
+| `SfcDescriptor`                           |    18 |    41 |
+| `SfcError`                                |    21 |    60 |
+| `SfcParseOptions`                         |    15 |   106 |
+| `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     7 |
 | `SfcTemplateBlock`                        |     5 |     6 |
 | `WITH_DEFAULTS`                           |     1 |     2 |
@@ -80,5 +80,5 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SymbolFlags`       |        0 |    5 |
 | `Croquis.bindings`  |       16 |  225 |
 | `Croquis.hoists`    |        0 |    2 |
-| `Croquis.macros`    |       11 |  102 |
+| `Croquis.macros`    |       11 |  106 |
 | `Croquis.types`     |        0 |   13 |
