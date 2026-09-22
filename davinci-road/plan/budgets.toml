@@ -320,9 +320,7 @@ vapor_visits_ratio_max = 1.00
 wall_time = "report-only"
 
 [sourcemap]
-# Minimum coverage per backend and mapping category. Populated before P3-9
-# merges; deletion of the legacy recovery requires new-path coverage >= the
-# old heuristic's measured coverage.
+# P3-9 TS-31 minimums; deleting legacy-sfc needs the sfc rows at or above it.
 dom_static_template = { backend = "dom", category = "static-template", anchors_min = 6, coverage_pct_min = 95, span_accuracy_pct_min = 100 }
 dom_rewritten_identifier = { backend = "dom", category = "rewritten-identifier", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 dom_section_boundary = { backend = "dom", category = "section-boundary", anchors_min = 3, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
@@ -333,8 +331,6 @@ ssr_static_template = { backend = "ssr", category = "static-template", anchors_m
 ssr_rewritten_identifier = { backend = "ssr", category = "rewritten-identifier", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 ssr_section_boundary = { backend = "ssr", category = "section-boundary", anchors_min = 3, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 legacy_sfc_text_matching_recovery = { backend = "legacy-sfc", category = "text-matching-recovery", anchors_min = 7, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
-# The structured SFC module map: over the legacy row's battery (at least the
-# legacy's measured 11/11 exact), and over statements the pipeline rewrites.
 sfc_text_matching_recovery = { backend = "sfc", category = "text-matching-recovery", anchors_min = 11, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 sfc_rewritten_statement = { backend = "sfc", category = "rewritten-statement", anchors_min = 19, coverage_pct_min = 100, span_accuracy_pct_min = 100 }
 
