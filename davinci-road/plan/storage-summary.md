@@ -30,7 +30,7 @@ The library trees in the reviewed inventory contain 110 production files,
 | -------- | ----------------------- | ----: | -----------: | ---------: |
 | infra    | `alloc::vec::Vec`       |    24 |           24 |        100 |
 | infra    | `alloc::string::String` |     0 |            0 |          0 |
-| infra    | `vize_s0::String`       |    28 |           28 |        176 |
+| infra    | `vize_s0::String`       |    29 |           29 |        178 |
 | infra    | `vize_s0::Vec`          |     0 |            0 |          0 |
 | infra    | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s1       | `alloc::vec::Vec`       |     0 |            0 |          0 |
