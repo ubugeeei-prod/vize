@@ -42,7 +42,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `BlockLocation`               |     2 |     2 |
 | `ReactiveKind`                |     5 |    41 |
 | `SfcDescriptor`               |     6 |    25 |
-| `SfcParseOptions`             |     1 |     1 |
 | `SfcScriptBlock`              |     3 |     6 |
 | `SfcStyleBlock`               |     2 |     8 |
 | `extract_identifier_refs_oxc` |     1 |     1 |

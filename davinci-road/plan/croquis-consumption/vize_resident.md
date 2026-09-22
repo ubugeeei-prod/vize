@@ -14,8 +14,9 @@ _None._
 
 | item              | files | sites |
 | ----------------- | ----: | ----: |
-| `SfcParseOptions` |     1 |     1 |
-| `parse_sfc`       |     1 |     1 |
+| `SfcDescriptor`   |     1 |     2 |
+| `SfcParseOptions` |     2 |     2 |
+| `parse_sfc`       |     2 |     2 |
 
 ## Naive grep disagreements (resolved/grep)
 
