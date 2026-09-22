@@ -131,6 +131,8 @@ const ADMITTED_RULES: &[&str] = &[
     "condense.drop-whitespace",
     "drop.comment",
     "drop.branch-gap",
+    // HTML table construction: a direct row under `<table>` gains a `tbody`.
+    "lower.table.implicit-tbody",
 ];
 
 /// Lower `source` through S1->S2->S3, build the SSR string plan from the
