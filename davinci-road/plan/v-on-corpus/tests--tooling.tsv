@@ -1,0 +1,3 @@
+file	spelling
+tests/tooling/canon-template-public-contracts.test.ts	@valid.once
+tests/tooling/sfc-baselines.test.ts	@keyup.32

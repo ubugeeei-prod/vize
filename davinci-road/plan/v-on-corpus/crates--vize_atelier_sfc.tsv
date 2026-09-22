@@ -1,0 +1,6 @@
+file	spelling
+crates/vize_atelier_sfc/benches/sfc_compile.rs	@click.stop
+crates/vize_atelier_sfc/benches/sfc_compile.rs	@keydown.enter
+crates/vize_atelier_sfc/benches/sfc_parse.rs	@click.self
+crates/vize_atelier_sfc/src/compile/tests/options_api_events.rs	@blur.stop
+crates/vize_atelier_sfc/src/compile_template/section_offsets_tests.rs	@keyup.enter

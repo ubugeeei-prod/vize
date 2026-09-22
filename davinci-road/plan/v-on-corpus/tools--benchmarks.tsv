@@ -1,0 +1,4 @@
+file	spelling
+tools/benchmarks/scripts/generate.mjs	@click.prevent
+tools/benchmarks/scripts/generate.mjs	@keydown.enter.exact.prevent
+tools/benchmarks/scripts/generate.mjs	@submit.prevent

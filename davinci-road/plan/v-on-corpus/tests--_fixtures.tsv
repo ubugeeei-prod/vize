@@ -1,0 +1,14 @@
+file	spelling
+tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue	@submit.prevent
+tests/_fixtures/_projects/ecosystem-products/src/ComposablesAndRouting.vue	@click.prevent
+tests/_fixtures/_projects/generic-build/src/BindingPatchFlags.vue	@keyup.enter
+tests/_fixtures/davinci-pug/matrix/v-bind-v-on.html	@click.stop.prevent
+tests/_fixtures/davinci-pug/matrix/v-bind-v-on.html	@keyup.enter
+tests/_fixtures/davinci-ts40-projection/vue2-native-event.vue	@click.native
+tests/_fixtures/pattern-reference/upstream/language-tools/packages/language-server/tests/completions.spec.ts	@click.|
+tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4369/main.vue	@keyup.enter
+tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#4369/main.vue	@keyup.space.prevent
+tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue	@foo-bar.up
+tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue	@fooBar.up
+tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue	@foo-bar.up
+tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/#6094/main.vue	@fooBar.down

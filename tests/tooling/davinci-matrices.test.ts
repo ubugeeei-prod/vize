@@ -48,6 +48,11 @@ const matrices = [
     artifact: "davinci-road/plan/storage-summary.md",
   },
   {
+    name: "natural v-on corpus inventory (evidence for the inline v-on buckets)",
+    generator: "tools/commands/davinci/v-on-corpus.rs",
+    artifact: "davinci-road/plan/v-on-corpus/<area>.tsv",
+  },
+  {
     name: "construct-matrix fixture plane (element kind × directive)",
     generator: "tools/commands/davinci/matrix-gen.rs",
     artifact: "tests/fixtures/davinci-matrix/",

@@ -1,162 +1,33 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import {
+  V_ON_CORPUS_DIR,
+  V_ON_CORPUS_REGEN,
+  classify,
+  modifiedOnSpellings,
+  renderVOnCorpus,
+  syntheticBoundary,
+  trackedNaturalSources,
+} from "../../legacy-tools/davinci/lib/v-on-corpus.mjs";
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const thisGate = "tests/tooling/davinci-v-on-storage.test.ts";
-
-// Reviewed scope: Git-tracked template files, documentation, and source/test
-// formats that carry inline template fixtures. Binary/generated/untracked
-// files are outside the inventory. JS-family carriers are explicit so a
-// fixture moved from TS to JS cannot silently disappear from the evidence.
-const templateCarrierExtensions = new Set([
-  ".astro",
-  ".cjs",
-  ".cts",
-  ".html",
-  ".js",
-  ".jsx",
-  ".md",
-  ".mjs",
-  ".mts",
-  ".rs",
-  ".svelte",
-  ".ts",
-  ".tsx",
-  ".vue",
-]);
-
-// Baseline: 9e18d171c3ef3a16021dff4debeab21195f99017, immediately before the
-// SmallVec change. Continue scanning the current Git-tracked corpus so future
-// natural spellings force an intentional capacity/evidence update, while the
-// marked synthetic boundary cases never justify their own chosen capacity.
-const syntheticBoundary =
-  /\/\/ v-on-storage-synthetic:start[\s\S]*?\/\/ v-on-storage-synthetic:end/gu;
-const modifiedOnName = /^(?:@|v-on:)(?!\[)[^\s=./>]+(?:\.[^\s=./>]+)+$/u;
 
 type Buckets = { options: number; event: number; keys: number };
+type InventoryFile = { relPath: string; text: string };
 
-function trackedNaturalSources(): Array<{ file: string; source: string }> {
-  const tracked = spawnSync("git", ["ls-files", "-z"], {
-    cwd: repoRoot,
-    encoding: "utf8",
-  });
-  assert.equal(tracked.status, 0, tracked.stderr);
-
-  return tracked.stdout
-    .split("\0")
-    .filter(
-      (file) =>
-        file !== "" && file !== thisGate && templateCarrierExtensions.has(path.extname(file)),
-    )
-    .map((file) => ({
-      file,
-      source: fs.readFileSync(path.join(repoRoot, file), "utf8").replace(syntheticBoundary, ""),
-    }));
-}
-
-function startTags(source: string): string[] {
-  const tags: string[] = [];
-  for (let start = 0; start < source.length - 1; start += 1) {
-    if (source[start] !== "<" || !/[A-Za-z]/u.test(source[start + 1])) continue;
-
-    let quote: '"' | "'" | undefined;
-    for (let end = start + 2; end < source.length; end += 1) {
-      const character = source[end];
-      if (quote !== undefined) {
-        if (character === quote) quote = undefined;
-      } else if (character === '"' || character === "'") {
-        quote = character;
-      } else if (character === ">") {
-        tags.push(source.slice(start, end + 1));
-        start = end;
-        break;
-      } else if (character === "<") {
-        break;
-      }
-    }
-  }
-  return tags;
-}
-
-function attributeNames(tag: string): string[] {
-  const names: string[] = [];
-  let cursor = 1;
-  while (cursor < tag.length && !/[\s/>]/u.test(tag[cursor])) cursor += 1;
-
-  while (cursor < tag.length) {
-    while (/\s/u.test(tag[cursor] ?? "")) cursor += 1;
-    if (tag[cursor] === "/" || tag[cursor] === ">" || tag[cursor] === undefined) break;
-
-    const nameStart = cursor;
-    while (!/[\s=/>]/u.test(tag[cursor] ?? ">")) cursor += 1;
-    names.push(tag.slice(nameStart, cursor));
-    while (/\s/u.test(tag[cursor] ?? "")) cursor += 1;
-    if (tag[cursor] !== "=") continue;
-
-    cursor += 1;
-    while (/\s/u.test(tag[cursor] ?? "")) cursor += 1;
-    const escapedQuote =
-      tag[cursor] === "\\" && (tag[cursor + 1] === '"' || tag[cursor + 1] === "'");
-    const quote = escapedQuote ? tag[cursor + 1] : tag[cursor];
-    if (quote === '"' || quote === "'") {
-      cursor += escapedQuote ? 2 : 1;
-      while (
-        cursor < tag.length &&
-        (escapedQuote ? tag[cursor] !== "\\" || tag[cursor + 1] !== quote : tag[cursor] !== quote)
-      ) {
-        cursor += 1;
-      }
-      cursor += escapedQuote ? 2 : 1;
-    } else {
-      while (!/[\s>]/u.test(tag[cursor] ?? ">")) cursor += 1;
-    }
-  }
-  return names;
-}
-
-function modifiedOnSpellings(source: string): string[] {
-  return startTags(source).flatMap((tag) =>
-    attributeNames(tag).filter((name) => modifiedOnName.test(name)),
+function committedInventory(): Map<string, string> {
+  const dir = path.join(repoRoot, V_ON_CORPUS_DIR);
+  const files = fs.existsSync(dir) ? fs.readdirSync(dir).sort() : [];
+  return new Map(
+    files.map((name) => [
+      `${V_ON_CORPUS_DIR}/${name}`,
+      fs.readFileSync(path.join(dir, name), "utf8"),
+    ]),
   );
-}
-
-function classify(spelling: string): Buckets {
-  const normalized = spelling.startsWith("@") ? spelling.slice(1) : spelling.slice("v-on:".length);
-  const [name, ...modifiers] = normalized.split(".");
-  const keyboard = name === "keydown" || name === "keyup" || name === "keypress";
-  const buckets: Buckets = { options: 0, event: 0, keys: 0 };
-
-  for (const modifier of modifiers) {
-    if (modifier === "native") continue;
-    if (modifier === "capture" || modifier === "once" || modifier === "passive") {
-      buckets.options += 1;
-    } else if ((modifier === "left" || modifier === "right") && keyboard) {
-      buckets.keys += 1;
-    } else if (
-      [
-        "stop",
-        "prevent",
-        "self",
-        "ctrl",
-        "shift",
-        "alt",
-        "meta",
-        "middle",
-        "exact",
-        "left",
-        "right",
-      ].includes(modifier)
-    ) {
-      buckets.event += 1;
-    } else {
-      buckets.keys += 1;
-    }
-  }
-  return buckets;
 }
 
 test("the natural committed v-on corpus fits the two-entry inline buckets", () => {
@@ -180,16 +51,24 @@ test("the natural committed v-on corpus fits the two-entry inline buckets", () =
     "the Mealie-shaped dynamic slot fixture keeps its natural modified v-on spelling",
   );
   assert.deepEqual(classify("@click.prevent"), { options: 0, event: 1, keys: 0 });
-  // Includes native S3 text/event admission, mounted modifier cases and paired
-  // event benchmarks, plus the public-contract @valid.once duplicate listener,
-  // the P3-8 SSR emitter differential's dropped element listener and
-  // component `@key-up.enter` prop fixtures, the native expression slice's
-  // retained-AST handler fixtures, the component slice's listener-modifier
-  // refusal, the playground Davinci tab (keyboard-activated folio lines, the
-  // Todo board preset's @keyup.enter), and the P4-12c pug fixture's pinned-pug
-  // HTML (`@click.stop.prevent`, `@keyup.enter`).
-  assert.equal(spellings.length, 261, "update the measured corpus evidence intentionally");
   assert.deepEqual(maxima, { options: 2, event: 2, keys: 2 });
+
+  // The intentional-update tripwire: every natural spelling is recorded, per
+  // source file, in the committed per-area inventory, and the live scan must
+  // equal it byte for byte (a new, moved, or removed spelling fails until the
+  // inventory is regenerated and its diff reviewed). The inventory carries no
+  // total, so fixtures added in different areas never conflict.
+  const expected: InventoryFile[] = renderVOnCorpus(sources);
+  assert.deepEqual(
+    [...committedInventory().entries()],
+    expected.map((file) => [file.relPath, file.text]),
+    `update the measured corpus evidence intentionally: ${V_ON_CORPUS_REGEN}`,
+  );
+  const inventoried = expected.reduce(
+    (count, file) => count + file.text.trimEnd().split("\n").length - 1,
+    0,
+  );
+  assert.equal(inventoried, spellings.length);
 });
 
 test("the inventory recognizes both static modified v-on attribute spellings", () => {

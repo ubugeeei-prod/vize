@@ -1,0 +1,7 @@
+file	spelling
+crates/vize_atelier_ssr/src/s4/differential_tests/component_fixtures.rs	@key-up.enter
+crates/vize_atelier_ssr/src/s4/differential_tests/fixtures.rs	@click.prevent
+crates/vize_atelier_ssr/tests/event_props.rs	@keydown.enter.prevent
+crates/vize_atelier_ssr/tests/event_props.rs	@click.stop
+crates/vize_atelier_ssr/tests/event_props.rs	@click.stop
+crates/vize_atelier_ssr/tests/ssr_snapshot.rs	@key-up.enter
