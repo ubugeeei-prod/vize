@@ -1,5 +1,8 @@
 //! Compiler error types and codes.
+mod codes;
 mod compatibility;
+mod diagnostic;
+pub use diagnostic::COMPILER_ERROR;
 pub mod recovery;
 mod render;
 use crate::SourceLocation;

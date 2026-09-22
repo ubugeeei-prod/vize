@@ -65,6 +65,10 @@ const PREFIX_LANE: &[Reason] = &[
     Reason::PrefixExpressionRejected,
 ];
 
+/// Inline render-function refusals (P3-17), covered by `emit_hoist_gap.rs`
+/// under the production SFC option shape.
+const INLINE_LANE: &[Reason] = &[Reason::HoistConstantGap, Reason::UnrefAcrossReorderedSlots];
+
 /// Build-shape refusals: the option is real but this build cannot honour
 /// it (`--no-default-features` drops the `std`-only TS lane).
 const PORTABILITY: &[Reason] = &[Reason::TypeScriptLaneUnavailable];
@@ -86,6 +90,7 @@ fn reason_catalogue_is_fully_accounted_for() {
     accounted.extend_from_slice(RETIRED);
     accounted.extend_from_slice(PREFIX_LANE);
     accounted.extend_from_slice(PORTABILITY);
+    accounted.extend_from_slice(INLINE_LANE);
 
     let mut accounted_codes = accounted
         .iter()

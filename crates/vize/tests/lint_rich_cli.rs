@@ -61,13 +61,13 @@ fn rich_output_speaks_the_requested_locale_end_to_end() {
     assert_eq!(output.status.code(), Some(1));
     assert_eq!(
         std::str::from_utf8(&output.stdout).expect("UTF-8 stdout"),
-        "エラー[vue/require-v-for-key]: 繰り返し要素には'v-bind:key'ディレクティブが必要です。要素: <li>
+        "エラー[vue/require-v-for-key]: `v-for` で繰り返す <li> には `v-bind:key` が必要です
  --> src/TodoList.vue:9:9
   |
 9 |     <li v-for=\"todo in todos\">{{ todo.title }}</li>
   |         ^^^^^^^^^^^^^^^^^^^^^
   |
-  = ヒント: 各アイテムに一意の識別子を持つ:key属性を追加してください
+  = ヒント: 各項目を一意に識別できる値を :key に指定してください
 
 1 ファイルを検査し、エラー 1 件、警告 0 件が見つかりました
 "
