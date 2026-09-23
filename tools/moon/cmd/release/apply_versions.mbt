@@ -174,6 +174,27 @@ async fn prepare_candidate(
     files_to_stage.push(zed_cargo_lock)
   }
 
+  // These standalone workspaces depend on the in-tree SDK and build with
+  // --locked. Updating the root workspace lockfile cannot refresh them.
+  for manifest in [
+    "crates/vize_extension_host/tests/guests/expression-echo/Cargo.toml",
+    "crates/vize_extension_host/tests/guests/output-echo/Cargo.toml",
+    "examples/volt-target/Cargo.toml",
+  ] {
+    if !@tool.path_exists(manifest) {
+      continue
+    }
+    if @process.run("cargo", [
+        "update", "--manifest-path", manifest, "-p", "vize_extension_sdk", "--offline",
+      ]) != 0 {
+      @stdio.stderr.write("Failed to update the SDK guest lockfile for \{manifest}\n")
+      return 1
+    }
+    let guest_lockfile = manifest.replace(old="Cargo.toml", new="Cargo.lock")
+    println("  Updated \{guest_lockfile}")
+    files_to_stage.push(guest_lockfile)
+  }
+
   if !update_release_readmes(current_version, new_version, files_to_stage) {
     return 1
   }
