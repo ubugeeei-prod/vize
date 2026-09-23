@@ -25,8 +25,9 @@ pub(super) fn element<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Resul
         || namespace.value.kind != ValueKind::Literal
         || namespace.value.text != "html"
         // These HTML tags have ordinary template parsing. Parser-context
-        // elements (tables, raw text, select, templates, namespaces) require a
-        // separate contract before their child indexes can be materialized.
+        // elements (tables, select, templates, namespaces) require a separate
+        // contract before their child indexes can be materialized. Textarea is
+        // admitted only when empty and model-bound (checked after attachment).
         // List items are admitted with the same nesting guard as buttons.
         // A `<template>` is admitted only as slot content (checked once its
         // slot binding attaches), and never carries attributes.
@@ -34,7 +35,9 @@ pub(super) fn element<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Resul
             "div" | "span" | "main" | "section" | "article" | "header" | "footer"
             | "nav" | "aside" | "button" | "strong" | "em" | "b" | "i" | "small"
             | "label" | "input" | "img" | "br" | "hr" | "ul" | "ol" | "li" | "template"
-            | "p" | "a" | "form" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6")
+            | "p" | "a" | "form" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
+            | "abbr" | "code" | "data" | "kbd" | "mark" | "samp" | "sub" | "sup"
+            | "time" | "var" | "textarea")
         || tag.value.text == "template" && values.len() != 2
     {
         return Err(LegacyReason::Element.into());
@@ -80,6 +83,28 @@ pub(super) fn binding<'a>(
         == (OpKind::SetProp, ValueKind::Literal, "model")
     {
         return super::model::model(values, retained.allocator());
+    }
+    if (kind, binding.value.kind, binding.value.text)
+        == (OpKind::Directive, ValueKind::Literal, "vue.cloak")
+    {
+        let target = binding.target.ok_or(LegacyReason::Structure)?;
+        if values.len() != 1 || binding.name.is_some() || binding.region.is_some() {
+            return Err(LegacyReason::Binding.into());
+        }
+        let span = (binding.value.span.start, binding.value.span.end);
+        return Ok((
+            target,
+            Binding {
+                kind: BindingKind::Cloak,
+                name: "",
+                value: Expr::plain(""),
+                modifiers: Vec::new_in(&retained.allocator()),
+                merge: None,
+                model_element: None,
+                position: 0,
+                spans: [span, span],
+            },
+        ));
     }
     // Generic ops carry several families (SetProp is also model/sync, a
     // Directive op also once/memo/cloak/custom). Select the family first.
@@ -146,6 +171,7 @@ pub(super) fn binding<'a>(
             value,
             modifiers,
             merge: None,
+            model_element: None,
             position: 0,
             spans,
         },

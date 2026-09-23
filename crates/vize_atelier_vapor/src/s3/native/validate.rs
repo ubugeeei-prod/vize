@@ -91,7 +91,9 @@ pub(super) fn admit<'a>(
                     operands::binding(values, op.kind, retained)?
                 };
                 binding.position = op.span.start;
-                if op.effect.is_none() {
+                // `v-cloak` is a one-shot DOM operation in a static region.
+                // In a dynamic branch it inherits that region's effect scope.
+                if op.effect.is_none() && binding.kind != super::BindingKind::Cloak {
                     return Err(AdmissionFailure::Invalid(
                         "binding lacks its dynamic partition",
                     ));

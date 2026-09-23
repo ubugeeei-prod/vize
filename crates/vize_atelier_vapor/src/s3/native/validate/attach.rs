@@ -1,6 +1,6 @@
 //! Bindings attach to their native owner once the tree is known: each
 //! name/family binds at most once, a loop body's `:key` moves to its loop, a
-//! static `class` merges into its `:class` exactly as the retained lane does,
+//! static `class`/`style` merge into bound values,
 //! component/outlet bindings become props in authored order, and a `v-bind`
 //! or `v-on` object on a component becomes a `$` source in that order.
 
@@ -129,7 +129,7 @@ pub(super) fn bindings<'a>(
                 return Err(LegacyReason::Binding.into());
             }
         } else if !fresh {
-            binding.merge = static_class(&mut nodes[index], &binding);
+            binding.merge = static_class_or_style(&mut nodes[index], &binding);
             if binding.merge.is_none() {
                 return Err(LegacyReason::Binding.into());
             }
@@ -204,10 +204,14 @@ fn prop<'a>(
     Ok(())
 }
 
-/// Remove a valued static `class` for its first `:class`; the template then
-/// omits it and the dynamic binding renders `[static, dynamic]`.
-fn static_class<'a>(node: &mut Node<'a>, binding: &Binding<'a>) -> Option<&'a str> {
-    if binding.kind != BindingKind::Prop || binding.name != "class" {
+/// Remove a valued static class/style beside its bound value. Style follows
+/// authored order, as official Vapor does; class keeps the retained lane's
+/// static-first lowering until that separate compatibility gap is resolved.
+fn static_class_or_style<'a>(
+    node: &mut Node<'a>,
+    binding: &Binding<'a>,
+) -> Option<(&'a str, bool)> {
+    if binding.kind != BindingKind::Prop || !matches!(binding.name, "class" | "style") {
         return None;
     }
     let Content::Element { attributes, .. } = &mut node.content else {
@@ -215,6 +219,8 @@ fn static_class<'a>(node: &mut Node<'a>, binding: &Binding<'a>) -> Option<&'a st
     };
     let position = attributes
         .iter()
-        .position(|(name, value, _)| *name == "class" && value.is_some())?;
-    attributes.remove(position).1
+        .position(|(name, value, _)| *name == binding.name && value.is_some())?;
+    let static_span = attributes[position].2;
+    let after = binding.name == "style" && static_span.0 > binding.spans[0].0;
+    attributes.remove(position).1.map(|value| (value, after))
 }
