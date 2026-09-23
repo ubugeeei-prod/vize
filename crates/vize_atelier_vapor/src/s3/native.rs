@@ -151,6 +151,8 @@ struct Binding<'a> {
 enum BindingKind {
     Prop,
     Event,
+    /// `v-cloak` removes the authored cloak marker once when the node mounts.
+    Cloak,
     Show,
     Html,
     Text,

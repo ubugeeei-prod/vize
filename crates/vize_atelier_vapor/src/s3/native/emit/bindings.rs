@@ -47,6 +47,19 @@ impl<'a> Emitter<'a, '_> {
         let value_span = Some(self.trimmed(binding.spans[1]));
         let name_span = self.token(binding.spans[0], |raw| argument_offset(raw, binding.name));
         match binding.kind {
+            BindingKind::Cloak => {
+                let dir = DirectiveNode::new(self.allocator, "cloak", SourceLocation::STUB);
+                block
+                    .operation
+                    .push(OperationNode::Directive(DirectiveIRNode {
+                        element,
+                        dir: Box::new_in(dir, &self.allocator),
+                        name: "vCloak",
+                        builtin: true,
+                        tag,
+                        input_type,
+                    }));
+            }
             BindingKind::Event => {
                 let modifiers = EventModifiers::from_names(
                     self.allocator,

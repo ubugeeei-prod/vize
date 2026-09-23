@@ -52,6 +52,11 @@ the commands that re-derive it, and the local measurements taken so far.
   update on input, and a later external patch on DOM, native Vapor, and retained
   Vapor. Child content and conflicting value sources still select legacy;
   mutating S3's `element-kind` away from its input/textarea owner is rejected.
+- `v-cloak` uses the S3 directive op's static partition at the root and the
+  inherited effect scope inside branches. Unit tests pin one removal operation,
+  retained template equality and rejection of a stale directive kind. The
+  independent mounted trace checks that the cloak attribute is absent after
+  each mount while the live node and untouched sibling keep their identities.
 - References beginning with `$event` remain in the legacy lane. Their handler
   semantics follow Vue: a reference names a component/setup binding; only an
   inline statement receives the implicit event parameter. The Chromium contract
