@@ -206,13 +206,16 @@ const editedLabel = "edited"
     let docs = server.state.get_virtual_docs(&uri).unwrap();
     let edited_template = &docs.art_template(1).unwrap().content;
     assert!(
-        edited_template.contains("= editedLabel;"),
+        edited_template.contains("void (editedLabel)"),
         "edited variant expression was not rebuilt:\n{edited_template}",
     );
-    assert_eq!(
-        edited_template.matches("secondaryLabel").count(),
-        1,
-        "the stale secondaryLabel expression should be gone while the setup declaration remains:\n{edited_template}",
+    assert!(
+        !edited_template.contains("void (secondaryLabel)"),
+        "the stale secondaryLabel template expression should be gone:\n{edited_template}",
+    );
+    assert!(
+        edited_template.contains("const secondaryLabel"),
+        "the setup declaration remains:\n{edited_template}",
     );
 
     futures::executor::block_on(server.did_change(full_change(uri.clone(), 4, &renamed)));
@@ -241,7 +244,7 @@ const editedLabel = "edited"
             .art_template(0)
             .unwrap()
             .content
-            .contains("= editedLabel;")
+            .contains("void (editedLabel)")
     );
 }
 

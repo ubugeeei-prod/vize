@@ -34,6 +34,7 @@ mod style_code;
 mod template_code;
 
 pub(crate) use generator::inline_art_variants;
+pub(crate) use generator::project_template_fragment;
 pub use generator::{
     ArtCursorPosition, ArtScriptChunk, ArtScriptSetupParts, ArtTargetComponent, ArtVariantInfo,
     BatchVirtualCodeGenerator, BlockType, VirtualCodeGenerator, analyze_art_script_setup,
@@ -43,9 +44,7 @@ pub use generator::{
 pub(crate) use generator::{find_art_block_at_completion_offset, find_block_at_completion_offset};
 pub use script_code::{ScriptCodeGenerator, extract_simple_bindings};
 pub use style_code::{StyleCodeGenerator, StyleMetadata};
-pub use template_code::{
-    ExpressionKind, TemplateCodeGenerator, TemplateExpression, extract_expressions,
-};
+pub use template_code::{ExpressionKind, TemplateExpression, extract_expressions};
 /// Every virtual document maps back to its SFC through the one projection
 /// mapping model (P4-5a).
 pub use vize_canon::virtual_ts::{
@@ -136,8 +135,9 @@ impl VirtualDocument {
         language: VirtualLanguage,
         source_map: ProjectionMapping,
     ) -> Self {
-        let content = vize_canon::virtual_ts::virtual_ts_document(content.into(), source_map.spans())
-            .into_string();
+        let content =
+            vize_canon::virtual_ts::virtual_ts_document(content.into(), source_map.spans())
+                .into_string();
         Self {
             uri,
             content: content.to_string(),

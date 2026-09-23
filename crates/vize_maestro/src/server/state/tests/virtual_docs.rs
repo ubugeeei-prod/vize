@@ -49,7 +49,7 @@ const secondaryLabel = ref('secondary')
 }
 
 #[test]
-fn typed_art_template_docs_strip_loose_context_prefixes_and_keep_mappings() {
+fn typed_art_template_docs_are_the_checker_document_and_keep_mappings() {
     let state = ServerState::new();
     let uri = Url::parse("file:///Button.art.vue").unwrap();
     let source = r#"<script setup lang="ts">
@@ -72,12 +72,23 @@ const props = defineProps<{ title: string }>()
     let virtual_docs = state.get_virtual_docs(&uri).unwrap();
     let template = virtual_docs.art_template(0).unwrap();
     assert!(
-        !template.content.contains("__VIZE_ctx."),
-        "typed art template must use setup bindings directly:\n{}",
+        template
+            .content
+            .contains("Virtual TypeScript for Vue SFC Type Checking"),
+        "art templates publish the checker document:\n{}",
         template.content,
     );
-    assert!(template.content.contains("= simpleLabel;"));
-    assert!(template.content.contains("= props.title;"));
+    assert!(!template.content.contains("__VIZE_ctx."));
+    assert!(
+        template.content.contains("void (simpleLabel)"),
+        "checker document did not emit the template expression:\n{}",
+        template.content,
+    );
+    assert!(
+        template.content.contains("void (props.title)"),
+        "checker document did not emit the props expression:\n{}",
+        template.content,
+    );
 
     for marker in ["simpleLabel", "props.title"] {
         let source_offset = source.rfind(marker).unwrap();
@@ -95,7 +106,7 @@ const props = defineProps<{ title: string }>()
 }
 
 #[test]
-fn typed_art_template_docs_keep_mappings_across_unicode_and_crlf_sources() {
+fn typed_art_template_docs_keep_checker_mappings_across_unicode_and_crlf_sources() {
     let lf_source = r#"<script setup lang="ts">
 const simpleLabel: string = "型付き"
 const props = defineProps<{ title: string }>()
@@ -120,10 +131,13 @@ const props = defineProps<{ title: string }>()
         let virtual_docs = state.get_virtual_docs(&uri).unwrap();
         let template = virtual_docs.art_template(0).unwrap();
         assert!(
-            !template.content.contains("__VIZE_ctx."),
-            "typed art template must use setup bindings directly ({endings}):\n{}",
+            template
+                .content
+                .contains("Virtual TypeScript for Vue SFC Type Checking"),
+            "art templates publish the checker document ({endings}):\n{}",
             template.content,
         );
+        assert!(!template.content.contains("__VIZE_ctx."));
 
         for marker in ["simpleLabel", "props.title"] {
             let source_offset = source.rfind(marker).unwrap();
@@ -232,7 +246,22 @@ fn update_virtual_docs_generates_standalone_html_template_doc() {
     let virtual_docs = state.get_virtual_docs(&uri).unwrap();
     let template = virtual_docs.template.as_ref().unwrap();
     assert!(template.uri.ends_with("index.html.__template.ts"));
-    assert!(template.content.contains("count"));
+    assert!(
+        template
+            .content
+            .contains("Virtual TypeScript for Vue SFC Type Checking"),
+        "standalone HTML publishes the checker document:\n{}",
+        template.content,
+    );
+    let source_offset = source.rfind("{{ count }}").unwrap() + "{{ ".len();
+    let generated = template
+        .source_map
+        .to_generated(source_offset)
+        .expect("html count is mapped");
+    assert_eq!(
+        &template.content[generated..generated + "count".len()],
+        "count"
+    );
 }
 
 #[test]

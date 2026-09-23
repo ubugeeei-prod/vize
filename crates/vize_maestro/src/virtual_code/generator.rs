@@ -27,8 +27,7 @@ use vize_s0::cstr;
 use binding::template_used_script_bindings;
 
 use super::{
-    ScriptCodeGenerator, StyleCodeGenerator, TemplateCodeGenerator, VirtualDocument,
-    VirtualDocuments, VirtualLanguage,
+    ScriptCodeGenerator, StyleCodeGenerator, VirtualDocument, VirtualDocuments, VirtualLanguage,
     script_code::extract_simple_bindings,
     template_code::{TemplateExpression, extract_expressions},
 };
@@ -50,8 +49,6 @@ pub(crate) use inline_art::inline_art_variants;
 /// embedded language (template, script, style). It uses arena allocation
 /// for temporary parsing data to minimize allocations.
 pub struct VirtualCodeGenerator {
-    /// Template code generator (reusable)
-    template_gen: TemplateCodeGenerator,
     /// Script code generator (reusable)
     script_gen: ScriptCodeGenerator,
     /// Style code generator (reusable)
@@ -63,7 +60,6 @@ impl VirtualCodeGenerator {
     #[inline]
     pub fn new() -> Self {
         Self {
-            template_gen: TemplateCodeGenerator::new(),
             script_gen: ScriptCodeGenerator::new(),
             style_gen: StyleCodeGenerator::new(),
         }
@@ -188,12 +184,33 @@ impl VirtualCodeGenerator {
     pub fn generate_template_only(&mut self, template_content: &str) -> Option<VirtualDocument> {
         let allocator = Allocator::new();
         let (ast, _) = vize_armature::parse(&allocator, template_content);
-
-        let mut doc = self.template_gen.generate(&ast, template_content);
-        doc.uri = "__inline.__template.ts".to_string();
-
-        Some(doc)
+        Some(checker_document::fragment_document(
+            None,
+            false,
+            0,
+            &ast,
+            0,
+            "__inline.__template.ts".to_string(),
+        ))
     }
+}
+
+pub(crate) fn project_template_fragment(
+    script: Option<&str>,
+    script_setup: bool,
+    script_offset: u32,
+    root: &vize_relief::RootNode<'_>,
+    template_offset: u32,
+    uri: String,
+) -> VirtualDocument {
+    checker_document::fragment_document(
+        script,
+        script_setup,
+        script_offset,
+        root,
+        template_offset,
+        uri,
+    )
 }
 
 impl Default for VirtualCodeGenerator {

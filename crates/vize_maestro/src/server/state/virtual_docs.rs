@@ -18,6 +18,18 @@ use art::{
     generate_art_script_setup_virtual_doc,
 };
 
+fn script_projection<'a>(
+    descriptor: &'a vize_atelier_sfc::SfcDescriptor<'a>,
+) -> (Option<&'a str>, bool, u32) {
+    if let Some(block) = descriptor.script_setup.as_ref() {
+        (Some(block.content.as_ref()), true, block.loc.start as u32)
+    } else if let Some(block) = descriptor.script.as_ref() {
+        (Some(block.content.as_ref()), false, block.loc.start as u32)
+    } else {
+        (None, false, 0)
+    }
+}
+
 #[cfg(test)]
 mod tests;
 
@@ -48,27 +60,26 @@ impl ServerState {
         let base_uri = uri.path();
         let mut virtual_docs = self.virtual_gen.write().generate(&descriptor, base_uri);
         add_inline_art_template_virtual_docs(&mut virtual_docs, &descriptor, base_uri);
-        super::art_template_context::attach(
-            &mut virtual_docs,
-            descriptor.script_setup.as_ref(),
-            false,
-        );
+        super::art_template_context::attach(&mut virtual_docs);
         self.virtual_docs_cache
             .insert(uri.clone(), Arc::new(virtual_docs));
     }
 
     /// Generate and cache virtual documents for standalone HTML files.
     fn update_standalone_html_virtual_docs(&self, uri: &Url, content: &str) {
-        use crate::virtual_code::{TemplateCodeGenerator, VirtualDocuments};
+        use crate::virtual_code::{VirtualDocuments, project_template_fragment};
 
         let allocator = vize_s0::Allocator::new();
         let (ast, _errors) = vize_armature::parse(&allocator, content);
         let base_uri = uri.path();
-
-        let mut template_gen = TemplateCodeGenerator::new();
-        template_gen.set_block_offset(0);
-        let mut template_doc = template_gen.generate(&ast, content);
-        template_doc.uri = vize_s0::cstr!("{base_uri}.__template.ts").to_string();
+        let template_doc = project_template_fragment(
+            None,
+            false,
+            0,
+            &ast,
+            0,
+            vize_s0::cstr!("{base_uri}.__template.ts").to_string(),
+        );
 
         let mut docs = VirtualDocuments::new();
         docs.template = Some(template_doc);
@@ -99,7 +110,9 @@ impl ServerState {
     /// Uses the default variant's template as the synthetic template block,
     /// and generates virtual docs for script_setup if present.
     fn update_art_virtual_docs(&self, uri: &Url, content: &str) {
-        use crate::virtual_code::{ScriptCodeGenerator, TemplateCodeGenerator, VirtualDocuments};
+        use crate::virtual_code::{
+            ScriptCodeGenerator, VirtualDocuments, project_template_fragment,
+        };
 
         let allocator = vize_s0::Allocator::new();
         let Ok(art_desc) =
@@ -111,9 +124,13 @@ impl ServerState {
 
         let base_uri = uri.path();
         let mut docs = VirtualDocuments::new();
+        let descriptor = self.sfc_descriptor(uri, content);
+        let (script, script_setup, script_offset) = descriptor
+            .as_deref()
+            .map(script_projection)
+            .unwrap_or((None, false, 0));
 
-        // Generate one virtual template per variant so editor features remain correct even when
-        // the cursor is inside a non-default variant.
+        // One checker document per variant, so a non-default variant keeps its own mappings.
         docs.art_templates.resize(art_desc.variants.len(), None);
 
         for (index, variant) in art_desc.variants.iter().enumerate() {
@@ -129,11 +146,14 @@ impl ServerState {
             let source_ptr = content.as_ptr() as usize;
             let block_offset = (template_ptr - source_ptr) as u32;
 
-            let mut template_gen = TemplateCodeGenerator::new();
-            template_gen.set_block_offset(block_offset);
-            let mut template_doc = template_gen.generate(&ast, template_content);
-            template_doc.uri =
-                vize_s0::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string();
+            let template_doc = project_template_fragment(
+                script,
+                script_setup,
+                script_offset,
+                &ast,
+                block_offset,
+                vize_s0::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string(),
+            );
 
             if variant.is_default || docs.template.is_none() {
                 docs.template = Some(template_doc.clone());
@@ -144,7 +164,7 @@ impl ServerState {
 
         // Generate script_setup virtual doc using SFC parser
         // (SFC parser handles script blocks even in art files)
-        if let Some(descriptor) = self.sfc_descriptor(uri, content) {
+        if let Some(descriptor) = descriptor.as_ref() {
             if let Some(ref script_setup) = descriptor.script_setup {
                 let isolate = art_script_setup_isolated(script_setup);
                 let mut script_doc = generate_art_script_setup_virtual_doc(
@@ -163,15 +183,9 @@ impl ServerState {
                 script_doc.uri = vize_s0::cstr!("{base_uri}.__script.ts").to_string();
                 docs.script = Some(script_doc);
             }
-            super::art_template_context::attach(
-                &mut docs,
-                descriptor.script_setup.as_ref(),
-                descriptor
-                    .script_setup
-                    .as_ref()
-                    .is_some_and(art_script_setup_isolated),
-            );
         }
+
+        super::art_template_context::attach(&mut docs);
 
         self.virtual_docs_cache.insert(uri.clone(), Arc::new(docs));
     }

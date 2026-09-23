@@ -7,9 +7,10 @@ pub(super) fn add_inline_art_template_virtual_docs(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     base_uri: &str,
 ) {
-    use crate::virtual_code::TemplateCodeGenerator;
+    use crate::virtual_code::project_template_fragment;
 
     let source = descriptor.source.as_ref();
+    let (script, script_setup, script_offset) = super::script_projection(descriptor);
     let mut variant_index = docs.art_templates.len();
 
     for custom in &descriptor.custom_blocks {
@@ -41,12 +42,15 @@ pub(super) fn add_inline_art_template_virtual_docs(
             let template_allocator = vize_s0::Allocator::new();
             let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
 
-            let mut template_gen = TemplateCodeGenerator::new();
-            template_gen.set_block_offset(variant.template_start as u32);
-            let mut template_doc = template_gen.generate(&ast, template_content);
-            template_doc.uri =
+            let template_doc = project_template_fragment(
+                script,
+                script_setup,
+                script_offset,
+                &ast,
+                variant.template_start as u32,
                 vize_s0::cstr!("{base_uri}.art_variant_{current_variant_index}.template.ts")
-                    .to_string();
+                    .to_string(),
+            );
 
             docs.art_templates[current_variant_index] = Some(template_doc);
         }
