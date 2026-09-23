@@ -568,7 +568,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/import
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/legacy_vue2.rs	1	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/legacy_vue2.rs	1	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/legacy_vue2.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/legacy_vue2.rs	204	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/legacy_vue2.rs	205	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/legacy_vue2/instance.rs	4	s0	S0	stage	vize_carton	compat	3
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/macro_anchors.rs	4	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/macro_anchors.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
