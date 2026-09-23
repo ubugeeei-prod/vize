@@ -75,8 +75,8 @@
 
 **Steps:**
 
-- [ ] `crates/vize_patina/src/html_content_model/composed.rs` over P4-3b's render-tree identities
-- [ ] A seeded cross-component defect class; fixtures for aliased imports, same-basename components, `v-if` multi-root, fragment roots, slot pass-through
+- [x] `crates/vize_patina/src/html_content_model/composed.rs` over P4-3b's render-tree identities
+- [x] A seeded cross-component defect class; fixtures for aliased imports, same-basename components, `v-if` multi-root, fragment roots, slot pass-through
 
 **Acceptance:** TS-37 cross-component class at 100% recall; TS-36 every witness verifies; TS-38 zero untriaged on the corpus; fixture snapshots exact (TS-9).
 

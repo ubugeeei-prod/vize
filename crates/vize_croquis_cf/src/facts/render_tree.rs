@@ -71,22 +71,15 @@ pub fn component_usage_targets(registry: &ModuleRegistry, caller: FileId) -> Vec
     let Some(entry) = registry.get(caller) else {
         return Vec::new();
     };
-    let mut facts = super::ProjectFacts::new(registry);
-    let table = facts
-        .prepare::<super::RenderTreeReader>()
-        .get::<RenderTree>()
-        .expect("render tree demand");
+    // The same resolution `RenderTree` stores. Walking one file does not
+    // rebuild the project table: a lint rebuilds every file, and a fresh
+    // table per file was quadratic.
     let mut targets = Vec::new();
     for tag in source_tags(entry) {
-        let Some((target, export_name)) = resolve_tag(registry, entry, tag.as_str()) else {
+        let Some((target, _)) = resolve_tag(registry, entry, tag.as_str()) else {
             continue;
         };
-        let key = RenderEdgeKey {
-            caller,
-            target,
-            export_name,
-        };
-        if table.contains_key(&key) && !targets.contains(&target) {
+        if !targets.contains(&target) {
             targets.push(target);
         }
     }
