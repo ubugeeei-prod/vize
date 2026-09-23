@@ -79,3 +79,57 @@ fn symlinked_workspace_build_output_package_gets_a_shadow_route() {
         Some(&source.canonicalize().unwrap())
     );
 }
+
+#[test]
+#[cfg(unix)]
+fn package_self_import_does_not_report_sibling_sources() {
+    let root = tempfile::tempdir().unwrap();
+    let package = root.path().join("packages/wave-ui");
+    let sibling = write(
+        root.path(),
+        "packages/wave-ui/src/sibling.ts",
+        "export const extra = 2;\n",
+    );
+    write(
+        root.path(),
+        "packages/wave-ui/src/index.ts",
+        "export const value = 1;\nexport * from './sibling';\n",
+    );
+    write(
+        root.path(),
+        "packages/wave-ui/package.json",
+        r#"{
+  "type": "module",
+  "name": "wave-ui",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "import": "./dist/index.js", "types": "./dist/index.d.ts" } }
+}
+"#,
+    );
+    let entry = write(
+        root.path(),
+        "packages/wave-ui/src/docs.ts",
+        "import { value } from 'wave-ui';\nvoid value;\n",
+    );
+
+    let mut resolver = PackageRouteResolver::default();
+    let mut canonical_paths = CanonicalPathCache::default();
+    let mut session = LocalImportSession::new(&mut resolver);
+    let discovered = collect_transitive_local_imports_with_session(
+        &[entry],
+        &package,
+        &mut canonical_paths,
+        false,
+        None,
+        &mut resolver,
+        &mut session,
+    );
+
+    assert!(
+        !discovered
+            .authored
+            .contains(&sibling.canonicalize().unwrap()),
+        "a file inside the package must not re-check the package source tree"
+    );
+}

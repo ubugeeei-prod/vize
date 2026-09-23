@@ -234,10 +234,13 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     &mut discovery,
                 )
             };
-            package_routes.extend(discovery.package_routes);
+            if package_route.is_none_or(|route| !file.starts_with(&route.package_root)) {
+                package_routes.extend(discovery.package_routes);
+            }
             let in_package_graph = package_graph || package_route.is_some();
             if let Some(route) = package_route
                 && needs_registration
+                && !file.starts_with(&route.package_root)
             {
                 if !package_graph && registered.insert(file.clone()) {
                     registrations.push(file.clone());
@@ -246,9 +249,7 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     .as_ref()
                     .expect("a positive package route came from a package lookup");
                 let mut route = route.clone();
-                // Re-sort only when the extension actually added something; most
-                // workspace packages arrive sorted and deduped, so the common case
-                // avoids a component-wise path sort over long pnpm paths (#4426).
+                // Re-sort only when this walk extended the dependency list (#4426).
                 let before = route.dependency_paths.len();
                 route.dependency_paths.extend(
                     discovery
@@ -280,12 +281,9 @@ pub(super) fn collect_transitive_local_imports_with_session(
                 }
             } else if let Some(route) = package_route
                 && route.workspace_source
+                && !needs_registration
             {
-                // A workspace package reached through `node_modules` is real
-                // project source, so it owns diagnostics even when nothing in
-                // it needs a Vize mirror. Only the mirror is optional here:
-                // skipping the walk would silently drop every error authored
-                // inside a plain TypeScript workspace package (#4137).
+                // Workspace source still owns diagnostics without a Vize mirror (#4137).
                 for candidate in route.all_source_paths() {
                     if is_declaration_file(candidate) {
                         continue;
