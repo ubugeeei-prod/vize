@@ -31,7 +31,8 @@ let
   # `filterCargoSources` keeps only what Cargo itself reads, but parts of this
   # workspace are embedded at compile time with `include_str!`: the carton
   # message catalogues, the canon TypeScript preamble, the marquette JSON
-  # schemas, and the Patina WHATWG content model TSV. The CLI's config schema
+  # schemas, the Patina WHATWG content model TSV, and the resident resource
+  # preset. The CLI's config schema
   # lives outside `crates/` entirely, beside
   # the npm package that also ships it. Filtered out, they fail the build
   # during macro expansion rather than at link time, which is why the error
@@ -48,6 +49,7 @@ let
 
   externalAssets = [
     "/npm/cli/schemas/vize.config.schema.json"
+    "/docs/davinci/plan/budgets.toml"
   ];
 
   src = lib.cleanSourceWith {
