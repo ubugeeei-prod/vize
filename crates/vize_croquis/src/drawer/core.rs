@@ -145,7 +145,7 @@ impl Drawer {
     /// Create drawer for compilation
     #[inline]
     pub fn for_compile() -> Self {
-        Self::with_options(DrawerOptions::for_compile())
+        Self::with_options(DrawerOptions::compile_demand())
     }
 
     /// Finish drawing and return the croquis.

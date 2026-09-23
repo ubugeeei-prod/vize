@@ -48,9 +48,12 @@ impl DrawerOptions {
         }
     }
 
-    /// Croquis for compilation (needs hoisting).
+    /// Compile demand: script, scopes, usage, and the hoist gate.
+    ///
+    /// `analyze_hoisting` is the `HoistTracker` gate. The tracker stays empty
+    /// until a consumer asks for hoists, so setting the bit does not allocate.
     #[inline]
-    pub const fn for_compile() -> Self {
+    pub const fn compile_demand() -> Self {
         Self {
             analyze_script: true,
             analyze_template_scopes: true,
@@ -60,5 +63,11 @@ impl DrawerOptions {
             collect_template_expressions: false,
             experimental_patterned_template: false,
         }
+    }
+
+    /// Croquis for compilation (needs hoisting).
+    #[inline]
+    pub const fn for_compile() -> Self {
+        Self::compile_demand()
     }
 }

@@ -32,7 +32,7 @@ fn vir_of(source: &str) -> String {
             vize_atelier_core::parser::parse(&template_allocator, template.content.as_ref());
         root
     });
-    let mut croquis_options = SfcCroquisOptions::for_lint();
+    let mut croquis_options = SfcCroquisOptions::lint_demand();
     croquis_options
         .analyzer_options
         .collect_template_expressions = true;

@@ -81,7 +81,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P4-3d](./phase-4-tasks.md#p4-3d--reactivity-merges-into-the-s3-lattice) Reactivity merges into the S3 lattice — lane B · startable now
 - [ ] [P4-3e](./phase-4-tasks.md#p4-3e--effect-graph-fact-group) Effect-graph fact group — lane B · gated on P3-6
 - [ ] [P4-3f](./phase-4-tasks.md#p4-3f--provide-inject-and-race-fact-groups) Provide/inject and race fact groups — lane B · startable now
-- [ ] [P4-4a](./phase-4-tasks.md#p4-4a--orphan-verdicts-for-non-effect-products) Orphan verdicts for non-effect products — lane B · startable now
+- [x] [P4-4a](./phase-4-tasks.md#p4-4a--orphan-verdicts-for-non-effect-products) Orphan verdicts for non-effect products — lane B · startable now
 - [ ] [P4-4b](./phase-4-tasks.md#p4-4b--effect-graph-verdict) Effect-graph verdict — lane B · gated on P3-6
 - [x] [P4-5a](./phase-4-tasks.md#p4-5a--one-mapping-model-and-one-diagnostic-post-pass) One mapping model and one diagnostic post-pass — lane C · startable now
 - [x] [P4-5b](./phase-4-tasks.md#p4-5b--s2-projection-as-an-s4-target) S2 projection as an S4 target — lane C · gated on P3-9

@@ -47,5 +47,45 @@ fn davinci(criterion: &mut Criterion) {
     }
 }
 
-criterion_group!(davinci_group, davinci);
+fn hoist_gate(criterion: &mut Criterion) {
+    let fixture = LADDER
+        .iter()
+        .find(|fixture| fixture.name == "small")
+        .expect("small ladder fixture");
+    let descriptor = parse_sfc(fixture.source, SfcParseOptions::default())
+        .expect("small.vue is a well-formed SFC");
+    let allocator = Allocator::new();
+    let template_ast = descriptor.template.as_ref().map(|block| {
+        let (root, _errors) = Parser::new(&allocator, block.content.as_ref()).parse();
+        root
+    });
+    // The hoist gate is `analyze_hoisting`. Off leaves `HoistTracker` empty.
+    // On registers the same gate; no consumer populates the tracker, so the
+    // two runs allocate the same.
+    let mut off = SfcCroquisOptions::for_compile();
+    off.analyzer_options.analyze_hoisting = false;
+    let on = SfcCroquisOptions::for_compile();
+    davinci_harness::bench_with_metrics(
+        criterion,
+        "croquis_hoist_gate_off_small",
+        fixture.relative_path,
+        || {
+            analyze_sfc_descriptor(&descriptor, template_ast.as_ref(), off)
+                .hoists
+                .count()
+        },
+    );
+    davinci_harness::bench_with_metrics(
+        criterion,
+        "croquis_hoist_gate_on_small",
+        fixture.relative_path,
+        || {
+            analyze_sfc_descriptor(&descriptor, template_ast.as_ref(), on)
+                .hoists
+                .count()
+        },
+    );
+}
+
+criterion_group!(davinci_group, davinci, hoist_gate);
 davinci_harness::main!(davinci_group);

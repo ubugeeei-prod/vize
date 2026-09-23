@@ -102,6 +102,8 @@ croquis_analyze_for_compile_large = { wall_p50_ns = 0, allocs = 296, rss_peak_by
 croquis_analyze_for_compile_stress-deep = { wall_p50_ns = 0, allocs = 46, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 croquis_analyze_for_compile_stress-wide = { wall_p50_ns = 0, allocs = 64, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 croquis_analyze_for_compile_stress-interp = { wall_p50_ns = 0, allocs = 8, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_hoist_gate_off_small = { wall_p50_ns = 0, allocs = 66, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+croquis_hoist_gate_on_small = { wall_p50_ns = 0, allocs = 66, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 harness-selfcheck = { wall_p50_ns = 0, allocs = 1, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 
 # Atelier per-stage benches (P0-3). Stage-window cases (transform / lower /

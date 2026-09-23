@@ -19,7 +19,7 @@ use crate::diagnostic::LintDiagnostic;
 
 /// The coordinates croquis' lint analysis measures script offsets in.
 ///
-/// `analyze_sfc_descriptor` with `SfcCroquisOptions::for_lint()` analyzes the
+/// `analyze_sfc_descriptor` with the lint demand analyzes the
 /// `<script>` content, a `\n`, then the `<script setup>` content when both
 /// blocks exist (setup offsets are shifted by the plain content's length plus
 /// one); otherwise it analyzes the one block alone. The frame mirrors that

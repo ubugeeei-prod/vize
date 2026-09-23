@@ -201,8 +201,8 @@
 
 **Steps:**
 
-- [ ] Evidence per product: TS-34 agreement plus a corpus-shard TS-38 scan for the provide/inject and race rules; verdicts in the task record
-- [ ] Demand-gated groups are not computed unless demanded — proved by an alloc-identical bench pair with and without the gated group registered
+- [x] Evidence per product: TS-34 agreement plus a corpus-shard TS-38 scan for the provide/inject and race rules; verdicts in the task record
+- [x] Demand-gated groups are not computed unless demanded — proved by an alloc-identical bench pair with and without the gated group registered
 
 **Acceptance:** TS-12 — the regenerated matrix's "no external consumers" section lists only demand-gated products, each naming its gate; the bench pair registered in `budgets.toml` with identical `allocs` (TS-10); `grep -rn "SfcCroquisOptions::for_lint\|DrawerOptions::for_compile" crates` empty; TS-9/TS-11 unchanged.
 

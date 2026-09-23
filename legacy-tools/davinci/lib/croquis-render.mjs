@@ -4,6 +4,7 @@
 // would change on every PR and make every other PR conflict). Ordering is
 // fully determined by lexical sorts so the staleness check can byte-compare.
 
+import { gateOf, gatedProductIds } from "./croquis-gates.mjs";
 import { formatTable } from "./markdown.mjs";
 import { byKey } from "./ordering.mjs";
 
@@ -179,6 +180,24 @@ function rowsBy(map) {
   return out;
 }
 
+function orphanProducts(productIds, resolvedBy) {
+  return productIds
+    .filter((product) => !resolvedBy.has(product.id))
+    .sort((left, right) => byKey(left.id, right.id));
+}
+
+/** Orphans missing a gate, and gates whose product is no longer an orphan. */
+export function gateViolations(products, analysis) {
+  const productIds = productIdsOf(products);
+  const resolvedBy = rowsBy(analysis.rows);
+  const orphans = new Set(orphanProducts(productIds, resolvedBy).map((product) => product.id));
+  const missing = [...orphans].filter((id) => gateOf(id) === null).sort(byKey);
+  const stale = gatedProductIds()
+    .filter((id) => !orphans.has(id))
+    .sort(byKey);
+  return { missing, stale };
+}
+
 /** The on-demand cross-crate view printed by `--summary`. Never committed. */
 export function renderSummary(products, analysis) {
   const productIds = productIdsOf(products);
@@ -205,13 +224,12 @@ export function renderSummary(products, analysis) {
   lines.push("");
   lines.push("## Products with no external consumers");
   lines.push("");
-  const orphansByModule = new Map();
-  for (const p of productIds.filter((p) => !resolvedBy.has(p.id))) {
-    if (!orphansByModule.has(p.module)) orphansByModule.set(p.module, []);
-    orphansByModule.get(p.module).push("`" + p.id + "`");
-  }
-  for (const module of [...orphansByModule.keys()].sort(byKey)) {
-    lines.push(`- \`${module}\`: ${orphansByModule.get(module).join(", ")}`);
+  lines.push(
+    "Every row is demand-gated. The gate is the switch that keeps the product off the hot path until a consumer demands it.",
+  );
+  lines.push("");
+  for (const product of orphanProducts(productIds, resolvedBy)) {
+    lines.push(`- \`${product.id}\` — gate: \`${gateOf(product.id)}\``);
   }
   lines.push("");
   lines.push("## Non-product `vize_croquis` imports observed");

@@ -33,20 +33,27 @@ impl SfcCroquisOptions {
         }
     }
 
-    /// Fast lint-oriented analysis.
+    /// Lint demand: script, scopes, usage, and undefined refs. Hoists and
+    /// template-expression collection stay off.
     #[inline]
-    pub const fn for_lint() -> Self {
+    pub const fn lint_demand() -> Self {
         Self {
             analyzer_options: DrawerOptions::for_lint(),
             merge_scripts: true,
         }
     }
 
+    /// Fast lint-oriented analysis.
+    #[inline]
+    pub const fn for_lint() -> Self {
+        Self::lint_demand()
+    }
+
     /// Compilation-oriented analysis.
     #[inline]
     pub const fn for_compile() -> Self {
         Self {
-            analyzer_options: DrawerOptions::for_compile(),
+            analyzer_options: DrawerOptions::compile_demand(),
             merge_scripts: true,
         }
     }

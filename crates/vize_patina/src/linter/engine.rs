@@ -82,7 +82,7 @@ pub(crate) fn analyze_descriptor_for_lint(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
     template_ast: Option<&RootNode<'_>>,
 ) -> Croquis {
-    analyze_sfc_descriptor(descriptor, template_ast, SfcCroquisOptions::for_lint())
+    analyze_sfc_descriptor(descriptor, template_ast, SfcCroquisOptions::lint_demand())
 }
 
 impl Linter {

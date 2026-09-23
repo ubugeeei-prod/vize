@@ -34,7 +34,7 @@ pub(super) fn project_type_aware<'a>(
 ) -> TypeAwareDocument {
     // Lint analysis skips template expressions. The checker document needs
     // them so a probe can type the expression the author wrote.
-    let mut options = SfcCroquisOptions::for_lint();
+    let mut options = SfcCroquisOptions::lint_demand();
     options.analyzer_options.collect_template_expressions = true;
     let analysis = analyze_sfc_descriptor(descriptor, template, options);
     let output = generate_virtual_ts_with_offsets(

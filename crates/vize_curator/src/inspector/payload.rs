@@ -231,7 +231,7 @@ fn build_semantic_report(
             }
             root
         });
-        let mut croquis_options = SfcCroquisOptions::for_lint();
+        let mut croquis_options = SfcCroquisOptions::lint_demand();
         croquis_options
             .analyzer_options
             .collect_template_expressions = true;

@@ -38,7 +38,7 @@
 import { checkArtifactSet, writeArtifactSet } from "./lib/artifact-set.mjs";
 import { analyzeConsumers } from "./lib/croquis-analysis.mjs";
 import { enumerateProducts } from "./lib/croquis-products.mjs";
-import { renderSummary } from "./lib/croquis-render.mjs";
+import { gateViolations, renderSummary } from "./lib/croquis-render.mjs";
 import { renderCroquisArtifacts } from "./lib/croquis-shards.mjs";
 import { REGEN_COMMAND, SHARD_DIR_REL } from "./lib/paths.mjs";
 
@@ -52,6 +52,20 @@ function main() {
   }
   const products = enumerateProducts();
   const analysis = analyzeConsumers(products);
+  const violations = gateViolations(products, analysis);
+  if (violations.missing.length > 0 || violations.stale.length > 0) {
+    if (violations.missing.length > 0) {
+      console.error(
+        `croquis products with no external consumer and no demand gate: ${violations.missing.join(", ")}`,
+      );
+    }
+    if (violations.stale.length > 0) {
+      console.error(
+        `croquis demand gates whose product now has a consumer: ${violations.stale.join(", ")}`,
+      );
+    }
+    if (mode !== "--summary") process.exit(1);
+  }
   if (mode === "--summary") {
     process.stdout.write(renderSummary(products, analysis));
     return;

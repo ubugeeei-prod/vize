@@ -24,7 +24,7 @@ pub(super) fn template_document(
         .template
         .as_ref()
         .expect("template document is only built for a template block");
-    let mut options = SfcCroquisOptions::for_lint();
+    let mut options = SfcCroquisOptions::lint_demand();
     options.analyzer_options.collect_template_expressions = true;
     let analysis = analyze_sfc_descriptor_with_context(descriptor, Some(root), options);
     let output = generate_virtual_ts_with_split_offsets(
