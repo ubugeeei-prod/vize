@@ -7,8 +7,6 @@ name: Editor conformance
 # rejects drift).
 
 on:
-  push:
-    branches: [main, davinci]
   schedule:
     # Daily, offset from the check/native-smoke/e2e crons.
     - cron: "41 4 * * *"

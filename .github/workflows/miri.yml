@@ -1,11 +1,12 @@
 name: Miri
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Miri @ {0}', github.sha) || format('Miri scheduled @ {0}', github.sha) }}
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main, davinci]
+  schedule:
+    - cron: "41 3 * * *"
 concurrency:
-  group: miri-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: miri-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:

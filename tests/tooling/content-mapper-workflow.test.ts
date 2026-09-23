@@ -22,70 +22,6 @@ const PACKAGE_ROUTE_COMMANDS = [
   "cargo test -p vize --test check_package_scope_mode_cli -- --nocapture",
   "cargo test -p vize --test check_package_tsx_shadow_cli -- --nocapture",
 ];
-const REQUIRED_TRIGGER_PATHS = [
-  ".github/workflows/content-mapper-conformance.yml",
-  "Cargo.lock",
-  "Cargo.toml",
-  "crates/vize/Cargo.toml",
-  "crates/vize/src/commands/content_mapper.rs",
-  "crates/vize/src/commands/content_mapper/**",
-  "crates/vize/src/commands/check/**",
-  "crates/vize/tests/content_mapper_tsgo_cli.rs",
-  "crates/vize/tests/content_mapper_tsgo_directives.rs",
-  "crates/vize/tests/content_mapper_tsgo_build.rs",
-  "crates/vize/tests/content_mapper_tsgo_incremental.rs",
-  "crates/vize/tests/content_mapper_tsgo_package_references.rs",
-  "crates/vize/tests/content_mapper_tsgo_watch.rs",
-  "crates/vize/tests/content_mapper_importer_scoped_packages.rs",
-  "crates/vize/tests/check_*package*.rs",
-  "crates/vize/tests/check_*package*/**",
-  "crates/vize/tests/davinci_ts40_projection_cli.rs",
-  "crates/vize/tests/snapshots/davinci_ts40_projection_cli__*.snap",
-  "crates/vize/tests/content_mapper_tsgo_lsp.rs",
-  "crates/vize/tests/content_mapper_lsp_shutdown.rs",
-  "crates/vize/tests/content_mapper_tsgo_declaration_lsp.rs",
-  "crates/vize/tests/content_mapper_tsgo_lsp_event_forms.rs",
-  "crates/vize/tests/content_mapper_tsgo_lsp_event_forms/**",
-  "crates/vize/tests/content_mapper_lsp_support/**",
-  "crates/vize/tests/fixtures/content_mapper_project/**",
-  "crates/vize_canon/Cargo.toml",
-  "crates/vize_canon/src/batch.rs",
-  "crates/vize_canon/src/batch/**",
-  "crates/vize_canon/src/corsa_bridge.rs",
-  "crates/vize_canon/src/corsa_bridge/**",
-  "crates/vize_canon/src/corsa_server.rs",
-  "crates/vize_canon/src/corsa_server/**",
-  "crates/vize_canon/src/lib.rs",
-  "crates/vize_canon/src/lsp_client.rs",
-  "crates/vize_canon/src/lsp_client/**",
-  "crates/vize_canon/src/package_route.rs",
-  "crates/vize_canon/src/package_route/**",
-  "crates/vize_canon/tests/lsp_import_resolution.rs",
-  "crates/vize_canon/src/virtual_ts.rs",
-  "crates/vize_canon/src/virtual_ts/**",
-  "crates/vize_maestro/Cargo.toml",
-  "crates/vize_maestro/src/lib.rs",
-  "crates/vize_maestro/src/ide/**",
-  "crates/vize_maestro/src/server/**",
-  "crates/vize_maestro/src/virtual_code.rs",
-  "crates/vize_maestro/src/virtual_code/**",
-  "crates/vize_maestro/tests/davinci_ts40_projection.rs",
-  "crates/vize_maestro/tests/davinci_ts40_projection_support/**",
-  "crates/vize_maestro/tests/snapshots/davinci_ts40_projection__*.snap",
-  "npm/cli/bin/vize",
-  "npm/cli/package.json",
-  "npm/cli/src/**",
-  "npm/cli/tests/**",
-  "npm/native/**",
-  "pnpm-lock.yaml",
-  "pnpm-workspace.yaml",
-  "tools/commands/release/npm/**",
-  "tools/support/**",
-  "tests/_fixtures/davinci-ts40-projection/**",
-  "tests/tooling/davinci-ts40-projection.test.ts",
-  "tests/tooling/support/davinci-ts40-projection.ts",
-];
-
 interface WorkflowStep {
   env?: Record<string, string>;
   name?: string;
@@ -95,14 +31,9 @@ interface WorkflowStep {
   "working-directory"?: string;
 }
 
-interface WorkflowTrigger {
-  branches?: string[];
-  paths?: string[];
-}
-
 interface WorkflowConfig {
   on: {
-    push: WorkflowTrigger;
+    schedule?: Array<{ cron: string }>;
     workflow_dispatch?: unknown;
   };
 }
@@ -124,12 +55,8 @@ function assertTriggerFilters(workflowConfig: WorkflowConfig): void {
     !Object.hasOwn(workflowConfig.on, "pull_request"),
     "full Content Mapper conformance must stay off the fast PR path",
   );
-  const trigger = workflowConfig.on.push;
-  assert.deepEqual(trigger.branches, ["main"], "push trigger must target main");
-  assert.ok(Array.isArray(trigger.paths), "push trigger must declare paths");
-  for (const pathFilter of REQUIRED_TRIGGER_PATHS) {
-    assert.ok(trigger.paths.includes(pathFilter), `push paths missing ${pathFilter}`);
-  }
+  assert.equal(Object.hasOwn(workflowConfig.on, "push"), false);
+  assert.deepEqual(workflowConfig.on.schedule, [{ cron: "21 4 * * *" }]);
 }
 
 test("Content Mapper conformance pins and runs the exact upstream project path", () => {

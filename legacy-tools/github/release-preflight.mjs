@@ -166,7 +166,7 @@ export function verifyReleaseTarget(env = process.env) {
  * commit only rewrote version metadata. `Native Smoke` must never be added: it
  * installs what the tag builds, so its subject really is the release commit.
  */
-const parentEvidenceReusableWorkflows = ["Fuzz", "Miri", "Real Project Matrix", "Docs build"];
+const parentEvidenceReusableWorkflows = ["Fuzz", "Real Project Matrix"];
 
 /**
  * A diff this cannot compute — a shallow clone, an unhydrated parent — answers

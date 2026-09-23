@@ -21,7 +21,7 @@ type Step = {
   with?: Record<string, unknown>;
 };
 type Workflow = {
-  on: { push: { branches: string[]; paths: string[] }; workflow_dispatch: unknown };
+  on: { schedule: Array<{ cron: string }>; workflow_dispatch: unknown };
   jobs: Record<string, { steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
 };
 
@@ -41,7 +41,8 @@ function leanSources(root: string = formalRoot): string[] {
 }
 
 function assertLeanWorkflow(workflow: Workflow): void {
-  assert.deepEqual(workflow.on.push.branches, ["main", "davinci"]);
+  assert.equal(Object.hasOwn(workflow.on, "push"), false);
+  assert.deepEqual(workflow.on.schedule, [{ cron: "11 5 * * *" }]);
   assert.ok(Object.hasOwn(workflow.on, "workflow_dispatch"));
   assert.ok(!Object.hasOwn(workflow.on, "pull_request"));
   const job = workflow.jobs["impeto-reference"];
@@ -84,10 +85,6 @@ function assertLeanWorkflow(workflow: Workflow): void {
       ],
     ],
   );
-  for (const file of ["davinci-runtime-trace.mjs", "davinci-mounted-trace.mjs"]) {
-    assert.ok(workflow.on.push.paths.includes(`tests/tooling/support/${file}`));
-  }
-  assert.ok(workflow.on.push.paths.includes("tests/tooling/support/davinci-event-*.mjs"));
 }
 
 test("TS-28 pins the Lean toolchain and CI package directory", () => {

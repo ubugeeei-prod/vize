@@ -1,9 +1,19 @@
 name: Docs build
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Docs build @ {0}', github.sha) || format('Docs build {0} @ {1}', github.event_name, github.sha) }}
 
 on:
   push:
     branches:
       - main
+    # Publish authored site changes immediately. Code-only pushes use the
+    # nightly build, and releases dispatch an exact-SHA build.
+    paths:
+      - ".github/workflows/build-docs.yml"
+      - "docs/**"
+      - "playground/**"
+      - "examples/vite-musea/**"
+  schedule:
+    - cron: "41 5 * * *"
   workflow_dispatch:
 
 env:
@@ -13,9 +23,9 @@ permissions:
   contents: read
 
 # Release preflight consumes this workflow as immutable evidence for github.sha.
-# A later main push must build independently instead of cancelling an older SHA.
+# Keep tag dispatch separate from a scheduled main build at the same SHA.
 concurrency:
-  group: docs-build-${{ github.sha }}
+  group: docs-build-${{ github.event_name }}-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:

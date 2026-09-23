@@ -62,6 +62,18 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
         expectedRunName: `Check full @ ${releaseSha}`,
       },
       {
+        workflowName: "Miri",
+        workflowId: "miri.yml",
+        inputs: {},
+        expectedRunName: `Miri @ ${releaseSha}`,
+      },
+      {
+        workflowName: "Docs build",
+        workflowId: "build-docs.yml",
+        inputs: {},
+        expectedRunName: `Docs build @ ${releaseSha}`,
+      },
+      {
         workflowName: "Fuzz",
         workflowId: "fuzz.yml",
         inputs: { mode: "replay" },
@@ -82,6 +94,15 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
       },
     ].map((plan) => ({ ref: "v1.2.3", ...plan })),
   );
+});
+
+test("tag-bound full gates include the exact SHA in their workflow run names", () => {
+  for (const workflowName of ["Check", "Miri", "Docs build"]) {
+    const plan = findReleasePlan(workflowName);
+    const runName = readWorkflow(plan.workflowId)["run-name"] ?? "";
+    assert.match(runName, /github\.sha/);
+    assert.ok(runName.includes(plan.expectedRunName.split(" @ ")[0]), workflowName);
+  }
 });
 
 test("release gate plans reject ambiguous SHAs and missing refs", () => {
@@ -147,7 +168,7 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
   assert.throws(
     () => selectRequiredWorkflowRuns(runs, releaseSha, requiredReleaseWorkflows, qualifiers),
-    /Fuzz: missing schedule\/workflow_dispatch run/,
+    /Check: missing workflow_dispatch run/,
   );
   for (const plan of plans) {
     const run = findEvidenceRun(runs, plan.workflowName);
@@ -157,7 +178,7 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
   }
   assert.throws(
     () => selectRequiredWorkflowRuns(runs, releaseSha, requiredReleaseWorkflows, qualifiers),
-    /Fuzz: missing schedule\/workflow_dispatch run/,
+    /Check: missing workflow_dispatch run/,
   );
   for (const plan of plans) {
     const run = findEvidenceRun(runs, plan.workflowName);
@@ -172,7 +193,7 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
 test("release gate bootstrap reuses evidence that already exists at the SHA", async () => {
   const plans = releasePlans();
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
-  for (const workflowName of ["Check", "Fuzz", "Real Project Matrix"]) {
+  for (const workflowName of requiredReleaseWorkflows) {
     const run = findEvidenceRun(runs, workflowName);
     run.display_title = findReleasePlan(workflowName).expectedRunName;
     run.event = "workflow_dispatch";
@@ -188,9 +209,8 @@ test("release gate bootstrap reuses evidence that already exists at the SHA", as
 
   assert.deepEqual(dispatched, []);
   assert.deepEqual([...selected.keys()], requiredReleaseWorkflows);
-  // Miri and Docs build are push-triggered on main; Check is full on dispatch.
-  for (const workflowName of ["Miri", "Docs build"]) {
-    assert.equal(findEvidenceRun(runs, workflowName).event, "push");
+  for (const workflowName of requiredReleaseWorkflows) {
+    assert.equal(findEvidenceRun(runs, workflowName).event, "workflow_dispatch");
   }
 });
 

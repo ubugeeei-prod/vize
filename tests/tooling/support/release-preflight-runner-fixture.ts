@@ -127,8 +127,14 @@ function releaseWorkflowRuns(tag: string) {
       "workflow_dispatch",
       `Fuzz replay @ ${releaseSha}`,
     ),
-    run(104, "Miri", ".github/workflows/miri.yml", "push"),
-    run(105, "Docs build", ".github/workflows/build-docs.yml", "push"),
+    run(104, "Miri", ".github/workflows/miri.yml", "workflow_dispatch", `Miri @ ${releaseSha}`),
+    run(
+      105,
+      "Docs build",
+      ".github/workflows/build-docs.yml",
+      "workflow_dispatch",
+      `Docs build @ ${releaseSha}`,
+    ),
     run(
       106,
       "Real Project Matrix",

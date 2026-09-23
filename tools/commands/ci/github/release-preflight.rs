@@ -33,8 +33,7 @@ use std::{
 
 const REQUIRED_RELEASE_WORKFLOWS: &[&str] =
     &["Check", "Fuzz", "Miri", "Real Project Matrix", "Docs build"];
-const PARENT_EVIDENCE_REUSABLE_WORKFLOWS: &[&str] =
-    &["Fuzz", "Miri", "Real Project Matrix", "Docs build"];
+const PARENT_EVIDENCE_REUSABLE_WORKFLOWS: &[&str] = &["Fuzz", "Real Project Matrix"];
 const RELEASE_PACKAGE_ROOTS: &[&str] = &["editors", "npm"];
 const RELEASE_BLOCKING_LABELS: &[&str] = &["priority:p0", "priority:p1"];
 const FAILURE_DETAIL_GITHUB_TIMEOUTS: GitHubApiTimeouts = GitHubApiTimeouts {
@@ -315,6 +314,22 @@ fn create_release_gate_dispatch_plans(
             ref_name: ref_name.to_string(),
             inputs: json!({}),
             expected_run_name: format!("Check full @ {head_sha}"),
+            accepts_scheduled_evidence: false,
+        },
+        DispatchPlan {
+            workflow_name: "Miri",
+            workflow_id: "miri.yml",
+            ref_name: ref_name.to_string(),
+            inputs: json!({}),
+            expected_run_name: format!("Miri @ {head_sha}"),
+            accepts_scheduled_evidence: false,
+        },
+        DispatchPlan {
+            workflow_name: "Docs build",
+            workflow_id: "build-docs.yml",
+            ref_name: ref_name.to_string(),
+            inputs: json!({}),
+            expected_run_name: format!("Docs build @ {head_sha}"),
             accepts_scheduled_evidence: false,
         },
         DispatchPlan {
@@ -785,17 +800,13 @@ fn required_release_workflow_evidence(name: &str) -> Result<WorkflowEvidence, St
         }),
         "Miri" => Ok(WorkflowEvidence {
             path: ".github/workflows/miri.yml",
-            events: if env::var("RELEASE_PR_NUMBER").is_ok_and(|value| !value.is_empty()) {
-                &["push", "pull_request"]
-            } else {
-                &["push"]
-            },
-            branches: &[("push", &["main"])],
+            events: &["workflow_dispatch"],
+            branches: &[],
         }),
         "Docs build" => Ok(WorkflowEvidence {
             path: ".github/workflows/build-docs.yml",
-            events: &["push", "workflow_dispatch"],
-            branches: &[("push", &["main"])],
+            events: &["workflow_dispatch"],
+            branches: &[],
         }),
         "Real Project Matrix" => Ok(WorkflowEvidence {
             path: ".github/workflows/real-project-matrix.yml",

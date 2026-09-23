@@ -58,14 +58,6 @@ test("the release dispatches only gates that need tag-bound evidence", () => {
 
   assert.deepEqual(
     plans.map((plan) => plan.workflowName),
-    ["Check", "Fuzz", "Real Project Matrix"],
+    ["Check", "Miri", "Docs build", "Fuzz", "Real Project Matrix"],
   );
-  // Miri and Docs build still use push evidence.
-  for (const pushTriggered of ["Miri", "Docs build"]) {
-    assert.equal(
-      plans.some((plan) => plan.workflowName === pushTriggered),
-      false,
-      `${pushTriggered} is already green on the release commit`,
-    );
-  }
 });

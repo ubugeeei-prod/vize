@@ -29,11 +29,11 @@ The command performs the whole release:
 
 Release preflight requires successful Check, Fuzz replay, Miri, Real Project
 Matrix, and Docs build evidence. Main pushes run the fast Check lane. Preflight
-dispatches the full Check workflow at the exact release tag SHA and verifies
-its `test-scripts` job; a fast push or PR run cannot stand in for it. For a
-version-only release commit, the other code gates may reuse their parent's
-evidence. The Benchmark workflow remains available on demand, but is not
-dispatched or waited on by release preflight.
+dispatches full Check, Miri, and Docs build at the exact release tag SHA and
+verifies Check's `test-scripts` job; fast push and PR runs cannot stand in for
+them. For a version-only release commit, Fuzz replay and Real Project Matrix
+may reuse their parent's evidence. The Benchmark workflow remains available on
+demand, but is not dispatched or waited on by release preflight.
 
 Your original worktree stays untouched. Only the command's generated release
 branch can be refreshed, using a lease to reject concurrent edits. Another
@@ -48,6 +48,10 @@ full compiler, package, coverage, and integration suites. The additional
 release builds and preflight run only when the release command explicitly
 dispatches them. No global strict-status-check setting is needed. The atomic
 promotion enforces the latest-main requirement for releases.
+
+Docs and playground content changes still build and deploy Pages immediately
+after merging to `main`. Code-only changes use the daily Docs build or the
+release's exact-SHA build instead of rebuilding the site on every push.
 
 Use the release command to finish release PRs; manually squash-merging one does
 not preserve the validated commit identity and will not trigger publication.

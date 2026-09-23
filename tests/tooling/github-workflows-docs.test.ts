@@ -56,14 +56,25 @@ function namedStep(job: WorkflowJob, name: string): WorkflowStep {
 test("docs build evidence is immutable per SHA and has no Pages authority", () => {
   const workflow = readWorkflow("build-docs.yml");
   const events = workflow.on as {
-    push?: { branches?: string[] };
+    push?: { branches?: string[]; paths?: string[] };
+    schedule?: Array<{ cron: string }>;
     workflow_dispatch?: unknown;
   };
 
   assert.equal(workflow.name, "Docs build");
-  assert.deepEqual(Object.keys(events).sort(), ["push", "workflow_dispatch"]);
+  assert.deepEqual(Object.keys(events).sort(), ["push", "schedule", "workflow_dispatch"]);
   assert.deepEqual(events.push?.branches, ["main"]);
-  assert.equal(workflow.concurrency?.group, "docs-build-${{ github.sha }}");
+  assert.deepEqual(events.push?.paths, [
+    ".github/workflows/build-docs.yml",
+    "docs/**",
+    "playground/**",
+    "examples/vite-musea/**",
+  ]);
+  assert.deepEqual(events.schedule, [{ cron: "41 5 * * *" }]);
+  assert.equal(
+    workflow.concurrency?.group,
+    "docs-build-${{ github.event_name }}-${{ github.ref }}-${{ github.sha }}",
+  );
   assert.equal(workflow.concurrency?.["cancel-in-progress"], true);
   assert.deepEqual(Object.keys(workflow.jobs ?? {}).sort(), ["build-docs", "build-playground"]);
   assert.equal(workflow.permissions?.contents, "read");
@@ -147,8 +158,7 @@ test("release preflight requires docs build evidence, never mutable deployment",
   assert.ok(!requiredReleaseWorkflows.includes("Deploy docs"));
   assert.deepEqual(requiredReleaseWorkflowEvidence.get("Docs build"), {
     path: ".github/workflows/build-docs.yml",
-    events: ["push", "workflow_dispatch"],
-    branches: { push: ["main"] },
+    events: ["workflow_dispatch"],
   });
 
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));

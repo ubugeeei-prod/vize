@@ -16,10 +16,10 @@ const exactShaGates = [
     "check.yml",
     "check-v2-${{ github.workflow }}-${{ github.event.pull_request.number || format('{0}-{1}', github.event_name, github.sha) }}",
   ],
-  ["miri.yml", "miri-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"],
+  ["miri.yml", "miri-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}"],
 ] as const;
 
-test("release gates preserve completed evidence for each pushed main SHA", () => {
+test("release gates isolate exact-tag dispatch from main validation", () => {
   for (const [file, expectedGroup] of exactShaGates) {
     const workflow = parse(readRepoFile(".github", "workflows", file)) as Workflow;
 

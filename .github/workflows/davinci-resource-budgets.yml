@@ -6,17 +6,6 @@ name: Davinci resource budgets
 # ratchet step rejects a loosened or dropped ceiling against the PR base.
 
 on:
-  push:
-    branches: [main, davinci]
-    paths:
-      - "crates/vize/**"
-      - "crates/vize_canon/**"
-      - "crates/vize_maestro/**"
-      - "Cargo.lock"
-      - "davinci-road/plan/budgets.toml"
-      - "tools/commands/davinci/resource-budgets.rs"
-      - "tools/support/davinci/resource_session.rs"
-      - ".github/workflows/davinci-resource-budgets.yml"
   schedule:
     # Daily, offset from the other nightly lanes.
     - cron: "53 5 * * *"

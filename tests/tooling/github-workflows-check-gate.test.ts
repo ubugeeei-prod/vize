@@ -120,29 +120,33 @@ test("report command exits nonzero for a failed dependency", () => {
   assert.match(result.stderr, /check-vize-apps: failure/);
 });
 
-test("slow suites stay available after merge or by explicit dispatch without starting on PRs", () => {
+test("slow suites use schedules or explicit dispatch without starting on PRs", () => {
   const pushOrDispatch = [
-    "content-mapper-conformance.yml",
     "davinci-contracts.yml",
     "davinci-html-content-model.yml",
     "davinci-incremental.yml",
-    "davinci-lean.yml",
     "davinci-moonbit.yml",
-    "davinci-resource-budgets.yml",
-    "editor-conformance.yml",
-    "fresco.yml",
-    "miri.yml",
-    "pkg-pr-new.yml",
   ];
   const scheduledOrDispatch = [
     "benchmark.yml",
     "check-bench.yml",
+    "content-mapper-conformance.yml",
+    "davinci-lean.yml",
+    "davinci-resource-budgets.yml",
     "e2e.yml",
+    "editor-conformance.yml",
+    "fresco.yml",
     "fuzz.yml",
+    "miri.yml",
     "tool-benchmark.yml",
     "vue-benchmarks-replay.yml",
   ];
-  for (const name of [...pushOrDispatch, ...scheduledOrDispatch, "criterion-bench.yml"]) {
+  for (const name of [
+    ...pushOrDispatch,
+    ...scheduledOrDispatch,
+    "criterion-bench.yml",
+    "pkg-pr-new.yml",
+  ]) {
     const events =
       (parse(readRepoFile(".github", "workflows", name)) as { on?: Record<string, unknown> }).on ??
       {};
@@ -151,5 +155,7 @@ test("slow suites stay available after merge or by explicit dispatch without sta
     if (pushOrDispatch.includes(name)) assert.equal(Object.hasOwn(events, "push"), true, name);
     if (scheduledOrDispatch.includes(name))
       assert.equal(Object.hasOwn(events, "schedule"), true, name);
+    if (scheduledOrDispatch.includes(name) || name === "pkg-pr-new.yml")
+      assert.equal(Object.hasOwn(events, "push"), false, name);
   }
 });

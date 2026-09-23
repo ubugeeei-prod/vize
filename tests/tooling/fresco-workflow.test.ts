@@ -10,18 +10,6 @@ const PLATFORM_MATRIX = [
   [hostedOrBlacksmithExact("windows-2025"), "win32-x64-msvc"],
 ] as const;
 
-const RELEVANT_PATHS = [
-  '".github/workflows/fresco.yml"',
-  '"package.json"',
-  '"Cargo.lock"',
-  '"Cargo.toml"',
-  '"crates/vize_fresco/**"',
-  '"npm/fresco/**"',
-  '"npm/fresco-native/**"',
-  '"pnpm-lock.yaml"',
-  '"pnpm-workspace.yaml"',
-];
-
 type WorkflowJob = {
   name?: string;
   "runs-on"?: string;
@@ -84,17 +72,14 @@ function workflowUsesStep(job: WorkflowJob, uses: string): WorkflowStep {
   return step;
 }
 
-test("fresco workflow runs on main source changes and manual dispatch", () => {
-  const workflow = readRepoFile(".github", "workflows", "fresco.yml");
-  assert.doesNotMatch(workflow, /\n  pull_request:\n/u);
-
-  const trigger = workflow.slice(workflow.indexOf("\n  push:\n"));
-  assert.match(trigger, /branches: \[main\]\n\s+paths:/, "push must filter paths");
-  for (const relevantPath of RELEVANT_PATHS) {
-    const pattern = new RegExp(`- ${relevantPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "g");
-    assert.equal([...workflow.matchAll(pattern)].length, 1, `${relevantPath} must gate push`);
-  }
-  assert.match(workflow, /\n  workflow_dispatch:\n/);
+test("fresco platform suites run nightly or by explicit dispatch", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "fresco.yml")) as {
+    on: Record<string, unknown>;
+  };
+  assert.equal(Object.hasOwn(workflow.on, "push"), false);
+  assert.equal(Object.hasOwn(workflow.on, "pull_request"), false);
+  assert.deepEqual(workflow.on.schedule, [{ cron: "11 6 * * *" }]);
+  assert.equal(Object.hasOwn(workflow.on, "workflow_dispatch"), true);
 });
 
 test("fresco JS lane checks, builds, and tests the package on all three platforms", () => {

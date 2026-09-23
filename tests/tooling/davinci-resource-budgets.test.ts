@@ -104,6 +104,9 @@ test("the recorded command is the one CI measures with", () => {
   const workflow = parse(
     readRepoFile(".github", "workflows", "davinci-resource-budgets.yml"),
   ) as any;
+  assert.equal(Object.hasOwn(workflow.on, "push"), false);
+  assert.ok(workflow.on.schedule);
+  assert.equal(Object.hasOwn(workflow.on, "workflow_dispatch"), true);
   const steps = workflow.jobs.resource.steps as Array<{ name?: string; run?: string }>;
   const measure = steps.find((step) => step.name === "Measure the resident server")!.run!;
   for (const [preset, table] of presets) {

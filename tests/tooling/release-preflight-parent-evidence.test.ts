@@ -47,10 +47,10 @@ test("version metadata paths are recognised and source paths are not", () => {
   }
 });
 
-test("version-only releases reuse prior safety evidence except full Check", () => {
+test("version-only releases reuse corpus evidence but dispatch tag-bound builds", () => {
   const shas = releaseEvidenceShas({ sha: tagSha, baseSha: parentSha, versionOnly: true });
   for (const gate of requiredReleaseWorkflows) {
-    if (gate === "Check") assert.equal(shas.get(gate), undefined);
+    if (["Check", "Miri", "Docs build"].includes(gate)) assert.equal(shas.get(gate), undefined);
     else assert.deepEqual(shas.get(gate), [tagSha, parentSha], gate);
   }
   // Its subject is the artifact the tag built, so it must never be reused.
@@ -81,7 +81,7 @@ function greenRun(
   };
 }
 
-test("a version-only release dispatches full Check while reusing other parent gates", async () => {
+test("a version-only release dispatches Check, Miri, and Docs at the tag", async () => {
   const plans = createReleaseGateDispatchPlans({
     ref: "v0.350.1",
     headSha: tagSha,
@@ -104,12 +104,14 @@ test("a version-only release dispatches full Check while reusing other parent ga
     ),
   ];
   const fullCheck = greenRun(".github/workflows/check.yml", tagSha, `Check full @ ${tagSha}`);
+  const tagMiri = greenRun(".github/workflows/miri.yml", tagSha, `Miri @ ${tagSha}`);
+  const tagDocs = greenRun(".github/workflows/build-docs.yml", tagSha, `Docs build @ ${tagSha}`);
   const dispatched: string[] = [];
   let listed = 0;
   const selected = await bootstrapRequiredWorkflowRuns({
     sha: tagSha,
     dispatchPlans: plans,
-    listRuns: async () => (++listed === 1 ? runs : [...runs, fullCheck]),
+    listRuns: async () => (++listed === 1 ? runs : [...runs, fullCheck, tagMiri, tagDocs]),
     dispatchWorkflow: async (plan: { workflowName: string }) =>
       void dispatched.push(plan.workflowName),
     evidenceShas: releaseEvidenceShas({ sha: tagSha, baseSha: parentSha, versionOnly: true }),
@@ -117,13 +119,17 @@ test("a version-only release dispatches full Check while reusing other parent ga
     timeoutMs: 0,
     sleep: async () => {},
   });
-  assert.deepEqual(dispatched, ["Check"]);
+  assert.deepEqual(dispatched, ["Check", "Miri", "Docs build"]);
   assert.deepEqual(
     [...selected.keys()].sort(byCodeUnit),
     [...requiredReleaseWorkflows].sort(byCodeUnit),
   );
   for (const gate of requiredReleaseWorkflows) {
-    assert.equal(selected.get(gate)?.head_sha, gate === "Check" ? tagSha : parentSha, gate);
+    assert.equal(
+      selected.get(gate)?.head_sha,
+      ["Check", "Miri", "Docs build"].includes(gate) ? tagSha : parentSha,
+      gate,
+    );
   }
 });
 
@@ -147,5 +153,8 @@ test("without the reuse the same parent evidence does not satisfy the gates", as
     }),
     /Required release gates are not green/,
   );
-  assert.deepEqual(dispatched.sort(byCodeUnit), ["Check", "Fuzz", "Real Project Matrix"]);
+  assert.deepEqual(
+    dispatched.sort(byCodeUnit),
+    plans.map((plan) => plan.workflowName).sort(byCodeUnit),
+  );
 });
