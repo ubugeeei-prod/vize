@@ -12,9 +12,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
 | `Analyzer`                     | type  | `analyzer`          |    42 |   160 |
 | `AnalyzerOptions`              | type  | `analyzer`          |    42 |   156 |
-| `BindingMetadata`              | type  | `croquis`           |     2 |     5 |
 | `ComponentUsage`               | type  | `croquis::template` |    20 |    44 |
-| `Croquis`                      | type  | `croquis`           |    92 |   210 |
+| `Croquis`                      | type  | `croquis`           |    92 |   215 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     1 |
@@ -32,14 +31,13 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `TemplateExpressionKind`       | type  | `croquis`           |     6 |    14 |
 | `TypeExport`                   | type  | `croquis`           |     2 |     9 |
 | `TypeExportKind`               | type  | `croquis`           |     2 |     9 |
+| `UndefinedRef`                 | type  | `croquis`           |     1 |     1 |
 | `VForScopeData`                | type  | `scope`             |     1 |     4 |
 | `VSlotScopeData`               | type  | `scope`             |     1 |     4 |
-| `Croquis.binding_spans`        | field | `croquis`           |     6 |     8 |
-| `Croquis.bindings`             | field | `croquis`           |    24 |    39 |
 | `Croquis.component_usages`     | field | `croquis`           |    16 |    20 |
 | `Croquis.import_statements`    | field | `croquis`           |     4 |     5 |
 | `Croquis.invalid_exports`      | field | `croquis`           |     1 |     1 |
-| `Croquis.macros`               | field | `croquis`           |    29 |    75 |
+| `Croquis.macros`               | field | `croquis`           |    28 |    73 |
 | `Croquis.options_descriptor`   | field | `croquis`           |     2 |     2 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     4 |
 | `Croquis.re_exports`           | field | `croquis`           |     1 |     1 |
@@ -50,24 +48,23 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.template_info`        | field | `croquis`           |     2 |     4 |
 | `Croquis.type_exports`         | field | `croquis`           |    10 |    20 |
 | `Croquis.types`                | field | `croquis`           |     5 |     9 |
-| `Croquis.undefined_refs`       | field | `croquis`           |     4 |     5 |
 | `Croquis.used_components`      | field | `croquis`           |     7 |     9 |
 
 ## Non-product `vize_croquis` imports
 
 | item                           | files | sites |
 | ------------------------------ | ----: | ----: |
-| `BindingType`                  |    10 |    25 |
-| `Bindings`                     |     3 |    11 |
-| `CroquisFacts`                 |     4 |     6 |
+| `BindingType`                  |    11 |    28 |
+| `Bindings`                     |     3 |    12 |
+| `CroquisFacts`                 |     4 |     7 |
 | `DEFINE_EMITS`                 |     1 |     1 |
 | `DEFINE_EXPOSE`                |     1 |     1 |
 | `DEFINE_MODEL`                 |     1 |     1 |
 | `DEFINE_PROPS`                 |     2 |     2 |
 | `DEFINE_SLOTS`                 |     1 |     1 |
-| `Demand`                       |     4 |     8 |
+| `Demand`                       |     4 |    10 |
 | `EventHandlerExpression`       |     2 |     5 |
-| `FactConsumer`                 |     4 |     4 |
+| `FactConsumer`                 |     4 |     5 |
 | `FactTable`                    |     1 |     4 |
 | `MacroCall`                    |     1 |     1 |
 | `MacroKind`                    |     3 |     4 |
@@ -76,11 +73,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `PropDefinition`               |     6 |    22 |
 | `PropsDestructuredBindings`    |     1 |     1 |
 | `ReactivityLossKind`           |     1 |    11 |
-| `SfcDescriptor`                |    11 |    26 |
+| `SfcDescriptor`                |    10 |    25 |
 | `SfcError`                     |     2 |     2 |
 | `SfcParseOptions`              |    13 |    19 |
 | `SfcTemplateBlock`             |     2 |     2 |
-| `UndefinedRefs`                |     2 |     5 |
+| `UndefinedRefs`                |     3 |     8 |
 | `ViolationSeverity`            |     1 |     3 |
 | `WITH_DEFAULTS`                |     1 |     1 |
 | `classify_event_handler`       |     2 |     3 |
@@ -103,10 +100,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | ------------------------- | -------: | ---: |
 | `Analyzer`                |      160 |  242 |
 | `AnalyzerOptions`         |      156 |  238 |
-| `BindingMetadata`         |        5 |    7 |
 | `COMPILER_MACRO_NAMES`    |        0 |    1 |
 | `ComponentUsage`          |       44 |   64 |
-| `Croquis`                 |      210 |  313 |
+| `Croquis`                 |      215 |  319 |
 | `Drawer`                  |        0 |    1 |
 | `EventHandlerScopeData`   |        9 |   16 |
 | `EventListener`           |        3 |    5 |
@@ -119,7 +115,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                 |       22 |   29 |
 | `ScopeKind`               |       59 |   76 |
 | `SlotUsage`               |        1 |    3 |
-| `Span`                    |        0 |   58 |
+| `Span`                    |        0 |   61 |
 | `SpreadProp`              |        6 |   10 |
 | `Symbol`                  |        0 |    4 |
 | `SymbolId`                |        0 |    3 |
@@ -128,10 +124,11 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `TypeExport`              |        9 |   12 |
 | `TypeExportKind`          |        9 |   11 |
 | `TypeResolver`            |        0 |    5 |
+| `UndefinedRef`            |        1 |    2 |
 | `VForScopeData`           |        4 |    5 |
 | `VSlotScopeData`          |        4 |    5 |
-| `Croquis.bindings`        |       39 |   84 |
-| `Croquis.macros`          |       75 |   76 |
+| `Croquis.bindings`        |        0 |   23 |
+| `Croquis.macros`          |       73 |   74 |
 | `Croquis.scopes`          |       59 |   61 |
 | `Croquis.types`           |        9 |   17 |
-| `Croquis.undefined_refs`  |        5 |    6 |
+| `Croquis.undefined_refs`  |        0 |    1 |

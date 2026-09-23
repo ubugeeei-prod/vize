@@ -17,6 +17,22 @@ impl Croquis {
         Self::default()
     }
 
+    /// Record a script binding in producer storage.
+    pub fn note_binding(&mut self, name: impl AsRef<str>, kind: BindingType) {
+        self.bindings.add(name, kind);
+    }
+
+    /// Whether producer storage already holds `name`.
+    pub fn has_binding(&self, name: &str) -> bool {
+        self.bindings.contains(name)
+    }
+
+    /// Record the authored span of a script binding.
+    pub fn note_binding_span(&mut self, name: impl AsRef<str>, start: u32, end: u32) {
+        self.binding_spans
+            .insert(CompactString::new(name.as_ref()), (start, end));
+    }
+
     /// Shift script-relative offsets after embedding this croquis into a
     /// larger synthetic script. Call this before drawing template facts.
     pub fn shift_script_offsets(&mut self, delta: u32) {

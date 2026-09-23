@@ -269,7 +269,7 @@ mod tests {
         );
         summary.scopes.exit_scope();
         // `const Kind` is a value binding, not a type export.
-        summary.binding_spans.insert("Kind".into(), (6, 10));
+        summary.note_binding_span("Kind", 6, 10);
         summary.type_exports.push(TypeExport {
             name: "Kind".into(),
             kind: TypeExportKind::Type,
@@ -305,7 +305,7 @@ mod tests {
             classic_len,
         );
         summary.scopes.exit_scope();
-        summary.binding_spans.insert("Kind".into(), (6, 10));
+        summary.note_binding_span("Kind", 6, 10);
         summary.type_exports.push(TypeExport {
             name: "Kind".into(),
             kind: TypeExportKind::Type,

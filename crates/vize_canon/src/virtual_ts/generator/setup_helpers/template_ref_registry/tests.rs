@@ -172,7 +172,7 @@ fn looped_refs_are_arrays_and_repeated_names_are_unions() {
 #[test]
 fn component_refs_register_the_component_public_instance() {
     let mut summary = Croquis::default();
-    summary.bindings.add("Child", BindingType::SetupConst);
+    summary.note_binding("Child", BindingType::SetupConst);
     assert_eq!(
         registry_with_summary(
             "import { useTemplateRef } from 'vue';\nimport Child from './Child.vue';\nconst child = useTemplateRef('child')",
@@ -188,8 +188,8 @@ fn component_refs_register_the_component_public_instance() {
 #[test]
 fn native_element_refs_do_not_become_component_refs_from_same_named_setup_bindings() {
     let mut summary = Croquis::default();
-    summary.bindings.add("canvas", BindingType::SetupConst);
-    summary.bindings.add("img", BindingType::SetupConst);
+    summary.note_binding("canvas", BindingType::SetupConst);
+    summary.note_binding("img", BindingType::SetupConst);
     assert_eq!(
         registry_with_summary(
             "import { useTemplateRef } from 'vue';\nconst canvas = useTemplateRef('canvas');\nconst img = useTemplateRef('img');",
@@ -205,8 +205,8 @@ fn native_element_refs_do_not_become_component_refs_from_same_named_setup_bindin
 #[test]
 fn unknown_foreign_namespace_elements_do_not_become_component_refs_from_setup_bindings() {
     let mut summary = Croquis::default();
-    summary.bindings.add("shape", BindingType::SetupConst);
-    summary.bindings.add("glyph", BindingType::SetupConst);
+    summary.note_binding("shape", BindingType::SetupConst);
+    summary.note_binding("glyph", BindingType::SetupConst);
     assert_eq!(
         registry_with_summary(
             "import { useTemplateRef } from 'vue';\nconst shape = useTemplateRef('shape');\nconst glyph = useTemplateRef('glyph');",
@@ -222,7 +222,7 @@ fn unknown_foreign_namespace_elements_do_not_become_component_refs_from_setup_bi
 #[test]
 fn component_refs_record_component_helper_without_guessing_from_registry_text() {
     let mut summary = Croquis::default();
-    summary.bindings.add("Child", BindingType::SetupConst);
+    summary.note_binding("Child", BindingType::SetupConst);
     let registry = registry_with_summary(
         "import { useTemplateRef } from 'vue';\nimport Child from './Child.vue';\nconst tricky = useTemplateRef('__VizeDomElement')",
         r#"<Child ref="__VizeDomElement" />"#,
@@ -241,7 +241,7 @@ fn component_refs_record_component_helper_without_guessing_from_registry_text() 
 #[test]
 fn kebab_case_component_refs_use_the_declared_component_binding() {
     let mut summary = Croquis::default();
-    summary.bindings.add("MyWidget", BindingType::SetupConst);
+    summary.note_binding("MyWidget", BindingType::SetupConst);
     assert_eq!(
         registry_with_summary(
             "import { useTemplateRef } from 'vue';\nimport MyWidget from './MyWidget.vue';\nconst widget = useTemplateRef('widget')",

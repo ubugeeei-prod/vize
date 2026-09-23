@@ -1,5 +1,4 @@
 use super::{TypeIntelligence, get_vue_global_hover, is_ident_char};
-use vize_carton::CompactString;
 use vize_croquis::Croquis;
 use vize_relief::BindingType;
 
@@ -26,14 +25,9 @@ fn test_definition_lookup() {
     // Source: "const count = ref(0)"
     let source = "const count = ref(0)";
     let mut summary = Croquis::default();
-    summary
-        .bindings
-        .bindings
-        .insert(CompactString::new("count"), BindingType::SetupRef);
+    summary.note_binding("count", BindingType::SetupRef);
     // "count" starts at offset 6, ends at 11
-    summary
-        .binding_spans
-        .insert(CompactString::new("count"), (6, 11));
+    summary.note_binding_span("count", 6, 11);
 
     let intel = TypeIntelligence::new(source, &summary);
 

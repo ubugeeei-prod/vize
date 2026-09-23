@@ -43,16 +43,13 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScriptParseResult`                       |     2 |     2 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     1 |     2 |
-| `SfcDescriptor`                           |    10 |    13 |
+| `SfcDescriptor`                           |    11 |    14 |
 | `SfcError`                                |     1 |     2 |
 | `SfcParseOptions`                         |    11 |    12 |
 | `UndefinedRefs`                           |     1 |     2 |
-| `VirtualTsConfig`                         |     1 |     1 |
-| `VirtualTsOutput`                         |     5 |    16 |
 | `collect_options_descriptor`              |     4 |     4 |
 | `collect_options_object`                  |     1 |     1 |
 | `extract_slot_props`                      |     1 |     1 |
-| `generate_virtual_ts_with_croquis`        |     1 |     1 |
 | `is_builtin_component`                    |     3 |     7 |
 | `is_kebab_case_loose`                     |     1 |     1 |
 | `is_pascal_case`                          |     2 |     2 |

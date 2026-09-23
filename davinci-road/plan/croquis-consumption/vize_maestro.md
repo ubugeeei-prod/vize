@@ -10,8 +10,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | product                        | kind  | module              | files | sites |
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                     | type  | `analyzer`          |     2 |     2 |
-| `AnalyzerOptions`              | type  | `analyzer`          |     2 |     2 |
+| `Analyzer`                     | type  | `analyzer`          |     3 |     3 |
+| `AnalyzerOptions`              | type  | `analyzer`          |     3 |     3 |
 | `ComponentShape`               | type  | `croquis`           |     1 |     1 |
 | `ComponentUsage`               | type  | `croquis::template` |     2 |     5 |
 | `Croquis`                      | type  | `croquis`           |     6 |    10 |
@@ -45,8 +45,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `FactConsumer`                |     6 |     8 |
 | `FactGroup`                   |     3 |     3 |
 | `ReactiveKind`                |     5 |    41 |
-| `SfcDescriptor`               |     6 |    24 |
-| `SfcScriptBlock`              |     3 |     6 |
+| `SfcDescriptor`               |     7 |    25 |
+| `SfcScriptBlock`              |     2 |     5 |
 | `SfcStyleBlock`               |     2 |     8 |
 | `extract_identifier_refs_oxc` |     1 |     1 |
 | `extract_identifiers_oxc`     |     2 |     2 |
@@ -58,8 +58,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | product                       | resolved | grep |
 | ----------------------------- | -------: | ---: |
-| `Analyzer`                    |        2 |    3 |
-| `AnalyzerOptions`             |        2 |    3 |
+| `Analyzer`                    |        3 |    5 |
+| `AnalyzerOptions`             |        3 |    5 |
 | `ComponentShape`              |        1 |    2 |
 | `ComponentUsage`              |        5 |    8 |
 | `Croquis`                     |       10 |   28 |
@@ -73,10 +73,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                     |        1 |    2 |
 | `ScopeKind`                   |       65 |   73 |
 | `SlotUsage`                   |        3 |    6 |
-| `Span`                        |        0 |   12 |
+| `Span`                        |        0 |   11 |
 | `Symbol`                      |        0 |    1 |
 | `SymbolId`                    |        0 |    5 |
-| `TemplateExpression`          |        0 |   15 |
+| `TemplateExpression`          |        0 |   14 |
 | `Croquis.binding_spans`       |        0 |    1 |
 | `Croquis.bindings`            |        0 |    5 |
 | `Croquis.import_statements`   |        0 |    1 |

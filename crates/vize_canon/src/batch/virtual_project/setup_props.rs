@@ -97,8 +97,8 @@ fn merge_imported_runtime_props_into_croquis(
         if !known.insert(prop.name.clone()) {
             continue;
         }
-        if !croquis.bindings.contains(prop.name.as_str()) {
-            croquis.bindings.add(prop.name.as_str(), BindingType::Props);
+        if !croquis.has_binding(prop.name.as_str()) {
+            croquis.note_binding(prop.name.as_str(), BindingType::Props);
         }
         croquis.macros.add_prop(prop);
     }

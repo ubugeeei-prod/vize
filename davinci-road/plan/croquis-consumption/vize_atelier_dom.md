@@ -11,7 +11,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | product                   | kind  | module    | files | sites |
 | ------------------------- | ----- | --------- | ----: | ----: |
 | `Croquis`                 | type  | `croquis` |     3 |     7 |
-| `Croquis.bindings`        | field | `croquis` |     1 |     3 |
+| `Croquis.bindings`        | field | `croquis` |     1 |     2 |
 | `Croquis.reactivity`      | field | `croquis` |     1 |     5 |
 | `Croquis.used_components` | field | `croquis` |     1 |     2 |
 
@@ -19,6 +19,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | item           | files | sites |
 | -------------- | ----: | ----: |
+| `Bindings`     |     1 |     2 |
+| `CroquisFacts` |     1 |     1 |
+| `Demand`       |     1 |     2 |
+| `FactConsumer` |     1 |     1 |
 | `ReactiveKind` |     1 |     4 |
 
 ## Naive grep disagreements (resolved/grep)
@@ -28,4 +32,4 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `BindingMetadata`  |        0 |   24 |
 | `Croquis`          |        7 |   24 |
 | `Scope`            |        0 |    1 |
-| `Croquis.bindings` |        3 |    6 |
+| `Croquis.bindings` |        2 |    5 |
