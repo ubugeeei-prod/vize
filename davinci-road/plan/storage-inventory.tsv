@@ -34,6 +34,7 @@ infra	analysis	crates/vize_davinci/src/side_table.rs	1	2	0	0	0	0	0	0
 infra	contract	crates/vize_davinci/src/summary.rs	1	13	1	10	0	0	0	0
 infra	-	crates/vize_davinci/src/summary/facet.rs	0	0	1	9	0	0	0	0
 infra	contract	crates/vize_davinci/src/summary/folio.rs	1	2	1	9	0	0	0	0
+infra	contract	crates/vize_davinci/src/summary/global.rs	1	11	1	14	0	0	0	0
 infra	analysis	crates/vize_davinci/src/summary/usage.rs	1	3	1	4	0	0	0	0
 infra	analysis	crates/vize_davinci/src/witness/audit.rs	1	2	0	0	0	0	0	0
 s1	-	crates/vize_s1/src/build.rs	0	0	0	0	1	7	0	0
