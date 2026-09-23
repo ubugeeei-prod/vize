@@ -9,7 +9,6 @@ use vize_s0::{
 };
 
 const SESSION_DIRECTORY_PREFIX: &str = "session-";
-pub(super) const VIRTUAL_FILE_NAME: &str = "active.patina.ts";
 pub(super) const TSCONFIG_FILE_NAME: &str = "tsconfig.json";
 static SESSION_COUNTER: AtomicU64 = AtomicU64::new(0);
 pub(super) const TSCONFIG_CONTENTS: &str = r#"{
@@ -17,17 +16,54 @@ pub(super) const TSCONFIG_CONTENTS: &str = r#"{
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "rootDirs": [".", "../../.."],
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true
   },
-  "files": ["active.patina.ts"]
+  "include": ["**/*.patina.ts"]
 }
 "#;
 
 pub(super) fn path_to_wire(path: &Path) -> String {
     path.to_string_lossy().as_ref().to_compact_string()
+}
+
+/// Mirror the authored file's package-relative directory below the session
+/// root. TypeScript's `rootDirs` then resolves its relative imports against
+/// the real package tree without changing Canon's generated source offsets.
+pub(super) fn virtual_file_path(
+    session_root: &Path,
+    project_root: &Path,
+    filename: &str,
+) -> PathBuf {
+    let authored = Path::new(filename);
+    let authored = if authored.is_absolute() {
+        authored.to_path_buf()
+    } else {
+        std::env::current_dir().map_or_else(|_| authored.to_path_buf(), |cwd| cwd.join(authored))
+    };
+    let relative = authored
+        .strip_prefix(project_root)
+        .ok()
+        .filter(|path| {
+            path.components()
+                .all(|component| matches!(component, std::path::Component::Normal(_)))
+        })
+        .unwrap_or_else(|| {
+            // A source outside the package or with parent traversals cannot be
+            // mirrored safely inside the session directory.
+            authored
+                .file_name()
+                .map(Path::new)
+                .unwrap_or(authored.as_path())
+        });
+    let mut output = session_root.join(relative);
+    let filename = output.file_name().unwrap_or_default().to_string_lossy();
+    output.set_file_name(format!("{filename}.patina.ts"));
+    output
 }
 
 pub(super) fn allocate_session_root(project_root: &Path) -> PathBuf {
@@ -195,7 +231,10 @@ fn push_u64(buffer: &mut String, value: u64) {
 mod tests {
     #[cfg(unix)]
     use super::is_stale_session_directory;
-    use super::{cleanup_stale_session_roots, resolve_corsa_executable, session_store_root};
+    use super::{
+        cleanup_stale_session_roots, resolve_corsa_executable, session_store_root,
+        virtual_file_path,
+    };
     use std::{
         path::{Path, PathBuf},
         sync::atomic::{AtomicU64, Ordering},
@@ -203,6 +242,16 @@ mod tests {
     use vize_s0::cstr;
 
     static NEXT_CASE_ID: AtomicU64 = AtomicU64::new(0);
+
+    #[test]
+    fn virtual_file_mirrors_the_authored_package_directory() {
+        let package = Path::new("/workspace/ui");
+        let session = package.join(".vize/patina/session-1-0");
+        assert_eq!(
+            virtual_file_path(&session, package, "/workspace/ui/src/components/Button.vue",),
+            session.join("src/components/Button.vue.patina.ts")
+        );
+    }
 
     fn case_dir(name: &str) -> PathBuf {
         let id = NEXT_CASE_ID.fetch_add(1, Ordering::Relaxed);

@@ -2,8 +2,8 @@ use super::{
     CorsaTypeAwareSession,
     errors::{compact_error, io_error_message},
     paths::{
-        TSCONFIG_CONTENTS, TSCONFIG_FILE_NAME, VIRTUAL_FILE_NAME, allocate_session_root,
-        path_to_wire, remove_session_root, resolve_corsa_executable, resolve_project_root,
+        TSCONFIG_CONTENTS, TSCONFIG_FILE_NAME, allocate_session_root, path_to_wire,
+        remove_session_root, resolve_corsa_executable, resolve_project_root, virtual_file_path,
     },
 };
 use corsa::{
@@ -45,7 +45,14 @@ impl CorsaTypeAwareSession {
             io_error_message("Failed to write patina tsconfig", &config_path, &error)
         })?;
 
-        let virtual_file_path = session_root.join(VIRTUAL_FILE_NAME);
+        let virtual_file_path = virtual_file_path(&session_root, &project_root, filename);
+        std::fs::create_dir_all(virtual_file_path.parent().unwrap()).map_err(|error| {
+            io_error_message(
+                "Failed to create patina virtual directory",
+                &virtual_file_path,
+                &error,
+            )
+        })?;
         profile!(
             "patina.corsa_session.prime_virtual_file",
             std::fs::write(&virtual_file_path, "")
@@ -104,23 +111,61 @@ impl CorsaTypeAwareSession {
     pub(in crate::linter) fn open_virtual_project(
         &mut self,
         generated_source: &str,
+        filename: &str,
     ) -> Result<(), String> {
+        let next_path = virtual_file_path(&self.session_root, &self.project_root, filename);
+        let previous_wire = if next_path == self.virtual_file_path {
+            None
+        } else {
+            std::fs::create_dir_all(next_path.parent().unwrap()).map_err(|error| {
+                io_error_message(
+                    "Failed to create patina virtual directory",
+                    &next_path,
+                    &error,
+                )
+            })?;
+            std::fs::write(&next_path, generated_source).map_err(|error| {
+                io_error_message(
+                    "Failed to write patina virtual TypeScript",
+                    &next_path,
+                    &error,
+                )
+            })?;
+            let previous_wire =
+                std::mem::replace(&mut self.virtual_file_wire, path_to_wire(&next_path));
+            let previous_path = std::mem::replace(&mut self.virtual_file_path, next_path);
+            let _ = std::fs::remove_file(previous_path);
+            Some(previous_wire)
+        };
+        let file_changes = previous_wire.as_ref().map(|previous| {
+            FileChanges::Summary(FileChangeSummary {
+                changed: Vec::new(),
+                created: vec![self.virtual_file_wire.as_str().into()],
+                deleted: vec![previous.as_str().into()],
+            })
+        });
+
         if self.supports_overlay_updates {
             self.overlay_version = self.overlay_version.saturating_add(1);
             return profile!(
                 "patina.corsa_session.refresh_overlay",
-                block_on(self.session.refresh_with_overlay_changes(
-                    None,
-                    Some(OverlayChanges {
-                        upsert: vec![OverlayUpdate {
-                            document: self.virtual_file_wire.as_str().into(),
-                            text: generated_source.into(),
-                            version: Some(self.overlay_version),
-                            language_id: Some("typescript".into()),
-                        }],
-                        delete: Vec::new(),
-                    }),
-                ))
+                block_on(
+                    self.session.refresh_with_overlay_changes(
+                        file_changes,
+                        Some(OverlayChanges {
+                            upsert: vec![OverlayUpdate {
+                                document: self.virtual_file_wire.as_str().into(),
+                                text: generated_source.into(),
+                                version: Some(self.overlay_version),
+                                language_id: Some("typescript".into()),
+                            }],
+                            delete: previous_wire
+                                .iter()
+                                .map(|previous| previous.as_str().into())
+                                .collect(),
+                        }),
+                    )
+                )
             )
             .map_err(|error| {
                 compact_error(
@@ -144,14 +189,13 @@ impl CorsaTypeAwareSession {
 
         profile!(
             "patina.corsa_session.refresh_file",
-            block_on(
-                self.session
-                    .refresh(Some(FileChanges::Summary(FileChangeSummary {
-                        changed: vec![self.virtual_file_wire.as_str().into()],
-                        created: Vec::new(),
-                        deleted: Vec::new(),
-                    }))),
-            )
+            block_on(self.session.refresh(file_changes.or_else(|| {
+                Some(FileChanges::Summary(FileChangeSummary {
+                    changed: vec![self.virtual_file_wire.as_str().into()],
+                    created: Vec::new(),
+                    deleted: Vec::new(),
+                }))
+            })),)
         )
         .map_err(|error| {
             compact_error(

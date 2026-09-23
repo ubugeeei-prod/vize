@@ -257,7 +257,7 @@ pub(super) fn lint_with_descriptor<'a>(
         with_corsa_session(linter, filename, |session| {
             profile!(
                 "patina.type_aware.corsa.open_virtual_project",
-                session.open_virtual_project(&virtual_ts.content)
+                session.open_virtual_project(&virtual_ts.content, filename)
             )?;
             for query in &macro_queries {
                 let probe = profile!(

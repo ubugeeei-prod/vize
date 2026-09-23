@@ -12,7 +12,10 @@ pub(super) fn corsa_available() -> bool {
         Ok(session) => session,
         Err(_) => return false,
     };
-    if session.open_virtual_project("const value = 1;\n").is_err() {
+    if session
+        .open_virtual_project("const value = 1;\n", "Component.vue")
+        .is_err()
+    {
         session.close();
         return false;
     }
@@ -647,6 +650,92 @@ const anyHandler: any = () => {}
             .iter()
             .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
     );
+}
+
+#[test]
+fn relative_imports_keep_template_bindings_typed_across_source_directories() {
+    use std::path::PathBuf;
+    use vize_s0::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
+
+    if !corsa_available() {
+        return;
+    }
+
+    let repo_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(std::path::Path::parent)
+        .unwrap()
+        .to_path_buf();
+    let Ok(corsa_path) = resolve_corsa_executable(CorsaResolveRequest {
+        explicit_path: None,
+        project_root: Some(&repo_root),
+    }) else {
+        return;
+    };
+    let package = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("target/vize-tests")
+        .join(format!("patina-imports-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&package);
+    let first = package.join("src/first");
+    let second = package.join("src/second");
+    std::fs::create_dir_all(&first).unwrap();
+    std::fs::create_dir_all(&second).unwrap();
+    std::fs::write(package.join("package.json"), "{}\n").unwrap();
+    std::fs::write(
+        first.join("model.ts"),
+        "export const safe = { message: 'typed' };\nexport const unsafe: any = { message: 'unsafe' };\n",
+    )
+    .unwrap();
+    std::fs::write(
+        second.join("model.ts"),
+        "export const safe = { message: 'also typed' };\n",
+    )
+    .unwrap();
+
+    let linter = Linter::with_preset(LintPreset::Opinionated).with_corsa_path(Some(corsa_path));
+    let first_source = "<script setup lang=\"ts\">\nimport { safe, unsafe } from './model.ts'\n</script>\n<template><p>{{ safe.message }}</p><p>{{ unsafe.message }}</p></template>";
+    let first_result = lint_sfc_with_corsa(
+        &linter,
+        first_source,
+        first.join("Panel.vue").to_str().unwrap(),
+    );
+    let safe_offset = first_source.find("safe.message").unwrap() as u32;
+    let unsafe_offset = first_source.find("unsafe.message").unwrap() as u32;
+    assert!(
+        first_result.diagnostics.iter().any(|diag| {
+            diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING
+                && diag.start >= unsafe_offset
+                && diag.end <= unsafe_offset + "unsafe.message".len() as u32
+        }),
+        "explicit any should remain unsafe: {:?}",
+        first_result.diagnostics
+    );
+    assert!(
+        !first_result.diagnostics.iter().any(|diag| {
+            diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING
+                && diag.start >= safe_offset
+                && diag.start < unsafe_offset
+        }),
+        "a typed relative import must not become any: {:?}",
+        first_result.diagnostics
+    );
+
+    let second_source = "<script setup lang=\"ts\">\nimport { safe } from './model.ts'\n</script>\n<template><p>{{ safe.message }}</p></template>";
+    let second_result = lint_sfc_with_corsa(
+        &linter,
+        second_source,
+        second.join("Panel.vue").to_str().unwrap(),
+    );
+    assert!(
+        !second_result
+            .diagnostics
+            .iter()
+            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
+        "moving the virtual file must preserve the second import: {:?}",
+        second_result.diagnostics
+    );
+    drop(linter);
+    std::fs::remove_dir_all(package).unwrap();
 }
 
 #[test]

@@ -109,7 +109,7 @@ fn starts_type_aware_session_from_package_root() {
         Err(error) => panic!("package-root patina session should start: {error:?}"),
     };
     session
-        .open_virtual_project("const value: number = 1;\n")
+        .open_virtual_project("const value: number = 1;\n", source.to_str().unwrap())
         .expect("package-root patina session should refresh the virtual file");
     session.close();
 
