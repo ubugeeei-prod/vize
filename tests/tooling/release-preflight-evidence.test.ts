@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import {
   assertRequiredWorkflowJobs,
   requiredReleaseWorkflowEvidence,
   requiredReleaseWorkflows,
+  requiredWorkflowJobNames,
   selectRequiredWorkflowRuns,
   summarizeRequiredWorkflowJobFailures,
 } from "../../tools/support/compat/github/release-preflight-evidence.mjs";
@@ -92,6 +94,34 @@ test("release evidence ignores a failed optional Benchmark run", () => {
   );
 });
 
+test("release Check job evidence covers the exact SemVer matrix in Rust and JS", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
+    jobs?: {
+      "semver-checks"?: {
+        name?: string;
+        strategy?: { matrix?: { crate?: string[] } };
+      };
+    };
+  };
+  const semverJob = workflow.jobs?.["semver-checks"];
+  assert.equal(semverJob?.name, "cargo-semver-checks (${{ matrix.crate }})");
+  const crates = semverJob?.strategy?.matrix?.crate;
+  assert.ok(crates);
+  assert.equal(crates.length, 11);
+  assert.deepEqual(requiredWorkflowJobNames("Check"), [
+    "test-scripts",
+    ...crates.map((name) => `cargo-semver-checks (${name})`),
+  ]);
+
+  const rust = readRepoFile("tools", "commands", "ci", "github", "release-preflight.rs");
+  const rustCrateBlock = rust.match(
+    /const REQUIRED_SEMVER_CRATES: &\[&str\] = &\[([\s\S]*?)\];/,
+  )?.[1];
+  assert.ok(rustCrateBlock);
+  const rustCrates = [...rustCrateBlock.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(rustCrates, crates);
+});
+
 test("newest matching run wins across cancellation, reruns, and concurrent runs", () => {
   const greenRuns = requiredReleaseWorkflows
     .filter((name) => name !== "Docs build")
@@ -134,10 +164,26 @@ test("newest matching run wins across cancellation, reruns, and concurrent runs"
 });
 
 test("matrix-sensitive release gates require every successful job", () => {
-  assert.doesNotThrow(() =>
-    assertRequiredWorkflowJobs("Check", [successfulReleaseJob("test-scripts")]),
-  );
+  const checkJobs = requiredWorkflowJobNames("Check").map(successfulReleaseJob);
+  assert.doesNotThrow(() => assertRequiredWorkflowJobs("Check", checkJobs));
   assert.throws(() => assertRequiredWorkflowJobs("Check", []), /test-scripts/);
+  const semverName = "cargo-semver-checks (vize_armature)";
+  const withoutSemver = checkJobs.filter((job) => job.name !== semverName);
+  assert.throws(
+    () => assertRequiredWorkflowJobs("Check", withoutSemver),
+    /cargo-semver-checks \(vize_armature\) job; found 0/,
+  );
+  assert.equal(
+    summarizeRequiredWorkflowJobFailures("Check", withoutSemver),
+    `required jobs: ${semverName}=missing`,
+  );
+  for (const conclusion of ["skipped", "failure"]) {
+    const jobs = checkJobs.map((job) => (job.name === semverName ? { ...job, conclusion } : job));
+    assert.throws(
+      () => assertRequiredWorkflowJobs("Check", jobs),
+      new RegExp(`cargo-semver-checks \\(vize_armature\\) is completed/${conclusion}`),
+    );
+  }
 
   const appJobs = [successfulReleaseJob("app-e2e")];
   assert.doesNotThrow(() => assertRequiredWorkflowJobs("App E2E", appJobs));

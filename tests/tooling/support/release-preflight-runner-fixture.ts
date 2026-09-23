@@ -6,6 +6,7 @@ import path from "node:path";
 import { crc32 } from "node:zlib";
 
 import { workspaceVersionFromCargoToml } from "../../../tools/support/compat/github/release-preflight-core.mjs";
+import { requiredWorkflowJobNames } from "../../../tools/support/compat/github/release-preflight-evidence.mjs";
 import {
   realProjectArtifacts,
   shardEntries,
@@ -148,7 +149,7 @@ function releaseWorkflowRuns(tag: string) {
 function releaseWorkflowJobs() {
   return Object.fromEntries(
     [
-      [101, ["test-scripts"]],
+      [101, requiredWorkflowJobNames("Check")],
       [102, ["pr-benchmark-budget"]],
       [
         103,

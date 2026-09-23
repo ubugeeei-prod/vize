@@ -33,6 +33,21 @@ use std::{
 
 const REQUIRED_RELEASE_WORKFLOWS: &[&str] =
     &["Check", "Fuzz", "Miri", "Real Project Matrix", "Docs build"];
+// Keep in sync with check.yml's semver-checks matrix. A skipped matrix must
+// never count as a validated release candidate.
+const REQUIRED_SEMVER_CRATES: &[&str] = &[
+    "vize_armature",
+    "vize_atelier_core",
+    "vize_atelier_dom",
+    "vize_atelier_sfc",
+    "vize_atelier_ssr",
+    "vize_atelier_vapor",
+    "vize_carton",
+    "vize_croquis",
+    "vize_fresco",
+    "vize_musea",
+    "vize_relief",
+];
 const PARENT_EVIDENCE_REUSABLE_WORKFLOWS: &[&str] = &["Fuzz", "Real Project Matrix"];
 const RELEASE_PACKAGE_ROOTS: &[&str] = &["editors", "npm"];
 const RELEASE_BLOCKING_LABELS: &[&str] = &["priority:p0", "priority:p1"];
@@ -840,7 +855,13 @@ fn workflow_requires_job_evidence(workflow_name: &str) -> bool {
 
 fn required_workflow_job_names(workflow_name: &str) -> Vec<String> {
     match workflow_name {
-        "Check" => vec!["test-scripts".to_string()],
+        "Check" => std::iter::once("test-scripts".to_string())
+            .chain(
+                REQUIRED_SEMVER_CRATES
+                    .iter()
+                    .map(|crate_name| format!("cargo-semver-checks ({crate_name})")),
+            )
+            .collect(),
         "Benchmark" => vec!["pr-benchmark-budget".to_string()],
         "Fuzz" => vec![
             "Fuzz sfc_parse".to_string(),
