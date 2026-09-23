@@ -48,7 +48,7 @@ function __setup() {
   type __R_count = typeof count;
   ;(function __template() {
     // Auto-unwrap Vue refs in template scope
-    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
+    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;
     var count: __U<__R_count> = undefined as any;
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.

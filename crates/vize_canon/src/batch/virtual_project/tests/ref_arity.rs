@@ -2,8 +2,7 @@ use std::fs;
 
 use super::{VirtualProject, snapshot_text, unique_case_dir};
 
-const MODERN_REF_UNWRAP_HELPER: &str =
-    "type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;";
+const MODERN_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;";
 const LEGACY_REF_UNWRAP_HELPER: &str = "type __U<T> = T extends { value: infer __V } ? __V : T;";
 
 #[test]

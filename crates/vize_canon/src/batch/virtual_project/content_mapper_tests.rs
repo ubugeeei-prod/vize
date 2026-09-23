@@ -206,7 +206,7 @@ const TEMPLATE_SCOPE: &str = "  ;(function __template() {\n";
 const TEMPLATE_REF_UNWRAP_PRELUDE: &str = r#"    // Auto-unwrap Vue refs in template scope
     type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
     type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
-    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
+    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;
 "#;
 
 fn template_scope_of(text: &str) -> &str {
