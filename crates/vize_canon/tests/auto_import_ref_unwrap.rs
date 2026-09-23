@@ -278,7 +278,7 @@ fn vue3_dialect_uses_the_nominal_ref_helper_for_auto_imports() {
     );
     assert!(
         code.contains(
-            "type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;"
+            "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;"
         ),
         "the Vue 3 dialect must keep the nominal `Ref` test:\n{code}"
     );
