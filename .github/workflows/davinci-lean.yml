@@ -78,6 +78,8 @@ jobs:
         run: cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace
       - name: Run TS-30 mounted backend behavior
         run: cargo test -p vize_atelier_vapor --test davinci_mounted_behavior
+      - name: Run TS-33 upstream Vapor behavioral parity
+        run: cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install Chromium for the event contract
         working-directory: tests

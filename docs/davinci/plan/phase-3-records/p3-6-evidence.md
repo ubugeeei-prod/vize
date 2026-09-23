@@ -57,6 +57,11 @@ the commands that re-derive it, and the local measurements taken so far.
   retained template equality and rejection of a stale directive kind. The
   independent mounted trace checks that the cloak attribute is absent after
   each mount while the live node and untouched sibling keep their identities.
+- The first TS-33 fixture compiles one conditional element and its static
+  sibling through Vize S3 and pinned official `@vue/compiler-vapor`. Both
+  outputs mount on the same pinned `@vue/runtime-vapor`; five exact snapshots
+  include DOM state, branch recreation identity and unchanged sibling identity.
+  A zero-legacy-walk assertion ensures the Vize side actually exercises S3.
 - References beginning with `$event` remain in the legacy lane. Their handler
   semantics follow Vue: a reference names a component/setup binding; only an
   inline statement receives the implicit event parameter. The Chromium contract
@@ -71,6 +76,7 @@ the commands that re-derive it, and the local measurements taken so far.
 - `cargo test -p vize_atelier_vapor --lib`
 - `cargo test -p vize_atelier_vapor --test davinci_vapor_artifact --test davinci_walk_baseline --test davinci_expr_reparse_floor`
 - `cargo test -p vize_atelier_vapor --test davinci_mounted_behavior --test davinci_s3_compiled_trace`
+- `cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity`
 - `cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture` (Chromium)
 - `cargo clippy -p vize_atelier_vapor --lib -- -D warnings`
 - `cargo run -p vize_test_runner --bin coverage` (published fixture parity)

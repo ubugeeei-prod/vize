@@ -78,6 +78,7 @@ function assertLeanWorkflow(workflow: Workflow): void {
       [".", "cargo test -p vize_s2_to_s3 --test lean_reference_fixture"],
       [".", "cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace"],
       [".", "cargo test -p vize_atelier_vapor --test davinci_mounted_behavior"],
+      [".", "cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity"],
       ["tests", "vize-ci-apt-retry vp exec playwright install --with-deps chromium"],
       [
         ".",

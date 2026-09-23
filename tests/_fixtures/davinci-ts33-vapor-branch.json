@@ -1,0 +1,43 @@
+{
+  "source": "<main data-id=\"root\"><p v-if=\"open\" data-id=\"branch\" :title=\"tip\">{{ label }}</p><i data-id=\"tail\">tail</i></main>",
+  "context": { "open": true, "tip": "first", "label": "A" },
+  "steps": [
+    { "patch": { "tip": "second", "label": "B" } },
+    { "patch": { "open": false } },
+    { "patch": { "open": true } }
+  ],
+  "expected": [
+    {
+      "tree": [{ "tag": "main", "attributes": { "data-id": "root" }, "children": [
+        { "tag": "p", "attributes": { "data-id": "branch", "title": "first" }, "children": ["A"] },
+        { "tag": "i", "attributes": { "data-id": "tail" }, "children": ["tail"] }
+      ] }],
+      "events": [],
+      "identities": [["root", 0], ["branch", 1], ["tail", 2]]
+    },
+    {
+      "tree": [{ "tag": "main", "attributes": { "data-id": "root" }, "children": [
+        { "tag": "p", "attributes": { "data-id": "branch", "title": "second" }, "children": ["B"] },
+        { "tag": "i", "attributes": { "data-id": "tail" }, "children": ["tail"] }
+      ] }],
+      "events": [],
+      "identities": [["root", 0], ["branch", 1], ["tail", 2]]
+    },
+    {
+      "tree": [{ "tag": "main", "attributes": { "data-id": "root" }, "children": [
+        { "tag": "i", "attributes": { "data-id": "tail" }, "children": ["tail"] }
+      ] }],
+      "events": [],
+      "identities": [["root", 0], ["tail", 2]]
+    },
+    {
+      "tree": [{ "tag": "main", "attributes": { "data-id": "root" }, "children": [
+        { "tag": "p", "attributes": { "data-id": "branch", "title": "second" }, "children": ["B"] },
+        { "tag": "i", "attributes": { "data-id": "tail" }, "children": ["tail"] }
+      ] }],
+      "events": [],
+      "identities": [["root", 0], ["branch", 3], ["tail", 2]]
+    },
+    { "tree": [], "events": [], "identities": [] }
+  ]
+}
