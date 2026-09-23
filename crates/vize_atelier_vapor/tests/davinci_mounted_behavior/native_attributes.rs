@@ -114,3 +114,45 @@ fn native_show_text_and_html_directives_track_state() {
         ])
     );
 }
+
+#[test]
+fn native_cloak_is_removed_on_each_mount_without_replacing_live_nodes() {
+    let source = r#"<main data-id="root"><div v-if="open" v-cloak data-id="cloak" :title="tip">{{ label }}</div><p data-id="tail">tail</p></main>"#;
+    let cloak = |title: &str, label: &str| {
+        element(
+            "div",
+            json!({"data-id": "cloak", "title": title}),
+            json!([label]),
+        )
+    };
+    let tail = element("p", json!({"data-id": "tail"}), json!(["tail"]));
+    let view = |children: Value, identities: Value| {
+        json!({
+            "tree": [element("main", json!({"data-id": "root"}), children)],
+            "events": [],
+            "identities": identities
+        })
+    };
+    let expected = json!([
+        view(json!([cloak("first", "A"), tail]), json!([["root", 0], ["cloak", 1], ["tail", 2]])),
+        view(json!([cloak("second", "B"), tail]), json!([["root", 0], ["cloak", 1], ["tail", 2]])),
+        view(json!([tail]), json!([["root", 0], ["tail", 2]])),
+        view(json!([cloak("second", "B"), tail]), json!([["root", 0], ["cloak", 3], ["tail", 2]])),
+        {"tree": [], "events": [], "identities": []}
+    ]);
+    for backend in ["vdom", "vapor", "vapor-legacy"] {
+        let actual = mounted_trace_with_identity(
+            backend,
+            source,
+            json!({"open": true, "tip": "first", "label": "A"}),
+            json!([
+                {"patch": {"tip": "second", "label": "B"}},
+                {"patch": {"open": false}},
+                {"patch": {"open": true}}
+            ]),
+            false,
+            true,
+        );
+        assert_eq!(actual, expected, "{backend}");
+    }
+}

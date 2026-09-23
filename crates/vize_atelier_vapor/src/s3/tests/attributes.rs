@@ -1,4 +1,4 @@
-use super::{generated, options};
+use super::{generated, lowered_source, options};
 use crate::s3::{
     LegacyReason, VaporS3BridgeStatus, admit, lower_source_for_vapor, retained::Retained,
 };
@@ -54,12 +54,113 @@ fn expression_and_content_directive_shapes_are_admitted() {
 }
 
 #[test]
+fn static_and_bound_styles_merge_in_authored_order() {
+    for (source, effect) in [
+        (
+            r#"<div style="color: red;" :style="theme"></div>"#,
+            "_setStyle(n0, [\"color: red;\", _ctx.theme])",
+        ),
+        (
+            r#"<div :style="theme" style="color: red;"></div>"#,
+            "_setStyle(n0, [_ctx.theme, \"color: red;\"])",
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        let compiled = crate::compile_vapor(
+            &allocator,
+            source,
+            crate::VaporCompilerOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+        assert!(
+            compiled.error_messages.is_empty(),
+            "{source}: {:?}",
+            compiled.error_messages
+        );
+        assert!(
+            compiled.code.contains(effect),
+            "{source}: {}",
+            compiled.code
+        );
+        assert!(
+            compiled.code.contains("_template(\"<div></div>\", true)"),
+            "{source}: {}",
+            compiled.code
+        );
+    }
+}
+
+#[test]
+fn cloak_is_a_native_one_shot_directive_in_static_and_branch_regions() {
+    for source in [
+        r#"<div v-cloak></div>"#,
+        r#"<div v-cloak>{{ label }}</div>"#,
+        r#"<main><div v-if="open" v-cloak :title="tip">{{ label }}</div><p>tail</p></main>"#,
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                crate::compile_vapor(
+                    &allocator,
+                    source,
+                    crate::VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+            };
+            let native = compile(false);
+            let retained = compile(true);
+            assert_eq!(native.templates, retained.templates, "{source}");
+            for code in [native.code, retained.code] {
+                assert_eq!(
+                    code.matches(".removeAttribute(\"v-cloak\")").count(),
+                    1,
+                    "{source}: {code}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn cloak_schema_rejects_an_unmatched_directive_kind() {
+    let allocator = Allocator::new();
+    let mut s3 = lowered_source(&allocator, r#"<div v-cloak>{{ label }}</div>"#);
+    let kind = s3
+        .program
+        .operands
+        .iter_mut()
+        .find(|operand| operand.role == OperandRole::BindingKind)
+        .expect("cloak binding kind");
+    kind.value.text = "vue.show";
+    let status = admit(s3, &Retained::new(&allocator));
+    assert!(
+        matches!(status, VaporS3BridgeStatus::Rejected(_)),
+        "{status:?}"
+    );
+}
+
+#[test]
 fn unsupported_attribute_shapes_select_exact_legacy_reasons() {
     use LegacyReason::{Binding, ExpressionOrEncoding, Operation, Structure};
     for (source, reason) in [
         (r#"<div v-html="markup"><b>child</b></div>"#, Structure),
         (r#"<div v-text="label">child</div>"#, Structure),
-        (r#"<div style="color: red" :style="s"></div>"#, Binding),
+        (r#"<div style :style="s"></div>"#, Binding),
         (r#"<div class :class="c"></div>"#, Binding),
         (r#"<div :class="a" :class="b"></div>"#, Binding),
         (r#"<input :type="kind" v-model="value">"#, Binding),

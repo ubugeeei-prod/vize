@@ -10,7 +10,7 @@ use vize_s3::{
 
 use super::super::{Binding, BindingKind, Content, Expr, Node};
 use super::{Result, ident::reference, operands::one};
-use crate::s3::LegacyReason;
+use crate::s3::{AdmissionFailure, LegacyReason};
 
 pub(super) fn model<'a>(
     values: &[Operand<'a>],
@@ -51,7 +51,7 @@ pub(super) fn model<'a>(
         || !reference(text)
         || text.starts_with('_')
         || text.starts_with('$')
-        || element != Some("input")
+        || !matches!(element, Some("input" | "textarea"))
     {
         return Err(LegacyReason::Binding.into());
     }
@@ -63,6 +63,7 @@ pub(super) fn model<'a>(
             value: Expr::plain(text),
             modifiers,
             merge: None,
+            model_element: element,
             position: 0,
             spans: [
                 (read.span.start, read.span.end),
@@ -72,7 +73,8 @@ pub(super) fn model<'a>(
     ))
 }
 
-/// A model binds only to an `<input>` whose `type`, when present, is static.
+/// A model binds to an `<input>` with static `type`, or an empty `<textarea>`.
+/// Textarea contents are RCDATA, so child text needs its own parser contract.
 pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
     for node in nodes {
         let bound = |kind: BindingKind, name: &str| {
@@ -80,11 +82,42 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
                 .iter()
                 .any(|binding| binding.kind == kind && binding.name == name)
         };
-        if bound(BindingKind::Model, "")
-            && (!matches!(node.content, Content::Element { tag: "input", .. })
-                || bound(BindingKind::Prop, "type"))
+        let model = node
+            .bindings
+            .iter()
+            .find(|binding| binding.kind == BindingKind::Model);
+        if let Some(model) = model
+            && !matches!(node.content, Content::Element { tag, .. } if model.model_element == Some(tag))
         {
-            return Err(LegacyReason::Binding.into());
+            return Err(AdmissionFailure::Invalid(
+                "model element kind disagrees with target",
+            ));
+        }
+        match &node.content {
+            Content::Element { tag: "input", .. }
+                if model.is_some() && bound(BindingKind::Prop, "type") =>
+            {
+                return Err(LegacyReason::Binding.into());
+            }
+            Content::Element {
+                tag: "textarea",
+                attributes,
+                ..
+            } if model.is_none()
+                || !node.children.is_empty()
+                || attributes.iter().any(|(name, ..)| *name == "value")
+                || bound(BindingKind::Prop, "value")
+                || bound(BindingKind::Html, "")
+                || bound(BindingKind::Text, "") =>
+            {
+                return Err(LegacyReason::Binding.into());
+            }
+            Content::Element {
+                tag: "input" | "textarea",
+                ..
+            } => {}
+            _ if model.is_some() => return Err(LegacyReason::Binding.into()),
+            _ => {}
         }
     }
     Ok(())

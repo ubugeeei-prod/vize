@@ -53,6 +53,7 @@ pub(super) fn slot<'a>(
             value: Expr::plain(params),
             modifiers: Vec::new_in(&alloc),
             merge: None,
+            model_element: None,
             position: 0,
             spans,
         },

@@ -49,6 +49,7 @@ fn accepted_artifacts_bypass_legacy_walks_and_unsupported_inputs_keep_them() {
         r#"<main><div data-id="card" class="card" :class="{ active: count > 1, [tone]: true }" :style="{ color: color }" :title="'n=' + count">{{ count * 2 }} / {{ label.toUpperCase() }}</div></main>"#,
         r#"<main><button data-id="inc" @click="count++">+</button><button data-id="add" @click="count = count + step">add</button><button data-id="rec" @click="record(label + ':' + count)">rec</button><button data-id="arrow" @click="() => record('arrow')">arrow</button><button data-id="evt" @click="record($event.type)">evt</button><span data-id="out">{{ count }}</span></main>"#,
         r#"<main><div v-show="visible && ready">shown</div><span v-text="message + '!'"></span><i v-html="markup"></i></main>"#,
+        r#"<main data-id="root"><div v-if="open" v-cloak data-id="cloak" :title="tip">{{ label }}</div><p data-id="tail">tail</p></main>"#,
         // Components, slot outlets, root fragments and the mounted parents.
         r#"<div><MyComp :foo="a" bar="b" @update="save">text {{ x }}</MyComp></div>"#,
         r#"<MyComp>hello {{ name }}<b>x</b></MyComp>"#,

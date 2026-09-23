@@ -42,6 +42,32 @@ the commands that re-derive it, and the local measurements taken so far.
 - Four reviewed output snapshots reflect parent-before-child node numbering and
   equivalent child-index navigation. The adjacent dynamic-child fixture also has
   an independently specified mounted update trace.
+- Ordinary phrasing elements (`abbr`, `code`, `data`, `kbd`, `mark`, `samp`,
+  `sub`, `sup`, `time`, `var`) have the same template bytes as the retained lane
+  with both prefix settings. A mounted trace checks live prop and text updates
+  through the published DOM, native Vapor, and retained Vapor runtimes; repaired
+  paragraph nesting still selects the legacy lane.
+- Empty textarea models emit the same code as the retained lane with either
+  prefix setting. A mounted trace observes the live textarea value, its model
+  update on input, and a later external patch on DOM, native Vapor, and retained
+  Vapor. Child content and conflicting value sources still select legacy;
+  mutating S3's `element-kind` away from its input/textarea owner is rejected.
+- `v-cloak` uses the S3 directive op's static partition at the root and the
+  inherited effect scope inside branches. Unit tests pin one removal operation,
+  retained template equality and rejection of a stale directive kind. The
+  independent mounted trace checks that the cloak attribute is absent after
+  each mount while the live node and untouched sibling keep their identities.
+- Static `style` beside `:style` now projects to one `_setStyle` call in
+  authored source order. Both orders match independently specified mounted DOM
+  states and node identities through updates and unmount, and the pinned
+  official `@vue/compiler-vapor` output under the same runtime. Empty static
+  style attributes still select legacy.
+- TS-33 compiles a conditional element, `v-cloak`, empty textarea model,
+  semantic phrasing elements, and both static/dynamic style orders through
+  Vize S3 and pinned official `@vue/compiler-vapor`. Both outputs mount on the
+  same pinned `@vue/runtime-vapor`; exact snapshots cover branch recreation,
+  live and sibling identity, model input/external patch, and style precedence.
+  Zero-legacy-walk assertions ensure the Vize side actually exercises S3.
 - References beginning with `$event` remain in the legacy lane. Their handler
   semantics follow Vue: a reference names a component/setup binding; only an
   inline statement receives the implicit event parameter. The Chromium contract
@@ -56,6 +82,7 @@ the commands that re-derive it, and the local measurements taken so far.
 - `cargo test -p vize_atelier_vapor --lib`
 - `cargo test -p vize_atelier_vapor --test davinci_vapor_artifact --test davinci_walk_baseline --test davinci_expr_reparse_floor`
 - `cargo test -p vize_atelier_vapor --test davinci_mounted_behavior --test davinci_s3_compiled_trace`
+- `cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity`
 - `cargo test -p vize_atelier_vapor --test davinci_event_handlers -- --ignored --nocapture` (Chromium)
 - `cargo clippy -p vize_atelier_vapor --lib -- -D warnings`
 - `cargo run -p vize_test_runner --bin coverage` (published fixture parity)

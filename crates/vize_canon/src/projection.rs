@@ -14,4 +14,4 @@ pub use assemble::{
     AssembledDiagnostic, AssembledOrigin, AssemblyPolicy, AuthoredSource, FinishedDiagnostic,
     ProjectedDocument, assemble_diagnostics,
 };
-pub use expr::project_template_expressions;
+pub use expr::{project_template_expression_document, project_template_expressions};
