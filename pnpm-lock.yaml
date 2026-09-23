@@ -571,6 +571,9 @@ importers:
       oxc-parser:
         specifier: catalog:oxc
         version: 0.144.0
+      oxc-transform:
+        specifier: catalog:oxc
+        version: 0.144.0
     devDependencies:
       '@jridgewell/trace-mapping':
         specifier: 0.3.31

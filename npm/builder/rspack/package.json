@@ -65,12 +65,14 @@
     "check:fix": "vp check --fix src vite.config.ts",
     "fmt": "vp fmt --write src vite.config.ts",
     "test": "pnpm build && node --test src/*.test.ts src/**/*.test.ts",
+    "test:hmr": "pnpm build && node --test test/hmr.test.mjs",
     "test:update": "pnpm build && node --test --test-update-snapshots src/*.test.ts src/**/*.test.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
     "diff": "8.0.4",
-    "oxc-parser": "catalog:oxc"
+    "oxc-parser": "catalog:oxc",
+    "oxc-transform": "catalog:oxc"
   },
   "devDependencies": {
     "@jridgewell/trace-mapping": "0.3.31",

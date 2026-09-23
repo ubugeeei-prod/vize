@@ -1,11 +1,13 @@
 /** JS module output assembly for compiled SFCs. */
 
 import path from "node:path";
+import { createHash } from "node:crypto";
 import { rewriteSfcTemplateAssetReferences } from "@vizejs/native";
 import type { CompiledModule } from "../types/index.ts";
 import { genHotReloadCode, genCSSModuleHotReloadCode } from "./hotReload.ts";
 import {
   analyzeModuleOutput,
+  hmrImportSnapshot,
   insertBeforeSfcMainDefaultExport,
   rewriteDefaultExportToSfcMain,
 } from "./module-output.ts";
@@ -165,12 +167,6 @@ export function generateOutputWithMap(
     );
   }
 
-  if (options.hmr && compiled.scopeId) {
-    insertBeforeSfcMainDefaultExport(emitted, genHotReloadCode(compiled.scopeId), {
-      normalizeSemicolon: true,
-    });
-  }
-
   if (compiled.customBlocks.length > 0) {
     const customBlockImports = compiled.customBlocks
       .map((block, index) => {
@@ -212,6 +208,18 @@ export function generateOutputWithMap(
       })
       .join("\n");
     emitted.prepend(`${assetImports}\n`);
+  }
+
+  if (options.hmr && compiled.scopeId) {
+    const metadata = compiled.hmr && {
+      ...compiled.hmr,
+      module: createHash("sha256").update(emitted.code).digest("hex").slice(0, 16),
+    };
+    insertBeforeSfcMainDefaultExport(
+      emitted,
+      genHotReloadCode(compiled.scopeId, metadata, hmrImportSnapshot(emitted.code) ?? "null"),
+      { normalizeSemicolon: true },
+    );
   }
 
   return { code: emitted.code, map: emitted.map };
