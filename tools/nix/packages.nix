@@ -41,6 +41,9 @@ in
         cmp \
           ${vize.src}/crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts \
           ${root + /crates/vize_canon/src/virtual_ts/helpers/pattern_matching.d.ts}
+        cmp \
+          ${vize.src}/crates/vize_patina/src/html_content_model/whatwg.tsv \
+          ${root + /crates/vize_patina/src/html_content_model/whatwg.tsv}
         test ! -e ${vize.src}/playground/package.json
         test ! -e ${vize.src}/crates/vize_canon/tests/snapshots/patterned_typechecking__patterned_root_virtual_ts.snap
         touch "$out"
