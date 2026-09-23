@@ -36,7 +36,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `VSlotScopeData`               | type  | `scope`             |     1 |     4 |
 | `Croquis.import_statements`    | field | `croquis`           |     4 |     5 |
 | `Croquis.invalid_exports`      | field | `croquis`           |     1 |     1 |
-| `Croquis.macros`               | field | `croquis`           |    28 |    73 |
+| `Croquis.macros`               | field | `croquis`           |    28 |    72 |
 | `Croquis.options_descriptor`   | field | `croquis`           |     2 |     2 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     4 |
 | `Croquis.re_exports`           | field | `croquis`           |     1 |     1 |
@@ -131,7 +131,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `VForScopeData`           |        4 |    5 |
 | `VSlotScopeData`          |        4 |    5 |
 | `Croquis.bindings`        |        0 |   23 |
-| `Croquis.macros`          |       73 |   74 |
+| `Croquis.macros`          |       72 |   73 |
 | `Croquis.scopes`          |       59 |   61 |
 | `Croquis.types`           |        9 |   17 |
 | `Croquis.undefined_refs`  |        0 |    1 |

@@ -35,10 +35,7 @@ export function parseCanonCodes(): CanonCodes {
 }
 
 /** Canon codes whose help or message text is missing in any locale. */
-export function canonProblems(
-  canon: CanonCodes,
-  legacy: Map<string, Partial<Entry>>,
-): string[] {
+export function canonProblems(canon: CanonCodes, legacy: Map<string, Partial<Entry>>): string[] {
   const problems: string[] = [];
   if (canon.help.size !== canon.variants.length) {
     problems.push("TypeErrorCode::help_key does not cover every variant");
@@ -71,7 +68,9 @@ export function parseCroquisCodes(): string[] {
     read("crates", "vize_croquis_cf", "src", "diagnostics", "rules.rs"),
     "pub fn code",
   );
-  return [...new Set([...body.matchAll(/"(vize:croquis\/cf\/[^"]+)"/gu)].map((match) => match[1]))].sort();
+  return [
+    ...new Set([...body.matchAll(/"(vize:croquis\/cf\/[^"]+)"/gu)].map((match) => match[1])),
+  ].sort();
 }
 
 /** Croquis codes missing a message or help entry in any locale. */

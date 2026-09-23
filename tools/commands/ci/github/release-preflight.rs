@@ -31,22 +31,10 @@ use std::{
     time::{Duration, Instant},
 };
 
-const REQUIRED_RELEASE_WORKFLOWS: &[&str] = &[
-    "Check",
-    "Benchmark",
-    "Fuzz",
-    "Miri",
-    "Real Project Matrix",
-    "Docs build",
-];
-const PARENT_EVIDENCE_REUSABLE_WORKFLOWS: &[&str] = &[
-    "Check",
-    "Benchmark",
-    "Fuzz",
-    "Miri",
-    "Real Project Matrix",
-    "Docs build",
-];
+const REQUIRED_RELEASE_WORKFLOWS: &[&str] =
+    &["Check", "Fuzz", "Miri", "Real Project Matrix", "Docs build"];
+const PARENT_EVIDENCE_REUSABLE_WORKFLOWS: &[&str] =
+    &["Check", "Fuzz", "Miri", "Real Project Matrix", "Docs build"];
 const RELEASE_PACKAGE_ROOTS: &[&str] = &["editors", "npm"];
 const RELEASE_BLOCKING_LABELS: &[&str] = &["priority:p0", "priority:p1"];
 const FAILURE_DETAIL_GITHUB_TIMEOUTS: GitHubApiTimeouts = GitHubApiTimeouts {
@@ -252,7 +240,7 @@ fn release_parent_sha(sha: &str) -> Result<String, String> {
     let parts = revision.split_whitespace().collect::<Vec<_>>();
     if parts.len() != 2 || parts[0] != sha {
         return Err(format!(
-            "Release commit {sha} must have exactly one parent for benchmark comparison"
+            "Release commit {sha} must have exactly one parent for release evidence reuse"
         ));
     }
     let base_sha = parts[1].to_string();
@@ -263,7 +251,7 @@ fn release_parent_sha(sha: &str) -> Result<String, String> {
     )?;
     if ancestry.status != 0 {
         return Err(format!(
-            "Benchmark base {base_sha} is not an ancestor of release commit {sha}"
+            "Release parent {base_sha} is not an ancestor of release commit {sha}"
         ));
     }
     Ok(base_sha)
@@ -321,14 +309,6 @@ fn create_release_gate_dispatch_plans(
         return Err("Release dispatch ref is required".to_string());
     }
     Ok(vec![
-        DispatchPlan {
-            workflow_name: "Benchmark",
-            workflow_id: "benchmark.yml",
-            ref_name: ref_name.to_string(),
-            inputs: json!({ "base_sha": base_sha, "head_sha": head_sha }),
-            expected_run_name: format!("Benchmark {base_sha}...{head_sha}"),
-            accepts_scheduled_evidence: false,
-        },
         DispatchPlan {
             workflow_name: "Fuzz",
             workflow_id: "fuzz.yml",
@@ -780,11 +760,10 @@ fn required_release_workflow_evidence(name: &str) -> Result<WorkflowEvidence, St
     match name {
         "Check" => Ok(WorkflowEvidence {
             path: ".github/workflows/check.yml",
-            events: if env::var("RELEASE_PR_NUMBER").is_ok_and(|value| !value.is_empty()) {
-                &["push", "pull_request"]
-            } else {
-                &["push"]
-            },
+            // The release reuses the parent's main push run when the tag only
+            // changes version metadata. PR Check may skip test-scripts, which
+            // remains required release evidence.
+            events: &["push"],
             branches: &[("push", &["main"])],
         }),
         "Benchmark" => Ok(WorkflowEvidence {

@@ -237,16 +237,10 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   const abJob = workflowJobBody(workflow, "criterion-ab");
   const guardJob = workflowJobBody(workflow, "dialect-guard");
 
-  // Only runs on PRs and only when Rust or the bench harness changes.
-  assert.match(workflow, /\n  pull_request:\n/);
-  assert.match(workflow, /paths:\n\s+- "crates\/\*\*"/);
-  assert.match(workflow, /- "tools\/benchmarks\/crates\/\*\*"/);
-  assert.match(workflow, /- "Cargo\.lock"/);
-  assert.match(workflow, /- "Cargo\.toml"/);
-  assert.match(workflow, /- "tools\/benchmarks\/scripts\/criterion-ab\.mjs"/);
-  assert.match(workflow, /- "tools\/benchmarks\/scripts\/criterion-impact\.mjs"/);
-  assert.match(workflow, /- "tools\/benchmarks\/scripts\/criterion-summary\.mjs"/);
-  assert.match(workflow, /- "tools\/benchmarks\/scripts\/dialect-guard\.mjs"/);
+  // Relative measurements run on explicit, reviewable base/head commits.
+  assert.match(workflow, /\n  workflow_dispatch:\n/);
+  assert.doesNotMatch(workflow, /\n  pull_request:\n/);
+  assert.match(workflow, /base_sha:[\s\S]*required:\s*true[\s\S]*head_sha:[\s\S]*required:\s*true/);
   assert.match(workflow, /FORCE_JAVASCRIPT_ACTIONS_TO_NODE24:\s*true/);
 
   for (const [jobName, minutes] of [
@@ -260,21 +254,21 @@ test("criterion bench workflow runs an A/B micro-benchmark and a dialect guard",
   }
 
   // A/B: alternating base/head criterion baselines compared with critcmp into a
-  // shared target dir; report-only by default (no threshold blocks the PR).
+  // shared target dir; relative measurements are report-only by default.
   assert.match(abJob, new RegExp(`runs-on:\\s*${hostedOrBlacksmith("ubuntu-24.04")}`));
   assert.match(abJob, /contents:\s*read/);
   assert.doesNotMatch(abJob, /contents:\s*write/);
   const checkoutHead = workflowStepBody(abJob, "Checkout head");
   const checkoutBase = workflowStepBody(abJob, "Checkout base");
-  assert.match(checkoutHead, /ref:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/);
+  assert.match(checkoutHead, /ref:\s*\$\{\{\s*inputs\.head_sha\s*\}\}/);
   assert.match(checkoutHead, /fetch-depth:\s*0/);
   assert.match(checkoutHead, /persist-credentials:\s*false/);
-  assert.match(checkoutBase, /ref:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
+  assert.match(checkoutBase, /ref:\s*\$\{\{\s*inputs\.base_sha\s*\}\}/);
   assert.match(checkoutBase, /persist-credentials:\s*false/);
 
   const impactStep = workflowStepBody(abJob, "Select affected Criterion suites");
-  assert.match(impactStep, /PR_BASE_SHA:\s*\$\{\{\s*github\.event\.pull_request\.base\.sha\s*\}\}/);
-  assert.match(impactStep, /PR_HEAD_SHA:\s*\$\{\{\s*github\.event\.pull_request\.head\.sha\s*\}\}/);
+  assert.match(impactStep, /PR_BASE_SHA:\s*\$\{\{\s*inputs\.base_sha\s*\}\}/);
+  assert.match(impactStep, /PR_HEAD_SHA:\s*\$\{\{\s*inputs\.head_sha\s*\}\}/);
   assert.match(impactStep, /--base-sha "\$PR_BASE_SHA"/);
   assert.match(impactStep, /--head-sha "\$PR_HEAD_SHA"/);
 

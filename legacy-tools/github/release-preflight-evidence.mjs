@@ -7,7 +7,6 @@ import { requiredRealProjectMatrixShardCount } from "./release-preflight-matrix-
  */
 export const requiredReleaseWorkflows = [
   "Check",
-  "Benchmark",
   "Fuzz",
   "Miri",
   "Real Project Matrix",

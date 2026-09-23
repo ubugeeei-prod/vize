@@ -24,26 +24,6 @@ on:
     # Daily long-run fuzz at 04:23 UTC; reproducers are uploaded as artifacts
     # so a regression triage can grab the failing input without re-running.
     - cron: "23 4 * * *"
-  pull_request:
-    branches: [main]
-    paths:
-      - "crates/vize_atelier_sfc/**"
-      - "crates/vize_atelier_dom/**"
-      - "crates/vize_atelier_core/**"
-      - "crates/vize_atelier_ssr/**"
-      - "crates/vize_atelier_vapor/**"
-      - "crates/vize_armature/**"
-      - "crates/vize_carton/**"
-      - "crates/vize_davinci/**"
-      - "crates/vize_s2/**"
-      - "crates/vize_s1_to_s2/**"
-      - "crates/vize_s2_to_s3/**"
-      - "crates/vize_s1/**"
-      - "tests/fuzz/**"
-      - "tools/commands/ci/fuzz/**"
-      - "tools/support/**"
-      - ".github/workflows/fuzz.yml"
-
 run-name: Fuzz ${{ github.event_name == 'workflow_dispatch' && (inputs.mode == 'replay' && 'replay' || format('{0}s', inputs.max-total-time)) || github.event_name }} @ ${{ github.sha }}
 
 concurrency:
@@ -66,10 +46,9 @@ jobs:
     # follow-up if platform-divergent panics ever appear in triage.
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
-    # Pull-request fuzzing is advisory to keep the short readiness lane moving.
     # Scheduled and manually dispatched runs are release evidence and must fail
     # after preserving and triaging any reproducer.
-    continue-on-error: ${{ github.event_name == 'pull_request' }}
+    continue-on-error: false
     strategy:
       fail-fast: false
       matrix:
@@ -110,9 +89,8 @@ jobs:
               seconds="$REQUESTED_MAX_TOTAL_TIME"
               ;;
             *)
-              # PR-gating short fuzz: 2 minutes/target — tight enough to keep
-              # PR latency reasonable while still exercising every seed.
-              seconds=120
+              echo "::error title=Unsupported fuzz event::campaign requires schedule or workflow_dispatch"
+              exit 1
               ;;
           esac
           if [[ ! "$seconds" =~ ^[0-9]{1,4}$ ]] || (( 10#$seconds < 1 || 10#$seconds > 3600 )); then

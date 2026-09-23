@@ -74,6 +74,15 @@ test("required workflow selection fails closed for missing, stale, red, or wrong
   );
 });
 
+test("release evidence ignores a failed optional Benchmark run", () => {
+  const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
+  runs.push({ ...successfulReleaseRun("Benchmark", 99), conclusion: "failure" });
+  assert.deepEqual(
+    [...selectRequiredWorkflowRuns(runs, releaseSha).keys()],
+    requiredReleaseWorkflows,
+  );
+});
+
 test("newest matching run wins across cancellation, reruns, and concurrent runs", () => {
   const greenRuns = requiredReleaseWorkflows
     .filter((name) => name !== "Docs build")

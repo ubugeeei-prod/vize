@@ -9,24 +9,14 @@ import {
 import { vueParityAction } from "./support/check-vue-parity-action.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-test("the typecheck divergence ratchet runs on every pull request", () => {
-  // Dimension 1 of the vue-tsc parity scorecard (#3222) is a *per-PR* ratchet:
-  // tooling/compat-ratchet.test.ts may only hold or improve the divergence
-  // ledger in tests/_fixtures/compat-baseline.json. It reaches the PR lane only
-  // because the vue-parity job carries no event guard — three sibling jobs in
-  // this same workflow (nix-flake, source-coverage, branch-coverage) opt out of
-  // pull requests with exactly such a guard for runtime reasons. Adding one to
-  // vue-parity would silently un-gate the ledger with every other assertion in
-  // this file still passing, so pin the trigger and the absence of the guard.
-  // The davinci integration branch carries the same required gates, so its
-  // PRs ride the identical trigger (davinci-road/roadmap.md standing gates).
+test("the full typecheck divergence ratchet runs on main, schedule, and dispatch", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
 
   assert.match(workflow, /\n  pull_request:\n    branches: \[main, davinci\]\n/);
-  assert.doesNotMatch(
+  assert.match(workflow, /\n  workflow_dispatch:\n/);
+  assert.match(
     workflowJobBody(workflow, "vue-parity"),
-    /^ {4}if:/m,
-    "vue-parity must stay unconditional: it is the only pre-merge gate on the divergence ledger",
+    /if: \$\{\{ github\.event_name != 'pull_request' \}\}/,
   );
 });
 

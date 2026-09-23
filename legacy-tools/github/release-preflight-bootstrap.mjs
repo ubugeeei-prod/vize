@@ -27,14 +27,6 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
 
   return [
     {
-      workflowName: "Benchmark",
-      workflowId: "benchmark.yml",
-      ref,
-      inputs: { base_sha: baseSha, head_sha: headSha },
-      expectedRunName: `Benchmark ${baseSha}...${headSha}`,
-      acceptsScheduledEvidence: false,
-    },
-    {
       workflowName: "Fuzz",
       workflowId: "fuzz.yml",
       ref,

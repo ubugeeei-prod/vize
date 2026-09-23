@@ -18,8 +18,8 @@ use super::spans::expression_span;
 use super::{Emitter, Result};
 use crate::codegen::element::props::quoted_js_string;
 use crate::codegen::helpers::extract_destructure_params;
-use crate::s4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 use crate::s4::AdmissionFailure;
+use crate::s4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
 
 /// A `createSlots` entry source, by the plan position of its content child.
 #[derive(Clone, Copy)]
