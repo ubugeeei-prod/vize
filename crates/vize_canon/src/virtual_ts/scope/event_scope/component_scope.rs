@@ -28,7 +28,9 @@ pub(super) fn generate_component_handler_scope(
         "__vize_event"
     };
     let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
-    let event_types = generate_component_event_types(
+    // Only reached for handlers with a target component; without one there is
+    // no event contract to declare.
+    let Some(event_types) = generate_component_event_types(
         ts,
         ComponentEventTypeContext {
             summary: ctx.summary,
@@ -46,8 +48,9 @@ pub(super) fn generate_component_handler_scope(
             }),
             indent,
         },
-    )
-    .expect("component event handler should have a target component");
+    ) else {
+        return;
+    };
     let event_type = event_types.event_type;
     let handler_type = event_types.handler_type;
     let handler_type_expr = event_types.handler_type_expr;

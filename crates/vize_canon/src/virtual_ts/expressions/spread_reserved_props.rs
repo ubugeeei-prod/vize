@@ -75,17 +75,20 @@ fn has_reserved_name_candidate(
     }
     let bytes = expression.as_bytes();
     let mut cursor = 0;
-    while cursor < bytes.len() {
-        if !is_identifier_start(bytes[cursor]) {
+    while let Some(&byte) = bytes.get(cursor) {
+        if !is_identifier_start(byte) {
             cursor += 1;
             continue;
         }
         let start = cursor;
         cursor += 1;
-        while cursor < bytes.len() && is_identifier_continue(bytes[cursor]) {
+        while bytes
+            .get(cursor)
+            .is_some_and(|byte| is_identifier_continue(*byte))
+        {
             cursor += 1;
         }
-        if template_binding_access.contains(&expression[start..cursor]) {
+        if template_binding_access.contains(expression.get(start..cursor).unwrap_or_default()) {
             return true;
         }
     }
@@ -227,9 +230,14 @@ fn apply_replacements(
             &mut code,
             &mut segments,
         );
+        let Some((name, receiver)) = expression
+            .get(replacement.source.clone())
+            .and_then(|name| Some((name, bindings.receiver(name)?)))
+        else {
+            // Leave the authored text in place; the next source segment copies it.
+            continue;
+        };
         let generated_start = code.len();
-        let name = &expression[replacement.source.clone()];
-        let receiver = bindings.receiver(name).expect("collected binding access");
         if replacement.shorthand {
             append!(code, "{name}: {receiver}[\"{name}\"]");
         } else {
@@ -260,7 +268,10 @@ fn push_source_segment(
         return;
     }
     let generated_start = code.len();
-    code.push_str(&expression[source.clone()]);
+    let Some(text) = expression.get(source.clone()) else {
+        return;
+    };
+    code.push_str(text);
     segments.push(SpreadRewriteSegment {
         generated: generated_start..code.len(),
         source,

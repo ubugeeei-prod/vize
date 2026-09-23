@@ -60,6 +60,7 @@ mod sfc_diagnostics;
 pub mod sfc_typecheck;
 pub mod template_diagnostic_directives;
 pub mod template_instance_names;
+mod text_scan;
 mod types;
 pub mod virtual_ts;
 

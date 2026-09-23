@@ -80,10 +80,10 @@ fn glued_section_end(source: &str, mut cursor: usize) -> Option<usize> {
 /// The length of `import … 'specifier'`, measured from the `import` keyword.
 fn module_specifier_end(import: &str) -> Option<usize> {
     let open = import.find(['\'', '"', ';'])?;
-    let quote = import[open..].chars().next().filter(|c| *c != ';')?;
+    let quote = import.get(open..)?.chars().next().filter(|c| *c != ';')?;
     let body = import.get(open + 1..)?;
     let close = body.find([quote, '\n'])?;
-    body[close..]
+    body.get(close..)?
         .starts_with(quote)
         .then_some(open + 1 + close + 1)
 }
@@ -103,7 +103,7 @@ fn import_attributes_len(rest: &str) -> Option<usize> {
 /// Skip whitespace and comments.
 fn skip_trivia(source: &str, mut cursor: usize) -> usize {
     loop {
-        let rest = &source[cursor..];
+        let rest = source.get(cursor..).unwrap_or_default();
         let trimmed = rest.trim_start();
         cursor += rest.len() - trimmed.len();
         let comment = if trimmed.starts_with("//") {

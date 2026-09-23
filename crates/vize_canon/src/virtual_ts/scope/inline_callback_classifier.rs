@@ -50,7 +50,9 @@ fn looks_like_inline_callback_start(value: &str) -> bool {
         end = index + ch.len_utf8();
     }
     let after_identifier = skip_js_trivia(value, end);
-    value[after_identifier..].starts_with("=>")
+    value
+        .get(after_identifier..)
+        .is_some_and(|rest| rest.starts_with("=>"))
 }
 
 fn expression_is_inline_function(expression: &Expression<'_>) -> bool {

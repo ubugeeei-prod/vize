@@ -298,7 +298,7 @@ fn map_slot_props_pattern(
     function_gen_start: usize,
     ts: &str,
 ) {
-    let function_text = &ts[function_gen_start..];
+    let function_text = ts.get(function_gen_start..).unwrap_or_default();
     // TypeScript anchors missing destructured properties on the property key,
     // not the renamed local binding. Preserve the complete authored pattern.
     if let Some(source_start) = pattern_offset

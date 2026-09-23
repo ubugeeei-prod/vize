@@ -175,10 +175,11 @@ fn element_event_host_tag<'root, 'arena>(
 fn event_host_tag_from_source(source: &str, directive_start: u32) -> Option<&str> {
     let prefix = source.get(..directive_start as usize)?;
     let open = host_tag_open_offset(prefix)?;
-    if prefix[open..].starts_with("</") {
+    let tag = prefix.get(open..)?;
+    if tag.starts_with("</") {
         return None;
     }
-    prefix[open + 1..]
+    tag.get(1..)?
         .trim_start()
         .split(|ch: char| ch.is_ascii_whitespace() || ch == '/' || ch == '>')
         .next()

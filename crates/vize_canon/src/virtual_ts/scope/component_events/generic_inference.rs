@@ -69,7 +69,7 @@ pub(super) fn generate_inferred_emit_args(
     });
     let guarded_call_indent = guard.as_ref().map(|_| cstr!("{}  ", ctx.indent));
     let call_indent = guarded_call_indent.as_deref().unwrap_or(ctx.indent);
-    if guard.is_some() {
+    if let Some(guard) = guard.as_deref() {
         append!(*ts, "{}const {emit_props} = (() => {{\n", ctx.indent);
         append!(
             *ts,
@@ -77,8 +77,7 @@ pub(super) fn generate_inferred_emit_args(
         );
         append!(
             *ts,
-            "{call_indent}if ({}) return (undefined as unknown as {resolver_type})({})({{\n",
-            guard.as_deref().unwrap(),
+            "{call_indent}if ({guard}) return (undefined as unknown as {resolver_type})({})({{\n",
             ctx.component_ref,
         );
     } else {

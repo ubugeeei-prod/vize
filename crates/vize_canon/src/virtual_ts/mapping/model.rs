@@ -301,7 +301,7 @@ impl ProjectionMapping {
                     }
                 })
                 .ok()?;
-            &self.spans[index]
+            self.spans.get(index)?
         } else {
             self.spans
                 .iter()
@@ -396,7 +396,8 @@ fn shift_generated_range(range: &mut Range<usize>, start: usize, old_end: usize,
 }
 
 fn authored_disjoint(spans: &[VizeMapping]) -> bool {
-    spans
-        .windows(2)
-        .all(|pair| pair[0].src_range.end <= pair[1].src_range.start)
+    spans.windows(2).all(|pair| match pair {
+        [left, right] => left.src_range.end <= right.src_range.start,
+        _ => true,
+    })
 }

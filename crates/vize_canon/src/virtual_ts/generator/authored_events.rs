@@ -43,7 +43,7 @@ pub(super) fn emit_authored_event_map(
         append!(*ts, ": __VizeStaticEventMap{generic_suffix}[");
         ts.push_str(
             serde_json::to_string(emit.name.as_str())
-                .expect("event names serialize as JSON strings")
+                .unwrap_or_default()
                 .as_str(),
         );
         ts.push_str("];\n");
@@ -65,14 +65,14 @@ pub(super) fn emit_authored_event_map(
         let generated_start = ts.len();
         ts.push_str(
             serde_json::to_string(event_name.as_str())
-                .expect("model event names serialize as JSON strings")
+                .unwrap_or_default()
                 .as_str(),
         );
         let generated_end = ts.len();
         append!(*ts, ": __VizeStaticEventMap{generic_suffix}[");
         ts.push_str(
             serde_json::to_string(event_name.as_str())
-                .expect("model event names serialize as JSON strings")
+                .unwrap_or_default()
                 .as_str(),
         );
         ts.push_str("];\n");

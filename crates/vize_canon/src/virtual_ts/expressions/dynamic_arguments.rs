@@ -64,15 +64,23 @@ fn directive_start(source: &str, bracket: usize) -> Option<usize> {
         return None;
     }
     let mut start = bracket;
-    while start > 0
-        && matches!(
-            bytes[start - 1],
-            b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b':'
-        )
+    while start
+        .checked_sub(1)
+        .and_then(|prev| bytes.get(prev))
+        .is_some_and(|byte| {
+            matches!(
+                byte,
+                b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'-' | b'.' | b'_' | b':'
+            )
+        })
     {
         start -= 1;
     }
-    if start > 0 && matches!(bytes[start - 1], b'@' | b'#') {
+    if start
+        .checked_sub(1)
+        .and_then(|prev| bytes.get(prev))
+        .is_some_and(|byte| matches!(byte, b'@' | b'#'))
+    {
         start -= 1;
     }
     (start < bracket).then_some(start)

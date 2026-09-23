@@ -72,27 +72,26 @@ fn rewrite_default_export_expression(
     const REPLACEMENT: &str = "const __default__ =";
 
     let (export_start, expr_start, expr_end) = default_expr?;
-    if expr_end > text.len() || expr_start >= expr_end || export_start >= expr_start {
+    if expr_start >= expr_end || export_start >= expr_start {
         return None;
     }
     let keyword_end = export_start.checked_add(EXPORT_DEFAULT.len())?;
-    if keyword_end > expr_start
-        || !text.is_char_boundary(export_start)
-        || !text.is_char_boundary(expr_start)
-        || !text.is_char_boundary(expr_end)
-        || !text[export_start..].starts_with(EXPORT_DEFAULT)
-    {
+    if keyword_end > expr_start || text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
         return None;
     }
-
-    let mut output = String::with_capacity(text.len() + REPLACEMENT.len());
-    output.push_str(&text[..export_start]);
-    output.push_str(REPLACEMENT);
+    let before = text.get(..export_start)?;
     // `keyword_end..expr_start` is the inter-token whitespace/comment run
     // between the keyword and the expression (empty for `export default{`).
-    output.push_str(&text[keyword_end..expr_start]);
-    output.push_str(&text[expr_start..expr_end]);
-    output.push_str(&text[expr_end..]);
+    let gap = text.get(keyword_end..expr_start)?;
+    let expression = text.get(expr_start..expr_end)?;
+    let after = text.get(expr_end..)?;
+
+    let mut output = String::with_capacity(text.len() + REPLACEMENT.len());
+    output.push_str(before);
+    output.push_str(REPLACEMENT);
+    output.push_str(gap);
+    output.push_str(expression);
+    output.push_str(after);
     Some(output)
 }
 
@@ -108,30 +107,31 @@ fn wrap_default_export_object(
     const EXPORT_DEFAULT: &str = "export default";
 
     let (export_start, object_start, object_end) = default_object?;
-    if object_end > text.len() || object_start >= object_end {
+    if object_start >= object_end {
         return None;
     }
     let keyword_end = export_start.checked_add(EXPORT_DEFAULT.len())?;
-    if keyword_end > object_start
-        || !text.is_char_boundary(export_start)
-        || !text.is_char_boundary(object_start)
-        || !text.is_char_boundary(object_end)
-        || !text[export_start..].starts_with(EXPORT_DEFAULT)
-        || !text[object_start..].starts_with('{')
-    {
+    if keyword_end > object_start || text.get(export_start..keyword_end)? != EXPORT_DEFAULT {
+        return None;
+    }
+    let before = text.get(..export_start)?;
+    let gap = text.get(keyword_end..object_start)?;
+    let object = text.get(object_start..object_end)?;
+    let after = text.get(object_end..)?;
+    if !object.starts_with('{') {
         return None;
     }
 
     let mut output =
         String::with_capacity(text.len() + DEFINE_COMPONENT_REF.len() + EXPORT_DEFAULT.len());
-    output.push_str(&text[..export_start]);
+    output.push_str(before);
     output.push_str("const __default__ =");
-    output.push_str(&text[keyword_end..object_start]);
+    output.push_str(gap);
     output.push_str(DEFINE_COMPONENT_REF);
     output.push('(');
-    output.push_str(&text[object_start..object_end]);
+    output.push_str(object);
     output.push(')');
-    output.push_str(&text[object_end..]);
+    output.push_str(after);
     Some(output)
 }
 

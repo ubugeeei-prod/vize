@@ -10,54 +10,26 @@ pub(super) fn expression_source_for_typecheck(expr: &str) -> Cow<'_, str> {
 }
 
 fn contains_typescript_suppression_comment(expr: &str) -> bool {
-    let bytes = expr.as_bytes();
-    let len = bytes.len();
-    let mut index = 0;
-
-    while index < len {
-        while index < len && bytes[index].is_ascii_whitespace() {
-            index += 1;
-        }
-        if index + 1 >= len || bytes[index] != b'/' {
+    let mut rest = expr;
+    loop {
+        rest = rest.trim_start_matches(|ch: char| ch.is_ascii_whitespace());
+        let (body, tail) = if let Some(after) = rest.strip_prefix("//") {
+            after.split_once('\n').unwrap_or((after, ""))
+        } else if let Some(after) = rest.strip_prefix("/*") {
+            after.split_once("*/").unwrap_or_else(|| {
+                // An unterminated block comment is scanned up to its final character.
+                let mut chars = after.chars();
+                chars.next_back();
+                (chars.as_str(), "")
+            })
+        } else {
             return false;
+        };
+        if is_typescript_suppression_directive(body) {
+            return true;
         }
-        {
-            let next = bytes[index + 1];
-            if next == b'/' {
-                let start = index + 2;
-                let mut end = start;
-                while end < len && bytes[end] != b'\n' {
-                    end += 1;
-                }
-                if is_typescript_suppression_directive(&expr[start..end]) {
-                    return true;
-                }
-                index = end;
-                if index < len {
-                    index += 1;
-                }
-                continue;
-            }
-
-            if next == b'*' {
-                let start = index + 2;
-                index += 2;
-                while index + 1 < len && !(bytes[index] == b'*' && bytes[index + 1] == b'/') {
-                    index += 1;
-                }
-                let end = index.min(len);
-                if is_typescript_suppression_directive(&expr[start..end]) {
-                    return true;
-                }
-                index = (index + 2).min(len);
-                continue;
-            }
-        }
-
-        return false;
+        rest = tail;
     }
-
-    false
 }
 
 fn is_typescript_suppression_directive(comment: &str) -> bool {

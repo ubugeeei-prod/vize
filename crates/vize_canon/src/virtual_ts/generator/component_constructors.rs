@@ -75,11 +75,14 @@ pub(super) fn emit_component_constructors<'a>(
     if aliases.jsx_slots {
         ts.push_str("declare global { namespace JSX { interface ElementChildrenAttribute {} } }\ntype __VizeJsxSlotProps<S> = { [K in keyof JSX.ElementChildrenAttribute]?: S };\n");
     }
-    if !legacy_component && let Some((declaration, names)) = aliases.generic_params {
+    if !legacy_component
+        && let Some((declaration, names)) = aliases.generic_params
+        && let Some(authored_generic) = authored_generic
+    {
         generic_function::emit(
             ts,
             aliases,
-            authored_generic.expect("generic SFC has authored parameters"),
+            authored_generic,
             declaration,
             names,
             setup_props_plan.component_props_type_ref(),

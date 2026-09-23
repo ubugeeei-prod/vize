@@ -133,14 +133,10 @@ pub(crate) fn generate_component_prop_checks(
         .props
         .iter()
         .any(crate::virtual_ts::scope::is_inline_callback_prop);
-    let grouped_guard = has_inline_callback && usage.vif_guard.is_some();
-    if grouped_guard {
-        append_ignored_vif_guard_open(
-            ts,
-            indent,
-            usage.vif_guard.as_deref().unwrap(),
-            "Inference-only guard",
-        );
+    let grouped_guard_expr = usage.vif_guard.as_deref().filter(|_| has_inline_callback);
+    let grouped_guard = grouped_guard_expr.is_some();
+    if let Some(guard) = grouped_guard_expr {
+        append_ignored_vif_guard_open(ts, indent, guard, "Inference-only guard");
     }
     let callback_indent = if grouped_guard {
         cstr!("{indent}  ")

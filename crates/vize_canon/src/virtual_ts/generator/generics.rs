@@ -4,6 +4,7 @@
 use vize_carton::{String, append, cstr};
 use vize_croquis::{Croquis, ScopeData, ScopeKind};
 
+use crate::text_scan::{byte_before, starts_with_at};
 use crate::virtual_ts::props::{
     add_generic_defaults, extract_generic_names, strip_const_modifiers,
 };
@@ -59,7 +60,7 @@ impl HoistedGenericAliases {
             .iter()
             .filter(|export| export.hoisted)
             .filter_map(|export| {
-                let source = &script[export.start as usize..export.end as usize];
+                let source = script.get(export.start as usize..export.end as usize)?;
                 (references_any_identifier(source, &names)
                     && generic_injection_point(source, export.name.as_str()).is_some())
                 .then(|| String::from(export.name.as_str()))
@@ -156,13 +157,13 @@ pub(super) fn split_generic_params(list: &str) -> Vec<&str> {
             b'<' => depth += 1,
             b'>' => depth -= 1,
             b',' if depth == 0 => {
-                params.push(&list[start..i]);
+                params.push(list.get(start..i).unwrap_or_default());
                 start = i + 1;
             }
             _ => {}
         }
     }
-    params.push(&list[start..]);
+    params.push(list.get(start..).unwrap_or_default());
     params
 }
 
@@ -175,16 +176,18 @@ fn param_constraint(param: &str) -> Option<&str> {
     let mut depth = 0i32;
     let mut start = None;
     let mut i = 0usize;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'<' => depth += 1,
             b'>' => depth -= 1,
             b'=' if bytes.get(i + 1) == Some(&b'>') => i += 1,
             b'=' if depth == 0 => break,
             b'e' if depth == 0
                 && start.is_none()
-                && param[i..].starts_with("extends")
-                && (i == 0 || !is_ident_byte(bytes[i - 1]))
+                && bytes
+                    .get(i..)
+                    .is_some_and(|rest| rest.starts_with(b"extends"))
+                && !byte_before(bytes, i).is_some_and(is_ident_byte)
                 && !matches!(bytes.get(i + 7), Some(&b) if is_ident_byte(b)) =>
             {
                 start = Some(i + 7);
@@ -194,7 +197,7 @@ fn param_constraint(param: &str) -> Option<&str> {
         }
         i += 1;
     }
-    let constraint = param[start?..i.min(param.len())].trim();
+    let constraint = param.get(start?..i.min(param.len()))?.trim();
     (!constraint.is_empty()).then_some(constraint)
 }
 
@@ -203,7 +206,7 @@ pub(super) fn is_ident_byte(b: u8) -> bool {
 }
 
 pub(super) fn skip_ascii_ws(bytes: &[u8], mut i: usize) -> usize {
-    while i < bytes.len() && bytes[i].is_ascii_whitespace() {
+    while bytes.get(i).is_some_and(u8::is_ascii_whitespace) {
         i += 1;
     }
     i
@@ -220,11 +223,11 @@ pub(crate) fn references_any_identifier(haystack: &str, idents: &[String]) -> bo
             return false;
         }
         let mut from = 0;
-        while let Some(rel) = haystack[from..].find(ident) {
+        while let Some(rel) = haystack.get(from..).and_then(|rest| rest.find(ident)) {
             let at = from + rel;
-            let before_ok = at == 0 || !is_ident_byte(bytes[at - 1]);
+            let before_ok = !byte_before(bytes, at).is_some_and(is_ident_byte);
             let after = at + ident.len();
-            let after_ok = after >= bytes.len() || !is_ident_byte(bytes[after]);
+            let after_ok = !bytes.get(after).is_some_and(|&b| is_ident_byte(b));
             if before_ok && after_ok {
                 return true;
             }
@@ -243,18 +246,18 @@ pub(super) fn generic_injection_point(decl: &str, type_name: &str) -> Option<usi
     let mut i = skip_ascii_ws(bytes, 0);
 
     // Optional `export` modifier.
-    if decl[i..].starts_with("export")
+    if starts_with_at(decl, i, "export")
         && matches!(bytes.get(i + 6), Some(b) if b.is_ascii_whitespace())
     {
         i = skip_ascii_ws(bytes, i + 6);
     }
 
     // Declaration keyword.
-    if decl[i..].starts_with("type")
+    if starts_with_at(decl, i, "type")
         && matches!(bytes.get(i + 4), Some(b) if b.is_ascii_whitespace())
     {
         i += 4;
-    } else if decl[i..].starts_with("interface")
+    } else if starts_with_at(decl, i, "interface")
         && matches!(bytes.get(i + 9), Some(b) if b.is_ascii_whitespace())
     {
         i += 9;
@@ -264,7 +267,7 @@ pub(super) fn generic_injection_point(decl: &str, type_name: &str) -> Option<usi
     i = skip_ascii_ws(bytes, i);
 
     // Declared name.
-    if !decl[i..].starts_with(type_name) {
+    if !starts_with_at(decl, i, type_name) {
         return None;
     }
     let name_end = i + type_name.len();

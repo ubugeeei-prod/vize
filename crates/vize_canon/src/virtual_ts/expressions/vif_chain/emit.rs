@@ -96,8 +96,10 @@ fn emit_vif_branch_open(
         (true, None) => {}
     }
 
-    if let Some(expr_index) = branch.condition_expr_index {
-        let expr = exprs[expr_index];
+    if let Some(expr) = branch
+        .condition_expr_index
+        .and_then(|expr_index| exprs.get(expr_index))
+    {
         let src_start = (context.template_offset + expr.start) as usize;
         let src_end = (context.template_offset + expr.end) as usize;
         append!(
@@ -126,8 +128,10 @@ fn append_guard_condition(
         let gen_start = ts.len();
         append_binding_expression(ts, condition, ctx.bindings);
         let gen_end = ts.len();
-        if let Some(expr_index) = branch.condition_expr_index {
-            let expr = exprs[expr_index];
+        if let Some(expr) = branch
+            .condition_expr_index
+            .and_then(|expr_index| exprs.get(expr_index))
+        {
             mappings.push(VizeMapping {
                 gen_range: gen_start..gen_end,
                 src_range: (template_offset + expr.start) as usize

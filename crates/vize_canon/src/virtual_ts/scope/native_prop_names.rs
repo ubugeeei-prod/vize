@@ -55,8 +55,12 @@ fn visit(
             if name.starts_with("data-") {
                 continue;
             }
-            let tag = serde_json::to_string(element.tag).expect("string serialization");
-            let key = serde_json::to_string(name).expect("string serialization");
+            let (Ok(tag), Ok(key)) = (
+                serde_json::to_string(element.tag),
+                serde_json::to_string(name),
+            ) else {
+                continue;
+            };
             let start = ts.len();
             append!(*ts, "  const __vize_native_key_{}", location.span.start);
             let name_end = ts.len();
@@ -106,7 +110,9 @@ fn emit_fragment_prop_names(
         if matches!(name, "key" | "ref") || name.starts_with("data-") {
             continue;
         }
-        let key = serde_json::to_string(name).expect("string serialization");
+        let Ok(key) = serde_json::to_string(name) else {
+            continue;
+        };
         append!(
             *ts,
             "  const __vize_fragment_prop_{}: Partial<__VizeNativeElement<\"template\">> = {{ ",

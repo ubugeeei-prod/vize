@@ -152,7 +152,7 @@ pub(super) fn strip_named_value_exports(
     starts: &[u32],
 ) {
     let first = starts.partition_point(|&start| (start as usize) < line_start);
-    for &start in &starts[first..] {
+    for &start in starts.get(first..).unwrap_or_default() {
         let column = start as usize - line_start;
         if column >= line.len() {
             break;
@@ -202,10 +202,10 @@ fn leading_ts_directive_comment_start(script: &str, statement_start: usize) -> O
     let mut has_ts_directive = false;
     while cursor > 0 {
         let previous_line_end = cursor.saturating_sub(1);
-        let previous_line_start = script[..previous_line_end]
-            .rfind('\n')
-            .map_or(0, |index| index + 1);
-        let line = &script[previous_line_start..previous_line_end];
+        let previous_line_start = line_start_at(script, previous_line_end);
+        let Some(line) = script.get(previous_line_start..previous_line_end) else {
+            break;
+        };
         let line = line.strip_suffix('\r').unwrap_or(line);
         let trimmed = line.trim_start();
         if !trimmed.starts_with("//") {
@@ -221,8 +221,10 @@ fn leading_ts_directive_comment_start(script: &str, statement_start: usize) -> O
 }
 
 fn line_start_at(script: &str, offset: usize) -> usize {
-    script[..offset.min(script.len())]
-        .rfind('\n')
+    let bytes = script.as_bytes();
+    bytes
+        .get(..offset.min(bytes.len()))
+        .and_then(|before| before.iter().rposition(|&byte| byte == b'\n'))
         .map_or(0, |index| index + 1)
 }
 

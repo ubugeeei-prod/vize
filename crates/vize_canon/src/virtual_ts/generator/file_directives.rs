@@ -9,11 +9,12 @@ pub(super) fn emit(ts: &mut String, source: Option<&str>, setup_start: Option<us
     let Some(source) = source else {
         return;
     };
-    let nocheck = if let Some(start) = setup_start.filter(|&start| source.is_char_boundary(start)) {
-        leading_nocheck(&source[..start]) || leading_nocheck(&source[start..])
-    } else {
-        leading_nocheck(source)
-    };
+    let nocheck =
+        if let Some((head, tail)) = setup_start.and_then(|start| source.split_at_checked(start)) {
+            leading_nocheck(head) || leading_nocheck(tail)
+        } else {
+            leading_nocheck(source)
+        };
     if nocheck {
         ts.push_str("// @ts-nocheck\n");
     }
@@ -35,7 +36,9 @@ fn leading_nocheck(source: &str) -> bool {
         if comment.span.start as usize >= limit {
             break;
         }
-        let text = &source[comment.span.start as usize..comment.span.end as usize];
+        let Some(text) = source.get(comment.span.start as usize..comment.span.end as usize) else {
+            continue;
+        };
         let text = text
             .strip_prefix("//")
             .or_else(|| text.strip_prefix("/*"))

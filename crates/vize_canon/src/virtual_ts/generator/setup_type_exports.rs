@@ -12,12 +12,14 @@ fn skip_trivia(source: &str, mut at: usize) -> usize {
             at += 1;
         }
         if source.get(at..).is_some_and(|rest| rest.starts_with("//")) {
-            at = source[at..]
-                .find('\n')
+            at = source
+                .get(at..)
+                .and_then(|rest| rest.find('\n'))
                 .map_or(source.len(), |end| at + end + 1);
         } else if source.get(at..).is_some_and(|rest| rest.starts_with("/*")) {
-            at = source[at + 2..]
-                .find("*/")
+            at = source
+                .get(at + 2..)
+                .and_then(|rest| rest.find("*/"))
                 .map_or(source.len(), |end| at + end + 4);
         } else {
             return at;
@@ -154,14 +156,16 @@ impl SetupTypeExportsPlan {
         let original = line.as_ref();
         let mut output = String::with_capacity(original.len());
         let mut copied_until = 0usize;
-        for start in &self.export_starts[first..last] {
+        for start in self.export_starts.get(first..last).unwrap_or_default() {
             let column = (*start - line_start) as usize;
-            if original.get(column..column + "export".len()) == Some("export") {
-                output.push_str(&original[copied_until..column]);
+            if original.get(column..column + "export".len()) == Some("export")
+                && let Some(kept) = original.get(copied_until..column)
+            {
+                output.push_str(kept);
                 copied_until = column + "export".len();
             }
         }
-        output.push_str(&original[copied_until..]);
+        output.push_str(original.get(copied_until..).unwrap_or_default());
         *line = Cow::Owned(output.into());
     }
 

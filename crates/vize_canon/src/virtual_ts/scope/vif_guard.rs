@@ -64,7 +64,7 @@ pub(crate) fn remove_enclosing_vif_guard_prefix(guard: &str, prefix: &str) -> Op
         return Some(String::from(guard));
     }
 
-    let remaining = &guard_terms[prefix_terms.len()..];
+    let remaining = guard_terms.get(prefix_terms.len()..).unwrap_or_default();
     (!remaining.is_empty()).then(|| String::from(remaining.join(" && ").as_str()))
 }
 
@@ -138,17 +138,16 @@ fn split_guard_terms(guard: &str) -> Vec<&str> {
     let mut start = 0usize;
     let mut index = 0usize;
 
-    while index < bytes.len() {
-        match bytes[index] {
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
             b'(' | b'[' | b'{' => depth += 1,
             b')' | b']' | b'}' => depth -= 1,
             b'&' if depth == 0
                 && bytes.get(index + 1) == Some(&b'&')
-                && index >= 1
-                && bytes[index - 1] == b' '
+                && crate::text_scan::byte_before(bytes, index) == Some(b' ')
                 && bytes.get(index + 2) == Some(&b' ') =>
             {
-                terms.push(guard[start..index - 1].trim());
+                terms.push(guard.get(start..index - 1).unwrap_or_default().trim());
                 index += 3;
                 start = index;
                 continue;
@@ -158,7 +157,7 @@ fn split_guard_terms(guard: &str) -> Vec<&str> {
         index += 1;
     }
 
-    terms.push(guard[start..].trim());
+    terms.push(guard.get(start..).unwrap_or_default().trim());
     terms
 }
 

@@ -39,11 +39,12 @@ pub(super) fn split_slot_pattern_annotation(pattern: &str) -> Option<(&str, &str
             '{' | '[' | '(' | '<' => depth += 1,
             '}' | ']' | ')' | '>' => depth -= 1,
             ':' if depth == 0 => {
-                let annotation = pattern[at + 1..].trim();
+                let (binding, annotation) = pattern.split_at_checked(at)?;
+                let annotation = annotation.get(1..)?.trim();
                 if annotation.is_empty() {
                     return None;
                 }
-                return Some((pattern[..at].trim_end(), annotation));
+                return Some((binding.trim_end(), annotation));
             }
             _ => {}
         }
@@ -224,9 +225,11 @@ pub(super) fn pattern_identifier_offset(pattern: &str, name: &str) -> Option<usi
 /// instead of declaring this one. A rest element (`[first, ...rest]`) is a
 /// declaration and stays eligible.
 fn is_declaration_token(text: &str, at: usize, len: usize) -> bool {
-    let leading = &text[..at];
+    let (Some(leading), Some(trailing)) = (text.get(..at), text.get(at + len..)) else {
+        return false;
+    };
     let before = leading.chars().next_back();
-    let after = text[at + len..].chars().next();
+    let after = trailing.chars().next();
     if before.is_some_and(is_identifier_part) || after.is_some_and(is_identifier_part) {
         return false;
     }

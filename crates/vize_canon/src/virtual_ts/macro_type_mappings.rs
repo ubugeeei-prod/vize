@@ -57,12 +57,14 @@ impl<'a> MacroTypeMappings<'a> {
         else {
             return;
         };
-        let generated = &ts[generated_start..];
+        let Some(generated) = ts.get(generated_start..) else {
+            return;
+        };
         let declaration = cstr!("export type {export_name}");
         let Some(generated_type_start) = generated
             .find(declaration.as_str())
-            .and_then(|start| generated[start..].find(" = ").map(|rhs| start + rhs + 3))
-            .and_then(|start| generated[start..].find(emitted).map(|inner| start + inner))
+            .and_then(|start| Some(start + generated.get(start..)?.find(" = ")? + 3))
+            .and_then(|start| Some(start + generated.get(start..)?.find(emitted)?))
         else {
             return;
         };
@@ -87,7 +89,7 @@ impl<'a> MacroTypeMappings<'a> {
         declarations: &vize_croquis::macros::MacroTracker,
         emitted_model_names: &FxHashSet<String>,
     ) {
-        let generated = &ts[generated_start..];
+        let generated = ts.get(generated_start..).unwrap_or_default();
         for model in models {
             if !emitted_model_names
                 .iter()

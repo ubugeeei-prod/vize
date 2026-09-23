@@ -6,7 +6,7 @@ use std::ops::Range;
 
 use vize_croquis::{BindingType, Croquis};
 use vize_s0::config::VueVersion;
-use vize_s0::{FxHashMap, FxHashSet, String, append, cstr};
+use vize_s0::{FxHashMap, FxHashSet, String, append};
 
 use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
 use super::anchors::emit_props_shadow_anchor;
@@ -272,12 +272,9 @@ fn record_typeof_capture(
     captures: &mut FxHashMap<String, Range<usize>>,
     helper_prefix: &str,
 ) {
-    let line = cstr!("  type {helper_prefix}_{name} = typeof {name};\n");
-    let start = ts.len()
-        + line
-            .rfind(name)
-            .expect("capture line should contain binding name");
-    ts.push_str(line.as_str());
+    append!(*ts, "  type {helper_prefix}_{name} = typeof ");
+    let start = ts.len();
+    append!(*ts, "{name};\n");
     captures.insert(String::from(name), start..start + name.len());
 }
 
@@ -289,12 +286,12 @@ fn record_template_shadow(
     captures: &FxHashMap<String, Range<usize>>,
     semantic_links: &mut Vec<VizeSemanticLink>,
 ) {
-    let line = cstr!("    var {name}: {type_prefix}{name}{type_suffix} = undefined as any;\n");
-    let start = ts.len()
-        + line
-            .find(name)
-            .expect("template shadow line should contain binding name");
-    ts.push_str(line.as_str());
+    ts.push_str("    var ");
+    let start = ts.len();
+    append!(
+        *ts,
+        "{name}: {type_prefix}{name}{type_suffix} = undefined as any;\n"
+    );
     if let Some(source_range) = captures.get(name) {
         semantic_links.push(VizeSemanticLink {
             source_range: source_range.clone(),

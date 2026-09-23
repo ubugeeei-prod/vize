@@ -21,9 +21,8 @@ impl Iterator for StructuralBytes<'_> {
     type Item = (usize, u8);
 
     fn next(&mut self) -> Option<Self::Item> {
-        while self.index < self.bytes.len() {
+        while let Some(&byte) = self.bytes.get(self.index) {
             let index = self.index;
-            let byte = self.bytes[index];
             if byte.is_ascii_whitespace() {
                 self.index += 1;
                 continue;
@@ -56,8 +55,10 @@ impl Iterator for StructuralBytes<'_> {
             }
             if byte == b'/' && self.bytes.get(index + 1) == Some(&b'*') {
                 self.index += 2;
-                while self.index + 1 < self.bytes.len()
-                    && (self.bytes[self.index] != b'*' || self.bytes[self.index + 1] != b'/')
+                while self
+                    .bytes
+                    .get(self.index..self.index + 2)
+                    .is_some_and(|pair| pair != b"*/")
                 {
                     self.index += 1;
                 }
@@ -95,7 +96,10 @@ pub(super) fn skip_js_trivia(input: &str, mut index: usize) -> usize {
             .is_some_and(|trivia| trivia == b"/*")
         {
             index += 2;
-            while index + 1 < bytes.len() && (bytes[index] != b'*' || bytes[index + 1] != b'/') {
+            while bytes
+                .get(index..index + 2)
+                .is_some_and(|pair| pair != b"*/")
+            {
                 index += 1;
             }
             index = (index + 2).min(bytes.len());

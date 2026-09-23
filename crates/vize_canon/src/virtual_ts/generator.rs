@@ -236,7 +236,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 ) {
                     continue;
                 }
-                let text = &script[start as usize..end as usize];
+                let Some(text) = script.get(start as usize..end as usize) else {
+                    continue;
+                };
 
                 if module_statements::emit_generic_injected(
                     &mut ts,
@@ -458,16 +460,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 if let Some(close_offset) = pending_wrap_close
                     && close_offset > line_start
                     && close_offset <= line_end
-                    && close_offset - line_start <= line.len()
-                    && line.is_char_boundary(close_offset - line_start)
+                    && let Some((head, tail)) = line.split_at_checked(close_offset - line_start)
                 {
-                    let column = close_offset - line_start;
-                    #[allow(clippy::disallowed_types)]
-                    {
-                        output_line = std::borrow::Cow::Owned(
-                            cstr!("{}){}", &line[..column], &line[column..]).into(),
-                        );
-                    }
+                    output_line = std::borrow::Cow::Owned(cstr!("{head}){tail}").into());
                     pending_wrap_close = None;
                 }
 
@@ -481,7 +476,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 {
                     emitted_default_alias = true;
                     declared_default_alias = true;
-                    let leading_ws = &output_line[..output_line.len() - trimmed_line.len()];
+                    let leading_ws = output_line.strip_suffix(trimmed_line).unwrap_or_default();
                     // A class default export (the class-component shape) stays
                     // a real class declaration so `@Component()` decorators
                     // remain valid (a bare `const __default__ = class {}`
@@ -519,20 +514,20 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                                 && object_start >= line_start
                                 && object_start < line_end
                                 && object_start - line_start <= line.len()
-                                && line[object_start - line_start..].starts_with('{')
+                                && line
+                                    .get(object_start - line_start..)
+                                    .is_some_and(|rest| rest.starts_with('{'))
                         })
                     };
-                    #[allow(clippy::disallowed_types)]
-                    if let Some((class_start, class_end, name_start, name_end)) =
-                        class_default.map(|(_, cs, ce, ns, ne)| (cs, ce, ns, ne))
+                    if let Some((class_end, name, class_text)) =
+                        class_default.and_then(|(_, cs, ce, ns, ne)| {
+                            Some((ce, script.get(ns..ne)?, line.get(cs - line_start..)?))
+                        })
                     {
                         // Drop the `export default ` keyword, keep the class
                         // (and any same-line trailing decorator) verbatim.
-                        let class_column = class_start - line_start;
-                        let name = &script[name_start..name_end];
-                        output_line = std::borrow::Cow::Owned(
-                            cstr!("{leading_ws}{}", &line[class_column..]).into(),
-                        );
+                        output_line =
+                            std::borrow::Cow::Owned(cstr!("{leading_ws}{class_text}").into());
                         pending_class_alias = Some((class_end, name));
                     } else if let Some((object_column, object_end)) =
                         wrap_object.and_then(|(_, object_start, object_end)| {
@@ -542,15 +537,20 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         })
                     {
                         let keyword_end = line.len() - default_expr.len();
-                        if object_end <= line_end && object_end - line_start <= line.len() {
+                        let separator = line.get(keyword_end..object_column).unwrap_or_default();
+                        let single_line = (object_end <= line_end)
+                            .then(|| object_end - line_start)
+                            .and_then(|close_column| {
+                                Some((
+                                    line.get(object_column..close_column)?,
+                                    line.get(close_column..)?,
+                                ))
+                            });
+                        if let Some((object, after)) = single_line {
                             // Single-line `export default { ... }`.
-                            let close_column = object_end - line_start;
                             output_line = std::borrow::Cow::Owned(
                                 cstr!(
-                                    "{leading_ws}const __default__ ={}{DEFINE_COMPONENT_REF}({}){}",
-                                    &line[keyword_end..object_column],
-                                    &line[object_column..close_column],
-                                    &line[close_column..],
+                                    "{leading_ws}const __default__ ={separator}{DEFINE_COMPONENT_REF}({object}){after}",
                                 )
                                 .into(),
                             );
@@ -558,9 +558,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                             pending_wrap_close = Some(object_end);
                             output_line = std::borrow::Cow::Owned(
                                 cstr!(
-                                    "{leading_ws}const __default__ ={}{DEFINE_COMPONENT_REF}({}",
-                                    &line[keyword_end..object_column],
-                                    &line[object_column..],
+                                    "{leading_ws}const __default__ ={separator}{DEFINE_COMPONENT_REF}({}",
+                                    line.get(object_column..).unwrap_or_default(),
                                 )
                                 .into(),
                             );
@@ -573,12 +572,9 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 }
                 // Replace import.meta with polyfill variable to avoid TS1343
                 if uses_import_meta && output_line.contains("import.meta") {
-                    #[allow(clippy::disallowed_types)]
-                    {
-                        output_line = std::borrow::Cow::Owned(
-                            output_line.replace("import.meta", "__import_meta"),
-                        );
-                    }
+                    output_line = std::borrow::Cow::Owned(
+                        output_line.replace("import.meta", "__import_meta"),
+                    );
                 }
 
                 ts.push_str(&output_line);

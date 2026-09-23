@@ -33,7 +33,11 @@ pub(crate) fn map_rewritten_template_binding(
     let Some(rewritten) = rewrite_binding(expression, bindings, &mut spans) else {
         return;
     };
-    for (relative, _) in ts[generated_start..].match_indices(rewritten.as_str()) {
+    for (relative, _) in ts
+        .get(generated_start..)
+        .unwrap_or_default()
+        .match_indices(rewritten.as_str())
+    {
         let base = generated_start + relative;
         for span in spans.as_deref().unwrap_or_default() {
             mappings.push(VizeMapping {
@@ -62,24 +66,22 @@ fn rewrite_binding(
     let mut copied_source = 0;
     let mut copied_generated = 0;
 
-    while i < len {
-        let current = bytes[i];
-
+    while let Some(&current) = bytes.get(i) {
         if current == b'\'' || current == b'"' || current == b'`' {
             let end = skip_quoted_literal(bytes, i);
-            output.push_str(&expression[i..end]);
+            output.push_str(expression.get(i..end).unwrap_or_default());
             i = end;
             continue;
         }
 
         if current == b'/'
-            && i + 1 < len
-            && bytes[i + 1] != b'/'
-            && bytes[i + 1] != b'*'
+            && bytes
+                .get(i + 1)
+                .is_some_and(|next| *next != b'/' && *next != b'*')
             && starts_regex_literal(bytes, i)
         {
             let end = skip_regex_literal(bytes, i);
-            output.push_str(&expression[i..end]);
+            output.push_str(expression.get(i..end).unwrap_or_default());
             i = end;
             continue;
         }
@@ -87,10 +89,13 @@ fn rewrite_binding(
         if is_identifier_start(current) {
             let start = i;
             i += 1;
-            while i < len && is_identifier_continue(bytes[i]) {
+            while bytes
+                .get(i)
+                .is_some_and(|byte| is_identifier_continue(*byte))
+            {
                 i += 1;
             }
-            let ident = &expression[start..i];
+            let ident = expression.get(start..i).unwrap_or_default();
             if is_reserved_identifier(ident)
                 && let Some(receiver) = template_binding_access.receiver(ident)
                 && !is_property_access(bytes, start)
@@ -129,10 +134,9 @@ fn rewrite_binding(
             continue;
         }
 
-        let ch = expression[i..]
-            .chars()
-            .next()
-            .expect("valid UTF-8 boundary");
+        let Some(ch) = expression.get(i..).and_then(|rest| rest.chars().next()) else {
+            break;
+        };
         output.push(ch);
         i += ch.len_utf8();
     }
@@ -151,10 +155,11 @@ fn rewrite_binding(
 }
 
 fn skip_quoted_literal(bytes: &[u8], start: usize) -> usize {
-    let quote = bytes[start];
+    let Some(&quote) = bytes.get(start) else {
+        return bytes.len();
+    };
     let mut i = start + 1;
-    while i < bytes.len() {
-        let current = bytes[i];
+    while let Some(&current) = bytes.get(i) {
         i += 1;
         if current == b'\\' {
             i = (i + 1).min(bytes.len());
@@ -170,8 +175,7 @@ fn skip_quoted_literal(bytes: &[u8], start: usize) -> usize {
 fn skip_regex_literal(bytes: &[u8], start: usize) -> usize {
     let mut i = start + 1;
     let mut in_class = false;
-    while i < bytes.len() {
-        let current = bytes[i];
+    while let Some(&current) = bytes.get(i) {
         i += 1;
         if current == b'\\' {
             i = (i + 1).min(bytes.len());
@@ -184,7 +188,7 @@ fn skip_regex_literal(bytes: &[u8], start: usize) -> usize {
             _ => {}
         }
     }
-    while i < bytes.len() && bytes[i].is_ascii_alphabetic() {
+    while bytes.get(i).is_some_and(u8::is_ascii_alphabetic) {
         i += 1;
     }
     i
@@ -218,7 +222,9 @@ fn starts_regex_literal(bytes: &[u8], slash: usize) -> bool {
 }
 
 fn previous_significant_byte(bytes: &[u8], before: usize) -> Option<u8> {
-    bytes[..before]
+    bytes
+        .get(..before)
+        .unwrap_or_default()
         .iter()
         .rev()
         .copied()
@@ -226,7 +232,9 @@ fn previous_significant_byte(bytes: &[u8], before: usize) -> Option<u8> {
 }
 
 fn next_significant_byte(bytes: &[u8], after: usize) -> Option<u8> {
-    bytes[after..]
+    bytes
+        .get(after..)
+        .unwrap_or_default()
         .iter()
         .copied()
         .find(|b| !b.is_ascii_whitespace())

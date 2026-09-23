@@ -31,7 +31,12 @@ pub(super) fn generate_strict_expression_refs(
         for ident in extract_identifier_refs_oxc(expr.content.as_str()) {
             let name = ident.name.as_str();
             let local_start = expr.start + ident.offset;
-            let head = expr.content.as_str()[..ident.offset as usize].trim_end();
+            let head = expr
+                .content
+                .as_str()
+                .get(..ident.offset as usize)
+                .unwrap_or_default()
+                .trim_end();
             let member_root = is_member_root_occurrence(summary, local_start, name);
             let call_root = is_call_root_occurrence(summary, local_start, name);
             let scoped_bare_ref =

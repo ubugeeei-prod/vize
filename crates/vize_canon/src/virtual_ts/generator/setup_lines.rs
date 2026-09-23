@@ -70,10 +70,15 @@ pub(super) fn setup_line<'a>(
     index: &mut usize,
 ) -> Option<Cow<'a, str>> {
     let end = start + line.len();
-    while *index < spans.len() && spans[*index].1 as usize <= start {
+    while spans
+        .get(*index)
+        .is_some_and(|&(_, right)| right as usize <= start)
+    {
         *index += 1;
     }
-    let overlapping: Vec<_> = spans[*index..]
+    let overlapping: Vec<_> = spans
+        .get(*index..)
+        .unwrap_or_default()
         .iter()
         .take_while(|&&(left, _)| (left as usize) < end)
         .filter(|&&(left, right)| start < right as usize && end > left as usize)
@@ -83,9 +88,10 @@ pub(super) fn setup_line<'a>(
     }
     let mut bytes = line.as_bytes().to_vec();
     for &&(left, right) in &overlapping {
-        for byte in
-            &mut bytes[(left as usize).saturating_sub(start)..(right as usize).min(end) - start]
-        {
+        let masked = bytes
+            .get_mut((left as usize).saturating_sub(start)..(right as usize).min(end) - start)
+            .unwrap_or_default();
+        for byte in masked {
             if *byte != b'\r' {
                 *byte = b' ';
             }
@@ -95,11 +101,13 @@ pub(super) fn setup_line<'a>(
         return None;
     }
     // Every complete UTF-8 sequence in a statement is replaced with ASCII;
-    // AST boundaries never split a code point.
-    #[allow(clippy::disallowed_types)]
-    Some(Cow::Owned(
-        std::string::String::from_utf8(bytes).expect("masked script is UTF-8"),
-    ))
+    // AST boundaries never split a code point; should one ever do so, the line
+    // is kept unmasked rather than emitting invalid UTF-8.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "`Cow<str>` owns a std `String`; the bytes come from a std `Vec`"
+    )]
+    Some(std::string::String::from_utf8(bytes).map_or(Cow::Borrowed(line), Cow::Owned))
 }
 
 #[cfg(test)]

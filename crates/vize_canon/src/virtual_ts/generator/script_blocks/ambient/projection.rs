@@ -92,7 +92,10 @@ impl AmbientProjection {
             let first = self
                 .captures
                 .partition_point(|capture| capture.owner.start as usize <= start);
-            let mut splits = self.captures[first..]
+            let mut splits = self
+                .captures
+                .get(first..)
+                .unwrap_or_default()
                 .iter()
                 .take_while(move |capture| (capture.owner.start as usize) < end)
                 .map(|capture| capture.owner.start as usize)
@@ -110,7 +113,10 @@ impl AmbientProjection {
                 while splits.peek() == Some(&next) {
                     splits.next();
                 }
-                let chunk = (cursor, &line[cursor - start..next - start]);
+                let chunk = (
+                    cursor,
+                    line.get(cursor - start..next - start).unwrap_or_default(),
+                );
                 cursor = next;
                 Some(chunk)
             })

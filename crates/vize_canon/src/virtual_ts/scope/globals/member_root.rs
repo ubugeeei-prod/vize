@@ -22,7 +22,7 @@ fn occurrence_tail<'a>(summary: &'a Croquis, offset: u32, name: &str) -> Option<
         {
             continue;
         }
-        return Some(&source[member_tail_start(source, local, name.len())..]);
+        return source.get(member_tail_start(source, local, name.len())..);
     }
     None
 }
@@ -30,7 +30,7 @@ fn occurrence_tail<'a>(summary: &'a Croquis, offset: u32, name: &str) -> Option<
 fn member_tail_start(source: &str, local: usize, name_len: usize) -> usize {
     let mut tail = skip_js_trivia_forward(source, local + name_len);
     let mut wrappers = parenthesized_wrapper_count(source, local);
-    while wrappers > 0 && source[tail..].starts_with(')') {
+    while wrappers > 0 && source.get(tail..).is_some_and(|rest| rest.starts_with(')')) {
         tail = skip_js_trivia_forward(source, tail + 1);
         wrappers -= 1;
     }
@@ -43,7 +43,10 @@ fn parenthesized_wrapper_count(source: &str, local: usize) -> usize {
     let mut count = 0;
     loop {
         end = skip_js_trivia_backward(source, end);
-        if end == 0 || !source[..end].ends_with('(') {
+        if !source
+            .get(..end)
+            .is_some_and(|before| before.ends_with('('))
+        {
             break;
         }
         end -= 1;
@@ -59,7 +62,10 @@ fn parenthesized_wrapper_count(source: &str, local: usize) -> usize {
 
 fn has_call_like_prefix(source: &str, open: usize) -> bool {
     let prefix = skip_js_trivia_backward(source, open);
-    let Some(ch) = source[..prefix].chars().next_back() else {
+    let Some(ch) = source
+        .get(..prefix)
+        .and_then(|before| before.chars().next_back())
+    else {
         return false;
     };
     ch == ')' || ch == ']' || ch == '\'' || ch == '"' || ch == '`' || is_identifier_part(ch)
@@ -71,22 +77,17 @@ fn is_identifier_part(ch: char) -> bool {
 
 fn skip_js_trivia_forward(source: &str, mut index: usize) -> usize {
     loop {
-        while index < source.len() {
-            let ch = source[index..].chars().next().unwrap();
-            if !ch.is_whitespace() {
-                break;
-            }
-            index += ch.len_utf8();
-        }
-        if source[index..].starts_with("//") {
-            index += 2;
-            while index < source.len() && source.as_bytes()[index] != b'\n' {
-                index += 1;
-            }
+        let Some(rest) = source.get(index..) else {
+            return index;
+        };
+        let trimmed = rest.trim_start();
+        index += rest.len() - trimmed.len();
+        if let Some(comment) = trimmed.strip_prefix("//") {
+            index += 2 + comment.find('\n').unwrap_or(comment.len());
             continue;
         }
-        if source[index..].starts_with("/*") {
-            let Some(end) = source[index + 2..].find("*/") else {
+        if let Some(comment) = trimmed.strip_prefix("/*") {
+            let Some(end) = comment.find("*/") else {
                 return source.len();
             };
             index += end + 4;
@@ -98,17 +99,12 @@ fn skip_js_trivia_forward(source: &str, mut index: usize) -> usize {
 
 fn skip_js_trivia_backward(source: &str, mut end: usize) -> usize {
     loop {
-        while end > 0 {
-            let ch = source[..end].chars().next_back().unwrap();
-            if !ch.is_whitespace() {
-                break;
-            }
-            end -= ch.len_utf8();
-        }
-        if end >= 2
-            && source[..end].ends_with("*/")
-            && let Some(start) = source[..end - 2].rfind("/*")
-        {
+        let Some(before) = source.get(..end) else {
+            return end;
+        };
+        let trimmed = before.trim_end();
+        end = trimmed.len();
+        if let Some(start) = trimmed.strip_suffix("*/").and_then(|body| body.rfind("/*")) {
             end = start;
             continue;
         }

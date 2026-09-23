@@ -89,7 +89,11 @@ impl ExplicitGenerics {
             "  // Explicit `@vue-generic` arguments: the instantiated call signature.\n  const __vizeExplicitGeneric = <C>(component: C) => component as unknown as (C extends (...args: infer __A) => infer __R ? (...args: __A) => __R : C);\n",
         );
         for usage in vize_croquis::facts::component_usage_list(summary) {
-            let Some(generic) = self.by_usage_start.get(&usage.start) else {
+            let Some((generic, arguments)) = self
+                .by_usage_start
+                .get(&usage.start)
+                .and_then(|generic| Some((generic, source.get(generic.arguments.clone())?)))
+            else {
                 continue;
             };
             append!(
@@ -99,7 +103,7 @@ impl ExplicitGenerics {
                 component_ref(usage.name.as_str())
             );
             let generated_start = ts.len();
-            ts.push_str(&source[generic.arguments.clone()]);
+            ts.push_str(arguments);
             mappings.push(VizeMapping {
                 gen_range: generated_start..ts.len(),
                 src_range: template_offset as usize + generic.arguments.start
@@ -119,9 +123,9 @@ fn preceding_arguments(source: &str, element_start: usize) -> Option<std::ops::R
     loop {
         let before = source.get(..end)?.trim_end();
         let comment_end = before.strip_suffix("-->")?.len();
-        let comment_start = before[..comment_end].rfind("<!--")?;
+        let comment_start = before.get(..comment_end)?.rfind("<!--")?;
         let content_start = comment_start + "<!--".len();
-        let content = &before[content_start..comment_end];
+        let content = before.get(content_start..comment_end)?;
         if let Some(rest) = content.trim_start().strip_prefix(DIRECTIVE) {
             let rest_start = comment_end - rest.len();
             let text = rest.trim();

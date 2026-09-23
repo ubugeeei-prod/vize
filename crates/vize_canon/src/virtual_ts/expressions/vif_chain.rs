@@ -62,7 +62,7 @@ impl<'a> VifControlFlowChain<'a> {
                 break;
             }
 
-            let chain_terms = &terms[prefix.len()..];
+            let chain_terms = terms.get(prefix.len()..).unwrap_or_default();
             if previous_negations_match(chain_terms, &previous_conditions)
                 && chain_terms.len() == previous_conditions.len() + 1
                 && let Some(current) = chain_terms.last()
@@ -124,7 +124,10 @@ fn collect_guard_group<'a>(
 ) -> Option<GuardGroup<'a>> {
     let guard = exprs.get(start)?.vif_guard.as_ref()?.as_str();
     let mut end = start + 1;
-    while end < exprs.len() && exprs[end].vif_guard.as_ref().is_some_and(|g| g == guard) {
+    while exprs
+        .get(end)
+        .is_some_and(|expr| expr.vif_guard.as_ref().is_some_and(|g| g == guard))
+    {
         end += 1;
     }
     Some(GuardGroup { guard, start, end })
@@ -162,8 +165,8 @@ fn split_top_level_and(input: &str) -> Vec<&str> {
     let mut start = 0usize;
     let mut index = 0usize;
 
-    while index < bytes.len() {
-        match bytes[index] {
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
             b'(' => depth += 1,
             b')' => depth = depth.saturating_sub(1),
             b'&' if depth == 0
@@ -171,7 +174,7 @@ fn split_top_level_and(input: &str) -> Vec<&str> {
                 && is_ascii_space(bytes.get(index.wrapping_sub(1)).copied())
                 && is_ascii_space(bytes.get(index + 2).copied()) =>
             {
-                parts.push(&input[start..index - 1]);
+                parts.push(input.get(start..index - 1).unwrap_or_default());
                 index += 3;
                 start = index;
                 continue;
@@ -181,7 +184,7 @@ fn split_top_level_and(input: &str) -> Vec<&str> {
         index += 1;
     }
 
-    parts.push(&input[start..]);
+    parts.push(input.get(start..).unwrap_or_default());
     parts
 }
 
@@ -230,10 +233,9 @@ fn find_branch_condition_expr(
 ) -> Option<usize> {
     let trimmed_condition = condition.trim();
     (start..end).find(|&idx| {
-        exprs[idx].kind == TemplateExpressionKind::VIf
-            && strip_js_comments(exprs[idx].content.as_str())
-                .as_ref()
-                .trim()
-                == trimmed_condition
+        exprs.get(idx).is_some_and(|expr| {
+            expr.kind == TemplateExpressionKind::VIf
+                && strip_js_comments(expr.content.as_str()).as_ref().trim() == trimmed_condition
+        })
     })
 }

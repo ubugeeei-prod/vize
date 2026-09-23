@@ -76,12 +76,16 @@ pub(super) fn strip_synthetic_any_defaults(generic_decl: &str) -> String {
 
 /// One parameter declaration with only its generated `= any` suffix removed; `=>` never terminates it.
 fn param_without_synthetic_any_default(param: &str) -> String {
-    let Some(default_start) = default_start(param) else {
+    let Some((declaration, default)) =
+        default_start(param).and_then(|start| param.split_at_checked(start))
+    else {
         return param.trim().into();
     };
-    let default = param[default_start + 1..].trim();
-    if default == "any" {
-        param[..default_start].trim().into()
+    if default
+        .get(1..)
+        .is_some_and(|default| default.trim() == "any")
+    {
+        declaration.trim().into()
     } else {
         param.trim().into()
     }
@@ -91,8 +95,8 @@ fn default_start(param: &str) -> Option<usize> {
     let bytes = param.as_bytes();
     let mut depth = 0i32;
     let mut i = 0usize;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'<' => depth += 1,
             b'>' => depth -= 1,
             b'=' if bytes.get(i + 1) == Some(&b'>') => i += 1,

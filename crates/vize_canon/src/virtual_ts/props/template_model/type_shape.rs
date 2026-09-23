@@ -19,7 +19,9 @@ pub(super) fn is_plain_inline_type_literal(type_name: &str) -> bool {
             '}' => {
                 depth -= 1;
                 if depth == 0 {
-                    return type_name[idx + c.len_utf8()..].trim().is_empty();
+                    return type_name
+                        .get(idx + c.len_utf8()..)
+                        .is_some_and(|rest| rest.trim().is_empty());
                 }
             }
             _ => {}

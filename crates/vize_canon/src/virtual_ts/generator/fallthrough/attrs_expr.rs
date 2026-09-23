@@ -19,12 +19,11 @@ pub(super) fn expression_spreads_attrs(source: &str) -> bool {
     }
 
     let mut rest = source;
-    while let Some(index) = rest.find("$attrs") {
-        let before = rest[..index].trim_end();
-        if before.ends_with("...") {
+    while let Some((before, after)) = rest.split_once("$attrs") {
+        if before.trim_end().ends_with("...") {
             return true;
         }
-        rest = &rest[index + "$attrs".len()..];
+        rest = after;
     }
     false
 }

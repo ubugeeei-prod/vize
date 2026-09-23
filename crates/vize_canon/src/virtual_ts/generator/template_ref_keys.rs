@@ -109,9 +109,11 @@ impl Collector<'_> {
     /// Whether nothing but indentation precedes the current statement on its
     /// line, so that the start of the line is a statement boundary.
     fn statement_opens_its_line(&self) -> bool {
-        let before = &self.script[..self.statement_start];
-        let line_start = before.rfind('\n').map_or(0, |newline| newline + 1);
-        before[line_start..].trim().is_empty()
+        let Some(before) = self.script.get(..self.statement_start) else {
+            return false;
+        };
+        let line = before.rsplit_once('\n').map_or(before, |(_, line)| line);
+        line.trim().is_empty()
     }
 }
 

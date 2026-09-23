@@ -64,12 +64,12 @@ fn reference_types_attribute(line: &str) -> Option<&str> {
 fn attribute_value<'a>(line: &'a str, name: &str) -> Option<&'a str> {
     let needle = cstr!("{name}=");
     let start = line.find(needle.as_str())? + needle.len();
-    let quote = line[start..].chars().next()?;
+    let quote = line.get(start..)?.chars().next()?;
     if quote != '"' && quote != '\'' {
         return None;
     }
     let value_start = start + quote.len_utf8();
-    let value_end = line[value_start..].find(quote)? + value_start;
+    let value_end = line.get(value_start..)?.find(quote)? + value_start;
     line.get(value_start..value_end)
 }
 
@@ -245,7 +245,7 @@ pub(super) fn extract_declared_name(stub: &str) -> Option<&str> {
         let end = rest
             .find(['<', '(', ':', '=', ';', ' '])
             .unwrap_or(rest.len());
-        let name = rest[..end].trim();
+        let name = rest.get(..end).unwrap_or_default().trim();
         if !name.is_empty() {
             return Some(name);
         }

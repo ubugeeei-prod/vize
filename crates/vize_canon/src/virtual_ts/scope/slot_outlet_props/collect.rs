@@ -51,7 +51,9 @@ pub(super) fn slot_outlet_expression_ranges(
     expressions.sort_unstable_by_key(|expr| expr.start);
     let nested_expression = |start: u32, end: u32, content: &str| {
         let from = expressions.partition_point(|expr| expr.start < start);
-        expressions[from..]
+        expressions
+            .get(from..)
+            .unwrap_or_default()
             .iter()
             .take_while(|expr| expr.start <= end)
             .find(|expr| expr.end <= end && expr.content.as_str().trim() == content)

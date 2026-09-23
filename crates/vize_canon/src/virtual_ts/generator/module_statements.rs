@@ -77,7 +77,9 @@ impl GluedImportSection {
         let Some(glued) = glued.filter(|glued| glued.span == span) else {
             return false;
         };
-        let section = &script[span.0 as usize..span.1 as usize];
+        let Some(section) = script.get(span.0 as usize..span.1 as usize) else {
+            return false;
+        };
         push_mapped(ts, mappings, section, source_offset(span.0 as usize));
         let token_start = ts.len();
         ts.push_str("export {};\n");

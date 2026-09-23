@@ -25,40 +25,42 @@ impl FactConsumer for CanonUndefinedRefs {
 }
 
 /// Borrowed `Bindings` table. Methods are inherent so callers do not import the trait.
+///
+/// `None` only if the fact manager refused the declared demand; every query
+/// then answers as for a script without bindings.
 #[derive(Clone, Copy)]
-pub(super) struct ScriptBindings<'a>(&'a FactTable<Bindings>);
+pub(super) struct ScriptBindings<'a>(Option<&'a FactTable<Bindings>>);
 
 impl ScriptBindings<'_> {
     pub(super) fn is_script_setup(&self) -> bool {
-        self.0.is_script_setup()
+        self.0.is_some_and(BindingsTable::is_script_setup)
     }
 
     pub(super) fn typed(&self) -> impl Iterator<Item = (&str, BindingType)> {
-        self.0.typed()
+        self.0.into_iter().flat_map(BindingsTable::typed)
     }
 
     pub(super) fn spans(&self) -> impl Iterator<Item = (&str, (u32, u32))> {
-        self.0.spans()
+        self.0.into_iter().flat_map(BindingsTable::spans)
     }
 
     pub(super) fn contains_binding(&self, name: &str) -> bool {
-        self.0.contains_binding(name)
+        self.0.is_some_and(|table| table.contains_binding(name))
     }
 
     pub(super) fn binding_type(&self, name: &str) -> Option<BindingType> {
-        self.0.binding_type(name)
+        self.0.and_then(|table| table.binding_type(name))
     }
 
     pub(super) fn span(&self, name: &str) -> Option<(u32, u32)> {
-        self.0.span(name)
+        self.0.and_then(|table| table.span(name))
     }
 }
 
 pub(super) fn with_bindings<T>(summary: &Croquis, body: impl FnOnce(ScriptBindings<'_>) -> T) -> T {
     let mut facts = CroquisFacts::new(summary);
     let view = facts.prepare::<CanonBindings>();
-    let bindings = view.get::<Bindings>().expect("declared demand");
-    body(ScriptBindings(bindings))
+    body(ScriptBindings(view.get::<Bindings>().ok()))
 }
 
 pub(super) fn binding_type(summary: &Croquis, name: &str) -> Option<BindingType> {
@@ -81,21 +83,15 @@ pub(super) fn binding_span(summary: &Croquis, name: &str) -> Option<(u32, u32)> 
     with_bindings(summary, |bindings| bindings.span(name))
 }
 
-pub(super) fn with_undefined_refs<T>(
-    summary: &Croquis,
-    body: impl FnOnce(&FactTable<UndefinedRefs>) -> T,
-) -> T {
-    let mut facts = CroquisFacts::new(summary);
-    let view = facts.prepare::<CanonUndefinedRefs>();
-    let refs = view.get::<UndefinedRefs>().expect("declared demand");
-    body(refs)
-}
-
 /// Undefined template names in the drawer's walk order.
 pub(super) fn undefined_refs(summary: &Croquis) -> Vec<UndefinedRef> {
-    with_undefined_refs(summary, |refs| {
-        refs.iter()
-            .map(|(_, reference)| reference.clone())
-            .collect()
-    })
+    let mut facts = CroquisFacts::new(summary);
+    let view = facts.prepare::<CanonUndefinedRefs>();
+    view.get::<UndefinedRefs>()
+        .map(|refs| {
+            refs.iter()
+                .map(|(_, reference)| reference.clone())
+                .collect()
+        })
+        .unwrap_or_default()
 }

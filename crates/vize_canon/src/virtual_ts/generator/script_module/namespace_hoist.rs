@@ -131,10 +131,12 @@ impl NamespaceHoistPlan {
             if let Some(comment) = parsed.program.comments.iter().find(|comment| {
                 comment.is_jsdoc()
                     && comment.attached_to == *start
-                    && script[super::line_start_at(script, comment.span.start as usize)
-                        ..comment.span.start as usize]
-                        .trim()
-                        .is_empty()
+                    && script
+                        .get(
+                            super::line_start_at(script, comment.span.start as usize)
+                                ..comment.span.start as usize,
+                        )
+                        .is_some_and(|prefix| prefix.trim().is_empty())
             }) {
                 *start = comment.span.start;
             }

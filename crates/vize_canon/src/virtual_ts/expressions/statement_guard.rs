@@ -46,7 +46,7 @@ pub(super) fn generate_vif_guard_expression(
     let gen_stmt_end = ts.len();
     mappings.push(VizeMapping {
         gen_range: generated_text_range(
-            &ts[gen_stmt_start..gen_stmt_end],
+            ts.get(gen_stmt_start..gen_stmt_end).unwrap_or_default(),
             mapping_needle,
             gen_stmt_start,
         ),

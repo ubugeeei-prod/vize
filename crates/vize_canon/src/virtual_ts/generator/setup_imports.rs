@@ -259,12 +259,12 @@ fn emit_css_module_type(ts: &mut String, options: &VirtualTsOptions) {
         .iter()
         .filter(|global| global.default_value == CSS_MODULE_GLOBAL_MARKER)
     {
-        let name = serde_json::to_string(global.name.as_str()).expect("CSS module name serializes");
+        let name = serde_json::to_string(global.name.as_str()).unwrap_or_default();
         append!(*ts, "    {name}: {};\n", global.type_annotation);
         has_default |= global.name == "$style";
     }
     for name in &options.css_modules {
-        let quoted = serde_json::to_string(name.as_str()).expect("CSS module name serializes");
+        let quoted = serde_json::to_string(name.as_str()).unwrap_or_default();
         append!(*ts, "    {quoted}: Record<string, string>;\n");
         has_default |= name == "$style";
     }

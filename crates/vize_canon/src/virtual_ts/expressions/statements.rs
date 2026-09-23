@@ -30,10 +30,10 @@ pub(crate) fn generate_expressions(
     context: &ExpressionListEmitContext<'_>,
 ) {
     let mut index = 0;
-    while index < exprs.len() {
+    while let Some(&expr) = exprs.get(index) {
         if context
             .skipped_expression_ranges
-            .contains(&(exprs[index].start, exprs[index].end))
+            .contains(&(expr.start, expr.end))
         {
             index += 1;
             continue;
@@ -56,7 +56,7 @@ pub(crate) fn generate_expressions(
             generate_expression(
                 ts,
                 mappings,
-                exprs[index],
+                expr,
                 template_binding_access,
                 context.template_offset,
                 context.indent,
@@ -326,7 +326,7 @@ fn emit_expression_statement(
     let gen_stmt_end = ts.len();
     mappings.push(VizeMapping {
         gen_range: generated_text_range(
-            &ts[gen_stmt_start..gen_stmt_end],
+            ts.get(gen_stmt_start..gen_stmt_end).unwrap_or_default(),
             mapping_needle,
             gen_stmt_start,
         ),

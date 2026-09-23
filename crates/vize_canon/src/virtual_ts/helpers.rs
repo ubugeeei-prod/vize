@@ -262,8 +262,9 @@ pub(crate) fn push_ts_string_literal(out: &mut String, value: &str) {
 }
 
 fn push_hex_digit(out: &mut String, value: u8) {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
-    out.push(HEX[value as usize] as char);
+    if let Some(digit) = char::from_digit(u32::from(value), 16) {
+        out.push(digit);
+    }
 }
 
 #[inline]

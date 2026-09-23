@@ -25,12 +25,20 @@ impl PropsConstAssertions {
     }
 
     pub(super) fn splice_line(&mut self, line: &str, line_start: usize) -> Option<String> {
-        while self.index < self.offsets.len() && self.offsets[self.index] <= line_start {
+        while self
+            .offsets
+            .get(self.index)
+            .is_some_and(|&offset| offset <= line_start)
+        {
             self.index += 1;
         }
 
         let line_end = line_start + line.len();
-        if self.index >= self.offsets.len() || self.offsets[self.index] > line_end {
+        if !self
+            .offsets
+            .get(self.index)
+            .is_some_and(|&offset| offset <= line_end)
+        {
             return None;
         }
 
@@ -38,8 +46,7 @@ impl PropsConstAssertions {
         let mut copied_until = 0usize;
         let mut spliced = false;
 
-        while self.index < self.offsets.len() {
-            let offset = self.offsets[self.index];
+        while let Some(&offset) = self.offsets.get(self.index) {
             if offset > line_end {
                 break;
             }
@@ -49,10 +56,10 @@ impl PropsConstAssertions {
                 continue;
             }
             let column = offset - line_start;
-            if !line.is_char_boundary(column) {
+            let Some(segment) = line.get(copied_until..column) else {
                 continue;
-            }
-            output.push_str(&line[copied_until..column]);
+            };
+            output.push_str(segment);
             output.push_str(" as const");
             copied_until = column;
             spliced = true;
@@ -62,7 +69,7 @@ impl PropsConstAssertions {
             return None;
         }
 
-        output.push_str(&line[copied_until..]);
+        output.push_str(line.get(copied_until..).unwrap_or_default());
         Some(output)
     }
 

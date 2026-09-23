@@ -147,7 +147,7 @@ pub(crate) fn strip_outer_angle_brackets(s: &str) -> &str {
                 depth -= 1;
                 if depth == 0 && i == s.len() - 1 {
                     // The opening '<' matches the final '>' — strip them
-                    return &s[1..i];
+                    return s.get(1..i).unwrap_or(s);
                 }
             }
             _ => {}
@@ -159,10 +159,9 @@ pub(crate) fn strip_outer_angle_brackets(s: &str) -> &str {
 /// Strip generic parameters from a type name for interface lookup.
 /// e.g., `"ContextMenuContentProps<T>"` → `"ContextMenuContentProps"`
 pub(super) fn strip_generic_params(type_name: &str) -> &str {
-    match type_name.find('<') {
-        Some(pos) => &type_name[..pos],
-        None => type_name,
-    }
+    type_name
+        .split_once('<')
+        .map_or(type_name, |(name, _)| name)
 }
 
 /// First identifier of a generic parameter declaration, skipping the TS 5.0

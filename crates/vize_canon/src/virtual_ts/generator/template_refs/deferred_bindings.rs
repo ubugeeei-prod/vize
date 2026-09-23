@@ -39,7 +39,7 @@ use oxc_span::SourceType;
 use std::ops::Range;
 
 use vize_croquis::{BindingType, Croquis};
-use vize_s0::{FxHashMap, FxHashSet, String, cstr};
+use vize_s0::{FxHashMap, FxHashSet, String, append};
 
 use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
 
@@ -90,12 +90,9 @@ pub(super) fn emit_type_captures(
     }
     ts.push_str("  // Deferred-assignment type captures (setup runs before render)\n");
     for name in names {
-        let line = cstr!("  type __D_{name} = typeof {name};\n");
-        let start = ts.len()
-            + line
-                .rfind(name.as_str())
-                .expect("deferred capture line should contain binding name");
-        ts.push_str(line.as_str());
+        append!(*ts, "  type __D_{name} = typeof ");
+        let start = ts.len();
+        append!(*ts, "{name};\n");
         captures.insert(name.clone(), start..start + name.len());
     }
     captures
@@ -113,12 +110,9 @@ pub(super) fn emit_template_variables(
     }
     ts.push_str("    // Vue completes setup before the render function reads these\n");
     for name in names {
-        let line = cstr!("    var {name}: __D_{name} = undefined as any;\n");
-        let start = ts.len()
-            + line
-                .find(name.as_str())
-                .expect("deferred shadow line should contain binding name");
-        ts.push_str(line.as_str());
+        ts.push_str("    var ");
+        let start = ts.len();
+        append!(*ts, "{name}: __D_{name} = undefined as any;\n");
         if let Some(source_range) = captures.get(name) {
             semantic_links.push(VizeSemanticLink {
                 source_range: source_range.clone(),

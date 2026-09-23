@@ -64,15 +64,12 @@ pub(super) fn append_props_literal(
         if !is_checkable_prop(prop) {
             continue;
         }
-        while spreads
-            .peek()
-            .is_some_and(|pending| pending.start < prop.start)
-        {
+        while let Some(spread) = spreads.next_if(|pending| pending.start < prop.start) {
             close_named_group(ts, &mut open_named_group);
             append_spread_entry(
                 ts,
                 mappings,
-                spreads.next().expect("pending spread exists"),
+                spread,
                 template_binding_access,
                 usage.scope_id,
                 source_context,
@@ -94,12 +91,12 @@ pub(super) fn append_props_literal(
             &mut open_named_group,
         );
     }
-    while spreads.peek().is_some() {
+    for spread in spreads {
         close_named_group(ts, &mut open_named_group);
         append_spread_entry(
             ts,
             mappings,
-            spreads.next().expect("pending spread exists"),
+            spread,
             template_binding_access,
             usage.scope_id,
             source_context,

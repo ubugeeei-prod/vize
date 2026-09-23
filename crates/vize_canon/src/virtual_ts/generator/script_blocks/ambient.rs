@@ -73,10 +73,7 @@ pub(super) fn extend_module_spans(
     }
     let capture_allowed: Vec<bool> = candidates
         .iter()
-        .map(|span| {
-            include_leading_ts_directive_comments(script, vec![(span.start, span.end)])[0].0
-                == span.start
-        })
+        .map(|span| starts_without_leading_directive(script, *span))
         .collect();
 
     let built = SemanticBuilder::new()
@@ -105,21 +102,29 @@ pub(super) fn extend_module_spans(
         owners.dedup();
         let representative = owners.first().copied();
         // A shared representative avoids a quadratic clique for overload sets.
-        if let Some(first) = representative {
-            dependencies[first].extend(declarations.iter().copied());
-            for &owner in &owners[1..] {
-                dependencies[owner].push(candidates[first]);
+        let representative_span = representative.and_then(|first| candidates.get(first).copied());
+        if let Some((first, first_span)) = representative.zip(representative_span) {
+            if let Some(first_dependencies) = dependencies.get_mut(first) {
+                first_dependencies.extend(declarations.iter().copied());
+            }
+            for &owner in owners.iter().skip(1) {
+                if let Some(owner_dependencies) = dependencies.get_mut(owner) {
+                    owner_dependencies.push(first_span);
+                }
             }
         }
         for reference in semantic.symbol_references(symbol) {
-            if let Some(index) = containing(&candidates, semantic.reference_span(reference)) {
-                if let Some(first) = representative {
-                    dependencies[index].push(candidates[first]);
+            if let Some(index) = containing(&candidates, semantic.reference_span(reference))
+                && let Some(reference_dependencies) = dependencies.get_mut(index)
+            {
+                if let Some(first_span) = representative_span {
+                    reference_dependencies.push(first_span);
                 } else if scoping.symbol_scope_id(symbol) == scoping.root_scope_id()
                     && declarations
                         .iter()
                         .all(|span| !covered(module_spans, *span))
-                    && capture_allowed[index]
+                    && capture_allowed.get(index).copied().unwrap_or(false)
+                    && let Some(captures) = captured.get_mut(index)
                     && let Some((span, value)) = semantic
                         .nodes()
                         .ancestor_kinds(reference.node_id())
@@ -145,9 +150,9 @@ pub(super) fn extend_module_spans(
                             }
                         })
                 {
-                    captured[index].push((span, value));
+                    captures.push((span, value));
                 } else {
-                    dependencies[index].extend(declarations.iter().copied());
+                    reference_dependencies.extend(declarations.iter().copied());
                 }
             }
         }
@@ -171,19 +176,22 @@ pub(super) fn extend_module_spans(
             continue;
         }
         for reference in semantic.symbol_references(symbol) {
-            if let Some(index) = containing(&candidates, semantic.reference_span(reference)) {
-                let reference = semantic.reference_span(reference);
-                if let Some(capture) = captured[index]
-                    .partition_point(|(span, _)| span.start <= reference.start)
-                    .checked_sub(1)
-                {
-                    let span = captured[index][capture].0;
-                    if span.contains_inclusive(reference)
-                        && !span.contains_inclusive(scoping.symbol_span(symbol))
-                    {
-                        blocked[index] = true;
-                    }
-                }
+            let reference = semantic.reference_span(reference);
+            let Some(index) = containing(&candidates, reference) else {
+                continue;
+            };
+            let Some(captures) = captured.get(index) else {
+                continue;
+            };
+            if let Some(&(span, _)) = captures
+                .partition_point(|(span, _)| span.start <= reference.start)
+                .checked_sub(1)
+                .and_then(|capture| captures.get(capture))
+                && span.contains_inclusive(reference)
+                && !span.contains_inclusive(scoping.symbol_span(symbol))
+                && let Some(blocked) = blocked.get_mut(index)
+            {
+                *blocked = true;
             }
         }
     }
@@ -196,8 +204,10 @@ pub(super) fn extend_module_spans(
         if !SETUP_SCOPE_HELPER_NAMES.contains(&semantic.reference_name(reference)) {
             continue;
         }
-        if let Some(index) = containing(&candidates, semantic.reference_span(reference)) {
-            blocked[index] = true;
+        if let Some(blocked) = containing(&candidates, semantic.reference_span(reference))
+            .and_then(|index| blocked.get_mut(index))
+        {
+            *blocked = true;
         }
     }
     let mut dependents = vec![Vec::new(); candidates.len()];
@@ -207,11 +217,13 @@ pub(super) fn extend_module_spans(
                 continue;
             }
             if let Some(owner) = containing(&candidates, dependency) {
-                if owner != index {
-                    dependents[owner].push(index);
+                if owner != index
+                    && let Some(owner_dependents) = dependents.get_mut(owner)
+                {
+                    owner_dependents.push(index);
                 }
-            } else {
-                blocked[index] = true;
+            } else if let Some(blocked) = blocked.get_mut(index) {
+                *blocked = true;
             }
         }
     }
@@ -221,10 +233,12 @@ pub(super) fn extend_module_spans(
         .filter_map(|(index, blocked)| blocked.then_some(index))
         .collect();
     let mut cursor = 0;
-    while cursor < queue.len() {
-        for &dependent in &dependents[queue[cursor]] {
-            if !blocked[dependent] {
-                blocked[dependent] = true;
+    while let Some(&blocker) = queue.get(cursor) {
+        for &dependent in dependents.get(blocker).into_iter().flatten() {
+            if let Some(blocked) = blocked.get_mut(dependent)
+                && !*blocked
+            {
+                *blocked = true;
                 queue.push(dependent);
             }
         }
@@ -264,17 +278,20 @@ fn containing(candidates: &[Span], span: Span) -> Option<usize> {
     let index = candidates
         .partition_point(|candidate| candidate.start <= span.start)
         .checked_sub(1)?;
-    (span.end <= candidates[index].end).then_some(index)
+    (span.end <= candidates.get(index)?.end).then_some(index)
 }
 
 fn relocatable_line(script: &str, span: Span, comments: &[Span]) -> bool {
     let start = span.start as usize;
     let end = span.end as usize;
-    let line_start = script[..start].rfind('\n').map_or(0, |index| index + 1);
-    let line_end = script[end..]
-        .find('\n')
-        .map_or(script.len(), |index| end + index);
-    if script[line_start..start].trim().is_empty() && script[end..line_end].trim().is_empty() {
+    let (Some(before), Some(after)) = (script.get(..start), script.get(end..)) else {
+        return false;
+    };
+    let line_start = before.rfind('\n').map_or(0, |index| index + 1);
+    let line_end = after.find('\n').map_or(script.len(), |index| end + index);
+    let leading = before.get(line_start..).unwrap_or_default();
+    let trailing = after.get(..line_end - end).unwrap_or_default();
+    if leading.trim().is_empty() && trailing.trim().is_empty() {
         return true;
     }
     // Setup emission masks exact spans, so neighboring statements stay put.
@@ -286,5 +303,12 @@ fn relocatable_line(script: &str, span: Span, comments: &[Span]) -> bool {
     {
         return false;
     }
-    include_leading_ts_directive_comments(script, vec![(span.start, span.end)])[0].0 == span.start
+    starts_without_leading_directive(script, span)
+}
+
+/// Whether no leading `@ts-*` directive comment attaches to `span`.
+fn starts_without_leading_directive(script: &str, span: Span) -> bool {
+    include_leading_ts_directive_comments(script, vec![(span.start, span.end)])
+        .first()
+        .is_some_and(|&(start, _)| start == span.start)
 }
