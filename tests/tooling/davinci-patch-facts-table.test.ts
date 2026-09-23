@@ -14,6 +14,15 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 const emitRoot = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit.rs");
 const runPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "run.rs");
 const patchPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "patch.rs");
+const patchStoragePath = path.join(
+  repoRoot,
+  "crates",
+  "vize_s1_to_s2",
+  "src",
+  "emit",
+  "patch",
+  "storage.rs",
+);
 const patchTestsPath = path.join(
   repoRoot,
   "crates",
@@ -35,10 +44,13 @@ test("EmitCx carries an owner-keyed PatchFacts inline table", () => {
   const emitSource = read(emitRoot);
   const runSource = read(runPath);
   const patchSource = read(patchPath);
+  const storageSource = read(patchStoragePath);
 
-  assert.match(patchSource, /struct PatchFactsTable/);
-  assert.match(patchSource, /SmallVec<\[\(NodeId, StoredPatchFacts\); 16\]>/);
-  assert.match(patchSource, /StoredPatchFacts::from_patch/);
+  assert.match(patchSource, /mod storage;/);
+  assert.match(patchSource, /use storage::PatchFactsTable;/);
+  assert.match(storageSource, /struct PatchFactsTable/);
+  assert.match(storageSource, /SmallVec<\[\(NodeId, StoredPatchFacts\); 16\]>/);
+  assert.match(storageSource, /StoredPatchFacts::from_patch/);
   assert.match(emitSource, /patch_facts: patch::PatchFactsTable,/);
   assert.match(runSource, /patch_facts: super::patch::PatchFactsTable::new\(\),/);
 });
