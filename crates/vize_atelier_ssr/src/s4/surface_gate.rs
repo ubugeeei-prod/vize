@@ -11,9 +11,7 @@ pub(super) fn slot_v_pre_interpolates(source: &str, ops: &[vize_s2::op::Op<'_>])
             (bytes.contains("v-pre") && has_interpolation(&slot.fallback.ops))
                 || slot_v_pre_interpolates(source, &slot.fallback.ops)
         }
-        vize_s2::op::Op::Element(element) => {
-            slot_v_pre_interpolates(source, &element.children.ops)
-        }
+        vize_s2::op::Op::Element(element) => slot_v_pre_interpolates(source, &element.children.ops),
         vize_s2::op::Op::Component(component) => {
             slot_v_pre_interpolates(source, &component.children.ops)
         }
