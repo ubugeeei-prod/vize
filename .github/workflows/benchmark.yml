@@ -3,10 +3,6 @@ name: Benchmark
 on:
   schedule:
     - cron: "29 5 * * 2"
-  pull_request:
-    branches: [main, davinci]
-    types: [opened, synchronize, reopened, ready_for_review]
-  # Schedule compares main against the exact SHA below until a reviewed refresh.
   # Dispatch records its head SHA from --ref, so validation rejects mismatches.
   workflow_dispatch:
     inputs:

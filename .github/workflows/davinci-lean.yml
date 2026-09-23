@@ -24,29 +24,6 @@ on:
       - "pnpm-lock.yaml"
       - "pnpm-workspace.yaml"
       - ".github/workflows/davinci-lean.yml"
-  pull_request:
-    branches: [main, davinci]
-    paths:
-      - "formal/impeto/**"
-      - "crates/vize_atelier_core/**"
-      - "crates/vize_croquis/**"
-      - "crates/vize_atelier_dom/**"
-      - "crates/vize_atelier_vapor/**"
-      - "crates/vize_impeto/**"
-      - "crates/vize_relief/**"
-      - "crates/vize_s1_to_s2/**"
-      - "crates/vize_s2_to_s3/**"
-      - "davinci-road/plan/phase-3.md"
-      - "davinci-road/plan/test-suites.md"
-      - "tests/tooling/davinci-lean-reference.test.ts"
-      - "tests/tooling/davinci-lean-workflow.test.ts"
-      - "tests/tooling/support/davinci-runtime-trace.mjs"
-      - "tests/tooling/support/davinci-mounted-trace.mjs"
-      - "tests/tooling/support/davinci-event-*.mjs"
-      - "tests/package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - ".github/workflows/davinci-lean.yml"
   workflow_dispatch:
 
 concurrency:

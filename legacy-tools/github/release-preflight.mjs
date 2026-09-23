@@ -102,12 +102,14 @@ function verifyGitReleaseTarget(tag, sha, version) {
 function releaseParentSha(sha) {
   const revision = runGit(["rev-list", "--parents", "-n", "1", sha]).stdout.trim().split(/\s+/);
   if (revision.length !== 2 || revision[0] !== sha) {
-    throw new Error(`Release commit ${sha} must have exactly one parent for benchmark comparison`);
+    throw new Error(
+      `Release commit ${sha} must have exactly one parent for release evidence reuse`,
+    );
   }
   const baseSha = revision[1];
   const ancestry = runGit(["merge-base", "--is-ancestor", baseSha, sha], [0, 1]);
   if (ancestry.status !== 0) {
-    throw new Error(`Benchmark base ${baseSha} is not an ancestor of release commit ${sha}`);
+    throw new Error(`Release parent ${baseSha} is not an ancestor of release commit ${sha}`);
   }
   return baseSha;
 }
@@ -166,7 +168,6 @@ export function verifyReleaseTarget(env = process.env) {
  */
 const parentEvidenceReusableWorkflows = [
   "Check",
-  "Benchmark",
   "Fuzz",
   "Miri",
   "Real Project Matrix",

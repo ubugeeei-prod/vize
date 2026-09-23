@@ -1,11 +1,9 @@
 name: Miri
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, davinci]
-  pull_request:
-    branches: [main, davinci]
-
 concurrency:
   group: miri-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true

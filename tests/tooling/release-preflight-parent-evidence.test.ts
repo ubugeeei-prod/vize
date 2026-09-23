@@ -88,9 +88,14 @@ test("a version-only release never dispatches a gate the parent already proved",
   });
   const runs = [
     greenRun(".github/workflows/check.yml", parentSha, "Check", "push"),
+    // A later PR Check may skip test-scripts; it cannot replace the parent's
+    // successful main push run used by the release.
+    {
+      ...greenRun(".github/workflows/check.yml", tagSha, "Check", "pull_request"),
+      created_at: "2026-08-20T00:00:00Z",
+    },
     greenRun(".github/workflows/miri.yml", parentSha, "Miri", "push"),
     greenRun(".github/workflows/build-docs.yml", parentSha, "Docs build", "push"),
-    greenRun(".github/workflows/benchmark.yml", parentSha, `Benchmark ${parentSha}...${tagSha}`),
     greenRun(".github/workflows/fuzz.yml", parentSha, `Fuzz replay @ ${tagSha}`),
     greenRun(
       ".github/workflows/real-project-matrix.yml",
@@ -140,5 +145,5 @@ test("without the reuse the same parent evidence does not satisfy the gates", as
     }),
     /Required release gates are not green/,
   );
-  assert.deepEqual(dispatched.sort(byCodeUnit), ["Benchmark", "Fuzz", "Real Project Matrix"]);
+  assert.deepEqual(dispatched.sort(byCodeUnit), ["Fuzz", "Real Project Matrix"]);
 });

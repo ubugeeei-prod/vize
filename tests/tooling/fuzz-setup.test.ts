@@ -39,13 +39,13 @@ test("fuzz workspace declares libfuzzer-sys and an isolated [workspace]", () => 
   }
 });
 
-test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () => {
+test("fuzz CI workflow runs strict nightly and dispatched campaigns", () => {
   const workflow = readRepoFile(".github/workflows/fuzz.yml");
   const parsed = parse(workflow) as {
     "run-name": string;
     jobs: {
       fuzz: {
-        "continue-on-error": string;
+        "continue-on-error": boolean;
         steps: Array<{
           "continue-on-error"?: boolean;
           env?: Record<string, string>;
@@ -65,9 +65,8 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
   assert.match(parsed["run-name"], /inputs\.max-total-time/);
   assert.match(parsed["run-name"], /@ \$\{\{ github\.sha \}\}$/);
   assert.match(workflow, /schedule:[\s\S]*?-\s*cron:/);
-  assert.match(workflow, /pull_request:[\s\S]*paths:/);
-  assert.match(workflow, /"tests\/fuzz\/\*\*"/);
-  assert.doesNotMatch(workflow, /"fuzz\/\*\*"/);
+  assert.match(workflow, /workflow_dispatch:/);
+  assert.doesNotMatch(workflow, /\n  pull_request:/);
 
   // The matrix must drive each fuzz_target declared in tests/fuzz/Cargo.toml.
   const manifest = readRepoFile(fuzzManifestPath);
@@ -81,7 +80,7 @@ test("fuzz CI workflow gates short PR fuzz and schedules long nightly fuzz", () 
   }
 
   const fuzzJob = parsed.jobs.fuzz;
-  assert.equal(fuzzJob["continue-on-error"], "${{ github.event_name == 'pull_request' }}");
+  assert.equal(fuzzJob["continue-on-error"], false);
   const budgetStep = fuzzJob.steps.find((step) => step.id === "budget");
   assert.deepEqual(budgetStep?.env, {
     REQUESTED_MAX_TOTAL_TIME: "${{ inputs.max-total-time }}",

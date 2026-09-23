@@ -5,9 +5,9 @@ name: Check Benchmark Gate
 # diagnostic in minimal plant projects and in a planted copy of the timed
 # corpus, and it records the exact vize/tsgo/vue-tsc/vue versions, entry
 # point, file count, byte count, per-row diagnostic counts, and backend
-# readiness with the artifact. Correctness gates stay where they are
-# (check.yml vue-parity runs the plants suite on every PR); this job can only
-# add a failure, never publish a timing without them.
+# readiness with the artifact. The full Check workflow runs the fixture parity
+# suite on main and by dispatch; this lane also requires planted diagnostics
+# before publishing any timing.
 
 on:
   workflow_dispatch:
@@ -24,22 +24,8 @@ on:
         description: Warmup runs per row
         required: true
         default: "2"
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
-    paths:
-      - tools/benchmarks/scripts/benchmark-binary.mjs
-      - tools/benchmarks/scripts/check-gate.mjs
-      - tools/benchmarks/scripts/check-gate-env.mjs
-      - tools/benchmarks/scripts/check-gate-plants.mjs
-      - tools/benchmarks/scripts/check-gate-report.mjs
-      - tools/benchmarks/scripts/check-gate-report.test.mjs
-      - tools/benchmarks/scripts/generate.mjs
-      - .github/workflows/check-bench.yml
   schedule:
-    # Weekly report cadence; the plants correctness gate itself runs on every
-    # PR through check.yml vue-parity, so this schedule only refreshes the
-    # published throughput/readiness artifact.
+    # Weekly report cadence refreshes the throughput/readiness artifact.
     - cron: "17 6 * * 1"
 
 concurrency:

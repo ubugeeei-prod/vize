@@ -9,18 +9,6 @@ name: Fresco
 # Linux, macOS, and Windows whenever Fresco sources change.
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/fresco.yml"
-      - "package.json"
-      - "Cargo.lock"
-      - "Cargo.toml"
-      - "crates/vize_fresco/**"
-      - "npm/fresco/**"
-      - "npm/fresco-native/**"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
   push:
     branches: [main]
     paths:

@@ -17,18 +17,6 @@ on:
       - "tools/commands/davinci/resource-budgets.rs"
       - "tools/support/davinci/resource_session.rs"
       - ".github/workflows/davinci-resource-budgets.yml"
-  pull_request:
-    branches: [main, davinci]
-    paths:
-      - "crates/vize/**"
-      - "crates/vize_canon/**"
-      - "crates/vize_maestro/**"
-      - "Cargo.lock"
-      - "davinci-road/plan/budgets.toml"
-      - "tools/commands/davinci/resource-budgets.rs"
-      - "tools/support/davinci/resource_session.rs"
-      - "tests/tooling/davinci-resource-budgets.test.ts"
-      - ".github/workflows/davinci-resource-budgets.yml"
   schedule:
     # Daily, offset from the other nightly lanes.
     - cron: "53 5 * * *"

@@ -190,6 +190,37 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
   }
 });
 
+test("verify-only mode does not block on an optional failed Benchmark", () => {
+  const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-optional-benchmark-"));
+  try {
+    const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
+      mutateRuns(runs) {
+        const benchmark = runs.find((run) => run.name === "Benchmark");
+        assert.ok(benchmark);
+        benchmark.conclusion = "failure";
+      },
+    });
+    const result = spawnSync(
+      "rust-script",
+      ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
+      {
+        cwd: repoRoot,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+          ...fixture.env,
+        },
+      },
+    );
+    assert.ifError(result.error);
+    assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+    assert.doesNotMatch(result.stdout, /Required workflows:.*Benchmark/);
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
 test("verify-only mode reports failed matrix shard jobs for red release evidence", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-red-matrix-"));
   try {

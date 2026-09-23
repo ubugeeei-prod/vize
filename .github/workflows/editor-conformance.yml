@@ -9,18 +9,6 @@ name: Editor conformance
 on:
   push:
     branches: [main, davinci]
-  pull_request:
-    branches: [main, davinci]
-    paths:
-      - "crates/**"
-      - "Cargo.lock"
-      - "Cargo.toml"
-      - "editors/**"
-      - "legacy-tools/editor-e2e/**"
-      - "tests/editor-conformance/**"
-      - "tests/tooling/editor-conformance*"
-      - "pnpm-lock.yaml"
-      - ".github/workflows/editor-conformance.yml"
   schedule:
     # Daily, offset from the check/native-smoke/e2e crons.
     - cron: "41 4 * * *"

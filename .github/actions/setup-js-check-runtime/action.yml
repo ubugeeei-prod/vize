@@ -5,12 +5,18 @@ runs:
   using: composite
   steps:
     - uses: ./.github/actions/setup-moonbit
+      if: ${{ github.event_name != 'pull_request' }}
     - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
     - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+      if: ${{ github.event_name != 'pull_request' }}
       with:
         wild-version: "0.9.0"
-    - uses: ./.github/actions/setup-rust-script
     - uses: ./.github/actions/setup-rust-sticky-cache
       with:
         key: check-js
         cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+    - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+      with:
+        path: ~/.cargo/bin/rust-script
+        key: rust-script-0.34.0-${{ runner.os }}-${{ runner.arch }}
+    - uses: ./.github/actions/setup-rust-script

@@ -77,14 +77,11 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
   }
 });
 
-test("check workflow only runs SemVer checks with an exact Git event baseline", () => {
+test("SemVer checks run on main pushes with an exact Git event baseline", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "semver-checks");
 
-  assert.match(
-    job,
-    /if:\s*\$\{\{\s*github\.event_name == 'pull_request' \|\| github\.event_name == 'push'\s*\}\}/,
-  );
+  assert.match(job, /if:\s*\$\{\{\s*github\.event_name == 'push'\s*\}\}/);
   assert.match(
     job,
     /BASELINE_REV:\s*\$\{\{\s*github\.event_name == 'pull_request' && github\.event\.pull_request\.base\.sha \|\| \(github\.event_name == 'push' && github\.event\.before \|\| ''\)\s*\}\}/,
@@ -108,24 +105,11 @@ test("check workflow comments a detailed PR test report for each head push", () 
   assert.doesNotMatch(reportJob, /pull-requests:\s*write/);
 
   for (const jobName of [
-    "nix-flake",
     "fmt-rust",
     "check-js",
     "security-audit",
-    "semver-checks",
     "node-engine-compat",
     "check-vize-apps",
-    "vue-parity",
-    "test-scripts",
-    "editor-extensions",
-    "editor-host-smoke",
-    "build-js-packages",
-    "test-js-packages",
-    "clippy-and-test",
-    "coverage",
-    "source-coverage",
-    "branch-coverage",
-    "playground-test",
   ]) {
     assert.match(reportJob, new RegExp(`- ${jobName}\\b`));
   }
@@ -294,7 +278,7 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   assert.match(branchJob, /source-branch-summary\.json/);
   assert.match(branchJob, /rust-branch-coverage-summary/);
   assert.match(branchJob, /continue-on-error:\s*true/);
-  assert.doesNotMatch(branchJob, /github\.event_name != 'pull_request'/);
+  assert.match(branchJob, /github\.event_name != 'pull_request'/);
 });
 
 test("check workflow only installs Playwright browsers on cache misses", () => {
@@ -313,6 +297,7 @@ test("check workflow builds local native bindings before JS checks", () => {
   const buildJob = workflowJobBody(workflow, "build-js-packages");
   const playgroundJob = workflowJobBody(workflow, "playground-test");
   assert.match(checkJsJob, /vp run --workspace-root check:ci/);
+  assert.match(checkJsJob, /vp run --workspace-root check:repo/);
   assert.doesNotMatch(checkJsJob, /cargo build/);
   assert.match(checkJsJob, /setup-js-check-runtime/);
   assert.doesNotMatch(checkJsJob, /build:packages/);

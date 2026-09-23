@@ -1,8 +1,6 @@
 name: App E2E
 
 on:
-  pull_request:
-    branches: [main, davinci]
   schedule:
     - cron: "23 2 * * *"
   workflow_dispatch:

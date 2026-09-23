@@ -1,8 +1,6 @@
 name: pkg.pr.new
 
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
@@ -60,7 +58,7 @@ jobs:
         # The pkg.pr.new GitHub App must be installed on this repository for
         # the publish call to succeed. Until it is, the job logs a clear
         # message and is marked successful so the workflow does not red-light
-        # every PR while waiting on a one-time install action by a maintainer.
+        # main pushes while waiting on a one-time install action by a maintainer.
         # https://github.com/apps/pkg-pr-new
         run: |
           set -e

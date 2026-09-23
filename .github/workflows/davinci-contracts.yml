@@ -23,22 +23,6 @@ on:
       - "Cargo.lock"
       - "davinci-road/plan/test-suites.md"
       - ".github/workflows/davinci-contracts.yml"
-  pull_request:
-    branches: [main, davinci]
-    paths:
-      - "contracts/**"
-      - "crates/vize_extension_host/**"
-      - "crates/vize_extension_sdk/**"
-      - "npm/extension-sdk/**"
-      - "crates/vize_marquette/**"
-      - "crates/vize_davinci/**"
-      - "crates/vize_s1/**"
-      - "crates/vize_s1_to_s2/**"
-      - "crates/vize_s2/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
-      - "davinci-road/plan/test-suites.md"
-      - ".github/workflows/davinci-contracts.yml"
   workflow_dispatch:
 
 concurrency:
