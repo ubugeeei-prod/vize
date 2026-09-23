@@ -21,7 +21,7 @@ const { count, name } = inject('state') as { count: number; name: string }"#,
         .unwrap();
 
     // Should detect the inject with ObjectDestructure pattern
-    let injects = analysis.provide_inject.injects();
+    let injects = vize_croquis::facts::inject_entries(analysis);
     assert_eq!(injects.len(), 1, "Should have 1 inject");
     match &injects[0].pattern {
         InjectPattern::ObjectDestructure(props) => {
@@ -55,7 +55,7 @@ const state = inject('state')"#,
         .get_analysis(analyzer.registry().iter().next().unwrap().id)
         .unwrap();
 
-    let injects = analysis.provide_inject.injects();
+    let injects = vize_croquis::facts::inject_entries(analysis);
     assert_eq!(injects.len(), 1);
     assert!(matches!(injects[0].pattern, InjectPattern::Simple));
 }
@@ -80,7 +80,7 @@ const { foo } = inject('data') as { foo: string }"#,
         .get_analysis(analyzer.registry().iter().next().unwrap().id)
         .unwrap();
 
-    let injects = analysis.provide_inject.injects();
+    let injects = vize_croquis::facts::inject_entries(analysis);
     assert_eq!(injects.len(), 1);
     match &injects[0].pattern {
         InjectPattern::ObjectDestructure(props) => {
@@ -112,7 +112,7 @@ const { name } = inject('user') as { name: string; id: number }"#,
         .get_analysis(analyzer.registry().iter().next().unwrap().id)
         .unwrap();
 
-    let injects = analysis.provide_inject.injects();
+    let injects = vize_croquis::facts::inject_entries(analysis);
     assert_eq!(injects.len(), 1, "Should have 1 inject");
     match &injects[0].pattern {
         InjectPattern::ObjectDestructure(props) => {
@@ -143,7 +143,7 @@ const { count } = toRefs(inject('state') as { count: number })"#,
         .get_analysis(analyzer.registry().iter().next().unwrap().id)
         .unwrap();
 
-    let injects = analysis.provide_inject.injects();
+    let injects = vize_croquis::facts::inject_entries(analysis);
     assert_eq!(injects.len(), 1);
     assert!(matches!(injects[0].pattern, InjectPattern::Simple));
     assert!(

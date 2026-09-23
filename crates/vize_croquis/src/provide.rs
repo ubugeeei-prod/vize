@@ -29,7 +29,7 @@ pub enum ProvideKey {
 }
 
 /// A provide() call
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProvideEntry {
     pub id: ProviderId,
     pub key: ProvideKey,
@@ -43,7 +43,7 @@ pub struct ProvideEntry {
 }
 
 /// Destructure pattern for inject results
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum InjectPattern {
     /// Simple assignment: `const foo = inject('foo')`
     #[default]
@@ -62,7 +62,7 @@ pub enum InjectPattern {
 }
 
 /// An inject() call
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InjectEntry {
     pub key: ProvideKey,
     pub local_name: CompactString,
@@ -78,7 +78,7 @@ pub struct InjectEntry {
 }
 
 /// A composable function call (use* function) at top-level of setup.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ComposableCall {
     /// Name of the composable function.
     pub name: CompactString,

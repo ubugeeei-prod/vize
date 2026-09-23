@@ -11,7 +11,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             let analysis = &entry.analysis;
 
             // Check for composable calls
-            for composable in analysis.provide_inject.composables() {
+            for composable in vize_croquis::facts::composable_calls(analysis) {
                 // Find the source file for this composable
                 let source_file = self.find_composable_source(&composable.source);
 

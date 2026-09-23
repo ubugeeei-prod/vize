@@ -15,7 +15,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             let consumer_file_id = entry.id;
             let analysis = &entry.analysis;
 
-            for inject in analysis.provide_inject.injects() {
+            for inject in vize_croquis::facts::inject_entries(analysis) {
                 let key_str = provide_key_display(&inject.key);
                 let key_identity = provide_key_identity(&inject.key);
 

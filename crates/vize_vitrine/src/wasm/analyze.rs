@@ -150,9 +150,7 @@ pub(super) fn analyze_sfc_json_with_clock(
     let vir = summary.to_vir();
 
     // Convert provides to JSON
-    let provides: Vec<serde_json::Value> = summary
-        .provide_inject
-        .provides()
+    let provides: Vec<serde_json::Value> = vize_croquis::facts::provide_entries(&summary)
         .iter()
         .map(|p| {
             let (start, end) = script_offset_mapper.to_utf16_range(source, p.start, p.end);
@@ -178,9 +176,7 @@ pub(super) fn analyze_sfc_json_with_clock(
         .collect();
 
     // Convert injects to JSON
-    let injects: Vec<serde_json::Value> = summary
-        .provide_inject
-        .injects()
+    let injects: Vec<serde_json::Value> = vize_croquis::facts::inject_entries(&summary)
         .iter()
         .map(|i| {
             let (start, end) = script_offset_mapper.to_utf16_range(source, i.start, i.end);

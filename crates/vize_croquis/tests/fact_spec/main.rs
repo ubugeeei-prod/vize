@@ -75,6 +75,20 @@ fn the_committed_planes_agree_with_the_specs() {
             plane.divergences
         );
     }
+    for (label, plane) in [
+        ("battery", &battery.provide),
+        ("ladder", &ladder.provide),
+        ("matrix", &matrix.provide),
+        ("battery-race", &battery.race),
+        ("ladder-race", &ladder.race),
+        ("matrix-race", &matrix.race),
+    ] {
+        assert!(
+            plane.divergences.is_empty(),
+            "{label} reactivity diverged: {:?}",
+            plane.divergences
+        );
+    }
 }
 
 #[test]
@@ -118,6 +132,8 @@ fn the_corpus_shard_agrees_with_the_specs() {
             shard.bindings.skip("unreadable");
             shard.undefined.skip("unreadable");
             shard.reactivity.skip("unreadable");
+            shard.provide.skip("unreadable");
+            shard.race.skip("unreadable");
             continue;
         };
         run_source(
@@ -131,6 +147,40 @@ fn the_corpus_shard_agrees_with_the_specs() {
     shard
         .reactivity
         .verdict("reactivity", "corpus shard")
+        .unwrap_or_else(|message| panic!("{message}"));
+    assert!(
+        shard.provide.divergences.is_empty(),
+        "provide-inject corpus diverged: {:?}",
+        shard.provide.divergences
+    );
+    // The committed shard's direct `provide()` / `inject()` calls sit outside
+    // the tracker's top-level script-setup shape, so that half compares no
+    // rows. `the_provide_inject_spec_agrees_on_a_drawn_sfc` is the comparison.
+    shard
+        .race
+        .verdict("race-conditions", "corpus shard")
+        .unwrap_or_else(|message| panic!("{message}"));
+}
+
+#[test]
+fn the_provide_inject_spec_agrees_on_a_drawn_sfc() {
+    let source = "\
+<script setup>
+const theme = ref('dark')
+provide('theme', theme)
+const color = inject('theme')
+</script>
+<template><p>{{ color }}</p></template>
+";
+    let mut planes = Planes::default();
+    run_source("provide.vue", source, &mut planes);
+    eprintln!(
+        "{}",
+        planes.provide.scope_line("provide-inject", "drawn sfc")
+    );
+    planes
+        .provide
+        .verdict("provide-inject", "drawn sfc")
         .unwrap_or_else(|message| panic!("{message}"));
 }
 

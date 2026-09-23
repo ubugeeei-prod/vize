@@ -102,17 +102,17 @@ const comp = inject('computedValue')"#,
     for entry in analyzer.registry().iter() {
         append!(output, "File: {}\n", entry.filename);
 
-        if !entry.analysis.provide_inject.provides().is_empty() {
+        if !vize_croquis::facts::provide_entries(&entry.analysis).is_empty() {
             output.push_str("  Provides:\n");
-            for p in entry.analysis.provide_inject.provides() {
+            for p in vize_croquis::facts::provide_entries(&entry.analysis) {
                 append!(output, "    - key: {:?}\n", p.key);
                 append!(output, "      value: {}\n", p.value);
             }
         }
 
-        if !entry.analysis.provide_inject.injects().is_empty() {
+        if !vize_croquis::facts::inject_entries(&entry.analysis).is_empty() {
             output.push_str("  Injects:\n");
-            for i in entry.analysis.provide_inject.injects() {
+            for i in vize_croquis::facts::inject_entries(&entry.analysis) {
                 append!(output, "    - key: {:?}\n", i.key);
                 append!(output, "      has_default: {}\n", i.default_value.is_some());
                 append!(output, "      pattern: {:?}\n", i.pattern);

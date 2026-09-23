@@ -254,8 +254,8 @@ fn extract_provide_inject(
     analysis: &vize_croquis::Croquis,
 ) -> (Vec<ProvideEntry>, Vec<InjectEntry>) {
     // Use the actual provide/inject tracker data - precise static analysis
-    let provides = analysis.provide_inject.provides().to_vec();
-    let injects = analysis.provide_inject.injects().to_vec();
+    let provides = vize_croquis::facts::provide_entries(analysis);
+    let injects = vize_croquis::facts::inject_entries(analysis);
     (provides, injects)
 }
 

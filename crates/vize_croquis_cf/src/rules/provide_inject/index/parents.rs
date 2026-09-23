@@ -1,3 +1,4 @@
+use crate::facts::imported_render_target;
 use crate::graph::{DependencyEdge, DependencyGraph};
 use crate::registry::{FileId, ModuleEntry, ModuleRegistry};
 use vize_carton::FxHashMap;
@@ -79,7 +80,8 @@ fn runtime_usages(
     vize_croquis::facts::component_usage_list(&entry.analysis)
         .iter()
         .filter_map(|usage| {
-            let target_id = graph.find_by_component(usage.name.as_str())?;
+            let target_id = imported_render_target(registry, entry.id, usage.name.as_str())
+                .or_else(|| graph.find_by_component(usage.name.as_str()))?;
             Some(RuntimeUsage {
                 target_id,
                 start: usage.start,

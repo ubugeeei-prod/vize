@@ -64,11 +64,11 @@ pub(super) struct InjectedMutation {
     pub(super) provide_offset: u32,
 }
 
-struct PendingInjectedMutation<'a> {
+struct PendingInjectedMutation {
     consumer: FileId,
     inject: InjectEntry,
     target_name: CompactString,
-    risk: &'a RaceConditionRisk,
+    risk: RaceConditionRisk,
 }
 
 /// Analyze async race-condition risks across registered files.
@@ -92,13 +92,13 @@ pub(crate) fn analyze_race_conditions_with_index(
 
     for entry in registry.vue_components() {
         let injected_targets = injected_targets(entry);
-        for risk in entry.analysis.race_conditions.risks() {
+        for risk in vize_croquis::facts::race_risks(&entry.analysis) {
             for target in risk.kind.mutated_targets() {
-                let Some(&inject) = injected_targets.get(target.as_str()) else {
-                    diagnostics.extend(local_diagnostics(entry.id, risk, target));
+                let Some(inject) = injected_targets.get(target.as_str()) else {
+                    diagnostics.extend(local_diagnostics(entry.id, &risk, target));
                     issues.push(RaceConditionIssue {
                         file_id: entry.id,
-                        kind: local_issue_kind(risk, target),
+                        kind: local_issue_kind(&risk, target),
                         offset: risk.start,
                         end: risk.end,
                     });
@@ -109,7 +109,7 @@ pub(crate) fn analyze_race_conditions_with_index(
                     consumer: entry.id,
                     inject: inject.clone(),
                     target_name: target.clone(),
-                    risk,
+                    risk: risk.clone(),
                 });
             }
         }
@@ -136,12 +136,12 @@ pub(crate) fn analyze_race_conditions_with_index(
             if matches.is_empty() {
                 diagnostics.extend(local_diagnostics(
                     pending.consumer,
-                    pending.risk,
+                    &pending.risk,
                     &pending.target_name,
                 ));
                 issues.push(RaceConditionIssue {
                     file_id: pending.consumer,
-                    kind: local_issue_kind(pending.risk, &pending.target_name),
+                    kind: local_issue_kind(&pending.risk, &pending.target_name),
                     offset: pending.risk.start,
                     end: pending.risk.end,
                 });
@@ -193,14 +193,11 @@ pub(crate) fn analyze_race_conditions_with_index(
     (issues, diagnostics)
 }
 
-fn injected_targets(entry: &ModuleEntry) -> FxHashMap<&str, &InjectEntry> {
-    entry
-        .analysis
-        .provide_inject
-        .injects()
-        .iter()
+fn injected_targets(entry: &ModuleEntry) -> FxHashMap<CompactString, InjectEntry> {
+    vize_croquis::facts::inject_entries(&entry.analysis)
+        .into_iter()
         .filter(|inject| !inject.local_name.starts_with('('))
-        .map(|inject| (inject.local_name.as_str(), inject))
+        .map(|inject| (inject.local_name.clone(), inject))
         .collect()
 }
 

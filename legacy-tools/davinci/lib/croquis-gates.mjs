@@ -39,8 +39,8 @@ export const GATES = {
   track_usage: ["Croquis.used_directives"],
   "template-facts": ["ComponentRegistration", "ElementIdInfo", "TemplateInfo"],
   "effect-graph": ["EffectGraph"],
-  "provide-inject": ["ProvideInjectTracker"],
-  "race-conditions": ["RaceConditionTracker"],
+  "provide-inject": ["ProvideInjectTracker", "Croquis.provide_inject"],
+  "race-conditions": ["RaceConditionTracker", "Croquis.race_conditions"],
   "reactivity-overlay": [
     "ReactivityEffectEdgeOverlay",
     "ReactivityEffectGraphOverlay",

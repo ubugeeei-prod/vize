@@ -13,7 +13,7 @@ pub(super) fn analyze_component_reactivity(analysis: &vize_croquis::Croquis) -> 
 
     // Check for destructured inject() calls - these lose reactivity
     // This is precise: we check the actual InjectPattern from the tracker
-    for inject in analysis.provide_inject.injects() {
+    for inject in vize_croquis::facts::inject_entries(analysis) {
         use vize_croquis::provide::InjectPattern;
         match &inject.pattern {
             InjectPattern::ObjectDestructure(props) => {

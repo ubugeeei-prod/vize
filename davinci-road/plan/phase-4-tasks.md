@@ -183,7 +183,7 @@
 
 **Steps:**
 
-- [ ] Groups + TS-34 specs; readers switched; matrix regenerated
+- [x] Groups + TS-34 specs; readers switched; matrix regenerated
 
 **Acceptance:** TS-34; TS-35; `vize lint` cross-file fixtures and Doctor snapshots unchanged; TS-12.
 

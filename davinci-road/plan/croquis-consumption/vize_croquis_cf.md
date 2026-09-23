@@ -12,7 +12,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | -------------------------------------- | ----- | ------------------- | ----: | ----: |
 | `Analyzer`                             | type  | `analyzer`          |    20 |    42 |
 | `AnalyzerOptions`                      | type  | `analyzer`          |    14 |    21 |
-| `ComponentUsage`                       | type  | `croquis::template` |    13 |    37 |
+| `ComponentUsage`                       | type  | `croquis::template` |    14 |    38 |
 | `Croquis`                              | type  | `croquis`           |    41 |    96 |
 | `EffectGraphScript`                    | type  | `effect_graph`      |     1 |     1 |
 | `EffectGraphSummary`                   | type  | `effect_graph`      |     9 |    19 |
@@ -21,7 +21,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `EventListener`                        | type  | `croquis::template` |     6 |    10 |
 | `PassedProp`                           | type  | `croquis::template` |     8 |    17 |
 | `ScopeData`                            | type  | `scope`             |     8 |     8 |
-| `ScopeId`                              | type  | `scope`             |    13 |    19 |
+| `ScopeId`                              | type  | `scope`             |    14 |    20 |
 | `ScopeKind`                            | type  | `scope`             |     7 |     9 |
 | `SlotUsage`                            | type  | `croquis::template` |     2 |     2 |
 | `build_effect_graph_from_script`       | type  | `effect_graph`      |     1 |     2 |
@@ -30,8 +30,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.element_ids`                  | field | `croquis`           |     1 |     1 |
 | `Croquis.invalid_exports`              | field | `croquis`           |     1 |     2 |
 | `Croquis.macros`                       | field | `croquis`           |    14 |    25 |
-| `Croquis.provide_inject`               | field | `croquis`           |    10 |    26 |
-| `Croquis.race_conditions`              | field | `croquis`           |     1 |     1 |
 | `Croquis.re_export_forwards`           | field | `croquis`           |     1 |     1 |
 | `Croquis.reactivity`                   | field | `croquis`           |     2 |     2 |
 | `Croquis.scopes`                       | field | `croquis`           |    12 |    17 |
@@ -68,8 +66,12 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ViolationSeverity`          |     1 |     6 |
 | `component_identity`         |     1 |     1 |
 | `component_usage_list`       |     9 |    14 |
+| `composable_calls`           |     2 |     2 |
+| `inject_entries`             |     7 |    17 |
 | `parse_sfc`                  |     1 |     1 |
 | `parse_sfc_without_css_vars` |     1 |     1 |
+| `provide_entries`            |     4 |     7 |
+| `race_risks`                 |     1 |     1 |
 | `reactivity_count`           |     3 |     3 |
 | `reactivity_is_reactive`     |     1 |     5 |
 | `reactivity_lookup`          |     2 |     2 |
@@ -85,7 +87,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | -------------------------------------- | -------: | ---: |
 | `Analyzer`                             |       42 |   52 |
 | `AnalyzerOptions`                      |       21 |   60 |
-| `ComponentUsage`                       |       37 |   83 |
+| `ComponentUsage`                       |       38 |   85 |
 | `Croquis`                              |       96 |  123 |
 | `EffectGraphScript`                    |        1 |    2 |
 | `EffectGraphSummary`                   |       19 |   31 |
@@ -95,7 +97,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `MacroTracker`                         |        0 |    1 |
 | `PassedProp`                           |       17 |   25 |
 | `ProvideInjectTracker`                 |        0 |    1 |
-| `ScopeId`                              |       19 |   29 |
+| `ScopeId`                              |       20 |   31 |
 | `ScopeKind`                            |        9 |   10 |
 | `SlotUsage`                            |        2 |    7 |
 | `Span`                                 |        0 |   36 |
@@ -106,7 +108,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `build_effect_graph_from_sfc_scripts`  |        1 |    2 |
 | `Croquis.bindings`                     |        0 |    7 |
 | `Croquis.macros`                       |       25 |   27 |
-| `Croquis.provide_inject`               |       26 |   34 |
-| `Croquis.race_conditions`              |        1 |    4 |
+| `Croquis.provide_inject`               |        0 |    8 |
+| `Croquis.race_conditions`              |        0 |    3 |
 | `Croquis.setup_context`                |        1 |    4 |
 | `Croquis.template_info`                |       14 |   15 |

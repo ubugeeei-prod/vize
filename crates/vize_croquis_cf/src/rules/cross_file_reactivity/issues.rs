@@ -44,7 +44,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                     // named like a store is not flagged; a `defineStore` factory
                     // with a non-conforming name still is.
                     let stores = &self.registry.get(file_id).map(|entry| &entry.pinia_stores);
-                    for composable in analysis.provide_inject.composables() {
+                    for composable in vize_croquis::facts::composable_calls(analysis) {
                         let is_store = stores
                             .map(|s| s.contains(composable.name.as_str()))
                             .unwrap_or(false);

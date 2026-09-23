@@ -8,7 +8,9 @@ use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_carton::{Allocator, CompactString, cstr};
 use vize_croquis::facts::spec::agreement::Agreement;
-use vize_croquis::facts::spec::{bindings, bindings_extract, reactivity, trace, undefined_refs};
+use vize_croquis::facts::spec::{
+    bindings, bindings_extract, provide_inject, reactivity, trace, undefined_refs,
+};
 use vize_croquis::facts::{
     Bindings, CroquisFacts, Demand, FactConsumer, FactGroup, FactTable, UndefinedRefs,
 };
@@ -26,6 +28,8 @@ pub struct Planes {
     pub bindings: Agreement,
     pub undefined: Agreement,
     pub reactivity: Agreement,
+    pub provide: Agreement,
+    pub race: Agreement,
 }
 
 impl Planes {
@@ -37,10 +41,12 @@ impl Planes {
 
     pub fn scope_lines(&self, label: &str) -> CompactString {
         cstr!(
-            "{}\n{}\n{}",
+            "{}\n{}\n{}\n{}\n{}",
             self.bindings.scope_line("bindings", label),
             self.undefined.scope_line("undefined-refs", label),
-            self.reactivity.scope_line("reactivity", label)
+            self.reactivity.scope_line("reactivity", label),
+            self.provide.scope_line("provide-inject", label),
+            self.race.scope_line("race-conditions", label)
         )
     }
 
@@ -83,6 +89,8 @@ pub fn run_source(name: &str, source: &str, planes: &mut Planes) {
         planes.bindings.skip("sfc-parse-error");
         planes.undefined.skip("sfc-parse-error");
         planes.reactivity.skip("sfc-parse-error");
+        planes.provide.skip("sfc-parse-error");
+        planes.race.skip("sfc-parse-error");
         return;
     };
     let allocator = Allocator::new();
@@ -152,6 +160,8 @@ pub fn run_source(name: &str, source: &str, planes: &mut Planes) {
     }
 
     reactivity::compare_croquis(name, &croquis, &mut planes.reactivity);
+    provide_inject::compare_provide(name, &croquis, &mut planes.provide);
+    provide_inject::compare_race(name, &croquis, &mut planes.race);
 }
 
 fn describe_bindings(

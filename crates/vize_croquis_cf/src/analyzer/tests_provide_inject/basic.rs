@@ -49,9 +49,9 @@ const state = inject('state') as { count: number; user: { name: string } }"#,
     assert!(child_analysis.is_some());
 
     let analysis = child_analysis.unwrap();
-    assert_eq!(analysis.provide_inject.injects().len(), 1);
+    assert_eq!(vize_croquis::facts::inject_entries(analysis).len(), 1);
     assert_eq!(
-        analysis.provide_inject.injects()[0].key,
+        vize_croquis::facts::inject_entries(analysis)[0].key,
         vize_croquis::provide::ProvideKey::String(vize_carton::CompactString::new("state"))
     );
 }
@@ -74,7 +74,7 @@ const theme = inject('theme') satisfies string | undefined"#,
     assert!(child_analysis.is_some());
 
     let analysis = child_analysis.unwrap();
-    assert_eq!(analysis.provide_inject.injects().len(), 1);
+    assert_eq!(vize_croquis::facts::inject_entries(analysis).len(), 1);
 }
 
 #[test]
@@ -96,7 +96,7 @@ provide(ThemeKey, 'dark')"#,
     assert!(parent_analysis.is_some());
 
     let analysis = parent_analysis.unwrap();
-    assert_eq!(analysis.provide_inject.provides().len(), 1);
+    assert_eq!(vize_croquis::facts::provide_entries(analysis).len(), 1);
 }
 
 #[test]
@@ -119,11 +119,13 @@ const theme = inject<Theme>(ThemeKey)"#,
         .unwrap();
 
     assert_eq!(
-        analysis.provide_inject.provides()[0].value_type.as_deref(),
+        vize_croquis::facts::provide_entries(analysis)[0]
+            .value_type
+            .as_deref(),
         Some("Theme")
     );
     assert_eq!(
-        analysis.provide_inject.injects()[0]
+        vize_croquis::facts::inject_entries(analysis)[0]
             .expected_type
             .as_deref(),
         Some("Theme")
@@ -250,7 +252,7 @@ const theme = inject('theme', 'light')"#,
     assert!(child_analysis.is_some());
 
     let analysis = child_analysis.unwrap();
-    let injects = analysis.provide_inject.injects();
+    let injects = vize_croquis::facts::inject_entries(analysis);
     assert_eq!(injects.len(), 1);
     assert!(injects[0].default_value.is_some());
 }
@@ -281,6 +283,6 @@ provide('config', { debug: true })"#,
         .get_analysis(analyzer.registry().iter().next().unwrap().id)
         .unwrap();
 
-    assert_eq!(analysis.provide_inject.provides().len(), 2);
-    assert_eq!(analysis.provide_inject.injects().len(), 2);
+    assert_eq!(vize_croquis::facts::provide_entries(analysis).len(), 2);
+    assert_eq!(vize_croquis::facts::inject_entries(analysis).len(), 2);
 }
