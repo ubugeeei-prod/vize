@@ -11,17 +11,20 @@ at both boundaries. α pages cannot contain a body or S3 code shape.
 The focused `summary_firewall` test reads a prop from one dependent file and
 an emit from another. Its exact Salsa event counts are:
 
-| Revision                     | `sfc_summary` exec/reuse | `declaration_fingerprint` exec/reuse | dependent exec/reuse |
-| ---------------------------- | -----------------------: | -----------------------------------: | -------------------: |
-| First read                   |                      1/0 |                                  2/0 |                  2/0 |
-| Body-only edit, same α pages |                      1/0 |                                  0/2 |                  0/2 |
-| Prop type change             |                      1/0 |                                  2/0 |                  1/1 |
+| Revision                          | `sfc_summary` exec/reuse | `declaration_fingerprint` exec/reuse | dependent exec/reuse |
+| --------------------------------- | -----------------------: | -----------------------------------: | -------------------: |
+| First read                        |                      1/0 |                                  2/0 |                  2/0 |
+| Body-only edit, refreshed α pages |                      1/0 |                                  0/2 |                  0/2 |
+| Prop type change                  |                      1/0 |                                  2/0 |                  1/1 |
 
 Open buffers and α page updates have LOW durability; dependency files loaded
 through `open_dependency` and tsconfig have HIGH durability. The test also
 pins that a local buffer edit only validates and reuses the dependency's
-summary, while a tsconfig change re-evaluates that summary and backdates its
-unchanged declaration fingerprint.
+summary. `edit_with_alpha` updates source and α pages before a query can read
+them. A plain `edit` or tsconfig change without a fresh α export produces
+`StaleAlpha`; the declaration query returns no fingerprint, so dependents
+cannot silently accept an old contract. The producer must call `revise_alpha`
+after any source or config change before normal dependent results resume.
 
 The resource policy is in the recorded `linux-x64-ci` preset under
 `budgets.toml [resource]`: 128 summary memos, 512 declaration fingerprint
@@ -32,7 +35,8 @@ RSS; long-lived source inputs and other stage memos have separate lifetimes.
 
 The P5-11a RSS ceiling of 337 MiB was measured on a nine-file LSP fixture
 with Corsa processes included, not a synthetic 10k-file session. P5-4b stays
-open until the production α exporter calls `publish_alpha`/`revise_alpha`,
+open until the production α exporter calls `publish_alpha`/`edit_with_alpha`
+and refreshes after every tsconfig change,
 the 10k-file session is sampled with the same process-tree RSS methodology,
 and its peak is below a recorded 10k-file preset. The existing TS-42 corpus
 checks the block artifacts; the summary path needs a corpus edit script as

@@ -3,8 +3,8 @@
 
 use vize_davinci::summary::{AlphaEntry, AlphaPages, Facet, Fingerprint, Signature};
 use vize_resident::{
-    Accounting, DeclarationName, QueryCounts, ResidentDatabase, SourceFile, SummaryCachePolicy,
-    SummaryInput, declaration_fingerprint, sfc_summary,
+    Accounting, DeclarationName, QueryCounts, ResidentDatabase, ResidentSummaryError, SourceFile,
+    SummaryCachePolicy, SummaryInput, declaration_fingerprint, sfc_summary,
 };
 use vize_s0::String;
 
@@ -77,7 +77,12 @@ fn a_body_edit_rechecks_the_summary_without_executing_dependents() {
         ])
     );
 
-    db.edit(file, "<script setup>const n = 2</script>");
+    db.edit_with_alpha(
+        file,
+        provider,
+        "<script setup>const n = 2</script>",
+        pages("string", "MouseEvent"),
+    );
     assert_eq!(read_users(&db, provider, prop_user, emit_user), first);
     assert_eq!(
         db.take_accounting(),
@@ -130,11 +135,17 @@ fn tsconfig_and_dependency_durability_do_not_recheck_on_buffer_edits() {
     let name = db.declaration_name("label");
     assert_eq!(
         declaration_fingerprint(&db, provider, Facet::Prop, name),
-        before
+        None
     );
     assert_eq!(
-        db.take_accounting(),
-        counts(&[("sfc_summary", 1, 0), ("declaration_fingerprint", 0, 1)])
+        sfc_summary(&db, provider),
+        &Err(ResidentSummaryError::StaleAlpha)
+    );
+    db.revise_alpha(provider, pages("string", "MouseEvent"));
+    let name = db.declaration_name("label");
+    assert_eq!(
+        declaration_fingerprint(&db, provider, Facet::Prop, name),
+        before
     );
     assert_eq!(
         sfc_summary(&db, provider)
@@ -143,6 +154,40 @@ fn tsconfig_and_dependency_durability_do_not_recheck_on_buffer_edits() {
             .len(),
         3
     );
+}
+
+#[test]
+fn an_unpublished_alpha_refresh_never_serves_a_stale_fingerprint() {
+    let mut db = ResidentDatabase::default();
+    let file = db.open("Button.vue", "<script setup>const n = 1</script>");
+    let provider = db.publish_alpha(file, pages("string", "MouseEvent"));
+    let user = db.open("User.vue", "<Button label='a' />");
+    let name = db.declaration_name("label");
+    let before =
+        dependent_use(&db, user, provider, Facet::Prop, name).expect("initial fingerprint");
+    let _ = db.take_accounting();
+
+    db.edit(file, "<script setup>const n: number = 2</script>");
+    let name = db.declaration_name("label");
+    assert_eq!(dependent_use(&db, user, provider, Facet::Prop, name), None);
+    assert_eq!(
+        sfc_summary(&db, provider),
+        &Err(ResidentSummaryError::StaleAlpha)
+    );
+    assert_eq!(
+        db.take_accounting(),
+        counts(&[
+            ("sfc_summary", 1, 0),
+            ("declaration_fingerprint", 1, 0),
+            ("dependent_use", 1, 0),
+        ])
+    );
+
+    db.revise_alpha(provider, pages("number", "MouseEvent"));
+    let name = db.declaration_name("label");
+    let after =
+        dependent_use(&db, user, provider, Facet::Prop, name).expect("refreshed fingerprint");
+    assert_ne!(after, before);
 }
 
 #[test]

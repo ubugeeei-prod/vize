@@ -42,6 +42,6 @@ pub use descriptor::{
     SharedDescriptor, parse_descriptor,
 };
 pub use summary::{
-    DeclarationName, SummaryCachePolicy, SummaryInput, TsConfig, declaration_fingerprint,
-    sfc_summary,
+    DeclarationName, ResidentSummaryError, SummaryCachePolicy, SummaryInput, TsConfig,
+    declaration_fingerprint, sfc_summary,
 };

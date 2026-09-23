@@ -5,6 +5,7 @@
 
 use salsa::{Durability, Setter as _};
 use vize_davinci::summary::{AlphaPages, Facet, Fingerprint, SfcSummary, SummaryError};
+use vize_s0::hash::StableHasher128;
 use vize_s0::{String, cstr};
 
 use crate::db::{ResidentDatabase, SourceFile};
@@ -75,6 +76,35 @@ pub struct SummaryInput {
     pub file: SourceFile,
     #[returns(ref)]
     pub pages: AlphaPages,
+    #[returns(copy)]
+    pub source_stamp: [u8; 16],
+    #[returns(copy)]
+    pub config_stamp: [u8; 16],
+}
+
+/// A stale upstream α export is an error, not an unchanged interface.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ResidentSummaryError {
+    /// The source or tsconfig changed since the α pages were published.
+    StaleAlpha,
+    /// The published α pages were not a valid P5-2 interface.
+    InvalidAlpha(SummaryError),
+}
+
+fn stamp(domain: &[u8], text: &str) -> [u8; 16] {
+    let mut hasher = StableHasher128::new();
+    hasher.update(domain);
+    hasher.update(&(text.len() as u64).to_le_bytes());
+    hasher.update(text.as_bytes());
+    hasher.digest()
+}
+
+fn source_stamp(text: &str) -> [u8; 16] {
+    stamp(b"vize.resident.alpha.source\0", text)
+}
+
+fn config_stamp(text: &str) -> [u8; 16] {
+    stamp(b"vize.resident.alpha.config\0", text)
 }
 
 /// A declaration identity shared by users. Salsa reclaims interned names
@@ -91,10 +121,15 @@ pub struct DeclarationName<'db> {
 pub fn sfc_summary(
     db: &dyn salsa::Database,
     input: SummaryInput,
-) -> Result<SfcSummary, SummaryError> {
-    let _source_revision = input.file(db).text(db);
-    let _tsconfig = TsConfig::get(db).text(db);
-    SfcSummary::from_alpha(input.pages(db).clone())
+) -> Result<SfcSummary, ResidentSummaryError> {
+    let source = input.file(db).text(db);
+    let config = TsConfig::get(db).text(db);
+    if source_stamp(source) != input.source_stamp(db)
+        || config_stamp(config) != input.config_stamp(db)
+    {
+        return Err(ResidentSummaryError::StaleAlpha);
+    }
+    SfcSummary::from_alpha(input.pages(db).clone()).map_err(ResidentSummaryError::InvalidAlpha)
 }
 
 /// The exact declaration a dependent used. A sibling declaration can
@@ -115,17 +150,43 @@ pub fn declaration_fingerprint<'db>(
 impl ResidentDatabase {
     /// Register the α pages produced for a resident file.
     pub fn publish_alpha(&self, file: SourceFile, pages: AlphaPages) -> SummaryInput {
-        SummaryInput::builder(file, pages)
+        let source_stamp = source_stamp(file.text(self));
+        let config_stamp = config_stamp(TsConfig::get(self).text(self));
+        SummaryInput::builder(file, pages, source_stamp, config_stamp)
             .durability(Durability::LOW)
             .new(self)
     }
 
     /// Replace the α pages in the same revision as the corresponding edit.
     pub fn revise_alpha(&mut self, input: SummaryInput, pages: AlphaPages) {
+        let source_stamp = source_stamp(input.file(self).text(self));
+        let config_stamp = config_stamp(TsConfig::get(self).text(self));
         input
             .set_pages(self)
             .with_durability(Durability::LOW)
             .to(pages);
+        input
+            .set_source_stamp(self)
+            .with_durability(Durability::LOW)
+            .to(source_stamp);
+        input
+            .set_config_stamp(self)
+            .with_durability(Durability::LOW)
+            .to(config_stamp);
+    }
+
+    /// Replace a buffer and its freshly exported α pages before any query
+    /// can observe the new revision. A caller with no new pages gets
+    /// `StaleAlpha` rather than an old declaration fingerprint.
+    pub fn edit_with_alpha(
+        &mut self,
+        file: SourceFile,
+        input: SummaryInput,
+        text: &str,
+        pages: AlphaPages,
+    ) {
+        self.edit(file, text);
+        self.revise_alpha(input, pages);
     }
 
     /// Change the high-durability TypeScript project configuration.
