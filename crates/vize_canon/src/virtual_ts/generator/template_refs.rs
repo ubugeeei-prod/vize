@@ -98,21 +98,22 @@ impl TemplateRefUnwraps {
             .map(|name| name.as_str())
             .collect();
 
-        let mut setup_bindings: Vec<String> = summary
-            .bindings
-            .bindings
-            .iter()
-            .filter(|(name, _)| {
-                template_referenced_names
-                    .is_none_or(|referenced| referenced.contains(name.as_str()))
-            })
-            .filter(|(name, _)| !options_api_setup_binding_names.contains(name.as_str()))
-            .filter(|(name, binding_type)| {
-                summary.reactivity.needs_value_access(name.as_str())
-                    || matches!(binding_type, BindingType::SetupMaybeRef)
-            })
-            .map(|(name, _)| String::from(name.as_str()))
-            .collect();
+        let mut setup_bindings: Vec<String> =
+            crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+                bindings
+                    .typed()
+                    .filter(|(name, _)| {
+                        template_referenced_names
+                            .is_none_or(|referenced| referenced.contains(*name))
+                    })
+                    .filter(|(name, _)| !options_api_setup_binding_names.contains(name))
+                    .filter(|(name, binding_type)| {
+                        summary.reactivity.needs_value_access(name)
+                            || matches!(binding_type, BindingType::SetupMaybeRef)
+                    })
+                    .map(|(name, _)| String::from(name))
+                    .collect()
+            });
         setup_bindings.sort_unstable();
         let auto_import_bindings = template_referenced_names
             .map(|referenced| {

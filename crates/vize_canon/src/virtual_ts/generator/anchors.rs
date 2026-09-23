@@ -34,10 +34,8 @@ pub(super) fn emit_props_shadow_anchor(
     summary: &Croquis,
     template_referenced_names: &FxHashSet<String>,
 ) {
-    if summary
-        .bindings
-        .bindings
-        .get("props")
+    if crate::virtual_ts::script_facts::binding_type(summary, "props")
+        .as_ref()
         .is_some_and(is_setup_variable)
         && template_referenced_names.contains("props")
     {
@@ -68,7 +66,7 @@ pub(super) fn emit_setup_binding_anchors(
     template_referenced_names: Option<&FxHashSet<String>>,
     comment: &str,
 ) {
-    if summary.bindings.bindings.is_empty() {
+    if !crate::virtual_ts::script_facts::has_typed_bindings(summary) {
         return;
     }
 
@@ -80,7 +78,7 @@ pub(super) fn emit_setup_binding_anchors(
     );
     let mut first = true;
     for name in binding_names {
-        if is_reserved_anchor_name(name) {
+        if is_reserved_anchor_name(&name) {
             continue;
         }
         if first {

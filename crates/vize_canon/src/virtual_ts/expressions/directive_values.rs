@@ -5,9 +5,9 @@
 //! relationships. Only authored value ranges participate in diagnostics.
 
 use super::super::types::VizeMapping;
+use crate::virtual_ts::script_facts::ScriptBindings;
 use vize_carton::{CompactString, FxHashMap, String, append, camelize, capitalize};
 use vize_croquis::TemplateExpression;
-use vize_croquis::croquis::BindingMetadata;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
@@ -35,7 +35,7 @@ pub(crate) struct DirectiveValueBinding {
 
 pub(crate) fn collect_directive_value_bindings(
     root: Option<&RootNode<'_>>,
-    bindings: &BindingMetadata,
+    bindings: ScriptBindings<'_>,
     (has_default_alias, vapor): (bool, bool),
     enabled: bool,
 ) -> DirectiveValueBindings {
@@ -55,7 +55,7 @@ pub(crate) fn collect_directive_value_bindings(
 
 fn collect_child_bindings(
     child: &TemplateChildNode<'_>,
-    bindings: &BindingMetadata,
+    bindings: ScriptBindings<'_>,
     collected: &mut DirectiveValueBindings,
 ) {
     match child {
@@ -85,7 +85,7 @@ fn collect_child_bindings(
 
 fn collect_element_bindings(
     element: &ElementNode<'_>,
-    bindings: &BindingMetadata,
+    bindings: ScriptBindings<'_>,
     collected: &mut DirectiveValueBindings,
 ) {
     for prop in &element.props {
@@ -103,14 +103,14 @@ fn collect_element_bindings(
 
 fn directive_value_binding(
     directive: &DirectiveNode<'_>,
-    bindings: &BindingMetadata,
+    bindings: ScriptBindings<'_>,
 ) -> Option<((u32, u32), DirectiveValueBinding)> {
     if vize_carton::is_builtin_directive(directive.name) {
         return None;
     }
     let expression = directive.exp.as_ref()?;
     let variable = directive_binding_name(directive.name);
-    let in_setup = bindings.bindings.contains_key(variable.as_str());
+    let in_setup = bindings.contains_binding(variable.as_str());
     let arg = match directive.arg.as_ref() {
         Some(ExpressionNode::Simple(arg)) if arg.is_static => Some((
             CompactString::new(arg.content),

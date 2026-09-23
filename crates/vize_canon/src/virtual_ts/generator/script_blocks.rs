@@ -56,11 +56,15 @@ impl ScriptBlockScopes {
                 scopes.classic_names.insert(export.name.clone());
             }
         }
-        for (name, (start, _)) in &summary.binding_spans {
-            if scopes.owns(*start) && declares_a_type(script, *start) {
-                scopes.classic_names.insert(name.clone());
+        crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+            for (name, (start, _)) in bindings.spans() {
+                if scopes.owns(start) && declares_a_type(script, start) {
+                    scopes
+                        .classic_names
+                        .insert(vize_carton::CompactString::new(name));
+                }
             }
-        }
+        });
         scopes
     }
 

@@ -32,27 +32,28 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
         .iter()
         .map(|global| global.name.as_str())
         .collect();
-    let mut names: Vec<(&str, bool)> = summary
-        .bindings
-        .bindings
-        .iter()
-        .filter_map(|(name, binding_type)| {
-            let name = name.as_str();
-            match binding_type {
-                BindingType::Data => Some((name, true)),
-                BindingType::Options | BindingType::VueGlobal => Some((name, false)),
-                BindingType::Props
-                    if !summary.bindings.is_script_setup && !macro_prop_names.contains(name) =>
-                {
-                    Some((name, false))
-                }
-                _ => None,
-            }
-        })
-        .filter(|(name, _)| !configured_globals.contains(name))
-        .filter(|(name, _)| is_safe_value_identifier(name))
-        .collect();
-    names.sort_unstable_by_key(|(name, _)| *name);
+    let mut names: Vec<(String, bool)> =
+        crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+            let script_setup = bindings.is_script_setup();
+            bindings
+                .typed()
+                .filter_map(|(name, binding_type)| {
+                    let mutable = match binding_type {
+                        BindingType::Data => true,
+                        BindingType::Options | BindingType::VueGlobal => false,
+                        BindingType::Props if !script_setup && !macro_prop_names.contains(name) => {
+                            false
+                        }
+                        _ => return None,
+                    };
+                    if configured_globals.contains(name) || !is_safe_value_identifier(name) {
+                        return None;
+                    }
+                    Some((String::from(name), mutable))
+                })
+                .collect()
+        });
+    names.sort_by(|left, right| left.0.cmp(&right.0));
     names.dedup_by(|left, right| left.0 == right.0);
     let inherited_unknown_names =
         unresolved_extends_template_names(summary, &configured_globals, script);
@@ -88,10 +89,12 @@ pub(in crate::virtual_ts::generator) fn generate_options_api_variables(
             );
             start
         };
-        let Some(&(start, end)) = summary.binding_spans.get(*name) else {
+        let Some((start, end)) = crate::virtual_ts::script_facts::binding_span(summary, name)
+        else {
             continue;
         };
-        if script.and_then(|script| script.get(start as usize..end as usize)) != Some(*name) {
+        if script.and_then(|script| script.get(start as usize..end as usize)) != Some(name.as_ref())
+        {
             continue;
         }
         let original = offset(start as usize)..offset(end as usize);

@@ -42,7 +42,7 @@ pub(crate) fn resolved_component_binding_reference(
     // Ambient `external_template_bindings` must not beat a type-only import of
     // the same name: `import type { ElBadge }` still uses `__VizeComponent_*`.
     for candidate in [pascal_name.as_str(), camel_name.as_str(), template_name] {
-        if let Some(binding_type) = summary.bindings.get(candidate)
+        if let Some(binding_type) = super::script_facts::binding_type(summary, candidate)
             && !contains_compact_name(syntactic_type_only_imported_names, candidate)
         {
             return Some(component_binding_reference_for_summary_binding(

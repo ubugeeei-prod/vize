@@ -94,7 +94,7 @@ fn slots_type_ref(summary: &Croquis) -> String {
     let Some(define_slots) = summary.macros.define_slots() else {
         return String::from("__VizeSlots");
     };
-    if summary.bindings.bindings.contains_key("slots") {
+    if super::super::script_facts::contains_binding(summary, "slots") {
         return String::from("typeof slots");
     }
     let Some(generic_decl) = sfc_generic_param(summary) else {

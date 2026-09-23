@@ -33,6 +33,7 @@ mod props;
 #[cfg(test)]
 mod public_instance_guard_tests;
 mod scope;
+mod script_facts;
 mod semantic_links;
 #[cfg(test)]
 mod strict_template_global_enum_tests;

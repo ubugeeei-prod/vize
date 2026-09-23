@@ -23,7 +23,7 @@ use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
 
-use vize_croquis::{BindingMetadata, Croquis, ScopeData, analyzer::extract_identifier_refs_oxc};
+use vize_croquis::{Croquis, ScopeData, analyzer::extract_identifier_refs_oxc};
 
 use crate::virtual_ts::helpers::is_vue2_instance_member;
 use crate::virtual_ts::props::TemplatePropsModel;
@@ -51,7 +51,8 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
         scope_options,
         scope_options.setup_spread_bindings,
     );
-    for undef in &summary.undefined_refs {
+    let undefined_refs = crate::virtual_ts::script_facts::undefined_refs(summary);
+    for undef in &undefined_refs {
         let src_start = (template_offset + undef.offset) as usize;
         let src_end = src_start + undef.name.len();
         emitter.emit(undef.name.as_str(), src_start, src_end);
@@ -137,7 +138,7 @@ struct InstanceGlobalRefsEmitter<'a> {
     summary: &'a Croquis,
     scope_options: &'a ScopeGenerationOptions<'a, 'a>,
     options: &'a VirtualTsOptions,
-    bindings: &'a BindingMetadata,
+    script_bindings: FxHashSet<String>,
     synthetic_setup_bindings: FxHashSet<&'a str>,
     type_export_names: FxHashSet<&'a str>,
     seen_names: FxHashSet<String>,
@@ -166,7 +167,12 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             summary,
             scope_options,
             options: scope_options.virtual_ts_options,
-            bindings: &summary.bindings,
+            script_bindings: crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+                bindings
+                    .typed()
+                    .map(|(name, _)| String::from(name))
+                    .collect()
+            }),
             synthetic_setup_bindings: synthetic_setup_bindings
                 .iter()
                 .map(|name| name.as_str())
@@ -192,7 +198,7 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
 
     fn emit(&mut self, name: &str, src_start: usize, src_end: usize) {
         if !is_template_instance_global_name(name)
-            || self.bindings.contains(name)
+            || self.script_bindings.contains(name)
             || self.synthetic_setup_bindings.contains(name)
             || self.type_export_names.contains(name)
             || is_declared_template_context_name(name, self.options)

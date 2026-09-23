@@ -21,7 +21,7 @@ pub(super) fn collect_keyed_template_prop_names(
     emitted_names: &FxHashSet<String>,
 ) -> Vec<String> {
     let mut names = FxHashSet::default();
-    for undef in &summary.undefined_refs {
+    for undef in &crate::virtual_ts::script_facts::undefined_refs(summary) {
         let name = undef.name.as_str();
         if emitted_names.contains(name)
             || should_skip_template_prop_binding(summary, name)

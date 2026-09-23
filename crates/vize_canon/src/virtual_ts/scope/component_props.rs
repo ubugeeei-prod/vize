@@ -270,7 +270,7 @@ pub(super) fn component_usage_has_checkable_binding(
     legacy_vue2: bool,
 ) -> bool {
     let name = usage.name.as_str();
-    summary.bindings.bindings.contains_key(name)
+    super::super::script_facts::contains_binding(summary, name)
         || (!legacy_vue2
             && (component_name_matches_external_template_binding(name, external_template_bindings)
                 || component_binding_check.allows(name)

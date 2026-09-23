@@ -34,12 +34,11 @@ fn unresolved_extends_template_names(
         .iter()
         .map(|component| component.as_str())
         .collect();
-    let mut names = summary
-        .undefined_refs
+    let mut names = crate::virtual_ts::script_facts::undefined_refs(summary)
         .iter()
         .filter_map(|reference| {
             let name = reference.name.as_str();
-            if summary.bindings.bindings.contains_key(name)
+            if crate::virtual_ts::script_facts::contains_binding(summary, name)
                 || configured_globals.contains(name)
                 || type_export_names.contains(name)
                 || used_components.contains(name)
@@ -151,7 +150,7 @@ fn collect_unresolved_extends_expression_names(
 ) {
     for identifier in vize_croquis::drawer::extract_identifiers_oxc(expression) {
         let name = identifier.as_str();
-        if summary.bindings.bindings.contains_key(name)
+        if crate::virtual_ts::script_facts::contains_binding(summary, name)
             || configured_globals.contains(name)
             || type_export_names.contains(name)
             || used_components.contains(name)

@@ -57,7 +57,7 @@ fn emit_options_api_bridge(
 ) {
     // Matches the gate in `generate_options_api_variables`: the typed-instance
     // bridge is only meaningful for non-`<script setup>` components.
-    if summary.bindings.is_script_setup {
+    if crate::virtual_ts::script_facts::is_script_setup(summary) {
         return;
     }
 
@@ -68,20 +68,18 @@ fn emit_options_api_bridge(
         return;
     }
 
-    let mut names: Vec<&str> = summary
-        .bindings
-        .bindings
-        .iter()
-        .filter_map(|(name, binding_type)| {
-            let name = name.as_str();
-            match binding_type {
-                BindingType::Data | BindingType::Options | BindingType::Props => {
-                    is_safe_value_identifier(name).then_some(name)
-                }
-                _ => None,
-            }
-        })
-        .collect();
+    let mut names: Vec<String> =
+        crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+            bindings
+                .typed()
+                .filter_map(|(name, binding_type)| match binding_type {
+                    BindingType::Data | BindingType::Options | BindingType::Props => {
+                        is_safe_value_identifier(name).then(|| String::from(name))
+                    }
+                    _ => None,
+                })
+                .collect()
+        });
     extend_options_api_descriptor_names(&mut names, summary);
     names.sort_unstable();
     names.dedup();

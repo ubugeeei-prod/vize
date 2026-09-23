@@ -21,16 +21,17 @@ impl TemplateBindingAccess {
     pub(crate) fn collect(summary: &Croquis, options_api: bool) -> Self {
         let mut result = Self::from_props(collect_template_prop_names(summary));
         if options_api {
-            for (name, binding) in &summary.bindings.bindings {
-                if (matches!(binding, BindingType::Data | BindingType::Options)
-                    || (*binding == BindingType::Props && !summary.bindings.is_script_setup))
-                    && is_reserved_identifier(name)
-                {
-                    result
-                        .0
-                        .insert(name.as_str().into(), Receiver::OptionsInstance);
+            super::script_facts::with_bindings(summary, |bindings| {
+                let script_setup = bindings.is_script_setup();
+                for (name, binding) in bindings.typed() {
+                    if (matches!(binding, BindingType::Data | BindingType::Options)
+                        || (binding == BindingType::Props && !script_setup))
+                        && is_reserved_identifier(name)
+                    {
+                        result.0.insert(name.into(), Receiver::OptionsInstance);
+                    }
                 }
-            }
+            });
         }
         result
     }

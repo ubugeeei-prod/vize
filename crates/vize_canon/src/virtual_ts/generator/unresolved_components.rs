@@ -34,7 +34,7 @@ pub(super) fn emit_unresolved_components(
         let name = component.as_str();
         // A dynamic `:is` alias is declared by the template scope itself.
         if vize_croquis::drawer::is_dynamic_component_alias(name)
-            || (summary.bindings.bindings.contains_key(name)
+            || (crate::virtual_ts::script_facts::contains_binding(summary, name)
                 && !contains_compact_name(syntactic_type_only_imported_names, name))
             || component_name_matches_external_template_binding(name, &external_template_bindings)
             || global_components.keeps_unresolved_binding(name)

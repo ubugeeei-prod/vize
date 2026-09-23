@@ -58,7 +58,7 @@ pub(super) fn collect_deferred_setup_bindings(
     // A plain `<script>` reaches the template through the component instance,
     // and the Options API through the `__VizeOptionsSetupBinding` type query,
     // which never runs control-flow analysis to begin with.
-    if !summary.bindings.is_script_setup {
+    if !crate::virtual_ts::script_facts::is_script_setup(summary) {
         return Vec::new();
     }
     let (Some(script), Some(referenced)) = (script_content, template_referenced_names) else {
@@ -68,7 +68,10 @@ pub(super) fn collect_deferred_setup_bindings(
     let mut names: Vec<String> = collect_uninitialized_bindings(script)
         .into_iter()
         .filter(|name| referenced.contains(name.as_str()))
-        .filter(|name| summary.bindings.get(name.as_str()) == Some(BindingType::SetupLet))
+        .filter(|name| {
+            crate::virtual_ts::script_facts::binding_type(summary, name.as_str())
+                == Some(BindingType::SetupLet)
+        })
         .filter(|name| !already_shadowed(name.as_str()))
         .collect();
     names.sort_unstable();

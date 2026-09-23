@@ -48,7 +48,7 @@ fn emit_stubs(
         let name = extract_declared_name(stub);
         if let Some(name) = name {
             // Skip if already imported or declared in script bindings
-            if (summary.bindings.bindings.contains_key(name)
+            if (crate::virtual_ts::script_facts::contains_binding(summary, name)
                 && !contains_compact_name(syntactic_type_only_imported_names, name))
                 || (imported_names.contains(&name)
                     && !contains_compact_name(syntactic_type_only_imported_names, name))

@@ -18,10 +18,7 @@ pub(super) fn follows_default_keyword(rest: &str) -> bool {
         .is_none_or(|ch| ch != '\\' && !is_identifier_part(ch))
 }
 
-pub(super) fn extend_options_api_descriptor_names<'a>(
-    names: &mut Vec<&'a str>,
-    summary: &'a Croquis,
-) {
+pub(super) fn extend_options_api_descriptor_names(names: &mut Vec<String>, summary: &Croquis) {
     let Some(descriptor) = summary.options_descriptor.as_ref() else {
         return;
     };
@@ -37,6 +34,7 @@ pub(super) fn extend_options_api_descriptor_names<'a>(
         )
         .then_some(member.name.as_str())
         .filter(|name| is_safe_value_identifier(name))
+        .map(|name| String::from(name))
     }));
 }
 

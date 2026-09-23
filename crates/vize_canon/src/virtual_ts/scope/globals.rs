@@ -48,7 +48,8 @@ pub(super) fn generate_undefined_refs(
     template_offset: u32,
     options: &ScopeGenerationOptions<'_, '_>,
 ) {
-    if summary.undefined_refs.is_empty()
+    let undefined_refs = super::super::script_facts::undefined_refs(summary);
+    if undefined_refs.is_empty()
         && (!options.virtual_ts_options.strict_instance_globals
             || summary.template_expressions.is_empty())
     {
@@ -89,7 +90,7 @@ pub(super) fn generate_undefined_refs(
     let mut emitted_instance = false;
     let authored_ranges = authored_ranges::collect(mappings);
     let interpolations = authored_ranges::interpolations(summary, template_offset);
-    for undef in &summary.undefined_refs {
+    for undef in &undefined_refs {
         let name = undef.name.as_str();
         if !is_strict_template_context_candidate(name) {
             continue;

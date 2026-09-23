@@ -26,7 +26,7 @@ pub(super) fn generate_inferred_emit_args(
     ts: &mut String,
     ctx: &EmitInferenceContext<'_>,
 ) -> Option<String> {
-    ctx.summary.binding_spans.get(ctx.component_ref)?;
+    super::super::super::script_facts::binding_span(ctx.summary, ctx.component_ref)?;
     let (usage_idx, usage) =
         find_component_usage_for_event(ctx.summary, ctx.component_name, ctx.data, ctx.scope)?;
     if !usage.props.iter().any(|prop| {

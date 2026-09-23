@@ -112,12 +112,12 @@ fn collect_type_only_imported_names(
         .collect()
 }
 
-pub(super) fn collect_setup_binding_anchor_names<'a>(
-    summary: &'a Croquis,
+pub(super) fn collect_setup_binding_anchor_names(
+    summary: &Croquis,
     script_content: Option<&str>,
     usage: &IdentifierUsage,
     template_referenced_names: Option<&FxHashSet<String>>,
-) -> Vec<&'a str> {
+) -> Vec<String> {
     let type_only_imported_names = collect_type_only_imported_names(summary, script_content, usage);
     let mut template_value_names: FxHashSet<&str> = summary
         .used_components
@@ -128,25 +128,20 @@ pub(super) fn collect_setup_binding_anchor_names<'a>(
         template_value_names.extend(names.iter().map(|name| name.as_str()));
     }
 
-    let mut binding_names: Vec<&str> = if let Some(names) = template_referenced_names {
-        summary
-            .bindings
-            .bindings
-            .keys()
-            .map(|name| name.as_str())
-            .filter(|name| names.contains(*name))
-            .collect()
-    } else {
-        summary
-            .bindings
-            .bindings
-            .keys()
-            .map(|name| name.as_str())
-            .collect()
-    };
+    let mut binding_names: Vec<String> =
+        crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+            bindings
+                .typed()
+                .map(|(name, _)| String::from(name))
+                .filter(|name| {
+                    template_referenced_names.is_none_or(|names| names.contains(name.as_str()))
+                })
+                .collect()
+        });
     binding_names.retain(|name| {
-        !usage.const_enums.contains(*name)
-            && (!type_only_imported_names.contains(*name) || template_value_names.contains(name))
+        !usage.const_enums.contains(name.as_str())
+            && (!type_only_imported_names.contains(name.as_str())
+                || template_value_names.contains(name.as_str()))
     });
     binding_names.sort_unstable();
     binding_names
@@ -165,7 +160,7 @@ fn collect_value_import_binding_names(summary: &Croquis, script: &str) -> FxHash
                 .map(CompactString::new)
                 .collect::<Vec<_>>()
         })
-        .filter(|name| summary.bindings.bindings.contains_key(name))
+        .filter(|name| crate::virtual_ts::script_facts::contains_binding(summary, name))
         .collect()
 }
 

@@ -96,7 +96,7 @@ fn shadowed_helpers(summary: &Croquis, source: Option<&str>) -> SetupHelperPlan 
     };
     if !SETUP_MACRO_HELPERS
         .iter()
-        .any(|helper| summary.bindings.bindings.contains_key(helper.name))
+        .any(|helper| crate::virtual_ts::script_facts::contains_binding(summary, helper.name))
         && summary.macros.define_props().is_none()
         && summary.macros.define_emits().is_none()
     {

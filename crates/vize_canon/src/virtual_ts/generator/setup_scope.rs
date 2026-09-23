@@ -5,11 +5,11 @@ use vize_croquis::Croquis;
 use crate::virtual_ts::type_dependencies;
 
 fn binding_is_import(summary: &Croquis, name: &str) -> bool {
-    summary.binding_spans.get(name).is_some_and(|(start, end)| {
+    super::super::script_facts::binding_span(summary, name).is_some_and(|(start, end)| {
         summary
             .import_statements
             .iter()
-            .any(|import| *start >= import.start && *end <= import.end)
+            .any(|import| start >= import.start && end <= import.end)
     })
 }
 
@@ -49,7 +49,7 @@ pub(super) fn macro_type_requires_setup_scope(summary: &Croquis, type_args: &str
         {
             return !export.hoisted;
         }
-        summary.bindings.bindings.contains_key(name)
+        super::super::script_facts::contains_binding(summary, name)
             || summary.types.definitions().interfaces.contains_key(name)
             || summary.types.definitions().type_aliases.contains_key(name)
     })

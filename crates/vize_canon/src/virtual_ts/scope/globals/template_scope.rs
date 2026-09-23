@@ -36,7 +36,7 @@ pub(super) fn is_visible_template_binding(
     name: &str,
     template_offset: u32,
 ) -> bool {
-    summary.bindings.contains(name)
+    super::super::super::script_facts::contains_binding(summary, name)
         || binds_in_enclosing_template_scope(summary, name, template_offset)
 }
 

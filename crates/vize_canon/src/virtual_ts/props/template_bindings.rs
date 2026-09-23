@@ -8,9 +8,7 @@ use super::mappings::PropBindingMappings;
 #[inline]
 pub(super) fn should_skip_template_prop_binding(summary: &Croquis, prop_name: &str) -> bool {
     is_define_props_destructure_local(summary.macros.props_destructure(), prop_name)
-        || summary
-            .bindings
-            .get(prop_name)
+        || super::super::script_facts::binding_type(summary, prop_name)
             .is_some_and(|binding_type| !matches!(binding_type, BindingType::Props))
 }
 

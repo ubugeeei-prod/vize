@@ -136,7 +136,7 @@ impl<'a> GlobalComponentPlan<'a> {
             let pascal_name = capitalize(camel_name.as_str());
             let candidates = [name, camel_name.as_str(), pascal_name.as_str()];
             if candidates.iter().any(|candidate| {
-                (summary.bindings.bindings.contains_key(*candidate)
+                (crate::virtual_ts::script_facts::contains_binding(summary, candidate)
                     && !contains_compact_name(syntactic_type_only_imported_names, candidate))
                     || (imported_names.contains(candidate)
                         && !contains_compact_name(syntactic_type_only_imported_names, candidate))
