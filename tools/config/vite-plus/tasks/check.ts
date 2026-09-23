@@ -34,7 +34,10 @@ const ciPackageCheckCommand = [
 ].join(" && ");
 const localLintCommand = runTask("check");
 const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckPackages);
-const rustClippyCommand = "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports";
+const rustClippyCommand = [
+  "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports",
+  rustTool("ci/check-workspace-lints", "--check"),
+].join(" && ");
 const strictRepoCheckCommand = rustTool("ci/check-warning-budget", "--", localVp, "check");
 const ciVizeAppCheckCommand = [
   runInDirectory(

@@ -112,13 +112,30 @@ In test code, reach for the real replacement before an allow:
 - A `lsp_types` field you cannot retype: build the value with `cstr!` and `.into()` it at the
   boundary, or let inference name the type instead of writing `String` out.
 
+### Workspace lint contract
+
+`[workspace.lints]` in the root `Cargo.toml` is the shared contract every crate joins with
+`[lints] workspace = true`. `tools/commands/ci/check-workspace-lints.rs --check` runs in CI and keeps
+the list of crates that have not joined yet from growing back.
+
+- **Panic-free shipped code.** Library and binary targets must not abort on any input, so
+  `unwrap`, `expect`, `panic!`, `unreachable!`, `todo!`, `unimplemented!`, `[]` indexing and
+  slicing, and `&str[..]` slicing are denied. Express the invariant by construction (iterators,
+  `match`/`let … else`, `get`, `split_at_checked`, `strip_prefix`, `char_indices`), propagate with
+  `?`, or degrade gracefully (skip the node, keep the input unchanged, emit a diagnostic). Do not
+  suppress these lints in shipped code. Test code is exempt through `clippy.toml`.
+- **Reasoned suppressions.** Use `#[expect(lint, reason = "…")]` instead of `#[allow]`: a stale
+  expectation fails the build, and each one records why it exists. When a lint only fires under
+  some `cfg`, gate the expectation with `cfg_attr`.
+
 ### Snapshot assertions in test targets
 
 `insta::assert_snapshot!` and `insta::assert_debug_snapshot!` expand through `std::format!` inside
 the `insta` crate, so no call-site rewrite can avoid the disallowed macro. Those assertions are the
-one sanctioned exception. Put `#[allow(clippy::disallowed_macros)]` on the `#[cfg(test)] mod …` item
-that hosts the snapshot assertions — never at the crate root, never on the lint globally, and never
-on a module that also contains production code — and leave a comment pointing back to this section.
+one sanctioned exception. Put `#[expect(clippy::disallowed_macros, reason = "…")]` on the
+`#[cfg(test)] mod …` item that hosts the snapshot assertions — never at the crate root, never on the
+lint globally, and never on a module that also contains production code — and point the reason
+back to this section.
 When the test module is inline inside an over-budget file, split it out to the ordinary module path
 next to its parent (for example, `feature/tests.rs` for `mod tests;`). Keep the corresponding
 `snapshots/` directory beside that module so `insta` still resolves the recorded snapshots. Do not

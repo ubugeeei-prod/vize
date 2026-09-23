@@ -220,6 +220,35 @@ corsa = { package = "corsa", version = "=1.14.0" }
 corsa_lsp = { package = "corsa_lsp", version = "=1.14.0" }
 corsa_runtime = { package = "corsa_runtime", version = "=1.14.0" }
 
+# Shared lint contract. A member opts in with `[lints] workspace = true` once it
+# is clean; `tools/commands/ci/check-workspace-lints.rs` tracks who is left.
+#
+# Panic-free: shipped code (lib + bin targets) must not abort on any input, so
+# every explicit and implicit panic path is denied. Test code is exempt through
+# the `allow-*-in-tests` keys in `clippy.toml`. There is no escape hatch: an
+# invariant that "cannot fail" is expressed by construction (iterators, pattern
+# matching, `get`, `split_at_checked`, ...) or degrades gracefully.
+#
+# Hygiene: suppressions must be `#[expect(lint, reason = "...")]` so a stale
+# one fails the build and every one says why it exists.
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage)'] }
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+unreachable = "deny"
+todo = "deny"
+unimplemented = "deny"
+indexing_slicing = "deny"
+string_slice = "deny"
+get_unwrap = "deny"
+panic_in_result_fn = "deny"
+allow_attributes = "deny"
+allow_attributes_without_reason = "deny"
+wildcard_imports = "deny"
+
 [profile.release]
 # Release artifacts are benchmarked and shipped from this profile. Fat LTO plus
 # one codegen unit slows local release builds, but it lets LLVM optimize across

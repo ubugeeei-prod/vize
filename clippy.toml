@@ -29,3 +29,11 @@ await-holding-invalid-types = [
   { path = "dashmap::mapref::one::RefMut", reason = "Use an owned snapshot; a live shard guard across an await hangs the LSP" },
   { path = "dashmap::mapref::multiple::RefMulti", reason = "Collect the iteration before awaiting; a live shard guard across an await hangs the LSP" },
 ]
+
+# The workspace lint contract (`[workspace.lints.clippy]` in Cargo.toml) denies
+# every panic path in shipped code. Tests assert by panicking, so `#[test]`
+# functions and `#[cfg(test)]` modules keep the ergonomic forms.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests = true
+allow-indexing-slicing-in-tests = true
