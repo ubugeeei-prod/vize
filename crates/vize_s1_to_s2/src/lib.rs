@@ -78,8 +78,8 @@ pub use emit::{
     BindingKind, BindingTable, DomEmit, DomEmitBudget, DomEmitMode, DomEmitOptions,
     DomEmitSections, EmitError, ObservedDomEmit, TransformContent, TransformExpressions,
     TransformRefusal, TransformScopeMark, TransformedExpr, UnsupportedReason, UnsupportedRefusal,
-    decode_template_entities, emit_dom, emit_dom_source, emit_dom_source_observed,
-    emit_dom_source_observed_with_options, emit_dom_source_with_caps,
+    decode_ssr_static_text, decode_template_entities, emit_dom, emit_dom_source,
+    emit_dom_source_observed, emit_dom_source_observed_with_options, emit_dom_source_with_caps,
     emit_dom_source_with_caps_observed, emit_dom_source_with_options, emit_dom_with_options,
 };
 #[cfg(any(test, feature = "davinci-differential"))]

@@ -47,7 +47,7 @@ fn corpus_files(root: &Path) -> Vec<String> {
                 .and_then(|name| name.to_str())
                 .unwrap_or("");
             if path.is_dir() {
-                if name != "_git" && name != "node_modules" {
+                if name != "_git" && name != "_git-worktrees" && name != "node_modules" {
                     walk(&path, root, out);
                 }
             } else if name.ends_with(".vue") {

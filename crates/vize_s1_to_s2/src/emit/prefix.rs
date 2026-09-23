@@ -22,6 +22,8 @@ mod params;
 mod rewrite;
 mod scope;
 mod shape;
+#[cfg(test)]
+mod shorthand_scope;
 mod slot_defaults;
 mod splice;
 mod strip;

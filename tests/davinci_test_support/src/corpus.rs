@@ -140,7 +140,11 @@ pub fn collect_vue_files(root: &Path, out: &mut Vec<PathBuf>) {
     children.sort();
     for child in children {
         if child.is_dir() {
-            if child.file_name().is_some_and(|name| name == "node_modules") {
+            // `_git-worktrees` is a gitignored local checkout, not project code.
+            if child
+                .file_name()
+                .is_some_and(|name| name == "node_modules" || name == "_git-worktrees")
+            {
                 continue;
             }
             collect_vue_files(&child, out);

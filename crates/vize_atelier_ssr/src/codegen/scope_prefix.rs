@@ -58,8 +58,14 @@ pub(crate) fn strip_scope_prefixes_for_scoped_params(
             continue;
         }
 
-        result.push(bytes[index] as char);
-        index += 1;
+        // Copy a scalar, not a byte. A multibyte character such as `、`
+        // would otherwise become one Latin-1 scalar per UTF-8 byte.
+        let character = content[index..]
+            .chars()
+            .next()
+            .expect("valid UTF-8 boundary");
+        result.push(character);
+        index += character.len_utf8();
     }
 
     result

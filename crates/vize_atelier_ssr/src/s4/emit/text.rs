@@ -6,7 +6,7 @@ use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
 use vize_s0::Span;
 use vize_s1_to_s2::lower::{TextPart, TextParts, rebuild_source};
-use vize_s1_to_s2::{TransformContent, decode_template_entities};
+use vize_s1_to_s2::{TransformContent, decode_ssr_static_text};
 use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op as s2;
 
@@ -22,7 +22,7 @@ use crate::s4::{AdmissionFailure, LegacyReason};
 /// condenses the raw text; an entity that decodes to whitespace would make
 /// the two disagree, so that text keeps the legacy lane.
 pub(super) fn emit_text(ctx: &mut SsrCodegenContext<'_>, content: &str, start: u32) -> Result<()> {
-    let decoded = decode_template_entities(content);
+    let decoded = decode_ssr_static_text(content);
     admit_decoded(content, &decoded)?;
     // Anchored at the authored text, as the AST walker anchors a text node.
     ctx.push_string_part_static_mapped(&escape_html(&decoded), start);

@@ -4,7 +4,7 @@
 
 use vize_atelier_core::RuntimeHelper;
 use vize_s0::{String, ToCompactString, cstr};
-use vize_s1_to_s2::{TransformContent, decode_template_entities};
+use vize_s1_to_s2::{TransformContent, decode_ssr_static_text};
 use vize_s2::op as s2;
 
 use super::slots::Ranges;
@@ -130,7 +130,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// `_createTextVNode("...")`; empty text renders nothing.
     fn vnode_text(&mut self, content: &str) -> Result<Option<String>> {
-        let decoded = decode_template_entities(content);
+        let decoded = decode_ssr_static_text(content);
         text::admit_decoded(content, &decoded)?;
         if decoded.is_empty() {
             return Ok(None);
@@ -165,7 +165,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 let segment = self.segments[*only];
                 self.pos += 1;
                 let content = plan_source(&segment, SsrStringPayloadKind::Text)?;
-                let decoded = decode_template_entities(content);
+                let decoded = decode_ssr_static_text(content);
                 text::admit_decoded(content, &decoded)?;
                 quoted_js_string(&decoded)
             }

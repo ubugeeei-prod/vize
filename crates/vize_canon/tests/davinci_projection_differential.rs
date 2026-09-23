@@ -174,7 +174,12 @@ fn collect_vue(dir: &Path, out: &mut Vec<PathBuf>) {
                 .file_name()
                 .and_then(|name| name.to_str())
                 .unwrap_or("");
-            if name == "node_modules" || name == "_git" || name == "target" {
+            // `_git-worktrees` is a gitignored local checkout, not the committed corpus.
+            if name == "node_modules"
+                || name == "_git"
+                || name == "_git-worktrees"
+                || name == "target"
+            {
                 continue;
             }
             collect_vue(&path, out);

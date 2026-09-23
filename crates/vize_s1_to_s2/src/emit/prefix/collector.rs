@@ -233,10 +233,15 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
             && let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
             let name = ident.name.as_str();
-            if self.is_local(name) || is_global_allowed(name) || is_generated_filter_helper(name) {
-                return;
-            }
-            if self.scope.is_in_transform_scope(name) {
+            // Destructured `v-for` / slot aliases live in `slot_params`, not
+            // the transform-scope string. Expanding them and then stripping
+            // `_ctx.` leaves `{ id: id }` where the shipped lane kept `{ id }`.
+            if self.is_local(name)
+                || is_global_allowed(name)
+                || is_generated_filter_helper(name)
+                || self.scope.is_slot_param(name)
+                || self.scope.is_in_transform_scope(name)
+            {
                 return;
             }
             let prefix = self.scope.identifier_prefix(name);

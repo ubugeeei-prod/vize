@@ -13,6 +13,17 @@ use vize_s0::String;
 /// decoder every S2 consumer of authored text uses (DOM emission, and the
 /// Patina markup facade reading merged text parts).
 pub fn decode_html_entities(source: &str) -> String {
+    decode_html_entities_inner(source, true)
+}
+
+/// Static SSR text. The DOM tokenizer turns `&amp;#40;` into `(`. The SSR
+/// walker leaves that spelling as the text `&#40;`, which escapes back to
+/// `&amp;#40;`.
+pub fn decode_ssr_static_text(source: &str) -> String {
+    decode_html_entities_inner(source, false)
+}
+
+fn decode_html_entities_inner(source: &str, escaped_parens: bool) -> String {
     if !source.contains('&') {
         return String::from(source);
     }
@@ -21,7 +32,9 @@ pub fn decode_html_entities(source: &str) -> String {
     let mut out = String::with_capacity(source.len());
     let mut index = 0usize;
     while index < bytes.len() {
-        if let Some((ch, consumed)) = decode_escaped_numeric_parenthesis(&bytes[index..]) {
+        if escaped_parens
+            && let Some((ch, consumed)) = decode_escaped_numeric_parenthesis(&bytes[index..])
+        {
             out.push(ch);
             index += consumed;
             continue;

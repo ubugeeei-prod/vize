@@ -48,6 +48,10 @@ harness = false
 name = "davinci_ssr_corpus"
 required-features = ["davinci-differential"]
 
+[[test]]
+name = "davinci_ssr_production_cases"
+required-features = ["davinci-differential"]
+
 [package.metadata.cargo-semver-checks.lints]
 # SSR codegen result/options are a compatibility-preview compiler boundary.
 # P3-9 extends that opt-in boundary with source-map result fields while keeping

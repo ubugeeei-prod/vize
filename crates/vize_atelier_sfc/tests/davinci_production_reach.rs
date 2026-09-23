@@ -101,10 +101,9 @@ fn collect_committed_fixtures(dir: &Path, out: &mut Vec<PathBuf>) {
     children.sort();
     for child in children {
         if child.is_dir() {
-            if child
-                .file_name()
-                .is_some_and(|name| name == "node_modules" || name == "_git")
-            {
+            if child.file_name().is_some_and(|name| {
+                name == "node_modules" || name == "_git" || name == "_git-worktrees"
+            }) {
                 continue;
             }
             collect_committed_fixtures(&child, out);

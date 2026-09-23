@@ -203,8 +203,8 @@ SSR snapshot and a 34-case differential; only `v-once` / `v-memo` on a JSX
 element still use the walker. _Vue 3.5 alignment (`fix(ssr)!`):_ legacy
 directives, binds, spreads, and dynamic keys match `@vue/compiler-ssr` 3.5
 ([waivers](./compile-waivers.md) W-SSR-1..16) and the plan emits them (checkout
-smoke 764 of 779, vendor 1,279 of 1,279). The checkout corpus emits from the
-plan with empty divergence ([record](./phase-3-records/p3-8-croquis.md)).
+smoke 764 of 779, vendor 1,279 of 1,279). _Closed 2026-09-23:_ the checkout
+corpus emits from the plan with empty divergence ([record](./phase-3-records/p3-8-croquis.md)).
 
 **P3-9 S4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one
