@@ -108,15 +108,15 @@ fn collect_static_ids<'a>(
     ids: &mut Vec<IdEntry>,
 ) {
     let mut index = 0;
-    while index < children.len() {
-        if let TemplateChildNode::Element(el) = &children[index]
+    while let Some(child) = children.get(index) {
+        if let TemplateChildNode::Element(el) = child
             && element_has_directive(el, "if")
         {
             index = collect_conditional_element_chain(children, index, branches, ids);
             continue;
         }
 
-        match &children[index] {
+        match child {
             TemplateChildNode::Element(el) => {
                 collect_element_id(el, branches, ids);
                 collect_static_ids(&el.children, branches, ids);
@@ -149,7 +149,7 @@ fn collect_conditional_element_chain<'a>(
     branches: &mut Vec<BranchChoice>,
     ids: &mut Vec<IdEntry>,
 ) -> usize {
-    let TemplateChildNode::Element(first) = &children[index] else {
+    let Some(TemplateChildNode::Element(first)) = children.get(index) else {
         return index + 1;
     };
     let if_start = first.loc.span.start;
@@ -159,7 +159,7 @@ fn collect_conditional_element_chain<'a>(
     index += 1;
 
     while let Some(next_index) = next_branch_candidate(children, index) {
-        let TemplateChildNode::Element(branch) = &children[next_index] else {
+        let Some(TemplateChildNode::Element(branch)) = children.get(next_index) else {
             break;
         };
         let is_else = element_has_directive(branch, "else");

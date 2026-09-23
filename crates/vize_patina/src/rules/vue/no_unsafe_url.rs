@@ -199,8 +199,7 @@ fn static_string_literal_prefix(value: &str) -> Option<(&str, &str)> {
     }
 
     let mut escaped = false;
-    for index in 1..bytes.len() {
-        let byte = bytes[index];
+    for (index, &byte) in bytes.iter().enumerate().skip(1) {
         if escaped {
             escaped = false;
             continue;
@@ -210,7 +209,7 @@ fn static_string_literal_prefix(value: &str) -> Option<(&str, &str)> {
             continue;
         }
         if byte == quote {
-            return Some((&value[1..index], &value[index + 1..]));
+            return Some((value.get(1..index)?, value.get(index + 1..)?));
         }
     }
 

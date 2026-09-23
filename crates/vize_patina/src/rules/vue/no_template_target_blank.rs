@@ -60,13 +60,13 @@ fn is_external_href(value: &str) -> bool {
     if value.starts_with("//") {
         return true;
     }
-    let Some(colon) = value.as_bytes().iter().position(|&byte| byte == b':') else {
+    let Some((scheme, _)) = value.split_once(':') else {
         return false;
     };
-    colon > 0
-        && value.as_bytes()[..colon]
-            .iter()
-            .all(|byte| byte.is_ascii_alphanumeric() || *byte == b'_')
+    !scheme.is_empty()
+        && scheme
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
 }
 
 fn markup_has_dangerous_href(element: &MarkupElement<'_>) -> bool {

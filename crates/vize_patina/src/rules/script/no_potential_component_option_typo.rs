@@ -170,8 +170,8 @@ fn within_edit_distance_one(a: &str, b: &str) -> bool {
             };
             let (mut i, mut j) = (0usize, 0usize);
             let mut skipped = false;
-            while i < shorter.len() && j < longer.len() {
-                if shorter[i] == longer[j] {
+            while let (Some(short_byte), Some(long_byte)) = (shorter.get(i), longer.get(j)) {
+                if short_byte == long_byte {
                     i += 1;
                     j += 1;
                 } else if skipped {

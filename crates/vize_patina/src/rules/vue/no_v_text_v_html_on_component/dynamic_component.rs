@@ -89,7 +89,7 @@ fn string_literal_value(expression: &str) -> Option<&str> {
     if !matches!(quote, b'\'' | b'"') || bytes.last().copied() != Some(quote) {
         return None;
     }
-    let value = &expression[1..expression.len() - 1];
+    let value = expression.get(1..expression.len() - 1)?;
     if value.as_bytes().contains(&b'\\') {
         return None;
     }

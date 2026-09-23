@@ -26,7 +26,7 @@ pub(super) fn collect_template_ref_names(template: &str) -> FxHashSet<CompactStr
         // `ref` has to stand alone as an attribute name: the preceding byte may
         // not extend the name (`myref`, `data-ref`) and may not turn it into a
         // bound or namespaced attribute (`:ref`, `v-bind:ref`, `.ref`).
-        let before = index.checked_sub(1).map(|i| bytes[i]);
+        let before = index.checked_sub(1).and_then(|i| bytes.get(i).copied());
         if before.is_some_and(|byte| is_attribute_name_byte(byte) || byte == b':' || byte == b'.') {
             continue;
         }
@@ -61,7 +61,7 @@ fn attribute_value(template: &str, from: usize) -> Option<&str> {
         if byte == quote {
             // Quote bytes are ASCII, so slicing at them stays on char
             // boundaries even in non-ASCII templates.
-            return non_empty(&template[start..end]);
+            return template.get(start..end).and_then(non_empty);
         }
         if byte == b'\\' {
             return None;
@@ -77,7 +77,7 @@ fn unquoted_value(template: &str, start: usize) -> Option<&str> {
     while bytes.get(end).copied().is_some_and(is_unquoted_value_byte) {
         end += 1;
     }
-    non_empty(&template[start..end])
+    template.get(start..end).and_then(non_empty)
 }
 
 fn non_empty(value: &str) -> Option<&str> {

@@ -144,10 +144,11 @@ impl Rule for SfcElementOrder {
         // outranks it, not merely against its neighbour, so
         // `<style><script><template>` reports both the script and the template.
         // The block count is a handful, so the quadratic scan is free.
-        for index in 1..blocks.len() {
-            let current = &blocks[index];
-            let Some(previous) = blocks[..index]
-                .iter()
+        for (index, current) in blocks.iter().enumerate().skip(1) {
+            let Some(previous) = blocks
+                .get(..index)
+                .into_iter()
+                .flatten()
                 .find(|block| block.rank > current.rank)
             else {
                 continue;

@@ -170,16 +170,16 @@ impl CompiledSfcElementOrderGroup {
 }
 
 fn help_order(groups: &[CompiledSfcElementOrderGroup]) -> String {
-    if groups.len() == 2
-        && groups[0]
+    if let [first, second] = groups
+        && first
             .selectors
             .iter()
             .any(|selector| matches!(selector, SfcBlockSelector::Script))
-        && groups[0]
+        && first
             .selectors
             .iter()
             .any(|selector| matches!(selector, SfcBlockSelector::Template))
-        && groups[1]
+        && second
             .selectors
             .iter()
             .any(|selector| matches!(selector, SfcBlockSelector::Style))

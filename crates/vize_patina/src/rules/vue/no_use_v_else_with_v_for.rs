@@ -91,7 +91,10 @@ fn full_element_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
     let mut cursor = search_from;
 
     while cursor + tag.len() + 3 <= bytes.len() {
-        let Some(relative) = bytes[cursor..].iter().position(|&byte| byte == b'<') else {
+        let Some(relative) = bytes
+            .get(cursor..)
+            .and_then(|rest| rest.iter().position(|&byte| byte == b'<'))
+        else {
             break;
         };
         let start = cursor + relative;
@@ -104,7 +107,9 @@ fn full_element_loc(source: &str, element: &ElementNode<'_>) -> SourceLocation {
             && bytes
                 .get(name_end)
                 .is_some_and(|byte| byte.is_ascii_whitespace() || *byte == b'>')
-            && let Some(end_relative) = bytes[name_end..].iter().position(|&byte| byte == b'>')
+            && let Some(end_relative) = bytes
+                .get(name_end..)
+                .and_then(|rest| rest.iter().position(|&byte| byte == b'>'))
         {
             loc.span.end = (name_end + end_relative + 1) as u32;
             return loc;

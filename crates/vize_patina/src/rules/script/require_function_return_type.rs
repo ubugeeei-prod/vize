@@ -42,7 +42,6 @@ use memchr::memmem;
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use vize_s0::String;
 use vize_s0::ToCompactString;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
@@ -60,40 +59,6 @@ impl RequireFunctionReturnType {
         let trimmed = signature_end.trim_start();
         // After closing paren, should have : for return type
         trimmed.starts_with(':')
-    }
-
-    /// Find the function name from context (reserved for future use)
-    #[allow(dead_code)]
-    fn extract_function_name(source: &str, pos: usize) -> Option<String> {
-        // Look backwards for 'function ' or 'const '
-        let before = &source[..pos];
-
-        // Try to find function name
-        if let Some(func_pos) = before.rfind("function ") {
-            let after_func = &before[func_pos + 9..];
-            let name: String = after_func
-                .chars()
-                .take_while(|c| c.is_alphanumeric() || *c == '_')
-                .collect();
-            if !name.is_empty() {
-                return Some(name);
-            }
-        }
-
-        // Try to find const name
-        if let Some(const_pos) = before.rfind("const ") {
-            let after_const = &before[const_pos + 6..];
-            let name: String = after_const
-                .trim_start()
-                .chars()
-                .take_while(|c| c.is_alphanumeric() || *c == '_')
-                .collect();
-            if !name.is_empty() {
-                return Some(name);
-            }
-        }
-
-        None
     }
 }
 
@@ -114,17 +79,20 @@ impl ScriptRule for RequireFunctionReturnType {
         let func_finder = memmem::Finder::new(b"function ");
         let mut search_start = 0;
 
-        while let Some(pos) = func_finder.find(&bytes[search_start..]) {
+        while let Some(pos) = bytes
+            .get(search_start..)
+            .and_then(|rest| func_finder.find(rest))
+        {
             let abs_pos = search_start + pos;
             search_start = abs_pos + 9;
 
             // Find the closing parenthesis of parameters
-            let rest = &source[abs_pos..];
+            let rest = source.get(abs_pos..).unwrap_or_default();
             if let Some(paren_start) = rest.find('(') {
                 // Find matching close paren
                 let mut depth = 0;
                 let mut close_pos = None;
-                for (i, c) in rest[paren_start..].char_indices() {
+                for (i, c) in rest.get(paren_start..).unwrap_or_default().char_indices() {
                     match c {
                         '(' => depth += 1,
                         ')' => {
@@ -139,10 +107,11 @@ impl ScriptRule for RequireFunctionReturnType {
                 }
 
                 if let Some(cp) = close_pos {
-                    let after_paren = &rest[cp + 1..];
+                    let after_paren = rest.get(cp + 1..).unwrap_or_default();
                     if !Self::has_return_type(after_paren) {
                         // Extract function name for better error message
-                        let name_part = &rest[9..paren_start]; // after "function " until "("
+                        // (after "function " until "(")
+                        let name_part = rest.get(9..paren_start).unwrap_or_default();
                         let func_name = name_part.trim();
                         let message = if func_name.is_empty() {
                             "Function is missing a return type annotation".to_compact_string()
@@ -171,23 +140,26 @@ impl ScriptRule for RequireFunctionReturnType {
         let arrow_finder = memmem::Finder::new(b") =>");
         search_start = 0;
 
-        while let Some(pos) = arrow_finder.find(&bytes[search_start..]) {
+        while let Some(pos) = bytes
+            .get(search_start..)
+            .and_then(|rest| arrow_finder.find(rest))
+        {
             let abs_pos = search_start + pos;
             search_start = abs_pos + 4;
 
             // Check if there's a return type before ) =>
             // Look for ): pattern before the closing paren
-            let before = &source[..abs_pos];
+            let before = source.get(..abs_pos).unwrap_or_default();
 
             // Find the matching opening paren
             let mut depth = 0;
             let mut open_pos = None;
-            for (i, c) in before.chars().rev().enumerate() {
+            for (i, c) in before.char_indices().rev() {
                 match c {
                     ')' => depth += 1,
                     '(' => {
                         if depth == 0 {
-                            open_pos = Some(before.len() - i - 1);
+                            open_pos = Some(i);
                             break;
                         }
                         depth -= 1;
@@ -198,13 +170,13 @@ impl ScriptRule for RequireFunctionReturnType {
 
             if let Some(op) = open_pos {
                 // Check what's between open paren and closing ) =>
-                let params_section = &source[op..abs_pos + 1];
+                let params_section = source.get(op..abs_pos + 1).unwrap_or_default();
 
                 // A return type would look like ): Type, so after the last )
                 // we should see : before =>
                 if !params_section.contains("):") {
                     // Skip if this looks like a callback (inside another function call)
-                    let before_paren = &source[..op];
+                    let before_paren = source.get(..op).unwrap_or_default();
                     let is_callback = before_paren
                         .trim_end()
                         .chars()
@@ -266,5 +238,15 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint("const x = 1\nconst y = 2", 0);
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_arrow_span_is_a_byte_offset_with_non_ascii_params() {
+        let linter = create_linter();
+        let source = "const 日=(v = '日') => v";
+        let result = linter.lint(source, 0);
+        assert_eq!(result.warning_count, 1);
+        let open = source.find('(').unwrap() as u32;
+        assert_eq!(result.diagnostics[0].start, open);
     }
 }

@@ -6,7 +6,7 @@ pub(crate) fn normalized_scheme(value: &str) -> Option<(String, &str)> {
 
     for (index, ch) in value.char_indices() {
         if ch == ':' {
-            return saw_scheme_char.then(|| (scheme, &value[index + 1..]));
+            return saw_scheme_char.then(|| (scheme, value.get(index + 1..).unwrap_or_default()));
         }
 
         if ch.is_ascii_whitespace() || ch.is_ascii_control() {

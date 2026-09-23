@@ -228,8 +228,11 @@ fn expression_references_identifier(expression: &str, name: &str) -> bool {
     let needle = name.as_bytes();
     let mut i = 0;
     while i + needle.len() <= bytes.len() {
-        if bytes[i..i + needle.len()] == *needle {
-            let prev_is_ident = i > 0 && is_ident_byte(bytes[i - 1]);
+        if bytes.get(i..i + needle.len()) == Some(needle) {
+            let prev_is_ident = i
+                .checked_sub(1)
+                .and_then(|prev| bytes.get(prev))
+                .is_some_and(|&byte| is_ident_byte(byte));
             let next = bytes.get(i + needle.len()).copied();
             let next_is_ident = matches!(next, Some(b) if is_ident_byte(b));
             if !prev_is_ident && !next_is_ident {

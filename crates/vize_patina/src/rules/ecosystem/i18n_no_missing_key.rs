@@ -169,11 +169,16 @@ fn translation_literals(source: &str) -> Vec<TranslationLiteral<'_>> {
     let mut search_start = 0usize;
 
     while search_start < bytes.len() {
-        let Some(relative) = memchr::memchr2(b'\'', b'"', &bytes[search_start..]) else {
+        let Some(rest) = bytes.get(search_start..) else {
+            break;
+        };
+        let Some(relative) = memchr::memchr2(b'\'', b'"', rest) else {
             break;
         };
         let quote_start = search_start + relative;
-        let quote = bytes[quote_start];
+        let Some(&quote) = bytes.get(quote_start) else {
+            break;
+        };
         let Some(paren) = preceding_open_paren(bytes, quote_start) else {
             search_start = quote_start + 1;
             continue;
@@ -191,7 +196,9 @@ fn translation_literals(source: &str) -> Vec<TranslationLiteral<'_>> {
         let Some(content_end) = find_string_end(bytes, quote, content_start) else {
             break;
         };
-        let key = &source[content_start..content_end];
+        let Some(key) = source.get(content_start..content_end) else {
+            break;
+        };
         if !key.is_empty() && !key.as_bytes().contains(&b'\\') {
             literals.push(TranslationLiteral {
                 key,
@@ -207,13 +214,11 @@ fn translation_literals(source: &str) -> Vec<TranslationLiteral<'_>> {
 
 fn preceding_open_paren(bytes: &[u8], quote_start: usize) -> Option<usize> {
     let mut idx = quote_start;
-    while idx > 0 && bytes[idx - 1].is_ascii_whitespace() {
+    while idx > 0 && bytes.get(idx - 1).is_some_and(u8::is_ascii_whitespace) {
         idx -= 1;
     }
-    if idx == 0 || bytes[idx - 1] != b'(' {
-        return None;
-    }
-    Some(idx - 1)
+    let paren = idx.checked_sub(1)?;
+    (bytes.get(paren) == Some(&b'(')).then_some(paren)
 }
 
 fn callee_before_open_paren<'a>(
@@ -222,12 +227,12 @@ fn callee_before_open_paren<'a>(
     open_paren: usize,
 ) -> Option<&'a str> {
     let mut end = open_paren;
-    while end > 0 && bytes[end - 1].is_ascii_whitespace() {
+    while end > 0 && bytes.get(end - 1).is_some_and(u8::is_ascii_whitespace) {
         end -= 1;
     }
 
     let mut start = end;
-    while start > 0 && is_callee_byte(bytes[start - 1]) {
+    while start > 0 && bytes.get(start - 1).copied().is_some_and(is_callee_byte) {
         start -= 1;
     }
 
@@ -255,8 +260,8 @@ fn is_i18n_callee(callee: &str) -> bool {
 }
 
 fn find_string_end(bytes: &[u8], quote: u8, mut idx: usize) -> Option<usize> {
-    while idx < bytes.len() {
-        match bytes[idx] {
+    while let Some(&byte) = bytes.get(idx) {
+        match byte {
             b'\\' => idx += 2,
             byte if byte == quote => return Some(idx),
             _ => idx += 1,

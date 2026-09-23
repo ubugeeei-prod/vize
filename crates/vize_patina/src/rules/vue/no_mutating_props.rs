@@ -310,10 +310,11 @@ impl Rule for NoMutatingProps {
             }
 
             let mut facts = CroquisFacts::new(analysis);
-            let bindings = facts
-                .prepare::<NoMutatingProps>()
-                .get::<Bindings>()
-                .expect("declared demand");
+            // The rule declares the `Bindings` demand, so this lookup only
+            // fails if the facts engine is broken; lint nothing in that case.
+            let Ok(bindings) = facts.prepare::<NoMutatingProps>().get::<Bindings>() else {
+                return;
+            };
             for (name, binding_type) in bindings.typed() {
                 if matches!(binding_type, BindingType::Props | BindingType::PropsAliased) {
                     names.insert(name.to_compact_string());

@@ -89,7 +89,9 @@ impl NoMultiSpaces {
             return;
         }
 
-        let gap = &ctx.source[gap_start..gap_end];
+        let Some(gap) = ctx.source.get(gap_start..gap_end) else {
+            return;
+        };
         if !is_invalid_gap(gap) {
             return;
         }
@@ -133,7 +135,11 @@ fn is_invalid_gap(gap: &str) -> bool {
 fn first_whitespace_offset(source: &str, start: usize, end: usize) -> usize {
     let mut offset = start;
     let bytes = source.as_bytes();
-    while offset < end && !matches!(bytes[offset], b' ' | b'\t' | b'\n' | b'\r') {
+    while offset < end
+        && bytes
+            .get(offset)
+            .is_some_and(|byte| !matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))
+    {
         offset += 1;
     }
     offset

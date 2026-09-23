@@ -59,9 +59,20 @@ const MACRO_ORDER: [&str; 5] = [
     "defineSlots",
 ];
 
+/// A macro's position within [`MACRO_ORDER`] together with its canonical name.
+#[derive(Clone, Copy)]
+struct MacroRank {
+    index: usize,
+    name: &'static str,
+}
+
 /// Rank of a macro name within [`MACRO_ORDER`], or `None` if it is not ordered.
-fn macro_rank(name: &str) -> Option<usize> {
-    MACRO_ORDER.iter().position(|candidate| *candidate == name)
+fn macro_rank(name: &str) -> Option<MacroRank> {
+    MACRO_ORDER
+        .iter()
+        .enumerate()
+        .find(|(_, candidate)| **candidate == name)
+        .map(|(index, &name)| MacroRank { index, name })
 }
 
 /// Enforce a consistent order of the Vue compiler macros in `<script setup>`.
@@ -111,7 +122,7 @@ impl ScriptRule for DefineMacrosOrder {
 /// A recognised compiler-macro call found at the top level.
 struct MacroOccurrence {
     /// Rank within [`MACRO_ORDER`].
-    rank: usize,
+    rank: MacroRank,
     /// Source span of the whole statement (used for diagnostics).
     span: Span,
 }
@@ -121,11 +132,14 @@ struct MacroOccurrence {
 /// a macro whose rank is *strictly less* than an earlier macro's rank is out of
 /// order (e.g. `defineProps` (rank 2) appearing after `defineEmits` (rank 3)).
 fn report_out_of_order(macros: &[MacroOccurrence], offset: usize, result: &mut ScriptLintResult) {
-    let mut max_rank_so_far = macros[0].rank;
-    for occurrence in &macros[1..] {
-        if occurrence.rank < max_rank_so_far {
-            let expected = MACRO_ORDER[occurrence.rank];
-            let after = MACRO_ORDER[max_rank_so_far];
+    let [first, rest @ ..] = macros else {
+        return;
+    };
+    let mut max_rank_so_far = first.rank;
+    for occurrence in rest {
+        if occurrence.rank.index < max_rank_so_far.index {
+            let expected = occurrence.rank.name;
+            let after = max_rank_so_far.name;
             report(
                 occurrence.span,
                 offset,
@@ -153,7 +167,7 @@ fn report_after_non_macro(
     };
     for occurrence in macros {
         if occurrence.span.start > boundary.start {
-            let name = MACRO_ORDER[occurrence.rank];
+            let name = occurrence.rank.name;
             report(
                 occurrence.span,
                 offset,
@@ -183,7 +197,7 @@ fn report(span: Span, offset: usize, message: CompactString, result: &mut Script
 
 /// The macro rank and statement span if `statement` is a recognised top-level
 /// compiler-macro call.
-fn macro_occurrence(statement: &Statement<'_>) -> Option<(usize, Span)> {
+fn macro_occurrence(statement: &Statement<'_>) -> Option<(MacroRank, Span)> {
     match statement {
         Statement::ExpressionStatement(stmt) => {
             macro_rank_of_expression(&stmt.expression).map(|rank| (rank, stmt.span))
@@ -202,7 +216,7 @@ fn macro_occurrence(statement: &Statement<'_>) -> Option<(usize, Span)> {
 
 /// The macro rank of an expression, unwrapping a single `withDefaults(...)`
 /// wrapper (`withDefaults(defineProps(...), {})`) to its inner macro call.
-fn macro_rank_of_expression(expression: &Expression<'_>) -> Option<usize> {
+fn macro_rank_of_expression(expression: &Expression<'_>) -> Option<MacroRank> {
     let Expression::CallExpression(call) = expression else {
         return None;
     };

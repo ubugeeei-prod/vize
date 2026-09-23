@@ -118,8 +118,8 @@ impl Rule for ValidVFor {
 
                 // Validate alias part (left side of in/of)
                 let (alias_part, source_part) = if has_in {
-                    if let Some(idx) = trimmed.find(" in ") {
-                        (&trimmed[..idx], &trimmed[idx + 4..])
+                    if let Some(parts) = trimmed.split_once(" in ") {
+                        parts
                     } else {
                         ctx.error_with_help(
                             ctx.t("vue/valid-v-for.invalid_syntax"),
@@ -128,8 +128,8 @@ impl Rule for ValidVFor {
                         );
                         return;
                     }
-                } else if let Some(idx) = trimmed.find(" of ") {
-                    (&trimmed[..idx], &trimmed[idx + 4..])
+                } else if let Some(parts) = trimmed.split_once(" of ") {
+                    parts
                 } else {
                     ctx.error_with_help(
                         ctx.t("vue/valid-v-for.invalid_syntax"),
@@ -221,8 +221,11 @@ fn expression_references_identifier(expression: &str, name: &str) -> bool {
     let needle = name.as_bytes();
     let mut i = 0;
     while i + needle.len() <= bytes.len() {
-        if bytes[i..i + needle.len()] == *needle {
-            let prev_is_ident = i > 0 && is_ident_byte(bytes[i - 1]);
+        if bytes.get(i..i + needle.len()) == Some(needle) {
+            let prev_is_ident = i
+                .checked_sub(1)
+                .and_then(|prev| bytes.get(prev))
+                .is_some_and(|&byte| is_ident_byte(byte));
             let next_is_ident = bytes
                 .get(i + needle.len())
                 .is_some_and(|byte| is_ident_byte(*byte));

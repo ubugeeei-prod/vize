@@ -219,18 +219,30 @@ fn report_sort(
     let mut reordered = (0..object.properties.len()).collect::<Vec<_>>();
     sort_named_segments(&mut reordered, &names);
 
-    let (range_start, range_end, pieces) = property_text_ranges(object, source);
+    let Some((range_start, range_end, pieces)) = property_text_ranges(object, source) else {
+        return;
+    };
     let mut replacement = String::new("");
     for index in &reordered {
-        replacement.push_str(&pieces[*index]);
+        let Some(piece) = pieces.get(*index) else {
+            return;
+        };
+        replacement.push_str(piece);
     }
-    let misplaced = property_display_name(&object.properties[misplaced_index], source)
-        .or_else(|| names[misplaced_index].clone())
-        .unwrap_or_else(|| "unknown".into());
-    let expected_after = property_display_name(&object.properties[expected_after_index], source)
-        .or_else(|| names[expected_after_index].clone())
-        .unwrap_or_else(|| "unknown".into());
-    let misplaced_span = object.properties[misplaced_index].span();
+    let (Some(misplaced_property), Some(expected_after_property)) = (
+        object.properties.get(misplaced_index),
+        object.properties.get(expected_after_index),
+    ) else {
+        return;
+    };
+    let display_name = |property, index: usize| {
+        property_display_name(property, source)
+            .or_else(|| names.get(index).cloned().flatten())
+            .unwrap_or_else(|| "unknown".into())
+    };
+    let misplaced = display_name(misplaced_property, misplaced_index);
+    let expected_after = display_name(expected_after_property, expected_after_index);
+    let misplaced_span = misplaced_property.span();
     let start = offset as u32 + misplaced_span.start;
     let end = offset as u32 + misplaced_span.end;
     result.add_diagnostic(

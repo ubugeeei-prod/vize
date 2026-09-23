@@ -66,24 +66,22 @@ impl ScriptRule for PreferRefOverReactive {
         let finder = memmem::Finder::new(b"reactive(");
         let mut search_start = 0;
 
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
+        while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
             let abs_pos = search_start + pos;
             search_start = abs_pos + 9;
 
             // Make sure it's not part of another identifier like "shallowReactive"
-            if abs_pos > 0 {
-                let prev_char = bytes[abs_pos - 1];
-                if prev_char.is_ascii_alphanumeric() || prev_char == b'_' {
-                    continue;
-                }
+            if let Some(prev_char) = abs_pos.checked_sub(1).and_then(|prev| bytes.get(prev))
+                && (prev_char.is_ascii_alphanumeric() || *prev_char == b'_')
+            {
+                continue;
             }
 
             // Skip if it's toRefs(reactive(...)) pattern
-            if abs_pos >= 6 {
-                let before = &source[abs_pos.saturating_sub(6)..abs_pos];
-                if before.contains("toRefs") {
-                    continue;
-                }
+            if let Some(before_start) = abs_pos.checked_sub(6)
+                && bytes.get(before_start..abs_pos) == Some(b"toRefs".as_slice())
+            {
+                continue;
             }
 
             result.add_diagnostic(
@@ -134,6 +132,13 @@ mod tests {
         let result = linter.lint("const state = reactive({ count: 0 })", 0);
         assert_eq!(result.warning_count, 1);
         insta::assert_debug_snapshot!(result.diagnostics);
+    }
+
+    #[test]
+    fn test_non_ascii_before_reactive_does_not_panic() {
+        let linter = create_linter();
+        let result = linter.lint("const state = /*éé日*/reactive({ count: 0 })", 0);
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]

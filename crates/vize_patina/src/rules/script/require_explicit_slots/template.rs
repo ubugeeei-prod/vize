@@ -159,7 +159,7 @@ fn start_tag_has_v_pre(source: &str, element: &ElementNode<'_>) -> bool {
     start_tag.match_indices("v-pre").any(|(index, _)| {
         let before_ok = index
             .checked_sub(1)
-            .is_none_or(|i| bytes[i].is_ascii_whitespace());
+            .is_none_or(|i| bytes.get(i).is_some_and(u8::is_ascii_whitespace));
         let after_ok = bytes
             .get(index + "v-pre".len())
             .is_none_or(|byte| byte.is_ascii_whitespace() || matches!(byte, b'=' | b'/' | b'>'));

@@ -123,14 +123,12 @@ impl Rule for NoDeprecatedFilter {
 /// would clash, and eslint-plugin-vue treats a lone `|` the same way.
 fn has_filter_pipe(expr: &str) -> bool {
     let bytes = expr.as_bytes();
-    let len = bytes.len();
     let mut i = 0;
     // Tracks whether a `/` begins a regex literal (start of expression or right
     // after an operator) versus a division operator (right after a value).
     let mut prev_significant: u8 = 0;
 
-    while i < len {
-        let c = bytes[i];
+    while let Some(&c) = bytes.get(i) {
         match c {
             b'\'' | b'"' => {
                 i = skip_string(bytes, i, c);
@@ -152,7 +150,7 @@ fn has_filter_pipe(expr: &str) -> bool {
             }
             b'|' => {
                 // `||` is logical OR — consume both bytes, not a filter.
-                if i + 1 < len && bytes[i + 1] == b'|' {
+                if bytes.get(i + 1) == Some(&b'|') {
                     i += 2;
                     prev_significant = b'|';
                     continue;
@@ -192,8 +190,8 @@ fn regex_allowed(prev: u8) -> bool {
 fn skip_string(bytes: &[u8], i: usize, quote: u8) -> usize {
     let len = bytes.len();
     let mut j = i + 1;
-    while j < len {
-        match bytes[j] {
+    while let Some(&byte) = bytes.get(j) {
+        match byte {
             b'\\' => j += 2,
             c if c == quote => return j + 1,
             _ => j += 1,
@@ -208,16 +206,18 @@ fn skip_string(bytes: &[u8], i: usize, quote: u8) -> usize {
 fn skip_template(bytes: &[u8], i: usize) -> usize {
     let len = bytes.len();
     let mut j = i + 1;
-    while j < len {
-        match bytes[j] {
+    while let Some(&byte) = bytes.get(j) {
+        match byte {
             b'\\' => j += 2,
             b'`' => return j + 1,
-            b'$' if j + 1 < len && bytes[j + 1] == b'{' => {
+            b'$' if bytes.get(j + 1) == Some(&b'{') => {
                 // Skip the balanced `${ … }` interpolation block.
                 let mut depth = 1;
                 j += 2;
-                while j < len && depth > 0 {
-                    match bytes[j] {
+                while let Some(&byte) = bytes.get(j)
+                    && depth > 0
+                {
+                    match byte {
                         b'{' => depth += 1,
                         b'}' => depth -= 1,
                         _ => {}
@@ -237,8 +237,8 @@ fn skip_regex(bytes: &[u8], i: usize) -> usize {
     let len = bytes.len();
     let mut j = i + 1;
     let mut in_class = false;
-    while j < len {
-        match bytes[j] {
+    while let Some(&byte) = bytes.get(j) {
+        match byte {
             b'\\' => j += 2,
             b'[' => {
                 in_class = true;

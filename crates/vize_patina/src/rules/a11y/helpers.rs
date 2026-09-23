@@ -174,12 +174,12 @@ pub fn string_literal_value(content: &str) -> Option<&str> {
         return None;
     }
 
-    let inner = &content[1..content.len() - 1];
+    let inner = content.get(1..content.len() - 1)?;
     if !is_single_literal_body(inner, *quote) {
         return None;
     }
 
-    Some(&content[1..content.len() - 1])
+    Some(inner)
 }
 
 fn is_single_literal_body(inner: &str, quote: u8) -> bool {

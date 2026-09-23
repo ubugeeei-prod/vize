@@ -77,17 +77,20 @@ const ORDER_KEYS: &[&str] = &[
 
 pub(super) fn sort_named_segments(reordered: &mut [usize], names: &[Option<String>]) {
     let mut start = None;
-    for index in 0..names.len() {
-        if names[index].is_some() {
+    for (index, name) in names.iter().enumerate() {
+        if name.is_some() {
             start.get_or_insert(index);
-        } else if let Some(segment_start) = start.take() {
-            sort_segment(&mut reordered[segment_start..index], names);
+        } else if let Some(segment_start) = start.take()
+            && let Some(segment) = reordered.get_mut(segment_start..index)
+        {
+            sort_segment(segment, names);
         }
     }
     if let Some(segment_start) = start
         && segment_start + 1 < names.len()
+        && let Some(segment) = reordered.get_mut(segment_start..)
     {
-        sort_segment(&mut reordered[segment_start..], names);
+        sort_segment(segment, names);
     }
 }
 
@@ -102,7 +105,7 @@ pub(super) fn first_order_inversion(names: &[Option<String>]) -> Option<(usize, 
             continue;
         };
         if let Some(previous_index) = previous {
-            let previous_name = names[previous_index].as_deref()?;
+            let previous_name = names.get(previous_index)?.as_deref()?;
             if compare_names(previous_name, name).is_gt() {
                 return Some((previous_index, index));
             }
@@ -113,11 +116,11 @@ pub(super) fn first_order_inversion(names: &[Option<String>]) -> Option<(usize, 
 }
 
 fn sort_segment(segment: &mut [usize], names: &[Option<String>]) {
-    segment.sort_by(|left, right| {
-        compare_names(
-            names[*left].as_deref().unwrap(),
-            names[*right].as_deref().unwrap(),
-        )
+    let name_at = |index: usize| names.get(index).and_then(Option::as_deref);
+    segment.sort_by(|left, right| match (name_at(*left), name_at(*right)) {
+        (Some(left), Some(right)) => compare_names(left, right),
+        // Segments only hold named properties; keep the comparator total anyway.
+        (left, right) => left.is_some().cmp(&right.is_some()),
     });
 }
 
@@ -198,7 +201,7 @@ fn display_key_name(key: &PropertyKey<'_>, source: &str) -> Option<String> {
         PropertyKey::ParenthesizedExpression(parenthesized) => {
             display_expression_key_name(&parenthesized.expression, source)
         }
-        _ => Some(span_text(key.span(), source)),
+        _ => span_text(key.span(), source),
     }
 }
 
@@ -209,7 +212,7 @@ fn display_expression_key_name(expression: &Expression<'_>, source: &str) -> Opt
         Expression::ParenthesizedExpression(parenthesized) => {
             display_expression_key_name(&parenthesized.expression, source)
         }
-        _ => Some(span_text(expression.span(), source)),
+        _ => span_text(expression.span(), source),
     }
 }
 
@@ -222,7 +225,7 @@ fn key_name(key: &PropertyKey<'_>, source: &str) -> Option<String> {
         | PropertyKey::BigIntLiteral(_)
         | PropertyKey::BooleanLiteral(_)
         | PropertyKey::NullLiteral(_)
-        | PropertyKey::RegExpLiteral(_) => Some(span_text(key.span(), source)),
+        | PropertyKey::RegExpLiteral(_) => span_text(key.span(), source),
         PropertyKey::ParenthesizedExpression(parenthesized) => {
             expression_key_name(&parenthesized.expression, source)
         }
@@ -238,7 +241,7 @@ fn expression_key_name(expression: &Expression<'_>, source: &str) -> Option<Stri
         | Expression::BigIntLiteral(_)
         | Expression::BooleanLiteral(_)
         | Expression::NullLiteral(_)
-        | Expression::RegExpLiteral(_) => Some(span_text(expression.span(), source)),
+        | Expression::RegExpLiteral(_) => span_text(expression.span(), source),
         Expression::ParenthesizedExpression(parenthesized) => {
             expression_key_name(&parenthesized.expression, source)
         }
@@ -246,20 +249,23 @@ fn expression_key_name(expression: &Expression<'_>, source: &str) -> Option<Stri
     }
 }
 
-fn span_text(span: Span, source: &str) -> String {
-    source[span.start as usize..span.end as usize].to_compact_string()
+fn span_text(span: Span, source: &str) -> Option<String> {
+    source
+        .get(span.start as usize..span.end as usize)
+        .map(ToCompactString::to_compact_string)
 }
 
 pub(super) fn property_text_ranges(
     object: &ObjectExpression<'_>,
     source: &str,
-) -> (usize, usize, Vec<String>) {
-    let first_start = object.properties[0].span().start as usize;
-    let line_start = source[..first_start]
+) -> Option<(usize, usize, Vec<String>)> {
+    let first_start = object.properties.first()?.span().start as usize;
+    let line_start = source
+        .get(..first_start)?
         .rfind('\n')
         .map_or(0, |index| index + 1);
     let range_start = (object.span.start as usize + 1).max(line_start);
-    let close_brace = object.span.end as usize - 1;
+    let close_brace = (object.span.end as usize).checked_sub(1)?;
     let mut range_end = range_start;
     let mut pieces = Vec::with_capacity(object.properties.len());
 
@@ -272,7 +278,7 @@ pub(super) fn property_text_ranges(
         } else {
             property_end
         };
-        let mut text = source[range_end..last_range].to_compact_string();
+        let mut text = source.get(range_end..last_range)?.to_compact_string();
         if !has_comma && next_token == close_brace {
             text.push(',');
         }
@@ -283,13 +289,17 @@ pub(super) fn property_text_ranges(
         pieces.push(text);
         range_end = last_range;
     }
-    (range_start, range_end, pieces)
+    Some((range_start, range_end, pieces))
 }
 
 fn next_token_offset(source: &str, mut offset: usize, limit: usize) -> usize {
     while offset < limit {
-        let tail = &source[offset..];
-        let character = tail.chars().next().unwrap();
+        let Some(tail) = source.get(offset..) else {
+            break;
+        };
+        let Some(character) = tail.chars().next() else {
+            break;
+        };
         if character.is_whitespace() {
             offset += character.len_utf8();
         } else if tail.starts_with("//") {

@@ -76,8 +76,8 @@ fn slot_name<'a>(source: &'a str, directive: &DirectiveNode<'_>) -> &'a str {
 
 /// The name-and-argument half of an authored attribute.
 fn name_of(attribute: &str) -> &str {
-    match attribute.find('=') {
-        Some(index) => attribute[..index].trim_end(),
+    match attribute.split_once('=') {
+        Some((name, _)) => name.trim_end(),
         None => attribute.trim_end(),
     }
 }

@@ -49,7 +49,7 @@ fn collect_callee_events(template: &str, callee: &str, used: &mut FxHashSet<Comp
     }
     let bytes = template.as_bytes();
     for (index, _) in template.match_indices(callee) {
-        let before = index.checked_sub(1).map(|i| bytes[i]);
+        let before = index.checked_sub(1).and_then(|i| bytes.get(i).copied());
         if before.is_some_and(|byte| is_identifier_byte(byte) || byte == b'.') {
             continue;
         }
@@ -91,7 +91,7 @@ fn string_literal_argument(template: &str, from: usize) -> Option<&str> {
         if byte == quote {
             // Quote bytes are ASCII, so slicing at them stays on char
             // boundaries even in non-ASCII templates.
-            return Some(&template[start..end]);
+            return template.get(start..end);
         }
         if byte == b'\\' {
             return None;

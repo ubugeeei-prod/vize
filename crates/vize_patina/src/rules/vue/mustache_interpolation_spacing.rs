@@ -76,16 +76,20 @@ impl Rule for MustacheInterpolationSpacing {
         // Note: end.offset is exclusive (points to the character AFTER the last one)
         let start = interpolation.loc.span.start as usize;
         let end = interpolation.loc.span.end as usize;
-        if end <= start || end > ctx.source.len() {
+        let Some(raw) = ctx.source.get(start..end) else {
+            return;
+        };
+        if raw.len() < 4 {
             return;
         }
-        let raw = &ctx.source[start..end];
-        if raw.len() < 4 || !raw.starts_with("{{") || !raw.ends_with("}}") {
+        let Some(inner) = raw
+            .strip_prefix("{{")
+            .and_then(|rest| rest.strip_suffix("}}"))
+        else {
             return;
-        }
+        };
         // An interpolation holding only whitespace has no expression, and
         // upstream's `VExpressionContainer[expression!=null]` selector skips it.
-        let inner = &raw[2..raw.len() - 2];
         if inner.trim().is_empty() {
             return;
         }

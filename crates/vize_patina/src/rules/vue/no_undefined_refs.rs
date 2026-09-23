@@ -37,10 +37,12 @@ impl Rule for NoUndefinedRefs {
         };
 
         let mut facts = CroquisFacts::new(analysis);
-        let undefined_refs: Vec<_> = facts
-            .prepare::<Self>()
-            .get::<UndefinedRefs>()
-            .expect("declared demand")
+        // The rule declares the `UndefinedRefs` demand, so this lookup only
+        // fails if the facts engine is broken; lint nothing in that case.
+        let Ok(undefined) = facts.prepare::<Self>().get::<UndefinedRefs>() else {
+            return;
+        };
+        let undefined_refs: Vec<_> = undefined
             .iter()
             .map(|(_, undefined)| {
                 (

@@ -88,13 +88,13 @@ fn static_string_literal_value(value: &str) -> Option<&str> {
     if bytes.len() < 2 || (quote != b'\'' && quote != b'"') || bytes.last() != Some(&quote) {
         return None;
     }
-    let inner = &value[1..value.len() - 1];
+    let inner = value.get(1..value.len() - 1)?;
     (!inner.contains('\\')).then_some(inner)
 }
 
 fn object_path_literal_value(value: &str) -> Option<&str> {
     let path_pos = value.find("path")?;
-    let after_path = &value[path_pos + "path".len()..];
+    let after_path = value.get(path_pos + "path".len()..)?;
     let after_colon = after_path.trim_start().strip_prefix(':')?.trim_start();
     static_string_literal_value(after_colon.split([',', '}']).next()?.trim())
 }

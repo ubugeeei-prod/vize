@@ -61,23 +61,26 @@ impl NoReactiveDestructure {
         let finder = memmem::Finder::new(b"reactive(");
         let mut search_start = 0;
 
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
+        while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
             let abs_pos = search_start + pos;
             search_start = abs_pos + 9;
 
             // Look backwards for variable name
-            let before = &source[..abs_pos];
+            let before = source.get(..abs_pos).unwrap_or_default();
 
             // Find = before reactive(
-            if let Some(eq_pos) = before.rfind('=') {
-                let var_part = before[..eq_pos].trim_end();
+            if let Some((var_part, _)) = before.rsplit_once('=') {
+                let var_part = var_part.trim_end();
 
                 // Find const or let
                 if let Some(decl_pos) = var_part.rfind("const ").or_else(|| var_part.rfind("let "))
                 {
-                    let is_const = var_part[decl_pos..].starts_with("const ");
-                    let offset = if is_const { 6 } else { 4 };
-                    let var_name: String = var_part[decl_pos + offset..]
+                    let declaration = var_part.get(decl_pos..).unwrap_or_default();
+                    let binding = declaration
+                        .strip_prefix("const ")
+                        .or_else(|| declaration.strip_prefix("let "))
+                        .unwrap_or_default();
+                    let var_name: String = binding
                         .trim()
                         .chars()
                         .take_while(|c| c.is_alphanumeric() || *c == '_')
@@ -123,15 +126,15 @@ impl ScriptRule for NoReactiveDestructure {
             let finder = memmem::Finder::new(pattern_bytes);
             let mut search_start = 0;
 
-            while let Some(pos) = finder.find(&bytes[search_start..]) {
+            while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
                 let abs_pos = search_start + pos;
                 search_start = abs_pos + pattern.len();
 
                 // Check if this is a destructuring (look back for {)
-                let before = &source[..abs_pos + 1];
-                if let Some(open_brace) = before.rfind('{') {
+                let before = source.get(..abs_pos + 1).unwrap_or_default();
+                if let Some((decl_part, _)) = before.rsplit_once('{') {
+                    let open_brace = decl_part.len();
                     // Check this is a const/let declaration
-                    let decl_part = &source[..open_brace];
                     if decl_part.trim_end().ends_with("const")
                         || decl_part.trim_end().ends_with("let")
                     {

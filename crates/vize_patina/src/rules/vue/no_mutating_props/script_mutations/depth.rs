@@ -93,10 +93,9 @@ fn consume_identifier(source: &str) -> Option<&str> {
     let end = source
         .find(|ch: char| !(ch == '_' || ch == '$' || ch.is_ascii_alphanumeric()))
         .unwrap_or(source.len());
-    (end > 0).then_some(&source[end..])
+    (end > 0).then(|| source.get(end..)).flatten()
 }
 
 fn consume_bracket(source: &str) -> Option<&str> {
-    let close = source.find(']')?;
-    Some(&source[close + 1..])
+    source.split_once(']').map(|(_, rest)| rest)
 }

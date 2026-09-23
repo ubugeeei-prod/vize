@@ -57,7 +57,13 @@ pub(super) fn classify_props_access(script: &str, span: (u32, u32)) -> PropsAcce
     let prefix = prefix.trim_end();
     match prefix.as_bytes().last() {
         // `const <pattern> = defineProps(...)`.
-        Some(b'=') => match prefix[..prefix.len() - 1].trim_end().as_bytes().last() {
+        Some(b'=') => match prefix
+            .strip_suffix('=')
+            .unwrap_or_default()
+            .trim_end()
+            .as_bytes()
+            .last()
+        {
             Some(b'}') => PropsAccess::Destructured,
             _ => PropsAccess::Captured,
         },
@@ -143,7 +149,9 @@ pub(super) fn push_identifier_tokens(source: &str, names: &mut FxHashSet<Compact
             end = next_offset + next_ch.len_utf8();
             chars.next();
         }
-        names.insert(CompactString::new(&source[offset..end]));
+        if let Some(name) = source.get(offset..end) {
+            names.insert(CompactString::new(name));
+        }
     }
 }
 

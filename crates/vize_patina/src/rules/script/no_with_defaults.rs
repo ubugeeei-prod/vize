@@ -63,7 +63,7 @@ impl ScriptRule for NoWithDefaults {
         let finder = memmem::Finder::new(b"withDefaults(");
         let mut search_start = 0;
 
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
+        while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
             let abs_pos = search_start + pos;
             search_start = abs_pos + 12;
 

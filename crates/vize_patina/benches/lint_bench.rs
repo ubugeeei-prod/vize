@@ -6,7 +6,7 @@ use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use vize_patina::Linter;
 use vize_patina::rules::musea::MuseaLinter;
 use vize_patina::rules::script::{NoInternalImports, PreferImportFromVue, ScriptLinter};
-use vize_s0::{String, append};
+use vize_s0::{String, append, cstr};
 
 fn bench_lint_template(c: &mut Criterion) {
     let template = r#"
@@ -64,12 +64,12 @@ fn bench_lint_sfc(c: &mut Criterion) {
     let linter = Linter::new();
     let mut group = c.benchmark_group("sfc");
     for count in [1, 100] {
-        let source = format!(
-            "<script>export default {{ computed: {{ total() {{ return 1 }} }} }}</script><template><main>{}</main></template>",
-            "<section><p>{{ total() }}</p><button type=\"button\" @click=\"total()\">Read</button></section>".repeat(count)
+        let sections = "<section><p>{{ total() }}</p><button type=\"button\" @click=\"total()\">Read</button></section>".repeat(count);
+        let source = cstr!(
+            "<script>export default {{ computed: {{ total() {{ return 1 }} }} }}</script><template><main>{sections}</main></template>"
         );
         group.throughput(Throughput::Bytes(source.len() as u64));
-        group.bench_function(format!("lint_{count}_sections"), |b| {
+        group.bench_function(cstr!("lint_{count}_sections").as_str(), |b| {
             b.iter(|| linter.lint_sfc(black_box(&source), "bench.vue"))
         });
     }

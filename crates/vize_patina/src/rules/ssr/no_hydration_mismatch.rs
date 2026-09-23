@@ -147,9 +147,9 @@ fn scan_expression_code(content: &str) -> Option<(&'static str, &'static str)> {
     let bytes = content.as_bytes();
     let mut index = 0;
 
-    while index < bytes.len() {
-        match bytes[index] {
-            b'\'' | b'"' => index = skip_quoted_string(bytes, index),
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
+            quote @ (b'\'' | b'"') => index = skip_quoted_string(bytes, index, quote),
             b'`' => {
                 let (next, found) = scan_template_literal(content, index);
                 if found.is_some() {
@@ -174,6 +174,7 @@ fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'stat
     // multibyte character where `content[index..]` would panic. All patterns
     // are ASCII, so byte comparison is equivalent.
     let bytes = content.as_bytes();
+    let rest = bytes.get(index..)?;
 
     for pattern in [
         "Math.random",
@@ -184,7 +185,7 @@ fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'stat
         "process.env",
         "import.meta.env",
     ] {
-        if bytes[index..].starts_with(pattern.as_bytes())
+        if rest.starts_with(pattern.as_bytes())
             && has_member_left_boundary(bytes, index)
             && has_member_right_boundary(bytes, index + pattern.len())
         {
@@ -193,7 +194,7 @@ fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'stat
     }
 
     for pattern in ["uuid()", "nanoid()", "new Date()"] {
-        if bytes[index..].starts_with(pattern.as_bytes())
+        if rest.starts_with(pattern.as_bytes())
             && has_identifier_left_boundary(bytes, index)
             && has_identifier_right_boundary(bytes, index + pattern.len())
         {
@@ -207,7 +208,7 @@ fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'stat
         ".toLocaleDateString()",
         ".toLocaleTimeString()",
     ] {
-        if bytes[index..].starts_with(pattern.as_bytes())
+        if rest.starts_with(pattern.as_bytes())
             && has_identifier_right_boundary(bytes, index + pattern.len())
         {
             return pattern_match(pattern);
@@ -217,13 +218,11 @@ fn match_pattern_at(content: &str, index: usize) -> Option<(&'static str, &'stat
     None
 }
 
-fn skip_quoted_string(bytes: &[u8], start: usize) -> usize {
-    let quote = bytes[start];
+fn skip_quoted_string(bytes: &[u8], start: usize, quote: u8) -> usize {
     let mut escaped = false;
     let mut index = start + 1;
 
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         if escaped {
             escaped = false;
         } else if byte == b'\\' {
@@ -245,8 +244,7 @@ fn scan_template_literal(
     let mut escaped = false;
     let mut index = start + 1;
 
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         if escaped {
             escaped = false;
         } else if byte == b'\\' {
@@ -256,7 +254,8 @@ fn scan_template_literal(
         } else if byte == b'$' && bytes.get(index + 1) == Some(&b'{') {
             let expression_start = index + 2;
             let expression_end = find_template_expression_end(bytes, expression_start);
-            if let Some(found) = scan_expression_code(&content[expression_start..expression_end]) {
+            let expression = content.get(expression_start..expression_end);
+            if let Some(found) = expression.and_then(scan_expression_code) {
                 return (expression_end.saturating_add(1), Some(found));
             }
             index = expression_end;
@@ -271,9 +270,9 @@ fn find_template_expression_end(bytes: &[u8], start: usize) -> usize {
     let mut depth = 1;
     let mut index = start;
 
-    while index < bytes.len() {
-        match bytes[index] {
-            b'\'' | b'"' => index = skip_quoted_string(bytes, index),
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
+            quote @ (b'\'' | b'"') => index = skip_quoted_string(bytes, index, quote),
             b'`' => {
                 let (next, _) = scan_template_literal_bytes(bytes, index);
                 index = next;
@@ -300,8 +299,7 @@ fn scan_template_literal_bytes(bytes: &[u8], start: usize) -> (usize, ()) {
     let mut escaped = false;
     let mut index = start + 1;
 
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         if escaped {
             escaped = false;
         } else if byte == b'\\' {
@@ -316,7 +314,8 @@ fn scan_template_literal_bytes(bytes: &[u8], start: usize) -> (usize, ()) {
 }
 
 fn has_member_left_boundary(bytes: &[u8], index: usize) -> bool {
-    index == 0 || (!is_identifier_byte(bytes[index - 1]) && bytes[index - 1] != b'.')
+    let before = bytes.get(..index).and_then(<[u8]>::last);
+    before.is_none_or(|&byte| !is_identifier_byte(byte) && byte != b'.')
 }
 
 fn has_member_right_boundary(bytes: &[u8], index: usize) -> bool {
@@ -326,7 +325,8 @@ fn has_member_right_boundary(bytes: &[u8], index: usize) -> bool {
 }
 
 fn has_identifier_left_boundary(bytes: &[u8], index: usize) -> bool {
-    index == 0 || !is_identifier_byte(bytes[index - 1])
+    let before = bytes.get(..index).and_then(<[u8]>::last);
+    before.is_none_or(|&byte| !is_identifier_byte(byte))
 }
 
 fn has_identifier_right_boundary(bytes: &[u8], index: usize) -> bool {

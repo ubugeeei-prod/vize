@@ -192,27 +192,26 @@ impl NoBrowserGlobalsInSsr {
         let mut identifiers = Vec::new();
         let bytes = expr.as_bytes();
         let len = bytes.len();
+        let at = |index: usize| bytes.get(index).copied();
         let mut i = 0;
         // Track whether the previous token was a `.` (property access)
         let mut after_dot = false;
         let mut after_typeof = false;
         let mut can_start_regex = true;
 
-        while i < len {
-            let b = bytes[i];
-
+        while let Some(b) = at(i) {
             // Skip comments without changing the surrounding expression state.
-            if b == b'/' && i + 1 < len && bytes[i + 1] == b'/' {
+            if b == b'/' && at(i + 1) == Some(b'/') {
                 i += 2;
-                while i < len && !matches!(bytes[i], b'\n' | b'\r') {
+                while at(i).is_some_and(|c| !matches!(c, b'\n' | b'\r')) {
                     i += 1;
                 }
                 continue;
             }
-            if b == b'/' && i + 1 < len && bytes[i + 1] == b'*' {
+            if b == b'/' && at(i + 1) == Some(b'*') {
                 i += 2;
                 while i + 1 < len {
-                    if bytes[i] == b'*' && bytes[i + 1] == b'/' {
+                    if at(i) == Some(b'*') && at(i + 1) == Some(b'/') {
                         i += 2;
                         break;
                     }
@@ -224,24 +223,24 @@ impl NoBrowserGlobalsInSsr {
             if b == b'/' && can_start_regex {
                 i += 1;
                 let mut in_character_class = false;
-                while i < len {
-                    if bytes[i] == b'\\' {
+                while let Some(c) = at(i) {
+                    if c == b'\\' {
                         i += 2;
                         continue;
                     }
-                    if bytes[i] == b'[' {
+                    if c == b'[' {
                         in_character_class = true;
                         i += 1;
                         continue;
                     }
-                    if bytes[i] == b']' {
+                    if c == b']' {
                         in_character_class = false;
                         i += 1;
                         continue;
                     }
-                    if bytes[i] == b'/' && !in_character_class {
+                    if c == b'/' && !in_character_class {
                         i += 1;
-                        while i < len && bytes[i].is_ascii_alphabetic() {
+                        while at(i).is_some_and(|c| c.is_ascii_alphabetic()) {
                             i += 1;
                         }
                         break;
@@ -259,12 +258,12 @@ impl NoBrowserGlobalsInSsr {
                 after_typeof = false;
                 let quote = b;
                 i += 1;
-                while i < len {
-                    if bytes[i] == b'\\' {
+                while let Some(c) = at(i) {
+                    if c == b'\\' {
                         i += 2; // skip escaped character
                         continue;
                     }
-                    if bytes[i] == quote {
+                    if c == quote {
                         i += 1;
                         break;
                     }
@@ -287,12 +286,10 @@ impl NoBrowserGlobalsInSsr {
             if b.is_ascii_alphabetic() || b == b'_' || b == b'$' {
                 let start = i;
                 i += 1;
-                while i < len
-                    && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'_' || bytes[i] == b'$')
-                {
+                while at(i).is_some_and(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'$') {
                     i += 1;
                 }
-                let ident = &expr[start..i];
+                let ident = expr.get(start..i).unwrap_or_default();
 
                 // Skip if it's a property access (after `.`)
                 if after_dot {
@@ -305,10 +302,10 @@ impl NoBrowserGlobalsInSsr {
                 // Skip if it's an object property key (identifier followed by `:`)
                 // Look ahead past whitespace for `:`
                 let mut j = i;
-                while j < len && bytes[j].is_ascii_whitespace() {
+                while at(j).is_some_and(|c| c.is_ascii_whitespace()) {
                     j += 1;
                 }
-                if j < len && bytes[j] == b':' && (j + 1 >= len || bytes[j + 1] != b':') {
+                if at(j) == Some(b':') && at(j + 1) != Some(b':') {
                     // This is an object key like `{ top: 0 }`, skip it
                     after_dot = false;
                     after_typeof = false;
@@ -326,10 +323,10 @@ impl NoBrowserGlobalsInSsr {
                 if after_typeof {
                     after_typeof = false;
                     let mut next = i;
-                    while next < len && bytes[next].is_ascii_whitespace() {
+                    while at(next).is_some_and(|c| c.is_ascii_whitespace()) {
                         next += 1;
                     }
-                    if next >= len || !matches!(bytes[next], b'.' | b'[') {
+                    if !matches!(at(next), Some(b'.' | b'[')) {
                         after_dot = false;
                         can_start_regex = false;
                         continue;
@@ -346,7 +343,7 @@ impl NoBrowserGlobalsInSsr {
             if b.is_ascii_digit() {
                 after_typeof = false;
                 i += 1;
-                while i < len && (bytes[i].is_ascii_alphanumeric() || bytes[i] == b'.') {
+                while at(i).is_some_and(|c| c.is_ascii_alphanumeric() || c == b'.') {
                     i += 1;
                 }
                 after_dot = false;

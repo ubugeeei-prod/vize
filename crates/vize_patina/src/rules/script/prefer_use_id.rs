@@ -65,17 +65,20 @@ impl ScriptRule for PreferUseId {
             let finder = memmem::Finder::new(pattern);
             let mut search_start = 0;
 
-            while let Some(pos) = finder.find(&bytes[search_start..]) {
+            while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
                 let abs_pos = search_start + pos;
                 search_start = abs_pos + pattern.len();
 
                 // Check if this looks like ID generation (has id or Id nearby)
-                let line_start = source[..abs_pos].rfind('\n').map(|p| p + 1).unwrap_or(0);
-                let line_end = source[abs_pos..]
-                    .find('\n')
-                    .map(|p| abs_pos + p)
-                    .unwrap_or(source.len());
-                let line = &source[line_start..line_end];
+                let line_start = source
+                    .get(..abs_pos)
+                    .and_then(|before| before.rfind('\n'))
+                    .map_or(0, |p| p + 1);
+                let line_end = source
+                    .get(abs_pos..)
+                    .and_then(|after| after.find('\n'))
+                    .map_or(source.len(), |p| abs_pos + p);
+                let line = source.get(line_start..line_end).unwrap_or_default();
 
                 let looks_like_id = line.to_lowercase().contains("id")
                     || line.contains("uuid")

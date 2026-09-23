@@ -78,8 +78,8 @@ fn dynamic_props_member_access_kind(rest: &str) -> Option<MutationTargetKind> {
     if after_bracket.starts_with('\'') || after_bracket.starts_with('"') {
         return None;
     }
-    let close = after_bracket.find(']')?;
-    Some(member_suffix_kind(&after_bracket[close + 1..]))
+    let (_, suffix) = after_bracket.split_once(']')?;
+    Some(member_suffix_kind(suffix))
 }
 
 fn props_member_root(rest: &str) -> Option<(&str, &str)> {
@@ -103,18 +103,16 @@ fn props_member_root(rest: &str) -> Option<(&str, &str)> {
     if quote != '\'' && quote != '"' {
         return None;
     }
-    let name_start = quote.len_utf8();
-    let name_end = after_bracket[name_start..].find(quote)? + name_start;
-    let after_quote = &after_bracket[name_end + quote.len_utf8()..];
+    let (name, after_quote) = after_bracket.get(quote.len_utf8()..)?.split_once(quote)?;
     let after_close = after_quote.strip_prefix(']')?;
-    (name_end > name_start).then_some((&after_bracket[name_start..name_end], after_close))
+    (!name.is_empty()).then_some((name, after_close))
 }
 
 fn identifier_root(source: &str) -> Option<(&str, &str)> {
     let end = source
         .find(|ch: char| !(ch == '_' || ch == '$' || ch.is_ascii_alphanumeric()))
         .unwrap_or(source.len());
-    (end > 0).then_some((&source[..end], &source[end..]))
+    (end > 0).then(|| source.split_at_checked(end)).flatten()
 }
 
 fn member_suffix_kind(suffix: &str) -> MutationTargetKind {

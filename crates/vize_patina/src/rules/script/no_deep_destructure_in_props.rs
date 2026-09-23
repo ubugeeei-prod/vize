@@ -210,7 +210,8 @@ fn contains_object_binding_declaration(source: &str) -> bool {
 
 fn declaration_keyword_at(source: &str, index: usize) -> Option<&'static str> {
     ["const", "let", "var"].into_iter().find(|keyword| {
-        source[index..].starts_with(keyword) && has_keyword_boundaries(source, index, keyword)
+        source.get(index..).unwrap_or_default().starts_with(keyword)
+            && has_keyword_boundaries(source, index, keyword)
     })
 }
 

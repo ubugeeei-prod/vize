@@ -53,13 +53,13 @@ pub(super) fn value_range(source: &str, loc: &SourceLocation) -> Option<ValueRan
         .position(|byte| *byte == b'=')?
         + start;
     let mut cursor = separator + 1;
-    while cursor < end && bytes[cursor].is_ascii_whitespace() {
+    while cursor < end && bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
         cursor += 1;
     }
     if cursor >= end {
         return None;
     }
-    let quote = bytes[cursor];
+    let quote = *bytes.get(cursor)?;
     if quote != b'"' && quote != b'\'' {
         return Some(ValueRange {
             start: u32::try_from(cursor).ok()?,

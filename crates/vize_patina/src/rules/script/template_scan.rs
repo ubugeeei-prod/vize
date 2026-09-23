@@ -198,16 +198,18 @@ fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a st
 fn push_identifier_tokens(source: &str, out: &mut Vec<String>) {
     let bytes = source.as_bytes();
     let mut index = 0;
-    while index < bytes.len() {
-        if !is_identifier_start(bytes[index]) {
+    while let Some(&byte) = bytes.get(index) {
+        if !is_identifier_start(byte) {
             index += 1;
             continue;
         }
         let start = index;
-        while index < bytes.len() && is_identifier_byte(bytes[index]) {
+        while bytes.get(index).copied().is_some_and(is_identifier_byte) {
             index += 1;
         }
-        out.push(String::new(&source[start..index]));
+        if let Some(token) = source.get(start..index) {
+            out.push(String::new(token));
+        }
     }
 }
 

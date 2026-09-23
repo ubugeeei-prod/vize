@@ -257,20 +257,18 @@ fn is_reserved_native_component_name(name: &str) -> bool {
 }
 
 fn is_capitalized_lowercase_native_name(name: &str) -> bool {
-    let Some(first) = name.as_bytes().first() else {
+    let Some((first, rest)) = name.as_bytes().split_first() else {
         return false;
     };
     if !first.is_ascii_uppercase() {
         return false;
     }
-    if name.as_bytes()[1..]
-        .iter()
-        .any(|byte| byte.is_ascii_uppercase())
-    {
+    if rest.iter().any(|byte| byte.is_ascii_uppercase()) {
         return false;
     }
+    // Only the first byte is uppercase, and it is ASCII.
     let mut lowercase = String::from(name);
-    lowercase.replace_range(..1, &name[..1].to_ascii_lowercase());
+    lowercase.make_ascii_lowercase();
     is_html_tag(lowercase.as_str()) || is_svg_tag(lowercase.as_str())
 }
 
