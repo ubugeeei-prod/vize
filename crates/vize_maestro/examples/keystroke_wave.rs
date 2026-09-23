@@ -72,15 +72,15 @@ fn main() {
             state.update_virtual_docs(&uri, &text);
             let wave = [
                 time(|| {
-                    let ctx = IdeContext::with_content(&state, &uri, offset, text.clone());
+                    let ctx = IdeContext::new(&state, &uri, offset).expect("document is open");
                     HoverService::hover(&ctx).is_some()
                 }),
                 time(|| {
-                    let ctx = IdeContext::with_content(&state, &uri, offset, text.clone());
+                    let ctx = IdeContext::new(&state, &uri, offset).expect("document is open");
                     CompletionService::complete(&ctx).is_some()
                 }),
                 time(|| {
-                    let ctx = IdeContext::with_content(&state, &uri, offset, text.clone());
+                    let ctx = IdeContext::new(&state, &uri, offset).expect("document is open");
                     DefinitionService::definition(&ctx).is_some()
                 }),
             ];
