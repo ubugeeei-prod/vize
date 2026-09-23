@@ -3,7 +3,7 @@ use super::{
     TemplateContext, TemplatePromiseQuery, TemplateQuery, TemplateQueryKind,
     absolute_expression_range,
     calls::{FloatingPromiseProbeTarget, collect_template_call_ranges},
-    generated_offset_for_text,
+    generated_offset_for_text, v_for_source_binding_offset,
 };
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_span::SourceType;
@@ -279,6 +279,10 @@ fn collect_for(
     source_type: SourceType,
     sinks: &mut TemplateQuerySinks<'_>,
 ) {
+    let first_query = sinks
+        .template_queries
+        .as_ref()
+        .map_or(0, |queries| queries.len());
     collect_expression(
         virtual_ts,
         &for_node.source,
@@ -289,6 +293,7 @@ fn collect_for(
         source_type,
         sinks,
     );
+    retarget_v_for_source_queries(virtual_ts, sinks, first_query);
     profile!(
         "patina.type_aware.template_query_sets.children",
         collect_children(
@@ -348,6 +353,10 @@ fn collect_directive(
         "on" => TemplateContext::Event,
         _ => TemplateContext::Directive,
     };
+    let first_query = sinks
+        .template_queries
+        .as_ref()
+        .map_or(0, |queries| queries.len());
     collect_expression(
         virtual_ts,
         expression,
@@ -358,6 +367,104 @@ fn collect_directive(
         source_type,
         sinks,
     );
+    if directive.name == "for" {
+        retarget_v_for_source_queries(virtual_ts, sinks, first_query);
+    } else if directive.name == "bind" && directive.arg.is_none() {
+        retarget_slot_spread_call_queries(
+            virtual_ts,
+            expression.loc().span.slice(sinks.source),
+            sinks,
+            first_query,
+        );
+    }
+}
+
+/// A slot outlet's unargumented `v-bind` is wrapped in a generated spread
+/// helper. The closing parenthesis of its authored call can resolve to that
+/// helper's `any`, so query the root callee's return type instead.
+fn retarget_slot_spread_call_queries(
+    virtual_ts: &TypeAwareDocument,
+    expression_source: &str,
+    sinks: &mut TemplateQuerySinks<'_>,
+    first_query: usize,
+) {
+    if let Some(queries) = sinks.template_queries.as_deref_mut() {
+        let recent = &mut queries[first_query..];
+        let Some(expression_index) = recent
+            .iter()
+            .position(|query| query.kind == TemplateQueryKind::Expression)
+        else {
+            return;
+        };
+        let expression_start = recent[expression_index].source_start;
+        let expression_end = recent[expression_index].source_end;
+        let Some(callee_index) = recent.iter().position(|query| {
+            query.kind == TemplateQueryKind::CallCallee
+                && query.source_start == expression_start
+                && query.source_end < expression_end
+        }) else {
+            return;
+        };
+        let callee_len = (recent[callee_index].source_end - expression_start) as usize;
+        let Some(callee_text) = expression_source.get(..callee_len) else {
+            return;
+        };
+        let Some(callee_offset) = slot_spread_callee_offset(
+            &virtual_ts.content,
+            recent[expression_index].generated_offset,
+            callee_text,
+        ) else {
+            return;
+        };
+        recent[callee_index].generated_offset = callee_offset;
+        recent[expression_index].generated_offset = callee_offset;
+        recent[expression_index].kind = TemplateQueryKind::CallReturn;
+    }
+}
+
+fn slot_spread_callee_offset(
+    generated: &str,
+    expression_offset: u32,
+    callee_text: &str,
+) -> Option<u32> {
+    let at = expression_offset as usize;
+    let line_start = generated
+        .get(..at)?
+        .rfind('\n')
+        .map_or(0, |index| index + 1);
+    let line_end = generated
+        .get(at..)?
+        .find('\n')
+        .map_or(generated.len(), |index| at + index);
+    let line = generated.get(line_start..line_end)?;
+    if !line.contains("__vizeSlotOutletSpread<") {
+        return None;
+    }
+    let before_expression = line.get(..at - line_start)?;
+    let callee_start = before_expression.rfind(callee_text)?;
+    let after_callee = line.get(callee_start + callee_text.len()..)?;
+    if !after_callee.starts_with('(') && !after_callee.starts_with("?.(") {
+        return None;
+    }
+    u32::try_from(line_start + callee_start + callee_text.len() - 1).ok()
+}
+
+fn retarget_v_for_source_queries(
+    virtual_ts: &TypeAwareDocument,
+    sinks: &mut TemplateQuerySinks<'_>,
+    first_query: usize,
+) {
+    if let Some(queries) = sinks.template_queries.as_deref_mut() {
+        for query in &mut queries[first_query..] {
+            if query.kind == TemplateQueryKind::Expression
+                && let Some(offset) =
+                    v_for_source_binding_offset(&virtual_ts.content, query.generated_offset)
+            {
+                query.generated_offset = offset;
+                query.kind = TemplateQueryKind::ForSource;
+            }
+        }
+    }
 }
 
 #[allow(clippy::too_many_arguments)]

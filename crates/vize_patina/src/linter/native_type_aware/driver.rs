@@ -309,7 +309,7 @@ pub(super) fn lint_with_descriptor<'a>(
                         &virtual_ts.content,
                         query.generated_offset,
                         false,
-                        false,
+                        matches!(query.kind, TemplateQueryKind::CallReturn),
                     )
                 )?;
                 if !super::expression_bindings::template_binding_is_unsafe(
@@ -321,8 +321,10 @@ pub(super) fn lint_with_descriptor<'a>(
                 }
 
                 let owner_key = query.owner_key();
-                if matches!(query.kind, TemplateQueryKind::Expression)
-                    && warned_template_owners.contains(&owner_key)
+                if matches!(
+                    query.kind,
+                    TemplateQueryKind::Expression | TemplateQueryKind::CallReturn
+                ) && warned_template_owners.contains(&owner_key)
                 {
                     continue;
                 }

@@ -66,7 +66,28 @@ pub(super) fn template_binding_is_unsafe(
     {
         return false;
     }
-    super::has_unsafe_template_type(probe)
+    if super::has_unsafe_template_type(probe) {
+        return true;
+    }
+    if query.kind == super::template_queries::TemplateQueryKind::CallReturn {
+        return probe.is_some_and(|probe| {
+            probe.return_types.iter().any(|types| {
+                corsa::utils::is_any_like_type_texts(types)
+                    || corsa::utils::is_unknown_like_type_texts(types)
+            })
+        });
+    }
+    matches!(
+        query.kind,
+        super::template_queries::TemplateQueryKind::ForSource
+    ) && probe.is_some_and(|probe| {
+        probe.type_texts.iter().any(|text| {
+            text.contains("[item: any,")
+                || text.contains("[item: unknown,")
+                || text.contains("[item: any]")
+                || text.contains("[item: unknown]")
+        })
+    })
 }
 
 pub(super) fn bind_template_expressions(document: &mut TypeAwareDocument) {
