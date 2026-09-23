@@ -4693,6 +4693,7 @@ name = "vize_resident"
 version = "0.425.1"
 dependencies = [
  "salsa",
+ "toml",
  "vize_carton",
  "vize_croquis",
  "vize_davinci",

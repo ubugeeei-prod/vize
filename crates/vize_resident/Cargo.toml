@@ -22,6 +22,7 @@ seeded-stale-cache = []
 
 [dependencies]
 salsa = { workspace = true }
+toml = { workspace = true }
 vize_croquis = { workspace = true }
 vize_davinci = { workspace = true }
 vize_relief = { workspace = true }

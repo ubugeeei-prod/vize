@@ -29,6 +29,7 @@ pub mod db;
 pub mod descriptor;
 pub mod equivalence;
 pub mod snapshot;
+pub mod summary;
 
 pub use accounting::{Accounting, QueryCounts};
 pub use artifact::{
@@ -39,4 +40,8 @@ pub use db::{ResidentDatabase, SourceFile};
 pub use descriptor::{
     DescriptorParseError, DescriptorParseLoc, DescriptorStats, ParsedSfc, ResidentDocuments,
     SharedDescriptor, parse_descriptor,
+};
+pub use summary::{
+    DeclarationName, SummaryCachePolicy, SummaryInput, TsConfig, declaration_fingerprint,
+    sfc_summary,
 };

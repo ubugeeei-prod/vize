@@ -111,6 +111,10 @@
 
 ## P5-4b — Summary firewalls, durability and memory bounds
 
+**In progress 2026-09-23** — strict summary-query and cache-policy slice:
+[phase-5-records/p5-4b-progress.md](./phase-5-records/p5-4b-progress.md).
+The 10k-file RSS and summary TS-42 acceptance remain open.
+
 **Start gate:** startable now — no open earlier-phase dependency (waits behind P5-2).
 
 **Lane:** C

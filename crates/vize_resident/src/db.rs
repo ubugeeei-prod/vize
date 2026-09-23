@@ -26,6 +26,7 @@ use crate::artifact::{
     BlockArtifacts, BlockKind, BlockSource, PageArtifact, StageConfig, SurfaceArtifact,
     page_artifact, split_blocks, surface_artifact,
 };
+use crate::summary::{SummaryCachePolicy, TsConfig};
 
 /// One open file: its path and its current text (an open buffer, so
 /// [`Durability::LOW`]).
@@ -114,7 +115,7 @@ impl ResidentDatabase {
     #[must_use]
     pub fn new(config: StageConfig) -> Self {
         let recorder = Recorder::default();
-        let db = Self {
+        let mut db = Self {
             storage: salsa::Storage::new(Some(recorder.callback())),
             recorder,
         };
@@ -122,6 +123,12 @@ impl ResidentDatabase {
         let _config: ProjectConfig = ProjectConfig::builder(config)
             .durability(Durability::HIGH)
             .new(&db);
+        let _tsconfig = TsConfig::builder(String::from(""))
+            .durability(Durability::HIGH)
+            .new(&db);
+        let policy = SummaryCachePolicy::from_resource_preset("linux-x64-ci")
+            .expect("the bundled resource preset must have a summary cache policy");
+        crate::summary::apply_cache_policy(&mut db, policy);
         db
     }
 
@@ -129,6 +136,14 @@ impl ResidentDatabase {
     pub fn open(&self, path: &str, text: &str) -> SourceFile {
         SourceFile::builder(String::from(path), String::from(text))
             .durability(Durability::LOW)
+            .new(self)
+    }
+
+    /// Load a stable dependency, such as a file below `node_modules`.
+    /// Open editor buffers always use [`Self::open`] and LOW durability.
+    pub fn open_dependency(&self, path: &str, text: &str) -> SourceFile {
+        SourceFile::builder(String::from(path), String::from(text))
+            .durability(Durability::HIGH)
             .new(self)
     }
 
