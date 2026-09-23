@@ -58,7 +58,7 @@ linter	Linter	source	crates/vize_patina/src/linter/config.rs	21	s0	S0	stage	vize
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session.rs	3	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/errors.rs	2	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/paths.rs	5	s0	S0	stage	vize_s0	preferred	2
-linter	Linter	test/dev	crates/vize_patina/src/linter/corsa_session/paths.rs	203	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	test/dev	crates/vize_patina/src/linter/corsa_session/paths.rs	242	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/probe.rs	8	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/session.rs	16	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/corsa_session/session/tests.rs	6	s0	S0	stage	vize_s0	preferred	1
@@ -92,13 +92,14 @@ linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/document.rs
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/document.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/native_type_aware/document.rs	111	s0	S0	stage	vize_s0	preferred	2
 linter	Linter	test/dev	crates/vize_patina/src/linter/native_type_aware/document.rs	111	old_ast	old AST/parser	old	vize_armature	legacy	2
-linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/driver.rs	24	s0	S0	stage	vize_s0	preferred	2
-linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/driver.rs	24	old_ast	old AST/parser	old	vize_armature	legacy	1
-linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/driver.rs	24	croquis	Croquis analysis	old	vize_croquis	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/driver.rs	23	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/driver.rs	23	old_ast	old AST/parser	old	vize_armature	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/driver.rs	23	croquis	Croquis analysis	old	vize_croquis	legacy	1
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/driver/planning.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/expression_bindings.rs	6	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	test/dev	crates/vize_patina/src/linter/native_type_aware/expression_bindings.rs	165	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/native_type_aware/expression_bindings.rs	186	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/markers.rs	3	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/options_prop_shape.rs	4	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/parsing.rs	1	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/parsing.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/parsing.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -121,6 +122,7 @@ linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/template_qu
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/template_queries/collector.rs	8	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/template_queries/collector.rs	8	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/linter/native_type_aware/template_queries/collector.rs	8	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+linter	Linter	test/dev	crates/vize_patina/src/linter/native_type_aware/tests.rs	770	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/restricted_rules.rs	22	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/rule_selection.rs	3	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/script_rules.rs	3	s0	S0	stage	vize_s0	preferred	1
