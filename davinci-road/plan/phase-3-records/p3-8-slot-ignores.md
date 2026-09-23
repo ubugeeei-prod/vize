@@ -11,11 +11,11 @@ Emitter sweep, `VIZE_DAVINCI_DIFFERENTIAL_CORPUS` = the checkout, 0
 divergences, 0 rejected: **767 of 779** compared templates emit from
 the plan (was 764 of 779). Legacy reasons:
 
-| reason | count |
-| --- | ---: |
-| `surface_semantics` | 6 |
-| `binding` | 3 |
-| `operation` | 3 |
+| reason              | count |
+| ------------------- | ----: |
+| `surface_semantics` |     6 |
+| `binding`           |     3 |
+| `operation`         |     3 |
 
 Production adapter sweep, same checkout, 0 divergences: **182 of 784**
 compared (`legacy.croquis` 597, `surface_semantics` 3, `operation` 2,
