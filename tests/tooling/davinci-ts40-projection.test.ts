@@ -69,34 +69,52 @@ test("TS-40 baselines are wired into exact Content Mapper CI", () => {
     "utf8",
   );
   const parsed = parse(workflow) as {
-    on?: {
-      push?: { paths?: string[] };
+    on: {
+      schedule?: Array<{ cron: string }>;
       workflow_dispatch?: unknown;
     };
+    env?: { CONTENT_MAPPER_TYPESCRIPT_SHA?: string };
+    jobs?: {
+      "exact-tsgo-project"?: {
+        steps?: Array<{
+          name?: string;
+          run?: string;
+          with?: { repository?: string; ref?: string };
+        }>;
+      };
+    };
   };
-  const pushPaths = parsed.on?.push?.paths;
-  assert.ok(Array.isArray(pushPaths), "Content Mapper CI must define push path filters");
-  assert.ok(parsed.on && Object.hasOwn(parsed.on, "workflow_dispatch"));
-  assert.ok(parsed.on && !Object.hasOwn(parsed.on, "pull_request"));
+  assert.deepEqual(Object.keys(parsed.on).toSorted(), ["schedule", "workflow_dispatch"]);
+  assert.deepEqual(parsed.on.schedule, [{ cron: "21 4 * * *" }]);
+  assert.equal(
+    parsed.env?.CONTENT_MAPPER_TYPESCRIPT_SHA,
+    "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+  );
 
-  for (const command of [
-    "cargo test -p vize --test davinci_ts40_projection_cli -- --nocapture",
-    "cargo test -p vize_maestro --test davinci_ts40_projection -- --nocapture",
-    "cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture",
-    "node --test tests/tooling/davinci-ts40-projection.test.ts",
-  ]) {
-    assert.ok(workflow.includes(command), `Content Mapper CI is missing ${command}`);
-  }
-  for (const trigger of [
-    "crates/vize_canon/src/virtual_ts.rs",
-    "crates/vize_canon/src/virtual_ts/**",
-    "crates/vize_maestro/Cargo.toml",
-    "crates/vize_maestro/src/lib.rs",
-    "crates/vize_maestro/src/virtual_code.rs",
-    "crates/vize_maestro/src/virtual_code/**",
-  ]) {
-    assert.equal(pushPaths.includes(trigger), true, `${trigger} must trigger push TS-40 CI`);
-  }
+  const steps = parsed.jobs?.["exact-tsgo-project"]?.steps ?? [];
+  const upstreamCheckout = steps.filter(
+    (step) => step.name === "Checkout exact TypeScript Content Mapper revision",
+  );
+  assert.equal(upstreamCheckout.length, 1, "exact upstream checkout must run once");
+  assert.equal(upstreamCheckout[0].with?.repository, "microsoft/TypeScript");
+  assert.equal(upstreamCheckout[0].with?.ref, "${{ env.CONTENT_MAPPER_TYPESCRIPT_SHA }}");
+
+  const baselineSteps = steps.filter(
+    (step) => step.name === "Run TS-40 current-projection baselines",
+  );
+  assert.equal(baselineSteps.length, 1, "TS-40 baselines must run once in exact conformance");
+  assert.deepEqual(
+    baselineSteps[0].run
+      ?.trim()
+      .split("\n")
+      .map((line) => line.trim()),
+    [
+      "cargo test -p vize --test davinci_ts40_projection_cli -- --nocapture",
+      "cargo test -p vize_maestro --test davinci_ts40_projection -- --nocapture",
+      "cargo test -p vize_maestro --features legacy --test davinci_ts40_projection -- --nocapture",
+      "node --test tests/tooling/davinci-ts40-projection.test.ts",
+    ],
+  );
 });
 
 function digest(): ProjectionDigest {
