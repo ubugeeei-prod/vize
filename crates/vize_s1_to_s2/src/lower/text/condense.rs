@@ -175,13 +175,13 @@ fn text_groups<'a>(cx: &Cx<'a>, children: &[SurfaceChild<'a>]) -> StdVec<TextGro
         let mut texts = 0usize;
         let mut first_text = start;
         let mut end_offset = None;
-        while i < children.len() {
-            let (offset, len, end) = match &children[i] {
+        while let Some(child) = children.get(i) {
+            let (offset, len, end) = match child {
                 SurfaceChild::Text(token) if token.leading.is_empty() => {
                     (cx.offset(token.text), token.text.len() as u32, None::<u32>)
                 }
                 SurfaceChild::Comment(token)
-                    if invisible_comment(cx, &children[i]) && token.leading.is_empty() =>
+                    if invisible_comment(cx, child) && token.leading.is_empty() =>
                 {
                     (cx.offset(token.text), 0, Some(cx.token_span(token).end))
                 }
@@ -190,7 +190,7 @@ fn text_groups<'a>(cx: &Cx<'a>, children: &[SurfaceChild<'a>]) -> StdVec<TextGro
             if end_offset.is_some_and(|at| at != offset) {
                 break;
             }
-            if let SurfaceChild::Text(token) = &children[i] {
+            if let SurfaceChild::Text(token) = child {
                 if texts == 0 {
                     first_text = i;
                 }
@@ -245,31 +245,25 @@ pub(crate) fn plan_whitespace<'a>(
     let mut first_group = 0usize;
     let mut last_group = groups.len();
     let mut lo = 0usize;
-    while first_group < last_group {
-        let group = &groups[first_group];
+    for group in &groups {
         if group.start != lo || !group.ws_only {
             break;
         }
-        for slot in &mut plan[group.start..group.end] {
-            *slot = TextAction::Drop;
-        }
+        drop_members(&mut plan, group);
         lo = group.end;
         first_group += 1;
     }
     let mut hi = children.len();
-    while last_group > first_group {
-        let group = &groups[last_group - 1];
+    for group in groups.get(first_group..).unwrap_or_default().iter().rev() {
         if group.end != hi || !group.ws_only {
             break;
         }
-        for slot in &mut plan[group.start..group.end] {
-            *slot = TextAction::Drop;
-        }
+        drop_members(&mut plan, group);
         hi = group.start;
         last_group -= 1;
     }
 
-    for group in &groups[first_group..last_group] {
+    for group in groups.get(first_group..last_group).unwrap_or_default() {
         if group.ws_only {
             // Group neighbours are the nearest non-text children (on
             // parser output exactly `whitespace.rs:107-113`). This is
@@ -281,22 +275,26 @@ pub(crate) fn plan_whitespace<'a>(
             // emulating the second case from inside the first, and
             // measured against `@vue/compiler-dom` they got it wrong on
             // the shapes `dropped_comment_text_runs` now pins.
-            let prev_is_text = group.start > lo && text_like(&children[group.start - 1]);
-            let next_is_text = group.end < hi && text_like(&children[group.end]);
+            let prev_is_text = group.start > lo
+                && group
+                    .start
+                    .checked_sub(1)
+                    .and_then(|before| children.get(before))
+                    .is_some_and(text_like);
+            let next_is_text = group.end < hi && children.get(group.end).is_some_and(text_like);
             if !prev_is_text && !next_is_text && group.has_newline {
-                for slot in &mut plan[group.start..group.end] {
-                    *slot = TextAction::Drop;
-                }
+                drop_members(&mut plan, group);
             } else {
                 // The condensed space belongs on the group's first
                 // **text** child: an absorbed dropped comment can open
                 // the group (`<i/><!--c--> <b/>`), and writing the
                 // content to its index would drop the space Vue keeps.
-                plan[group.first_text] = TextAction::Content(" ");
-                for (index, slot) in plan[group.start..group.end].iter_mut().enumerate() {
-                    if group.start + index != group.first_text {
-                        *slot = TextAction::Drop;
-                    }
+                for (index, slot) in members(&mut plan, group).iter_mut().enumerate() {
+                    *slot = if group.start + index == group.first_text {
+                        TextAction::Content(" ")
+                    } else {
+                        TextAction::Drop
+                    };
                 }
             }
         } else {
@@ -305,15 +303,27 @@ pub(crate) fn plan_whitespace<'a>(
             // runs over the fused content at merge time instead
             // (`collapse_fused` — the two compose to the same bytes).
             if group.texts == 1
-                && let SurfaceChild::Text(token) = &children[group.first_text]
+                && let Some(SurfaceChild::Text(token)) = children.get(group.first_text)
                 && !token.text.chars().all(is_vue_ws)
                 && let Some(condensed) = condense_internal(cx, token.text)
+                && let Some(slot) = plan.get_mut(group.first_text)
             {
-                plan[group.first_text] = TextAction::Content(condensed);
+                *slot = TextAction::Content(condensed);
             }
         }
     }
     plan
+}
+
+/// A group's members in the plan (the plan holds one slot per child).
+fn members<'p, 'a>(plan: &'p mut [TextAction<'a>], group: &TextGroup) -> &'p mut [TextAction<'a>] {
+    plan.get_mut(group.start..group.end).unwrap_or_default()
+}
+
+fn drop_members(plan: &mut [TextAction<'_>], group: &TextGroup) {
+    for slot in members(plan, group) {
+        *slot = TextAction::Drop;
+    }
 }
 
 /// Whether `child` may extend a merge run starting at `end`: a text or

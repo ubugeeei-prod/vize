@@ -13,7 +13,7 @@ use vize_s2::op::{ForBinding, ForOp, Namespace, Op, Region};
 use vize_s2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 
 use super::cx::{Cx, attr_slice, attr_span, element_span};
-use super::element::{Analyzed, attr_value_text, element_core};
+use super::element::{Analyzed, attr_text, element_core};
 use super::expr::{desc, expr_at, opaque_at, simple_identifier, trimmed};
 use super::structural::{
     ForWrapper, capture_wrapper_attrs, capture_wrapper_key, lower_children,
@@ -65,9 +65,15 @@ pub(crate) fn lower_for<'a>(
     analyzed: &Analyzed<'a>,
     ns: Namespace,
 ) -> Op<'a> {
-    let attr_idx = analyzed.vfor.expect("caller checked v-for presence");
-    let attr = &element.open.attrs[attr_idx];
-    let raw = attr_value_text(element, attr_idx).filter(|raw| !raw.trim().is_empty());
+    // The caller checked v-for presence; without it the element lowers
+    // as itself.
+    let Some(attr) = analyzed
+        .vfor
+        .and_then(|index| element.open.attrs.get(index))
+    else {
+        return element_core(cx, element, analyzed, ns);
+    };
+    let raw = attr_text(attr).filter(|raw| !raw.trim().is_empty());
     let Some(raw) = raw else {
         cx.error(
             attr_span(cx, attr),
@@ -87,8 +93,10 @@ pub(crate) fn lower_for<'a>(
     // The split runs over the **untrimmed** value, exactly as the shipped
     // splitter does: `v-for=" in xs"` has a viable separator (its alias
     // is empty) only because the leading whitespace counts.
-    let split = split_for(raw)
-        .and_then(|split| split_aliases(&raw[..split.alias_end]).map(|aliases| (split, aliases)));
+    let split = split_for(raw).and_then(|split| {
+        let aliases = split_aliases(raw.get(..split.alias_end)?)?;
+        Some((raw.get(split.source_start..)?, aliases))
+    });
     let node = cx.mint_op();
     let span = element_span(cx, element);
     let tag = cx.mint_scope();
@@ -124,8 +132,8 @@ pub(crate) fn lower_for<'a>(
             cx.attach_for_parts(node, parts, 0, text_span);
             binding
         }
-        Some((split, aliases)) => {
-            let source = expr_at(cx, &raw[split.source_start..]);
+        Some((source, aliases)) => {
+            let source = expr_at(cx, source);
             let value = match aliases.first() {
                 Some(slice) if !slice.is_empty() => expr_at(cx, slice),
                 // An absent alias is still a position: zero-width at the
@@ -210,7 +218,7 @@ pub(crate) fn lower_for<'a>(
 /// The zero-width escape at the alias's position (absent alias, or the
 /// undecomposable whole).
 fn value_hole<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
-    let hole = &text[..0];
+    let hole = text.get(..0).unwrap_or(text);
     let span = cx.span_of(hole);
     opaque_at(cx, OpaqueReason::ForValue, hole, span)
 }

@@ -25,17 +25,13 @@ pub const COGNITIVE_WARN_ABOVE: u32 = 16;
 
 /// Consumer `C`'s read of the facts of the template occupying
 /// `source[start..end]`, spans relative to `source`; `None` when the range
-/// is not a valid slice of `source`.
+/// is not a valid slice of `source`, or when `C` demands a group the
+/// template registry does not compute or does not declare the complexity
+/// group (a consumer declaration bug, never an input property).
 ///
 /// Computes the [`TemplateComplexityGroup`] for the block through a fact
 /// manager, reads it through `C`'s declared view, and places the owned
 /// facts in the file.
-///
-/// # Panics
-///
-/// Panics when `C` demands a group the template registry does not compute,
-/// or does not declare the complexity group (debug builds): a consumer
-/// declaration bug, never an input property.
 #[must_use]
 pub fn template_facts<C: FactConsumer>(
     source: &str,
@@ -44,12 +40,8 @@ pub fn template_facts<C: FactConsumer>(
 ) -> Option<ComplexityFacts> {
     let template = source.get(start as usize..end as usize)?;
     let mut manager = FactManager::new(&TEMPLATE_FACTS);
-    let view = manager
-        .prepare::<C>(template)
-        .expect("the template registry computes every group a template consumer demands");
-    let table = view
-        .get::<TemplateComplexityGroup>()
-        .expect("a template-complexity consumer declares the complexity group");
+    let view = manager.prepare::<C>(template).ok()?;
+    let table = view.get::<TemplateComplexityGroup>().ok()?;
     table.get(&()).cloned().map(|facts| facts.shifted(start))
 }
 

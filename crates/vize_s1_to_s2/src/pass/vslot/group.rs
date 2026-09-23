@@ -151,9 +151,11 @@ fn validate(
         // stop — the legacy loop breaks there, duplicate and extraneous
         // checks never run.
         for child in children {
-            if let ChildKind::SlotTemplate(slots) = &child.kind {
+            if let ChildKind::SlotTemplate(slots) = &child.kind
+                && let Some(first) = slots.first()
+            {
                 channels.error(
-                    slots[0].span,
+                    first.span,
                     MIXED_MESSAGE,
                     "error.v-slot-mixed",
                     id,
@@ -175,7 +177,9 @@ fn validate(
                 has_template_slots = true;
                 // The first spelling per template, exactly the legacy
                 // `find_v_slot`; dynamic names skip the check.
-                let first = &slots[0];
+                let Some(first) = slots.first() else {
+                    continue;
+                };
                 if !first.static_name {
                     continue;
                 }

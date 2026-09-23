@@ -5,26 +5,24 @@
 //! well-formed spellings; DOM realization stays later (P2-11 emit).
 
 use vize_s0::{Box, String, cstr};
-use vize_s1::Element;
+use vize_s1::Attribute;
 
 use vize_s2::op::{BindingOp, VueMemoOp, VueOnceOp};
 
 use super::binding::defer;
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::Directive;
-use super::element::attr_value_text;
+use super::element::attr_text;
 use super::expr::{desc, expr_at};
 
 /// Bare `v-once` (no argument, modifier, or value) → `vue.once`.
 pub(crate) fn lower_once<'a>(
     cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    index: usize,
+    attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> Option<BindingOp<'a>> {
-    let attr = &element.open.attrs[index];
     let span = attr_span(cx, attr);
-    if !is_bare(directive, element, index) {
+    if !is_bare(directive, attr) {
         defer(
             cx,
             "defer.v-once",
@@ -51,13 +49,11 @@ pub(crate) fn lower_once<'a>(
 /// `v-memo="…"` with a value and no argument or modifier → `vue.memo`.
 pub(crate) fn lower_memo<'a>(
     cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    index: usize,
+    attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> Option<BindingOp<'a>> {
-    let attr = &element.open.attrs[index];
     let span = attr_span(cx, attr);
-    let text = attr_value_text(element, index)
+    let text = attr_text(attr)
         .map(str::trim)
         .filter(|text| !text.is_empty());
     if directive.arg.is_some() || !directive.modifiers.is_empty() || text.is_none() {
@@ -88,8 +84,6 @@ pub(crate) fn lower_memo<'a>(
     )))
 }
 
-fn is_bare(directive: &Directive<'_>, element: &Element<'_>, index: usize) -> bool {
-    directive.arg.is_none()
-        && directive.modifiers.is_empty()
-        && attr_value_text(element, index).is_none()
+fn is_bare(directive: &Directive<'_>, attr: &Attribute<'_>) -> bool {
+    directive.arg.is_none() && directive.modifiers.is_empty() && attr_text(attr).is_none()
 }

@@ -18,7 +18,7 @@ use vize_s2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{AttrForm, Head};
-use super::element::{Analyzed, attr_value_text};
+use super::element::{Analyzed, attr_text, attr_value_text};
 use super::expr::{expr_at, simple_identifier};
 
 /// Whether this element should consume `slot-scope`/`scope` (and the
@@ -68,10 +68,9 @@ pub(crate) fn companion_slot_index(
 pub(crate) fn lower_slot_scope<'a>(
     cx: &mut Cx<'a>,
     element: &Element<'a>,
-    index: usize,
+    attr: &vize_s1::Attribute<'a>,
     companion_slot: Option<usize>,
 ) -> BindingOp<'a> {
-    let attr = &element.open.attrs[index];
     let span = attr_span(cx, attr);
     let node = cx.mint_op();
     let name = companion_slot.and_then(|slot_index| {
@@ -79,7 +78,7 @@ pub(crate) fn lower_slot_scope<'a>(
             .map(str::trim)
             .filter(|text| !text.is_empty())
     });
-    let params = attr_value_text(element, index)
+    let params = attr_text(attr)
         .map(str::trim)
         .filter(|text| !text.is_empty())
         .map(|text| expr_at(cx, text));

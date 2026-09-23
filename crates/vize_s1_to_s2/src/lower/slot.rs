@@ -26,7 +26,7 @@ use super::binding::{defer, lower_slot_content};
 use super::bindop::{RULE_SAME_NAME, lower_bind, lower_on};
 use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::directive::{Arg, AttrForm, Head};
-use super::element::{Analyzed, attr_value_text};
+use super::element::{Analyzed, attr_text};
 use super::expr::{desc, expr_at};
 use super::structural::lower_children;
 
@@ -43,22 +43,20 @@ pub(crate) fn lower_slot<'a>(
     let mut name: Option<DynamicName<'a>> = None;
     let mut attributes: Vec<'a, Attribute<'a>> = Vec::new_in(&cx.allocator);
     let mut bindings: Vec<'a, BindingOp<'a>> = Vec::new_in(&cx.allocator);
-    for (index, attr) in element.open.attrs.iter().enumerate() {
+    for (index, (attr, form)) in element.open.attrs.iter().zip(&analyzed.forms).enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx) || Some(index) == analyzed.vfor {
             continue;
         }
-        match &analyzed.forms[index] {
+        match form {
             AttrForm::Static if attr.name.text == "name" && name.is_none() => {
                 // A value-less `name` reads as the implicit name — the
                 // shipped resolution (`codegen/slots/outlet.rs`), matched
                 // exactly so the two lanes never differ on the spelling.
-                name = Some(DynamicName::Static(
-                    attr_value_text(element, index).unwrap_or("default"),
-                ));
+                name = Some(DynamicName::Static(attr_text(attr).unwrap_or("default")));
             }
             AttrForm::Static => attributes.push(Attribute {
                 name: attr.name.text,
-                value: attr_value_text(element, index),
+                value: attr_text(attr),
                 span: attr_span(cx, attr),
             }),
             AttrForm::Directive(directive) => match directive.head {
@@ -69,7 +67,7 @@ pub(crate) fn lower_slot<'a>(
                     // shorthand before slot-outlet name resolution, so
                     // a missing or blank `:name` / `v-bind:name`
                     // selects the runtime `name` variable.
-                    match attr_value_text(element, index).map(str::trim) {
+                    match attr_text(attr).map(str::trim) {
                         Some(text) if !text.is_empty() => {
                             name = Some(DynamicName::Dynamic(expr_at(cx, text)));
                         }
@@ -91,22 +89,22 @@ pub(crate) fn lower_slot<'a>(
                         }
                     }
                 }
-                Head::Bind => bindings.push(lower_bind(cx, element, index, directive)),
-                Head::On => bindings.push(lower_on(cx, element, index, directive)),
+                Head::Bind => bindings.push(lower_bind(cx, attr, directive)),
+                Head::On => bindings.push(lower_on(cx, attr, directive)),
                 Head::Html => {
-                    if let Some(op) = super::html::lower_html(cx, element, index, directive) {
+                    if let Some(op) = super::html::lower_html(cx, attr, directive) {
                         bindings.push(op);
                     }
                 }
                 Head::Text => {
-                    if let Some(op) = super::vtext::lower_text(cx, element, index, directive) {
+                    if let Some(op) = super::vtext::lower_text(cx, attr, directive) {
                         bindings.push(op);
                     }
                 }
                 Head::Cloak => {
-                    bindings.push(super::cloak::lower_cloak(cx, element, index, directive));
+                    bindings.push(super::cloak::lower_cloak(cx, attr, directive));
                 }
-                Head::Slot => bindings.push(lower_slot_content(cx, element, index, directive)),
+                Head::Slot => bindings.push(lower_slot_content(cx, attr, directive)),
                 Head::Custom => {
                     cx.error(
                         attr_span(cx, attr),

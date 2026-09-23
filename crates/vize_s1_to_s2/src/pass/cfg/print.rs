@@ -60,7 +60,7 @@ fn push_clipped(out: &mut String, text: &str, more_lines: bool) {
     let mut chars = text.char_indices();
     match chars.nth(EXCERPT_CHARS) {
         Some((cut, _)) => {
-            out.push_str(&text[..cut]);
+            out.push_str(text.get(..cut).unwrap_or(text));
             out.push('…');
         }
         None => {

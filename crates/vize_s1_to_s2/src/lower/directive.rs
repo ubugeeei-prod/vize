@@ -81,9 +81,10 @@ pub(crate) fn classify<'a>(name: &'a str) -> AttrForm<'a> {
         return AttrForm::Static;
     };
     // Head runs to the first `:` (argument) or `.` (modifiers).
-    let head_end = rest.find([':', '.']).unwrap_or(rest.len());
-    let head_text = &rest[..head_end];
-    let tail = &rest[head_end..];
+    let (head_text, tail) = rest
+        .find([':', '.'])
+        .and_then(|head_end| rest.split_at_checked(head_end))
+        .unwrap_or((rest, ""));
     let (head, name) = match head_text {
         "if" => (Head::If, ""),
         "else-if" => (Head::ElseIf, ""),
@@ -141,8 +142,10 @@ fn arg_first<'a>(text: &'a str) -> (Option<Arg<'a>>, Vec<&'a str>) {
                 b']' => {
                     depth -= 1;
                     if depth == 0 {
-                        let inner = &inner_and_rest[..index];
-                        let rest = &inner_and_rest[index + 1..];
+                        let (inner, rest) = inner_and_rest
+                            .split_at_checked(index)
+                            .unwrap_or((inner_and_rest, ""));
+                        let rest = rest.strip_prefix(']').unwrap_or(rest);
                         let modifiers = split_modifiers(rest.strip_prefix('.').unwrap_or(""));
                         return (Some(Arg::Dynamic(inner)), modifiers);
                     }
@@ -152,9 +155,8 @@ fn arg_first<'a>(text: &'a str) -> (Option<Arg<'a>>, Vec<&'a str>) {
         }
         return (Some(Arg::Dynamic(inner_and_rest)), Vec::new());
     }
-    let arg_end = text.find('.').unwrap_or(text.len());
-    let arg = &text[..arg_end];
-    let modifiers = split_modifiers(text[arg_end..].strip_prefix('.').unwrap_or(""));
+    let (arg, modifiers) = text.split_once('.').unwrap_or((text, ""));
+    let modifiers = split_modifiers(modifiers);
     let arg = if arg.is_empty() {
         None
     } else {

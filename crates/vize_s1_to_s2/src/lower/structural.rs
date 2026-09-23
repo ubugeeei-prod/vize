@@ -17,12 +17,12 @@ use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::{Box, Span, String, Vec, cstr, ensure_sufficient_stack};
-use vize_s1::{Element, SurfaceChild};
+use vize_s1::{Attribute, Element, SurfaceChild};
 
 use vize_s2::op::{IfBranch, IfOp, Namespace, Op, Region};
 
 use super::cx::{Cx, attr_slice, attr_span, element_span};
-use super::element::{Analyzed, BranchKind, analyze, attr_value_text, element_core};
+use super::element::{Analyzed, BranchKind, analyze, attr_text, element_core};
 use super::expr::expr_at;
 use super::forop::lower_for;
 use super::if_keys;
@@ -37,9 +37,14 @@ pub(crate) use wrapper::{
 };
 use wrapper::{chain_once_attr, record_wrapper_key};
 
-/// One scanned branch of a chain: its element, analysis, branch-attr
-/// index, and the gap children it consumes.
-type Branch<'a, 't> = (&'t Element<'a>, Analyzed<'a>, usize, StdVec<usize>);
+/// One scanned branch of a chain: its element, analysis, branch
+/// attribute, and the gap children it consumes.
+type Branch<'a, 't> = (
+    &'t Element<'a>,
+    Analyzed<'a>,
+    &'t Attribute<'a>,
+    StdVec<usize>,
+);
 
 /// Lower one children level into a region's ops, in document order.
 ///
@@ -64,25 +69,24 @@ fn lower_children_guarded<'a>(
     let plan = text::plan_whitespace(cx, children);
     let mut out: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
     let mut i = 0usize;
-    while i < children.len() {
-        match &children[i] {
+    while let Some(child) = children.get(i) {
+        match child {
             SurfaceChild::Element(element) => {
                 let analyzed = analyze(element, cx.v_pre_suppressed());
-                match analyzed.branch {
-                    Some((idx, BranchKind::If)) => {
+                match analyzed.branch_attr(element) {
+                    Some((attr, BranchKind::If)) => {
                         i = lower_if_group(
                             cx,
                             children,
                             &plan,
                             i,
-                            (element, analyzed, idx),
+                            (element, analyzed, attr),
                             ns,
                             &mut out,
                         );
                         continue;
                     }
-                    Some((idx, BranchKind::ElseIf | BranchKind::Else)) => {
-                        let attr = &element.open.attrs[idx];
+                    Some((attr, BranchKind::ElseIf | BranchKind::Else)) => {
                         cx.error(
                             attr_span(cx, attr),
                             String::from("v-else/v-else-if has no adjacent v-if."),
@@ -127,28 +131,28 @@ fn is_branch_gap(child: &SurfaceChild<'_>) -> bool {
 
 /// Lower a `v-if` chain starting at `start`. Returns the index just past
 /// the last consumed sibling.
-fn lower_if_group<'a>(
+fn lower_if_group<'a, 't>(
     cx: &mut Cx<'a>,
-    children: &[SurfaceChild<'a>],
+    children: &'t [SurfaceChild<'a>],
     plan: &[text::TextAction<'a>],
     start: usize,
-    (first, first_analyzed, first_attr): (&Element<'a>, Analyzed<'a>, usize),
+    (first, first_analyzed, first_attr): (&'t Element<'a>, Analyzed<'a>, &'t Attribute<'a>),
     ns: Namespace,
     out: &mut Vec<'a, Op<'a>>,
 ) -> usize {
     // Scan the chain first: branches plus the gap nodes each consumes.
-    let mut branches: StdVec<Branch<'a, '_>> = StdVec::new();
+    let mut branches: StdVec<Branch<'a, 't>> = StdVec::new();
     branches.push((first, first_analyzed, first_attr, StdVec::new()));
     let mut j = start + 1;
     let mut pending: StdVec<usize> = StdVec::new();
-    while j < children.len() {
-        match &children[j] {
+    while let Some(child) = children.get(j) {
+        match child {
             gap if is_branch_gap(gap) => pending.push(j),
             SurfaceChild::Element(element) => {
                 let analyzed = analyze(element, cx.v_pre_suppressed());
-                match analyzed.branch {
-                    Some((idx, kind @ (BranchKind::ElseIf | BranchKind::Else))) => {
-                        branches.push((element, analyzed, idx, core::mem::take(&mut pending)));
+                match analyzed.branch_attr(element) {
+                    Some((attr, kind @ (BranchKind::ElseIf | BranchKind::Else))) => {
+                        branches.push((element, analyzed, attr, core::mem::take(&mut pending)));
                         j += 1;
                         if kind == BranchKind::Else {
                             break;
@@ -172,11 +176,11 @@ fn lower_if_group<'a>(
         .map(|(element, ..)| element_span(cx, element).end)
         .unwrap_or_else(|| element_span(cx, first).end);
     let span = Span::new(cx.offset(first.open.lt_name.text), last_end);
-    let head_attr = &first.open.attrs[first_attr];
+
     cx.record(
         "lower.if",
         node,
-        attr_slice(cx, head_attr),
+        attr_slice(cx, first_attr),
         cstr!("ui.if branches={}", branches.len()),
         span,
     );
@@ -187,7 +191,7 @@ fn lower_if_group<'a>(
     let mut from_template: StdVec<bool> = StdVec::new();
     let mut once = false;
     let mut preserved_gaps: StdVec<usize> = StdVec::new();
-    for (element, analyzed, attr_idx, gaps) in branches {
+    for (element, analyzed, attr, gaps) in branches {
         for gap in gaps {
             if matches!(
                 (children.get(gap), plan.get(gap)),
@@ -197,7 +201,8 @@ fn lower_if_group<'a>(
                 )
             ) {
                 preserved_gaps.push(gap);
-            } else if let SurfaceChild::Text(token) | SurfaceChild::Comment(token) = &children[gap]
+            } else if let Some(SurfaceChild::Text(token) | SurfaceChild::Comment(token)) =
+                children.get(gap)
             {
                 let gap_span = cx.token_span(token);
                 cx.record(
@@ -209,16 +214,15 @@ fn lower_if_group<'a>(
                 );
             }
         }
-        let attr = &element.open.attrs[attr_idx];
         let kind = match analyzed.branch {
             Some((_, kind)) => kind,
             None => BranchKind::If,
         };
         let condition = match kind {
-            BranchKind::Else => attr_value_text(element, attr_idx)
+            BranchKind::Else => attr_text(attr)
                 .and_then(|text| (!text.trim().is_empty()).then(|| expr_at(cx, text))),
             BranchKind::If | BranchKind::ElseIf => {
-                let text = attr_value_text(element, attr_idx);
+                let text = attr_text(attr);
                 if text.map(str::trim).is_none_or(str::is_empty) {
                     cx.error(
                         attr_span(cx, attr),

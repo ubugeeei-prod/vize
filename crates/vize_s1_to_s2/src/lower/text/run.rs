@@ -36,8 +36,13 @@ pub(crate) fn lower_text_run<'a>(
     start: usize,
     out: &mut vize_s0::Vec<'a, Op<'a>>,
 ) -> usize {
-    if let SurfaceChild::Text(token) = &children[start]
-        && plan[start] == TextAction::Drop
+    let Some(first) = children.get(start) else {
+        return start + 1;
+    };
+    // The plan holds one action per child; a missing one lowers as authored.
+    let action_at = |index: usize| plan.get(index).copied().unwrap_or(TextAction::Keep);
+    if let SurfaceChild::Text(token) = first
+        && action_at(start) == TextAction::Drop
     {
         let span = cx.token_span(token);
         cx.record(
@@ -53,7 +58,7 @@ pub(crate) fn lower_text_run<'a>(
     // A final child cannot form a compound. Keep its borrowed leaf instead
     // of constructing owned parts that the one-member arm would discard.
     if start + 1 == children.len() {
-        lower_single_text(cx, &children[start], plan[start], out);
+        lower_single_text(cx, first, action_at(start), out);
         return start + 1;
     }
 
@@ -73,7 +78,7 @@ pub(crate) fn lower_text_run<'a>(
     let mut i = start;
     let mut end = 0u32;
     let mut pending_gap: Option<u32> = None;
-    while i < children.len() {
+    while let Some(child) = children.get(i) {
         let probe = pending_gap.unwrap_or(end);
         // A comment the compile is not preserving is not a run boundary:
         // it is not a child at all. Vue's parser builds no node for it,
@@ -85,7 +90,7 @@ pub(crate) fn lower_text_run<'a>(
         // span. Contiguity is still required, so the merged span is
         // still the authored bytes.
         if i > start
-            && let SurfaceChild::Comment(token) = &children[i]
+            && let SurfaceChild::Comment(token) = child
             && !cx.preserve_comments()
             && !super::super::leaf::keeps_directive_comment(token.text)
             && token.leading.is_empty()
@@ -97,13 +102,14 @@ pub(crate) fn lower_text_run<'a>(
             i += 1;
             continue;
         }
-        if i > start && !extends_run(cx, &children[i], probe) {
+        if i > start && !extends_run(cx, child, probe) {
             break;
         }
-        match &children[i] {
+        match child {
             SurfaceChild::Text(token) => {
                 let span = cx.token_span(token);
-                if plan[i] == TextAction::Drop {
+                let action = action_at(i);
+                if action == TextAction::Drop {
                     // A condensed whitespace run's tail member: consume
                     // and record it here (never a run start — the
                     // pre-scan arm returns those).
@@ -118,7 +124,7 @@ pub(crate) fn lower_text_run<'a>(
                     i += 1;
                     continue;
                 }
-                let content = match plan[i] {
+                let content = match action {
                     TextAction::Content(content) => content,
                     _ => token.text,
                 };
@@ -161,7 +167,7 @@ pub(crate) fn lower_text_run<'a>(
     if members == 1 {
         // A lone node never merges (the legacy run grouping's own rule);
         // it lowers as the plain leaf, with the condensed content.
-        lower_single_text(cx, &children[start], plan[start], out);
+        lower_single_text(cx, first, action_at(start), out);
         // `i` is past everything the scan consumed, not just the lone
         // member: a dropped whitespace tail or a dropped comment was
         // already recorded above, and returning `start + 1` would let
@@ -169,7 +175,7 @@ pub(crate) fn lower_text_run<'a>(
         return i;
     }
 
-    let span = Span::new(parts[0].span.start, end);
+    let span = Span::new(parts.first().map_or(end, |part| part.span.start), end);
     let raw = cx
         .source
         .get(span.start as usize..span.end as usize)
@@ -263,19 +269,22 @@ pub(crate) fn lower_v_pre_text_run<'a>(
     start: usize,
     out: &mut vize_s0::Vec<'a, Op<'a>>,
 ) -> usize {
-    let Some(mut end) = text_family_end(cx, &children[start]) else {
+    let Some(first) = children.get(start) else {
         return start + 1;
     };
-    let start_offset = text_family_start(cx, &children[start]).unwrap_or(end);
+    let Some(mut end) = text_family_end(cx, first) else {
+        return start + 1;
+    };
+    let start_offset = text_family_start(cx, first).unwrap_or(end);
     let mut i = start + 1;
-    while i < children.len() {
-        let Some(next_start) = text_family_start(cx, &children[i]) else {
+    while let Some(child) = children.get(i) {
+        let Some(next_start) = text_family_start(cx, child) else {
             break;
         };
         if next_start != end {
             break;
         }
-        let Some(next_end) = text_family_end(cx, &children[i]) else {
+        let Some(next_end) = text_family_end(cx, child) else {
             break;
         };
         end = next_end;

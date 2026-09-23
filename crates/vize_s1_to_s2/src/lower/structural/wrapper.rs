@@ -14,7 +14,7 @@ use vize_s1::Element;
 
 use super::super::cx::{Cx, attr_slice, attr_span};
 use super::super::directive::{Arg, AttrForm, Head};
-use super::super::element::{Analyzed, BranchKind, attr_value_text};
+use super::super::element::{Analyzed, BranchKind, attr_text};
 
 /// One captured `<template v-if>` wrapper key (P2-9 series 5): the
 /// branch key the legacy transform lifts off the wrapper element
@@ -124,16 +124,16 @@ pub(crate) fn capture_wrapper_key<'a>(
     element: &Element<'a>,
     analyzed: &Analyzed<'a>,
 ) -> Option<(usize, WrapperKey)> {
-    for (index, attr) in element.open.attrs.iter().enumerate() {
+    for (index, (attr, form)) in element.open.attrs.iter().zip(&analyzed.forms).enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx) || Some(index) == analyzed.vfor {
             continue;
         }
-        match &analyzed.forms[index] {
+        match form {
             AttrForm::Static if attr.name.text == "key" => {
                 return Some((
                     index,
                     WrapperKey::Static {
-                        value: attr_value_text(element, index).map(String::from),
+                        value: attr_text(attr).map(String::from),
                         span: attr_span(cx, attr),
                     },
                 ));
@@ -141,7 +141,7 @@ pub(crate) fn capture_wrapper_key<'a>(
             AttrForm::Directive(directive)
                 if directive.head == Head::Bind && directive.arg == Some(Arg::Static("key")) =>
             {
-                let source = match attr_value_text(element, index) {
+                let source = match attr_text(attr) {
                     Some(text) => String::from(text.trim()),
                     // The parser's same-name expansion: a valueless
                     // `:key` reads `key`.
@@ -171,14 +171,14 @@ pub(crate) fn capture_wrapper_attrs<'a>(
     let mut indexes = StdVec::new();
     let mut attributes = StdVec::new();
     let mut class = None;
-    for (index, attr) in element.open.attrs.iter().enumerate() {
+    for (index, (attr, form)) in element.open.attrs.iter().zip(&analyzed.forms).enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx)
             || Some(index) == analyzed.vfor
             || Some(index) == captured_key
         {
             continue;
         }
-        match &analyzed.forms[index] {
+        match form {
             AttrForm::Static if attr.name.text == "class" => {
                 indexes.push(index);
                 let entry = class.get_or_insert_with(|| WrapperClass {
@@ -206,7 +206,7 @@ pub(crate) fn capture_wrapper_attrs<'a>(
                     && directive.arg == Some(Arg::Static("class"))
                     && directive.modifiers.is_empty() =>
             {
-                let source = match attr_value_text(element, index) {
+                let source = match attr_text(attr) {
                     Some(text) if text.trim().is_empty() => continue,
                     Some(text) => String::from(text.trim()),
                     None => String::from("class"),

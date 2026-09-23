@@ -57,43 +57,39 @@ fn lower_grouped_children<'a>(
     mut lower_group: impl FnMut(&mut Cx<'a>, &[SurfaceChild<'a>]) -> Op<'a>,
 ) -> Vec<'a, Op<'a>> {
     let mut out: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
-    let mut index = 0usize;
-    while index < children.len() {
-        if starts_group(&children[index]) {
-            let end = scan_group(children, index, starts_group);
-            out.push(lower_group(cx, &children[index..end]));
-            index = end;
-            continue;
+    let mut rest = children;
+    while let Some(first) = rest.first() {
+        let grouped = starts_group(first);
+        let len = if grouped {
+            group_len(rest, starts_group)
+        } else {
+            1 + rest
+                .iter()
+                .skip(1)
+                .take_while(|child| !starts_group(child))
+                .count()
+        };
+        let (segment, tail) = rest.split_at_checked(len).unwrap_or((rest, &[]));
+        if grouped {
+            out.push(lower_group(cx, segment));
+        } else {
+            push_all(&mut out, lower_children(cx, segment, ns));
         }
-
-        let start = index;
-        index += 1;
-        while index < children.len() && !starts_group(&children[index]) {
-            index += 1;
-        }
-        push_all(&mut out, lower_children(cx, &children[start..index], ns));
+        rest = tail;
     }
     out
 }
 
-fn scan_group(
-    children: &[SurfaceChild<'_>],
-    start: usize,
-    starts_group: fn(&SurfaceChild<'_>) -> bool,
-) -> usize {
-    let mut end = start + 1;
-    let mut index = end;
-    while index < children.len() {
-        if starts_group(&children[index]) {
+/// The length of the group opening `children`: through the last child
+/// that starts the group, across table gaps between them.
+fn group_len(children: &[SurfaceChild<'_>], starts_group: fn(&SurfaceChild<'_>) -> bool) -> usize {
+    let mut end = 1;
+    for (index, child) in children.iter().enumerate().skip(1) {
+        if starts_group(child) {
             end = index + 1;
-            index += 1;
-            continue;
+        } else if !is_table_gap(child) {
+            break;
         }
-        if is_table_gap(&children[index]) {
-            index += 1;
-            continue;
-        }
-        break;
     }
     end
 }
@@ -152,9 +148,14 @@ fn is_table_gap(child: &SurfaceChild<'_>) -> bool {
 }
 
 fn segment_span(cx: &Cx<'_>, segment: &[SurfaceChild<'_>]) -> Span {
-    let first = child_span(cx, &segment[0]);
-    let last = child_span(cx, &segment[segment.len() - 1]);
-    Span::new(first.start, last.end)
+    match (segment.first(), segment.last()) {
+        (Some(first), Some(last)) => {
+            Span::new(child_span(cx, first).start, child_span(cx, last).end)
+        }
+        // Grouping never yields an empty segment; zero-width at the block
+        // start keeps the span inside the source regardless.
+        _ => cx.span_of(cx.hole_at(0)),
+    }
 }
 
 fn child_span(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> Span {

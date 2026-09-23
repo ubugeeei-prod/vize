@@ -287,7 +287,7 @@ fn wrap_source(filter: &VueFilterExpr<'_>) -> String {
 
 fn wrap_one(exp: &str, app: &VueFilterApp<'_>) -> String {
     let id = asset_ident("filter", app.name);
-    match app.raw.find('(') {
+    match app.raw.split_once('(') {
         None => {
             let mut out = String::with_capacity(id.len() + exp.len() + 2);
             out.push_str(id.as_str());
@@ -296,7 +296,7 @@ fn wrap_one(exp: &str, app: &VueFilterApp<'_>) -> String {
             out.push(')');
             out
         }
-        Some(idx) if &app.raw[idx + 1..] == ")" => {
+        Some((_, ")")) => {
             let mut out = String::with_capacity(id.len() + exp.len() + 2);
             out.push_str(id.as_str());
             out.push('(');
@@ -304,8 +304,7 @@ fn wrap_one(exp: &str, app: &VueFilterApp<'_>) -> String {
             out.push(')');
             out
         }
-        Some(idx) => {
-            let args = &app.raw[idx + 1..];
+        Some((_, args)) => {
             let mut out = String::with_capacity(id.len() + exp.len() + args.len() + 3);
             out.push_str(id.as_str());
             out.push('(');

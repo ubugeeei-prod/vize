@@ -49,8 +49,11 @@ impl<'a> Args<'a> {
     }
 
     fn push(&mut self, arg: RemarkArg<'a>) {
-        self.slots[self.len] = arg;
-        self.len += 1;
+        // Four slots cover the widest remark (base, blocker, op, rule).
+        if let Some(slot) = self.slots.get_mut(self.len) {
+            *slot = arg;
+            self.len += 1;
+        }
     }
 
     fn blocker(&mut self, blocker: &'a str, op: Option<&'a str>, rule: Option<&'a str>) {
@@ -71,7 +74,7 @@ impl<'a> Args<'a> {
     }
 
     fn as_slice(&self) -> &[RemarkArg<'a>] {
-        &self.slots[..self.len]
+        self.slots.get(..self.len).unwrap_or(&self.slots)
     }
 }
 

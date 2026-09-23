@@ -112,7 +112,16 @@ pub(crate) fn analyze<'a>(element: &Element<'a>, in_v_pre: bool) -> Analyzed<'a>
     analyzed
 }
 
-impl Analyzed<'_> {
+impl<'a> Analyzed<'a> {
+    /// The branch directive's attribute and kind, when one is authored.
+    pub(crate) fn branch_attr<'t>(
+        &self,
+        element: &'t Element<'a>,
+    ) -> Option<(&'t vize_s1::Attribute<'a>, BranchKind)> {
+        let (index, kind) = self.branch?;
+        Some((element.open.attrs.get(index)?, kind))
+    }
+
     /// Whether the element carries a `v-slot` / `#` spelling. A
     /// `<template v-if #name>` / `<template v-for #name>` must keep the
     /// template op so the slot name survives unwrap (P2-11 createSlots).
@@ -151,10 +160,12 @@ impl Analyzed<'_> {
 /// The authored value text of an attribute, when it has a value node
 /// (a `Missing` value hole is a zero-width slice, present but empty).
 pub(crate) fn attr_value_text<'a>(element: &Element<'a>, index: usize) -> Option<&'a str> {
-    element.open.attrs[index]
-        .value
-        .as_ref()
-        .map(|value| value.content.text)
+    attr_text(element.open.attrs.get(index)?)
+}
+
+/// [`attr_value_text`] for an attribute already in hand.
+pub(crate) fn attr_text<'a>(attr: &vize_s1::Attribute<'a>) -> Option<&'a str> {
+    attr.value.as_ref().map(|value| value.content.text)
 }
 
 /// An element's own namespace, entered by tag.
@@ -234,7 +245,7 @@ pub(crate) fn element_core<'a>(
 
     let mut attributes: Vec<'a, Attribute<'a>> = Vec::new_in(&cx.allocator);
     let mut bindings: Vec<'a, BindingOp<'a>> = Vec::new_in(&cx.allocator);
-    for (index, attr) in element.open.attrs.iter().enumerate() {
+    for (index, (attr, form)) in element.open.attrs.iter().zip(&analyzed.forms).enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx) || Some(index) == analyzed.vfor {
             continue;
         }
@@ -254,12 +265,12 @@ pub(crate) fn element_core<'a>(
             );
             continue;
         }
-        match &analyzed.forms[index] {
+        match form {
             AttrForm::Static if Some(index) == scope_index => {
                 bindings.push(super::sugar::lower_slot_scope(
                     cx,
                     element,
-                    index,
+                    attr,
                     companion_slot,
                 ));
             }
@@ -277,7 +288,7 @@ pub(crate) fn element_core<'a>(
             }
             AttrForm::Directive(directive) => {
                 let owner = Owner { tag, component };
-                lower_attr(cx, element, index, directive, &owner, &mut bindings);
+                lower_attr(cx, attr, directive, &owner, &mut bindings);
             }
         }
     }

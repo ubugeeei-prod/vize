@@ -1,24 +1,22 @@
 //! `v-html` lowering into the Vue dialect raw-HTML op.
 
 use vize_s0::{Box, String};
-use vize_s1::Element;
+use vize_s1::Attribute;
 use vize_s2::op::{BindingOp, VueHtmlOp};
 
 use super::binding::defer;
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::Directive;
-use super::element::attr_value_text;
+use super::element::attr_text;
 use super::expr::expr_at;
 
 pub(crate) fn lower_html<'a>(
     cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    index: usize,
+    attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> Option<BindingOp<'a>> {
-    let attr = &element.open.attrs[index];
     let span = attr_span(cx, attr);
-    let text = attr_value_text(element, index)
+    let text = attr_text(attr)
         .map(str::trim)
         .filter(|text| !text.is_empty());
     if directive.arg.is_some() || !directive.modifiers.is_empty() {

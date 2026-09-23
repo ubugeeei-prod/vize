@@ -10,7 +10,7 @@ use alloc::vec::Vec as StdVec;
 use vize_davinci::id::NodeId;
 use vize_s0::{Span, String, Vec, cstr};
 use vize_s2::expr::ExprRef;
-use vize_s2::op::{Attribute, BindingOp, DynamicName, Op};
+use vize_s2::op::{Attribute, BindOp, BindingOp, DynamicName, Op};
 
 use super::cx::Cx;
 use super::structural::WrapperKey;
@@ -122,14 +122,14 @@ pub(crate) fn attach_if_facts(
         }
     }
 
-    for index in 1..keys.len() {
-        let Some(later) = &keys[index] else {
+    for (index, later) in keys.iter().enumerate().skip(1) {
+        let Some(later) = later else {
             continue;
         };
         let Some(text) = later.collision_text() else {
             continue;
         };
-        let collides = keys[..index].iter().any(|earlier| {
+        let collides = keys.iter().take(index).any(|earlier| {
             earlier
                 .as_ref()
                 .and_then(BranchKey::collision_text)
@@ -193,12 +193,13 @@ fn carrier_surface<'w, 'a>(
 
 /// A `ui.bind` whose argument spells `key` by static name or legacy
 /// dynamic-argument content.
-fn is_key_bind(binding: &BindingOp<'_>) -> bool {
+/// The binding as a key `ui.bind`, when it is one.
+fn key_bind<'b, 'a>(binding: &'b BindingOp<'a>) -> Option<&'b BindOp<'a>> {
     match binding {
         BindingOp::Bind(bind) => match bind.name {
-            Some(DynamicName::Static("key")) => true,
-            Some(DynamicName::Dynamic(ExprRef::Js(js))) => js.source == "key",
-            _ => false,
+            Some(DynamicName::Static("key")) => Some(bind),
+            Some(DynamicName::Dynamic(ExprRef::Js(js))) if js.source == "key" => Some(bind),
+            _ => None,
         },
         BindingOp::On(_)
         | BindingOp::Model(_)
@@ -212,7 +213,7 @@ fn is_key_bind(binding: &BindingOp<'_>) -> bool {
         | BindingOp::VueShow(_)
         | BindingOp::VueHtml(_)
         | BindingOp::VueText(_)
-        | BindingOp::VueCloak(_) => false,
+        | BindingOp::VueCloak(_) => None,
     }
 }
 
@@ -222,18 +223,19 @@ pub(crate) fn take_carrier_key(branch_span: Span, ops: &mut [Op<'_>]) -> Option<
     let (attributes, bindings) = carrier_surface(branch_span, ops)?;
     let static_at = attributes
         .iter()
-        .position(|attribute| attribute.name == "key")
-        .map(|index| (attributes[index].span.start, index));
+        .enumerate()
+        .find(|(_, attribute)| attribute.name == "key")
+        .map(|(index, attribute)| (attribute.span.start, index));
     let dynamic_at = bindings
         .iter()
-        .position(is_key_bind)
-        .map(|index| (binding_span(&bindings[index]).start, index));
+        .enumerate()
+        .find_map(|(index, binding)| key_bind(binding).map(|bind| (bind, index)));
     match (static_at, dynamic_at) {
-        (Some((attr_start, index)), Some((bind_start, _))) if attr_start < bind_start => {
+        (Some((attr_start, index)), Some((bind, _))) if attr_start < bind.span.start => {
             Some(take_static(attributes, index))
         }
         (Some((_, index)), None) => Some(take_static(attributes, index)),
-        (_, Some((_, index))) => Some(read_dynamic(bindings, index)),
+        (_, Some((bind, index))) => Some(read_dynamic(bind, index)),
         (None, None) => None,
     }
 }
@@ -255,10 +257,7 @@ fn take_static<'a>(attributes: &mut Vec<'a, Attribute<'a>>, index: usize) -> Bra
     }
 }
 
-fn read_dynamic<'a>(bindings: &[BindingOp<'a>], index: usize) -> BranchKey {
-    let BindingOp::Bind(bind) = &bindings[index] else {
-        unreachable!("is_key_bind admitted only ui.bind")
-    };
+fn read_dynamic(bind: &BindOp<'_>, index: usize) -> BranchKey {
     let source = bind
         .value
         .as_ref()
@@ -270,24 +269,5 @@ fn read_dynamic<'a>(bindings: &[BindingOp<'a>], index: usize) -> BranchKey {
             bind_index: Some(index),
         },
         span: bind.span,
-    }
-}
-
-fn binding_span(binding: &BindingOp<'_>) -> Span {
-    match binding {
-        BindingOp::Bind(bind) => bind.span,
-        BindingOp::On(on) => on.span,
-        BindingOp::Model(model) => model.span,
-        BindingOp::SlotContent(content) => content.span,
-        BindingOp::VueDirective(directive) => directive.span,
-        BindingOp::VueCssBind(bind) => bind.span,
-        BindingOp::VueSync(sync) => sync.span,
-        BindingOp::VueSlotScope(scope) => scope.span,
-        BindingOp::VueOnce(once) => once.span,
-        BindingOp::VueMemo(memo) => memo.span,
-        BindingOp::VueShow(show) => show.span,
-        BindingOp::VueHtml(html) => html.span,
-        BindingOp::VueText(text) => text.span,
-        BindingOp::VueCloak(cloak) => cloak.span,
     }
 }

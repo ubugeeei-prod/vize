@@ -64,7 +64,7 @@ impl Emitter<'_> {
             match part {
                 PugTagPart::Class(token) => {
                     classes.push((
-                        Lit::Str(String::from(&token.text[1..])),
+                        Lit::Str(String::from(sigil_body(token.text))),
                         false,
                         self.span(token),
                     ));
@@ -78,8 +78,8 @@ impl Emitter<'_> {
                         );
                     }
                     names.push("id");
-                    let value = Lit::Str(String::from(&token.text[1..]));
-                    let body = Some((&token.text[1..], Span::new(span.start + 1, span.end)));
+                    let value = Lit::Str(String::from(sigil_body(token.text)));
+                    let body = Some((sigil_body(token.text), Span::new(span.start + 1, span.end)));
                     entries.push(Entry {
                         key: String::from("id"),
                         key_span: None,
@@ -171,11 +171,12 @@ impl Emitter<'_> {
             super::PugRendering::Pug => 0,
             super::PugRendering::AuthoredOrder => class_at.unwrap_or(0).min(entries.len()),
         };
-        for entry in &entries[..split] {
+        let (before, after) = entries.split_at_checked(split).unwrap_or((&entries, &[]));
+        for entry in before {
             self.attribute(entry);
         }
         self.classes(&classes);
-        for entry in &entries[split..] {
+        for entry in after {
             self.attribute(entry);
         }
     }
@@ -274,4 +275,9 @@ fn cook_double_quoted(key: &str) -> Option<String> {
         Some(Lit::Str(cooked)) => Some(cooked),
         _ => None,
     }
+}
+
+/// A `.class` / `#id` shorthand token without its one-byte sigil.
+fn sigil_body(text: &str) -> &str {
+    text.get(1..).unwrap_or_default()
 }

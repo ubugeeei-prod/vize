@@ -231,9 +231,13 @@ where
         Ok(())
     });
     // The catalogue above is closed over the const pipeline, so a failure
-    // here is a compiler bug, not an input property.
+    // here is a compiler bug, not an input property. It surfaces as a
+    // lowering diagnostic so the caller sees the failure instead of a crash.
     if let Err(failure) = outcome {
-        panic!("s2 transform pipeline stopped: {}", failure.reason);
+        lowered.diagnostics.push(crate::exemptions::lowering(
+            vize_s0::Span::new(0, 0),
+            failure.reason,
+        ));
     }
     facts
 }

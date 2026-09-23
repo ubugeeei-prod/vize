@@ -151,7 +151,9 @@ pub fn lower_with_caps<'a>(
     errors: &[SurfaceError],
     caps: LegacyCaps,
 ) -> Lowered<'a> {
-    let root = SourceRoot::new(tree.source).expect("vize_s1 accepted a u32-addressable source");
+    let Ok(root) = SourceRoot::new(tree.source) else {
+        return oversized_source(allocator, tree.source, caps);
+    };
     lower_source_block_with_caps(allocator, tree, errors, root.whole_block(), caps)
 }
 
@@ -181,7 +183,9 @@ pub(crate) fn lower_with_caps_and_comment_policy<'a>(
     custom_element_patterns: &[String],
     custom_element_predicate: Option<fn(&str) -> bool>,
 ) -> Lowered<'a> {
-    let root = SourceRoot::new(tree.source).expect("vize_s1 accepted a u32-addressable source");
+    let Ok(root) = SourceRoot::new(tree.source) else {
+        return oversized_source(allocator, tree.source, caps);
+    };
     let custom_elements = LowerCustomElements {
         patterns: custom_element_patterns,
         predicate: custom_element_predicate,
@@ -277,6 +281,39 @@ fn lower_source_block_with_caps_and_comment_policy<'a>(
         wrappers: cx.wrappers,
         for_wrappers: cx.for_wrappers,
         features: cx.features,
+        caps,
+    }
+}
+
+/// The artifact for a source that cannot be addressed by `u32` offsets.
+///
+/// [`vize_s1::parse`] refuses such sources, so a tree reaching here was
+/// built by hand. Nothing can be spanned inside it: lowering yields an
+/// empty root and one diagnostic instead of mis-measured ops.
+fn oversized_source<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+) -> Lowered<'a> {
+    Lowered {
+        allocator,
+        source,
+        root: Region {
+            ops: vize_s0::Vec::new_in(&allocator),
+        },
+        op_count: 0,
+        diagnostics: alloc::vec![crate::exemptions::lowering(
+            Span::new(0, 0),
+            "the template source is too large to address with u32 offsets; nothing was lowered",
+        )],
+        provenance: StdVec::new(),
+        scopes: SideTable::new(),
+        texts: SideTable::new(),
+        for_facts: SideTable::new(),
+        if_facts: SideTable::new(),
+        wrappers: SideTable::new(),
+        for_wrappers: SideTable::new(),
+        features: LoweringFeatures::EMPTY,
         caps,
     }
 }

@@ -31,7 +31,7 @@ pub(super) fn frozen_name<'a>(
     authored: &'a str,
     directive: &Directive<'a>,
 ) -> &'a str {
-    let drops_nothing = !authored[1..].contains(':')
+    let drops_nothing = !authored.get(1..).unwrap_or(authored).contains(':')
         && !authored.contains('[')
         && !authored.contains(']')
         && directive.modifiers.is_empty();

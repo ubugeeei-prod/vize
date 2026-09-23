@@ -19,14 +19,14 @@
 //! bare `v-bind` an empty spread, both kept as authored.
 
 use vize_s0::{Box, String, Vec, cstr};
-use vize_s1::Element;
+use vize_s1::Attribute;
 
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{BindOp, BindingOp, DynamicName, OnOp, VueSyncOp};
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive};
-use super::element::attr_value_text;
+use super::element::attr_text;
 use super::expr::{desc, expr_at, filter_expr_at, handler_expr_at};
 
 /// The provenance rule of the same-name expansion.
@@ -52,11 +52,9 @@ fn name_desc(head: &str, name: &Option<DynamicName<'_>>) -> String {
 /// Lower one `v-bind` spelling into `ui.bind`.
 pub(crate) fn lower_bind<'a>(
     cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    index: usize,
+    attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
-    let attr = &element.open.attrs[index];
     let span = attr_span(cx, attr);
     let node = cx.mint_op();
     let name = lower_name(cx, directive.arg);
@@ -72,7 +70,7 @@ pub(crate) fn lower_bind<'a>(
         modifiers.push(modifier);
     }
 
-    let value = match attr_value_text(element, index) {
+    let value = match attr_text(attr) {
         // An authored-blank value (`:x=""`) materializes no expression
         // in the shipped parser (and blocks the same-name expansion,
         // which requires no value position at all) — mirrored exactly,
@@ -162,11 +160,9 @@ pub(crate) fn lower_bind<'a>(
 /// Lower one `v-on` spelling into `ui.on`.
 pub(crate) fn lower_on<'a>(
     cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    index: usize,
+    attr: &Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
-    let attr = &element.open.attrs[index];
     let span = attr_span(cx, attr);
     let node = cx.mint_op();
     let name = lower_name(cx, directive.arg);
@@ -174,7 +170,7 @@ pub(crate) fn lower_on<'a>(
     for modifier in &directive.modifiers {
         modifiers.push(modifier);
     }
-    let handler = attr_value_text(element, index)
+    let handler = attr_text(attr)
         .filter(|text| !text.trim().is_empty())
         .map(|text| handler_expr_at(cx, text));
     cx.record(

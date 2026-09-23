@@ -108,7 +108,7 @@ pub struct ScopeNameFact {
 }
 
 /// The holes, regions and scope names of one partial page.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct PartialFacts {
     holes: Vec<(u32, HoleFact)>,
     regions: Vec<(u32, RegionFact)>,
@@ -130,25 +130,25 @@ pub fn partial_facts_of(source: &str) -> PartialFacts {
 pub fn partial_facts(lowered: &mut Lowered<'_>, tree: &SurfaceTree<'_>) -> PartialFacts {
     let page = collect(lowered, tree);
     let mut manager = FactManager::new(&REGISTRY);
-    let view = manager
-        .prepare::<TemplateFacts>(&page)
-        .expect("the partial registry is closed over its groups");
+    // The registry is closed over its groups, so these lookups succeed;
+    // should they ever not, the page reports no facts instead of aborting.
+    let Ok(view) = manager.prepare::<TemplateFacts>(&page) else {
+        return PartialFacts::default();
+    };
+    let (Ok(holes), Ok(regions), Ok(scopes)) = (
+        view.get::<PartialHoles>(),
+        view.get::<PartialRegions>(),
+        view.get::<PartialScopes>(),
+    ) else {
+        return PartialFacts::default();
+    };
     PartialFacts {
-        holes: view
-            .get::<PartialHoles>()
-            .expect("declared")
-            .iter()
-            .map(|(key, hole)| (*key, *hole))
-            .collect(),
-        regions: view
-            .get::<PartialRegions>()
-            .expect("declared")
+        holes: holes.iter().map(|(key, hole)| (*key, *hole)).collect(),
+        regions: regions
             .iter()
             .map(|(key, region)| (*key, *region))
             .collect(),
-        scopes: view
-            .get::<PartialScopes>()
-            .expect("declared")
+        scopes: scopes
             .iter()
             .map(|(key, scope)| (*key, scope.clone()))
             .collect(),

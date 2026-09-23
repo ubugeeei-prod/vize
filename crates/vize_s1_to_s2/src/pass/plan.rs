@@ -134,34 +134,38 @@ impl Plan {
     };
 
     fn pipeline(&'static self) -> Pipeline {
-        Pipeline::new(S2_STAGE, &self.passes[..self.len])
+        Pipeline::new(S2_STAGE, self.passes.get(..self.len).unwrap_or(&[]))
     }
 }
 
 /// The plan `mask` selects: [`SELECTABLE`] filtered in landed order.
 const fn plan_for_mask(mask: u8) -> Plan {
     let mut plan = Plan::EMPTY;
-    let mut index = 0;
-    while index < SELECTABLE.len() {
-        let (desc, bit) = SELECTABLE[index];
-        if mask & bit != 0 {
-            plan.passes[plan.len] = desc;
+    let mut free: &mut [PassDesc] = &mut plan.passes;
+    let mut rest: &[(PassDesc, u8)] = &SELECTABLE;
+    while let [(desc, bit), tail @ ..] = rest {
+        if mask & *bit != 0
+            && let [slot, free_tail @ ..] = free
+        {
+            *slot = *desc;
+            free = free_tail;
             plan.len += 1;
         }
-        index += 1;
+        rest = tail;
     }
     plan
 }
 
 const fn all_plans() -> [Plan; PLAN_COUNT] {
     let mut plans = [Plan::EMPTY; PLAN_COUNT];
-    let mut mask = 0;
-    while mask < PLAN_COUNT {
-        // `mask` is bounded by `PLAN_COUNT`, which is `1 << 5`.
-        #[expect(clippy::cast_possible_truncation)]
-        let bits = mask as u8;
-        plans[mask] = plan_for_mask(bits);
-        mask += 1;
+    let mut rest: &mut [Plan] = &mut plans;
+    // Plan `i` sits at index `i`; `PLAN_COUNT` is `1 << 5`, so every mask
+    // fits a `u8`.
+    let mut mask: u8 = 0;
+    while let [plan, tail @ ..] = rest {
+        *plan = plan_for_mask(mask);
+        mask = mask.wrapping_add(1);
+        rest = tail;
     }
     plans
 }
@@ -203,7 +207,12 @@ pub(super) fn pipeline_for_profile(
     features: LoweringFeatures,
     profile: TransformProfile,
 ) -> Pipeline {
-    PLANS[usize::from(mask_for(caps, features, profile))].pipeline()
+    match PLANS.get(usize::from(mask_for(caps, features, profile))) {
+        Some(plan) => plan.pipeline(),
+        // Every mask is built from the five selectable bits, so it names a
+        // plan; an out-of-table mask would select no optional pass.
+        None => Pipeline::new(S2_STAGE, &[]),
+    }
 }
 
 #[cfg(test)]

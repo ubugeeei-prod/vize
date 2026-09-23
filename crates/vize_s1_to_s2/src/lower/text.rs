@@ -141,7 +141,7 @@ impl TextParts {
         assert!(
             self.parts
                 .windows(2)
-                .all(|pair| pair[0].dynamic || pair[1].dynamic),
+                .all(|pair| pair.iter().any(|part| part.dynamic)),
             "compound law broken: op {id} holds adjacent static parts — the lowering fuses them",
         );
         let mut cursor = span.start;
@@ -240,19 +240,18 @@ pub(crate) fn legacy_slot_filler_text(text: &str) -> bool {
         return false;
     }
 
-    let mut index = 0usize;
-    while index < text.len() {
-        let tail = &text[index..];
-        let ch = tail.chars().next().expect("index is in-bounds");
-        if ch.is_whitespace() {
-            index += ch.len_utf8();
-            continue;
-        }
-        if let Some(consumed) = nbsp_entity_len(tail) {
-            index += consumed;
-            continue;
-        }
-        return false;
+    let mut tail = text;
+    while let Some(ch) = tail.chars().next() {
+        let consumed = if ch.is_whitespace() {
+            ch.len_utf8()
+        } else if let Some(consumed) = nbsp_entity_len(tail) {
+            consumed
+        } else {
+            return false;
+        };
+        // Both lengths end on a char boundary (a whole char, or an ASCII
+        // entity), so the tail always advances.
+        tail = tail.get(consumed..).unwrap_or_default();
     }
     true
 }
@@ -306,7 +305,7 @@ fn numeric_nbsp_entity_len(text: &str) -> Option<usize> {
     if index == start {
         return None;
     }
-    let digits = core::str::from_utf8(&bytes[start..index]).ok()?;
+    let digits = core::str::from_utf8(bytes.get(start..index)?).ok()?;
     if u32::from_str_radix(digits, radix).ok()? != 0xa0 {
         return None;
     }

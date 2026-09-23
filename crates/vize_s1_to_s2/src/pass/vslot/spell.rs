@@ -115,11 +115,12 @@ fn consume_scope(
     let Some(id) = id else {
         return SlotParams::Absent;
     };
-    let recorded = channels.scopes.get(id).unwrap_or_else(|| {
-        panic!(
-            "hygiene law broken: ui.slot-content {id} has no scope entry — every params-bearing spelling is an introduction site"
-        )
-    });
+    // Every params-bearing spelling is an introduction site, so the
+    // lowering recorded a scope entry; without one the view is as
+    // unkeyable as past id exhaustion.
+    let Some(recorded) = channels.scopes.get(id) else {
+        return SlotParams::Absent;
+    };
     assert!(
         !channels.seen_tags.contains(&recorded.tag),
         "hygiene law broken: ui.slot-content {id} reuses scope tag {} — introduction sites mint fresh tags",

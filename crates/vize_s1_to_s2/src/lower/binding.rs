@@ -22,7 +22,6 @@ use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
 
 use vize_s0::{Box, Span, String, Vec, cstr};
-use vize_s1::Element;
 
 use vize_s2::op::{
     Attribute, BindingContract, BindingOp, DynamicName, ModelOp, SlotContentOp, VueDirectiveOp,
@@ -31,7 +30,7 @@ use vize_s2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin};
 
 use super::cx::{Cx, attr_slice, attr_span};
 use super::directive::{Arg, Directive, Head};
-use super::element::attr_value_text;
+use super::element::attr_text;
 use super::expr::{desc, expr_at, simple_identifier};
 
 /// The op an attribute attaches to.
@@ -46,30 +45,28 @@ pub(crate) struct Owner<'a> {
 /// component.
 pub(crate) fn lower_attr<'a>(
     cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    index: usize,
+    attr: &vize_s1::Attribute<'a>,
     directive: &Directive<'a>,
     owner: &Owner<'a>,
     bindings: &mut Vec<'a, BindingOp<'a>>,
 ) {
-    let attr = &element.open.attrs[index];
     match directive.head {
-        Head::Bind => bindings.push(super::bindop::lower_bind(cx, element, index, directive)),
-        Head::On => bindings.push(super::bindop::lower_on(cx, element, index, directive)),
+        Head::Bind => bindings.push(super::bindop::lower_bind(cx, attr, directive)),
+        Head::On => bindings.push(super::bindop::lower_on(cx, attr, directive)),
         Head::Model => {
-            if let Some(op) = lower_model(cx, element, index, directive, owner) {
+            if let Some(op) = lower_model(cx, attr, directive, owner) {
                 bindings.push(op);
             }
         }
-        Head::Custom => bindings.push(lower_custom(cx, element, index, directive)),
-        Head::Slot => bindings.push(lower_slot_content(cx, element, index, directive)),
+        Head::Custom => bindings.push(lower_custom(cx, attr, directive)),
+        Head::Slot => bindings.push(lower_slot_content(cx, attr, directive)),
         Head::Once => {
-            if let Some(op) = super::once_memo::lower_once(cx, element, index, directive) {
+            if let Some(op) = super::once_memo::lower_once(cx, attr, directive) {
                 bindings.push(op);
             }
         }
         Head::Memo => {
-            if let Some(op) = super::once_memo::lower_memo(cx, element, index, directive) {
+            if let Some(op) = super::once_memo::lower_memo(cx, attr, directive) {
                 bindings.push(op);
             }
         }
@@ -83,22 +80,22 @@ pub(crate) fn lower_attr<'a>(
             ),
         ),
         Head::Show => {
-            if let Some(op) = super::show::lower_show(cx, element, index, directive) {
+            if let Some(op) = super::show::lower_show(cx, attr, directive) {
                 bindings.push(op);
             }
         }
         Head::Html => {
-            if let Some(op) = super::html::lower_html(cx, element, index, directive) {
+            if let Some(op) = super::html::lower_html(cx, attr, directive) {
                 bindings.push(op);
             }
         }
         Head::Text => {
-            if let Some(op) = super::vtext::lower_text(cx, element, index, directive) {
+            if let Some(op) = super::vtext::lower_text(cx, attr, directive) {
                 bindings.push(op);
             }
         }
         Head::Cloak => {
-            bindings.push(super::cloak::lower_cloak(cx, element, index, directive));
+            bindings.push(super::cloak::lower_cloak(cx, attr, directive));
         }
         Head::If | Head::ElseIf | Head::Else | Head::For => {
             // The structural pass consumed the first of each; a duplicate
@@ -139,14 +136,12 @@ pub(crate) fn defer(
 /// modifiers ride as synthesized attributes carrying the binding's span.
 fn lower_model<'a>(
     cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    index: usize,
+    attr: &vize_s1::Attribute<'a>,
     directive: &Directive<'a>,
     owner: &Owner<'a>,
 ) -> Option<BindingOp<'a>> {
-    let attr = &element.open.attrs[index];
     let span = attr_span(cx, attr);
-    let text = attr_value_text(element, index);
+    let text = attr_text(attr);
     if text.map(str::trim).is_none_or(str::is_empty) {
         cx.error(span, String::from("v-model is missing expression."));
         cx.record(
@@ -208,11 +203,9 @@ fn lower_model<'a>(
 /// op, exactly as authored.
 fn lower_custom<'a>(
     cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    index: usize,
+    attr: &vize_s1::Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
-    let attr = &element.open.attrs[index];
     let span = attr_span(cx, attr);
     let node = cx.mint_op();
     let argument = directive.arg.map(|arg| match arg {
@@ -223,7 +216,7 @@ fn lower_custom<'a>(
     for modifier in &directive.modifiers {
         modifiers.push(modifier);
     }
-    let value = attr_value_text(element, index)
+    let value = attr_text(attr)
         .map(str::trim)
         .filter(|text| !text.is_empty())
         .map(|text| expr_at(cx, text));
@@ -259,11 +252,9 @@ fn lower_custom<'a>(
 /// identifier-enumeration seam (#4365).
 pub(crate) fn lower_slot_content<'a>(
     cx: &mut Cx<'a>,
-    element: &Element<'a>,
-    index: usize,
+    attr: &vize_s1::Attribute<'a>,
     directive: &Directive<'a>,
 ) -> BindingOp<'a> {
-    let attr = &element.open.attrs[index];
     let span = attr_span(cx, attr);
     let node = cx.mint_op();
     let name = directive.arg.map(|arg| match arg {
@@ -274,7 +265,7 @@ pub(crate) fn lower_slot_content<'a>(
     for modifier in &directive.modifiers {
         modifiers.push(modifier);
     }
-    let params = attr_value_text(element, index)
+    let params = attr_text(attr)
         .map(str::trim)
         .filter(|text| !text.is_empty())
         .map(|text| expr_at(cx, text));

@@ -78,8 +78,11 @@ impl FactProducer<PartialPage> for PartialRegions {
 
 impl FactProducer<PartialPage> for PartialScopes {
     fn produce(page: &PartialPage, inputs: &FactView<'_>) -> FactTable<Self> {
-        let regions = inputs.get::<PartialRegions>().expect("declared");
-        let holes = inputs.get::<PartialHoles>().expect("declared");
+        let (Ok(regions), Ok(holes)) =
+            (inputs.get::<PartialRegions>(), inputs.get::<PartialHoles>())
+        else {
+            return FactTable::default();
+        };
         page.names
             .iter()
             .filter_map(|name| {

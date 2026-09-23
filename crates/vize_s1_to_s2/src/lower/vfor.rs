@@ -44,35 +44,35 @@ pub(crate) struct ForSplit {
 /// whole as `Opaque(ForValue)`.
 pub fn split_v_for_value(raw: &str) -> Option<(Option<&str>, &str)> {
     let split = split_for(raw)?;
-    let aliases = split_aliases(&raw[..split.alias_end])?;
+    let aliases = split_aliases(raw.get(..split.alias_end)?)?;
     let value = aliases.first().copied().filter(|alias| !alias.is_empty());
-    Some((value, &raw[split.source_start..]))
+    Some((value, raw.get(split.source_start..)?))
 }
 
 /// Find the first viable ` in ` / ` of ` separator: the keyword with
 /// whitespace on both sides, exactly the shipped grammar.
 pub(crate) fn split_for(content: &str) -> Option<ForSplit> {
     for (keyword_start, first) in content.char_indices() {
-        let keyword = match first {
-            'i' if content[keyword_start..].starts_with("in") => "in",
-            'o' if content[keyword_start..].starts_with("of") => "of",
-            _ => continue,
+        if !matches!(first, 'i' | 'o') {
+            continue;
+        }
+        let Some((before, from_keyword)) = content.split_at_checked(keyword_start) else {
+            continue;
         };
-        let has_space_before = content[..keyword_start]
-            .chars()
-            .next_back()
-            .is_some_and(char::is_whitespace);
-        let after_keyword = keyword_start + keyword.len();
-        let has_space_after = content[after_keyword..]
-            .chars()
-            .next()
-            .is_some_and(char::is_whitespace);
+        let Some(after) = from_keyword
+            .strip_prefix("in")
+            .or_else(|| from_keyword.strip_prefix("of"))
+        else {
+            continue;
+        };
+        let has_space_before = before.chars().next_back().is_some_and(char::is_whitespace);
+        let has_space_after = after.chars().next().is_some_and(char::is_whitespace);
         if !(has_space_before && has_space_after) {
             continue;
         }
 
-        let alias_end = content[..keyword_start].trim_end().len();
-        let source = content[after_keyword..].trim_start();
+        let alias_end = before.trim_end().len();
+        let source = after.trim_start();
         if source.is_empty() {
             return None;
         }
@@ -98,10 +98,7 @@ pub(crate) fn split_aliases(alias: &str) -> Option<ForAliases<'_>> {
     let starts = trimmed.starts_with('(');
     let ends = trimmed.ends_with(')');
     let inner = if starts && ends {
-        if trimmed.len() < 2 {
-            return None;
-        }
-        &trimmed[1..trimmed.len() - 1]
+        trimmed.strip_prefix('(')?.strip_suffix(')')?
     } else if starts || ends {
         return None;
     } else {
@@ -144,13 +141,18 @@ fn split_top_level(input: &str) -> ForAliases<'_> {
             b'[' => bracket += 1,
             b']' => bracket = bracket.saturating_sub(1),
             b',' if paren == 0 && brace == 0 && bracket == 0 => {
-                aliases.push(input[start..idx].trim());
+                // Both ends sit on ASCII commas, so the slice is whole.
+                if let Some(alias) = input.get(start..idx) {
+                    aliases.push(alias.trim());
+                }
                 start = idx + 1;
             }
             _ => {}
         }
     }
-    aliases.push(input[start..].trim());
+    if let Some(alias) = input.get(start..) {
+        aliases.push(alias.trim());
+    }
     aliases
 }
 

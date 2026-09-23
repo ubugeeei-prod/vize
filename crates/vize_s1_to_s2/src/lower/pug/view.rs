@@ -35,15 +35,21 @@ impl PugBlockView {
     /// A template the lowering refuses has no view: `Err` carries the
     /// derivation with its diagnostics.
     pub fn new(host: &str, body: Range<usize>) -> Result<Self, PugTemplate> {
-        let template =
-            derive_template_source_with(&host[body.clone()], PugRendering::AuthoredOrder);
+        let (Some(before), Some(pug), Some(after)) = (
+            host.get(..body.start),
+            host.get(body.clone()),
+            host.get(body.end..),
+        ) else {
+            return Err(refuse_range());
+        };
+        let template = derive_template_source_with(pug, PugRendering::AuthoredOrder);
         if template.has_errors() {
             return Err(template);
         }
         let mut source = String::with_capacity(host.len() + template.html.len());
-        source.push_str(&host[..body.start]);
+        source.push_str(before);
         source.push_str(&template.html);
-        source.push_str(&host[body.end..]);
+        source.push_str(after);
         Ok(Self {
             source,
             body_start: body.start as u32,
@@ -119,4 +125,15 @@ mod tests {
         let refused = PugBlockView::new(host, 0..host.len()).expect_err("refused");
         assert!(refused.has_errors());
     }
+}
+
+/// The derivation for a `body` range that is not a slice of the host: an
+/// empty template carrying one refusal.
+fn refuse_range() -> PugTemplate {
+    let mut template = derive_template_source_with("", PugRendering::AuthoredOrder);
+    template.diagnostics.push(crate::exemptions::lowering(
+        vize_s0::Span::new(0, 0),
+        "the pug block range is not a UTF-8 slice of the host source",
+    ));
+    template
 }

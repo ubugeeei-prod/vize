@@ -30,15 +30,10 @@ pub(super) fn next<'a>(css: &'a str, from: usize) -> Option<Hit<'a>> {
 }
 
 fn trim_outer_quotes(expr: &str) -> &str {
-    let bytes = expr.as_bytes();
-    if bytes.len() >= 2
-        && matches!(bytes.first(), Some(b'"' | b'\''))
-        && bytes.first() == bytes.last()
-    {
-        &expr[1..expr.len() - 1]
-    } else {
-        expr
-    }
+    ['"', '\'']
+        .into_iter()
+        .find_map(|quote| expr.strip_prefix(quote)?.strip_suffix(quote))
+        .unwrap_or(expr)
 }
 
 fn find_matching_paren(s: &str) -> Option<usize> {
@@ -108,8 +103,7 @@ fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
     let mut in_block_comment = false;
     let mut in_line_comment = false;
 
-    while pos < bytes.len() {
-        let byte = bytes[pos];
+    while let Some(&byte) = bytes.get(pos) {
         if in_block_comment {
             if byte == b'*' && bytes.get(pos + 1) == Some(&b'/') {
                 in_block_comment = false;
@@ -156,7 +150,9 @@ fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
                 in_line_comment = true;
                 pos += 2;
             }
-            b'v' if bytes[pos..].starts_with(b"v-bind(")
+            b'v' if bytes
+                .get(pos..)
+                .is_some_and(|rest| rest.starts_with(b"v-bind("))
                 && has_v_bind_left_boundary(bytes, pos) =>
             {
                 return Some(pos);
@@ -168,7 +164,9 @@ fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
 }
 
 fn has_v_bind_left_boundary(bytes: &[u8], pos: usize) -> bool {
-    pos == 0 || !is_css_identifier_byte(bytes[pos - 1])
+    pos.checked_sub(1)
+        .and_then(|before| bytes.get(before))
+        .is_none_or(|&byte| !is_css_identifier_byte(byte))
 }
 
 fn is_css_identifier_byte(byte: u8) -> bool {

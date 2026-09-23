@@ -89,6 +89,9 @@ fn run_dom_legacy_transform<'a, O: PassObserver>(
         Ok(())
     });
     if let Err(failure) = outcome {
-        panic!("s2 dom legacy transform stopped: {}", failure.reason);
+        lowered.diagnostics.push(crate::exemptions::lowering(
+            vize_s0::Span::new(0, 0),
+            failure.reason,
+        ));
     }
 }
