@@ -6,7 +6,7 @@
 // seeded trees with `vize lint --cross-file`, and asserts by identity: every
 // injection found at its exact span, the one baseline finding moved through
 // the insertions, nothing else. Corpus runs are a local concern (see
-// davinci-road/plan/phase-4-records/p4-11a.md).
+// docs/davinci/plan/phase-4-records/p4-11a.md).
 
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";

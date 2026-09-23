@@ -19,22 +19,22 @@ import {
 } from "./support/davinci-phase2-ledger.ts";
 
 const docs = {
-  roadmap: new URL("../../davinci-road/roadmap.md", import.meta.url),
-  readme: new URL("../../davinci-road/plan/README.md", import.meta.url),
-  phase: new URL("../../davinci-road/plan/phase-2.md", import.meta.url),
-  tasks: new URL("../../davinci-road/plan/phase-2-tasks.md", import.meta.url),
-  tasksLater: new URL("../../davinci-road/plan/phase-2-tasks-later.md", import.meta.url),
-  records: new URL("../../davinci-road/plan/phase-2-records.md", import.meta.url),
-  p2_9: new URL("../../davinci-road/plan/phase-2-records/p2-9.md", import.meta.url),
+  roadmap: new URL("../../docs/davinci/roadmap.md", import.meta.url),
+  readme: new URL("../../docs/davinci/plan/README.md", import.meta.url),
+  phase: new URL("../../docs/davinci/plan/phase-2.md", import.meta.url),
+  tasks: new URL("../../docs/davinci/plan/phase-2-tasks.md", import.meta.url),
+  tasksLater: new URL("../../docs/davinci/plan/phase-2-tasks-later.md", import.meta.url),
+  records: new URL("../../docs/davinci/plan/phase-2-records.md", import.meta.url),
+  p2_9: new URL("../../docs/davinci/plan/phase-2-records/p2-9.md", import.meta.url),
   p2_9_11: new URL(
-    "../../davinci-road/plan/phase-2-records/p2-9/installment-11.md",
+    "../../docs/davinci/plan/phase-2-records/p2-9/installment-11.md",
     import.meta.url,
   ),
-  p2_11: new URL("../../davinci-road/plan/phase-2-records/p2-11.md", import.meta.url),
-  p2_17: new URL("../../davinci-road/plan/phase-2-records/p2-17.md", import.meta.url),
-  suites: new URL("../../davinci-road/plan/test-suites.md", import.meta.url),
-  devtool: new URL("../../davinci-road/devtool.md", import.meta.url),
-  questions: new URL("../../davinci-road/open-questions.md", import.meta.url),
+  p2_11: new URL("../../docs/davinci/plan/phase-2-records/p2-11.md", import.meta.url),
+  p2_17: new URL("../../docs/davinci/plan/phase-2-records/p2-17.md", import.meta.url),
+  suites: new URL("../../docs/davinci/plan/test-suites.md", import.meta.url),
+  devtool: new URL("../../docs/davinci/devtool.md", import.meta.url),
+  questions: new URL("../../docs/davinci/open-questions.md", import.meta.url),
 } as const;
 
 function read(url: URL): string {

@@ -3,7 +3,7 @@
 //!
 //! Output formatters derive line and column from **file-absolute** byte
 //! offsets. A range measured in another frame renders on the wrong line —
-//! FP-1 (`davinci-road/plan/ledger-fp.md`): `type/require-typed-emits` and
+//! FP-1 (`docs/davinci/plan/ledger-fp.md`): `type/require-typed-emits` and
 //! `type/require-typed-props` reported script-analysis offsets shifted by the
 //! *template's* start, so squiggles landed on innocent template text.
 //!

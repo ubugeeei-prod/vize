@@ -49,7 +49,7 @@ test("the storage aggregates are derived from the exact inventory, never hand-co
   };
   assert.notEqual(renderStorageSummary([moved, ...rest]), summary);
   const plan = fs.readFileSync(
-    path.join(repoRoot, "davinci-road/plan/storage-boundary.md"),
+    path.join(repoRoot, "docs/davinci/plan/storage-boundary.md"),
     "utf8",
   );
   // The plan keeps the policy and the category reasons; every aggregate lives

@@ -245,7 +245,7 @@ fn traversal_budget(fixture: &str) -> TraversalBudget {
         .expect("crate directory")
         .parent()
         .expect("repo root");
-    let text = std::fs::read_to_string(repo.join("davinci-road/plan/budgets.toml"))
+    let text = std::fs::read_to_string(repo.join("docs/davinci/plan/budgets.toml"))
         .expect("budgets.toml reads");
     let value: toml::Value = toml::from_str(&text).expect("budgets.toml parses");
     let id = format!("dom_{fixture}");
@@ -265,7 +265,7 @@ fn phase_2_dom_walk_target() -> u32 {
         .expect("crate directory")
         .parent()
         .expect("repo root");
-    let text = std::fs::read_to_string(repo.join("davinci-road/plan/budgets.toml"))
+    let text = std::fs::read_to_string(repo.join("docs/davinci/plan/budgets.toml"))
         .expect("budgets.toml reads");
     let value: toml::Value = toml::from_str(&text).expect("budgets.toml parses");
     let entry = value

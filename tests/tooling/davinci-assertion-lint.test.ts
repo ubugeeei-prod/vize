@@ -1,5 +1,5 @@
 // Self-test for the Davinci banned-assertion lint ("lint the linter",
-// plan/phase-0.md P0-12). The lint enforces davinci-road/assurance.md
+// plan/phase-0.md P0-12). The lint enforces docs/davinci/assurance.md
 // "Strict oracles — no partial matching" over Rust test code; this suite
 // pins (a) the exact finding set on a deliberately bad fixture and (b) a
 // green run over the real tree under the committed allowlist.
@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const lintPath = path.join(repoRoot, "tools", "commands", "davinci", "assertion-lint.rs");
 const fixtureDir = path.join(repoRoot, "tests", "_fixtures", "davinci-assertion-lint");
-const allowlistPath = path.join(repoRoot, "davinci-road", "plan", "assertion-allowlist.toml");
+const allowlistPath = path.join(repoRoot, "docs/davinci", "plan", "assertion-allowlist.toml");
 
 function runLint(args: string[]) {
   return spawnSync("rust-script", [lintPath, ...args], { cwd: repoRoot, encoding: "utf8" });
@@ -78,7 +78,7 @@ test("assertion lint flags every marked weak assertion in the bad fixture, and o
     result.stdout,
     `${expectedFindings.join("\n")}\n` +
       "assertion-lint: 5 unlisted findings — fix the assertion (exact oracles only) " +
-      "or triage via davinci-road/plan/assertion-allowlist.toml\n",
+      "or triage via docs/davinci/plan/assertion-allowlist.toml\n",
   );
 });
 
@@ -106,7 +106,7 @@ test("explicit allowlist suppresses fixture findings only before expiry", () => 
       result.stdout,
       expectedFindings.map((finding) => `${finding} (allowlist entry expired)`).join("\n") +
         "\nassertion-lint: 5 unlisted findings — fix the assertion (exact oracles only) " +
-        "or triage via davinci-road/plan/assertion-allowlist.toml\n",
+        "or triage via docs/davinci/plan/assertion-allowlist.toml\n",
     );
   } finally {
     removeTemporaryAllowlist(expiredAllowlist);

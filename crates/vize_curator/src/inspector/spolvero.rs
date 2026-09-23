@@ -2,7 +2,7 @@
 //!
 //! The inspector's stage pages, in the feed shape `vize_davinci` owns
 //! (`folio::feed::SpolveroFeed`, committed schema
-//! `davinci-road/plan/spolvero-feed.schema.json`). There is exactly one
+//! `docs/davinci/plan/spolvero-feed.schema.json`). There is exactly one
 //! serializer of that shape - `SpolveroFeed::to_json` - so this module
 //! builds pages and parses the feed's own output into the
 //! `serde_json::Value` the payload embeds; it never re-encodes the shape.

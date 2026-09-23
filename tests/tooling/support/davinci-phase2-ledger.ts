@@ -204,7 +204,7 @@ export function assertP2_17P2_20ExitBlockers(
     "P2 exit gate",
   );
   const exitRecord = fs.readFileSync(
-    new URL("../../../davinci-road/plan/phase-2-records/p2-20.md", import.meta.url),
+    new URL("../../../docs/davinci/plan/phase-2-records/p2-20.md", import.meta.url),
     "utf8",
   );
 
@@ -265,7 +265,7 @@ export function assertP2_17P2_20ExitBlockers(
 
 function assertP2_17MechanicalWitnesses(): void {
   const signoffRecord = fs.readFileSync(
-    new URL("../../../davinci-road/plan/phase-2-records/p2-17.md", import.meta.url),
+    new URL("../../../docs/davinci/plan/phase-2-records/p2-17.md", import.meta.url),
     "utf8",
   );
   assert.match(signoffRecord, /No redundant encodings/);

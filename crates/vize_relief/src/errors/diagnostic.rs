@@ -18,7 +18,7 @@ use vize_s0::i18n::{Locale, translator};
 use vize_s0::{CompactString, Span, cstr};
 
 /// The exemption compiler errors report under until the compiler produces
-/// witnesses (P4-6), counted in `davinci-road/plan/witness-exemptions.tsv`.
+/// witnesses (P4-6), counted in `docs/davinci/plan/witness-exemptions.tsv`.
 pub static COMPILER_ERROR: Exemption = Exemption::new("vize_relief", "compiler-error");
 
 impl ErrorCode {

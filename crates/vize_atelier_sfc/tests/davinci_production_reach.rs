@@ -15,7 +15,7 @@
 //!
 //! Two gates ride on the measurement:
 //!
-//! - **Reach floors.** `davinci-road/plan/reach-budgets.toml` `[reach]` pins, per
+//! - **Reach floors.** `docs/davinci/plan/reach-budgets.toml` `[reach]` pins, per
 //!   shape, the accepted-template count on the committed fixtures. Floors
 //!   only rise (the ratchet); a regression fails here.
 //! - **Production parity.** Every DOM template the S2 emitter accepted is

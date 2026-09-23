@@ -1,5 +1,5 @@
 //! The S2 op family: one concrete typed enum per position, never a uniform
-//! `Operation` structure (`davinci-road/architecture.md`, "What we take
+//! `Operation` structure (`docs/davinci/architecture.md`, "What we take
 //! from MLIR, and what we refuse").
 //!
 //! # Regions are owned by their op

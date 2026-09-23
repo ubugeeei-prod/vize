@@ -4,7 +4,7 @@
 //! turns each into one remark named after the placement (`hoist`, `cache`,
 //! `group`): `applied` when committed, `missed` otherwise, with the args
 //! `reason`, `emitted-size`, `reactive-edges`, `update-path`, `budget-left`.
-//! The vocabulary is registered in `davinci-road/plan/remarks-format.md`.
+//! The vocabulary is registered in `docs/davinci/plan/remarks-format.md`.
 
 use alloc::vec::Vec;
 use core::fmt;

@@ -8,7 +8,7 @@
 import { formatTable } from "./markdown.mjs";
 import { SURFACES, surfaceNameKind } from "./consumer-migration-scan.mjs";
 
-export const SHARD_DIR_REL = "davinci-road/plan/consumer-migration-surfaces";
+export const SHARD_DIR_REL = "docs/davinci/plan/consumer-migration-surfaces";
 
 export function surfaceList(surfaceCounts) {
   const labels = SURFACES.filter((surface) => surfaceCounts[surface.id] > 0).map(

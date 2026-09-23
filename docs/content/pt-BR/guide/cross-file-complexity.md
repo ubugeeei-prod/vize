@@ -21,7 +21,7 @@ O modelo mapeia três sinais de complexidade para o Vue:
   visíveis como sinais entre fronteiras, em vez de serem achatadas em um único arquivo.
 
 A definição das métricas e os limites fixados no corpus estão em
-[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/davinci-road/plan/complexity-metrics.md).
+[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/plan/complexity-metrics.md).
 
 ## Pontuações
 

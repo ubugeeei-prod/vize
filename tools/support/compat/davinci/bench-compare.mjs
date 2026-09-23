@@ -1,12 +1,12 @@
 // Davinci bench budget gate (plan/phase-0.md P0-4).
 //
 // Compares the current davinci bench reports against the committed baseline
-// reports under the thresholds registered in davinci-road/plan/budgets.toml
+// reports under the thresholds registered in docs/davinci/plan/budgets.toml
 // `[bench]`, and exits non-zero on any breach. One verdict row per bench on
 // stdout, sorted by bench id, then a summary line.
 //
 // Inputs
-//   --budgets  <path>  budgets file      (default davinci-road/plan/budgets.toml)
+//   --budgets  <path>  budgets file      (default docs/davinci/plan/budgets.toml)
 //   --baseline <dir>   baseline reports  (default tools/benchmarks/results/davinci/baseline)
 //   --results  <dir>   current reports   (default tools/benchmarks/results/davinci)
 //   --bench    <id>    select one bench  (repeatable; default is the full registry)
@@ -47,7 +47,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."
 
 function parseArgs(argv) {
   const options = {
-    budgets: path.join(repoRoot, "davinci-road", "plan", "budgets.toml"),
+    budgets: path.join(repoRoot, "docs/davinci", "plan", "budgets.toml"),
     baseline: path.join(repoRoot, "tools", "benchmarks", "results", "davinci", "baseline"),
     results: path.join(repoRoot, "tools", "benchmarks", "results", "davinci"),
     benches: [],

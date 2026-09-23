@@ -21,7 +21,7 @@ Vize のファイル間の複雑さレポートは、Croquis が作るプロジ�
   平坦化せず、境界を越えるシグナルとして残します。
 
 メトリクスの定義とコーパスから決めたしきい値は
-[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/davinci-road/plan/complexity-metrics.md)
+[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/plan/complexity-metrics.md)
 にあります。
 
 ## スコア

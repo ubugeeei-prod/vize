@@ -112,7 +112,7 @@ export function renderConsumerMigrationSummary(scan) {
   return `# Consumer migration surfaces summary (computed, not committed)
 
 Cross-file aggregates of the sharded inventory in
-\`davinci-road/plan/consumer-migration-surfaces/\`. Printed by
+\`docs/davinci/plan/consumer-migration-surfaces/\`. Printed by
 \`${SUMMARY_COMMAND}\`; every number is a sum over the TSV shards.
 
 ## Consumer summary

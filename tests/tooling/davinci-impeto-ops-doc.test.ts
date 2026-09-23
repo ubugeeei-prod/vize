@@ -27,7 +27,7 @@ function leanParserMnemonics(): string[] {
 }
 
 function tableRows(): Map<string, { vapor: string; vdom: string }> {
-  const doc = readRepoFile("davinci-road", "plan", "impeto-ops.md");
+  const doc = readRepoFile("docs/davinci", "plan", "impeto-ops.md");
   const rows = new Map<string, { vapor: string; vdom: string }>();
 
   for (const line of doc.split("\n")) {
@@ -78,12 +78,12 @@ test("P3-5 Impeto op reference records the executable Lean trace labels", () => 
 });
 
 test("P3-5 Impeto op reference is cross-linked from Folio docs and rustdoc", () => {
-  const folio = readRepoFile("davinci-road", "plan", "folio-format-impeto.md");
+  const folio = readRepoFile("docs/davinci", "plan", "folio-format-impeto.md");
   const lib = readRepoFile("crates", "vize_impeto", "src", "lib.rs");
-  const phase = readRepoFile("davinci-road", "plan", "phase-3.md");
+  const phase = readRepoFile("docs/davinci", "plan", "phase-3.md");
 
   assert.match(folio, /\[`impeto-ops\.md`\]\(\.\/impeto-ops\.md\)/u);
-  assert.match(lib, /\[`davinci-road\/plan\/impeto-ops\.md`\]/u);
+  assert.match(lib, /\[`docs\/davinci\/plan\/impeto-ops\.md`\]/u);
   assert.match(phase, /P3-5 Impeto op reference doc/u);
   assert.match(phase, /\[P3-5 record\]\(\.\/phase-3-records\/p3-5\.md\)/u);
 });

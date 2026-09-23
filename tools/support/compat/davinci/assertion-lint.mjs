@@ -1,6 +1,6 @@
 // Banned weak-assertion lint for Rust test code (Davinci P0-12).
 //
-// Doctrine: davinci-road/assurance.md, "Strict oracles — no partial
+// Doctrine: docs/davinci/assurance.md, "Strict oracles — no partial
 // matching". Test assertions compare whole normalized artifacts; substring,
 // prefix/suffix, regex, and partial-JSON probes are banned in test code.
 //
@@ -40,7 +40,7 @@
 //   - when a span cannot be delimited confidently (unbalanced parens,
 //     macro invoked with `[]`/`{}` delimiters), nothing is flagged.
 //
-// Allowlist: davinci-road/plan/assertion-allowlist.toml. Each `[[allow]]`
+// Allowlist: docs/davinci/plan/assertion-allowlist.toml. Each `[[allow]]`
 // group carries one justification and one expiry date plus the `paths` it
 // covers (repo-root-relative, forward slashes); a listed path suppresses
 // all findings in that file until the group expires. Expired groups stop
@@ -62,7 +62,7 @@ import { parseTomlLite, TomlLiteError } from "./toml-lite.mjs";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 const defaultAllowlistPath = path.join(
   repoRoot,
-  "davinci-road",
+  "docs/davinci",
   "plan",
   "assertion-allowlist.toml",
 );
@@ -238,7 +238,7 @@ function main() {
 
   if (unlisted.length > 0) {
     console.log(
-      `assertion-lint: ${unlisted.length} unlisted findings — fix the assertion (exact oracles only) or triage via davinci-road/plan/assertion-allowlist.toml`,
+      `assertion-lint: ${unlisted.length} unlisted findings — fix the assertion (exact oracles only) or triage via docs/davinci/plan/assertion-allowlist.toml`,
     );
     return 1;
   }

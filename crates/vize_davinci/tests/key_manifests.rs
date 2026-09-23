@@ -2,7 +2,7 @@
 //!
 //! Every declared input of every cached artifact changes its key; nothing
 //! else does; a manifest that declares a missing or an extra input cannot
-//! key the artifact at all; and `davinci-road/plan/key-manifests.md` lists
+//! key the artifact at all; and `docs/davinci/plan/key-manifests.md` lists
 //! exactly the artifacts and inputs `vize_davinci::key::manifest` declares.
 
 use std::fmt::Write as _;
@@ -14,7 +14,7 @@ use vize_davinci::key::{
 use vize_davinci::stage::Stage;
 use vize_s0::String;
 
-const DOC: &str = include_str!("../../../davinci-road/plan/key-manifests.md");
+const DOC: &str = include_str!("../../../docs/davinci/plan/key-manifests.md");
 
 /// A content key of `stage`, or `None` for an artifact keyed by its
 /// manifest alone.

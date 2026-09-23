@@ -33,7 +33,7 @@
 //!   surface shares, localized through a caller-supplied catalog.
 //!
 //! The stage IRs themselves land in their own crates (`vize_s2` for S2);
-//! see `davinci-road/architecture.md`. New implementation code should prefer
+//! see `docs/davinci/architecture.md`. New implementation code should prefer
 //! the stage aliases recorded in [`stage`] (`vize_s0`, `vize_s1`, `vize_s2`,
 //! `vize_s1_to_s2`) over any remaining historical art-name package ids.
 //!

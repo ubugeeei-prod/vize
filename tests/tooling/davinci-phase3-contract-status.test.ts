@@ -5,8 +5,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const phasePath = path.join(repoRoot, "davinci-road", "plan", "phase-3.md");
-const recordsRoot = path.join(repoRoot, "davinci-road", "plan", "phase-3-records");
+const phasePath = path.join(repoRoot, "docs/davinci", "plan", "phase-3.md");
+const recordsRoot = path.join(repoRoot, "docs/davinci", "plan", "phase-3-records");
 
 const phase = fs.readFileSync(phasePath, "utf8");
 

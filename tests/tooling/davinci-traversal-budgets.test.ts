@@ -1,6 +1,6 @@
 // Davinci traversal budgets (plan/phase-2.md P2-12a).
 //
-// Three suites, all reading davinci-road/plan/budgets.toml:
+// Three suites, all reading docs/davinci/plan/budgets.toml:
 //   1. Traversal reconciliation — every `<backend>_<fixture>` id under
 //      [traversal] has a walk-probe recorder that measures it and vice versa.
 //      The backend domain is derived from the crates that ship a
@@ -17,7 +17,7 @@
 // because either file alone would breach the 350-line source budget.
 //
 // The measurement, the exclusion list and the reading of the numbers:
-// davinci-road/plan/walk-baseline.md and plan/phase-2-records.md#p2-12a.
+// docs/davinci/plan/walk-baseline.md and plan/phase-2-records.md#p2-12a.
 
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const budgetsPath = path.join(repoRoot, "davinci-road", "plan", "budgets.toml");
+const budgetsPath = path.join(repoRoot, "docs/davinci", "plan", "budgets.toml");
 
 const budgetsText = fs.readFileSync(budgetsPath, "utf8");
 const budgets = parseTomlLite(budgetsText) as {

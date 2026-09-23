@@ -14,7 +14,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../
 // already hydrates (check.yml, "Hydrate CLI diagnostic fixture"), the
 // metamorphic lane's shard. The full-corpus recipe — and the distribution
 // the metric spec pins its thresholds from — is the same env var pointed at
-// tests/_fixtures/_git (davinci-road/plan/complexity-metrics.md).
+// tests/_fixtures/_git (docs/davinci/plan/complexity-metrics.md).
 const shard = ["tests/_fixtures/_git/ant-design-vue", "tests/_fixtures/_git/create-vue"];
 
 function hydrated(relative: string): boolean {

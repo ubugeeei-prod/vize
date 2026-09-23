@@ -14,7 +14,7 @@
 //!
 //! Producers that predate the witness SDK report errors under a declared
 //! [`Exemption`] instead — [`Witness::LegacyExempt`] — so the exemption is an
-//! entry in an inventory (`davinci-road/plan/witness-exemptions.tsv`) rather
+//! entry in an inventory (`docs/davinci/plan/witness-exemptions.tsv`) rather
 //! than an absence, which is the whole point of "never silently".
 
 pub mod exemption;

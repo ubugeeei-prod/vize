@@ -4,8 +4,8 @@
 //! [`RemarkCollector`](crate::pass::RemarkCollector) finishes into - so the
 //! text a snapshot or a corpus baseline pins and the JSON Spolvero and agents
 //! read cannot disagree. The grammar and the per-pass vocabulary are
-//! `davinci-road/plan/remarks-format.md`; the JSON shape is committed as
-//! `davinci-road/plan/remarks.schema.json`.
+//! `docs/davinci/plan/remarks-format.md`; the JSON shape is committed as
+//! `docs/davinci/plan/remarks.schema.json`.
 //!
 //! # The page
 //!

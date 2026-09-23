@@ -1,6 +1,6 @@
 // Seeded-defect generator + identity-based recall assertion (Davinci P0-13).
 //
-// Doctrine: davinci-road/assurance.md, "Seeded-defect recall — the FN
+// Doctrine: docs/davinci/assurance.md, "Seeded-defect recall — the FN
 // oracle". Two pilot defect classes are injected into COPIES of real
 // sources (originals are never touched):
 //

@@ -4,8 +4,8 @@
 //
 // Node builtins only is a hard constraint for these tools, so this file
 // implements exactly the subset the committed Davinci TOML artifacts use
-// (davinci-road/plan/assertion-allowlist.toml, davinci-road/plan/taxonomy.toml,
-// davinci-road/plan/budgets.toml) and rejects everything else loudly instead
+// (docs/davinci/plan/assertion-allowlist.toml, docs/davinci/plan/taxonomy.toml,
+// docs/davinci/plan/budgets.toml) and rejects everything else loudly instead
 // of guessing:
 //
 //   - `#` comments and blank lines

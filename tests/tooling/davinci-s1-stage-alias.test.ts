@@ -36,7 +36,7 @@ test("Davinci S1 uses the physical crate package and directory", () => {
 });
 
 test("P2-7 lossless S1 recipes use the physical crate package", () => {
-  const record = readRepoFile("davinci-road", "plan", "phase-2-records", "p2-7.md");
+  const record = readRepoFile("docs/davinci", "plan", "phase-2-records", "p2-7.md");
   assert.match(record, /cargo test -p vize_s1 --features davinci-differential/u);
   assert.match(record, /cargo tree -i vize_s1\s+--workspace/u);
   assert.doesNotMatch(record, /cargo (?:test -p|tree -i) vize_sinopia/u);

@@ -98,8 +98,8 @@ fn run_node_generator_result(
         ));
     }
     if mode == "--write" {
-        fs::create_dir_all(root.join("davinci-road/plan"))
-            .map_err(|error| format!("cannot create davinci-road/plan: {error}"))?;
+        fs::create_dir_all(root.join("docs/davinci/plan"))
+            .map_err(|error| format!("cannot create docs/davinci/plan: {error}"))?;
     }
 
     let status = Command::new("node")

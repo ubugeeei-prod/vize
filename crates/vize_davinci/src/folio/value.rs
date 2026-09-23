@@ -8,7 +8,7 @@
 //!
 //! Values are line-atomic: a value containing `\n` would span physical
 //! lines and break the byte round-trip, so embedding one is outside the
-//! contract (`davinci-road/plan/folio-format.md`, "Derived pages"). The
+//! contract (`docs/davinci/plan/folio-format.md`, "Derived pages"). The
 //! same goes for a map key containing `=`.
 
 use core::fmt;

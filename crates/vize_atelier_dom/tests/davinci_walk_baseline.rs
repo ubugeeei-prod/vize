@@ -3,7 +3,7 @@
 //! One fused compile per ladder fixture, diffing
 //! `vize_atelier_core::walk_probe` around it: the template-node visits and
 //! stage tree-walks the shipped pipeline makes. `BASELINE` is the pre-S2
-//! sweep that produced `davinci-road/plan/walk-baseline.md` and filled
+//! sweep that produced `docs/davinci/plan/walk-baseline.md` and filled
 //! `budgets.toml [traversal]`; it stays fixed as the "before" budget.
 //! `PRODUCTION_FLOOR` pins the source-map-free DOM selector after the S2
 //! switch. Any increase means a stage started walking the legacy tree again

@@ -15,7 +15,7 @@ import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.mjs"
 import { readRepoFile, root as repoRoot } from "./support/github-workflows.ts";
 
 const tool = path.join(repoRoot, "tools/commands/davinci/resource-budgets.rs");
-const budgetsText = readRepoFile("davinci-road", "plan", "budgets.toml");
+const budgetsText = readRepoFile("docs/davinci", "plan", "budgets.toml");
 const presetFields = [
   "machine",
   "project",
@@ -168,7 +168,7 @@ test("a number without methodology is rejected", () => {
 
 test("an injected loosening fails the ratchet; a tightening passes", () => {
   const ceiling = (resource[firstPreset][firstMetric] as Metric).ceiling;
-  const base = path.join(repoRoot, "davinci-road/plan/budgets.toml");
+  const base = path.join(repoRoot, "docs/davinci/plan/budgets.toml");
   withBudgets(
     mutateMetric(firstMetric, (line) =>
       line.replace(/ceiling = [\d.]+/u, `ceiling = ${ceiling + 1}`),

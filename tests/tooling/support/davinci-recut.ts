@@ -21,7 +21,7 @@ export interface Contract {
   deps: string[];
 }
 
-export const plan = new URL("../../../davinci-road/plan/", import.meta.url);
+export const plan = new URL("../../../docs/davinci/plan/", import.meta.url);
 
 export function readPlan(relative: string): string {
   return fs.readFileSync(new URL(relative, plan), "utf8");

@@ -2,8 +2,8 @@
 //
 // Scans the HYDRATED corpus projects registered in
 // tests/_fixtures/vue-ecosystem-fixtures.json for the construct-taxonomy
-// dimensions in davinci-road/plan/taxonomy.toml and emits
-// davinci-road/plan/corpus-coverage.md: per-construct x per-project counts
+// dimensions in docs/davinci/plan/taxonomy.toml and emits
+// docs/davinci/plan/corpus-coverage.md: per-construct x per-project counts
 // plus a scope-proof footer (hydrated-project count vs manifest total).
 //
 // Inputs per project:
@@ -25,7 +25,7 @@
 //
 // Modes:
 //   (default)  dry run — scan and print a summary; nothing is written
-//   --write    write davinci-road/plan/corpus-coverage.md
+//   --write    write docs/davinci/plan/corpus-coverage.md
 //   --check    verify the committed report byte-matches a fresh scan
 //              (exit 1 on drift)
 //
@@ -47,9 +47,9 @@ import { buildReport } from "./lib/corpus-coverage-render.mjs";
 import { parseTomlLite, TomlLiteError } from "./toml-lite.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
-const taxonomyPath = path.join(repoRoot, "davinci-road", "plan", "taxonomy.toml");
+const taxonomyPath = path.join(repoRoot, "docs/davinci", "plan", "taxonomy.toml");
 const manifestPath = path.join(repoRoot, "tests", "_fixtures", "vue-ecosystem-fixtures.json");
-const reportPath = path.join(repoRoot, "davinci-road", "plan", "corpus-coverage.md");
+const reportPath = path.join(repoRoot, "docs/davinci", "plan", "corpus-coverage.md");
 
 function fail(message) {
   console.error(message);

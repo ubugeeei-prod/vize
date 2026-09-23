@@ -1,7 +1,7 @@
 //! The budget-counting observer: the walk counter the traversal gate reads.
 //!
 //! `budgets.toml [traversal]` gates walks per fixture, and
-//! `davinci-road/plan/walk-baseline.md` records what the pre-S2 pipeline
+//! `docs/davinci/plan/walk-baseline.md` records what the pre-S2 pipeline
 //! spends. P2-12a measured that with a temporary probe hard-wired into the
 //! atelier stages; this observer is what replaces it once passes run through
 //! the manager, and it counts the same quantity by construction rather than by

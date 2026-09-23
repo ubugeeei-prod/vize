@@ -5,7 +5,7 @@
 //! shape - `{pass, kind, name, span, args}` - with **structured** args, since
 //! free-form strings are unfilterable (LLVM's own regret). The contract,
 //! including the per-pass vocabulary, lives in
-//! `davinci-road/plan/remarks-format.md`.
+//! `docs/davinci/plan/remarks-format.md`.
 //!
 //! # The channel is the observer
 //!

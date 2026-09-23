@@ -1,4 +1,4 @@
-// P0-11 profile export (`davinci-road/plan/profile-export.schema.json`): the
+// P0-11 profile export (`docs/davinci/plan/profile-export.schema.json`): the
 // timing artifact Spolvero reads. `analyzeSfc` returns the ladder run's step
 // timings in this shape under `spolveroProfile`; like the feed, it is
 // negotiated on `schema_version` before any span is read.

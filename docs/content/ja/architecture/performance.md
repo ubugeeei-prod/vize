@@ -126,7 +126,7 @@ Vite プラグイン (`@vizejs/vite-plugin`) はファイル単位でキャッ�
 
 上記のコンパイラ内部の作業は、クレートごとのマイクロベンチ ハーネス (`cargo bench --bench davinci`) によって、固定された 6 つのフィクスチャのラダー `tools/benchmarks/crates/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue` 上で測定されます。
 
-**これらの数値の読み方。** 割り当て回数は決定的でマシンに依存しないため、正確な事実であり、リグレッションのラチェットとして使われます。実行時間は共有の開発マシン上で `--quick` サンプリングにより測定されたもので、**方向性を示すだけ**です。リファレンスランナー (Blacksmith) での記録は保留中であり、そのため `davinci-road/plan/budgets.toml` の `wall_p50_ns` と `allocs` はすべて `0` (「未記録、参考のみ」の意味) のままです。実行ごとの結果ファイルは `tools/benchmarks/results/davinci/` に出力されますが、これはローカルの成果物であり、コミットされたベースラインではありません。
+**これらの数値の読み方。** 割り当て回数は決定的でマシンに依存しないため、正確な事実であり、リグレッションのラチェットとして使われます。実行時間は共有の開発マシン上で `--quick` サンプリングにより測定されたもので、**方向性を示すだけ**です。リファレンスランナー (Blacksmith) での記録は保留中であり、そのため `docs/davinci/plan/budgets.toml` の `wall_p50_ns` と `allocs` はすべて `0` (「未記録、参考のみ」の意味) のままです。実行ごとの結果ファイルは `tools/benchmarks/results/davinci/` に出力されますが、これはローカルの成果物であり、コミットされたベースラインではありません。
 
 コンパイル 1 回あたりの割り当て呼び出し回数、文字列とアリーナの作業の前後 (正確値、同一フィクスチャ):
 

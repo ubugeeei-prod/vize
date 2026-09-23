@@ -3,12 +3,12 @@
 // Exercises both FP/FN pilot tools over the COMMITTED miniature fixture set
 // (tests/_fixtures/davinci-fpfn) so CI proves the identity assertion without
 // corpus hydration; the corpus-shard run stays a local/nightly concern
-// (davinci-road/plan/phase-0.md, P0-13).
+// (docs/davinci/plan/phase-0.md, P0-13).
 //
 // The committed expected/assert-report.json pins the MEASURED current
 // toolchain behavior: class-(a) recall is 0/3 because vue/no-undefined-refs
 // is registered by no preset and no opt-in path, so `vize lint` cannot fire
-// it (davinci-road/plan/ledger-fn.md, FN-1). The day that rule gains a
+// it (docs/davinci/plan/ledger-fn.md, FN-1). The day that rule gains a
 // consumer this test fails loudly — refresh expected/assert-report.json AND
 // flip the FN-1 ledger entry in the same change.
 

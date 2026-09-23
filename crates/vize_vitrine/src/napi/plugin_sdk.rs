@@ -1,6 +1,6 @@
 //! JS plugin SDK spike — the napi host (Davinci P4-16, charter #29).
 //!
-//! The decided shape (record: `davinci-road/plan/phase-4-records/p4-16.md`):
+//! The decided shape (record: `docs/davinci/plan/phase-4-records/p4-16.md`):
 //!
 //! - **Serialized visit batches, not proxies.** Per plugin per document the
 //!   host builds one JSON batch of the S2 page (only the node kinds the

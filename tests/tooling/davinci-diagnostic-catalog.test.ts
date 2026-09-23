@@ -29,7 +29,7 @@ import {
   s3Problems,
 } from "./davinci-diagnostic-catalog-producers.ts";
 
-// TS-53 (davinci-road/plan/test-suites.md), catalog half: every word the
+// TS-53 (docs/davinci/plan/test-suites.md), catalog half: every word the
 // Davinci diagnostic renderer prints around producer text, and every
 // diagnostic code a producer can emit, exists in en, ja and zh; every renderer
 // snapshot case is committed in all three locales. Codes are enumerated from

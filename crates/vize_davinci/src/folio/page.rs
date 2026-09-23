@@ -2,7 +2,7 @@
 //! parse driver the generated code calls into.
 //!
 //! The derived page format is documented in
-//! `davinci-road/plan/folio-format.md` ("Derived pages"). In short: a
+//! `docs/davinci/plan/folio-format.md` ("Derived pages"). In short: a
 //! `[page]` header section carrying `name=value` scalar lines in field
 //! declaration order, then one `[page.field]` section per `Vec` (entries in
 //! order) or `FxHashMap` field (entries sorted by printed key). Empty

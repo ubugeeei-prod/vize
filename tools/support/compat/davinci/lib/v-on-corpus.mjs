@@ -13,7 +13,7 @@
 // capacity.
 //
 // The committed evidence is sharded one TSV per source area
-// (davinci-road/plan/v-on-corpus/<area>.tsv, one spelling per line, no
+// (docs/davinci/plan/v-on-corpus/<area>.tsv, one spelling per line, no
 // totals), so two PRs adding fixtures in different crates never edit the
 // same committed line.
 
@@ -25,7 +25,7 @@ import { repoRoot } from "./paths.mjs";
 
 // The gate itself carries lookalike and boundary fixtures for its unit tests.
 export const V_ON_GATE = "tests/tooling/davinci-v-on-storage.test.ts";
-export const V_ON_CORPUS_DIR = "davinci-road/plan/v-on-corpus";
+export const V_ON_CORPUS_DIR = "docs/davinci/plan/v-on-corpus";
 export const V_ON_CORPUS_REGEN = "rust-script tools/commands/davinci/v-on-corpus.rs --write";
 
 export const templateCarrierExtensions = new Set([

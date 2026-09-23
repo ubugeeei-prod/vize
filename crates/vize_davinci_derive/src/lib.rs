@@ -7,7 +7,7 @@
 //! The derive generates `vize_davinci::folio::Folio`'s exact shape -
 //! `print(&self, w, mode)` and `parse(input) -> Result<Self, FolioError>` -
 //! for an owned document struct, following the normalization rules written
-//! in `davinci-road/plan/folio-format.md` ("Derived pages"): stable field
+//! in `docs/davinci/plan/folio-format.md` ("Derived pages"): stable field
 //! order from the type shape, fixed section order, sorted map iteration,
 //! empty sections omitted, LF line endings, 1-based error line numbers.
 //!
@@ -57,7 +57,7 @@ use syn::{DeriveInput, parse_macro_input};
 /// Derive `vize_davinci::folio::Folio` for an owned document struct.
 ///
 /// See the crate docs for the generated page format, and
-/// `davinci-road/plan/folio-format.md` for the normalization contract the
+/// `docs/davinci/plan/folio-format.md` for the normalization contract the
 /// generated pair upholds (TS-16: `print(parse(t)) == t` byte-exact in
 /// `Full` mode, `parse(print(v)) == v` structurally).
 #[proc_macro_derive(Folio)]

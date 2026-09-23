@@ -31,16 +31,16 @@
 //! to the passes whose artifact actually changed (with today's no-op bodies:
 //! none), and `--timing-json <path>` writes the run's profile export - the
 //! per-walk spans the timing observer records - against the P0-11 schema
-//! (`davinci-road/plan/profile-export.schema.json`). Since P2-18 the folio
+//! (`docs/davinci/plan/profile-export.schema.json`). Since P2-18 the folio
 //! directory also carries its Spolvero feed (`spolvero.json`): the same
 //! pages as one schema-versioned JSON document
-//! (`davinci-road/plan/spolvero-feed.schema.json`), written even when the
+//! (`docs/davinci/plan/spolvero-feed.schema.json`), written even when the
 //! hash gate emitted zero pages.
 //!
 //! `--remarks <path>` (P3-13) writes the run's optimization remarks - every
 //! remark a pass emitted through the observer channel, in canonical order -
 //! as the committed JSON document
-//! (`davinci-road/plan/remarks.schema.json`). With today's catalogue-free
+//! (`docs/davinci/plan/remarks.schema.json`). With today's catalogue-free
 //! no-op bodies the list is empty, and the file says so rather than being
 //! absent (the `--folio-after-change` precedent).
 //!

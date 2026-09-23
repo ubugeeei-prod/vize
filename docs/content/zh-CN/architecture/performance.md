@@ -127,7 +127,7 @@ Vite 插件（`@vizejs/vite-plugin`）按文件级缓存，分为键不同的两
 上述编译器内部工作由按 crate 的微基准框架（`cargo bench --bench davinci`）在固定的六个夹具阶梯
 `tools/benchmarks/crates/davinci_harness/fixtures/{small,medium,large,stress-deep,stress-wide,stress-interp}.vue` 上测量。
 
-**如何阅读这些数字。** 分配次数是确定性的且与机器无关，因此是精确事实，并被用作回归棘轮。墙钟时间是在共享的开发机上以 `--quick` 采样测得的，**仅具方向性** —— 参考运行器（Blacksmith）的记录仍待完成，这也是 `davinci-road/plan/budgets.toml` 中每一项 `wall_p50_ns` 和 `allocs` 仍为 `0`（意为“尚未记录，仅供参考”）的原因。每次运行的结果文件落在 `tools/benchmarks/results/davinci/`，属于本地产物，而非已提交的基线。
+**如何阅读这些数字。** 分配次数是确定性的且与机器无关，因此是精确事实，并被用作回归棘轮。墙钟时间是在共享的开发机上以 `--quick` 采样测得的，**仅具方向性** —— 参考运行器（Blacksmith）的记录仍待完成，这也是 `docs/davinci/plan/budgets.toml` 中每一项 `wall_p50_ns` 和 `allocs` 仍为 `0`（意为“尚未记录，仅供参考”）的原因。每次运行的结果文件落在 `tools/benchmarks/results/davinci/`，属于本地产物，而非已提交的基线。
 
 字符串与 arena 工作前后，每次编译的分配调用次数（精确值，同一批夹具）：
 

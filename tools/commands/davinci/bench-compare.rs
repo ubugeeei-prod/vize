@@ -148,7 +148,7 @@ fn run() -> Result<u8, ConfigError> {
 
 fn parse_args(root: &Path, argv: Vec<String>) -> Result<Options, ConfigError> {
     let mut options = Options {
-        budgets: root.join("davinci-road/plan/budgets.toml"),
+        budgets: root.join("docs/davinci/plan/budgets.toml"),
         baseline: root.join("tools/benchmarks/results/davinci/baseline"),
         results: root.join("tools/benchmarks/results/davinci"),
         benches: Vec::new(),

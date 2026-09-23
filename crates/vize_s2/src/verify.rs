@@ -1,7 +1,7 @@
 //! The S2 verifier: local invariant checks between passes, debug/CI only.
 //!
 //! The GHC `-dcore-lint` discipline, imported per
-//! `davinci-road/prior-art-toolchains.md`: every check is **local** — a
+//! `docs/davinci/prior-art-toolchains.md`: every check is **local** — a
 //! node plus the facts it and its neighbours already declare (spans, side
 //! tables, the arena stamp) — with no global inference and no fixpoint;
 //! whole-program checks are barrier analyses and belong to P3-1's phase
@@ -11,7 +11,7 @@
 //!
 //! # The invariant catalogue
 //!
-//! Documented in `davinci-road/plan/folio-format.md` ("S2 verifier
+//! Documented in `docs/davinci/plan/folio-format.md` ("S2 verifier
 //! invariants") — the format doc is where "canonical" is written down.
 //!
 //! | code   | rigor      | invariant                                        |

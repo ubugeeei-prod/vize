@@ -18,7 +18,7 @@ Vize 的跨文件复杂度报告是 Croquis 生成的项目图摘要。它本身
 - 组件边界数据流：props、provide/inject 和响应式边作为跨边界信号保留，而不是被压平到单个文件中。
 
 指标定义和由语料库确定的阈值见
-[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/davinci-road/plan/complexity-metrics.md)。
+[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/plan/complexity-metrics.md)。
 
 ## 分数
 

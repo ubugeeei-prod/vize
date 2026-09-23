@@ -22,7 +22,7 @@ const libraryRoots = [
   "crates/vize_s1_to_s2/src",
   "crates/vize_s2_to_s3/src",
 ];
-const inventoryPath = path.join(repoRoot, "davinci-road/plan/storage-inventory.tsv");
+const inventoryPath = path.join(repoRoot, "docs/davinci/plan/storage-inventory.tsv");
 const davinciOptRoot = "crates/vize_davinci/src/bin/davinci-opt/";
 
 function rustFiles(root: string): string[] {

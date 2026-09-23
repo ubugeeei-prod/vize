@@ -1,6 +1,6 @@
 // Spolvero feed (Davinci P2-18, C-2/C-5): the compiler's stage pages as one
 // schema-versioned document. The committed schema is
-// `davinci-road/plan/spolvero-feed.schema.json`; this module is the
+// `docs/davinci/plan/spolvero-feed.schema.json`; this module is the
 // playground's consumer side of it and negotiates the version before reading
 // any shape-dependent field (devtool.md: refuse a mismatch loudly instead of
 // misrendering).

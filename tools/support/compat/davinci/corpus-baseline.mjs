@@ -9,7 +9,7 @@
 //
 // The artifact is the anchor every later Davinci phase diffs against via
 // `tools/davinci/corpus-diff.mjs` (TS-11). Hash contract and the filed
-// nondeterminism notes live in davinci-road/plan/corpus-baseline-notes.md.
+// nondeterminism notes live in docs/davinci/plan/corpus-baseline-notes.md.
 //
 // Usage:
 //   rust-script tools/commands/davinci/corpus-baseline.rs [options]

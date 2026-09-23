@@ -21,7 +21,7 @@ The model maps three complexity signals to Vue:
   visible as cross-boundary signals instead of being flattened into one file.
 
 The metric definition and its corpus-pinned thresholds live in
-[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/davinci-road/plan/complexity-metrics.md).
+[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/plan/complexity-metrics.md).
 
 ## Scores
 

@@ -1,7 +1,7 @@
 //! The P6-4a hosting choice: the pinned native `moonc`, one process per
 //! check, behind [`MooncHost`].
 //!
-//! Measured in the spike (record: `davinci-road/plan/phase-6-records/p6-4a.md`):
+//! Measured in the spike (record: `docs/davinci/plan/phase-6-records/p6-4a.md`):
 //! `moonc` is a native OCaml binary, the toolchain CI already installs at
 //! the `.moonbit-version` pin; no wasm build of it is published, so there
 //! is nothing for wasmtime to load. The native binary takes the virtual

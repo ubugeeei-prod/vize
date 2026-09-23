@@ -13,7 +13,7 @@
 //! After all cases, the expression re-parse counter
 //! (`vize_atelier_core::expr_parse_probe`) is sampled around one fused
 //! compile per fixture - the `davinci.expr.parses` baseline recorded in
-//! `davinci-road/plan/expr-reparse-baseline.md`.
+//! `docs/davinci/plan/expr-reparse-baseline.md`.
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::{LADDER, template_block};

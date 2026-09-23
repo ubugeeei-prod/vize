@@ -3,11 +3,11 @@ import { test } from "node:test";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-// TS-24 (davinci-road/plan/test-suites.md): the wasm32-wasip2 portability
+// TS-24 (docs/davinci/plan/test-suites.md): the wasm32-wasip2 portability
 // lanes for the six Davinci `no_std` stage libraries. The lanes ride `clippy-and-test`
 // as steps rather than as their own job because `.github/workflows/check.yml`
 // is over the 350-line ratchet and must not grow
-// (davinci-road/plan/phase-2-records/p2-14.md); this file is what keeps that
+// (docs/davinci/plan/phase-2-records/p2-14.md); this file is what keeps that
 // placement from silently dissolving. S0 (`vize_s0`, package `vize_carton`)
 // remains the approved `std` foundation recorded in no-std-boundary.md.
 
@@ -27,7 +27,7 @@ const noDefaultLane = `${defaultLane} --no-default-features`;
 test("TS-24: the wasm32-wasip2 lanes run in main and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "clippy-and-test");
-  const suite = readRepoFile("davinci-road", "plan", "test-suites.md");
+  const suite = readRepoFile("docs/davinci", "plan", "test-suites.md");
   const ts24Rows = suite.split("\n").filter((line) => line.startsWith("| TS-24 "));
 
   assert.equal(ts24Rows.length, 1, "test-suites.md must define exactly one normative TS-24 row");

@@ -7,7 +7,7 @@
 // resolution), and a first-cut portability classification
 // (neutral-core-candidate / vue-dialect-bound / container-bound) for charter
 // #7's fairness metric. Hand-corrections live in
-// davinci-road/plan/rule-parity-overrides.toml and are applied last.
+// docs/davinci/plan/rule-parity-overrides.toml and are applied last.
 //
 // This file is the CLI; the stages live in ./lib:
 //   rust-source.mjs          comment/string stripping + `use`-tree parsing

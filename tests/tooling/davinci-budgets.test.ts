@@ -3,7 +3,7 @@
 // Two suites:
 //   1. Registry reconciliation — every bench id constructed in the davinci
 //      bench sources (cstr!-built or literal) has a `<id> = { … }` entry under
-//      [bench] in davinci-road/plan/budgets.toml, and vice versa, with the
+//      [bench] in docs/davinci/plan/budgets.toml, and vice versa, with the
 //      offending id named on mismatch. Entries carry exactly the documented
 //      field set and hold the tolerance ceilings (0.05; 0.10 for stage-window
 //      benches: `_transform_`, vapor lower, ssr codegen) — ceilings, not
@@ -23,7 +23,7 @@ import { fileURLToPath } from "node:url";
 import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const budgetsPath = path.join(repoRoot, "davinci-road", "plan", "budgets.toml");
+const budgetsPath = path.join(repoRoot, "docs/davinci", "plan", "budgets.toml");
 
 const budgetsText = fs.readFileSync(budgetsPath, "utf8");
 const budgets = parseTomlLite(budgetsText) as {

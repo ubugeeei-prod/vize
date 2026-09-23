@@ -3,7 +3,7 @@
 //! Compiles the TS-31 fixture battery with source maps on for every live
 //! backend, decodes the maps with an independent decoder, classifies every
 //! authored anchor, and compares the measurement with the committed report at
-//! `davinci-road/plan/ts31-sourcemap-coverage.json`. The legacy text-matching
+//! `docs/davinci/plan/ts31-sourcemap-coverage.json`. The legacy text-matching
 //! recovery is deleted, so `legacy-sfc/text-matching-recovery` is not
 //! remeasured: the harness copies that row's frozen anchor statuses out of
 //! the committed report, including when `VIZE_UPDATE_TS31_REPORT=1` rewrites
@@ -39,7 +39,7 @@ const FROZEN_LEGACY_ROW: &str = "legacy-sfc/text-matching-recovery";
 
 fn report_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../davinci-road/plan/ts31-sourcemap-coverage.json")
+        .join("../../docs/davinci/plan/ts31-sourcemap-coverage.json")
 }
 
 fn measure_fixture(rows: &mut Rows, backend: Backend, fixture: &Fixture, filename: &str) {

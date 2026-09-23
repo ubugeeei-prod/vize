@@ -45,7 +45,7 @@ const EXPR_SOURCE_TYPE: SourceType = SourceType::ts();
 /// requires slice + span at print time and an AST pointer alone cannot
 /// recover either (a standalone-parsed expression's oxc spans are
 /// text-relative, not file-relative). The deviation is recorded in
-/// `davinci-road/plan/phase-2-records/p2-5b.md`.
+/// `docs/davinci/plan/phase-2-records/p2-5b.md`.
 #[derive(Debug, Clone, Copy)]
 pub struct JsExpr<'a> {
     /// The retained AST. Covers [`JsExpr::source`] entirely; its internal

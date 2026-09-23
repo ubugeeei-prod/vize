@@ -14,7 +14,7 @@ use crate::common;
 use crate::seed_exact_gen;
 
 pub const TABLE_REL: &str = "crates/vize_patina/src/rule_contracts/table.rs";
-pub const LEDGER_REL: &str = "davinci-road/plan/ledger-fn.md";
+pub const LEDGER_REL: &str = "docs/davinci/plan/ledger-fn.md";
 const LEDGER_START: &str = "<!-- p4-15a-unclassed -->";
 const LEDGER_END: &str = "<!-- /p4-15a-unclassed -->";
 

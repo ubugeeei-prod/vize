@@ -139,8 +139,8 @@ fn is_excluded_path(path: &str) -> bool {
         || path.starts_with("tools/support/")
         || path == "npm/cli/schemas/vize.config.schema.json"
         || path == "npm/cli/src/types/generated.ts"
-        || path == "davinci-road/plan/croquis-consumption.md"
-        || path == "davinci-road/plan/corpus-coverage.md"
+        || path == "docs/davinci/plan/croquis-consumption.md"
+        || path == "docs/davinci/plan/corpus-coverage.md"
         || path == "package.json"
         || path.ends_with("/package.json")
         || path == ".github/workflows/release.yml"

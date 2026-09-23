@@ -3,7 +3,7 @@
 //!
 //! # The imported practice
 //!
-//! `davinci-road/prior-art-toolchains.md` (Lean 4, metaprogramming
+//! `docs/davinci/prior-art-toolchains.md` (Lean 4, metaprogramming
 //! anti-lesson): dialect lowerings that synthesize identifiers (slot
 //! props, `v-for` scopes) need **hygiene-style scope tagging so
 //! synthesized names can't capture author bindings**. The mechanism here

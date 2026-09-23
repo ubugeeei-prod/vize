@@ -12,7 +12,7 @@
 //! Every α page is printed inside an [`AlphaDocument`], whose header names
 //! the group and its `schema_version` (the P2-17 rule), so no α page can be
 //! written without its version and none is read back under another one.
-//! Every α group is documented in `davinci-road/plan/fact-alpha-schemas.md`;
+//! Every α group is documented in `docs/davinci/plan/fact-alpha-schemas.md`;
 //! [`check_alpha_schema_doc`] is the executable half of that rule.
 
 use core::fmt;

@@ -3,7 +3,7 @@
 //! One fused compile per ladder fixture, diffing
 //! `vize_atelier_core::walk_probe` around it: the template-node visits and
 //! stage tree-walks today's still-live pipeline makes. This is the sweep that
-//! produced `davinci-road/plan/walk-baseline.md` and filled
+//! produced `docs/davinci/plan/walk-baseline.md` and filled
 //! `budgets.toml [traversal]`; the numbers below are that record, pinned
 //! exactly. Any change means a stage started or stopped walking the tree -
 //! re-derive the baseline deliberately (`--nocapture` prints every row and

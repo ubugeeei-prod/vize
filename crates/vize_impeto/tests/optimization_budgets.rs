@@ -1,5 +1,5 @@
 //! The `-O` tier table equals `[optimization]` and `[target.p3-10]` in
-//! `davinci-road/plan/budgets.toml`, field for field. The file is the source
+//! `docs/davinci/plan/budgets.toml`, field for field. The file is the source
 //! of truth: loosening or tightening it without the Rust table (or the
 //! reverse) fails here.
 
@@ -12,7 +12,7 @@ fn budgets() -> toml::Value {
         .parent()
         .and_then(Path::parent)
         .expect("repo root");
-    let text = std::fs::read_to_string(repo.join("davinci-road/plan/budgets.toml"))
+    let text = std::fs::read_to_string(repo.join("docs/davinci/plan/budgets.toml"))
         .expect("budgets.toml reads");
     toml::from_str(&text).expect("budgets.toml parses")
 }

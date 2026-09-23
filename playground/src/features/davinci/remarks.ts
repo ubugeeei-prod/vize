@@ -1,7 +1,7 @@
 // Optimization remarks (P3-13): a pass saying why it did or did not
 // transform something - LLVM's `-Rpass`/`-Rpass-missed`/`-Rpass-analysis`
 // with structured arguments. They reach the view as the Spolvero feed's
-// `remarks` member (`davinci-road/plan/remarks-format.md`); nothing here
+// `remarks` member (`docs/davinci/plan/remarks-format.md`); nothing here
 // decides anything - every entry is a remark a pass emitted through the
 // observer channel.
 

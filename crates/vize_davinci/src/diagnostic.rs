@@ -14,7 +14,7 @@
 //! - [`Severity::Error`] is reachable only through [`Diagnostic::proven`],
 //!   which takes a non-empty [`WitnessChain`] naming fact groups, or through
 //!   [`Diagnostic::legacy_error`], which takes a declared [`Exemption`]
-//!   counted by `davinci-road/plan/witness-exemptions.tsv` — an inventory
+//!   counted by `docs/davinci/plan/witness-exemptions.tsv` — an inventory
 //!   that only shrinks.
 //! - [`Diagnostic::new`] takes an [`Advisory`] severity, so an error without
 //!   a witness is a type error — the provisional "canary that tries
@@ -220,7 +220,7 @@ impl Diagnostic {
 
     /// An error from a producer that predates the witness SDK, exempt from
     /// the witness law **by inventory**: `exemption` is a declared `static`
-    /// counted by `davinci-road/plan/witness-exemptions.tsv`, never an
+    /// counted by `docs/davinci/plan/witness-exemptions.tsv`, never an
     /// ambient absence.
     #[must_use]
     pub fn legacy_error(

@@ -6,9 +6,9 @@
 // It does not change runtime wiring and is safe to merge before any rollout.
 //
 // The committed inventory is sharded so parallel PRs stop conflicting on it:
-// davinci-road/plan/consumer-migration-surfaces.md (method, legend, scopes,
+// docs/davinci/plan/consumer-migration-surfaces.md (method, legend, scopes,
 // shard layout — configuration only) plus one TSV per (consumer, crate) under
-// davinci-road/plan/consumer-migration-surfaces/. Cross-file totals are never
+// docs/davinci/plan/consumer-migration-surfaces/. Cross-file totals are never
 // committed; --summary prints them.
 //
 // Usage:
@@ -28,7 +28,7 @@ import {
   renderConsumerMigrationSummary,
 } from "./lib/consumer-migration-summary.mjs";
 
-const ARTIFACT_REL = "davinci-road/plan/consumer-migration-surfaces.md";
+const ARTIFACT_REL = "docs/davinci/plan/consumer-migration-surfaces.md";
 const REGEN_COMMAND = "rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write";
 
 function main() {

@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
 // Davinci plan matrices are generated artifacts committed to the repo
-// (davinci-road/plan/*.md, and since P2-15 the fixture plane under
+// (docs/davinci/plan/*.md, and since P2-15 the fixture plane under
 // tests/fixtures/). Each generator supports `--check`, which regenerates
 // in memory and byte-compares against the committed artifact.
 // Add one entry per matrix (P0-8 rule-parity joins this list).
@@ -24,33 +24,33 @@ const matrices = [
   {
     name: "croquis consumption matrix",
     generator: "tools/commands/davinci/croquis-consumers.rs",
-    artifact: "davinci-road/plan/croquis-consumption.md + croquis-consumption/<crate>.md",
+    artifact: "docs/davinci/plan/croquis-consumption.md + croquis-consumption/<crate>.md",
   },
   {
     name: "rule-parity matrix (SFC × JSX)",
     generator: "tools/commands/davinci/rule-parity.rs",
-    artifact: "davinci-road/plan/rule-parity.md",
+    artifact: "docs/davinci/plan/rule-parity.md",
   },
   {
     name: "SourceLocation consumer inventory",
     generator: "tools/commands/davinci/sourcelocation-inventory.rs",
-    artifact: "davinci-road/plan/sourcelocation-inventory.md",
+    artifact: "docs/davinci/plan/sourcelocation-inventory.md",
   },
   {
     name: "consumer migration surface inventory",
     generator: "tools/commands/davinci/consumer-migration-surfaces.rs",
     artifact:
-      "davinci-road/plan/consumer-migration-surfaces.md + consumer-migration-surfaces/<consumer>/<crate>.tsv",
+      "docs/davinci/plan/consumer-migration-surfaces.md + consumer-migration-surfaces/<consumer>/<crate>.tsv",
   },
   {
     name: "storage summary (aggregates of the per-file storage ledger)",
     generator: "tools/commands/davinci/storage-summary.rs",
-    artifact: "davinci-road/plan/storage-summary.md",
+    artifact: "docs/davinci/plan/storage-summary.md",
   },
   {
     name: "natural v-on corpus inventory (evidence for the inline v-on buckets)",
     generator: "tools/commands/davinci/v-on-corpus.rs",
-    artifact: "davinci-road/plan/v-on-corpus/<area>.tsv",
+    artifact: "docs/davinci/plan/v-on-corpus/<area>.tsv",
   },
   {
     name: "construct-matrix fixture plane (element kind × directive)",

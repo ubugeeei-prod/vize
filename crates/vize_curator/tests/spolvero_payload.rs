@@ -1,6 +1,6 @@
 //! The inspector payload's Spolvero feed (P2-18): the `spolvero` member of
 //! every `build_payload` result validates against the committed schema
-//! (`davinci-road/plan/spolvero-feed.schema.json`) through the shared strict
+//! (`docs/davinci/plan/spolvero-feed.schema.json`) through the shared strict
 //! validator (TS-15), and its content is pinned exactly.
 
 use std::path::Path;
@@ -17,7 +17,7 @@ fn load_schema() -> serde_json::Value {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("..")
         .join("..")
-        .join("davinci-road")
+        .join("docs/davinci")
         .join("plan")
         .join("spolvero-feed.schema.json");
     let text = std::fs::read_to_string(&path).expect("committed schema reads");

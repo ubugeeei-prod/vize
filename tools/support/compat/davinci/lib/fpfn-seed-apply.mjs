@@ -10,7 +10,7 @@
 //   into `<script setup>` (creating the block when the file has none).
 //   Expected diagnostic: none — vize_croquis computes `unused_bindings` but
 //   no lint rule consumes it, which is exactly the documented FN this pilot
-//   records (davinci-road/plan/ledger-fn.md).
+//   records (docs/davinci/plan/ledger-fn.md).
 //
 // Every edit is recorded with its original-file span and length delta so
 // the identity assertion can map pristine-run diagnostics into seeded-file

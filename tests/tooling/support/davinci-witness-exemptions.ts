@@ -2,7 +2,7 @@
 // ledger, derive it mechanically from the Rust sources, and compare it with
 // the base revision so it can only shrink.
 //
-// Contract (`davinci-road/plan/phase-4-tasks-later.md#p4-6a`): a producer that
+// Contract (`docs/davinci/plan/phase-4-tasks-later.md#p4-6a`): a producer that
 // predates the witness SDK reports errors through
 // `Diagnostic::legacy_error(&EXEMPTION, ..)`, where `EXEMPTION` is a named
 // `static` declared with `Exemption::new("<producer>", "<code>")`. A row is
@@ -13,7 +13,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-export const inventoryRelative = "davinci-road/plan/witness-exemptions.tsv";
+export const inventoryRelative = "docs/davinci/plan/witness-exemptions.tsv";
 export const inventoryHeader = "producer\tcode\texempt";
 
 export type ExemptionRow = { producer: string; code: string; exempt: number };

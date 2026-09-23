@@ -1,7 +1,7 @@
 //! The SDK for `vize:contracts` guests (Davinci phase 6, P6-2).
 //!
 //! **Experimental:** the contracts are `0.x` until GA; they move under the
-//! written policy in `davinci-road/contracts-compat-policy.md`, and this
+//! written policy in `docs/davinci/contracts-compat-policy.md`, and this
 //! crate's version moves with them.
 //!
 //! An input-dialect guest is a `wasm32-wasip2` component that depends on this

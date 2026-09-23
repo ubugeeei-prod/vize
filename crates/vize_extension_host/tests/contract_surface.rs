@@ -1,5 +1,5 @@
 //! The released `vize:contracts` surfaces, versioned alongside the WIT
-//! (P6-8, `davinci-road/contracts-compat-policy.md`).
+//! (P6-8, `docs/davinci/contracts-compat-policy.md`).
 //!
 //! `crates/vize_extension_sdk/versions/` holds one canonical surface per
 //! released package version. This test holds the history to the policy — every consecutive

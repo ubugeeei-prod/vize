@@ -20,7 +20,7 @@ on:
       - "crates/vize_s2/**"
       - "Cargo.toml"
       - "Cargo.lock"
-      - "davinci-road/plan/test-suites.md"
+      - "docs/davinci/plan/test-suites.md"
       - ".github/workflows/davinci-contracts.yml"
   workflow_dispatch:
 

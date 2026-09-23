@@ -209,7 +209,7 @@ export function renderSummary(products, analysis) {
   lines.push("");
   lines.push(
     "Cross-crate aggregates of the sharded matrix in" +
-      " `davinci-road/plan/croquis-consumption/`. Printed by `" +
+      " `docs/davinci/plan/croquis-consumption/`. Printed by `" +
       SUMMARY_COMMAND +
       "`; totals are sums over the per-crate shards.",
   );

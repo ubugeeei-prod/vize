@@ -15,7 +15,7 @@ use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::pass::AnalysisId;
 use vize_s0::String;
 
-const SCHEMA_DOC: &str = include_str!("../../../../davinci-road/plan/fact-alpha-schemas.md");
+const SCHEMA_DOC: &str = include_str!("../../../../docs/davinci/plan/fact-alpha-schemas.md");
 
 const ARTIFACTS: [&Words; 3] = [&["alpha", "be", "gamma", "δelta"], &["one"], &[]];
 

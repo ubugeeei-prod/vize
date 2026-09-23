@@ -9,7 +9,7 @@
 // and `formatter` (`vize fmt --check`).
 //
 // Hash contract per surface (documented in
-// davinci-road/plan/corpus-baseline-notes.md): the sha256 of a
+// docs/davinci/plan/corpus-baseline-notes.md): the sha256 of a
 // key-sorted canonical JSON of the fields listed in `HASHED_FIELDS`.
 // Two fields are excluded as filed nondeterminism, verified empirically
 // by back-to-back runs: the compiler lane's `stderr` (absolute mkdtemp
@@ -33,8 +33,8 @@ export const SCHEMA_VERSION = 1;
 export const UNSTABLE_SCHEMA = "vize.davinciCorpusUnstableRows";
 export const REGISTRY_REL = "tests/_fixtures/vue-ecosystem-fixtures.json";
 export const BASELINE_REL = "tests/_fixtures/davinci-baseline.json";
-export const NOTES_REL = "davinci-road/plan/corpus-baseline-notes.md";
-export const UNSTABLE_REL = "davinci-road/plan/corpus-baseline-unstable.json";
+export const NOTES_REL = "docs/davinci/plan/corpus-baseline-notes.md";
+export const UNSTABLE_REL = "docs/davinci/plan/corpus-baseline-unstable.json";
 export const BASELINE_PATH = path.join(repoRoot, BASELINE_REL);
 export const UNSTABLE_PATH = path.join(repoRoot, UNSTABLE_REL);
 

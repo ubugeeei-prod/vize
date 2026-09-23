@@ -77,7 +77,7 @@ pub fn write_timing(path: &Path) -> Result<(), String> {
 }
 
 /// Write the run's remark log as the committed JSON document (P3-13,
-/// `davinci-road/plan/remarks.schema.json`). An empty log still writes a
+/// `docs/davinci/plan/remarks.schema.json`). An empty log still writes a
 /// document with zero remarks, so "nothing was remarked" is observable.
 ///
 /// # Errors

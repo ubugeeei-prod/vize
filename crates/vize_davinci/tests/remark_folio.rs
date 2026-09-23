@@ -1,7 +1,7 @@
 //! The `[remarks]` page and the remark JSON document (P3-13), pinned
 //! exactly: canonical text, both round-trip laws, `Display` elision, every
 //! parse rejection's message, and the JSON document validated against the
-//! committed schema (`davinci-road/plan/remarks.schema.json`) through the
+//! committed schema (`docs/davinci/plan/remarks.schema.json`) through the
 //! shared strict validator (TS-15).
 
 use std::path::Path;
@@ -200,7 +200,7 @@ fn every_malformed_entry_is_rejected_with_its_line_and_reason() {
 
 fn load_schema() -> serde_json::Value {
     let path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../davinci-road/plan/remarks.schema.json");
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/davinci/plan/remarks.schema.json");
     let text = std::fs::read_to_string(path).expect("committed schema reads");
     serde_json::from_str(&text).expect("committed schema is valid JSON")
 }

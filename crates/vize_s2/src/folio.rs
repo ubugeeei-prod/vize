@@ -2,7 +2,7 @@
 //!
 //! [`S2Folio`] is an **owned document model** of an S2 op tree,
 //! printable and parseable under the `vize_davinci::folio` contract; the
-//! grammar is documented in `davinci-road/plan/folio-format.md` ("Disegno
+//! grammar is documented in `docs/davinci/plan/folio-format.md` ("Disegno
 //! page"). [`S2Folio::of`] mirrors a live arena tree into the owned
 //! model, because arena references cannot persist across a compile
 //! (P1-11's contract) and `parse` must construct values without an arena.

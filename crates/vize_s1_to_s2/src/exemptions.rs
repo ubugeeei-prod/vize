@@ -3,7 +3,7 @@
 //!
 //! `vize_davinci::diagnostic` makes an unwitnessed error unrepresentable
 //! except through a declared [`Exemption`]. Each static below is one such
-//! declaration, counted in `davinci-road/plan/witness-exemptions.tsv` with the
+//! declaration, counted in `docs/davinci/plan/witness-exemptions.tsv` with the
 //! number of construction sites that report under it. The inventory only
 //! shrinks: a row leaves it when its site reports through
 //! `Diagnostic::proven` with a fact chain instead. Every kind here is a

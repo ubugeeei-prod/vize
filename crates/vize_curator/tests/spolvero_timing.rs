@@ -27,7 +27,7 @@ fn squares() -> impl Fn() -> u64 {
 
 fn load_schema() -> serde_json::Value {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../davinci-road/plan/profile-export.schema.json");
+        .join("../../docs/davinci/plan/profile-export.schema.json");
     let text = std::fs::read_to_string(path).expect("committed schema reads");
     serde_json::from_str(&text).expect("committed schema is valid JSON")
 }

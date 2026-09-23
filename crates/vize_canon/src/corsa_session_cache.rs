@@ -4,7 +4,7 @@
 //! Corsa build, flag set or host: a key covering less than the session's
 //! inputs is a cache-corruption bug, not a performance detail. The key is
 //! therefore the P5-1b ambient manifest's fingerprint for the
-//! `corsa.session` artifact (`davinci-road/plan/key-manifests.md`), which
+//! `corsa.session` artifact (`docs/davinci/plan/key-manifests.md`), which
 //! folds **exactly** these inputs — the fold refuses a missing or an extra
 //! one:
 //!

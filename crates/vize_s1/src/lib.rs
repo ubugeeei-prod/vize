@@ -10,7 +10,7 @@
 //! whose in-order render is the **exact source bytes**, malformed input
 //! included, and a debug verifier asserts that on every construction
 //! (`render(tree) == source`, the SwiftSyntax import recorded in
-//! `davinci-road/prior-art-toolchains.md`).
+//! `docs/davinci/prior-art-toolchains.md`).
 //!
 //! The tree is *emitted by `vize_armature`* in the P2-7 contract's sense:
 //! armature's tokenizer drives construction (one shared lexer, no private

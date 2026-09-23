@@ -2,7 +2,7 @@
 //! complexity of one component's template, computed over the S2 control
 //! regions instead of scanned from expression text.
 //!
-//! The metric definition is `davinci-road/plan/complexity-metrics.md`; this
+//! The metric definition is `docs/davinci/plan/complexity-metrics.md`; this
 //! module is its production implementation and the TS-34 naive evaluator
 //! (`tests/cfg_complexity_oracle.rs`) is the independent one.
 //!

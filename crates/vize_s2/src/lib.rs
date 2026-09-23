@@ -8,7 +8,7 @@
 //! independent of the material it is later executed in.
 //!
 //! S2 is the normalized, input-neutral representation of UI semantics
-//! (`davinci-road/architecture.md`, "S2 — Disegno"). Vue templates, JSX and
+//! (`docs/davinci/architecture.md`, "S2 — Disegno"). Vue templates, JSX and
 //! pug all lower into the same [`op`] family; whatever is genuinely
 //! Vue-specific stays a `vue.*` dialect op instead of shaping the core.
 //! The Vue template lowering into this family is `vize_s1_to_s2` (codename
@@ -23,9 +23,9 @@
 //! - [`expr`] — [`expr::ExprRef`], the expression reference: retained JS
 //!   AST, foreign dialect (type-only until phase 6), or the classified
 //!   escape with pessimal documented semantics (P2-5b's decision; record
-//!   in `davinci-road/plan/phase-2-records/p2-5b.md`).
+//!   in `docs/davinci/plan/phase-2-records/p2-5b.md`).
 //! - [`folio`] — [`folio::S2Folio`], the S2 stage dump
-//!   (`davinci-road/plan/folio-format.md`, "Disegno page").
+//!   (`docs/davinci/plan/folio-format.md`, "Disegno page").
 //! - [`verify`] — the between-pass invariant checks (P2-6), debug/CI only:
 //!   local in the GHC `-dcore-lint` sense, and never in a release build.
 //! - [`scope`] / [`provenance`] — the side-table vocabulary lowerings

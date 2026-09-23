@@ -8,7 +8,7 @@ pages the host accepts, and the runtime an import-free `no_std`
 crate.
 
 Contract versioning follows
-[the compatibility policy](https://github.com/ubugeeei-prod/vize/blob/main/davinci-road/contracts-compat-policy.md).
+[the compatibility policy](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/contracts-compat-policy.md).
 Support and deprecation guarantees are defined in the
 [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
 

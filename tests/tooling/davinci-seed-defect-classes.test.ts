@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const seedTool = path.join(root, "tools/commands/davinci/seed-defects.rs");
 const tablePath = path.join(root, "crates/vize_patina/src/rule_contracts/table.rs");
-const ledgerPath = path.join(root, "davinci-road/plan/ledger-fn.md");
+const ledgerPath = path.join(root, "docs/davinci/plan/ledger-fn.md");
 const ROW =
   /^\s*row!\("(?<name>[^"]+)",\s*(?<tier>Exact|Sound|Complete|Heuristic),\s*[A-Z0-9_]+,\s*(?:Error|Warning)\),\s*$/u;
 

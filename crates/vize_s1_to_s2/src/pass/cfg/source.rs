@@ -75,7 +75,7 @@ mod tests {
 
     #[test]
     fn the_thresholds_are_the_ones_the_spec_pins() {
-        let spec = include_str!("../../../../../davinci-road/plan/complexity-metrics.md");
+        let spec = include_str!("../../../../../docs/davinci/plan/complexity-metrics.md");
         let cyclomatic = alloc::format!("cyclomatic complexity exceeds {CYCLOMATIC_WARN_ABOVE}**");
         let cognitive = alloc::format!("cognitive\ncomplexity exceeds {COGNITIVE_WARN_ABOVE}**");
         // Each threshold sentence appears exactly once in the spec.

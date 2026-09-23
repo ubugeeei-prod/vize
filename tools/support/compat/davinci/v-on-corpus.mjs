@@ -1,7 +1,7 @@
 // Natural modified-v-on corpus inventory (evidence for the two-entry inline
 // v-on buckets; tests/tooling/davinci-v-on-storage.test.ts).
 //
-// Writes one TSV per source area under davinci-road/plan/v-on-corpus/ with
+// Writes one TSV per source area under docs/davinci/plan/v-on-corpus/ with
 // every natural `@event.modifier` / `v-on:event.modifier` spelling in the
 // Git-tracked corpus, one per line. Adding a v-on fixture regenerates only its
 // own area's shard, so parallel PRs stop conflicting on a single hand-edited

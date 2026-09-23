@@ -3,7 +3,7 @@
 //! A folio is a stage artifact rendered as text. The contract is defined by
 //! [`Folio`] together with the mode-explicit equality laws below; the
 //! normalization rules shared by every folio page are documented in
-//! `davinci-road/plan/folio-format.md`.
+//! `docs/davinci/plan/folio-format.md`.
 //!
 //! # Equality laws (mode-explicit)
 //!

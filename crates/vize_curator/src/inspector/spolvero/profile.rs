@@ -1,7 +1,7 @@
 //! The ladder's timings as a P0-11 profile export (C-3).
 //!
 //! Spolvero's timing artifact is the profiler export
-//! (`davinci-road/plan/profile-export.schema.json`), not a private shape: the
+//! (`docs/davinci/plan/profile-export.schema.json`), not a private shape: the
 //! steps and walks a [`LadderRun`](super::LadderRun) timed are recorded into
 //! a local [`Profiler`] with `{stage, pass, block}` attribution and
 //! serialized by the profiler's own exporter - the one serializer of that

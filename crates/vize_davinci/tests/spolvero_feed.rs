@@ -1,7 +1,7 @@
 //! The Spolvero feed v1 (P2-18), pinned end to end on the `davinci-opt`
 //! surface: `--folio-dir` writes `spolvero.json` beside the pages, the
 //! document validates against the committed schema
-//! (`davinci-road/plan/spolvero-feed.schema.json`) through the shared strict
+//! (`docs/davinci/plan/spolvero-feed.schema.json`) through the shared strict
 //! validator (TS-15), and its content equals the dump's pages
 //! exactly, escaping law included.
 
@@ -81,7 +81,7 @@ fn load_schema() -> serde_json::Value {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("..")
         .join("..")
-        .join("davinci-road")
+        .join("docs/davinci")
         .join("plan")
         .join("spolvero-feed.schema.json");
     let text = std::fs::read_to_string(&path).expect("committed schema reads");

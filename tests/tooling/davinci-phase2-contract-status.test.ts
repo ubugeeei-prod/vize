@@ -4,10 +4,10 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 const docs = {
-  phase: new URL("../../davinci-road/plan/phase-2.md", import.meta.url),
-  tasks: new URL("../../davinci-road/plan/phase-2-tasks.md", import.meta.url),
-  tasksLater: new URL("../../davinci-road/plan/phase-2-tasks-later.md", import.meta.url),
-  records: new URL("../../davinci-road/plan/phase-2-records.md", import.meta.url),
+  phase: new URL("../../docs/davinci/plan/phase-2.md", import.meta.url),
+  tasks: new URL("../../docs/davinci/plan/phase-2-tasks.md", import.meta.url),
+  tasksLater: new URL("../../docs/davinci/plan/phase-2-tasks-later.md", import.meta.url),
+  records: new URL("../../docs/davinci/plan/phase-2-records.md", import.meta.url),
 } as const;
 
 function read(url: URL): string {
@@ -96,7 +96,7 @@ function sectionBetween(source: string, start: RegExp, end: RegExp, label: strin
 
 function recordFile(id: string): string {
   return fileURLToPath(
-    new URL(`../../davinci-road/plan/phase-2-records/${id.toLowerCase()}.md`, import.meta.url),
+    new URL(`../../docs/davinci/plan/phase-2-records/${id.toLowerCase()}.md`, import.meta.url),
   );
 }
 

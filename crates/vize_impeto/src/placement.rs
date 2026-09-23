@@ -2,7 +2,7 @@
 //!
 //! Impeto keeps the choice of *where* an op's work runs as data on the op
 //! instead of deciding it while emitting, the aegraph discipline recorded in
-//! `davinci-road/prior-art-toolchains.md`. The canonical program runs every op
+//! `docs/davinci/prior-art-toolchains.md`. The canonical program runs every op
 //! [`Placement::Inline`]; [`annotate`] records the other semantics-preserving
 //! shapes an op may take:
 //!

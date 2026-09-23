@@ -7,7 +7,7 @@
 
 export function p2_11Installment(number: number): URL {
   return new URL(
-    `../../../../davinci-road/plan/phase-2-records/p2-11/installment-${number}.md`,
+    `../../../../docs/davinci/plan/phase-2-records/p2-11/installment-${number}.md`,
     import.meta.url,
   );
 }

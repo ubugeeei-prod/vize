@@ -3,7 +3,7 @@
 //! Warn when a component's **own** template complexity exceeds the
 //! corpus-pinned thresholds (Davinci P4-9b): cyclomatic complexity above 11
 //! or cognitive complexity above 16, the full-corpus p95 recorded in
-//! `davinci-road/plan/complexity-metrics.md`.
+//! `docs/davinci/plan/complexity-metrics.md`.
 //!
 //! The facts come from the S2 `template-complexity` fact group
 //! (`vize_s1_to_s2::pass::cfg`, read under this rule's declared demand)

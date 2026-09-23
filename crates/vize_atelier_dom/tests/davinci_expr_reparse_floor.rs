@@ -2,7 +2,7 @@
 //!
 //! One fused compile per ladder fixture, counting the surviving legacy oxc
 //! expression re-parses via the P0-3 probe — the same sweep that produced
-//! `davinci-road/plan/expr-reparse-baseline.md`, pinned exactly at the
+//! `docs/davinci/plan/expr-reparse-baseline.md`, pinned exactly at the
 //! post-P1-7 floor (the pre-P1-7 counts are the baseline doc's table). Any
 //! change means a retained-consumption gate, S2 selector, or legacy site moved:
 //! re-derive the floor deliberately and update the baseline doc's post-P1-7

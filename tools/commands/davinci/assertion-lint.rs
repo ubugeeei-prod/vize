@@ -110,7 +110,7 @@ fn run() -> Result<u8, (u8, String)> {
         return Ok(0);
     }
 
-    let default_allowlist = repo_root.join("davinci-road/plan/assertion-allowlist.toml");
+    let default_allowlist = repo_root.join("docs/davinci/plan/assertion-allowlist.toml");
     let allowlist_path = args
         .allowlist
         .or_else(|| (default_tree && default_allowlist.exists()).then_some(default_allowlist));
@@ -159,7 +159,7 @@ fn run() -> Result<u8, (u8, String)> {
 
     if !unlisted.is_empty() {
         println!(
-            "assertion-lint: {} unlisted findings — fix the assertion (exact oracles only) or triage via davinci-road/plan/assertion-allowlist.toml",
+            "assertion-lint: {} unlisted findings — fix the assertion (exact oracles only) or triage via docs/davinci/plan/assertion-allowlist.toml",
             unlisted.len()
         );
         return Ok(1);

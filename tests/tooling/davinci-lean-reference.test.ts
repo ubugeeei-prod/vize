@@ -212,7 +212,7 @@ test("TS-28 compiled backend trace gate executes both emitted backends", async (
 });
 
 test("TS-28 command in the suite registry names the executable runner", () => {
-  const suites = readRepoFile("davinci-road", "plan", "test-suites.md");
+  const suites = readRepoFile("docs/davinci", "plan", "test-suites.md");
   const rows = suites
     .split("\n")
     .filter((line) => line.startsWith("|"))

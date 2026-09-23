@@ -30,7 +30,7 @@
 //! **template tree**. `vize_atelier_vapor::generate` walks Vapor IR rather
 //! than the template tree and `vize_croquis` walks the script AST; neither is
 //! a template traversal, so neither appears here, and
-//! `davinci-road/plan/walk-baseline.md` records the same exclusion for the
+//! `docs/davinci/plan/walk-baseline.md` records the same exclusion for the
 //! probe that measures these plans.
 //!
 //! The tie is a law, not a comment: each backend's

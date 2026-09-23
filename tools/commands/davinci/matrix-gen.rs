@@ -29,7 +29,7 @@ const DIMENSIONS: &[&str] = &[
     "binding_source",
     "block_combination",
 ];
-const USAGE: &str = "Usage: rust-script tools/commands/davinci/matrix-gen.rs [--write | --check] [--out-dir <dir>]\n\nGenerates construct-matrix fixture stubs from davinci-road/plan/taxonomy.toml.\nDefault is a dry run that prints the would-be fixture count.";
+const USAGE: &str = "Usage: rust-script tools/commands/davinci/matrix-gen.rs [--write | --check] [--out-dir <dir>]\n\nGenerates construct-matrix fixture stubs from docs/davinci/plan/taxonomy.toml.\nDefault is a dry run that prints the would-be fixture count.";
 
 #[derive(Clone, Debug)]
 struct Args {
@@ -200,7 +200,7 @@ fn parse_args(argv: Vec<String>) -> Result<Args, (u8, String)> {
 }
 
 fn load_taxonomy(root: &Path) -> Result<Taxonomy, String> {
-    let taxonomy_path = root.join("davinci-road/plan/taxonomy.toml");
+    let taxonomy_path = root.join("docs/davinci/plan/taxonomy.toml");
     let value: Value = toml::from_str(&common::read_text(&taxonomy_path)?)
         .map_err(|error| format!("malformed taxonomy {}: {error}", taxonomy_path.display()))?;
     let id_re = Regex::new(r"^[a-z][a-z0-9-]*$").unwrap();

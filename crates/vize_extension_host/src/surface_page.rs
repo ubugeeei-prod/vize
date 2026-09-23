@@ -9,7 +9,7 @@
 //! after checking that the tokens tile it ([`SurfacePage::check_tiles`]), so
 //! a guest can neither drop nor invent a byte.
 //!
-//! The grammar is documented in `davinci-road/plan/folio-format.md` ("S1
+//! The grammar is documented in `docs/davinci/plan/folio-format.md` ("S1
 //! page"). `Display` prints the same text as `Full`: nothing is elidable
 //! from a page that is only offsets.
 

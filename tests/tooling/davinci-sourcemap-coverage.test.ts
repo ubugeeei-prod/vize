@@ -1,7 +1,7 @@
 // Davinci TS-31 source-map coverage gate (plan/phase-3.md P3-9).
 //
 // `cargo test -p vize_atelier_sfc --test davinci_ts31_sourcemap` measures the
-// TS-31 fixture battery and keeps `davinci-road/plan/ts31-sourcemap-coverage.json`
+// TS-31 fixture battery and keeps `docs/davinci/plan/ts31-sourcemap-coverage.json`
 // equal to the measurement. This gate compares that report with the pinned
 // `[sourcemap]` budgets: every row either meets its budget or is listed, with
 // its exact measured counts, in the P3-9 record's tracked-shortfall ledger.
@@ -41,7 +41,7 @@ type Report = {
 type Shortfall = { authored: number; covered: number; exact: number };
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const plan = path.join(repoRoot, "davinci-road", "plan");
+const plan = path.join(repoRoot, "docs/davinci", "plan");
 const budgets = (
   parseTomlLite(fs.readFileSync(path.join(plan, "budgets.toml"), "utf8")) as {
     sourcemap: Record<string, Budget>;

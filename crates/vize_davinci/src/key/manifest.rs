@@ -8,7 +8,7 @@
 //! Corsa build, feature flags, the platform — is **ambient**, and every
 //! cached artifact declares which ambient inputs it reads
 //! ([`CachedArtifact::inputs`], documented row for row in
-//! `davinci-road/plan/key-manifests.md`). A [`KeyManifest`] carries their
+//! `docs/davinci/plan/key-manifests.md`). A [`KeyManifest`] carries their
 //! values' digests and folds into a key only when it sets **exactly** the
 //! artifact's inputs: a missing one is the corruption bug, an extra one is an
 //! undeclared input — both are errors, never silently accepted.

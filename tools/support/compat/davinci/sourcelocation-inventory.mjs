@@ -4,7 +4,7 @@
 // Davinci `Span` type (crates/vize_carton/src/span.rs) deleted —
 // `source`, `start.line`, `start.column`, `end.line`, `end.column` — across
 // `crates/*/src/**/*.rs`, grouped by crate and member, and emits the
-// migration record as davinci-road/plan/sourcelocation-inventory.md. The
+// migration record as docs/davinci/plan/sourcelocation-inventory.md. The
 // migration is fully executed (P1-3 retired `source`, P1-4 retired
 // line/column with the `Position` type itself), so the scan doubles as the
 // ratchet: any member read coming back fails regeneration, as does any
@@ -38,7 +38,7 @@ import {
   scanWorkspace,
 } from "./lib/sourcelocation-scan.mjs";
 
-const ARTIFACT_REL = "davinci-road/plan/sourcelocation-inventory.md";
+const ARTIFACT_REL = "docs/davinci/plan/sourcelocation-inventory.md";
 const REGEN_COMMAND = "rust-script tools/commands/davinci/sourcelocation-inventory.rs --write";
 const SUMMARY_COMMAND = "rust-script tools/commands/davinci/sourcelocation-inventory.rs --summary";
 

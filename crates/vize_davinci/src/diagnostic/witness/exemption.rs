@@ -1,7 +1,7 @@
 //! [`Exemption`] — one legacy producer's error kind, exempt from the witness
 //! law by inventory.
 //!
-//! The inventory is `davinci-road/plan/witness-exemptions.tsv` (`producer`,
+//! The inventory is `docs/davinci/plan/witness-exemptions.tsv` (`producer`,
 //! `code`, `exempt`), and `tests/tooling/davinci-witness-exemptions.test.ts`
 //! derives it mechanically from the source: every `Exemption::new` is a
 //! declaration, and `exempt` counts the construction sites that report under

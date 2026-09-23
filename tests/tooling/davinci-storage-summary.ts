@@ -1,5 +1,5 @@
 // Derived aggregates of the reviewed per-file storage ledger
-// (davinci-road/plan/storage-inventory.tsv). The per-file rows are the ratchet
+// (docs/davinci/plan/storage-inventory.tsv). The per-file rows are the ratchet
 // — the storage policy test holds them to strict equality with the measured
 // sources — and every aggregate below is a pure function of those rows, so it
 // is generated (`rust-script tools/commands/davinci/storage-summary.rs
@@ -15,8 +15,8 @@ import {
 } from "./davinci-storage-inventory.ts";
 import { storageKinds, type StorageKind } from "./davinci-storage-scan.ts";
 
-export const STORAGE_INVENTORY_REL = "davinci-road/plan/storage-inventory.tsv";
-export const STORAGE_SUMMARY_REL = "davinci-road/plan/storage-summary.md";
+export const STORAGE_INVENTORY_REL = "docs/davinci/plan/storage-inventory.tsv";
+export const STORAGE_SUMMARY_REL = "docs/davinci/plan/storage-summary.md";
 export const STORAGE_SUMMARY_REGEN =
   "rust-script tools/commands/davinci/storage-summary.rs --write";
 

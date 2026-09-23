@@ -6,7 +6,7 @@
 //! (`devtool.md`'s data-layer requirement - a consumer refuses a mismatch
 //! loudly instead of misrendering), the producing surface's `command`, and
 //! the folio pages in emission order. The committed schema is
-//! `davinci-road/plan/spolvero-feed.schema.json`, validated in tests through
+//! `docs/davinci/plan/spolvero-feed.schema.json`, validated in tests through
 //! the strict TS-15 subset validator - one producer here, one validator in
 //! the tree.
 //!

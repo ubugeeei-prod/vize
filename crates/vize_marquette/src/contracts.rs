@@ -16,7 +16,7 @@
 //!   protocol version must move for the classified change.
 //!
 //! The policy those functions implement is
-//! `davinci-road/contracts-compat-policy.md`. The optional `wit` feature
+//! `docs/davinci/contracts-compat-policy.md`. The optional `wit` feature
 //! reads a surface from WIT sources with the Bytecode Alliance `wit-parser`
 //! (`contracts::wit`).
 //!

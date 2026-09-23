@@ -2,7 +2,7 @@
   "schema": "vize.davinciCorpusBaseline",
   "version": 1,
   "registry": "tests/_fixtures/vue-ecosystem-fixtures.json",
-  "notes": "davinci-road/plan/corpus-baseline-notes.md",
+  "notes": "docs/davinci/plan/corpus-baseline-notes.md",
   "hashed_fields": {
     "compiler": [
       "compilerArtifacts",

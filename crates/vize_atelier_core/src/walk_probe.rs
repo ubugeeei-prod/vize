@@ -6,8 +6,8 @@
 //! manager's traversal count against the numbers this probe recorded, so the
 //! quantity has to be pinned before the work that could bias it - the P0-3
 //! precedent ([`crate::expr_parse_probe`]), whose baseline lives in
-//! `davinci-road/plan/expr-reparse-baseline.md` exactly the same way. This
-//! probe's baseline is `davinci-road/plan/walk-baseline.md`, and
+//! `docs/davinci/plan/expr-reparse-baseline.md` exactly the same way. This
+//! probe's baseline is `docs/davinci/plan/walk-baseline.md`, and
 //! `budgets.toml [traversal]` gates it.
 //!
 //! # The counting rule

@@ -181,7 +181,7 @@ mod tests {
     //
     // That was **verified by compiling it**, not assumed (the P0-7 rule), and
     // the exact rustc output is recorded in
-    // `davinci-road/plan/phase-2-records/p2-2.md`. It is not a standing
+    // `docs/davinci/plan/phase-2-records/p2-2.md`. It is not a standing
     // regression test because the workspace has no compile-fail harness
     // (no `trybuild`); adding one is a workspace-wide decision, not this
     // task's, and the gap is named here rather than left implicit.

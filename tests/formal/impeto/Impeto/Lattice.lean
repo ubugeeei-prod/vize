@@ -2,7 +2,7 @@ namespace Impeto.Lattice
 
 /-!
 Independent model of the P3-2 reactivity lattice. It is written from the
-declarative rule table in `davinci-road/plan/phase-3.md` and the P3-2 record,
+declarative rule table in `docs/davinci/plan/phase-3.md` and the P3-2 record,
 never from Rust source: every binding fact demands a lower bound on the class,
 and the naive evaluator must return the least class meeting every demand.
 `LatticeLaws` proves that contract; `LatticeFixture` compares this evaluator

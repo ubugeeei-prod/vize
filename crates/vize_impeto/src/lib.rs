@@ -19,7 +19,7 @@
 //! overlay on the op graph; see [`placement`].
 //!
 //! The operation semantics review point lives in
-//! [`davinci-road/plan/impeto-ops.md`](../../../davinci-road/plan/impeto-ops.md)
+//! [`docs/davinci/plan/impeto-ops.md`](../../../docs/davinci/plan/impeto-ops.md)
 //! and is kept in sync with [`op::OpKind`] plus the Lean reference runner.
 
 #![no_std]

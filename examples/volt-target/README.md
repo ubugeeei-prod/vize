@@ -13,5 +13,5 @@ cargo test -p vize_extension_host --offline --features extension-host --test vol
 
 The host runs that guest out of process and in process and accepts the
 document through `OutputSession`. The contract-change list is
-`davinci-road/plan/phase-6-records/p6-6.md`. The Volt maintainer has not
+`docs/davinci/plan/phase-6-records/p6-6.md`. The Volt maintainer has not
 signed off; the phase index stays open.

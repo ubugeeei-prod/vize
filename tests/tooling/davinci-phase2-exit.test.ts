@@ -34,8 +34,8 @@ function walkFiles(root: string): string[] {
 }
 
 test("Phase 2 exit gate is fully evaluated and keeps the allocation miss visible", () => {
-  const phase = readRepoFile("davinci-road", "plan", "phase-2.md");
-  const record = readRepoFile("davinci-road", "plan", "phase-2-records", "p2-20.md");
+  const phase = readRepoFile("docs/davinci", "plan", "phase-2.md");
+  const record = readRepoFile("docs/davinci", "plan", "phase-2-records", "p2-20.md");
   const gate = sectionBetween(
     phase,
     /^## Exit gate \(machine-checkable\)/mu,
@@ -89,7 +89,7 @@ test("Phase 2 old-path flags are absent from live source roots", () => {
 });
 
 test("Phase 2 corpus expansion audit records a full hydrated scope proof", () => {
-  const coverage = readRepoFile("davinci-road", "plan", "corpus-coverage.md");
+  const coverage = readRepoFile("docs/davinci", "plan", "corpus-coverage.md");
   assert.match(coverage, /Hydrated: 142 of 142 manifest projects/);
   assert.match(coverage, /\| \*\*total sites\*\*[^|\n]*(?:\|[^|\n]*){5}\|\s+0 \|/);
   assert.match(coverage, /All manifest projects were hydrated for this run/);

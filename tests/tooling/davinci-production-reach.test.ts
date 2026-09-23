@@ -22,8 +22,8 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
   const manifest = readRepoFile("crates", "vize_atelier_sfc", "Cargo.toml");
-  const budgets = readRepoFile("davinci-road", "plan", "reach-budgets.toml");
-  const record = readRepoFile("davinci-road", "plan", "phase-3-records", "p3-17.md");
+  const budgets = readRepoFile("docs/davinci", "plan", "reach-budgets.toml");
+  const record = readRepoFile("docs/davinci", "plan", "phase-3-records", "p3-17.md");
   const shapesSource = readRepoFile(
     "crates",
     "vize_atelier_sfc",

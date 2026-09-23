@@ -20,8 +20,8 @@ pub const SCHEMA_VERSION: u64 = 1;
 pub const UNSTABLE_SCHEMA: &str = "vize.davinciCorpusUnstableRows";
 pub const REGISTRY_REL: &str = "tests/_fixtures/vue-ecosystem-fixtures.json";
 pub const BASELINE_REL: &str = "tests/_fixtures/davinci-baseline.json";
-pub const NOTES_REL: &str = "davinci-road/plan/corpus-baseline-notes.md";
-pub const UNSTABLE_REL: &str = "davinci-road/plan/corpus-baseline-unstable.json";
+pub const NOTES_REL: &str = "docs/davinci/plan/corpus-baseline-notes.md";
+pub const UNSTABLE_REL: &str = "docs/davinci/plan/corpus-baseline-unstable.json";
 pub const SURFACES: &[&str] = &["compiler", "formatter", "linter", "typechecker"];
 
 const PAYLOAD_FAILURE_FIELDS: &[&str] = &["spawnError", "parseError", "validationError"];
@@ -615,7 +615,7 @@ pub fn assert_fixtures_pristine(root: &Path, allow_materialized: bool) -> Result
     }
     lines.extend([
         "  a sweep over contaminated fixtures measures a different tree than the".to_string(),
-        "  baseline did - see davinci-road/plan/corpus-baseline-notes.md, Re-record 2".to_string(),
+        "  baseline did - see docs/davinci/plan/corpus-baseline-notes.md, Re-record 2".to_string(),
         "  (pass --allow-dirty-fixtures to sweep anyway; the hashes are then not".to_string(),
         "  comparable to the committed baseline)".to_string(),
     ]);

@@ -1,7 +1,7 @@
 //! The timing observer: one profile span per **walk**, not per pass.
 //!
 //! Costs are recorded through `vize_s0::profiler`, whose export is P0-11's
-//! [`profile-export.schema.json`](../../../../davinci-road/plan/profile-export.schema.json).
+//! [`profile-export.schema.json`](../../../../docs/davinci/plan/profile-export.schema.json).
 //! Attribution reuses `vize_s0::profiler::SpanAttribution` — the
 //! `{stage, pass, file_id, block, span}` builders that already exist for
 //! exactly this — rather than introducing a second attribution model, which is

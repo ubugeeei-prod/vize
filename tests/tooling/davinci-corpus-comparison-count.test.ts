@@ -88,9 +88,9 @@ test("P2-11 DOM differential docs pin the hydrated full-corpus comparison count"
     ["tests/_fixtures/_git/primevue", ["primevue", "primevue-volt", "primevue-showcase"]],
   ]);
 
-  const phase = read(new URL("../../davinci-road/plan/phase-2.md", import.meta.url));
-  const tasks = read(new URL("../../davinci-road/plan/phase-2-tasks.md", import.meta.url));
-  const record = read(new URL("../../davinci-road/plan/phase-2-records/p2-11.md", import.meta.url));
+  const phase = read(new URL("../../docs/davinci/plan/phase-2.md", import.meta.url));
+  const tasks = read(new URL("../../docs/davinci/plan/phase-2-tasks.md", import.meta.url));
+  const record = read(new URL("../../docs/davinci/plan/phase-2-records/p2-11.md", import.meta.url));
   const countSection = requiredSection(
     record,
     /^## Hydrated corpus differential count contract/mu,

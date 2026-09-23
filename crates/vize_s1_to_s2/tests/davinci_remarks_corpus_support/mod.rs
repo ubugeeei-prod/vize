@@ -1,6 +1,6 @@
 //! C-13's first version: the missed-remarks backlog, rendered from the
 //! TS-32 corpus by `vize_davinci::folio::remarks::backlog::mine_missed` and
-//! pinned as `davinci-road/plan/remarks-backlog.md`.
+//! pinned as `docs/davinci/plan/remarks-backlog.md`.
 
 use vize_davinci::folio::remarks::backlog::mine_missed;
 use vize_davinci::folio::remarks::corpus::RemarkCorpus;
@@ -8,7 +8,7 @@ use vize_davinci::pass::RemarkKind;
 use vize_s0::{String, cstr};
 
 /// The committed backlog document, relative to the repo root.
-pub const BACKLOG_REL: &str = "davinci-road/plan/remarks-backlog.md";
+pub const BACKLOG_REL: &str = "docs/davinci/plan/remarks-backlog.md";
 
 /// Render the backlog for `corpus` (formatter-stable Markdown).
 pub fn backlog_markdown(corpus: &RemarkCorpus) -> String {

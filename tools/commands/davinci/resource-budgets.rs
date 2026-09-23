@@ -10,7 +10,7 @@
 //! ```
 //!
 //! Davinci P5-11a (TS-44 baselines): measures the resident `vize lsp` and
-//! gates `davinci-road/plan/budgets.toml [resource]`.
+//! gates `docs/davinci/plan/budgets.toml [resource]`.
 //!
 //!   --measure  --preset <id> [--runs N] [--keystrokes K] [--idle-seconds S]
 //!              [--server <vize>] [--out <json>]   record one measurement
@@ -73,7 +73,7 @@ fn flag(args: &[String], name: &str) -> Option<String> {
 
 fn run(args: Vec<String>) -> Result<(), String> {
     let repo = common::repo_root()?;
-    let budgets = flag(&args, "--budgets").map_or_else(|| repo.join("davinci-road/plan/budgets.toml"), PathBuf::from);
+    let budgets = flag(&args, "--budgets").map_or_else(|| repo.join("docs/davinci/plan/budgets.toml"), PathBuf::from);
     if args.iter().any(|arg| arg == "--measure") {
         return measure(&repo, &args);
     }

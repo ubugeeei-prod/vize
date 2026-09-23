@@ -221,7 +221,7 @@ fn load_schema() -> serde_json::Value {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("..")
         .join("..")
-        .join("davinci-road")
+        .join("docs/davinci")
         .join("plan")
         .join("profile-export.schema.json");
     let text = std::fs::read_to_string(&path).expect("committed schema reads");

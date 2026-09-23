@@ -1,4 +1,4 @@
-// Scanner for davinci-road/plan/consumer-migration-surfaces.md.
+// Scanner for docs/davinci/plan/consumer-migration-surfaces.md.
 //
 // It deliberately counts lexical crate/surface mentions, not semantic Rust
 // resolution. Rust comments and string literals are stripped before matching;

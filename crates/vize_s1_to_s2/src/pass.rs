@@ -8,7 +8,7 @@
 //! crate is published to crates.io and the release gate
 //! (`tests/tooling/moonbit-publish-crates.test.ts`) rejects any
 //! published crate whose release graph names an unpublished one — the
-//! constraint `davinci-road/plan/phase-2.md` records under "Davinci
+//! constraint `docs/davinci/plan/phase-2.md` records under "Davinci
 //! describes the shipped pipeline". The backends read Davinci from
 //! **dev-dependencies** (stripped on publish), which is where the P2-9
 //! differential comparator sits (`crates/vize_atelier_core/tests/

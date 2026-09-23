@@ -1,4 +1,4 @@
-// The davinci bench budget registry loader (davinci-road/plan/budgets.toml
+// The davinci bench budget registry loader (docs/davinci/plan/budgets.toml
 // `[bench]`), used by tools/davinci/bench-compare.mjs.
 //
 // Every entry must carry exactly the documented field set, so a typo or a

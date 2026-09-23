@@ -2,7 +2,7 @@
 //!
 //! Serializes the profiler's span, counter, and allocation data into the
 //! stable JSON shape committed at
-//! `davinci-road/plan/profile-export.schema.json` (the `--profile-json` CLI
+//! `docs/davinci/plan/profile-export.schema.json` (the `--profile-json` CLI
 //! contract). The export is size-budgeted following the
 //! `vize_doctor::ai_context` conventions: hard entry limits applied in
 //! deterministic order, with every omission accounted for in an explicit
@@ -195,7 +195,7 @@ pub struct ProfileExportAllocation {
 
 /// Versioned, deterministic machine-readable profile report.
 ///
-/// Shape is committed at `davinci-road/plan/profile-export.schema.json`;
+/// Shape is committed at `docs/davinci/plan/profile-export.schema.json`;
 /// bump [`PROFILE_EXPORT_SCHEMA_VERSION`] with any incompatible change.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ProfileExport {

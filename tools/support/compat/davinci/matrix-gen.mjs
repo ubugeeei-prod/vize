@@ -1,6 +1,6 @@
 // Construct-matrix fixture generator — SKELETON (Davinci P0-12).
 //
-// Reads davinci-road/plan/taxonomy.toml (DRAFT, pending maintainer
+// Reads docs/davinci/plan/taxonomy.toml (DRAFT, pending maintainer
 // sign-off) and emits deterministic .vue fixture stubs under
 // tests/fixtures/davinci-matrix/. This skeleton generates the
 // element_kind x directive plane only; the full cross-product (modifier
@@ -34,7 +34,7 @@ import { fileURLToPath } from "node:url";
 import { parseTomlLite, TomlLiteError } from "./toml-lite.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
-const taxonomyPath = path.join(repoRoot, "davinci-road", "plan", "taxonomy.toml");
+const taxonomyPath = path.join(repoRoot, "docs/davinci", "plan", "taxonomy.toml");
 const defaultOutDir = path.join(repoRoot, "tests", "fixtures", "davinci-matrix");
 
 const ID_RE = /^[a-z][a-z0-9-]*$/;
@@ -132,7 +132,7 @@ function parseArgs(argv) {
 
 const USAGE = `Usage: rust-script tools/commands/davinci/matrix-gen.rs [--write | --check] [--out-dir <dir>]
 
-Generates construct-matrix fixture stubs from davinci-road/plan/taxonomy.toml.
+Generates construct-matrix fixture stubs from docs/davinci/plan/taxonomy.toml.
 Default is a dry run that prints the would-be fixture count.`;
 
 function describe(taxonomy) {

@@ -1,10 +1,10 @@
 // Storage summary generator (Davinci storage boundary).
 //
-// The reviewed per-file ledger davinci-road/plan/storage-inventory.tsv is the
+// The reviewed per-file ledger docs/davinci/plan/storage-inventory.tsv is the
 // storage ratchet: tests/tooling/davinci-storage-policy.test.ts holds every
 // row to strict equality with the measured stage sources. This command derives
 // the ledger's aggregates (retained alloc Vec totals, per-category and
-// per-scope counts) into davinci-road/plan/storage-summary.md so they are
+// per-scope counts) into docs/davinci/plan/storage-summary.md so they are
 // never hand-copied, and a rebase that conflicts on them is resolved by
 // regenerating.
 //

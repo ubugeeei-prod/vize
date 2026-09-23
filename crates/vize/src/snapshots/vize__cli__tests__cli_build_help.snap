@@ -92,13 +92,13 @@ Options:
       --folio-dir <DIR>
           Write per-pass Davinci folio dumps for davinci-driven compiles into DIR
 
-          The compile path has no folio-printable stage artifact until the S2 build path lands (davinci-road P2-12b), so today a build writes the directory and no pages; `davinci-opt --folio-dir` dumps real pages.
+          The compile path has no folio-printable stage artifact until the S2 build path lands (docs/davinci P2-12b), so today a build writes the directory and no pages; `davinci-opt --folio-dir` dumps real pages.
 
       --folio-after-change
           Only dump a pass's folio when the artifact hash changed across it
 
       --profile-json <PATH>
-          Write a machine-readable profiling report as JSON to this path (implies profile collection; schema: davinci-road/plan/profile-export.schema.json)
+          Write a machine-readable profiling report as JSON to this path (implies profile collection; schema: docs/davinci/plan/profile-export.schema.json)
 
   -h, --help
           Print help (see a summary with '-h')

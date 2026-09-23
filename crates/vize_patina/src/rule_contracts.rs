@@ -15,7 +15,7 @@
 //! ([`RuleContract::clamp`]), and the drain belongs to its P4-8 wave.
 //!
 //! Every error-severity rule reports without a witness today, so each one's
-//! [`Exemption`] is counted by `davinci-road/plan/witness-exemptions.tsv`
+//! [`Exemption`] is counted by `docs/davinci/plan/witness-exemptions.tsv`
 //! (one row per `Error` row below) — the P4-8 waves' drain queue.
 //!
 //! Tiers are the initial P4-6c declaration: a structural check the file's

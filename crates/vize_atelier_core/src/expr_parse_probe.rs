@@ -7,7 +7,7 @@
 //! `Allocator::default()`, so a counted parse and a parse arena are the same
 //! event by construction. The P0-3 benches read the counter to record the
 //! per-fixture re-parse baseline
-//! (`davinci-road/plan/expr-reparse-baseline.md`); phase 1 replaces the
+//! (`docs/davinci/plan/expr-reparse-baseline.md`); phase 1 replaces the
 //! parse-copy-reparse round trips with retained ASTs, TS-26 then asserts
 //! `davinci.expr.parses == distinct expressions`, and this module is deleted
 //! with the last call site.

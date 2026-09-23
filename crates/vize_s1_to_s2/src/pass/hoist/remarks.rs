@@ -5,7 +5,7 @@
 //! fact that licenses the hoist holds. Whether DOM realization then hoists
 //! is position- and option-dependent (`hoist.rs`'s module docs) and is not
 //! claimed. The vocabulary is registered in
-//! `davinci-road/plan/remarks-format.md`:
+//! `docs/davinci/plan/remarks-format.md`:
 //!
 //! - `static-subtree` — per `ui.element`: `applied` when the subtree is
 //!   fully static (whole-hoist eligible), else `missed` with the first

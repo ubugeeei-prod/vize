@@ -21,7 +21,7 @@ test("feature-gated S1-to-S2 corpus lanes run in main and manual Check", () => {
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
   const testReportJob = workflowJobBody(workflow, "test-report");
   const manifest = readRepoFile("crates", "vize_s1_to_s2", "Cargo.toml");
-  const suites = readRepoFile("davinci-road", "plan", "test-suites.md");
+  const suites = readRepoFile("docs/davinci", "plan", "test-suites.md");
 
   assert.match(
     suites,

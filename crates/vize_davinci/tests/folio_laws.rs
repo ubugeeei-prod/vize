@@ -1,7 +1,7 @@
 //! Folio trait laws on hand-written croquis folio texts.
 //!
 //! The mode-explicit contract under test (see `crates/vize_davinci/src/folio.rs`
-//! and `davinci-road/plan/folio-format.md`):
+//! and `docs/davinci/plan/folio-format.md`):
 //!
 //! - `Full`: `print(parse(t)) == t` for canonical text, `parse(print(v)) == v`
 //!   for (normalized) values; non-canonical input is normalized by the first

@@ -44,7 +44,7 @@ fn temp_path(name: &str) -> PathBuf {
 
 fn load_schema() -> serde_json::Value {
     let path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../davinci-road/plan/remarks.schema.json");
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../docs/davinci/plan/remarks.schema.json");
     serde_json::from_str(&std::fs::read_to_string(path).expect("schema reads"))
         .expect("schema is valid JSON")
 }

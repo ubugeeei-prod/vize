@@ -9,7 +9,7 @@
 //! [`vize_s2`]): [`lower`] is a **total function** — every input
 //! yields S2 ops and/or [`Diagnostic`]s, never a panic and never a
 //! partial-then-abandoned state (the MLIR one-shot import,
-//! `davinci-road/prior-art.md`).
+//! `docs/davinci/prior-art.md`).
 //!
 //! # The home decision (dependency direction)
 //!
@@ -22,7 +22,7 @@
 //! conversion depends downward on both and neither learns of the other;
 //! `cargo tree -i` on either stage names only this experimental,
 //! `publish = false` crate, so no shipped compile path can observe any of
-//! it. Full reasoning in `davinci-road/plan/phase-2-records/p2-8.md`.
+//! it. Full reasoning in `docs/davinci/plan/phase-2-records/p2-8.md`.
 //!
 //! # What lowering means here
 //!

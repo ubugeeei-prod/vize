@@ -19,7 +19,7 @@
 //!   classes P1-5/P1-9 measured, with **pessimal documented semantics from
 //!   day one** (the imported LLVM `undef`/`poison` rule - see
 //!   [`opaque`]'s module docs for the laws, and
-//!   `davinci-road/plan/phase-2-records/p2-5b.md` for the decision record
+//!   `docs/davinci/plan/phase-2-records/p2-5b.md` for the decision record
 //!   and the measurement that picked this resolution).
 //!
 //! # No equality, on purpose

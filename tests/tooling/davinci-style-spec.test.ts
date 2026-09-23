@@ -1,5 +1,5 @@
 // TS-41 bijection for P4-12a. Every `### Snn —` rule in
-// davinci-road/plan/style-spec.md has
+// docs/davinci/plan/style-spec.md has
 // crates/vize_glyph/tests/style_spec/Snn/{input,output}.vue, and every pair
 // has one rule. The orphan case is injected: the checker fails closed on a
 // pair the spec does not name. This test does not run the formatter
@@ -12,7 +12,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const specPath = path.join(repoRoot, "davinci-road/plan/style-spec.md");
+const specPath = path.join(repoRoot, "docs/davinci/plan/style-spec.md");
 const fixtureRoot = path.join(repoRoot, "crates/vize_glyph/tests/style_spec");
 
 const RULE_HEADING = /^### (S\d{2}) — \S/u;

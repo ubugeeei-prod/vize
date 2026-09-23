@@ -25,11 +25,11 @@ function taskSection(source: string, id: string): string {
 }
 
 test("P2-10 docs describe vue.css-bind spans as file-absolute", () => {
-  const phase = readRepoFile("davinci-road", "plan", "phase-2.md");
-  const records = readRepoFile("davinci-road", "plan", "phase-2-records.md");
-  const tasks = readRepoFile("davinci-road", "plan", "phase-2-tasks.md");
-  const p2_10 = readRepoFile("davinci-road", "plan", "phase-2-records", "p2-10.md");
-  const folioFormat = readRepoFile("davinci-road", "plan", "folio-format.md");
+  const phase = readRepoFile("docs/davinci", "plan", "phase-2.md");
+  const records = readRepoFile("docs/davinci", "plan", "phase-2-records.md");
+  const tasks = readRepoFile("docs/davinci", "plan", "phase-2-tasks.md");
+  const p2_10 = readRepoFile("docs/davinci", "plan", "phase-2-records", "p2-10.md");
+  const folioFormat = readRepoFile("docs/davinci", "plan", "folio-format.md");
   const entries = [
     lineMatching(phase, /P2-10.*vue\.css-bind/u),
     lineMatching(records, /P2-10.*vue\.css-bind/u),

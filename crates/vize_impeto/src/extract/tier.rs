@@ -2,7 +2,7 @@
 //!
 //! Every tier runs the same pass; only the budget and the metric tolerances
 //! scale (the Flambda2 import). The table mirrors `[optimization]` in
-//! `davinci-road/plan/budgets.toml`, which stays the source of truth:
+//! `docs/davinci/plan/budgets.toml`, which stays the source of truth:
 //! `tests/optimization_budgets.rs` reads that file and requires this table to
 //! equal it field for field.
 

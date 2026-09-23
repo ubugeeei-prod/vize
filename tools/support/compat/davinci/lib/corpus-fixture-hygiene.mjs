@@ -7,7 +7,7 @@
 //   - `vize check` materializes tsgo project state, including a `node_modules`
 //     directory, *inside* the checked project. One sweep leaves ~142 fixture
 //     projects dirty, and the next sweep then measures a different tree than
-//     the baseline did (davinci-road/plan/corpus-baseline-notes.md,
+//     the baseline did (docs/davinci/plan/corpus-baseline-notes.md,
 //     "Re-record 2" — that inheritance produced drift on two surfaces and cost
 //     a full investigation before it was understood).
 //   - a partially-hydrated or drifted submodule silently narrows the corpus,
@@ -137,7 +137,7 @@ export function assertFixturesPristine(fail, { allowMaterialized = false } = {})
   }
   lines.push(
     "  a sweep over contaminated fixtures measures a different tree than the",
-    "  baseline did — see davinci-road/plan/corpus-baseline-notes.md, Re-record 2",
+    "  baseline did — see docs/davinci/plan/corpus-baseline-notes.md, Re-record 2",
     "  (pass --allow-dirty-fixtures to sweep anyway; the hashes are then not",
     "  comparable to the committed baseline)",
   );

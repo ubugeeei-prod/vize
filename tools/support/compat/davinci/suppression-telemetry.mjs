@@ -1,10 +1,10 @@
 // Suppression-telemetry FP oracle (Davinci P0-13).
 //
-// Doctrine: davinci-road/assurance.md, "Suppression telemetry — the FP
+// Doctrine: docs/davinci/assurance.md, "Suppression telemetry — the FP
 // oracle". Real projects carry `eslint-disable` pragmas; every vize
 // diagnostic that fires on a line a user suppressed for the ANALOGOUS
 // upstream rule is a false-positive candidate that must be triaged in
-// davinci-road/plan/ledger-fp.md (`fixed` / `justified-with-witness` /
+// docs/davinci/plan/ledger-fp.md (`fixed` / `justified-with-witness` /
 // `deferred-with-issue`), never left ambient.
 //
 // Mechanics (see lib/fpfn-suppress-scan.mjs for details): vize honors

@@ -2,7 +2,7 @@
 //!
 //! Flattened into the build, lint, and check argument structs so every
 //! pipeline-running subcommand can emit the machine-readable profile report
-//! defined by `davinci-road/plan/profile-export.schema.json`.
+//! defined by `docs/davinci/plan/profile-export.schema.json`.
 
 use std::path::{Path, PathBuf};
 
@@ -14,7 +14,7 @@ use crate::profile_support;
 /// Shared machine-readable profile export flags.
 #[derive(Args, Debug, Clone, Default)]
 pub struct ProfileExportArgs {
-    /// Write a machine-readable profiling report as JSON to this path (implies profile collection; schema: davinci-road/plan/profile-export.schema.json)
+    /// Write a machine-readable profiling report as JSON to this path (implies profile collection; schema: docs/davinci/plan/profile-export.schema.json)
     #[arg(long, value_name = "PATH")]
     pub profile_json: Option<PathBuf>,
 }

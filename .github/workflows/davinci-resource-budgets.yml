@@ -1,7 +1,7 @@
 name: Davinci resource budgets
 
 # TS-44 (Davinci P5-11a): the resident `vize lsp` measured against the
-# `davinci-road/plan/budgets.toml [resource]` ceilings on the reference
+# `docs/davinci/plan/budgets.toml [resource]` ceilings on the reference
 # runner. Every recorded number names this workflow's measure command; the
 # ratchet step rejects a loosened or dropped ceiling against the PR base.
 
@@ -75,7 +75,11 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags --depth=1 origin "${BASE_SHA}"
-          git show "${BASE_SHA}:davinci-road/plan/budgets.toml" > "${RUNNER_TEMP}/base-budgets.toml"
+          # Resolve the base revision's path so the directory move itself can
+          # still compare against the pre-move budget registry.
+          BASE_BUDGET_PATH="$(git ls-tree -r --name-only "${BASE_SHA}" | rg '(^|/)plan/budgets[.]toml$')"
+          test -n "${BASE_BUDGET_PATH}"
+          git show "${BASE_SHA}:${BASE_BUDGET_PATH}" > "${RUNNER_TEMP}/base-budgets.toml"
           rust-script tools/commands/davinci/resource-budgets.rs --ratchet "${RUNNER_TEMP}/base-budgets.toml"
       - name: The measurement holds every pinned ceiling
         if: ${{ !cancelled() }}

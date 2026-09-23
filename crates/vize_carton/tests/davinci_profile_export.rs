@@ -8,7 +8,7 @@
 //!    parent's child share, and the plain/attributed `profile!` arms land in
 //!    disjoint buckets.
 //! 2. The serialized export satisfies the committed schema
-//!    `davinci-road/plan/profile-export.schema.json`, checked by the strict
+//!    `docs/davinci/plan/profile-export.schema.json`, checked by the strict
 //!    shared strict JSON Schema subset validator: a schema keyword the
 //!    validator does not implement is an error, never a silently skipped
 //!    check.
@@ -34,7 +34,7 @@ use vize_carton::profiler::{
 static GLOBAL: ProfilingAllocator<System> = ProfilingAllocator::new();
 
 /// Schema location relative to the workspace root.
-const SCHEMA_SUBPATH: &str = "davinci-road/plan/profile-export.schema.json";
+const SCHEMA_SUBPATH: &str = "docs/davinci/plan/profile-export.schema.json";
 
 const INNER_ATTRIBUTION: SpanAttribution = SpanAttribution::new()
     .with_stage("s1")

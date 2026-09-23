@@ -1,4 +1,4 @@
-//! FP-1 (`davinci-road/plan/ledger-fp.md`): `type/require-typed-emits` and
+//! FP-1 (`docs/davinci/plan/ledger-fp.md`): `type/require-typed-emits` and
 //! `type/require-typed-props` report the `defineEmits` / `defineProps` call
 //! they are about — not template text.
 //!

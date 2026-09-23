@@ -4,7 +4,7 @@
 //! Every enum of the family is matched with **no `_` arm**, so adding a
 //! variant breaks this file at compile time. The canary is proved by
 //! injection, not assumed (the P0-7 staleness-check pattern): the landing
-//! records (`davinci-road/plan/phase-2-records/p2-5a.md`, `p2-5b.md`)
+//! records (`docs/davinci/plan/phase-2-records/p2-5a.md`, `p2-5b.md`)
 //! document the injected variants and the resulting build failures.
 
 use vize_s0::{Allocator, Box, Span, Vec};

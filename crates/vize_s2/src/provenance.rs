@@ -3,7 +3,7 @@
 //!
 //! # The imported practice
 //!
-//! Lean 4's `InfoTree` (`davinci-road/prior-art-toolchains.md`): every
+//! Lean 4's `InfoTree` (`docs/davinci/prior-art-toolchains.md`): every
 //! elaboration step records which rule produced what, from which syntax,
 //! with before/after pairs for macro expansion - **and partial results are
 //! kept when elaboration fails**, so hover works in broken code. The

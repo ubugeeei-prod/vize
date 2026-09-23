@@ -6,7 +6,7 @@
 //! P4-1 fact API ([`vize_davinci::fact`]), so a consumer demands "the route
 //! params of `user-posts`" exactly the way it demands bindings or scopes.
 //!
-//! # The contract (`davinci-road/open-questions.md`, settled here)
+//! # The contract (`docs/davinci/open-questions.md`, settled here)
 //!
 //! A provider is **neither a new plug-in kind nor a fact consumer with write
 //! access**. It is a *project-level population pass* in the demand graph:

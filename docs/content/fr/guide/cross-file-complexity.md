@@ -22,7 +22,7 @@ Le modèle associe trois signaux de complexité à Vue :
   restent visibles comme signaux transfrontaliers au lieu d’être aplaties dans un seul fichier.
 
 La définition des métriques et les seuils fixés sur le corpus se trouvent dans
-[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/davinci-road/plan/complexity-metrics.md).
+[`complexity-metrics.md`](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/plan/complexity-metrics.md).
 
 ## Scores
 

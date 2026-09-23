@@ -19,7 +19,7 @@ use super::{EmitCx, EmitError, UnsupportedReason as Reason};
 // The checked modifier inventory in `tests/tooling/davinci-v-on-storage.test.ts`
 // selects two inline entries per classifier bucket. Authored directives remain
 // unbounded and spill without changing order or output; the allocation budget in
-// `davinci-road/plan/budgets.toml` owns the measured proof.
+// `docs/davinci/plan/budgets.toml` owns the measured proof.
 const OPTION_INLINE_CAP: usize = 2;
 const EVENT_INLINE_CAP: usize = 2;
 const KEY_INLINE_CAP: usize = 2;

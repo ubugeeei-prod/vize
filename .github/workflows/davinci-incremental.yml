@@ -1,6 +1,6 @@
 name: Davinci Incremental
 
-# Phase 5 incrementality suites (davinci-road/plan/test-suites.md):
+# Phase 5 incrementality suites (docs/davinci/plan/test-suites.md):
 # - TS-43 key stability runs on two platforms against one committed golden, so
 #   a platform-dependent byte in any key recipe fails on at least one lane.
 # - TS-42 incremental ≡ clean runs the committed edit scripts through the
@@ -22,7 +22,7 @@ on:
       - "tools/commands/davinci/incremental-equivalence*"
       - "tools/commands/davinci/incremental-equivalence/**"
       - "Cargo.lock"
-      - "davinci-road/plan/key-manifests.md"
+      - "docs/davinci/plan/key-manifests.md"
       - ".github/workflows/davinci-incremental.yml"
   workflow_dispatch:
 

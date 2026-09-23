@@ -1,6 +1,6 @@
 // Folio page text -> display lines: syntax tokens plus the authored span each
 // line points at. The grammar being read is the committed folio format
-// (`davinci-road/plan/folio-format.md`, `folio-format-impeto.md`); nothing
+// (`docs/davinci/plan/folio-format.md`, `folio-format-impeto.md`); nothing
 // here re-derives compiler facts, it only reads the spans the pages print.
 
 import type { Range } from "./offsets";

@@ -6,7 +6,7 @@
 //! in [`FolioMode::Full`](super::FolioMode) reproduces that format
 //! byte-for-byte for canonical content; parsing is the inverse. The live
 //! renderer stays in `crates/vize_croquis/src/croquis/vir.rs`; this module
-//! owns the format contract (see `davinci-road/plan/folio-format.md`).
+//! owns the format contract (see `docs/davinci/plan/folio-format.md`).
 //!
 //! A folio models the dump, not the analysis: counts in the header are
 //! carried as printed, and no cross-section invariants are enforced beyond

@@ -18,7 +18,7 @@ use crate::{
 
 /// Rendered cyclomatic complexity above which a component is a hotspot:
 /// the p95 over 40,724 components of the full corpus
-/// (`davinci-road/plan/complexity-metrics.md`).
+/// (`docs/davinci/plan/complexity-metrics.md`).
 pub const RENDERED_CYCLOMATIC_HOTSPOT_ABOVE: u32 = 106;
 /// Rendered cognitive complexity above which a component is a hotspot
 /// (same measurement).

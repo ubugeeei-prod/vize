@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vize.dev/schemas/spolvero-feed.schema.json",
+  "title": "Davinci Spolvero feed",
+  "description": "The observer's folio output as one consumable document (P2-18): the pages a run emitted, in emission order, under the schema_version Spolvero negotiates on (devtool.md data layer - a consumer refuses a mismatch loudly instead of misrendering). Producers: `davinci-opt --folio-dir` writes it as `spolvero.json` beside the pages (SpolveroFeed::of_dump over the same FolioDump, so directory and feed cannot disagree; a page's file name derives as `{seq:03}-{stage}.{pass}.folio` from its array index and fields), the inspector payload embeds it under `spolvero`, and the wasm `analyzeSfc` result carries the full S1 -> S2 -> S3 stage ladder next to the croquis alias. Transport is deliberately unspecified here - that decision is P2-19.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "command", "pages"],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Feed format version. Incompatible shape changes bump this."
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Producing surface (for example `davinci-opt`, `inspector`, `analyze-sfc`)."
+    },
+    "pages": {
+      "type": "array",
+      "description": "The pages, in emission order.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "stage", "pass", "text"],
+        "properties": {
+          "path": {
+            "type": ["string", "null"],
+            "description": "Source file the page was produced for, when the producing surface works per-file (the inspector); null for a single-artifact pipeline run."
+          },
+          "stage": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "description": "Stage (or stage page family) that produced the page: the ladder emits `s1`, `s2`, `s2-plan` (the transform plan's walks), `s2-provenance`, `s3`, `s3-partition` and `s3-values`; `davinci-opt` pages use the dumped stage (`croquis`, `budget-observer`, ...)."
+          },
+          "pass": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9._-]+$",
+            "description": "Producing step: the pass name for a pipeline dump, or the non-pass step that made the page (`parse` for the S1 surface tree)."
+          },
+          "text": {
+            "type": "string",
+            "description": "The page text: canonical Full-mode folio text, or for S1 the byte-faithful surface render."
+          }
+        }
+      }
+    },
+    "remarks": {
+      "type": "array",
+      "description": "Optimization remarks (P3-13), per file in canonical order: each item is a remarks.schema.json remark item plus the `path` it was produced for, spans in byte offsets into the artifact the pipeline lowered (the frame of that file's pages: the template content for the inspector and analyzeSfc). Additive to v1: every producer emits it since P3-13; it is optional so earlier v1 documents stay valid. Grammar and vocabulary: docs/davinci/plan/remarks-format.md.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "stage", "pass", "kind", "name", "span", "args"],
+        "properties": {
+          "path": {
+            "type": ["string", "null"],
+            "description": "Source file the remark was produced for; null for a single-artifact pipeline run."
+          },
+          "stage": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$" },
+          "pass": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$" },
+          "kind": { "type": "string", "pattern": "^(applied|missed|analysis)$" },
+          "name": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$" },
+          "span": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "end"],
+            "properties": {
+              "start": { "type": "integer", "minimum": 0 },
+              "end": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["key", "value"],
+              "properties": {
+                "key": { "type": "string", "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$" },
+                "value": { "type": ["string", "integer", "boolean"] }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

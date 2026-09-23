@@ -21,9 +21,9 @@
 //   croquis-shards.mjs     committed index + one shard per consuming crate
 //   artifact-set.mjs       byte-exact --write/--check of the shard set
 //
-// The committed matrix is sharded: davinci-road/plan/croquis-consumption.md
+// The committed matrix is sharded: docs/davinci/plan/croquis-consumption.md
 // (method + product set, which depend only on vize_croquis) and
-// davinci-road/plan/croquis-consumption/<crate>.md (every per-crate fact).
+// docs/davinci/plan/croquis-consumption/<crate>.md (every per-crate fact).
 // Cross-crate totals are never committed — they changed with every PR and
 // made every open PR conflict — and are printed on demand by --summary.
 //

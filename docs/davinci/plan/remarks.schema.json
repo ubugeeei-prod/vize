@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vize.dev/schemas/remarks.schema.json",
+  "title": "Davinci optimization remarks",
+  "description": "A pipeline run's optimization remarks (P3-13): every remark a pass emitted through the pass manager's observer channel, in canonical order (emitting pass's run position, then span start ascending, span end descending, then remark name). Produced by RemarkLog::to_json - `davinci-opt --remarks <path>` writes it. The text twin is the `[remarks]` folio page; both serialize the same RemarkLog. Grammar, kinds and the per-pass vocabulary: docs/davinci/plan/remarks-format.md. Consumers negotiate schema_version before reading remarks and refuse a mismatch loudly (devtool.md data layer).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "command", "remarks"],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Remark document format version. Incompatible shape changes bump this."
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Producing surface (for example `davinci-opt`)."
+    },
+    "remarks": {
+      "type": "array",
+      "description": "The remarks, in canonical order.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "pass", "kind", "name", "span", "args"],
+        "properties": {
+          "stage": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+            "description": "Stage of the pipeline whose pass emitted the remark (`s2`)."
+          },
+          "pass": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+            "description": "The emitting pass, as the pass manager attributed it (`hoist-static`)."
+          },
+          "kind": {
+            "type": "string",
+            "pattern": "^(applied|missed|analysis)$",
+            "description": "applied: the pass performed (or, for an analysis pass, established) the optimization; missed: it was considered and did not apply, args name the blocker; analysis: a neutral explanatory fact."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$",
+            "description": "The remark's identity within its pass, from the registered vocabulary (`static-subtree`)."
+          },
+          "span": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["start", "end"],
+            "description": "Authored span the decision is about: byte offsets into the source the pipeline's artifact was lowered from.",
+            "properties": {
+              "start": { "type": "integer", "minimum": 0 },
+              "end": { "type": "integer", "minimum": 0 }
+            }
+          },
+          "args": {
+            "type": "array",
+            "description": "Structured arguments in emission order; keys are unique within a remark.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["key", "value"],
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?$"
+                },
+                "value": {
+                  "type": ["string", "integer", "boolean"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
