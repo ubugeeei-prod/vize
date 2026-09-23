@@ -1,6 +1,8 @@
 //! Caret lookups: byte-to-byte, first containing row, clamped to the last byte.
 
-use super::{ProjectionFeatures, ProjectionMapping, ProjectionMeta, VizeMapping};
+use super::{
+    ProjectionFeatures, ProjectionMapping, ProjectionMeta, ProjectionSpanKind, VizeMapping,
+};
 
 fn two_rows() -> ProjectionMapping {
     let mut mapping = ProjectionMapping::new();
@@ -126,4 +128,39 @@ fn an_empty_mapping_resolves_nothing() {
     assert_eq!(mapping.span_at_generated(0), None);
     assert_eq!(mapping.diagnostic_range_to_authored(0, 1), None);
     assert_eq!(mapping.len(), 0);
+}
+
+#[test]
+fn an_internal_import_rewrite_keeps_the_following_source_bytes_aligned() {
+    let source = "import { x } from './dep'; const after = x;";
+    let specifier = source.find("./dep").expect("specifier");
+    let after = source.find("after").expect("following identifier");
+    let replacement = "/pkg/src/dep";
+    let old_len = "./dep".len();
+    let delta = replacement.len() - old_len;
+    let mut mapping = ProjectionMapping::new();
+    mapping.push_with(
+        VizeMapping::new(0..source.len(), 0..source.len()),
+        ProjectionMeta::of_kind(ProjectionSpanKind::Script),
+    );
+
+    mapping.note_generated_replacement(specifier, old_len, replacement.len());
+
+    assert_eq!(mapping.to_generated(after), Some(after + delta));
+    assert_eq!(
+        mapping.to_generated_for(after, ProjectionFeatures::DEFINITION),
+        Some(after + delta)
+    );
+    assert_eq!(mapping.to_authored(after + delta), Some(after));
+    assert_eq!(
+        mapping.diagnostic_range_to_authored(after + delta, after + delta + 5),
+        Some((after, after + 5))
+    );
+    assert_eq!(mapping.to_generated(specifier), Some(specifier));
+    assert_eq!(mapping.rows().count(), 3);
+    assert!(
+        mapping
+            .rows()
+            .all(|row| row.meta.kind == ProjectionSpanKind::Script)
+    );
 }

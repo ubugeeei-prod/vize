@@ -186,10 +186,64 @@ impl ProjectionMapping {
         if delta == 0 {
             return;
         }
-        for span in &mut self.spans {
-            shift_generated_range(&mut span.gen_range, start, old_end, delta);
-            for sub in &mut span.sub_spans {
-                shift_generated_range(&mut sub.gen_range, start, old_end, delta);
+        // An edit inside a byte-for-byte row changes the distance from its
+        // start for every following byte. Keep the unchanged prefix and
+        // suffix as separate, aligned rows. Most edits fall between rows;
+        // avoid rebuilding the mapping for those.
+        let needs_split = |span: &VizeMapping| {
+            span.sub_spans.is_empty()
+                && span.gen_range.start < start
+                && old_end < span.gen_range.end
+                && span.gen_range.end - span.gen_range.start
+                    == span.src_range.end - span.src_range.start
+        };
+        if !self.spans.iter().any(needs_split) {
+            for span in &mut self.spans {
+                shift_generated_range(&mut span.gen_range, start, old_end, delta);
+                for sub in &mut span.sub_spans {
+                    shift_generated_range(&mut sub.gen_range, start, old_end, delta);
+                }
+            }
+            for link in &mut self.semantic_links {
+                shift_generated_range(&mut link.source_range, start, old_end, delta);
+                shift_generated_range(&mut link.target_range, start, old_end, delta);
+            }
+            return;
+        }
+        let spans = core::mem::take(&mut self.spans);
+        let meta = core::mem::take(&mut self.meta);
+        self.authored_disjoint = true;
+        for (index, mut span) in spans.into_iter().enumerate() {
+            let row_meta = meta.get(index).copied().unwrap_or_default();
+            if needs_split(&span) {
+                let source_start = span.src_range.start + start - span.gen_range.start;
+                let source_end = source_start + old_len;
+                self.push_with(
+                    VizeMapping::new(
+                        span.gen_range.start..start,
+                        span.src_range.start..source_start,
+                    ),
+                    row_meta,
+                );
+                if old_len > 0 {
+                    self.push_with(
+                        VizeMapping::new(start..start + new_len, source_start..source_end),
+                        row_meta,
+                    );
+                }
+                self.push_with(
+                    VizeMapping::new(
+                        add_delta(old_end, delta)..add_delta(span.gen_range.end, delta),
+                        source_end..span.src_range.end,
+                    ),
+                    row_meta,
+                );
+            } else {
+                shift_generated_range(&mut span.gen_range, start, old_end, delta);
+                for sub in &mut span.sub_spans {
+                    shift_generated_range(&mut sub.gen_range, start, old_end, delta);
+                }
+                self.push_with(span, row_meta);
             }
         }
         for link in &mut self.semantic_links {
