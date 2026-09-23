@@ -60,6 +60,13 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
+      - name: Check Davinci source inventories
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+        run: |
+          node tools/support/compat/davinci/croquis-consumers.mjs --check
+          node tools/support/compat/davinci/consumer-migration-surfaces.mjs --check
+          node --test tests/tooling/davinci-storage-policy.test.ts
+          node tools/support/compat/davinci/storage-summary.mjs --check
       - uses: ./.github/actions/setup-js-check-runtime
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline

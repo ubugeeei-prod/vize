@@ -25,7 +25,7 @@ const FULL_SUITE_JOBS = [
 type Job = {
   if?: string;
   needs?: string[];
-  steps?: Array<{ name?: string; if?: string; run?: string }>;
+  steps?: Array<{ name?: string; if?: string; run?: string; uses?: string }>;
 };
 const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
   on?: Record<string, unknown>;
@@ -88,6 +88,29 @@ test("PR and main push stay fast while full checks require schedule or dispatch"
   assert.equal(
     checkSteps.find((step) => step.name === "Check JS/TS")?.if,
     "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+  );
+  const inventory = checkSteps.find((step) => step.name === "Check Davinci source inventories");
+  assert.ok(inventory);
+  assert.equal(
+    inventory.if,
+    "${{ github.event_name == 'pull_request' || github.event_name == 'push' }}",
+  );
+  assert.deepEqual(
+    inventory.run
+      ?.trim()
+      .split("\n")
+      .map((line) => line.trim()),
+    [
+      "node tools/support/compat/davinci/croquis-consumers.mjs --check",
+      "node tools/support/compat/davinci/consumer-migration-surfaces.mjs --check",
+      "node --test tests/tooling/davinci-storage-policy.test.ts",
+      "node tools/support/compat/davinci/storage-summary.mjs --check",
+    ],
+  );
+  assert.ok(
+    checkSteps.indexOf(inventory) <
+      checkSteps.findIndex((step) => step.uses === "./.github/actions/setup-js-check-runtime"),
+    "inventory checks must fail before the heavy JS check setup",
   );
   assert.match(commands("check-js"), /vp run --workspace-root check:repo/);
   assert.match(commands("check-js"), /vp run --workspace-root check:ci/);
