@@ -214,6 +214,13 @@ export function generateOutputWithMap(
     const metadata = compiled.hmr && {
       ...compiled.hmr,
       module: createHash("sha256").update(emitted.code).digest("hex").slice(0, 16),
+      styles: JSON.stringify({
+        scoped: compiled.hasScoped,
+        blocks: compiled.styles.map(({ content, ...style }) => ({
+          ...style,
+          active: Boolean(style.src || /\S/.test(content)),
+        })),
+      }),
     };
     insertBeforeSfcMainDefaultExport(
       emitted,

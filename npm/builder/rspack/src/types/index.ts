@@ -58,8 +58,14 @@ export interface TemplateAssetUrl {
 
 export interface CompiledModule {
   code: string;
-  /** Browser-local guard against map-only SFC module replacements. */
-  hmr?: { source: string; canRerender: boolean };
+  /** Per-source metadata for browser-local HMR comparisons. */
+  hmr?: {
+    source: string;
+    script?: string;
+    template?: string;
+    options: string;
+    canRerender: boolean;
+  };
   /** Source map v3 JSON for the native module, before output assembly. */
   map?: string;
   css?: string;

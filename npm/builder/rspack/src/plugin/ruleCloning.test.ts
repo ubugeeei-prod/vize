@@ -187,6 +187,37 @@ void describe("applyRuleCloning", () => {
     assert.equal(cssClone!.type, "css/module");
   });
 
+  void test("scopes extracted CSS after preprocessing and before JavaScript conversion", () => {
+    for (const cssLoader of [
+      "css-loader",
+      "/project/node_modules/css-loader/dist/cjs.js",
+      "C:\\project\\node_modules\\css-loader\\dist\\cjs.js",
+    ]) {
+      const rules = [
+        {
+          test: /\.scss$/,
+          type: "javascript/auto",
+          use: ["extract-loader", cssLoader, "sass-loader"],
+        },
+        { test: /\.vue$/, loader: "@vizejs/rspack-plugin/loader" },
+      ];
+      applyRuleCloning(rules as never, false);
+      const branches = (
+        rules[1] as unknown as { oneOf: { use: (string | { loader: string })[] }[] }
+      ).oneOf;
+      assert.deepEqual(
+        branches[0].use.map((use) => (typeof use === "string" ? use : use.loader)),
+        [
+          "extract-loader",
+          cssLoader,
+          "@vizejs/rspack-plugin/scope-loader",
+          "sass-loader",
+          "@vizejs/rspack-plugin/style-loader",
+        ],
+      );
+    }
+  });
+
   void test("deep clones use entries to avoid mutating originals", () => {
     const originalOptions = { modules: true };
     const rules = [

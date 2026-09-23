@@ -34,7 +34,13 @@ export default function vizeStyleLoader(
   const style = styles[index];
 
   if (!style) {
-    this.emitError(new Error(`[vize] Style block at index ${index} not found in ${resourcePath}`));
+    // A removed block can still be rebuilt through the previous watch graph
+    // while Rspack updates its importing SFC. Empty CSS lets HMR remove it.
+    if (!this.hot) {
+      this.emitError(
+        new Error(`[vize] Style block at index ${index} not found in ${resourcePath}`),
+      );
+    }
     callback(null, "");
     return;
   }

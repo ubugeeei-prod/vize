@@ -2,8 +2,12 @@
 
 export interface HmrMetadata {
   source: string;
+  script?: string;
+  template?: string;
+  options: string;
   canRerender: boolean;
   module: string;
+  styles: string;
 }
 
 /** Update an owned CSS mapping without invalidating useCssModule() references. */
@@ -39,7 +43,8 @@ if (module.hot) {
       // disables state preservation without changing module loading semantics.
       try { return ${imports} } catch { return null }
     })(),
-    component: _sfc_main
+    component: _sfc_main,
+    setup: _sfc_main.setup && _sfc_main.setup.toString()
   }
   module.hot.dispose(data => { data.vize = current })
   module.hot.accept()
@@ -50,8 +55,13 @@ if (module.hot) {
       previous.imports.length === current.imports.length &&
       current.imports.every((entry, index) => entry[0] === previous.imports[index][0] && Object.is(entry[1], previous.imports[index][1]))
     const canPreserve = before && after && before.canRerender && after.canRerender &&
-      before.source !== after.source && before.module === after.module && sameImports
-    if (canPreserve) {
+      before.source !== after.source &&
+      before.options === after.options && before.styles === after.styles && sameImports &&
+      previous.setup === current.setup
+    if (canPreserve && (before.module === after.module ||
+        (typeof before.script === 'string' && before.script === after.script &&
+         typeof before.template === 'string' && typeof after.template === 'string' &&
+         before.template !== after.template && typeof _sfc_main.render === 'function'))) {
       // Retain both the module table and each mapping captured by setup.
       if (previous.component.__cssModules && _sfc_main.__cssModules) {
         Object.keys(_sfc_main.__cssModules).forEach(name => ${genCSSModuleUpdateCode(
@@ -60,7 +70,7 @@ if (module.hot) {
         )})
         _sfc_main.__cssModules = previous.component.__cssModules
       }
-      if (_sfc_main.__cssModules) {
+      if (before.module !== after.module || _sfc_main.__cssModules) {
         api.rerender('${id}', _sfc_main.render)
       }
     } else {

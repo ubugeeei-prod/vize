@@ -1,34 +1,48 @@
-# Source maps and style hot updates
+# SFC hot updates
 
 [Package overview](../README.md)
 
-With `eval-source-map`, a style edit changes the full SFC source embedded in the
-component's source map. Rspack can therefore replace the component module even
-when its generated JavaScript has not changed.
+Development builds use Rspack's `module.hot` and Vue's HMR runtime. Set the SFC
+loader's `hotReload: false` to disable injection. Production and SSR builds omit
+client HMR code.
 
-The SFC loader preserves component state when the SFC source changes but its
-generated JavaScript and imported runtime values remain identical. Previous
-values live in each browser module's `module.hot.data`, independently of compiler
-caches and other clients. CSS Modules retain writable mapping objects so references
-captured by `useCssModule()` observe class additions, changes, and deletions.
+| Change                                                                                   | Behavior                                                                                            |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Style content; component JavaScript unchanged                                            | Preserve component state, including when `eval-source-map` changes the SFC module's embedded source |
+| Template; script, setup shape, style structure and imported runtime values unchanged     | Update the render function and preserve component state                                             |
+| CSS Module content                                                                       | Update the shared class bindings and rerender                                                       |
+| Script or script dependency                                                              | Reload the component; local state resets                                                            |
+| Style block structure, compilation mode, setup shape, or imported runtime values changed | Reload the component                                                                                |
 
-Changed JavaScript, including template and script edits, reloads the component.
-Vapor, custom elements, custom blocks and side-effect-only imports also use
-component reload. An uninitialized circular import makes dependency comparison
-unavailable and uses reload on later updates; it does not prevent initial loading.
-Production and SSR output omit client HMR code.
+Update history belongs to each browser module's HMR lifecycle. Compiler caches
+do not decide which previous version a browser has applied. External script and
+template files participate in the same comparison after the loader resolves
+their contents. External style files remain style-module dependencies.
 
-## Browser regression tests
+State preservation requires compiler hash metadata and a compatible VDOM render
+function. Vapor, custom elements, custom blocks, and modules with side-effect-only
+imports use the conservative component reload path. A template edit that changes
+the generated setup function also reloads the component. JSX/TSX entry modules
+are outside this SFC HMR contract.
 
-`test:hmr` uses a real dev server, Chromium and temporary SFC fixtures with
-`eval-source-map` enabled. It checks state retention for scoped styles, default
-and named CSS Modules, `useCssModule()` mappings, circular component imports,
-script dependency updates, component reload, page identity and browser errors.
-JavaScript and TypeScript fixtures cover Native CSS automatic rules and manually
-routed CssExtract. Automatic CssExtract scoped rules require a separate loader
-ordering correction; the manual configuration is in [Manual rules](./manual-rules.md).
+### Browser regression tests
 
-Dependencies come from an isolated directory to select the Rspack major:
+`test:hmr` runs a real dev server and Chromium against temporary fixtures. It
+checks DOM text, local component state, computed CSS, CSS Module bindings, page
+identity, and browser errors through repeated edits. Fixtures cover JavaScript
+and TypeScript script setup, external Options API scripts/templates/styles,
+script dependencies, and removal of style blocks. Source maps remain enabled.
+
+Verified combinations use Vue 3.5.42 and Playwright 1.62.1:
+
+| Rspack | Dev server | CSS routing                                                        |
+| ------ | ---------- | ------------------------------------------------------------------ |
+| 1.7.12 | 1.2.1      | Native CSS with `experiments.css`; automatic and manual CssExtract |
+| 2.2.2  | 2.2.1      | Native CSS; automatic and manual CssExtract                        |
+
+These versions record browser acceptance coverage, not a guarantee for every
+release allowed by the peer range. The test uses an isolated dependency directory
+so the workspace's Rspack version cannot replace the selected major:
 
 ```sh
 # Run from npm/builder/rspack after building the workspace native package.
@@ -40,8 +54,7 @@ node "$hmr_runtime/node_modules/playwright/cli.js" install chromium
 VIZE_HMR_RUNTIME="$hmr_runtime" pnpm test:hmr
 ```
 
-The Rspack 1 combination uses `@rspack/core@1.7.12` and
-`@rspack/dev-server@1.2.1` in a separate directory. `--legacy-peer-deps`
-accommodates css-loader 7.1.2's optional peer range, which predates Rspack 2.
-Tests load the current plugin's `dist` and do not cover tarball installation.
-These selected versions do not establish coverage of every allowed peer version.
+For Rspack 1, select `@rspack/core@1.7.12` and `@rspack/dev-server@1.2.1` in a
+separate dependency directory. `--legacy-peer-deps` accommodates css-loader
+7.1.2's optional Rspack peer declaration, which predates Rspack 2. Tests load the
+current plugin build from `dist`; they do not exercise npm tarball packaging.

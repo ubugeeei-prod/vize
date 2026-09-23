@@ -191,6 +191,9 @@ export function compileFile(
     code: result.code,
     hmr: {
       source: contentHash,
+      script: result.scriptHash,
+      template: result.templateHash,
+      options: computeContentHash(JSON.stringify(napiOptions)),
       canRerender: !vapor && !ssr && !isCustomElement && result.customBlocks.length === 0,
     },
     ...(result.map ? { map: result.map } : {}),

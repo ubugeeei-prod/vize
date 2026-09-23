@@ -8,8 +8,8 @@
 
 1. Find the `.vue` rule containing the vize loader
 2. Clone your CSS/SCSS/Less/Stylus rules for `?vue&type=style` sub-requests
-3. Inject the vize scope-loader + style-loader at the end of each cloned chain
-   (execution order: style-loader extracts block → preprocessor compiles → scope-loader applies native scoped CSS)
+3. Insert the Vize style loader before preprocessing and the scope loader after preprocessing.
+   In a CssExtract chain, scoped CSS is transformed before `css-loader` converts it to JavaScript.
 4. Build `oneOf` branches inside the `.vue` rule
 5. Add `resourceQuery: { not: [/vue/] }` to original CSS rules so they don't conflict
 

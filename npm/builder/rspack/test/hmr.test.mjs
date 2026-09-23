@@ -16,6 +16,7 @@ const packageRoot = fileURLToPath(new URL("../", import.meta.url));
 
 for (const { nativeCss, autoRules, typescript } of [true, false].flatMap((typescript) => [
   { nativeCss: true, autoRules: true, typescript },
+  { nativeCss: false, autoRules: true, typescript },
   { nativeCss: false, autoRules: false, typescript },
 ])) {
   void test(
@@ -259,13 +260,7 @@ if (module.hot) module.hot.addStatusHandler(status => { window.hotStatus = statu
         "style-only update preserves state with source maps enabled",
       );
       await edit("before {{", "after {{");
-      assert.equal(
-        await button.textContent(),
-        "after 0",
-        "template changes still reload the component",
-      );
-      await button.click();
-      await button.click();
+      assert.equal(await button.textContent(), "after 2", "template-only update preserves state");
       await edit("padding: 7px", "padding: 13px");
       await page.waitForFunction(
         () => getComputedStyle(document.querySelector("button")).padding === "13px",
@@ -302,6 +297,38 @@ if (module.hot) module.hot.addStatusHandler(status => { window.hotStatus = statu
       await edit("after {{", "again {{");
       assert.equal(await button.textContent(), "again 5");
 
+      // External blocks are loader dependencies, not separate Vue component modules.
+      await fs.writeFile(
+        path.join(root, "script.js"),
+        "export default { data() { return { count: 7 }; } };",
+      );
+      await fs.writeFile(
+        path.join(root, "template.html"),
+        '<button id="counter" @click="count++">external {{ count }}</button>',
+      );
+      await fs.writeFile(path.join(root, "style.css"), "button { color: rgb(70, 80, 90); }");
+      await write(
+        "App.vue",
+        '<script src="./script.js"></script><template src="./template.html"></template><style scoped src="./style.css"></style>',
+      );
+      await button.click();
+      assert.equal(await button.textContent(), "external 8");
+      await write(
+        "template.html",
+        '<button id="counter" @click="count++">changed {{ count }}</button>',
+      );
+      assert.equal(
+        await button.textContent(),
+        "changed 8",
+        "external template preserves Options API state",
+      );
+      await write("style.css", "button { color: rgb(90, 80, 70); }");
+      await page.waitForFunction(
+        () => getComputedStyle(document.querySelector("button")).color === "rgb(90, 80, 70)",
+      );
+      assert.equal(await button.textContent(), "changed 8", "external style preserves state");
+      await write("script.js", "export default { data() { return { count: 9 }; } };");
+      assert.equal(await button.textContent(), "changed 9", "external script reloads component");
       assert.deepEqual(errors, []);
     },
   );

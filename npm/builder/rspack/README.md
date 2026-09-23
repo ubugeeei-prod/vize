@@ -12,7 +12,7 @@ High-performance Rspack plugin for Vue SFC compilation powered by [Vize](https:/
 ## Features
 
 - ⚡ **Blazing Fast** - Powered by Rust-based `@vizejs/native` compiler
-- 🔄 **HMR Support** - Script/template hot reload via `module.hot` + `__VUE_HMR_RUNTIME__`, CSS Modules HMR with targeted rerender
+- 🔄 **SFC HMR** - State-preserving style/template updates for compatible Vue 3 VDOM components; script updates reload the component
 - 🎨 **CSS Processing** - Support for both Rspack native CSS (`experiments.css` in Rspack 1.x, default capability in Rspack 2.x) and CssExtractRspackPlugin
 - 📦 **CSS Modules** - First-class CSS Modules support with per-module HMR
 - 🔗 **`<style src>` Support** - Resolves external style files with watch dependency tracking
@@ -175,7 +175,7 @@ export default {
 - [Manual `oneOf` rules and style request routing](./docs/manual-rules.md)
 - [Plugin and loader API reference](./docs/api.md)
 - [Migration guide](./MIGRATION.md)
-- [Source maps and style hot updates](./docs/hmr.md)
+- [SFC hot updates and browser regression tests](./docs/hmr.md)
 
 ## Configuration responsibilities
 

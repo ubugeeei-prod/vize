@@ -6,7 +6,11 @@ import { hmrImportSnapshot } from "./module-output.ts";
 
 const initial: HmrMetadata = {
   source: "source-1",
+  script: "script-1",
+  template: "template-1",
+  options: "options-1",
   module: "module-1",
+  styles: "styles-1",
   canRerender: true,
 };
 
@@ -61,12 +65,13 @@ void test("map/style-only reevaluation preserves state; subsequent template and 
   const template = {
     ...initial,
     source: "template-edit",
+    template: "template-2",
     module: "module-2",
   };
   hmr.update(template);
-  assert.deepEqual(hmr.calls, ["reload"]);
-  hmr.update({ ...template, source: "script-edit", module: "module-3" });
-  assert.deepEqual(hmr.calls, ["reload", "reload"]);
+  assert.deepEqual(hmr.calls, ["rerender"]);
+  hmr.update({ ...template, source: "script-edit", script: "script-2", module: "module-3" });
+  assert.deepEqual(hmr.calls, ["rerender", "reload"]);
 });
 
 void test("dependency reevaluation reloads even when generated module text is unchanged", () => {
@@ -103,11 +108,18 @@ void test("an uninitialized namespace export does not prevent loading", () => {
   assert.deepEqual(hmr.calls, ["reload"]);
 });
 
-void test("changed JavaScript and unsupported modes reload", () => {
-  for (const change of [{ canRerender: false }, { module: "changed-without-template-change" }]) {
+void test("missing hashes, incompatible options/style structure and unsupported modes reload", () => {
+  for (const change of [
+    { script: undefined },
+    { template: undefined },
+    { options: "other" },
+    { styles: "other" },
+    { canRerender: false },
+    { module: "changed-without-template-change" },
+  ]) {
     const hmr = session();
     hmr.update();
-    hmr.update({ ...initial, source: "edit", ...change });
+    hmr.update({ ...initial, source: "edit", module: "changed", ...change });
     assert.deepEqual(hmr.calls, ["reload"]);
   }
 });
@@ -121,7 +133,7 @@ void test("template edits that change setup bindings reload instead of retaining
     render() {},
   });
   hmr.update(
-    { ...initial, source: "edit", module: "module-2" },
+    { ...initial, source: "edit", template: "template-2", module: "module-2" },
     {
       setup() {
         return { a: 1, b: 2 };
@@ -129,6 +141,15 @@ void test("template edits that change setup bindings reload instead of retaining
       render() {},
     },
   );
+  assert.deepEqual(hmr.calls, ["reload"]);
+});
+
+void test("identical JavaScript keeps the map-only guard even without template hash metadata", () => {
+  const hmr = session();
+  hmr.update({ ...initial, template: undefined });
+  hmr.update({ ...initial, source: "style-edit", template: undefined });
+  assert.deepEqual(hmr.calls, []);
+  hmr.update({ ...initial, source: "code-edit", template: undefined, module: "changed" });
   assert.deepEqual(hmr.calls, ["reload"]);
 });
 
@@ -196,7 +217,7 @@ void test("HMR history is local to each browser module lifecycle", () => {
   const b = session();
   a.update();
   a.update({ ...initial, source: "style-edit" });
-  b.update({ ...initial, source: "other-client" });
+  b.update({ ...initial, source: "other-client", script: "other-script" });
   assert.deepEqual(a.calls, []);
   assert.deepEqual(b.calls, []);
 });

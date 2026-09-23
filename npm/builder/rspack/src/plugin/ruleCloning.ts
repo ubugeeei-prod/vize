@@ -180,12 +180,17 @@ function cloneRulesForVueStyle(rule: RuleSetRule, lang: string, nativeCss: boole
   const uses = normalizeUseFromRule(rule);
   if (uses.length === 0) return [];
 
-  // Chain (right to left): style-loader → user loaders (e.g. sass-loader) → scope-loader
-  const clonedUse: RuleSetUseItem[] = [
-    { loader: VIZE_SCOPE_LOADER_IDENT },
-    ...deepCloneUse(uses),
-    { loader: VIZE_STYLE_LOADER_IDENT },
-  ];
+  // Scope CSS after preprocessors, before css-loader converts it to JavaScript.
+  // Native CSS rules contain only CSS-to-CSS loaders, so scope goes last there.
+  const clonedUse = deepCloneUse(uses);
+  const cssLoaderIndex = nativeCss
+    ? -1
+    : clonedUse.findIndex((use) => {
+        const loader = typeof use === "string" ? use : use.loader;
+        return /(?:^|[/\\])css-loader(?:[/\\?]|$)/.test(loader ?? "");
+      });
+  clonedUse.splice(cssLoaderIndex + 1, 0, { loader: VIZE_SCOPE_LOADER_IDENT });
+  clonedUse.push({ loader: VIZE_STYLE_LOADER_IDENT });
 
   const createRule = (resourceQuery: RegExp, fallbackType?: RuleSetRule["type"]): RuleSetRule => {
     const cloned: RuleSetRule = {
