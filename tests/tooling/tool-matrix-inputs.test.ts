@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { collectVueInputPaths } from "../../legacy-tools/fixtures/tool-matrix-inputs.mjs";
+import { collectVueInputPaths } from "../../tools/support/compat/fixtures/tool-matrix-inputs.mjs";
 
 function writeFile(root: string, relative: string, content = "<template />\n"): void {
   const file = path.join(root, relative);

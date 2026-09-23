@@ -11,7 +11,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { parseTomlLite } from "../../legacy-tools/davinci/toml-lite.mjs";
+import { parseTomlLite } from "../../tools/support/compat/davinci/toml-lite.mjs";
 import { readRepoFile, root as repoRoot } from "./support/github-workflows.ts";
 
 const tool = path.join(repoRoot, "tools/commands/davinci/resource-budgets.rs");

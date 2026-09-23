@@ -2,7 +2,7 @@
      Regenerate: rust-script tools/commands/davinci/croquis-consumers.rs --write
      Verify:     rust-script tools/commands/davinci/croquis-consumers.rs --check
      Totals:     rust-script tools/commands/davinci/croquis-consumers.rs --summary
-     Generator:  legacy-tools/davinci/croquis-consumers.mjs -->
+     Generator:  tools/support/compat/davinci/croquis-consumers.mjs -->
 
 # Croquis consumption matrix
 

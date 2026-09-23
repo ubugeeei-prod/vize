@@ -5,7 +5,7 @@
 // is generated (`rust-script tools/commands/davinci/storage-summary.rs
 // --write`) instead of hand-copied into the plan and the test.
 
-import { formatTable } from "../../legacy-tools/davinci/lib/markdown.mjs";
+import { formatTable } from "../../tools/support/compat/davinci/lib/markdown.mjs";
 import {
   summarizeAllocVecCategories,
   summarizeKind,

@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
-import { compareTypecheckDiagnostics } from "../../legacy-tools/fixtures/typecheck-divergence.mjs";
+import { compareTypecheckDiagnostics } from "../../tools/support/compat/fixtures/typecheck-divergence.mjs";
 import {
   buildSeededMutation,
   seededMutationDiagnostic,
-} from "../../legacy-tools/fixtures/typecheck-divergence-mutation-source.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-divergence-mutation-source.mjs";
 import type { CompatProbe, CompatSummary } from "./compat-ratchet.ts";
 import type { PinnedFixtureWorkspace } from "./realworld-patch.ts";
 import { runVizeCheck, runVueTsc } from "./realworld-typecheck.ts";

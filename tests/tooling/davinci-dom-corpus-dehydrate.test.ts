@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
-import { dehydrateCorpus } from "../../legacy-tools/fixtures/davinci-dom-corpus-workflow.mjs";
+import { dehydrateCorpus } from "../../tools/support/compat/fixtures/davinci-dom-corpus-workflow.mjs";
 
 test("S2 DOM corpus dehydrate unregisters selected fixture gitlinks", () => {
   const artifact = mkdtempSync(join(tmpdir(), "vize-dom-corpus-"));

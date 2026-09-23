@@ -10,8 +10,8 @@ import {
   createKnownViolationConsumption,
   validateKnownViolationEntries,
   writeGlyphPugSemanticEvidence,
-} from "../../legacy-tools/fixtures/glyph-corpus.mjs";
-import { createWaiverIssueAudit } from "../../legacy-tools/fixtures/glyph-corpus-waiver-audit.mjs";
+} from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
+import { createWaiverIssueAudit } from "../../tools/support/compat/fixtures/glyph-corpus-waiver-audit.mjs";
 
 const validEntry = {
   property: "parse-preservation",

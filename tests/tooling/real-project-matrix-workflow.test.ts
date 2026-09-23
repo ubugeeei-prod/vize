@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { requiredRealProjectMatrixShardCount } from "../../legacy-tools/github/release-preflight-matrix-evidence.mjs";
+import { requiredRealProjectMatrixShardCount } from "../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
 import {
   findStep,
   readRealProjectMatrixWorkflow,

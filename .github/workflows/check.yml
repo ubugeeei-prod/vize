@@ -642,7 +642,7 @@ jobs:
       # Runs last so the inventory is collected and uploaded either way.
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node legacy-tools/github/require-needs-success.mjs
+        run: node tools/support/compat/github/require-needs-success.mjs
 
   test-report-comment:
     name: test-report-comment

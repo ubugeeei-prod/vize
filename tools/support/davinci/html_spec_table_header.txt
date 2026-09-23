@@ -2,7 +2,7 @@
 # Living Standard, the single source the vize HTML conformance checker reads
 # (`vize_patina::html_content_model`). Every row names the spec clause it
 # projects; the checker's verdicts over it are pinned against an independent
-# HTML parser (`legacy-tools/davinci/html-content-model-oracle.mjs`).
+# HTML parser (`tools/support/compat/davinci/html-content-model-oracle.mjs`).
 #
 # GENERATED from the snapshot excerpt in `whatwg/` — do not edit by hand:
 #   rust-script tools/commands/davinci/html-content-model.rs --write

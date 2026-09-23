@@ -9,15 +9,15 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const command = path.join(repoRoot, "tools/commands/davinci/consumer-migration-surfaces.rs");
 const legacyFiles = [
-  "legacy-tools/davinci/consumer-migration-surfaces.mjs",
-  "legacy-tools/davinci/lib/artifact-set.mjs",
-  "legacy-tools/davinci/lib/consumer-migration-render.mjs",
-  "legacy-tools/davinci/lib/consumer-migration-scan.mjs",
-  "legacy-tools/davinci/lib/consumer-migration-summary.mjs",
-  "legacy-tools/davinci/lib/markdown.mjs",
-  "legacy-tools/davinci/lib/ordering.mjs",
-  "legacy-tools/davinci/lib/paths.mjs",
-  "legacy-tools/davinci/lib/rust-source.mjs",
+  "tools/support/compat/davinci/consumer-migration-surfaces.mjs",
+  "tools/support/compat/davinci/lib/artifact-set.mjs",
+  "tools/support/compat/davinci/lib/consumer-migration-render.mjs",
+  "tools/support/compat/davinci/lib/consumer-migration-scan.mjs",
+  "tools/support/compat/davinci/lib/consumer-migration-summary.mjs",
+  "tools/support/compat/davinci/lib/markdown.mjs",
+  "tools/support/compat/davinci/lib/ordering.mjs",
+  "tools/support/compat/davinci/lib/paths.mjs",
+  "tools/support/compat/davinci/lib/rust-source.mjs",
 ];
 const scannedCrates = [
   "vize_atelier_core",

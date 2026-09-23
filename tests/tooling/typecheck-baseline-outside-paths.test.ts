@@ -4,13 +4,13 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { toolArgs } from "../../legacy-tools/fixtures/tool-matrix-command.mjs";
+import { toolArgs } from "../../tools/support/compat/fixtures/tool-matrix-command.mjs";
 import {
   isolatedTsconfigOverlayPath,
   rewriteOutsidePackagePaths,
   writeIsolatedTsconfigOverlay,
-} from "../../legacy-tools/fixtures/typecheck-baseline-outside-paths.mjs";
-import { materializeBaselineProject } from "../../legacy-tools/fixtures/typecheck-baseline-project.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
+import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.mjs";
 
 /**
  * Unique isolation can link a fixture-local copy, but vue-tsc still honors

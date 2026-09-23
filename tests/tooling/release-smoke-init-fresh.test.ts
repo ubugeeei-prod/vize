@@ -10,13 +10,13 @@ import {
   managerEnv,
   projectEnv,
   runManager,
-} from "../../legacy-tools/npm/smoke-release-init-project.mjs";
-import { PACKAGE_MANAGERS } from "../../legacy-tools/npm/smoke-release-init-managers.mjs";
-import { withPoisonedVizePath } from "../../legacy-tools/npm/smoke-release-path-poison.mjs";
+} from "../../tools/support/compat/npm/smoke-release-init-project.mjs";
+import { PACKAGE_MANAGERS } from "../../tools/support/compat/npm/smoke-release-init-managers.mjs";
+import { withPoisonedVizePath } from "../../tools/support/compat/npm/smoke-release-path-poison.mjs";
 import {
   FRESH_INIT_MATRIX,
   PROJECT_SHAPES,
-} from "../../legacy-tools/npm/smoke-release-init-shapes.mjs";
+} from "../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 import {
   COREPACK_MANAGER_SPECS,
@@ -268,7 +268,7 @@ test("the documented generated check runs with outside vize path poison", () => 
     assert.match(fs.readFileSync(path.join(poisonDir, "vize"), "utf8"), /outside vize/);
     assert.match(fs.readFileSync(path.join(poisonDir, "vize.cmd"), "utf8"), /outside vize/);
 
-    const freshDriver = readRepoFile("legacy-tools", "npm", "smoke-release-init-fresh.mjs");
+    const freshDriver = readRepoFile("tools/support/compat", "npm", "smoke-release-init-fresh.mjs");
     assert.match(
       freshDriver,
       /runGeneratedCheck\(\s*projectRoot,\s*manager,\s*\[\],\s*withPoisonedVizePath/su,

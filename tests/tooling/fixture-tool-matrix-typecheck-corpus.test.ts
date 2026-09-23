@@ -4,7 +4,7 @@ import { test } from "node:test";
 import {
   toolArgs,
   typecheckCorpusGlobs,
-} from "../../legacy-tools/fixtures/tool-matrix-command.mjs";
+} from "../../tools/support/compat/fixtures/tool-matrix-command.mjs";
 
 const project = {
   vueGlobs: ["apps/**/*.vue", "playground/src/**/*.vue"],

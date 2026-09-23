@@ -18,13 +18,13 @@ import {
   resolveBaselineRuntime,
   retainEnabledFindings,
   selectComparableRules,
-} from "../../legacy-tools/fixtures/lint-divergence-baseline.mjs";
-import { renderMarkdown } from "../../legacy-tools/fixtures/lint-divergence-markdown.mjs";
+} from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import { renderMarkdown } from "../../tools/support/compat/fixtures/lint-divergence-markdown.mjs";
 import {
   reconcileCorpus,
   runLintDivergenceReport,
-} from "../../legacy-tools/fixtures/lint-divergence-report.mjs";
-import { readRuleMap } from "../../legacy-tools/fixtures/patina-rule-map.mjs";
+} from "../../tools/support/compat/fixtures/lint-divergence-report.mjs";
+import { readRuleMap } from "../../tools/support/compat/fixtures/patina-rule-map.mjs";
 
 const repoRoot = path.resolve(import.meta.dirname, "..", "..");
 const vizeBin = process.env.VIZE_TEST_BIN ?? process.env.VIZE_BIN ?? null;

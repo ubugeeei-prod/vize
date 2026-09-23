@@ -4,10 +4,10 @@ import { test } from "node:test";
 import {
   bootstrapRequiredWorkflowRuns,
   createReleaseGateDispatchPlans,
-} from "../../legacy-tools/github/release-preflight-bootstrap.mjs";
-import { isVersionMetadataOnlyRelease } from "../../legacy-tools/github/release-preflight-core.mjs";
-import { requiredReleaseWorkflows } from "../../legacy-tools/github/release-preflight-evidence.mjs";
-import { releaseEvidenceShas } from "../../legacy-tools/github/release-preflight.mjs";
+} from "../../tools/support/compat/github/release-preflight-bootstrap.mjs";
+import { isVersionMetadataOnlyRelease } from "../../tools/support/compat/github/release-preflight-core.mjs";
+import { requiredReleaseWorkflows } from "../../tools/support/compat/github/release-preflight-evidence.mjs";
+import { releaseEvidenceShas } from "../../tools/support/compat/github/release-preflight.mjs";
 
 /** The workspace lint budget is zero warnings, and `.sort()` needs a comparator. */
 const byCodeUnit = (left: string, right: string) => (left < right ? -1 : left > right ? 1 : 0);

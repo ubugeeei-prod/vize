@@ -11,7 +11,7 @@ const SCRIPT: &str = r#"
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 const context = JSON.parse(process.argv[1]);
-const helper = (name) => import(pathToFileURL(path.join(context.repoRoot, "legacy-tools/npm", name)));
+const helper = (name) => import(pathToFileURL(path.join(context.repoRoot, "tools/support/compat/npm", name)));
 const { runInitTypecheckChecks } = await helper("smoke-release-init-typecheck.mjs");
 const { runFreshProjectInitChecks } = await helper("smoke-release-init-fresh.mjs");
 context.packed = new Map(Object.entries(context.packed));

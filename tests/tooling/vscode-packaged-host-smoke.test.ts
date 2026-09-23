@@ -13,7 +13,7 @@ import {
   runPackagedExtensionHost,
   runVSCodeCommandWithTimeout,
 } from "../../editors/vscode/test/packaged-host-contract.mjs";
-import { prepareRealVueWorkspace } from "../../legacy-tools/editor-e2e/real-vue-workspace.mjs";
+import { prepareRealVueWorkspace } from "../../tools/support/compat/editor-e2e/real-vue-workspace.mjs";
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 

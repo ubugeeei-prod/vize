@@ -6,7 +6,7 @@ import {
   attachBudget,
   parseBudgetMode,
   summarizeBudgets,
-} from "../../legacy-tools/fixtures/lint-divergence-budget.mjs";
+} from "../../tools/support/compat/fixtures/lint-divergence-budget.mjs";
 
 test("lint divergence passes only with readable input and zero unexplained drift", () => {
   const artifact = attachBudget(baseArtifact());

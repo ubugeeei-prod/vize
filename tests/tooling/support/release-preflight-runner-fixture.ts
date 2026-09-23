@@ -5,7 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { crc32 } from "node:zlib";
 
-import { workspaceVersionFromCargoToml } from "../../../legacy-tools/github/release-preflight-core.mjs";
+import { workspaceVersionFromCargoToml } from "../../../tools/support/compat/github/release-preflight-core.mjs";
 import {
   realProjectArtifacts,
   shardEntries,

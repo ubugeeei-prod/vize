@@ -373,7 +373,7 @@ fn measure_run(server: &Path, workspace: &Path, keystrokes: usize, idle: u64, sa
 /// uses (it resolves Vue and the TypeScript 7 runtime through Node's module
 /// resolution, which is what a pnpm install lays out).
 fn prepare_workspace(repo: &Path, workspace: &Path) -> Result<PathBuf, String> {
-    let helper = repo.join("legacy-tools/editor-e2e/real-vue-workspace.mjs");
+    let helper = repo.join("tools/support/compat/editor-e2e/real-vue-workspace.mjs");
     let script = "const [helper, dir] = process.argv.slice(1); \
         const { prepareRealVueWorkspace } = await import(helper); \
         prepareRealVueWorkspace(dir);";

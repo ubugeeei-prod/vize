@@ -7,7 +7,7 @@ import { test } from "node:test";
 import {
   rewriteOutsideTypeRoots,
   writeIsolatedTsconfigOverlay,
-} from "../../legacy-tools/fixtures/typecheck-baseline-outside-paths.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
 
 /**
  * Unique isolation cannot retarget `compilerOptions.typeRoots`. An outside

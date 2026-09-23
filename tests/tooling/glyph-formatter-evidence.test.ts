@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { loadFormatterCheckEvidenceOrRecord } from "../../legacy-tools/fixtures/glyph-formatter-evidence.mjs";
+import { loadFormatterCheckEvidenceOrRecord } from "../../tools/support/compat/fixtures/glyph-formatter-evidence.mjs";
 
 test("glyph idempotence records unusable formatter check evidence", () => {
   const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-check-unusable-"));

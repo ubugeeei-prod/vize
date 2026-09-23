@@ -9,7 +9,7 @@ import {
   validateDownloadedArtifact,
   validateRegistryResponse,
   validateReleaseCommit,
-} from "../../legacy-tools/github/npm-bootstrap-contract.mjs";
+} from "../../tools/support/compat/github/npm-bootstrap-contract.mjs";
 import {
   artifactName,
   cargoToml,

@@ -16,7 +16,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
-import { loadGlyphCorpusProjects } from "../../legacy-tools/fixtures/glyph-corpus.mjs";
+import { loadGlyphCorpusProjects } from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
 import { parseSfc, pug, pugOptions, sha256 } from "./support/pug/oracle-runtime.ts";
 import { findStep, readRealProjectMatrixWorkflow } from "./support/real-project-matrix-workflow.ts";
 

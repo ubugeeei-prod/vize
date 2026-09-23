@@ -7,12 +7,12 @@ import { test } from "node:test";
 import {
   applyIsolatedAliasOverlay,
   rewriteOutsideAliasPaths,
-} from "../../legacy-tools/fixtures/typecheck-baseline-outside-aliases.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.mjs";
 import {
   rewriteOutsidePackagePaths,
   writeIsolatedTsconfigOverlay,
-} from "../../legacy-tools/fixtures/typecheck-baseline-outside-paths.mjs";
-import { materializeBaselineProject } from "../../legacy-tools/fixtures/typecheck-baseline-project.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
+import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.mjs";
 
 /**
  * Nuxt writes `baseUrl: ".."` on `.nuxt/tsconfig.json` and `paths` relative to

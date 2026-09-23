@@ -1,6 +1,6 @@
 # Checker parser-family verdicts over the P4-11a differential universe (generated).
 # Regenerate: VIZE_HTML_CONTENT_MODEL_WRITE=1 cargo test -p vize_patina --test html_content_model_differential
-# Verify: node legacy-tools/davinci/html-content-model-oracle.mjs --engine chromium|parse5
+# Verify: node tools/support/compat/davinci/html-content-model-oracle.mjs --engine chromium|parse5
 # One digit per leaf of the section universe: 0 faithful, k = the k-th node diverges first.
 universe	pairs	a abbr address annotation-xml applet area article aside audio b base basefont bdi bdo bgsound big blockquote body br button canvas caption center cite code col colgroup data datalist dd del desc details dfn dialog dir div dl dt em embed fieldset figcaption figure font foo footer foreignObject form frame frameset g h1 h2 h3 h4 h5 h6 head header hgroup hr html i iframe image img input ins kbd keygen label legend li link listing main malignmark map mark marquee math menu meta meter mglyph mi mn mo ms mtext my-el nav nobr noembed noframes noscript object ol optgroup option output p param path picture plaintext pre progress q rb rp rt rtc ruby s samp script search section select selectedcontent slot small source span strike strong style sub summary sup svg table tbody td template textarea tfoot th thead time title tr track tt u ul var video wbr xmp #text
 chain	pairs	a	200000000000000002000200022000000000000000000000022000000020002002000000000000000000000000000000000000000020000000000000000000000000002200222002000000000

@@ -16,7 +16,7 @@ mod artifact_command;
 fn main() -> ExitCode {
     artifact_command::run_node_generator(
         env::args().nth(1).as_deref(),
-        "legacy-tools/davinci/rule-parity.mjs",
+        "tools/support/compat/davinci/rule-parity.mjs",
         "usage: rust-script tools/commands/davinci/rule-parity.rs --write | --check",
     )
 }

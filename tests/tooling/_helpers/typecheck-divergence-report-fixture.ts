@@ -8,11 +8,11 @@ import { fileURLToPath } from "node:url";
 import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
-} from "../../../legacy-tools/fixtures/tool-matrix-typechecker.mjs";
+} from "../../../tools/support/compat/fixtures/tool-matrix-typechecker.mjs";
 import {
   collectTypecheckerAuthoredPaths,
   collectVueInputPaths,
-} from "../../../legacy-tools/fixtures/tool-matrix-inputs.mjs";
+} from "../../../tools/support/compat/fixtures/tool-matrix-inputs.mjs";
 import {
   type MutationDiagnosticMode,
   writeVize,

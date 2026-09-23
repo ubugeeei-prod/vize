@@ -14,7 +14,7 @@ use std::{env, process::ExitCode};
 mod artifact_command;
 
 const USAGE: &str = "usage: rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write | --check | --summary";
-const LEGACY_GENERATOR: &str = "legacy-tools/davinci/consumer-migration-surfaces.mjs";
+const LEGACY_GENERATOR: &str = "tools/support/compat/davinci/consumer-migration-surfaces.mjs";
 
 fn main() -> ExitCode {
     artifact_command::run_node_generator(env::args().nth(1).as_deref(), LEGACY_GENERATOR, USAGE)

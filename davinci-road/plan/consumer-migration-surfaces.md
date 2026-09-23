@@ -2,7 +2,7 @@
      Regenerate: rust-script tools/commands/davinci/consumer-migration-surfaces.rs --write
      Verify:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --check
      Totals:     rust-script tools/commands/davinci/consumer-migration-surfaces.rs --summary
-     Generator:  legacy-tools/davinci/consumer-migration-surfaces.mjs -->
+     Generator:  tools/support/compat/davinci/consumer-migration-surfaces.mjs -->
 
 # Consumer migration surfaces
 

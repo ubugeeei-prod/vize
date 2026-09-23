@@ -9,7 +9,7 @@ import {
   cliHandoffNames,
   createCliPublishHandoff,
   formatCliHandoffSummary,
-} from "../../legacy-tools/github/npm-bootstrap-handoff.mjs";
+} from "../../tools/support/compat/github/npm-bootstrap-handoff.mjs";
 
 const packageName = "@vizejs/nuxt-lint-config";
 const version = "1.2.3";

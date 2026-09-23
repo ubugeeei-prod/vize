@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { aggregateNeedsResults } from "../../legacy-tools/github/require-needs-success.mjs";
+import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.mjs";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 const PR_JOBS = ["fmt-rust", "check-js", "security-audit", "node-engine-compat", "check-vize-apps"];
@@ -73,7 +73,7 @@ test("PR and main push stay fast while full checks require schedule or dispatch"
   assert.equal(workflow.jobs?.["semver-checks"]?.if, "${{ github.event_name == 'push' }}");
   assert.equal(
     workflow.jobs?.["test-report"]?.steps?.at(-1)?.run,
-    "node legacy-tools/github/require-needs-success.mjs",
+    "node tools/support/compat/github/require-needs-success.mjs",
   );
   const commands = (job: string) =>
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
@@ -110,7 +110,7 @@ test("report fails closed when any PR check fails or skips", () => {
 });
 
 test("report command exits nonzero for a failed dependency", () => {
-  const script = "legacy-tools/github/require-needs-success.mjs";
+  const script = "tools/support/compat/github/require-needs-success.mjs";
   const result = spawnSync(process.execPath, [script], {
     cwd: root,
     encoding: "utf8",

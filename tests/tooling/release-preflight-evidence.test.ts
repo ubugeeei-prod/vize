@@ -7,8 +7,8 @@ import {
   requiredReleaseWorkflows,
   selectRequiredWorkflowRuns,
   summarizeRequiredWorkflowJobFailures,
-} from "../../legacy-tools/github/release-preflight-evidence.mjs";
-import { requiredRealProjectMatrixShardCount } from "../../legacy-tools/github/release-preflight-matrix-evidence.mjs";
+} from "../../tools/support/compat/github/release-preflight-evidence.mjs";
+import { requiredRealProjectMatrixShardCount } from "../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 import {
   releaseSha,

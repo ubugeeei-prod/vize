@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { evaluateBaselineAmbientEnvironment } from "../../legacy-tools/fixtures/typecheck-baseline-ambient.mjs";
+import { evaluateBaselineAmbientEnvironment } from "../../tools/support/compat/fixtures/typecheck-baseline-ambient.mjs";
 
 /**
  * Run 31979524200: the ledger could not see the difference between a fixture typed

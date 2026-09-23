@@ -4,7 +4,7 @@ import { test } from "node:test";
 import {
   githubApiPages,
   githubApiRequest,
-} from "../../legacy-tools/github/release-preflight-github.mjs";
+} from "../../tools/support/compat/github/release-preflight-github.mjs";
 
 const requestBase = {
   apiUrl: "https://api.github.test",

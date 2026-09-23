@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { validatedFileCount } from "../../legacy-tools/fixtures/tool-matrix-metrics.mjs";
+import { validatedFileCount } from "../../tools/support/compat/fixtures/tool-matrix-metrics.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const toolPath = path.join(root, "tools", "commands", "fixtures", "tool-matrix-report.rs");

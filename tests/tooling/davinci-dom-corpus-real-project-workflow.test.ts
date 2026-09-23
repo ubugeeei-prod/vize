@@ -17,7 +17,7 @@ import {
   parseOldErrorReasons,
   validateCorpusEvidence,
   verdictFor,
-} from "../../legacy-tools/fixtures/davinci-dom-corpus-workflow.mjs";
+} from "../../tools/support/compat/fixtures/davinci-dom-corpus-workflow.mjs";
 import { findStep, readRealProjectMatrixWorkflow } from "./support/real-project-matrix-workflow.ts";
 
 const helperSource = readFileSync("tools/commands/fixtures/davinci-dom-corpus-workflow.rs", "utf8");

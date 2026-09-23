@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
-import { compareTypecheckDiagnostics } from "../../legacy-tools/fixtures/typecheck-divergence.mjs";
+import { compareTypecheckDiagnostics } from "../../tools/support/compat/fixtures/typecheck-divergence.mjs";
 import * as compatNonVacuity from "./compat-nonvacuity.ts";
 import type { CompatNonVacuity } from "./compat-nonvacuity.ts";
 import { repoRoot, symlinkDirectory, withPinnedFixtureWorkspace } from "./realworld-patch.ts";
@@ -20,7 +20,7 @@ import { resolveVueTscManifestPath } from "./vue-tsc-manifest.ts";
  * files out of a hydrated vue-parity fixture, points vize check and vue-tsc at
  * the exact same isolated workspace, and classifies the diagnostics with the
  * same comparator the weekly real-project matrix uses
- * (legacy-tools/fixtures/typecheck-divergence.mjs, schema
+ * (tools/support/compat/fixtures/typecheck-divergence.mjs, schema
  * vize.fixtureTypecheckDivergence). Divergence — not diagnostic count — is the
  * metric: unresolved project-internal imports are expected and must surface
  * identically from both tools.

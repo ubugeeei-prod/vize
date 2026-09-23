@@ -12,7 +12,7 @@ import {
   renderVOnCorpus,
   syntheticBoundary,
   trackedNaturalSources,
-} from "../../legacy-tools/davinci/lib/v-on-corpus.mjs";
+} from "../../tools/support/compat/davinci/lib/v-on-corpus.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

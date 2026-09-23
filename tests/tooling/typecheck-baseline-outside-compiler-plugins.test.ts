@@ -4,10 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { applyIsolatedAliasOverlay } from "../../legacy-tools/fixtures/typecheck-baseline-outside-aliases.mjs";
-import { rewriteOutsideCompilerPlugins } from "../../legacy-tools/fixtures/typecheck-baseline-outside-compiler-plugins.mjs";
-import { writeIsolatedTsconfigOverlay } from "../../legacy-tools/fixtures/typecheck-baseline-outside-paths.mjs";
-import { materializeBaselineProject } from "../../legacy-tools/fixtures/typecheck-baseline-project.mjs";
+import { applyIsolatedAliasOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-aliases.mjs";
+import { rewriteOutsideCompilerPlugins } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-compiler-plugins.mjs";
+import { writeIsolatedTsconfigOverlay } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-paths.mjs";
+import { materializeBaselineProject } from "../../tools/support/compat/fixtures/typecheck-baseline-project.mjs";
 
 /**
  * Unique isolation cannot retarget `require("../../node_modules/<pkg>")` from

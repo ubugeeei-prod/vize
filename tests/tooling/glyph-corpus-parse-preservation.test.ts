@@ -17,12 +17,12 @@ import {
   runVize,
   writeGlyphCorpusPropertyEvidence,
   writeGlyphPugSemanticEvidence,
-} from "../../legacy-tools/fixtures/glyph-corpus.mjs";
+} from "../../tools/support/compat/fixtures/glyph-corpus.mjs";
 import {
   evidenceSourceCommit,
   formatterEvidence,
   writeGlyphSfcEquivalenceEvidence,
-} from "../../legacy-tools/fixtures/glyph-sfc-evidence.mjs";
+} from "../../tools/support/compat/fixtures/glyph-sfc-evidence.mjs";
 import {
   makeSyntheticProject,
   sweepProject,

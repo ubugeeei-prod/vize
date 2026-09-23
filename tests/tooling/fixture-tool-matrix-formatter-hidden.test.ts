@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { snapshotFormatterInputs } from "../../legacy-tools/fixtures/tool-matrix-formatter.mjs";
+import { snapshotFormatterInputs } from "../../tools/support/compat/fixtures/tool-matrix-formatter.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

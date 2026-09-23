@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   assertInstalledMapperContract,
   runInstalledContentMapperChecks,
-} from "../../legacy-tools/npm/smoke-release-runtime.mjs";
+} from "../../tools/support/compat/npm/smoke-release-runtime.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 

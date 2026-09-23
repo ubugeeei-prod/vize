@@ -5,8 +5,8 @@ import {
   SURFACES,
   scanConsumerMigrationSurfaces,
   surfaceNameKind,
-} from "../../legacy-tools/davinci/lib/consumer-migration-scan.mjs";
-import { renderConsumerMigrationSurfaceRows } from "../../legacy-tools/davinci/lib/consumer-migration-render.mjs";
+} from "../../tools/support/compat/davinci/lib/consumer-migration-scan.mjs";
+import { renderConsumerMigrationSurfaceRows } from "../../tools/support/compat/davinci/lib/consumer-migration-render.mjs";
 
 const TSV_HEADERS = [
   "consumer_id",

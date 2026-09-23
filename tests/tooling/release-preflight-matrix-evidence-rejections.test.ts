@@ -4,7 +4,7 @@ import { test } from "node:test";
 import {
   assertRealProjectMatrixReleaseArtifacts,
   requiredRealProjectMatrixShardCount,
-} from "../../legacy-tools/github/release-preflight-matrix-evidence.mjs";
+} from "../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
 import {
   json,
   mutateDivergence,

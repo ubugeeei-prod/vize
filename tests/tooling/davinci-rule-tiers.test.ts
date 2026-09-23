@@ -5,7 +5,7 @@ import {
   TIER_TABLE_REL,
   applyTiers,
   readTierTable,
-} from "../../legacy-tools/davinci/lib/rule-parity-tiers.mjs";
+} from "../../tools/support/compat/davinci/lib/rule-parity-tiers.mjs";
 
 // P4-6c: the rule-parity matrix's `tier` column comes from the RuleContract
 // table, and generation fails on a rule without a row or a row without a

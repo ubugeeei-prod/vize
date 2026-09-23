@@ -14,7 +14,7 @@ use std::{env, process::ExitCode};
 mod artifact_command;
 
 const USAGE: &str = "usage: rust-script tools/commands/davinci/v-on-corpus.rs --write | --check";
-const LEGACY_GENERATOR: &str = "legacy-tools/davinci/v-on-corpus.mjs";
+const LEGACY_GENERATOR: &str = "tools/support/compat/davinci/v-on-corpus.mjs";
 
 fn main() -> ExitCode {
     artifact_command::run_node_generator(env::args().nth(1).as_deref(), LEGACY_GENERATOR, USAGE)

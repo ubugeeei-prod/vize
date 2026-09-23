@@ -11,7 +11,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 test("the Rust release command forwards all tarballs to the fresh-project oracle", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "vize-smoke-dispatch-"));
   try {
-    const helpers = path.join(temporary, "legacy-tools/npm");
+    const helpers = path.join(temporary, "tools/support/compat/npm");
     fs.mkdirSync(helpers, { recursive: true });
     fs.writeFileSync(path.join(temporary, "Cargo.toml"), "[workspace]\n");
     fs.writeFileSync(path.join(temporary, "pnpm-workspace.yaml"), "packages: []\n");

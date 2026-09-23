@@ -6,7 +6,7 @@
 //! checked in a no-quirks `<body>` context. There the checker must decide
 //! every node: an `unknown` parser verdict fails this test outright. The
 //! verdicts are committed as `html_content_model/checker-verdicts.tsv` and
-//! compared exactly on every run; `legacy-tools/davinci/html-content-model-oracle.mjs`
+//! compared exactly on every run; `tools/support/compat/davinci/html-content-model-oracle.mjs`
 //! recomputes each one with an independent HTML parser (Chromium in CI) and
 //! requires exact agreement.
 //!
@@ -197,7 +197,7 @@ fn render(unknown: &mut Vec<String>) -> String {
     let mut out = String::from(
         "# Checker parser-family verdicts over the P4-11a differential universe (generated).\n\
          # Regenerate: VIZE_HTML_CONTENT_MODEL_WRITE=1 cargo test -p vize_patina --test html_content_model_differential\n\
-         # Verify: node legacy-tools/davinci/html-content-model-oracle.mjs --engine chromium|parse5\n\
+         # Verify: node tools/support/compat/davinci/html-content-model-oracle.mjs --engine chromium|parse5\n\
          # One digit per leaf of the section universe: 0 faithful, k = the k-th node diverges first.\n",
     );
     for (section, parents, leaves) in [

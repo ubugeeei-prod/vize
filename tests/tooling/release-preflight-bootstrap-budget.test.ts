@@ -4,8 +4,8 @@ import { test } from "node:test";
 import {
   bootstrapRequiredWorkflowRuns,
   createReleaseGateDispatchPlans,
-} from "../../legacy-tools/github/release-preflight-bootstrap.mjs";
-import { requiredReleaseWorkflows } from "../../legacy-tools/github/release-preflight-evidence.mjs";
+} from "../../tools/support/compat/github/release-preflight-bootstrap.mjs";
+import { requiredReleaseWorkflows } from "../../tools/support/compat/github/release-preflight-evidence.mjs";
 import { releaseSha } from "./support/release-preflight.ts";
 
 test("release gate wait budget covers the full Real Project Matrix release gate", async () => {

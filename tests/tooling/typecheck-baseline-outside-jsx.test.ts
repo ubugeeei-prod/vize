@@ -8,8 +8,8 @@ import {
   applyIsolatedJsxBaseline,
   applyIsolatedJsxOverlay,
   rewriteOutsideJsxImportSource,
-} from "../../legacy-tools/fixtures/typecheck-baseline-outside-jsx.mjs";
-import { applyIsolatedTypecheckOverlays } from "../../legacy-tools/fixtures/typecheck-baseline-outside-overlays.mjs";
+} from "../../tools/support/compat/fixtures/typecheck-baseline-outside-jsx.mjs";
+import { applyIsolatedTypecheckOverlays } from "../../tools/support/compat/fixtures/typecheck-baseline-outside-overlays.mjs";
 
 /**
  * Unique isolation cannot retarget `jsxImportSource: "../../node_modules/vue"`
