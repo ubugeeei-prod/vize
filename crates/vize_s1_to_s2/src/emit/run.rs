@@ -128,9 +128,11 @@ pub(super) fn emit_dom_observed<'f>(
         bindings: options.bindings,
         inline: options.inline,
         authored_unref: core::cell::Cell::new(u32::MAX),
+        authored_for: core::cell::Cell::new(u32::MAX),
     };
     helper_preference::prefer_helpers(&mut cx.buf, &prefer_cx, &mut helper_walk, &lowered.root);
     let authored_unref = prefer_cx.authored_unref.get();
+    let authored_for = prefer_cx.authored_for.get();
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
     cx.buf
         .push(options.mode.render_signature(options.bindings.is_some()));
@@ -174,7 +176,15 @@ pub(super) fn emit_dom_observed<'f>(
         emitted_unref
     };
     if unref_visit != u32::MAX {
-        cx.buf.prefer_at_visit(Helper::Unref, unref_visit);
+        if cx.reordered_slots && authored_unref < authored_for {
+            // A dynamic slot can pre-register renderList at its owning
+            // component before visiting earlier default-slot expressions.
+            // The shipped transform registers their unref first.
+            cx.buf
+                .prefer_at_visit_before(Helper::Unref, unref_visit, Helper::RenderList);
+        } else {
+            cx.buf.prefer_at_visit(Helper::Unref, unref_visit);
+        }
         cx.buf.use_helper(Helper::Unref);
     }
     cache_slots::renumber(&mut cx);

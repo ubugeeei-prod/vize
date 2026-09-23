@@ -29,6 +29,16 @@ fn identifier_prefix_follows_the_binding_table_in_non_inline_mode() {
 }
 
 #[test]
+fn destructured_for_values_shadow_props_inside_nested_slots() {
+    let table = BindingTable::new([("version", BindingKind::Props)], [], true);
+    let mut scope = PrefixScope::new(Some(&table), true, true, true);
+    assert_eq!(scope.identifier_prefix("version"), Some("__props."));
+    scope.push_for([Some("[dep, version]"), None, None]);
+    assert_eq!(scope.identifier_prefix("version"), None);
+    assert!(scope.is_slot_param("version"));
+}
+
+#[test]
 fn inline_reads_setup_bindings_off_the_closure() {
     let table = BindingTable::new(
         [

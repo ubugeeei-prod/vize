@@ -79,8 +79,11 @@ fn bindings_need_unref(bindings: &[BindingOp<'_>], table: &BindingTable) -> bool
             .as_ref()
             .is_some_and(|value| expression_needs_unref(value, table)),
         BindingOp::VueMemo(memo) => expression_needs_unref(&memo.value, table),
-        BindingOp::Model(_)
-        | BindingOp::SlotContent(_)
+        BindingOp::Model(model) => {
+            dynamic_needs_unref(model.argument.as_ref(), table)
+                || expression_needs_unref(&model.contract.read, table)
+        }
+        BindingOp::SlotContent(_)
         | BindingOp::VueCssBind(_)
         | BindingOp::VueSync(_)
         | BindingOp::VueSlotScope(_)

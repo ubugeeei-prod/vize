@@ -1,0 +1,71 @@
+//! Inline production compiles must retain transform-time scope and helper order.
+#![cfg(feature = "davinci-dom-differential")]
+
+#[path = "davinci_production_reach/shapes.rs"]
+#[allow(dead_code)]
+mod shapes;
+
+use shapes::Shape;
+use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_s0::profiler::global_profiler;
+
+#[test]
+fn inline_scope_and_helper_order_match_shipped_compiler() {
+    // One test keeps the global selection profiler free of parallel races.
+    assert_inline_parity(
+        "for-value-shadow.vue",
+        r#"<script setup lang="ts">
+const props = defineProps<{ version: string }>()
+const visibleDeps = [['dep', '1.0.0']]
+</script>
+<template><ul><li v-for="[dep, version] in visibleDeps" :key="dep"><LinkBase :to="dep">{{ version }}</LinkBase></li></ul></template>"#,
+    );
+    assert_inline_parity(
+        "model-before-for.vue",
+        r#"<script setup lang="ts">
+import { ref } from 'vue'
+let activeTab = ref('a')
+const tabs = ['a', 'b']
+</script>
+<template><select v-model="activeTab"><option v-for="tab in tabs" :key="tab">{{ tab }}</option></select></template>"#,
+    );
+    assert_inline_parity(
+        "transition-slot-before-for.vue",
+        r#"<script setup lang="ts">
+import { ref } from 'vue'
+let label = ref('ready')
+const items = [1, 2]
+</script>
+<template><PageWithHeader><div v-if="items.length">{{ label }}<TransitionGroup><div v-for="item in items" :key="item">{{ item }}</div></TransitionGroup></div><template #footer><Transition><div v-show="items.length">{{ label }}</div></Transition></template></PageWithHeader></template>"#,
+    );
+}
+
+fn assert_inline_parity(filename: &str, source: &str) {
+    let descriptor = parse_sfc(
+        source,
+        SfcParseOptions {
+            filename: filename.into(),
+            ..Default::default()
+        },
+    )
+    .expect("fixture parses");
+    let profiler = global_profiler();
+    profiler.clear();
+    profiler.enable();
+    let emitted = shapes::compile(&descriptor, filename, Shape::DomInline).expect("S2 compile");
+    let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
+    assert!(
+        counters
+            .entries
+            .iter()
+            .any(|entry| entry.name == "davinci.s2_dom.accepted" && entry.total == 1),
+        "{filename} must reach S2: {counters:?}"
+    );
+    let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+        shapes::compile(&descriptor, filename, Shape::DomInline)
+    })
+    .expect("legacy compile");
+    assert_eq!(emitted.code, legacy.code, "{filename}");
+}

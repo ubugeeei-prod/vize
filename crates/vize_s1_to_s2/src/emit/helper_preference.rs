@@ -33,6 +33,9 @@ pub(super) struct PreferCx<'a> {
     pub(super) inline: bool,
     /// Preference-walk visit of the first authored `_unref`, if any.
     pub(super) authored_unref: core::cell::Cell<u32>,
+    /// First authored `v-for`, which a slot helper may pre-register at
+    /// the owning component before the transform would visit it.
+    pub(super) authored_for: core::cell::Cell<u32>,
 }
 
 impl PreferCx<'_> {
@@ -162,6 +165,9 @@ fn prefer_op_helpers(
             }
         }
         Op::For(for_op) => {
+            if cx.authored_for.get() == u32::MAX {
+                cx.authored_for.set(visit);
+            }
             buf.prefer(Helper::RenderList);
             buf.prefer(Helper::OpenBlock);
             buf.prefer(Helper::CreateBlock);

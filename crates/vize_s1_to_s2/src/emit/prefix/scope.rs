@@ -1,10 +1,9 @@
 //! The two scope notions the shipped lane consults while prefixing.
 //!
 //! - The **transform scope** is what `TransformContext::is_in_scope` saw
-//!   when `process_expression` ran: `v-for` aliases as whole strings (a
-//!   destructuring pattern never matches an identifier) and slot prop
-//!   names from `extract_slot_prop_names`. It decides *whether* a name is
-//!   prefixed.
+//!   when `process_expression` ran: each binding from a destructured
+//!   `v-for` value, raw key/index aliases, and slot prop names from
+//!   `extract_slot_prop_names`. It decides *whether* a name is prefixed.
 //! - The **codegen slot params** are what `CodegenContext::is_slot_param`
 //!   saw: `extract_destructure_params` over `v-for` aliases and slot
 //!   params. They drive the codegen-time strips of prefixes the transform
@@ -211,11 +210,21 @@ impl<'b> PrefixScope<'b> {
 
     /// `TransformContext::enter_v_for_scope` + the codegen callback params.
     pub(in crate::emit) fn push_for(&mut self, aliases: [Option<&str>; 3]) {
-        for alias in aliases.into_iter().flatten() {
+        for (index, alias) in aliases.into_iter().enumerate() {
+            let Some(alias) = alias else { continue };
             if alias.is_empty() {
                 continue;
             }
-            self.transform.push(String::from(alias));
+            // The shipped scope chain registers each binding of a
+            // destructured value pattern before process_expression runs.
+            // Slot text only strips `_ctx.` at codegen, so a prop with the
+            // same name must be shadowed here rather than prefixed first.
+            if index == 0 && alias.trim_start().starts_with(['{', '[']) {
+                self.transform
+                    .extend(super::params::extract_slot_prop_names(alias));
+            } else {
+                self.transform.push(String::from(alias));
+            }
             super::params::extract_destructure_params(alias.trim(), &mut self.slot_params);
         }
     }
