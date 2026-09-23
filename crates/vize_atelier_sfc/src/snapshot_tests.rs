@@ -5,7 +5,7 @@
 //! in tests/snapshots/sfc/ts/.
 //!
 //! The test cases are loaded from PKL or TOML fixtures in tests/fixtures/sfc/.
-#![allow(clippy::disallowed_macros)]
+#![expect(clippy::disallowed_macros, reason = "insta uses format!")]
 
 use crate::{SfcCompileOptions, compile_sfc, parse_sfc};
 use pklrust::{EvaluatorManager, EvaluatorOptions, ModuleSource};
@@ -19,15 +19,11 @@ use vize_carton::{String, ToCompactString};
 struct TestCase {
     name: String,
     input: String,
-    #[allow(dead_code)]
-    expected: Option<String>,
 }
 
 /// A fixture file containing multiple test cases.
 #[derive(Debug, Deserialize)]
 struct Fixture {
-    #[allow(dead_code)]
-    mode: Option<String>,
     cases: Vec<TestCase>,
 }
 

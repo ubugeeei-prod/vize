@@ -89,3 +89,6 @@ required-features = ["davinci-dom-differential"]
 [[example]]
 name = "css_engine_recovery"
 required-features = ["native"]
+
+[lints]
+workspace = true

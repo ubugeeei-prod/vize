@@ -9,6 +9,7 @@ mod collector;
 pub(crate) mod helpers;
 mod process;
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests;
 mod transform;
 

@@ -15,7 +15,6 @@ use crate::{
 };
 
 /// Compile template block using Vapor mode
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn compile_template_block_vapor(
     allocator: &Allocator,
     template: &SfcTemplateBlock,
@@ -120,56 +119,52 @@ pub(super) fn transform_vapor_template_output(
     bindings: Option<&BindingMetadata>,
     runtime_module_name: &str,
 ) -> Result<String, SfcError> {
-    let lines: Vec<&str> = code.lines().collect();
+    let mut lines = code.lines().peekable();
     let mut output = String::default();
-    let mut index = 0usize;
 
-    while index < lines.len() {
-        let line = lines[index];
+    while let Some(&line) = lines.peek() {
         let trimmed = line.trim();
         if trimmed.starts_with("import ") {
             output.push_str(&rewrite_vapor_import(line, runtime_module_name));
             output.push('\n');
-            index += 1;
+            lines.next();
             continue;
         }
         if trimmed.is_empty() {
-            index += 1;
+            lines.next();
             continue;
         }
         break;
     }
 
-    let mut found_render = false;
-    while index < lines.len() {
-        let line = lines[index];
-        let trimmed = line.trim();
-        if is_render_signature(trimmed) {
-            found_render = true;
+    let mut render_line = None;
+    for line in lines.by_ref() {
+        if is_render_signature(line.trim()) {
+            render_line = Some(line);
             break;
         }
 
         output.push_str(line);
         output.push('\n');
-        index += 1;
     }
 
-    if !found_render {
+    let Some(render_line) = render_line else {
         return Err(SfcError {
             message: "Vapor template output is missing a render function".to_compact_string(),
             code: Some("VAPOR_TEMPLATE_ERROR".to_compact_string()),
             loc: Some(template.loc.clone()),
         });
-    }
+    };
 
     output.push_str("function render(_ctx, $props, $emit, $attrs, $slots) {\n");
 
     let mut brace_state = StringTrackState::default();
-    let mut brace_depth = count_braces_with_state(lines[index], &mut brace_state);
-    index += 1;
+    let mut brace_depth = count_braces_with_state(render_line, &mut brace_state);
 
-    while index < lines.len() && brace_depth > 0 {
-        let line = lines[index];
+    for line in lines {
+        if brace_depth <= 0 {
+            break;
+        }
         let next_depth = brace_depth + count_braces_with_state(line, &mut brace_state);
         if !(next_depth == 0 && line.trim() == "}") {
             if let Some(rewritten) = rewrite_bound_component_resolution(line, bindings) {
@@ -180,7 +175,6 @@ pub(super) fn transform_vapor_template_output(
             output.push('\n');
         }
         brace_depth = next_depth;
-        index += 1;
     }
 
     output.push_str("}\n");
@@ -198,10 +192,8 @@ fn rewrite_bound_component_resolution(
         return None;
     }
 
-    let resolve_start = trimmed.find(" = _resolveComponent(\"")?;
-    let tag_start = resolve_start + " = _resolveComponent(\"".len();
-    let tag_end = trimmed[tag_start..].find("\")")? + tag_start;
-    let tag = &trimmed[tag_start..tag_end];
+    let (declaration, resolve_call) = trimmed.split_once(" = _resolveComponent(\"")?;
+    let (tag, _) = resolve_call.split_once("\")")?;
     let binding_name = resolve_component_binding_name(bindings, tag)?;
 
     let indent_len = line.len().saturating_sub(trimmed.len());
@@ -213,8 +205,8 @@ fn rewrite_bound_component_resolution(
     };
 
     let mut rewritten = String::with_capacity(line.len() + binding_expr.len());
-    rewritten.push_str(&line[..indent_len]);
-    rewritten.push_str(&trimmed[..resolve_start]);
+    rewritten.push_str(line.get(..indent_len)?);
+    rewritten.push_str(declaration);
     rewritten.push_str(" = ");
     rewritten.push_str(&binding_expr);
     Some(rewritten)

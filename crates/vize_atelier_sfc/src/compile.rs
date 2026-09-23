@@ -15,6 +15,7 @@ pub(crate) mod output_module;
 mod styles;
 mod template_only;
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests;
 
 use crate::compile_script::props::{is_valid_identifier, validate_macro_scope_for_descriptor};
@@ -46,7 +47,7 @@ use self::output_module::{
 use self::styles::compile_styles;
 
 pub use crate::compile_script::ScriptCompileResult;
-#[allow(deprecated)]
+#[expect(deprecated, reason = "kept exported until removal")]
 pub use entry::compile_sfc_with_vue_parser_quirks;
 pub use entry::{
     SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter,
@@ -147,10 +148,13 @@ fn compile_sfc_inner(
     let has_template = descriptor.template.is_some();
 
     // Case 1: Template only - just output render function
-    if !has_script && !has_script_setup && has_template {
+    if !has_script
+        && !has_script_setup
+        && let Some(template) = descriptor.template.as_ref()
+    {
         return template_only::compile_template_only(
             template_only::TemplateOnlyInput {
-                descriptor,
+                template,
                 options: &options,
                 custom_elements: &custom_elements,
                 template_syntax,
@@ -171,8 +175,7 @@ fn compile_sfc_inner(
     }
 
     // Case 2: Script (non-setup) + Template - rewrite default and compile template
-    if has_script && !has_script_setup {
-        let script = descriptor.script.as_ref().unwrap();
+    if !has_script_setup && let Some(script) = descriptor.script.as_ref() {
         let (lazy_hydration_transform, script_content, script_runs) =
             module_trace::prepared_script(script, codegen_options.source_map);
 
@@ -253,8 +256,7 @@ fn compile_sfc_inner(
         };
 
         // Compile template if present
-        if has_template {
-            let template = descriptor.template.as_ref().unwrap();
+        if let Some(template) = descriptor.template.as_ref() {
             let template_allocator = vize_carton::pool::acquire();
             let template_result = if is_vapor {
                 profile!(
@@ -454,8 +456,7 @@ fn compile_sfc_inner(
 
     // Merge type definitions from normal <script> block so that
     // defineProps<TypeRef>() can resolve types defined there.
-    if has_script {
-        let script = descriptor.script.as_ref().unwrap();
+    if let Some(script) = descriptor.script.as_ref() {
         profile!(
             "atelier.sfc.script_context.collect_normal_types",
             ctx.collect_types_from(&script.content)
@@ -466,8 +467,7 @@ fn compile_sfc_inner(
         "atelier.sfc.script_context.collect_setup_import_types",
         ctx.collect_imported_types_from_path(&script_setup_content, source_filename, source_is_ts)
     );
-    if has_script {
-        let script = descriptor.script.as_ref().unwrap();
+    if let Some(script) = descriptor.script.as_ref() {
         profile!(
             "atelier.sfc.script_context.collect_normal_import_types",
             ctx.collect_imported_types_from_path(
@@ -522,8 +522,7 @@ fn compile_sfc_inner(
     // declarations from the normal script are accessible in the template.
     // This enables proper component resolution (e.g., `import { Form as PForm }`)
     // and identifier prefix resolution (avoiding incorrect `_ctx.` prefix).
-    if has_script {
-        let script = descriptor.script.as_ref().unwrap();
+    if let Some(script) = descriptor.script.as_ref() {
         let normal_script_bindings = profile!(
             "atelier.sfc.normal_script.register_bindings",
             collect_normal_script_bindings(&script.content)

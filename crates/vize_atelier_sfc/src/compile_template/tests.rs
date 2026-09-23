@@ -1,4 +1,5 @@
 //! Tests for template compilation utilities.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 mod string_tracking;
 

@@ -467,16 +467,8 @@ fn split_top_level(input: &str, delimiter: char) -> Vec<String> {
     for ch in input.chars() {
         match ch {
             '{' | '<' | '(' | '[' => depth += 1,
-            '}' | ')' | ']' => {
-                if depth > 0 {
-                    depth -= 1;
-                }
-            }
-            '>' => {
-                if prev != '=' && depth > 0 {
-                    depth -= 1;
-                }
-            }
+            '}' | ')' | ']' if depth > 0 => depth -= 1,
+            '>' if prev != '=' && depth > 0 => depth -= 1,
             _ => {}
         }
 

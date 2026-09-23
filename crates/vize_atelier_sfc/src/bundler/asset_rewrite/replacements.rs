@@ -10,13 +10,13 @@ pub(super) struct AssetReferenceReplacement {
 }
 
 pub(super) fn asset_expression(asset: &TemplateAssetUrl) -> String {
-    let Some(hash_index) = asset.url.find('#') else {
+    let Some(hash) = asset.url.find('#').and_then(|index| asset.url.get(index..)) else {
         return asset.var_name.clone();
     };
 
     let mut output = String::from(asset.var_name.as_str());
     output.push_str(" + ");
-    push_js_string_literal(&mut output, &asset.url[hash_index..]);
+    push_js_string_literal(&mut output, hash);
     output
 }
 
@@ -55,11 +55,14 @@ pub(super) fn apply_asset_replacements(
     let mut changed = false;
 
     for replacement in replacements {
-        if replacement.start < last || replacement.end > code.len() {
+        let Some(before) = code
+            .get(last..replacement.start)
+            .filter(|_| replacement.end <= code.len())
+        else {
             continue;
-        }
+        };
 
-        output.push_str(&code[last..replacement.start]);
+        output.push_str(before);
         output.push_str(replacement.value.as_str());
         last = replacement.end;
         changed = true;
@@ -69,6 +72,6 @@ pub(super) fn apply_asset_replacements(
         return String::from(code);
     }
 
-    output.push_str(&code[last..]);
+    output.push_str(code.get(last..).unwrap_or_default());
     output
 }

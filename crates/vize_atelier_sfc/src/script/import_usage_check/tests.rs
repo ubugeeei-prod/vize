@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use super::{
     TemplateUsedIdentifiers, is_used_in_template, resolve_template_read_identifiers,
     resolve_template_used_identifiers,

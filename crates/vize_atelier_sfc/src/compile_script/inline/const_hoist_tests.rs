@@ -1,4 +1,5 @@
 //! Scope discipline of literal-const hoisting (#3944).
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use super::compile_script_setup_inline;
 use crate::compile_script::TemplateParts;

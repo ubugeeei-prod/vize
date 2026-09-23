@@ -6,6 +6,8 @@
 //! every prop undefined, which took down the whole Nuxt UI playground with
 //! `Missing required prop: "name"` followed by an SSR 500.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_s0::String;
 

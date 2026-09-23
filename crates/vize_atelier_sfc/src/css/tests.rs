@@ -1,4 +1,5 @@
 //! Tests for CSS compilation.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 mod scoped_regressions;
 
@@ -25,22 +26,20 @@ fn test_utf8(bytes: &[u8]) -> &str {
     }
 }
 
-fn v_bind_snapshot<T: AsRef<str>>(transformed: &str, vars: &[T]) -> String {
+fn v_bind_snapshot<T: AsRef<str>>(transformed: &str, vars: &[T]) -> vize_carton::String {
     let vars = vars
         .iter()
         .map(|var| format!("- {}", var.as_ref()))
         .collect::<Vec<_>>()
         .join("\n");
-    format!("vars:\n{vars}\n\ncss:\n{transformed}")
+    format!("vars:\n{vars}\n\ncss:\n{transformed}").into()
 }
 
-fn css_without_ascii_whitespace(css: &str) -> String {
-    css.chars()
-        .filter(|char| !char.is_ascii_whitespace())
-        .collect()
+fn css_without_ascii_whitespace(css: &str) -> vize_carton::String {
+    css.split_ascii_whitespace().collect()
 }
 
-fn compile_scoped_css_without_whitespace(css: &str) -> String {
+fn compile_scoped_css_without_whitespace(css: &str) -> vize_carton::String {
     let result = compile_css(
         css,
         &CssCompileOptions {
@@ -84,8 +83,8 @@ fn test_compile_scoped_css() {
 fn rewrite_url_nodes(value: &mut serde_json::Value, from: &str, to: &str) {
     match value {
         serde_json::Value::Object(map) => {
-            if map.get("url") == Some(&serde_json::Value::String(from.to_string())) {
-                map.insert("url".to_string(), serde_json::Value::String(to.to_string()));
+            if map.get("url") == Some(&serde_json::Value::String(from.into())) {
+                map.insert("url".into(), serde_json::Value::String(to.into()));
             }
 
             for child in map.values_mut() {
@@ -179,7 +178,7 @@ fn test_v_bind_extraction() {
     let bump = Allocator::new();
     let css = ".foo { color: v-bind(color); background: v-bind('bgColor'); }";
     let (transformed, vars) = extract_and_transform_v_bind(&bump, css);
-    insta::assert_snapshot!("v_bind_extraction", v_bind_snapshot(&transformed, &vars));
+    insta::assert_snapshot!("v_bind_extraction", v_bind_snapshot(transformed, &vars));
 }
 
 #[test]
@@ -226,7 +225,7 @@ fn test_v_bind_extraction_handles_quoted_expressions_with_parentheses() {
 
     insta::assert_snapshot!(
         "v_bind_extraction_handles_quoted_expressions_with_parentheses",
-        v_bind_snapshot(&transformed, &vars)
+        v_bind_snapshot(transformed, &vars)
     );
 }
 
@@ -251,7 +250,7 @@ fn test_v_bind_extraction_ignores_strings_and_comments() {
 
     insta::assert_snapshot!(
         "v_bind_extraction_ignores_strings_and_comments",
-        v_bind_snapshot(&transformed, &vars)
+        v_bind_snapshot(transformed, &vars)
     );
 }
 

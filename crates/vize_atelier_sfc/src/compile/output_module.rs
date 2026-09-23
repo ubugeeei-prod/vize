@@ -157,7 +157,9 @@ fn rewrite_module_sfc_to_standalone(
             .replace("export function render(", "function render(")
             .replace("export function ssrRender(", "function ssrRender(");
         if let Some(index) = rewritten.find("export default")
-            && rewritten[..index].trim().is_empty()
+            && rewritten
+                .get(..index)
+                .is_some_and(|before| before.trim().is_empty())
         {
             rewritten.replace_range(index..index + "export default".len(), "return");
         }

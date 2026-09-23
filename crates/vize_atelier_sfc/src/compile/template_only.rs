@@ -10,7 +10,7 @@ use crate::compile_template::{
     TemplateBlockCompileContext, compile_template_block, compile_template_block_vapor,
 };
 use crate::types::{
-    SfcCompileOptions, SfcCompileResult, SfcDescriptor, SfcError, SfcMacroArtifact,
+    SfcCompileOptions, SfcCompileResult, SfcError, SfcMacroArtifact, SfcTemplateBlock,
 };
 
 use super::helpers::trim_trailing_newlines;
@@ -21,7 +21,7 @@ use super::styles::CompiledStyles;
 
 /// Everything the template-only path reads from the shared prelude.
 pub(super) struct TemplateOnlyInput<'a> {
-    pub(super) descriptor: &'a SfcDescriptor<'a>,
+    pub(super) template: &'a SfcTemplateBlock<'a>,
     pub(super) options: &'a SfcCompileOptions,
     pub(super) custom_elements: &'a CustomElementMatcher,
     pub(super) template_syntax: TemplateSyntaxMode,
@@ -42,7 +42,7 @@ pub(super) fn compile_template_only(
     mut warnings: Vec<SfcError>,
     macro_artifacts: Vec<SfcMacroArtifact>,
 ) -> Result<SfcCompileResult, SfcError> {
-    let template = input.descriptor.template.as_ref().unwrap();
+    let template = input.template;
     // P1-11: this worker's arena, reset and reused between files.
     let template_allocator = vize_carton::pool::acquire();
     let template_result = if input.is_vapor {

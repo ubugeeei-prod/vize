@@ -1,3 +1,8 @@
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 use super::compile_script_setup_inline;
 use crate::compile_script::TemplateParts;
 

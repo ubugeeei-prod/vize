@@ -149,12 +149,10 @@ impl<'a> TemplateAssetReferenceCollector<'a> {
         let span = expression.span();
         let start = span.start as usize;
         let end = span.end as usize;
-        if start > end || end > self.code.len() {
-            return None;
-        }
+        let expression = self.code.get(start..end)?;
 
         let mut source = String::from("(");
-        source.push_str(&self.code[start..end]);
+        source.push_str(expression);
         source.push(')');
         Some((source, false))
     }
@@ -176,14 +174,14 @@ impl<'a> TemplateAssetReferenceCollector<'a> {
         changed: &mut bool,
     ) {
         let mut cursor = 0usize;
-        while cursor < text.len() {
-            let Some((relative_start, asset)) = self.find_next_asset(&text[cursor..]) else {
-                push_string_part(parts, &text[cursor..]);
+        while let Some(rest) = text.get(cursor..).filter(|rest| !rest.is_empty()) {
+            let Some((relative_start, asset)) = self.find_next_asset(rest) else {
+                push_string_part(parts, rest);
                 return;
             };
 
             let start = cursor + relative_start;
-            push_string_part(parts, &text[cursor..start]);
+            push_string_part(parts, rest.get(..relative_start).unwrap_or_default());
             parts.push(asset_expression(asset));
             *changed = true;
             cursor = start + asset.url.len();

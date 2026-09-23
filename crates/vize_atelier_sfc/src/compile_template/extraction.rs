@@ -162,7 +162,6 @@ pub(crate) fn extract_template_parts_full(
 /// Extract imports, hoisted consts, preamble (component/directive resolution), and render body
 /// from compiled template code.
 /// Returns (imports, hoisted, preamble, render_body, render_function_name)
-#[allow(dead_code)]
 pub(crate) fn extract_template_parts(
     template_code: &str,
 ) -> (String, String, String, String, &'static str) {

@@ -1,6 +1,7 @@
 //! Native Rust benchmarks for SFC compilation performance.
 //!
 //! Run with: cargo bench -p vize_atelier_sfc --bench sfc_compile
+#![expect(clippy::expect_used, reason = "benchmarks abort on fixture errors")]
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 use vize_atelier_sfc::{
@@ -324,14 +325,8 @@ fn compile_options(filename: &'static str) -> SfcCompileOptions {
 }
 
 fn benchmark_compile_case(c: &mut Criterion, name: &str, filename: &'static str, source: &str) {
-    let descriptor = parse_sfc(
-        source,
-        SfcParseOptions {
-            filename: filename.into(),
-            ..Default::default()
-        },
-    )
-    .expect("failed to parse benchmark SFC");
+    let descriptor =
+        parse_sfc(source, compile_options(filename).parse).expect("failed to parse benchmark SFC");
 
     let source_len = source.len() as u64;
     let mut group = c.benchmark_group("sfc_compile");

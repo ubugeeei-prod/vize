@@ -1,5 +1,6 @@
 //! Compare the old and shared-parse NAPI output paths on identical emitted code.
 //! Run: cargo bench -p vize_atelier_sfc --bench output_boundary
+#![expect(clippy::expect_used, reason = "benchmarks abort on fixture errors")]
 use criterion::{BatchSize, BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 use vize_atelier_sfc::{

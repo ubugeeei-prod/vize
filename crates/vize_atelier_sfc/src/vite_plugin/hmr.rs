@@ -65,6 +65,7 @@ fn did_hash_change(prev: Option<&str>, next: Option<&str>) -> bool {
 }
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::*;
 

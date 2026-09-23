@@ -1,3 +1,8 @@
+#![expect(
+    clippy::expect_used,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 

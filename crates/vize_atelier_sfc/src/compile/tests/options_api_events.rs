@@ -63,8 +63,10 @@ export default {
 </template>"#;
 
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
-    let mut compiler_options = vize_atelier_dom::DomCompilerOptions::default();
-    compiler_options.cache_handlers = true;
+    let compiler_options = vize_atelier_dom::DomCompilerOptions {
+        cache_handlers: true,
+        ..Default::default()
+    };
     let result = compile_sfc(
         &descriptor,
         SfcCompileOptions {

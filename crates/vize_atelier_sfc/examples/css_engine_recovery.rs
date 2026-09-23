@@ -2,11 +2,12 @@
 
 use vize_atelier_sfc::{CssCompileOptions, compile_css, parse_css_ast};
 
+const _: () = assert!(
+    cfg!(panic = "unwind"),
+    "native CSS recovery requires unwinding"
+);
+
 fn main() {
-    assert!(
-        cfg!(panic = "unwind"),
-        "native CSS recovery requires unwinding"
-    );
     let parse_error = "CSS parse error: the CSS engine hit an internal defect (upstream lightningcss panic; see vize issue #3295)";
     let compile_error = "CSS compile error: the CSS engine hit an internal defect (upstream lightningcss panic; see vize issue #3295)";
     let artifact = include_str!("../tests/fixtures/css-engine/6190.css");

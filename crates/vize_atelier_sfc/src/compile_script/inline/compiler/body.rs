@@ -16,7 +16,7 @@ use super::super::super::{
 use super::{
     component_output::emit_component_definition,
     hoist::separate_hoisted_consts,
-    model::{build_model_props_emits, collect_model_infos},
+    model::{ModelInfo, build_model_props_emits, collect_model_infos},
     preamble::emit_preamble,
     props::build_props_emits,
     render::{SetupBindingInputs, emit_render_return},
@@ -89,14 +89,7 @@ pub(super) fn compile_script_setup_inline_body(
         )
     );
 
-    let model_infos: Vec<(
-        String,
-        String,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-    )> = profile!(
+    let model_infos: Vec<ModelInfo> = profile!(
         "atelier.script_inline.collect_model_infos",
         collect_model_infos(&ctx)
     );

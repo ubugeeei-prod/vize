@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::{
     SfcCroquisOptions, analyze_sfc_descriptor_resolved, analyze_sfc_descriptor_with_context,
 };
@@ -51,7 +52,7 @@ const count = ref(0)
         .expect("plain script import scope should have a parent");
     assert_eq!(plain_import_parent.kind, ScopeKind::NonScriptSetup);
 
-    let count_span = analysis.croquis.binding_spans.get("count").unwrap();
+    let count_span = &analysis.croquis.binding_spans["count"];
     assert_eq!(
         &script[count_span.0 as usize..count_span.1 as usize],
         "count"

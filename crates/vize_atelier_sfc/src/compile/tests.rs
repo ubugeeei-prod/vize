@@ -40,7 +40,7 @@ fn temp_compile_project_dir(test_name: &str) -> PathBuf {
 fn sfc_compile_snapshot(
     css_vars: &[std::borrow::Cow<'_, str>],
     result: &SfcCompileResult,
-) -> String {
+) -> impl std::fmt::Display {
     let css_vars = css_vars
         .iter()
         .map(|var| format!("- {var}"))
@@ -2953,7 +2953,7 @@ export default defineComponent({
         let start = code
             .find("function _sfc_render(")
             .expect("render function present");
-        &code[start..]
+        code.get(start..).unwrap()
     }
     assert_eq!(
         render_fn(&result.code),

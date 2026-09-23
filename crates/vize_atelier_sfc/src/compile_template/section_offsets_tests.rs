@@ -53,8 +53,10 @@ fn test_slice_template_parts_matches_line_scanner() {
             let template_allocator = vize_s0::Allocator::new();
             let mut template_options = TemplateCompileOptions::default();
             if !inline {
-                let mut compiler_options = vize_atelier_dom::DomCompilerOptions::default();
-                compiler_options.hoist_static = false;
+                let compiler_options = vize_atelier_dom::DomCompilerOptions {
+                    hoist_static: false,
+                    ..Default::default()
+                };
                 template_options.compiler_options = Some(compiler_options);
             }
             let result = compile_template_block(

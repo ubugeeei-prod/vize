@@ -138,10 +138,8 @@ fn walk_node(
                 }
             }
         }
-        TemplateChildNode::CompoundExpression(compound) => {
-            if collect_used_ids {
-                extract_read_identifiers_from_compound(compound, result);
-            }
+        TemplateChildNode::CompoundExpression(compound) if collect_used_ids => {
+            extract_read_identifiers_from_compound(compound, result);
         }
         // Text, Comment, IfBranch, Hoisted don't need processing
         _ => {}

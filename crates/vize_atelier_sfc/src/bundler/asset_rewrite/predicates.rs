@@ -6,10 +6,8 @@ pub(super) fn is_template_hoist_declarator(declarator: &VariableDeclarator<'_>) 
     };
 
     let name = id.name.as_str();
-    name.starts_with("_hoisted_")
-        && name["_hoisted_".len()..]
-            .bytes()
-            .all(|byte| byte.is_ascii_digit())
+    name.strip_prefix("_hoisted_")
+        .is_some_and(|suffix| suffix.bytes().all(|byte| byte.is_ascii_digit()))
 }
 
 pub(super) fn is_render_function_name(name: &str) -> bool {

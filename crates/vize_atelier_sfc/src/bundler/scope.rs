@@ -31,24 +31,20 @@ pub fn generate_bundler_scope_id(
 fn relative_scope_path(filename: &str, root: &str) -> String {
     let file_components = normal_components(Path::new(filename));
     let root_components = normal_components(Path::new(root));
-    let mut common = 0usize;
-    while common < file_components.len()
-        && common < root_components.len()
-        && file_components[common].as_str() == root_components[common].as_str()
-    {
-        common += 1;
-    }
+    let common = file_components
+        .iter()
+        .zip(&root_components)
+        .take_while(|(file, root)| file.as_str() == root.as_str())
+        .count();
 
     let parent_count = root_components.len().saturating_sub(common);
     let mut parts: Vec<&str> = Vec::with_capacity(parent_count + file_components.len() - common);
     parts.extend(std::iter::repeat_n("..", parent_count));
-    parts.extend(file_components[common..].iter().map(String::as_str));
+    let unique = file_components.get(common..).unwrap_or_default();
+    parts.extend(unique.iter().map(String::as_str));
 
-    let mut start = 0usize;
-    while parts.get(start) == Some(&"..") {
-        start += 1;
-    }
-    join_slash(&parts[start..])
+    let start = parts.iter().take_while(|part| **part == "..").count();
+    join_slash(parts.get(start..).unwrap_or_default())
 }
 
 fn normal_components(path: &Path) -> Vec<String> {
@@ -90,17 +86,10 @@ fn normalize_newlines(source: &str) -> String {
 
 fn sha256_prefix(input: &str, len: usize) -> String {
     let digest = Sha256::digest(input.as_bytes());
-    const HEX: &[u8; 16] = b"0123456789abcdef";
     let mut output = String::with_capacity(len);
-    for byte in digest.iter().take(len.div_ceil(2)) {
-        output.push(HEX[(byte >> 4) as usize] as char);
-        if output.len() == len {
-            break;
-        }
-        output.push(HEX[(byte & 0x0f) as usize] as char);
-        if output.len() == len {
-            break;
-        }
+    let nibbles = digest.iter().flat_map(|byte| [byte >> 4, byte & 0x0f]);
+    for nibble in nibbles.take(len) {
+        output.push(char::from_digit(u32::from(nibble), 16).unwrap_or('0'));
     }
     output
 }

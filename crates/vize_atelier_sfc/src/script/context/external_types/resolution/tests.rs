@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use super::super::super::batch_epoch::NO_EPOCH;

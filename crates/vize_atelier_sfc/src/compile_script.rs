@@ -13,6 +13,7 @@ pub mod props;
 pub(crate) mod runtime_bindings;
 pub mod statement_sections;
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests;
 pub mod typescript;
 

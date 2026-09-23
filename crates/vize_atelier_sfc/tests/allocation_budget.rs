@@ -22,7 +22,7 @@
 //! `cargo test -p vize_atelier_sfc --test allocation_budget -- --nocapture`,
 //! read the printed `measured ...`, and update the matching budget below.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(clippy::disallowed_macros, reason = "budget messages use format!")]
 
 use std::alloc::System;
 

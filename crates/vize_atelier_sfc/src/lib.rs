@@ -29,18 +29,6 @@
 //! println!("{}", result.code);
 //! ```
 
-#![allow(clippy::collapsible_match)]
-#![allow(clippy::type_complexity)]
-#![allow(clippy::redundant_field_names)]
-#![allow(clippy::unnecessary_lazy_evaluations)]
-#![allow(clippy::field_reassign_with_default)]
-#![allow(clippy::only_used_in_recursion)]
-#![cfg_attr(
-    test,
-    allow(unused_imports, clippy::disallowed_macros, clippy::disallowed_types)
-)]
-#![cfg_attr(test, allow(clippy::disallowed_methods, clippy::needless_borrow))]
-
 extern crate vize_s0 as vize_carton;
 
 // Core modules - following Vue.js compiler-sfc structure
@@ -79,7 +67,7 @@ pub use bundler::{
     extract_style_blocks, generate_bundler_scope_id, has_scoped_style, is_importable_asset_url,
     strip_css_comments_for_scoped, wrap_scoped_preprocessor_style,
 };
-#[allow(deprecated)]
+#[expect(deprecated, reason = "kept exported until removal")]
 pub use compile::compile_sfc_with_vue_parser_quirks;
 pub use compile::{ScriptCompileResult, compile_sfc, compile_sfc_with_template_syntax};
 pub use compile::{

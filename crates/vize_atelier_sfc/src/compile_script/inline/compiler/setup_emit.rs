@@ -9,6 +9,7 @@ use vize_carton::{Box as CoreBox, String, profile};
 use crate::script::{ScriptCompileContext, gen_props_access_exp};
 
 use super::await_transform::transform_await_expressions;
+use super::model::ModelInfo;
 use super::trace::Tracer;
 
 fn is_identifier_continue(c: char) -> bool {
@@ -88,14 +89,7 @@ fn transform_css_var_expression(
 pub(super) fn emit_setup_body(
     output: &mut vize_carton::Vec<u8>,
     ctx: &ScriptCompileContext,
-    model_infos: &[(
-        String,
-        String,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-    )],
+    model_infos: &[ModelInfo],
     setup_body_lines: &[String],
     source_is_ts: bool,
     _is_ts: bool,

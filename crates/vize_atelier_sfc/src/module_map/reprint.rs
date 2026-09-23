@@ -48,7 +48,7 @@ impl<'a> Lines<'a> {
             .copied()
             .unwrap_or(self.text.len());
         let mut units = 0u32;
-        for (index, ch) in self.text[start..end].char_indices() {
+        for (index, ch) in self.text.get(start..end)?.char_indices() {
             if units == column {
                 return Some(start + index);
             }
@@ -93,8 +93,9 @@ pub(crate) fn remap_reprinted(
     post: &str,
     reprint: &Runs,
 ) -> Option<serde_json::Value> {
-    let source = map["sourcesContent"][0].as_str()?;
-    let filename = map["sources"][0].as_str()?;
+    let first_str = |key: &str| map.get(key)?.get(0)?.as_str();
+    let source = first_str("sourcesContent")?;
+    let filename = first_str("sources")?;
     let json = serde_json::to_string(map).ok()?;
     let parsed = SourceMap::from_json_string(&json).ok()?;
     let (pre_lines, source_lines) = (Lines::newline_only(pre), Lines::newline_only(source));

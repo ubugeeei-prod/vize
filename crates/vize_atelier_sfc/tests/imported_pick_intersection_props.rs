@@ -1,4 +1,8 @@
-#![allow(clippy::disallowed_macros)] // `insta::assert_snapshot!` expands to `format!`.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking; insta and fixtures use format!"
+)]
 
 use std::path::PathBuf;
 

@@ -214,6 +214,7 @@ fn is_call_of(call: &CallExpression<'_>, name: &str) -> bool {
 }
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use vize_carton::{CompactString, FxHashSet, ToCompactString};
 

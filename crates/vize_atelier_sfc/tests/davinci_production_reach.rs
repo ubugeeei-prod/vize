@@ -33,11 +33,10 @@
 //!     --test davinci_production_reach -- --nocapture
 //! ```
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
+#![expect(clippy::disallowed_macros, reason = "reports are built with format!")]
+#![expect(clippy::disallowed_types, reason = "fixture I/O uses std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixture I/O uses std strings")]
+#![expect(clippy::indexing_slicing, reason = "tests assert by panicking")]
 
 mod davinci_production_reach {
     pub mod diff;

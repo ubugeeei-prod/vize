@@ -1,4 +1,5 @@
 //! Whole-module byte comparison for the production-parity oracle.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use vize_atelier_sfc::{SfcCompileResult, SfcError};
 

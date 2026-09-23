@@ -1,7 +1,11 @@
 //! The structured SFC module map end to end: maps are additive (TS-11) for
 //! every module shape, and representative modules pin every segment.
-
-#![allow(clippy::disallowed_types, clippy::disallowed_macros)]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_macros,
+    reason = "tests compare std strings and build them with format!"
+)]
 
 use oxc_sourcemap::SourceMap;
 use vize_atelier_core::CodegenOptions;

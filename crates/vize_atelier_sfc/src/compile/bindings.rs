@@ -15,8 +15,10 @@ use crate::types::{BindingMetadata, BindingType};
 pub(super) fn croquis_to_legacy_bindings(
     src: &vize_croquis::croquis::BindingMetadata,
 ) -> BindingMetadata {
-    let mut dst = BindingMetadata::default();
-    dst.is_script_setup = src.is_script_setup;
+    let mut dst = BindingMetadata {
+        is_script_setup: src.is_script_setup,
+        ..Default::default()
+    };
     for (name, bt) in src.iter() {
         dst.bindings.insert(name.to_compact_string(), bt);
     }

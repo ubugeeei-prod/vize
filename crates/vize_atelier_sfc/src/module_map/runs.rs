@@ -83,7 +83,8 @@ impl Runs {
         let end = start + len;
         let mut sliced = Runs::default();
         let first = self.runs.partition_point(|run| run.out + run.len <= start);
-        for run in self.runs[first..].iter().take_while(|run| run.out < end) {
+        let tail = self.runs.get(first..).unwrap_or_default();
+        for run in tail.iter().take_while(|run| run.out < end) {
             let lo = run.out.max(start);
             let hi = (run.out + run.len).min(end);
             if lo < hi {
@@ -174,13 +175,13 @@ pub(crate) fn replace_traced(text: &str, from: &str, to: &str) -> (vize_carton::
     let mut cursor = 0;
     for (start, _) in text.match_indices(from) {
         runs.copy(replaced.len(), cursor, start - cursor);
-        replaced.push_str(&text[cursor..start]);
+        replaced.push_str(text.get(cursor..start).unwrap_or_default());
         runs.point(replaced.len(), start);
         replaced.push_str(to);
         cursor = start + from.len();
     }
     runs.copy(replaced.len(), cursor, text.len() - cursor);
-    replaced.push_str(&text[cursor..]);
+    replaced.push_str(text.get(cursor..).unwrap_or_default());
     (replaced, runs)
 }
 
@@ -219,7 +220,7 @@ pub(crate) fn apply_edits<'e>(
             continue;
         }
         runs.copy(out.len(), cursor, start - cursor);
-        out.push_str(&origin[cursor..start]);
+        out.push_str(origin.get(cursor..start).unwrap_or_default());
         if !replacement.is_empty() {
             runs.point(out.len(), start);
         }
@@ -227,6 +228,6 @@ pub(crate) fn apply_edits<'e>(
         cursor = end;
     }
     runs.copy(out.len(), cursor, origin.len() - cursor);
-    out.push_str(&origin[cursor..]);
+    out.push_str(origin.get(cursor..).unwrap_or_default());
     (out, runs)
 }

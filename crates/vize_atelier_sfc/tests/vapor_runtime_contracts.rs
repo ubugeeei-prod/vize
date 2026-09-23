@@ -1,7 +1,10 @@
-#![allow(
+#![expect(
     clippy::disallowed_macros,
+    clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::unwrap_used,
+    clippy::indexing_slicing,
+    reason = "tests assert by panicking; insta and fixtures use format!; fixtures use std strings"
 )]
 
 use serde_json::{Value, json};

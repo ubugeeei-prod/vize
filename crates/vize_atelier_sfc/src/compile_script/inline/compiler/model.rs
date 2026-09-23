@@ -8,6 +8,17 @@ use super::super::super::props::{
 use super::super::type_handling::resolve_type_args;
 use super::props::build_user_props_decl;
 
+/// One `defineModel` call: model name, binding name, modifiers binding name,
+/// prop options, runtime prop options, and type arguments.
+pub(super) type ModelInfo = (
+    String,
+    String,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+);
+
 /// Resolve a defineModel `<T>` type argument to its runtime constructor,
 /// mirroring `@vue/compiler-sfc`'s `inferRuntimeType`: primitives map directly
 /// (`string` → `String`), and local interface / type-alias references that do
@@ -49,14 +60,7 @@ pub(super) fn model_value_prop(
 /// Build model props (and combine props/emits) when defineModel is used.
 pub(super) fn build_model_props_emits(
     ctx: &ScriptCompileContext,
-    model_infos: &[(
-        String,
-        String,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-    )],
+    model_infos: &[ModelInfo],
     is_ts: bool,
     needs_prop_type: bool,
     needs_merge_defaults: bool,
@@ -184,16 +188,7 @@ pub(super) fn build_model_props_emits(
 /// Collect model info from defineModel calls.
 ///
 /// Returns Vec of (model_name, binding_name, modifiers_binding_name, prop_options).
-pub(super) fn collect_model_infos(
-    ctx: &ScriptCompileContext,
-) -> Vec<(
-    String,
-    String,
-    Option<String>,
-    Option<String>,
-    Option<String>,
-    Option<String>,
-)> {
+pub(super) fn collect_model_infos(ctx: &ScriptCompileContext) -> Vec<ModelInfo> {
     ctx.macros
         .define_models
         .iter()

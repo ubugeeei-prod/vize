@@ -13,10 +13,15 @@
 //! Regenerate the report after an intentional emitter change with
 //! `VIZE_UPDATE_TS31_REPORT=1 cargo test -p vize_atelier_sfc --test davinci_ts31_sourcemap`.
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "tests assert by panicking; insta and fixtures use format!; fixtures use std strings"
 )]
 
 mod davinci_ts31_sourcemap {

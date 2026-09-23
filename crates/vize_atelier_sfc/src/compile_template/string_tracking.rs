@@ -4,8 +4,6 @@
 //! block comments, and `${...}` expressions when counting braces and
 //! parentheses in JavaScript/TypeScript code.
 
-use vize_s0::String;
-
 /// State for tracking string/template literal/comment context across multiple lines.
 /// Required because template literals (backtick strings) and block comments can span
 /// multiple lines, and `${...}` expressions within template literals contain code-mode
@@ -51,12 +49,9 @@ impl Default for StringTrackState {
 pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) -> i32 {
     let mut count: i32 = 0;
     let bytes = line.as_bytes();
-    let len = bytes.len();
     let mut i = 0;
 
-    while i < len {
-        let ch = bytes[i];
-
+    while let Some(&ch) = bytes.get(i) {
         if state.escape {
             state.escape = false;
             i += 1;
@@ -65,7 +60,7 @@ pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) 
 
         // Inside a block comment: skip everything until */
         if state.in_block_comment {
-            if ch == b'*' && i + 1 < len && bytes[i + 1] == b'/' {
+            if ch == b'*' && bytes.get(i + 1) == Some(&b'/') {
                 state.in_block_comment = false;
                 i += 2; // Skip both * and /
                 continue;
@@ -85,7 +80,7 @@ pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) 
                 if ch == b'`' {
                     // Close template literal
                     state.in_string = false;
-                } else if ch == b'$' && i + 1 < len && bytes[i + 1] == b'{' {
+                } else if ch == b'$' && bytes.get(i + 1) == Some(&b'{') {
                     // Enter template expression ${...}
                     // The ${ is template syntax, not a code brace
                     state.in_string = false;
@@ -100,13 +95,13 @@ pub(super) fn count_braces_with_state(line: &str, state: &mut StringTrackState) 
         } else {
             // Not in string - we're in code mode
             match ch {
-                b'/' if i + 1 < len && bytes[i + 1] == b'*' => {
+                b'/' if bytes.get(i + 1) == Some(&b'*') => {
                     // Enter block comment /*
                     state.in_block_comment = true;
                     i += 2; // Skip both / and *
                     continue;
                 }
-                b'/' if i + 1 < len && bytes[i + 1] == b'/' => {
+                b'/' if bytes.get(i + 1) == Some(&b'/') => {
                     // Line comment // -- skip rest of line
                     break;
                 }
@@ -174,12 +169,9 @@ pub(super) fn count_braces_outside_strings(line: &str) -> i32 {
 pub(super) fn count_delims_with_state(line: &str, state: &mut StringTrackState) -> i32 {
     let mut count: i32 = 0;
     let bytes = line.as_bytes();
-    let len = bytes.len();
     let mut i = 0;
 
-    while i < len {
-        let ch = bytes[i];
-
+    while let Some(&ch) = bytes.get(i) {
         if state.escape {
             state.escape = false;
             i += 1;
@@ -187,7 +179,7 @@ pub(super) fn count_delims_with_state(line: &str, state: &mut StringTrackState) 
         }
 
         if state.in_block_comment {
-            if ch == b'*' && i + 1 < len && bytes[i + 1] == b'/' {
+            if ch == b'*' && bytes.get(i + 1) == Some(&b'/') {
                 state.in_block_comment = false;
                 i += 2;
                 continue;
@@ -206,7 +198,7 @@ pub(super) fn count_delims_with_state(line: &str, state: &mut StringTrackState) 
             if state.string_char == b'`' {
                 if ch == b'`' {
                     state.in_string = false;
-                } else if ch == b'$' && i + 1 < len && bytes[i + 1] == b'{' {
+                } else if ch == b'$' && bytes.get(i + 1) == Some(&b'{') {
                     state.in_string = false;
                     state.template_expr_brace_stack.push(0);
                     // The `${` opens a code-mode region; the `{` counts as an open delimiter.
@@ -219,12 +211,12 @@ pub(super) fn count_delims_with_state(line: &str, state: &mut StringTrackState) 
             }
         } else {
             match ch {
-                b'/' if i + 1 < len && bytes[i + 1] == b'*' => {
+                b'/' if bytes.get(i + 1) == Some(&b'*') => {
                     state.in_block_comment = true;
                     i += 2;
                     continue;
                 }
-                b'/' if i + 1 < len && bytes[i + 1] == b'/' => {
+                b'/' if bytes.get(i + 1) == Some(&b'/') => {
                     break;
                 }
                 b'\'' | b'"' => {
@@ -279,12 +271,9 @@ pub(super) fn count_delims_with_state(line: &str, state: &mut StringTrackState) 
 pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) -> i32 {
     let mut count: i32 = 0;
     let bytes = line.as_bytes();
-    let len = bytes.len();
     let mut i = 0;
 
-    while i < len {
-        let ch = bytes[i];
-
+    while let Some(&ch) = bytes.get(i) {
         if state.escape {
             state.escape = false;
             i += 1;
@@ -293,7 +282,7 @@ pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) 
 
         // Inside a block comment: skip everything until */
         if state.in_block_comment {
-            if ch == b'*' && i + 1 < len && bytes[i + 1] == b'/' {
+            if ch == b'*' && bytes.get(i + 1) == Some(&b'/') {
                 state.in_block_comment = false;
                 i += 2; // Skip both * and /
                 continue;
@@ -312,7 +301,7 @@ pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) 
             if state.string_char == b'`' {
                 if ch == b'`' {
                     state.in_string = false;
-                } else if ch == b'$' && i + 1 < len && bytes[i + 1] == b'{' {
+                } else if ch == b'$' && bytes.get(i + 1) == Some(&b'{') {
                     state.in_string = false;
                     state.template_expr_brace_stack.push(0);
                     i += 2;
@@ -324,13 +313,13 @@ pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) 
         } else {
             // Not in string - we're in code mode
             match ch {
-                b'/' if i + 1 < len && bytes[i + 1] == b'*' => {
+                b'/' if bytes.get(i + 1) == Some(&b'*') => {
                     // Enter block comment /*
                     state.in_block_comment = true;
                     i += 2; // Skip both / and *
                     continue;
                 }
-                b'/' if i + 1 < len && bytes[i + 1] == b'/' => {
+                b'/' if bytes.get(i + 1) == Some(&b'/') => {
                     // Line comment // -- skip rest of line
                     break;
                 }
@@ -377,81 +366,4 @@ pub(super) fn count_parens_with_state(line: &str, state: &mut StringTrackState) 
     }
 
     count
-}
-
-/// Compact render body by removing unnecessary line breaks inside function calls and arrays
-#[allow(dead_code)]
-pub(super) fn compact_render_body(render_body: &str) -> String {
-    let mut result = String::default();
-    let mut chars = render_body.chars().peekable();
-    let mut paren_depth: i32 = 0;
-    let mut bracket_depth: i32 = 0;
-    let mut brace_depth: i32 = 0;
-    let mut in_string = false;
-    let mut string_char = '\0';
-    let mut in_template = false;
-
-    while let Some(ch) = chars.next() {
-        match ch {
-            '"' | '\'' if !in_template => {
-                if !in_string {
-                    in_string = true;
-                    string_char = ch;
-                } else if string_char == ch {
-                    in_string = false;
-                }
-                result.push(ch);
-            }
-            '`' => {
-                in_template = !in_template;
-                result.push(ch);
-            }
-            '(' if !in_string && !in_template => {
-                paren_depth += 1;
-                result.push(ch);
-            }
-            ')' if !in_string && !in_template => {
-                paren_depth = paren_depth.saturating_sub(1);
-                result.push(ch);
-            }
-            '[' if !in_string && !in_template => {
-                bracket_depth += 1;
-                result.push(ch);
-            }
-            ']' if !in_string && !in_template => {
-                bracket_depth = bracket_depth.saturating_sub(1);
-                result.push(ch);
-            }
-            '{' if !in_string && !in_template => {
-                brace_depth += 1;
-                result.push(ch);
-            }
-            '}' if !in_string && !in_template => {
-                brace_depth = brace_depth.saturating_sub(1);
-                result.push(ch);
-            }
-            '\n' => {
-                // If inside braces (block bodies), keep newlines to preserve statement separation
-                if brace_depth > 0 && !in_string && !in_template {
-                    result.push('\n');
-                } else if (paren_depth > 0 || bracket_depth > 0) && !in_string && !in_template {
-                    result.push(' ');
-                    // Skip following whitespace
-                    while let Some(&next_ch) = chars.peek() {
-                        if next_ch.is_whitespace() && next_ch != '\n' {
-                            chars.next();
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    // Keep newline outside of function calls/arrays or inside strings
-                    result.push(ch);
-                }
-            }
-            _ => result.push(ch),
-        }
-    }
-
-    result
 }

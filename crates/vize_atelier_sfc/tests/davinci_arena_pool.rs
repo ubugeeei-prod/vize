@@ -20,6 +20,7 @@
 //! `&mut self` and the pool guard owns its arena, so an arena-backed value
 //! that outlived a file is a compile error). These tests cover what it cannot
 //! see: the pool's own bookkeeping and the owned-form contract.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcCompileResult, SfcParseOptions, compile_sfc, parse_sfc,

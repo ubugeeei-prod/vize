@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use super::{
     classify_vite_plugin_request, create_virtual_id, from_virtual_id, normalize_fs_id_for_build,
     normalize_virtual_vue_module_id,

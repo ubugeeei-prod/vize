@@ -5,11 +5,9 @@
 //! source-length budget.
 
 use super::{
-    SfcCompileOptions, SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter,
-    compile_sfc_with_template_syntax, parse_sfc,
+    SfcCompileOptions, SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter, parse_sfc,
 };
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
-use vize_carton::config::VueVersion;
 
 #[test]
 fn test_compile_sfc_ts_ref_condition_and_handler_keep_value_access() {
@@ -46,8 +44,10 @@ const isRootSelected = ref(false)
     let script_setup = descriptor.script_setup.as_ref().unwrap();
     let template = descriptor.template.as_ref().unwrap();
     let croquis = crate::script::analyze_script_setup_to_summary(&script_setup.content);
-    let mut binding_metadata = crate::BindingMetadata::default();
-    binding_metadata.is_script_setup = croquis.bindings.is_script_setup;
+    let mut binding_metadata = crate::BindingMetadata {
+        is_script_setup: croquis.bindings.is_script_setup,
+        ..Default::default()
+    };
     for (name, binding_type) in croquis.bindings.iter() {
         binding_metadata
             .bindings

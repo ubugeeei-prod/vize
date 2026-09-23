@@ -181,8 +181,13 @@ pub fn prepare_root_patterned_template<'d, 's>(
         if span == retained {
             continue;
         }
-        content.push_str(&original[cursor..span.start as usize]);
-        for byte in original[span.start as usize..span.end as usize].bytes() {
+        content.push_str(
+            original
+                .get(cursor..span.start as usize)
+                .unwrap_or_default(),
+        );
+        let masked = original.get(span.start as usize..span.end as usize);
+        for byte in masked.unwrap_or_default().bytes() {
             content.push(if matches!(byte, b'\r' | b'\n') {
                 char::from(byte)
             } else {
@@ -191,17 +196,18 @@ pub fn prepare_root_patterned_template<'d, 's>(
         }
         cursor = span.end as usize;
     }
-    content.push_str(&original[cursor..]);
+    content.push_str(original.get(cursor..).unwrap_or_default());
     let mut descriptor = descriptor.clone();
-    let template = descriptor.template.as_mut().unwrap();
-    template.content = Cow::Owned(content.into());
-    template.loc = location(source, template.loc.tag_start, template.loc.tag_end);
+    if let Some(template) = descriptor.template.as_mut() {
+        template.content = Cow::Owned(content.into());
+        template.loc = location(source, template.loc.tag_start, template.loc.tag_end);
+    }
     Ok(Cow::Owned(descriptor))
 }
 
 fn location(source: &str, start: usize, end: usize) -> BlockLocation {
     let position = |offset| {
-        let prefix = &source[..offset];
+        let prefix = source.get(..offset).unwrap_or_default();
         (
             prefix.bytes().filter(|&b| b == b'\n').count() + 1,
             prefix.rfind('\n').map_or(offset + 1, |line| offset - line),

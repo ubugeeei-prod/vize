@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use super::super::{
     PrecompileChunkOptions, PrecompileFileMetadata, PrecompileFileMetadataEntry,
     chunk_precompile_files, diff_precompile_files, has_file_metadata_changed,

@@ -279,6 +279,7 @@ fn static_property_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod declaration_tests {
     use super::*;
 

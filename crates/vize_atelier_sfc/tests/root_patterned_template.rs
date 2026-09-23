@@ -1,7 +1,10 @@
-#![allow(
+#![expect(
     clippy::disallowed_macros,
+    clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::string_slice,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking; insta and fixtures use format!; fixtures use std strings"
 )]
 
 use vize_atelier_dom::DomCompilerOptions;

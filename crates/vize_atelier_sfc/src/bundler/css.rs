@@ -11,13 +11,11 @@ pub fn strip_css_comments_for_scoped(css: &str) -> String {
     let mut index = 0usize;
     let mut changed = false;
 
-    while index < bytes.len() {
-        match bytes[index] {
-            b'"' | b'\'' => {
-                let quote = bytes[index];
+    while let Some(&current) = bytes.get(index) {
+        match current {
+            quote @ (b'"' | b'\'') => {
                 index += 1;
-                while index < bytes.len() {
-                    let byte = bytes[index];
+                while let Some(&byte) = bytes.get(index) {
                     if byte == b'\\' {
                         index = (index + 2).min(bytes.len());
                         continue;
@@ -29,16 +27,16 @@ pub fn strip_css_comments_for_scoped(css: &str) -> String {
                 }
             }
             b'/' if bytes.get(index + 1) == Some(&b'*') => {
-                output.push_str(&css[copy_start..index]);
+                output.push_str(css.get(copy_start..index).unwrap_or_default());
                 output.push_str("  ");
                 index += 2;
-                while index < bytes.len() {
-                    if bytes[index] == b'*' && bytes.get(index + 1) == Some(&b'/') {
+                while let Some(&byte) = bytes.get(index) {
+                    if byte == b'*' && bytes.get(index + 1) == Some(&b'/') {
                         output.push_str("  ");
                         index += 2;
                         break;
                     }
-                    output.push(if bytes[index] == b'\n' { '\n' } else { ' ' });
+                    output.push(if byte == b'\n' { '\n' } else { ' ' });
                     index += 1;
                 }
                 copy_start = index;
@@ -52,7 +50,7 @@ pub fn strip_css_comments_for_scoped(css: &str) -> String {
         return String::from(css);
     }
 
-    output.push_str(&css[copy_start..]);
+    output.push_str(css.get(copy_start..).unwrap_or_default());
     output
 }
 

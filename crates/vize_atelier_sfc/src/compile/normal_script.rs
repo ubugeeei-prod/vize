@@ -105,7 +105,9 @@ fn extract_traced(
                 // Find the span of "export default" keyword portion
                 let stmt_start = stmt.span().start;
                 let stmt_end = stmt.span().end;
-                let stmt_text = &content[stmt_start as usize..stmt_end as usize];
+                let stmt_text = content
+                    .get(stmt_start as usize..stmt_end as usize)
+                    .unwrap_or_default();
                 // Replace "export default" with "const __default__ ="
                 let rewritten: String = stmt_text
                     .replacen("export default", "const __default__ =", 1)
@@ -141,21 +143,17 @@ fn extract_traced(
     for (start, end, replacement) in &modifications {
         let start = *start as usize;
         runs.copy(output.len(), last_end, start.saturating_sub(last_end));
-        output.push_str(&content[last_end..start]);
+        output.push_str(content.get(last_end..start).unwrap_or_default());
         if let Some(repl) = replacement {
-            trace_default_rewrite(
-                &mut runs,
-                output.len(),
-                &content[start..*end as usize],
-                start,
-            );
+            let original = content.get(start..*end as usize).unwrap_or_default();
+            trace_default_rewrite(&mut runs, output.len(), original, start);
             output.push_str(repl);
         }
         last_end = *end as usize;
     }
-    if last_end < content.len() {
-        runs.copy(output.len(), last_end, content.len() - last_end);
-        output.push_str(&content[last_end..]);
+    if let Some(rest) = content.get(last_end..).filter(|rest| !rest.is_empty()) {
+        runs.copy(output.len(), last_end, rest.len());
+        output.push_str(rest);
     }
 
     let lead = output.len() - output.trim_start().len();

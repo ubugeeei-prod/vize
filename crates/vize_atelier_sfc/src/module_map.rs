@@ -39,7 +39,9 @@ fn is_word(ch: char) -> bool {
 /// non-whitespace character, every non-whitespace character after
 /// whitespace, and every change between word and punctuation characters.
 pub(crate) fn token_starts(generated: &str, run: Run) -> impl Iterator<Item = usize> + '_ {
-    let text = &generated[run.out..run.out + run.len];
+    let text = generated
+        .get(run.out..run.out + run.len)
+        .unwrap_or_default();
     let mut previous: Option<char> = None;
     text.char_indices().filter_map(move |(index, ch)| {
         let starts = !ch.is_whitespace()

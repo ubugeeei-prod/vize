@@ -197,6 +197,7 @@ pub fn extract_import_identifiers(import: &str) -> Vec<vize_carton::String> {
 }
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::{import_block_has_local_from, process_import_for_types};
 

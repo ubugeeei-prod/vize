@@ -12,6 +12,7 @@ pub(crate) mod helpers;
 #[cfg(test)]
 mod static_enum_tests;
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests;
 pub(crate) mod type_handling;
 

@@ -39,11 +39,10 @@ pub(super) fn generate_scope_id(filename: &str) -> String {
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     filename.hash(&mut hasher);
     let value = hasher.finish() & 0xFFFFFFFF;
-    const HEX: &[u8; 16] = b"0123456789abcdef";
     let mut out = String::with_capacity(8);
     for shift in (0..32).step_by(4).rev() {
-        let digit = ((value >> shift) & 0xF) as usize;
-        out.push(HEX[digit] as char);
+        let digit = ((value >> shift) & 0xF) as u32;
+        out.push(char::from_digit(digit, 16).unwrap_or('0'));
     }
     out
 }
@@ -173,9 +172,9 @@ pub(super) fn demote_v_model_reactive_const_bindings(
         let after_const = decl_start + "const".len();
         starts.push(decl_start);
 
-        rewritten.push_str(&script_content[last_end..decl_start]);
+        rewritten.push_str(script_content.get(last_end..decl_start)?);
         rewritten.push_str("let");
-        rewritten.push_str(&script_content[after_const..decl_end]);
+        rewritten.push_str(script_content.get(after_const..decl_end)?);
         last_end = decl_end;
     }
 
@@ -183,7 +182,7 @@ pub(super) fn demote_v_model_reactive_const_bindings(
         return None;
     }
 
-    rewritten.push_str(&script_content[last_end..]);
+    rewritten.push_str(script_content.get(last_end..)?);
 
     Some((rewritten, demoted_ids, starts))
 }

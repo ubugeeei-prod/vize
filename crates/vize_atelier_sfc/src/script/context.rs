@@ -284,11 +284,11 @@ function increment() { count.value++ }
         assert!(destructure.bindings.contains_key("bar"));
 
         // Check local names
-        assert_eq!(destructure.bindings.get("foo").unwrap().local, "myFoo");
-        assert_eq!(destructure.bindings.get("bar").unwrap().local, "bar");
+        assert_eq!(destructure.bindings["foo"].local, "myFoo");
+        assert_eq!(destructure.bindings["bar"].local, "bar");
 
         // Check default value
-        assert!(destructure.bindings.get("bar").unwrap().default.is_some());
+        assert!(destructure.bindings["bar"].default.is_some());
     }
 
     #[test]

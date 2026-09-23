@@ -1,4 +1,9 @@
-#![allow(clippy::disallowed_types)] // Fixture files arrive through `std::fs` as std strings.
+#![expect(
+    clippy::disallowed_types,
+    clippy::expect_used,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking; fixtures use std strings"
+)]
 //! The P4-12c compile oracle: compiling an SFC with `<template
 //! lang="pug">` equals, byte for byte, compiling the same SFC with its
 //! template replaced by the pinned `pug` package's HTML rendering — in the

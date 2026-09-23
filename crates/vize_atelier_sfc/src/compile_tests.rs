@@ -2,10 +2,10 @@
 //!
 //! Split out of `lib.rs` so that module stays inside the per-file
 //! source-length budget.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use super::{SfcCompileOptions, compile_sfc, compile_sfc_with_template_syntax, parse_sfc};
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_carton::config::VueVersion;
 
 #[test]
 fn test_compile_sfc_with_define_emits() {

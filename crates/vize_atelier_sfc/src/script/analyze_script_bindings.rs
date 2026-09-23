@@ -45,10 +45,9 @@ pub fn analyze_script_bindings(source: &str) -> BindingMetadata {
 
 /// Analyze bindings from options object (e.g., export default { ... })
 fn analyze_bindings_from_options(node: &ObjectExpression<'_>, source: &str) -> BindingMetadata {
+    // The default is non-script-setup, so components/directives are not
+    // resolved from these bindings.
     let mut bindings = BindingMetadata::default();
-
-    // Mark as non-script-setup so we don't resolve components/directives from these
-    bindings.is_script_setup = false;
 
     for property in node.properties.iter() {
         match property {

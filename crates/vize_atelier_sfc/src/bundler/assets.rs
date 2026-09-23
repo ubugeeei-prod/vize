@@ -63,7 +63,7 @@ fn scan_template_asset_urls(
     counter: &mut usize,
 ) {
     let mut cursor = 0usize;
-    while let Some(offset) = template[cursor..].find('<') {
+    while let Some(offset) = template.get(cursor..).and_then(|rest| rest.find('<')) {
         let start = cursor + offset;
         let Some(tag) = parse_opening_tag(template, start) else {
             cursor = start + 1;
@@ -117,11 +117,10 @@ fn parse_opening_tag(template: &str, start: usize) -> Option<OpeningTag<'_>> {
     if index == name_start {
         return None;
     }
-    let name = String::from(&template[name_start..index]);
+    let name = String::from(template.get(name_start..index)?);
     let attrs_start = index;
     let mut quote = None;
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         if let Some(active_quote) = quote {
             if byte == b'\\' {
                 index = (index + 2).min(bytes.len());
@@ -135,7 +134,7 @@ fn parse_opening_tag(template: &str, start: usize) -> Option<OpeningTag<'_>> {
         } else if byte == b'>' {
             return Some(OpeningTag {
                 name,
-                attrs: &template[attrs_start..index],
+                attrs: template.get(attrs_start..index)?,
                 end: index + 1,
             });
         }
@@ -166,18 +165,16 @@ fn static_attr_value<'a>(attrs: &'a str, name: &str) -> Option<&'a str> {
             index += 1;
         }
         let name_start = index;
-        while index < bytes.len()
-            && !matches!(
-                bytes[index],
-                b' ' | b'\t' | b'\n' | b'\r' | b'=' | b'/' | b'>'
-            )
+        while bytes
+            .get(index)
+            .is_some_and(|byte| !matches!(byte, b' ' | b'\t' | b'\n' | b'\r' | b'=' | b'/' | b'>'))
         {
             index += 1;
         }
         if index == name_start {
             break;
         }
-        let attr_name = &attrs[name_start..index];
+        let attr_name = attrs.get(name_start..index)?;
         while matches!(bytes.get(index), Some(b' ' | b'\t' | b'\n' | b'\r')) {
             index += 1;
         }
@@ -194,30 +191,18 @@ fn static_attr_value<'a>(attrs: &'a str, name: &str) -> Option<&'a str> {
         }
         index += 1;
         let value_start = index;
-        while index < bytes.len() && bytes[index] != quote {
+        while bytes.get(index).is_some_and(|&byte| byte != quote) {
             index += 1;
         }
         if attr_name == name {
-            return Some(&attrs[value_start..index]);
+            return attrs.get(value_start..index);
         }
         index += 1;
     }
     None
 }
 
-fn push_usize(output: &mut String, mut value: usize) {
-    if value == 0 {
-        output.push('0');
-        return;
-    }
-    let mut digits = [0u8; 20];
-    let mut len = 0usize;
-    while value > 0 {
-        digits[len] = (value % 10) as u8;
-        value /= 10;
-        len += 1;
-    }
-    for digit in digits[..len].iter().rev() {
-        output.push((b'0' + *digit) as char);
-    }
+fn push_usize(output: &mut String, value: usize) {
+    use std::fmt::Write as _;
+    let _ = write!(output, "{value}");
 }

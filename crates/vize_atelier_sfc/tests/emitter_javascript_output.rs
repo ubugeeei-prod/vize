@@ -5,6 +5,8 @@
 //! JavaScript via `ensure_javascript_output`. These tests pin that guarantee so
 //! a regression in the script pipeline cannot leak TypeScript into the bundler.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcParseOptions,
     compile_script::typescript::{

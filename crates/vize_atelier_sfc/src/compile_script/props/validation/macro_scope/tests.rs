@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::super::validate_script_setup_semantics;
 use super::script_setup_has_semantic_validator_candidates;
 

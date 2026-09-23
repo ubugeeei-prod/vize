@@ -2,6 +2,7 @@
 //!
 //! Kept separate from `tests.rs` so that already large file does not grow past
 //! the source-file-length limit.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use super::super::compile_sfc;
 use crate::types::{ScriptCompileOptions, SfcCompileOptions, TemplateCompileOptions};

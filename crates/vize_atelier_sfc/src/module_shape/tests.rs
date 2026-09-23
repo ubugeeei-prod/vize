@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::{SfcModuleShape, analyze_module_shape};
 
 fn shape(code: &str) -> SfcModuleShape {

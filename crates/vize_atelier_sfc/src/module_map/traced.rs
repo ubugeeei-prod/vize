@@ -24,7 +24,8 @@ impl<'o> TracedText<'o> {
     /// Append `origin[start..end]` as a copy.
     pub(crate) fn copy(&mut self, start: usize, end: usize) {
         self.runs.copy(self.text.len(), start, end - start);
-        self.text.push_str(&self.origin[start..end]);
+        self.text
+            .push_str(self.origin.get(start..end).unwrap_or_default());
     }
 
     /// Append synthesized text.

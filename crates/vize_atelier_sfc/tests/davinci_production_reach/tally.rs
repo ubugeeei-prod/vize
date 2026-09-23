@@ -1,4 +1,9 @@
 //! Per-shape lane tallies and the `[reach]` budget floors.
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
 
 use std::collections::BTreeMap;
 
