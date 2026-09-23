@@ -1293,6 +1293,7 @@ Croquis {
     element_ids: [],
     import_statements: [],
     re_exports: [],
+    re_export_forwards: [],
     binding_spans: {
         "count": (
             19,

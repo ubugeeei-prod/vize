@@ -2,6 +2,7 @@ import { registerRecutChecks } from "./support/davinci-recut.ts";
 
 registerRecutChecks({
   phase: 6,
+  strictDisjointPaths: true,
   taskFiles: ["phase-6-tasks.md", "phase-6-tasks-later.md"],
   predecessorFiles: ["phase-3.md", "phase-4.md", "phase-5.md"],
   provisionalGateLines: [

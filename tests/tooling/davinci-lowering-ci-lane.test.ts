@@ -16,7 +16,7 @@ const jsxS2VdomParityCommand =
 const patinaMarkupDifferentialCommand =
   'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential -- --nocapture';
 
-test("feature-gated S1-to-S2 corpus lanes run in main and manual Check", () => {
+test("feature-gated S1-to-S2 corpus lanes run in scheduled and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
   const testReportJob = workflowJobBody(workflow, "test-report");
@@ -40,8 +40,8 @@ test("feature-gated S1-to-S2 corpus lanes run in main and manual Check", () => {
 
   assert.match(
     clippyJob,
-    /^ {4}if: \$\{\{ github\.event_name != 'pull_request' \}\}$/m,
-    "clippy-and-test must run on main and manual Check",
+    /^ {4}if: \$\{\{ github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch' \}\}$/m,
+    "clippy-and-test must run on scheduled and manual Check",
   );
   assert.doesNotMatch(testReportJob, /- clippy-and-test\b/);
   assert.match(clippyJob, /run: cargo test --workspace && /);
@@ -55,7 +55,7 @@ test("feature-gated S1-to-S2 corpus lanes run in main and manual Check", () => {
   );
   assert.ok(
     clippyJob.includes(s1ToS2PugCorpusCommand),
-    "the feature-gated pug corpus entry (P4-12c baseline scope) must run on main",
+    "the feature-gated pug corpus entry (P4-12c baseline scope) must run in full Check",
   );
   assert.match(
     readRepoFile("crates", "vize_atelier_ssr", "Cargo.toml"),

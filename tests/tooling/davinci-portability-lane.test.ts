@@ -24,7 +24,7 @@ const packageArgs = portableStageCrates.map(([packageName]) => `-p ${packageName
 const defaultLane = `cargo build ${packageArgs} --lib --target wasm32-wasip2`;
 const noDefaultLane = `${defaultLane} --no-default-features`;
 
-test("TS-24: the wasm32-wasip2 lanes run in main and manual Check", () => {
+test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "clippy-and-test");
   const suite = readRepoFile("docs/davinci", "plan", "test-suites.md");
@@ -36,12 +36,12 @@ test("TS-24: the wasm32-wasip2 lanes run in main and manual Check", () => {
     "the normative TS-24 row must pin the same six-library commands as CI",
   );
 
-  // The full portability suite runs on main and manual Check; the PR report
-  // remains bounded by its separate fast-check contract.
+  // The full portability suite runs on schedule and manual Check; routine
+  // pushes and PRs remain bounded by their fast-check contract.
   assert.match(
     job,
-    /^ {4}if: \$\{\{ github\.event_name != 'pull_request' \}\}$/m,
-    "clippy-and-test must run on main and manual Check",
+    /^ {4}if: \$\{\{ github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch' \}\}$/m,
+    "clippy-and-test must run on scheduled and manual Check",
   );
   assert.doesNotMatch(workflowJobBody(workflow, "test-report"), /- clippy-and-test\b/);
 

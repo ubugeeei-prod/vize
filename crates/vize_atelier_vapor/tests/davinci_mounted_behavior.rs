@@ -21,6 +21,7 @@ mod davinci_mounted_behavior {
     mod native_attributes;
     mod native_components;
     mod native_control;
+    mod native_inline;
     mod native_roots;
     mod native_slots;
     mod native_spreads;

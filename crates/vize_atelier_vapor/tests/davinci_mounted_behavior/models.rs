@@ -5,8 +5,9 @@
 //! including live `value`, `checked` and `selected` state, must equal the
 //! independent Lean model reference in `model-reference.behavior.jsonl`.
 
-use crate::{Scenario, mounted_trace_with_identity};
-use serde_json::Value;
+use super::native_control::element;
+use crate::{Scenario, mounted_trace, mounted_trace_with_identity};
+use serde_json::{Value, json};
 use std::path::Path;
 
 fn lines(name: &str) -> Vec<Value> {
@@ -81,4 +82,37 @@ fn mounted_select_models_match_the_lean_model_reference() {
 #[test]
 fn mounted_looped_models_match_the_lean_model_reference() {
     run_stem("model-loop-reference", &["keyed-", "positional-"], true, 4);
+}
+
+#[test]
+fn native_textarea_model_tracks_input_and_external_updates() {
+    let source =
+        r#"<section><textarea v-model="content"></textarea><p>{{ content }}</p></section>"#;
+    let view = |content: &str| {
+        json!({
+            "tree": [element("section", json!({}), json!([
+                {"tag": "textarea", "attributes": {}, "children": [], "value": content},
+                element("p", json!({}), json!([content]))
+            ]))],
+            "events": []
+        })
+    };
+    let expected = json!([
+        view("initial"),
+        view("typed"),
+        view("external"),
+        {"tree": [], "events": []}
+    ]);
+    for backend in ["vdom", "vapor", "vapor-legacy"] {
+        let actual = mounted_trace(
+            backend,
+            source,
+            json!({"content": "initial"}),
+            json!([
+                {"event": "input", "selector": "textarea", "value": "typed"},
+                {"patch": {"content": "external"}}
+            ]),
+        );
+        assert_eq!(actual, expected, "{backend}");
+    }
 }

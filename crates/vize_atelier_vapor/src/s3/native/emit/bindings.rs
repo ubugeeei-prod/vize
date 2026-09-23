@@ -47,6 +47,19 @@ impl<'a> Emitter<'a, '_> {
         let value_span = Some(self.trimmed(binding.spans[1]));
         let name_span = self.token(binding.spans[0], |raw| argument_offset(raw, binding.name));
         match binding.kind {
+            BindingKind::Cloak => {
+                let dir = DirectiveNode::new(self.allocator, "cloak", SourceLocation::STUB);
+                block
+                    .operation
+                    .push(OperationNode::Directive(DirectiveIRNode {
+                        element,
+                        dir: Box::new_in(dir, &self.allocator),
+                        name: "vCloak",
+                        builtin: true,
+                        tag,
+                        input_type,
+                    }));
+            }
             BindingKind::Event => {
                 let modifiers = EventModifiers::from_names(
                     self.allocator,
@@ -68,10 +81,13 @@ impl<'a> Emitter<'a, '_> {
             }
             BindingKind::Prop => {
                 let mut values = Vec::new_in(&self.allocator);
-                if let Some(merge) = binding.merge {
+                if let Some((merge, false)) = binding.merge {
                     values.push(self.expression(Expr::plain(merge), true));
                 }
                 values.push(self.spanned(binding.value, false, value_span));
+                if let Some((merge, true)) = binding.merge {
+                    values.push(self.expression(Expr::plain(merge), true));
+                }
                 let key = self.spanned(Expr::plain(binding.name), true, name_span);
                 self.effect(
                     OperationNode::SetProp(SetPropIRNode {

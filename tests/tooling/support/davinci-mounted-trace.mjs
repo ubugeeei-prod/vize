@@ -270,6 +270,7 @@ export function observeChildren(parent) {
         element.value = node.value;
         element.checked = node.checked;
       }
+      if (node.localName === "textarea") element.value = node.value;
       if (node.localName === "button") element.disabled = node.disabled;
       if (node.localName === "select") element.value = node.value;
       if (node.localName === "option") element.selected = node.selected;

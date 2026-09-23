@@ -1324,6 +1324,7 @@ ScriptParseResult {
         },
     ],
     re_exports: [],
+    re_export_forwards: [],
     component_registrations: [],
     component_shape: Unspecified,
     binding_spans: {

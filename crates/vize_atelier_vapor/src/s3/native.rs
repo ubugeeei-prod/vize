@@ -136,8 +136,10 @@ struct Binding<'a> {
     name: &'a str,
     value: Expr<'a>,
     modifiers: Vec<'a, &'a str>,
-    /// A static `class` merged ahead of this dynamic `:class`.
-    merge: Option<&'a str>,
+    /// Static class/style value and whether it followed the bound value.
+    merge: Option<(&'a str, bool)>,
+    /// S3's element-kind operand for a model; checked against the target tag.
+    model_element: Option<&'a str>,
     /// Authored position, which orders an element's spread sources.
     position: u32,
     /// Authored spans of the name and of the untrimmed value.
@@ -149,11 +151,13 @@ struct Binding<'a> {
 enum BindingKind {
     Prop,
     Event,
+    /// `v-cloak` removes the authored cloak marker once when the node mounts.
+    Cloak,
     Show,
     Html,
     Text,
-    /// `v-model` on an input: `value` is the model reference, `modifiers` the
-    /// `lazy`/`number`/`trim` options.
+    /// `v-model` on an input or textarea: `value` is the model reference,
+    /// `modifiers` the `lazy`/`number`/`trim` options.
     Model,
     /// Slot content on a `<template #name>` or its component: `name` is the
     /// slot name, `value` the parameter pattern (empty when there is none).
