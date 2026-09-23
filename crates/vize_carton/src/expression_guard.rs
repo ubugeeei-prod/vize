@@ -30,6 +30,7 @@ struct ExpressionNestingAnalysis {
     max_depth: usize,
     delimiters_balanced: bool,
     cumulative_speculative_type_angle_depth: usize,
+    excessive_speculative_type_angle_opens: bool,
     oversized_numeric_token: bool,
 }
 
@@ -71,6 +72,11 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
     // escapes also match OXC: injecting `&&` every 25 `<`, or closing the
     // angles, drops a 10.7KB input from 1.47s to ~25us.
     let mut speculative_type_angle_opens = 0usize;
+    // Closing `>` pays back recursion depth, but it does not make an outer
+    // speculative type-argument parse succeed. Reopening more candidates in
+    // that same unclosed chain can make OXC retry its failed branches many
+    // times even when the peak angle depth stays below the depth limit.
+    let mut excessive_speculative_type_angle_opens = false;
     let mut malformed_type_escape_opens = 0usize;
     let mut segment_speculative_type_angle_depth = 0usize;
     let mut cumulative_speculative_type_angle_depth = 0usize;
@@ -197,6 +203,8 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
                 angle_depth += 1;
                 if let Some(kind) = speculative_type_angle_open_kind(content, i) {
                     speculative_type_angle_opens += 1;
+                    excessive_speculative_type_angle_opens |=
+                        speculative_type_angle_opens > MAX_EXPRESSION_NESTING_DEPTH;
                     if kind == SpeculativeTypeAngleOpen::MalformedIdentifierEscape {
                         malformed_type_escape_opens += 1;
                     }
@@ -319,6 +327,7 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
             && delimiters.is_empty()
             && template_interpolation_depths.is_empty(),
         cumulative_speculative_type_angle_depth,
+        excessive_speculative_type_angle_opens,
         oversized_numeric_token,
     }
 }
@@ -338,6 +347,7 @@ pub fn expression_is_safe_to_parse(content: &str) -> bool {
     analysis.delimiters_balanced
         && analysis.max_depth <= MAX_EXPRESSION_NESTING_DEPTH
         && analysis.cumulative_speculative_type_angle_depth <= MAX_EXPRESSION_NESTING_DEPTH
+        && !analysis.excessive_speculative_type_angle_opens
         && !analysis.oversized_numeric_token
         && !operators::has_excessive_prefix_operator_run(content)
 }
