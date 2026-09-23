@@ -329,6 +329,14 @@ if (module.hot) module.hot.addStatusHandler(status => { window.hotStatus = statu
       assert.equal(await button.textContent(), "changed 8", "external style preserves state");
       await write("script.js", "export default { data() { return { count: 9 }; } };");
       assert.equal(await button.textContent(), "changed 9", "external script reloads component");
+      await write(
+        "App.vue",
+        '<script src="./script.js"></script><template src="./template.html"></template>',
+      );
+      await page.waitForFunction(
+        () => getComputedStyle(document.querySelector("button")).color !== "rgb(90, 80, 70)",
+      );
+      assert.equal(await button.textContent(), "changed 9", "removing a style keeps the component");
       assert.deepEqual(errors, []);
     },
   );
