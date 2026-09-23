@@ -2,7 +2,6 @@
 
 [Package overview](../README.md) · [Manual rules](./manual-rules.md)
 
-
 ### VizePlugin
 
 `new VizePlugin()` enables automatic style-rule cloning and TypeScript stripping.
