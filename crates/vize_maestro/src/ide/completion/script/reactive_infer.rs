@@ -1,10 +1,11 @@
 //! Heuristic inference of reactive binding kinds and their inner value types
 //! from raw script source, used to enrich completion details without a backing
 //! Corsa type session.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "inferred types are rendered into tower-lsp detail strings, which are std `String`"
 )]
 
 use vize_croquis::reactivity::ReactiveKind;
@@ -59,10 +60,10 @@ fn infer_reactive_kind_from_source(script_content: &str, name: &str) -> Option<R
     ];
 
     for declaration_start in declaration_starts {
-        let Some(start) = script_content.find(declaration_start.as_str()) else {
+        let Some((_, initializer)) = script_content.split_once(declaration_start.as_str()) else {
             continue;
         };
-        let initializer = script_content[start + declaration_start.len()..].trim_start();
+        let initializer = initializer.trim_start();
         let callee = initializer
             .split_once('(')
             .map(|(callee, _)| callee.trim())
@@ -100,20 +101,17 @@ pub(crate) fn infer_reactive_value_type(
     let callee = reactive_kind_callee(kind);
     for keyword in ["const", "let"] {
         let prefix = format!("{keyword} {name} = {callee}");
-        let Some(pos) = script_content.find(prefix.as_str()) else {
+        let Some((_, after)) = script_content.split_once(prefix.as_str()) else {
             continue;
         };
-        let after = &script_content[pos + prefix.len()..];
-        match after.as_bytes().first() {
-            Some(b'<') => {
-                if let Some(end) = find_matching_angle(&after[1..]) {
-                    return Some(after[1..end + 1].trim().to_string());
-                }
+        if let Some(generic) = after.strip_prefix('<') {
+            if let Some(end) = find_matching_angle(generic)
+                && let Some(value_type) = generic.get(..end)
+            {
+                return Some(value_type.trim().to_string());
             }
-            Some(b'(') => {
-                return infer_value_type_from_initializer(&after[1..], wrapper);
-            }
-            _ => {}
+        } else if let Some(arguments) = after.strip_prefix('(') {
+            return infer_value_type_from_initializer(arguments, wrapper);
         }
     }
 
@@ -131,7 +129,7 @@ fn reactive_kind_callee(kind: ReactiveKind) -> &'static str {
 
 fn find_matching_angle(s: &str) -> Option<usize> {
     let mut depth = 1;
-    for (i, c) in s.chars().enumerate() {
+    for (i, c) in s.char_indices() {
         match c {
             '<' => depth += 1,
             '>' => {
@@ -158,19 +156,19 @@ fn infer_value_type_from_initializer(initializer: &str, wrapper: &str) -> Option
 }
 
 fn extract_arrow_body(initializer: &str) -> Option<&str> {
-    let arrow = initializer.find("=>")?;
-    let body = initializer[arrow + 2..].trim_start();
+    let (_, body) = initializer.split_once("=>")?;
+    let body = body.trim_start();
 
     if let Some(body) = body.strip_prefix('{')
-        && let Some(return_pos) = body.find("return")
+        && let Some((_, returned)) = body.split_once("return")
     {
-        let returned = body[return_pos + "return".len()..].trim_start();
-        let end = returned.find([';', '}']).unwrap_or(returned.len());
-        return Some(returned[..end].trim());
+        let returned = returned.trim_start();
+        let returned = returned.split([';', '}']).next().unwrap_or(returned);
+        return Some(returned.trim());
     }
 
-    let end = body.find(['\n', ';']).unwrap_or(body.len());
-    Some(body[..end].trim().trim_end_matches(')').trim())
+    let body = body.split(['\n', ';']).next().unwrap_or(body);
+    Some(body.trim().trim_end_matches(')').trim())
 }
 
 fn infer_expression_type(expression: &str) -> Option<String> {

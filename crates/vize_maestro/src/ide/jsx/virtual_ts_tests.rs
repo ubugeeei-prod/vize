@@ -31,7 +31,10 @@ fn mapping_summary<'a>(source: &'a str, generated: &'a JsxVirtualTs) -> Vec<Mapp
         .collect()
 }
 
-#[allow(dead_code)]
+#[expect(
+    dead_code,
+    reason = "fields are only read through the `Debug` output that the assertions compare"
+)]
 #[derive(Debug)]
 struct MappingSummary<'a> {
     generated: &'a str,
@@ -66,7 +69,10 @@ fn virtual_positions_for_markers(
         .collect()
 }
 
-#[allow(dead_code)]
+#[expect(
+    dead_code,
+    reason = "fields are only read through the `Debug` output that the assertions compare"
+)]
 #[derive(Debug)]
 struct VirtualPosition {
     marker: String,
@@ -226,7 +232,10 @@ fn collect_jsx_expressions_includes_for_body_model_and_style_exprs() {
     );
 }
 
-#[allow(dead_code)]
+#[expect(
+    dead_code,
+    reason = "fields are only read through the `Debug` output that the assertions compare"
+)]
 #[derive(Debug)]
 struct ExprSummary {
     content: String,

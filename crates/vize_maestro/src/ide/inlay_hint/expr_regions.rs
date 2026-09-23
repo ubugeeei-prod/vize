@@ -22,10 +22,10 @@ pub(super) fn code_regions(expr: &str) -> Vec<(usize, usize)> {
         }
     };
 
-    while i < bytes.len() {
+    while let Some(&byte) = bytes.get(i) {
         if let Some(state @ None) = templates.last_mut() {
             // Template literal text: not code until `${` or the closing tick.
-            match bytes[i] {
+            match byte {
                 b'\\' => i = i.saturating_add(2),
                 b'`' => {
                     templates.pop();
@@ -43,13 +43,12 @@ pub(super) fn code_regions(expr: &str) -> Vec<(usize, usize)> {
             continue;
         }
 
-        match bytes[i] {
-            b'\'' | b'"' => {
-                let quote = bytes[i];
+        match byte {
+            quote @ (b'\'' | b'"') => {
                 close_region(&mut regions, region_start, i);
                 i += 1;
-                while i < bytes.len() {
-                    match bytes[i] {
+                while let Some(&next) = bytes.get(i) {
+                    match next {
                         b'\\' => i = i.saturating_add(2),
                         b if b == quote => {
                             i += 1;
@@ -67,7 +66,7 @@ pub(super) fn code_regions(expr: &str) -> Vec<(usize, usize)> {
             }
             b'/' if bytes.get(i + 1) == Some(&b'/') => {
                 close_region(&mut regions, region_start, i);
-                while i < bytes.len() && bytes[i] != b'\n' {
+                while bytes.get(i).is_some_and(|&next| next != b'\n') {
                     i += 1;
                 }
                 region_start = i;
@@ -75,7 +74,7 @@ pub(super) fn code_regions(expr: &str) -> Vec<(usize, usize)> {
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
                 close_region(&mut regions, region_start, i);
                 i += 2;
-                while i + 1 < bytes.len() && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                while bytes.get(i..i + 2).is_some_and(|pair| pair != b"*/") {
                     i += 1;
                 }
                 i = (i + 2).min(bytes.len());
@@ -86,13 +85,17 @@ pub(super) fn code_regions(expr: &str) -> Vec<(usize, usize)> {
                 i += 1;
             }
             b'}' => {
-                if let Some(Some(entry_depth)) = templates.last().copied()
-                    && brace_depth == entry_depth + 1
-                {
+                let closed_depth = templates.last_mut().and_then(|state| match *state {
+                    Some(entry_depth) if brace_depth == entry_depth + 1 => {
+                        *state = None;
+                        Some(entry_depth)
+                    }
+                    _ => None,
+                });
+                if let Some(entry_depth) = closed_depth {
                     // Closes the current `${...}` interpolation.
                     close_region(&mut regions, region_start, i);
                     brace_depth = entry_depth;
-                    *templates.last_mut().expect("template state") = None;
                 } else {
                     brace_depth = brace_depth.saturating_sub(1);
                 }
@@ -108,6 +111,7 @@ pub(super) fn code_regions(expr: &str) -> Vec<(usize, usize)> {
     regions
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::code_regions;

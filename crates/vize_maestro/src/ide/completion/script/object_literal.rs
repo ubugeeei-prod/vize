@@ -67,10 +67,12 @@ fn receiver_resolves_to_top_level(
     }
     let summary = drawer.finish();
     let mut facts = vize_croquis::facts::CroquisFacts::new(&summary);
-    let bindings = facts
+    let Ok(bindings) = facts
         .prepare::<ObjectLiteralCompletion>()
         .get::<vize_croquis::facts::Bindings>()
-        .expect("declared demand");
+    else {
+        return false;
+    };
     vize_croquis::facts::BindingsTable::contains_binding(bindings, receiver)
         && summary
             .scopes
@@ -191,7 +193,10 @@ fn is_plain_identifier(name: &str) -> bool {
         && bytes.all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'))
 }
 
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "tower-lsp payload fields take std `String`, which `cstr!` does not produce"
+)]
 fn completion_item(receiver: &str, member: StaticMember) -> CompletionItem {
     CompletionItem {
         label: member.name.to_string(),

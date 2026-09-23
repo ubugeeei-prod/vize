@@ -7,7 +7,10 @@
 //! - Real completions from Corsa (when available)
 //!
 //! Uses vize_croquis for accurate scope analysis and type information.
-#![allow(clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "completion items are tower-lsp payloads built from std `String` text"
+)]
 
 mod dispatch;
 mod items;
@@ -46,7 +49,11 @@ mod template_event_tests;
 // `insta`'s snapshot macros expand through the disallowed `std::format!`; the
 // expansion is inside `insta`, so only an allow at the test module can silence
 // it. See CONTRIBUTING.md, "Snapshot assertions in test targets".
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshot assertions expand through std::format!; see CONTRIBUTING.md"
+)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests;
 

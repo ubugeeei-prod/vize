@@ -16,7 +16,11 @@
 //!
 //! This is a lint-based (parse-only) provider, like the SFC code-action handler;
 //! it needs no Corsa bridge and is not gated on `typeChecker.jsxTypecheck`.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "lsp_types::WorkspaceEdit::changes is a std HashMap of std `String` edits"
+)]
 
 use std::collections::HashMap;
 
@@ -61,7 +65,10 @@ impl JsxCodeActionService {
             let mut changes = HashMap::new();
             changes.insert(uri.clone(), edits);
 
-            #[allow(clippy::disallowed_macros)]
+            #[expect(
+                clippy::disallowed_macros,
+                reason = "tower-lsp payload fields take std `String`, which `cstr!` does not produce"
+            )]
             let action = CodeAction {
                 title: format!("Fix: {}", fix.message),
                 kind: Some(CodeActionKind::QUICKFIX),

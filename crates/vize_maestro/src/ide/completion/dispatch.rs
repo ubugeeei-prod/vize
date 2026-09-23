@@ -56,33 +56,26 @@ pub fn trigger_characters() -> Vec<String> {
 
 /// Check if cursor offset is inside an HTML comment (`<!-- ... -->`).
 pub(crate) fn is_inside_html_comment(content: &str, offset: usize) -> bool {
-    let before = &content[..offset.min(content.len())];
-    if let Some(comment_start) = before.rfind("<!--") {
-        let after_start = &before[comment_start + 4..];
-        !after_start.contains("-->")
-    } else {
-        false
-    }
+    let Some(before) = content.get(..offset.min(content.len())) else {
+        return false;
+    };
+    before
+        .rsplit_once("<!--")
+        .is_some_and(|(_, after_start)| !after_start.contains("-->"))
 }
 
 /// Check if cursor is inside <art ...> opening tag.
 pub(crate) fn is_inside_art_tag(before: &str) -> bool {
-    if let Some(art_start) = before.rfind("<art") {
-        let after_art = &before[art_start..];
-        !after_art.contains('>')
-    } else {
-        false
-    }
+    before
+        .rsplit_once("<art")
+        .is_some_and(|(_, after_art)| !after_art.contains('>'))
 }
 
 /// Check if cursor is inside <variant ...> opening tag.
 pub(crate) fn is_inside_variant_tag(before: &str) -> bool {
-    if let Some(variant_start) = before.rfind("<variant") {
-        let after_variant = &before[variant_start..];
-        !after_variant.contains('>')
-    } else {
-        false
-    }
+    before
+        .rsplit_once("<variant")
+        .is_some_and(|(_, after_variant)| !after_variant.contains('>'))
 }
 
 /// Check if we should suggest <art> block at root level.
@@ -93,8 +86,7 @@ pub(crate) fn should_suggest_art_block(before: &str) -> bool {
 
 /// Check if we should suggest <variant> block inside <art>.
 pub(crate) fn should_suggest_variant_block(before: &str) -> bool {
-    if let Some(art_start) = before.rfind("<art") {
-        let after_art = &before[art_start..];
+    if let Some((_, after_art)) = before.rsplit_once("<art") {
         after_art.contains('>') && !after_art.contains("</art>")
     } else {
         false

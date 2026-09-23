@@ -1,5 +1,8 @@
 //! Lazy checker documentation without exposing backend edits to the editor.
-#![allow(clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "completion resolve data round-trips std `String` values through serde_json"
+)]
 
 use serde_json::{Value, json};
 use tower_lsp::lsp_types::{CompletionItem, Url};

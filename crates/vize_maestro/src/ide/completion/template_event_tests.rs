@@ -1,7 +1,8 @@
-#![allow(
+#![expect(
     clippy::disallowed_methods,
     clippy::disallowed_macros,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "test fixtures build expected LSP values with std `String` and `format!`"
 )]
 
 use super::CompletionService;

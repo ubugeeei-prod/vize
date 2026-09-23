@@ -2,10 +2,11 @@
 //!
 //! Handles completions for template directives, built-in components,
 //! Art blocks, and variant blocks.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "template completion edits are tower-lsp payloads built from std `String` text"
 )]
 
 mod art;
@@ -42,8 +43,14 @@ pub(crate) use component_meta::component_metadata;
 pub(super) use component_native::complete_with_corsa as complete_component_with_corsa;
 pub(crate) use directives::{contextual_directive_completions, vize_directive_completions};
 // Consumed via `template::*` by unit tests in the parent completion module; the
-// `allow` keeps non-test builds warning-free while preserving the public path.
-#[cfg_attr(not(test), allow(unused_imports))]
+// expectation keeps non-test builds warning-free while preserving the public path.
+#[cfg_attr(
+    not(test),
+    expect(
+        unused_imports,
+        reason = "re-exported for the parent module's unit tests"
+    )
+)]
 pub(crate) use directives::{directive_completions, petite_vue_directive_completions};
 
 /// Get completions for template context.

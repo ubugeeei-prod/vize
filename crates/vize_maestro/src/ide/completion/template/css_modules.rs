@@ -12,7 +12,7 @@ use crate::ide::IdeContext;
 /// properties are the declared class names. When the cursor sits at
 /// `$style.|` we surface those names instead of the usual directive list.
 pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<CompletionItem>> {
-    let before = &ctx.content[..ctx.offset.min(ctx.content.len())];
+    let before = ctx.content.get(..ctx.offset.min(ctx.content.len()))?;
     let trimmed = before.trim_end_matches([' ', '\t']);
     if !trimmed.ends_with("$style.") {
         return None;
@@ -35,7 +35,7 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
         classes
             .into_iter()
             .map(|name| {
-                #[allow(clippy::disallowed_macros)]
+                #[expect(clippy::disallowed_macros, reason = "tower-lsp payload fields take std `String`, which `cstr!` does not produce")]
                 CompletionItem {
                     label: name.clone(),
                     kind: Some(CompletionItemKind::FIELD),
@@ -58,15 +58,20 @@ fn extract_css_class_names(css: &str) -> Vec<String> {
     let mut out = Vec::new();
     let bytes = css.as_bytes();
     let mut i = 0;
-    while i < bytes.len() {
-        if bytes[i] == b'.' && i + 1 < bytes.len() && bytes[i + 1].is_ascii_alphabetic() {
+    while let Some(&byte) = bytes.get(i) {
+        if byte == b'.' && bytes.get(i + 1).is_some_and(u8::is_ascii_alphabetic) {
             let start = i + 1;
             let mut end = start;
-            while end < bytes.len() && is_class_ident_byte(bytes[end]) {
+            while bytes
+                .get(end)
+                .is_some_and(|&next| is_class_ident_byte(next))
+            {
                 end += 1;
             }
-            if end > start {
-                out.push(css[start..end].to_string());
+            if end > start
+                && let Some(class) = css.get(start..end)
+            {
+                out.push(class.to_string());
                 i = end;
                 continue;
             }

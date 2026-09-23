@@ -3,7 +3,6 @@
 //! Provides inlay hints for:
 //! - Props destructure (show `#props.` prefix for destructured props in template and script)
 //!
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 //! Uses vize_croquis for proper scope analysis to accurately identify destructured props.
 //!
 //! SFC blocks come from the resident descriptor (P5-6c): one parse per buffer
@@ -18,8 +17,10 @@ mod binding_hint_tests;
 #[cfg(test)]
 mod i18n_hint_tests;
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod prop_hint_tests;
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod resident_tests;
 
 use tower_lsp::lsp_types::{InlayHint, Position, Range, Url};
@@ -84,11 +85,11 @@ impl InlayHintService {
         let croquis = analyzer.finish();
 
         // Get all prop names from defineProps (for template hints)
-        let all_prop_names: Vec<String> = croquis
+        let all_prop_names: Vec<&str> = croquis
             .macros
             .props()
             .iter()
-            .map(|p| p.name.to_string())
+            .map(|p| p.name.as_str())
             .collect();
 
         // Get props destructure info from the analysis (for script hints)
@@ -123,12 +124,11 @@ impl InlayHintService {
         if let Some(ref template) = descriptor.template
             && !all_prop_names.is_empty()
         {
-            let prop_refs: Vec<&str> = all_prop_names.iter().map(|s| s.as_str()).collect();
             Self::collect_template_props_hints(
                 &template.content,
                 template.loc.start,
                 content,
-                &prop_refs,
+                &all_prop_names,
                 range,
                 &mut hints,
             );
@@ -176,8 +176,8 @@ impl InlayHintService {
                 script,
                 source.name.as_str(),
                 source.kind,
-            )
-            .unwrap_or_else(|| "_".to_string());
+            );
+            let value_type = value_type.as_deref().unwrap_or("_");
 
             // Locate `const NAME =` in the script content. Anchoring on the
             // declaration keyword avoids matching usages inside expressions.
@@ -197,13 +197,9 @@ impl InlayHintService {
             // Anchor the hint at the position right after the binding name
             // (just before the `=`). That keeps the inlay rendered between
             // the identifier and the initializer.
-            let name_end_in_script = {
-                let mut walk = pos_in_script - " =".len();
-                while walk > 0 && script.as_bytes()[walk - 1] == b' ' {
-                    walk -= 1;
-                }
-                walk
-            };
+            let name_end_in_script = script
+                .get(..pos_in_script - " =".len())
+                .map_or(0, |prefix| prefix.trim_end_matches(' ').len());
             let sfc_offset = script_offset + name_end_in_script;
             if sfc_offset > full_content.len() {
                 continue;
@@ -213,14 +209,14 @@ impl InlayHintService {
             if !Self::position_in_range(position, range) {
                 continue;
             }
-            let label = vize_s0::cstr!(": {}<{}>", wrapper, value_type.as_str());
+            let label = vize_s0::cstr!(": {}<{}>", wrapper, value_type);
             hints.push(InlayHint {
                 position,
-                label: InlayHintLabel::String(label.to_string()),
+                label: InlayHintLabel::String(label.into()),
                 kind: Some(InlayHintKind::TYPE),
                 text_edits: None,
                 tooltip: Some(tower_lsp::lsp_types::InlayHintTooltip::String(
-                    vize_s0::cstr!("Vue reactive binding ({})", wrapper).to_string(),
+                    vize_s0::cstr!("Vue reactive binding ({})", wrapper).into(),
                 )),
                 padding_left: Some(true),
                 padding_right: None,

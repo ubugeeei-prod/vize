@@ -12,7 +12,11 @@
 //! intent of landing the index now is so other roadmap milestones
 //! (workspace symbols, completion auto-import suggestions) can share
 //! the same scan.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "auto-import candidates feed tower-lsp edits, which carry std `String` text"
+)]
 
 use std::path::{Path, PathBuf};
 

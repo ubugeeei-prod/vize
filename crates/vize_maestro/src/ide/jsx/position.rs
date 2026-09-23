@@ -202,10 +202,8 @@ fn position_to_byte_offset(text: &str, line: u32, character: u32) -> Option<usiz
         return None;
     }
 
-    let line_text = text[line_start..]
-        .split_once('\n')
-        .map(|(line, _)| line)
-        .unwrap_or(&text[line_start..]);
+    let rest = text.get(line_start..)?;
+    let line_text = rest.split_once('\n').map_or(rest, |(line, _)| line);
     let mut utf16_units = 0u32;
     for (relative_offset, ch) in line_text.char_indices() {
         if utf16_units == character {

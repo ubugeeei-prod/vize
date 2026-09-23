@@ -30,8 +30,9 @@ pub(super) fn opening_tag_context_at_offset(
 
 fn html_opening_tag_context_at_offset(content: &str, offset: usize) -> Option<OpenTagContext> {
     let cursor = offset.min(content.len());
-    let tag_start = content[..cursor].rfind('<')?;
-    if content[tag_start..cursor].contains('>') {
+    let before = content.get(..cursor)?;
+    let tag_start = before.rfind('<')?;
+    if before.get(tag_start..)?.contains('>') {
         return None;
     }
 
@@ -41,21 +42,12 @@ fn html_opening_tag_context_at_offset(content: &str, offset: usize) -> Option<Op
         return None;
     }
 
-    let mut name_end = name_start;
-    while name_end < content.len() {
-        let byte = bytes[name_end];
-        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
-            name_end += 1;
-        } else {
-            break;
-        }
-    }
-
+    let name_end = read_tag_name_end(content, name_start);
     if name_start == name_end || cursor <= name_end {
         return None;
     }
 
-    let tag_name = content[name_start..name_end].to_string();
+    let tag_name = content.get(name_start..name_end)?.to_string();
     let inside_attribute_value = is_inside_open_tag_attribute_value(content, tag_start, cursor);
     let (current_token_start, current_token) = current_open_tag_token(content, tag_start, cursor);
 
@@ -73,7 +65,7 @@ fn is_inside_open_tag_attribute_value(content: &str, tag_start: usize, cursor: u
     let mut pos = tag_start;
 
     while pos < cursor {
-        let Some(ch) = content[pos..].chars().next() else {
+        let Some(ch) = content.get(pos..).and_then(|rest| rest.chars().next()) else {
             break;
         };
         if let Some(open_quote) = quote {
@@ -90,7 +82,7 @@ fn is_inside_open_tag_attribute_value(content: &str, tag_start: usize, cursor: u
 }
 
 fn current_open_tag_token(content: &str, tag_start: usize, cursor: usize) -> (usize, String) {
-    let slice = &content[tag_start..cursor];
+    let slice = content.get(tag_start..cursor).unwrap_or_default();
     let mut token_start = tag_start;
 
     for (relative, ch) in slice.char_indices() {
@@ -101,7 +93,11 @@ fn current_open_tag_token(content: &str, tag_start: usize, cursor: usize) -> (us
 
     (
         token_start,
-        content[token_start..cursor].trim_start().to_string(),
+        content
+            .get(token_start..cursor)
+            .unwrap_or_default()
+            .trim_start()
+            .to_string(),
     )
 }
 
@@ -123,14 +119,19 @@ pub(super) fn is_slot_completion_prefix(prefix: &str) -> bool {
 }
 
 pub(super) fn nearest_open_component_before(content: &str, before_offset: usize) -> Option<String> {
-    let before = &content[..before_offset.min(content.len())];
+    let before = content.get(..before_offset.min(content.len()))?;
     let mut stack = Vec::new();
     let mut pos = 0usize;
 
-    while let Some(relative_start) = before[pos..].find('<') {
+    while let Some(rest) = before.get(pos..) {
+        let Some(relative_start) = rest.find('<') else {
+            break;
+        };
         let tag_start = pos + relative_start;
-        if before[tag_start..].starts_with("<!--") {
-            let Some(end) = before[tag_start + 4..].find("-->") else {
+        if let Some(comment) = before.get(tag_start + 4..)
+            && before.get(tag_start..tag_start + 4) == Some("<!--")
+        {
+            let Some(end) = comment.find("-->") else {
                 break;
             };
             pos = tag_start + 4 + end + 3;
@@ -140,7 +141,9 @@ pub(super) fn nearest_open_component_before(content: &str, before_offset: usize)
         let Some(tag_end) = find_tag_end(before, tag_start) else {
             break;
         };
-        let tag = &before[tag_start..=tag_end];
+        let Some(tag) = before.get(tag_start..=tag_end) else {
+            break;
+        };
         let name_start = tag_start + if tag.starts_with("</") { 2 } else { 1 };
         if matches!(before.as_bytes().get(name_start), Some(b'!' | b'?')) {
             pos = tag_end + 1;
@@ -153,7 +156,9 @@ pub(super) fn nearest_open_component_before(content: &str, before_offset: usize)
             continue;
         }
 
-        let tag_name = &before[name_start..name_end];
+        let Some(tag_name) = before.get(name_start..name_end) else {
+            break;
+        };
         if tag.starts_with("</") {
             if let Some(index) = stack.iter().rposition(|open: &String| open == tag_name) {
                 stack.truncate(index);
@@ -173,7 +178,7 @@ pub(super) fn find_tag_end(content: &str, tag_start: usize) -> Option<usize> {
     let mut pos = tag_start;
 
     while pos < content.len() {
-        let ch = content[pos..].chars().next()?;
+        let ch = content.get(pos..)?.chars().next()?;
         if let Some(open_quote) = quote {
             if ch == open_quote {
                 quote = None;
@@ -190,13 +195,12 @@ pub(super) fn find_tag_end(content: &str, tag_start: usize) -> Option<usize> {
 }
 
 fn read_tag_name_end(content: &str, mut pos: usize) -> usize {
-    while pos < content.len() {
-        let byte = content.as_bytes()[pos];
-        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
-            pos += 1;
-        } else {
-            break;
-        }
+    while content
+        .as_bytes()
+        .get(pos)
+        .is_some_and(|&byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+    {
+        pos += 1;
     }
     pos
 }

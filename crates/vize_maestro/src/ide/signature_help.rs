@@ -1,6 +1,13 @@
 //! TypeScript signature help for authored Vue and JSX positions.
 
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![cfg_attr(
+    feature = "native",
+    expect(
+        clippy::disallowed_types,
+        clippy::disallowed_methods,
+        reason = "signature help is a tower-lsp payload of std `String` text and the Corsa bridge is shared through std Arc"
+    )
+)]
 
 #[cfg(feature = "native")]
 use std::sync::Arc;
@@ -280,5 +287,11 @@ fn record_signature_help_stage(
     }
 }
 
+#[expect(
+    clippy::indexing_slicing,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "tests assert by panicking"
+)]
 #[cfg(all(test, feature = "native"))]
 mod tests;

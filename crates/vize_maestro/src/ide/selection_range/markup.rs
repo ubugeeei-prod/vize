@@ -29,11 +29,15 @@ pub(super) fn markup_spans(
     let mut stack: Vec<OpenTag<'_>> = Vec::new();
     let mut cursor = region_start;
 
-    while cursor < region_end {
-        match bytes[cursor] {
-            b'<' if content[cursor..region_end].starts_with("<!--") => {
-                let end = content[cursor..region_end]
-                    .find("-->")
+    while let Some(byte) = byte_before(bytes, cursor, region_end) {
+        match byte {
+            b'<' if content
+                .get(cursor..region_end)
+                .is_some_and(|rest| rest.starts_with("<!--")) =>
+            {
+                let end = content
+                    .get(cursor..region_end)
+                    .and_then(|rest| rest.find("-->"))
                     .map_or(region_end, |relative| cursor + relative + 3);
                 push_if_contains(spans, (cursor, end), offset);
                 cursor = end;
@@ -68,15 +72,18 @@ fn close_tag(
 ) -> usize {
     let name_start = cursor + 2;
     let name_end = tag_name_end(content.as_bytes(), name_start, region_end);
-    let close_end = content[cursor..region_end]
-        .find('>')
+    let close_end = content
+        .get(cursor..region_end)
+        .and_then(|rest| rest.find('>'))
         .map_or(region_end, |relative| cursor + relative + 1);
 
-    let name = &content[name_start..name_end];
+    // Tag names are ASCII, so `name_start..name_end` is always a char range.
+    let name = content.get(name_start..name_end).unwrap_or_default();
     // `rposition` recovers from unclosed inner elements: the nearest matching
     // open tag wins and everything opened after it is discarded.
-    if let Some(index) = stack.iter().rposition(|open| open.name == name) {
-        let open = stack[index];
+    if let Some(index) = stack.iter().rposition(|open| open.name == name)
+        && let Some(&open) = stack.get(index)
+    {
         stack.truncate(index);
         push_if_contains(spans, (open.content_start, cursor), offset);
         push_if_contains(spans, (open.tag_start, close_end), offset);
@@ -104,11 +111,13 @@ fn start_tag<'a>(
         return Some(cursor + 1);
     }
 
-    attribute_spans(content, (name_end, tag_end - 1), offset, spans);
+    // `tag_end` is just past the closing `>`, so `tag_end - 1` is that `>`.
+    let gt = tag_end - 1;
+    attribute_spans(content, (name_end, gt), offset, spans);
     push_if_contains(spans, (cursor, tag_end), offset);
 
-    let name = &content[name_start..name_end];
-    let self_closing = content[..tag_end - 1].trim_end().ends_with('/');
+    let name = content.get(name_start..name_end)?;
+    let self_closing = content.get(..gt)?.trim_end().ends_with('/');
     if !self_closing && !vize_s0::is_void_tag(name) {
         stack.push(OpenTag {
             name,
@@ -129,12 +138,15 @@ fn interpolation(
     spans: &mut Vec<(usize, usize)>,
 ) -> usize {
     let inner_start = cursor + 2;
-    let Some(relative) = content[inner_start..region_end].find("}}") else {
+    let Some(inner) = content
+        .get(inner_start..region_end)
+        .and_then(|rest| rest.split_once("}}"))
+        .map(|(inner, _)| inner)
+    else {
         return inner_start;
     };
 
-    let inner_end = inner_start + relative;
-    let inner = &content[inner_start..inner_end];
+    let inner_end = inner_start + inner.len();
     let trimmed_start = inner_start + (inner.len() - inner.trim_start().len());
     let trimmed_end = inner_end - (inner.len() - inner.trim_end().len());
     push_if_contains(spans, (trimmed_start, trimmed_end), offset);
@@ -154,14 +166,14 @@ fn attribute_spans(
     let (region_start, region_end) = region;
     let mut cursor = region_start;
 
-    while cursor < region_end {
-        if bytes[cursor].is_ascii_whitespace() || bytes[cursor] == b'/' {
+    while let Some(byte) = byte_before(bytes, cursor, region_end) {
+        if byte.is_ascii_whitespace() || byte == b'/' {
             cursor += 1;
             continue;
         }
 
         let name_start = cursor;
-        while cursor < region_end && !is_attribute_terminator(bytes[cursor]) {
+        while byte_before(bytes, cursor, region_end).is_some_and(|b| !is_attribute_terminator(b)) {
             cursor += 1;
         }
         let name_end = cursor;
@@ -170,20 +182,14 @@ fn attribute_spans(
             continue;
         }
 
-        let mut probe = cursor;
-        while probe < region_end && bytes[probe].is_ascii_whitespace() {
-            probe += 1;
-        }
-        if probe >= region_end || bytes[probe] != b'=' {
+        let mut probe = skip_whitespace(bytes, cursor, region_end);
+        if byte_before(bytes, probe, region_end) != Some(b'=') {
             // A valueless attribute such as `disabled`.
             push_if_contains(spans, (name_start, name_end), offset);
             continue;
         }
 
-        probe += 1;
-        while probe < region_end && bytes[probe].is_ascii_whitespace() {
-            probe += 1;
-        }
+        probe = skip_whitespace(bytes, probe + 1, region_end);
         cursor = attribute_value(content, (probe, region_end), (name_start, offset), spans);
     }
 }
@@ -200,11 +206,10 @@ fn attribute_value(
     let (value_probe, region_end) = region;
     let (name_start, offset) = name_start_and_offset;
 
-    if value_probe < region_end && (bytes[value_probe] == b'"' || bytes[value_probe] == b'\'') {
-        let quote = bytes[value_probe];
+    if let Some(quote @ (b'"' | b'\'')) = byte_before(bytes, value_probe, region_end) {
         let value_start = value_probe + 1;
         let mut value_end = value_start;
-        while value_end < region_end && bytes[value_end] != quote {
+        while byte_before(bytes, value_end, region_end).is_some_and(|b| b != quote) {
             value_end += 1;
         }
         let quoted_end = (value_end + 1).min(region_end);
@@ -217,7 +222,7 @@ fn attribute_value(
     }
 
     let mut value_end = value_probe;
-    while value_end < region_end && !bytes[value_end].is_ascii_whitespace() {
+    while byte_before(bytes, value_end, region_end).is_some_and(|b| !b.is_ascii_whitespace()) {
         value_end += 1;
     }
     push_if_contains(spans, (value_probe, value_end), offset);
@@ -232,12 +237,29 @@ fn is_attribute_terminator(byte: u8) -> bool {
 
 fn tag_name_end(bytes: &[u8], name_start: usize, limit: usize) -> usize {
     let mut end = name_start;
-    while end < limit
-        && (bytes[end].is_ascii_alphanumeric() || matches!(bytes[end], b'-' | b'_' | b'.' | b':'))
+    while byte_before(bytes, end, limit)
+        .is_some_and(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.' | b':'))
     {
         end += 1;
     }
     end
+}
+
+/// The byte at `index`, when `index` is before `limit` and inside `bytes`.
+#[inline]
+fn byte_before(bytes: &[u8], index: usize, limit: usize) -> Option<u8> {
+    if index < limit {
+        bytes.get(index).copied()
+    } else {
+        None
+    }
+}
+
+fn skip_whitespace(bytes: &[u8], mut cursor: usize, limit: usize) -> usize {
+    while byte_before(bytes, cursor, limit).is_some_and(|b| b.is_ascii_whitespace()) {
+        cursor += 1;
+    }
+    cursor
 }
 
 /// Byte offset just past the `>` that closes the start tag at `tag_start`.
@@ -246,8 +268,7 @@ fn start_tag_end(content: &str, tag_start: usize, limit: usize) -> Option<usize>
     let mut cursor = tag_start + 1;
     let mut quote: Option<u8> = None;
 
-    while cursor < limit {
-        let byte = bytes[cursor];
+    while let Some(byte) = byte_before(bytes, cursor, limit) {
         match quote {
             Some(open) if byte == open => quote = None,
             Some(_) => {}

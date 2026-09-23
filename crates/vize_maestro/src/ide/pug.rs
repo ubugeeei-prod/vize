@@ -17,14 +17,15 @@ pub(crate) fn tag_name_span_at_offset(
         return None;
     }
 
-    let line_start = content[..cursor].rfind('\n').map_or(0, |index| index + 1);
-    let line_end = content[cursor..]
+    let (before, after) = content.split_at_checked(cursor)?;
+    let line_start = before.rfind('\n').map_or(0, |index| index + 1);
+    let line_end = after
         .find('\n')
         .map_or(content.len(), |index| cursor + index);
     let bytes = content.as_bytes();
     let mut name_start = line_start;
 
-    while name_start < line_end && matches!(bytes[name_start], b' ' | b'\t') {
+    while name_start < line_end && matches!(bytes.get(name_start), Some(b' ' | b'\t')) {
         name_start += 1;
     }
     if matches!(
@@ -68,7 +69,7 @@ pub(crate) fn opening_tag_context_at_offset(
         current_attribute_token(content, attribute_start, cursor);
 
     Some(OpeningTagContext {
-        tag_name: content[tag_start..name_end].to_string(),
+        tag_name: content.get(tag_start..name_end)?.to_string(),
         tag_start,
         current_token,
         current_token_start,
@@ -77,34 +78,21 @@ pub(crate) fn opening_tag_context_at_offset(
 }
 
 fn read_tag_name_end(content: &str, mut pos: usize, line_end: usize) -> usize {
-    while pos < line_end {
-        let byte = content.as_bytes()[pos];
-        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
-            pos += 1;
-        } else {
-            break;
-        }
+    while pos < line_end
+        && content
+            .as_bytes()
+            .get(pos)
+            .is_some_and(|&byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+    {
+        pos += 1;
     }
     pos
 }
 
 fn read_tag_suffix_end(content: &str, mut pos: usize, line_end: usize) -> usize {
     let bytes = content.as_bytes();
-    while pos < line_end {
-        match bytes[pos] {
-            b'.' | b'#' => {
-                pos += 1;
-                while pos < line_end {
-                    let byte = bytes[pos];
-                    if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
-                        pos += 1;
-                    } else {
-                        break;
-                    }
-                }
-            }
-            _ => break,
-        }
+    while pos < line_end && matches!(bytes.get(pos), Some(b'.' | b'#')) {
+        pos = read_tag_name_end(content, pos + 1, line_end);
     }
     pos
 }
@@ -115,7 +103,7 @@ fn find_attribute_end(content: &str, open: usize, line_end: usize) -> Option<usi
     let mut pos = open;
 
     while pos < line_end {
-        let ch = content[pos..].chars().next()?;
+        let ch = content.get(pos..)?.chars().next()?;
         if let Some(open_quote) = quote {
             if ch == open_quote {
                 quote = None;
@@ -141,7 +129,7 @@ fn is_inside_attribute_value(content: &str, attribute_start: usize, cursor: usiz
     let mut pos = attribute_start;
 
     while pos < cursor {
-        let Some(ch) = content[pos..].chars().next() else {
+        let Some(ch) = content.get(pos..).and_then(|rest| rest.chars().next()) else {
             break;
         };
         if let Some(open_quote) = quote {
@@ -167,7 +155,7 @@ fn current_attribute_token(
     let mut pos = attribute_start;
 
     while pos < cursor {
-        let Some(ch) = content[pos..].chars().next() else {
+        let Some(ch) = content.get(pos..).and_then(|rest| rest.chars().next()) else {
             break;
         };
         if let Some(open_quote) = quote {
@@ -184,28 +172,39 @@ fn current_attribute_token(
 
     (
         token_start,
-        content[token_start..cursor].trim_start().to_string(),
+        content
+            .get(token_start..cursor)
+            .unwrap_or_default()
+            .trim_start()
+            .to_string(),
     )
 }
 
 fn is_in_pug_template_region(content: &str, cursor: usize) -> bool {
-    let before = &content[..cursor.min(content.len())];
+    let Some(before) = content.get(..cursor.min(content.len())) else {
+        return false;
+    };
     let Some(template_start) = before.rfind("<template") else {
         return false;
     };
-    if before[template_start..].rfind("</template").is_some() {
-        return false;
-    }
-
-    let Some(tag_end) = content[template_start..].find('>') else {
+    let Some(template) = content.get(template_start..) else {
         return false;
     };
-    let tag_end = template_start + tag_end;
-    if cursor <= tag_end {
+    if before
+        .get(template_start..)
+        .is_some_and(|open| open.contains("</template"))
+    {
         return false;
     }
 
-    template_start_tag_lang_is_pug(&content[template_start..=tag_end])
+    let Some(tag_end) = template.find('>') else {
+        return false;
+    };
+    if cursor <= template_start + tag_end {
+        return false;
+    }
+
+    template_start_tag_lang_is_pug(template.get(..=tag_end).unwrap_or_default())
 }
 
 fn template_start_tag_lang_is_pug(start_tag: &str) -> bool {
@@ -213,12 +212,16 @@ fn template_start_tag_lang_is_pug(start_tag: &str) -> bool {
     let bytes = lower.as_bytes();
     let mut search = 0usize;
 
-    while let Some(relative) = lower[search..].find("lang") {
+    while let Some(relative) = lower.get(search..).and_then(|rest| rest.find("lang")) {
         let name_start = search + relative;
         let name_end = name_start + "lang".len();
         search = name_end;
 
-        if name_start > 0 && is_attribute_name_byte(bytes[name_start - 1]) {
+        if name_start
+            .checked_sub(1)
+            .and_then(|prev| bytes.get(prev))
+            .is_some_and(|&byte| is_attribute_name_byte(byte))
+        {
             continue;
         }
         if bytes
@@ -247,14 +250,13 @@ fn template_start_tag_lang_is_pug(start_tag: &str) -> bool {
         }
 
         let value = match bytes.get(pos) {
-            Some(b'"' | b'\'') => {
-                let quote = bytes[pos];
+            Some(&quote @ (b'"' | b'\'')) => {
                 pos += 1;
                 let value_start = pos;
                 while bytes.get(pos).is_some_and(|byte| *byte != quote) {
                     pos += 1;
                 }
-                &lower[value_start..pos]
+                lower.get(value_start..pos).unwrap_or_default()
             }
             Some(_) => {
                 let value_start = pos;
@@ -264,7 +266,7 @@ fn template_start_tag_lang_is_pug(start_tag: &str) -> bool {
                 {
                     pos += 1;
                 }
-                &lower[value_start..pos]
+                lower.get(value_start..pos).unwrap_or_default()
             }
             None => continue,
         };
@@ -281,6 +283,7 @@ fn is_attribute_name_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b':')
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{opening_tag_context_at_offset, tag_name_span_at_offset};

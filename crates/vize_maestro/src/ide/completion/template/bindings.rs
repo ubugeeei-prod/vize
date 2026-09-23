@@ -1,5 +1,6 @@
 //! Analyzed template binding completions, scope-local bindings and generic
 //! template snippets.
+#![expect(clippy::disallowed_macros, reason = "LSP fields take std `String`")]
 
 use std::collections::BTreeSet;
 
@@ -68,7 +69,9 @@ pub(crate) fn analyzed_template_binding_completions(
 
     let mut facts = CroquisFacts::new(&croquis);
     let view = facts.prepare::<TemplateBindingCompletion>();
-    let bindings = view.get::<Bindings>().expect("declared demand");
+    let Ok(bindings) = view.get::<Bindings>() else {
+        return items_vec;
+    };
     for (name, binding_type) in bindings.typed() {
         if locals.contains(name) {
             continue;
@@ -80,7 +83,6 @@ pub(crate) fn analyzed_template_binding_completions(
             continue;
         }
         let (kind, type_detail, doc) = items::binding_type_to_completion_info(binding_type);
-        #[allow(clippy::disallowed_macros)]
         items_vec.push(CompletionItem {
             label: name.to_string(),
             kind: Some(kind),
@@ -110,7 +112,6 @@ pub(crate) fn analyzed_template_binding_completions(
                 .unwrap_or("unknown");
             let required = if prop.required { "" } else { "?" };
 
-            #[allow(clippy::disallowed_macros)]
             items_vec.push(CompletionItem {
                 label: prop.name.to_string(),
                 kind: Some(CompletionItemKind::PROPERTY),
@@ -148,7 +149,6 @@ pub(crate) fn analyzed_template_binding_completions(
                 continue;
             }
             let kind_str = source.kind.to_display();
-            #[allow(clippy::disallowed_macros)]
             items_vec.push(CompletionItem {
                 label: source.name.to_string(),
                 kind: Some(CompletionItemKind::VARIABLE),
@@ -225,7 +225,6 @@ fn is_template_scope_kind(kind: ScopeKind) -> bool {
     )
 }
 
-#[allow(clippy::disallowed_macros)]
 fn template_scope_completion_item(name: &str, scope_kind: ScopeKind) -> CompletionItem {
     let label = template_scope_label(scope_kind);
     CompletionItem {

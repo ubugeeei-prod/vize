@@ -2,10 +2,11 @@
 //!
 //! Provides helper functions for constructing various kinds of
 //! completion items and converting binding types to completion info.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "completion items are tower-lsp payloads built from std `String` text"
 )]
 
 use tower_lsp::lsp_types::{
@@ -91,7 +92,6 @@ pub(crate) fn binding_type_to_completion_info(
 }
 
 /// Create a directive completion item.
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn directive_item(label: &str, description: &str, snippet: &str) -> CompletionItem {
     let example = markup::snippet_for_docs(snippet);
     CompletionItem {
@@ -133,7 +133,6 @@ fn directive_completion_kind(label: &str) -> CompletionItemKind {
 }
 
 /// Create a @vize: directive completion item.
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn vize_directive_item(label: &str, snippet: &str, description: &str) -> CompletionItem {
     let example = markup::snippet_for_docs(snippet);
     CompletionItem {
@@ -160,7 +159,6 @@ pub(crate) fn vize_directive_item(label: &str, snippet: &str, description: &str)
 }
 
 /// Create a component completion item.
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn component_item(label: &str, description: &str, snippet: &str) -> CompletionItem {
     let example = markup::snippet_for_docs(snippet);
     CompletionItem {
@@ -198,7 +196,6 @@ pub(crate) fn snippet_item(label: &str, description: &str, snippet: &str) -> Com
 }
 
 /// Create an API completion item.
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn api_item(label: &str, signature: &str, description: &str) -> CompletionItem {
     CompletionItem {
         label: label.to_string(),
@@ -218,7 +215,6 @@ pub(crate) fn api_item(label: &str, signature: &str, description: &str) -> Compl
 }
 
 /// Create a macro completion item.
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn macro_item(
     label: &str,
     signature: &str,
@@ -285,7 +281,6 @@ pub(crate) fn attr_item(label: &str, description: &str, snippet: &str) -> Comple
 }
 
 /// Create a CSS completion item.
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn css_item(
     label: &str,
     signature: &str,

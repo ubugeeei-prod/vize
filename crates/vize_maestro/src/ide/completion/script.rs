@@ -2,10 +2,10 @@
 //!
 //! Handles completions within script blocks including Vue Composition API,
 //! compiler macros, and import suggestions.
-#![allow(
-    clippy::disallowed_types,
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "completion items are tower-lsp payloads built from std `String` text"
 )]
 
 mod context;
@@ -92,7 +92,10 @@ fn completes_a_member(content: &str, offset: usize) -> bool {
     let prefix_start = before_cursor
         .rfind(|c: char| !(c.is_ascii_alphanumeric() || c == '_' || c == '$'))
         .map_or(0, |index| index + 1);
-    let Some(before_dot) = before_cursor[..prefix_start].trim_end().strip_suffix('.') else {
+    let Some(before_dot) = before_cursor
+        .get(..prefix_start)
+        .and_then(|head| head.trim_end().strip_suffix('.'))
+    else {
         return false;
     };
     // `?.` can only be optional chaining, never a numeric literal.
@@ -104,7 +107,9 @@ fn completes_a_member(content: &str, offset: usize) -> bool {
             !(c.is_ascii_alphanumeric() || c == '_' || c == '$' || c == '.' || c == ']')
         })
         .map_or(0, |index| index + 1);
-    receiver_is_member_chain(&before_dot[receiver_start..])
+    before_dot
+        .get(receiver_start..)
+        .is_some_and(receiver_is_member_chain)
 }
 
 /// Get completions for script context.
@@ -174,10 +179,14 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
 
         let croquis = analyzer.finish();
         let mut facts = vize_croquis::facts::CroquisFacts::new(&croquis);
-        let bindings = facts
+        // `ScriptCompletion` declares the Bindings demand, so the lookup only
+        // fails if that declaration drifts; keep the generic items then.
+        let Ok(bindings) = facts
             .prepare::<ScriptCompletion>()
             .get::<vize_croquis::facts::Bindings>()
-            .expect("declared demand");
+        else {
+            return items_vec;
+        };
 
         // Scope-aware completion: include nested bindings (closures, blocks,
         // v-for params, etc.) that are visible at the cursor. We avoid
@@ -225,7 +234,6 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
                     )
                 });
 
-            #[allow(clippy::disallowed_macros)]
             items_vec.push(CompletionItem {
                 label: name.to_string(),
                 kind: Some(kind),
@@ -268,7 +276,6 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
                         (kind_str, doc)
                     });
 
-            #[allow(clippy::disallowed_macros)]
             items_vec.push(CompletionItem {
                 label: source.name.to_string(),
                 kind: Some(CompletionItemKind::VARIABLE),
@@ -294,7 +301,6 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
     items_vec
 }
 
-#[allow(clippy::disallowed_macros)]
 fn inner_scope_completion_item(
     name: &str,
     binding_type: BindingType,

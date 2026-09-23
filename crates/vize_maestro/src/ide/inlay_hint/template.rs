@@ -2,7 +2,6 @@
 //!
 //! Finds usages of props in template mustache expressions and
 //! Vue directive attributes, generating `#props.` prefix hints.
-#![allow(clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{InlayHint, InlayHintKind, InlayHintLabel, Position, Range};
 
@@ -52,12 +51,14 @@ impl InlayHintService {
     ) {
         let mut pos = 0;
 
-        while let Some(start) = template[pos..].find("{{") {
+        while let Some(start) = template.get(pos..).and_then(|rest| rest.find("{{")) {
             let abs_start = pos + start + 2; // Skip "{{"
 
-            if let Some(end) = template[abs_start..].find("}}") {
-                let abs_end = abs_start + end;
-                let expr = &template[abs_start..abs_end];
+            if let Some((expr, _)) = template
+                .get(abs_start..)
+                .and_then(|rest| rest.split_once("}}"))
+            {
+                let abs_end = abs_start + expr.len();
 
                 for &prop in destructured_props {
                     Self::find_prop_usages_in_expr(
@@ -109,9 +110,7 @@ impl InlayHintService {
 
         let mut pos = 0;
 
-        while pos < template.len() {
-            let remaining = &template[pos..];
-
+        while let Some(remaining) = template.get(pos..).filter(|rest| !rest.is_empty()) {
             // Find next directive or shorthand
             let mut next_match: Option<(usize, usize, char)> = None; // (position, skip_len, quote_char)
 
@@ -119,9 +118,9 @@ impl InlayHintService {
             for (i, c) in remaining.char_indices() {
                 if (c == ':' || c == '@' || c == '#') && i + 1 < remaining.len() {
                     // Check if followed by identifier and ="
-                    let after = &remaining[i + 1..];
-                    if let Some(eq_pos) = after.find('=') {
-                        let attr_name = &after[..eq_pos];
+                    let after = remaining.get(i + 1..).unwrap_or_default();
+                    if let Some((attr_name, _)) = after.split_once('=') {
+                        let eq_pos = attr_name.len();
                         // Validate it's a valid attribute name (alphanumeric, -, _)
                         if !attr_name.is_empty()
                             && attr_name
@@ -129,12 +128,11 @@ impl InlayHintService {
                                 .all(|c| c.is_alphanumeric() || c == '-' || c == '_' || c == ':')
                         {
                             let quote_start = i + 1 + eq_pos + 1;
-                            if quote_start < remaining.len() {
-                                let quote = remaining.as_bytes()[quote_start] as char;
-                                if quote == '"' || quote == '\'' {
-                                    next_match = Some((i, quote_start + 1, quote));
-                                    break;
-                                }
+                            if let Some(&quote @ (b'"' | b'\'')) =
+                                remaining.as_bytes().get(quote_start)
+                            {
+                                next_match = Some((i, quote_start + 1, quote as char));
+                                break;
                             }
                         }
                     }
@@ -147,25 +145,25 @@ impl InlayHintService {
                     let pattern_end = found + pattern.len();
                     if pattern.ends_with(':') {
                         // v-bind:, v-on:, v-slot: - need to find ="
-                        if let Some(eq_pos) = remaining[pattern_end..].find('=') {
+                        if let Some(eq_pos) =
+                            remaining.get(pattern_end..).and_then(|rest| rest.find('='))
+                        {
                             let quote_pos = pattern_end + eq_pos + 1;
-                            if quote_pos < remaining.len() {
-                                let quote = remaining.as_bytes()[quote_pos] as char;
-                                if quote == '"' || quote == '\'' {
-                                    let new_match = (found, quote_pos + 1, quote);
-                                    if next_match
-                                        .as_ref()
-                                        .is_none_or(|current| new_match.0 < current.0)
-                                    {
-                                        next_match = Some(new_match);
-                                    }
+                            if let Some(&quote @ (b'"' | b'\'')) =
+                                remaining.as_bytes().get(quote_pos)
+                            {
+                                let new_match = (found, quote_pos + 1, quote as char);
+                                if next_match
+                                    .as_ref()
+                                    .is_none_or(|current| new_match.0 < current.0)
+                                {
+                                    next_match = Some(new_match);
                                 }
                             }
                         }
-                    } else {
+                    } else if let Some(&quote) = pattern.as_bytes().last() {
                         // v-if=", etc. - pattern already includes the quote
-                        let quote = pattern.as_bytes()[pattern.len() - 1] as char;
-                        let new_match = (found, pattern_end, quote);
+                        let new_match = (found, pattern_end, quote as char);
                         if next_match
                             .as_ref()
                             .is_none_or(|current| new_match.0 < current.0)
@@ -183,9 +181,11 @@ impl InlayHintService {
             let abs_start = pos + expr_start;
 
             // Find closing quote
-            if let Some(end) = template[abs_start..].find(quote) {
-                let abs_end = abs_start + end;
-                let expr = &template[abs_start..abs_end];
+            if let Some((expr, _)) = template
+                .get(abs_start..)
+                .and_then(|rest| rest.split_once(quote))
+            {
+                let abs_end = abs_start + expr.len();
 
                 for &prop in destructured_props {
                     Self::find_prop_usages_in_expr(
@@ -228,8 +228,10 @@ impl InlayHintService {
             None => return,
         };
         let mut search_pos = region.0;
+        // Resume one character past each match so overlapping names are found.
+        let step = prop_name.chars().next().map_or(1, char::len_utf8);
 
-        while let Some(found) = expr[search_pos..].find(prop_name) {
+        while let Some(found) = expr.get(search_pos..).and_then(|rest| rest.find(prop_name)) {
             let abs_pos = search_pos + found;
 
             // Bounds check
@@ -250,7 +252,7 @@ impl InlayHintService {
                 continue;
             }
             if abs_pos + prop_name.len() > region.1 {
-                search_pos = abs_pos + 1;
+                search_pos = abs_pos + step;
                 continue;
             }
 
@@ -268,8 +270,9 @@ impl InlayHintService {
                 .unwrap_or(true);
 
             // Check it's not preceded by "props." already
-            let not_already_prefixed =
-                abs_pos < 6 || &expr[abs_pos.saturating_sub(6)..abs_pos] != "props.";
+            let not_already_prefixed = !expr
+                .get(..abs_pos)
+                .is_some_and(|before| before.ends_with("props."));
 
             // Check it's not a property access (preceded by .)
             let not_property_access = abs_pos == 0
@@ -297,7 +300,7 @@ impl InlayHintService {
 
                 // Bounds check for full_content
                 if sfc_offset >= full_content.len() {
-                    search_pos = abs_pos + 1;
+                    search_pos = abs_pos + step;
                     continue;
                 }
 
@@ -309,11 +312,11 @@ impl InlayHintService {
                 if Self::position_in_range(position, range) {
                     hints.push(InlayHint {
                         position,
-                        label: InlayHintLabel::String("#props.".to_string()),
+                        label: InlayHintLabel::String("#props.".to_owned()),
                         kind: Some(InlayHintKind::TYPE),
                         text_edits: None,
                         tooltip: Some(tower_lsp::lsp_types::InlayHintTooltip::String(
-                            "Destructured from defineProps".to_string(),
+                            "Destructured from defineProps".to_owned(),
                         )),
                         padding_left: None,
                         padding_right: Some(true),
@@ -322,7 +325,7 @@ impl InlayHintService {
                 }
             }
 
-            search_pos = abs_pos + 1;
+            search_pos = abs_pos + step;
         }
     }
 }

@@ -1,10 +1,5 @@
 //! Static completion lists: Vue Composition API, compiler macros, and common
 //! import suggestions surfaced inside script blocks.
-#![allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
-)]
 
 use tower_lsp::lsp_types::CompletionItem;
 

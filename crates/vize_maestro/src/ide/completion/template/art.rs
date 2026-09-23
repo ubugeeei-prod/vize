@@ -19,7 +19,7 @@ pub(crate) fn complete_art(ctx: &IdeContext) -> Option<CompletionResponse> {
 
     let content = &ctx.content;
     let offset = ctx.offset;
-    let before_cursor = &content[..offset.min(content.len())];
+    let before_cursor = content.get(..offset.min(content.len()))?;
 
     if is_inside_art_tag(before_cursor) {
         items_vec.extend(art_attribute_completions());
@@ -46,7 +46,7 @@ pub(crate) fn complete_inline_art(ctx: &IdeContext) -> Option<CompletionResponse
 
     let content = &ctx.content;
     let offset = ctx.offset;
-    let before_cursor = &content[..offset.min(content.len())];
+    let before_cursor = content.get(..offset.min(content.len()))?;
 
     if is_inside_art_tag(before_cursor) {
         items_vec.extend(art_attribute_completions());

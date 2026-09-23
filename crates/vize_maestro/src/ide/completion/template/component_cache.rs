@@ -99,7 +99,10 @@ fn open_stamp(document: &crate::document::Document) -> (String, u64, i32, u64) {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::disallowed_methods)]
+    #![expect(
+        clippy::disallowed_methods,
+        reason = "test fixtures build owned source text with to_string"
+    )]
 
     use super::cached_component_metadata;
     use crate::{ide::IdeContext, server::ServerState};

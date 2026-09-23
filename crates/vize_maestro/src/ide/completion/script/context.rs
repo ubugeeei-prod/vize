@@ -1,10 +1,9 @@
 //! Cursor- and SFC-level context helpers for script completion: extracting the
 //! script block's content/offset, classifying scope kinds, and locating the
 //! member-access receiver under the cursor.
-#![allow(
+#![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "script context text is fed to APIs that take std `String`"
 )]
 
 use vize_croquis::ScopeKind;
@@ -81,25 +80,14 @@ pub(super) fn receiver_is_member_chain(receiver: &str) -> bool {
 }
 
 pub(super) fn member_access_receiver(content: &str, offset: usize) -> Option<&str> {
-    let before = &content[..offset.min(content.len())];
-    let before = before.trim_end();
-    let receiver_end = before.strip_suffix('.')?.len();
-    let mut receiver_start = receiver_end;
-
-    while receiver_start > 0 {
-        let byte = before.as_bytes()[receiver_start - 1];
-        if is_receiver_byte(byte) {
-            receiver_start -= 1;
-        } else {
-            break;
-        }
-    }
-
-    if receiver_start == receiver_end {
-        return None;
-    }
-
-    Some(&before[receiver_start..receiver_end])
+    let before = content.get(..offset.min(content.len()))?.trim_end();
+    let head = before.strip_suffix('.')?;
+    let receiver_start = head
+        .bytes()
+        .rposition(|byte| !is_receiver_byte(byte))
+        .map_or(0, |index| index + 1);
+    let receiver = head.get(receiver_start..)?;
+    (!receiver.is_empty()).then_some(receiver)
 }
 
 // Mirrors `CursorContext::is_receiver_byte`. Including `.` and `]` keeps

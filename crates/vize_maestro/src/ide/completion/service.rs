@@ -1,7 +1,13 @@
 //! Completion service entry point and Corsa integration.
 //!
 //! Dispatches `complete` and `complete_with_corsa` to block-specific handlers.
-#![allow(clippy::disallowed_types)]
+#![cfg_attr(
+    feature = "native",
+    expect(
+        clippy::disallowed_types,
+        reason = "the Corsa bridge is shared with the server through std `Arc`"
+    )
+)]
 
 #[cfg(feature = "native")]
 use std::sync::Arc;
@@ -72,7 +78,8 @@ impl super::CompletionService {
             BlockType::Script => script::complete_script(ctx, false),
             BlockType::ScriptSetup => script::complete_script(ctx, true),
             BlockType::Style(index) => style::complete_style(ctx, index),
-            BlockType::Art(_) => unreachable!(), // handled above
+            // Handled above; routed the same way if the early return ever moves.
+            BlockType::Art(_) => return service_inline_art::complete(ctx),
         };
 
         if items.is_empty() {

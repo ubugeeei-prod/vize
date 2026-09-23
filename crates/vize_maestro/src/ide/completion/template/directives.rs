@@ -52,7 +52,10 @@ fn event_shorthand_completions() -> Vec<CompletionItem> {
     .collect()
 }
 
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "tower-lsp payload fields take std `String`, which `cstr!` does not produce"
+)]
 fn event_item(label: &str, detail: &str) -> CompletionItem {
     CompletionItem {
         label: label.to_string(),
@@ -128,7 +131,10 @@ pub(crate) fn petite_vue_directive_completions() -> Vec<CompletionItem> {
     ]
 }
 
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "tower-lsp payload fields take std `String`, which `cstr!` does not produce"
+)]
 fn petite_vue_item(
     label: &str,
     detail: &str,

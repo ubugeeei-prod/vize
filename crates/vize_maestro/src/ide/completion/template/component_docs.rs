@@ -1,5 +1,8 @@
 //! Markdown docs for component prop and slot completions.
-#![allow(clippy::disallowed_macros)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "component documentation is rendered into a tower-lsp std `String`"
+)]
 
 use tower_lsp::lsp_types::Documentation;
 

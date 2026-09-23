@@ -12,7 +12,10 @@
 //! identifier before touching the backend (the type backend's own
 //! prepare-rename gates *where* a rename may start). Gated by the caller on
 //! `typeChecker.jsxTypecheck`.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "lsp_types::WorkspaceEdit uses a std HashMap and the Corsa bridge is shared through std Arc"
+)]
 
 use std::collections::HashMap;
 use std::sync::Arc;

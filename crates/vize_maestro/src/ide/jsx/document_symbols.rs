@@ -18,7 +18,11 @@
 //! `deprecated` is allowed for the `DocumentSymbol::deprecated` wire field;
 //! `disallowed_methods` for the `std::string::String` conversions the LSP
 //! `DocumentSymbol` type requires, matching the SFC document-symbol handler.
-#![allow(deprecated, clippy::disallowed_methods)]
+#![expect(
+    deprecated,
+    clippy::disallowed_methods,
+    reason = "`DocumentSymbol::deprecated` is a required wire field; symbol names are std `String`"
+)]
 
 use tower_lsp::lsp_types::{DocumentSymbol, Position, Range, SymbolKind, Url};
 use vize_atelier_jsx::{JsxLang, lower_source};
@@ -50,7 +54,7 @@ impl JsxDocumentSymbolsService {
                 .unwrap_or_else(|| {
                     // Anonymous default-exported / inline component: use a stable
                     // 1-based placeholder so the outline stays deterministic.
-                    #[allow(clippy::disallowed_macros)]
+                    #[expect(clippy::disallowed_macros, reason = "tower-lsp payload fields take std `String`, which `cstr!` does not produce")]
                     {
                         format!("component {}", index + 1)
                     }

@@ -2,7 +2,6 @@
 //!
 //! Finds usages of destructured props in script setup code
 //! and generates `#props.` prefix hints.
-#![allow(clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{InlayHint, InlayHintKind, InlayHintLabel, Position, Range};
 
@@ -49,8 +48,10 @@ impl InlayHintService {
         }
 
         let mut search_pos = 0;
+        // Resume one character past each match so overlapping names are found.
+        let step = prop_name.chars().next().map_or(1, char::len_utf8);
 
-        while let Some(found) = text[search_pos..].find(prop_name) {
+        while let Some(found) = text.get(search_pos..).and_then(|rest| rest.find(prop_name)) {
             let abs_pos = search_pos + found;
 
             // Bounds check
@@ -63,7 +64,7 @@ impl InlayHintService {
 
             // Skip if within defineProps call (including type definition)
             if sfc_offset <= base_offset + define_props_end {
-                search_pos = abs_pos + 1;
+                search_pos = abs_pos + step;
                 continue;
             }
 
@@ -81,8 +82,9 @@ impl InlayHintService {
                 .unwrap_or(true);
 
             // Check it's not preceded by "props." already
-            let not_already_prefixed =
-                abs_pos < 6 || &text[abs_pos.saturating_sub(6)..abs_pos] != "props.";
+            let not_already_prefixed = !text
+                .get(..abs_pos)
+                .is_some_and(|before| before.ends_with("props."));
 
             // Check it's not in a string literal (simple check for quotes)
             let not_in_string = !Self::is_in_string(text, abs_pos);
@@ -112,7 +114,7 @@ impl InlayHintService {
             {
                 // Bounds check for full_content
                 if sfc_offset >= full_content.len() {
-                    search_pos = abs_pos + 1;
+                    search_pos = abs_pos + step;
                     continue;
                 }
 
@@ -124,11 +126,11 @@ impl InlayHintService {
                 if Self::position_in_range(position, range) {
                     hints.push(InlayHint {
                         position,
-                        label: InlayHintLabel::String("#props.".to_string()),
+                        label: InlayHintLabel::String("#props.".to_owned()),
                         kind: Some(InlayHintKind::TYPE),
                         text_edits: None,
                         tooltip: Some(tower_lsp::lsp_types::InlayHintTooltip::String(
-                            "Destructured from defineProps".to_string(),
+                            "Destructured from defineProps".to_owned(),
                         )),
                         padding_left: None,
                         padding_right: Some(true),
@@ -137,7 +139,7 @@ impl InlayHintService {
                 }
             }
 
-            search_pos = abs_pos + 1;
+            search_pos = abs_pos + step;
         }
     }
 
@@ -147,7 +149,9 @@ impl InlayHintService {
             return false;
         }
 
-        let before = &text[..pos];
+        let Some(before) = text.get(..pos) else {
+            return false;
+        };
         let mut in_single = false;
         let mut in_double = false;
         let mut in_template = false;

@@ -15,7 +15,10 @@
 //! 1:1 (no escape cooking), matching the SFC [`StyleCodeGenerator`] precisely.
 //! Detection mirrors `vize_atelier_jsx`'s extractor: a lowercase intrinsic
 //! `style` element carrying a bare `scoped` attribute.
-#![allow(clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "scoped style CSS is handed to APIs that take std `String`"
+)]
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{JSXAttributeItem, JSXAttributeName, JSXChild, JSXElement, JSXElementName};
@@ -186,7 +189,10 @@ impl ScopedStyleCollector<'_> {
         if css.trim().is_empty() {
             return None;
         }
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "tower-lsp payload fields take std `String`"
+        )]
         Some(JsxScopedStyle {
             css: css.to_string(),
             start,
@@ -215,6 +221,7 @@ fn has_scoped_attr(attributes: &[JSXAttributeItem<'_>]) -> bool {
     })
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::*;

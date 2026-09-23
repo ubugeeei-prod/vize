@@ -1,9 +1,10 @@
 //! Member-access (`receiver.|`) completion: resolving `.value` on refs/computed
 //! and lifting `reactive({ ... })` initializer keys from raw source.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "member completion items are tower-lsp payloads built from std `String` text"
 )]
 
 use tower_lsp::lsp_types::{
@@ -56,19 +57,16 @@ fn reactive_object_key_completions(script_content: &str, name: &str) -> Vec<Comp
     };
     let keys = extract_object_literal_keys(initializer);
     keys.into_iter()
-        .map(|key| {
-            #[allow(clippy::disallowed_macros)]
-            CompletionItem {
-                label: key.clone(),
-                kind: Some(CompletionItemKind::PROPERTY),
-                detail: Some("reactive property".to_string()),
-                documentation: Some(Documentation::MarkupContent(MarkupContent {
-                    kind: MarkupKind::Markdown,
-                    value: format!("Key inferred from `reactive(...)` initializer for `{name}`."),
-                })),
-                sort_text: Some(format!("0{key}")),
-                ..Default::default()
-            }
+        .map(|key| CompletionItem {
+            label: key.clone(),
+            kind: Some(CompletionItemKind::PROPERTY),
+            detail: Some("reactive property".to_string()),
+            documentation: Some(Documentation::MarkupContent(MarkupContent {
+                kind: MarkupKind::Markdown,
+                value: format!("Key inferred from `reactive(...)` initializer for `{name}`."),
+            })),
+            sort_text: Some(format!("0{key}")),
+            ..Default::default()
         })
         .collect()
 }
@@ -77,10 +75,9 @@ fn reactive_object_initializer<'a>(script_content: &'a str, name: &str) -> Optio
     for callee in ["reactive", "shallowReactive"] {
         for keyword in ["const", "let"] {
             let needle = vize_s0::cstr!("{keyword} {name} = {callee}(");
-            let Some(pos) = script_content.find(needle.as_str()) else {
+            let Some((_, after)) = script_content.split_once(needle.as_str()) else {
                 continue;
             };
-            let after = &script_content[pos + needle.len()..];
             let after = after.trim_start();
             if after.starts_with('{') {
                 return Some(after);
@@ -103,8 +100,7 @@ fn extract_object_literal_keys(initializer: &str) -> Vec<String> {
     let mut seen = std::collections::BTreeSet::new();
     let mut i = 0;
     let mut at_key_start = false;
-    while i < bytes.len() {
-        let b = bytes[i];
+    while let Some(&b) = bytes.get(i) {
         match b {
             b'{' | b'[' | b'(' => {
                 depth += 1;
@@ -126,10 +122,10 @@ fn extract_object_literal_keys(initializer: &str) -> Vec<String> {
                 let quote = b;
                 let key_start = i + 1;
                 let mut j = key_start;
-                while j < bytes.len() && bytes[j] != quote {
+                while bytes.get(j).is_some_and(|&next| next != quote) {
                     j += 1;
                 }
-                if let Ok(key) = std::str::from_utf8(&bytes[key_start..j])
+                if let Some(Ok(key)) = bytes.get(key_start..j).map(std::str::from_utf8)
                     && seen.insert(key.to_string())
                 {
                     keys.push(key.to_string());
@@ -143,12 +139,12 @@ fn extract_object_literal_keys(initializer: &str) -> Vec<String> {
             {
                 let key_start = i;
                 let mut j = i;
-                while j < bytes.len()
-                    && (bytes[j].is_ascii_alphanumeric() || bytes[j] == b'_' || bytes[j] == b'$')
-                {
+                while bytes.get(j).is_some_and(|&next| {
+                    next.is_ascii_alphanumeric() || next == b'_' || next == b'$'
+                }) {
                     j += 1;
                 }
-                if let Ok(key) = std::str::from_utf8(&bytes[key_start..j])
+                if let Some(Ok(key)) = bytes.get(key_start..j).map(std::str::from_utf8)
                     && seen.insert(key.to_string())
                 {
                     keys.push(key.to_string());
@@ -163,7 +159,6 @@ fn extract_object_literal_keys(initializer: &str) -> Vec<String> {
     keys
 }
 
-#[allow(clippy::disallowed_macros)]
 fn value_completion_item(value_type: &str, readonly: bool) -> CompletionItem {
     CompletionItem {
         label: "value".to_string(),
