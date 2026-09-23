@@ -5,7 +5,7 @@ use vize_s2::expr::ExprRef;
 use vize_s2::op::{DynamicName, ElementOp, ForOp, IfOp, SlotContentOp};
 
 use crate::emit::buf::Buf;
-use crate::emit::create_slots_walk::{first_slot_template, skip_ops};
+use crate::emit::create_slots_walk::{SlotTemplateSite, first_slot_template, skip_ops};
 use crate::emit::js::{escape_js_string, expr_source};
 use crate::emit::prefix::Site;
 use crate::emit::slots::emit_template_pieces;
@@ -28,10 +28,10 @@ pub(super) fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(),
             cx.buf.push("? ");
         }
         match first_slot_template(&branch.region) {
-            Some((idx, element, content)) => {
-                skip_ops(cx, &branch.region.ops[..idx]);
-                emit_slot_object(cx, element, content, Some(i as u32))?;
-                skip_ops(cx, &branch.region.ops[idx + 1..]);
+            Some(site) => {
+                skip_ops(cx, site.before);
+                emit_slot_object(cx, site.element, site.content, Some(i as u32))?;
+                skip_ops(cx, site.after);
             }
             None => {
                 skip_ops(cx, &branch.region.ops);
@@ -93,11 +93,11 @@ fn authored_expr_padding<'a>(
         return None;
     }
     let before = source.get(attr_start..value_start)?;
-    let quote_pos = before
+    let (quote_pos, &quote) = before
         .as_bytes()
         .iter()
-        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
-    let quote = before.as_bytes()[quote_pos];
+        .enumerate()
+        .rfind(|(_, byte)| matches!(**byte, b'\'' | b'"'))?;
     let leading = before.get(quote_pos + 1..)?;
     let after = source.get(value_end..attr_end)?;
     let trailing_end = after
@@ -117,9 +117,7 @@ fn authored_expr_padding<'a>(
 pub(super) fn emit_for_entry(
     cx: &mut EmitCx<'_>,
     for_op: &ForOp<'_>,
-    slot_idx: usize,
-    slot_element: &ElementOp<'_>,
-    slot_content: &SlotContentOp<'_>,
+    site: &SlotTemplateSite<'_>,
 ) -> Result<(), EmitError> {
     let source_raw = vfor::js_source(&for_op.binding.source)?;
     let source_prefixed;
@@ -152,9 +150,9 @@ pub(super) fn emit_for_entry(
     cx.buf.newline();
     cx.buf.push("return ");
     let prefix_mark = cx.enter_for_scope(for_op);
-    skip_ops(cx, &for_op.region.ops[..slot_idx]);
-    let body = emit_slot_object(cx, slot_element, slot_content, None);
-    skip_ops(cx, &for_op.region.ops[slot_idx + 1..]);
+    skip_ops(cx, site.before);
+    let body = emit_slot_object(cx, site.element, site.content, None);
+    skip_ops(cx, site.after);
     cx.leave_scope(prefix_mark);
     body?;
     cx.buf.deindent();

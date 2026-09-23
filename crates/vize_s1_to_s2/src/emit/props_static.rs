@@ -124,7 +124,11 @@ pub(super) fn component_hoist_props(
         let Some((key, dynamic_value)) = component_hoist_prop(&mut prop, piece, is_ts)? else {
             return Ok(None);
         };
-        if has_prior_component_hoist_key(&pieces[..index], key.as_str(), is_ts)? {
+        if has_prior_component_hoist_key(
+            pieces.get(..index).unwrap_or_default(),
+            key.as_str(),
+            is_ts,
+        )? {
             continue;
         }
         dynamic_values |= dynamic_value;
@@ -176,7 +180,11 @@ pub(super) fn for_item_hoist_props(
         let Some(key) = for_item_hoist_prop(&mut prop, piece, is_ts)? else {
             return Ok(None);
         };
-        if has_prior_for_item_hoist_key(&pieces[..index], key.as_str(), is_ts)? {
+        if has_prior_for_item_hoist_key(
+            pieces.get(..index).unwrap_or_default(),
+            key.as_str(),
+            is_ts,
+        )? {
             continue;
         }
         if emitted > 0 {

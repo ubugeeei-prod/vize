@@ -177,7 +177,7 @@ pub(super) fn emit_slots(
     cx.buf.deindent();
     cx.buf.push("{");
     cx.buf.indent();
-    for (i, group) in facts.groups.iter().enumerate() {
+    for (group, bucket) in facts.groups.iter().zip(&buckets) {
         cx.buf.newline();
         emit_slot_key(cx, &group.name);
         cx.buf.push(": ");
@@ -187,7 +187,7 @@ pub(super) fn emit_slots(
         emit_slot_params(cx, &group.params, content);
         cx.buf.push(" => [");
         cx.buf.indent();
-        for (j, piece) in buckets[i].iter().enumerate() {
+        for (j, piece) in bucket.iter().enumerate() {
             if j > 0 {
                 cx.buf.push(",");
             }

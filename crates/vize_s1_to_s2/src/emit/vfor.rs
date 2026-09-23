@@ -50,7 +50,7 @@ pub(super) fn emit_for(
     result
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "one slice per v-for alias")]
 fn emit_for_scoped(
     cx: &mut EmitCx<'_>,
     for_op: &ForOp<'_>,

@@ -262,7 +262,11 @@ fn is_root_fragment_whitespace_gap(parts: &[crate::lower::TextPart], index: usiz
         && part.text.chars().all(char::is_whitespace)
         && (index == 0
             || index + 1 == parts.len()
-            || (parts[index - 1].dynamic && parts[index + 1].dynamic))
+            || (index
+                .checked_sub(1)
+                .and_then(|before| parts.get(before))
+                .is_some_and(|part| part.dynamic)
+                && parts.get(index + 1).is_some_and(|part| part.dynamic)))
 }
 
 fn is_compound(op: &Op<'_>) -> bool {

@@ -217,13 +217,13 @@ fn emit_static_style_object(cx: &mut EmitCx<'_>, value: &str) {
             '(' => depth += 1,
             ')' if depth > 0 => depth -= 1,
             ';' if depth == 0 => {
-                emit_declaration(cx, &value[start..i], &mut emitted);
+                emit_declaration(cx, value.get(start..i).unwrap_or_default(), &mut emitted);
                 start = i + ch.len_utf8();
             }
             _ => {}
         }
     }
-    emit_declaration(cx, &value[start..], &mut emitted);
+    emit_declaration(cx, value.get(start..).unwrap_or_default(), &mut emitted);
     cx.buf.push("}");
 }
 

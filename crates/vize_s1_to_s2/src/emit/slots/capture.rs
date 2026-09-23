@@ -70,7 +70,7 @@ pub(in crate::emit) fn capture(
     let start = cx.buf.code.len();
     let site_start = cx.cache_sites.len();
     write(cx)?;
-    let text = String::from(&cx.buf.code.as_str()[start..]);
+    let text = String::from(cx.buf.code.as_str().get(start..).unwrap_or_default());
     let sites = cx
         .cache_sites
         .split_off(site_start)

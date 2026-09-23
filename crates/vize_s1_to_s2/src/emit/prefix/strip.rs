@@ -32,38 +32,28 @@ pub(super) fn strip_scope_prefixes_for_slot_params(
         return String::from(content);
     }
     let mut result = String::with_capacity(content.len());
-    let bytes = content.as_bytes();
-    let mut i = 0;
-    while i < bytes.len() {
-        let mut stripped = false;
+    let mut rest = content;
+    'scan: while let Some(character) = rest.chars().next() {
         for prefix in SLOT_PARAM_SCOPE_PREFIXES {
-            let prefix_bytes = prefix.as_bytes();
-            if i + prefix_bytes.len() > bytes.len()
-                || &bytes[i..i + prefix_bytes.len()] != prefix_bytes
-            {
+            let Some(after) = rest.strip_prefix(prefix) else {
                 continue;
-            }
-            let start = i + prefix_bytes.len();
-            let mut end = start;
-            while end < bytes.len()
-                && (bytes[end].is_ascii_alphanumeric() || bytes[end] == b'_' || bytes[end] == b'$')
-            {
-                end += 1;
-            }
-            let ident = &content[start..end];
+            };
+            let len = after
+                .bytes()
+                .take_while(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'))
+                .count();
+            // The identifier is ASCII, so it ends on a char boundary.
+            let Some((ident, tail)) = after.split_at_checked(len) else {
+                continue;
+            };
             if !ident.is_empty() && scope.is_slot_param(ident) {
                 result.push_str(ident);
-                i = end;
-                stripped = true;
-                break;
+                rest = tail;
+                continue 'scan;
             }
         }
-        if stripped {
-            continue;
-        }
-        let character = content[i..].chars().next().expect("valid UTF-8 boundary");
         result.push(character);
-        i += character.len_utf8();
+        rest = rest.get(character.len_utf8()..).unwrap_or_default();
     }
     result
 }

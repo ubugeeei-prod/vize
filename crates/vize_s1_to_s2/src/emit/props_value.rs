@@ -120,11 +120,11 @@ pub(super) fn authored_value_padding<'a>(
         return authored_quoted_value_padding(source, attr_start, attr_end);
     }
     let before = source.get(attr_start..value_start)?;
-    let quote_pos = before
+    let (quote_pos, &quote) = before
         .as_bytes()
         .iter()
-        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
-    let quote = before.as_bytes()[quote_pos];
+        .enumerate()
+        .rfind(|(_, byte)| matches!(**byte, b'\'' | b'"'))?;
     let leading = before.get(quote_pos + 1..)?;
     let after = source.get(value_end..attr_end)?;
     let trailing_end = after
@@ -150,11 +150,11 @@ fn authored_quoted_value_padding(
         return None;
     }
     let attr = source.get(attr_start..attr_end)?;
-    let quote_pos = attr
+    let (quote_pos, &quote) = attr
         .as_bytes()
         .iter()
-        .position(|byte| matches!(*byte, b'\'' | b'"'))?;
-    let quote = attr.as_bytes()[quote_pos];
+        .enumerate()
+        .find(|(_, byte)| matches!(**byte, b'\'' | b'"'))?;
     let inner_start = quote_pos + 1;
     let close_rel = attr
         .get(inner_start..)?

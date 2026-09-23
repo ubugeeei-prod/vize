@@ -55,24 +55,26 @@ pub(super) fn force_multiline_object_arg(
     pieces: &[Piece<'_>],
     for_item: bool,
 ) -> bool {
-    let after_spread = args[..index].iter().any(Arg::is_spread);
+    let (before, rest) = args.split_at_checked(index).unwrap_or((args, &[]));
+    let after = rest.get(1..).unwrap_or_default();
+    let after_spread = before.iter().any(Arg::is_spread);
     if !after_spread || pieces.is_empty() {
         return pieces.len() == 1
             && for_item
-            && args[index + 1..].iter().any(Arg::is_spread)
-            && has_object_with_props(&args[index + 1..]);
+            && after.iter().any(Arg::is_spread)
+            && has_object_with_props(after);
     }
-    let has_later_spread = args[index + 1..].iter().any(Arg::is_spread);
+    let has_later_spread = after.iter().any(Arg::is_spread);
     if has_later_spread && single_static_attr_before_object_on(args, index, pieces, for_item) {
         return false;
     }
     if for_item || has_later_spread {
         return true;
     }
-    if pieces.len() == 1 && has_branch_object_with_props_before_spread(&args[..index]) {
+    if pieces.len() == 1 && has_branch_object_with_props_before_spread(before) {
         return true;
     }
-    if pieces.len() == 1 && has_unsuppressed_key_only_branch_before_spread(&args[..index]) {
+    if pieces.len() == 1 && has_unsuppressed_key_only_branch_before_spread(before) {
         return true;
     }
     let has_branch_key = args.iter().any(|arg| {
@@ -188,7 +190,9 @@ fn single_static_attr_before_object_on(
 ) -> bool {
     !for_item
         && matches!(pieces, [Piece::Attr(_)])
-        && args[index + 1..]
+        && args
+            .get(index + 1..)
+            .unwrap_or_default()
             .iter()
             .all(|arg| matches!(arg, Arg::OnSpread(_)))
 }

@@ -198,8 +198,9 @@ fn emit_entry(cx: &mut EmitCx<'_>, directive: &VueDirectiveOp<'_>) -> Result<(),
     };
     if let Some((span, source)) = &value {
         cx.buf.push(", ");
-        if cx.prefixing() {
-            let expr = directive.value.expect("checked value");
+        if cx.prefixing()
+            && let Some(expr) = directive.value
+        {
             cx.push_prefixed_expr(&expr, Site::Expression)?;
         } else if let Some((leading, trailing)) =
             authored_value_padding(cx.source, directive.span, source.as_str(), *span)

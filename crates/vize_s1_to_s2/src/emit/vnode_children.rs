@@ -47,20 +47,18 @@ fn emit_children_inner(
     }
     cx.buf.push("[");
     cx.buf.indent();
-    let mut i = 0;
+    let mut rest: &[Op<'_>] = ops;
     let mut first = true;
-    while i < ops.len() {
-        if matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
-            let start = i;
-            while i < ops.len() && matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
-                i += 1;
-            }
+    while let Some((op, tail)) = rest.split_first() {
+        if is_text_like(op) {
+            let (run, after) = split_text_run(rest);
             if !first {
                 cx.buf.push(",");
             }
             cx.buf.newline();
             first = false;
-            emit_create_text_vnode(cx, &ops[start..i])?;
+            emit_create_text_vnode(cx, run)?;
+            rest = after;
             continue;
         }
         if !first {
@@ -68,7 +66,7 @@ fn emit_children_inner(
         }
         cx.buf.newline();
         first = false;
-        match &ops[i] {
+        match op {
             Op::Comment(comment) => {
                 let _id = cx.walk.mint();
                 emit_comment_vnode(cx, comment);
@@ -80,10 +78,20 @@ fn emit_children_inner(
                 cache_static_children,
             )?,
         }
-        i += 1;
+        rest = tail;
     }
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("]");
     Ok(())
+}
+
+pub(super) fn is_text_like(op: &Op<'_>) -> bool {
+    matches!(op, Op::Text(_) | Op::Interpolation(_))
+}
+
+/// `ops` split after its leading run of text and interpolation ops.
+pub(super) fn split_text_run<'o, 'a>(ops: &'o [Op<'a>]) -> (&'o [Op<'a>], &'o [Op<'a>]) {
+    let len = ops.iter().take_while(|op| is_text_like(op)).count();
+    ops.split_at_checked(len).unwrap_or((ops, &[]))
 }

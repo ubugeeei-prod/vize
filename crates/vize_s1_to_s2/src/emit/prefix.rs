@@ -140,13 +140,13 @@ fn quote_padded<'a>(file: &'a str, source: &str, span: Span) -> Option<&'a str> 
     }
     let before = file.get(..start)?;
     let quote_pos = before.rfind(|c: char| !c.is_ascii_whitespace())?;
-    let quote = before.as_bytes()[quote_pos];
+    let quote = *before.as_bytes().get(quote_pos)?;
     if !matches!(quote, b'"' | b'\'') {
         return None;
     }
     let after = file.get(end..)?;
     let close_rel = after.find(|c: char| !c.is_ascii_whitespace())?;
-    if after.as_bytes()[close_rel] != quote {
+    if after.as_bytes().get(close_rel) != Some(&quote) {
         return None;
     }
     file.get(quote_pos + 1..end + close_rel)

@@ -11,7 +11,7 @@ pub(crate) fn tag_pattern_matches(pattern: &str, tag: &str) -> bool {
 
     let starts_with_wildcard = pattern.starts_with('*');
     let ends_with_wildcard = pattern.ends_with('*');
-    let mut position = 0;
+    let mut rest = tag;
     let mut matched_any = false;
 
     for (index, part) in pattern
@@ -21,17 +21,17 @@ pub(crate) fn tag_pattern_matches(pattern: &str, tag: &str) -> bool {
     {
         matched_any = true;
         if index == 0 && !starts_with_wildcard {
-            if !tag[position..].starts_with(part) {
+            let Some(after) = rest.strip_prefix(part) else {
                 return false;
-            }
-            position += part.len();
+            };
+            rest = after;
             continue;
         }
 
-        let Some(found) = tag[position..].find(part) else {
+        let Some((_, after)) = rest.split_once(part) else {
             return false;
         };
-        position += found + part.len();
+        rest = after;
     }
 
     if !matched_any {

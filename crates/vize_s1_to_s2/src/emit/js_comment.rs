@@ -48,14 +48,17 @@ pub(super) fn source_is_js(source: &str, span_start: u32) -> bool {
 
 pub(super) fn convert_line_comments_to_block(content: &str) -> String {
     let bytes = content.as_bytes();
+    // Every scan stops on an ASCII delimiter or at the end, so these
+    // ranges are whole chars of `content`.
+    let text = |start: usize, end: usize| content.get(start..end).unwrap_or_default();
     let mut result = String::with_capacity(content.len());
     let mut can_start_regex = true;
     let mut i = 0;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'\'' | b'"' | b'`' => {
-                let end = skip_quoted(bytes, i + 1, bytes[i]).min(bytes.len());
-                result.push_str(&content[i..end]);
+                let end = skip_quoted(bytes, i + 1, byte).min(bytes.len());
+                result.push_str(text(i, end));
                 i = end;
                 can_start_regex = false;
             }
@@ -63,26 +66,21 @@ pub(super) fn convert_line_comments_to_block(content: &str) -> String {
                 let start = i + 2;
                 let end = skip_line_comment(bytes, start);
                 result.push_str("/* ");
-                result.push_str(content[start..end].trim_end().replace("*/", "* /").as_str());
+                result.push_str(text(start, end).trim_end().replace("*/", "* /").as_str());
                 result.push_str(" */");
                 i = end;
             }
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
-                let mut end = i + 2;
-                while end + 1 < bytes.len() && !(bytes[end] == b'*' && bytes[end + 1] == b'/') {
-                    end += 1;
-                }
-                let end = if end + 1 < bytes.len() {
-                    end + 2
-                } else {
-                    bytes.len()
-                };
-                result.push_str(&content[i..end]);
+                let end = bytes
+                    .get(i + 2..)
+                    .and_then(|rest| rest.windows(2).position(|pair| pair == b"*/"))
+                    .map_or(bytes.len(), |at| i + 2 + at + 2);
+                result.push_str(text(i, end));
                 i = end;
             }
             b'/' if can_start_regex => {
                 if let Some(end) = skip_regex(bytes, i + 1) {
-                    result.push_str(&content[i..end]);
+                    result.push_str(text(i, end));
                     i = end;
                     can_start_regex = false;
                 } else {
@@ -92,28 +90,31 @@ pub(super) fn convert_line_comments_to_block(content: &str) -> String {
             }
             b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' => {
                 let end = skip_identifier(bytes, i + 1);
-                result.push_str(&content[i..end]);
-                can_start_regex = keyword_allows_regex_after(&bytes[i..end]);
+                result.push_str(text(i, end));
+                can_start_regex = keyword_allows_regex_after(bytes.get(i..end).unwrap_or_default());
                 i = end;
             }
             b'0'..=b'9' => {
                 let end = skip_number(bytes, i + 1);
-                result.push_str(&content[i..end]);
+                result.push_str(text(i, end));
                 i = end;
                 can_start_regex = false;
             }
             b')' | b']' | b'}' => {
-                result.push(bytes[i] as char);
+                result.push(char::from(byte));
                 i += 1;
                 can_start_regex = false;
             }
-            b'+' | b'-' if bytes.get(i + 1) == Some(&bytes[i]) => {
-                result.push_str(&content[i..i + 2]);
+            b'+' | b'-' if bytes.get(i + 1) == Some(&byte) => {
+                result.push_str(text(i, i + 2));
                 i += 2;
                 can_start_regex = false;
             }
             _ => {
-                let ch = content[i..].chars().next().unwrap_or('\u{FFFD}');
+                let ch = content
+                    .get(i..)
+                    .and_then(|rest| rest.chars().next())
+                    .unwrap_or('\u{FFFD}');
                 result.push(ch);
                 i += ch.len_utf8();
                 if !ch.is_ascii_whitespace() {

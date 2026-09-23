@@ -122,8 +122,9 @@ fn emit_on_spread_expr(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitErr
     cx.buf.use_to_handlers();
     cx.buf.push(Buf::to_handlers_alias());
     cx.buf.push("(");
-    if cx.prefixing() {
-        let expr = on.handler.expect("checked handler");
+    if cx.prefixing()
+        && let Some(expr) = on.handler
+    {
         cx.push_prefixed_expr(&expr, Site::Expression)?;
     } else {
         cx.buf.push(source.as_str());

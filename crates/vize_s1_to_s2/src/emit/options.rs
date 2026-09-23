@@ -145,7 +145,11 @@ impl BindingTable {
                 .names
                 .binary_search_by(|(entry, _)| entry.as_str().cmp(name))
             {
-                Ok(index) => table.names[index].1 = kind,
+                Ok(index) => {
+                    if let Some(entry) = table.names.get_mut(index) {
+                        entry.1 = kind;
+                    }
+                }
                 Err(index) => table.names.insert(index, (String::from(name), kind)),
             }
         }
@@ -154,7 +158,11 @@ impl BindingTable {
                 .aliases
                 .binary_search_by(|(entry, _)| entry.as_str().cmp(local))
             {
-                Ok(index) => table.aliases[index].1 = String::from(key),
+                Ok(index) => {
+                    if let Some(entry) = table.aliases.get_mut(index) {
+                        entry.1 = String::from(key);
+                    }
+                }
                 Err(index) => table
                     .aliases
                     .insert(index, (String::from(local), String::from(key))),
@@ -169,7 +177,8 @@ impl BindingTable {
         self.names
             .binary_search_by(|(entry, _)| entry.as_str().cmp(name))
             .ok()
-            .map(|index| self.names[index].1)
+            .and_then(|index| self.names.get(index))
+            .map(|(_, value)| *value)
     }
 
     /// Whether `name` is recorded at all.

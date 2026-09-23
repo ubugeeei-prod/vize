@@ -86,10 +86,13 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
     /// dropped: the shipped apply loop saw that position as out of range.
     fn push_assignment_value_suffix(&mut self, end: usize) {
         let bytes = self.source.as_bytes();
-        let mut position = end;
-        while position < bytes.len() && bytes[position] == b')' {
-            position += 1;
-        }
+        let position = end
+            + bytes
+                .get(end..)
+                .unwrap_or_default()
+                .iter()
+                .take_while(|byte| **byte == b')')
+                .count();
         if self.wrapped || position < bytes.len() {
             self.suffix_rewrites
                 .push((position, String::from(".value")));
@@ -288,10 +291,9 @@ impl<'ast> ExpressionScope<'ast> for IdentifierCollector<'_, '_> {
         self.local_scopes.pop();
     }
     fn add_local(&mut self, name: &str) {
-        let scope = self
-            .local_scopes
-            .last_mut()
-            .expect("expression binding owns a scope");
-        scope.push(String::from(name));
+        // An expression binding always pushes its scope first.
+        if let Some(scope) = self.local_scopes.last_mut() {
+            scope.push(String::from(name));
+        }
     }
 }

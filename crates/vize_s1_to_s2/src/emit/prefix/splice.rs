@@ -38,15 +38,15 @@ pub(super) fn splice_insertions(
     let mut cursor = 0usize;
     for (pos, prefix, suffix) in all_rewrites.iter().rev() {
         let pos = pos.saturating_sub(wrapper_offset);
-        if pos > original.len() {
+        let Some(chunk) = original.get(cursor..pos) else {
             continue;
-        }
-        result.push_str(&original[cursor..pos]);
+        };
+        result.push_str(chunk);
         result.push_str(prefix);
         result.push_str(suffix);
         cursor = pos;
     }
-    result.push_str(&original[cursor..]);
+    result.push_str(original.get(cursor..).unwrap_or_default());
     result
 }
 
@@ -72,11 +72,14 @@ pub(super) fn splice_replacements(
         if *start >= original.len() || *end > original.len() {
             continue;
         }
-        result.push_str(&original[cursor..*start]);
+        let Some(chunk) = original.get(cursor..*start) else {
+            continue;
+        };
+        result.push_str(chunk);
         result.push_str(replacement);
         cursor = *end;
     }
-    result.push_str(&original[cursor..]);
+    result.push_str(original.get(cursor..).unwrap_or_default());
     result
 }
 

@@ -58,23 +58,21 @@ fn replace_prefixed_alias_access(code: String, object: &str, local: &str, key: &
     let replacement = prop_access_expression(object, key);
 
     let mut result = String::with_capacity(code.len());
-    let mut cursor = 0;
-    while let Some(rel_pos) = code[cursor..].find(needle.as_str()) {
-        let start = cursor + rel_pos;
-        let end = start + needle.len();
-        let after_ok = code[end..]
+    let mut rest = code.as_str();
+    while let Some((head, tail)) = rest.split_once(needle.as_str()) {
+        let after_ok = tail
             .chars()
             .next()
             .is_none_or(|c| !is_identifier_continue(c));
-        result.push_str(&code[cursor..start]);
+        result.push_str(head);
         if after_ok {
             result.push_str(replacement.as_str());
         } else {
-            result.push_str(&code[start..end]);
+            result.push_str(needle.as_str());
         }
-        cursor = end;
+        rest = tail;
     }
-    result.push_str(&code[cursor..]);
+    result.push_str(rest);
     result
 }
 

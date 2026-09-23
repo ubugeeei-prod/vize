@@ -37,8 +37,7 @@ pub(super) fn ends_in_line_comment(source: &str) -> bool {
     let mut index = 0usize;
     let mut state = ScanState::Code;
     let mut escaped = false;
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         match state {
             ScanState::Code => match byte {
                 b'\'' => enter_string(&mut state, &mut escaped, ScanState::Single),

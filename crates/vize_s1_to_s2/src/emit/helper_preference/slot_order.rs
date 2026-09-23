@@ -43,8 +43,8 @@ fn has_dynamic_slot_for(region: &Region<'_>) -> bool {
 fn conditional_slot_template_has_direct_v_for(region: &Region<'_>) -> bool {
     region.ops.iter().any(|op| match op {
         Op::If(if_op) => if_op.branches.iter().any(|branch| {
-            first_slot_template(&branch.region).is_some_and(|(_, element, _)| {
-                element
+            first_slot_template(&branch.region).is_some_and(|site| {
+                site.element
                     .children
                     .ops
                     .iter()

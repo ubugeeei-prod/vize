@@ -96,15 +96,15 @@ fn op_branch_key_count(cx: &EmitCx<'_>, op: &Op<'_>, walk: &mut PageWalk) -> u32
 
 fn slot_if_branch_key_count(cx: &EmitCx<'_>, if_op: &IfOp<'_>, walk: &mut PageWalk) -> u32 {
     if_op.branches.iter().fold(0u32, |count, branch| {
-        let Some((idx, element, _content)) = first_slot_template(&branch.region) else {
+        let Some(site) = first_slot_template(&branch.region) else {
             skip_ops_for_count(walk, &branch.region.ops);
             return count;
         };
-        skip_ops_for_count(walk, &branch.region.ops[..idx]);
+        skip_ops_for_count(walk, site.before);
         let _id = walk.mint();
-        walk.skip(element.bindings.len());
-        let count = count.saturating_add(region_branch_key_count(cx, &element.children, walk));
-        skip_ops_for_count(walk, &branch.region.ops[idx + 1..]);
+        walk.skip(site.element.bindings.len());
+        let count = count.saturating_add(region_branch_key_count(cx, &site.element.children, walk));
+        skip_ops_for_count(walk, site.after);
         count
     })
 }

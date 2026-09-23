@@ -151,9 +151,9 @@ fn emit_modified_entry(
     cx.buf.newline();
     cx.buf.push("    void 0,");
     cx.buf.newline();
-    if modifiers.len() == 1 {
+    if let [modifier] = modifiers {
         cx.buf.push("    { ");
-        cx.buf.push(modifiers[0]);
+        cx.buf.push(modifier);
         cx.buf.push(": true }");
     } else {
         cx.buf.push("    {");
@@ -225,12 +225,12 @@ fn native_read_source(cx: &EmitCx<'_>, model: &ModelOp<'_>) -> Result<String, Em
     if padded.trim() != read.source() {
         return Ok(String::from(raw.as_str()));
     }
-    let leading = padded.len() - padded.trim_start().len();
-    let trailing = padded.len() - padded.trim_end().len();
+    let leading = padded.strip_suffix(padded.trim_start()).unwrap_or_default();
+    let trailing = padded.strip_prefix(padded.trim_end()).unwrap_or_default();
     let mut out = String::with_capacity(padded.len());
-    out.push_str(&padded[..leading]);
+    out.push_str(leading);
     out.push_str(raw.as_str());
-    out.push_str(&padded[padded.len() - trailing..]);
+    out.push_str(trailing);
     Ok(out)
 }
 

@@ -45,12 +45,20 @@ pub(super) fn renumber(cx: &mut EmitCx<'_>) {
         .sort_unstable_by_key(|(offset, _, _)| *offset);
     let mut out = String::with_capacity(cx.buf.code.len());
     let mut cursor = 0usize;
+    // Sites are recorded offsets of ASCII slot numbers; one that does not
+    // slice the buffer leaves the code as emitted.
     for (offset, _, slot) in cx.cache_sites.iter().copied() {
-        out.push_str(&cx.buf.code.as_str()[cursor..offset]);
+        let Some(chunk) = cx.buf.code.as_str().get(cursor..offset) else {
+            return;
+        };
+        out.push_str(chunk);
         let width = slot.to_compact_string().len();
         out.push_str(renumbered(slot).to_compact_string().as_str());
         cursor = offset + width;
     }
-    out.push_str(&cx.buf.code.as_str()[cursor..]);
+    let Some(tail) = cx.buf.code.as_str().get(cursor..) else {
+        return;
+    };
+    out.push_str(tail);
     cx.buf.code = out;
 }

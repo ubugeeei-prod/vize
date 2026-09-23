@@ -269,10 +269,8 @@ pub(super) fn emit_call(
         && !has_binds
         && element.attributes.is_empty()
         && if_key.is_none();
-    if hoist {
-        let props_alias = cx
-            .buf
-            .hoist_root_props(hoisted_props.expect("checked hoisted props"));
+    if let Some(hoisted_props) = hoisted_props {
+        let props_alias = cx.buf.hoist_root_props(hoisted_props);
         cx.buf.push(", ");
         cx.buf.push(props_alias.as_str());
     } else if if_key.is_some() || has_binds {

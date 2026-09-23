@@ -105,16 +105,14 @@ fn collect(
             Op::For(for_op) => {
                 let id = peek_id(cx);
                 if is_slot_for(cx, id, for_op) {
-                    let Some((idx, element, content)) = first_slot_template(&for_op.region) else {
+                    let Some(site) = first_slot_template(&for_op.region) else {
                         return Err(EmitError::unsupported_at(
                             super::UnsupportedReason::CreateSlotsMissingSlotTemplate,
                             for_op.span,
                         ));
                     };
                     entries.push(with_branch_key(cx, &mut entry_branch_key, |cx| {
-                        capture(cx, |cx| {
-                            entry::emit_for_entry(cx, for_op, idx, element, content)
-                        })
+                        capture(cx, |cx| entry::emit_for_entry(cx, for_op, &site))
                     })?);
                 } else if is_template_for_slot_outlet_entry(cx, id, for_op) {
                     let walk_before = cx.walk.clone();

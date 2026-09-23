@@ -37,7 +37,11 @@ impl BindingTable {
                 .reactive
                 .binary_search_by(|(entry, _)| entry.as_str().cmp(name))
             {
-                Ok(index) => self.reactive[index].1 = read,
+                Ok(index) => {
+                    if let Some(entry) = self.reactive.get_mut(index) {
+                        entry.1 = read;
+                    }
+                }
                 Err(index) => self.reactive.insert(index, (String::from(name), read)),
             }
         }
@@ -50,6 +54,7 @@ impl BindingTable {
         self.reactive
             .binary_search_by(|(entry, _)| entry.as_str().cmp(name))
             .ok()
-            .map(|index| self.reactive[index].1)
+            .and_then(|index| self.reactive.get(index))
+            .map(|(_, value)| *value)
     }
 }

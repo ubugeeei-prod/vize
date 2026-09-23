@@ -1,3 +1,4 @@
+use super::storage::StoredPatchFacts;
 use super::*;
 
 #[test]

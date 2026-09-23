@@ -14,12 +14,13 @@ fn byte_may_need_js_escaping(b: u8) -> bool {
 }
 
 fn push_hex4(out: &mut String, value: u32) {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
     out.push_str("\\u");
-    out.push(HEX[((value >> 12) & 0xF) as usize] as char);
-    out.push(HEX[((value >> 8) & 0xF) as usize] as char);
-    out.push(HEX[((value >> 4) & 0xF) as usize] as char);
-    out.push(HEX[(value & 0xF) as usize] as char);
+    for shift in [12, 8, 4, 0] {
+        // A nibble is always a hex digit.
+        if let Some(digit) = char::from_digit((value >> shift) & 0xF, 16) {
+            out.push(digit);
+        }
+    }
 }
 
 /// Same rule as `vize_atelier_core::codegen::helpers::is_valid_js_identifier`.
@@ -100,9 +101,9 @@ fn strip_trailing_block_comments(mut source: &str) -> Option<&str> {
     loop {
         source = source.trim_end();
         if let Some(end) = source.strip_suffix("*/")
-            && let Some(start) = end.rfind("/*")
+            && let Some((before, _)) = end.rsplit_once("/*")
         {
-            source = &end[..start];
+            source = before;
             continue;
         }
         break;

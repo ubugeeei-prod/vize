@@ -167,11 +167,11 @@ fn authored_condition_padding<'a>(
         return None;
     }
     let before = source.get(attr_start..value_start)?;
-    let quote_pos = before
+    let (quote_pos, &quote) = before
         .as_bytes()
         .iter()
-        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
-    let quote = before.as_bytes()[quote_pos];
+        .enumerate()
+        .rfind(|(_, byte)| matches!(**byte, b'\'' | b'"'))?;
     let leading = before.get(quote_pos + 1..)?;
     let after = source.get(value_end..attr_end)?;
     let trailing_end = after
@@ -202,11 +202,11 @@ fn authored_condition_quote_padding<'a>(
         return None;
     }
     let before = source.get(..value_start)?;
-    let quote_pos = before
+    let (quote_pos, &quote) = before
         .as_bytes()
         .iter()
-        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
-    let quote = before.as_bytes()[quote_pos];
+        .enumerate()
+        .rfind(|(_, byte)| matches!(**byte, b'\'' | b'"'))?;
     let leading = source.get(quote_pos + 1..value_start)?;
     let after = source.get(value_end..)?;
     let trailing_end = after.as_bytes().iter().position(|byte| *byte == quote)?;

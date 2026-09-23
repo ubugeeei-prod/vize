@@ -64,7 +64,7 @@ fn root_hoist_props_with_layout(
         let Some(key) = static_hoist_prop(&mut prop, piece, is_ts)? else {
             return Ok(None);
         };
-        if has_prior_hoist_key(&pieces[..index], key.as_str(), is_ts)? {
+        if has_prior_hoist_key(pieces.get(..index).unwrap_or_default(), key.as_str(), is_ts)? {
             continue;
         }
         props.push(prop);

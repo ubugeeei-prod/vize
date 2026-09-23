@@ -38,20 +38,20 @@ fn strict_mode_divergent_identifier(name: &str) -> bool {
 
 fn sloppy_only_numeric_raw(raw: &str) -> bool {
     let bytes = raw.as_bytes();
-    bytes.len() > 1 && bytes[0] == b'0' && bytes[1].is_ascii_digit()
+    matches!(bytes, [b'0', second, ..] if second.is_ascii_digit())
 }
 
 fn sloppy_only_string_raw(raw: &str) -> bool {
     let bytes = raw.as_bytes();
-    let mut index = 0;
-    while index + 1 < bytes.len() {
-        if bytes[index] == b'\\' {
-            if bytes[index + 1].is_ascii_digit() {
+    let mut rest = bytes;
+    while let [first, second, tail @ ..] = rest {
+        if *first == b'\\' {
+            if second.is_ascii_digit() {
                 return true;
             }
-            index += 2;
-        } else {
-            index += 1;
+            rest = tail;
+        } else if let [_, after @ ..] = rest {
+            rest = after;
         }
     }
     false

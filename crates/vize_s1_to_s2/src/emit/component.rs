@@ -132,7 +132,11 @@ pub(super) fn emit_call(
         .and_then(|id| cx.facts.static_facts.get(id))
         .is_some_and(|fact| fact.foreign && fact.props_hoistable);
     let inline_root_hoist = props_static::inline_root_hoist(cx, id, position);
-    let hoisted_static_props = if can_hoist_static_props
+    // `can_hoist_static_props` holds only for a hoistable props object.
+    let hoistable = hoistable_static_props
+        .as_ref()
+        .filter(|_| can_hoist_static_props);
+    let hoisted_static_props = if let Some(props) = hoistable
         && (inline_root_hoist
             || (!array
                 && (facts.is_some() || create || foreign_static_props)
@@ -146,27 +150,15 @@ pub(super) fn emit_call(
                     || foreign_static_props))
             || (array && static_nested))
     {
-        Some(
-            cx.buf.push_hoist(
-                hoistable_static_props
-                    .as_ref()
-                    .expect("checked hoisted props")
-                    .source
-                    .clone(),
-            ),
-        )
+        Some(cx.buf.push_hoist(props.source.clone()))
     } else {
         None
     };
-    let unused_hoist = hoisted_static_props.is_none() && can_hoist_static_props && static_nested;
-    if unused_hoist {
-        cx.buf.push_hoist(
-            hoistable_static_props
-                .as_ref()
-                .expect("checked hoisted props")
-                .source
-                .clone(),
-        );
+    if hoisted_static_props.is_none()
+        && static_nested
+        && let Some(props) = hoistable
+    {
+        cx.buf.push_hoist(props.source.clone());
     }
     let mut patch = cx.materialize_patch_facts(id, &component.bindings, true, if_key, for_item);
     if skip_is {

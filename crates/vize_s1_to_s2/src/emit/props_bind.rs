@@ -223,16 +223,16 @@ fn emit_template_literal_prefixes(
     prefixes.sort_unstable_by_key(|(start, _)| *start);
     let mut cursor = 0usize;
     for (start, end) in prefixes {
-        if start < cursor || end > source.len() {
+        let (Some(gap), Some(name)) = (source.get(cursor..start), source.get(start..end)) else {
             cx.buf.push(source);
             return;
-        }
-        cx.buf.push(&source[cursor..start]);
+        };
+        cx.buf.push(gap);
         cx.buf.push("_ctx.");
-        cx.buf.push(&source[start..end]);
+        cx.buf.push(name);
         cursor = end;
     }
-    cx.buf.push(&source[cursor..]);
+    cx.buf.push(source.get(cursor..).unwrap_or_default());
 }
 
 pub(super) fn is_global_key_name(name: &str) -> bool {

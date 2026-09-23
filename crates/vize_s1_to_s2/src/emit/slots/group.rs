@@ -19,15 +19,17 @@ pub(super) fn collect_pieces(
         .ops
         .iter()
         .all(|op| matches!(op, Op::Text(_) | Op::Interpolation(_)))
-        && let Some(idx) = facts
+        && let Some((idx, group)) = facts
             .groups
             .iter()
-            .position(|group| matches!(group.carrier, SlotCarrier::Component))
+            .enumerate()
+            .find(|(_, group)| matches!(group.carrier, SlotCarrier::Component))
+        && let Some(bucket) = buckets.get_mut(idx)
     {
-        let params = scoped_params(&facts.groups[idx].params);
+        let params = scoped_params(&group.params);
         with_group_if_key(cx, &mut group_keys, idx, |cx| {
             crate::emit::outlet::with_slot_params(cx, params, |cx| {
-                emit_template_pieces(cx, children, &mut buckets[idx])
+                emit_template_pieces(cx, children, bucket)
             })
         })?;
         if let Some(after) = group_keys.last().copied() {
@@ -40,36 +42,41 @@ pub(super) fn collect_pieces(
             Op::Element(element) if is_slot_template(element) => {
                 let id = cx.walk.mint();
                 cx.walk.skip(element.bindings.len());
-                let Some(idx) = facts.groups.iter().position(
-                    |group| matches!(group.carrier, SlotCarrier::Template(tid) if tid == id),
-                ) else {
+                let found = facts.groups.iter().enumerate().find(
+                    |(_, group)| matches!(group.carrier, SlotCarrier::Template(tid) if tid == id),
+                );
+                let Some((idx, group, bucket)) =
+                    found.and_then(|(idx, group)| Some((idx, group, buckets.get_mut(idx)?)))
+                else {
                     return Err(EmitError::unsupported_at(
                         Reason::SlotFactsMissingGroup,
                         element.span,
                     ));
                 };
-                let params = scoped_params(&facts.groups[idx].params);
+                let params = scoped_params(&group.params);
                 with_group_if_key(cx, &mut group_keys, idx, |cx| {
                     crate::emit::outlet::with_slot_params(cx, params, |cx| {
-                        emit_template_pieces(cx, &element.children, &mut buckets[idx])
+                        emit_template_pieces(cx, &element.children, bucket)
                     })
                 })?;
             }
             _ => {
-                let idx = facts.groups.iter().position(|group| {
+                let found = facts.groups.iter().enumerate().find(|(_, group)| {
                     matches!(
                         group.carrier,
                         SlotCarrier::Implicit | SlotCarrier::Component
                     )
                 });
-                let Some(idx) = idx else {
+                let Some((idx, group, bucket)) =
+                    found.and_then(|(idx, group)| Some((idx, group, buckets.get_mut(idx)?)))
+                else {
                     return Err(EmitError::unsupported_op(Reason::SlotFactsMissingGroup, op));
                 };
-                let params = scoped_params(&facts.groups[idx].params);
+                let params = scoped_params(&group.params);
                 let piece = with_group_if_key(cx, &mut group_keys, idx, |cx| {
                     crate::emit::outlet::with_slot_params(cx, params, |cx| capture_child(cx, op))
                 })?;
-                buckets[idx].push(piece);
+                bucket.push(piece);
             }
         }
     }
@@ -97,13 +104,18 @@ fn group_branch_key_starts(
         match op {
             Op::Element(element) if is_slot_template(element) => {
                 let id = walk.mint();
-                if let Some(idx) = facts.groups.iter().position(
-                    |group| matches!(group.carrier, SlotCarrier::Template(tid) if tid == id),
-                ) {
+                if let Some(count) = facts
+                    .groups
+                    .iter()
+                    .position(
+                        |group| matches!(group.carrier, SlotCarrier::Template(tid) if tid == id),
+                    )
+                    .and_then(|idx| counts.get_mut(idx))
+                {
                     let mut nested = walk.clone();
                     let _id = nested.mint();
                     nested.skip(element.bindings.len());
-                    counts[idx] = counts[idx].saturating_add(region_branch_key_count(
+                    *count = count.saturating_add(region_branch_key_count(
                         cx,
                         &element.children,
                         &mut nested,
@@ -112,15 +124,19 @@ fn group_branch_key_starts(
                 crate::emit::create_slots_walk::advance_after_op(&mut walk, op);
             }
             _ => {
-                if let Some(idx) = facts.groups.iter().position(|group| {
-                    matches!(
-                        group.carrier,
-                        SlotCarrier::Implicit | SlotCarrier::Component
-                    )
-                }) {
+                if let Some(count) = facts
+                    .groups
+                    .iter()
+                    .position(|group| {
+                        matches!(
+                            group.carrier,
+                            SlotCarrier::Implicit | SlotCarrier::Component
+                        )
+                    })
+                    .and_then(|idx| counts.get_mut(idx))
+                {
                     let mut nested = walk.clone();
-                    counts[idx] =
-                        counts[idx].saturating_add(op_branch_key_count(cx, op, &mut nested));
+                    *count = count.saturating_add(op_branch_key_count(cx, op, &mut nested));
                 }
                 let _id = walk.mint();
                 crate::emit::create_slots_walk::advance_after_op(&mut walk, op);
@@ -146,9 +162,12 @@ fn with_group_if_key<T>(
     write: impl FnOnce(&mut EmitCx<'_>) -> Result<T, EmitError>,
 ) -> Result<T, EmitError> {
     let saved = cx.if_branch_key;
-    cx.if_branch_key = group_keys[idx];
+    // One key start per group; a missing one keeps the current key.
+    cx.if_branch_key = group_keys.get(idx).copied().unwrap_or(saved);
     let result = write(cx);
-    group_keys[idx] = cx.if_branch_key;
+    if let Some(key) = group_keys.get_mut(idx) {
+        *key = cx.if_branch_key;
+    }
     cx.if_branch_key = saved;
     result
 }
@@ -190,15 +209,15 @@ fn op_branch_key_count(cx: &EmitCx<'_>, op: &Op<'_>, walk: &mut PageWalk) -> u32
 
 fn slot_if_branch_key_count(cx: &EmitCx<'_>, if_op: &IfOp<'_>, walk: &mut PageWalk) -> u32 {
     if_op.branches.iter().fold(0u32, |count, branch| {
-        let Some((idx, element, _content)) = first_slot_template(&branch.region) else {
+        let Some(site) = first_slot_template(&branch.region) else {
             skip_ops_for_count(walk, &branch.region.ops);
             return count;
         };
-        skip_ops_for_count(walk, &branch.region.ops[..idx]);
+        skip_ops_for_count(walk, site.before);
         let _id = walk.mint();
-        walk.skip(element.bindings.len());
-        let count = count.saturating_add(region_branch_key_count(cx, &element.children, walk));
-        skip_ops_for_count(walk, &branch.region.ops[idx + 1..]);
+        walk.skip(site.element.bindings.len());
+        let count = count.saturating_add(region_branch_key_count(cx, &site.element.children, walk));
+        skip_ops_for_count(walk, site.after);
         count
     })
 }

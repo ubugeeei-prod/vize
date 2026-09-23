@@ -28,26 +28,19 @@ fn decode_html_entities_inner(source: &str, escaped_parens: bool) -> String {
         return String::from(source);
     }
 
-    let bytes = source.as_bytes();
     let mut out = String::with_capacity(source.len());
-    let mut index = 0usize;
-    while index < bytes.len() {
-        if escaped_parens
-            && let Some((ch, consumed)) = decode_escaped_numeric_parenthesis(&bytes[index..])
-        {
-            out.push(ch);
-            index += consumed;
-            continue;
-        }
-        if let Some((ch, consumed)) = try_decode_entity(&bytes[index..], Context::General) {
-            out.push(ch);
-            index += consumed;
-            continue;
-        }
-
-        let ch = source[index..].chars().next().unwrap_or('\u{FFFD}');
-        out.push(ch);
-        index += ch.len_utf8();
+    let mut rest = source;
+    while !rest.is_empty() {
+        let decoded = if escaped_parens {
+            decode_escaped_numeric_parenthesis(rest.as_bytes())
+        } else {
+            None
+        };
+        rest = push_decoded(
+            &mut out,
+            rest,
+            decoded.or_else(|| try_decode_entity(rest.as_bytes(), Context::General)),
+        );
     }
     out
 }
@@ -61,21 +54,30 @@ pub fn decode_html_attribute_entities(source: &str) -> String {
         return String::from(source);
     }
 
-    let bytes = source.as_bytes();
     let mut out = String::with_capacity(source.len());
-    let mut index = 0usize;
-    while index < bytes.len() {
-        if let Some((ch, consumed)) = try_decode_entity(&bytes[index..], Context::Attribute) {
-            out.push(ch);
-            index += consumed;
-            continue;
-        }
-
-        let ch = source[index..].chars().next().unwrap_or('\u{FFFD}');
-        out.push(ch);
-        index += ch.len_utf8();
+    let mut rest = source;
+    while !rest.is_empty() {
+        let decoded = try_decode_entity(rest.as_bytes(), Context::Attribute);
+        rest = push_decoded(&mut out, rest, decoded);
     }
     out
+}
+
+/// Push one decoded reference, or else the next authored char, and return
+/// the rest of `rest`. A reference spans ASCII bytes only, so it ends on a
+/// char boundary.
+fn push_decoded<'s>(out: &mut String, rest: &'s str, decoded: Option<(char, usize)>) -> &'s str {
+    if let Some((ch, consumed)) = decoded
+        && let Some(after) = rest.get(consumed..)
+    {
+        out.push(ch);
+        return after;
+    }
+    let mut chars = rest.chars();
+    if let Some(ch) = chars.next() {
+        out.push(ch);
+    }
+    chars.as_str()
 }
 
 fn decode_escaped_numeric_parenthesis(input: &[u8]) -> Option<(char, usize)> {
@@ -112,16 +114,12 @@ fn first_scalar(expansion: &[u8]) -> Option<char> {
 }
 
 fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> {
-    let mut index = 1usize;
-    let mut steps = 0usize;
-    while steps < ENTITY_MAX_LENGTH - 1 && index < input.len() {
-        if input[index].is_ascii_alphanumeric() {
-            index += 1;
-            steps += 1;
-        } else {
-            break;
-        }
-    }
+    let index = 1 + input
+        .iter()
+        .skip(1)
+        .take(ENTITY_MAX_LENGTH - 1)
+        .take_while(|byte| byte.is_ascii_alphanumeric())
+        .count();
 
     let mut consumed_end = index;
     match input.get(index).copied() {
@@ -131,7 +129,7 @@ fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> 
     }
 
     if context == Context::Attribute {
-        let candidate = &input[..consumed_end];
+        let candidate = input.get(..consumed_end)?;
         if candidate.len() < ENTITY_MIN_LENGTH {
             return None;
         }
@@ -142,7 +140,7 @@ fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> 
 
     let max_len = min(consumed_end, ENTITY_MAX_LENGTH);
     for check_len in (ENTITY_MIN_LENGTH..=max_len).rev() {
-        if let Some(expansion) = ENTITIES.get(&input[..check_len]) {
+        if let Some(expansion) = input.get(..check_len).and_then(|name| ENTITIES.get(name)) {
             let ch = first_scalar(expansion)?;
             return Some((ch, check_len));
         }
@@ -151,33 +149,23 @@ fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> 
 }
 
 fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
-    if input.len() < 3 || input[0] != b'&' || input[1] != b'#' {
+    let [b'&', b'#', rest @ ..] = input else {
         return None;
-    }
+    };
 
     let mut position = 2usize;
-    let number = match input.get(position).copied() {
-        Some(b'x' | b'X') => {
-            position += 1;
-            let start = position;
-            while position < input.len() && input[position].is_ascii_hexdigit() {
-                position += 1;
-            }
-            let hex = &input[start..position];
+    let number = match rest {
+        [b'x' | b'X', digits @ ..] => {
+            let hex = leading_run(digits, u8::is_ascii_hexdigit);
             if hex.is_empty() {
                 return None;
             }
+            position += 1 + hex.len();
             u32::from_str_radix(core::str::from_utf8(hex).ok()?, 16)
         }
-        Some(c) if c.is_ascii_digit() => {
-            let start = position;
-            while position < input.len() && input[position].is_ascii_digit() {
-                position += 1;
-            }
-            let dec = &input[start..position];
-            if dec.is_empty() {
-                return None;
-            }
+        [c, ..] if c.is_ascii_digit() => {
+            let dec = leading_run(rest, u8::is_ascii_digit);
+            position += dec.len();
             core::str::from_utf8(dec).ok()?.parse::<u32>()
         }
         _ => return None,
@@ -196,7 +184,12 @@ fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
     Some((ch, end))
 }
 
-#[allow(clippy::match_same_arms)]
+/// The longest prefix of `bytes` whose bytes all satisfy `keep`.
+fn leading_run(bytes: &[u8], keep: fn(&u8) -> bool) -> &[u8] {
+    let len = bytes.iter().take_while(|byte| keep(byte)).count();
+    bytes.split_at_checked(len).map_or(bytes, |(run, _)| run)
+}
+
 fn correct_numeric_entity(number: u32) -> char {
     match number {
         0x00 => '\u{FFFD}',

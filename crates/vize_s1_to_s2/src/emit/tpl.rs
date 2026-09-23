@@ -140,11 +140,10 @@ pub(super) fn emit_for_template_item(
     class: Option<&WrapperClass>,
 ) -> Result<(), EmitError> {
     if should_unwrap_for(ops) {
-        let Op::Element(element) = &ops[0] else {
-            return Err(EmitError::unsupported_op(
-                Reason::TemplateUnwrapShape,
-                &ops[0],
-            ));
+        let element = match ops.first() {
+            Some(Op::Element(element)) => element,
+            Some(op) => return Err(EmitError::unsupported_op(Reason::TemplateUnwrapShape, op)),
+            None => return Err(EmitError::unsupported(Reason::TemplateUnwrapShape)),
         };
         let id = cx.walk.mint();
         cx.walk.skip(element.bindings.len());

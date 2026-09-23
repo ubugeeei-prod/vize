@@ -46,8 +46,7 @@ fn walk_destructure_params(trimmed: &str, visit: &mut dyn FnMut(&str) -> bool) -
             continue;
         }
 
-        if trimmed.starts_with('{') && trimmed.ends_with('}') {
-            let inner = &trimmed[1..trimmed.len() - 1];
+        if let Some(inner) = trimmed.strip_prefix('{').and_then(|t| t.strip_suffix('}')) {
             for part in split_top_level(inner).into_iter().rev() {
                 let part = part.trim();
                 if let Some(rest) = part.strip_prefix("...") {
@@ -57,8 +56,8 @@ fn walk_destructure_params(trimmed: &str, visit: &mut dyn FnMut(&str) -> bool) -
                     }
                     continue;
                 }
-                if let Some(colon_pos) = find_top_level_char(part, ':') {
-                    let value = strip_default_value(part[colon_pos + 1..].trim());
+                if let Some((_, value)) = split_at_top_level_char(part, ':') {
+                    let value = strip_default_value(value.trim());
                     if !value.is_empty() {
                         pending.push(value);
                     }
@@ -69,8 +68,7 @@ fn walk_destructure_params(trimmed: &str, visit: &mut dyn FnMut(&str) -> bool) -
                     pending.push(part);
                 }
             }
-        } else if trimmed.starts_with('[') && trimmed.ends_with(']') {
-            let inner = &trimmed[1..trimmed.len() - 1];
+        } else if let Some(inner) = trimmed.strip_prefix('[').and_then(|t| t.strip_suffix(']')) {
             for part in split_top_level(inner).into_iter().rev() {
                 let part = part.trim();
                 if let Some(rest) = part.strip_prefix("...") {
@@ -111,23 +109,32 @@ fn split_top_level(s: &str) -> SmallVec<[&str; 8]> {
             '{' | '[' | '(' => depth += 1,
             '}' | ']' | ')' => depth -= 1,
             ',' if depth == 0 => {
-                parts.push(&s[start..i]);
+                if let Some(part) = s.get(start..i) {
+                    parts.push(part);
+                }
                 start = i + ch.len_utf8();
             }
             _ => {}
         }
         prev = ch;
     }
-    parts.push(&s[start..]);
+    if let Some(part) = s.get(start..) {
+        parts.push(part);
+    }
     parts
 }
 
 fn strip_default_value(pattern: &str) -> &str {
-    if let Some(index) = find_top_level_char(pattern, '=') {
-        pattern[..index].trim()
-    } else {
-        pattern.trim()
+    match split_at_top_level_char(pattern, '=') {
+        Some((before, _)) => before.trim(),
+        None => pattern.trim(),
     }
+}
+
+/// `s` split around its first top-level `needle`, which is dropped.
+fn split_at_top_level_char(s: &str, needle: char) -> Option<(&str, &str)> {
+    let (before, rest) = s.split_at_checked(find_top_level_char(s, needle)?)?;
+    Some((before, rest.strip_prefix(needle)?))
 }
 
 fn find_top_level_char(s: &str, needle: char) -> Option<usize> {

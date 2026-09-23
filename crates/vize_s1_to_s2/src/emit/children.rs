@@ -244,8 +244,7 @@ pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Res
         return Ok(());
     }
     let has_interp = ops.iter().any(|op| matches!(op, Op::Interpolation(_)));
-    let is_single_space =
-        !has_interp && ops.len() == 1 && matches!(&ops[0], Op::Text(text) if text.content == " ");
+    let is_single_space = !has_interp && matches!(ops, [Op::Text(text)] if text.content == " ");
     cx.buf.use_create_text();
     cx.buf.push(Buf::create_text_alias());
     if is_single_space && cx.once_depth == 0 {
@@ -263,10 +262,10 @@ pub(super) fn emit_create_text_vnode(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Res
 }
 
 fn emit_once_compound_text_vnodes(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<bool, EmitError> {
-    if cx.once_depth == 0 || cx.once_element_depth != 1 || ops.len() != 1 {
+    if cx.once_depth == 0 || cx.once_element_depth != 1 {
         return Ok(false);
     }
-    let Op::Interpolation(interp) = &ops[0] else {
+    let [Op::Interpolation(interp)] = ops else {
         return Ok(false);
     };
     if !matches!(

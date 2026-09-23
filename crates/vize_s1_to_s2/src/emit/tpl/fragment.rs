@@ -197,21 +197,19 @@ fn emit_fragment_children(
 }
 
 fn emit_force_array(cx: &mut EmitCx<'_>, ops: &[Op<'_>]) -> Result<(), EmitError> {
-    let mut i = 0;
+    let mut rest = ops;
     let mut first = true;
-    while i < ops.len() {
-        if matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
-            let start = i;
-            while i < ops.len() && matches!(ops[i], Op::Text(_) | Op::Interpolation(_)) {
-                i += 1;
-            }
+    while let Some((op, tail)) = rest.split_first() {
+        if crate::emit::vnode_children::is_text_like(op) {
+            let (run, after) = crate::emit::vnode_children::split_text_run(rest);
             start_item(cx, &mut first);
-            emit_create_text_vnode(cx, &ops[start..i])?;
+            emit_create_text_vnode(cx, run)?;
+            rest = after;
             continue;
         }
         start_item(cx, &mut first);
-        emit_node_child(cx, &ops[i])?;
-        i += 1;
+        emit_node_child(cx, op)?;
+        rest = tail;
     }
     Ok(())
 }

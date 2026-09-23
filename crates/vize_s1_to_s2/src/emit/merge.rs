@@ -54,7 +54,7 @@ pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "forwarded patch-flag inputs")]
 pub(super) fn object_patch<'a>(
     bindings: &[BindingOp<'a>],
     is_component: bool,
@@ -314,11 +314,11 @@ fn authored_object_on_padding<'a>(
         return None;
     }
     let before = source.get(attr_start..value_start)?;
-    let quote_pos = before
+    let (quote_pos, &quote) = before
         .as_bytes()
         .iter()
-        .rposition(|byte| matches!(*byte, b'\'' | b'"'))?;
-    let quote = before.as_bytes()[quote_pos];
+        .enumerate()
+        .rfind(|(_, byte)| matches!(**byte, b'\'' | b'"'))?;
     let leading = before.get(quote_pos + 1..)?;
     let after = source.get(value_end..attr_end)?;
     let trailing_end = after

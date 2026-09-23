@@ -139,13 +139,15 @@ impl Buf {
             .used_order
             .iter()
             .position(|candidate| candidate.bit() == helper.bit())?;
-        self.used_order[..index]
+        let (before, rest) = self.used_order.split_at_checked(index)?;
+        let after = rest.split_first().map_or(&[][..], |(_, after)| after);
+        before
             .iter()
             .rev()
             .find_map(|candidate| self.first_alias_position(*candidate))
             .map(|position| alias_sort_position(position) + 1)
             .or_else(|| {
-                self.used_order[index + 1..]
+                after
                     .iter()
                     .find_map(|candidate| self.first_alias_position(*candidate))
                     .map(|position| alias_sort_position(position).saturating_sub(1))

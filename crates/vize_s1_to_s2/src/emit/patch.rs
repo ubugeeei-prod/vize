@@ -12,7 +12,6 @@ mod storage;
 mod tests;
 
 use alloc::vec::Vec as StdVec;
-use smallvec::SmallVec;
 use vize_davinci::id::NodeId;
 use vize_impeto::lattice::{
     BindingFact, BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
@@ -27,51 +26,7 @@ use super::props::{
     bind_value_uses_legacy_patchless_runtime_expr, has_prop_modifier, is_dynamic_bind_name,
     is_emitted_key_bind, static_bind_key,
 };
-use storage::StoredPatchFacts;
-
-pub(super) struct PatchFactsTable {
-    // Keep owner IDs ordered so every emitted VNode does not scan all earlier
-    // facts. Small components still use the inline allocation.
-    entries: SmallVec<[(NodeId, StoredPatchFacts); 16]>,
-}
-
-impl PatchFactsTable {
-    pub(super) fn new() -> Self {
-        Self {
-            entries: SmallVec::new(),
-        }
-    }
-
-    fn materialize(&mut self, owner: Option<NodeId>, facts: PatchFacts) -> PatchFacts {
-        let Some(owner) = owner else {
-            return facts;
-        };
-        let stored = StoredPatchFacts::from_patch(&facts);
-        match self.entries.binary_search_by_key(&owner, |(id, _)| *id) {
-            Ok(index) => self.entries[index].1 = stored,
-            Err(index) => self.entries.insert(index, (owner, stored)),
-        }
-        facts
-    }
-
-    #[cfg(any(test, feature = "davinci-differential"))]
-    pub(super) fn materialized_len(&self) -> usize {
-        self.entries.len()
-    }
-
-    #[cfg(test)]
-    fn get(&self, owner: NodeId) -> Option<&StoredPatchFacts> {
-        self.entries
-            .binary_search_by_key(&owner, |(id, _)| *id)
-            .ok()
-            .map(|index| &self.entries[index].1)
-    }
-
-    #[cfg(test)]
-    fn len(&self) -> usize {
-        self.materialized_len()
-    }
-}
+pub(in crate::emit) use storage::PatchFactsTable;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(super) struct PatchFacts {
@@ -112,7 +67,7 @@ impl super::EmitCx<'_> {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent patch-flag inputs")]
 pub(super) fn binding_patch_facts<'a>(
     bindings: &[BindingOp<'a>],
     is_component: bool,

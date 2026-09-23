@@ -25,14 +25,28 @@ pub(super) fn slot_template_content<'a>(
     }
 }
 
-pub(super) fn first_slot_template<'a>(
-    region: &'a Region<'a>,
-) -> Option<(usize, &'a ElementOp<'a>, &'a SlotContentOp<'a>)> {
-    region.ops.iter().enumerate().find_map(|(i, op)| match op {
-        Op::Element(element) => {
-            slot_template_content(element).map(|content| (i, &**element, content))
-        }
-        _ => None,
+/// A region's first slot template, with the sibling ops around it.
+pub(super) struct SlotTemplateSite<'a> {
+    pub before: &'a [Op<'a>],
+    pub element: &'a ElementOp<'a>,
+    pub content: &'a SlotContentOp<'a>,
+    pub after: &'a [Op<'a>],
+}
+
+pub(super) fn first_slot_template<'a>(region: &'a Region<'a>) -> Option<SlotTemplateSite<'a>> {
+    let ops: &'a [Op<'a>] = &region.ops;
+    ops.iter().enumerate().find_map(|(i, op)| {
+        let Op::Element(element) = op else {
+            return None;
+        };
+        let content = slot_template_content(element)?;
+        let (before, rest) = ops.split_at_checked(i)?;
+        Some(SlotTemplateSite {
+            before,
+            element,
+            content,
+            after: rest.get(1..)?,
+        })
     })
 }
 
