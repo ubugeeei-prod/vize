@@ -50,7 +50,7 @@ The library trees in the reviewed inventory contain 121 production files,
 | s3       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
 | s1_to_s2 | `alloc::vec::Vec`       |    67 |           67 |        270 |
 | s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |
-| s1_to_s2 | `vize_s0::String`       |    96 |          104 |        479 |
+| s1_to_s2 | `vize_s0::String`       |    97 |          105 |        480 |
 | s1_to_s2 | `vize_s0::Vec`          |    16 |           18 |         69 |
 | s1_to_s2 | `vize_s0::SmallVec`     |     5 |            5 |         10 |
 | s2_to_s3 | `alloc::vec::Vec`       |     1 |            1 |          1 |
