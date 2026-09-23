@@ -1,7 +1,24 @@
 //! S4 projection rows preserve the authored expression, including byte offsets.
 
-use super::project_template_expressions;
-use crate::virtual_ts::VizeMapping;
+use super::{project_template_expression_document, project_template_expressions};
+use crate::virtual_ts::{ProjectionMapping, VizeMapping};
+
+#[test]
+fn prelowered_region_emits_the_same_document_and_mapping() {
+    let source =
+        "<div v-if=\"状態\" :[field]=\"value\">{{ count }}</div>\r\n<slot :name=\"slotName\" />";
+    let allocator = vize_carton::Allocator::new();
+    let (tree, errors) = vize_s1::parse(&allocator, source);
+    let lowered = vize_s1_to_s2::lower(&allocator, &tree, &errors);
+    let document = project_template_expression_document(&lowered.root);
+
+    assert_eq!(document.as_str(), "状態\nfield\nvalue\ncount\nslotName");
+    assert_eq!(document.links().len(), 5);
+    assert_eq!(
+        ProjectionMapping::from_emit_document(&document),
+        project_template_expressions(source)
+    );
+}
 
 fn assert_expressions(source: &str, expressions: &[&str]) {
     let mapping = project_template_expressions(source);

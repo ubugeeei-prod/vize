@@ -26,9 +26,19 @@ pub fn project_template_expressions(source: &str) -> ProjectionMapping {
     let allocator = Allocator::new();
     let (tree, errors) = vize_s1::parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
-    let mut document = EmitDocument::new(true);
-    project_region(&mut document, &JsDialect, &lowered.root);
+    let document = project_template_expression_document(&lowered.root);
     ProjectionMapping::from_emit_document(&document)
+}
+
+/// Emit expression text and authored links from an already lowered S2 region.
+///
+/// Callers that own the S2 tree can reuse it instead of parsing and lowering
+/// the template again. The document contains expression projections only;
+/// it is not yet the checker's complete virtual TypeScript module.
+pub fn project_template_expression_document(region: &Region<'_>) -> EmitDocument {
+    let mut document = EmitDocument::new(true);
+    project_region(&mut document, &JsDialect, region);
+    document
 }
 
 fn project_region<D: ExprDialect>(document: &mut EmitDocument, dialect: &D, region: &Region<'_>) {
