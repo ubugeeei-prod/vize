@@ -51,7 +51,13 @@ pub fn error_divergence(
     legacy: &Result<SfcCompileResult, SfcError>,
 ) -> Option<String> {
     match legacy {
-        Err(legacy) if selected.code == legacy.code && selected.message == legacy.message => None,
+        Err(legacy)
+            if selected.code == legacy.code
+                && selected.message == legacy.message
+                && selected.loc == legacy.loc =>
+        {
+            None
+        }
         Err(legacy) => Some(format!(
             "compile errors differ: selected={selected:?} legacy={legacy:?}"
         )),
@@ -85,6 +91,7 @@ fn window(source: &str, other: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use vize_atelier_sfc::BlockLocation;
 
     fn error(code: &str, message: &str) -> SfcError {
         SfcError {
@@ -118,5 +125,26 @@ mod tests {
             )
             .is_some()
         );
+    }
+
+    #[test]
+    fn selected_errors_require_matching_locations() {
+        let mut selected = error("parse", "invalid end tag");
+        selected.loc = Some(BlockLocation {
+            start: 10,
+            end: 20,
+            start_line: 2,
+            start_column: 3,
+            end_line: 2,
+            end_column: 13,
+            ..Default::default()
+        });
+
+        let mut legacy = selected.clone();
+        assert_eq!(error_divergence(&selected, &Err(legacy.clone())), None);
+
+        legacy.loc.as_mut().unwrap().start += 1;
+        assert!(error_divergence(&selected, &Err(legacy)).is_some());
+        assert!(error_divergence(&selected, &Err(error("parse", "invalid end tag"))).is_some());
     }
 }

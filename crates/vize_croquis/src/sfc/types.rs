@@ -267,7 +267,7 @@ impl<'a> SfcCustomBlock<'a> {
 }
 
 /// Source location of an SFC block.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BlockLocation {
     /// Start offset of content after the opening tag.
     pub start: usize,
