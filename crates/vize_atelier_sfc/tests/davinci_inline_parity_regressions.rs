@@ -38,6 +38,30 @@ const items = [1, 2]
 </script>
 <template><PageWithHeader><div v-if="items.length">{{ label }}<TransitionGroup><div v-for="item in items" :key="item">{{ item }}</div></TransitionGroup></div><template #footer><Transition><div v-show="items.length">{{ label }}</div></Transition></template></PageWithHeader></template>"#,
     );
+    assert_inline_parity(
+        "loop-callback-unref.vue",
+        r#"<script setup lang="ts">
+import { getKey } from './key'
+const items = [{ id: 1 }]
+</script>
+<template><div><template v-for="item in items" :key="getKey(item)"><span>{{ getKey(item) }}</span></template></div></template>"#,
+    );
+    assert_inline_parity(
+        "show-before-loop.vue",
+        r#"<script setup lang="ts">
+import { shown } from './shown'
+const items = [1, 2]
+</script>
+<template><Transition><div v-show="shown"><span v-for="item in items" :key="item">{{ item }}</span></div></Transition></template>"#,
+    );
+    assert_inline_parity(
+        "runtime-directive-before-loop.vue",
+        r#"<script setup lang="ts">
+import { options } from './options'
+const items = [1, 2]
+</script>
+<template><div v-draggable="options"><TransitionGroup><span v-for="item in items" :key="item">{{ item }}</span></TransitionGroup></div></template>"#,
+    );
 }
 
 fn assert_inline_parity(filename: &str, source: &str) {

@@ -1,9 +1,5 @@
-//! The first authored expression that the inline transform wraps in `_unref`.
-//!
-//! Slot objects print named templates ahead of earlier default content, so
-//! the emit walk meets that wrapper later than the transform does. The
-//! preference walk is source order, and its visit numbers are what
-//! `prefer_at_visit` sorts by.
+//! Inline model and runtime-directive expressions whose `_unref` helper is
+//! registered during transform, before later children are emitted.
 
 use alloc::vec::Vec as StdVec;
 
@@ -18,49 +14,33 @@ use super::super::options::{BindingKind, BindingTable};
 use super::PreferCx;
 
 pub(super) fn note_op(cx: &PreferCx<'_>, op: &Op<'_>, visit: u32) {
-    if cx.authored_unref.get() != u32::MAX || !cx.inline {
+    if !cx.inline {
         return;
     }
     let Some(table) = cx.bindings else {
         return;
     };
-    if op_needs_unref(op, table) {
-        cx.authored_unref.set(visit);
+    if let Op::For(for_op) = op
+        && cx.authored_for.get() == u32::MAX
+    {
+        cx.first_for_source_unref
+            .set(expression_needs_unref(&for_op.binding.source, table));
+    }
+    if cx.authored_eager_unref.get() == u32::MAX && op_has_eager_unref(op, table) {
+        cx.authored_eager_unref.set(visit);
     }
 }
 
-fn op_needs_unref(op: &Op<'_>, table: &BindingTable) -> bool {
-    match op {
-        Op::Interpolation(text) => expression_needs_unref(&text.expression, table),
-        Op::If(if_op) => if_op.branches.iter().any(|branch| {
-            branch
-                .condition
-                .as_ref()
-                .is_some_and(|condition| expression_needs_unref(condition, table))
-        }),
-        Op::For(for_op) => expression_needs_unref(&for_op.binding.source, table),
-        Op::Element(element) => bindings_need_unref(&element.bindings, table),
-        Op::Component(component) => bindings_need_unref(&component.bindings, table),
-        Op::Slot(slot) => bindings_need_unref(&slot.bindings, table),
-        Op::Text(_) | Op::Comment(_) => false,
-    }
-}
-
-fn bindings_need_unref(bindings: &[BindingOp<'_>], table: &BindingTable) -> bool {
+fn op_has_eager_unref(op: &Op<'_>, table: &BindingTable) -> bool {
+    let bindings = match op {
+        Op::Element(element) => &element.bindings,
+        Op::Component(component) => &component.bindings,
+        _ => return false,
+    };
     bindings.iter().any(|binding| match binding {
-        BindingOp::Bind(bind) => {
-            dynamic_needs_unref(bind.name.as_ref(), table)
-                || bind
-                    .value
-                    .as_ref()
-                    .is_some_and(|value| expression_needs_unref(value, table))
-        }
-        BindingOp::On(on) => {
-            dynamic_needs_unref(on.name.as_ref(), table)
-                || on
-                    .handler
-                    .as_ref()
-                    .is_some_and(|handler| expression_needs_unref(handler, table))
+        BindingOp::Model(model) => {
+            dynamic_needs_unref(model.argument.as_ref(), table)
+                || expression_needs_unref(&model.contract.read, table)
         }
         BindingOp::VueDirective(directive) => {
             dynamic_needs_unref(directive.argument.as_ref(), table)
@@ -70,25 +50,7 @@ fn bindings_need_unref(bindings: &[BindingOp<'_>], table: &BindingTable) -> bool
                     .is_some_and(|value| expression_needs_unref(value, table))
         }
         BindingOp::VueShow(show) => expression_needs_unref(&show.value, table),
-        BindingOp::VueHtml(html) => html
-            .value
-            .as_ref()
-            .is_some_and(|value| expression_needs_unref(value, table)),
-        BindingOp::VueText(text) => text
-            .value
-            .as_ref()
-            .is_some_and(|value| expression_needs_unref(value, table)),
-        BindingOp::VueMemo(memo) => expression_needs_unref(&memo.value, table),
-        BindingOp::Model(model) => {
-            dynamic_needs_unref(model.argument.as_ref(), table)
-                || expression_needs_unref(&model.contract.read, table)
-        }
-        BindingOp::SlotContent(_)
-        | BindingOp::VueCssBind(_)
-        | BindingOp::VueSync(_)
-        | BindingOp::VueSlotScope(_)
-        | BindingOp::VueOnce(_)
-        | BindingOp::VueCloak(_) => false,
+        _ => false,
     })
 }
 

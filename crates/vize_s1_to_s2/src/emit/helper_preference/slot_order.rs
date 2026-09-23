@@ -61,7 +61,7 @@ fn conditional_slot_template_has_direct_v_for(region: &Region<'_>) -> bool {
     })
 }
 
-fn explicit_transition_slot_with_implicit_transition_group(region: &Region<'_>) -> bool {
+pub(super) fn explicit_transition_slot_with_implicit_transition_group(region: &Region<'_>) -> bool {
     let mut explicit_transition = false;
     let mut implicit_transition_group = false;
     for op in region.ops.iter() {

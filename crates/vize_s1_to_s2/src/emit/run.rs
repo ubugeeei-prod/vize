@@ -127,12 +127,16 @@ pub(super) fn emit_dom_observed<'f>(
         for_wrappers: &lowered.for_wrappers,
         bindings: options.bindings,
         inline: options.inline,
-        authored_unref: core::cell::Cell::new(u32::MAX),
+        authored_eager_unref: core::cell::Cell::new(u32::MAX),
         authored_for: core::cell::Cell::new(u32::MAX),
+        first_for_source_unref: core::cell::Cell::new(false),
+        early_transition_slot_for: core::cell::Cell::new(false),
     };
     helper_preference::prefer_helpers(&mut cx.buf, &prefer_cx, &mut helper_walk, &lowered.root);
-    let authored_unref = prefer_cx.authored_unref.get();
+    let authored_eager_unref = prefer_cx.authored_eager_unref.get();
     let authored_for = prefer_cx.authored_for.get();
+    let first_for_source_unref = prefer_cx.first_for_source_unref.get();
+    let early_transition_slot_for = prefer_cx.early_transition_slot_for.get();
     fragment::prefer_root_fragment(&mut cx.buf, &lowered.root);
     cx.buf
         .push(options.mode.render_signature(options.bindings.is_some()));
@@ -164,26 +168,29 @@ pub(super) fn emit_dom_observed<'f>(
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("}");
-    // `_unref` is registered while transforming an authored expression.
-    // Codegen can visit that expression later (directives after children,
-    // named slots before default content), so use the authored visit for
-    // its position among structural helpers. The emit visit is a fallback
-    // for expressions the preference walk cannot classify.
+    // Ordinary reads register `_unref` when the body emits them. Model and
+    // runtime-directive reads register it while transforming their directive,
+    // before a later loop can register `renderList`.
     let emitted_unref = cx.used_unref.get();
-    let unref_visit = if authored_unref != u32::MAX {
-        authored_unref
+    let unref_visit = if authored_eager_unref < emitted_unref {
+        authored_eager_unref
     } else {
         emitted_unref
     };
     // The preference walk can encounter a model read that the final render
     // body does not wrap. A visit orders a helper; it does not create one.
     if emitted_unref != u32::MAX {
-        if authored_unref < authored_for {
+        if early_transition_slot_for && unref_visit < authored_for {
             // A dynamic slot can pre-register renderList at its owning
             // component before visiting earlier default-slot expressions.
             // The shipped transform registers their unref first.
             cx.buf
                 .prefer_at_visit_before(Helper::Unref, unref_visit, Helper::RenderList);
+        } else if unref_visit == authored_for && !first_for_source_unref {
+            // The first `_unref` is inside the loop callback; the loop's
+            // `renderList` was registered before visiting that child.
+            cx.buf
+                .prefer_at_visit_after(Helper::Unref, unref_visit, Helper::RenderList);
         } else {
             cx.buf.prefer_at_visit(Helper::Unref, unref_visit);
         }

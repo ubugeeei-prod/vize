@@ -16,7 +16,8 @@ use super::helper::Helper;
 use super::options::BindingTable;
 use super::{builtin, directive, sfc_style, slots};
 use slot_order::{
-    component_slot_content, direct_slot_carrier_precedes_slot_outlet, has_slot_outlet,
+    component_slot_content, direct_slot_carrier_precedes_slot_outlet,
+    explicit_transition_slot_with_implicit_transition_group, has_slot_outlet,
     op_is_direct_slot_carrier, prefer_slot_helpers,
 };
 
@@ -31,11 +32,18 @@ pub(super) struct PreferCx<'a> {
     pub(super) bindings: Option<&'a BindingTable>,
     /// Inline render closures wrap setup `let` reads in `_unref`.
     pub(super) inline: bool,
-    /// Preference-walk visit of the first authored `_unref`, if any.
-    pub(super) authored_unref: core::cell::Cell<u32>,
+    /// First authored model or runtime-directive read that registers `_unref`
+    /// before children are emitted.
+    pub(super) authored_eager_unref: core::cell::Cell<u32>,
     /// First authored `v-for`, which a slot helper may pre-register at
     /// the owning component before the transform would visit it.
     pub(super) authored_for: core::cell::Cell<u32>,
+    /// Whether the first loop source itself, rather than its callback, reads
+    /// through `_unref` at the loop visit.
+    pub(super) first_for_source_unref: core::cell::Cell<bool>,
+    /// Transition slot structure whose `renderList` is pre-registered at
+    /// the parent component, ahead of its authored loop.
+    pub(super) early_transition_slot_for: core::cell::Cell<bool>,
 }
 
 impl PreferCx<'_> {
@@ -145,6 +153,9 @@ fn prefer_op_helpers(
             }
             walk.skip(bindings.len());
             if id.and_then(|id| cx.facts.slot_facts.get(id)).is_some() {
+                if explicit_transition_slot_with_implicit_transition_group(&component.children) {
+                    cx.early_transition_slot_for.set(true);
+                }
                 prefer_slot_helpers(buf, &component.children);
             }
             prefer_region_helpers(buf, cx, walk, &component.children, slot_context, false);
