@@ -1,4 +1,4 @@
-package vize:contracts@0.1.1;
+package vize:contracts@0.1.2;
 
 /// The expression-dialect boundary: one block's expressions and the
 /// bindings in scope in, analysis facts and a checkable projection out.

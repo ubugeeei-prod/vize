@@ -1,4 +1,4 @@
-//! The host's mirror of the `vize:contracts@0.1.1` WIT types, and the
+//! The host's mirror of the `vize:contracts@0.1.2` WIT types, and the
 //! [`InputDialectGuest`] trait every hosting mode implements.
 //!
 //! Field order and names follow `contracts/wit/` exactly (serialized with
@@ -36,7 +36,7 @@ fn declared_exemption(name: &str) -> Option<&'static Exemption> {
 }
 
 /// The WIT package this host implements.
-pub const PACKAGE: &str = "vize:contracts@0.1.1";
+pub const PACKAGE: &str = "vize:contracts@0.1.2";
 /// The integer protocol version this host speaks.
 pub const PROTOCOL_VERSION: u32 = 1;
 /// The S1 page schema version this host reads and writes.

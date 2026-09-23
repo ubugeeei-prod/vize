@@ -1,0 +1,27 @@
+# TS-48 output-world guest stub: a `vize:contracts` output-target component
+# that echoes the committed emit-document golden.
+#
+# Built by `tests/wit_golden_output.rs` for `wasm32-wasip2` with `--locked`; it is
+# its own workspace so the vize workspace never compiles it for the host.
+[package]
+name = "vize-contract-output-echo-guest"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# The no_std guest runtime (allocator, cabi_realloc, memcmp, panic handler).
+vize_extension_sdk = { path = "../../../../vize_extension_sdk" }
+wit-bindgen = { version = "=0.62.0", default-features = false, features = ["macros", "realloc"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[workspace]

@@ -34,6 +34,7 @@ pub mod contract;
 pub mod expression;
 pub mod handshake;
 pub mod outproc;
+pub mod output;
 pub mod session;
 pub mod surface_page;
 pub mod vue;

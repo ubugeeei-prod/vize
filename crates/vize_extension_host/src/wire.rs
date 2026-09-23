@@ -14,6 +14,7 @@ use vize_s0::{String, cstr};
 
 use crate::contract::{Capability, GuestError, InputDialectGuest, LoweredBlock, SourceBlock};
 use crate::expression::{Analysis, ExpressionBatch, ExpressionDialectGuest};
+use crate::output::{EmitRequest, Emitted, OutputTargetGuest};
 
 /// A call from the parent host.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -22,6 +23,7 @@ pub enum Request {
     GetCapability,
     LowerBlock { block: SourceBlock },
     Analyze { batch: ExpressionBatch },
+    Emit { request: EmitRequest },
 }
 
 /// The child's answer.
@@ -35,6 +37,7 @@ pub enum Response {
     Capability(Capability),
     LoweredBlock(LoweredBlock),
     Analysis(Analysis),
+    Emitted(Emitted),
     /// The call reached the guest and failed there.
     Guest(GuestError),
 }
@@ -102,6 +105,7 @@ pub fn answer_input<G: InputDialectGuest>(guest: &mut G, request: Request) -> Re
             .lower_block(&block)
             .map_or_else(Response::Guest, Response::LoweredBlock),
         Request::Analyze { .. } => wrong_world("input-dialect"),
+        Request::Emit { .. } => wrong_world("input-dialect"),
     }
 }
 
@@ -115,6 +119,20 @@ pub fn answer_expression<G: ExpressionDialectGuest>(guest: &mut G, request: Requ
             .analyze(&batch)
             .map_or_else(Response::Guest, Response::Analysis),
         Request::LowerBlock { .. } => wrong_world("expression-dialect"),
+        Request::Emit { .. } => wrong_world("expression-dialect"),
+    }
+}
+
+/// Answer one request with an output-target guest.
+pub fn answer_output<G: OutputTargetGuest>(guest: &mut G, request: Request) -> Response {
+    match request {
+        Request::GetCapability => guest
+            .get_capability()
+            .map_or_else(Response::Guest, Response::Capability),
+        Request::Emit { request } => guest
+            .emit(&request)
+            .map_or_else(Response::Guest, Response::Emitted),
+        Request::LowerBlock { .. } | Request::Analyze { .. } => wrong_world("output-target"),
     }
 }
 
