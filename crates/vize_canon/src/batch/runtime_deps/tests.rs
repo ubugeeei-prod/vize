@@ -117,6 +117,45 @@ fn runtime_node_modules_supply_vue_and_vite_fallbacks() {
 }
 
 #[test]
+fn symlinked_vue_prefers_its_installed_runtime_namespace() {
+    let temp = tempfile::tempdir().unwrap();
+    let project = temp.path().join("project");
+    let store = temp.path().join("store");
+    let real_vue = create_package(&store.join("node_modules"), "vue");
+    let real_namespace = store.join("node_modules").join("@vue");
+    create_package(&real_namespace, "runtime-dom");
+    std::fs::create_dir_all(project.join("node_modules")).unwrap();
+    std::os::unix::fs::symlink(&real_vue, project.join("node_modules/vue")).unwrap();
+    create_package(&project, "node_modules/@vue/runtime-dom");
+
+    with_test_env_overrides(
+        &[
+            ("VIZE_VUE_PACKAGE", None),
+            ("VIZE_VUE_NAMESPACE_PACKAGE", None),
+            ("VIZE_VUE_RUNTIME_DOM_PACKAGE", None),
+            ("VIZE_VITE_PACKAGE", None),
+            ("VIZE_RUNTIME_NODE_MODULES", None),
+            (
+                "VIZE_TEST_WORKSPACE_NODE_MODULES",
+                Some(Path::new("__none__")),
+            ),
+        ],
+        || {
+            let vue = resolve_vue_package(&project).unwrap();
+            let VueRuntimePackages::Namespace(namespace) =
+                resolve_vue_runtime_packages(&project, &vue)
+            else {
+                panic!("expected the installed vue namespace");
+            };
+            assert_eq!(
+                std::fs::canonicalize(&namespace).unwrap(),
+                std::fs::canonicalize(&real_namespace).unwrap()
+            );
+        },
+    );
+}
+
+#[test]
 fn materialized_runtime_dom_also_links_adjacent_runtime_core() {
     let temp = tempfile::tempdir().unwrap();
     let project = temp.path().join("project");

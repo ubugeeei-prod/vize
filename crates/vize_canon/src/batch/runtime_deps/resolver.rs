@@ -128,13 +128,15 @@ fn resolve_inferred_vue_namespace_package(
 fn resolve_adjacent_vue_namespace_package(vue_source: &Path) -> Option<PathBuf> {
     let mut candidates = Vec::new();
 
-    if let Some(parent) = vue_source.parent() {
-        candidates.push(parent.join("@vue"));
-    }
-
+    // pnpm links `vue` into a hoisted `node_modules` whose `@vue` can be a
+    // different version. The package's own sibling namespace is the one that
+    // was installed with this `vue`.
     if let Ok(real_vue_source) = std::fs::canonicalize(vue_source)
         && let Some(parent) = real_vue_source.parent()
     {
+        candidates.push(parent.join("@vue"));
+    }
+    if let Some(parent) = vue_source.parent() {
         candidates.push(parent.join("@vue"));
     }
 

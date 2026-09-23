@@ -122,15 +122,42 @@ fn link_vue_runtime_packages(
     runtime_core_source: Option<&Path>,
 ) -> std::io::Result<()> {
     link_vue_runtime_dom_package(node_modules_dir, runtime_dom_source)?;
+    let adjacent_core = resolve_adjacent_runtime_core_package(runtime_dom_source);
+    let runtime_core_source = adjacent_core.as_deref().or(runtime_core_source);
     if let Some(runtime_core_source) = runtime_core_source {
-        link_vue_runtime_core_package(node_modules_dir, runtime_core_source)
-    } else if let Some(runtime_core_source) =
-        resolve_adjacent_runtime_core_package(runtime_dom_source)
-    {
-        link_vue_runtime_core_package(node_modules_dir, &runtime_core_source)
+        link_vue_runtime_core_package(node_modules_dir, runtime_core_source)?;
+        if let Some(reactivity) = resolve_adjacent_named_package(runtime_core_source, "reactivity")
+        {
+            link_named_vue_package(node_modules_dir, "reactivity", &reactivity)?;
+        }
+        Ok(())
     } else {
         write_vue_runtime_core_stub(node_modules_dir)
     }
+}
+
+fn resolve_adjacent_named_package(package: &Path, name: &str) -> Option<PathBuf> {
+    let direct = package
+        .parent()
+        .map(|parent| parent.join(name))
+        .filter(|candidate| candidate.exists());
+    if direct.is_some() {
+        return direct;
+    }
+    std::fs::canonicalize(package)
+        .ok()
+        .and_then(|real| real.parent().map(|parent| parent.join(name)))
+        .filter(|candidate| candidate.exists())
+}
+
+fn link_named_vue_package(
+    node_modules_dir: &Path,
+    name: &str,
+    source: &Path,
+) -> std::io::Result<()> {
+    let vue_namespace_dir = node_modules_dir.join("@vue");
+    ensure_stub_dir(&vue_namespace_dir)?;
+    symlink_path(&package_link_source(source), &vue_namespace_dir.join(name))
 }
 
 fn resolve_adjacent_runtime_core_package(runtime_dom_source: &Path) -> Option<PathBuf> {

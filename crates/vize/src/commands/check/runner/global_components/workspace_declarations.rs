@@ -120,6 +120,12 @@ fn declaration_may_augment_global_components(
     path: &Path,
     component_names: Option<&FxHashSet<String>>,
 ) -> bool {
+    // Vue's own `packages/runtime-core/types/globalComponents.d.ts` is the
+    // framework source that gets concatenated into the published types. Putting
+    // that ambient module into an app program replaces `vue`'s exports.
+    if is_vue_framework_global_components_source(path) {
+        return false;
+    }
     let Ok(content) = fs::read_to_string(path) else {
         return false;
     };
@@ -138,6 +144,13 @@ fn declaration_may_augment_global_components(
             normalize_global_component_binding_name(name.as_str())
                 .is_some_and(|name| component_names.contains(&name))
         })
+}
+
+fn is_vue_framework_global_components_source(path: &Path) -> bool {
+    let mut parts = path.components().rev();
+    parts.next().and_then(|part| part.as_os_str().to_str()) == Some("globalComponents.d.ts")
+        && parts.next().and_then(|part| part.as_os_str().to_str()) == Some("types")
+        && parts.next().and_then(|part| part.as_os_str().to_str()) == Some("runtime-core")
 }
 
 fn is_vue_path(path: &Path) -> bool {
