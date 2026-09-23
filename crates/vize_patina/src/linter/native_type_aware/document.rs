@@ -98,7 +98,7 @@ fn keep_any_out_of_boolean_keys(document: &mut TypeAwareDocument) {
 
 #[cfg(test)]
 mod tests {
-    use super::project_type_aware;
+    use super::{BOOLEAN_KEY_PATCHED, project_type_aware};
     use crate::linter::native_type_aware::markers::marker_insert_offset;
 
     #[test]
@@ -167,15 +167,15 @@ mod tests {
             0,
             "Component.vue",
         );
-        assert!(
-            document
-                .content
-                .contains("__VizeIsAny<Exclude<T[K], undefined>> extends true ? never")
+        let expected_alias = format!(
+            "{BOOLEAN_KEY_PATCHED} type __DefineProps<T, __BKeys extends keyof T = __VizeBooleanKey<T>> = Readonly<T> & {{ readonly [K in __BKeys]-?: boolean }};"
         );
-        assert!(
-            !document.content.contains(
-                "K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;"
-            )
-        );
+        let boolean_aliases: Vec<_> = document
+            .content
+            .as_str()
+            .lines()
+            .filter(|line| line.starts_with("type __VizeBooleanKey<"))
+            .collect();
+        assert_eq!(boolean_aliases, vec![expected_alias.as_str()]);
     }
 }
