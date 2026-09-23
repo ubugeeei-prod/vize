@@ -64,6 +64,29 @@ use vize_s0::profiler::global_profiler;
 static PROFILER_TEST_LOCK: Mutex<()> = Mutex::new(());
 
 #[test]
+fn maybe_ref_event_handler_does_not_import_unused_unref() {
+    let _guard = PROFILER_TEST_LOCK.lock().unwrap();
+    let sources = [
+        "<template><SelectorQuery @selector=\"updateSelector\" /></template><script setup>import { debounce } from './helper'; const updateSelector = debounce(() => {})</script>",
+        "<template><SelectorQuery v-model:selector-type=\"state.selectorType\" @selector=\"updateSelector\" /></template><script setup>import { reactive } from 'vue'; import { debounce } from './helper'; const state = reactive({ selectorType: '' }); const updateSelector = debounce(() => {})</script>",
+    ];
+    for source in sources {
+        let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+        let shape = Shape::DomInline;
+        let selected = compile(&descriptor, "MaybeRefHandler.vue", shape).unwrap();
+        let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+            compile(&descriptor, "MaybeRefHandler.vue", shape)
+        });
+        assert!(
+            !selected.code.contains("unref as _unref"),
+            "unused _unref leaked into imports:\n{}",
+            selected.code
+        );
+        assert_eq!(divergence(&selected, &legacy), None);
+    }
+}
+
+#[test]
 fn production_compiles_report_and_hold_their_davinci_reach() {
     let _guard = PROFILER_TEST_LOCK.lock().unwrap();
     std::thread::Builder::new()
