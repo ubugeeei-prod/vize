@@ -104,3 +104,30 @@ test("the release gate rejects the nightly campaign as replay evidence", () => {
   assert.equal(qualify({ event: "schedule", display_title: "Fuzz schedule" }), false);
   assert.equal(qualify({ event: "workflow_dispatch", display_title: plan.expectedRunName }), true);
 });
+
+test("version-only releases reuse a parent replay but never its nightly campaign", () => {
+  const plan = fuzzPlan();
+  const parentSha = "b".repeat(40);
+  const qualify = releaseGateRunQualifiers(
+    [plan],
+    new Map([["Fuzz", [releaseSha, parentSha]]]),
+  ).get("Fuzz");
+  assert.ok(qualify);
+
+  assert.equal(
+    qualify({
+      event: "workflow_dispatch",
+      head_sha: parentSha,
+      display_title: `Fuzz replay @ ${parentSha}`,
+    }),
+    true,
+  );
+  assert.equal(
+    qualify({
+      event: "schedule",
+      head_sha: parentSha,
+      display_title: `Fuzz schedule @ ${parentSha}`,
+    }),
+    false,
+  );
+});

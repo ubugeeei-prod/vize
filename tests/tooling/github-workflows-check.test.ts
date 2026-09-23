@@ -77,11 +77,16 @@ test("PR CI jobs cap runtime with explicit timeouts", () => {
   }
 });
 
-test("SemVer checks run on main pushes with an exact Git event baseline", () => {
+test("SemVer checks run on main pushes and exact-SHA release dispatches", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "semver-checks");
 
-  assert.match(job, /if:\s*\$\{\{\s*github\.event_name == 'push'\s*\}\}/);
+  assert.match(
+    job,
+    /if:\s*\$\{\{\s*github\.event_name == 'push' \|\| github\.event_name == 'workflow_dispatch'\s*\}\}/,
+  );
+  assert.match(job, /name: Use candidate version for SemVer classification/);
+  assert.match(job, /: > "\$RUNNER_TEMP\/semver-change-marker\.txt"/);
   assert.match(
     job,
     /BASELINE_REV:\s*\$\{\{\s*github\.event_name == 'pull_request' && github\.event\.pull_request\.base\.sha \|\| \(github\.event_name == 'push' && github\.event\.before \|\| ''\)\s*\}\}/,

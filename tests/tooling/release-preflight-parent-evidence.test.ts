@@ -96,11 +96,11 @@ test("a version-only release dispatches Check, Miri, and Docs at the tag", async
     },
     greenRun(".github/workflows/miri.yml", parentSha, "Miri", "push"),
     greenRun(".github/workflows/build-docs.yml", parentSha, "Docs build", "push"),
-    greenRun(".github/workflows/fuzz.yml", parentSha, `Fuzz replay @ ${tagSha}`),
+    greenRun(".github/workflows/fuzz.yml", parentSha, `Fuzz replay @ ${parentSha}`),
     greenRun(
       ".github/workflows/real-project-matrix.yml",
       parentSha,
-      `Real Project Matrix @ ${tagSha}`,
+      `Real Project Matrix @ ${parentSha}`,
     ),
   ];
   const fullCheck = greenRun(".github/workflows/check.yml", tagSha, `Check full @ ${tagSha}`);

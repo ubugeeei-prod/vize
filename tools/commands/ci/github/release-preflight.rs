@@ -715,7 +715,7 @@ fn latest_required_workflow_run<'a>(
                 .iter()
                 .any(|sha| run.get("head_sha").and_then(Value::as_str) == Some(sha.as_str()))
                 && matches_evidence(run, &evidence)
-                && qualifier.map_or(true, |plan| qualifies_run(run, plan))
+                && qualifier.map_or(true, |plan| qualifies_run(run, plan, accepted_shas))
         })
         .collect::<Vec<_>>();
     matches.sort_by(|left, right| compare_runs(right, left));
@@ -762,10 +762,24 @@ fn matches_evidence(run: &Value, evidence: &WorkflowEvidence) -> bool {
     true
 }
 
-fn qualifies_run(run: &Value, plan: &DispatchPlan) -> bool {
-    (plan.accepts_scheduled_evidence
-        && run.get("event").and_then(Value::as_str) == Some("schedule"))
-        || run.get("display_title").and_then(Value::as_str) == Some(plan.expected_run_name.as_str())
+fn qualifies_run(run: &Value, plan: &DispatchPlan, accepted_shas: &[String]) -> bool {
+    if plan.accepts_scheduled_evidence
+        && run.get("event").and_then(Value::as_str) == Some("schedule")
+    {
+        return true;
+    }
+    let title = run.get("display_title").and_then(Value::as_str);
+    if title == Some(plan.expected_run_name.as_str()) {
+        return true;
+    }
+    let sha = run.get("head_sha").and_then(Value::as_str).unwrap_or("");
+    let Some((prefix, _)) = plan.expected_run_name.rsplit_once(" @ ") else {
+        return false;
+    };
+    let expected = format!("{prefix} @ {sha}");
+    run.get("event").and_then(Value::as_str) == Some("workflow_dispatch")
+        && accepted_shas.iter().any(|accepted| accepted == sha)
+        && title == Some(expected.as_str())
 }
 
 fn accepted_evidence_shas(

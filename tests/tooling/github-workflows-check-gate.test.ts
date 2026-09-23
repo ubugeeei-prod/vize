@@ -70,7 +70,10 @@ test("PR and main push stay fast while full checks require schedule or dispatch"
     workflow.jobs?.["nix-flake"]?.if,
     "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
   );
-  assert.equal(workflow.jobs?.["semver-checks"]?.if, "${{ github.event_name == 'push' }}");
+  assert.equal(
+    workflow.jobs?.["semver-checks"]?.if,
+    "${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}",
+  );
   assert.equal(
     workflow.jobs?.["test-report"]?.steps?.at(-1)?.run,
     "node tools/support/compat/github/require-needs-success.mjs",

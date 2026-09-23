@@ -78,14 +78,21 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
   ];
 }
 
-export function releaseGateRunQualifiers(dispatchPlans) {
+export function releaseGateRunQualifiers(dispatchPlans, evidenceShas = new Map()) {
   return new Map(
-    dispatchPlans.map((plan) => [
-      plan.workflowName,
-      (run) =>
-        (plan.acceptsScheduledEvidence === true && run.event === "schedule") ||
-        run.display_title === plan.expectedRunName,
-    ]),
+    dispatchPlans.map((plan) => {
+      const reusableShas = evidenceShas.get(plan.workflowName) ?? [];
+      const titlePrefix = plan.expectedRunName.slice(0, -40);
+      return [
+        plan.workflowName,
+        (run) =>
+          (plan.acceptsScheduledEvidence === true && run.event === "schedule") ||
+          run.display_title === plan.expectedRunName ||
+          (run.event === "workflow_dispatch" &&
+            reusableShas.includes(run.head_sha) &&
+            run.display_title === `${titlePrefix}${run.head_sha}`),
+      ];
+    }),
   );
 }
 
@@ -106,7 +113,7 @@ export async function bootstrapRequiredWorkflowRuns({
   pollIntervalMs = 15_000,
   onWait = () => {},
 }) {
-  const qualifiers = releaseGateRunQualifiers(dispatchPlans);
+  const qualifiers = releaseGateRunQualifiers(dispatchPlans, evidenceShas);
   let runs = await listRuns();
   const dispatchErrors = [];
   for (const plan of dispatchPlans) {

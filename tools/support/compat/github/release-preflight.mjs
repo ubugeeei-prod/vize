@@ -257,7 +257,7 @@ export async function verifyReleasePreflight(env = process.env, { bootstrap = tr
       await listRuns(),
       sha,
       requiredReleaseWorkflows,
-      releaseGateRunQualifiers(dispatchPlans),
+      releaseGateRunQualifiers(dispatchPlans, evidenceShas),
       evidenceShas,
     );
   }
