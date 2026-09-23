@@ -9,6 +9,7 @@ function createMockCompiler(
     experiments?: { css?: boolean };
     rules?: unknown[];
     warnings?: string[];
+    debugMessages?: string[];
     rspackVersion?: string;
   } = {},
 ) {
@@ -46,7 +47,9 @@ function createMockCompiler(
         warn(message: string) {
           config.warnings?.push(message);
         },
-        debug() {},
+        debug(message: string) {
+          config.debugMessages?.push(message);
+        },
       };
     },
   };
@@ -62,6 +65,84 @@ void test("injects the default Vue compile-time flags", (t) => {
   new VizePlugin().apply(compiler as never);
 
   t.assert.snapshot(JSON.stringify(getCapturedDefinitions(), null, 2));
+});
+
+void test("legacy plugin compilation fields warn without overriding per-rule loader options", () => {
+  const warnings: string[] = [];
+  const loaderOptions = {
+    ssr: false,
+    vapor: false,
+    sourceMap: false,
+    compilerOptions: { templateSyntax: "standard" },
+  };
+  const rules = [{ oneOf: [{ loader: "@vizejs/rspack-plugin/loader", options: loaderOptions }] }];
+  const { compiler } = createMockCompiler(undefined, { rules, warnings });
+  new VizePlugin({
+    autoRules: false,
+    typescript: false,
+    ssr: true,
+    vapor: true,
+    sourceMap: true,
+    compilerOptions: { templateSyntax: "strict" },
+  }).apply(compiler as never);
+  assert.deepEqual(rules[0].oneOf[0].options, { ...loaderOptions, css: { native: false } });
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /compilation options are not forwarded/);
+});
+
+void test("native CSS mode reaches hand-written nested rules with autoRules disabled", () => {
+  const rules = [{ rules: [{ oneOf: [{ loader: "@vizejs/rspack-plugin/loader" }] }] }];
+  const { compiler } = createMockCompiler(undefined, { rules, rspackVersion: "2.0.0" });
+  new VizePlugin({ autoRules: false, typescript: false }).apply(compiler as never);
+  assert.deepEqual(rules[0].rules[0].oneOf[0], {
+    loader: "@vizejs/rspack-plugin/loader",
+    options: { css: { native: true } },
+  });
+});
+
+void test("debug output requires opt-in while warnings remain visible", () => {
+  for (const debug of [false, true]) {
+    const debugMessages: string[] = [];
+    const warnings: string[] = [];
+    const { compiler } = createMockCompiler(undefined, { rules: [], debugMessages, warnings });
+    new VizePlugin({ debug, ssr: true }).apply(compiler as never);
+    assert.equal(debugMessages.length > 0, debug);
+    assert.equal(warnings.length, 1);
+  }
+});
+
+void test("manual CSS overrides remain independent of the plugin default without warnings", () => {
+  for (const native of [true, false]) {
+    const warnings: string[] = [];
+    const loader = "@vizejs/rspack-plugin/loader";
+    const nativeEntry = { loader, options: { css: { native: true } } };
+    const jsEntry = { loader, options: { css: { native: false } } };
+    const defaultEntry = { loader };
+    const cssRule = {
+      test: /\.css$/,
+      use: ["custom-css-loader"],
+      generator: { exportsOnly: true },
+    };
+    const rules = [cssRule, { oneOf: [nativeEntry, jsEntry, defaultEntry] }];
+    const before = structuredClone(cssRule);
+    const { compiler } = createMockCompiler(undefined, { rules, warnings, rspackVersion: "2.0.0" });
+    new VizePlugin({ autoRules: false, typescript: false, css: { native } }).apply(
+      compiler as never,
+    );
+    assert.equal(nativeEntry.options.css.native, true);
+    assert.equal(jsEntry.options.css.native, false);
+    assert.deepEqual(defaultEntry, { loader, options: { css: { native } } });
+    assert.deepEqual(cssRule, before);
+    assert.deepEqual(warnings, []);
+  }
+});
+
+void test("automatic CSS integration rejects a conflicting loader override", () => {
+  const rules = [
+    { test: /\.vue$/, loader: "@vizejs/rspack-plugin/loader", options: { css: { native: false } } },
+  ];
+  const { compiler } = createMockCompiler(undefined, { rules, rspackVersion: "2.0.0" });
+  assert.throws(() => new VizePlugin().apply(compiler as never), /automatic CSS mode/);
 });
 
 void test("does not override Vue flags that are already defined", (t) => {

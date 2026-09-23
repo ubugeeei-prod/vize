@@ -8,8 +8,9 @@
 
 import type { LoaderContext } from "@rspack/core";
 import { compileJsxModule } from "../shared/compiler.ts";
+import { parseSourceMap } from "../shared/source-map.ts";
 import { matchesPattern } from "../shared/utils.ts";
-import type { VizeLoaderOptions } from "../types/index.ts";
+import type { VizeJsxLoaderOptions as VizeLoaderOptions } from "../types/index.ts";
 
 export default function vizeJsxLoader(
   this: LoaderContext<VizeLoaderOptions>,
@@ -33,10 +34,9 @@ export default function vizeJsxLoader(
   }
 
   try {
-    // Honor the loader's source-map setting (rspack toggles `this.sourceMap`
-    // from devtool); fall back to the explicit option, then on by default to
-    // match the `.vue` loader. Skipped only when the compiler tooling is off.
-    const sourceMap = options.sourceMap ?? this.sourceMap ?? true;
+    // Explicit loader options take precedence over Rspack's devtool context.
+    const isProduction = this.mode === "production" || process.env.NODE_ENV === "production";
+    const sourceMap = options.sourceMap ?? this.sourceMap ?? !isProduction;
 
     const { code, map, warnings } = compileJsxModule(resourcePath, source, {
       jsxMode: options.jsxMode,
@@ -49,9 +49,7 @@ export default function vizeJsxLoader(
       this.emitWarning(new Error(`[vize] ${warning}`));
     }
 
-    // Forward the v3 map (parsed to the object rspack expects) so downstream
-    // devtools chain it back to the JSX source (#1533).
-    callback(null, code, map ? JSON.parse(map) : undefined);
+    callback(null, code, parseSourceMap(map) ? map! : undefined);
   } catch (error) {
     callback(error as Error);
   }

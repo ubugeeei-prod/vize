@@ -16,6 +16,7 @@ import type {
   SfcSrcInfo,
   TemplateAssetUrl,
 } from "../types/index.ts";
+import { inlineSrcBlock, MappedModule } from "./source-map.ts";
 
 export interface NativeStyleBlock {
   content: string;
@@ -91,29 +92,17 @@ export function inlineSrcBlocks(
   scriptContent: string | null,
   templateContent: string | null,
 ): string {
-  let result = source;
+  const result = new MappedModule(source, null);
 
   if (scriptContent !== null) {
-    result = result.replace(
-      /(<script)([^>]*)\bsrc=["'][^"']+["']([^>]*>)[\s\S]*?(<\/script>)/i,
-      (_, open, beforeSrc, afterSrc, close) => {
-        const attrs = (beforeSrc + afterSrc).replace(/\bsrc=["'][^"']+["']\s*/g, "");
-        return `${open}${attrs}\n${scriptContent}\n${close}`;
-      },
-    );
+    inlineSrcBlock(result, "script", scriptContent);
   }
 
   if (templateContent !== null) {
-    result = result.replace(
-      /(<template)([^>]*)\bsrc=["'][^"']+["']([^>]*>)[\s\S]*?(<\/template>)/i,
-      (_, open, beforeSrc, afterSrc, close) => {
-        const attrs = (beforeSrc + afterSrc).replace(/\bsrc=["'][^"']+["']\s*/g, "");
-        return `${open}${attrs}\n${templateContent}\n${close}`;
-      },
-    );
+    inlineSrcBlock(result, "template", templateContent);
   }
 
-  return result;
+  return result.code;
 }
 
 /** Match a file path against include/exclude patterns. Normalizes backslashes. */

@@ -11,7 +11,13 @@ export { default as vizeLoader } from "./loader/index.ts";
 export { default as vizeJsxLoader } from "./loader/jsx-loader.ts";
 export { default as vizeStyleLoader } from "./loader/style-loader.ts";
 export { default as vizeScopeLoader } from "./loader/scope-loader.ts";
-export type { VizeLoaderOptions, VizeStyleLoaderOptions } from "./types/index.ts";
+export type {
+  VizeLoaderOptions,
+  VizeSfcLoaderOptions,
+  VizeSfcCompilerOptions,
+  VizeJsxLoaderOptions,
+  VizeStyleLoaderOptions,
+} from "./types/index.ts";
 
 // Shared utilities (optional export for advanced usage)
 export {

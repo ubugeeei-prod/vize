@@ -69,16 +69,20 @@
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
+    "diff": "8.0.4",
     "oxc-parser": "catalog:oxc"
   },
   "devDependencies": {
+    "@jridgewell/trace-mapping": "0.3.31",
     "@rspack/core": "catalog:bundlers",
     "@tsdown/css": "catalog:content",
     "@types/node": "catalog:typescript",
+    "css-loader": "7.1.2",
     "tsdown": "catalog:vite-stack",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
-    "vite-plus": "catalog:vite-stack"
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
   },
   "peerDependencies": {
     "@rspack/core": "^1.0.0 || ^2.0.0"

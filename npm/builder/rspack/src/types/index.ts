@@ -56,7 +56,7 @@ export interface MacroArtifact {
 export interface SfcCompileResultNapi {
   code: string;
   css?: string;
-  /** Source map JSON (when implemented) */
+  /** Source map v3 JSON when requested from the native compiler. */
   map?: string;
   errors: string[];
   warnings: string[];
@@ -219,6 +219,8 @@ export interface TemplateAssetUrl {
 
 export interface CompiledModule {
   code: string;
+  /** Source map v3 JSON for the native module, before output assembly. */
+  map?: string;
   css?: string;
   errors: string[];
   warnings: string[];
@@ -238,8 +240,21 @@ export interface CompiledModule {
 
 // Loader Options Types
 
+/** Native options with loader-level aliases retained for existing configurations. */
+export type VizeSfcCompilerOptions = Omit<SfcCompileOptionsNapi, "ssr" | "vapor" | "sourceMap"> & {
+  /** @deprecated Use the SFC loader's top-level ssr option. */
+  ssr?: boolean;
+  /** @deprecated Use the SFC loader's top-level vapor option. */
+  vapor?: boolean;
+  /** @deprecated Use the SFC loader's top-level sourceMap option. */
+  sourceMap?: boolean;
+};
+
+/** Compatibility type; prefer VizeSfcLoaderOptions or VizeJsxLoaderOptions. */
 export interface VizeLoaderOptions {
-  /** Source maps @default true */
+  /** Override production output; otherwise follows loader mode / NODE_ENV. */
+  isProduction?: boolean;
+  /** Source maps; falls back to compilerOptions, then Rspack's loader context. */
   sourceMap?: boolean;
 
   /** SSR mode @default false */
@@ -248,14 +263,14 @@ export interface VizeLoaderOptions {
   /** Project root */
   root?: string;
 
-  /** Include filter */
+  /** @deprecated Use module.rules[].include. Retained as a loader passthrough filter. */
   include?: string | RegExp | (string | RegExp)[];
 
-  /** Exclude filter */
+  /** @deprecated Use module.rules[].exclude. Retained as a loader passthrough filter. */
   exclude?: string | RegExp | (string | RegExp)[];
 
   /** Low-level compiler options for @vizejs/native compileSfc */
-  compilerOptions?: SfcCompileOptionsNapi;
+  compilerOptions?: VizeSfcCompilerOptions;
 
   /** Custom element mode. true=all, RegExp=matched. @default /\.ce\.vue$/ */
   customElement?: boolean | RegExp;
@@ -274,7 +289,8 @@ export interface VizeLoaderOptions {
 
   /** CSS handling config */
   css?: {
-    /** Rspack native CSS, uses LightningCSS @default auto-detected */
+    /** With autoRules: false, override the plugin default for this SFC chain.
+     * With automatic rules, must match the plugin's resolved CSS mode. */
     native?: boolean;
   };
 
@@ -285,6 +301,15 @@ export interface VizeLoaderOptions {
   transformAssetUrls?: boolean | Record<string, string[]>;
 }
 
+/** Options accepted by the SFC loader. JSX compilation uses a separate loader. */
+export type VizeSfcLoaderOptions = Omit<VizeLoaderOptions, "jsxMode" | "jsxCompat">;
+
+/** Options accepted by the JSX/TSX loader. */
+export type VizeJsxLoaderOptions = Pick<
+  VizeLoaderOptions,
+  "sourceMap" | "vapor" | "jsxMode" | "jsxCompat" | "include" | "exclude"
+>;
+
 export interface VizeStyleLoaderOptions {
   /** Rspack native CSS mode @default false */
   native?: boolean;
@@ -293,40 +318,41 @@ export interface VizeStyleLoaderOptions {
 // Plugin Options Types
 
 export interface VizeRspackPluginOptions {
-  /** Include filter @default /\.vue$/ */
+  /** @deprecated Use rule.include. This legacy field only filters plugin watch logs. */
   include?: string | RegExp | (string | RegExp)[];
 
-  /** Exclude filter @default /node_modules/ */
+  /** @deprecated Use rule.exclude. This legacy field only filters plugin watch logs. */
   exclude?: string | RegExp | (string | RegExp)[];
 
-  /** Force production mode @default auto-detected */
+  /** @deprecated Use Rspack mode. Retained for plugin flags/logging only. */
   isProduction?: boolean;
 
-  /** SSR mode @default false */
+  /** @deprecated Use SFC loader ssr. This plugin field is not forwarded. */
   ssr?: boolean;
 
-  /** Source maps @default true (dev), false (prod) */
+  /** @deprecated Use loader sourceMap. This plugin field is not forwarded. */
   sourceMap?: boolean;
 
-  /** Vapor mode @default false */
+  /** @deprecated Use loader vapor. This plugin field only affects the legacy debug message. */
   vapor?: boolean;
 
-  /** Default JSX output mode for `.jsx`/`.tsx` without a `"use vue:*"` directive. @default "vdom" */
+  /** @deprecated Use JSX loader jsxMode. This plugin field is not forwarded. */
   jsxMode?: "vdom" | "vapor";
 
-  /** JSX semantics; `"babel"` opts into @vue/babel-plugin-jsx compatibility. */
+  /** @deprecated Use JSX loader jsxCompat. This plugin field is not forwarded. */
   jsxCompat?: "native" | "babel";
 
-  /** Root directory @default Rspack's root */
+  /** @deprecated Use loader root or Rspack context. This plugin field is not forwarded. */
   root?: string;
 
   /** CSS config */
   css?: {
-    /** Rspack native CSS, uses LightningCSS @default false */
+    /** Automatic CSS mode, or default for manual SFC rules. Auto-detected from
+     * the Rspack version and experiments.css when omitted. */
     native?: boolean;
   };
 
-  /** Compiler options */
+  /** @deprecated Use SFC loader compilerOptions. This plugin field is not forwarded. */
   compilerOptions?: SfcCompileOptionsNapi;
 
   /** Debug logging @default false */

@@ -14,7 +14,7 @@ import {
   toStyleBlockInfo,
 } from "./utils.ts";
 
-export { generateOutput } from "./output.ts";
+export { generateOutput, generateOutputWithMap } from "./output.ts";
 
 const { compileSfc } = native;
 
@@ -189,6 +189,7 @@ export function compileFile(
 
   const compiled: CompiledModule = {
     code: result.code,
+    ...(result.map ? { map: result.map } : {}),
     css: result.css,
     errors: result.errors,
     warnings: result.warnings,

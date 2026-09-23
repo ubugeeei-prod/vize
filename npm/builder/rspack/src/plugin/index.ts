@@ -5,6 +5,7 @@ import type { VizeRspackPluginOptions } from "../types/index.ts";
 import { matchesPattern } from "../shared/utils.ts";
 import { getLegacyNativeCssState, resolveNativeCss } from "../shared/nativeCss.ts";
 import { applyRuleCloning } from "./ruleCloning.ts";
+import { applyNativeCssMode } from "./loaderOptions.ts";
 
 export class VizePlugin {
   static readonly name = "VizePlugin";
@@ -19,8 +20,31 @@ export class VizePlugin {
     const logger = compiler.getInfrastructureLogger(VizePlugin.name);
     const isProduction = this.options.isProduction ?? compiler.options.mode === "production";
 
-    if (this.options.vapor && !isProduction) {
-      logger.debug("Vapor mode is enabled.");
+    const legacyOptions = [
+      "include",
+      "exclude",
+      "isProduction",
+      "ssr",
+      "sourceMap",
+      "vapor",
+      "jsxMode",
+      "jsxCompat",
+      "root",
+      "compilerOptions",
+    ] as const;
+    const configuredLegacyOptions = legacyOptions.filter((key) => this.options[key] !== undefined);
+    if (configuredLegacyOptions.length > 0) {
+      logger.warn(
+        `Deprecated VizePlugin options: ${configuredLegacyOptions.join(", ")}. ` +
+          "Compilation options belong in loader options; file filters belong in module.rules. " +
+          "Legacy plugin behavior is unchanged: compilation options are not forwarded. See MIGRATION.md.",
+      );
+    }
+
+    if (this.options.debug && this.options.vapor && !isProduction) {
+      logger.debug(
+        "Legacy plugin vapor is set; configure vapor on the loader to select compilation mode.",
+      );
     }
 
     const legacyNativeCssState = getLegacyNativeCssState(compiler.options);
@@ -38,13 +62,18 @@ export class VizePlugin {
       );
     }
 
-    // 1. Auto-inject style sub-request rules
+    const rules = compiler.options.module?.rules;
     const autoRules = this.options.autoRules ?? true;
+    if (rules) {
+      applyNativeCssMode(rules as (RuleSetRule | "...")[], isCssNativeEnabled, autoRules);
+    }
+
+    // 1. Auto-inject style sub-request rules
     if (autoRules) {
       const rules = compiler.options.module?.rules;
       if (rules) {
         const result = applyRuleCloning(rules as (RuleSetRule | "...")[], isCssNativeEnabled);
-        if (result.applied) {
+        if (result.applied && this.options.debug) {
           logger.debug(
             `Auto-injected ${result.clonedCount} style rule(s) for Vue SFC sub-requests.`,
           );
@@ -84,7 +113,9 @@ export class VizePlugin {
             },
             type: "javascript/auto",
           });
-          logger.debug("Auto-injected TypeScript post-processing rule for .vue files.");
+          if (this.options.debug) {
+            logger.debug("Auto-injected TypeScript post-processing rule for .vue files.");
+          }
         }
       }
     }
@@ -117,7 +148,7 @@ export class VizePlugin {
     }
 
     // 4. Dev mode file-change logging
-    if (!isProduction) {
+    if (this.options.debug && !isProduction) {
       compiler.hooks.watchRun.tap(VizePlugin.name, (comp) => {
         const changed = comp.modifiedFiles;
         const removed = comp.removedFiles;

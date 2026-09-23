@@ -1,4 +1,5 @@
 import { parseSync } from "oxc-parser";
+import type { MappedModule } from "./source-map.ts";
 
 const OUTPUT_PARSE_ID = "vize-rspack-output.tsx";
 const SFC_MAIN_NAME = "_sfc_main";
@@ -101,34 +102,40 @@ export function analyzeModuleOutput(code: string): ModuleOutputInfo {
   };
 }
 
-export function rewriteDefaultExportToSfcMain(code: string): string {
+export function rewriteDefaultExportToSfcMain(module: MappedModule): void {
+  const code = module.code;
   const defaultExport = findDefaultExport(parseProgram(code));
   const exportStart = getNodeStart(defaultExport);
   const keywordEnd = defaultExport ? getExportDefaultKeywordEnd(code, defaultExport) : null;
   if (exportStart == null || keywordEnd == null) {
-    return code;
+    return;
   }
 
-  return `${code.slice(0, exportStart)}const ${SFC_MAIN_NAME} =${code.slice(keywordEnd)}`;
+  module.replace(exportStart, keywordEnd, `const ${SFC_MAIN_NAME} =`);
 }
 
 export function insertBeforeSfcMainDefaultExport(
-  code: string,
+  module: MappedModule,
   insertion: string,
   options: { normalizeSemicolon?: boolean } = {},
-): string {
+): void {
+  const code = module.code;
   const defaultExport = findDefaultExport(parseProgram(code));
   const declaration = isNode(defaultExport?.declaration) ? defaultExport.declaration : null;
   const exportStart = getNodeStart(defaultExport);
   const exportEnd = typeof defaultExport?.end === "number" ? defaultExport.end : null;
   if (!isIdentifierNamed(declaration, SFC_MAIN_NAME) || exportStart == null) {
-    return code;
+    return;
   }
 
-  if (options.normalizeSemicolon && exportEnd != null) {
-    const suffixStart = code[exportEnd] === ";" ? exportEnd + 1 : exportEnd;
-    return `${code.slice(0, exportStart)}${insertion}\nexport default ${SFC_MAIN_NAME};${code.slice(suffixStart)}`;
+  if (
+    options.normalizeSemicolon &&
+    exportEnd != null &&
+    code[exportEnd - 1] !== ";" &&
+    code[exportEnd] !== ";"
+  ) {
+    module.replace(exportEnd, exportEnd, ";");
   }
 
-  return `${code.slice(0, exportStart)}${insertion}\n${code.slice(exportStart)}`;
+  module.replace(exportStart, exportStart, `${insertion}\n`);
 }

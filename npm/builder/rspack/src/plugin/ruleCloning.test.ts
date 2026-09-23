@@ -4,6 +4,45 @@ import "./../test/setup.ts";
 import { applyRuleCloning } from "./ruleCloning.ts";
 
 void describe("applyRuleCloning", () => {
+  void test("shares file filters while keeping request conditions and metadata on the main branch", () => {
+    const include = /src/;
+    const exclude = /vendor/;
+    const issuer = /entry/;
+    const resourceQuery = { not: [/raw/] };
+    const options = { ssr: true };
+    const rules = [
+      {
+        test: /\.vue$/,
+        include,
+        exclude,
+        issuer,
+        resourceQuery,
+        sideEffects: false,
+        loader: "@vizejs/rspack-plugin/loader",
+        options,
+      },
+    ];
+    applyRuleCloning(rules, true);
+    const rule = rules[0] as Record<string, unknown>;
+    assert.equal(rule.include, include);
+    assert.equal(rule.exclude, exclude);
+    assert.equal(rule.issuer, undefined);
+    assert.equal(rule.resourceQuery, undefined);
+    assert.equal(rule.sideEffects, undefined);
+    assert.equal(rule.loader, undefined);
+    assert.equal(rule.options, undefined);
+    const branches = rule.oneOf as Array<Record<string, unknown>>;
+    const main = branches.at(-1)!;
+    assert.equal(main.issuer, issuer);
+    assert.equal(main.resourceQuery, resourceQuery);
+    assert.equal(main.sideEffects, false);
+    const uses = main.use as Array<{ options: unknown }>;
+    assert.deepEqual(uses[0].options, { ssr: true, css: { native: true } });
+    for (const style of branches.slice(0, -1)) {
+      assert.equal(style.sideEffects, true);
+    }
+    assert.deepEqual(options, { ssr: true });
+  });
   void test("does nothing when no vize loader is found", () => {
     const rules = [{ test: /\.css$/, use: ["style-loader", "css-loader"] }];
     const result = applyRuleCloning(rules as never, true);

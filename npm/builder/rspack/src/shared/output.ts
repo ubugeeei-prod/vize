@@ -9,44 +9,52 @@ import {
   insertBeforeSfcMainDefaultExport,
   rewriteDefaultExportToSfcMain,
 } from "./module-output.ts";
+import { MappedModule, parseSourceMap, type SourceMapV3 } from "./source-map.ts";
+
+export interface GenerateOutputOptions {
+  requestPath: string;
+  /** Inject HMR boilerplate using `module.hot` (Rspack/webpack CJS API) */
+  hmr?: boolean;
+  /** Original file path (for __file exposure in dev mode) */
+  filePath?: string;
+  /** Whether this is a production build */
+  isProduction?: boolean;
+  /** Project root context (for computing relative __file path) */
+  rootContext?: string;
+  /** Whether Rspack native CSS is handling CSS module exports */
+  nativeCss?: boolean;
+}
 
 /** Generate JS output with style/custom-block imports and optional HMR code. */
-export function generateOutput(
+export function generateOutput(compiled: CompiledModule, options: GenerateOutputOptions): string {
+  return generateOutputWithMap(compiled, options).code;
+}
+
+/** Generate module code and preserve native mappings through output assembly. */
+export function generateOutputWithMap(
   compiled: CompiledModule,
-  options: {
-    requestPath: string;
-    /** Inject HMR boilerplate using `module.hot` (Rspack/webpack CJS API) */
-    hmr?: boolean;
-    /** Original file path (for __file exposure in dev mode) */
-    filePath?: string;
-    /** Whether this is a production build */
-    isProduction?: boolean;
-    /** Project root context (for computing relative __file path) */
-    rootContext?: string;
-    /** Whether Rspack native CSS is handling CSS module exports */
-    nativeCss?: boolean;
-  },
-): string {
-  let output = compiled.code;
+  options: GenerateOutputOptions,
+): { code: string; map: SourceMapV3 | null } {
+  const emitted = new MappedModule(compiled.code, parseSourceMap(compiled.map));
   const isCustomElement = compiled.isCustomElement;
 
   if (compiled.templateAssetUrls.length > 0) {
-    output = rewriteSfcTemplateAssetReferences(output, compiled.templateAssetUrls);
+    emitted.edit(rewriteSfcTemplateAssetReferences(emitted.code, compiled.templateAssetUrls));
   }
 
-  const moduleInfo = analyzeModuleOutput(output);
+  const moduleInfo = analyzeModuleOutput(emitted.code);
   const hasExportDefault = moduleInfo.hasDefaultExport;
   const hasSfcMainDefined = moduleInfo.hasSfcMainDefined;
 
   if (hasExportDefault && !hasSfcMainDefined) {
-    output = rewriteDefaultExportToSfcMain(output);
+    rewriteDefaultExportToSfcMain(emitted);
     if (compiled.hasScoped && compiled.scopeId) {
-      output += `\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`;
+      emitted.append(`\n_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`);
     }
-    output += "\nexport default _sfc_main;";
+    emitted.append("\nexport default _sfc_main;");
   } else if (hasExportDefault && hasSfcMainDefined && compiled.hasScoped && compiled.scopeId) {
-    output = insertBeforeSfcMainDefaultExport(
-      output,
+    insertBeforeSfcMainDefaultExport(
+      emitted,
       `_sfc_main.__scopeId = "data-v-${compiled.scopeId}";`,
     );
   }
@@ -95,29 +103,33 @@ export function generateOutput(
           const bindingName = typeof style.module === "string" ? style.module : "$style";
           const varName = `_cssModule_${style.index}`;
           cssModuleHmrEntries.push({ request, varName, bindingName });
-          return options.nativeCss
-            ? `import * as ${varName} from ${JSON.stringify(request)};`
-            : `import ${varName} from ${JSON.stringify(request)};`;
+          return `import * as ${varName} from ${JSON.stringify(request)};`;
         }
         return `import ${JSON.stringify(request)};`;
       })
       .join("\n");
 
-    output = styleImports + "\n" + output;
+    emitted.prepend(`${styleImports}\n`);
 
     if (isCustomElement) {
       const stylesArray = activeStyles.map((style) => `_style_${style.index}`).join(",");
-      output = insertBeforeSfcMainDefaultExport(output, `_sfc_main.styles = [${stylesArray}];`, {
+      insertBeforeSfcMainDefaultExport(emitted, `_sfc_main.styles = [${stylesArray}];`, {
         normalizeSemicolon: true,
       });
     }
 
     if (!isCustomElement && cssModuleHmrEntries.length > 0) {
-      const cssModuleSetup = cssModuleHmrEntries
-        .map(
+      const cssModuleInterop = options.nativeCss
+        ? ""
+        : 'const __vize_resolve_css_module__ = (value) => value.default && typeof value.default === "object" ? value.default : value;';
+      const cssModuleSetup = [
+        cssModuleInterop,
+        ...cssModuleHmrEntries.map(
           (module) =>
-            `_sfc_main.__cssModules = _sfc_main.__cssModules || {};\n_sfc_main.__cssModules[${JSON.stringify(module.bindingName)}] = ${module.varName};`,
-        )
+            `_sfc_main.__cssModules = _sfc_main.__cssModules || {};\n_sfc_main.__cssModules[${JSON.stringify(module.bindingName)}] = ${options.nativeCss ? module.varName : `__vize_resolve_css_module__(${module.varName})`};`,
+        ),
+      ]
+        .filter(Boolean)
         .join("\n");
 
       const cssModuleHmr =
@@ -127,14 +139,16 @@ export function generateOutput(
                 genCSSModuleHotReloadCode(
                   compiled.scopeId,
                   JSON.stringify(module.request),
-                  module.varName,
+                  options.nativeCss
+                    ? module.varName
+                    : `__vize_resolve_css_module__(${module.varName})`,
                   module.bindingName,
                 ),
               )
               .join("\n")
           : "";
 
-      output = insertBeforeSfcMainDefaultExport(output, `${cssModuleSetup}\n${cssModuleHmr}`, {
+      insertBeforeSfcMainDefaultExport(emitted, `${cssModuleSetup}\n${cssModuleHmr}`, {
         normalizeSemicolon: true,
       });
     }
@@ -144,15 +158,15 @@ export function generateOutput(
     const relativePath = options.rootContext
       ? path.relative(options.rootContext, options.filePath).replace(/\\/g, "/")
       : path.basename(options.filePath);
-    output = insertBeforeSfcMainDefaultExport(
-      output,
+    insertBeforeSfcMainDefaultExport(
+      emitted,
       `_sfc_main.__file = ${JSON.stringify(relativePath)};`,
       { normalizeSemicolon: true },
     );
   }
 
   if (options.hmr && compiled.scopeId) {
-    output = insertBeforeSfcMainDefaultExport(output, genHotReloadCode(compiled.scopeId), {
+    insertBeforeSfcMainDefaultExport(emitted, genHotReloadCode(compiled.scopeId), {
       normalizeSemicolon: true,
     });
   }
@@ -183,7 +197,7 @@ export function generateOutput(
       })
       .join("\n");
 
-    output = insertBeforeSfcMainDefaultExport(output, customBlockImports, {
+    insertBeforeSfcMainDefaultExport(emitted, customBlockImports, {
       normalizeSemicolon: true,
     });
   }
@@ -197,8 +211,8 @@ export function generateOutput(
         return `import ${varName} from ${JSON.stringify(importPath)};`;
       })
       .join("\n");
-    output = assetImports + "\n" + output;
+    emitted.prepend(`${assetImports}\n`);
   }
 
-  return output;
+  return { code: emitted.code, map: emitted.map };
 }

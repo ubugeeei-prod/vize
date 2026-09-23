@@ -33,7 +33,7 @@ vp install -D @vizejs/rspack-plugin @rspack/core
 
 > [!IMPORTANT]
 > **Rspack 2.x**: native CSS is the default — you don't need to set `experiments.css` or `css: { native: true }`. (`experiments.css` is deprecated in 2.x but still works; the recommended path is to declare CSS rules with `type: "css/auto"`, which VizePlugin does for you.) Set `css: { native: false }` only to opt out and use a JS-based style pipeline (e.g. `CssExtractRspackPlugin` / `style-loader`).
-> **Rspack 1.x**: native CSS is off by default. Set `experiments: { css: true }` (or pass `css: { native: true }`) to enable it.
+> **Rspack 1.x**: native CSS is off by default. Set `experiments: { css: true }` to enable it. The plugin option alone does not enable the Rspack 1.x experiment.
 
 ### Simple Mode (Recommended)
 
@@ -61,7 +61,6 @@ export default {
 
   plugins: [
     new VizePlugin({
-      isProduction,
       // Native CSS is the default on Rspack 2.x.
       // On Rspack 1.x, pass css: { native: true } and set experiments: { css: true }.
       // Pass css: { native: false } to opt out of native CSS.
@@ -101,11 +100,7 @@ export default {
     ],
   },
 
-  plugins: [
-    new VizePlugin({
-      isProduction,
-    }),
-  ],
+  plugins: [new VizePlugin()],
 
   resolve: {
     alias: {
@@ -155,9 +150,7 @@ export default {
   },
 
   plugins: [
-    new VizePlugin({
-      isProduction,
-    }),
+    new VizePlugin({}),
 
     ...(isProduction
       ? [
@@ -281,7 +274,6 @@ export default {
 
   plugins: [
     new VizePlugin({
-      isProduction,
       autoRules: false,
       css: { native: true },
     }),
@@ -382,7 +374,6 @@ export default {
 
   plugins: [
     new VizePlugin({
-      isProduction,
       autoRules: false,
     }),
 
@@ -406,64 +397,114 @@ export default {
 
 </details>
 
+## Configuration responsibilities
+
+Rspack rules select files through `test`, `include`, and `exclude`. SFC and JSX
+loader options configure compilation. `VizePlugin` configures CSS integration,
+automatic rules, TypeScript post-processing, and diagnostic logging.
+
+Compilation options on `VizePlugin` are deprecated and are not forwarded to loaders.
+Existing configurations can be updated using the [migration guide](./MIGRATION.md).
+With automatic rules, SFC loader `css.native` must match the plugin's resolved
+CSS mode. With `autoRules: false`, each loader's explicit mode is preserved and
+the plugin supplies a default only where the mode is unspecified. This applies
+to static entries in nested `rules` / `oneOf` as well. Automatic
+style-rule cloning targets the first matching root-level Vue rule without `oneOf`; nested
+configurations must supply their own style routing. Function-valued `use` entries
+are not rewritten; use static entries for plugin-managed CSS configuration.
+
+Manual style routing retains control over loader order, preprocessor options,
+CSS Modules, and rule-level parser/generator settings. Match each SFC loader's
+CSS mode to its style sub-request pipeline. Automatic cloning copies the CSS
+loader chain and type; it does not reproduce arbitrary CSS rule conditions or
+parser/generator settings. Use manual routing for those configurations.
+
 ## API
 
 ### VizePlugin
 
-```typescript
-import { VizePlugin } from "@vizejs/rspack-plugin";
+`new VizePlugin()` enables automatic style-rule cloning and TypeScript stripping.
+The supported integration options are:
 
-new VizePlugin({
-  isProduction: boolean;    // Auto-detected from Rspack mode
-  include: string | RegExp | (string | RegExp)[]; // Filter watched .vue files
-  exclude: string | RegExp | (string | RegExp)[]; // Exclude watched .vue files
-  ssr: boolean;             // Enable SSR mode (default: false)
-  sourceMap: boolean;       // Enable source maps (default: true in dev)
-  vapor: boolean;           // Enable Vapor mode (default: false)
-  root: string;             // Root directory (default: Rspack's root)
-  css: {
-    native: boolean;        // Use Rspack native CSS. Default: true on Rspack 2.x, false on 1.x (1.x also needs experiments: { css: true })
-  };
-  compilerOptions: {};      // Extra @vizejs/native compileSfc options
-  debug: boolean;           // Enable debug logging (default: false)
-  autoRules: boolean;       // Auto-clone CSS rules for Vue style sub-requests (default: true)
-  typescript: boolean;      // Auto-inject builtin:swc-loader for .vue post-processing (default: true)
-});
-// Debug logging uses Rspack's infrastructure logger.
-// Control verbosity via `infrastructureLogging.level` in your rspack config.
-```
+| Option       | Default              | Effect                                         |
+| ------------ | -------------------- | ---------------------------------------------- |
+| `css.native` | Detected from Rspack | Select Native CSS or a JS loader pipeline      |
+| `autoRules`  | `true`               | Clone style rules for SFC sub-requests         |
+| `typescript` | `true`               | Inject SWC to strip types from main SFC output |
+| `debug`      | `false`              | Emit Vize infrastructure debug messages        |
 
-### VizeLoader
+Enable both Vize debug output and Rspack's logger to display debug messages:
 
-```typescript
-// In rspack.config.js
+```javascript
 {
-  loader: "@vizejs/rspack-plugin/loader",
-  options: {
-    include: string | RegExp | (string | RegExp)[]; // Safe compile allowlist
-    exclude: string | RegExp | (string | RegExp)[]; // Safe compile denylist
-    sourceMap: boolean;     // Enable source maps (default: true)
-    ssr: boolean;           // Enable SSR mode (default: false)
-    vapor: boolean;         // Enable Vapor mode (default: false)
-    customElement: boolean | RegExp; // Custom element mode (default: /\.ce\.vue$/)
-    hotReload: boolean;     // Enable HMR (default: true in dev, false in prod/SSR)
-    transformAssetUrls: boolean | Record<string, string[]>; // See below (default: true)
-    compilerOptions: {      // Extra @vizejs/native compileSfc options
-      filename?: string;
-      sourceMap?: boolean;
-      ssr?: boolean;
-      isTs?: boolean;       // Preserve TypeScript (auto-detected from <script lang="ts">)
-      vapor?: boolean;      // Enable Vapor mode compilation
-      scopeId?: string;
-    };
-  };
+  infrastructureLogging: { level: "verbose", debug: /VizePlugin/ },
+  plugins: [new VizePlugin({ debug: true })],
 }
 ```
 
-If `include/exclude` filters out a `.vue` file matched by this loader rule, the loader emits a warning and passes through the source unchanged.
-This avoids hard failures while still alerting you to mismatched rule/filter configuration.
+Warnings and errors do not depend on `debug`. Deprecated plugin fields remain
+accepted with migration warnings; their previous behavior is retained.
 
-Compilation errors cause the loader to fail immediately (`callback(error)`) instead of returning broken code.
+### SFC loader
+
+`@vizejs/rspack-plugin/loader` accepts `VizeSfcLoaderOptions`:
+
+```typescript
+import type { VizeSfcLoaderOptions } from "@vizejs/rspack-plugin";
+
+const options = {
+  ssr: false,
+  vapor: false,
+  customElement: /\.ce\.vue$/,
+  hotReload: true,
+  transformAssetUrls: true,
+  compilerOptions: { templateSyntax: "standard" },
+} satisfies VizeSfcLoaderOptions;
+```
+
+| Option               | Behavior                                                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `ssr`                | Server compilation; defaults to false; disables client HMR                                                                      |
+| `vapor`              | Default SFC compilation mode; defaults to false                                                                                 |
+| `sourceMap`          | Forwards available native maps through output assembly; falls back to `compilerOptions.sourceMap`, then Rspack's loader context |
+| `isProduction`       | Override SFC production output; otherwise use loader mode / NODE_ENV                                                            |
+| `root`               | Base for scope IDs and development file paths; relative values resolve against Rspack context                                   |
+| `compilerOptions`    | Additional native compiler options                                                                                              |
+| `css.native`         | Explicit mode for a manually routed SFC chain (`autoRules: false`); otherwise must match the plugin mode                        |
+| `customElement`      | Custom element selection; defaults to matching .ce.vue                                                                          |
+| `hotReload`          | Enables client HMR injection in development; false disables it                                                                  |
+| `transformAssetUrls` | Rewrites supported static template asset URLs; defaults to true                                                                 |
+
+Set `ssr`, `vapor`, and `sourceMap` at loader top level. Their nested
+`compilerOptions` counterparts remain as deprecated fallbacks. Explicit top-level
+values, including `false`, take precedence. Without an explicit source-map option
+or loader context value, maps default to enabled in development and disabled in
+production. `filename` and `scopeId` are derived internally.
+
+The SFC loader passes native source maps to Rspack after accounting for generated
+imports, export rewrites, component metadata, and template asset replacements.
+External script content maps back to its source file. Rspack's `devtool` controls
+final bundle map emission. Mapping coverage follows the native compiler: the
+current SFC map covers script code; template-only SFCs can return no map. The
+loader does not synthesize template mappings.
+
+CSS Modules support Rspack native CSS and `css-loader` with either default or
+named exports. Class maps are attached to the component's `$style` or the name
+specified by `<style module="name">`.
+
+Legacy loader `include` / `exclude` filters remain available. A filtered file
+passes through unchanged with a warning; this is not a Vue 2 fallback. Prefer
+Rspack rule conditions so excluded files never reach this loader.
+Compilation errors fail the loader immediately.
+
+### JSX loader
+
+`@vizejs/rspack-plugin/jsx-loader` accepts `VizeJsxLoaderOptions`:
+`jsxMode`, `jsxCompat`, `vapor`, `sourceMap`, and the legacy file filters.
+Configure these on the JSX rule. `jsxCompat: "babel"` selects native compiler
+compatibility semantics; it does not install a Babel loader.
+
+The existing `VizeLoaderOptions` type remains exported for compatibility.
 
 #### TypeScript
 

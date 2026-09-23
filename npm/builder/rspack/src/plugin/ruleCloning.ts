@@ -5,10 +5,10 @@
  */
 
 import type { RuleSetRule, RuleSetUseItem } from "@rspack/core";
+import { applyNativeCssMode, isVizeMainLoader } from "./loaderOptions.ts";
 
 // ---------------------------------------------------------------------------
 
-const VIZE_LOADER_IDENT = "@vizejs/rspack-plugin/loader";
 const VIZE_STYLE_LOADER_IDENT = "@vizejs/rspack-plugin/style-loader";
 const VIZE_SCOPE_LOADER_IDENT = "@vizejs/rspack-plugin/scope-loader";
 
@@ -89,17 +89,31 @@ export function applyRuleCloning(
     clonedStyleRules.push(...createFallbackStyleRules(nativeCss));
   }
 
-  // Step 4: build oneOf
+  // File selection applies to the SFC and its style sub-requests. Request
+  // conditions and module metadata belong only to the original main branch.
+  const { test, include, exclude, resource, descriptionData, ...mainRule } = vueRule;
   const mainLoaderBranch: RuleSetRule = {
-    use: withNativeCssLoaderOption(normalizeUseFromRule(vueRule), nativeCss),
+    ...mainRule,
+    loader: undefined,
+    options: undefined,
+    use: deepCloneUse(normalizeUseFromRule(vueRule)),
   };
+  applyNativeCssMode([mainLoaderBranch], nativeCss);
 
-  const oneOf: RuleSetRule[] = [...clonedStyleRules, mainLoaderBranch];
+  // A used component's plain style imports must survive tree shaking, even
+  // when the component or its package is marked as side-effect-free.
+  for (const rule of clonedStyleRules) {
+    rule.sideEffects = true;
+  }
 
   // Replace original .vue rule with oneOf version
   rules[vueRuleIndex] = {
-    test: vueRule.test,
-    oneOf,
+    test,
+    include,
+    exclude,
+    resource,
+    descriptionData,
+    oneOf: [...clonedStyleRules, mainLoaderBranch],
   };
 
   // Step 5: exclude vue sub-requests from original CSS rules────
@@ -126,16 +140,6 @@ function isVueMainRule(rule: RuleSetRule): boolean {
     const loader = typeof u === "string" ? u : (u as { loader?: string }).loader;
     return loader ? isVizeMainLoader(loader) : false;
   });
-}
-
-function isVizeMainLoader(loader: string): boolean {
-  // Match package export or resolved package file path.
-  const normalized = loader.replaceAll("\\", "/");
-  return (
-    loader === VIZE_LOADER_IDENT ||
-    ((normalized.includes("@vizejs/rspack-plugin") || normalized.includes("rspack-vize-plugin")) &&
-      /\/dist\/loader\/index\.[cm]?js$/.test(normalized))
-  );
 }
 
 function testMatchesVue(test: RuleSetRule["test"]): boolean {
@@ -233,50 +237,6 @@ function createFallbackStyleRules(nativeCss: boolean): RuleSetRule[] {
       use: [{ loader: VIZE_SCOPE_LOADER_IDENT }, { loader: VIZE_STYLE_LOADER_IDENT }],
     },
   ];
-}
-
-function withNativeCssLoaderOption(uses: RuleSetUseItem[], nativeCss: boolean): RuleSetUseItem[] {
-  return deepCloneUse(uses).map((useItem) => {
-    if (typeof useItem === "string") {
-      return isVizeMainLoader(useItem)
-        ? { loader: useItem, options: { css: { native: nativeCss } } }
-        : useItem;
-    }
-
-    if (typeof useItem !== "object" || useItem === null) {
-      return useItem;
-    }
-
-    const loader = (useItem as { loader?: string }).loader;
-    if (!loader || !isVizeMainLoader(loader)) {
-      return useItem;
-    }
-
-    const options = (useItem as { options?: unknown }).options;
-    if (!options || typeof options !== "object" || Array.isArray(options)) {
-      return { ...useItem, options: { css: { native: nativeCss } } };
-    }
-
-    const optionRecord = options as Record<string, unknown>;
-    const cssOptions = optionRecord.css;
-    if (!cssOptions || typeof cssOptions !== "object" || Array.isArray(cssOptions)) {
-      return {
-        ...useItem,
-        options: { ...optionRecord, css: { native: nativeCss } },
-      };
-    }
-
-    return {
-      ...useItem,
-      options: {
-        ...optionRecord,
-        css: {
-          ...(cssOptions as Record<string, unknown>),
-          native: nativeCss,
-        },
-      },
-    };
-  });
 }
 
 /** Exclude Vue style sub-requests from a rule via `resourceQuery: { not: [/vue/] }`. */

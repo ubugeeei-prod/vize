@@ -1,17 +1,13 @@
 /** Main .vue SFC loader. Compiles SFC → JS; must be used with `oneOf` (mutual exclusion with style-loader). */
 
-import type { LoaderContext } from "@rspack/core";
+import { sources, type LoaderContext } from "@rspack/core";
 import fs from "node:fs";
 import path from "node:path";
-import { compileFile, generateOutput } from "../shared/compiler.ts";
-import {
-  matchesPattern,
-  extractSrcInfo,
-  inlineSrcBlocks,
-  extractCustomBlocks,
-} from "../shared/utils.ts";
+import { compileFile, generateOutputWithMap } from "../shared/compiler.ts";
+import { matchesPattern, extractSrcInfo, extractCustomBlocks } from "../shared/utils.ts";
 import { resolveNativeCss as resolveNativeCssMode } from "../shared/nativeCss.ts";
-import type { VizeLoaderOptions } from "../types/index.ts";
+import { inlineSrcBlock, MappedModule } from "../shared/source-map.ts";
+import type { VizeSfcLoaderOptions as VizeLoaderOptions } from "../types/index.ts";
 
 /** .ce.vue → custom element */
 const DEFAULT_CE_PATTERN = /\.ce\.vue$/;
@@ -23,10 +19,13 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
   const resourceQuery = this.resourceQuery;
   const requestPath = normalizeRequestPath(this, resourcePath);
 
-  const isProduction = this.mode === "production" || process.env.NODE_ENV === "production";
-  const isSsr = options.ssr ?? false;
+  const isProduction =
+    options.isProduction ?? (this.mode === "production" || process.env.NODE_ENV === "production");
+  const isSsr = options.ssr ?? options.compilerOptions?.ssr ?? false;
   const needsHotReload = !isSsr && !isProduction && options.hotReload !== false;
   const nativeCss = resolveNativeCss(this, options);
+  const sourceMap =
+    options.sourceMap ?? options.compilerOptions?.sourceMap ?? this.sourceMap ?? !isProduction;
 
   this.addDependency(resourcePath);
 
@@ -93,14 +92,19 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
 
     // Resolve external src references
     const srcInfo = extractSrcInfo(source);
-    let resolvedSource = source;
+    const resolvedSource = new MappedModule(
+      source,
+      sourceMap && (srcInfo.scriptSrc || srcInfo.templateSrc)
+        ? new sources.OriginalSource(source, resourcePath).map({ columns: true })
+        : null,
+    );
 
     if (srcInfo.scriptSrc) {
       const scriptPath = path.resolve(path.dirname(resourcePath), srcInfo.scriptSrc);
       this.addDependency(scriptPath);
       try {
         const scriptContent = fs.readFileSync(scriptPath, "utf-8");
-        resolvedSource = inlineSrcBlocks(resolvedSource, scriptContent, null);
+        inlineSrcBlock(resolvedSource, "script", scriptContent, scriptPath);
       } catch {
         callback(
           new Error(
@@ -116,7 +120,7 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       this.addDependency(templatePath);
       try {
         const templateContent = fs.readFileSync(templatePath, "utf-8");
-        resolvedSource = inlineSrcBlocks(resolvedSource, null, templateContent);
+        inlineSrcBlock(resolvedSource, "template", templateContent, templatePath);
       } catch {
         callback(
           new Error(
@@ -127,13 +131,16 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       }
     }
 
-    const compiled = compileFile(resourcePath, resolvedSource, {
-      sourceMap: options.sourceMap ?? this.sourceMap ?? true,
-      ssr: options.ssr ?? false,
-      vapor: options.vapor ?? false,
+    const rootContext = options.root
+      ? path.resolve(this.rootContext, options.root)
+      : this.rootContext;
+    const compiled = compileFile(resourcePath, resolvedSource.code, {
+      sourceMap,
+      ssr: isSsr,
+      vapor: options.vapor ?? options.compilerOptions?.vapor ?? false,
       compilerOptions: options.compilerOptions,
       isCustomElement,
-      rootContext: this.rootContext,
+      rootContext,
       isProduction,
       transformAssetUrls: options.transformAssetUrls,
     });
@@ -151,17 +158,27 @@ export default function vizeLoader(this: LoaderContext<VizeLoaderOptions>, sourc
       return;
     }
 
-    const output = generateOutput(compiled, {
+    const output = generateOutputWithMap(compiled, {
       requestPath,
       hmr: needsHotReload,
       filePath: resourcePath,
       isProduction,
-      rootContext: this.rootContext,
+      rootContext,
       nativeCss,
     });
 
-    // TODO: pass source map when @vizejs/native exposes it
-    callback(null, output);
+    const map =
+      output.map && resolvedSource.map
+        ? new sources.SourceMapSource(
+            output.code,
+            resourcePath,
+            JSON.stringify(output.map),
+            resolvedSource.code,
+            JSON.stringify(resolvedSource.map),
+            true,
+          ).map({ columns: true })
+        : output.map;
+    callback(null, output.code, map ? JSON.stringify(map) : undefined);
   } catch (error) {
     callback(error as Error);
   }
