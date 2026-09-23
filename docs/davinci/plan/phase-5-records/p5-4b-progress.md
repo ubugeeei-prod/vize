@@ -11,11 +11,11 @@ at both boundaries. α pages cannot contain a body or S3 code shape.
 The focused `summary_firewall` test reads a prop from one dependent file and
 an emit from another. Its exact Salsa event counts are:
 
-| Revision | `sfc_summary` exec/reuse | `declaration_fingerprint` exec/reuse | dependent exec/reuse |
-| --- | ---: | ---: | ---: |
-| First read | 1/0 | 2/0 | 2/0 |
-| Body-only edit, same α pages | 1/0 | 0/2 | 0/2 |
-| Prop type change | 1/0 | 2/0 | 1/1 |
+| Revision                     | `sfc_summary` exec/reuse | `declaration_fingerprint` exec/reuse | dependent exec/reuse |
+| ---------------------------- | -----------------------: | -----------------------------------: | -------------------: |
+| First read                   |                      1/0 |                                  2/0 |                  2/0 |
+| Body-only edit, same α pages |                      1/0 |                                  0/2 |                  0/2 |
+| Prop type change             |                      1/0 |                                  2/0 |                  1/1 |
 
 Open buffers and α page updates have LOW durability; dependency files loaded
 through `open_dependency` and tsconfig have HIGH durability. The test also
