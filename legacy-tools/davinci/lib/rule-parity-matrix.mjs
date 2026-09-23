@@ -99,6 +99,8 @@ export function buildMatrix() {
       if (rule.registered) {
         rule.sfc = "yes";
         rule.sfcDetail = "script-blocks";
+        rule.jsx = "yes";
+        rule.jsxLane = "script";
       }
     } else if (family === "css") {
       rule.surfaces.push("css-text");

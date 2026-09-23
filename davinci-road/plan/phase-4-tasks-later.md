@@ -131,6 +131,8 @@
 
 **Non-goals:** dialect-bound rules (P4-8b); new rules.
 
+**Progress 2026-09-23:** the script registry runs on the JSX program (`lint_jsx_script`). SFC∩JSX is 221 (was 150); the 71 script rules, including the 42 neutral-core ones, are the `script` lane. Ten paired fixtures agree. The box stays open: the 15 template ports, the 7 CSS rules, the other script fixtures, and the exemption drain are still open. See the [P4-8a record](./phase-4-records/p4-8a.md).
+
 ## P4-8b — Dialect-bound rule wave
 
 **Start gate:** startable now — P3-independent.

@@ -1,0 +1,1 @@
+Computed properties cannot be async. They must return a value synchronously.

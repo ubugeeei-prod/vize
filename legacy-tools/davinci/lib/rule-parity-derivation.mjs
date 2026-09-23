@@ -76,10 +76,11 @@ export function derivationSection(model) {
       " rule with no markup projection and no template-visitor hook —" +
       " `run_on_sfc`-only rules and corsa-only rules — is dispatched but can" +
       " never fire (`lint_jsx` calls neither `run_on_sfc` nor the corsa" +
-      " session) — shown as `no (no JSX-reachable hooks)`. Script/CSS" +
+      " session) — shown as `no (no JSX-reachable hooks)`. The script" +
+      " registry runs on the JSX program (`lint_jsx_script`). CSS" +
       " registries, the corsa session, and `MuseaLinter` are never invoked" +
-      " from `lint_jsx`; the generator asserts those absences (and the lane" +
-      " anchors) against the current dispatch source and fails on drift.",
+      " from `lint_jsx`; the generator asserts that (and the lane anchors)" +
+      " against the current dispatch source and fails on drift.",
   );
   lines.push(
     "- **croquis** — symbol-aware, per P0-7's use-declaration resolution:" +

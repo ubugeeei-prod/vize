@@ -72,10 +72,12 @@ export function loadDispatchModel() {
       throw new Error(`dispatch model drift: lint_jsx body lost anchor ${anchor}`);
     }
   }
-  // The JSX path must not drive SFC hooks, the script/css block registries,
-  // nor the corsa type-aware session; those absences are what make the
-  // corresponding rows SFC-only below.
-  for (const absent of ["run_on_sfc", "script_rules", "css_rules", "native_type_aware"]) {
+  // The JSX path must not drive SFC hooks, the CSS registry, or the corsa
+  // session. The script registry runs through `lint_jsx_script`.
+  if (!jsxBody.includes("lint_jsx_script")) {
+    throw new Error("dispatch model drift: lint_jsx lost lint_jsx_script");
+  }
+  for (const absent of ["run_on_sfc", "css_rules", "native_type_aware"]) {
     if (jsxBody.includes(absent)) {
       throw new Error(
         `dispatch model drift: lint_jsx body now references ${absent}; re-derive path membership`,

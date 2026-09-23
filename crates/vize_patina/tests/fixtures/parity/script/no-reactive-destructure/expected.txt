@@ -1,0 +1,1 @@
+Destructuring reactive object loses reactivity

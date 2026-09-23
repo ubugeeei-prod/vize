@@ -1,0 +1,1 @@
+`$on()` was removed in Vue 3. The instance event-emitter API is no longer available.

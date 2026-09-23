@@ -42,6 +42,7 @@ mod nuxt_prefer_nuxt_link;
 mod prop_style_policy;
 mod recovered_parse_analysis;
 mod script;
+mod script_jsx_parity;
 #[cfg(not(target_arch = "wasm32"))]
 mod script_template_ast;
 mod severity_overrides;

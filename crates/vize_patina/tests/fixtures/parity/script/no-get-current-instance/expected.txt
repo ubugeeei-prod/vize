@@ -1,0 +1,2 @@
+getCurrentInstance import is not supported in Vapor-oriented components
+getCurrentInstance() is not supported in Vapor-oriented components

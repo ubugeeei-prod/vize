@@ -15,6 +15,11 @@ use vize_s0::dialect::VueDialect;
 use vize_s0::{Allocator, ToCompactString, profile};
 
 impl Linter {
+    /// Script rules on the JSX program, the same registry `<script>` uses.
+    pub(super) fn lint_jsx_script(&self, source: &str, result: &mut LintResult) {
+        super::super::script_rules::append_builtin_script_rules_for_source(self, source, 0, result);
+    }
+
     pub(super) fn jsx_ir_needs_analysis(&self) -> bool {
         self.has_active_semantic_template_rules()
     }
