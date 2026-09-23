@@ -140,6 +140,10 @@ fn unwrap_static_expression<'a>(mut expr: &'a Expression<'a>) -> &'a Expression<
     loop {
         match expr {
             Expression::ParenthesizedExpression(paren) => expr = &paren.expression,
+            Expression::TSAsExpression(assertion) => expr = &assertion.expression,
+            Expression::TSSatisfiesExpression(assertion) => expr = &assertion.expression,
+            Expression::TSTypeAssertion(assertion) => expr = &assertion.expression,
+            Expression::TSNonNullExpression(assertion) => expr = &assertion.expression,
             _ => return expr,
         }
     }

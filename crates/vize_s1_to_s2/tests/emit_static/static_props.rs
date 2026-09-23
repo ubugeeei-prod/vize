@@ -259,6 +259,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn type_only_style_assertions_keep_static_objects_without_normalization() {
+    assert_shipped_parity(
+        r#"<div :style="{ perspective: 'calc(var(--radius) * 2)', perspectiveOrigin: '50% 50%', contain: 'layout paint size' } as StyleValue"></div>"#,
+    );
+}
+
+#[test]
 fn bare_style_attribute_beside_dynamic_style_matches_the_shipped_lane() {
     assert_shipped_parity(r#"<div style :style="s"></div>"#);
     assert_shipped_parity(r#"<div :style="s" style></div>"#);
