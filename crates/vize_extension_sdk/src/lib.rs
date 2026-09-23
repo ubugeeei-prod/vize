@@ -73,7 +73,7 @@ pub use bindings::exports::vize::contracts::{handshake, input_lowering};
 pub use bindings::vize::contracts::types;
 
 /// The WIT package this SDK binds.
-pub const PACKAGE: &str = "vize:contracts@0.1.1";
+pub const PACKAGE: &str = "vize:contracts@0.1.2";
 /// The handshake protocol version of this contract version.
 pub const PROTOCOL_VERSION: u32 = 1;
 /// The S1 page schema version the [`pages::s1`] writer emits.
@@ -89,6 +89,12 @@ pub const FACTS_PAGE_SCHEMA: u32 = 1;
 pub const PROJECTION_PAGE_SCHEMA: u32 = 1;
 /// The features the expression-dialect world requires, sorted.
 pub const EXPRESSION_REQUIRED_FEATURES: &[&str] = &["facts-page@1", "projection-page@1"];
+/// The S3 page schema version the output-target world carries.
+pub const S3_PAGE_SCHEMA: u32 = 1;
+/// The emit-document page schema version the output-target world returns.
+pub const EMIT_DOCUMENT_PAGE_SCHEMA: u32 = 1;
+/// The features the output-target world requires, sorted.
+pub const OUTPUT_REQUIRED_FEATURES: &[&str] = &["emit-document-page@1", "s2-page@1", "s3-page@1"];
 
 /// The capability offer for a guest lowering the given `lang` values:
 /// protocol version and features, sorted and unique as the host requires.

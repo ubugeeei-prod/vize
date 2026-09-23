@@ -4,6 +4,7 @@
 #![allow(dead_code)]
 
 pub mod expression;
+pub mod output;
 
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};

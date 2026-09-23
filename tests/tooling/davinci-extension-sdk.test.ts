@@ -122,7 +122,11 @@ type Surface = {
 
 function newestSurface(): Surface {
   const files = fs.readdirSync(path.join(root, "contracts/versions")).toSorted();
-  assert.deepEqual(files, ["vize-contracts@0.1.0.json", "vize-contracts@0.1.1.json"]);
+  assert.deepEqual(files, [
+    "vize-contracts@0.1.0.json",
+    "vize-contracts@0.1.1.json",
+    "vize-contracts@0.1.2.json",
+  ]);
   return JSON.parse(read("contracts/versions", files.at(-1)!)) as Surface;
 }
 
@@ -183,14 +187,14 @@ test("the TypeScript declarations mirror the released surface", () => {
       }
     }
   }
-  for (const exported of ["handshake", "input-lowering", "expression-analysis"]) {
+  for (const exported of ["handshake", "input-lowering", "expression-analysis", "emission"]) {
     const methods = Object.entries(surface.interfaces[exported].functions).map(
       ([name, fn]) =>
         `${camel(name)}(${fn.params.map((param) => `${camel(param.name)}: ${tsType(param.type)}`).join(", ")}): ${fn.result ? tsType(fn.result) : "void"};`,
     );
     assert.deepEqual(interfaceBody(declarations, pascal(exported)), methods);
   }
-  assert.equal(checked, 15);
+  assert.equal(checked, 17);
 });
 
 test("the JS and Rust SDK constants are the released handshake", async () => {
@@ -216,10 +220,18 @@ test("the JS and Rust SDK constants are the released handshake", async () => {
   for (const [name, page] of [
     ["FACTS_PAGE_SCHEMA", "facts-page"],
     ["PROJECTION_PAGE_SCHEMA", "projection-page"],
+    ["S3_PAGE_SCHEMA", "s3-page"],
+    ["EMIT_DOCUMENT_PAGE_SCHEMA", "emit-document-page"],
   ]) {
     assert.equal(sdkJs[name], surface.pages[page], name);
     assert.equal(rustConst(name), `${surface.pages[page]}`, name);
   }
+  const outputRequired = surface.worlds["output-target"].requiredFeatures;
+  assert.deepEqual(sdkJs.OUTPUT_REQUIRED_FEATURES, outputRequired);
+  assert.equal(
+    rustConst("OUTPUT_REQUIRED_FEATURES"),
+    `&[${outputRequired.map((f) => `"${f}"`).join(", ")}]`,
+  );
   const expressionRequired = surface.worlds["expression-dialect"].requiredFeatures;
   assert.deepEqual(sdkJs.EXPRESSION_REQUIRED_FEATURES, expressionRequired);
   assert.equal(

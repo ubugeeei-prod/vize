@@ -72,7 +72,7 @@ fn the_echo_guest_imports_no_host_function() {
         .collect();
     // The shared `types` interface holds only type definitions: importing it
     // asks the host for nothing, and the empty linker satisfies it.
-    assert_eq!(imports, ["vize:contracts/types@0.1.1"]);
+    assert_eq!(imports, ["vize:contracts/types@0.1.2"]);
 }
 
 #[test]

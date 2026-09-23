@@ -1,0 +1,8 @@
+[emit-document]
+schema_version=1
+
+[emit-document.links]
+0:12 0:2 ret true
+
+[emit-document.text]
+return "ok";

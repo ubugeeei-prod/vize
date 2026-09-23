@@ -63,3 +63,7 @@ required-features = ["extension-host"]
 [[test]]
 name = "wit_golden_expression"
 required-features = ["extension-host"]
+
+[[test]]
+name = "wit_golden_output"
+required-features = ["extension-host"]

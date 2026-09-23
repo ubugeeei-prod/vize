@@ -56,7 +56,7 @@
 
 **Steps:**
 
-- [ ] World definition; golden exchange with a stub target emitting a fixed document
+- [x] World definition; golden exchange with a stub target emitting a fixed document
 
 **Acceptance:** TS-48 for the output world: negotiation and byte-equal payloads.
 

@@ -21,8 +21,10 @@ use crate::contract::{
 };
 
 mod expression;
+mod output;
 
 pub use expression::WasmExpressionGuest;
+pub use output::WasmOutputGuest;
 
 pub(crate) mod bindings {
     wasmtime::component::bindgen!({

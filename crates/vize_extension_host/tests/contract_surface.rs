@@ -16,6 +16,7 @@ use vize_extension_host::contract::{
     PROTOCOL_VERSION, REQUIRED_FEATURES, S1_PAGE_SCHEMA, S2_PAGE_SCHEMA,
 };
 use vize_extension_host::expression::{self, FACTS_PAGE_SCHEMA, PROJECTION_PAGE_SCHEMA};
+use vize_extension_host::output::{self, EMIT_DOCUMENT_PAGE_SCHEMA, S3_PAGE_SCHEMA};
 use vize_marquette::contracts::wit::{Protocol, surface_from_wit};
 use vize_marquette::{
     ContractSurface, ContractVersion, canonical_surface_json, check_version_policy,
@@ -38,10 +39,15 @@ fn host_protocol() -> Protocol {
     Protocol {
         protocol_version: PROTOCOL_VERSION,
         pages: BTreeMap::from([
+            (
+                String::from("emit-document-page"),
+                EMIT_DOCUMENT_PAGE_SCHEMA,
+            ),
             (String::from("facts-page"), FACTS_PAGE_SCHEMA),
             (String::from("projection-page"), PROJECTION_PAGE_SCHEMA),
             (String::from("s1-page"), S1_PAGE_SCHEMA),
             (String::from("s2-page"), S2_PAGE_SCHEMA),
+            (String::from("s3-page"), S3_PAGE_SCHEMA),
         ]),
         required_features: BTreeMap::from([
             (
@@ -49,6 +55,10 @@ fn host_protocol() -> Protocol {
                 features(expression::REQUIRED_FEATURES),
             ),
             (String::from("input-dialect"), features(REQUIRED_FEATURES)),
+            (
+                String::from("output-target"),
+                features(output::REQUIRED_FEATURES),
+            ),
         ]),
     }
 }
@@ -91,7 +101,7 @@ fn released_surfaces_are_canonical_and_follow_the_policy() {
             .iter()
             .map(|(version, ..)| cstr!("{version}"))
             .collect::<Vec<_>>(),
-        ["0.1.0", "0.1.1"]
+        ["0.1.0", "0.1.1", "0.1.2"]
     );
     for (_, surface, bytes) in &released {
         assert_eq!(

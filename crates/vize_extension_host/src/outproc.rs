@@ -18,6 +18,7 @@ use crate::contract::{
     Capability, GuestError, GuestLimits, InputDialectGuest, LoweredBlock, SourceBlock,
 };
 use crate::expression::{Analysis, ExpressionBatch, ExpressionDialectGuest};
+use crate::output::{EmitRequest, Emitted, OutputTargetGuest};
 use crate::wire::{Request, Response, read_message, transport, write_message};
 
 /// A guest behind a child process.
@@ -54,6 +55,19 @@ pub fn serve_expression_command(runner: &Path, component: &Path, limits: GuestLi
         .arg(component)
         .arg("--world")
         .arg("expression-dialect");
+    with_limits(&mut command, limits);
+    command
+}
+
+/// The command that serves an `output-target` component.
+#[must_use]
+pub fn serve_output_command(runner: &Path, component: &Path, limits: GuestLimits) -> Command {
+    let mut command = Command::new(runner);
+    command
+        .arg("serve")
+        .arg(component)
+        .arg("--world")
+        .arg("output-target");
     with_limits(&mut command, limits);
     command
 }
@@ -127,6 +141,7 @@ fn unexpected(response: &Response) -> GuestError {
         Response::Capability(_) => "capability",
         Response::LoweredBlock(_) => "lowered-block",
         Response::Analysis(_) => "analysis",
+        Response::Emitted(_) => "emitted",
         Response::Guest(_) => "guest",
     };
     GuestError::Transport(cstr!("unexpected `{name}` response"))
@@ -162,6 +177,22 @@ impl ExpressionDialectGuest for OutOfProcessGuest {
         };
         match self.call(&request)? {
             Response::Analysis(analysis) => Ok(analysis),
+            other => Err(unexpected(&other)),
+        }
+    }
+}
+
+impl OutputTargetGuest for OutOfProcessGuest {
+    fn get_capability(&mut self) -> Result<Capability, GuestError> {
+        InputDialectGuest::get_capability(self)
+    }
+
+    fn emit(&mut self, request: &EmitRequest) -> Result<Emitted, GuestError> {
+        let request = Request::Emit {
+            request: request.clone(),
+        };
+        match self.call(&request)? {
+            Response::Emitted(emitted) => Ok(emitted),
             other => Err(unexpected(&other)),
         }
     }
