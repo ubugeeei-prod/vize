@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: check-v2-${{ github.workflow }}-${{ github.event.pull_request.number || format('{0}-{1}', github.event_name, github.sha) }}
+  group: check-v2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:

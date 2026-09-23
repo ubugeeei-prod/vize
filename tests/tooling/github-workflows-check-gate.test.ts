@@ -30,11 +30,23 @@ type Job = {
 const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
   on?: Record<string, unknown>;
   jobs?: Record<string, Job>;
+  concurrency?: { group?: string; "cancel-in-progress"?: boolean };
 };
 
 function needs(results: Record<string, string> = {}): Record<string, { result: string }> {
   return Object.fromEntries(PR_JOBS.map((job) => [job, { result: results[job] ?? "success" }]));
 }
+
+test("obsolete main validation is cancelled when the branch advances", () => {
+  for (const candidate of [
+    workflow,
+    parse(readRepoFile(".github", "workflows", "davinci-contracts.yml")) as typeof workflow,
+  ]) {
+    assert.equal(candidate.concurrency?.["cancel-in-progress"], true);
+    assert.match(candidate.concurrency?.group ?? "", /github\.event\.pull_request\.number \|\| github\.ref/);
+    assert.doesNotMatch(candidate.concurrency?.group ?? "", /github\.sha/);
+  }
+});
 
 test("PR report waits for the real fast checks and full checks run after merge", () => {
   assert.ok(workflow.on?.pull_request);
