@@ -7,7 +7,7 @@ import { aggregateNeedsResults } from "../../legacy-tools/github/require-needs-s
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 const PR_JOBS = ["fmt-rust", "check-js", "security-audit", "node-engine-compat", "check-vize-apps"];
-const PUSH_ONLY_JOBS = [
+const FULL_SUITE_JOBS = [
   "nix-flake",
   "vue-parity",
   "test-scripts",
@@ -51,7 +51,7 @@ test("obsolete main validation is cancelled when the branch advances", () => {
   }
 });
 
-test("PR report waits for the real fast checks and full checks run after merge", () => {
+test("PR and main push stay fast while full checks require schedule or dispatch", () => {
   assert.ok(workflow.on?.pull_request);
   assert.ok(workflow.on?.push);
   assert.ok(workflow.on?.schedule);
@@ -60,9 +60,16 @@ test("PR report waits for the real fast checks and full checks run after merge",
   for (const job of PR_JOBS) {
     assert.equal(workflow.jobs?.[job]?.if, undefined, `${job} must run on pull requests`);
   }
-  for (const job of PUSH_ONLY_JOBS) {
-    assert.equal(workflow.jobs?.[job]?.if, "${{ github.event_name != 'pull_request' }}");
+  for (const job of FULL_SUITE_JOBS) {
+    assert.equal(
+      workflow.jobs?.[job]?.if,
+      "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+    );
   }
+  assert.equal(
+    workflow.jobs?.["nix-flake"]?.if,
+    "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+  );
   assert.equal(workflow.jobs?.["semver-checks"]?.if, "${{ github.event_name == 'push' }}");
   assert.equal(
     workflow.jobs?.["test-report"]?.steps?.at(-1)?.run,
@@ -72,12 +79,12 @@ test("PR report waits for the real fast checks and full checks run after merge",
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
   const checkSteps = workflow.jobs?.["check-js"]?.steps ?? [];
   assert.equal(
-    checkSteps.find((step) => step.name === "Check PR JS/TS")?.if,
-    "${{ github.event_name == 'pull_request' }}",
+    checkSteps.find((step) => step.name === "Check fast JS/TS")?.if,
+    "${{ github.event_name == 'pull_request' || github.event_name == 'push' }}",
   );
   assert.equal(
     checkSteps.find((step) => step.name === "Check JS/TS")?.if,
-    "${{ github.event_name != 'pull_request' }}",
+    "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
   );
   assert.match(commands("check-js"), /vp run --workspace-root check:repo/);
   assert.match(commands("check-js"), /vp run --workspace-root check:ci/);

@@ -278,7 +278,10 @@ test("check workflow blocks on Rust source and branch coverage budgets", () => {
   assert.match(branchJob, /source-branch-summary\.json/);
   assert.match(branchJob, /rust-branch-coverage-summary/);
   assert.match(branchJob, /continue-on-error:\s*true/);
-  assert.match(branchJob, /github\.event_name != 'pull_request'/);
+  assert.match(
+    branchJob,
+    /github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch'/,
+  );
 });
 
 test("check workflow only installs Playwright browsers on cache misses", () => {

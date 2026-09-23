@@ -1,10 +1,11 @@
 name: Check
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Check full @ {0}', github.sha) || format('Check {0} @ {1}', github.event_name, github.sha) }}
 on:
   push:
     branches: [main, davinci]
   pull_request:
     branches: [main, davinci]
-  # Daily cadence for nix-flake and source-coverage; both skip pull requests.
+  # Full validation runs daily and on explicit dispatch (including releases).
   schedule:
     # 03:11 UTC daily (~12:11 JST). Offset from native-smoke and e2e to spread
     # GitHub Actions concurrency budget.
@@ -26,11 +27,7 @@ jobs:
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
-    # Nix store cache restore + `nix flake check` was the second-slowest PR
-    # gate after playground-test. The flake itself rarely changes between
-    # PRs, so run it on push-to-main (catches merge regressions within
-    # minutes) and on the daily schedule, not on every PR.
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31
@@ -67,10 +64,10 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check JS/TS
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         run: vp run --filter './npm/native' build:debug && vp run --workspace-root check:ci
-      - name: Check PR JS/TS
-        if: ${{ github.event_name == 'pull_request' }}
+      - name: Check fast JS/TS
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
         run: vp run --workspace-root check:repo
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
@@ -200,7 +197,7 @@ jobs:
 
   vue-parity:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -222,7 +219,7 @@ jobs:
       - uses: ./.github/actions/check-vue-parity
   test-scripts:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     # Restoration of the original setup after the trim in #519 broke
     # main: lsp-smoke.test.ts launches `vize lsp` (falls back to
     # `cargo run -p vize` when no binary is staged), moonbit-*.test.ts
@@ -260,21 +257,21 @@ jobs:
         run: vp run --workspace-root test:scripts
   editor-extensions:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/package-editor-extensions
   editor-host-smoke:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/vscode-host-smoke
   build-js-packages:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -320,7 +317,7 @@ jobs:
 
   test-js-packages:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 45
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -347,7 +344,7 @@ jobs:
 
   clippy-and-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 45
     env:
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -385,7 +382,7 @@ jobs:
         run: cargo test --workspace && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_lowering_corpus -- --nocapture && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_dom_corpus -- --nocapture && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_remarks_corpus -- --nocapture && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_pug_corpus -- --nocapture && cargo test -p vize_atelier_sfc --features davinci-dom-differential --test davinci_production_reach -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture && cargo test -p vize_atelier_jsx --features davinci-differential --lib vdom::s2_differential::s2_vdom_admitted_cases_match_relief_codegen -- --exact && cargo test -p vize --features legacy --test check_nuxt_tsconfig_isolation_cli && cargo test -p vize_atelier_core --features legacy --test davinci_s2_transform_vue2 && cargo test -p vize_vitrine --no-default-features --features wasm && VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential -- --nocapture
   coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -410,8 +407,8 @@ jobs:
   source-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 40
-    # Source coverage is a push/daily trend metric; fixture and compiler/lint gates stay per PR.
-    if: ${{ github.event_name != 'pull_request' }}
+    # Source coverage is a daily/full-run trend metric; fast checks stay on PRs and pushes.
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -467,9 +464,9 @@ jobs:
 
   branch-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 45
-    # Keep the strict nightly instrumentation gate on main and explicit runs.
+    # Keep the strict nightly instrumentation gate on scheduled and explicit runs.
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
@@ -525,7 +522,7 @@ jobs:
 
   playground-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 30
     needs:
       - build-js-packages

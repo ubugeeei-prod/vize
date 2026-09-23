@@ -64,13 +64,11 @@ test("required workflow selection fails closed for missing, stale, red, or wrong
     () =>
       selectRequiredWorkflowRuns(
         greenRuns.map((run) =>
-          run.path === ".github/workflows/check.yml"
-            ? { ...run, head_branch: "release-candidate" }
-            : run,
+          run.path === ".github/workflows/check.yml" ? { ...run, event: "push" } : run,
         ),
         releaseSha,
       ),
-    /Check: missing push run/,
+    /Check: missing workflow_dispatch run/,
   );
 });
 

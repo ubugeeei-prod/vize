@@ -47,10 +47,11 @@ test("version metadata paths are recognised and source paths are not", () => {
   }
 });
 
-test("every required gate reuses the parent; artifact gates never do", () => {
+test("version-only releases reuse prior safety evidence except full Check", () => {
   const shas = releaseEvidenceShas({ sha: tagSha, baseSha: parentSha, versionOnly: true });
   for (const gate of requiredReleaseWorkflows) {
-    assert.deepEqual(shas.get(gate), [tagSha, parentSha], gate);
+    if (gate === "Check") assert.equal(shas.get(gate), undefined);
+    else assert.deepEqual(shas.get(gate), [tagSha, parentSha], gate);
   }
   // Its subject is the artifact the tag built, so it must never be reused.
   assert.equal(shas.get("Native Smoke"), undefined);
@@ -80,7 +81,7 @@ function greenRun(
   };
 }
 
-test("a version-only release never dispatches a gate the parent already proved", async () => {
+test("a version-only release dispatches full Check while reusing other parent gates", async () => {
   const plans = createReleaseGateDispatchPlans({
     ref: "v0.350.1",
     headSha: tagSha,
@@ -88,8 +89,7 @@ test("a version-only release never dispatches a gate the parent already proved",
   });
   const runs = [
     greenRun(".github/workflows/check.yml", parentSha, "Check", "push"),
-    // A later PR Check may skip test-scripts; it cannot replace the parent's
-    // successful main push run used by the release.
+    // Neither the parent's fast push nor a PR run proves the full suite.
     {
       ...greenRun(".github/workflows/check.yml", tagSha, "Check", "pull_request"),
       created_at: "2026-08-20T00:00:00Z",
@@ -103,11 +103,13 @@ test("a version-only release never dispatches a gate the parent already proved",
       `Real Project Matrix @ ${tagSha}`,
     ),
   ];
+  const fullCheck = greenRun(".github/workflows/check.yml", tagSha, `Check full @ ${tagSha}`);
   const dispatched: string[] = [];
+  let listed = 0;
   const selected = await bootstrapRequiredWorkflowRuns({
     sha: tagSha,
     dispatchPlans: plans,
-    listRuns: async () => runs,
+    listRuns: async () => (++listed === 1 ? runs : [...runs, fullCheck]),
     dispatchWorkflow: async (plan: { workflowName: string }) =>
       void dispatched.push(plan.workflowName),
     evidenceShas: releaseEvidenceShas({ sha: tagSha, baseSha: parentSha, versionOnly: true }),
@@ -115,13 +117,13 @@ test("a version-only release never dispatches a gate the parent already proved",
     timeoutMs: 0,
     sleep: async () => {},
   });
-  assert.deepEqual(dispatched, [], "no gate should be dispatched");
+  assert.deepEqual(dispatched, ["Check"]);
   assert.deepEqual(
     [...selected.keys()].sort(byCodeUnit),
     [...requiredReleaseWorkflows].sort(byCodeUnit),
   );
   for (const gate of requiredReleaseWorkflows) {
-    assert.equal(selected.get(gate)?.head_sha, parentSha, gate);
+    assert.equal(selected.get(gate)?.head_sha, gate === "Check" ? tagSha : parentSha, gate);
   }
 });
 
@@ -145,5 +147,5 @@ test("without the reuse the same parent evidence does not satisfy the gates", as
     }),
     /Required release gates are not green/,
   );
-  assert.deepEqual(dispatched.sort(byCodeUnit), ["Fuzz", "Real Project Matrix"]);
+  assert.deepEqual(dispatched.sort(byCodeUnit), ["Check", "Fuzz", "Real Project Matrix"]);
 });

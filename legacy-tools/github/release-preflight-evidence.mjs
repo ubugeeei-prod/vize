@@ -14,10 +14,7 @@ export const requiredReleaseWorkflows = [
 ];
 
 export const requiredReleaseWorkflowEvidence = new Map([
-  [
-    "Check",
-    { path: ".github/workflows/check.yml", events: ["push"], branches: { push: ["main"] } },
-  ],
+  ["Check", { path: ".github/workflows/check.yml", events: ["workflow_dispatch"] }],
   ["Benchmark", { path: ".github/workflows/benchmark.yml", events: ["workflow_dispatch"] }],
   [
     "Native Smoke",

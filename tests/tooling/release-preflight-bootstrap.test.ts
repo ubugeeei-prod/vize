@@ -56,6 +56,12 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
     })),
     [
       {
+        workflowName: "Check",
+        workflowId: "check.yml",
+        inputs: {},
+        expectedRunName: `Check full @ ${releaseSha}`,
+      },
+      {
         workflowName: "Fuzz",
         workflowId: "fuzz.yml",
         inputs: { mode: "replay" },
@@ -166,7 +172,7 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
 test("release gate bootstrap reuses evidence that already exists at the SHA", async () => {
   const plans = releasePlans();
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
-  for (const workflowName of ["Fuzz", "Real Project Matrix"]) {
+  for (const workflowName of ["Check", "Fuzz", "Real Project Matrix"]) {
     const run = findEvidenceRun(runs, workflowName);
     run.display_title = findReleasePlan(workflowName).expectedRunName;
     run.event = "workflow_dispatch";
@@ -182,9 +188,8 @@ test("release gate bootstrap reuses evidence that already exists at the SHA", as
 
   assert.deepEqual(dispatched, []);
   assert.deepEqual([...selected.keys()], requiredReleaseWorkflows);
-  // Check, Miri and Docs build are push-triggered on main, so a release
-  // confirms the runs main already produced instead of waiting on new ones.
-  for (const workflowName of ["Check", "Miri", "Docs build"]) {
+  // Miri and Docs build are push-triggered on main; Check is full on dispatch.
+  for (const workflowName of ["Miri", "Docs build"]) {
     assert.equal(findEvidenceRun(runs, workflowName).event, "push");
   }
 });

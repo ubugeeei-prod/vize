@@ -28,10 +28,12 @@ The command performs the whole release:
    publication jobs succeed and the GitHub Release is publicly available.
 
 Release preflight requires successful Check, Fuzz replay, Miri, Real Project
-Matrix, and Docs build evidence. For a version-only release commit it accepts
-the parent's main push evidence, including Check's `test-scripts` job. The
-Benchmark workflow remains available on demand, but is not dispatched or
-waited on by release preflight.
+Matrix, and Docs build evidence. Main pushes run the fast Check lane. Preflight
+dispatches the full Check workflow at the exact release tag SHA and verifies
+its `test-scripts` job; a fast push or PR run cannot stand in for it. For a
+version-only release commit, the other code gates may reuse their parent's
+evidence. The Benchmark workflow remains available on demand, but is not
+dispatched or waited on by release preflight.
 
 Your original worktree stays untouched. Only the command's generated release
 branch can be refreshed, using a lease to reject concurrent edits. Another
@@ -40,10 +42,12 @@ proposed version silently. Keep the terminal running, or resume the same PR.
 
 ## Ordinary PRs
 
-Release has no `pull_request` or tag-push trigger. Ordinary PRs keep their usual
-checks; the additional release builds and preflight run only when the release
-command explicitly dispatches them. No global strict-status-check setting is
-needed. The atomic promotion enforces the latest-main requirement for releases.
+Release has no `pull_request` or tag-push trigger. Ordinary PRs and main pushes
+run the fast Check lane; daily and explicitly dispatched Check runs keep the
+full compiler, package, coverage, and integration suites. The additional
+release builds and preflight run only when the release command explicitly
+dispatches them. No global strict-status-check setting is needed. The atomic
+promotion enforces the latest-main requirement for releases.
 
 Use the release command to finish release PRs; manually squash-merging one does
 not preserve the validated commit identity and will not trigger publication.

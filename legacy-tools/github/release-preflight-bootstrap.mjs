@@ -27,6 +27,14 @@ export function createReleaseGateDispatchPlans({ ref, headSha, baseSha }) {
 
   return [
     {
+      workflowName: "Check",
+      workflowId: "check.yml",
+      ref,
+      inputs: {},
+      expectedRunName: `Check full @ ${headSha}`,
+      acceptsScheduledEvidence: false,
+    },
+    {
       workflowName: "Fuzz",
       workflowId: "fuzz.yml",
       ref,

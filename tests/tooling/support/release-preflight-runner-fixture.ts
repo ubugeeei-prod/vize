@@ -106,7 +106,13 @@ function releaseWorkflowRuns(tag: string) {
     updated_at: `2026-07-12T00:${id}:00Z`,
   });
   return [
-    run(101, "Check", ".github/workflows/check.yml", "push"),
+    run(
+      101,
+      "Check",
+      ".github/workflows/check.yml",
+      "workflow_dispatch",
+      `Check full @ ${releaseSha}`,
+    ),
     run(
       102,
       "Benchmark",

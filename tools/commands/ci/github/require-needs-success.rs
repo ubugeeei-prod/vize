@@ -11,8 +11,11 @@ use serde_json::Value;
 use std::{collections::BTreeMap, env, process::ExitCode};
 
 const SKIPPABLE_JOBS: &[(&str, &str)] = &[
-    ("nix-flake", "runs on push and schedule only"),
-    ("source-coverage", "runs on push and schedule only"),
+    ("nix-flake", "runs on schedule and explicit dispatch only"),
+    (
+        "source-coverage",
+        "runs on schedule and explicit dispatch only",
+    ),
 ];
 
 fn main() -> ExitCode {
