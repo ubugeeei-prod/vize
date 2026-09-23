@@ -65,6 +65,19 @@ impl Shape {
     }
 }
 
+/// Match the source-level override in `compile_sfc_inner`: an adapter that
+/// requests DOM still runs the Vapor compiler for these SFCs.
+pub fn explicit_vapor_source(descriptor: &SfcDescriptor<'_>) -> bool {
+    descriptor
+        .script_setup
+        .as_ref()
+        .is_some_and(|script| script.attrs.contains_key("vapor"))
+        || descriptor
+            .script
+            .as_ref()
+            .is_some_and(|script| script.attrs.contains_key("vapor"))
+}
+
 /// Compile `descriptor` exactly as the shape's adapter does.
 pub fn compile(
     descriptor: &SfcDescriptor<'_>,

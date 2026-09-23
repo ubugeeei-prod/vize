@@ -41,6 +41,9 @@
 
 mod davinci_production_reach {
     pub mod diff;
+    pub mod parity;
+    #[cfg(test)]
+    mod selection_tests;
     pub mod shapes;
     pub mod tally;
 }
@@ -50,8 +53,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use davinci_production_reach::diff::divergence;
-use davinci_production_reach::shapes::{Shape, compile};
-use davinci_production_reach::tally::{Lane, Tally, classify, floors};
+use davinci_production_reach::parity::parity_failures;
+use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
+use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
 use vize_atelier_sfc::{SfcCompileResult, SfcParseOptions, parse_sfc};
 use vize_s0::profiler::global_profiler;
 
@@ -184,7 +188,7 @@ fn measure(
             return;
         }
     };
-    let lane = match classify(shape, &counters) {
+    let lane = match classify_route(shape, &counters, explicit_vapor_source(descriptor)) {
         Ok(lane) => lane,
         Err(violation) => {
             tally.violations.push(format!("{name}: {violation}"));
@@ -260,19 +264,7 @@ fn report(scope: &str, sweep: &Sweep) {
 }
 
 fn assert_parity(sweep: &Sweep) {
-    let mut failures = Vec::new();
-    for (shape, tally) in sweep.tallies.values() {
-        failures.extend(tally.violations.iter().cloned());
-        failures.extend(tally.divergences.iter().take(10).cloned());
-        if shape.is_dom() && tally.unrecorded != 0 {
-            failures.push(format!(
-                "{}: {} DOM template compiles recorded no selection counter: {:?}",
-                shape.id(),
-                tally.unrecorded,
-                tally.unrecorded_samples
-            ));
-        }
-    }
+    let failures = parity_failures(sweep);
     assert!(
         failures.is_empty(),
         "production reach selection/parity failures:\n{}",

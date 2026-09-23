@@ -11,6 +11,9 @@ use super::shapes::Shape;
 pub enum Lane {
     /// The Davinci stage emitted the module.
     Accepted,
+    /// An explicit `<script vapor>` declaration routed a requested DOM shape
+    /// through the Vapor backend, which recorded its own selection counter.
+    RoutedVapor,
     /// The legacy lane emitted it, for the named reason.
     Legacy(String),
     /// The Davinci artifact broke an invariant and the legacy lane emitted.
@@ -53,6 +56,28 @@ pub fn classify(shape: Shape, counters: &CounterSummary) -> Result<Lane, String>
     }
 }
 
+/// An explicit Vapor SFC overrides the adapter's DOM request. Require one
+/// Vapor backend selection before accounting for that route; a genuinely
+/// missing DOM/Vapor selection stays `Unrecorded` and fails the reach gate.
+pub fn classify_route(
+    shape: Shape,
+    counters: &CounterSummary,
+    explicit_vapor: bool,
+) -> Result<Lane, String> {
+    let lane = classify(shape, counters)?;
+    if !shape.is_dom() || !explicit_vapor {
+        return Ok(lane);
+    }
+    let vapor_lane = classify(Shape::Vapor, counters)?;
+    match (lane, vapor_lane) {
+        (Lane::Unrecorded, Lane::Unrecorded) => Ok(Lane::Unrecorded),
+        (Lane::Unrecorded, _) => Ok(Lane::RoutedVapor),
+        (dom, vapor) => Err(format!(
+            "explicit Vapor source recorded a DOM selection {dom:?} and Vapor selection {vapor:?}"
+        )),
+    }
+}
+
 /// One shape's tally over a corpus.
 #[derive(Debug, Default)]
 pub struct Tally {
@@ -60,6 +85,8 @@ pub struct Tally {
     pub templates: u64,
     /// Templates whose module the Davinci stage emitted.
     pub accepted: u64,
+    /// Explicit Vapor SFCs that overrode this shape's requested DOM backend.
+    pub routed_vapor: u64,
     /// Legacy-lane templates per reason.
     pub legacy: BTreeMap<String, u64>,
     /// Artifact rejections (the legacy lane emitted).
@@ -87,6 +114,7 @@ impl Tally {
         self.templates += 1;
         match lane {
             Lane::Accepted => self.accepted += 1,
+            Lane::RoutedVapor => self.routed_vapor += 1,
             Lane::Legacy(reason) => *self.legacy.entry(reason).or_default() += 1,
             Lane::Rejected => self.rejected += 1,
             Lane::Unrecorded => self.unrecorded += 1,
@@ -102,7 +130,7 @@ impl Tally {
 
     pub fn line(&self, shape: Shape) -> String {
         format!(
-            "davinci production reach: shape={} stage={:?} templates={} accepted={} permille={} ready={} legacy={:?} rejected={} unrecorded={} sfc_errors={:?} compared={} divergences={}",
+            "davinci production reach: shape={} stage={:?} templates={} accepted={} permille={} ready={} legacy={:?} rejected={} routed_vapor={} unrecorded={} sfc_errors={:?} compared={} divergences={}",
             shape.id(),
             shape.stage(),
             self.templates,
@@ -111,6 +139,7 @@ impl Tally {
             self.ready,
             self.legacy,
             self.rejected,
+            self.routed_vapor,
             self.unrecorded,
             self.sfc_errors,
             self.compared,
