@@ -15,6 +15,8 @@
 
 #[path = "../../support/common.rs"]
 mod common;
+#[path = "../../support/fixture_inputs.rs"]
+mod fixture_inputs;
 
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -1133,27 +1135,7 @@ fn inspect_compiler_artifacts(
 }
 
 fn collect_vue_input_paths(cwd: &Path, patterns: &[String]) -> Result<Vec<String>, String> {
-    let mut files = Vec::new();
-    for pattern in patterns {
-        let absolute_pattern = cwd.join(pattern).to_string_lossy().to_string();
-        let entries = glob::glob(&absolute_pattern)
-            .map_err(|error| format!("invalid glob pattern {pattern}: {error}"))?;
-        for entry in entries {
-            let path = entry.map_err(|error| format!("failed to read glob entry: {error}"))?;
-            if ignored_source_path(&path) {
-                continue;
-            }
-            if path.is_file() {
-                let relative = path
-                    .strip_prefix(cwd)
-                    .map_err(|error| format!("compiler input is outside fixture root: {error}"))?;
-                files.push(slash_path(relative));
-            }
-        }
-    }
-    files.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));
-    files.dedup();
-    Ok(files)
+    fixture_inputs::collect_matching_files(cwd, patterns)
 }
 
 fn collect_typechecker_authored_paths(cwd: &Path) -> Result<Vec<String>, String> {
@@ -1167,13 +1149,6 @@ fn collect_typechecker_authored_paths(cwd: &Path) -> Result<Vec<String>, String>
         })
         .collect::<Vec<_>>();
     collect_vue_input_paths(cwd, &patterns)
-}
-
-fn ignored_source_path(path: &Path) -> bool {
-    path.components().any(|component| {
-        let name = component.as_os_str().to_string_lossy();
-        name == ".yarn" || name == "node_modules"
-    })
 }
 
 fn collect_files(root: &Path) -> Result<Vec<String>, String> {
