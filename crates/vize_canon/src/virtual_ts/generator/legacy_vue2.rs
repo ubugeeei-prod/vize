@@ -41,9 +41,12 @@ const LEGACY_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [
 /// joining the module-scope preamble: `__U` is their only reference. Module-scope
 /// declarations are module-local, so an unused one surfaces to the user as a
 /// `TS6196` hint on their own file.
+/// Check for a `value` property before referring to `vue.Ref`: when Vue types
+/// are temporarily unavailable, that import can resolve to `any` and would
+/// otherwise erase ordinary imported function signatures in template scope.
 const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T extends unknown ? ([__U] extends [T] ? false : true) : false;
     type __VizeWidenTemplateRef<T> = __VizeIsAny<T> extends true ? T : __VizeIsUnion<T> extends true ? T : T extends string ? string extends T ? string : T : T extends number ? number extends T ? number : T : T extends boolean ? boolean extends T ? boolean : T : T;
-    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;
+    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;
 "#;
 /// [`MODERN_REF_UNWRAP_HELPER`] for the hoisted path: the ambient helpers file
 /// (`SHARED_PREAMBLE_DTS`) is a `.d.ts` global script, so it declares the two
@@ -53,10 +56,8 @@ const MODERN_REF_UNWRAP_HELPER: &str = r#"    type __VizeIsUnion<T, __U = T> = T
 /// aliases saves 369 bytes in every generated `.vue.ts` and stops TypeScript
 /// instantiating a distinct declaration per file instead of caching one
 /// (#3443, #3460).
-const MODERN_HOISTED_REF_UNWRAP_HELPER: &str =
-    "    type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;\n";
-const MODERN_GENERIC_REF_UNWRAP_HELPER: &str =
-    "    type __U<T> = T extends import('vue').Ref<any> ? T['value'] : T;\n";
+const MODERN_HOISTED_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;\n";
+const MODERN_GENERIC_REF_UNWRAP_HELPER: &str = "    type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref<any> ? T['value'] : T : T;\n";
 const MODERN_EXPOSED_UNWRAP_HELPER: &str = "type __VizeShallowUnwrapRef<T> = { [K in keyof T]: T[K] extends import('vue').Ref<infer __V> ? __V : T[K] };\n";
 const LEGACY_DEFINE_COMPONENT_HELPER: &str = r#"type __VizeNuxt2Context = {
   app: any;
