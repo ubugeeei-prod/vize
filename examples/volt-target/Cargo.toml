@@ -1,0 +1,26 @@
+# P6-6 Volt output-target exercise: a `vize:contracts` output-target guest
+# that emits one HEEx module for the committed probe pages.
+#
+# Its own workspace, built for `wasm32-wasip2` by
+# `cargo test -p vize_extension_host --features extension-host --test volt_target`.
+[package]
+name = "vize-contract-volt-target-guest"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+vize_extension_sdk = { path = "../../crates/vize_extension_sdk" }
+wit-bindgen = { version = "=0.62.0", default-features = false, features = ["macros", "realloc"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
+
+[workspace]

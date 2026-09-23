@@ -167,6 +167,11 @@
 
 ## P6-6 — Volt output-target exercise
 
+**Mechanical run 2026-09-23** — `examples/volt-target` emits one HEEx module
+through the output world; the recorded command exits 0. **Review point
+open:** the Volt maintainer has not signed off, so the phase index stays
+open. Record: [phase-6-records/p6-6.md](./phase-6-records/p6-6.md).
+
 **Start gate:** startable now — no open earlier-phase dependency (waits behind P6-1c).
 
 **Lane:** E
@@ -175,8 +180,8 @@
 
 **Steps:**
 
-- [ ] Guest and host harness; a documented end-to-end run
-- [ ] Contract-change list, each item resolved or deferred
+- [x] Guest and host harness; a documented end-to-end run
+- [x] Contract-change list, each item resolved or deferred
 
 **Acceptance:** the end-to-end run reproduces from its recorded command; the change list resolved. **Review point:** requires the Volt maintainer's participation and sign-off.
 
