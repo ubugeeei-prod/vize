@@ -17,7 +17,7 @@ pub(super) fn runtime_component_parents(
     let mut component_parents: FxHashMap<FileId, Vec<FileId>> = FxHashMap::default();
 
     for entry in registry.vue_components() {
-        if entry.analysis.component_usages.is_empty() {
+        if vize_croquis::facts::component_usage_list(&entry.analysis).is_empty() {
             add_graph_component_parents(&mut component_parents, graph, entry.id);
             continue;
         }
@@ -76,9 +76,7 @@ fn runtime_usages(
     registry: &ModuleRegistry,
     graph: &DependencyGraph,
 ) -> Vec<RuntimeUsage> {
-    entry
-        .analysis
-        .component_usages
+    vize_croquis::facts::component_usage_list(&entry.analysis)
         .iter()
         .filter_map(|usage| {
             let target_id = graph.find_by_component(usage.name.as_str())?;

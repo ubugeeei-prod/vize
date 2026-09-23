@@ -126,15 +126,14 @@ pub(super) fn generate_inferred_emit_args(
     Some(inferred_args)
 }
 
-pub(super) fn find_component_usage_for_event<'a>(
-    summary: &'a Croquis,
+pub(super) fn find_component_usage_for_event(
+    summary: &Croquis,
     component_name: &str,
     data: &EventHandlerScopeData,
     scope: &Scope,
-) -> Option<(usize, &'a ComponentUsage)> {
-    summary
-        .component_usages
-        .iter()
+) -> Option<(usize, ComponentUsage)> {
+    vize_croquis::facts::component_usage_list(summary)
+        .into_iter()
         .enumerate()
         .find(|(_, usage)| {
             usage.name.as_str() == component_name

@@ -78,7 +78,8 @@ pub fn component_usage_targets(registry: &ModuleRegistry, caller: FileId) -> Vec
         .expect("render tree demand");
     let mut targets = Vec::new();
     for tag in source_tags(entry) {
-        let Some((target, export_name)) = resolve_tag(registry, entry, entry.path.parent(), tag)
+        let Some((target, export_name)) =
+            resolve_tag(registry, entry, entry.path.parent(), tag.as_str())
         else {
             continue;
         };
@@ -94,19 +95,22 @@ pub fn component_usage_targets(registry: &ModuleRegistry, caller: FileId) -> Vec
     targets
 }
 
-fn source_tags(entry: &ModuleEntry) -> Vec<&str> {
-    let mut tags: Vec<&str> = Vec::new();
-    for usage in &entry.analysis.component_usages {
+fn source_tags(entry: &ModuleEntry) -> Vec<CompactString> {
+    let mut tags = Vec::new();
+    for usage in vize_croquis::facts::component_usage_list(&entry.analysis) {
         if !tags
             .iter()
-            .any(|tag| names_match(tag, usage.name.as_str()))
+            .any(|tag: &CompactString| names_match(tag.as_str(), usage.name.as_str()))
         {
-            tags.push(usage.name.as_str());
+            tags.push(usage.name);
         }
     }
-    for name in &entry.analysis.used_components {
-        if !tags.iter().any(|tag| names_match(tag, name.as_str())) {
-            tags.push(name.as_str());
+    for name in vize_croquis::facts::used_component_name_list(&entry.analysis) {
+        if !tags
+            .iter()
+            .any(|tag: &CompactString| names_match(tag.as_str(), name.as_str()))
+        {
+            tags.push(name);
         }
     }
     tags
@@ -118,7 +122,7 @@ fn edges_of(
 ) -> BTreeMap<RenderEdgeKey, Vec<RenderSite>> {
     let mut grouped = BTreeMap::new();
     let from_dir = entry.path.parent();
-    for usage in &entry.analysis.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(&entry.analysis) {
         push_edge(
             registry,
             entry,
@@ -131,10 +135,8 @@ fn edges_of(
             &mut grouped,
         );
     }
-    for name in &entry.analysis.used_components {
-        let covered = entry
-            .analysis
-            .component_usages
+    for name in vize_croquis::facts::used_component_name_list(&entry.analysis) {
+        let covered = vize_croquis::facts::component_usage_list(&entry.analysis)
             .iter()
             .any(|usage| names_match(usage.name.as_str(), name.as_str()));
         if !covered {

@@ -46,10 +46,8 @@ fn unregistered_component_uses_template_usage_offset() {
     let graph = DependencyGraph::new();
     let mut analysis = Croquis::new();
 
-    analysis
-        .used_components
-        .insert(CompactString::new("UnknownThing"));
-    analysis.component_usages.push(ComponentUsage {
+    analysis.note_used_component(CompactString::new("UnknownThing"));
+    analysis.note_component_usage(ComponentUsage {
         name: CompactString::new("UnknownThing"),
         start: 12,
         end: 27,

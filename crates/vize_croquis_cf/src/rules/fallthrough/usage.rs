@@ -61,7 +61,7 @@ pub(super) fn collect_fallthrough_usage_facts(
             let declared_props = declared_props_for(registry, *child_id);
             let declared_events = declared_events_for(registry, *child_id);
 
-            for usage in &parent_entry.analysis.component_usages {
+            for usage in vize_croquis::facts::component_usage_list(&parent_entry.analysis) {
                 if graph.find_by_component(usage.name.as_str()) != Some(*child_id) {
                     continue;
                 }

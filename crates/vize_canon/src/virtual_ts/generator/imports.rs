@@ -119,13 +119,12 @@ pub(super) fn collect_setup_binding_anchor_names(
     template_referenced_names: Option<&FxHashSet<String>>,
 ) -> Vec<String> {
     let type_only_imported_names = collect_type_only_imported_names(summary, script_content, usage);
-    let mut template_value_names: FxHashSet<&str> = summary
-        .used_components
-        .iter()
-        .map(|name| name.as_str())
-        .collect();
+    let mut template_value_names: FxHashSet<CompactString> =
+        vize_croquis::facts::used_component_name_list(summary)
+            .into_iter()
+            .collect();
     if let Some(names) = template_referenced_names {
-        template_value_names.extend(names.iter().map(|name| name.as_str()));
+        template_value_names.extend(names.iter().cloned());
     }
 
     let mut binding_names: Vec<String> =

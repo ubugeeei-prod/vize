@@ -186,9 +186,14 @@ pub(crate) fn generate_scope_closures(
         relaxed_required_usage_starts: &relaxed_required_usage_starts,
         explicit_generics: &explicit_generics,
     };
-    let usages = check_options
+    let owned_usages = check_options
         .check_props
         .then(|| collect_checkable_usages(&props_ctx));
+    let usages = owned_usages.as_ref().map(|rows| {
+        rows.iter()
+            .map(|(index, usage)| (*index, usage))
+            .collect::<Vec<_>>()
+    });
     if let Some(usages) = &usages {
         emit_event_references(ts, mappings, &props_ctx, usages);
     }

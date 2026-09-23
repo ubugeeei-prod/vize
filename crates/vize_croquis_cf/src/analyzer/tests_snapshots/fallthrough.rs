@@ -103,9 +103,9 @@ fn test_snapshot_fallthrough_usage_facts() {
     forwarder.template_info.content_end = 90;
 
     let mut app = Croquis::new();
-    app.used_components.insert(CompactString::new("Panel"));
-    app.used_components.insert(CompactString::new("Forwarder"));
-    app.component_usages.push(usage(
+    app.note_used_component(CompactString::new("Panel"));
+    app.note_used_component(CompactString::new("Forwarder"));
+    app.note_component_usage(usage(
         "Panel",
         10,
         90,
@@ -117,7 +117,7 @@ fn test_snapshot_fallthrough_usage_facts() {
         vec![event("close", 73, 88)],
         true,
     ));
-    app.component_usages.push(usage(
+    app.note_component_usage(usage(
         "Forwarder",
         100,
         150,
@@ -127,8 +127,8 @@ fn test_snapshot_fallthrough_usage_facts() {
     ));
 
     let mut shell = Croquis::new();
-    shell.used_components.insert(CompactString::new("Panel"));
-    shell.component_usages.push(usage(
+    shell.note_used_component(CompactString::new("Panel"));
+    shell.note_component_usage(usage(
         "Panel",
         20,
         60,

@@ -52,7 +52,7 @@ fn component_slot_at_offset(ctx: &IdeContext<'_>) -> Option<(String, String)> {
     drawer.draw_template(&root);
     let summary = drawer.finish();
 
-    for usage in &summary.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(&summary) {
         for slot in &usage.slots {
             let Some(range) = slot_navigation_source_range(Some(template_source), slot) else {
                 continue;

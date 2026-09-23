@@ -30,7 +30,7 @@ fn diagnostics_include_parent_usage_related_locations() {
 
     let parent_analysis = {
         let mut analysis = Croquis::new();
-        analysis.component_usages.push(ComponentUsage {
+        analysis.note_component_usage(ComponentUsage {
             name: CompactString::new("Panel"),
             start: 10,
             end: 80,
@@ -95,7 +95,7 @@ fn spread_attrs_report_multi_root_with_parent_usage_location() {
 
     let parent_analysis = {
         let mut analysis = Croquis::new();
-        analysis.component_usages.push(ComponentUsage {
+        analysis.note_component_usage(ComponentUsage {
             name: CompactString::new("Panel"),
             start: 23,
             end: 54,
@@ -150,7 +150,7 @@ fn spread_attrs_are_safe_when_multi_root_component_binds_attrs() {
     let mut registry = ModuleRegistry::new();
 
     let mut parent_analysis = Croquis::new();
-    parent_analysis.component_usages.push(ComponentUsage {
+    parent_analysis.note_component_usage(ComponentUsage {
         name: CompactString::new("Panel"),
         start: 10,
         end: 40,
@@ -187,7 +187,7 @@ fn declared_emit_listener_does_not_create_fallthrough_diagnostics() {
     let mut registry = ModuleRegistry::new();
 
     let mut parent_analysis = Croquis::new();
-    parent_analysis.component_usages.push(ComponentUsage {
+    parent_analysis.note_component_usage(ComponentUsage {
         name: CompactString::new("Panel"),
         start: 10,
         end: 40,

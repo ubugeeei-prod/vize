@@ -27,7 +27,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `build_effect_graph_from_script`       | type  | `effect_graph`      |     1 |     2 |
 | `build_effect_graph_from_script_setup` | type  | `effect_graph`      |     1 |     1 |
 | `build_effect_graph_from_sfc_scripts`  | type  | `effect_graph`      |     1 |     1 |
-| `Croquis.component_usages`             | field | `croquis`           |    19 |    34 |
 | `Croquis.element_ids`                  | field | `croquis`           |     1 |     1 |
 | `Croquis.invalid_exports`              | field | `croquis`           |     1 |     2 |
 | `Croquis.macros`                       | field | `croquis`           |    14 |    25 |
@@ -40,7 +39,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.template_expressions`         | field | `croquis`           |     1 |     3 |
 | `Croquis.template_info`                | field | `croquis`           |     5 |    14 |
 | `Croquis.type_exports`                 | field | `croquis`           |     1 |     1 |
-| `Croquis.used_components`              | field | `croquis`           |    17 |    32 |
 
 ## Non-product `vize_croquis` imports
 
@@ -69,9 +67,12 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SfcParseOptions`            |     2 |     2 |
 | `ViolationSeverity`          |     1 |     6 |
 | `component_identity`         |     1 |     1 |
+| `component_usage_list`       |     9 |    14 |
 | `parse_sfc`                  |     1 |     1 |
 | `parse_sfc_without_css_vars` |     1 |     1 |
 | `to_pascal_case`             |     1 |     2 |
+| `used_component_contains`    |     1 |     1 |
+| `used_component_name_list`   |     4 |     6 |
 
 ## Naive grep disagreements (resolved/grep)
 
@@ -99,10 +100,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `build_effect_graph_from_script_setup` |        1 |    2 |
 | `build_effect_graph_from_sfc_scripts`  |        1 |    2 |
 | `Croquis.bindings`                     |        0 |    8 |
-| `Croquis.component_usages`             |       34 |   39 |
 | `Croquis.macros`                       |       25 |   27 |
 | `Croquis.provide_inject`               |       26 |   34 |
 | `Croquis.race_conditions`              |        1 |    4 |
 | `Croquis.setup_context`                |        1 |    4 |
 | `Croquis.template_info`                |       14 |   15 |
-| `Croquis.used_components`              |       32 |   36 |

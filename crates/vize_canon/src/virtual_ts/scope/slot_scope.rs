@@ -72,12 +72,12 @@ fn slot_payload_type(
         ctx.syntactic_type_only_imported_names,
         component,
     );
-    let component_ref = match host {
+    let component_ref = match &host {
         Some(usage) => ctx.explicit_generics.usage_reference(usage.start, resolved),
         None => resolved,
     };
     let binding = cstr!("{}{}", ctx.binding_prefix, scope.id.as_u32());
-    if let Some(usage) = host {
+    if let Some(usage) = &host {
         generate_slot_host_binding(
             ts,
             usage,

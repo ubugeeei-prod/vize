@@ -68,7 +68,7 @@ pub fn analyze_component_resolution(
             .collect();
 
         // Check used components
-        for component_name in &analysis.used_components {
+        for component_name in vize_croquis::facts::used_component_name_list(analysis) {
             // Skip built-in components
             if is_builtin_component(component_name.as_str()) {
                 continue;
@@ -182,8 +182,7 @@ pub fn analyze_component_resolution(
 }
 
 fn component_usage_offset(analysis: &vize_croquis::Croquis, component_name: &str) -> Option<u32> {
-    analysis
-        .component_usages
+    vize_croquis::facts::component_usage_list(analysis)
         .iter()
         .find(|usage| component_names_match(usage.name.as_str(), component_name))
         .map(|usage| usage.start)

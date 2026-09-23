@@ -13,10 +13,8 @@ fn script(source: &str, component: Option<&str>) -> vize_croquis::Croquis {
     analyzer.analyze_script_setup(source);
     let mut analysis = analyzer.finish();
     if let Some(component) = component {
-        analysis
-            .used_components
-            .insert(CompactString::new(component));
-        analysis.component_usages.push(ComponentUsage {
+        analysis.note_used_component(CompactString::new(component));
+        analysis.note_component_usage(ComponentUsage {
             name: CompactString::new(component),
             start: 4,
             end: 4 + component.len() as u32,

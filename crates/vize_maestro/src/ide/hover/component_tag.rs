@@ -104,8 +104,7 @@ fn component_usage_at_cursor(ctx: &IdeContext<'_>, tag_name: &str) -> Option<Com
     drawer.draw_template(&root);
     let croquis = drawer.finish();
 
-    croquis
-        .component_usages
+    vize_croquis::facts::component_usage_list(&croquis)
         .iter()
         .filter(|usage| {
             usage.name == tag_name

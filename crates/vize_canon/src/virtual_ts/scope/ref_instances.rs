@@ -39,8 +39,7 @@ pub(crate) const REF_INSTANCE_HELPERS: &str = "  type __VizeRefInstanceFactory<_
 /// Template-relative starts of the component usages whose ref is instantiated:
 /// a static `ref` next to at least one bound prop, outside every slot scope.
 pub(crate) fn instantiated_ref_starts(summary: &Croquis) -> Vec<u32> {
-    summary
-        .component_usages
+    vize_croquis::facts::component_usage_list(summary)
         .iter()
         .filter(|usage| {
             let mut has_ref = false;
@@ -100,7 +99,7 @@ pub(super) fn emit_ref_instance_probes(
     starts: &[u32],
 ) -> String {
     let mut record = String::from("{ ");
-    for usage in &ctx.summary.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(ctx.summary) {
         if !starts.contains(&usage.start) {
             continue;
         }
@@ -110,8 +109,8 @@ pub(super) fn emit_ref_instance_probes(
             ctx.syntactic_type_only_imported_names,
             usage.name.as_str(),
         )
-        .zip(enclosing_loops(ctx.summary, usage))
-        .map(|(component, loops)| emit_probe(ts, ctx, usage, component.as_str(), &loops));
+        .zip(enclosing_loops(ctx.summary, &usage))
+        .map(|(component, loops)| emit_probe(ts, ctx, &usage, component.as_str(), &loops));
         match probe {
             Some(name) => append!(record, "\"{}\": () => {name}, ", usage.start),
             None => append!(record, "\"{}\": () => undefined, ", usage.start),

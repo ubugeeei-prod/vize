@@ -60,7 +60,7 @@ impl DiagnosticService {
         });
         drawer.draw_template(&root);
         let croquis = drawer.finish();
-        if croquis.component_usages.is_empty() {
+        if vize_croquis::facts::component_usage_list(&croquis).is_empty() {
             return Vec::new();
         }
 
@@ -68,7 +68,7 @@ impl DiagnosticService {
             IdeContext::new(state, uri, template.loc.start).expect("document is open");
         let mut diagnostics = Vec::new();
 
-        for usage in croquis.component_usages {
+        for usage in vize_croquis::facts::component_usage_list(&croquis) {
             if usage.has_spread_attrs || usage.props.iter().any(|prop| prop.name_is_dynamic) {
                 continue;
             }

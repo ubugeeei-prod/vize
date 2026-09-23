@@ -38,8 +38,7 @@ pub(super) fn usage_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
     });
     drawer.draw_template(&root);
     let croquis = drawer.finish();
-    croquis
-        .component_usages
+    vize_croquis::facts::component_usage_list(&croquis)
         .iter()
         .flat_map(|usage| &usage.props)
         .filter_map(|prop| {

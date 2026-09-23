@@ -78,7 +78,7 @@ fn usage_facts_keep_parent_source_ranges_and_attr_classification() {
 
     let parent_analysis = {
         let mut analysis = Croquis::new();
-        analysis.component_usages.push(ComponentUsage {
+        analysis.note_component_usage(ComponentUsage {
             name: CompactString::new("Child"),
             start: 10,
             end: 90,
@@ -159,7 +159,7 @@ fn usage_facts_feed_listener_attrs_into_component_aggregates() {
 
     let parent_analysis = {
         let mut analysis = Croquis::new();
-        analysis.component_usages.push(ComponentUsage {
+        analysis.note_component_usage(ComponentUsage {
             name: CompactString::new("Dialog"),
             start: 5,
             end: 40,
@@ -214,12 +214,8 @@ fn passed_attrs_are_attributed_per_child() {
 
     let parent_analysis = {
         let mut analysis = Croquis::new();
-        analysis
-            .component_usages
-            .push(usage_with_prop("ChildA", "foo"));
-        analysis
-            .component_usages
-            .push(usage_with_prop("ChildB", "bar"));
+        analysis.note_component_usage(usage_with_prop("ChildA", "foo"));
+        analysis.note_component_usage(usage_with_prop("ChildB", "bar"));
         analysis
     };
 
@@ -265,16 +261,10 @@ fn same_child_used_twice_does_not_leak_sibling_attrs() {
     let parent_analysis = {
         let mut analysis = Croquis::new();
         // Two usages of the same child, each passing its own prop.
-        analysis
-            .component_usages
-            .push(usage_with_prop("Card", "title"));
-        analysis
-            .component_usages
-            .push(usage_with_prop("Card", "subtitle"));
+        analysis.note_component_usage(usage_with_prop("Card", "title"));
+        analysis.note_component_usage(usage_with_prop("Card", "subtitle"));
         // An unrelated sibling child receiving a different prop.
-        analysis
-            .component_usages
-            .push(usage_with_prop("Banner", "color"));
+        analysis.note_component_usage(usage_with_prop("Banner", "color"));
         analysis
     };
 

@@ -12,12 +12,10 @@ fn script_analysis(script: &str, usages: &[(&str, &[(&str, &str)])]) -> vize_cro
     for (component, props) in usages {
         analyzer
             .croquis_mut()
-            .used_components
-            .insert(CompactString::new(*component));
+            .note_used_component(CompactString::new(*component));
         analyzer
             .croquis_mut()
-            .component_usages
-            .push(component_usage(component, props));
+            .note_component_usage(component_usage(component, props));
     }
 
     analyzer.finish()

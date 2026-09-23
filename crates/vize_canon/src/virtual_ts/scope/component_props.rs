@@ -237,18 +237,17 @@ pub(super) fn generate_component_props(
     }
 }
 
-pub(super) fn collect_checkable_usages<'a>(
-    ctx: &ComponentPropsContext<'a, '_>,
-) -> Vec<(usize, &'a ComponentUsage)> {
+pub(super) fn collect_checkable_usages(
+    ctx: &ComponentPropsContext<'_, '_>,
+) -> Vec<(usize, ComponentUsage)> {
     let external_template_bindings: FxHashSet<&str> = ctx
         .options
         .external_template_bindings
         .iter()
         .map(|name| name.as_str())
         .collect();
-    ctx.summary
-        .component_usages
-        .iter()
+    vize_croquis::facts::component_usage_list(ctx.summary)
+        .into_iter()
         .enumerate()
         .filter(|(_, usage)| {
             component_usage_has_checkable_binding(

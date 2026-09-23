@@ -137,7 +137,7 @@ pub(super) fn component_event_ranges(source: &str, filename: &str) -> Vec<Offset
     drawer.draw_template(&root);
     let croquis = drawer.finish();
     let mut ranges = Vec::new();
-    for usage in &croquis.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(&croquis) {
         for event in &usage.events {
             if event.name_is_dynamic {
                 continue;

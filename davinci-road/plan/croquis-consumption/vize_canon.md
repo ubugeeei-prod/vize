@@ -34,7 +34,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `UndefinedRef`                 | type  | `croquis`           |     1 |     1 |
 | `VForScopeData`                | type  | `scope`             |     1 |     4 |
 | `VSlotScopeData`               | type  | `scope`             |     1 |     4 |
-| `Croquis.component_usages`     | field | `croquis`           |    16 |    20 |
 | `Croquis.import_statements`    | field | `croquis`           |     4 |     5 |
 | `Croquis.invalid_exports`      | field | `croquis`           |     1 |     1 |
 | `Croquis.macros`               | field | `croquis`           |    28 |    73 |
@@ -48,7 +47,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.template_info`        | field | `croquis`           |     2 |     4 |
 | `Croquis.type_exports`         | field | `croquis`           |    10 |    20 |
 | `Croquis.types`                | field | `croquis`           |     5 |     9 |
-| `Croquis.used_components`      | field | `croquis`           |     7 |     9 |
 
 ## Non-product `vize_croquis` imports
 
@@ -81,6 +79,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ViolationSeverity`            |     1 |     3 |
 | `WITH_DEFAULTS`                |     1 |     1 |
 | `classify_event_handler`       |     2 |     3 |
+| `component_usage_list`         |    16 |    20 |
 | `extract_identifier_refs_oxc`  |     2 |     3 |
 | `extract_identifiers_oxc`      |     5 |     6 |
 | `is_dynamic_component_alias`   |     3 |     4 |
@@ -93,6 +92,9 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `parse_program_for_analysis`   |     4 |     7 |
 | `strip_js_comments`            |     3 |     3 |
 | `to_pascal_case`               |     2 |     2 |
+| `used_component_contains`      |     1 |     1 |
+| `used_component_name_list`     |     5 |     6 |
+| `used_components_empty`        |     2 |     2 |
 
 ## Naive grep disagreements (resolved/grep)
 

@@ -89,7 +89,7 @@ fn a_croquis_summary_without_metadata_names_its_own_legacy_reason() {
 #[test]
 fn a_croquis_registration_the_metadata_lacks_stays_legacy() {
     let mut summary = croquis_with(&[("Child", BindingType::SetupConst)]);
-    summary.used_components.insert("Child".into());
+    summary.note_used_component("Child");
     let selection = select(
         r#"<Child />"#,
         &SsrCompilerOptions {

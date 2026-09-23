@@ -22,10 +22,10 @@ pub(super) fn collect_component_prop_expression_ranges(
         .iter()
         .map(|name| name.as_str())
         .collect();
-    for usage in &summary.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(summary) {
         let has_checkable_binding = component_usage_has_checkable_binding(
             summary,
-            usage,
+            &usage,
             &external_template_bindings,
             options.component_binding_check,
             options.legacy_vue2,

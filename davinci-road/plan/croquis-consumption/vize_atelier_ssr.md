@@ -8,20 +8,20 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 ## Resolved product sites
 
-| product                   | kind  | module    | files | sites |
-| ------------------------- | ----- | --------- | ----: | ----: |
-| `Croquis`                 | type  | `croquis` |     3 |     4 |
-| `Croquis.bindings`        | field | `croquis` |     1 |     1 |
-| `Croquis.used_components` | field | `croquis` |     2 |     2 |
+| product            | kind  | module    | files | sites |
+| ------------------ | ----- | --------- | ----: | ----: |
+| `Croquis`          | type  | `croquis` |     3 |     4 |
+| `Croquis.bindings` | field | `croquis` |     1 |     1 |
 
 ## Non-product `vize_croquis` imports
 
-| item           | files | sites |
-| -------------- | ----: | ----: |
-| `Bindings`     |     1 |     2 |
-| `CroquisFacts` |     1 |     1 |
-| `Demand`       |     1 |     2 |
-| `FactConsumer` |     1 |     1 |
+| item                    | files | sites |
+| ----------------------- | ----: | ----: |
+| `Bindings`              |     1 |     2 |
+| `CroquisFacts`          |     1 |     1 |
+| `Demand`                |     1 |     2 |
+| `FactConsumer`          |     1 |     1 |
+| `used_components_empty` |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)
 

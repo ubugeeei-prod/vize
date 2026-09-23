@@ -178,9 +178,8 @@ fn has_error_captured(analysis: &vize_croquis::Croquis) -> bool {
 
 /// Check if a component uses Suspense.
 fn uses_suspense(analysis: &vize_croquis::Croquis) -> bool {
-    analysis.used_components.contains("Suspense")
-        || analysis
-            .used_components
+    vize_croquis::facts::used_component_contains(analysis, "Suspense")
+        || vize_croquis::facts::used_component_name_list(analysis)
             .iter()
             .any(|c| c.as_str() == "Suspense")
 }

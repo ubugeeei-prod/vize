@@ -28,13 +28,13 @@ pub struct ComponentIdentity {
     pub export_name: CompactString,
 }
 
-/// One template use of a resolved component, in template order under its key.
+/// One recorded use. `usage` is absent when the name is only in the used set.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ComponentUsageSite {
-    /// Start offset in the template.
-    pub start: u32,
-    /// End offset in the template.
-    pub end: u32,
+pub struct GroupedComponentUse {
+    pub tag: CompactString,
+    pub usage: Option<crate::croquis::ComponentUsage>,
+    pub usage_index: Option<u32>,
+    pub name_ordinal: Option<u32>,
 }
 
 /// The `ComponentUsages` fact group.
@@ -46,23 +46,48 @@ impl FactGroup for ComponentUsages {
     const STRATUM: u8 = 0;
     const DEPENDS: Demand = Demand::NONE;
     type Key = ComponentIdentity;
-    type Value = Vec<ComponentUsageSite>;
+    type Value = Vec<GroupedComponentUse>;
 }
 
 impl FactProducer<Croquis> for ComponentUsages {
     fn produce(croquis: &Croquis, _: &FactView<'_>) -> FactTable<Self> {
-        let mut grouped: Vec<(ComponentIdentity, Vec<ComponentUsageSite>)> =
+        let mut grouped: Vec<(ComponentIdentity, Vec<GroupedComponentUse>)> =
             Vec::with_capacity(croquis.component_usages.len());
-        for usage in &croquis.component_usages {
+        for (index, usage) in croquis.component_usages.iter().enumerate() {
             let identity = resolve(croquis, usage.name.as_str());
-            let site = ComponentUsageSite {
-                start: usage.start,
-                end: usage.end,
+            let recorded = GroupedComponentUse {
+                tag: usage.name.clone(),
+                usage: Some(usage.clone()),
+                usage_index: Some(u32::try_from(index).unwrap_or(u32::MAX)),
+                name_ordinal: None,
             };
             if let Some((_, sites)) = grouped.iter_mut().find(|(key, _)| key == &identity) {
-                sites.push(site);
+                sites.push(recorded);
             } else {
-                grouped.push((identity, vec![site]));
+                grouped.push((identity, vec![recorded]));
+            }
+        }
+        for (ordinal, name) in croquis.used_components.iter().enumerate() {
+            let identity = resolve(croquis, name.as_str());
+            let ordinal = u32::try_from(ordinal).unwrap_or(u32::MAX);
+            if let Some((_, sites)) = grouped.iter_mut().find(|(key, _)| key == &identity) {
+                for site in sites.iter_mut().filter(|site| site.tag == *name) {
+                    site.name_ordinal = Some(ordinal);
+                }
+                if sites.iter().any(|site| site.tag == *name) {
+                    continue;
+                }
+            }
+            let recorded = GroupedComponentUse {
+                tag: name.clone(),
+                usage: None,
+                usage_index: None,
+                name_ordinal: Some(ordinal),
+            };
+            if let Some((_, sites)) = grouped.iter_mut().find(|(key, _)| key == &identity) {
+                sites.push(recorded);
+            } else {
+                grouped.push((identity, vec![recorded]));
             }
         }
         grouped.into_iter().collect()

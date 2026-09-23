@@ -81,6 +81,7 @@ impl CrossFileAnalyzer {
 /// Relative specifiers carry a meaningful directory and must resolve against
 /// the importing file's path, so they are excluded from the bare-filename
 /// fallback used for flat virtual/playground projects.
+#[cfg(test)]
 fn is_relative_specifier(specifier: &str) -> bool {
     specifier.starts_with("./")
         || specifier.starts_with("../")

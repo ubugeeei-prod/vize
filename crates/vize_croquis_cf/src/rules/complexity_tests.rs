@@ -72,7 +72,7 @@ fn dominant_dimension_is_none_for_zero_score() {
 #[test]
 fn summarizes_complexity_from_registry_and_result() {
     let mut analysis = Croquis::new();
-    analysis.component_usages.push(ComponentUsage {
+    analysis.note_component_usage(ComponentUsage {
         name: CompactString::new("Child"),
         start: 21,
         end: 40,

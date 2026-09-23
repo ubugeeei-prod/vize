@@ -5,17 +5,17 @@ use std::path::Path;
 use vize_carton::{CompactString, FxHashMap, String, camelize};
 use vize_croquis::macros::MacroKind;
 
-pub(super) struct PassedComponentUsage<'a> {
-    pub(super) props: Vec<PassedPropInfo<'a>>,
+pub(super) struct PassedComponentUsage {
+    pub(super) props: Vec<PassedPropInfo>,
     pub(super) has_spread_attrs: bool,
     pub(super) start: u32,
     pub(super) end: u32,
 }
 
-pub(super) struct PassedPropInfo<'a> {
-    pub(super) name: &'a str,
+pub(super) struct PassedPropInfo {
+    pub(super) name: CompactString,
     pub(super) name_is_dynamic: bool,
-    pub(super) value: Option<&'a str>,
+    pub(super) value: Option<CompactString>,
     pub(super) start: u32,
     pub(super) end: u32,
     pub(super) is_dynamic: bool,
@@ -24,14 +24,14 @@ pub(super) struct PassedPropInfo<'a> {
 /// Extract matched usages and explicit props passed to a specific component from the analysis.
 ///
 /// Uses component_usages to find props passed to the component.
-pub(super) fn extract_passed_props_for_component<'a>(
-    analysis: &'a vize_croquis::Croquis,
+pub(super) fn extract_passed_props_for_component(
+    analysis: &vize_croquis::Croquis,
     component_name: &str,
     aliases: &[CompactString],
-) -> Vec<PassedComponentUsage<'a>> {
+) -> Vec<PassedComponentUsage> {
     let mut usages = Vec::new();
 
-    for usage in &analysis.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(analysis) {
         // Match component name (case-insensitive for kebab-case vs PascalCase)
         if component_names_match(usage.name.as_str(), component_name)
             || aliases
@@ -42,9 +42,9 @@ pub(super) fn extract_passed_props_for_component<'a>(
                 .props
                 .iter()
                 .map(|prop| PassedPropInfo {
-                    name: prop.name.as_str(),
+                    name: prop.name.clone(),
                     name_is_dynamic: prop.name_is_dynamic,
-                    value: prop.value.as_deref(),
+                    value: prop.value.clone(),
                     start: prop.start,
                     end: prop.end,
                     is_dynamic: prop.is_dynamic,
@@ -82,14 +82,14 @@ pub(super) fn define_props_offset(entry: &ModuleEntry) -> u32 {
         .map_or(0, |call| call.start)
 }
 
-pub(super) fn has_passed_prop(usage: &PassedComponentUsage<'_>, name: &str) -> bool {
+pub(super) fn has_passed_prop(usage: &PassedComponentUsage, name: &str) -> bool {
     usage
         .props
         .iter()
-        .any(|prop| !prop.name_is_dynamic && prop_names_match(prop.name, name))
+        .any(|prop| !prop.name_is_dynamic && prop_names_match(prop.name.as_str(), name))
 }
 
-pub(super) fn has_dynamic_prop_name(usage: &PassedComponentUsage<'_>) -> bool {
+pub(super) fn has_dynamic_prop_name(usage: &PassedComponentUsage) -> bool {
     usage.props.iter().any(|prop| prop.name_is_dynamic)
 }
 
@@ -108,7 +108,7 @@ fn prop_names_match(left: &str, right: &str) -> bool {
     left == right || camelize(left) == camelize(right)
 }
 
-pub(super) fn actual_literal_type(prop: &PassedPropInfo<'_>) -> Option<CompactString> {
+pub(super) fn actual_literal_type(prop: &PassedPropInfo) -> Option<CompactString> {
     if !prop.is_dynamic {
         return Some(if prop.value.is_some() {
             CompactString::const_new("string")
@@ -117,7 +117,7 @@ pub(super) fn actual_literal_type(prop: &PassedPropInfo<'_>) -> Option<CompactSt
         });
     }
 
-    let value = prop.value?.trim();
+    let value = prop.value.as_deref()?.trim();
     if is_string_literal(value) {
         Some(CompactString::const_new("string"))
     } else if is_boolean_literal(value) {

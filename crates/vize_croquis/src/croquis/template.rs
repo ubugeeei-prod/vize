@@ -173,7 +173,7 @@ impl TemplateExpressionKind {
 ///
 /// Uses SmallVec to avoid heap allocations for typical component usage
 /// (most components have < 8 props, < 4 events, < 2 slots).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ComponentUsage {
     /// Component name (e.g., "MyButton", "user-card")
     pub name: CompactString,
@@ -203,7 +203,7 @@ pub struct ComponentUsage {
 }
 
 /// An argument-less `v-bind="expr"` spread on a component usage.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SpreadProp {
     /// The spread expression as authored, e.g. `bag` or `$attrs`.
     pub expression: CompactString,
@@ -214,7 +214,7 @@ pub struct SpreadProp {
 }
 
 /// A prop passed to a component in template.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PassedProp {
     /// Prop name (kebab-case or camelCase as written)
     pub name: CompactString,
@@ -231,7 +231,7 @@ pub struct PassedProp {
 }
 
 /// An event listener on a component.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EventListener {
     /// Event name (e.g., "click", "update:modelValue")
     pub name: CompactString,
@@ -248,7 +248,7 @@ pub struct EventListener {
 }
 
 /// A slot provided to a component.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SlotUsage {
     /// Slot name ("default" if unnamed)
     pub name: CompactString,

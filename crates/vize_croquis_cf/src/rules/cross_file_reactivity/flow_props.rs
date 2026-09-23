@@ -29,7 +29,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                 };
                 let aliases = imported_aliases_for_child(parent_entry, child_entry);
 
-                for usage in &parent_entry.analysis.component_usages {
+                for usage in vize_croquis::facts::component_usage_list(&parent_entry.analysis) {
                     if !component_usage_targets_child(usage.name.as_str(), child_entry, &aliases) {
                         continue;
                     }

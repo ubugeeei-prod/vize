@@ -126,8 +126,7 @@ provide(ThemeKey, theme)"#,
     );
     parent_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("Child"));
+        .note_used_component(vize_carton::CompactString::new("Child"));
     let parent_analysis = parent_analyzer.finish();
 
     let mut child_analyzer = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());

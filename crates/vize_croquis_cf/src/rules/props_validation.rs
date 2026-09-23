@@ -178,20 +178,20 @@ pub fn analyze_props_validation(
                     continue;
                 }
                 // Skip built-in attributes
-                if is_builtin_attr(passed_prop.name) {
+                if is_builtin_attr(passed_prop.name.as_str()) {
                     continue;
                 }
 
                 // Check if this prop is declared
                 let Some((declared_prop_name, prop_info)) =
-                    declared_prop(&child_props_info.props, passed_prop.name)
+                    declared_prop(&child_props_info.props, passed_prop.name.as_str())
                 else {
                     let issue = PropsValidationIssue {
                         parent_file: parent_id,
                         child_file: child_id,
                         component_name: child_component_name.clone(),
                         kind: PropsValidationIssueKind::UndeclaredProp {
-                            prop_name: CompactString::new(passed_prop.name),
+                            prop_name: passed_prop.name.clone(),
                         },
                         offset: passed_prop.start,
                     };
@@ -199,7 +199,7 @@ pub fn analyze_props_validation(
 
                     let diagnostic = CrossFileDiagnostic::with_span(
                         CrossFileDiagnosticKind::UndeclaredProp {
-                            prop_name: CompactString::new(passed_prop.name),
+                            prop_name: passed_prop.name.clone(),
                             component_name: child_component_name.clone(),
                         },
                         DiagnosticSeverity::Warning, // Warning since it might be intentional $attrs
@@ -210,13 +210,13 @@ pub fn analyze_props_validation(
                             "**Undeclared Prop**: `{}` is passed to `<{}>` but not declared\n\n\
                             The prop is not defined in the component's `defineProps`.\n\
                             If intentional, it will fall through to the root element via `$attrs`.",
-                            passed_prop.name, child_component_name
+                            passed_prop.name.as_str(), child_component_name
                         ),
                     )
                     .with_suggestion(cstr!(
                         "Add to defineProps:\n```typescript\ndefineProps<{{\n  {}: unknown\n}}>()\n```\n\n\
                         Or use `v-bind=\"$attrs\"` in the child component for fallthrough.",
-                        passed_prop.name
+                        passed_prop.name.as_str()
                     ));
 
                     diagnostics.push(diagnostic);
@@ -233,7 +233,7 @@ pub fn analyze_props_validation(
                         child_file: child_id,
                         component_name: child_component_name.clone(),
                         kind: PropsValidationIssueKind::TypeMismatch {
-                            prop_name: CompactString::new(passed_prop.name),
+                            prop_name: passed_prop.name.clone(),
                             expected: expected.clone(),
                             actual: actual.clone(),
                         },
@@ -243,7 +243,7 @@ pub fn analyze_props_validation(
 
                     let diagnostic = CrossFileDiagnostic::with_span(
                         CrossFileDiagnosticKind::PropTypeMismatch {
-                            prop_name: CompactString::new(passed_prop.name),
+                            prop_name: passed_prop.name.clone(),
                             expected_type: expected.clone(),
                             actual_type: actual.clone(),
                         },

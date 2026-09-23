@@ -229,7 +229,7 @@ const bag = { count: 1 }
         .unwrap_or_else(|| {
             panic!(
                 "following member must have a precise mapping: spreads={:?} mappings={:?}",
-                summary.component_usages[0].spread_props,
+                vize_croquis::facts::component_usage_list(&summary)[0].spread_props,
                 output.mapping.spans()
             )
         });

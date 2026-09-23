@@ -26,7 +26,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeKind`                    | type  | `scope`             |     9 |    65 |
 | `SlotUsage`                    | type  | `croquis::template` |     2 |     3 |
 | `Croquis.component_shape`      | field | `croquis`           |     1 |     1 |
-| `Croquis.component_usages`     | field | `croquis`           |     6 |     7 |
 | `Croquis.macros`               | field | `croquis`           |     7 |    14 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     3 |
 | `Croquis.reactivity`           | field | `croquis`           |     5 |     6 |
@@ -48,6 +47,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SfcDescriptor`               |     7 |    25 |
 | `SfcScriptBlock`              |     2 |     5 |
 | `SfcStyleBlock`               |     2 |     8 |
+| `component_usage_list`        |     6 |     7 |
 | `extract_identifier_refs_oxc` |     1 |     1 |
 | `extract_identifiers_oxc`     |     2 |     2 |
 | `is_kebab_case`               |     1 |     1 |

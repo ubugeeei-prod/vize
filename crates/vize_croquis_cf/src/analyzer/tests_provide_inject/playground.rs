@@ -26,14 +26,13 @@ provide('user', { name: 'John', id: 1 })"#;
     // Simulate template analysis adding used component
     app_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("ParentComponent"));
+        .note_used_component(vize_carton::CompactString::new("ParentComponent"));
     let app_analysis = app_analyzer.finish();
 
     // Debug: check used_components
     eprintln!(
         "App.vue used_components: {:?}",
-        app_analysis.used_components
+        vize_croquis::facts::used_component_name_list(&app_analysis)
     );
 
     // ParentComponent.vue - injects 'theme' and 'user', uses ChildComponent
@@ -47,13 +46,12 @@ const { name } = inject('user')"#;
     parent_analyzer.analyze_script_setup(parent_script);
     parent_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("ChildComponent"));
+        .note_used_component(vize_carton::CompactString::new("ChildComponent"));
     let parent_analysis = parent_analyzer.finish();
 
     eprintln!(
         "ParentComponent.vue used_components: {:?}",
-        parent_analysis.used_components
+        vize_croquis::facts::used_component_name_list(&parent_analysis)
     );
 
     // ChildComponent.vue - no provide/inject
@@ -137,8 +135,7 @@ provide('user', user)"#,
     // Manually add used component (normally from template analysis)
     app_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("Child"));
+        .note_used_component(vize_carton::CompactString::new("Child"));
     let app_analysis = app_analyzer.finish();
 
     // Child.vue injects 'theme' and 'user'

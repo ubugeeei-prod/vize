@@ -12,8 +12,7 @@ fn add_inline_self_component_binding(
     options: &mut VirtualTsOptions,
     summary: &vize_croquis::Croquis,
 ) {
-    if summary
-        .component_usages
+    if vize_croquis::facts::component_usage_list(summary)
         .iter()
         .any(|usage| usage.name.as_str() == "Self")
     {

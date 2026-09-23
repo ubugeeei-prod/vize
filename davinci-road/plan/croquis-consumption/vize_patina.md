@@ -25,7 +25,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.macros`                  | field | `croquis`           |     8 |    22 |
 | `Croquis.reactivity`              | field | `croquis`           |     1 |     1 |
 | `Croquis.scopes`                  | field | `croquis`           |     2 |     4 |
-| `Croquis.used_components`         | field | `croquis`           |     1 |     1 |
 
 ## Non-product `vize_croquis` imports
 
@@ -59,6 +58,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `parse_script_with_options`               |     1 |     1 |
 | `parse_v_for_expression`                  |     1 |     1 |
 | `to_pascal_case`                          |     2 |     3 |
+| `used_component_name_list`                |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)
 

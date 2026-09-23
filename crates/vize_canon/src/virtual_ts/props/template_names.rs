@@ -33,7 +33,7 @@ pub(crate) fn collect_template_prop_names(summary: &Croquis) -> FxHashSet<String
         insert_reserved_prop_name(summary, &mut names, model.name.as_str());
     }
 
-    for usage in &summary.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(summary) {
         for prop in &usage.props {
             if !prop.name_is_dynamic
                 && prop.is_dynamic

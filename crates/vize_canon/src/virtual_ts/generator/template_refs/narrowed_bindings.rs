@@ -37,7 +37,7 @@ pub(super) fn collect(summary: &Croquis, candidates: &[&str]) -> FxHashSet<Strin
             visit(guard.as_str(), true);
         }
     }
-    for usage in &summary.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(summary) {
         if let Some(guard) = usage.vif_guard.as_ref() {
             visit(guard.as_str(), true);
         }

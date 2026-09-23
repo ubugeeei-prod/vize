@@ -41,7 +41,7 @@ fn collect_template_referenced_names(
         }
     }
 
-    for usage in &summary.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(summary) {
         names.insert(usage.name.as_str().into());
         if let Some(guard) = usage.vif_guard.as_ref() {
             collect_expression_identifiers(&mut names, &mut expressions, guard.as_str());
@@ -60,7 +60,7 @@ fn collect_template_referenced_names(
         }
     }
 
-    for component in &summary.used_components {
+    for component in vize_croquis::facts::used_component_name_list(summary) {
         names.insert(component.as_str().into());
     }
 
@@ -110,14 +110,14 @@ fn collect_pattern_default_identifiers(names: &mut FxHashSet<String>, pattern: &
     }
 }
 
-fn collect_expression_identifiers<'a>(
+fn collect_expression_identifiers(
     names: &mut FxHashSet<String>,
-    expressions: &mut FxHashSet<&'a str>,
-    expression: &'a str,
+    expressions: &mut FxHashSet<String>,
+    expression: &str,
 ) {
     // Croquis records a source expression in multiple semantic views. This is
     // one conservative name union, so identical text only needs parsing once.
-    if !expressions.insert(expression) {
+    if !expressions.insert(expression.into()) {
         return;
     }
     for identifier in vize_croquis::drawer::extract_identifiers_oxc(expression) {

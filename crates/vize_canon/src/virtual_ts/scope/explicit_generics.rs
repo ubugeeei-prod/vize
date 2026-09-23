@@ -30,8 +30,7 @@ impl ExplicitGenerics {
         let Some(source) = template_source.filter(|source| source.contains(DIRECTIVE)) else {
             return Self::default();
         };
-        let by_usage_start = summary
-            .component_usages
+        let by_usage_start = vize_croquis::facts::component_usage_list(summary)
             .iter()
             .filter_map(|usage| {
                 let arguments = preceding_arguments(source, usage.start as usize)?;
@@ -64,8 +63,7 @@ impl ExplicitGenerics {
         if self.by_usage_start.is_empty() {
             return None;
         }
-        summary
-            .component_usages
+        vize_croquis::facts::component_usage_list(summary)
             .iter()
             .find(|usage| {
                 usage.start <= offset && offset < usage.end && usage.name.as_str() == component
@@ -90,7 +88,7 @@ impl ExplicitGenerics {
         ts.push_str(
             "  // Explicit `@vue-generic` arguments: the instantiated call signature.\n  const __vizeExplicitGeneric = <C>(component: C) => component as unknown as (C extends (...args: infer __A) => infer __R ? (...args: __A) => __R : C);\n",
         );
-        for usage in &summary.component_usages {
+        for usage in vize_croquis::facts::component_usage_list(summary) {
             let Some(generic) = self.by_usage_start.get(&usage.start) else {
                 continue;
             };

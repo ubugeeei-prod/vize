@@ -183,8 +183,7 @@ impl Rule for NoUnusedComponents {
                     }
 
                     // Check if used in template (case-insensitive matching for kebab-case)
-                    !analysis
-                        .used_components
+                    !vize_croquis::facts::used_component_name_list(analysis)
                         .iter()
                         .any(|used| Self::component_name_matches(used.as_str(), name))
                 })

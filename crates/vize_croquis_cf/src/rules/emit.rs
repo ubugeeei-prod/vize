@@ -214,7 +214,7 @@ fn extract_event_listeners(
 ) -> FxHashMap<CompactString, FxHashMap<CompactString, u32>> {
     let mut result: FxHashMap<CompactString, FxHashMap<CompactString, u32>> = FxHashMap::default();
 
-    for usage in &analysis.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(analysis) {
         let component_name = usage.name.to_compact_string();
         let events = result.entry(component_name).or_default();
 

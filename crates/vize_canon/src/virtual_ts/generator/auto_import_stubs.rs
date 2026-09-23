@@ -84,8 +84,7 @@ fn component_alias_for_type_only_auto_import(
     if !contains_compact_name(syntactic_type_only_imported_names, name) {
         return None;
     }
-    summary
-        .used_components
+    vize_croquis::facts::used_component_name_list(summary)
         .iter()
         .find(|component| {
             let component_name = component.as_str();

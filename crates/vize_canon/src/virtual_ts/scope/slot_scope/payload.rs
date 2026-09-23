@@ -51,15 +51,14 @@ pub(crate) fn emit_slot_payload_helpers(
 /// authored `v-slot` / `#name` directive, so that offset links the two exactly
 /// — no containment heuristic, and no ambiguity between nested usages of the
 /// same tag.
-pub(super) fn find_slot_host<'a>(
-    summary: &'a Croquis,
+pub(super) fn find_slot_host(
+    summary: &Croquis,
     scope: &Scope,
     component: &str,
-) -> Option<&'a ComponentUsage> {
+) -> Option<ComponentUsage> {
     let directive_offset = scope.span.start;
-    summary
-        .component_usages
-        .iter()
+    vize_croquis::facts::component_usage_list(summary)
+        .into_iter()
         .filter(|usage| usage.name.as_str() == component)
         .find(|usage| {
             usage

@@ -8,8 +8,7 @@ fn script_analysis(script: &str, used_components: &[&str]) -> vize_croquis::Croq
     for component in used_components {
         analyzer
             .croquis_mut()
-            .used_components
-            .insert(vize_carton::CompactString::new(*component));
+            .note_used_component(vize_carton::CompactString::new(*component));
     }
     analyzer.finish()
 }

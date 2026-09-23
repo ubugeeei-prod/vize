@@ -15,8 +15,7 @@ provide('globalState', { app: 'test' })"#,
     );
     gp_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("Parent"));
+        .note_used_component(vize_carton::CompactString::new("Parent"));
     let gp_analysis = gp_analyzer.finish();
 
     // Parent doesn't provide/inject anything, just passes through
@@ -24,8 +23,7 @@ provide('globalState', { app: 'test' })"#,
     parent_analyzer.analyze_script_setup(r#"// No provide/inject"#);
     parent_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("Child"));
+        .note_used_component(vize_carton::CompactString::new("Child"));
     let parent_analysis = parent_analyzer.finish();
 
     // Child injects 'globalState' (from grandparent)
@@ -83,16 +81,14 @@ provide('state', state)"#,
     );
     app_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("Middle"));
+        .note_used_component(vize_carton::CompactString::new("Middle"));
     let app_analysis = app_analyzer.finish();
 
     let mut middle_analyzer = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
     middle_analyzer.analyze_script_setup("// pass-through component");
     middle_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("Leaf"));
+        .note_used_component(vize_carton::CompactString::new("Leaf"));
     let middle_analysis = middle_analyzer.finish();
 
     let mut leaf_analyzer = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
@@ -234,8 +230,8 @@ fn script_analysis_with_component_usages(
 ) -> vize_croquis::Croquis {
     let mut analysis = script_analysis(script, &[]);
     for usage in usages {
-        analysis.used_components.insert(usage.name.clone());
-        analysis.component_usages.push(usage);
+        analysis.note_used_component(usage.name.clone());
+        analysis.note_component_usage(usage);
     }
     analysis
 }

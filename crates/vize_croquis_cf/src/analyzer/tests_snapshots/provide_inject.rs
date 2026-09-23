@@ -264,8 +264,7 @@ fn script_analysis(script: &str, components: &[&str]) -> vize_croquis::Croquis {
     for component in components {
         analyzer
             .croquis_mut()
-            .used_components
-            .insert(CompactString::new(*component));
+            .note_used_component(CompactString::new(*component));
     }
     analyzer.finish()
 }

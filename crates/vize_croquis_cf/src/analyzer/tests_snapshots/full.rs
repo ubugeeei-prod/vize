@@ -19,8 +19,7 @@ const isAdmin = computed(() => user.value.role === 'admin')"#,
     );
     app_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("Dashboard"));
+        .note_used_component(vize_carton::CompactString::new("Dashboard"));
     let app_analysis = app_analyzer.finish();
 
     // Dashboard.vue - uses theme, provides nested state
@@ -36,8 +35,7 @@ provide('dashboardState', dashboardState)"#,
     );
     dashboard_analyzer
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("Widget"));
+        .note_used_component(vize_carton::CompactString::new("Widget"));
     let dashboard_analysis = dashboard_analyzer.finish();
 
     // Widget.vue - uses all injected values

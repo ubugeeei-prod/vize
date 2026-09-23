@@ -24,7 +24,7 @@ pub(super) fn projectable(croquis: &Croquis, metadata: Option<&BindingMetadata>)
     let Some(metadata) = metadata else {
         return false;
     };
-    if !croquis.used_components.is_empty() {
+    if !vize_croquis::facts::used_components_empty(croquis) {
         return false;
     }
     let mut facts = CroquisFacts::new(croquis);

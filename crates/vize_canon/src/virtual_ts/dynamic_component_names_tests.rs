@@ -24,7 +24,8 @@ fn dynamic_prop_names_do_not_become_static_component_contract_keys() {
     analyzer.analyze_script_setup(script);
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
-    let usage = &summary.component_usages[0];
+    let usages = vize_croquis::facts::component_usage_list(&summary);
+    let usage = &usages[0];
     assert!(!usage.props[0].name_is_dynamic);
     assert!(usage.props[1].name_is_dynamic);
     assert!(!usage.events[0].name_is_dynamic);

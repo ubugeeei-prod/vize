@@ -65,14 +65,12 @@ fn local_input(entry: &ModuleEntry, effect_graph: EffectGraphSummary) -> Complex
     ComplexityInput {
         component_count: 1,
         slot_count: analysis.macros.slots().len().saturating_add(
-            analysis
-                .component_usages
+            vize_croquis::facts::component_usage_list(analysis)
                 .iter()
                 .map(|usage| usage.slots.len())
                 .fold(0usize, usize::saturating_add),
         ),
-        prop_drilling_edge_count: analysis
-            .component_usages
+        prop_drilling_edge_count: vize_croquis::facts::component_usage_list(analysis)
             .iter()
             .map(|usage| usage.props.len())
             .fold(0usize, usize::saturating_add),

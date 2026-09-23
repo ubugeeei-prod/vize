@@ -13,12 +13,10 @@ provide('a', 1)"#,
     );
     comp_a
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("CompB"));
+        .note_used_component(vize_carton::CompactString::new("CompB"));
     comp_a
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("CompC"));
+        .note_used_component(vize_carton::CompactString::new("CompC"));
 
     let mut comp_b = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
     comp_b.analyze_script_setup(
@@ -28,8 +26,7 @@ provide('b', 2)"#,
     );
     comp_b
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("CompD"));
+        .note_used_component(vize_carton::CompactString::new("CompD"));
 
     let mut comp_c = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
     comp_c.analyze_script_setup(
@@ -38,8 +35,7 @@ const a = inject('a')"#,
     );
     comp_c
         .croquis_mut()
-        .used_components
-        .insert(vize_carton::CompactString::new("CompD"));
+        .note_used_component(vize_carton::CompactString::new("CompD"));
 
     let mut comp_d = vize_croquis::Analyzer::with_options(AnalyzerOptions::full());
     comp_d.analyze_script_setup(

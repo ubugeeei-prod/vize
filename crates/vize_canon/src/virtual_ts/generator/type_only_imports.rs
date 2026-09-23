@@ -34,8 +34,8 @@ fn should_collect_syntactic_type_only_imported_names(
     global_components: &GlobalComponentPlan<'_>,
     has_options_api_props: bool,
 ) -> bool {
-    (global_components.enabled() && !summary.component_usages.is_empty())
-        || !summary.used_components.is_empty()
+    (global_components.enabled() && !vize_croquis::facts::component_usage_list(summary).is_empty())
+        || !vize_croquis::facts::used_components_empty(summary)
         || summary.macros.define_props().is_some()
         || !summary.macros.models().is_empty()
         || has_options_api_props

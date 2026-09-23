@@ -8,24 +8,24 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 ## Resolved product sites
 
-| product                               | kind  | module         | files | sites |
-| ------------------------------------- | ----- | -------------- | ----: | ----: |
-| `Analyzer`                            | type  | `analyzer`     |     1 |     1 |
-| `AnalyzerOptions`                     | type  | `analyzer`     |     1 |     1 |
-| `Croquis`                             | type  | `croquis`      |     1 |     1 |
-| `EffectGraphScript`                   | type  | `effect_graph` |     1 |     2 |
-| `build_effect_graph_from_sfc_scripts` | type  | `effect_graph` |     1 |     1 |
-| `Croquis.component_usages`            | field | `croquis`      |     1 |     1 |
+| product                               | kind | module         | files | sites |
+| ------------------------------------- | ---- | -------------- | ----: | ----: |
+| `Analyzer`                            | type | `analyzer`     |     1 |     1 |
+| `AnalyzerOptions`                     | type | `analyzer`     |     1 |     1 |
+| `Croquis`                             | type | `croquis`      |     1 |     1 |
+| `EffectGraphScript`                   | type | `effect_graph` |     1 |     2 |
+| `build_effect_graph_from_sfc_scripts` | type | `effect_graph` |     1 |     1 |
 
 ## Non-product `vize_croquis` imports
 
-| item              | files | sites |
-| ----------------- | ----: | ----: |
-| `BlockLocation`   |     1 |     1 |
-| `SfcDescriptor`   |     2 |     4 |
-| `SfcParseOptions` |    11 |    14 |
-| `SfcScriptBlock`  |     1 |     1 |
-| `to_pascal_case`  |     1 |     1 |
+| item                   | files | sites |
+| ---------------------- | ----: | ----: |
+| `BlockLocation`        |     1 |     1 |
+| `SfcDescriptor`        |     2 |     4 |
+| `SfcParseOptions`      |    11 |    14 |
+| `SfcScriptBlock`       |     1 |     1 |
+| `component_usage_list` |     1 |     1 |
+| `to_pascal_case`       |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)
 

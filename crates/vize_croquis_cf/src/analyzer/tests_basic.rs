@@ -306,16 +306,14 @@ fn script_analysis_with_component_usage(
     usage: ComponentUsage,
 ) -> vize_croquis::Croquis {
     let mut analysis = script_analysis(script);
-    analysis.used_components.insert(usage.name.clone());
-    analysis.component_usages.push(usage);
+    analysis.note_used_component(usage.name.clone());
+    analysis.note_component_usage(usage);
     analysis
 }
 
 fn script_analysis_with_used_component(script: &str, component: &str) -> vize_croquis::Croquis {
     let mut analysis = script_analysis(script);
-    analysis
-        .used_components
-        .insert(CompactString::new(component));
+    analysis.note_used_component(CompactString::new(component));
     analysis
 }
 

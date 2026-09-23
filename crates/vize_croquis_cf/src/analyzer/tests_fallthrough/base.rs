@@ -19,8 +19,8 @@ fn fallthrough_component_facts_are_populated_from_analyzer() {
     let child_id = analyzer.add_file_with_analysis(Path::new("Child.vue"), "", child);
 
     let mut parent = Croquis::new();
-    parent.used_components.insert(CompactString::new("Child"));
-    parent.component_usages.push(ComponentUsage {
+    parent.note_used_component(CompactString::new("Child"));
+    parent.note_component_usage(ComponentUsage {
         name: CompactString::new("Child"),
         start: 0,
         end: 80,

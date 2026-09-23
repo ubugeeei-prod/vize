@@ -105,9 +105,9 @@
 
 **Steps:**
 
-- [ ] Per-file group in `crates/vize_croquis/src/facts/components.rs`; project group in `crates/vize_croquis_cf/src/facts/render_tree.rs` resolving identities with the existing `rules/component_resolution.rs` logic moved behind the group
-- [ ] Edges are registration-order independent and **stale edges are removed on re-resolution**
-- [ ] TS-34 spec + naive evaluator; readers outside lane C switched; matrix regenerated
+- [x] Per-file group in `crates/vize_croquis/src/facts/components.rs`; project group in `crates/vize_croquis_cf/src/facts/render_tree.rs` resolving identities with the existing `rules/component_resolution.rs` logic moved behind the group
+- [x] Edges are registration-order independent and **stale edges are removed on re-resolution**
+- [x] TS-34 spec + naive evaluator; readers outside lane C switched; matrix regenerated
 
 **Acceptance:** TS-34 as in P4-3a; regression fixtures with exact diagnostic sets for aliased imports, re-exports, same-basename components in different directories, both child registration orders, and a stale edge after re-resolution; TS-35; cross-file lint snapshots unchanged; TS-12.
 

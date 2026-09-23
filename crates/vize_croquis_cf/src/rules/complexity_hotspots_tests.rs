@@ -15,7 +15,7 @@ use vize_croquis::{Croquis, EffectGraphSummary, ScopeId};
 #[test]
 fn ranks_hotspots_with_dimension_inputs_and_json_shape() {
     let mut parent = Croquis::new();
-    parent.component_usages.push(ComponentUsage {
+    parent.note_component_usage(ComponentUsage {
         name: CompactString::new("Child"),
         start: 41,
         end: 90,
@@ -184,8 +184,8 @@ fn analyzer_result_stores_complexity_hotspots() {
     );
 
     let mut parent = Croquis::new();
-    parent.used_components.insert(CompactString::new("Child"));
-    parent.component_usages.push(ComponentUsage {
+    parent.note_used_component(CompactString::new("Child"));
+    parent.note_component_usage(ComponentUsage {
         name: CompactString::new("Child"),
         start: 0,
         end: 30,

@@ -20,7 +20,7 @@ pub(super) fn emit_dynamic_component_aliases(
     let Some(root) = template_ast else {
         return;
     };
-    for usage in &summary.component_usages {
+    for usage in vize_croquis::facts::component_usage_list(summary) {
         if !is_dynamic_component_alias(usage.name.as_str()) {
             continue;
         }

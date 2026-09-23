@@ -85,7 +85,8 @@ fn collect_explicit_template_component_names(files: &[PathBuf]) -> FxHashSet<Str
         let (root, _) = vize_armature::parse(&allocator, template.content.as_ref());
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
         analyzer.analyze_template(&root);
-        for usage in analyzer.finish().component_usages {
+        let croquis = analyzer.finish();
+        for usage in vize_croquis::facts::component_usage_list(&croquis) {
             names.insert(String::from(usage.name.as_str()));
             names.insert(String::from(to_pascal_case(usage.name.as_str()).as_str()));
         }

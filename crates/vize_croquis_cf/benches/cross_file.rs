@@ -28,8 +28,7 @@ fn script_analysis(source: &str, used_components: &[CompactString]) -> Croquis {
     for component in used_components {
         analyzer
             .croquis_mut()
-            .used_components
-            .insert(component.clone());
+            .note_used_component(component.clone());
     }
     analyzer.finish()
 }
