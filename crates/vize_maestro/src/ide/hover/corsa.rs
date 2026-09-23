@@ -2,10 +2,10 @@
 //!
 //! Provides offset conversion between SFC and virtual TypeScript documents,
 //! and conversion of Corsa hover responses to LSP hover format.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "`Arc<CorsaBridge>` is shared across requests and `to_string()` builds std `String` payloads"
 )]
 
 use std::sync::Arc;
@@ -293,7 +293,7 @@ impl HoverService {
                 .map(|item| match item {
                     LspMarkedString::String(s) => Self::wrap_type_info_in_codeblock(&s),
                     LspMarkedString::LanguageString { language, value } => {
-                        #[allow(clippy::disallowed_macros)]
+                        #[expect(clippy::disallowed_macros, reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take")]
                         {
                             format!("```{}\n{}\n```", language, value)
                         }

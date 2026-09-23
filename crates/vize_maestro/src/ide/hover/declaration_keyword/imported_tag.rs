@@ -18,12 +18,14 @@ pub(super) fn imported_tag_property_keyword(
         return None;
     }
     let fence_start = markdown.find("```")?;
-    let after_fence = markdown[fence_start..].find('\n')? + fence_start + 1;
+    let after_fence = markdown
+        .get(fence_start..)
+        .and_then(|rest| rest.find('\n'))?
+        + fence_start
+        + 1;
     let synthesized = format!("var {word}");
-    if !markdown[after_fence..].starts_with(&synthesized) {
-        return None;
-    }
-    let following = markdown[after_fence + synthesized.len()..].chars().next();
+    let (head, body) = markdown.split_at_checked(after_fence)?;
+    let following = body.strip_prefix(synthesized.as_str())?.chars().next();
     if following.is_some_and(|c| c == '_' || c == '$' || c.is_alphanumeric()) {
         return None;
     }
@@ -34,9 +36,9 @@ pub(super) fn imported_tag_property_keyword(
         return None;
     }
     let mut rewritten = String::with_capacity(markdown.len() + "(property)".len());
-    rewritten.push_str(&markdown[..after_fence]);
+    rewritten.push_str(head);
     rewritten.push_str("(property)");
-    rewritten.push_str(&markdown[after_fence + "var".len()..]);
+    rewritten.push_str(body.strip_prefix("var")?);
     Some(rewritten)
 }
 
@@ -61,5 +63,7 @@ fn hover_is_on_tag(content: &str, offset: usize, word: &str) -> bool {
     content
         .get(word_start..)
         .is_some_and(|rest| rest.starts_with(word))
-        && before[..word_start].ends_with('<')
+        && before
+            .get(..word_start)
+            .is_some_and(|head| head.ends_with('<'))
 }

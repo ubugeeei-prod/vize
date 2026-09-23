@@ -50,13 +50,13 @@ pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool
     // reads a member exactly like `it.na|` does.
     let mut pos = identifier_start(content, offset);
     // Skip any whitespace between the `.` and the name (`it. na|`).
-    while let Some(ch) = content[..pos].chars().next_back() {
+    while let Some(ch) = content.get(..pos).and_then(|head| head.chars().next_back()) {
         if !ch.is_whitespace() {
             break;
         }
         pos -= ch.len_utf8();
     }
-    if !content[..pos].ends_with('.') {
+    if !content.get(..pos).is_some_and(|head| head.ends_with('.')) {
         return false;
     }
 
@@ -65,7 +65,7 @@ pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool
     // spread is always three dots, so this looks for the other two rather than
     // for any preceding dot: in `42..toStrin` the first dot closes the numeric
     // literal `42.` and the second one still reads a member off it.
-    if content[..dot].ends_with("..") {
+    if content.get(..dot).is_some_and(|head| head.ends_with("..")) {
         return false;
     }
     !is_decimal_point(content, dot)
@@ -83,7 +83,9 @@ pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool
 #[cfg(feature = "native")]
 fn is_decimal_point(content: &str, dot: usize) -> bool {
     let start = identifier_start(content, dot);
-    let token = &content[start..dot];
+    let Some(token) = content.get(start..dot) else {
+        return false;
+    };
     // A digit-led token before the `.` is the integer part of a literal, which
     // covers every fragment of one (`1.`, `1.5`, `1.na`). An identifier that
     // merely contains digits (`foo1.bar`) is still a member read, so this tests
@@ -102,7 +104,9 @@ fn is_decimal_point(content: &str, dot: usize) -> bool {
     }
     // Those digits can still be the tail of a literal that ended before them,
     // in which case the `.` reads a member too.
-    !closes_numeric_literal(&content[..start])
+    content
+        .get(..start)
+        .is_some_and(|before| !closes_numeric_literal(before))
 }
 
 /// Whether the text ending right before a run of decimal digits already closed
@@ -124,15 +128,19 @@ fn closes_numeric_literal(before: &str) -> bool {
     else {
         return false;
     };
-    mantissa[identifier_start(mantissa, mantissa.len())..]
-        .starts_with(|ch: char| ch.is_ascii_digit())
+    mantissa
+        .get(identifier_start(mantissa, mantissa.len())..)
+        .is_some_and(|token| token.starts_with(|ch: char| ch.is_ascii_digit()))
 }
 
 /// Walk back from `end` over identifier characters and return the token start.
 #[cfg(feature = "native")]
 fn identifier_start(content: &str, end: usize) -> usize {
     let mut start = end;
-    while let Some(ch) = content[..start].chars().next_back() {
+    while let Some(ch) = content
+        .get(..start)
+        .and_then(|head| head.chars().next_back())
+    {
         if !is_identifier_char(ch) {
             break;
         }
@@ -151,7 +159,9 @@ fn is_identifier_char(ch: char) -> bool {
 }
 
 fn is_in_mustache_expression(content: &str, offset: usize) -> bool {
-    let before = &content[..offset];
+    let Some(before) = content.get(..offset) else {
+        return false;
+    };
     let Some(mustache_start) = before.rfind("{{") else {
         return false;
     };
@@ -163,19 +173,25 @@ fn is_in_mustache_expression(content: &str, offset: usize) -> bool {
         return false;
     }
 
-    content[offset..].contains("}}")
+    content
+        .get(offset..)
+        .is_some_and(|rest| rest.contains("}}"))
 }
 
 fn is_in_vue_directive_expression(content: &str, offset: usize) -> bool {
     let bytes = content.as_bytes();
-    for (tag_start, _) in content[..offset].match_indices('<').rev() {
+    let Some(before) = content.get(..offset) else {
+        return false;
+    };
+    for (tag_start, _) in before.match_indices('<').rev() {
         let name_start = tag_start + 1;
         if matches!(bytes.get(name_start), Some(b'/' | b'!' | b'?')) {
             continue;
         }
         let mut name_end = name_start;
-        while name_end < bytes.len()
-            && (bytes[name_end].is_ascii_alphanumeric() || matches!(bytes[name_end], b'-' | b'_'))
+        while bytes
+            .get(name_end)
+            .is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
         {
             name_end += 1;
         }
@@ -187,7 +203,9 @@ fn is_in_vue_directive_expression(content: &str, offset: usize) -> bool {
         let mut quote_start = None;
         let mut pos = name_end;
         while pos < offset {
-            let byte = bytes[pos];
+            let Some(&byte) = bytes.get(pos) else {
+                break;
+            };
             if let Some(open_quote) = quote {
                 if byte == open_quote {
                     quote = None;
@@ -219,28 +237,33 @@ fn is_in_vue_directive_expression(content: &str, offset: usize) -> bool {
 
 fn directive_attribute_name_before_quote(content: &str, quote_start: usize) -> Option<&str> {
     let bytes = content.as_bytes();
+    // The byte right before `pos`, if any.
+    let before = |pos: usize| {
+        pos.checked_sub(1)
+            .and_then(|index| bytes.get(index))
+            .copied()
+    };
     let mut pos = quote_start;
-    while pos > 0 && bytes[pos - 1].is_ascii_whitespace() {
+    while before(pos).is_some_and(|byte| byte.is_ascii_whitespace()) {
         pos -= 1;
     }
-    if pos == 0 || bytes[pos - 1] != b'=' {
+    if before(pos) != Some(b'=') {
         return None;
     }
     pos -= 1;
 
-    while pos > 0 && bytes[pos - 1].is_ascii_whitespace() {
+    while before(pos).is_some_and(|byte| byte.is_ascii_whitespace()) {
         pos -= 1;
     }
     let attr_end = pos;
-    while pos > 0 {
-        let byte = bytes[pos - 1];
+    while let Some(byte) = before(pos) {
         if byte.is_ascii_whitespace() || matches!(byte, b'<' | b'>' | b'/') {
             break;
         }
         pos -= 1;
     }
 
-    Some(&content[pos..attr_end])
+    content.get(pos..attr_end)
 }
 
 fn is_vue_expression_attribute(attr_name: &str) -> bool {

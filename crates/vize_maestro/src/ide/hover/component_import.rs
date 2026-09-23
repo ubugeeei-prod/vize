@@ -1,9 +1,10 @@
 //! Hover presentation for imported Vue SFC component contracts.
 #![cfg(feature = "native")]
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "tower_lsp::lsp_types payloads take std `String`, built with `to_string()` and `format!`"
 )]
 
 use std::path::Path;
@@ -212,8 +213,7 @@ fn compact_type(source: &str) -> String {
     let mut cursor = 0;
     let bytes = source.as_bytes();
 
-    while cursor < source.len() {
-        let byte = bytes[cursor];
+    while let Some(&byte) = bytes.get(cursor) {
         if byte.is_ascii_whitespace() {
             pending_space = !output.is_empty();
             cursor = consume_while(source, cursor, u8::is_ascii_whitespace);
@@ -233,7 +233,7 @@ fn compact_type(source: &str) -> String {
                 pending_space = false;
             }
             let end = consume_quoted(source, cursor, byte);
-            output.push_str(&source[cursor..end]);
+            output.push_str(source.get(cursor..end).unwrap_or_default());
             cursor = end;
             continue;
         }
@@ -241,10 +241,9 @@ fn compact_type(source: &str) -> String {
             output.push(' ');
             pending_space = false;
         }
-        let ch = source[cursor..]
-            .chars()
-            .next()
-            .expect("cursor points inside source");
+        let Some(ch) = source.get(cursor..).and_then(|rest| rest.chars().next()) else {
+            break;
+        };
         output.push(ch);
         cursor += ch.len_utf8();
     }
@@ -265,22 +264,24 @@ fn compact_type_argument(source: &str) -> String {
 fn consume_while(source: &str, start: usize, predicate: fn(&u8) -> bool) -> usize {
     let mut cursor = start;
     let bytes = source.as_bytes();
-    while cursor < source.len() && predicate(&bytes[cursor]) {
+    while bytes.get(cursor).is_some_and(predicate) {
         cursor += 1;
     }
     cursor
 }
 
 fn consume_line_comment(source: &str, start: usize) -> usize {
-    source[start + 2..]
-        .find('\n')
+    source
+        .get(start + 2..)
+        .and_then(|rest| rest.find('\n'))
         .map(|end| start + 2 + end)
         .unwrap_or(source.len())
 }
 
 fn consume_block_comment(source: &str, start: usize) -> usize {
-    source[start + 2..]
-        .find("*/")
+    source
+        .get(start + 2..)
+        .and_then(|rest| rest.find("*/"))
         .map(|end| start + 2 + end + 2)
         .unwrap_or(source.len())
 }
@@ -289,8 +290,7 @@ fn consume_quoted(source: &str, start: usize, quote: u8) -> usize {
     let bytes = source.as_bytes();
     let mut escaped = false;
     let mut cursor = start + 1;
-    while cursor < source.len() {
-        let byte = bytes[cursor];
+    while let Some(&byte) = bytes.get(cursor) {
         if escaped {
             escaped = false;
         } else if byte == b'\\' {

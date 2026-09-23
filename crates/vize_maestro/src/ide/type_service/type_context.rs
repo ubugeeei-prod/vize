@@ -2,7 +2,11 @@
 //!
 //! Builds a `vize_canon::TypeContext` from SFC descriptors by extracting
 //! bindings from script blocks and adding Vue built-in globals.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "tower_lsp::lsp_types payloads take std `String`, built with `to_string()`"
+)]
 
 use super::TypeService;
 
@@ -37,9 +41,11 @@ impl TypeService {
         // Find const/let/var declarations
         for pattern in ["const ", "let ", "var "] {
             let mut pos = 0;
-            while let Some(start) = script[pos..].find(pattern) {
+            while let Some(start) = script.get(pos..).and_then(|rest| rest.find(pattern)) {
                 let abs_start = pos + start + pattern.len();
-                let remaining = &script[abs_start..];
+                let Some(remaining) = script.get(abs_start..) else {
+                    break;
+                };
 
                 // Extract the identifier
                 if let Some(ident) = Self::extract_identifier(remaining) {
@@ -51,7 +57,10 @@ impl TypeService {
                     };
 
                     // Try to infer type
-                    let after_ident = &remaining.trim_start()[ident.len()..];
+                    let after_ident = remaining
+                        .trim_start()
+                        .get(ident.len()..)
+                        .unwrap_or_default();
                     let type_info = Self::infer_binding_type(after_ident, &ident);
 
                     ctx.add_binding(
@@ -66,9 +75,11 @@ impl TypeService {
 
         // Find function declarations
         let mut pos = 0;
-        while let Some(start) = script[pos..].find("function ") {
+        while let Some(start) = script.get(pos..).and_then(|rest| rest.find("function ")) {
             let abs_start = pos + start + 9;
-            let remaining = &script[abs_start..];
+            let Some(remaining) = script.get(abs_start..) else {
+                break;
+            };
 
             if let Some(ident) = Self::extract_identifier(remaining) {
                 ctx.add_binding(
@@ -94,14 +105,14 @@ impl TypeService {
             ("reactive(", vize_canon::BindingKind::Reactive),
         ] {
             let mut search_pos = 0;
-            while let Some(fn_pos) = script[search_pos..].find(fn_name) {
+            while let Some(fn_pos) = script.get(search_pos..).and_then(|rest| rest.find(fn_name)) {
                 let abs_fn_pos = search_pos + fn_pos;
 
                 // Look backwards for the binding name
                 if let Some(binding_name) = Self::find_binding_before(script, abs_fn_pos) {
                     let type_info = match kind {
                         vize_canon::BindingKind::Ref => {
-                            Self::infer_ref_call_type(&script[abs_fn_pos..])
+                            Self::infer_ref_call_type(script.get(abs_fn_pos..).unwrap_or_default())
                         }
                         vize_canon::BindingKind::Computed => vize_canon::TypeInfo::new(
                             "ComputedRef<unknown>",
@@ -128,57 +139,40 @@ impl TypeService {
     /// Extract an identifier from the start of a string.
     pub(super) fn extract_identifier(s: &str) -> Option<String> {
         let s = s.trim_start();
-        if s.is_empty() {
-            return None;
-        }
-
-        let bytes = s.as_bytes();
-        let first = bytes[0] as char;
+        let first = *s.as_bytes().first()?;
 
         // Must start with letter, underscore, or $
-        if !first.is_ascii_alphabetic() && first != '_' && first != '$' {
+        if !first.is_ascii_alphabetic() && first != b'_' && first != b'$' {
             return None;
         }
 
-        let mut end = 1;
-        while end < bytes.len() {
-            let c = bytes[end] as char;
-            if !c.is_ascii_alphanumeric() && c != '_' && c != '$' {
-                break;
-            }
-            end += 1;
-        }
+        let end = s
+            .bytes()
+            .position(|c| !c.is_ascii_alphanumeric() && c != b'_' && c != b'$')
+            .unwrap_or(s.len());
 
-        Some(s[..end].to_string())
+        s.get(..end).map(str::to_string)
     }
 
     /// Find the binding name before a function call like ref().
     fn find_binding_before(script: &str, fn_pos: usize) -> Option<String> {
         // Look for pattern like "const name = ref("
-        let before = &script[..fn_pos];
-        let trimmed = before.trim_end();
+        let trimmed = script.get(..fn_pos)?.trim_end();
 
         // Should end with "= "
-        if !trimmed.ends_with('=') {
-            return None;
-        }
-
-        let before_eq = trimmed[..trimmed.len() - 1].trim_end();
+        let before_eq = trimmed.strip_suffix('=')?.trim_end();
 
         // Find the identifier before =
-        let mut end = before_eq.len();
-        let bytes = before_eq.as_bytes();
+        let name_len = before_eq
+            .bytes()
+            .rev()
+            .take_while(|c| c.is_ascii_alphanumeric() || *c == b'_' || *c == b'$')
+            .count();
 
-        while end > 0 {
-            let c = bytes[end - 1] as char;
-            if !c.is_ascii_alphanumeric() && c != '_' && c != '$' {
-                break;
-            }
-            end -= 1;
-        }
-
-        if end < before_eq.len() {
-            Some(before_eq[end..].to_string())
+        if name_len > 0 {
+            before_eq
+                .get(before_eq.len() - name_len..)
+                .map(str::to_string)
         } else {
             None
         }
@@ -189,10 +183,10 @@ impl TypeService {
         let trimmed = after_ident.trim_start();
 
         // Check for type annotation
-        if trimmed.starts_with(':') {
+        if let Some(annotation) = trimmed.strip_prefix(':') {
             // Has type annotation - extract it
-            if let Some(eq_pos) = trimmed.find('=') {
-                let type_str = trimmed[1..eq_pos].trim();
+            if let Some((type_str, _)) = annotation.split_once('=') {
+                let type_str = type_str.trim();
                 return vize_canon::TypeInfo::new(type_str, vize_canon::TypeKind::Unknown);
             }
         }

@@ -2,7 +2,11 @@
 //!
 //! Provides types for describing where bindings are defined and
 //! utilities for extracting binding locations from script content.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "tower_lsp::lsp_types payloads take std `String`, built with `to_string()`"
+)]
 
 /// Location of a binding definition.
 #[derive(Debug, Clone)]
@@ -59,11 +63,13 @@ pub fn extract_bindings_with_locations(content: &str, is_setup: bool) -> Vec<Bin
     }
 
     let content_start = super::helpers::skip_virtual_header(content);
-    let search_content = &content[content_start..];
+    let Some(search_content) = content.get(content_start..) else {
+        return bindings;
+    };
 
     for line in search_content.lines() {
         let trimmed = line.trim();
-        let line_start = search_content[..search_content.find(line).unwrap_or(0)].len();
+        let line_start = search_content.find(line).unwrap_or(0);
 
         // const/let/var declarations
         for keyword in &["const ", "let ", "var "] {
@@ -71,9 +77,8 @@ pub fn extract_bindings_with_locations(content: &str, is_setup: bool) -> Vec<Bin
                 && let Some(rest) = trimmed.strip_prefix(keyword)
             {
                 // Handle destructuring: { a, b }
-                if rest.starts_with('{') {
-                    if let Some(end) = rest.find('}') {
-                        let inner = &rest[1..end];
+                if let Some(body) = rest.strip_prefix('{') {
+                    if let Some((inner, _)) = body.split_once('}') {
                         for part in inner.split(',') {
                             let name = part.split(':').next().unwrap_or("").trim();
                             if !name.is_empty()

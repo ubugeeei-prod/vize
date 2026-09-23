@@ -3,7 +3,10 @@
 //! Converts vize_canon type check results into LSP diagnostics,
 //! including support for the legacy vize_canon type checker and
 //! batch type checking via Corsa.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "`to_string()` builds the std `String` values tower_lsp::lsp_types payloads take"
+)]
 
 use tower_lsp::lsp_types::{
     CodeDescription, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, Location,
@@ -98,7 +101,7 @@ impl TypeService {
                                 let (rel_end_line, rel_end_col) =
                                     offset_to_line_col(&content, rel.end as usize);
 
-                                #[allow(clippy::disallowed_macros)]
+                                #[expect(clippy::disallowed_macros, reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take")]
                                 DiagnosticRelatedInformation {
                                     location: Location {
                                         uri: rel
@@ -117,7 +120,7 @@ impl TypeService {
                                             },
                                         },
                                     },
-                                    #[allow(clippy::disallowed_methods)]
+                                    #[expect(clippy::disallowed_methods, reason = "`to_string()` builds the std `String` values tower_lsp::lsp_types payloads take")]
                                     message: rel.message.to_string(),
                                 }
                             })
@@ -126,24 +129,23 @@ impl TypeService {
                 };
 
                 // Build help message
-                #[allow(clippy::disallowed_macros)]
+                #[expect(clippy::disallowed_macros, reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take")]
                 let message = if let Some(ref help) = diag.help {
                     format!("{}\n\nHelp: {}", diag.message, help)
                 } else {
-                    #[allow(clippy::disallowed_methods)]
+                    #[expect(clippy::disallowed_methods, reason = "`to_string()` builds the std `String` values tower_lsp::lsp_types payloads take")]
                     diag.message.to_string()
                 };
 
                 // Build code description URL
-                #[allow(clippy::disallowed_macros)]
-                let code_description = diag.code.as_ref().map(|code| CodeDescription {
-                    href: Url::parse(&format!(
+                #[expect(clippy::disallowed_macros, reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take")]
+                let code_description = diag.code.as_ref().and_then(|code| {
+                    Url::parse(&format!(
                         "https://github.com/ubugeeei-prod/vize/wiki/type-errors#{}",
                         code
                     ))
-                    .unwrap_or_else(|_| {
-                        Url::parse("https://github.com/ubugeeei-prod/vize").unwrap()
-                    }),
+                    .ok()
+                    .map(|href| CodeDescription { href })
                 });
 
                 Diagnostic {
@@ -163,7 +165,7 @@ impl TypeService {
                         TypeSeverity::Info => DiagnosticSeverity::INFORMATION,
                         TypeSeverity::Hint => DiagnosticSeverity::HINT,
                     }),
-                    #[allow(clippy::disallowed_methods)]
+                    #[expect(clippy::disallowed_methods, reason = "`to_string()` builds the std `String` values tower_lsp::lsp_types payloads take")]
                     code: diag.code.map(|c| NumberOrString::String(c.to_string())),
                     code_description,
                     source: Some("vize/types".to_string()),
@@ -227,7 +229,7 @@ impl TypeService {
                     }),
                     code: Some(NumberOrString::Number(diag.code.code() as i32)),
                     source: Some("vize/types".to_string()),
-                    #[allow(clippy::disallowed_methods)]
+                    #[expect(clippy::disallowed_methods, reason = "`to_string()` builds the std `String` values tower_lsp::lsp_types payloads take")]
                     message: diag.message.to_string(),
                     ..Default::default()
                 }

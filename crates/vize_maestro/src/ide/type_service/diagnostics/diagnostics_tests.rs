@@ -143,7 +143,10 @@ const bar = 'baz'
 }
 
 #[test]
-#[allow(deprecated)]
+#[expect(
+    deprecated,
+    reason = "exercises the deprecated `collect_diagnostics_legacy` entry point on purpose"
+)]
 fn resident_legacy_diagnostics_share_cached_success_rejection_and_recovery() {
     use crate::ide::IdeContext;
     use vize_resident::DescriptorStats;

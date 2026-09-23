@@ -28,17 +28,20 @@ pub(super) fn find_prop_in_define_model(
             continue;
         }
 
-        let after_name = &content[define_model_pos + "defineModel".len()..];
+        let after_name = content.get(define_model_pos + "defineModel".len()..)?;
         let paren_relative = after_name.find('(')?;
         let args_start = define_model_pos + "defineModel".len() + paren_relative + 1;
         let mut arg_start = args_start;
-        while arg_start < content.len() && content.as_bytes()[arg_start].is_ascii_whitespace() {
+        while content
+            .as_bytes()
+            .get(arg_start)
+            .is_some_and(u8::is_ascii_whitespace)
+        {
             arg_start += 1;
         }
 
         match content.as_bytes().get(arg_start).copied() {
-            Some(b'\'' | b'"' | b'`') => {
-                let quote = content.as_bytes()[arg_start];
+            Some(quote @ (b'\'' | b'"' | b'`')) => {
                 let literal_start = arg_start + 1;
                 let literal_end = find_string_literal_end(content, literal_start, quote)?;
                 if content.get(literal_start..literal_end) == Some(property_name) {
@@ -67,8 +70,8 @@ fn is_identifier_boundary(content: &str, start: usize, len: usize) -> bool {
 fn find_string_literal_end(content: &str, start: usize, quote: u8) -> Option<usize> {
     let bytes = content.as_bytes();
     let mut pos = start;
-    while pos < bytes.len() {
-        match bytes[pos] {
+    while let Some(&byte) = bytes.get(pos) {
+        match byte {
             b'\\' => pos += 2,
             byte if byte == quote => return Some(pos),
             _ => pos += 1,

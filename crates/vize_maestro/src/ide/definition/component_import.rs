@@ -1,5 +1,8 @@
 //! Component import resolution beyond direct `.vue` specifiers.
-#![allow(clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "tower_lsp::lsp_types payloads take std `String`"
+)]
 
 use std::path::{Path, PathBuf};
 
@@ -40,12 +43,17 @@ fn find_component_import_by_name(
     component_name: &str,
 ) -> Option<ComponentImport> {
     for (pos, _) in ctx.content.match_indices("import ") {
-        let rest = &ctx.content[pos..];
+        let Some(rest) = ctx.content.get(pos..) else {
+            continue;
+        };
         let Some(from_pos) = rest.find(" from") else {
             continue;
         };
         let specifier = helpers::extract_import_path_from_pos(rest, from_pos + " from".len())?;
-        let clause = rest["import ".len()..from_pos].trim();
+        let Some(clause) = rest.get("import ".len()..from_pos) else {
+            continue;
+        };
+        let clause = clause.trim();
         if default_import_name(clause) == Some(component_name) {
             return Some(ComponentImport {
                 specifier,
@@ -143,14 +151,18 @@ struct Reexport {
 fn named_reexports(content: &str, export_name: &str) -> Vec<Reexport> {
     let mut exports = Vec::new();
     for (pos, _) in content.match_indices("export ") {
-        let rest = &content[pos..];
+        let Some(rest) = content.get(pos..) else {
+            continue;
+        };
         let Some(body) = brace_body(rest) else {
             continue;
         };
         let Some(body_start) = rest.find('{') else {
             continue;
         };
-        let after_body = &rest[body_start + body.len() + 2..];
+        let Some(after_body) = rest.get(body_start + body.len() + 2..) else {
+            continue;
+        };
         let Some(from_pos) = after_body.find("from") else {
             continue;
         };
@@ -196,7 +208,9 @@ fn parse_export_binding(part: &str) -> Option<(&str, &str)> {
 fn star_reexports(content: &str) -> Vec<String> {
     let mut specifiers = Vec::new();
     for (pos, _) in content.match_indices("export *") {
-        let rest = &content[pos + "export *".len()..];
+        let Some(rest) = content.get(pos + "export *".len()..) else {
+            continue;
+        };
         let Some(from_pos) = rest.find("from") else {
             continue;
         };
@@ -228,9 +242,9 @@ fn resolve_from_module(module_path: &Path, specifier: &str) -> Option<PathBuf> {
 }
 
 fn brace_body(value: &str) -> Option<&str> {
-    let start = value.find('{')?;
-    let end = value[start + 1..].find('}')? + start + 1;
-    Some(&value[start + 1..end])
+    let (_, after_open) = value.split_once('{')?;
+    let (body, _) = after_open.split_once('}')?;
+    Some(body)
 }
 
 fn ident_at_start(value: &str) -> Option<&str> {
@@ -238,7 +252,7 @@ fn ident_at_start(value: &str) -> Option<&str> {
         .bytes()
         .position(|byte| !(byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'))
         .unwrap_or(value.len());
-    (end > 0).then_some(&value[..end])
+    value.get(..end).filter(|ident| !ident.is_empty())
 }
 
 fn is_vue_path(path: &Path) -> bool {

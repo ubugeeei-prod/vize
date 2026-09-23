@@ -80,7 +80,7 @@ fn define_emits_event_range(
     let script_setup = descriptor.script_setup.as_ref()?;
     let script = script_setup.content.as_ref();
     let define_emits_pos = script.find("defineEmits")?;
-    let event_pos = find_event_in_define_emits(&script[define_emits_pos..], event_name)
+    let event_pos = find_event_in_define_emits(script.get(define_emits_pos..)?, event_name)
         .map(|pos| define_emits_pos + pos)
         .unwrap_or(define_emits_pos);
     let start = script_setup.loc.start + event_pos;
@@ -101,7 +101,10 @@ fn define_emits_event_range(
 
 fn find_event_in_define_emits(content: &str, event_name: &str) -> Option<usize> {
     let mut search_start = 0;
-    while let Some(relative) = content[search_start..].find(event_name) {
+    while let Some(relative) = content
+        .get(search_start..)
+        .and_then(|rest| rest.find(event_name))
+    {
         let start = search_start + relative;
         let end = start + event_name.len();
         if is_event_key_at(content, start, end) {
@@ -119,25 +122,28 @@ fn payload_from_emit_type_args<'a>(type_args: &'a str, event_name: &str) -> Opti
     if matches!(bytes.get(pos), Some(b'\'' | b'"')) {
         pos += 1;
     }
-    while pos < type_args.len() && bytes[pos].is_ascii_whitespace() {
+    while bytes.get(pos).is_some_and(u8::is_ascii_whitespace) {
         pos += 1;
     }
     if bytes.get(pos) == Some(&b'?') {
         pos += 1;
     }
-    while pos < type_args.len() && bytes[pos].is_ascii_whitespace() {
+    while bytes.get(pos).is_some_and(u8::is_ascii_whitespace) {
         pos += 1;
     }
     if bytes.get(pos) != Some(&b':') {
         return None;
     }
     pos += 1;
-    while pos < type_args.len() && bytes[pos].is_ascii_whitespace() {
+    while bytes.get(pos).is_some_and(u8::is_ascii_whitespace) {
         pos += 1;
     }
     let start = pos;
     let end = top_level_type_end(type_args, start);
-    (end > start).then(|| type_args[start..end].trim())
+    type_args
+        .get(start..end)
+        .filter(|_| end > start)
+        .map(str::trim)
 }
 
 fn top_level_type_end(source: &str, start: usize) -> usize {
@@ -147,8 +153,7 @@ fn top_level_type_end(source: &str, start: usize) -> usize {
     let mut paren = 0usize;
     let mut quote = None;
     let mut pos = start;
-    while pos < source.len() {
-        let ch = source[pos..].chars().next().unwrap();
+    while let Some(ch) = source.get(pos..).and_then(|rest| rest.chars().next()) {
         if let Some(open_quote) = quote {
             if ch == open_quote {
                 quote = None;

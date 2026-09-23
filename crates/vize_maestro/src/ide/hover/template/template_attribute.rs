@@ -1,6 +1,6 @@
 pub(crate) fn name_at_offset(content: &str, offset: usize) -> Option<&str> {
     let cursor = offset.min(content.len());
-    let tag_start = content[..cursor].rfind('<')?;
+    let tag_start = content.get(..cursor).and_then(|head| head.rfind('<'))?;
     let bytes = content.as_bytes();
     if matches!(bytes.get(tag_start + 1), Some(b'/' | b'!' | b'?')) {
         return None;
@@ -11,28 +11,30 @@ pub(crate) fn name_at_offset(content: &str, offset: usize) -> Option<&str> {
         return None;
     }
 
-    let mut pos = tag_start + 1;
-    while pos < tag_end {
-        let byte = bytes[pos];
-        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_') {
-            pos += 1;
+    // Byte at `i` while still inside the tag; `None` past `tag_end`.
+    let at = |i: usize| {
+        if i < tag_end {
+            bytes.get(i).copied()
         } else {
-            break;
+            None
         }
+    };
+    let mut pos = tag_start + 1;
+    while at(pos).is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_')) {
+        pos += 1;
     }
 
     while pos < tag_end {
-        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+        while at(pos).is_some_and(|byte| byte.is_ascii_whitespace()) {
             pos += 1;
         }
-        if pos >= tag_end || matches!(bytes[pos], b'/' | b'>') {
+        if matches!(at(pos), None | Some(b'/' | b'>')) {
             break;
         }
 
         let attr_start = pos;
-        while pos < tag_end
-            && !bytes[pos].is_ascii_whitespace()
-            && !matches!(bytes[pos], b'=' | b'/' | b'>')
+        while at(pos)
+            .is_some_and(|byte| !byte.is_ascii_whitespace() && !matches!(byte, b'=' | b'/' | b'>'))
         {
             pos += 1;
         }
@@ -42,28 +44,27 @@ pub(crate) fn name_at_offset(content: &str, offset: usize) -> Option<&str> {
         }
 
         if cursor >= attr_start && cursor <= attr_end {
-            return Some(&content[attr_start..attr_end]);
+            return content.get(attr_start..attr_end);
         }
 
-        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+        while at(pos).is_some_and(|byte| byte.is_ascii_whitespace()) {
             pos += 1;
         }
-        if pos < tag_end && bytes[pos] == b'=' {
+        if at(pos) == Some(b'=') {
             pos += 1;
-            while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+            while at(pos).is_some_and(|byte| byte.is_ascii_whitespace()) {
                 pos += 1;
             }
-            if pos < tag_end && matches!(bytes[pos], b'"' | b'\'') {
-                let quote = bytes[pos];
+            if let Some(quote @ (b'"' | b'\'')) = at(pos) {
                 pos += 1;
-                while pos < tag_end && bytes[pos] != quote {
+                while at(pos).is_some_and(|byte| byte != quote) {
                     pos += 1;
                 }
                 if pos < tag_end {
                     pos += 1;
                 }
             } else {
-                while pos < tag_end && !bytes[pos].is_ascii_whitespace() && bytes[pos] != b'>' {
+                while at(pos).is_some_and(|byte| !byte.is_ascii_whitespace() && byte != b'>') {
                     pos += 1;
                 }
             }
@@ -78,7 +79,7 @@ fn find_open_tag_end(content: &str, tag_start: usize) -> Option<usize> {
     let mut pos = tag_start;
 
     while pos < content.len() {
-        let ch = content[pos..].chars().next()?;
+        let ch = content.get(pos..).and_then(|rest| rest.chars().next())?;
         if let Some(open_quote) = quote {
             if ch == open_quote {
                 quote = None;

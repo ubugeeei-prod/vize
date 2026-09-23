@@ -23,7 +23,7 @@ impl FactConsumer for TemplatePropDefinition {
 fn span_of<C: FactConsumer>(croquis: &Croquis, name: &str) -> Option<(u32, u32)> {
     let mut facts = CroquisFacts::new(croquis);
     let view = facts.prepare::<C>();
-    view.get::<Bindings>().expect("declared demand").span(name)
+    view.get::<Bindings>().ok()?.span(name)
 }
 
 /// The definition span of script binding `name`.

@@ -89,17 +89,20 @@ pub(super) fn specifier_at_offset(content: &str, offset: usize) -> Option<&str> 
         return None;
     }
 
-    let line_start = content[..offset].rfind('\n').map_or(0, |index| index + 1);
-    let line_end = content[offset..]
+    let line_start = content
+        .get(..offset)
+        .and_then(|head| head.rfind('\n'))
+        .map_or(0, |index| index + 1);
+    let line_end = content
+        .get(offset..)?
         .find('\n')
         .map_or(content.len(), |index| offset + index);
-    let line = &content[line_start..line_end];
+    let line = content.get(line_start..line_end)?;
     let relative_offset = offset - line_start;
     let bytes = line.as_bytes();
     let mut cursor = 0;
 
-    while cursor < bytes.len() {
-        let quote = bytes[cursor];
+    while let Some(&quote) = bytes.get(cursor) {
         if quote != b'\'' && quote != b'"' {
             cursor += 1;
             continue;
@@ -107,18 +110,18 @@ pub(super) fn specifier_at_offset(content: &str, offset: usize) -> Option<&str> 
 
         let start = cursor;
         cursor += 1;
-        while cursor < bytes.len() {
-            if bytes[cursor] == b'\\' {
+        while let Some(&byte) = bytes.get(cursor) {
+            if byte == b'\\' {
                 cursor = (cursor + 2).min(bytes.len());
                 continue;
             }
-            if bytes[cursor] == quote {
+            if byte == quote {
                 let end = cursor;
                 if relative_offset > start
                     && relative_offset <= end
-                    && is_module_context(&line[..start])
+                    && line.get(..start).is_some_and(is_module_context)
                 {
-                    return Some(&line[start + 1..end]);
+                    return line.get(start + 1..end);
                 }
                 cursor += 1;
                 break;
@@ -171,11 +174,10 @@ fn is_absolute_specifier(specifier: &str) -> bool {
     if Path::new(specifier).is_absolute() || specifier.starts_with("\\\\") {
         return true;
     }
-    let bytes = specifier.as_bytes();
-    bytes.len() >= 3
-        && bytes[0].is_ascii_alphabetic()
-        && bytes[1] == b':'
-        && matches!(bytes[2], b'/' | b'\\')
+    matches!(
+        specifier.as_bytes(),
+        [drive, b':', b'/' | b'\\', ..] if drive.is_ascii_alphabetic()
+    )
 }
 
 fn resolve_file_candidate(candidate: &Path) -> Option<PathBuf> {

@@ -38,8 +38,7 @@ impl HoverService {
             .map(|(_, binding, scope_kind)| (binding, scope_kind))?;
 
         let inferred_type = Self::binding_type_to_ts_display(binding.binding_type);
-        #[allow(clippy::disallowed_macros)]
-        let signature = format!("{word}: {inferred_type}");
+        let signature = vize_s0::cstr!("{word}: {inferred_type}");
 
         let scope_note = match scope_kind {
             ScopeKind::VFor => {

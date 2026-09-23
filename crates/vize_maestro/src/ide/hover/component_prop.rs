@@ -61,7 +61,7 @@ pub(super) fn hover_attribute_documented(
     let script_setup = descriptor.script_setup.as_ref()?;
     let script = script_setup.content.as_ref();
     let define_props_pos = script.find("defineProps")?;
-    let after_define_props = &script[define_props_pos..];
+    let after_define_props = script.get(define_props_pos..)?;
     let prop_pos =
         crate::ide::definition::helpers::find_prop_in_define_props(after_define_props, &prop_name)?;
     let signature = prop_signature_at(script, define_props_pos + prop_pos, &prop_name);
@@ -127,15 +127,16 @@ fn documented_signature(
 }
 
 fn prop_signature_at(script: &str, offset: usize, prop_name: &str) -> String {
-    let line_start = script[..offset]
-        .rfind('\n')
-        .map(|index| index + 1)
-        .unwrap_or(0);
-    let line_end = script[offset..]
+    let Some((before, after)) = script.split_at_checked(offset) else {
+        return prop_name.to_string();
+    };
+    let line_start = before.rfind('\n').map_or(0, |index| index + 1);
+    let line_end = after
         .find('\n')
-        .map(|index| offset + index)
-        .unwrap_or(script.len());
-    let line = script[line_start..line_end]
+        .map_or(script.len(), |index| offset + index);
+    let line = script
+        .get(line_start..line_end)
+        .unwrap_or_default()
         .trim()
         .trim_end_matches(',')
         .trim();

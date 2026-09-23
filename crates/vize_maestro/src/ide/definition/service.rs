@@ -2,10 +2,9 @@
 //!
 //! Provides the main `definition` and `definition_with_corsa` methods
 //! that dispatch to block-specific handlers.
-#![allow(
+#![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "the Corsa bridge is shared across LSP requests as `Arc<CorsaBridge>`"
 )]
 
 #[cfg(feature = "native")]

@@ -1,10 +1,12 @@
 //! Script hover provider.
 //!
 //! and script bindings.
-#![allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+#![cfg_attr(
+    feature = "native",
+    expect(
+        clippy::disallowed_types,
+        reason = "the Corsa bridge is shared across LSP requests as `Arc<CorsaBridge>`"
+    )
 )]
 
 use tower_lsp::lsp_types::Hover;
@@ -137,11 +139,10 @@ impl HoverService {
         // Try to infer a more specific type from the script content
         let inferred_type = script_content
             .and_then(|content| Self::infer_type_from_script(content, word, binding_type))
-            .unwrap_or_else(|| Self::binding_type_to_ts_display(binding_type).to_string());
+            .unwrap_or_else(|| Self::binding_type_to_ts_display(binding_type).into());
 
         let kind_desc = Self::binding_type_to_description(binding_type);
-        #[allow(clippy::disallowed_macros)]
-        let signature = format!("{word}: {inferred_type}");
+        let signature = vize_s0::cstr!("{word}: {inferred_type}");
 
         let mut builder = HoverBuilder::new()
             .title(word)
@@ -150,8 +151,7 @@ impl HoverService {
             .description(kind_desc);
 
         if summary.needs_value_in_script(word) {
-            #[allow(clippy::disallowed_macros)]
-            let tip = format!("Use `{}.value` to read or write this ref in script.", word);
+            let tip = vize_s0::cstr!("Use `{}.value` to read or write this ref in script.", word);
             builder = builder.section("Tip", &tip);
         }
 

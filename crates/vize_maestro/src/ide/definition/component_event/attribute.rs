@@ -1,6 +1,6 @@
 use tower_lsp::lsp_types::{Position, Range};
 
-use super::{IdeContext, helpers};
+use super::{IdeContext, helpers, helpers::find_tag_name_span};
 use crate::ide::is_component_tag;
 
 pub(super) struct ComponentEventAtOffset {
@@ -49,22 +49,26 @@ fn raw_attribute_and_component_at_offset(ctx: &IdeContext<'_>) -> Option<RawAttr
         return None;
     }
 
-    let component_name = content[name_start..name_end].to_string();
+    let component_name = content.get(name_start..name_end)?.to_string();
     let mut pos = name_end;
+    // Byte at `i` while still inside the tag; `None` past `tag_end`.
+    let at = |i: usize| {
+        if i < tag_end {
+            bytes.get(i).copied()
+        } else {
+            None
+        }
+    };
     while pos < tag_end {
-        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+        while at(pos).is_some_and(|b| b.is_ascii_whitespace()) {
             pos += 1;
         }
-        if pos >= tag_end || bytes[pos] == b'/' {
+        if matches!(at(pos), None | Some(b'/')) {
             break;
         }
 
         let attr_start = pos;
-        while pos < tag_end
-            && !bytes[pos].is_ascii_whitespace()
-            && bytes[pos] != b'='
-            && bytes[pos] != b'/'
-        {
+        while at(pos).is_some_and(|b| !b.is_ascii_whitespace() && b != b'=' && b != b'/') {
             pos += 1;
         }
         let attr_end = pos;
@@ -73,16 +77,16 @@ fn raw_attribute_and_component_at_offset(ctx: &IdeContext<'_>) -> Option<RawAttr
         }
         let cursor_on_attr_name = cursor >= attr_start && cursor <= attr_end;
 
-        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+        while at(pos).is_some_and(|b| b.is_ascii_whitespace()) {
             pos += 1;
         }
-        if pos < tag_end && bytes[pos] == b'=' {
+        if at(pos) == Some(b'=') {
             pos = skip_attribute_value(content, tag_end, pos + 1);
         }
 
         if cursor_on_attr_name {
             return Some(RawAttributeAtOffset {
-                raw_name: content[attr_start..attr_end].to_string(),
+                raw_name: content.get(attr_start..attr_end)?.to_string(),
                 name_start: attr_start,
                 component_name,
             });
@@ -107,76 +111,25 @@ fn event_name_span(raw_name: &str, attr_start: usize) -> Option<(&str, usize, us
 
 fn skip_attribute_value(content: &str, tag_end: usize, mut pos: usize) -> usize {
     let bytes = content.as_bytes();
-    while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+    let at = |i: usize| {
+        if i < tag_end {
+            bytes.get(i).copied()
+        } else {
+            None
+        }
+    };
+    while at(pos).is_some_and(|b| b.is_ascii_whitespace()) {
         pos += 1;
     }
-    if pos < tag_end && matches!(bytes[pos], b'"' | b'\'') {
-        let quote = bytes[pos];
+    if let Some(quote @ (b'"' | b'\'')) = at(pos) {
         pos += 1;
-        while pos < tag_end && bytes[pos] != quote {
+        while at(pos).is_some_and(|b| b != quote) {
             pos += 1;
         }
         return (pos + 1).min(tag_end);
     }
-    while pos < tag_end && !bytes[pos].is_ascii_whitespace() && bytes[pos] != b'>' {
+    while at(pos).is_some_and(|b| !b.is_ascii_whitespace() && b != b'>') {
         pos += 1;
     }
     pos
-}
-
-fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usize, usize)> {
-    let bytes = content.as_bytes();
-    let mut cursor = offset.min(bytes.len());
-    if cursor == bytes.len() {
-        cursor = cursor.saturating_sub(1);
-    }
-    if cursor > 0 && bytes.get(cursor) == Some(&b'>') {
-        cursor -= 1;
-    }
-    let mut search_end = cursor.saturating_add(1).min(content.len());
-    while search_end > 0 {
-        let tag_start = content[..search_end].rfind('<')?;
-        let tag_end = find_tag_end_from(content, tag_start)?;
-        if cursor > tag_end {
-            return None;
-        }
-        let mut name_start = tag_start + 1;
-        if name_start < tag_end && bytes[name_start] == b'/' {
-            name_start += 1;
-        }
-        let mut name_end = name_start;
-        while name_end < tag_end {
-            let byte = bytes[name_end];
-            if byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_' {
-                name_end += 1;
-            } else {
-                break;
-            }
-        }
-        if name_start != name_end {
-            return Some((tag_start, tag_end, name_start, name_end));
-        }
-        search_end = tag_start;
-    }
-    None
-}
-
-fn find_tag_end_from(content: &str, tag_start: usize) -> Option<usize> {
-    let bytes = content.as_bytes();
-    let mut tag_end = tag_start;
-    let mut quote = None;
-    while tag_end < bytes.len() {
-        let byte = bytes[tag_end];
-        if let Some(current_quote) = quote {
-            if byte == current_quote {
-                quote = None;
-            }
-        } else if byte == b'"' || byte == b'\'' {
-            quote = Some(byte);
-        } else if byte == b'>' {
-            return Some(tag_end);
-        }
-        tag_end += 1;
-    }
-    None
 }

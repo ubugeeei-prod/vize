@@ -1,5 +1,4 @@
 //! `v-slot` scope prop lookup in authored templates.
-#![allow(clippy::disallowed_types)]
 
 use vize_croquis::{Analyzer, AnalyzerOptions, ScopeKind};
 

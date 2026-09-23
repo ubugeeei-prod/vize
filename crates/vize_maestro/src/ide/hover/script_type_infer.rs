@@ -28,7 +28,7 @@ impl HoverService {
         let after_name = Self::find_declaration_after_name(content, name)?.trim_start();
         let after_type = if let Some(type_annotation) = after_name.strip_prefix(':') {
             let eq_pos = Self::find_top_level_char(type_annotation, '=')?;
-            &type_annotation[eq_pos + 1..]
+            type_annotation.get(eq_pos + 1..)?
         } else {
             after_name
         };
@@ -47,21 +47,29 @@ impl HoverService {
     fn find_declaration_after_name<'a>(content: &'a str, name: &str) -> Option<&'a str> {
         for keyword in ["const", "let", "var"] {
             let mut search = 0;
-            while let Some(relative_pos) = content[search..].find(keyword) {
+            while let Some(relative_pos) = content.get(search..).and_then(|rest| rest.find(keyword))
+            {
                 let keyword_start = search + relative_pos;
                 let keyword_end = keyword_start + keyword.len();
                 search = keyword_end;
-                if keyword_start > 0 && Self::is_ident_byte(content.as_bytes()[keyword_start - 1]) {
+                if keyword_start
+                    .checked_sub(1)
+                    .and_then(|index| content.as_bytes().get(index))
+                    .is_some_and(|byte| Self::is_ident_byte(*byte))
+                {
                     continue;
                 }
-                if !content[keyword_end..]
+                let Some(after_keyword) = content.get(keyword_end..) else {
+                    continue;
+                };
+                if !after_keyword
                     .chars()
                     .next()
                     .is_some_and(char::is_whitespace)
                 {
                     continue;
                 }
-                let after_keyword = content[keyword_end..].trim_start();
+                let after_keyword = after_keyword.trim_start();
                 let Some(after_name) = after_keyword.strip_prefix(name) else {
                     continue;
                 };
@@ -95,11 +103,10 @@ impl HoverService {
             };
             let after_callee = after_callee.trim_start();
             if let Some(after_type_start) = after_callee.strip_prefix('<') {
-                if let Some(end) = Self::find_matching_bracket(after_type_start, '<', '>') {
-                    return Some(Self::format_wrapper_type(
-                        wrapper,
-                        after_type_start[..end].trim(),
-                    ));
+                if let Some(end) = Self::find_matching_bracket(after_type_start, '<', '>')
+                    && let Some(inner_type) = after_type_start.get(..end)
+                {
+                    return Some(Self::format_wrapper_type(wrapper, inner_type.trim()));
                 }
             } else if let Some(after_arg_start) = after_callee.strip_prefix('(')
                 && let Some(arg_type) = Self::infer_type_from_arg(after_arg_start)
@@ -110,7 +117,10 @@ impl HoverService {
         None
     }
 
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take"
+    )]
     fn format_wrapper_type(wrapper: &str, inner_type: &str) -> String {
         format!("{wrapper}<{inner_type}>")
     }
@@ -148,16 +158,16 @@ impl HoverService {
 
     fn extract_arrow_function_body(arg_str: &str) -> Option<&str> {
         let arrow = arg_str.find("=>")?;
-        let body = arg_str[arrow + 2..].trim_start();
+        let body = arg_str.get(arrow + 2..)?.trim_start();
         if let Some(body) = body.strip_prefix('{')
-            && let Some(return_pos) = body.find("return")
+            && let Some((_, returned)) = body.split_once("return")
         {
-            let returned = body[return_pos + "return".len()..].trim_start();
-            let end = returned.find([';', '}']).unwrap_or(returned.len());
-            return Some(returned[..end].trim());
+            let returned = returned.trim_start();
+            let returned = returned.split([';', '}']).next().unwrap_or(returned);
+            return Some(returned.trim());
         }
-        let end = body.find(['\n', ';']).unwrap_or(body.len());
-        Some(body[..end].trim().trim_end_matches(')').trim())
+        let body = body.split(['\n', ';']).next().unwrap_or(body);
+        Some(body.trim().trim_end_matches(')').trim())
     }
 
     fn infer_type_from_expression(expression: &str) -> Option<String> {
@@ -198,7 +208,7 @@ impl HoverService {
     fn extract_type_annotation(s: &str) -> Option<String> {
         let s = s.trim();
         let end = Self::find_type_annotation_end(s);
-        let type_str = s[..end].trim();
+        let type_str = s.get(..end)?.trim();
         (!type_str.is_empty()).then(|| type_str.to_string())
     }
 
@@ -216,7 +226,7 @@ impl HoverService {
                 '<' | '(' | '[' | '{' => depth += 1,
                 '>' | ')' | ']' | '}' => depth -= 1,
                 c if c == target && depth == 0 => {
-                    if target == '=' && s[index..].starts_with("=>") {
+                    if target == '=' && s.get(index..).is_some_and(|rest| rest.starts_with("=>")) {
                         continue;
                     }
                     return Some(index);
@@ -229,7 +239,7 @@ impl HoverService {
 
     fn find_matching_bracket(s: &str, open: char, close: char) -> Option<usize> {
         let mut depth = 1;
-        for (i, c) in s.chars().enumerate() {
+        for (i, c) in s.char_indices() {
             if c == open {
                 depth += 1;
             } else if c == close {
@@ -242,25 +252,26 @@ impl HoverService {
         None
     }
 
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take"
+    )]
     fn infer_prop_type(content: &str, prop_name: &str) -> Option<String> {
         if let Some(props_start) = content.find("defineProps<") {
-            let after = &content[props_start + "defineProps<".len()..];
+            let after = content.get(props_start + "defineProps<".len()..)?;
             if let Some(end) = Self::find_matching_bracket(after, '<', '>') {
-                let props_type = &after[..end];
+                let props_type = after.get(..end)?;
                 let prop_pattern = format!("{prop_name}: ");
-                if let Some(prop_pos) = props_type.find(prop_pattern.as_str()) {
-                    let after_prop = &props_type[prop_pos + prop_pattern.len()..];
-                    if let Some(type_str) = Self::extract_prop_type(after_prop) {
-                        return Some(type_str);
-                    }
+                if let Some((_, after_prop)) = props_type.split_once(prop_pattern.as_str())
+                    && let Some(type_str) = Self::extract_prop_type(after_prop)
+                {
+                    return Some(type_str);
                 }
                 let opt_pattern = format!("{prop_name}?: ");
-                if let Some(prop_pos) = props_type.find(opt_pattern.as_str()) {
-                    let after_prop = &props_type[prop_pos + opt_pattern.len()..];
-                    if let Some(type_str) = Self::extract_prop_type(after_prop) {
-                        return Some(format!("{type_str} | undefined"));
-                    }
+                if let Some((_, after_prop)) = props_type.split_once(opt_pattern.as_str())
+                    && let Some(type_str) = Self::extract_prop_type(after_prop)
+                {
+                    return Some(format!("{type_str} | undefined"));
                 }
             }
         }
@@ -271,7 +282,7 @@ impl HoverService {
         let s = s.trim();
         let mut depth = 0;
         let mut end = 0;
-        for (i, c) in s.chars().enumerate() {
+        for (i, c) in s.char_indices() {
             match c {
                 '<' | '(' | '[' | '{' => depth += 1,
                 '>' | ')' | ']' | '}' => {
@@ -287,9 +298,9 @@ impl HoverService {
                 }
                 _ => {}
             }
-            end = i + 1;
+            end = i + c.len_utf8();
         }
-        let type_str = s[..end].trim();
+        let type_str = s.get(..end)?.trim();
         (!type_str.is_empty()).then(|| type_str.to_string())
     }
 }

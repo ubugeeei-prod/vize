@@ -16,28 +16,36 @@ impl HoverBuilder {
     }
 
     /// Add a title.
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take"
+    )]
     pub fn title(mut self, title: &str) -> Self {
         self.sections.push(format!("**{}**", title));
         self
     }
 
     /// Add compact metadata under the title.
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take"
+    )]
     pub fn meta(mut self, text: &str) -> Self {
         self.sections.push(format!("_{}_", text));
         self
     }
 
     /// Add a code block.
-    #[allow(clippy::disallowed_macros)]
     pub fn code(mut self, language: &str, code: &str) -> Self {
         self.sections.push(markup::code_block(language, code));
         self
     }
 
     /// Add a syntax-highlightable example block.
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take"
+    )]
     pub fn example(mut self, language: &str, code: &str) -> Self {
         self.sections.push(format!(
             "**Example**\n\n{}",
@@ -47,14 +55,20 @@ impl HoverBuilder {
     }
 
     /// Add a named text section.
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take"
+    )]
     pub fn section(mut self, heading: &str, text: &str) -> Self {
         self.sections.push(format!("**{}**\n\n{}", heading, text));
         self
     }
 
     /// Add a named bullet list.
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take"
+    )]
     pub fn bullets(mut self, heading: &str, items: &[&str]) -> Self {
         if items.is_empty() {
             return self;
@@ -76,14 +90,16 @@ impl HoverBuilder {
     }
 
     /// Add a documentation link.
-    #[allow(clippy::disallowed_macros)]
     pub fn link(mut self, text: &str, url: &str) -> Self {
         self.sections.push(markup::link(text, url));
         self
     }
 
     /// Add a named documentation link section.
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take"
+    )]
     pub fn docs(mut self, text: &str, url: &str) -> Self {
         self.sections
             .push(format!("**Docs**\n\n{}", markup::link(text, url)));

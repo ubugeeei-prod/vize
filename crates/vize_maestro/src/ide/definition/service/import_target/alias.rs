@@ -34,8 +34,11 @@ pub(in crate::ide::definition::service) fn normalize_bound_name_definition(
     }
     let location = match &response {
         GotoDefinitionResponse::Scalar(location) => location,
-        GotoDefinitionResponse::Array(locations) if locations.len() == 1 => &locations[0],
-        GotoDefinitionResponse::Array(_) | GotoDefinitionResponse::Link(_) => {
+        GotoDefinitionResponse::Array(locations) => match locations.as_slice() {
+            [location] => location,
+            _ => return Some(response),
+        },
+        GotoDefinitionResponse::Link(_) => {
             return Some(response);
         }
     };
@@ -70,7 +73,11 @@ pub(in crate::ide::definition::service) fn normalize_bound_name_definition(
 fn word_start_at_offset(content: &str, offset: usize) -> Option<usize> {
     let bytes = content.as_bytes();
     let mut start = offset.min(bytes.len());
-    while start > 0 && helpers::is_word_char(bytes[start - 1]) {
+    while start
+        .checked_sub(1)
+        .and_then(|index| bytes.get(index))
+        .is_some_and(|byte| helpers::is_word_char(*byte))
+    {
         start -= 1;
     }
     let has_word = bytes

@@ -2,10 +2,10 @@
 //!
 //! Provides hover information for template expressions, Vue directives,
 //! and template bindings from script setup.
-#![allow(
-    clippy::disallowed_types,
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "`to_string()` and `format!` build the std `String` values tower_lsp::lsp_types payloads take"
 )]
 
 use tower_lsp::lsp_types::Hover;
@@ -74,8 +74,7 @@ impl HoverService {
         }
 
         if let Some(type_info) = super::backend::heuristic_type_at(ctx) {
-            #[allow(clippy::disallowed_macros)]
-            let signature = format!("{word}: {}", type_info.display);
+            let signature = vize_s0::cstr!("{word}: {}", type_info.display);
             let mut builder = HoverBuilder::new()
                 .title(&word)
                 .meta("Template expression type")
@@ -272,8 +271,7 @@ impl HoverService {
             "The binding is resolved from `<script>` analysis."
         };
 
-        #[allow(clippy::disallowed_macros)]
-        let signature = format!("{word}: {inferred_type}");
+        let signature = vize_s0::cstr!("{word}: {inferred_type}");
 
         Some(
             HoverBuilder::new()

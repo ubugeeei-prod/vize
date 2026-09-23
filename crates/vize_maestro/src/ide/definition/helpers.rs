@@ -1,13 +1,14 @@
 //! Helper utilities for the definition service.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "definition helpers hand std `String` values to the lsp_types-based definition service"
 )]
 
 use std::path::PathBuf;
 
 use tower_lsp::lsp_types::Url;
+use vize_s0::cstr;
 
 use super::IdeContext;
 
@@ -50,7 +51,7 @@ pub(crate) fn get_tag_at_offset(content: &str, offset: usize) -> Option<String> 
         return None;
     }
 
-    Some(content[name_start..name_end].to_string())
+    content.get(name_start..name_end).map(str::to_string)
 }
 
 /// Get the attribute name and component name at the cursor position.
@@ -66,24 +67,29 @@ pub(crate) fn get_attribute_and_component_at_offset(
         return None;
     }
 
-    let tag_name = &content[name_start..name_end];
+    let tag_name = content.get(name_start..name_end)?;
     let mut pos = name_end;
+    // Byte at `i` while still inside the tag; `None` past `tag_end`.
+    let at = |i: usize| {
+        if i < tag_end {
+            bytes.get(i).copied()
+        } else {
+            None
+        }
+    };
 
     while pos < tag_end {
-        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+        while at(pos).is_some_and(|b| b.is_ascii_whitespace()) {
             pos += 1;
         }
 
-        if pos >= tag_end || bytes[pos] == b'/' {
+        let Some(first) = at(pos) else { break };
+        if first == b'/' {
             break;
         }
 
         let attr_start = pos;
-        while pos < tag_end
-            && !bytes[pos].is_ascii_whitespace()
-            && bytes[pos] != b'='
-            && bytes[pos] != b'/'
-        {
+        while at(pos).is_some_and(|b| !b.is_ascii_whitespace() && b != b'=' && b != b'/') {
             pos += 1;
         }
         let attr_end = pos;
@@ -93,29 +99,28 @@ pub(crate) fn get_attribute_and_component_at_offset(
         }
 
         let cursor_on_attr_name = cursor >= attr_start && cursor <= attr_end;
-        let raw_attr_name = &content[attr_start..attr_end];
+        let raw_attr_name = content.get(attr_start..attr_end)?;
 
-        while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+        while at(pos).is_some_and(|b| b.is_ascii_whitespace()) {
             pos += 1;
         }
 
-        if pos < tag_end && bytes[pos] == b'=' {
+        if at(pos) == Some(b'=') {
             pos += 1;
-            while pos < tag_end && bytes[pos].is_ascii_whitespace() {
+            while at(pos).is_some_and(|b| b.is_ascii_whitespace()) {
                 pos += 1;
             }
 
-            if pos < tag_end && (bytes[pos] == b'"' || bytes[pos] == b'\'') {
-                let quote = bytes[pos];
+            if let Some(quote @ (b'"' | b'\'')) = at(pos) {
                 pos += 1;
-                while pos < tag_end && bytes[pos] != quote {
+                while at(pos).is_some_and(|b| b != quote) {
                     pos += 1;
                 }
                 if pos < tag_end {
                     pos += 1;
                 }
             } else {
-                while pos < tag_end && !bytes[pos].is_ascii_whitespace() && bytes[pos] != b'>' {
+                while at(pos).is_some_and(|b| !b.is_ascii_whitespace() && b != b'>') {
                     pos += 1;
                 }
             }
@@ -151,7 +156,10 @@ pub(crate) fn get_attribute_and_component_at_offset(
     None
 }
 
-fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usize, usize)> {
+pub(crate) fn find_tag_name_span(
+    content: &str,
+    offset: usize,
+) -> Option<(usize, usize, usize, usize)> {
     let bytes = content.as_bytes();
     if bytes.is_empty() {
         return None;
@@ -167,7 +175,7 @@ fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usi
 
     let mut search_end = cursor.saturating_add(1).min(content.len());
     while search_end > 0 {
-        let tag_start = content[..search_end].rfind('<')?;
+        let tag_start = content.get(..search_end)?.rfind('<')?;
         let tag_end = find_tag_end_from(content, tag_start)?;
 
         if cursor > tag_end {
@@ -175,18 +183,17 @@ fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usi
         }
 
         let mut name_start = tag_start + 1;
-        if name_start < tag_end && bytes[name_start] == b'/' {
+        if name_start < tag_end && bytes.get(name_start) == Some(&b'/') {
             name_start += 1;
         }
 
         let mut name_end = name_start;
-        while name_end < tag_end {
-            let byte = bytes[name_end];
-            if byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_' {
-                name_end += 1;
-            } else {
-                break;
-            }
+        while name_end < tag_end
+            && bytes
+                .get(name_end)
+                .is_some_and(|&b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
+        {
+            name_end += 1;
         }
 
         if name_start != name_end {
@@ -200,12 +207,9 @@ fn find_tag_name_span(content: &str, offset: usize) -> Option<(usize, usize, usi
 }
 
 fn find_tag_end_from(content: &str, tag_start: usize) -> Option<usize> {
-    let bytes = content.as_bytes();
-    let mut tag_end = tag_start;
     let mut quote = None;
 
-    while tag_end < bytes.len() {
-        let byte = bytes[tag_end];
+    for (tag_end, &byte) in content.as_bytes().iter().enumerate().skip(tag_start) {
         if let Some(current_quote) = quote {
             if byte == current_quote {
                 quote = None;
@@ -215,7 +219,6 @@ fn find_tag_end_from(content: &str, tag_start: usize) -> Option<usize> {
         } else if byte == b'>' {
             return Some(tag_end);
         }
-        tag_end += 1;
     }
 
     None
@@ -242,17 +245,18 @@ pub(crate) fn kebab_to_camel(s: &str) -> String {
 
 /// Find a property name within defineProps type/object definition.
 pub(crate) fn find_prop_in_define_props(content: &str, property_name: &str) -> Option<usize> {
-    #[allow(clippy::disallowed_macros)]
     let patterns = [
-        format!("{}: ", property_name),
-        format!("{}?: ", property_name),
-        format!("{} :", property_name),
-        format!("{}?:", property_name),
+        cstr!("{property_name}: "),
+        cstr!("{property_name}?: "),
+        cstr!("{property_name} :"),
+        cstr!("{property_name}?:"),
     ];
 
     for pattern in &patterns {
         if let Some(pos) = content.find(pattern.as_str()) {
-            let before = &content[..pos];
+            let Some(before) = content.get(..pos) else {
+                continue;
+            };
             let open_angle = before.matches('<').count();
             let close_angle = before.matches('>').count();
             let open_curly = before.matches('{').count();
@@ -277,24 +281,26 @@ pub(crate) fn find_import_path(ctx: &IdeContext<'_>, component_name: &str) -> Op
     let content = &ctx.content;
 
     // Pattern 1: import ComponentName from 'path'
-    #[allow(clippy::disallowed_macros)]
-    let default_import_pattern = format!("import {} from", component_name);
-    if let Some(pos) = content.find(&default_import_pattern) {
+    let default_import_pattern = cstr!("import {component_name} from");
+    if let Some(pos) = content.find(default_import_pattern.as_str()) {
         return extract_import_path_from_pos(content, pos + default_import_pattern.len());
     }
 
     // Pattern 2: import { ComponentName } from 'path'
     let import_positions: Vec<_> = content.match_indices("import ").collect();
-    #[allow(clippy::disallowed_macros)]
     for (pos, _) in import_positions {
-        let rest = &content[pos..];
-        if let Some(from_pos) = rest.find(" from") {
-            let import_clause = &rest[7..from_pos]; // Skip "import "
-            if import_clause.contains(&format!("{{ {}", component_name))
-                || import_clause.contains(&format!("{} }}", component_name))
-                || import_clause.contains(&format!(", {}", component_name))
-                || import_clause.contains(&format!("{},", component_name))
-                || import_clause == format!("{{ {} }}", component_name)
+        let Some(rest) = content.get(pos..) else {
+            continue;
+        };
+        if let Some(from_pos) = rest.find(" from")
+            && let Some(import_clause) = rest.get(7..from_pos)
+        {
+            // `import_clause` skips "import "
+            if import_clause.contains(cstr!("{{ {component_name}").as_str())
+                || import_clause.contains(cstr!("{component_name} }}").as_str())
+                || import_clause.contains(cstr!(", {component_name}").as_str())
+                || import_clause.contains(cstr!("{component_name},").as_str())
+                || import_clause == cstr!("{{ {component_name} }}").as_str()
             {
                 return extract_import_path_from_pos(rest, from_pos + 5);
             }
@@ -306,17 +312,17 @@ pub(crate) fn find_import_path(ctx: &IdeContext<'_>, component_name: &str) -> Op
 
 /// Extract import path from a position after 'from'.
 pub(crate) fn extract_import_path_from_pos(content: &str, pos: usize) -> Option<String> {
-    let rest = content[pos..].trim_start();
+    let rest = content.get(pos..)?.trim_start();
 
     let quote_char = rest.chars().next()?;
     if quote_char != '\'' && quote_char != '"' {
         return None;
     }
 
-    let path_start = 1;
-    let path_end = rest[path_start..].find(quote_char)?;
+    let path = rest.get(quote_char.len_utf8()..)?;
+    let path_end = path.find(quote_char)?;
 
-    Some(rest[path_start..path_start + path_end].to_string())
+    path.get(..path_end).map(str::to_string)
 }
 
 /// Resolve a relative, package, or tsconfig-path import from the current file.

@@ -2,7 +2,10 @@
 //! whose JavaScript expression or closing bracket is not complete yet.
 
 pub(super) fn contains_cursor(content: &str, open: usize, cursor: usize) -> bool {
-    let prefix = content[..open]
+    let Some(head) = content.get(..open) else {
+        return false;
+    };
+    let prefix = head
         .rsplit(|ch: char| ch.is_ascii_whitespace() || matches!(ch, '<' | '>'))
         .next()
         .unwrap_or_default();
@@ -12,7 +15,10 @@ pub(super) fn contains_cursor(content: &str, open: usize, cursor: usize) -> bool
     let mut depth = 1;
     let mut quote = None;
     let mut escaped = false;
-    for byte in content.as_bytes()[open + 1..cursor].iter().copied() {
+    let Some(argument) = content.as_bytes().get(open + 1..cursor) else {
+        return false;
+    };
+    for byte in argument.iter().copied() {
         if let Some(delimiter) = quote {
             if escaped {
                 escaped = false;

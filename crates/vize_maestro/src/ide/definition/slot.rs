@@ -16,7 +16,7 @@ pub(super) fn component_slot_definition(ctx: &IdeContext<'_>) -> Option<GotoDefi
     let script_setup = descriptor.script_setup.as_ref()?;
     let script = script_setup.content.as_ref();
     let define_slots_pos = script.find("defineSlots")?;
-    let slot_pos = find_slot_in_define_slots(&script[define_slots_pos..], &slot_name)?;
+    let slot_pos = find_slot_in_define_slots(script.get(define_slots_pos..)?, &slot_name)?;
     let sfc_offset = script_setup.loc.start + define_slots_pos + slot_pos;
     let (line, character) = helpers::offset_to_position(&component_content, sfc_offset);
     let file_uri = tower_lsp::lsp_types::Url::from_file_path(&resolved_path).ok()?;
@@ -91,7 +91,10 @@ fn slot_navigation_source_range(
 
 fn find_slot_in_define_slots(content: &str, slot_name: &str) -> Option<usize> {
     let mut search_start = 0;
-    while let Some(relative) = content[search_start..].find(slot_name) {
+    while let Some(relative) = content
+        .get(search_start..)
+        .and_then(|rest| rest.find(slot_name))
+    {
         let pos = search_start + relative;
         let end = pos + slot_name.len();
         if is_inside_define_slots_type(content, pos) && is_slot_key_at(content, pos, end) {
@@ -128,7 +131,9 @@ fn is_identifier_byte(byte: u8) -> bool {
 }
 
 fn is_inside_define_slots_type(content: &str, pos: usize) -> bool {
-    let before = &content[..pos];
+    let Some(before) = content.get(..pos) else {
+        return false;
+    };
     before.matches('<').count() > before.matches('>').count()
         && before.matches('{').count() > before.matches('}').count()
 }

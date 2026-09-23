@@ -1,5 +1,8 @@
 //! `v-for` scope alias lookup in authored templates.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "`to_string()` builds the std `String` values tower_lsp::lsp_types payloads take"
+)]
 
 use vize_relief::{ElementNode, ExpressionNode, PropNode, SourceLocation, TemplateChildNode};
 
@@ -127,7 +130,7 @@ fn v_for_left_side(text: &str) -> Option<(usize, &str)> {
     }
 
     let (start, end) = strip_wrapping_parens(text, start, end);
-    Some((start, &text[start..end]))
+    Some((start, text.get(start..end)?))
 }
 
 fn find_v_for_separator(text: &str) -> Option<usize> {
@@ -138,7 +141,11 @@ fn find_v_for_separator(text: &str) -> Option<usize> {
             ')' | ']' | '}' => depth = depth.saturating_sub(1),
             _ => {}
         }
-        if depth == 0 && (text[index..].starts_with(" in ") || text[index..].starts_with(" of ")) {
+        if depth == 0
+            && text
+                .get(index..)
+                .is_some_and(|rest| rest.starts_with(" in ") || rest.starts_with(" of "))
+        {
             return Some(index);
         }
     }
@@ -146,7 +153,10 @@ fn find_v_for_separator(text: &str) -> Option<usize> {
 }
 
 fn strip_wrapping_parens(text: &str, start: usize, end: usize) -> (usize, usize) {
-    if text[start..end].starts_with('(') && text[start..end].ends_with(')') {
+    if text
+        .get(start..end)
+        .is_some_and(|range| range.starts_with('(') && range.ends_with(')'))
+    {
         trim_range(text, start + 1, end - 1)
     } else {
         (start, end)
@@ -182,11 +192,10 @@ fn push_trimmed_part<'a>(
     parts: &mut Vec<(usize, &'a str)>,
 ) {
     let (trimmed_start, trimmed_end) = trim_range(text, start, end);
-    if trimmed_start < trimmed_end {
-        parts.push((
-            base_start + trimmed_start,
-            &text[trimmed_start..trimmed_end],
-        ));
+    if trimmed_start < trimmed_end
+        && let Some(part) = text.get(trimmed_start..trimmed_end)
+    {
+        parts.push((base_start + trimmed_start, part));
     }
 }
 
@@ -212,7 +221,7 @@ fn binding_from_text(
 fn find_identifier(text: &str, word: &str) -> Option<usize> {
     let bytes = text.as_bytes();
     let mut search_start = 0;
-    while let Some(relative) = text[search_start..].find(word) {
+    while let Some(relative) = text.get(search_start..).and_then(|rest| rest.find(word)) {
         let start = search_start + relative;
         let end = start + word.len();
         if is_identifier_boundary(bytes, start, end) {
@@ -305,10 +314,11 @@ fn is_identifier_byte(byte: u8) -> bool {
 }
 
 fn trim_range(text: &str, mut start: usize, mut end: usize) -> (usize, usize) {
-    while start < end && text.as_bytes()[start].is_ascii_whitespace() {
+    let bytes = text.as_bytes();
+    while start < end && bytes.get(start).is_some_and(u8::is_ascii_whitespace) {
         start += 1;
     }
-    while end > start && text.as_bytes()[end - 1].is_ascii_whitespace() {
+    while end > start && bytes.get(end - 1).is_some_and(u8::is_ascii_whitespace) {
         end -= 1;
     }
     (start, end)

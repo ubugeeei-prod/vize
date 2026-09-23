@@ -1,4 +1,7 @@
-#![allow(clippy::disallowed_macros)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "`format!` builds the std `String` values tower_lsp::lsp_types payloads take"
+)]
 
 use std::sync::Arc;
 

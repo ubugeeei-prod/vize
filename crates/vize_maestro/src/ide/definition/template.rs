@@ -1,5 +1,4 @@
 //! Template go-to-definition for expressions, component tags, and props.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range};
 use vize_croquis::{Drawer, DrawerOptions};
@@ -7,6 +6,11 @@ use vize_relief::BindingType;
 
 use super::{IdeContext, helpers};
 use crate::ide::{component_name_candidates, is_component_tag, template_scope};
+
+mod scope_ranges;
+use scope_ranges::{
+    create_app_object_ranges, find_object_property_key_in_range, v_scope_value_ranges,
+};
 
 /// Find definition for a symbol in template context.
 pub(crate) fn definition_in_template(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
@@ -131,174 +135,6 @@ fn find_standalone_html_scope_definition(
     None
 }
 
-fn v_scope_value_ranges(content: &str) -> Vec<(usize, usize)> {
-    let mut ranges = Vec::new();
-    let bytes = content.as_bytes();
-    let mut search_start = 0;
-
-    while let Some(relative) = content[search_start..].find("v-scope") {
-        let attr_start = search_start + relative;
-        let mut pos = attr_start + "v-scope".len();
-
-        if pos < bytes.len()
-            && (bytes[pos].is_ascii_alphanumeric() || bytes[pos] == b'-' || bytes[pos] == b'_')
-        {
-            search_start = pos;
-            continue;
-        }
-
-        while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-            pos += 1;
-        }
-        if bytes.get(pos) != Some(&b'=') {
-            search_start = pos;
-            continue;
-        }
-        pos += 1;
-        while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-            pos += 1;
-        }
-
-        let Some(&quote) = bytes.get(pos) else {
-            break;
-        };
-        if quote != b'"' && quote != b'\'' {
-            search_start = pos + 1;
-            continue;
-        }
-        let value_start = pos + 1;
-        let Some(relative_end) = content[value_start..].find(quote as char) else {
-            break;
-        };
-        let value_end = value_start + relative_end;
-        ranges.push((value_start, value_end));
-        search_start = value_end + 1;
-    }
-
-    ranges
-}
-
-fn create_app_object_ranges(content: &str) -> Vec<(usize, usize)> {
-    let mut ranges = Vec::new();
-    let bytes = content.as_bytes();
-    let mut search_start = 0;
-
-    while let Some(relative) = content[search_start..].find("createApp") {
-        let name_start = search_start + relative;
-        if name_start > 0 && helpers::is_word_char(bytes[name_start - 1]) {
-            search_start = name_start + "createApp".len();
-            continue;
-        }
-
-        let mut pos = name_start + "createApp".len();
-        if pos < bytes.len() && helpers::is_word_char(bytes[pos]) {
-            search_start = pos;
-            continue;
-        }
-
-        while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-            pos += 1;
-        }
-        if bytes.get(pos) != Some(&b'(') {
-            search_start = pos;
-            continue;
-        }
-        pos += 1;
-        while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-            pos += 1;
-        }
-        if bytes.get(pos) != Some(&b'{') {
-            search_start = pos;
-            continue;
-        }
-
-        if let Some(end) = find_matching_byte(content, pos, b'{', b'}') {
-            ranges.push((pos + 1, end));
-            search_start = end + 1;
-        } else {
-            break;
-        }
-    }
-
-    ranges
-}
-
-fn find_object_property_key_in_range(
-    content: &str,
-    range: (usize, usize),
-    word: &str,
-    cursor_start: usize,
-) -> Option<usize> {
-    let (start, end) = range;
-    let bytes = content.as_bytes();
-    let mut search_start = start;
-
-    while search_start < end {
-        let relative = content[search_start..end].find(word)?;
-        let key_start = search_start + relative;
-        let key_end = key_start + word.len();
-
-        if key_start != cursor_start
-            && is_identifier_boundary(bytes, key_start, key_end)
-            && is_property_key_tail(bytes, key_end, end)
-        {
-            return Some(key_start);
-        }
-
-        search_start = key_end;
-    }
-
-    None
-}
-
-fn is_identifier_boundary(bytes: &[u8], start: usize, end: usize) -> bool {
-    let before = start.checked_sub(1).and_then(|index| bytes.get(index));
-    let after = bytes.get(end);
-    !before.is_some_and(|byte| helpers::is_word_char(*byte))
-        && !after.is_some_and(|byte| helpers::is_word_char(*byte))
-}
-
-fn is_property_key_tail(bytes: &[u8], key_end: usize, range_end: usize) -> bool {
-    let mut pos = key_end;
-    while pos < range_end && bytes[pos].is_ascii_whitespace() {
-        pos += 1;
-    }
-
-    pos >= range_end || matches!(bytes[pos], b':' | b'(' | b',' | b'}')
-}
-
-fn find_matching_byte(content: &str, start: usize, open: u8, close: u8) -> Option<usize> {
-    let bytes = content.as_bytes();
-    let mut depth = 0usize;
-    let mut quote = None;
-    let mut pos = start;
-
-    while pos < bytes.len() {
-        let byte = bytes[pos];
-        if let Some(current_quote) = quote {
-            if byte == b'\\' {
-                pos += 2;
-                continue;
-            }
-            if byte == current_quote {
-                quote = None;
-            }
-        } else if byte == b'"' || byte == b'\'' || byte == b'`' {
-            quote = Some(byte);
-        } else if byte == open {
-            depth += 1;
-        } else if byte == close {
-            depth = depth.saturating_sub(1);
-            if depth == 0 {
-                return Some(pos);
-            }
-        }
-        pos += 1;
-    }
-
-    None
-}
-
 fn location_response(ctx: &IdeContext<'_>, offset: usize, len: usize) -> GotoDefinitionResponse {
     let (line, character) = helpers::offset_to_position(&ctx.content, offset);
     GotoDefinitionResponse::Scalar(Location {
@@ -319,7 +155,13 @@ pub(crate) fn find_props_property_definition(
     property_name: &str,
 ) -> Option<GotoDefinitionResponse> {
     let mut word_start = ctx.offset;
-    while word_start > 0 && helpers::is_word_char(ctx.content.as_bytes()[word_start - 1]) {
+    while word_start > 0
+        && ctx
+            .content
+            .as_bytes()
+            .get(word_start - 1)
+            .is_some_and(|&b| helpers::is_word_char(b))
+    {
         word_start -= 1;
     }
 
@@ -342,7 +184,7 @@ pub(crate) fn find_props_property_definition(
         let content = &script_setup.content;
 
         if let Some(define_props_pos) = content.find("defineProps") {
-            let after_define_props = &content[define_props_pos..];
+            let after_define_props = content.get(define_props_pos..).unwrap_or_default();
 
             if let Some(prop_pos) =
                 helpers::find_prop_in_define_props(after_define_props, property_name)
@@ -410,7 +252,7 @@ pub(crate) fn find_component_prop_definition(
 
         let define_props_pos = content.find("defineProps");
         if let Some(define_props_pos) = define_props_pos {
-            let after_define_props = &content[define_props_pos..];
+            let after_define_props = content.get(define_props_pos..).unwrap_or_default();
 
             if let Some(prop_pos) =
                 helpers::find_prop_in_define_props(after_define_props, &prop_name)
@@ -604,7 +446,7 @@ pub(crate) fn find_prop_definition_by_name(
 
     let content = &script_setup.content;
     if let Some(define_props_pos) = content.find("defineProps") {
-        let after_define_props = &content[define_props_pos..];
+        let after_define_props = content.get(define_props_pos..).unwrap_or_default();
 
         if let Some(prop_pos) = helpers::find_prop_in_define_props(after_define_props, prop_name) {
             let sfc_offset = script_setup.loc.start + define_props_pos + prop_pos;

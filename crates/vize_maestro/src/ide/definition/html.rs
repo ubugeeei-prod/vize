@@ -1,5 +1,11 @@
 //! Native HTML/SVG/MathML definition helpers.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![cfg_attr(
+    feature = "native",
+    expect(
+        clippy::disallowed_types,
+        reason = "the Corsa bridge is shared across LSP requests as `Arc<CorsaBridge>`"
+    )
+)]
 
 #[cfg(feature = "native")]
 use std::sync::Arc;

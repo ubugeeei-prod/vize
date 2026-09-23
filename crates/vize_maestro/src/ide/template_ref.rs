@@ -62,11 +62,12 @@ struct TemplateRefBinding {
 
 fn static_ref_value_at_offset(content: &str, offset: usize) -> Option<StaticRefValue> {
     let offset = normalize_offset(content, offset);
-    let tag_start = content[..offset].rfind('<')?;
-    if content[tag_start..offset].contains('>') {
+    let tag_start = content.get(..offset).and_then(|head| head.rfind('<'))?;
+    if content.get(tag_start..offset)?.contains('>') {
         return None;
     }
-    let tag_end = content[offset..]
+    let tag_end = content
+        .get(offset..)?
         .find('>')
         .map(|relative| offset + relative)
         .unwrap_or(content.len());
@@ -74,7 +75,10 @@ fn static_ref_value_at_offset(content: &str, offset: usize) -> Option<StaticRefV
     let bytes = content.as_bytes();
     let mut cursor = tag_start + 1;
     while cursor + "ref".len() <= tag_end {
-        let Some(relative) = content[cursor..tag_end].find("ref") else {
+        let Some(relative) = content
+            .get(cursor..tag_end)
+            .and_then(|rest| rest.find("ref"))
+        else {
             break;
         };
         let name_start = cursor + relative;
@@ -100,7 +104,7 @@ fn static_ref_value_at_offset(content: &str, offset: usize) -> Option<StaticRefV
         if !(value_start <= offset && offset <= value_end) {
             continue;
         }
-        let ref_name = &content[value_start..value_end];
+        let ref_name = content.get(value_start..value_end)?;
         if !is_identifier_name(ref_name) {
             return None;
         }
@@ -120,7 +124,10 @@ fn use_template_ref_binding(ctx: &IdeContext<'_>, ref_name: &str) -> Option<Temp
     let content = script_setup.content.as_ref();
 
     let mut search_start = 0;
-    while let Some(relative) = content[search_start..].find("useTemplateRef") {
+    while let Some(relative) = content
+        .get(search_start..)
+        .and_then(|rest| rest.find("useTemplateRef"))
+    {
         let callee_start = search_start + relative;
         let callee_end = callee_start + "useTemplateRef".len();
         search_start = callee_end;
@@ -160,28 +167,33 @@ fn first_static_argument(content: &str, callee_end: usize) -> Option<String> {
     let value_start = pos + 1;
     let value_end = find_quote(bytes, value_start, content.len(), quote)?;
     Some(unescape_simple_string(
-        &content[value_start..value_end],
+        content.get(value_start..value_end)?,
         quote,
     ))
 }
 
 fn variable_binding_before_call(content: &str, callee_start: usize) -> Option<String> {
-    let statement_start = content[..callee_start]
-        .rfind(['\n', ';'])
-        .map_or(0, |offset| offset + 1);
-    let prefix = &content[statement_start..callee_start];
-    let eq = prefix.rfind('=')?;
-    let before_eq = prefix[..eq].trim_end();
+    let head = content.get(..callee_start)?;
+    let prefix = head.rsplit(['\n', ';']).next().unwrap_or(head);
+    let (before_eq, _) = prefix.rsplit_once('=')?;
+    let before_eq = before_eq.trim_end();
 
     for keyword in ["const", "let", "var"] {
         let Some(keyword_start) = before_eq.rfind(keyword) else {
             continue;
         };
         let keyword_end = keyword_start + keyword.len();
-        if keyword_start > 0 && is_identifier_byte(before_eq.as_bytes()[keyword_start - 1]) {
+        if keyword_start
+            .checked_sub(1)
+            .and_then(|index| before_eq.as_bytes().get(index))
+            .is_some_and(|byte| is_identifier_byte(*byte))
+        {
             continue;
         }
-        let after_keyword = before_eq[keyword_end..].trim_start();
+        let Some(after_keyword) = before_eq.get(keyword_end..) else {
+            continue;
+        };
+        let after_keyword = after_keyword.trim_start();
         let name = after_keyword
             .split(|ch: char| !is_identifier_char(ch))
             .next()
@@ -248,7 +260,7 @@ fn skip_ascii_whitespace(bytes: &[u8], mut pos: usize) -> usize {
 
 fn find_quote(bytes: &[u8], mut pos: usize, end: usize, quote: u8) -> Option<usize> {
     while pos < end {
-        match bytes[pos] {
+        match *bytes.get(pos)? {
             b'\\' => pos += 2,
             byte if byte == quote => return Some(pos),
             _ => pos += 1,
@@ -264,10 +276,10 @@ fn find_matching_byte(content: &str, start: usize, open: u8, close: u8) -> Optio
     }
     let mut depth = 0usize;
     let mut pos = start;
-    while pos < bytes.len() {
-        match bytes[pos] {
+    while let Some(&byte) = bytes.get(pos) {
+        match byte {
             b'\'' | b'"' => {
-                pos = find_quote(bytes, pos + 1, bytes.len(), bytes[pos])? + 1;
+                pos = find_quote(bytes, pos + 1, bytes.len(), byte)? + 1;
                 continue;
             }
             byte if byte == open => depth += 1,

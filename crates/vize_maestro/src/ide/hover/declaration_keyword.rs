@@ -10,10 +10,10 @@
 //! one known top-level declaration kind — anything else keeps the checker's
 //! answer.
 #![cfg(feature = "native")]
-#![allow(
+#![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "tower_lsp::lsp_types payloads take std `String`, built with `format!`"
 )]
 
 use oxc_allocator::Allocator;
@@ -142,12 +142,14 @@ fn align_v_for_parameter(
         return None;
     }
     let fence_start = markdown.find("```")?;
-    let after_fence = markdown[fence_start..].find('\n')? + fence_start + 1;
+    let after_fence = markdown
+        .get(fence_start..)
+        .and_then(|rest| rest.find('\n'))?
+        + fence_start
+        + 1;
     let synthesized = format!("(parameter) {word}");
-    if !markdown[after_fence..].starts_with(&synthesized) {
-        return None;
-    }
-    let following = markdown[after_fence + synthesized.len()..].chars().next();
+    let (head, body) = markdown.split_at_checked(after_fence)?;
+    let following = body.strip_prefix(synthesized.as_str())?.chars().next();
     if following.is_some_and(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric()) {
         return None;
     }
@@ -155,9 +157,9 @@ fn align_v_for_parameter(
         return None;
     }
     let mut rewritten = String::with_capacity(markdown.len());
-    rewritten.push_str(&markdown[..after_fence]);
+    rewritten.push_str(head);
     rewritten.push_str("const");
-    rewritten.push_str(&markdown[after_fence + "(parameter)".len()..]);
+    rewritten.push_str(body.strip_prefix("(parameter)")?);
     Some(rewritten)
 }
 
@@ -280,21 +282,23 @@ pub(super) fn align_leading_var(
         return None;
     }
     let fence_start = markdown.find("```")?;
-    let after_fence = markdown[fence_start..].find('\n')? + fence_start + 1;
+    let after_fence = markdown
+        .get(fence_start..)
+        .and_then(|rest| rest.find('\n'))?
+        + fence_start
+        + 1;
     let synthesized = format!("var {word}");
-    if !markdown[after_fence..].starts_with(&synthesized) {
-        return None;
-    }
-    let following = markdown[after_fence + synthesized.len()..].chars().next();
+    let (head, body) = markdown.split_at_checked(after_fence)?;
+    let following = body.strip_prefix(synthesized.as_str())?.chars().next();
     // Only the whole identifier: `var counter` must not match hover on `count`.
     if following.is_some_and(|c| c == '_' || c == '$' || c.is_ascii_alphanumeric()) {
         return None;
     }
     let keyword = authored_keyword(script_setup, lang, word)?;
     let mut rewritten = String::with_capacity(markdown.len());
-    rewritten.push_str(&markdown[..after_fence]);
+    rewritten.push_str(head);
     rewritten.push_str(keyword);
-    rewritten.push_str(&markdown[after_fence + "var".len()..]);
+    rewritten.push_str(body.strip_prefix("var")?);
     Some(rewritten)
 }
 

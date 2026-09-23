@@ -3,10 +3,11 @@
 //! Provides contextual hover information for:
 //! - Template expressions and bindings
 //! - Vue directives
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "tower_lsp::lsp_types payloads take std `String`, built with `to_string()` and `format!`"
 )]
 
 mod backend;
@@ -133,9 +134,7 @@ impl HoverService {
         )
     }
 
-    // =========================================================================
-    // Shared utilities
-    // =========================================================================
+    // Shared utilities.
 
     /// Get the word at a given offset.
     pub(super) fn get_word_at_offset(content: &str, offset: usize) -> String {

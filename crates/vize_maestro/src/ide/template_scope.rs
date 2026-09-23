@@ -1,5 +1,8 @@
 //! Authored template-scope bindings such as `v-for` aliases.
-#![allow(clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "tower_lsp::lsp_types payloads take std `String`"
+)]
 
 mod analysis;
 mod patterned_navigation;

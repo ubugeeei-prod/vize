@@ -1,7 +1,10 @@
 //! Script and style definition lookup.
 //!
 //! Handles go-to-definition within script blocks and v-bind() in styles.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "`to_string()` builds the std `String` values tower_lsp::lsp_types payloads take"
+)]
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range};
 
@@ -185,12 +188,14 @@ fn is_inside_style_v_bind_argument(content: &str, offset: usize) -> bool {
         offset -= 1;
     }
 
-    let Some(v_bind_start) = content[..offset].rfind("v-bind(") else {
+    let Some(v_bind_start) = content.get(..offset).and_then(|head| head.rfind("v-bind(")) else {
         return false;
     };
     let arg_start = v_bind_start + "v-bind(".len();
 
-    !content[arg_start..offset].contains(')')
+    !content
+        .get(arg_start..offset)
+        .is_some_and(|argument| argument.contains(')'))
 }
 
 /// Find the location of a binding definition in raw script content (not virtual code).
@@ -270,15 +275,18 @@ pub(crate) fn find_binding_location_raw(content: &str, name: &str) -> Option<Bin
     None
 }
 
-/// Find the location of a binding definition in script content.
-#[allow(dead_code)]
+/// Find the location of a binding definition in virtual script content.
+///
+/// Only the definition tests exercise the virtual-code variant; the server
+/// resolves bindings through [`find_binding_location_raw`].
+#[cfg(test)]
 pub(crate) fn find_binding_location(
     content: &str,
     name: &str,
     _is_setup: bool,
 ) -> Option<BindingLocation> {
     let content_start = helpers::skip_virtual_header(content);
-    let search_content = &content[content_start..];
+    let search_content = content.get(content_start..)?;
 
     let patterns = [
         cstr!("const {name} "),

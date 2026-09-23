@@ -124,43 +124,45 @@ fn bound_import(content: &str, word: &str) -> Option<(String, String)> {
 fn import_statements(content: &str) -> Vec<(usize, usize, &str, &str)> {
     let mut statements = Vec::new();
     let mut search_start = 0;
-    while let Some(position) = content[search_start..].find("import") {
+    while let Some(position) = content
+        .get(search_start..)
+        .and_then(|rest| rest.find("import"))
+    {
         let statement_start = search_start + position;
         search_start = statement_start + "import".len();
-        let rest = &content[statement_start..];
-        let Some((quote_start, quote_end)) = find_specifier_span(rest) else {
+        let Some((quote_end, clause, specifier)) =
+            content.get(statement_start..).and_then(find_specifier_span)
+        else {
             continue;
         };
         statements.push((
             statement_start,
             statement_start + quote_end,
-            &rest[..quote_start],
-            &rest[quote_start + 1..quote_end],
+            clause,
+            specifier,
         ));
     }
     statements
 }
 
-/// `(opening_quote_index, closing_quote_index)` of the statement's specifier,
-/// relative to the statement start.
-fn find_specifier_span(rest: &str) -> Option<(usize, usize)> {
-    let line_end = rest.find('\n').map_or(rest.len(), |index| {
+/// `(closing_quote_index, clause, specifier)` of the statement: the closing
+/// quote index is relative to the statement start, and the clause is
+/// everything before the specifier's opening quote.
+fn find_specifier_span(rest: &str) -> Option<(usize, &str, &str)> {
+    let segment = match rest.split_once('\n') {
         // Multi-line named-import lists keep scanning to the closing quote.
-        if rest[..index].contains('{') && !rest[..index].contains('}') {
-            rest.len()
-        } else {
-            index
-        }
-    });
-    let segment = &rest[..line_end];
+        Some((line, _)) if !(line.contains('{') && !line.contains('}')) => line,
+        _ => rest,
+    };
     let quote_start = segment
         .find('"')
         .into_iter()
         .chain(segment.find('\''))
         .min()?;
-    let quote = segment.as_bytes()[quote_start] as char;
-    let quote_end = segment[quote_start + 1..].find(quote)? + quote_start + 1;
-    Some((quote_start, quote_end))
+    let (clause, after_quote) = segment.split_at_checked(quote_start)?;
+    let quote = after_quote.chars().next()?;
+    let (specifier, _) = after_quote.get(1..)?.split_once(quote)?;
+    Some((quote_start + 1 + specifier.len(), clause, specifier))
 }
 
 /// The name the target module exports for local binding `word` — the left
@@ -169,7 +171,7 @@ fn find_specifier_span(rest: &str) -> Option<(usize, usize)> {
 /// to follow, so the local binding stays the lookup key.
 fn bound_source_name(clause: &str, word: &str) -> Option<String> {
     if let (Some(open), Some(close)) = (clause.find('{'), clause.find('}')) {
-        for part in clause[open + 1..close].split(',') {
+        for part in clause.get(open + 1..close).unwrap_or_default().split(',') {
             let part = part.trim().trim_start_matches("type ").trim();
             let (source, bound) = split_rename(part);
             if bound == word {
@@ -256,22 +258,27 @@ fn locate_export(ctx: &IdeContext<'_>, target: &Path, word: &str, hops: usize) -
 /// must continue the walk looking for `Widget`.
 fn reexport_specifier(content: &str, word: &str) -> Option<(String, String)> {
     let mut search_start = 0;
-    while let Some(position) = content[search_start..].find("export") {
+    while let Some(position) = content
+        .get(search_start..)
+        .and_then(|rest| rest.find("export"))
+    {
         let statement_start = search_start + position;
         search_start = statement_start + "export".len();
-        let rest = &content[statement_start..];
-        let Some((quote_start, quote_end)) = find_specifier_span(rest) else {
+        let Some((_, clause, specifier)) =
+            content.get(statement_start..).and_then(find_specifier_span)
+        else {
             continue;
         };
-        let clause = &rest[..quote_start];
         if !clause.contains("from") {
             continue;
         }
         let source = if let (Some(open), Some(close)) = (clause.find('{'), clause.find('}')) {
-            clause[open + 1..close].split(',').find_map(|part| {
-                let part = part.trim().trim_start_matches("type ").trim();
-                let (source, exported) = split_rename(part);
-                (exported == word).then(|| source.to_owned())
+            clause.get(open + 1..close).and_then(|names| {
+                names.split(',').find_map(|part| {
+                    let part = part.trim().trim_start_matches("type ").trim();
+                    let (source, exported) = split_rename(part);
+                    (exported == word).then(|| source.to_owned())
+                })
             })
         } else if clause.contains('*') {
             Some(word.to_owned())
@@ -287,7 +294,7 @@ fn reexport_specifier(content: &str, word: &str) -> Option<(String, String)> {
             } else {
                 source
             };
-            return Some((rest[quote_start + 1..quote_end].to_owned(), exported));
+            return Some((specifier.to_owned(), exported));
         }
     }
     None
