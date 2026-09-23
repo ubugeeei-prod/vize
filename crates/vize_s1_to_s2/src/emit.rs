@@ -189,9 +189,6 @@ struct EmitCx<'facts> {
     /// `createSlots` entry: the shipped hoist walk treats it as the branch
     /// root and hoists neither it nor its props (P3-17).
     slot_if_branch_root: bool,
-    /// An inline render emitted a component whose named slot templates are
-    /// printed ahead of earlier-authored default content (P3-17).
-    reordered_slots: bool,
     /// The current `v-for` branch root came from an authored `<template v-if>`.
     template_if_for_branch_root: bool,
     /// A native root unwrapped from `<template v-for>` drops an authored

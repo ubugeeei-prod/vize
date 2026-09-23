@@ -92,7 +92,6 @@ pub(super) fn emit_dom_observed<'f>(
         template_for_item_root_id: None,
         template_if_branch_root: false,
         slot_if_branch_root: false,
-        reordered_slots: false,
         template_if_for_branch_root: false,
         suppress_template_for_child_key: false,
         skip_memo: false,
@@ -163,13 +162,13 @@ pub(super) fn emit_dom_observed<'f>(
     cx.buf.deindent();
     cx.buf.newline();
     cx.buf.push("}");
-    // `_unref` is a *transform* registration: it lists with the pre-walk's
-    // preferred helpers, at the op whose expression needed it - ahead of a
-    // structural helper that op registers later (`renderList`). Named slot
-    // templates print ahead of earlier default content, so the emit walk's
-    // first use is not the authored one; the pre-walk recorded that visit.
+    // `_unref` is registered while transforming an authored expression.
+    // Codegen can visit that expression later (directives after children,
+    // named slots before default content), so use the authored visit for
+    // its position among structural helpers. The emit visit is a fallback
+    // for expressions the preference walk cannot classify.
     let emitted_unref = cx.used_unref.get();
-    let unref_visit = if cx.reordered_slots && authored_unref != u32::MAX {
+    let unref_visit = if authored_unref != u32::MAX {
         authored_unref
     } else {
         emitted_unref

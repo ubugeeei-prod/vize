@@ -4,8 +4,8 @@ use vize_s2::op::{InterpolationOp, Op};
 use super::super::buf::Buf;
 use super::super::children::{
     emit_comment_vnode, emit_create_text_vnode, emit_dynamic_part, emit_interpolation,
-    emit_js_to_display_string, emit_plain_text_vnode, emit_raw_interpolation_or_refuse,
-    emit_to_display_string, is_empty_interpolation,
+    emit_plain_text_vnode, emit_raw_interpolation_or_refuse, emit_to_display_string,
+    is_empty_interpolation,
 };
 use super::super::hoist::{emit_hoisted_element, is_hoistable};
 use super::super::js::{escape_js_string, is_valid_js_identifier};
@@ -248,10 +248,9 @@ fn emit_gen_interp(
 ) -> Result<(), EmitError> {
     let id = cx.walk.mint();
     match interp.expression {
-        ExprRef::Js(js) => {
+        ExprRef::Js(_) => {
             start_item(cx, first);
-            emit_js_to_display_string(cx, js);
-            Ok(())
+            emit_interpolation(cx, interp, id)
         }
         ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
             let id = id.ok_or(EmitError::unsupported_at(

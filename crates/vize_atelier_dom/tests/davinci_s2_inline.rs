@@ -68,6 +68,18 @@ const BATTERY: &[(&str, &str)] = &[
         "vfor_alias_shadows",
         r#"<li v-for="count in items" :key="count">{{ count }} {{ msg }}</li>"#,
     ),
+    (
+        "unref_in_for_key_follows_render_list",
+        r#"<template v-for="item in items" :key="msg(item)"><span>{{ item }}</span><em>{{ item }}</em></template>"#,
+    ),
+    (
+        "directive_unref_precedes_nested_render_list",
+        r#"<div v-my-dir="[items, { ...msg }]"><span v-for="item in items">{{ item }}</span></div>"#,
+    ),
+    (
+        "template_for_fragment_interpolation_unrefs_setup_let_member",
+        r#"<template v-for="(row, r) in msg"><span v-for="cell in row">{{ cell }}</span>{{ r === msg.length - 1 ? 'a' : 'b' }}</template>"#,
+    ),
     ("vhtml_let", r#"<div v-html="msg"></div>"#),
     ("vtext_ref", r#"<p v-text="count"></p>"#),
     ("vmemo_ref", r#"<div v-memo="[count]">{{ msg }}</div>"#),

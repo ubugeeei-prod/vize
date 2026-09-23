@@ -65,9 +65,6 @@ pub(super) fn emit_call(
     }
     let has_array = array && slots::has_implicit_default(&component.children);
     let has_slots = !array && (facts.is_some() || create || spread.is_some());
-    if cx.scope.inline() && has_slots && named_template_follows_default(&component.children) {
-        cx.reordered_slots = true;
-    }
     let forwards_slot = super::outlet::has_forwarded_outlet(&component.children);
     let filler_default_props_placeholder =
         !array && !has_slots && slots::filler_default_needs_props_placeholder(&component.children);
@@ -255,24 +252,4 @@ pub(super) fn emit_call(
     emit_dynamic_props(cx, &patch.dynamic_props);
     cx.buf.push(")");
     Ok(())
-}
-
-/// A named slot template authored after a conditional chain in the default
-/// content — the shape whose `_unref` registration point the emitter was
-/// measured to misplace (misskey `chat/room.vue`); simpler default content
-/// ahead of a named template keeps the shipped order and stays admitted.
-fn named_template_follows_default(children: &vize_s2::op::Region<'_>) -> bool {
-    let mut saw_conditional_default = false;
-    for op in children.ops.iter() {
-        match op {
-            vize_s2::op::Op::Element(element) if slots::is_slot_template(element) => {
-                if saw_conditional_default {
-                    return true;
-                }
-            }
-            vize_s2::op::Op::If(_) => saw_conditional_default = true,
-            _ => {}
-        }
-    }
-    false
 }
