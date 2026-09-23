@@ -14,13 +14,13 @@ strict equality with the sources and this page to byte equality with the rows.
 ## Retained `alloc::vec::Vec`
 
 The library trees in the reviewed inventory contain 121 production files,
-133 direct `alloc::vec::Vec` paths, and 504 bound `Vec`/`StdVec` uses.
+133 direct `alloc::vec::Vec` paths, and 505 bound `Vec`/`StdVec` uses.
 
 | Category | Files | Direct paths | Bound uses |
 | -------- | ----: | -----------: | ---------: |
 | contract |    27 |           38 |        114 |
 | analysis |    25 |           26 |        101 |
-| lower    |    16 |           16 |         71 |
+| lower    |    16 |           16 |         72 |
 | pass     |    19 |           19 |         82 |
 | emit     |    34 |           34 |        136 |
 
@@ -48,10 +48,10 @@ The library trees in the reviewed inventory contain 121 production files,
 | s3       | `vize_s0::String`       |     6 |            6 |         27 |
 | s3       | `vize_s0::Vec`          |     2 |            2 |         14 |
 | s3       | `vize_s0::SmallVec`     |     0 |            0 |          0 |
-| s1_to_s2 | `alloc::vec::Vec`       |    67 |           67 |        270 |
+| s1_to_s2 | `alloc::vec::Vec`       |    67 |           67 |        271 |
 | s1_to_s2 | `alloc::string::String` |     0 |            0 |          0 |
 | s1_to_s2 | `vize_s0::String`       |    97 |          105 |        480 |
-| s1_to_s2 | `vize_s0::Vec`          |    16 |           18 |         69 |
+| s1_to_s2 | `vize_s0::Vec`          |    17 |           19 |         69 |
 | s1_to_s2 | `vize_s0::SmallVec`     |     5 |            5 |         10 |
 | s2_to_s3 | `alloc::vec::Vec`       |     1 |            1 |          1 |
 | s2_to_s3 | `alloc::string::String` |     0 |            0 |          0 |
