@@ -42,6 +42,11 @@ the commands that re-derive it, and the local measurements taken so far.
 - Four reviewed output snapshots reflect parent-before-child node numbering and
   equivalent child-index navigation. The adjacent dynamic-child fixture also has
   an independently specified mounted update trace.
+- Ordinary phrasing elements (`abbr`, `code`, `data`, `kbd`, `mark`, `samp`,
+  `sub`, `sup`, `time`, `var`) have the same template bytes as the retained lane
+  with both prefix settings. A mounted trace checks live prop and text updates
+  through the published DOM, native Vapor, and retained Vapor runtimes; repaired
+  paragraph nesting still selects the legacy lane.
 - References beginning with `$event` remain in the legacy lane. Their handler
   semantics follow Vue: a reference names a component/setup binding; only an
   inline statement receives the implicit event parameter. The Chromium contract

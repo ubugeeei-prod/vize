@@ -34,7 +34,9 @@ pub(super) fn element<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Resul
             "div" | "span" | "main" | "section" | "article" | "header" | "footer"
             | "nav" | "aside" | "button" | "strong" | "em" | "b" | "i" | "small"
             | "label" | "input" | "img" | "br" | "hr" | "ul" | "ol" | "li" | "template"
-            | "p" | "a" | "form" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6")
+            | "p" | "a" | "form" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
+            | "abbr" | "code" | "data" | "kbd" | "mark" | "samp" | "sub" | "sup"
+            | "time" | "var")
         || tag.value.text == "template" && values.len() != 2
     {
         return Err(LegacyReason::Element.into());
