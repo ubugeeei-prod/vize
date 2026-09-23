@@ -10,13 +10,29 @@
 
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_croquis::Croquis;
+use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
+
+/// SSR projection reads script bindings through the declared fact.
+struct SsrCroquisProjection;
+
+impl FactConsumer for SsrCroquisProjection {
+    const NAME: &'static str = "ssr/croquis-projection";
+    const DEMAND: Demand = Demand::NONE.with(Bindings::ID);
+}
 
 pub(super) fn projectable(croquis: &Croquis, metadata: Option<&BindingMetadata>) -> bool {
     let Some(metadata) = metadata else {
         return false;
     };
-    croquis.used_components.is_empty()
-        && croquis.bindings.iter().all(|(name, kind)| {
-            kind != BindingType::SetupConst || metadata.bindings.contains_key(name)
-        })
+    if !croquis.used_components.is_empty() {
+        return false;
+    }
+    let mut facts = CroquisFacts::new(croquis);
+    let bindings = facts
+        .prepare::<SsrCroquisProjection>()
+        .get::<Bindings>()
+        .expect("declared demand");
+    bindings
+        .typed()
+        .all(|(name, kind)| kind != BindingType::SetupConst || metadata.bindings.contains_key(name))
 }
