@@ -1,6 +1,8 @@
 //! Type a template expression as a runtime Options API prop when Canon left
 //! the free name as `any` so the instance check can still report `TS2339`.
 
+use vize_s0::{String, cstr};
+
 pub(super) fn options_props_object(text: &str) -> Option<&str> {
     let marker = "const __vize_options_props = (";
     let at = text.find(marker)?;
@@ -17,7 +19,7 @@ pub(super) fn options_prop_annotation(object: Option<&str>, expr: &str) -> Optio
     if !is_identifier(name) || !object_has_depth1_key(object?, name) {
         return None;
     }
-    Some(format!(
+    Some(cstr!(
         "__VizeOptionsPropShape<typeof __vize_options_props>[\"{name}\"]"
     ))
 }

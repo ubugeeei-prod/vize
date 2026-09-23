@@ -3,7 +3,7 @@
 //! event handlers as `__vize_cb)((expr))`. This pass adds the binding and
 //! keeps each expression's mapping on its text.
 
-use vize_s0::String as VizeString;
+use vize_s0::{String as VizeString, cstr};
 
 use super::document::TypeAwareDocument;
 
@@ -37,7 +37,7 @@ fn binding_on_line(generated: &str, offset: usize) -> Option<u32> {
 }
 
 pub(super) fn hoist_type_imports(document: &mut TypeAwareDocument, script: &str) {
-    let mut prelude = std::string::String::new();
+    let mut prelude = VizeString::new("");
     for line in script.lines() {
         let trimmed = line.trim();
         if trimmed.starts_with("import type ") && !document.content.contains(trimmed) {
@@ -52,7 +52,7 @@ pub(super) fn hoist_type_imports(document: &mut TypeAwareDocument, script: &str)
         .mapping
         .note_generated_replacement(0, 0, prelude.len());
     prelude.push_str(document.content.as_str());
-    document.content = VizeString::from(prelude.as_str());
+    document.content = prelude;
 }
 
 pub(super) fn template_binding_is_unsafe(
@@ -70,8 +70,8 @@ pub(super) fn template_binding_is_unsafe(
 }
 
 pub(super) fn bind_template_expressions(document: &mut TypeAwareDocument) {
-    let mut text = std::string::String::from(document.content.as_str());
-    let props_object = super::options_prop_shape::options_props_object(&text).map(str::to_string);
+    let mut text = document.content.clone();
+    let props_object = super::options_prop_shape::options_props_object(&text).map(VizeString::from);
     let mut edits = Vec::new();
     let mut index = 0u32;
     collect_void_wrappers(&text, props_object.as_deref(), &mut edits, &mut index);
@@ -93,13 +93,13 @@ pub(super) fn bind_template_expressions(document: &mut TypeAwareDocument) {
         }
         text.replace_range(start..end, &new_stmt);
     }
-    document.content = VizeString::from(text.as_str());
+    document.content = text;
 }
 
 fn collect_void_wrappers(
     text: &str,
     props_object: Option<&str>,
-    edits: &mut Vec<(usize, usize, usize, usize, String)>,
+    edits: &mut Vec<(usize, usize, usize, usize, VizeString)>,
     index: &mut u32,
 ) {
     let mut search = 0usize;
@@ -122,8 +122,8 @@ fn collect_void_wrappers(
         let expr = &text[expr_start..expr_end];
         let new_stmt = match super::options_prop_shape::options_prop_annotation(props_object, expr)
         {
-            Some(annotation) => format!("const __expr_{index}: {annotation} = {expr}"),
-            None => format!("const __expr_{index} = {expr}"),
+            Some(annotation) => cstr!("const __expr_{index}: {annotation} = {expr}"),
+            None => cstr!("const __expr_{index} = {expr}"),
         };
         let old_end = void_at + VOID_OPEN.len() + expr.len() + 1;
         edits.push((void_at, old_end, expr_start, expr_end, new_stmt));
@@ -134,7 +134,7 @@ fn collect_void_wrappers(
 
 fn collect_handler_arguments(
     text: &str,
-    edits: &mut Vec<(usize, usize, usize, usize, String)>,
+    edits: &mut Vec<(usize, usize, usize, usize, VizeString)>,
     index: &mut u32,
 ) {
     let mut search = 0usize;
@@ -152,7 +152,7 @@ fn collect_handler_arguments(
                 .take_while(|character| *character == ' ')
                 .count(),
         );
-        let line = format!("{indent}const __expr_{index} = {expr};\n");
+        let line = cstr!("{indent}const __expr_{index} = {expr};\n");
         edits.push((line_start, line_start, expr_start, expr_end, line));
         *index += 1;
         search = expr_end;

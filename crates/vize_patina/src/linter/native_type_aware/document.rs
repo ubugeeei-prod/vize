@@ -77,7 +77,7 @@ const BOOLEAN_KEY_ALIAS: &str = "type __VizeBooleanKey<T, K extends keyof T = ke
 const BOOLEAN_KEY_PATCHED: &str = "type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? __VizeIsAny<Exclude<T[K], undefined>> extends true ? never : [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;";
 
 fn keep_any_out_of_boolean_keys(document: &mut TypeAwareDocument) {
-    let mut text = std::string::String::from(document.content.as_str());
+    let mut text = document.content.clone();
     let mut found = Vec::new();
     let mut search = 0usize;
     while let Some(relative) = text[search..].find(BOOLEAN_KEY_ALIAS) {
@@ -93,7 +93,7 @@ fn keep_any_out_of_boolean_keys(document: &mut TypeAwareDocument) {
         );
         text.replace_range(start..start + BOOLEAN_KEY_ALIAS.len(), BOOLEAN_KEY_PATCHED);
     }
-    document.content = String::from(text.as_str());
+    document.content = text;
 }
 
 #[cfg(test)]

@@ -15,7 +15,7 @@ pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, file
     let Some(parent) = source_directory(filename) else {
         return;
     };
-    let mut text = std::string::String::from(document.content.as_str());
+    let mut text = document.content.clone();
     let mut edits = Vec::new();
     let mut from = 0usize;
     while let Some((start, end)) = next_relative_specifier(&text, from) {
@@ -34,7 +34,7 @@ pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, file
             .note_generated_replacement(start, end - start, absolute.len());
         text.replace_range(start..end, &absolute);
     }
-    document.content = VizeString::from(text.as_str());
+    document.content = text;
 }
 
 fn source_directory(filename: &str) -> Option<std::path::PathBuf> {
@@ -99,8 +99,8 @@ fn normalize_path(path: &Path) -> std::path::PathBuf {
     normalized
 }
 
-fn display_path(path: &Path) -> std::string::String {
-    path.to_string_lossy().replace('\\', "/")
+fn display_path(path: &Path) -> VizeString {
+    VizeString::from(path.to_string_lossy().replace('\\', "/"))
 }
 
 #[cfg(test)]
