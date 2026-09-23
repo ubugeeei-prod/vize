@@ -132,7 +132,7 @@ fn check_template_ref_enum_comparisons_keep_declared_ref_value_type() {
         .join("\n");
     assert!(
         virtual_ts.contains(
-            "type __U<T> = T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T;"
+            "type __U<T> = T extends { value: unknown } ? T extends import('vue').Ref ? __VizeWidenTemplateRef<T['value']> : T : T;"
         ),
         "template refs should unwrap through the widening helper:\n{virtual_ts}"
     );
