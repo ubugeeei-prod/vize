@@ -179,7 +179,7 @@ pub fn build_guest_manifest(
             "wasm32-wasip2",
         ])
         .arg("--manifest-path")
-        .arg(&manifest)
+        .arg(manifest)
         .arg("--target-dir")
         .arg(&target_dir);
     if !features.is_empty() {

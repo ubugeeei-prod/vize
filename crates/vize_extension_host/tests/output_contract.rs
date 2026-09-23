@@ -5,7 +5,7 @@ use vize_extension_host::contract::{Page, Span};
 use vize_extension_host::output::{
     EmitDocument, EmitError, EmitLink, EmitRequest, Emitted, accept_emitted,
 };
-use vize_s0::String;
+use vize_s0::{String, cstr};
 
 fn request() -> EmitRequest {
     EmitRequest {
@@ -67,7 +67,7 @@ fn a_wrong_schema_is_refused() {
     emitted.document.schema_version = 2;
     let error = accept_emitted(&request(), emitted).expect_err("schema");
     assert_eq!(
-        error.to_string(),
+        cstr!("{error}"),
         "emit-document-page schema version 2 is unreadable: this host reads version 1"
     );
 }
@@ -85,7 +85,7 @@ fn a_non_canonical_page_is_refused() {
     )
     .expect_err("canonical");
     assert_eq!(
-        error.to_string(),
+        cstr!("{error}"),
         "emit-document-page is not canonical: it differs from its reprint at byte 33"
     );
 }
@@ -130,7 +130,7 @@ fn a_diagnostic_outside_the_authored_links_is_refused() {
     )
     .expect_err("diagnostic");
     assert_eq!(
-        error.to_string(),
+        cstr!("{error}"),
         "diagnostic 0 span 9:10 lies outside every authored link"
     );
 }
