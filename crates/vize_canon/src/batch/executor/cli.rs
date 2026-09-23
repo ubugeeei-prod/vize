@@ -18,6 +18,7 @@ mod output;
 mod patterns;
 mod project_diagnostics;
 mod shard_sizing;
+mod union_find;
 
 use checkers::{checker_count, rejects_checkers_flag};
 use diagnostic_paths::normalize_cli_path;
@@ -27,6 +28,7 @@ use import_resolution::resolve_virtual_import;
 use output::parse_cli_diagnostics;
 use output::parse_output_diagnostics;
 use shard_sizing::shard_count;
+use union_find::UnionFind;
 
 pub(super) fn check_with_cli(
     corsa_path: &Path,
@@ -336,44 +338,6 @@ fn normalize_join(base: &Path, specifier: &str) -> PathBuf {
         }
     }
     normalized
-}
-
-struct UnionFind {
-    parent: Vec<usize>,
-}
-
-impl UnionFind {
-    fn new(size: usize) -> Self {
-        Self {
-            parent: (0..size).collect(),
-        }
-    }
-
-    fn find(&mut self, node: usize) -> usize {
-        let mut root = node;
-        while let Some(&parent) = self.parent.get(root)
-            && parent != root
-        {
-            root = parent;
-        }
-        let mut current = node;
-        while let Some(parent) = self.parent.get_mut(current)
-            && *parent != root
-        {
-            current = std::mem::replace(parent, root);
-        }
-        root
-    }
-
-    fn union(&mut self, left: usize, right: usize) {
-        let left_root = self.find(left);
-        let right_root = self.find(right);
-        if left_root != right_root
-            && let Some(parent) = self.parent.get_mut(right_root)
-        {
-            *parent = left_root;
-        }
-    }
 }
 
 fn is_vue_original(path: &Path) -> bool {

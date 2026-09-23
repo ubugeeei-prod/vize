@@ -227,9 +227,7 @@ pub(super) fn find_default_export_targets(script: &str) -> DefaultExportTargets 
                     object_span.end as usize,
                 ));
             }
-            ExportDefaultDeclarationKind::ClassDeclaration(class)
-                if let Some(id) = class.id.as_ref() =>
-            {
+            ExportDefaultDeclarationKind::ClassDeclaration(class) if let Some(id) = &class.id => {
                 targets.class = Some((
                     export.span.start as usize,
                     class.span.start as usize,

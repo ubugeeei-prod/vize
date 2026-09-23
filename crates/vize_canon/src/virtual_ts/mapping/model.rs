@@ -396,8 +396,7 @@ fn shift_generated_range(range: &mut Range<usize>, start: usize, old_end: usize,
 }
 
 fn authored_disjoint(spans: &[VizeMapping]) -> bool {
-    spans.windows(2).all(|pair| match pair {
-        [left, right] => left.src_range.end <= right.src_range.start,
-        _ => true,
-    })
+    spans
+        .windows(2)
+        .all(|pair| matches!(pair, [left, right] if left.src_range.end <= right.src_range.start))
 }

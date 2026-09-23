@@ -283,10 +283,10 @@ fn is_typescript_as_assertion_operator(
     expression_before_as && type_after_as
 }
 
-fn is_identifier_start(byte: u8) -> bool {
+pub(super) const fn is_identifier_start(byte: u8) -> bool {
     byte.is_ascii_alphabetic() || byte == b'_' || byte == b'$'
 }
 
-fn is_identifier_continue(byte: u8) -> bool {
+pub(super) const fn is_identifier_continue(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }

@@ -6,6 +6,7 @@
 //! asks OXC for actual unresolved value-reference spans instead of guessing
 //! from token adjacency.
 
+use super::reserved_props::{is_identifier_continue, is_identifier_start};
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::ops::Range;
 
@@ -84,7 +85,8 @@ fn has_reserved_name_candidate(
         cursor += 1;
         while bytes
             .get(cursor)
-            .is_some_and(|byte| is_identifier_continue(*byte))
+            .copied()
+            .is_some_and(is_identifier_continue)
         {
             cursor += 1;
         }
@@ -234,7 +236,8 @@ fn apply_replacements(
             .get(replacement.source.clone())
             .and_then(|name| Some((name, bindings.receiver(name)?)))
         else {
-            // Leave the authored text in place; the next source segment copies it.
+            // Keep the authored text: the next source segment copies it.
+            source_cursor = replacement.source.start;
             continue;
         };
         let generated_start = code.len();
@@ -264,26 +267,18 @@ fn push_source_segment(
     code: &mut String,
     segments: &mut Vec<SpreadRewriteSegment>,
 ) {
-    if source.is_empty() {
-        return;
-    }
-    let generated_start = code.len();
-    let Some(text) = expression.get(source.clone()) else {
+    let Some(text) = expression
+        .get(source.clone())
+        .filter(|text| !text.is_empty())
+    else {
         return;
     };
+    let generated_start = code.len();
     code.push_str(text);
     segments.push(SpreadRewriteSegment {
         generated: generated_start..code.len(),
         source,
     });
-}
-
-const fn is_identifier_start(byte: u8) -> bool {
-    byte.is_ascii_alphabetic() || matches!(byte, b'_' | b'$')
-}
-
-const fn is_identifier_continue(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
 }
 
 #[cfg(test)]

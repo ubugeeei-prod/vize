@@ -375,14 +375,11 @@ fn push_verbatim(
     src_start: usize,
     src_end: usize,
 ) {
-    let Some(text) = source
-        .get(src_start..src_end)
-        .filter(|text| !text.is_empty())
-    else {
+    if src_start >= src_end {
         return;
-    };
+    }
     let gen_start = out.len();
-    out.push_str(text);
+    out.push_str(source.get(src_start..src_end).unwrap_or_default());
     let gen_end = out.len();
     mappings.push(VizeMapping {
         gen_range: gen_start..gen_end,
