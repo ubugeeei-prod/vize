@@ -401,6 +401,9 @@ typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	raw_ox
 typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	2
 typechecker	Typechecker	source	crates/vize_canon/src/projection/expr.rs	9	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/projection/expr/bindings.rs	8	s2	S2	stage	vize_s2	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/projection/expr/tests.rs	10	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/projection/expr/tests.rs	10	s1	S1	stage	vize_s1	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/projection/expr/tests.rs	10	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	1
 typechecker	Typechecker	source	crates/vize_canon/src/script_parse.rs	1	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/script_parse.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 typechecker	Typechecker	source	crates/vize_canon/src/script_parse.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
