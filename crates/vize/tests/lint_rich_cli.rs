@@ -1,6 +1,6 @@
 //! `vize lint --format rich` (P4-14a): lint results through the Davinci
 //! diagnostic renderer, in the locale `--locale` selects, pinned end to end.
-//! Output is piped, so the renderer runs colourless.
+//! Text snapshots pipe output without inherited forced-color overrides.
 
 use std::{fs, path::Path, process::Command};
 
@@ -17,14 +17,20 @@ const todos = ref([{ id: 1, title: "Write the talk" }])
 </template>
 "#;
 
-fn lint(root: &Path, args: &[&str]) -> std::process::Output {
-    Command::new(env!("CARGO_BIN_EXE_vize"))
+fn lint_command(root: &Path, args: &[&str]) -> Command {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+    command
         .current_dir(root)
         .env("NO_COLOR", "1")
+        .env_remove("FORCE_COLOR")
+        .env_remove("CLICOLOR_FORCE")
         .args(["lint", "--no-config", "--format", "rich"])
-        .args(args)
-        .output()
-        .expect("vize runs")
+        .args(args);
+    command
+}
+
+fn lint(root: &Path, args: &[&str]) -> std::process::Output {
+    lint_command(root, args).output().expect("vize runs")
 }
 
 fn project() -> tempfile::TempDir {
@@ -72,6 +78,19 @@ fn rich_output_speaks_the_requested_locale_end_to_end() {
 1 ファイルを検査し、エラー 1 件、警告 0 件が見つかりました
 "
     );
+}
+
+#[test]
+fn rich_output_honors_explicit_force_color_when_piped() {
+    let root = project();
+    let output = lint_command(root.path(), &["--help-level", "short", "src/TodoList.vue"])
+        .env("FORCE_COLOR", "1")
+        .output()
+        .expect("vize runs");
+    assert_eq!(output.status.code(), Some(1));
+    let stdout = std::str::from_utf8(&output.stdout).expect("UTF-8 stdout");
+    assert!(stdout.starts_with("\x1b[1;91merror[vue/require-v-for-key]\x1b[0m"));
+    assert!(stdout.ends_with("\x1b[1m1 error and 0 warnings in 1 file\x1b[0m\n"));
 }
 
 #[test]
