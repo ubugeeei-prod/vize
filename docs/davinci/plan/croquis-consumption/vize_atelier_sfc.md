@@ -40,12 +40,12 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScriptParseResult`                       |     1 |     1 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     2 |     2 |
-| `SfcDescriptor`                           |    17 |    39 |
+| `SfcDescriptor`                           |    16 |    38 |
 | `SfcError`                                |    21 |    60 |
 | `SfcParseOptions`                         |    13 |   104 |
 | `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     7 |
-| `SfcTemplateBlock`                        |     5 |     6 |
+| `SfcTemplateBlock`                        |     6 |     7 |
 | `WITH_DEFAULTS`                           |     1 |     1 |
 | `analyze_script_setup_program`            |     1 |     1 |
 | `artifact_macro_names`                    |     1 |     1 |
