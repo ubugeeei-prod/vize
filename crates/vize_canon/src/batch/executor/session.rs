@@ -155,7 +155,7 @@ impl IncrementalSessionState {
         self.metrics.last_source_nodes_rebuilt = 0;
         self.metrics.last_dependency_nodes_reconciled = 0;
         self.metrics.last_shadow_bindings_rebuilt = 0;
-        if let Some(session) = &mut self.session {
+        let session = if let Some(session) = &mut self.session {
             self.metrics.last_session_reused = true;
             let delta = snapshot.diff(&session.snapshot);
             self.metrics.last_changed_files = delta.changed.len();
@@ -177,6 +177,7 @@ impl IncrementalSessionState {
             session.snapshot = snapshot;
             self.metrics.session_reuses += 1;
             self.metrics.session_refreshes += usize::from(refreshed);
+            session
         } else {
             let corsa_path = corsa_path.to_string_lossy();
             let client = profile!(
@@ -187,12 +188,10 @@ impl IncrementalSessionState {
                 )
             )
             .map_err(map_corsa_error)?;
-            self.session = Some(IncrementalSession { client, snapshot });
             self.metrics.session_starts += 1;
             self.metrics.last_session_started = true;
-        }
-
-        let session = self.session.as_mut().expect("session initialized above");
+            self.session.insert(IncrementalSession { client, snapshot })
+        };
         check_session_client(&mut session.client, project, &session.snapshot.uris)
     }
 

@@ -313,10 +313,14 @@ fn private_package_shadow_root(virtual_root: &Path, manifest_path: &Path) -> Pat
     #[cfg(not(unix))]
     digest.update(manifest_path.as_os_str().to_string_lossy().as_bytes());
     let mut key = vize_carton::String::with_capacity(64);
-    const HEX: &[u8; 16] = b"0123456789abcdef";
-    for byte in digest.finalize() {
-        key.push(HEX[(byte >> 4) as usize] as char);
-        key.push(HEX[(byte & 0x0f) as usize] as char);
+    for nibble in digest
+        .finalize()
+        .into_iter()
+        .flat_map(|byte| [byte >> 4, byte & 0x0f])
+    {
+        if let Some(digit) = char::from_digit(u32::from(nibble), 16) {
+            key.push(digit);
+        }
     }
     virtual_root
         .join("__vize_package_scopes__")

@@ -77,16 +77,14 @@ pub(crate) fn quoted_specifiers(message: &str) -> Vec<&str> {
     let mut found = Vec::new();
     for (open, close) in QUOTE_PAIRS {
         let mut rest = message;
-        while let Some(start) = rest.find(open) {
-            let after_open = &rest[start + open.len_utf8()..];
-            let Some(end) = after_open.find(close) else {
+        while let Some((_, after_open)) = rest.split_once(open) {
+            let Some((candidate, after_close)) = after_open.split_once(close) else {
                 break;
             };
-            let candidate = &after_open[..end];
             if is_specifier_shaped(candidate) && !found.contains(&candidate) {
                 found.push(candidate);
             }
-            rest = &after_open[end + close.len_utf8()..];
+            rest = after_close;
         }
     }
     found

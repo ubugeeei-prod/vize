@@ -80,18 +80,25 @@ impl<T> SessionMap<T> {
 
     /// Record a session that was just spawned. This is not the TypeScript
     /// init counter; that counter moves only inside the spawn itself.
-    pub(crate) fn insert_spawned(&mut self, key: CorsaSessionKey, value: T, now: Instant) {
+    pub(crate) fn insert_spawned(
+        &mut self,
+        key: CorsaSessionKey,
+        value: T,
+        now: Instant,
+    ) -> &mut T {
         #[cfg(test)]
         {
             self.spawns = self.spawns.saturating_add(1);
         }
-        self.slots.insert(
-            key.fingerprint(),
-            Slot {
+        let slot = self
+            .slots
+            .entry(key.fingerprint())
+            .insert_entry(Slot {
                 value,
                 last_used: now,
-            },
-        );
+            })
+            .into_mut();
+        &mut slot.value
     }
 }
 

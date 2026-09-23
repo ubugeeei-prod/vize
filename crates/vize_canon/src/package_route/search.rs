@@ -146,7 +146,8 @@ impl<'a> PackageRequest<'a> {
                 return None;
             }
             let scope_end = scope_end + 1;
-            let package_end = specifier[scope_end + 1..]
+            let package_end = specifier
+                .get(scope_end + 1..)?
                 .find('/')
                 .map_or(specifier.len(), |end| scope_end + 1 + end);
             if package_end == scope_end + 1 {
@@ -169,11 +170,10 @@ fn is_absolute_specifier(specifier: &str) -> bool {
     if Path::new(specifier).is_absolute() || specifier.starts_with("\\\\") {
         return true;
     }
-    let bytes = specifier.as_bytes();
-    bytes.len() >= 3
-        && bytes[0].is_ascii_alphabetic()
-        && bytes[1] == b':'
-        && matches!(bytes[2], b'/' | b'\\')
+    matches!(
+        specifier.as_bytes(),
+        [drive, b':', b'/' | b'\\', ..] if drive.is_ascii_alphabetic()
+    )
 }
 
 pub(super) fn find_package_root(

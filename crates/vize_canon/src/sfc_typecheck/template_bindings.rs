@@ -23,7 +23,9 @@ pub fn check_template_bindings(
 ) {
     let mut facts = CroquisFacts::new(summary);
     let view = facts.prepare::<TemplateBindingCheck>();
-    let undefined = view.get::<UndefinedRefs>().expect("declared demand");
+    let Ok(undefined) = view.get::<UndefinedRefs>() else {
+        return;
+    };
     for (_, undef_ref) in undefined.iter() {
         if suppress_options_api_setup_spread_refs && undef_ref.context == "template expression" {
             continue;

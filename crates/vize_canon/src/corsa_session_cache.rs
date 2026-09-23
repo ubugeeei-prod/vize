@@ -103,10 +103,12 @@ impl CorsaSessionKey {
 
     /// The key over already-resolved inputs.
     pub fn from_inputs(inputs: &SessionInputs) -> Self {
+        // `SessionInputs::manifest` sets exactly the corsa.session inputs, so
+        // the declared-input check cannot fail; the zero key is unreachable.
         let fingerprint = inputs
             .manifest()
             .fingerprint(CachedArtifact::CorsaSession)
-            .expect("SessionInputs sets exactly the corsa.session inputs");
+            .unwrap_or_default();
         Self {
             tsconfig_path: inputs.project.clone(),
             fingerprint,

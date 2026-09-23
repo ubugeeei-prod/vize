@@ -54,11 +54,12 @@ pub fn widen_leading_literal_type(message: &str) -> Option<String> {
     const PREFIX: &str = "Type '";
     const NEEDLE: &str = "' is not assignable to ";
     let rest = message.strip_prefix(PREFIX)?;
-    let end = rest.find(NEEDLE)?;
-    let widened = widened_primitive_name(&rest[..end])?;
+    let (literal, after) = rest.split_once(NEEDLE)?;
+    let widened = widened_primitive_name(literal)?;
     let mut normalized = String::from(PREFIX);
     normalized.push_str(widened);
-    normalized.push_str(&rest[end..]);
+    normalized.push_str(NEEDLE);
+    normalized.push_str(after);
     Some(normalized)
 }
 

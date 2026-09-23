@@ -116,7 +116,7 @@ fn string_literal_at(rest: &str) -> Option<&str> {
         .chars()
         .next()
         .filter(|character| matches!(character, '\'' | '"' | '`'))?;
-    rest[quote.len_utf8()..]
+    rest.get(quote.len_utf8()..)?
         .split_once(quote)
         .map(|(literal, _)| literal)
 }

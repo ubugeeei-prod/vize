@@ -113,9 +113,10 @@ fn project_key(project_root: &Path) -> vize_carton::String {
 fn encode_digest(digest: impl AsRef<[u8]>) -> vize_carton::String {
     let digest = digest.as_ref();
     let mut encoded = vize_carton::String::with_capacity(digest.len() * 2);
-    for byte in digest {
-        use std::fmt::Write as _;
-        write!(encoded, "{byte:02x}").expect("writing to a String cannot fail");
+    for nibble in digest.iter().flat_map(|byte| [byte >> 4, byte & 0x0f]) {
+        if let Some(digit) = char::from_digit(u32::from(nibble), 16) {
+            encoded.push(digit);
+        }
     }
     encoded
 }

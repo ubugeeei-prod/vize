@@ -163,11 +163,15 @@ pub fn assemble_diagnostics<P>(
             continue;
         }
         if diagnostic.code == Some(2322)
-            && keyof_indexes[diagnostic.document]
-                .get_or_insert_with(|| {
-                    keyof::AssignmentIndex::new(document.generated, document.tsx)
+            && keyof_indexes
+                .get_mut(diagnostic.document)
+                .is_some_and(|index| {
+                    index
+                        .get_or_insert_with(|| {
+                            keyof::AssignmentIndex::new(document.generated, document.tsx)
+                        })
+                        .matches_at(diagnostic.start as u32)
                 })
-                .matches_at(diagnostic.start as u32)
         {
             continue;
         }

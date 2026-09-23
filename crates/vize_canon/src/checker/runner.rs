@@ -81,12 +81,15 @@ impl TypeChecker {
     /// Check interpolation expressions {{ expr }}.
     fn check_interpolations(&self, template: &str, ctx: &TypeContext, result: &mut CheckResult) {
         let mut pos = 0;
-        while let Some(start) = template[pos..].find("{{") {
+        while let Some(start) = find_at(template, pos, "{{") {
             let abs_start = pos + start;
-            if let Some(end) = template[abs_start..].find("}}") {
+            if let Some(end) = find_at(template, abs_start, "}}") {
                 let expr_start = abs_start + 2;
                 let expr_end = abs_start + end;
-                let expr = template[expr_start..expr_end].trim();
+                let expr = template
+                    .get(expr_start..expr_end)
+                    .unwrap_or_default()
+                    .trim();
 
                 if !expr.is_empty() {
                     self.check_expression(expr, expr_start as u32, expr_end as u32, ctx, result);
@@ -121,10 +124,10 @@ impl TypeChecker {
         let pattern = cstr!("{directive}=\"");
         let mut pos = 0;
 
-        while let Some(start) = template[pos..].find(pattern.as_str()) {
+        while let Some(start) = find_at(template, pos, pattern.as_str()) {
             let abs_start = pos + start + pattern.len();
-            if let Some(end) = template[abs_start..].find('"') {
-                let expr = &template[abs_start..abs_start + end];
+            if let Some(end) = find_at(template, abs_start, "\"") {
+                let expr = template.get(abs_start..abs_start + end).unwrap_or_default();
                 if !expr.is_empty() {
                     self.check_expression(
                         expr,
@@ -146,14 +149,14 @@ impl TypeChecker {
         let pattern = "v-for=\"";
         let mut pos = 0;
 
-        while let Some(start) = template[pos..].find(pattern) {
+        while let Some(start) = find_at(template, pos, pattern) {
             let abs_start = pos + start + pattern.len();
-            if let Some(end) = template[abs_start..].find('"') {
-                let expr = &template[abs_start..abs_start + end];
+            if let Some(end) = find_at(template, abs_start, "\"") {
+                let expr = template.get(abs_start..abs_start + end).unwrap_or_default();
 
                 // Parse "item in items" or "(item, index) in items"
                 if let Some(in_pos) = expr.find(" in ") {
-                    let iterable = expr[in_pos + 4..].trim();
+                    let iterable = expr.get(in_pos + 4..).unwrap_or_default().trim();
                     let iterable_start = abs_start + in_pos + 4;
                     self.check_expression(
                         iterable,
@@ -178,14 +181,16 @@ impl TypeChecker {
 
         for pattern in patterns {
             let mut pos = 0;
-            while let Some(start) = template[pos..].find(pattern) {
+            while let Some(start) = find_at(template, pos, pattern) {
                 let abs_start = pos + start + pattern.len();
 
                 // Find the end of the event name and the ="
-                if let Some(eq_pos) = template[abs_start..].find("=\"") {
+                if let Some(eq_pos) = find_at(template, abs_start, "=\"") {
                     let handler_start = abs_start + eq_pos + 2;
-                    if let Some(end) = template[handler_start..].find('"') {
-                        let handler = &template[handler_start..handler_start + end];
+                    if let Some(end) = find_at(template, handler_start, "\"") {
+                        let handler = template
+                            .get(handler_start..handler_start + end)
+                            .unwrap_or_default();
 
                         // Simple handler (just a function name)
                         if Self::is_simple_identifier(handler) {
@@ -212,7 +217,7 @@ impl TypeChecker {
                         break;
                     }
                 } else {
-                    pos = abs_start + 1;
+                    pos = abs_start + next_char_len(template, abs_start);
                 }
             }
         }
@@ -225,9 +230,9 @@ impl TypeChecker {
 
         for (prefix, suffix) in patterns {
             let mut pos = 0;
-            while let Some(start) = template[pos..].find(prefix) {
+            while let Some(start) = find_at(template, pos, prefix) {
                 // Skip :: (CSS pseudo-selectors)
-                if prefix == ":" && template[pos + start..].starts_with("::") {
+                if prefix == ":" && crate::text_scan::starts_with_at(template, pos + start, "::") {
                     pos = pos + start + 2;
                     continue;
                 }
@@ -235,10 +240,12 @@ impl TypeChecker {
                 let abs_start = pos + start + prefix.len();
 
                 // Find ="
-                if let Some(eq_pos) = template[abs_start..].find(&*cstr!("{suffix}\"")) {
+                if let Some(eq_pos) = find_at(template, abs_start, &cstr!("{suffix}\"")) {
                     let expr_start = abs_start + eq_pos + 2;
-                    if let Some(end) = template[expr_start..].find('"') {
-                        let expr = &template[expr_start..expr_start + end];
+                    if let Some(end) = find_at(template, expr_start, "\"") {
+                        let expr = template
+                            .get(expr_start..expr_start + end)
+                            .unwrap_or_default();
                         if !expr.is_empty() {
                             self.check_expression(
                                 expr,
@@ -253,7 +260,7 @@ impl TypeChecker {
                         break;
                     }
                 } else {
-                    pos = abs_start + 1;
+                    pos = abs_start + next_char_len(template, abs_start);
                 }
             }
         }
@@ -305,4 +312,16 @@ impl TypeChecker {
             ));
         }
     }
+}
+
+/// Byte offset of `needle` in `text` after `from`, relative to `from`.
+fn find_at(text: &str, from: usize, needle: &str) -> Option<usize> {
+    text.get(from..)?.find(needle)
+}
+
+/// Width of the character at `at`, so a scan can step over it; 1 past the end.
+fn next_char_len(text: &str, at: usize) -> usize {
+    text.get(at..)
+        .and_then(|rest| rest.chars().next())
+        .map_or(1, char::len_utf8)
 }

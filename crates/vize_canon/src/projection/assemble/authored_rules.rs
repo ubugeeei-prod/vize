@@ -54,7 +54,9 @@ pub(super) fn filter<P>(
 
 /// 0-based authored line of `offset`.
 fn line_of(text: &str, offset: usize) -> usize {
-    text.as_bytes()[..offset.min(text.len())]
+    text.as_bytes()
+        .get(..offset.min(text.len()))
+        .unwrap_or_default()
         .iter()
         .filter(|&&byte| byte == b'\n')
         .count()
@@ -97,7 +99,9 @@ fn multiline_ts_directive_suppresses(
     }
     let lower_bound = diagnostic_line.saturating_sub(16);
     for directive_line in (lower_bound..=diagnostic_line).rev() {
-        let line = lines[directive_line].trim();
+        let Some(line) = lines.get(directive_line).map(|line| line.trim()) else {
+            continue;
+        };
         let expect_error = if line.contains("@ts-ignore") {
             false
         } else if line.contains("@ts-expect-error") {
@@ -131,7 +135,10 @@ fn containing_use_vmodel_call(lines: &[&str], diagnostic_line: usize) -> Option<
         return None;
     }
     for start in (0..=diagnostic_line).rev() {
-        if !lines[start].contains("useVModel(") {
+        if !lines
+            .get(start)
+            .is_some_and(|line| line.contains("useVModel("))
+        {
             continue;
         }
         let Some(end) = call_end_line(lines, start) else {
@@ -165,7 +172,7 @@ fn call_end_line(lines: &[&str], start: usize) -> Option<usize> {
 
 fn call_has_passive_false(lines: &[&str], start: usize, end: usize) -> bool {
     let mut saw_passive = false;
-    for line in &lines[start..=end] {
+    for line in lines.get(start..=end).unwrap_or_default() {
         let line = line.trim();
         if line.contains("passive:") {
             saw_passive = true;

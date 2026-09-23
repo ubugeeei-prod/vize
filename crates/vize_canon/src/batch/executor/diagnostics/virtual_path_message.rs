@@ -96,9 +96,7 @@ fn replace_root_prefix(message: &str, root: &str, replacement: &str) -> String {
     let mut rewritten = String::with_capacity(message.len());
     let mut rest = message;
     let mut preceding = None;
-    while let Some(at) = rest.find(root) {
-        let (before, matched) = rest.split_at(at);
-        let after = &matched[root.len()..];
+    while let Some((before, after)) = rest.split_once(root) {
         rewritten.push_str(before);
         let emitted = if starts_a_path_component(before.chars().next_back().or(preceding))
             && ends_a_path_component(after)

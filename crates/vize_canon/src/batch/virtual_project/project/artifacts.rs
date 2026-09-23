@@ -73,13 +73,10 @@ impl VirtualProject {
             .virtual_paths
             .push(registered.file.virtual_path.clone());
         self.passthrough_files.remove(&registered.file.virtual_path);
+        // `original_index` maps this source to its own virtual path (inserted above).
+        let canonical_virtual = registered.file.virtual_path.clone();
         self.virtual_files
             .insert(registered.file.virtual_path.clone(), registered.file);
-        let canonical_virtual = self
-            .original_index
-            .get(&original_path)
-            .cloned()
-            .expect("registered source must have a canonical virtual path");
         self.index_package_source(&original_path, &canonical_virtual);
         self.mark_package_shadow_source_changed(&canonical_virtual);
         artifacts.virtual_paths.sort();

@@ -80,7 +80,9 @@ impl TypeReferences<'_> {
             let start = self
                 .references
                 .partition_point(|(reference, _)| reference.start < span.start);
-            self.references[start..]
+            self.references
+                .get(start..)
+                .unwrap_or_default()
                 .iter()
                 .take_while(move |(reference, _)| reference.end <= span.end)
                 .map(|(_, symbol)| *symbol)

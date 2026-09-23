@@ -11,13 +11,16 @@ pub(super) fn target_exists(external_path: &Path) -> bool {
 
     for extension in [".vue", ".html", ".htm", ".tsx", ".jsx"] {
         let mut search_end = name.len();
-        while let Some(extension_start) = name[..search_end].rfind(extension) {
+        while let Some(extension_start) = name
+            .get(..search_end)
+            .and_then(|head| head.rfind(extension))
+        {
             let authored_end = extension_start + extension.len();
-            let virtual_suffix = &name[authored_end..];
+            let Some((authored, virtual_suffix)) = name.split_at_checked(authored_end) else {
+                break;
+            };
             if is_virtual_typescript_suffix(virtual_suffix)
-                && external_path
-                    .with_file_name(&name[..authored_end])
-                    .is_file()
+                && external_path.with_file_name(authored).is_file()
             {
                 return true;
             }

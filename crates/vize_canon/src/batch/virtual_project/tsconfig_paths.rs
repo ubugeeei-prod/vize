@@ -98,7 +98,7 @@ fn split_package_specifier(extends: &str) -> Option<(&str, Option<&str>)> {
         }
         let package_len = first.len() + 1 + name.len();
         return Some((
-            &extends[..package_len],
+            extends.get(..package_len)?,
             extends
                 .get(package_len + 1..)
                 .filter(|path| !path.is_empty()),
@@ -232,8 +232,7 @@ fn strip_trailing_commas(content: &str) -> CompactString {
     let mut in_string = false;
     let mut escaped = false;
 
-    while index < chars.len() {
-        let ch = chars[index];
+    while let Some(&ch) = chars.get(index) {
         if in_string {
             output.push(ch);
             if escaped {
@@ -256,10 +255,16 @@ fn strip_trailing_commas(content: &str) -> CompactString {
 
         if ch == ',' {
             let mut lookahead = index + 1;
-            while lookahead < chars.len() && chars[lookahead].is_whitespace() {
+            while chars
+                .get(lookahead)
+                .is_some_and(|next| next.is_whitespace())
+            {
                 lookahead += 1;
             }
-            if lookahead < chars.len() && matches!(chars[lookahead], '}' | ']') {
+            if chars
+                .get(lookahead)
+                .is_some_and(|next| matches!(next, '}' | ']'))
+            {
                 index += 1;
                 continue;
             }

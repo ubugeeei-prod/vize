@@ -318,7 +318,11 @@ pub fn check_fallthrough_attrs(
     let start = summary.template_info.content_start;
 
     result.add_diagnostic(SfcTypeDiagnostic {
-        severity: [SfcTypeSeverity::Warning, SfcTypeSeverity::Error][usize::from(strict)],
+        severity: if strict {
+            SfcTypeSeverity::Error
+        } else {
+            SfcTypeSeverity::Warning
+        },
         message: "Multi-root component may lose fallthrough attributes".into(),
         start: template_offset + start,
         end: template_offset + summary.template_info.content_end.max(start + 1),

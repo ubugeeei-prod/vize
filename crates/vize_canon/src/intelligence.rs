@@ -187,11 +187,12 @@ impl<'a> TypeIntelligence<'a> {
 
         // Look up binding in summary
         let mut facts = CroquisFacts::new(self.summary);
-        let bindings = facts
-            .prepare::<TypeIntelligenceFacts>()
+        let view = facts.prepare::<TypeIntelligenceFacts>();
+        if let Some(binding_type) = view
             .get::<Bindings>()
-            .expect("declared demand");
-        if let Some(binding_type) = bindings.binding_type(name) {
+            .ok()
+            .and_then(|bindings| bindings.binding_type(name))
+        {
             let contents = format_binding_hover(name, binding_type);
             return Some(HoverInfo {
                 contents,
@@ -252,11 +253,12 @@ impl<'a> TypeIntelligence<'a> {
         let (name, _) = self.find_identifier_at(offset)?;
 
         let mut facts = CroquisFacts::new(self.summary);
-        let bindings = facts
-            .prepare::<TypeIntelligenceFacts>()
+        let view = facts.prepare::<TypeIntelligenceFacts>();
+        if let Some((start, end)) = view
             .get::<Bindings>()
-            .expect("declared demand");
-        if let Some((start, end)) = bindings.span(name) {
+            .ok()
+            .and_then(|bindings| bindings.span(name))
+        {
             return Some(Location {
                 span: Span::new(start, end),
             });
@@ -271,38 +273,34 @@ impl<'a> TypeIntelligence<'a> {
         let bytes = self.source.as_bytes();
         let offset = offset as usize;
 
-        if offset >= bytes.len() {
-            return None;
-        }
-
         // Check if we're on an identifier character
-        if !is_ident_char(bytes[offset]) {
+        if !bytes.get(offset).is_some_and(|&byte| is_ident_char(byte)) {
             return None;
         }
 
         // Find start of identifier
         let mut start = offset;
-        while start > 0 && is_ident_char(bytes[start - 1]) {
+        while crate::text_scan::byte_before(bytes, start).is_some_and(is_ident_char) {
             start -= 1;
         }
 
         // Find end of identifier
         let mut end = offset;
-        while end < bytes.len() && is_ident_char(bytes[end]) {
+        while bytes.get(end).is_some_and(|&byte| is_ident_char(byte)) {
             end += 1;
         }
 
-        let name = std::str::from_utf8(&bytes[start..end]).ok()?;
+        let name = std::str::from_utf8(bytes.get(start..end)?).ok()?;
         Some((name, Span::new(start as u32, end as u32)))
     }
 
     /// Add binding completions from summary.
     fn add_binding_completions(&self, completions: &mut Vec<Completion>) {
         let mut facts = CroquisFacts::new(self.summary);
-        let bindings = facts
-            .prepare::<TypeIntelligenceFacts>()
-            .get::<Bindings>()
-            .expect("declared demand");
+        let view = facts.prepare::<TypeIntelligenceFacts>();
+        let Ok(bindings) = view.get::<Bindings>() else {
+            return;
+        };
         for (name, binding_type) in bindings.typed() {
             let kind = binding_type_to_completion_kind(binding_type);
             let detail = Some(cstr!("{binding_type:?}"));

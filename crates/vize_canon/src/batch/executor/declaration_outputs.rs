@@ -103,9 +103,9 @@ fn remove_ranges(source: &str, ranges: &[std::ops::Range<usize>]) -> String {
     let mut result = String::default();
     let mut cursor = 0;
     for range in ranges {
-        result.push_str(&source[cursor..range.start]);
+        result.push_str(source.get(cursor..range.start).unwrap_or_default());
         cursor = range.end;
     }
-    result.push_str(&source[cursor..]);
+    result.push_str(source.get(cursor..).unwrap_or_default());
     result
 }

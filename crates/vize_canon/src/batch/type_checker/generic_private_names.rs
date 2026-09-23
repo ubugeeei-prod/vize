@@ -91,12 +91,12 @@ fn first_private_name(source: &str) -> Option<(usize, &str)> {
     let name = MACROS
         .iter()
         .flat_map(|name| content.match_indices(name))
-        .filter_map(|(at, name)| type_arguments(&content[at + name.len()..]))
+        .filter_map(|(at, name)| type_arguments(content.get(at + name.len()..)?))
         .flat_map(identifiers)
         .find(|identifier| private_names.contains(identifier))?;
     // The name borrows from `content`, which borrows from `source`.
     let at = source.find(name)?;
-    Some((start, &source[at..at + name.len()]))
+    Some((start, source.get(at..at + name.len())?))
 }
 
 /// The text between the angle brackets that directly follow a macro name.
@@ -106,7 +106,7 @@ fn type_arguments(after_macro: &str) -> Option<&str> {
     for (index, character) in rest.char_indices() {
         match character {
             '<' => depth += 1,
-            '>' if depth == 1 => return Some(&rest[..index]),
+            '>' if depth == 1 => return rest.get(..index),
             '>' => depth -= 1,
             _ => {}
         }

@@ -192,13 +192,19 @@ fn is_diagnostic_handler_anchor(
     {
         return false;
     }
-    let line_start = generated[..start].rfind('\n').map_or(0, |index| index + 1);
-    generated[line_start..start].trim_start() == "const "
+    line_prefix(generated, start).is_some_and(|prefix| prefix.trim_start() == "const ")
+}
+
+/// The text between the start of `start`'s line and `start`.
+fn line_prefix(generated: &str, start: usize) -> Option<&str> {
+    let before = generated.get(..start)?;
+    Some(before.rsplit_once('\n').map_or(before, |(_, line)| line))
 }
 
 fn is_component_prop_alias_key(generated: &str, start: usize) -> bool {
-    let line_start = generated[..start].rfind('\n').map_or(0, |index| index + 1);
-    let prefix = generated[line_start..start].trim_start();
+    let Some(prefix) = line_prefix(generated, start).map(str::trim_start) else {
+        return false;
+    };
     prefix.contains("__VizePropValue<") && prefix.ends_with(", '")
 }
 
@@ -216,13 +222,16 @@ fn is_component_prop_check_anchor(
 fn projection_prefix(generated: &str, start: usize) -> Option<&str> {
     const MARKER: &[u8] = b"__vize_";
     let probe_start = start.saturating_sub(64);
-    generated.as_bytes()[probe_start..start]
+    let has_marker = generated
+        .as_bytes()
+        .get(probe_start..start)?
         .windows(MARKER.len())
-        .any(|window| window == MARKER)
-        .then(|| {
-            let line_start = generated[..start].rfind('\n').map_or(0, |index| index + 1);
-            &generated[line_start..start]
-        })
+        .any(|window| window == MARKER);
+    if has_marker {
+        line_prefix(generated, start)
+    } else {
+        None
+    }
 }
 
 fn is_whole_symbol_projection(prefix: &str) -> bool {

@@ -104,10 +104,11 @@ impl VirtualProject {
 fn relative_path_from(from_dir: &Path, target: &Path) -> PathBuf {
     let from = path_components(from_dir);
     let to = path_components(target);
-    let mut common = 0usize;
-    while common < from.len() && common < to.len() && from[common] == to[common] {
-        common += 1;
-    }
+    let common = from
+        .iter()
+        .zip(&to)
+        .take_while(|(left, right)| left == right)
+        .count();
     if common == 0 {
         return target.to_path_buf();
     }

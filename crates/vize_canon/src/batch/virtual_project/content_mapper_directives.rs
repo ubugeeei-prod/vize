@@ -39,7 +39,8 @@ pub(super) fn template_diagnostic_directives(
     let mut directives = Vec::new();
     let mut expects_unused_table = false;
     for comment in template_comments(source, template_range.clone()) {
-        let Some((token, token_start)) = directive_token(&source[comment.text.clone()]) else {
+        let Some((token, token_start)) = source.get(comment.text.clone()).and_then(directive_token)
+        else {
             continue;
         };
         let original_start = comment.text.start + token_start;
@@ -95,10 +96,9 @@ fn template_comments(
 ) -> impl Iterator<Item = TemplateComment> {
     let mut cursor = template_range.start;
     std::iter::from_fn(move || {
-        let text = &source[cursor..template_range.end];
-        let open = text.find("<!--")?;
+        let open = source.get(cursor..template_range.end)?.find("<!--")?;
         let text_start = cursor + open + "<!--".len();
-        let close = source[text_start..template_range.end].find("-->")?;
+        let close = source.get(text_start..template_range.end)?.find("-->")?;
         let comment = TemplateComment {
             text: text_start..text_start + close,
             end: text_start + close + "-->".len(),
@@ -115,7 +115,7 @@ fn directive_token(comment: &str) -> Option<(&'static str, usize)> {
         .iter()
         .filter_map(|token| {
             let start = comment.find(token)?;
-            let tail = comment[start + token.len()..].bytes().next();
+            let tail = comment.as_bytes().get(start + token.len()).copied();
             tail.is_none_or(|byte| !byte.is_ascii_alphanumeric() && byte != b'-')
                 .then_some((*token, start))
         })
@@ -131,9 +131,9 @@ fn directive_target(
 ) -> std::ops::Range<usize> {
     let mut line_start = comment_end;
     loop {
-        let rest = &source[line_start..template_end];
-        let line_len = rest.find('\n').unwrap_or(rest.len());
-        let line = &rest[..line_len];
+        let rest = source.get(line_start..template_end).unwrap_or_default();
+        let line = rest.split_once('\n').map_or(rest, |(line, _)| line);
+        let line_len = line.len();
         if !line.trim().is_empty() {
             return line_start..line_start + line_len;
         }

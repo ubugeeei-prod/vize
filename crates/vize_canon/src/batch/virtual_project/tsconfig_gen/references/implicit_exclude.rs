@@ -31,25 +31,34 @@ pub(super) fn wildcard_hits_package_folder(
         });
     };
 
-    for segment in &segments[..recursive_at] {
+    for segment in segments.iter().take(recursive_at) {
         if head >= tail {
             return false;
         }
-        if segment.contains(['*', '?', '[']) && is_package_folder(path[head], case_sensitive) {
+        if segment.contains(['*', '?', '['])
+            && path
+                .get(head)
+                .is_some_and(|name| is_package_folder(name, case_sensitive))
+        {
             return true;
         }
         head += 1;
     }
-    for segment in segments[recursive_at + 1..].iter().rev() {
+    for segment in segments.iter().skip(recursive_at + 1).rev() {
         if *segment == "**" || tail <= head {
             break;
         }
         tail -= 1;
-        if segment.contains(['*', '?', '[']) && is_package_folder(path[tail], case_sensitive) {
+        if segment.contains(['*', '?', '['])
+            && path
+                .get(tail)
+                .is_some_and(|name| is_package_folder(name, case_sensitive))
+        {
             return true;
         }
     }
-    path[head..tail]
+    path.get(head..tail)
+        .unwrap_or_default()
         .iter()
         .any(|name| is_package_folder(name, case_sensitive))
 }

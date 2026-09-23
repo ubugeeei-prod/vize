@@ -102,6 +102,6 @@ pub(super) fn render_open(
 
 fn json_string(value: &str) -> CompactString {
     serde_json::to_string(value)
-        .expect("serializing a Rust string to JSON cannot fail")
+        .unwrap_or_default()
         .to_compact_string()
 }

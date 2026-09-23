@@ -53,20 +53,17 @@ impl CorsaServer {
         let key = self.session_key(source, flags)?;
         let now = Instant::now();
         self.sessions.reap(now);
-        if self.sessions.get_mut(&key, now).is_none() {
+        let result = if let Some(client) = self.sessions.get_mut(&key, now) {
+            body(client)
+        } else {
             let client = CorsaProjectClient::new(
                 self.config.corsa_path.as_deref(),
                 self.config.working_dir.as_deref(),
             )?;
-            self.sessions
-                .insert_spawned(key.clone(), client, Instant::now());
-        }
-        let result = {
-            let client = self
-                .sessions
-                .get_mut(&key, Instant::now())
-                .expect("the session was reused or just inserted");
-            body(client)
+            body(
+                self.sessions
+                    .insert_spawned(key.clone(), client, Instant::now()),
+            )
         };
         // A check can outlast a short idle window. The session was in use the
         // whole time, so idle is measured from the moment it became free.

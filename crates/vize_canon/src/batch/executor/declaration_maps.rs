@@ -64,7 +64,9 @@ fn rewrite_declaration_map(path: &Path, project: &VirtualProject) -> CorsaResult
 
     if let Some(sources) = map.get_mut("sources").and_then(Value::as_array_mut) {
         for (index, rewrite) in &rewrites {
-            sources[*index] = Value::String(rewrite.source.as_str().into());
+            if let Some(source) = sources.get_mut(*index) {
+                *source = Value::String(rewrite.source.as_str().into());
+            }
         }
     }
 
@@ -142,10 +144,11 @@ fn is_declaration_map_file(path: &Path) -> bool {
 fn relative_path_from(from_dir: &Path, target: &Path) -> PathBuf {
     let from = path_components(from_dir);
     let to = path_components(target);
-    let mut common = 0usize;
-    while common < from.len() && common < to.len() && from[common] == to[common] {
-        common += 1;
-    }
+    let common = from
+        .iter()
+        .zip(&to)
+        .take_while(|(left, right)| left == right)
+        .count();
     if common == 0 {
         return target.to_path_buf();
     }

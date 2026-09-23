@@ -90,7 +90,10 @@ impl VirtualProject {
     ) -> CorsaResult<()> {
         let config: serde_json::Value =
             serde_json::from_str(&std::fs::read_to_string(config_path)?)?;
-        let Some(root_dir) = config["compilerOptions"]["rootDir"].as_str() else {
+        let Some(root_dir) = config
+            .pointer("/compilerOptions/rootDir")
+            .and_then(serde_json::Value::as_str)
+        else {
             return Ok(());
         };
         let emit_root_dir = Path::new(root_dir);
@@ -225,10 +228,11 @@ fn normalize_path_lexically(path: &Path) -> PathBuf {
 fn relative_path_from(from_dir: &Path, target: &Path) -> PathBuf {
     let from = path_components(from_dir);
     let to = path_components(target);
-    let mut common = 0usize;
-    while common < from.len() && common < to.len() && from[common] == to[common] {
-        common += 1;
-    }
+    let common = from
+        .iter()
+        .zip(&to)
+        .take_while(|(left, right)| left == right)
+        .count();
     if common == 0 {
         return target.to_path_buf();
     }

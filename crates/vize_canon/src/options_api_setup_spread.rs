@@ -36,10 +36,13 @@ pub(crate) fn collect_template_setup_bindings(
 ) -> Vec<String> {
     let mut facts = CroquisFacts::new(summary);
     let view = facts.prepare::<SetupSpreadBindings>();
-    let bindings = view.get::<Bindings>().expect("declared demand");
+    let Ok(bindings) = view.get::<Bindings>() else {
+        return Vec::new();
+    };
     let mut names = collect_descriptor_setup_bindings(summary, bindings, options_api);
-    if suppresses_template_undefined_refs(options_api, script_content) {
-        let undefined = view.get::<UndefinedRefs>().expect("declared demand");
+    if suppresses_template_undefined_refs(options_api, script_content)
+        && let Ok(undefined) = view.get::<UndefinedRefs>()
+    {
         extend_spread_bindings(&mut names, bindings, undefined, template_referenced_names);
     }
     if let Some(template_referenced_names) = template_referenced_names {

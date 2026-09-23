@@ -118,8 +118,8 @@ fn parse_option_diagnostic_line(
     narrowing: OptionDiagnosticNarrowing,
 ) -> Option<Option<(u32, vize_carton::String, u8)>> {
     let (prefix, suffix) = line.split_once("): ")?;
-    let open = prefix.rfind('(')?;
-    if !names_probe_config(&prefix[..open], config_path) {
+    let (path, _) = prefix.rsplit_once('(')?;
+    if !names_probe_config(path, config_path) {
         return None;
     }
 

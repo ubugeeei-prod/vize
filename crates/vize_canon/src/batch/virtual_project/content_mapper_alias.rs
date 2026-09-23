@@ -26,12 +26,10 @@ pub(super) fn is_alias_projection(generated: &str, original: &str) -> bool {
 }
 
 fn unquoted_ts_string(text: &str) -> &str {
-    let bytes = text.as_bytes();
-    if bytes.len() >= 2
-        && matches!(bytes[0], b'\'' | b'"' | b'`')
-        && bytes.last() == Some(&bytes[0])
+    if let [first @ (b'\'' | b'"' | b'`'), .., last] = text.as_bytes()
+        && first == last
     {
-        &text[1..text.len() - 1]
+        text.get(1..text.len() - 1).unwrap_or(text)
     } else {
         text
     }

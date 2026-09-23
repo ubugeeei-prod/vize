@@ -54,7 +54,10 @@ fn split_original_overlaps(
     boundaries
         .windows(2)
         .filter_map(|window| {
-            let original = window[0]..window[1];
+            let &[start, end] = window else {
+                return None;
+            };
+            let original = start..end;
             let valid = overlaps.iter().all(|span| {
                 !ranges_overlap(&original, &span.original) || span.original == original
             });

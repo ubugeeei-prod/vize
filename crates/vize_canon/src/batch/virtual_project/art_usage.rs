@@ -33,7 +33,10 @@ fn collect_variant_template_referenced_names(
     names: &mut FxHashSet<CompactString>,
 ) {
     let mut cursor = 0;
-    while let Some(relative_start) = art_content[cursor..].find("<variant") {
+    while let Some(relative_start) = art_content
+        .get(cursor..)
+        .and_then(|rest| rest.find("<variant"))
+    {
         let start = cursor + relative_start;
         let after_name = start + "<variant".len();
         if !is_variant_tag_boundary(art_content.as_bytes().get(after_name).copied()) {
@@ -41,24 +44,35 @@ fn collect_variant_template_referenced_names(
             continue;
         }
 
-        let Some(tag_end) = art_content[start..].find('>').map(|offset| start + offset) else {
+        let Some(tag_end) = art_content
+            .get(start..)
+            .and_then(|rest| rest.find('>'))
+            .map(|offset| start + offset)
+        else {
             break;
         };
-        let tag = art_content[start..=tag_end].trim_end();
+        let tag = art_content
+            .get(start..=tag_end)
+            .unwrap_or_default()
+            .trim_end();
         if tag.ends_with("/>") {
             cursor = tag_end + 1;
             continue;
         }
 
         let template_start = tag_end + 1;
-        let Some(close_start) = art_content[template_start..]
-            .find("</variant>")
+        let Some(close_start) = art_content
+            .get(template_start..)
+            .and_then(|rest| rest.find("</variant>"))
             .map(|offset| template_start + offset)
         else {
             break;
         };
         collect_template_source_referenced_names(
-            art_content[template_start..close_start].trim(),
+            art_content
+                .get(template_start..close_start)
+                .unwrap_or_default()
+                .trim(),
             template_syntax,
             experimental_in_tag_comments,
             names,

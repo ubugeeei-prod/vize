@@ -22,9 +22,7 @@ pub(super) fn parse_cli_diagnostic_line(
     mapper: &mut DiagnosticMapper<'_>,
 ) -> Option<Decoded> {
     let (prefix, suffix) = line.split_once("): ")?;
-    let open = prefix.rfind('(')?;
-    let path = &prefix[..open];
-    let position = &prefix[open + 1..];
+    let (path, position) = prefix.rsplit_once('(')?;
     let (line, column) = position.split_once(',')?;
     let line = line.parse::<u32>().ok()?.saturating_sub(1);
     let column = column.parse::<u32>().ok()?.saturating_sub(1);

@@ -71,7 +71,9 @@ fn with_external_script_source(mut descriptor: SfcDescriptor<'_>) -> SfcDescript
                 .map(|stem| cstr!("{stem}.js"))
         })
         .unwrap_or_else(|| String::from(src));
-    let specifier = serde_json::to_string(specifier.as_str()).expect("string serialization");
+    let Ok(specifier) = serde_json::to_string(specifier.as_str()) else {
+        return descriptor;
+    };
     let content = cstr!("import __vize_src from {specifier};\nexport default __vize_src;\n");
     script.content = std::borrow::Cow::Owned(content.as_str().into());
     descriptor

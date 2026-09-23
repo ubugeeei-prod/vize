@@ -220,7 +220,10 @@ fn checked_source_span(source: &str, start: usize, end: usize) -> (usize, usize)
     let start = source.floor_char_boundary(start);
     let end = end.min(source.len()).max(start);
     let end = source.ceil_char_boundary(end);
-    let default_length = source[start..].chars().next().map_or(0, char::len_utf8);
+    let default_length = source
+        .get(start..)
+        .and_then(|rest| rest.chars().next())
+        .map_or(0, char::len_utf8);
     (start, end.saturating_sub(start).max(default_length))
 }
 
@@ -291,20 +294,11 @@ fn candidate(
     generated_range: Range<usize>,
     original_range: Range<usize>,
 ) -> Option<SpanCandidate> {
-    if generated_range.is_empty()
-        || original_range.is_empty()
-        || generated_range.end > generated.len()
-        || original_range.end > source.len()
-        || !generated.is_char_boundary(generated_range.start)
-        || !generated.is_char_boundary(generated_range.end)
-        || !source.is_char_boundary(original_range.start)
-        || !source.is_char_boundary(original_range.end)
-    {
+    if generated_range.is_empty() || original_range.is_empty() {
         return None;
     }
-
-    let generated_text = &generated[generated_range.clone()];
-    let original_text = &source[original_range.clone()];
+    let generated_text = generated.get(generated_range.clone())?;
+    let original_text = source.get(original_range.clone())?;
     if !is_synthetic_content_mapper_identifier(generated_text)
         && let Some(relative_start) = generated_text.find(original_text)
     {

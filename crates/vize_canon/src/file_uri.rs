@@ -28,11 +28,12 @@ fn append_encoded_path(uri: &mut String, path: &[u8]) {
 }
 
 fn append_percent_encoded(uri: &mut String, byte: u8) {
-    const HEX: &[u8; 16] = b"0123456789ABCDEF";
-
     uri.push('%');
-    uri.push(HEX[(byte >> 4) as usize] as char);
-    uri.push(HEX[(byte & 0x0f) as usize] as char);
+    for nibble in [byte >> 4, byte & 0x0f] {
+        if let Some(digit) = char::from_digit(u32::from(nibble), 16) {
+            uri.push(digit.to_ascii_uppercase());
+        }
+    }
 }
 
 fn decode_path(path: &str) -> Option<String> {
@@ -40,18 +41,16 @@ fn decode_path(path: &str) -> Option<String> {
     let mut decoded = std::vec::Vec::with_capacity(bytes.len());
     let mut index = 0;
 
-    while index < bytes.len() {
-        if bytes[index] == b'%'
-            && index + 2 < bytes.len()
-            && let (Some(high), Some(low)) =
-                (hex_value(bytes[index + 1]), hex_value(bytes[index + 2]))
+    while let Some(&byte) = bytes.get(index) {
+        if let Some(&[b'%', high, low]) = bytes.get(index..index + 3)
+            && let (Some(high), Some(low)) = (hex_value(high), hex_value(low))
         {
             decoded.push((high << 4) | low);
             index += 3;
             continue;
         }
 
-        decoded.push(bytes[index]);
+        decoded.push(byte);
         index += 1;
     }
 

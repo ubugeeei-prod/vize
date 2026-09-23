@@ -298,8 +298,9 @@ pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u
         .line_starts(text)
         .nth(line as usize)
         .unwrap_or(text.len());
-    let offset = text[..start].encode_utf16().count() as u32;
-    let line_len = text[start..]
+    let (before, after) = text.split_at_checked(start).unwrap_or((text, ""));
+    let offset = before.encode_utf16().count() as u32;
+    let line_len = after
         .split(['\r', '\n'])
         .next()
         .unwrap_or_default()

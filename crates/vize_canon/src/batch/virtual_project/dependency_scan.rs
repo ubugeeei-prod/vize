@@ -172,13 +172,12 @@ impl VirtualProject {
             for (specifier, mode) in specifiers {
                 let native_target =
                     resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases);
-                if native_target.is_none() {
+                let Some(target) = native_target else {
                     if let Some(resolve) = package_resolver.as_deref_mut() {
                         let _ = resolve(&importer, &specifier, mode);
                     }
                     continue;
-                }
-                let target = native_target.expect("checked above");
+                };
                 let Some(key) = canonical_key(&target) else {
                     continue;
                 };

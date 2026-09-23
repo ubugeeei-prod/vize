@@ -13,10 +13,13 @@ pub(super) fn runtime_arg_identifier(args: &str) -> Option<&str> {
 fn strip_wrapping_parentheses(mut value: &str) -> &str {
     loop {
         let trimmed = value.trim();
-        if !trimmed.starts_with('(') || !trimmed.ends_with(')') {
+        let Some(inner) = trimmed
+            .strip_prefix('(')
+            .and_then(|rest| rest.strip_suffix(')'))
+        else {
             return trimmed;
-        }
-        value = &trimmed[1..trimmed.len() - 1];
+        };
+        value = inner;
     }
 }
 

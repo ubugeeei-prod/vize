@@ -67,10 +67,11 @@ fn module_attribute_span(
     let tag = source.get(tag_start..content_start)?;
     let bytes = tag.as_bytes();
     let mut index = 0;
-    while let Some(found) = tag[index..].find("module") {
+    while let Some(found) = tag.get(index..).and_then(|rest| rest.find("module")) {
         let start = index + found;
         let end = start + "module".len();
-        let preceded = start > 0 && bytes[start - 1].is_ascii_whitespace();
+        let preceded = crate::text_scan::byte_before(bytes, start)
+            .is_some_and(|byte| byte.is_ascii_whitespace());
         let followed = bytes
             .get(end)
             .is_none_or(|byte| byte.is_ascii_whitespace() || matches!(byte, b'=' | b'/' | b'>'));
@@ -78,14 +79,14 @@ fn module_attribute_span(
             index = end;
             continue;
         }
-        let rest = &tag[end..];
+        let rest = tag.get(end..).unwrap_or_default();
         let value = rest.strip_prefix('=').and_then(|after| {
             let quote = after.as_bytes().first().copied()?;
             if !matches!(quote, b'"' | b'\'') {
                 return None;
             }
             let value_start = end + 2;
-            let value_len = after[1..].find(quote as char)?;
+            let value_len = after.get(1..)?.find(quote as char)?;
             (value_len > 0).then_some(value_start..value_start + value_len)
         });
         return Some(match value {

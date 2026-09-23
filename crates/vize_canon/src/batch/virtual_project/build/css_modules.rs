@@ -182,7 +182,7 @@ fn css_module_type(shape: &CssModuleShape, strict: bool) -> CompactString {
             merged.push_str(" & typeof import(");
             merged.push_str(
                 serde_json::to_string(import.as_str())
-                    .expect("import specifier should serialize")
+                    .unwrap_or_default()
                     .as_str(),
             );
             merged.push_str(").default");
@@ -213,8 +213,8 @@ fn contains_dynamic_css_module_exports(css: &str) -> bool {
 fn css_import_targets(css: &str) -> Vec<CompactString> {
     let mut targets = Vec::new();
     let mut rest = css;
-    while let Some(index) = rest.find("@import") {
-        rest = rest[index + "@import".len()..].trim_start();
+    while let Some((_, after_import)) = rest.split_once("@import") {
+        rest = after_import.trim_start();
         let inner = rest
             .strip_prefix("url(")
             .map(|after| after.trim_start())
@@ -222,11 +222,12 @@ fn css_import_targets(css: &str) -> Vec<CompactString> {
         let Some(quote) = inner.chars().next().filter(|c| matches!(c, '"' | '\'')) else {
             continue;
         };
-        let Some(end) = inner[1..].find(quote) else {
+        let Some((target, after_target)) = inner.get(1..).and_then(|body| body.split_once(quote))
+        else {
             break;
         };
-        targets.push(inner[1..1 + end].to_compact_string());
-        rest = &inner[1 + end + 1..];
+        targets.push(target.to_compact_string());
+        rest = after_target;
     }
     targets
 }
@@ -241,8 +242,7 @@ fn extract_authored_css_classes(css: &str) -> Option<BTreeSet<CompactString>> {
     let mut index = 0usize;
     let mut quote = None;
 
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         if let Some(open_quote) = quote {
             if byte == b'\\' {
                 index = (index + 2).min(bytes.len());
@@ -255,7 +255,7 @@ fn extract_authored_css_classes(css: &str) -> Option<BTreeSet<CompactString>> {
             continue;
         }
         if byte == b'/' && bytes.get(index + 1) == Some(&b'*') {
-            let relative_end = css[index + 2..].find("*/")?;
+            let relative_end = css.get(index + 2..)?.find("*/")?;
             index += relative_end + 4;
             continue;
         }
@@ -281,10 +281,7 @@ fn collect_classes_from_selector_prelude(
     prelude: &[u8],
     classes: &mut BTreeSet<CompactString>,
 ) -> Option<()> {
-    let trimmed = prelude
-        .iter()
-        .position(|byte| !byte.is_ascii_whitespace())
-        .map_or(&[][..], |start| &prelude[start..]);
+    let trimmed = prelude.trim_ascii_start();
     if trimmed.starts_with(b"@") {
         return Some(());
     }
@@ -293,17 +290,20 @@ fn collect_classes_from_selector_prelude(
     }
 
     let mut index = 0usize;
-    while index + 1 < trimmed.len() {
-        if trimmed[index] != b'.' || !is_css_class_start(trimmed[index + 1]) {
+    while let Some([dot, first]) = trimmed.get(index..index + 2) {
+        if *dot != b'.' || !is_css_class_start(*first) {
             index += 1;
             continue;
         }
         let start = index + 1;
         let mut end = start + 1;
-        while end < trimmed.len() && is_css_class_continue(trimmed[end]) {
+        while trimmed
+            .get(end)
+            .is_some_and(|&byte| is_css_class_continue(byte))
+        {
             end += 1;
         }
-        let class_name = std::str::from_utf8(&trimmed[start..end]).ok()?;
+        let class_name = std::str::from_utf8(trimmed.get(start..end)?).ok()?;
         classes.insert(class_name.to_compact_string());
         index = end;
     }
@@ -323,7 +323,7 @@ fn css_module_type_annotation(classes: &BTreeSet<CompactString>) -> CompactStrin
     for class_name in classes {
         annotation.push_str(
             serde_json::to_string(class_name.as_str())
-                .expect("CSS class name should serialize")
+                .unwrap_or_default()
                 .as_str(),
         );
         annotation.push_str(": string; ");

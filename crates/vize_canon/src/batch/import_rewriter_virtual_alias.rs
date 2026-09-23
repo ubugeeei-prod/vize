@@ -94,7 +94,7 @@ impl VirtualAliasRewritePolicy {
 
 impl PathAliasPattern {
     fn new(pattern: &str, targets: Vec<String>) -> Self {
-        let Some(wildcard) = pattern.find('*') else {
+        let Some((prefix, suffix)) = pattern.split_once('*') else {
             return Self {
                 prefix: pattern.into(),
                 suffix: String::default(),
@@ -103,8 +103,8 @@ impl PathAliasPattern {
             };
         };
         Self {
-            prefix: pattern[..wildcard].into(),
-            suffix: pattern[wildcard + 1..].into(),
+            prefix: prefix.into(),
+            suffix: suffix.into(),
             wildcard: true,
             targets,
         }
@@ -162,14 +162,9 @@ impl PathAliasPattern {
         }
         let capture_end = specifier.len().checked_sub(self.suffix.len())?;
         let capture = specifier.get(self.prefix.len()..capture_end)?;
-        target.find('*').map(|wildcard| {
-            cstr!(
-                "{}{}{}",
-                &target[..wildcard],
-                capture,
-                &target[wildcard + 1..]
-            )
-        })
+        target
+            .split_once('*')
+            .map(|(before, after)| cstr!("{before}{capture}{after}"))
     }
 }
 

@@ -33,14 +33,16 @@ impl TypeChecker {
     fn find_expression_at(&self, template: &str, offset: usize) -> Option<(String, usize)> {
         // Check interpolations
         let mut pos = 0;
-        while let Some(start) = template[pos..].find("{{") {
+        while let Some(start) = template.get(pos..).and_then(|rest| rest.find("{{")) {
             let abs_start = pos + start;
-            if let Some(end) = template[abs_start..].find("}}") {
+            if let Some(end) = template.get(abs_start..).and_then(|rest| rest.find("}}")) {
                 let expr_start = abs_start + 2;
                 let expr_end = abs_start + end;
 
-                if offset >= expr_start && offset <= expr_end {
-                    let source = &template[expr_start..expr_end];
+                if offset >= expr_start
+                    && offset <= expr_end
+                    && let Some(source) = template.get(expr_start..expr_end)
+                {
                     let leading = source.len() - source.trim_start().len();
                     return Some((source.trim().into(), expr_start + leading));
                 }
@@ -71,11 +73,14 @@ impl TypeChecker {
         let pattern = cstr!("{directive}=\"");
         let mut pos = 0;
 
-        while let Some(start) = template[pos..].find(pattern.as_str()) {
+        while let Some(start) = template
+            .get(pos..)
+            .and_then(|rest| rest.find(pattern.as_str()))
+        {
             let abs_start = pos + start + pattern.len();
-            if let Some(end) = template[abs_start..].find('"') {
+            if let Some(end) = template.get(abs_start..).and_then(|rest| rest.find('"')) {
                 if offset >= abs_start && offset <= abs_start + end {
-                    return Some((template[abs_start..abs_start + end].into(), abs_start));
+                    return Some((template.get(abs_start..abs_start + end)?.into(), abs_start));
                 }
                 pos = abs_start + end + 1;
             } else {
@@ -110,35 +115,35 @@ impl TypeChecker {
 
     /// Find identifier at offset within an expression.
     fn find_identifier_at(&self, expr: &str, offset: usize) -> Option<String> {
-        if offset >= expr.len() {
-            return None;
-        }
-
         let bytes = expr.as_bytes();
+        let is_ident_byte = |byte: &u8| Self::is_ident_char(*byte as char);
 
         // Check if we're on an identifier character
-        if !Self::is_ident_char(bytes[offset] as char) {
+        if !bytes.get(offset).is_some_and(is_ident_byte) {
             return None;
         }
 
         // Find the start of the identifier
         let mut start = offset;
-        while start > 0 && Self::is_ident_char(bytes[start - 1] as char) {
+        while crate::text_scan::byte_before(bytes, start).is_some_and(|byte| is_ident_byte(&byte)) {
             start -= 1;
         }
 
         // Find the end of the identifier
         let mut end = offset;
-        while end < bytes.len() && Self::is_ident_char(bytes[end] as char) {
+        while bytes.get(end).is_some_and(is_ident_byte) {
             end += 1;
         }
 
         // First char must be a valid start char
-        if !Self::is_ident_start(bytes[start] as char) {
+        if !bytes
+            .get(start)
+            .is_some_and(|&byte| Self::is_ident_start(byte as char))
+        {
             return None;
         }
 
-        Some(expr[start..end].into())
+        Some(expr.get(start..end)?.into())
     }
 
     /// Get completions at a specific offset.
@@ -207,7 +212,10 @@ impl TypeChecker {
 
         while i < bytes.len() {
             // Skip non-identifier characters
-            while i < bytes.len() && !Self::is_ident_start(bytes[i] as char) {
+            while bytes
+                .get(i)
+                .is_some_and(|&byte| !Self::is_ident_start(byte as char))
+            {
                 i += 1;
             }
 
@@ -218,12 +226,17 @@ impl TypeChecker {
             let start = i;
 
             // Read the identifier
-            while i < bytes.len() && Self::is_ident_char(bytes[i] as char) {
+            while bytes
+                .get(i)
+                .is_some_and(|&byte| Self::is_ident_char(byte as char))
+            {
                 i += 1;
             }
 
-            if start < i {
-                identifiers.push((&expr[start..i], start));
+            if start < i
+                && let Some(identifier) = expr.get(start..i)
+            {
+                identifiers.push((identifier, start));
             }
         }
 

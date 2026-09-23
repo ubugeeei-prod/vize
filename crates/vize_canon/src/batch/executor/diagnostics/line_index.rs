@@ -58,7 +58,7 @@ impl LineIndex {
         let line = usize::try_from(line).ok()?;
         let start = *self.starts.get(line)?;
         let end = self.line_end(content, line);
-        let offset = vize_carton::line_index::utf16_offset(&content[start..end], col)?;
+        let offset = vize_carton::line_index::utf16_offset(content.get(start..end)?, col)?;
         u32::try_from(start + offset).ok()
     }
 
@@ -80,7 +80,7 @@ impl LineIndex {
         while !content.is_char_boundary(boundary) {
             boundary += 1;
         }
-        let col = vize_carton::line_index::utf16_len(&content[start..boundary]);
+        let col = vize_carton::line_index::utf16_len(content.get(start..boundary)?);
         Some((u32::try_from(line).ok()?, u32::try_from(col).ok()?))
     }
 
@@ -88,7 +88,9 @@ impl LineIndex {
         let Some(&next_start) = self.starts.get(line + 1) else {
             return self.len;
         };
-        let prefix = &content[..next_start];
+        let Some(prefix) = content.get(..next_start) else {
+            return self.len;
+        };
         let width = if self.backend && prefix.ends_with("\r\n") {
             2
         } else if self.backend && prefix.ends_with(['\u{2028}', '\u{2029}']) {

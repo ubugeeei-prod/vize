@@ -110,25 +110,25 @@ fn extract_relative_module_specifiers(source: &str) -> Vec<CompactString> {
         };
 
         let mut j = i + keyword_len;
-        while j < len && bytes[j].is_ascii_whitespace() {
+        while bytes.get(j).is_some_and(u8::is_ascii_whitespace) {
             j += 1;
         }
-        if j < len && bytes[j] == b'(' {
+        if bytes.get(j) == Some(&b'(') {
             j += 1;
-            while j < len && bytes[j].is_ascii_whitespace() {
+            while bytes.get(j).is_some_and(u8::is_ascii_whitespace) {
                 j += 1;
             }
         }
 
-        if j < len && (bytes[j] == b'"' || bytes[j] == b'\'') {
-            let quote = bytes[j];
+        if let Some(&quote) = bytes.get(j).filter(|&&byte| byte == b'"' || byte == b'\'') {
             let start = j + 1;
             let mut k = start;
-            while k < len && bytes[k] != quote {
+            while bytes.get(k).is_some_and(|&byte| byte != quote) {
                 k += 1;
             }
-            if k < len {
-                let specifier = &source[start..k];
+            if k < len
+                && let Some(specifier) = source.get(start..k)
+            {
                 if is_relative_specifier(specifier) {
                     specifiers.push(specifier.to_compact_string());
                 }
@@ -144,12 +144,13 @@ fn extract_relative_module_specifiers(source: &str) -> Vec<CompactString> {
 }
 
 fn matches_keyword(bytes: &[u8], at: usize, keyword: &[u8]) -> bool {
-    if at + keyword.len() > bytes.len() || &bytes[at..at + keyword.len()] != keyword {
+    if bytes.get(at..at + keyword.len()) != Some(keyword) {
         return false;
     }
-    let before_ok = at == 0 || !is_identifier_byte(bytes[at - 1]);
-    let after = at + keyword.len();
-    let after_ok = after >= bytes.len() || !is_identifier_byte(bytes[after]);
+    let before_ok = !crate::text_scan::byte_before(bytes, at).is_some_and(is_identifier_byte);
+    let after_ok = !bytes
+        .get(at + keyword.len())
+        .is_some_and(|&byte| is_identifier_byte(byte));
     before_ok && after_ok
 }
 
