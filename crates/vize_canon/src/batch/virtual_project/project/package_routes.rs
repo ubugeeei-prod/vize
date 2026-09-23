@@ -229,12 +229,26 @@ impl VirtualProject {
             self.refresh_package_routes();
             self.package_routes_need_refresh = false;
         }
-        let mut targets = self
-            .package_route_source_paths()
-            .into_iter()
-            .collect::<Vec<_>>();
-        targets.sort();
-        self.register_paths(&targets)
+        // A package source can itself import another export of the same
+        // package. Discover those routes after registering each wave of
+        // sources so its own package boundary is available in the virtual
+        // project, even when the app only imports the package root.
+        let mut processed = FxHashSet::default();
+        loop {
+            let mut targets = self
+                .package_route_source_paths()
+                .into_iter()
+                .filter(|path| !processed.contains(path))
+                .collect::<Vec<_>>();
+            if targets.is_empty() {
+                break;
+            }
+            targets.sort();
+            self.register_paths(&targets)?;
+            self.reconcile_package_routes_for_importers(&targets);
+            processed.extend(targets);
+        }
+        Ok(())
     }
 
     pub(crate) fn refresh_package_route_keys(
