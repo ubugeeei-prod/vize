@@ -72,7 +72,7 @@ test("PR and main push stay fast while full checks require schedule or dispatch"
   );
   assert.equal(
     workflow.jobs?.["semver-checks"]?.if,
-    "${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}",
+    "${{ github.event_name == 'workflow_dispatch' }}",
   );
   assert.equal(
     workflow.jobs?.["test-report"]?.steps?.at(-1)?.run,

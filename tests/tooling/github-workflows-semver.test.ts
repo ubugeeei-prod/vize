@@ -4,21 +4,15 @@ import { test } from "node:test";
 import { resolveSemverChangeMarker } from "../../tools/support/compat/github/semver-change-marker.mjs";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-test("push SemVer checks preserve pull-request markers after squash merge", () => {
+test("release SemVer checks classify the exact candidate without push metadata", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "semver-checks");
 
   assert.match(job, /permissions:\n(?:[^\S\n]+\S.*\n)*[^\S\n]+contents:\s*read\n/);
-  assert.match(job, /permissions:\n(?:[^\S\n]+\S.*\n)*[^\S\n]+pull-requests:\s*read\n/);
-  assert.match(job, /- name:\s*Resolve SemVer change marker/);
-  assert.match(
-    job,
-    /GITHUB_TOKEN:\s*\$\{\{\s*github\.event_name == 'push' && github\.token \|\| ''\s*\}\}/,
-  );
-  assert.match(
-    job,
-    /rust-script tools\/commands\/ci\/github\/semver-change-marker\.rs "\$RUNNER_TEMP\/semver-change-marker\.txt"/,
-  );
+  assert.doesNotMatch(job, /pull-requests:\s*read/);
+  assert.match(job, /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch'\s*\}\}/);
+  assert.match(job, /- name:\s*Use candidate version for SemVer classification/);
+  assert.doesNotMatch(job, /- name:\s*Resolve SemVer change marker/);
   assert.match(job, /bash tools\/commands\/ci\/github\/check-semver\.sh/);
   const script = readRepoFile("tools", "commands", "ci", "github", "check-semver.sh");
   assert.match(

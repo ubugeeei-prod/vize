@@ -71,13 +71,12 @@ jobs:
         run: vp run --workspace-root check:repo
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
-    # The release gate must check the candidate SHA, not only its main parent.
-    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    # Keep routine main pushes fast; the release gate checks the exact candidate SHA.
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     permissions:
       contents: read
-      pull-requests: read
     # Keep this list in sync with crates published by tools/moon/cmd/publish_crates.
     strategy:
       fail-fast: false
@@ -102,13 +101,7 @@ jobs:
         with:
           toolchain: 1.95.0
       - uses: ./.github/actions/setup-rust-script
-      - name: Resolve SemVer change marker
-        if: ${{ github.event_name == 'push' }}
-        env:
-          GITHUB_TOKEN: ${{ github.event_name == 'push' && github.token || '' }}
-        run: rust-script tools/commands/ci/github/semver-change-marker.rs "$RUNNER_TEMP/semver-change-marker.txt"
       - name: Use candidate version for SemVer classification
-        if: ${{ github.event_name == 'workflow_dispatch' }}
         # cargo-semver-checks derives the release type from the bumped version.
         run: |
           : > "$RUNNER_TEMP/semver-change-marker.txt"
