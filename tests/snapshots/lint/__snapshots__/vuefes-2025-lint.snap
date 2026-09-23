@@ -685,6 +685,17 @@
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <p> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
+        "line": 118,
+        "column": 17,
+        "endLine": 118,
+        "endColumn": 19,
+        "help": "Why: the browser builds the DOM by re-parsing the rendered HTML (server-side rendering, static content inserted with innerHTML). Where this template disagrees with the HTML parser, the browser's DOM differs from the virtual DOM: hydration mismatches, and styles and scripts see a different tree.\nFix: move the element to a place its parent accepts, or change the outer element (for example <div> instead of <p>, <tbody> around table rows)."
+      },
+      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -815,9 +826,20 @@
         "endLine": 202,
         "endColumn": 30,
         "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <p> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
+        "line": 217,
+        "column": 15,
+        "endLine": 217,
+        "endColumn": 17,
+        "help": "Why: the browser builds the DOM by re-parsing the rendered HTML (server-side rendering, static content inserted with innerHTML). Where this template disagrees with the HTML parser, the browser's DOM differs from the virtual DOM: hydration mismatches, and styles and scripts see a different tree.\nFix: move the element to a place its parent accepts, or change the outer element (for example <div> instead of <p>, <tbody> around table rows)."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 2,
     "warningCount": 13
   },
   {
@@ -868,9 +890,20 @@
         "endLine": 136,
         "endColumn": 50,
         "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+      },
+      {
+        "ruleId": "vue/permitted-contents",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 2,
+        "message": "[vize:vue/permitted-contents] <p> closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template",
+        "line": 146,
+        "column": 19,
+        "endLine": 146,
+        "endColumn": 21,
+        "help": "Why: the browser builds the DOM by re-parsing the rendered HTML (server-side rendering, static content inserted with innerHTML). Where this template disagrees with the HTML parser, the browser's DOM differs from the virtual DOM: hydration mismatches, and styles and scripts see a different tree.\nFix: move the element to a place its parent accepts, or change the outer element (for example <div> instead of <p>, <tbody> around table rows)."
       }
     ],
-    "errorCount": 0,
+    "errorCount": 1,
     "warningCount": 2
   },
   {
