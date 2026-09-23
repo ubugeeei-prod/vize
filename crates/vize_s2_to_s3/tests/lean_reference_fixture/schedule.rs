@@ -43,7 +43,7 @@ fn source(stem: &str) -> String {
     if stem == "rust-lowered-static-dynamic" {
         return crate::STATIC_DYNAMIC_SOURCE.to_string();
     }
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../formal/impeto/fixtures");
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
     std::fs::read_to_string(fixtures.join(format!("{stem}.template.txt"))).unwrap()
 }
 
@@ -145,7 +145,7 @@ fn schedule_contract_codes_match_lean_reference() {
         }
     }
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../formal/impeto/fixtures/schedule-contract.txt");
+        .join("../../tests/formal/impeto/fixtures/schedule-contract.txt");
     if std::env::var("VIZE_UPDATE_SCHEDULE_CONTRACT_FIXTURE").as_deref() == Ok("1") {
         std::fs::write(&path, &actual).unwrap();
     }

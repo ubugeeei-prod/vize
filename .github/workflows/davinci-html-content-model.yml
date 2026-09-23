@@ -5,7 +5,7 @@ name: Davinci HTML content model
 # current by `cargo test -p vize_patina --test html_content_model_differential`
 # in the Check workflow) must agree exactly with Chromium's HTML parser.
 # Charter #36: the checker's walk and verdict rule are total, decidable and
-# sound for every context a truncated chain describes (formal/html-content-model).
+# sound for every context a truncated chain describes (tests/formal/html-content-model).
 
 on:
   push:
@@ -14,7 +14,7 @@ on:
       - "crates/vize_patina/src/html_content_model/**"
       - "crates/vize_patina/tests/html_content_model/**"
       - "legacy-tools/davinci/html-content-model-oracle.mjs"
-      - "formal/html-content-model/**"
+      - "tests/formal/html-content-model/**"
       - ".github/workflows/davinci-html-content-model.yml"
   workflow_dispatch:
 
@@ -60,14 +60,14 @@ jobs:
           persist-credentials: false
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1.6.0
         with:
-          lake-package-directory: formal/html-content-model
+          lake-package-directory: tests/formal/html-content-model
           build: "true"
           test: "false"
           lint: "false"
           use-mathlib-cache: "false"
           use-github-cache: "true"
       - name: Reject proof escapes in the Lean package
-        working-directory: formal/html-content-model
+        working-directory: tests/formal/html-content-model
         run: |
           status=0
           grep -rnwE --include='*.lean' --exclude-dir=.lake 'sorry|admit|axiom|native_decide' . || status=$?

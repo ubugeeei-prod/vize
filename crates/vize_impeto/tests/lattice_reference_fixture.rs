@@ -4,7 +4,7 @@
 //! input matrix. `lake exe impetoRef --check-lattice-fixtures` re-enumerates the
 //! same matrix, parses this page without Rust code and recomputes every class
 //! with the independent Lean classifier whose laws are proved in
-//! `formal/impeto/Impeto/LatticeLaws.lean`. Regenerate the page with
+//! `tests/formal/impeto/Impeto/LatticeLaws.lean`. Regenerate the page with
 //! `VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE=1` only when the rule spec changes.
 
 use std::path::Path;
@@ -89,7 +89,7 @@ fn rust_lattice_fact_page_matches_lean_reference_fixture() {
     expected.push(b'\n');
 
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../formal/impeto/fixtures/reactivity-lattice.folio");
+        .join("../../tests/formal/impeto/fixtures/reactivity-lattice.folio");
     if std::env::var("VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE").as_deref() == Ok("1") {
         std::fs::write(&path, &expected).unwrap();
     }

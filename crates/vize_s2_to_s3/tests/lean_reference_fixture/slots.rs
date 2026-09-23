@@ -152,7 +152,7 @@ fn slot_reference_cases_are_rust_lowered() {
         }));
         graphs.push(json!({ "name": name, "graph": graph, "values": values }));
     }
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../formal/impeto/fixtures");
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
     check_lines(&fixtures.join("slot-reference.cases.jsonl"), &rows);
     check_lines(&fixtures.join("slot-reference.lowered.jsonl"), &graphs);
 }

@@ -60,7 +60,7 @@ total lowering skeleton, and exported partition fact contract. _Closed
 2026-09-12:_ TS-17 S3 Folio snapshots and TS-20 S2→S3 fuzz coverage were added
 to the same record.
 
-**P3-4 Lean reference + differential.** `formal/impeto/` Lean package
+**P3-4 Lean reference + differential.** `tests/formal/impeto/` Lean package
 (CI-lenient lane per charter #39): executable small-step semantics for S3 ops
 under both Vapor and VDOM interpretations; runner compares compiled-output
 behavior traces vs reference on S3 fixtures (TS-28). _Accept:_ runner in CI

@@ -26,27 +26,27 @@ struct Fixture {
 const STATIC_DYNAMIC_SOURCE: &str =
     r#"<main class="shell"><button :disabled="locked" @click="save">{{ label }}</button></main>"#;
 const CONTROL_SLOTS_SOURCE: &str =
-    include_str!("../../../formal/impeto/fixtures/rust-lowered-control-slots.template.txt");
+    include_str!("../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.template.txt");
 
 const FIXTURES: &[Fixture] = &[
     Fixture {
         name: "rust-lowered-static-dynamic",
         source: STATIC_DYNAMIC_SOURCE,
         vdom_trace: include_str!(
-            "../../../formal/impeto/fixtures/rust-lowered-static-dynamic.vdom.trace"
+            "../../../tests/formal/impeto/fixtures/rust-lowered-static-dynamic.vdom.trace"
         ),
         vapor_trace: include_str!(
-            "../../../formal/impeto/fixtures/rust-lowered-static-dynamic.vapor.trace"
+            "../../../tests/formal/impeto/fixtures/rust-lowered-static-dynamic.vapor.trace"
         ),
     },
     Fixture {
         name: "rust-lowered-control-slots",
         source: CONTROL_SLOTS_SOURCE,
         vdom_trace: include_str!(
-            "../../../formal/impeto/fixtures/rust-lowered-control-slots.vdom.trace"
+            "../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.vdom.trace"
         ),
         vapor_trace: include_str!(
-            "../../../formal/impeto/fixtures/rust-lowered-control-slots.vapor.trace"
+            "../../../tests/formal/impeto/fixtures/rust-lowered-control-slots.vapor.trace"
         ),
     },
 ];

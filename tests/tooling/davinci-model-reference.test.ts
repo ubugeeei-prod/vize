@@ -15,7 +15,7 @@ type Entry = {
 
 function jsonLines(name: string): Entry[] {
   return fs
-    .readFileSync(path.join(repoRoot, "formal/impeto/fixtures", name), "utf8")
+    .readFileSync(path.join(repoRoot, "tests/formal/impeto/fixtures", name), "utf8")
     .split("\n")
     .filter((line) => line.length > 0)
     .map((line) => JSON.parse(line) as Entry);

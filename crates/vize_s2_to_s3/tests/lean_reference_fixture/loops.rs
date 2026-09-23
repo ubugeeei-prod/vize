@@ -14,7 +14,7 @@ use vize_s3::verify::verify;
 
 #[test]
 fn loop_reference_graph_and_values_are_rust_lowered() {
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../formal/impeto/fixtures");
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
     for name in ["keyed", "unkeyed", "nested"] {
         let stem = fixtures.join(format!("rust-lowered-loop-{name}"));
         let source = std::fs::read_to_string(stem.with_extension("template.txt")).unwrap();

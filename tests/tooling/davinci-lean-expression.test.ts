@@ -7,7 +7,7 @@ import vm from "node:vm";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const table = JSON.parse(
-  fs.readFileSync(path.join(repoRoot, "formal/impeto/fixtures/expression-cases.json"), "utf8"),
+  fs.readFileSync(path.join(repoRoot, "tests/formal/impeto/fixtures/expression-cases.json"), "utf8"),
 ) as {
   context: Record<string, unknown>;
   cases: Array<{ expr: string; value?: unknown; unsupported?: string }>;

@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const fixtureRoot = path.join(repoRoot, "formal/impeto/fixtures");
+const fixtureRoot = path.join(repoRoot, "tests/formal/impeto/fixtures");
 
 type Snapshot = { tree: unknown[]; events: string[]; identities: [string, number][] };
 type Case = {

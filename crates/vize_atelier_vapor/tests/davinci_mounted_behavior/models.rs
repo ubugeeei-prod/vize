@@ -11,7 +11,7 @@ use std::path::Path;
 
 fn lines(name: &str) -> Vec<Value> {
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../formal/impeto/fixtures")
+        .join("../../tests/formal/impeto/fixtures")
         .join(name);
     std::fs::read_to_string(path)
         .unwrap()

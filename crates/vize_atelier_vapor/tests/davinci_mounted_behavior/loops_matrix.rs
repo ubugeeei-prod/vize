@@ -23,7 +23,7 @@ const GAP_FAMILY: &str = "object-positional-";
 
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../formal/impeto/fixtures")
+        .join("../../tests/formal/impeto/fixtures")
         .join(name)
 }
 

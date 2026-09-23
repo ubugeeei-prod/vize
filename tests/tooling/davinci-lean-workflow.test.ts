@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const formalRoot = path.join(repoRoot, "formal", "impeto");
+const formalRoot = path.join(repoRoot, "tests", "formal", "impeto");
 
 function readRepoFile(...segments: string[]): string {
   return fs.readFileSync(path.join(repoRoot, ...segments), "utf8");
@@ -51,7 +51,7 @@ function assertLeanWorkflow(workflow: Workflow): void {
   assert.ok(job["continue-on-error"] === undefined || job["continue-on-error"] === false);
   const lean = job.steps.find((step) => step.uses?.startsWith("leanprover/lean-action@"));
   assert.equal(lean?.uses, "leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596");
-  assert.equal(lean?.with?.["lake-package-directory"], "formal/impeto");
+  assert.equal(lean?.with?.["lake-package-directory"], "tests/formal/impeto");
   assert.equal(lean?.with?.build, "true");
   const vp = job.steps.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
   assert.equal(vp?.uses, "voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa");
@@ -67,13 +67,13 @@ function assertLeanWorkflow(workflow: Workflow): void {
     ),
     [
       [".", "vp install --frozen-lockfile --prefer-offline"],
-      ["formal/impeto", "lake exe impetoRef --check-fixtures"],
-      ["formal/impeto", "lake exe impetoRef --check-backend-fixtures"],
-      ["formal/impeto", "lake exe impetoRef --check-stateful-fixtures"],
-      ["formal/impeto", proofEscapeScan],
-      ["formal/impeto", "lake exe impetoRef --check-lattice-fixtures"],
-      ["formal/impeto", "lake exe impetoRef --check-schedule-fixtures"],
-      ["formal/impeto", "lake exe impetoRef --check-folios"],
+      ["tests/formal/impeto", "lake exe impetoRef --check-fixtures"],
+      ["tests/formal/impeto", "lake exe impetoRef --check-backend-fixtures"],
+      ["tests/formal/impeto", "lake exe impetoRef --check-stateful-fixtures"],
+      ["tests/formal/impeto", proofEscapeScan],
+      ["tests/formal/impeto", "lake exe impetoRef --check-lattice-fixtures"],
+      ["tests/formal/impeto", "lake exe impetoRef --check-schedule-fixtures"],
+      ["tests/formal/impeto", "lake exe impetoRef --check-folios"],
       [".", "cargo test -p vize_impeto --test lattice_reference_fixture"],
       [".", "cargo test -p vize_s2_to_s3 --test lean_reference_fixture"],
       [".", "cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace"],
@@ -89,7 +89,7 @@ function assertLeanWorkflow(workflow: Workflow): void {
 
 test("TS-28 pins the Lean toolchain and CI package directory", () => {
   assert.equal(
-    readRepoFile("formal", "impeto", "lean-toolchain").trim(),
+    readRepoFile("tests", "formal", "impeto", "lean-toolchain").trim(),
     "leanprover/lean4:v4.33.1",
   );
 
@@ -154,18 +154,18 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
       );
     }
   }
-  const theorems = readRepoFile("formal", "impeto", "Impeto", "Theorems.lean");
+  const theorems = readRepoFile("tests", "formal", "impeto", "Impeto", "Theorems.lean");
   assert.match(theorems, /^import Impeto\.LatticeLaws$/mu);
   assert.match(theorems, /^import Impeto\.ScheduleLaws$/mu);
   assert.match(theorems, /^import Impeto\.IncrementalLaws$/mu);
   assert.match(theorems, /^#audit_impeto_theorems \d+$/mu);
-  const main = readRepoFile("formal", "impeto", "Main.lean");
+  const main = readRepoFile("tests", "formal", "impeto", "Main.lean");
   assert.match(main, /^import Impeto\.Theorems$/mu);
   assert.match(
     main,
     /"--check-lattice-fixtures"\] => LatticeFixture\.checkFile "fixtures\/reactivity-lattice\.folio"/u,
   );
-  const laws = readRepoFile("formal", "impeto", "Impeto", "LatticeLaws.lean");
+  const laws = readRepoFile("tests", "formal", "impeto", "Impeto", "LatticeLaws.lean");
   for (const name of [
     "join_le_iff",
     "effectsFloor_eq_tier",
@@ -176,7 +176,7 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   ]) {
     assert.match(laws, new RegExp(`^theorem ${name}\\b`, "mu"), `missing theorem ${name}`);
   }
-  const schedule = readRepoFile("formal", "impeto", "Impeto", "ScheduleLaws.lean");
+  const schedule = readRepoFile("tests", "formal", "impeto", "Impeto", "ScheduleLaws.lean");
   for (const name of [
     "accepted_schedule_orders_edges",
     "accepted_edges_stay_in_scope",
@@ -186,13 +186,13 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   }
   assert.match(main, /"--check-schedule-fixtures"\] => ScheduleFixture\.check/u);
   assert.match(main, /"--check-folios"\] => CheckerTests\.check/u);
-  const checker = readRepoFile("formal", "impeto", "Impeto", "Checker.lean");
+  const checker = readRepoFile("tests", "formal", "impeto", "Impeto", "Checker.lean");
   assert.doesNotMatch(checker, /\bpartial\b|\bunsafe\b/u, "the folio checker must stay total");
   assert.match(
-    readRepoFile("formal", "impeto", "Impeto", "CheckerLaws.lean"),
+    readRepoFile("tests", "formal", "impeto", "Impeto", "CheckerLaws.lean"),
     /^theorem violations_nil_iff\b/mu,
   );
-  const incremental = readRepoFile("formal", "impeto", "Impeto", "IncrementalLaws.lean");
+  const incremental = readRepoFile("tests", "formal", "impeto", "Impeto", "IncrementalLaws.lean");
   for (const name of [
     "reconcile_erase",
     "update_tree",
@@ -207,6 +207,6 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     /^    mod schedule;$/mu,
   );
   const bridge = readRepoFile("crates", "vize_impeto", "tests", "lattice_reference_fixture.rs");
-  assert.match(bridge, /formal\/impeto\/fixtures\/reactivity-lattice\.folio/u);
+  assert.match(bridge, /tests\/formal\/impeto\/fixtures\/reactivity-lattice\.folio/u);
   assert.match(bridge, /ReactivityFolio::of\(&facts\)\.print_to_string\(FolioMode::Full\)/u);
 });

@@ -40,35 +40,35 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596 # v1.6.0
         with:
-          lake-package-directory: formal/impeto
+          lake-package-directory: tests/formal/impeto
           build: "true"
           test: "false"
           lint: "false"
           use-mathlib-cache: "false"
           use-github-cache: "true"
       - name: Run TS-28 fixture differential
-        working-directory: formal/impeto
+        working-directory: tests/formal/impeto
         run: lake exe impetoRef --check-fixtures
       - name: Run TS-28 backend trace split
-        working-directory: formal/impeto
+        working-directory: tests/formal/impeto
         run: lake exe impetoRef --check-backend-fixtures
       - name: Run TS-28 stateful reference differential
-        working-directory: formal/impeto
+        working-directory: tests/formal/impeto
         run: lake exe impetoRef --check-stateful-fixtures
       - name: Reject P3-15 proof escapes in the Lean package
-        working-directory: formal/impeto
+        working-directory: tests/formal/impeto
         run: |
           status=0
           grep -rnwE --include='*.lean' --exclude-dir=.lake 'sorry|admit|axiom|native_decide' . || status=$?
           test "$status" -eq 1
       - name: Run P3-15 reactivity lattice differential
-        working-directory: formal/impeto
+        working-directory: tests/formal/impeto
         run: lake exe impetoRef --check-lattice-fixtures
       - name: Run P3-15 scheduling contract differential
-        working-directory: formal/impeto
+        working-directory: tests/formal/impeto
         run: lake exe impetoRef --check-schedule-fixtures
       - name: Run C-23 independent S3 folio checker
-        working-directory: formal/impeto
+        working-directory: tests/formal/impeto
         run: lake exe impetoRef --check-folios
       - name: Check Rust reactivity lattice fact provenance
         run: cargo test -p vize_impeto --test lattice_reference_fixture

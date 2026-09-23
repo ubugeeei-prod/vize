@@ -4,7 +4,7 @@ use std::path::Path;
 
 #[test]
 fn mounted_loops_match_reference_trees_identities_and_fresh_events() {
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../formal/impeto/fixtures");
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
     for name in ["keyed", "unkeyed", "nested"] {
         let stem = fixtures.join(format!("rust-lowered-loop-{name}"));
         let source = std::fs::read_to_string(stem.with_extension("template.txt")).unwrap();
@@ -45,7 +45,7 @@ fn mounted_loops_match_reference_trees_identities_and_fresh_events() {
 #[test]
 fn native_loop_function_handlers_execute_once_and_keep_current_alias_values() {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../formal/impeto/fixtures/rust-lowered-loop-keyed");
+        .join("../../tests/formal/impeto/fixtures/rust-lowered-loop-keyed");
     let source = std::fs::read_to_string(fixture.with_extension("template.txt")).unwrap();
     let scenario: Scenario = serde_json::from_str(
         &std::fs::read_to_string(fixture.with_extension("scenario.json")).unwrap(),

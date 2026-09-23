@@ -282,7 +282,7 @@ fn emit(stem: &str, cases: Vec<Case>) {
         }));
         graphs.push(json!({ "name": name, "graph": graph, "values": values }));
     }
-    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../formal/impeto/fixtures");
+    let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/formal/impeto/fixtures");
     check_lines(&fixtures.join(format!("{stem}.cases.jsonl")), &rows);
     check_lines(&fixtures.join(format!("{stem}.lowered.jsonl")), &graphs);
 }

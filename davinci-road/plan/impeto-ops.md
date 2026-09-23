@@ -6,7 +6,7 @@ scopes, and the decisions that DOM, VDOM, Vapor, and SSR must not rediscover in
 separate emitters.
 
 This page is the human reference for the 16 stable operation mnemonics. The
-normative executable companion is the Lean package in `formal/impeto/`, which
+normative executable companion is the Lean package in `tests/formal/impeto/`, which
 parses the same S3 Folio text and records the first VDOM/Vapor trace labels.
 Folio remains the concrete interchange syntax; see
 [`folio-format-impeto.md`](./folio-format-impeto.md).
