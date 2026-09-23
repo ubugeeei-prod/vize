@@ -23,11 +23,13 @@ assert.ok(Array.isArray(steps) && steps.length > 0);
 const compiled = compiler.compile(source, { mode: "module", prefixIdentifiers: true });
 assert.ok(typeof compiled.code === "string" && compiled.code.length > 0);
 process.stdout.write(
-  `${JSON.stringify(await traceMountedBackend({
-    backend: "vapor",
-    code: compiled.code,
-    context,
-    steps,
-    identities: true,
-  }))}\n`,
+  `${JSON.stringify(
+    await traceMountedBackend({
+      backend: "vapor",
+      code: compiled.code,
+      context,
+      steps,
+      identities: true,
+    }),
+  )}\n`,
 );
