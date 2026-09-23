@@ -318,6 +318,22 @@ fn test_conditional_svg_child_does_not_promote_html_parent_to_block() {
 }
 
 #[test]
+fn test_direct_conditional_svg_child_promotes_html_parent_to_block() {
+    let allocator = Allocator::new();
+    let (_, errors, result) = compile_template(
+        &allocator,
+        r#"<button><div class="icon"><svg v-if="selected"><path/></svg><svg v-else><circle/></svg></div></button>"#,
+    );
+    assert!(errors.is_empty());
+
+    let code = result.code.as_str();
+    assert!(
+        code.contains(r#"_createElementBlock("div", { class: "icon" }"#),
+        "a direct conditional SVG child must promote its HTML parent:\n{code}"
+    );
+}
+
+#[test]
 fn test_inline_svg_descendants_inside_same_namespace_stay_vnodes() {
     let allocator = Allocator::new();
     let (_, errors, result) = compile_template(
