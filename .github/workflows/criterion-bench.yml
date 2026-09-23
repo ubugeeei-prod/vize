@@ -1,26 +1,19 @@
 name: Criterion Bench
 
 on:
-  pull_request:
-    branches: [main, davinci]
-    types: [opened, synchronize, reopened, ready_for_review]
-    paths:
-      - "crates/**"
-      - "tools/benchmarks/crates/**"
-      - ".cargo/**"
-      - "Cargo.lock"
-      - "Cargo.toml"
-      - "tools/benchmarks/scripts/criterion-ab.mjs"
-      - "tools/benchmarks/scripts/criterion-baselines.mjs"
-      - "tools/benchmarks/scripts/criterion-impact.mjs"
-      - "tools/benchmarks/scripts/criterion-summary.mjs"
-      - "tools/benchmarks/scripts/dialect-guard.mjs"
-      - "tools/benchmarks/scripts/generate.mjs"
-      - "rust-toolchain.toml"
-      - ".github/workflows/criterion-bench.yml"
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Full base commit SHA
+        required: true
+        type: string
+      head_sha:
+        description: Full head commit SHA
+        required: true
+        type: string
 
 concurrency:
-  group: criterion-bench-${{ github.event.pull_request.number || github.ref }}
+  group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}
   cancel-in-progress: true
 
 env:
@@ -58,7 +51,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: head
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ inputs.head_sha }}
           fetch-depth: 0
           persist-credentials: false
 
@@ -66,7 +59,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: base
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: ${{ inputs.base_sha }}
           persist-credentials: false
 
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
@@ -82,8 +75,8 @@ jobs:
       - name: Select affected Criterion suites
         id: impact
         env:
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ inputs.base_sha }}
+          PR_HEAD_SHA: ${{ inputs.head_sha }}
         run: |
           node head/tools/benchmarks/scripts/criterion-impact.mjs \
             --repo-dir "$GITHUB_WORKSPACE/head" \
@@ -149,7 +142,7 @@ jobs:
       - name: Checkout head
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ inputs.head_sha }}
 
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 

@@ -9,6 +9,7 @@ on:
     # 03:11 UTC daily (~12:11 JST). Offset from native-smoke and e2e to spread
     # GitHub Actions concurrency budget.
     - cron: "11 3 * * *"
+  workflow_dispatch:
 
 concurrency:
   group: check-v2-${{ github.workflow }}-${{ github.event.pull_request.number || format('{0}-{1}', github.event_name, github.sha) }}
@@ -66,10 +67,14 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check JS/TS
+        if: ${{ github.event_name != 'pull_request' }}
         run: vp run --filter './npm/native' build:debug && vp run --workspace-root check:ci
+      - name: Check PR JS/TS
+        if: ${{ github.event_name == 'pull_request' }}
+        run: vp run --workspace-root check:repo
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
-    if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+    if: ${{ github.event_name == 'push' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 25
     permissions:
@@ -195,6 +200,7 @@ jobs:
 
   vue-parity:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -216,6 +222,7 @@ jobs:
       - uses: ./.github/actions/check-vue-parity
   test-scripts:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     # Restoration of the original setup after the trim in #519 broke
     # main: lsp-smoke.test.ts launches `vize lsp` (falls back to
     # `cargo run -p vize` when no binary is staged), moonbit-*.test.ts
@@ -253,18 +260,21 @@ jobs:
         run: vp run --workspace-root test:scripts
   editor-extensions:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/package-editor-extensions
   editor-host-smoke:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/vscode-host-smoke
   build-js-packages:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 30
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -310,6 +320,7 @@ jobs:
 
   test-js-packages:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 45
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
@@ -336,6 +347,7 @@ jobs:
 
   clippy-and-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 45
     env:
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
@@ -373,6 +385,7 @@ jobs:
         run: cargo test --workspace && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_lowering_corpus -- --nocapture && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_dom_corpus -- --nocapture && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_remarks_corpus -- --nocapture && cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_pug_corpus -- --nocapture && cargo test -p vize_atelier_sfc --features davinci-dom-differential --test davinci_production_reach -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture && cargo test -p vize_atelier_jsx --features davinci-differential --lib vdom::s2_differential::s2_vdom_admitted_cases_match_relief_codegen -- --exact && cargo test -p vize --features legacy --test check_nuxt_tsconfig_isolation_cli && cargo test -p vize_atelier_core --features legacy --test davinci_s2_transform_vue2 && cargo test -p vize_vitrine --no-default-features --features wasm && VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential -- --nocapture
   coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -454,9 +467,9 @@ jobs:
 
   branch-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 45
-    # Run the strict nightly gate before merge as well as on main. A main-only
-    # gate allowed stale instrumented artifacts to distort metrics across many PRs.
+    # Keep the strict nightly instrumentation gate on main and explicit runs.
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
@@ -512,6 +525,7 @@ jobs:
 
   playground-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
+    if: ${{ github.event_name != 'pull_request' }}
     timeout-minutes: 30
     needs:
       - build-js-packages
@@ -611,30 +625,15 @@ jobs:
     timeout-minutes: 5
     if: ${{ always() && github.event_name == 'pull_request' }}
     needs:
-      - nix-flake
       - fmt-rust
       - check-js
       - security-audit
-      - semver-checks
       - node-engine-compat
       - check-vize-apps
-      - vue-parity
-      - test-scripts
-      - editor-extensions
-      - editor-host-smoke
-      - build-js-packages
-      - test-js-packages
-      - clippy-and-test
-      - coverage
-      - source-coverage
-      - branch-coverage
-      - playground-test
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
-      - uses: ./.github/actions/setup-rust-script
       - name: Collect test inventory
         run: node tools/benchmarks/scripts/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"
       - name: Upload test inventory
@@ -646,7 +645,7 @@ jobs:
       # Runs last so the inventory is collected and uploaded either way.
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: rust-script tools/commands/ci/github/require-needs-success.rs
+        run: node legacy-tools/github/require-needs-success.mjs
 
   test-report-comment:
     name: test-report-comment

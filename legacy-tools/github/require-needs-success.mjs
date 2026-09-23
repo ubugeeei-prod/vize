@@ -2,27 +2,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
- * Jobs in the `test-report` dependency list that skip on every pull request by
- * design, mapped to the reason they skip.
- *
- * `test-report` itself only runs on `pull_request`, so this is the complete set
- * of legitimate skips: both entries are gated by
- * `if: ${{ github.event_name != 'pull_request' }}` in `.github/workflows/check.yml`
- * and therefore never run in the event that `test-report` aggregates.
- *
- * Every other needed job runs on pull requests, so a `skipped` result there means
- * the job never ran at all — `playground-test`, for instance, is skipped when the
- * `build-js-packages` job it needs fails. Those skips are failures for gating
- * purposes: the work they were meant to gate was not done.
- *
- * `tests/tooling/github-workflows-check-gate.test.ts` re-derives this list from
- * the workflow's `if:` guards, so adding a pull-request-skipping job to
- * `test-report`'s `needs:` fails that test until the job is classified here.
+ * All jobs in the PR report's dependency list must run. A skipped job is a
+ * missing check and fails the report.
  */
-export const PULL_REQUEST_SKIPPED_JOBS = Object.freeze({
-  "nix-flake": "runs on push and schedule only",
-  "source-coverage": "runs on push and schedule only",
-});
+export const PULL_REQUEST_SKIPPED_JOBS = Object.freeze({});
 
 function sortedEntries(needs) {
   return Object.entries(needs).sort(([left], [right]) =>
@@ -99,7 +82,7 @@ function main() {
   const raw = process.env.NEEDS_JSON;
   if (!raw) {
     console.error(
-      "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to tools/commands/ci/github/require-needs-success.rs",
+      "NEEDS_JSON is required: pass ${{ toJSON(needs) }} to legacy-tools/github/require-needs-success.mjs",
     );
     process.exitCode = 1;
     return;

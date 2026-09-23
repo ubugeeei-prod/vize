@@ -40,9 +40,6 @@ on:
         required: true
         type: boolean
         default: false
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
   schedule:
     # A full tool benchmark is far too heavy (75 min) to run on every push to
     # main, so a scheduled run publishes benchmark artifacts on a fixed cadence.

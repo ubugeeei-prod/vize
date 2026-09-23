@@ -12,15 +12,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "43 6 * * 1"
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened, ready_for_review]
-    paths:
-      - tools/benchmarks/scripts/vue-benchmarks-replay.mjs
-      - tools/benchmarks/scripts/vue-benchmarks-replay-expect-main.json
-      - tools/benchmarks/scripts/vue-benchmarks-replay-expect-release.json
-      - .github/workflows/vue-benchmarks-replay.yml
-
 concurrency:
   group: vue-benchmarks-replay-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true

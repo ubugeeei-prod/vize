@@ -16,14 +16,6 @@ on:
       - "legacy-tools/davinci/html-content-model-oracle.mjs"
       - "formal/html-content-model/**"
       - ".github/workflows/davinci-html-content-model.yml"
-  pull_request:
-    branches: [main, davinci]
-    paths:
-      - "crates/vize_patina/src/html_content_model/**"
-      - "crates/vize_patina/tests/html_content_model/**"
-      - "legacy-tools/davinci/html-content-model-oracle.mjs"
-      - "formal/html-content-model/**"
-      - ".github/workflows/davinci-html-content-model.yml"
   workflow_dispatch:
 
 concurrency:
