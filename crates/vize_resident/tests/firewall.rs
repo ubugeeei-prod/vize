@@ -12,6 +12,14 @@
 //! Off under `seeded-stale-cache`: that mutation build breaks the firewall on
 //! purpose, and `tests/equivalence.rs` is the test that must see it.
 
+#![cfg_attr(
+    not(feature = "seeded-stale-cache"),
+    expect(
+        clippy::expect_used,
+        clippy::string_slice,
+        reason = "tests assert by panicking"
+    )
+)]
 #![cfg(not(feature = "seeded-stale-cache"))]
 
 use vize_resident::{

@@ -1,6 +1,8 @@
 //! P5-4b: a source-body edit may recheck the interface, but it must not
 //! execute a dependent file's query when no used declaration changed.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_davinci::summary::{AlphaEntry, AlphaPages, Facet, Fingerprint, Signature};
 use vize_resident::{
     Accounting, DeclarationName, QueryCounts, ResidentDatabase, ResidentSummaryError, SourceFile,

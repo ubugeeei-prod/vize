@@ -96,9 +96,12 @@ impl EditOp {
     #[must_use]
     pub fn steps(&self, current: &str, original: &str) -> Vec<Step> {
         let splice = |at: usize, text: &str| {
-            let mut out = String::from(&current[..at]);
+            let Some((before, after)) = current.split_at_checked(at) else {
+                return Step::Text(String::from(current));
+            };
+            let mut out = String::from(before);
             out.push_str(text);
-            out.push_str(&current[at..]);
+            out.push_str(after);
             Step::Text(out)
         };
         match self {
@@ -135,6 +138,9 @@ fn type_steps(current: &str, target: Target, text: &str) -> Vec<Step> {
     let mut buffer = String::from(current);
     let mut cursor = start;
     for character in text.chars() {
+        if !buffer.is_char_boundary(cursor) {
+            break;
+        }
         let mut encoded = [0u8; 4];
         buffer.insert_str(cursor, character.encode_utf8(&mut encoded));
         cursor += character.len_utf8();
@@ -145,16 +151,20 @@ fn type_steps(current: &str, target: Target, text: &str) -> Vec<Step> {
 
 fn bump(current: &str, target: Target) -> Option<String> {
     let (start, end) = block_range(current, target)?;
-    let offset = current[start..end].find(|c: char| c.is_ascii_alphabetic())? + start;
-    let letter = current.as_bytes()[offset];
-    let next = match letter {
-        b'z' => b'a',
-        b'Z' => b'A',
-        other => other + 1,
+    let offset = current
+        .get(start..end)?
+        .find(|c: char| c.is_ascii_alphabetic())?
+        + start;
+    let (before, rest) = current.split_at_checked(offset)?;
+    let mut rest = rest.chars();
+    let next = match rest.next()? {
+        'z' => 'a',
+        'Z' => 'A',
+        other => char::from(u8::try_from(other).ok()? + 1),
     };
-    let mut out = String::from(&current[..offset]);
-    out.push(char::from(next));
-    out.push_str(&current[offset + 1..]);
+    let mut out = String::from(before);
+    out.push(next);
+    out.push_str(rest.as_str());
     Some(out)
 }
 

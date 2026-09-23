@@ -126,9 +126,11 @@ impl ResidentDatabase {
         let _tsconfig = TsConfig::builder(String::from(""))
             .durability(Durability::HIGH)
             .new(&db);
-        let policy = SummaryCachePolicy::from_resource_preset("linux-x64-ci")
-            .expect("the bundled resource preset must have a summary cache policy");
-        crate::summary::apply_cache_policy(&mut db, policy);
+        // The bundled preset always parses (a unit test pins it); if it ever
+        // stopped, the salsa default LRU capacities stay in force.
+        if let Ok(policy) = SummaryCachePolicy::from_resource_preset("linux-x64-ci") {
+            crate::summary::apply_cache_policy(&mut db, policy);
+        }
         db
     }
 

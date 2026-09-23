@@ -24,16 +24,18 @@
 //! its own file and every other file keeps answering.
 
 pub mod cancel;
+mod compute;
 pub mod isolate;
 pub mod region;
 mod shift;
 
-// Snapshots are immutable and shared between the tree that computed them and
-// every later tree that adopts them, possibly on another worker thread.
-#[allow(clippy::disallowed_types)]
+#[expect(
+    clippy::disallowed_types,
+    reason = "snapshots are immutable and shared between the tree that computed them and \
+              every later tree that adopts them, possibly on another worker thread"
+)]
 type Shared<T> = std::sync::Arc<T>;
 
-use vize_davinci::key::ArtifactKey;
 use vize_s0::String;
 use vize_s1_to_s2::LegacyCaps;
 
@@ -42,8 +44,7 @@ use crate::artifact::{
     page_artifact, split_blocks, surface_artifact,
 };
 use cancel::{CancelToken, Cancelled};
-use region::{RegionLowering, RegionSyntax, assemble, lower_region, split_regions};
-use shift::shifted;
+use region::{RegionLowering, RegionSyntax, lower_region};
 
 /// The stage functions a snapshot update calls — the real ones by default;
 /// a test substitutes a failing stage to exercise isolation.
@@ -54,7 +55,7 @@ pub struct Stages {
     /// The S2 artifact of a block lowered whole.
     pub page: fn(&BlockSource, StageConfig) -> Option<PageArtifact>,
     /// The lowering of one template region.
-    pub region: fn(&str, &RegionSyntax, LegacyCaps) -> RegionLowering,
+    pub region: fn(&str, &RegionSyntax, LegacyCaps) -> Option<RegionLowering>,
 }
 
 impl Stages {
@@ -184,7 +185,7 @@ impl SnapshotTree {
         }
         let mut blocks = Vec::with_capacity(slots.len());
         for (index, slot) in slots.into_iter().enumerate() {
-            let old = adoptable.map(|old| &old.blocks[index]);
+            let old = adoptable.and_then(|old| old.blocks.get(index));
             let block_token = token.child();
             let (snapshot, region_tokens) = match old {
                 Some(old) if old.snapshot.source == slot.source => {
@@ -203,8 +204,14 @@ impl SnapshotTree {
                     }
                     stats.blocks.computed += 1;
                     let old = old.map(|old| &old.snapshot);
-                    let (computed, region_tokens) =
-                        compute_block(slot.source, old, config, stages, &block_token, &mut stats)?;
+                    let (computed, region_tokens) = compute::compute_block(
+                        slot.source,
+                        old,
+                        config,
+                        stages,
+                        &block_token,
+                        &mut stats,
+                    )?;
                     (Shared::new(computed), region_tokens)
                 }
             };
@@ -259,82 +266,4 @@ impl SnapshotTree {
         }
         tokens
     }
-}
-
-/// A changed block's task: S1 whole, S2 by regions when the template splits.
-fn compute_block(
-    source: BlockSource,
-    old: Option<&Shared<BlockSnapshot>>,
-    config: StageConfig,
-    stages: &Stages,
-    token: &CancelToken,
-    stats: &mut SnapshotStats,
-) -> Result<(BlockSnapshot, Vec<CancelToken>), Cancelled> {
-    token.check()?;
-    let surface = (stages.surface)(&source);
-    let decomposed = (source.kind == BlockKind::Template && surface.is_some())
-        .then(|| split_regions(source.text.as_str()))
-        .flatten();
-    let Some(syntaxes) = decomposed else {
-        token.check()?;
-        let page = (stages.page)(&source, config);
-        let snapshot = BlockSnapshot {
-            source,
-            surface,
-            page,
-            regions: Vec::new(),
-        };
-        return Ok((snapshot, Vec::new()));
-    };
-    let old_regions = old.map_or(&[][..], |old| old.regions.as_slice());
-    let caps = LegacyCaps::for_version(config.vue_version);
-    let mut regions: Vec<_> = Vec::with_capacity(syntaxes.len());
-    let mut tokens = Vec::with_capacity(syntaxes.len());
-    let mut used = vec![false; old_regions.len()];
-    for syntax in syntaxes {
-        token.check()?;
-        let found = old_regions
-            .iter()
-            .enumerate()
-            .find(|(index, old)| !used[*index] && old.syntax.text == syntax.text);
-        match found {
-            Some((index, old)) => {
-                used[index] = true;
-                stats.regions.adopted += 1;
-                tokens.push(token.child());
-                if old.syntax.start == syntax.start {
-                    regions.push(old.clone());
-                } else {
-                    // The same bytes moved inside the block: adopt the
-                    // lowering with its spans moved, no stage work.
-                    let lowering = shifted(&old.lowering, old.syntax.start, syntax.start);
-                    regions.push(Shared::new(RegionSnapshot { syntax, lowering }));
-                }
-            }
-            None => {
-                stats.regions.computed += 1;
-                let region_token = token.child();
-                let lowering = (stages.region)(source.text.as_str(), &syntax, caps);
-                region_token.check()?;
-                tokens.push(region_token);
-                regions.push(Shared::new(RegionSnapshot { syntax, lowering }));
-            }
-        }
-    }
-    // The replaced block's token was cancelled by the caller, which cascaded
-    // to every old region task; the ones not adopted are the cancelled work.
-    stats.regions.cancelled += used.iter().filter(|used| !**used).count() as u32;
-    let (folio, diagnostics) = assemble(regions.iter().map(|region| &region.lowering));
-    let page = PageArtifact {
-        key: ArtifactKey::of(&folio, 0),
-        folio,
-        diagnostics,
-    };
-    let snapshot = BlockSnapshot {
-        source,
-        surface,
-        page: Some(page),
-        regions,
-    };
-    Ok((snapshot, tokens))
 }

@@ -9,6 +9,8 @@
 //! the harness can see the bug class it exists for. The corpus shard runs
 //! the same harness in CI (`davinci-incremental.yml`).
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::path::{Path, PathBuf};
 
 use vize_resident::equivalence::{EditScript, EquivalenceReport, parse_script};

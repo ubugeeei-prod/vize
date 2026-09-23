@@ -5,6 +5,15 @@
 //! region: adopted / computed / cancelled), and every tree's artifacts equal
 //! the clean path. The fixture's template has three root regions.
 
+#![cfg_attr(
+    not(feature = "seeded-stale-cache"),
+    expect(
+        clippy::expect_used,
+        clippy::panic,
+        clippy::string_slice,
+        reason = "tests assert by panicking"
+    )
+)]
 #![cfg(not(feature = "seeded-stale-cache"))]
 
 use std::cell::{Cell, RefCell};
@@ -191,7 +200,11 @@ thread_local! {
 }
 
 /// A region stage that cancels the running update after its first region.
-fn cancelling_region(block: &str, region: &RegionSyntax, caps: LegacyCaps) -> RegionLowering {
+fn cancelling_region(
+    block: &str,
+    region: &RegionSyntax,
+    caps: LegacyCaps,
+) -> Option<RegionLowering> {
     REGIONS_LOWERED.with(|count| count.set(count.get() + 1));
     CANCEL_ON_REGION.with(|token| token.borrow().as_ref().map(CancelToken::cancel));
     lower_region(block, region, caps)

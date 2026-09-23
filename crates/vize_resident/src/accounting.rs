@@ -35,10 +35,12 @@ pub(crate) type Record = (IngredientIndex, bool);
 /// salsa clones per snapshot — hence the shared owner.
 #[derive(Clone, Default)]
 pub(crate) struct Recorder {
-    // Shared between the storage's event callback and every database clone
-    // (salsa clones the handle per snapshot); a scoped reference cannot
-    // outlive the storage that owns the callback.
-    #[allow(clippy::disallowed_types)]
+    #[expect(
+        clippy::disallowed_types,
+        reason = "shared between the storage's event callback and every database clone \
+                  (salsa clones the handle per snapshot); a scoped reference cannot outlive \
+                  the storage that owns the callback"
+    )]
     records: std::sync::Arc<Mutex<Vec<Record>>>,
 }
 

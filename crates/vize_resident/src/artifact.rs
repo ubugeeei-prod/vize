@@ -173,7 +173,7 @@ pub fn split_blocks(text: &str) -> Vec<BlockSlot> {
     };
     let mut slots = Vec::new();
     let mut push = |kind: BlockKind, ordinal: usize, start: usize, end: usize, attrs| {
-        slots.push(slot(text, kind, ordinal, start, end, attrs));
+        slots.extend(slot(text, kind, ordinal, start, end, attrs));
     };
     if let Some(template) = &descriptor.template {
         push(
@@ -230,8 +230,8 @@ fn slot(
     start: usize,
     end: usize,
     attrs: &HeaderAttrs<'_>,
-) -> BlockSlot {
-    let content = &text[start..end];
+) -> Option<BlockSlot> {
+    let content = text.get(start..end)?;
     let mut pairs: Vec<(String, String)> = attrs
         .iter()
         .map(|(name, value)| (String::from(name.as_ref()), String::from(value.as_ref())))
@@ -242,9 +242,9 @@ fn slot(
         .map(|(name, value)| (name.as_str(), Some(value.as_str())))
         .collect();
     let key = source_block_key(kind.tag(), &borrowed, content);
-    BlockSlot {
-        start: u32::try_from(start).expect("SFC sources are u32-addressed"),
-        ordinal: u32::try_from(ordinal).expect("block ordinals fit u32"),
+    Some(BlockSlot {
+        start: u32::try_from(start).ok()?,
+        ordinal: u32::try_from(ordinal).ok()?,
         source: BlockSource {
             kind: kind.clone(),
             attrs: pairs,
@@ -252,7 +252,7 @@ fn slot(
             key,
         },
         kind,
-    }
+    })
 }
 
 /// Whether a template block is HTML (the only S1 input language today).

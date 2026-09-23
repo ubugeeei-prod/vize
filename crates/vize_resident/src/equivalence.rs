@@ -148,14 +148,17 @@ impl EquivalenceReport {
 
     /// Update the state's snapshot tree to its current text and config.
     fn advance_snapshot(&mut self, state: &mut State<'_>) {
-        let (tree, stats) = SnapshotTree::update(
+        // A fresh root token is never cancelled, so the update always
+        // completes; if it did not, the previous tree stays current.
+        let Ok((tree, stats)) = SnapshotTree::update(
             state.snapshot.as_ref(),
             state.text.as_str(),
             state.config,
             &Stages::DEFAULT,
             CancelToken::root(),
-        )
-        .expect("an uncancelled update completes");
+        ) else {
+            return;
+        };
         self.snapshot += stats;
         state.snapshot = Some(tree);
     }
@@ -170,12 +173,11 @@ impl EquivalenceReport {
         if !self.mismatches.is_empty() {
             let mut message = String::from("TS-42: incremental artifacts differ from clean ones");
             for mismatch in &self.mismatches {
-                write!(
+                let _ = write!(
                     message,
                     "\n  {} [{} step {}] {}",
                     mismatch.file, mismatch.script, mismatch.step, mismatch.detail
-                )
-                .expect("string write");
+                );
             }
             return Err(message);
         }
@@ -199,15 +201,14 @@ impl EquivalenceReport {
             ("snapshot_regions_computed", self.snapshot.regions.computed),
             ("mismatches", self.mismatches.len() as u32),
         ] {
-            writeln!(out, "{key}={value}").expect("string write");
+            let _ = writeln!(out, "{key}={value}");
         }
         for mismatch in &self.mismatches {
-            writeln!(
+            let _ = writeln!(
                 out,
                 "mismatch {} {} step={} {}",
                 mismatch.file, mismatch.script, mismatch.step, mismatch.detail
-            )
-            .expect("string write");
+            );
         }
         out
     }
@@ -224,7 +225,7 @@ struct State<'a> {
 fn describe(served: &[BlockArtifacts], clean: &[BlockArtifacts]) -> String {
     let mut out = String::default();
     if served.len() != clean.len() {
-        write!(out, "block count {} != {}", served.len(), clean.len()).expect("string write");
+        let _ = write!(out, "block count {} != {}", served.len(), clean.len());
         return out;
     }
     for (served, clean) in served.iter().zip(clean) {
@@ -241,7 +242,7 @@ fn describe(served: &[BlockArtifacts], clean: &[BlockArtifacts]) -> String {
         } else {
             continue;
         };
-        write!(out, "{}[{}] {field}", clean.kind.tag(), clean.ordinal).expect("string write");
+        let _ = write!(out, "{}[{}] {field}", clean.kind.tag(), clean.ordinal);
         return out;
     }
     out

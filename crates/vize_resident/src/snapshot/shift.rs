@@ -11,14 +11,20 @@ use vize_s2::folio::{
 
 use super::region::RegionLowering;
 
-/// A copy of `lowering` whose spans moved from `from` to `to`.
+/// A copy of `lowering` whose spans moved from `from` to `to`, or `None` when
+/// a moved span would leave the `u32` offset range.
 #[must_use]
-pub fn shifted(lowering: &RegionLowering, from: u32, to: u32) -> RegionLowering {
+pub fn shifted(lowering: &RegionLowering, from: u32, to: u32) -> Option<RegionLowering> {
     let mut moved = lowering.clone();
     let delta = i64::from(to) - i64::from(from);
+    let mut in_range = true;
     let mut shift = |span: &mut Span| {
-        span.start = offset(span.start, delta);
-        span.end = offset(span.end, delta);
+        for position in [&mut span.start, &mut span.end] {
+            match u32::try_from(i64::from(*position) + delta) {
+                Ok(moved) => *position = moved,
+                Err(_) => in_range = false,
+            }
+        }
     };
     for op in &mut moved.ops {
         shift_op(op, &mut shift);
@@ -26,11 +32,7 @@ pub fn shifted(lowering: &RegionLowering, from: u32, to: u32) -> RegionLowering 
     for diagnostic in moved.surface.iter_mut().chain(&mut moved.semantic) {
         shift_diagnostic(diagnostic, &mut shift);
     }
-    moved
-}
-
-fn offset(position: u32, delta: i64) -> u32 {
-    u32::try_from(i64::from(position) + delta).expect("a moved span stays inside its block")
+    in_range.then_some(moved)
 }
 
 type Shift<'s> = dyn FnMut(&mut Span) + 's;

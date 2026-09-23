@@ -57,8 +57,10 @@ pub fn update_isolated(job: FileJob<'_>, config: StageConfig, stages: &Stages) -
 
 /// The message of a panic payload: `panic!` with a literal carries a
 /// `&str`, with a formatted message a std `String`.
-// The payload's std `String` is what `panic!` produced; it is read, not kept.
-#[allow(clippy::disallowed_types)]
+#[expect(
+    clippy::disallowed_types,
+    reason = "the payload's std `String` is what `panic!` produced; it is read, not kept"
+)]
 fn panic_message(payload: &(dyn std::any::Any + Send)) -> String {
     payload
         .downcast_ref::<&str>()
@@ -95,8 +97,13 @@ pub fn update_files_isolated(
                         break;
                     };
                     let outcome = update_isolated(job, config, stages);
-                    results.lock().unwrap_or_else(|poison| poison.into_inner())[index] =
-                        Some(outcome);
+                    if let Some(slot) = results
+                        .lock()
+                        .unwrap_or_else(|poison| poison.into_inner())
+                        .get_mut(index)
+                    {
+                        *slot = Some(outcome);
+                    }
                 }
             });
         }
@@ -105,6 +112,9 @@ pub fn update_files_isolated(
         .into_inner()
         .unwrap_or_else(|poison| poison.into_inner())
         .into_iter()
-        .map(|outcome| outcome.expect("every job ran"))
+        .map(|outcome| {
+            outcome
+                .unwrap_or_else(|| FileOutcome::Degraded(String::from("file update did not run")))
+        })
         .collect()
 }

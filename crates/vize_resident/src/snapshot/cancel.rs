@@ -15,10 +15,12 @@ struct Node {
 /// A cancellation token. Clones share the flag.
 #[derive(Debug, Clone)]
 pub struct CancelToken(
-    // Tokens are shared by the task that polls them and the owner that
-    // cancels them, across worker threads; a scoped reference cannot span
-    // both lifetimes.
-    #[allow(clippy::disallowed_types)] std::sync::Arc<Node>,
+    #[expect(
+        clippy::disallowed_types,
+        reason = "tokens are shared by the task that polls them and the owner that cancels \
+                  them, across worker threads; a scoped reference cannot span both lifetimes"
+    )]
+    std::sync::Arc<Node>,
 );
 
 /// A task stopped because its token (or an ancestor's) was cancelled.
@@ -32,7 +34,7 @@ impl CancelToken {
         Self::with_parent(None)
     }
 
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "builds the shared token node")]
     fn with_parent(parent: Option<CancelToken>) -> Self {
         Self(std::sync::Arc::new(Node {
             cancelled: AtomicBool::new(false),

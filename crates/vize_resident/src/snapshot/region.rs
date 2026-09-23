@@ -50,8 +50,7 @@ pub fn split_regions(block: &str) -> Option<Vec<RegionSyntax>> {
         .map(|child| first_token(child).leading.as_ptr() as usize - base)
         .collect();
     let mut ranges: Vec<(usize, usize)> = Vec::new();
-    for (index, child) in tree.children.iter().enumerate() {
-        let start = starts[index];
+    for (index, (child, &start)) in tree.children.iter().zip(&starts).enumerate() {
         let end = starts.get(index + 1).copied().unwrap_or(block.len());
         match child {
             SurfaceChild::Text(token) if is_dropped_whitespace(token) => {}
@@ -65,37 +64,42 @@ pub fn split_regions(block: &str) -> Option<Vec<RegionSyntax>> {
             _ => return None,
         }
     }
-    Some(
-        ranges
-            .into_iter()
-            .map(|(start, end)| RegionSyntax {
-                start: u32::try_from(start).expect("u32 block"),
-                text: String::from(&block[start..end]),
+    ranges
+        .into_iter()
+        .map(|(start, end)| {
+            Some(RegionSyntax {
+                start: u32::try_from(start).ok()?,
+                text: String::from(block.get(start..end)?),
             })
-            .collect(),
-    )
+        })
+        .collect()
 }
 
-/// Lower one region of `block` against the block frame (block-relative spans).
+/// Lower one region of `block` against the block frame (block-relative spans),
+/// or `None` when `region` is not a slice of `block`.
 #[must_use]
-pub fn lower_region(block: &str, region: &RegionSyntax, caps: LegacyCaps) -> RegionLowering {
+pub fn lower_region(
+    block: &str,
+    region: &RegionSyntax,
+    caps: LegacyCaps,
+) -> Option<RegionLowering> {
     let start = region.start as usize;
-    let slice = &block[start..start + region.text.len()];
+    let slice = block.get(start..start + region.text.len())?;
     let allocator = Allocator::default();
     let (tree, errors) = vize_s1::parse(&allocator, slice);
     let frame = SourceRoot::new(block)
         .and_then(|root| root.block(slice, region.start))
-        .expect("a region is a slice of its block");
+        .ok()?;
     let lowered = lower_source_block_with_caps(&allocator, &tree, &errors, frame, caps);
     let (surface, semantic) = lowered
         .diagnostics
         .into_iter()
         .partition(|diagnostic| diagnostic.stage == Stage::Surface);
-    RegionLowering {
+    Some(RegionLowering {
         ops: S2Folio::of(&lowered.root.ops).ops,
         surface,
         semantic,
-    }
+    })
 }
 
 /// Concatenate region lowerings in document order: every region's ops, then

@@ -17,9 +17,11 @@ use vize_s0::{FxHashMap, String};
 use crate::accounting::Accounting;
 use crate::db::{ResidentDatabase, SourceFile};
 
-// One revision's descriptor is shared by every request that reads it, and a
-// request may outlive the lock it was fetched under.
-#[allow(clippy::disallowed_types)]
+#[expect(
+    clippy::disallowed_types,
+    reason = "one revision's descriptor is shared by every request that reads it, and a \
+              request may outlive the lock it was fetched under"
+)]
 type Shared<T> = std::sync::Arc<T>;
 
 /// One revision's parsed descriptor, shared by every reader of that

@@ -1,6 +1,8 @@
 //! P5-6a: the SFC descriptor query — one parse per buffer revision, exact
 //! accounting, and every served descriptor equal to the clean parse.
 
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+
 use core::fmt::Write as _;
 
 use vize_resident::descriptor::parse_descriptor;
