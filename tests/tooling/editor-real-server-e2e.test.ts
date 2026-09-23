@@ -197,14 +197,17 @@ test("CI executes the packaged Emacs ERT suite", () => {
   assert.ok(setupIndex < runIndex, "Emacs setup must run before the ERT suite");
 });
 
-test("check.yml keeps the editor real-server job in the required set", () => {
+test("check.yml keeps the editor real-server job in main and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
 
   assert.match(
     workflow,
     /\n  editor-host-smoke:\n[\s\S]*?uses: \.\/\.github\/actions\/vscode-host-smoke\n/,
   );
-  assert.match(workflow, /\n      - editor-host-smoke\n/);
+  assert.match(
+    workflow,
+    /\n  editor-host-smoke:\n    runs-on: [^\n]+\n    if: \$\{\{ github\.event_name != 'pull_request' \}\}/,
+  );
 });
 
 test("the packaged Neovim archive ships the real-server scenario", () => {

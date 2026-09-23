@@ -154,11 +154,14 @@ test("Maestro scorecard gates editor breadth through CI-backed artifacts", () =>
   const hostAction = readRepoFile(".github", "actions", "vscode-host-smoke", "action.yml");
   const hostJob = workflowJobBody(workflow, "editor-host-smoke");
   assert.match(hostJob, /uses: \.\/\.github\/actions\/vscode-host-smoke/);
-  const jobs = (parse(workflow) as { jobs: Record<string, { needs?: string[] | string }> }).jobs;
+  const jobs = (
+    parse(workflow) as { jobs: Record<string, { if?: string; needs?: string[] | string }> }
+  ).jobs;
+  assert.equal(jobs["editor-host-smoke"]?.if, "${{ github.event_name != 'pull_request' }}");
   const reportNeeds = jobs["test-report"]?.needs ?? [];
   assert.ok(
-    (Array.isArray(reportNeeds) ? reportNeeds : [reportNeeds]).includes("editor-host-smoke"),
-    "test-report must aggregate the editor-host-smoke gate",
+    !(Array.isArray(reportNeeds) ? reportNeeds : [reportNeeds]).includes("editor-host-smoke"),
+    "the two-minute PR report must leave editor-host-smoke to main and manual Check",
   );
 
   for (const row of scorecard.editorBreadth) {

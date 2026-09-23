@@ -102,7 +102,6 @@ interface WorkflowTrigger {
 
 interface WorkflowConfig {
   on: {
-    pull_request: WorkflowTrigger;
     push: WorkflowTrigger;
     workflow_dispatch?: unknown;
   };
@@ -121,13 +120,15 @@ function stepsRunning(steps: WorkflowStep[], command: string): number[] {
 
 function assertTriggerFilters(workflowConfig: WorkflowConfig): void {
   assert.ok(Object.hasOwn(workflowConfig.on, "workflow_dispatch"), "missing workflow_dispatch");
-  for (const event of ["pull_request", "push"] as const) {
-    const trigger = workflowConfig.on[event];
-    assert.deepEqual(trigger.branches, ["main"], `${event} trigger must target main`);
-    assert.ok(Array.isArray(trigger.paths), `${event} trigger must declare paths`);
-    for (const pathFilter of REQUIRED_TRIGGER_PATHS) {
-      assert.ok(trigger.paths.includes(pathFilter), `${event} paths missing ${pathFilter}`);
-    }
+  assert.ok(
+    !Object.hasOwn(workflowConfig.on, "pull_request"),
+    "full Content Mapper conformance must stay off the fast PR path",
+  );
+  const trigger = workflowConfig.on.push;
+  assert.deepEqual(trigger.branches, ["main"], "push trigger must target main");
+  assert.ok(Array.isArray(trigger.paths), "push trigger must declare paths");
+  for (const pathFilter of REQUIRED_TRIGGER_PATHS) {
+    assert.ok(trigger.paths.includes(pathFilter), `push paths missing ${pathFilter}`);
   }
 }
 

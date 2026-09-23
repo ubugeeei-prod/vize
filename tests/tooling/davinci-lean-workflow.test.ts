@@ -21,7 +21,7 @@ type Step = {
   with?: Record<string, unknown>;
 };
 type Workflow = {
-  on: Record<"push" | "pull_request", { paths: string[] }>;
+  on: { push: { branches: string[]; paths: string[] }; workflow_dispatch: unknown };
   jobs: Record<string, { steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
 };
 
@@ -41,6 +41,9 @@ function leanSources(root: string = formalRoot): string[] {
 }
 
 function assertLeanWorkflow(workflow: Workflow): void {
+  assert.deepEqual(workflow.on.push.branches, ["main", "davinci"]);
+  assert.ok(Object.hasOwn(workflow.on, "workflow_dispatch"));
+  assert.ok(!Object.hasOwn(workflow.on, "pull_request"));
   const job = workflow.jobs["impeto-reference"];
   assert.ok(job);
   assert.equal(job.if, undefined);
@@ -81,12 +84,10 @@ function assertLeanWorkflow(workflow: Workflow): void {
       ],
     ],
   );
-  for (const event of ["push", "pull_request"] as const) {
-    for (const file of ["davinci-runtime-trace.mjs", "davinci-mounted-trace.mjs"]) {
-      assert.ok(workflow.on[event].paths.includes(`tests/tooling/support/${file}`));
-    }
-    assert.ok(workflow.on[event].paths.includes("tests/tooling/support/davinci-event-*.mjs"));
+  for (const file of ["davinci-runtime-trace.mjs", "davinci-mounted-trace.mjs"]) {
+    assert.ok(workflow.on.push.paths.includes(`tests/tooling/support/${file}`));
   }
+  assert.ok(workflow.on.push.paths.includes("tests/tooling/support/davinci-event-*.mjs"));
 }
 
 test("TS-28 pins the Lean toolchain and CI package directory", () => {

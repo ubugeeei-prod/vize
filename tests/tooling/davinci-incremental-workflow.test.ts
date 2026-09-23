@@ -1,5 +1,5 @@
 // P5-9 / P5-1a: the incrementality workflow keeps its shape — TS-42 runs on
-// every PR touching the resident tier, over the corpus shard, with the seeded
+// every matching main/davinci push, over the corpus shard, with the seeded
 // stale-cache defect proven caught; TS-43 runs on a Linux and a macOS lane.
 
 import assert from "node:assert/strict";
@@ -18,7 +18,7 @@ type Job = {
   steps: Step[];
 };
 type Workflow = {
-  on: Record<"push" | "pull_request", { paths: string[] }>;
+  on: { push: { branches: string[]; paths: string[] }; workflow_dispatch: unknown };
   jobs: Record<string, Job>;
 };
 
@@ -36,18 +36,19 @@ function runs(job: Job): string[] {
 }
 
 test("the incrementality workflow triggers on the resident tier and its keyers", () => {
-  for (const event of ["push", "pull_request"] as const) {
-    const paths = workflow.on[event].paths;
-    for (const required of [
-      "crates/vize_resident/**",
-      "crates/vize_davinci/**",
-      "crates/vize_s2/**",
-      "crates/vize_s1_to_s2/**",
-      "tools/commands/davinci/incremental-equivalence/**",
-      ".github/workflows/davinci-incremental.yml",
-    ]) {
-      assert.ok(paths.includes(required), `${event} must trigger on ${required}`);
-    }
+  assert.deepEqual(workflow.on.push.branches, ["main", "davinci"]);
+  assert.ok(Object.hasOwn(workflow.on, "workflow_dispatch"));
+  assert.ok(!Object.hasOwn(workflow.on, "pull_request"));
+  const paths = workflow.on.push.paths;
+  for (const required of [
+    "crates/vize_resident/**",
+    "crates/vize_davinci/**",
+    "crates/vize_s2/**",
+    "crates/vize_s1_to_s2/**",
+    "tools/commands/davinci/incremental-equivalence/**",
+    ".github/workflows/davinci-incremental.yml",
+  ]) {
+    assert.ok(paths.includes(required), `push must trigger on ${required}`);
   }
 });
 

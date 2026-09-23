@@ -70,17 +70,14 @@ test("TS-40 baselines are wired into exact Content Mapper CI", () => {
   );
   const parsed = parse(workflow) as {
     on?: {
-      pull_request?: { paths?: string[] };
       push?: { paths?: string[] };
+      workflow_dispatch?: unknown;
     };
   };
-  const pullRequestPaths = parsed.on?.pull_request?.paths;
   const pushPaths = parsed.on?.push?.paths;
-  assert.ok(
-    Array.isArray(pullRequestPaths),
-    "Content Mapper CI must define pull_request path filters",
-  );
   assert.ok(Array.isArray(pushPaths), "Content Mapper CI must define push path filters");
+  assert.ok(parsed.on && Object.hasOwn(parsed.on, "workflow_dispatch"));
+  assert.ok(parsed.on && !Object.hasOwn(parsed.on, "pull_request"));
 
   for (const command of [
     "cargo test -p vize --test davinci_ts40_projection_cli -- --nocapture",
@@ -98,11 +95,6 @@ test("TS-40 baselines are wired into exact Content Mapper CI", () => {
     "crates/vize_maestro/src/virtual_code.rs",
     "crates/vize_maestro/src/virtual_code/**",
   ]) {
-    assert.equal(
-      pullRequestPaths.includes(trigger),
-      true,
-      `${trigger} must trigger pull-request TS-40 CI`,
-    );
     assert.equal(pushPaths.includes(trigger), true, `${trigger} must trigger push TS-40 CI`);
   }
 });

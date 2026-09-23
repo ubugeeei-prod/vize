@@ -24,7 +24,7 @@ const packageArgs = portableStageCrates.map(([packageName]) => `-p ${packageName
 const defaultLane = `cargo build ${packageArgs} --lib --target wasm32-wasip2`;
 const noDefaultLane = `${defaultLane} --no-default-features`;
 
-test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () => {
+test("TS-24: the wasm32-wasip2 lanes run in main and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "clippy-and-test");
   const suite = readRepoFile("davinci-road", "plan", "test-suites.md");
@@ -36,16 +36,14 @@ test("TS-24: the wasm32-wasip2 lanes ride the required clippy-and-test job", () 
     "the normative TS-24 row must pin the same six-library commands as CI",
   );
 
-  // Required on every pull request: clippy-and-test carries no event guard,
-  // and it sits in the `needs:` list of test-report, the required status
-  // check (tests/tooling/github-workflows-check-gate.test.ts deep-equals that
-  // list, so membership cannot drift without failing there too).
-  assert.doesNotMatch(
+  // The full portability suite runs on main and manual Check; the PR report
+  // remains bounded by its separate fast-check contract.
+  assert.match(
     job,
-    /^ {4}if:/m,
-    "clippy-and-test must stay unconditional: TS-24 is required for the core crates",
+    /^ {4}if: \$\{\{ github\.event_name != 'pull_request' \}\}$/m,
+    "clippy-and-test must run on main and manual Check",
   );
-  assert.match(workflowJobBody(workflow, "test-report"), /- clippy-and-test\b/);
+  assert.doesNotMatch(workflowJobBody(workflow, "test-report"), /- clippy-and-test\b/);
 
   // The wasip2 std installs through the pinned toolchain: cargo runs under
   // rust-toolchain.toml (channel 1.95.0), so a `targets:` input on the

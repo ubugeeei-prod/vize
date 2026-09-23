@@ -45,14 +45,13 @@ const namedStep = (job: Job | undefined, name: string): Step => {
   return found;
 };
 
-test("App E2E keeps PR, nightly, dispatch, and immutable run identity", () => {
+test("App E2E keeps nightly, dispatch, and immutable run identity", () => {
   const workflow = loadWorkflow();
   const triggers = workflow.on ?? {};
-  assert.ok(triggers.pull_request);
+  assert.ok(!Object.hasOwn(triggers, "pull_request"));
   assert.ok(triggers.schedule);
   assert.ok(triggers.workflow_dispatch);
   assert.deepEqual(workflow.permissions, { contents: "read" });
-  assert.match(workflow["run-name"] ?? "", /readiness-pr-/);
   assert.match(workflow["run-name"] ?? "", /inputs\.target_sha \|\| github\.sha/);
   assert.equal(workflow.env?.E2E_TARGET_SHA, "${{ inputs.target_sha || github.sha }}");
   assert.equal(workflow.concurrency?.["cancel-in-progress"], true);

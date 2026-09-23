@@ -84,20 +84,15 @@ function workflowUsesStep(job: WorkflowJob, uses: string): WorkflowStep {
   return step;
 }
 
-test("fresco workflow runs on fresco source changes across both trigger events", () => {
+test("fresco workflow runs on main source changes and manual dispatch", () => {
   const workflow = readRepoFile(".github", "workflows", "fresco.yml");
+  assert.doesNotMatch(workflow, /\n  pull_request:\n/u);
 
-  for (const event of ["pull_request", "push"]) {
-    const trigger = workflow.slice(workflow.indexOf(`\n  ${event}:\n`));
-    assert.match(trigger, /branches: \[main\]\n\s+paths:/, `${event} must filter paths`);
-  }
+  const trigger = workflow.slice(workflow.indexOf("\n  push:\n"));
+  assert.match(trigger, /branches: \[main\]\n\s+paths:/, "push must filter paths");
   for (const relevantPath of RELEVANT_PATHS) {
     const pattern = new RegExp(`- ${relevantPath.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "g");
-    assert.equal(
-      [...workflow.matchAll(pattern)].length,
-      2,
-      `${relevantPath} must gate both pull_request and push`,
-    );
+    assert.equal([...workflow.matchAll(pattern)].length, 1, `${relevantPath} must gate push`);
   }
   assert.match(workflow, /\n  workflow_dispatch:\n/);
 });
