@@ -99,14 +99,18 @@ pub fn rewrite_static_asset_urls(code: &str, alias_rules: &[DynamicImportAliasRu
             continue;
         };
 
-        let full_path = &code[candidate.value_start..candidate.value_end];
+        let full_path = code
+            .get(candidate.value_start..candidate.value_end)
+            .unwrap_or_default();
         if !is_script_asset(full_path)
             && alias_rules
                 .iter()
                 .any(|rule| full_path.starts_with(rule.from_prefix.as_str()))
         {
-            output.push_str(&code[last..candidate.prefix_start]);
-            output.push_str(&code[candidate.prefix_start..candidate.value_prefix_end]);
+            output.push_str(
+                code.get(last..candidate.value_prefix_end)
+                    .unwrap_or_default(),
+            );
             let var_name = push_static_import(&mut imports, counter, full_path);
             output.push_str(var_name.as_str());
             counter += 1;
@@ -121,7 +125,7 @@ pub fn rewrite_static_asset_urls(code: &str, alias_rules: &[DynamicImportAliasRu
         return String::from(code);
     }
 
-    output.push_str(&code[last..]);
+    output.push_str(code.get(last..).unwrap_or_default());
     let import_bytes = imports
         .iter()
         .fold(0usize, |acc, import| acc + import.len() + 1);
@@ -270,10 +274,13 @@ fn apply_string_literal_replacements(
     let mut changed = false;
 
     for replacement in replacements {
-        if replacement.start < last || replacement.end > code.len() {
+        let Some(before) = code
+            .get(last..replacement.start)
+            .filter(|_| replacement.end <= code.len())
+        else {
             continue;
-        }
-        output.push_str(&code[last..replacement.start]);
+        };
+        output.push_str(before);
         push_js_string_literal(&mut output, replacement.value.as_str());
         last = replacement.end;
         changed = true;
@@ -283,7 +290,7 @@ fn apply_string_literal_replacements(
         return String::from(code);
     }
 
-    output.push_str(&code[last..]);
+    output.push_str(code.get(last..).unwrap_or_default());
     output
 }
 
@@ -316,13 +323,14 @@ pub fn rewrite_dynamic_template_imports(
             continue;
         };
 
-        output.push_str(&code[last..cursor]);
+        output.push_str(code.get(last..cursor).unwrap_or_default());
         output.push_str("import(/* @vite-ignore */ `");
 
         let template_start = backtick + 1;
+        let template = code.get(template_start..).unwrap_or_default();
         if let Some(rule) = alias_rules
             .iter()
-            .find(|rule| code[template_start..].starts_with(rule.from_prefix.as_str()))
+            .find(|rule| template.starts_with(rule.from_prefix.as_str()))
         {
             output.push_str(rule.to_prefix.as_str());
             cursor = template_start + rule.from_prefix.len();
@@ -336,7 +344,7 @@ pub fn rewrite_dynamic_template_imports(
         return String::from(code);
     }
 
-    output.push_str(&code[last..]);
+    output.push_str(code.get(last..).unwrap_or_default());
     output
 }
 
@@ -389,7 +397,6 @@ pub fn to_browser_import_prefix(replacement: &str) -> String {
 }
 
 struct SrcCandidate {
-    prefix_start: usize,
     value_prefix_end: usize,
     value_start: usize,
     value_end: usize,
@@ -403,8 +410,8 @@ fn parse_src_candidate(code: &str, cursor: usize) -> Option<SrcCandidate> {
             // tail of `data_src`/`lazysrc` props would be rewritten too. Any
             // non-ASCII byte is part of a multi-byte character that may itself
             // be an identifier tail (`ésrc`), so reject it as well.
-            let preceding = cursor.checked_sub(1).map(|index| bytes[index]);
-            if preceding.is_some_and(|byte| !byte.is_ascii() || is_define_tail_byte(byte)) {
+            let preceding = cursor.checked_sub(1).and_then(|index| bytes.get(index));
+            if preceding.is_some_and(|&byte| !byte.is_ascii() || is_define_tail_byte(byte)) {
                 return None;
             }
             cursor + 3
@@ -430,13 +437,13 @@ fn parse_src_candidate(code: &str, cursor: usize) -> Option<SrcCandidate> {
     let value_start = quote_index + 1;
     let mut value_end = value_start;
     let mut has_escape = false;
-    while value_end < bytes.len() {
-        if bytes[value_end] == b'\\' {
+    while let Some(&byte) = bytes.get(value_end) {
+        if byte == b'\\' {
             // A backslash escapes the next byte, so an escaped quote does not
             // terminate the literal (`src: '/images/a\', b.jpg'`).
             has_escape = true;
             value_end += 2;
-        } else if bytes[value_end] == quote {
+        } else if byte == quote {
             break;
         } else {
             value_end += 1;
@@ -457,13 +464,12 @@ fn parse_src_candidate(code: &str, cursor: usize) -> Option<SrcCandidate> {
     // its closing quote.
     let after_value = skip_ascii_ws(bytes, value_end + 1);
     if !matches!(
-        after_value.map(|index| bytes[index]),
+        after_value.and_then(|index| bytes.get(index)),
         None | Some(b',') | Some(b'}') | Some(b')')
     ) {
         return None;
     }
     Some(SrcCandidate {
-        prefix_start: cursor,
         value_prefix_end: quote_index,
         value_start,
         value_end,
@@ -485,18 +491,9 @@ fn push_static_import(imports: &mut SmallVec<[String; 4]>, counter: usize, path:
     var_name
 }
 
-fn push_usize(output: &mut String, mut value: usize) {
-    let mut buffer = [0u8; 20];
-    let mut cursor = buffer.len();
-    loop {
-        cursor -= 1;
-        buffer[cursor] = b'0' + (value % 10) as u8;
-        value /= 10;
-        if value == 0 {
-            break;
-        }
-    }
-    output.push_str(std::str::from_utf8(&buffer[cursor..]).unwrap_or(""));
+fn push_usize(output: &mut String, value: usize) {
+    use std::fmt::Write as _;
+    let _ = write!(output, "{value}");
 }
 
 fn normalize_slashes(value: &str) -> String {
@@ -522,11 +519,11 @@ fn is_script_asset(path: &str) -> bool {
 }
 
 fn ends_with_ignore_ascii_case(value: &[u8], suffix: &[u8]) -> bool {
-    value.len() >= suffix.len()
-        && value[value.len() - suffix.len()..]
-            .iter()
-            .zip(suffix.iter())
-            .all(|(left, right)| left.eq_ignore_ascii_case(right))
+    value
+        .len()
+        .checked_sub(suffix.len())
+        .and_then(|start| value.get(start..))
+        .is_some_and(|tail| tail.eq_ignore_ascii_case(suffix))
 }
 
 fn is_import_boundary(bytes: &[u8], cursor: usize) -> bool {
@@ -562,13 +559,13 @@ fn replace_define_key(input: &str, key: &str, value: &str) -> String {
     let mut last = 0usize;
     let mut changed = false;
 
-    while cursor + key_bytes.len() <= input_bytes.len() {
-        if &input_bytes[cursor..cursor + key_bytes.len()] == key_bytes
+    while let Some(window) = input_bytes.get(cursor..cursor + key_bytes.len()) {
+        if window == key_bytes
             && input_bytes
                 .get(cursor + key_bytes.len())
                 .is_none_or(|byte| !is_define_tail_byte(*byte))
         {
-            output.push_str(&input[last..cursor]);
+            output.push_str(input.get(last..cursor).unwrap_or_default());
             output.push_str(value);
             cursor += key_bytes.len();
             last = cursor;
@@ -582,7 +579,7 @@ fn replace_define_key(input: &str, key: &str, value: &str) -> String {
         return String::from(input);
     }
 
-    output.push_str(&input[last..]);
+    output.push_str(input.get(last..).unwrap_or_default());
     output
 }
 

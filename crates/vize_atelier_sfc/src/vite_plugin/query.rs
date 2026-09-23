@@ -10,11 +10,11 @@ pub struct SplitRequest<'a> {
 
 /// Splits a Vite module ID without allocating.
 pub fn split_request(id: &str) -> SplitRequest<'_> {
-    if let Some(query_start) = id.find('?') {
+    if let Some((path, query_suffix)) = id.find('?').and_then(|start| id.split_at_checked(start)) {
         SplitRequest {
-            path: &id[..query_start],
-            query: &id[query_start + 1..],
-            query_suffix: &id[query_start..],
+            path,
+            query: query_suffix.get(1..).unwrap_or_default(),
+            query_suffix,
         }
     } else {
         SplitRequest {

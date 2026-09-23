@@ -14,7 +14,7 @@ pub(crate) fn push_js_string_literal(output: &mut String, value: &str) {
             '\u{08}' => Some("\\b"),
             '\u{0c}' => Some("\\f"),
             '\u{00}'..='\u{1f}' => {
-                output.push_str(&value[segment_start..index]);
+                output.push_str(value.get(segment_start..index).unwrap_or_default());
                 push_control_escape(output, char as u8);
                 segment_start = index + char.len_utf8();
                 None
@@ -23,21 +23,21 @@ pub(crate) fn push_js_string_literal(output: &mut String, value: &str) {
         };
 
         if let Some(escaped) = escaped {
-            output.push_str(&value[segment_start..index]);
+            output.push_str(value.get(segment_start..index).unwrap_or_default());
             output.push_str(escaped);
             segment_start = index + char.len_utf8();
         }
     }
 
-    output.push_str(&value[segment_start..]);
+    output.push_str(value.get(segment_start..).unwrap_or_default());
     output.push('"');
 }
 
 fn push_control_escape(output: &mut String, byte: u8) {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
     output.push_str("\\u00");
-    output.push(HEX[(byte >> 4) as usize] as char);
-    output.push(HEX[(byte & 0x0f) as usize] as char);
+    for nibble in [byte >> 4, byte & 0x0f] {
+        output.push(char::from_digit(u32::from(nibble), 16).unwrap_or('0'));
+    }
 }
 
 #[cfg(test)]

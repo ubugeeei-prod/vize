@@ -58,8 +58,10 @@ fn math_function_arguments_crash(bytes: &[u8], mut i: usize, single_arg: bool) -
     let mut depth = 1usize;
     let (mut any_percent, mut any_bare_number) = (false, false);
     let (mut arg_digits, mut arg_alpha, mut arg_percent) = (false, false, false);
-    while i < bytes.len() && depth > 0 {
-        match bytes[i] {
+    while depth > 0
+        && let Some(&byte) = bytes.get(i)
+    {
+        match byte {
             b'(' => depth += 1,
             b')' => {
                 depth -= 1;
@@ -97,12 +99,13 @@ pub(crate) fn css_contains_crashing_math_function(css: &str) -> bool {
     let mut context_depth: Option<usize> = None;
     let mut paren_depth = 0usize;
     let mut in_opacity_value = false;
-    while i < bytes.len() {
-        let b = bytes[i];
+    while let Some(&b) = bytes.get(i) {
         match b {
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
                 i += 2;
-                while i + 1 < bytes.len() && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                while let Some(pair) = bytes.get(i..i + 2)
+                    && pair != b"*/"
+                {
                     i += 1;
                 }
                 i = (i + 2).min(bytes.len());
@@ -110,8 +113,11 @@ pub(crate) fn css_contains_crashing_math_function(css: &str) -> bool {
             }
             b'"' | b'\'' => {
                 i += 1;
-                while i < bytes.len() && bytes[i] != b && bytes[i] != b'\n' {
-                    i += if bytes[i] == b'\\' { 2 } else { 1 };
+                while let Some(&c) = bytes.get(i)
+                    && c != b
+                    && c != b'\n'
+                {
+                    i += if c == b'\\' { 2 } else { 1 };
                 }
                 i = (i + 1).min(bytes.len());
                 continue;
@@ -126,10 +132,10 @@ pub(crate) fn css_contains_crashing_math_function(css: &str) -> bool {
             b';' | b'}' | b'{' => in_opacity_value = false,
             _ if is_ident_byte(b) => {
                 let start = i;
-                while i < bytes.len() && is_ident_byte(bytes[i]) {
+                while bytes.get(i).copied().is_some_and(is_ident_byte) {
                     i += 1;
                 }
-                let ident = &lower[start..i];
+                let ident = lower.get(start..i).unwrap_or_default();
                 let followed_by_paren = bytes.get(i) == Some(&b'(');
                 if followed_by_paren {
                     if (context_depth.is_some() || in_opacity_value)
@@ -149,7 +155,7 @@ pub(crate) fn css_contains_crashing_math_function(css: &str) -> bool {
                     }
                 } else if OPACITY_PROPERTIES.contains(&ident) && paren_depth == 0 {
                     let mut j = i;
-                    while j < bytes.len() && (bytes[j] == b' ' || bytes[j] == b'\t') {
+                    while matches!(bytes.get(j), Some(b' ' | b'\t')) {
                         j += 1;
                     }
                     if bytes.get(j) == Some(&b':') {

@@ -155,7 +155,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
                 brace_depth += 1;
                 if in_at_rule {
                     // End of at-rule header (e.g., @media (...) {)
-                    let at_rule_part = &current[last_selector_end..current.len() - 1];
+                    let at_rule_part = pending_header(&current, last_selector_end);
                     output.push_str(at_rule_part.trim());
                     output.push('{');
                     in_at_rule = false;
@@ -169,14 +169,14 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
                     last_selector_end = current.len();
                 } else if keyframes_brace_depth.is_some_and(|d| brace_depth > d) {
                     // Inside @keyframes: stops (from/to/0%/100%) are not selectors
-                    let kf_part = &current[last_selector_end..current.len() - 1];
+                    let kf_part = pending_header(&current, last_selector_end);
                     output.push_str(kf_part.trim());
                     output.push('{');
                     in_selector = false;
                     last_selector_end = current.len();
                 } else if in_selector && brace_depth == 1 {
                     // End of selector at root level, apply scope
-                    let selector_part = &current[last_selector_end..current.len() - 1];
+                    let selector_part = pending_header(&current, last_selector_end);
                     output.push_str(&scope_selector_with_leading_comments(
                         selector_part,
                         &attr_selector,
@@ -186,7 +186,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
                     last_selector_end = current.len();
                 } else if in_selector && at_rule_depth > 0 && brace_depth > at_rule_depth {
                     // End of selector inside at-rule (e.g., inside @media), apply scope
-                    let selector_part = &current[last_selector_end..current.len() - 1];
+                    let selector_part = pending_header(&current, last_selector_end);
                     output.push_str(&scope_selector_with_leading_comments(
                         selector_part,
                         &attr_selector,
@@ -223,7 +223,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
                 in_at_rule = true;
                 in_selector = false;
                 // Look ahead to detect @keyframes (including vendor prefixes)
-                let css_remaining = &css[current.len()..];
+                let css_remaining = css.get(current.len()..).unwrap_or_default();
                 pending_keyframes = css_remaining.starts_with("keyframes")
                     || css_remaining.starts_with("-webkit-keyframes")
                     || css_remaining.starts_with("-moz-keyframes")
@@ -232,7 +232,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
             ';' if in_at_rule => {
                 // Statement at-rule (e.g., @import, @charset, @namespace)
                 // Flush the entire at-rule including the semicolon
-                let stmt = &current[last_selector_end..];
+                let stmt = current.get(last_selector_end..).unwrap_or_default();
                 output.push_str(stmt.trim());
                 output.push('\n');
                 in_at_rule = false;
@@ -250,11 +250,20 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
     }
 
     // Handle any remaining content
-    if !current[last_selector_end..].is_empty() && in_selector {
-        output.push_str(&current[last_selector_end..]);
+    if let Some(rest) = current.get(last_selector_end..)
+        && !rest.is_empty()
+        && in_selector
+    {
+        output.push_str(rest);
     }
 
     output
+}
+
+/// Text buffered since `start`, without the `{` that was just pushed.
+fn pending_header(current: &str, start: usize) -> &str {
+    let pending = current.get(start..).unwrap_or_default();
+    pending.strip_suffix('{').unwrap_or(pending)
 }
 
 /// Add scope to selector text while preserving leading CSS comments verbatim.
@@ -264,9 +273,12 @@ fn scope_selector_with_leading_comments(selector: &str, attr_selector: &str) -> 
     };
 
     let mut output = String::with_capacity(selector.len() + attr_selector.len());
-    output.push_str(&selector[..prefix_end]);
+    let (prefix, selector_body) = selector
+        .split_at_checked(prefix_end)
+        .unwrap_or((selector, ""));
+    output.push_str(prefix);
 
-    let selector_body = selector[prefix_end..].trim();
+    let selector_body = selector_body.trim();
     if !selector_body.is_empty() {
         output.push_str(&scope_selector(
             &normalize_deep_selectors(selector_body),
@@ -307,8 +319,11 @@ fn normalize_deep_selectors(selector: &str) -> String {
         return selector.to_compact_string();
     };
 
-    let before = selector[..pos].trim_end();
-    let after = selector[pos + needle.len()..].trim_start();
+    let Some((before, after)) = selector.split_at_checked(pos) else {
+        return selector.to_compact_string();
+    };
+    let before = before.trim_end();
+    let after = after.get(needle.len()..).unwrap_or_default().trim_start();
 
     // Function form (e.g. `::v-deep(.x)`): consume the parenthesised
     // argument and emit `modern(inner)<rest>`. Combinator form
@@ -320,10 +335,9 @@ fn normalize_deep_selectors(selector: &str) -> String {
         out.push(' ');
     }
     if let Some(rest) = after.strip_prefix('(')
-        && let Some(end) = rest.find(')')
+        && let Some((inner, trailing)) = rest.split_once(')')
     {
-        let inner = rest[..end].trim();
-        let trailing = &rest[end + 1..];
+        let inner = inner.trim();
         out.push_str(modern);
         out.push('(');
         out.push_str(inner);
@@ -351,18 +365,19 @@ fn leading_css_comment_trivia_end(value: &str) -> Option<usize> {
     let mut found_comment = false;
 
     loop {
-        let ws_end = value[cursor..]
+        let tail = value.get(cursor..)?;
+        let ws_end = tail
             .char_indices()
             .find(|(_, char)| !char.is_whitespace())
             .map_or(value.len(), |(index, _)| cursor + index);
         cursor = ws_end;
 
-        if !value[cursor..].starts_with("/*") {
+        let Some(comment) = value.get(cursor..).and_then(|tail| tail.strip_prefix("/*")) else {
             return found_comment.then_some(cursor);
-        }
+        };
 
         found_comment = true;
-        let Some(end) = value[cursor + 2..].find("*/") else {
+        let Some(end) = comment.find("*/") else {
             return Some(value.len());
         };
         cursor += 2 + end + 2;
@@ -386,24 +401,21 @@ fn scope_selector(selector: &str, attr_selector: &str) -> String {
 }
 
 fn split_top_level_commas(s: &str) -> Vec<&str> {
-    let bytes = s.as_bytes();
     let mut out = Vec::new();
     let mut depth: i32 = 0;
     let mut last = 0;
-    let mut i = 0;
-    while i < bytes.len() {
-        match bytes[i] {
+    for (i, byte) in s.bytes().enumerate() {
+        match byte {
             b'(' | b'[' => depth += 1,
             b')' | b']' => depth -= 1,
             b',' if depth == 0 => {
-                out.push(&s[last..i]);
+                out.push(s.get(last..i).unwrap_or_default());
                 last = i + 1;
             }
             _ => {}
         }
-        i += 1;
     }
-    out.push(&s[last..]);
+    out.push(s.get(last..).unwrap_or_default());
     out
 }
 
@@ -453,13 +465,10 @@ fn scope_single_selector(selector: &str, attr_selector: &str) -> String {
 }
 
 fn split_top_level_whitespace(s: &str) -> Vec<&str> {
-    let bytes = s.as_bytes();
     let mut out = Vec::new();
     let mut depth: i32 = 0;
     let mut start: Option<usize> = None;
-    let mut i = 0;
-    while i < bytes.len() {
-        let b = bytes[i];
+    for (i, b) in s.bytes().enumerate() {
         match b {
             b'(' | b'[' => {
                 if start.is_none() {
@@ -471,8 +480,8 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
                 depth -= 1;
             }
             b' ' | b'\t' | b'\n' | b'\r' if depth == 0 => {
-                if let Some(s_pos) = start.take() {
-                    out.push(&s[s_pos..i]);
+                if let Some(part) = start.take().and_then(|s_pos| s.get(s_pos..i)) {
+                    out.push(part);
                 }
             }
             _ => {
@@ -481,10 +490,9 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
                 }
             }
         }
-        i += 1;
     }
-    if let Some(s_pos) = start {
-        out.push(&s[s_pos..]);
+    if let Some(part) = start.and_then(|s_pos| s.get(s_pos..)) {
+        out.push(part);
     }
     out
 }
@@ -495,9 +503,9 @@ fn add_scope_to_element(selector: &str, attr_selector: &str) -> String {
     // attribute lands on the compound selector, not inside a functional
     // pseudo-class argument (e.g. `.x:not(:checked)` → `.x[attr]:not(:checked)`,
     // not `.x:not(:[attr]checked)`). Skip colons inside parentheses. (#971)
-    if let Some(pseudo_pos) = find_top_level_pseudo(selector) {
-        let before = &selector[..pseudo_pos];
-        let after = &selector[pseudo_pos..];
+    if let Some(pseudo_pos) = find_top_level_pseudo(selector)
+        && let Some((before, after)) = selector.split_at_checked(pseudo_pos)
+    {
         // Avoid splitting at a pseudo that is part of an escape sequence
         // (`\:`), which is rare but valid in CSS.
         if !before.ends_with('\\') {
@@ -520,17 +528,14 @@ fn add_scope_to_element(selector: &str, attr_selector: &str) -> String {
 /// a pseudo-element, skipping any colon that lives inside parentheses (i.e.
 /// inside `:not(...)`, `:is(...)`, `:where(...)`, `:has(...)` arguments).
 fn find_top_level_pseudo(selector: &str) -> Option<usize> {
-    let bytes = selector.as_bytes();
     let mut depth: i32 = 0;
-    let mut i = 0;
-    while i < bytes.len() {
-        match bytes[i] {
+    for (i, byte) in selector.bytes().enumerate() {
+        match byte {
             b'(' => depth += 1,
             b')' => depth -= 1,
             b':' if depth == 0 => return Some(i),
             _ => {}
         }
-        i += 1;
     }
     None
 }
@@ -538,24 +543,17 @@ fn find_top_level_pseudo(selector: &str) -> Option<usize> {
 /// Transform :deep() to descendant selector
 fn transform_deep(selector: &str, attr_selector: &str) -> String {
     // :deep(.child) -> [data-v-xxx] .child
-    if let Some(start) = selector.find(":deep(") {
-        let before = &selector[..start];
-        let after = &selector[start + 6..];
+    if let Some((before, after)) = selector.split_once(":deep(")
+        && let Some((inner, rest)) = after.split_once(')')
+    {
+        let scoped_before = scope_deep_prefix(before, attr_selector);
 
-        if let Some(end) = after.find(')') {
-            let inner = &after[..end];
-            let rest = &after[end + 1..];
-
-            let scoped_before = scope_deep_prefix(before, attr_selector);
-
-            let mut result =
-                String::with_capacity(scoped_before.len() + inner.len() + rest.len() + 1);
-            result.push_str(&scoped_before);
-            result.push(' ');
-            result.push_str(inner);
-            result.push_str(rest);
-            return result;
-        }
+        let mut result = String::with_capacity(scoped_before.len() + inner.len() + rest.len() + 1);
+        result.push_str(&scoped_before);
+        result.push(' ');
+        result.push_str(inner);
+        result.push_str(rest);
+        return result;
     }
 
     selector.to_compact_string()
@@ -571,26 +569,30 @@ fn scope_deep_prefix(before: &str, attr_selector: &str) -> String {
         return scope_single_selector(before.trim(), attr_selector);
     };
 
-    let target_end = before[..combinator_start].trim_end().len();
-    if target_end == 0 {
+    let Some((target, combinator)) = before.split_at_checked(combinator_start) else {
+        return scope_single_selector(before.trim(), attr_selector);
+    };
+    let target = target.trim_end();
+    if target.is_empty() {
         let mut result = String::with_capacity(attr_selector.len() + before.len());
         result.push_str(attr_selector);
-        result.push_str(&before[combinator_start..]);
+        result.push_str(combinator);
         return result;
     }
 
-    let scoped_target = scope_single_selector(&before[..target_end], attr_selector);
-    let mut result = String::with_capacity(scoped_target.len() + before.len() - target_end);
+    let trailing = before.get(target.len()..).unwrap_or_default();
+    let scoped_target = scope_single_selector(target, attr_selector);
+    let mut result = String::with_capacity(scoped_target.len() + trailing.len());
     result.push_str(&scoped_target);
-    result.push_str(&before[target_end..]);
+    result.push_str(trailing);
     result
 }
 
 fn trailing_combinator_start(value: &str) -> Option<usize> {
     let bytes = value.as_bytes();
-    match bytes.last().copied()? {
-        b'>' | b'+' | b'~' => Some(bytes.len() - 1),
-        b'|' if bytes.len() >= 2 && bytes[bytes.len() - 2] == b'|' => Some(bytes.len() - 2),
+    match bytes {
+        [.., b'|', b'|'] => Some(bytes.len() - 2),
+        [.., b'>' | b'+' | b'~'] => Some(bytes.len() - 1),
         _ => None,
     }
 }
@@ -598,21 +600,15 @@ fn trailing_combinator_start(value: &str) -> Option<usize> {
 /// Transform :slotted() for slot content
 fn transform_slotted(selector: &str, attr_selector: &str) -> String {
     // :slotted(.child) -> .child[data-v-xxx-s]
-    if let Some(start) = selector.find(":slotted(") {
-        let after = &selector[start + 9..];
-
-        if let Some(end) = after.find(')') {
-            let inner = &after[..end];
-            let rest = &after[end + 1..];
-
-            let mut result =
-                String::with_capacity(inner.len() + attr_selector.len() + rest.len() + 2);
-            result.push_str(inner);
-            result.push_str(attr_selector);
-            result.push_str("-s");
-            result.push_str(rest);
-            return result;
-        }
+    if let Some((_, after)) = selector.split_once(":slotted(")
+        && let Some((inner, rest)) = after.split_once(')')
+    {
+        let mut result = String::with_capacity(inner.len() + attr_selector.len() + rest.len() + 2);
+        result.push_str(inner);
+        result.push_str(attr_selector);
+        result.push_str("-s");
+        result.push_str(rest);
+        return result;
     }
 
     selector.to_compact_string()
@@ -621,20 +617,14 @@ fn transform_slotted(selector: &str, attr_selector: &str) -> String {
 /// Transform :global() to unscoped
 fn transform_global(selector: &str) -> String {
     // :global(.class) -> .class
-    if let Some(start) = selector.find(":global(") {
-        let before = &selector[..start];
-        let after = &selector[start + 8..];
-
-        if let Some(end) = after.find(')') {
-            let inner = &after[..end];
-            let rest = &after[end + 1..];
-
-            let mut result = String::with_capacity(before.len() + inner.len() + rest.len());
-            result.push_str(before);
-            result.push_str(inner);
-            result.push_str(rest);
-            return result;
-        }
+    if let Some((before, after)) = selector.split_once(":global(")
+        && let Some((inner, rest)) = after.split_once(')')
+    {
+        let mut result = String::with_capacity(before.len() + inner.len() + rest.len());
+        result.push_str(before);
+        result.push_str(inner);
+        result.push_str(rest);
+        return result;
     }
 
     selector.to_compact_string()

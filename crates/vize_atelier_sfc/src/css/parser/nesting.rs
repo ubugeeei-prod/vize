@@ -29,9 +29,9 @@ pub(crate) fn css_nesting_exceeds_max_depth(css: &str) -> bool {
     let bytes = css.as_bytes();
     let mut depth = 0usize;
     let mut i = 0;
-    while i < bytes.len() {
-        match bytes[i] {
-            b'"' | b'\'' => i = skip_string(bytes, i + 1, bytes[i]),
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
+            b'"' | b'\'' => i = skip_string(bytes, i + 1, byte),
             b'/' if bytes.get(i + 1) == Some(&b'*') => i = skip_comment(bytes, i + 2),
             b'(' | b'[' | b'{' => {
                 depth += 1;
@@ -68,8 +68,8 @@ fn scan_ident(bytes: &[u8], start: usize) -> (usize, bool) {
     let mut i = start;
     let mut decoded = [0u8; 3];
     let mut len = 0usize;
-    while i < bytes.len() {
-        let ch = match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        let ch = match byte {
             b @ (b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'-') => {
                 i += 1;
                 b.to_ascii_lowercase()
@@ -90,8 +90,8 @@ fn scan_ident(bytes: &[u8], start: usize) -> (usize, bool) {
             }
             _ => break,
         };
-        if len < 3 {
-            decoded[len] = ch;
+        if let Some(slot) = decoded.get_mut(len) {
+            *slot = ch;
         }
         len += 1;
     }
@@ -134,8 +134,8 @@ fn url_argument_is_string(bytes: &[u8], mut i: usize) -> bool {
 }
 
 fn skip_string(bytes: &[u8], mut i: usize, quote: u8) -> usize {
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'\\' => i = i.saturating_add(2),
             // Bad-string: an unescaped newline ends the token.
             b'\n' | b'\r' | b'\x0C' => return i,
@@ -146,20 +146,17 @@ fn skip_string(bytes: &[u8], mut i: usize, quote: u8) -> usize {
     i
 }
 
-fn skip_comment(bytes: &[u8], mut i: usize) -> usize {
-    while i + 1 < bytes.len() {
-        if bytes[i] == b'*' && bytes[i + 1] == b'/' {
-            return i + 2;
-        }
-        i += 1;
-    }
-    bytes.len()
+fn skip_comment(bytes: &[u8], i: usize) -> usize {
+    bytes
+        .get(i..)
+        .and_then(|rest| rest.windows(2).position(|pair| pair == b"*/"))
+        .map_or(bytes.len(), |offset| i + offset + 2)
 }
 
 /// Consumes url-token or bad-url content up to and including the closing `)`.
 fn skip_url(bytes: &[u8], mut i: usize) -> usize {
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'\\' => i = i.saturating_add(2),
             b')' => return i + 1,
             _ => i += 1,

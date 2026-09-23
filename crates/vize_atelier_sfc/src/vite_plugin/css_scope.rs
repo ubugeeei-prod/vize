@@ -38,18 +38,22 @@ fn transform_css_block_with_parents(
     let mut declarations = String::default();
 
     while cursor < css.len() {
-        let Some(brace) = find_next_top_level_brace(css, cursor) else {
-            declarations.push_str(&css[cursor..]);
+        let rule = find_next_top_level_brace(css, cursor).and_then(|brace| {
+            let end = find_matching_brace(css, brace)?;
+            let header_start = find_rule_header_start(css, cursor, brace);
+            Some((
+                css.get(cursor..header_start)?,
+                css.get(header_start..brace)?,
+                css.get(brace + 1..end)?,
+                end,
+            ))
+        });
+        let Some((pending, header, body, end)) = rule else {
+            declarations.push_str(css.get(cursor..).unwrap_or_default());
             break;
         };
 
-        let Some(end) = find_matching_brace(css, brace) else {
-            declarations.push_str(&css[cursor..]);
-            break;
-        };
-
-        let header_start = find_rule_header_start(css, cursor, brace);
-        declarations.push_str(&css[cursor..header_start]);
+        declarations.push_str(pending);
         flush_declarations(
             &mut output,
             parent_selectors,
@@ -58,8 +62,6 @@ fn transform_css_block_with_parents(
         );
         declarations.clear();
 
-        let header = &css[header_start..brace];
-        let body = &css[brace + 1..end];
         let (leading, statement) = split_leading_trivia(header);
 
         output.push_str(leading);
@@ -104,7 +106,11 @@ fn find_rule_header_start(css: &str, start: usize, brace: usize) -> usize {
     let mut quote = None;
     let mut in_comment = false;
     let mut header_start = start;
-    let mut iter = css[start..brace].char_indices().peekable();
+    let mut iter = css
+        .get(start..brace)
+        .unwrap_or_default()
+        .char_indices()
+        .peekable();
 
     while let Some((relative, char)) = iter.next() {
         let index = start + relative;
@@ -225,7 +231,11 @@ fn find_next_top_level_brace(css: &str, start: usize) -> Option<usize> {
     let mut bracket_depth = 0usize;
     let mut quote = None;
     let mut in_comment = false;
-    let mut iter = css[start..].char_indices().peekable();
+    let mut iter = css
+        .get(start..)
+        .unwrap_or_default()
+        .char_indices()
+        .peekable();
 
     while let Some((relative, char)) = iter.next() {
         let index = start + relative;
@@ -270,7 +280,11 @@ fn find_matching_brace(css: &str, start: usize) -> Option<usize> {
     let mut depth = 0usize;
     let mut quote = None;
     let mut in_comment = false;
-    let mut iter = css[start..].char_indices().peekable();
+    let mut iter = css
+        .get(start..)
+        .unwrap_or_default()
+        .char_indices()
+        .peekable();
 
     while let Some((relative, char)) = iter.next() {
         let index = start + relative;
@@ -353,14 +367,14 @@ fn split_selector_list(selector_list: &str) -> SmallVec<[&str; 4]> {
             '[' => bracket_depth += 1,
             ']' => bracket_depth = bracket_depth.saturating_sub(1),
             ',' if paren_depth == 0 && bracket_depth == 0 => {
-                selectors.push(&selector_list[start..index]);
+                selectors.push(selector_list.get(start..index).unwrap_or_default());
                 start = index + 1;
             }
             _ => {}
         }
     }
 
-    selectors.push(&selector_list[start..]);
+    selectors.push(selector_list.get(start..).unwrap_or_default());
     selectors
 }
 
@@ -369,19 +383,23 @@ fn scope_selector(selector: &str, scope_id: &str) -> String {
         return String::from(selector);
     };
 
-    let leading = &selector[..leading_length];
     let body_end = trailing_trim_end(selector);
-    let trailing = &selector[body_end..];
-    let mut body = legacy_deep::normalize_scoped_selector_body(&selector[leading_length..body_end]);
+    let (Some(leading), Some(body), Some(trailing)) = (
+        selector.get(..leading_length),
+        selector.get(leading_length..body_end),
+        selector.get(body_end..),
+    ) else {
+        return String::from(selector);
+    };
+    let mut body = legacy_deep::normalize_scoped_selector_body(body);
 
     if let Some(slotted) = find_pseudo_function_any(body.as_str(), &["::v-slotted(", ":slotted("]) {
         body = slotted::scope_slotted_selector(body.as_str(), &slotted, scope_id);
     } else if let Some(deep) =
         find_pseudo_function_any(body.as_str(), &["::v-deep(", "::deep(", ":deep("])
     {
-        let before = body[..deep.start].trim_end();
-        let inner = &body[deep.inner_start..deep.inner_end];
-        let after = &body[deep.end..];
+        let (before, inner, after) = deep.parts(body.as_str());
+        let before = before.trim_end();
         let scoped_before = if before.is_empty() {
             scope_attr(scope_id)
         } else {
@@ -408,18 +426,22 @@ fn split_leading_trivia(value: &str) -> (&str, &str) {
     let mut cursor = 0usize;
 
     loop {
-        let ws_end = value[cursor..]
+        let Some((_, rest)) = value.split_at_checked(cursor) else {
+            return ("", value);
+        };
+        cursor += rest
             .char_indices()
             .find(|(_, char)| !char.is_whitespace())
-            .map_or(value.len(), |(index, _)| cursor + index);
-        cursor = ws_end;
+            .map_or(rest.len(), |(index, _)| index);
+        let Some((leading, rest)) = value.split_at_checked(cursor) else {
+            return ("", value);
+        };
 
-        if !value[cursor..].starts_with("/*") {
-            return (&value[..cursor], &value[cursor..]);
-        }
-
-        let Some(end) = value[cursor + 2..].find("*/") else {
-            return (&value[..cursor], &value[cursor..]);
+        let Some(end) = rest
+            .strip_prefix("/*")
+            .and_then(|comment| comment.find("*/"))
+        else {
+            return (leading, rest);
         };
         cursor += 2 + end + 2;
     }
@@ -431,13 +453,16 @@ fn add_scope_before_trailing_combinator(selector: &str, scope_id: &str) -> Strin
         return add_scope_to_selector_end(selector, scope_id);
     };
 
-    let target = selector[..combinator_start].trim_end();
+    let target = selector
+        .get(..combinator_start)
+        .unwrap_or_default()
+        .trim_end();
     let mut output = if target.is_empty() {
         scope_attr(scope_id)
     } else {
         add_scope_to_selector_end(target, scope_id)
     };
-    output.push_str(&selector[target.len()..]);
+    output.push_str(selector.get(target.len()..).unwrap_or_default());
     output
 }
 
@@ -456,16 +481,18 @@ fn add_scope_to_selector_end(selector: &str, scope_id: &str) -> String {
         return output;
     }
 
-    let target_start = find_last_compound_start(selector);
-    let before_target = &selector[..target_start];
-    let target = &selector[target_start..];
-    let insert_at = find_scope_insert_position(target);
+    let (before_target, target) = selector
+        .split_at_checked(find_last_compound_start(selector))
+        .unwrap_or(("", selector));
+    let (head, tail) = target
+        .split_at_checked(find_scope_insert_position(target))
+        .unwrap_or((target, ""));
 
     let mut output = String::with_capacity(selector.len() + scope_id.len() + 2);
     output.push_str(before_target);
-    output.push_str(&target[..insert_at]);
+    output.push_str(head);
     push_scope_attr(&mut output, scope_id);
-    output.push_str(&target[insert_at..]);
+    output.push_str(tail);
     output
 }
 
@@ -545,6 +572,19 @@ struct PseudoFunction {
     end: usize,
 }
 
+impl PseudoFunction {
+    /// The text before the function, its argument, and the text after `)`.
+    fn parts<'s>(&self, input: &'s str) -> (&'s str, &'s str, &'s str) {
+        (
+            input.get(..self.start).unwrap_or_default(),
+            input
+                .get(self.inner_start..self.inner_end)
+                .unwrap_or_default(),
+            input.get(self.end..).unwrap_or_default(),
+        )
+    }
+}
+
 fn unwrap_pseudo_functions(input: &str, markers: &[&str]) -> String {
     let mut output = String::with_capacity(input.len());
     let mut cursor = 0usize;
@@ -555,8 +595,8 @@ fn unwrap_pseudo_functions(input: &str, markers: &[&str]) -> String {
             break;
         }
 
-        output.push_str(&input[cursor..function.start]);
-        output.push_str(&input[function.inner_start..function.inner_end]);
+        output.push_str(input.get(cursor..function.start).unwrap_or_default());
+        output.push_str(function.parts(input).1);
         cursor = function.end;
         changed = true;
     }
@@ -565,7 +605,7 @@ fn unwrap_pseudo_functions(input: &str, markers: &[&str]) -> String {
         return String::from(input);
     }
 
-    output.push_str(&input[cursor..]);
+    output.push_str(input.get(cursor..).unwrap_or_default());
     output
 }
 
@@ -581,7 +621,7 @@ fn find_pseudo_function_any_from(
     markers
         .iter()
         .filter_map(|marker| {
-            let start = cursor + input[cursor..].find(marker)?;
+            let start = cursor + input.get(cursor..)?.find(marker)?;
             find_pseudo_function_from(input, marker, start)
         })
         .min_by_key(|function| function.start)
@@ -601,7 +641,7 @@ fn find_pseudo_function_from(input: &str, marker: &str, start: usize) -> Option<
 fn find_matching_paren(input: &str, open_paren: usize) -> Option<usize> {
     let mut depth = 0usize;
     let mut quote = None;
-    let mut iter = input[open_paren..].char_indices().peekable();
+    let mut iter = input.get(open_paren..)?.char_indices().peekable();
 
     while let Some((relative, char)) = iter.next() {
         let index = open_paren + relative;
@@ -658,116 +698,4 @@ fn push_scope_attr(output: &mut String, scope_id: &str) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn scopes_basic_selectors() {
-        assert_eq!(
-            scope_css_for_pipeline(".foo, .bar:hover { color: red; }", "data-v-x").as_str(),
-            ".foo[data-v-x],.bar[data-v-x]:hover{color: red;}"
-        );
-    }
-
-    #[test]
-    fn unwraps_deep_inside_scoped_selector() {
-        assert_eq!(
-            scope_css_for_pipeline(
-                ".parent :deep(.child:nth-child(2)) { color: red; }",
-                "data-v-x"
-            )
-            .as_str(),
-            ".parent[data-v-x] .child:nth-child(2){color: red;}"
-        );
-    }
-
-    #[test]
-    fn unwraps_legacy_v_deep_inside_scoped_selector() {
-        assert_eq!(
-            scope_css_for_pipeline(
-                ".parent > ::v-deep(.child:nth-child(2)) { color: red; }",
-                "data-v-x"
-            )
-            .as_str(),
-            ".parent[data-v-x] > .child:nth-child(2){color: red;}"
-        );
-    }
-
-    #[test]
-    fn unwraps_preprocessor_special_selectors() {
-        let css = "[data-v-x] .parent > ::v-deep(.child), [data-v-x] :slotted(.slot), [data-v-x] .foo:global(.bar) {}";
-
-        assert_eq!(
-            unwrap_deep_selectors(css).as_str(),
-            "[data-v-x] .parent > .child, [data-v-x] .slot, [data-v-x] .foo.bar {}"
-        );
-    }
-
-    #[test]
-    fn recurses_media_rules() {
-        assert_eq!(
-            scope_css_for_pipeline(
-                "@media (min-width: 1px) { .foo { color: red; } }",
-                "data-v-x"
-            )
-            .as_str(),
-            "@media (min-width: 1px) { .foo[data-v-x]{color: red;}}"
-        );
-    }
-
-    #[test]
-    fn scopes_nested_css_like_vue_pipeline() {
-        assert_eq!(
-            scope_css_for_pipeline(
-                "#pages-store { row-gap: 1.5rem; @media (--mobile) { row-gap: 1rem; } h1 { margin: 0; } :deep(.divider) { border: 0; } }",
-                "data-v-x"
-            )
-            .as_str(),
-            "#pages-store[data-v-x]{row-gap: 1.5rem;} @media (--mobile) {#pages-store[data-v-x]{row-gap: 1rem;}} #pages-store h1[data-v-x]{margin: 0;} #pages-store[data-v-x] .divider{border: 0;}"
-        );
-    }
-
-    #[test]
-    fn scopes_nested_css_under_media_rules() {
-        assert_eq!(
-            scope_css_for_pipeline(
-                "@media (--mobile) { .foo { color: red; :deep(.bar) { color: blue; } } }",
-                "data-v-x"
-            )
-            .as_str(),
-            "@media (--mobile) { .foo[data-v-x]{color: red;} .foo[data-v-x] .bar{color: blue;}}"
-        );
-    }
-
-    #[test]
-    fn preserves_comments_before_media_rules() {
-        assert_eq!(
-            scope_css_for_pipeline(
-                "/* desktop */\n@media (min-width: 1px) { .foo { color: red; } }",
-                "data-v-x"
-            )
-            .as_str(),
-            "/* desktop */\n@media (min-width: 1px) { .foo[data-v-x]{color: red;}}"
-        );
-    }
-
-    #[test]
-    fn preserves_comments_before_selectors() {
-        assert_eq!(
-            scope_css_for_pipeline("/* card */\n.foo { color: red; }", "data-v-x").as_str(),
-            "/* card */\n.foo[data-v-x]{color: red;}"
-        );
-    }
-
-    #[test]
-    fn scopes_escaped_utility_selectors() {
-        assert_eq!(
-            scope_css_for_pipeline(
-                ".hover\\:text-\\[\\#00DC82\\]:hover { color: red; }.text-\\[80px\\] { font-size: 80px; }",
-                "data-v-x"
-            )
-            .as_str(),
-            ".hover\\:text-\\[\\#00DC82\\][data-v-x]:hover{color: red;}.text-\\[80px\\][data-v-x]{font-size: 80px;}"
-        );
-    }
-}
+mod tests;

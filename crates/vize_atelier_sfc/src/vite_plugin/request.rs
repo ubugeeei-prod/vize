@@ -157,12 +157,9 @@ fn is_vize_virtual_vue_module_id(id: &str, path: &str) -> bool {
 }
 
 fn vize_virtual_path(id: &str) -> String {
-    let prefix_len = if id.starts_with(VIZE_SSR_PREFIX) {
-        VIZE_SSR_PREFIX.len()
-    } else {
-        1
-    };
-    let without_prefix = &id[prefix_len..];
+    let without_prefix = id
+        .strip_prefix(VIZE_SSR_PREFIX)
+        .unwrap_or_else(|| id.get(1..).unwrap_or_default());
     let split = split_request(without_prefix);
     String::from(normalize_vue_path(split.path))
 }

@@ -9,9 +9,8 @@ pub(super) fn scope_slotted_selector(
     slotted: &PseudoFunction,
     scope_id: &str,
 ) -> String {
-    let before = body[..slotted.start].trim_end();
-    let inner = &body[slotted.inner_start..slotted.inner_end];
-    let after = &body[slotted.end..];
+    let (before, inner, after) = slotted.parts(body);
+    let before = before.trim_end();
     let mut scoped = String::with_capacity(body.len() + scope_id.len() * 2 + 4);
 
     if !before.is_empty() {
@@ -33,18 +32,18 @@ fn selector_ends_with_combinator(selector: &str) -> bool {
 
 fn push_slotted_target(output: &mut String, inner: &str, scope_id: &str) {
     let target = strip_slotted_leading_universal(inner.trim());
-    let insert_at = find_scope_insert_position(target);
-    output.push_str(&target[..insert_at]);
+    let (head, tail) = target
+        .split_at_checked(find_scope_insert_position(target))
+        .unwrap_or((target, ""));
+    output.push_str(head);
     push_slotted_scope_attr(output, scope_id);
-    output.push_str(&target[insert_at..]);
+    output.push_str(tail);
 }
 
 fn strip_slotted_leading_universal(selector: &str) -> &str {
-    let Some(end) = slotted_leading_universal_end(selector) else {
-        return selector;
-    };
-
-    &selector[end..]
+    slotted_leading_universal_end(selector)
+        .and_then(|end| selector.get(end..))
+        .unwrap_or(selector)
 }
 
 fn slotted_leading_universal_end(selector: &str) -> Option<usize> {

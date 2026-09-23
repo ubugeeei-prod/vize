@@ -12,8 +12,8 @@ fn normalize(selector: &str) -> String {
         return String::from(selector);
     };
 
-    let before = selector[..marker.start].trim_end();
-    let after = selector[marker.end..].trim_start();
+    let before = selector.get(..marker.start).unwrap_or_default().trim_end();
+    let after = selector.get(marker.end..).unwrap_or_default().trim_start();
     let target = deep_target(after).unwrap_or_else(|| String::from(after));
     let target = strip_legacy_markers(target.as_str());
 
@@ -30,14 +30,12 @@ fn normalize(selector: &str) -> String {
 }
 
 fn deep_target(after: &str) -> Option<String> {
-    if !after.starts_with('(') {
-        return None;
-    }
-
+    let argument = after.strip_prefix('(')?;
     let end = find_matching_paren(after, 0)?;
+    let (inner, rest) = argument.split_at_checked(end.checked_sub(1)?)?;
     let mut target = String::with_capacity(after.len().saturating_sub(2));
-    target.push_str(&after[1..end]);
-    target.push_str(&after[end + 1..]);
+    target.push_str(inner);
+    target.push_str(rest.get(1..)?);
     Some(target)
 }
 
@@ -47,13 +45,17 @@ fn strip_legacy_markers(selector: &str) -> String {
     let mut changed = false;
 
     while let Some(marker) = find_marker_from(selector, cursor) {
-        output.push_str(selector[cursor..marker.start].trim_end());
+        output.push_str(
+            selector
+                .get(cursor..marker.start)
+                .unwrap_or_default()
+                .trim_end(),
+        );
         push_descendant_space(&mut output);
         cursor = skip_ws(selector, marker.end);
         if let Some(target) = parenthesized_deep_target(selector, cursor) {
-            output.push_str(
-                strip_legacy_markers(&selector[target.inner_start..target.inner_end]).trim(),
-            );
+            let inner = selector.get(target.inner_start..target.inner_end);
+            output.push_str(strip_legacy_markers(inner.unwrap_or_default()).trim());
             cursor = target.end;
         }
         changed = true;
@@ -63,7 +65,7 @@ fn strip_legacy_markers(selector: &str) -> String {
         return String::from(selector);
     }
 
-    output.push_str(&selector[cursor..]);
+    output.push_str(selector.get(cursor..).unwrap_or_default());
     output
 }
 
@@ -74,7 +76,7 @@ struct ParenthesizedTarget {
 }
 
 fn parenthesized_deep_target(selector: &str, cursor: usize) -> Option<ParenthesizedTarget> {
-    if !selector[cursor..].starts_with('(') {
+    if !selector.get(cursor..)?.starts_with('(') {
         return None;
     }
 
@@ -99,7 +101,9 @@ fn push_descendant_space(output: &mut String) {
 }
 
 fn skip_ws(input: &str, cursor: usize) -> usize {
-    input[cursor..]
+    input
+        .get(cursor..)
+        .unwrap_or_default()
         .char_indices()
         .find(|(_, char)| !char.is_whitespace())
         .map_or(input.len(), |(index, _)| cursor + index)
@@ -124,7 +128,9 @@ fn find_marker_from(selector: &str, cursor: usize) -> Option<Marker> {
 
 fn marker_at(selector: &str, index: usize) -> Option<Marker> {
     for marker in [">>>", "/deep/", "::v-deep"] {
-        if selector[index..].starts_with(marker)
+        if selector
+            .get(index..)
+            .is_some_and(|rest| rest.starts_with(marker))
             && has_marker_boundary(selector, index + marker.len())
         {
             return Some(Marker {
@@ -138,9 +144,9 @@ fn marker_at(selector: &str, index: usize) -> Option<Marker> {
 }
 
 fn has_marker_boundary(selector: &str, index: usize) -> bool {
-    selector[index..]
-        .chars()
-        .next()
+    selector
+        .get(index..)
+        .and_then(|rest| rest.chars().next())
         .is_none_or(|char| !matches!(char, '-' | '_' | 'a'..='z' | 'A'..='Z' | '0'..='9'))
 }
 
@@ -164,10 +170,10 @@ impl<'a> Scanner<'a> {
     }
 
     fn next_syntax_index(&mut self) -> Option<usize> {
-        while self.cursor < self.selector.len() {
+        let selector = self.selector;
+        let bytes = selector.as_bytes();
+        while let Some(&byte) = bytes.get(self.cursor) {
             let index = self.cursor;
-            let bytes = self.selector.as_bytes();
-            let byte = bytes[index];
             let next = bytes.get(index + 1).copied();
 
             if self.in_comment {

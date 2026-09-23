@@ -102,8 +102,10 @@ pub fn resolve_vue_path(root: &str, id: &str, importer: Option<&str>) -> String 
     let id_path = Path::new(id);
     let mut resolved = if id.starts_with("/@fs/") {
         PathBuf::from(strip_vite_fs_prefix(id))
-    } else if id.starts_with('/') && !id_path.exists() {
-        Path::new(root).join(&id[1..])
+    } else if let Some(relative) = id.strip_prefix('/')
+        && !id_path.exists()
+    {
+        Path::new(root).join(relative)
     } else if id_path.is_absolute() {
         id_path.to_path_buf()
     } else if let Some(importer) = importer {
@@ -222,11 +224,9 @@ fn path_without_query(value: &str) -> String {
 }
 
 fn strip_vite_fs_prefix(path: &str) -> &str {
-    if path.starts_with("/@fs/") {
-        &path[4..]
-    } else {
-        path
-    }
+    path.strip_prefix("/@fs")
+        .filter(|rest| rest.starts_with('/'))
+        .unwrap_or(path)
 }
 
 fn real_importer_path(importer: &str) -> String {

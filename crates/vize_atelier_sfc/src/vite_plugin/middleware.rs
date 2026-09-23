@@ -7,13 +7,13 @@ pub struct ViteDevMiddlewareRewrite {
 }
 
 pub fn normalize_css_module_filename(filename: &str) -> String {
-    let after_nul = filename
-        .rfind('\0')
-        .map_or(filename, |nul_idx| &filename[nul_idx + 1..]);
+    let after_nul = filename.rfind('\0').map_or(filename, |nul_idx| {
+        filename.get(nul_idx + 1..).unwrap_or_default()
+    });
     let without_suffix = strip_style_virtual_suffix(after_nul);
     let path = without_suffix
-        .find('?')
-        .map_or(without_suffix, |query_idx| &without_suffix[..query_idx]);
+        .split_once('?')
+        .map_or(without_suffix, |(path, _)| path);
     String::from(path)
 }
 
@@ -24,11 +24,7 @@ pub fn normalize_dev_middleware_url(req_url: &str) -> Option<ViteDevMiddlewareRe
 
     let (url_path, query_suffix) = split_url_query(req_url);
     let cleaned_path = normalize_fs_prefix(remove_encoded_nul(url_path).as_str());
-    if !cleaned_path.starts_with("/@fs/") {
-        return None;
-    }
-
-    let fs_path = &cleaned_path[4..];
+    let fs_path = cleaned_path.strip_prefix("/@fs")?;
     if !fs_path.starts_with('/') || is_vue_virtual_ts_path(fs_path) {
         return None;
     }
@@ -52,15 +48,17 @@ fn strip_style_virtual_suffix(path: &str) -> &str {
 }
 
 fn strip_word_extension(path: &str) -> &str {
-    let bytes = path.as_bytes();
-    let mut cursor = bytes.len();
-    while cursor > 0 && is_word_byte(bytes[cursor - 1]) {
-        cursor -= 1;
-    }
-    if cursor == bytes.len() || cursor == 0 || bytes[cursor - 1] != b'.' {
+    let word_len = path
+        .bytes()
+        .rev()
+        .take_while(|&byte| is_word_byte(byte))
+        .count();
+    if word_len == 0 {
         return path;
     }
-    &path[..cursor - 1]
+    path.get(..path.len() - word_len)
+        .and_then(|stem| stem.strip_suffix('.'))
+        .unwrap_or(path)
 }
 
 fn is_word_byte(byte: u8) -> bool {
@@ -68,18 +66,18 @@ fn is_word_byte(byte: u8) -> bool {
 }
 
 fn split_url_query(url: &str) -> (&str, &str) {
-    url.find('?').map_or((url, ""), |query_idx| {
-        (&url[..query_idx], &url[query_idx..])
-    })
+    url.find('?')
+        .and_then(|query_idx| url.split_at_checked(query_idx))
+        .unwrap_or((url, ""))
 }
 
 fn remove_encoded_nul(path: &str) -> String {
     let marker = "__x00__";
     let mut output = String::with_capacity(path.len());
     let mut remaining = path;
-    while let Some(idx) = remaining.find(marker) {
-        output.push_str(&remaining[..idx]);
-        remaining = &remaining[idx + marker.len()..];
+    while let Some((before, after)) = remaining.split_once(marker) {
+        output.push_str(before);
+        remaining = after;
     }
     output.push_str(remaining);
     output

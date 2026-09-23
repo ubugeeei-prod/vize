@@ -54,8 +54,8 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
         if in_string {
             if c as u8 == string_char {
                 // Check for escape
-                let prev_byte = if i > 0 { css_bytes[i - 1] } else { 0 };
-                if prev_byte != b'\\' {
+                let prev_byte = i.checked_sub(1).and_then(|p| css_bytes.get(p)).copied();
+                if prev_byte != Some(b'\\') {
                     in_string = false;
                 }
             }
@@ -85,7 +85,7 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
                 in_at_rule = true;
                 in_selector = false;
                 // Look ahead to detect @keyframes (including vendor prefixes)
-                let remaining = &css[i + 1..];
+                let remaining = css.get(i + 1..).unwrap_or_default();
                 pending_keyframes = remaining.starts_with("keyframes")
                     || remaining.starts_with("-webkit-keyframes")
                     || remaining.starts_with("-moz-keyframes")
@@ -182,8 +182,8 @@ pub(crate) fn apply_scoped_css<'a>(bump: &'a Allocator, css: &str, scope_id: &st
     }
 
     // Handle any remaining content
-    if in_selector && last_selector_end < css_bytes.len() {
-        output.extend_from_slice(&css_bytes[last_selector_end..]);
+    if in_selector && let Some(rest) = css_bytes.get(last_selector_end..) {
+        output.extend_from_slice(rest);
     }
 
     // SAFETY: `output` is built by copying selector/content ranges from the
@@ -206,9 +206,12 @@ fn scope_selector_with_leading_comments(
         return;
     };
 
-    out.extend_from_slice(&selector.as_bytes()[..prefix_end]);
+    let (prefix, selector_body) = selector
+        .split_at_checked(prefix_end)
+        .unwrap_or((selector, ""));
+    out.extend_from_slice(prefix.as_bytes());
 
-    let selector_body = selector[prefix_end..].trim();
+    let selector_body = selector_body.trim();
     if !selector_body.is_empty() {
         scope_selector(out, selector_body, attr_selector);
     }
@@ -219,18 +222,19 @@ fn leading_css_comment_trivia_end(value: &str) -> Option<usize> {
     let mut found_comment = false;
 
     loop {
-        let ws_end = value[cursor..]
+        let ws_end = value
+            .get(cursor..)?
             .char_indices()
             .find(|(_, char)| !char.is_whitespace())
             .map_or(value.len(), |(index, _)| cursor + index);
         cursor = ws_end;
 
-        if !value[cursor..].starts_with("/*") {
+        let Some(comment) = value.get(cursor..).and_then(|tail| tail.strip_prefix("/*")) else {
             return found_comment.then_some(cursor);
-        }
+        };
 
         found_comment = true;
-        let Some(end) = value[cursor + 2..].find("*/") else {
+        let Some(end) = comment.find("*/") else {
             return Some(value.len());
         };
         cursor += 2 + end + 2;
@@ -262,26 +266,23 @@ fn scope_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: &[u8]) 
 }
 
 fn split_top_level_commas(s: &str) -> Vec<&str> {
-    let bytes = s.as_bytes();
     let mut out = Vec::new();
     let mut depth: i32 = 0;
     let mut last = 0;
-    let mut i = 0;
 
-    while i < bytes.len() {
-        match bytes[i] {
+    for (i, byte) in s.bytes().enumerate() {
+        match byte {
             b'(' | b'[' => depth += 1,
             b')' | b']' => depth -= 1,
             b',' if depth == 0 => {
-                out.push(&s[last..i]);
+                out.push(s.get(last..i).unwrap_or_default());
                 last = i + 1;
             }
             _ => {}
         }
-        i += 1;
     }
 
-    out.push(&s[last..]);
+    out.push(s.get(last..).unwrap_or_default());
     out
 }
 
@@ -316,35 +317,24 @@ fn scope_single_selector(out: &mut ArenaVec<u8>, selector: &str, attr_selector: 
 
     // Find the last top-level compound selector to append the attribute.
     let parts: Vec<&str> = split_top_level_whitespace(selector);
-    if parts.is_empty() {
+    // Add scope to the last part
+    let Some((last, leading)) = parts.split_last() else {
         out.extend_from_slice(selector.as_bytes());
         return;
+    };
+    for part in leading {
+        out.extend_from_slice(part.as_bytes());
+        out.push(b' ');
     }
-
-    // Add scope to the last part
-    for (i, part) in parts.iter().enumerate() {
-        if i > 0 {
-            out.push(b' ');
-        }
-
-        if i == parts.len() - 1 {
-            // Last part - add scope
-            add_scope_to_element(out, part, attr_selector);
-        } else {
-            out.extend_from_slice(part.as_bytes());
-        }
-    }
+    add_scope_to_element(out, last, attr_selector);
 }
 
 fn split_top_level_whitespace(s: &str) -> Vec<&str> {
-    let bytes = s.as_bytes();
     let mut out = Vec::new();
     let mut depth: i32 = 0;
     let mut start: Option<usize> = None;
-    let mut i = 0;
 
-    while i < bytes.len() {
-        let byte = bytes[i];
+    for (i, byte) in s.bytes().enumerate() {
         match byte {
             b'(' | b'[' => {
                 if start.is_none() {
@@ -356,8 +346,8 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
                 depth -= 1;
             }
             b' ' | b'\t' | b'\n' | b'\r' if depth == 0 => {
-                if let Some(start_pos) = start.take() {
-                    out.push(&s[start_pos..i]);
+                if let Some(part) = start.take().and_then(|start_pos| s.get(start_pos..i)) {
+                    out.push(part);
                 }
             }
             _ => {
@@ -366,11 +356,10 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
                 }
             }
         }
-        i += 1;
     }
 
-    if let Some(start_pos) = start {
-        out.push(&s[start_pos..]);
+    if let Some(part) = start.and_then(|start_pos| s.get(start_pos..)) {
+        out.push(part);
     }
 
     out
@@ -378,21 +367,20 @@ fn split_top_level_whitespace(s: &str) -> Vec<&str> {
 
 /// Add scope attribute to an element selector
 pub(super) fn add_scope_to_element(out: &mut ArenaVec<u8>, selector: &str, attr_selector: &[u8]) {
-    let selector = if let Some(end) = leading_universal_selector_end(selector) {
-        &selector[end..]
-    } else {
-        selector
-    };
+    let selector = leading_universal_selector_end(selector)
+        .and_then(|end| selector.get(end..))
+        .unwrap_or(selector);
 
     // Find the first top-level pseudo-element or pseudo-class so the scope
     // attribute lands on the compound selector, not inside a functional
     // pseudo-class argument.
-    if let Some(pseudo_pos) = find_top_level_pseudo(selector)
-        && !selector[..pseudo_pos].ends_with('\\')
+    if let Some((before, after)) =
+        find_top_level_pseudo(selector).and_then(|pos| selector.split_at_checked(pos))
+        && !before.ends_with('\\')
     {
-        out.extend_from_slice(&selector.as_bytes()[..pseudo_pos]);
+        out.extend_from_slice(before.as_bytes());
         out.extend_from_slice(attr_selector);
-        out.extend_from_slice(&selector.as_bytes()[pseudo_pos..]);
+        out.extend_from_slice(after.as_bytes());
         return;
     }
 
@@ -407,13 +395,7 @@ pub(super) fn transform_deep(
     start: usize,
     attr_selector: &[u8],
 ) {
-    let before = &selector[..start];
-    let after = &selector[start + 6..];
-
-    if let Some(end) = find_matching_paren(after) {
-        let inner = &after[..end];
-        let rest = &after[end + 1..];
-
+    if let Some((before, inner, rest)) = split_pseudo_function(selector, start, ":deep(") {
         push_deep_scope_prefix(out, before, attr_selector);
         out.push(b' ');
         out.extend_from_slice(inner.as_bytes());
@@ -435,39 +417,52 @@ fn push_deep_scope_prefix(out: &mut ArenaVec<u8>, before: &str, attr_selector: &
         return;
     };
 
-    let target_end = before[..combinator_start].trim_end().len();
-    if target_end == 0 {
+    let Some((target, combinator)) = before.split_at_checked(combinator_start) else {
+        scope_single_selector(out, before.trim(), attr_selector);
+        return;
+    };
+    let target = target.trim_end();
+    if target.is_empty() {
         out.extend_from_slice(attr_selector);
-        out.extend_from_slice(&before.as_bytes()[combinator_start..]);
+        out.extend_from_slice(combinator.as_bytes());
         return;
     }
 
-    scope_single_selector(out, &before[..target_end], attr_selector);
-    out.extend_from_slice(&before.as_bytes()[target_end..]);
+    scope_single_selector(out, target, attr_selector);
+    out.extend_from_slice(before.get(target.len()..).unwrap_or_default().as_bytes());
 }
 
 fn trailing_combinator_start(value: &str) -> Option<usize> {
     let bytes = value.as_bytes();
-    match bytes.last().copied()? {
-        b'>' | b'+' | b'~' => Some(bytes.len() - 1),
-        b'|' if bytes.len() >= 2 && bytes[bytes.len() - 2] == b'|' => Some(bytes.len() - 2),
+    match bytes {
+        [.., b'|', b'|'] => Some(bytes.len() - 2),
+        [.., b'>' | b'+' | b'~'] => Some(bytes.len() - 1),
         _ => None,
     }
 }
 
 /// Transform :global() to unscoped
 pub(super) fn transform_global(out: &mut ArenaVec<u8>, selector: &str, start: usize) {
-    let before = &selector[..start];
-    let after = &selector[start + 8..];
-
-    if let Some(end) = find_matching_paren(after) {
-        let inner = &after[..end];
-        let rest = &after[end + 1..];
-
+    if let Some((before, inner, rest)) = split_pseudo_function(selector, start, ":global(") {
         out.extend_from_slice(before.as_bytes());
         out.extend_from_slice(inner.as_bytes());
         out.extend_from_slice(rest.as_bytes());
     } else {
         out.extend_from_slice(selector.as_bytes());
     }
+}
+
+/// Split `selector` around the pseudo function `marker` found at `start`:
+/// the text before it, its parenthesised argument, and the text after the
+/// matching `)`. `None` when the argument is unterminated.
+pub(super) fn split_pseudo_function<'s>(
+    selector: &'s str,
+    start: usize,
+    marker: &str,
+) -> Option<(&'s str, &'s str, &'s str)> {
+    let (before, pseudo) = selector.split_at_checked(start)?;
+    let after = pseudo.get(marker.len()..)?;
+    let end = find_matching_paren(after)?;
+    let (inner, rest) = after.split_at_checked(end)?;
+    Some((before, inner, rest.get(1..)?))
 }

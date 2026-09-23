@@ -7,15 +7,14 @@ use vize_carton::{SmallVec, String};
 use super::css_scope;
 use super::js_string::push_js_string_literal;
 
-static CSS_IMPORT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?m)^@import\s+(?:"([^"]+)"|'([^']+)');?\s*$"#).expect("valid css import regex")
-});
-static CUSTOM_MEDIA_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"@custom-media\s+(--[\w-]+)\s+(.+?)\s*;").expect("valid custom media regex")
-});
-static CUSTOM_MEDIA_LINE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^@custom-media\s+[^;]+;\s*$").expect("valid custom media line regex")
-});
+// The patterns are literals, so construction cannot fail; `None` would only
+// disable the rewrite it drives and leave the CSS unchanged.
+static CSS_IMPORT_RE: LazyLock<Option<Regex>> =
+    LazyLock::new(|| Regex::new(r#"(?m)^@import\s+(?:"([^"]+)"|'([^']+)');?\s*$"#).ok());
+static CUSTOM_MEDIA_RE: LazyLock<Option<Regex>> =
+    LazyLock::new(|| Regex::new(r"@custom-media\s+(--[\w-]+)\s+(.+?)\s*;").ok());
+static CUSTOM_MEDIA_LINE_RE: LazyLock<Option<Regex>> =
+    LazyLock::new(|| Regex::new(r"(?m)^@custom-media\s+[^;]+;\s*$").ok());
 
 /// Serializable CSS alias rule used by the Vite plugin.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -52,7 +51,7 @@ pub fn resolve_css_imports(
     let mut result = inline_css_imports(css, importer, alias_rules, &mut custom_media);
 
     parse_custom_media(result.as_str(), &mut custom_media);
-    result = replace_regex_all(&CUSTOM_MEDIA_LINE_RE, result.as_str(), "");
+    result = replace_regex_all(CUSTOM_MEDIA_LINE_RE.as_ref(), result.as_str(), "");
 
     for entry in &custom_media {
         let mut pattern = String::with_capacity(entry.name.len() + 2);
@@ -85,7 +84,7 @@ fn inline_css_imports(
     let mut output = String::with_capacity(css.len());
     let mut last = 0usize;
 
-    for captures in CSS_IMPORT_RE.captures_iter(css) {
+    for captures in CSS_IMPORT_RE.iter().flat_map(|re| re.captures_iter(css)) {
         let Some(matched) = captures.get(0) else {
             continue;
         };
@@ -101,7 +100,7 @@ fn inline_css_imports(
             .filter(|path| path.exists())
             .and_then(|path| std::fs::read_to_string(path).ok());
 
-        output.push_str(&css[last..matched.start()]);
+        output.push_str(css.get(last..matched.start()).unwrap_or_default());
         if let Some(content) = replacement {
             parse_custom_media(content.as_str(), custom_media);
             output.push_str(content.as_str());
@@ -115,12 +114,12 @@ fn inline_css_imports(
         return String::from(css);
     }
 
-    output.push_str(&css[last..]);
+    output.push_str(css.get(last..).unwrap_or_default());
     output
 }
 
 fn parse_custom_media(css: &str, entries: &mut SmallVec<[CustomMedia; 4]>) {
-    for captures in CUSTOM_MEDIA_RE.captures_iter(css) {
+    for captures in CUSTOM_MEDIA_RE.iter().flat_map(|re| re.captures_iter(css)) {
         let Some(name) = captures.get(1).map(|capture| capture.as_str()) else {
             continue;
         };
@@ -161,7 +160,8 @@ fn resolve_dev_urls(
             continue;
         };
 
-        let trimmed = css[candidate.value_start..candidate.value_end].trim();
+        let value = css.get(candidate.value_start..candidate.value_end);
+        let trimmed = value.unwrap_or_default().trim();
         if should_skip_url(trimmed) {
             cursor = candidate.end;
             continue;
@@ -184,7 +184,7 @@ fn resolve_dev_urls(
             });
 
         if let Some(replacement) = replacement {
-            output.push_str(&css[last..cursor]);
+            output.push_str(css.get(last..cursor).unwrap_or_default());
             output.push_str("url(");
             push_js_string_literal(&mut output, replacement.as_str());
             output.push(')');
@@ -198,7 +198,7 @@ fn resolve_dev_urls(
         return String::from(css);
     }
 
-    output.push_str(&css[last..]);
+    output.push_str(css.get(last..).unwrap_or_default());
     output
 }
 
@@ -216,8 +216,7 @@ fn parse_url_candidate(css: &str, cursor: usize) -> Option<UrlCandidate> {
     }
 
     let quote = match bytes.get(index).copied() {
-        Some(b'"' | b'\'') => {
-            let quote = bytes[index];
+        Some(quote @ (b'"' | b'\'')) => {
             index += 1;
             Some(quote)
         }
@@ -226,15 +225,11 @@ fn parse_url_candidate(css: &str, cursor: usize) -> Option<UrlCandidate> {
 
     let value_start = index;
     let value_end = if let Some(quote) = quote {
-        while index < bytes.len() && bytes[index] != quote {
-            index += 1;
-        }
-        (index < bytes.len()).then_some(index)?
+        index += bytes.get(index..)?.iter().position(|&byte| byte == quote)?;
+        index
     } else {
-        while index < bytes.len() && bytes[index] != b')' {
-            index += 1;
-        }
-        (index < bytes.len()).then_some(index)?
+        index += bytes.get(index..)?.iter().position(|&byte| byte == b')')?;
+        index
     };
 
     if quote.is_some() {
@@ -347,7 +342,10 @@ fn normalize_path_for_url(path: &Path) -> String {
     output
 }
 
-fn replace_regex_all(regex: &Regex, input: &str, replacement: &str) -> String {
+fn replace_regex_all(regex: Option<&Regex>, input: &str, replacement: &str) -> String {
+    let Some(regex) = regex else {
+        return String::from(input);
+    };
     let replaced = regex.replace_all(input, replacement);
     String::from(replaced.as_ref())
 }
@@ -359,20 +357,17 @@ fn replace_literal(input: &str, needle: &str, replacement: &str) -> String {
 
     let mut output = String::with_capacity(input.len());
     let mut last = 0usize;
-    let mut cursor = 0usize;
-    while let Some(offset) = input[cursor..].find(needle) {
-        let start = cursor + offset;
-        output.push_str(&input[last..start]);
+    for (start, _) in input.match_indices(needle) {
+        output.push_str(input.get(last..start).unwrap_or_default());
         output.push_str(replacement);
-        cursor = start + needle.len();
-        last = cursor;
+        last = start + needle.len();
     }
 
     if last == 0 {
         return String::from(input);
     }
 
-    output.push_str(&input[last..]);
+    output.push_str(input.get(last..).unwrap_or_default());
     output
 }
 
@@ -384,17 +379,17 @@ fn collapse_excess_blank_lines(input: &str) -> String {
 
     while cursor < bytes.len() {
         let text_start = cursor;
-        while cursor < bytes.len() && bytes[cursor] != b'\n' {
+        while bytes.get(cursor).is_some_and(|&byte| byte != b'\n') {
             cursor += 1;
         }
-        output.push_str(&input[text_start..cursor]);
+        output.push_str(input.get(text_start..cursor).unwrap_or_default());
 
         if cursor == bytes.len() {
             break;
         }
 
         let start = cursor;
-        while cursor < bytes.len() && bytes[cursor] == b'\n' {
+        while bytes.get(cursor) == Some(&b'\n') {
             cursor += 1;
         }
         let count = cursor - start;
