@@ -6,7 +6,7 @@
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
 };
-use vize_s0::{ensure_sufficient_stack, is_builtin_directive};
+use vize_s0::is_builtin_directive;
 
 use super::super::{
     context::CodegenContext, node::generate_node, props::is_supported_directive,
@@ -159,12 +159,12 @@ pub(crate) fn has_dynamic_key_binding(el: &ElementNode<'_>) -> bool {
     })
 }
 
-/// Check whether a native element needs its own block to enter or leave an
-/// SVG/MathML namespace boundary. Descendants already inside the same
-/// namespace can stay as inline VNodes, matching Vue's DOM compiler output.
+/// Check whether a native element itself enters or leaves an SVG/MathML
+/// namespace. A nested SVG child opens its own block; it does not turn its
+/// HTML parent into a block. Elements such as `foreignObject` also open a
+/// block because their children return to the HTML namespace.
 pub(crate) fn crosses_namespace_boundary(ctx: &CodegenContext, el: &ElementNode<'_>) -> bool {
-    el.tag_type == ElementType::Element
-        && (el.ns != ctx.parent_ns || children_cross_namespace_boundary(el.ns, &el.children))
+    el.tag_type == ElementType::Element && (el.ns != ctx.parent_ns || child_namespace(el) != el.ns)
 }
 
 pub(crate) fn child_namespace(el: &ElementNode<'_>) -> Namespace {
@@ -179,31 +179,6 @@ pub(crate) fn child_namespace(el: &ElementNode<'_>) -> Namespace {
             Namespace::Html
         }
         _ => el.ns,
-    }
-}
-
-fn children_cross_namespace_boundary(ns: Namespace, children: &[TemplateChildNode<'_>]) -> bool {
-    children
-        .iter()
-        .any(|child| child_crosses_namespace_boundary(ns, child))
-}
-
-fn child_crosses_namespace_boundary(ns: Namespace, child: &TemplateChildNode<'_>) -> bool {
-    match child {
-        TemplateChildNode::Element(el) => match el.tag_type {
-            ElementType::Element => el.ns != ns,
-            ElementType::Template => {
-                ensure_sufficient_stack(|| children_cross_namespace_boundary(ns, &el.children))
-            }
-            _ => false,
-        },
-        TemplateChildNode::If(if_node) => if_node.branches.iter().any(|branch| {
-            ensure_sufficient_stack(|| children_cross_namespace_boundary(ns, &branch.children))
-        }),
-        TemplateChildNode::For(for_node) => {
-            ensure_sufficient_stack(|| children_cross_namespace_boundary(ns, &for_node.children))
-        }
-        _ => false,
     }
 }
 

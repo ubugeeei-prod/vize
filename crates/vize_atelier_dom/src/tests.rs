@@ -290,6 +290,33 @@ fn test_inline_svg_dynamic_subtree_uses_own_block() {
     );
 }
 
+/// Scalar's client selector nests an SVG in the `v-else` side of an icon
+/// wrapper. The namespace transition belongs to the SVG branch, not to the
+/// HTML wrapper containing the conditional templates.
+#[test]
+fn test_conditional_svg_child_does_not_promote_html_parent_to_block() {
+    let allocator = Allocator::new();
+    let (_, errors, result) = compile_template(
+        &allocator,
+        r#"<button><div class="icon"><template v-if="selected"><span>selected</span></template><template v-else><svg><path d="M0 0"/></svg></template></div></button>"#,
+    );
+    assert!(errors.is_empty());
+
+    let code = result.code.as_str();
+    assert!(
+        code.contains(r#"_createElementVNode("div", { class: "icon" }"#),
+        "the HTML icon wrapper should remain an inline VNode:\n{code}"
+    );
+    assert!(
+        !code.contains(r#"_createElementBlock("div", { class: "icon" }"#),
+        "the nested SVG branch must not promote its HTML parent:\n{code}"
+    );
+    assert!(
+        code.contains(r#"_createElementBlock("svg""#),
+        "the SVG branch itself must enter its namespace with a block:\n{code}"
+    );
+}
+
 #[test]
 fn test_inline_svg_descendants_inside_same_namespace_stay_vnodes() {
     let allocator = Allocator::new();
