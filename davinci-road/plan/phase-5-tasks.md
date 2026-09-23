@@ -198,7 +198,7 @@
 
 **Steps:**
 
-- [ ] Migrate the rest; delete `with_content`, `with_content_for_completion` and `with_content_at_position`
+- [x] Migrate the rest; delete `with_content`, `with_content_for_completion` and `with_content_at_position`
 
 **Acceptance:** the `parse_sfc` ceiling at **0** request-path sites; `grep -rn "fn with_content" crates/vize_maestro/src` empty; the LSP suites exact.
 

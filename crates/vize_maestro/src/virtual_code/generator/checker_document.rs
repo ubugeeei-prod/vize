@@ -5,8 +5,10 @@
 //! calls `parse_sfc`.
 
 use vize_atelier_sfc::SfcDescriptor;
-use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
-use vize_canon::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
+use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context};
+use vize_canon::virtual_ts::{
+    VirtualTsOptions, generate_virtual_ts_with_offsets, generate_virtual_ts_with_split_offsets,
+};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 use vize_relief::RootNode;
 use vize_s0::cstr;
@@ -24,18 +26,15 @@ pub(super) fn template_document(
         .expect("template document is only built for a template block");
     let mut options = SfcCroquisOptions::for_lint();
     options.analyzer_options.collect_template_expressions = true;
-    let analysis = analyze_sfc_descriptor(descriptor, Some(root), options);
-    let script = descriptor
-        .script_setup
-        .as_ref()
-        .or(descriptor.script.as_ref());
-    let output = generate_virtual_ts_with_offsets(
-        &analysis,
-        script.map(|block| block.content.as_ref()),
+    let analysis = analyze_sfc_descriptor_with_context(descriptor, Some(root), options);
+    let output = generate_virtual_ts_with_split_offsets(
+        &analysis.croquis,
+        analysis.script_content.as_deref(),
         Some(root),
-        script.map(|block| block.loc.start as u32).unwrap_or(0),
+        analysis.script_offset,
         template.loc.start as u32,
         &VirtualTsOptions::default(),
+        analysis.split_script_setup_offsets(descriptor),
     );
     VirtualDocument::from_emission(
         cstr!("{base_uri}.__template.ts").to_string(),

@@ -52,6 +52,35 @@ pub fn generate_virtual_ts_with_offsets(
     )
 }
 
+/// Generate virtual TypeScript for a Croquis analyzed on merged script text.
+///
+/// `split_script_setup_offsets` is `(synthetic_setup_start, source_setup_start)`
+/// from the descriptor analysis. Spans at or after the synthetic start map
+/// through the authored `<script setup>` block. `None` keeps every span
+/// relative to `script_offset`.
+pub fn generate_virtual_ts_with_split_offsets(
+    summary: &Croquis,
+    script_content: Option<&str>,
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    script_offset: u32,
+    template_offset: u32,
+    options: &VirtualTsOptions,
+    split_script_setup_offsets: Option<(usize, usize)>,
+) -> VirtualTsOutput {
+    generate_virtual_ts_with_offsets_and_checks(
+        summary,
+        script_content,
+        template_ast,
+        script_offset,
+        template_offset,
+        options,
+        VirtualTsGenerationOptions {
+            split_script_setup_offsets,
+            ..Default::default()
+        },
+    )
+}
+
 /// Generate virtual TypeScript with Vue 3 Options API binding resolution
 /// enabled (opt-in, standard build — no `legacy` feature required).
 pub fn generate_virtual_ts_with_offsets_options_api(

@@ -4,7 +4,7 @@ mod component_constructors;
 mod component_export;
 mod component_public_types;
 mod emits;
-mod entry;
+pub(super) mod entry;
 mod fallthrough;
 mod file_directives;
 pub(super) mod generics;

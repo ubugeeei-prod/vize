@@ -53,8 +53,9 @@ mod unknown_props_tests;
 
 pub(crate) use generator::generate_virtual_ts_with_offsets_and_checks;
 pub use generator::{
-    generate_virtual_ts, generate_virtual_ts_with_offsets,
-    generate_virtual_ts_with_offsets_legacy_vue2, generate_virtual_ts_with_offsets_options_api,
+    entry::generate_virtual_ts_with_split_offsets, generate_virtual_ts,
+    generate_virtual_ts_with_offsets, generate_virtual_ts_with_offsets_legacy_vue2,
+    generate_virtual_ts_with_offsets_options_api,
 };
 pub use helpers::{
     DECLARATION_HELPERS_DTS, SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_FILE_NAME, VUE_SETUP_HELPERS,
