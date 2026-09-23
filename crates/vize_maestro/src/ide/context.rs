@@ -51,6 +51,7 @@ impl<'a> IdeContext<'a> {
 
     /// A buffer that is not an open document (another file's text, or a test
     /// fixture). Request handlers use [`Self::new`].
+    #[cfg(feature = "native")]
     pub(crate) fn for_unopened(
         state: &'a ServerState,
         uri: &'a Url,

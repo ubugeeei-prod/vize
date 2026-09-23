@@ -240,7 +240,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tes
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests.rs	6	raw_oxc	raw OXC	raw	oxc_parser	raw	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/graphql_generated.rs	4	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/package_shadow_fan_out.rs	23	s0	S0	stage	vize_carton	compat	6
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/ref_arity.rs	51	s0	S0	stage	vize_carton	compat	4
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/ref_arity.rs	50	s0	S0	stage	vize_carton	compat	4
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/tsconfig_extends.rs	313	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/windows_paths.rs	18	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/tests/workspace_package_routes.rs	11	s0	S0	stage	vize_carton	compat	1
