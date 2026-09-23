@@ -18,7 +18,7 @@ for (const { nativeCss, autoRules, typescript } of [true, false].flatMap((typesc
   { nativeCss: true, autoRules: true, typescript },
   { nativeCss: false, autoRules: false, typescript },
 ])) {
-  test(
+  void test(
     `browser HMR (${nativeCss ? "Native CSS" : "CssExtract"}, ${autoRules ? "auto" : "manual"}, ${typescript ? "TS" : "JS"})`,
     { timeout: 120_000 },
     async (t) => {
