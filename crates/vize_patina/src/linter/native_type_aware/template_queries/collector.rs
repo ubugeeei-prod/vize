@@ -480,18 +480,7 @@ fn collect_expression_query_sets(
 }
 
 fn expression_binding_generated_offset(generated: &str, expression_offset: u32) -> Option<u32> {
-    let offset = usize::min(expression_offset as usize, generated.len());
-    let before_offset = generated.get(..offset)?;
-    let after_offset = generated.get(offset..)?;
-    let line_start = before_offset.rfind('\n').map_or(0, |index| index + 1);
-    let line_end = after_offset
-        .find('\n')
-        .map_or(generated.len(), |index| offset + index);
-    let line = generated.get(line_start..line_end)?;
-    let const_start = line.find("const __expr_")?;
-    let name_start = const_start + "const ".len();
-    let name_end = line.get(name_start..)?.find(" = ")? + name_start;
-    (name_end > name_start).then_some((line_start + name_end - 1) as u32)
+    super::super::expression_bindings::binding_offset(generated, expression_offset)
 }
 
 #[cfg(test)]

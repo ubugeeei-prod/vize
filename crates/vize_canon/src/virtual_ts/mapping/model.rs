@@ -179,11 +179,7 @@ impl ProjectionMapping {
         self.spans.is_empty()
     }
 
-    /// Move generated ranges after a replacement of `old_len` bytes at `start`.
-    ///
-    /// Ranges that begin at or after the old end move by the length delta.
-    /// A range that starts before the replacement and ends after it grows or
-    /// shrinks with that delta. Authored ranges stay put.
+    /// Move generated ranges after replacing `old_len` bytes at `start`.
     pub fn note_generated_replacement(&mut self, start: usize, old_len: usize, new_len: usize) {
         let old_end = start.saturating_add(old_len);
         let delta = new_len as isize - old_len as isize;
@@ -199,6 +195,35 @@ impl ProjectionMapping {
         for link in &mut self.semantic_links {
             shift_generated_range(&mut link.source_range, start, old_end, delta);
             shift_generated_range(&mut link.target_range, start, old_end, delta);
+        }
+    }
+
+    /// Move rows when `void (expr)` becomes `const __expr_N = expr`.
+    pub fn retarget_expression_binding(
+        &mut self,
+        stmt: Range<usize>,
+        expr: Range<usize>,
+        prefix_delta: isize,
+        total_delta: isize,
+    ) {
+        let adjust = |range: &mut Range<usize>| {
+            if range.start >= stmt.end {
+                shift_both(range, total_delta);
+            } else if range.start >= expr.start && range.end <= expr.end {
+                shift_both(range, prefix_delta);
+            } else if range.end > stmt.end && range.start < stmt.end {
+                range.end = add_delta(range.end, total_delta);
+            }
+        };
+        for span in &mut self.spans {
+            adjust(&mut span.gen_range);
+            for sub in &mut span.sub_spans {
+                adjust(&mut sub.gen_range);
+            }
+        }
+        for link in &mut self.semantic_links {
+            adjust(&mut link.source_range);
+            adjust(&mut link.target_range);
         }
     }
 
@@ -295,19 +320,24 @@ fn clamped_byte(from: &Range<usize>, to: &Range<usize>, offset: usize) -> usize 
     to.start + relative.min(to.end.saturating_sub(to.start).saturating_sub(1))
 }
 
+fn shift_both(range: &mut Range<usize>, delta: isize) {
+    range.start = add_delta(range.start, delta);
+    range.end = add_delta(range.end, delta);
+}
+
+fn add_delta(value: usize, delta: isize) -> usize {
+    if delta >= 0 {
+        value + delta as usize
+    } else {
+        value.saturating_sub((-delta) as usize)
+    }
+}
+
 fn shift_generated_range(range: &mut Range<usize>, start: usize, old_end: usize, delta: isize) {
-    let shift = |value: usize| -> usize {
-        if delta >= 0 {
-            value + delta as usize
-        } else {
-            value.saturating_sub((-delta) as usize)
-        }
-    };
     if range.start >= old_end {
-        range.start = shift(range.start);
-        range.end = shift(range.end);
+        shift_both(range, delta);
     } else if range.end > start && range.end >= old_end {
-        range.end = shift(range.end);
+        range.end = add_delta(range.end, delta);
     }
 }
 

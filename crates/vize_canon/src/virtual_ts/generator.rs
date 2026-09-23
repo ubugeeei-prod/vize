@@ -306,8 +306,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         has_script_reference_types || check_options.check_unknown_components,
         generation_options.self_component_name,
     );
-    // Derive a real cross-file `Props` type from macro or Options API input.
-    let options_api_props = (options_api && summary.macros.props().is_empty())
+    let options_api_props = options_api
         .then(|| script_content.and_then(find_options_api_props))
         .flatten();
     // The template-scope unwrap set also needs it: an auto-import already

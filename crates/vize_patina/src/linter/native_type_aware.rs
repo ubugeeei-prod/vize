@@ -11,6 +11,7 @@ use vize_s0::{String, ToCompactString, profile};
 
 mod document;
 mod driver;
+mod expression_bindings;
 mod markers;
 mod parsing;
 mod reactivity_loss;

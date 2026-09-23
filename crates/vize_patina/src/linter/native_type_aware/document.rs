@@ -7,6 +7,7 @@ use vize_atelier_sfc::SfcDescriptor;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor};
 use vize_canon::virtual_ts::{
     ProjectionMapping, VirtualTsOptions, generate_virtual_ts_with_offsets,
+    generate_virtual_ts_with_offsets_options_api,
 };
 use vize_relief::RootNode;
 use vize_s0::String;
@@ -38,18 +39,32 @@ pub(super) fn project_type_aware<'a>(
     let mut options = SfcCroquisOptions::lint_demand();
     options.analyzer_options.collect_template_expressions = true;
     let analysis = analyze_sfc_descriptor(descriptor, template, options);
-    let output = generate_virtual_ts_with_offsets(
-        &analysis,
-        Some(script_content),
-        template,
-        script_offset,
-        template_offset,
-        &VirtualTsOptions::default(),
-    );
+    let ts_options = VirtualTsOptions::default();
+    let output = if descriptor.script_setup.is_none() && descriptor.script.is_some() {
+        generate_virtual_ts_with_offsets_options_api(
+            &analysis,
+            Some(script_content),
+            template,
+            script_offset,
+            template_offset,
+            &ts_options,
+        )
+    } else {
+        generate_virtual_ts_with_offsets(
+            &analysis,
+            Some(script_content),
+            template,
+            script_offset,
+            template_offset,
+            &ts_options,
+        )
+    };
     let mut document = TypeAwareDocument {
         content: output.code,
         mapping: output.mapping,
     };
+    super::expression_bindings::hoist_type_imports(&mut document, script_content);
+    super::expression_bindings::bind_template_expressions(&mut document);
     super::relative_imports::absolutize_relative_imports(&mut document, filename);
     document
 }

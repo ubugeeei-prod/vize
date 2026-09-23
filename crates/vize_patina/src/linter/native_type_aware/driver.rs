@@ -108,10 +108,6 @@ pub(super) fn lint_with_descriptor<'a>(
         return result;
     }
 
-    // Plan every type-aware probe before generating virtual TS. Most files have
-    // enough static macro information to report or skip immediately; if no active
-    // rule needs Corsa, returning here avoids virtual project creation and the
-    // expensive type-probe round trip entirely.
     let needs_prop_probe = profile!("patina.type_aware.plan_prop_queries", {
         collect_prop_static_warning_or_probe_need(linter, &analysis, &mut result, descriptor)
     });
@@ -317,7 +313,11 @@ pub(super) fn lint_with_descriptor<'a>(
                         false,
                     )
                 )?;
-                if !has_unsafe_template_type(probe.as_ref()) {
+                if !super::expression_bindings::template_binding_is_unsafe(
+                    source,
+                    query,
+                    probe.as_ref(),
+                ) {
                     continue;
                 }
 
