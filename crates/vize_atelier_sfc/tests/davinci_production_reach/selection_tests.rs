@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_s0::profiler::{CounterEntry, CounterSummary};
+use vize_s0::profiler::{CounterEntry, CounterSummary, global_profiler};
 
 use super::parity::parity_failures;
 use super::shapes::{Shape, compile, explicit_vapor_source};
@@ -36,6 +36,7 @@ fn dom_failures(lane: Lane) -> Vec<String> {
 
 #[test]
 fn source_vapor_route_requires_a_real_vapor_selection() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     for source in [
         "<script setup vapor>const x = 1</script><template>{{ x }}</template>",
         "<script vapor>export default {}</script><template>hi</template>",
@@ -43,21 +44,26 @@ fn source_vapor_route_requires_a_real_vapor_selection() {
         let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
         assert!(explicit_vapor_source(&descriptor));
         for shape in [Shape::DomInline, Shape::DomModule] {
-            let output = compile(&descriptor, "explicit-vapor.vue", shape).unwrap();
+            let profiler = global_profiler();
+            profiler.clear();
+            profiler.enable();
+            let output = compile(&descriptor, "explicit-vapor.vue", shape);
+            let counters = profiler.counter_summary();
+            profiler.disable();
+            profiler.clear();
+            let output = output.unwrap();
             assert!(
                 output.code.contains("defineVaporComponent")
                     || output.code.contains(".__vapor = true"),
                 "{}",
                 output.code
             );
+            assert_eq!(
+                classify_route(shape, &counters, true),
+                Ok(Lane::RoutedVapor),
+                "{shape:?}: {source}"
+            );
         }
-    }
-    let counters = vapor_counter();
-    for shape in [Shape::DomInline, Shape::DomModule] {
-        assert_eq!(
-            classify_route(shape, &counters, true),
-            Ok(Lane::RoutedVapor)
-        );
     }
     assert!(dom_failures(Lane::RoutedVapor).is_empty());
 }

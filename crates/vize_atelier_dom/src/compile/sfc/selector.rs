@@ -50,6 +50,10 @@ fn source_contains_parser_recovery(source: &str) -> bool {
         let namespace = tag_namespace(name, tags.last().copied());
         let tag_end = scan_tag_end(bytes, name_end);
         let self_closing = tag_closes_self_closing(bytes, name_end, tag_end);
+        let html_void_tag = namespace == SourceNamespace::Html
+            && (is_html_void_tag_name(name)
+                || (name.bytes().any(|byte| byte.is_ascii_uppercase())
+                    && is_html_void_tag_name(&name.to_ascii_lowercase())));
         if namespace == SourceNamespace::Html
             && (name.eq_ignore_ascii_case("a")
                 || name.eq_ignore_ascii_case("button")
@@ -78,7 +82,7 @@ fn source_contains_parser_recovery(source: &str) -> bool {
             return true;
         }
 
-        if !self_closing {
+        if !self_closing && !html_void_tag {
             tags.push(SourceOpenTag { name, namespace });
         }
 
@@ -86,6 +90,24 @@ fn source_contains_parser_recovery(source: &str) -> bool {
     }
 
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::s2_sfc_fast_path_supported_source;
+
+    #[test]
+    fn html_void_element_does_not_keep_parent_open_after_close() {
+        for source in [
+            r#"<a><img src="x"></a><a>next</a>"#,
+            r#"<a><IMG src="x"></a><a>next</a>"#,
+        ] {
+            assert!(
+                s2_sfc_fast_path_supported_source(source),
+                "{source} should keep the direct S2 SFC fast path"
+            );
+        }
+    }
 }
 
 fn find_byte(bytes: &[u8], start: usize, needle: u8) -> Option<usize> {

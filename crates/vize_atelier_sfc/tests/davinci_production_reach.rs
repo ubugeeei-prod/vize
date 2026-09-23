@@ -53,7 +53,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-use davinci_production_reach::diff::divergence;
+use davinci_production_reach::diff::{divergence, error_divergence};
 use davinci_production_reach::parity::parity_failures;
 use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
 use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
@@ -309,6 +309,16 @@ fn measure(
         Err(error) => {
             let code = error.code.as_deref().unwrap_or("unknown").to_owned();
             *tally.sfc_errors.entry(code).or_default() += 1;
+            if shape.is_dom() {
+                let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+                    compile(descriptor, name, shape)
+                });
+                if let Some(divergence) = error_divergence(&error, &legacy) {
+                    tally
+                        .divergences
+                        .push(format!("{name} [{}]: {divergence}", shape.id()));
+                }
+            }
             return;
         }
     };

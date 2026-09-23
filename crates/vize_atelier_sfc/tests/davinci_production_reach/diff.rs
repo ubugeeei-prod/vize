@@ -45,6 +45,61 @@ pub fn divergence(
     None
 }
 
+/// A selected compile error must agree with the forced legacy result too.
+pub fn error_divergence(
+    selected: &SfcError,
+    legacy: &Result<SfcCompileResult, SfcError>,
+) -> Option<String> {
+    match legacy {
+        Err(legacy) if selected.code == legacy.code && selected.message == legacy.message => None,
+        Err(legacy) => Some(format!(
+            "compile errors differ: selected={selected:?} legacy={legacy:?}"
+        )),
+        Ok(_) => Some(format!(
+            "selected lane failed but legacy lane compiled: {selected:?}"
+        )),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn error(code: &str, message: &str) -> SfcError {
+        SfcError {
+            code: Some(code.into()),
+            message: message.into(),
+            loc: None,
+        }
+    }
+
+    #[test]
+    fn selected_errors_require_matching_legacy_errors() {
+        let selected = error("parse", "invalid end tag");
+        assert_eq!(
+            error_divergence(&selected, &Err(error("parse", "invalid end tag"))),
+            None
+        );
+        assert!(error_divergence(&selected, &Err(error("parse", "different"))).is_some());
+        assert!(error_divergence(&selected, &Err(error("codegen", "invalid end tag"))).is_some());
+        assert!(
+            error_divergence(
+                &selected,
+                &Ok(SfcCompileResult {
+                    code: "compiled".into(),
+                    css: None,
+                    map: None,
+                    errors: Vec::new(),
+                    warnings: Vec::new(),
+                    bindings: None,
+                    macro_artifacts: Vec::new(),
+                })
+            )
+            .is_some()
+        );
+    }
+}
+
 fn first_diff(left: &str, right: &str) -> usize {
     left.bytes()
         .zip(right.bytes())
