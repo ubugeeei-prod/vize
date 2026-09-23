@@ -15,6 +15,7 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
   const vsixPath = path.join(tempDir, "vize.vsix");
   const statePath = path.join(tempDir, "state.json");
   const callsPath = path.join(tempDir, "calls.json");
+  const curlCallsPath = path.join(tempDir, "curl-calls.json");
 
   try {
     fs.mkdirSync(binDir, { recursive: true });
@@ -37,13 +38,6 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
         "const state = fs.existsSync(process.env.STATE_PATH)",
         "  ? JSON.parse(fs.readFileSync(process.env.STATE_PATH, 'utf8'))",
         "  : { published: false };",
-        "if (args[0] === 'dlx' && args[2] === 'ovsx@^1.0.0' && args[3] === 'ovsx' && args[4] === 'get') {",
-        "  if (state.published) {",
-        "    process.stdout.write(JSON.stringify({ version: '0.57.0' }));",
-        "    process.exit(0);",
-        "  }",
-        "  process.exit(1);",
-        "}",
         "if (args[0] === 'dlx' && args[2] === 'ovsx@^1.0.0' && args[3] === 'ovsx' && args[4] === 'create-namespace') {",
         "  if (process.env.NAMESPACE_ERROR === 'auth') { console.error('token is not authorized'); process.exit(17); }",
         "  console.error('Namespace already exists');",
@@ -57,12 +51,31 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
         "process.exit(1);",
       ].join("\n"),
     );
+    writeFakeCommand(
+      binDir,
+      "curl",
+      [
+        "const fs = require('node:fs');",
+        "const args = process.argv.slice(2);",
+        "const calls = fs.existsSync(process.env.CURL_CALLS_PATH)",
+        "  ? JSON.parse(fs.readFileSync(process.env.CURL_CALLS_PATH, 'utf8'))",
+        "  : [];",
+        "calls.push(args);",
+        "fs.writeFileSync(process.env.CURL_CALLS_PATH, JSON.stringify(calls));",
+        "const state = fs.existsSync(process.env.STATE_PATH)",
+        "  ? JSON.parse(fs.readFileSync(process.env.STATE_PATH, 'utf8'))",
+        "  : { published: false };",
+        "if (!state.published) process.exit(22); // curl --fail on HTTP 404",
+        "process.stdout.write(JSON.stringify({ version: '0.57.0' }));",
+      ].join("\n"),
+    );
 
     const runPublish = (namespaceError?: string) =>
       runMoonScript("publish_open_vsx_extension", [vsixPath, manifestPath], {
         env: {
           PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
           CALLS_PATH: callsPath,
+          CURL_CALLS_PATH: curlCallsPath,
           STATE_PATH: statePath,
           NAMESPACE_ERROR: namespaceError ?? "",
         },
@@ -75,16 +88,24 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
     const rejectedCalls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
     assert.deepEqual(
       rejectedCalls.map((call) => call[4]),
-      ["get", "create-namespace"],
+      ["create-namespace"],
     );
+    const expectedLookup = [
+      "--fail",
+      "--silent",
+      "--show-error",
+      "https://open-vsx.org/api/ubugeeei/vize/0.57.0",
+    ];
+    assert.deepEqual(JSON.parse(fs.readFileSync(curlCallsPath, "utf8")), [expectedLookup]);
 
     writeFileSync(callsPath, "[]");
+    writeFileSync(curlCallsPath, "[]");
     const result = runPublish();
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.match(result.stdout, /already exists; continuing to publish/);
 
     const calls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
-    assert.deepEqual(calls.at(-3), [
+    assert.deepEqual(calls.at(-2), [
       "dlx",
       "-p",
       "ovsx@^1.0.0",
@@ -92,8 +113,11 @@ test("publish_open_vsx_extension publishes a packaged VSIX with ovsx", () => {
       "create-namespace",
       "ubugeeei",
     ]);
-    assert.deepEqual(calls.at(-2), ["dlx", "-p", "ovsx@^1.0.0", "ovsx", "publish", vsixPath]);
-    assert.equal(calls.at(-1)?.[4], "get");
+    assert.deepEqual(calls.at(-1), ["dlx", "-p", "ovsx@^1.0.0", "ovsx", "publish", vsixPath]);
+    assert.deepEqual(JSON.parse(fs.readFileSync(curlCallsPath, "utf8")), [
+      expectedLookup,
+      expectedLookup,
+    ]);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }
@@ -105,6 +129,7 @@ test("publish_open_vsx_extension skips an already visible Open VSX version", () 
   const manifestPath = path.join(tempDir, "package.json");
   const vsixPath = path.join(tempDir, "vize.vsix");
   const callsPath = path.join(tempDir, "calls.json");
+  const curlCallsPath = path.join(tempDir, "curl-calls.json");
 
   try {
     fs.mkdirSync(binDir, { recursive: true });
@@ -113,6 +138,7 @@ test("publish_open_vsx_extension skips an already visible Open VSX version", () 
       `${JSON.stringify({ publisher: "ubugeeei", name: "vize", version: "0.57.0" }, null, 2)}\n`,
     );
     writeFileSync(vsixPath, "vsix");
+    writeFileSync(callsPath, "[]");
     writeFakeCommand(
       binDir,
       "vp",
@@ -124,11 +150,17 @@ test("publish_open_vsx_extension skips an already visible Open VSX version", () 
         "  : [];",
         "calls.push(args);",
         "fs.writeFileSync(process.env.CALLS_PATH, JSON.stringify(calls));",
-        "if (args[0] === 'dlx' && args[2] === 'ovsx@^1.0.0' && args[3] === 'ovsx' && args[4] === 'get') {",
-        "  process.stdout.write(JSON.stringify({ version: '0.57.0' }));",
-        "  process.exit(0);",
-        "}",
         "process.exit(1);",
+      ].join("\n"),
+    );
+    writeFakeCommand(
+      binDir,
+      "curl",
+      [
+        "const fs = require('node:fs');",
+        "const args = process.argv.slice(2);",
+        "fs.writeFileSync(process.env.CURL_CALLS_PATH, JSON.stringify([args]));",
+        "process.stdout.write(JSON.stringify({ version: '0.57.0' }));",
       ].join("\n"),
     );
 
@@ -136,14 +168,17 @@ test("publish_open_vsx_extension skips an already visible Open VSX version", () 
       env: {
         PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
         CALLS_PATH: callsPath,
+        CURL_CALLS_PATH: curlCallsPath,
       },
     });
     assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
     assert.match(result.stdout, /already published/);
 
     const calls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
-    assert.equal(calls.length, 1);
-    assert.equal(calls[0]?.[4], "get");
+    assert.deepEqual(calls, []);
+    assert.deepEqual(JSON.parse(fs.readFileSync(curlCallsPath, "utf8")), [
+      ["--fail", "--silent", "--show-error", "https://open-vsx.org/api/ubugeeei/vize/0.57.0"],
+    ]);
   } finally {
     rmSync(tempDir, { recursive: true, force: true });
   }

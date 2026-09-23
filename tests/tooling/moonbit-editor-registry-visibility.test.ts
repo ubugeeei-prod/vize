@@ -16,7 +16,7 @@ const scenarios = [
   },
   {
     script: "publish_open_vsx_extension",
-    metadataCommand: "get",
+    metadataCommand: "curl",
     registry: "Open VSX",
   },
 ] as const;
@@ -47,10 +47,22 @@ for (const scenario of scenarios) {
             "const calls = fs.existsSync(process.env.CALLS_PATH) ? JSON.parse(fs.readFileSync(process.env.CALLS_PATH, 'utf8')) : [];",
             "calls.push(args);",
             "fs.writeFileSync(process.env.CALLS_PATH, JSON.stringify(calls));",
-            "if (args[4] === 'show' || args[4] === 'get') process.exit(1);",
+            "if (args[4] === 'show') process.exit(1);",
             "if (args[4] === 'create-namespace') process.exit(0);",
             "if (args[4] === 'publish') process.exit(Number(process.env.PUBLISH_EXIT));",
             "process.exit(1);",
+          ].join("\n"),
+        );
+        writeFakeCommand(
+          binDir,
+          "curl",
+          [
+            "const fs = require('node:fs');",
+            "const args = process.argv.slice(2);",
+            "const calls = fs.existsSync(process.env.CALLS_PATH) ? JSON.parse(fs.readFileSync(process.env.CALLS_PATH, 'utf8')) : [];",
+            "calls.push(['curl', ...args]);",
+            "fs.writeFileSync(process.env.CALLS_PATH, JSON.stringify(calls));",
+            "process.exit(22); // curl --fail on HTTP 404",
           ].join("\n"),
         );
 
@@ -69,7 +81,21 @@ for (const scenario of scenarios) {
           assert.match(result.stderr, new RegExp(`${scenario.registry} did not expose`));
         }
         const calls = JSON.parse(fs.readFileSync(callsPath, "utf8")) as string[][];
-        assert.equal(calls.filter((args) => args[4] === scenario.metadataCommand).length, 2);
+        const metadataCalls = calls.filter(
+          (args) => args[4] === scenario.metadataCommand || args[0] === scenario.metadataCommand,
+        );
+        assert.equal(metadataCalls.length, 2);
+        if (scenario.script === "publish_open_vsx_extension") {
+          for (const call of metadataCalls) {
+            assert.deepEqual(call, [
+              "curl",
+              "--fail",
+              "--silent",
+              "--show-error",
+              "https://open-vsx.org/api/ubugeeei/vize/0.57.0",
+            ]);
+          }
+        }
         assert.equal(calls.filter((args) => args[4] === "publish").length, 1);
       } finally {
         rmSync(tempDir, { recursive: true, force: true });
