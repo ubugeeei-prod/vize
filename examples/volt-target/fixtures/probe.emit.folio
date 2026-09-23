@@ -1,0 +1,8 @@
+[emit-document]
+schema_version=1
+
+[emit-document.links]
+6:11 0:5 hello true
+
+[emit-document.text]
+~H"<p>Hello</p>"

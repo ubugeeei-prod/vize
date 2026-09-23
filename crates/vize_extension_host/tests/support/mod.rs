@@ -145,6 +145,17 @@ pub fn build_guest(dir: &str, artifact: &str, features: &[&str]) -> PathBuf {
         .join("tests/guests")
         .join(dir)
         .join("Cargo.toml");
+    build_guest_manifest(&manifest, dir, artifact, features)
+}
+
+/// Build the guest at `manifest` for `wasm32-wasip2`. `key` names its target
+/// directory. `features` empty means the default feature set.
+pub fn build_guest_manifest(
+    manifest: &Path,
+    key: &str,
+    artifact: &str,
+    features: &[&str],
+) -> PathBuf {
     let variant = if features.is_empty() {
         cstr!("default")
     } else {
@@ -156,7 +167,7 @@ pub fn build_guest(dir: &str, artifact: &str, features: &[&str]) -> PathBuf {
     );
     let target_dir = target_root
         .join("contract-guests")
-        .join(dir)
+        .join(key)
         .join(variant.as_str());
     let mut command = Command::new(env!("CARGO"));
     command
@@ -183,7 +194,7 @@ pub fn build_guest(dir: &str, artifact: &str, features: &[&str]) -> PathBuf {
         command.env_remove(leaked);
     }
     let status = command.status().expect("cargo runs");
-    assert!(status.success(), "building the echo guest failed: {status}");
+    assert!(status.success(), "building the guest failed: {status}");
     target_dir
         .join("wasm32-wasip2/release")
         .join(cstr!("{artifact}.wasm").as_str())
