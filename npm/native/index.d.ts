@@ -722,6 +722,8 @@ export interface PluginLintOptionsNapi {
   filename?: string;
   /** Reuse a result whose content key this process has already seen. */
   cache?: boolean;
+  /** Optional directory for reusing results across Node processes. */
+  cacheDir?: string;
 }
 
 export interface PluginDiagnosticNapi {

@@ -8,10 +8,11 @@
 
 use vize_davinci::fact::{Demand, FactManager, FactProducer};
 
-use super::batch::{PluginSpec, build_batch, content_key, diagnostics};
+use super::batch::{PluginSpec, build_batch, diagnostics};
 use super::document::PluginDocument;
 use super::error::HostError;
 use super::facts::{REGISTRY, TemplateScopes, resolve_demands};
+use super::plugin_cache::{PluginCache, content_key};
 
 const TODOS: &str = "<template>\n  <ul>\n    <li v-for=\"(todo, i) in todos\" :key=\"i\">{{ todo.title }}</li>\n  </ul>\n</template>\n";
 
@@ -172,7 +173,8 @@ fn the_content_key_covers_the_plugin_code_version_and_file() {
     let demands = strings(&["templateScopes"]);
     let base = spec(None, &demands);
     let key = content_key(TODOS, "Todos.vue", &base);
-    assert_eq!(key.len(), 64);
+    assert_eq!(key.len(), 38);
+    assert_eq!(&key[..6], "s0.v1:");
     assert_eq!(content_key(TODOS, "Todos.vue", &base), key);
     let variants = [
         content_key(TODOS, "Other.vue", &base),
@@ -194,11 +196,56 @@ fn the_content_key_covers_the_plugin_code_version_and_file() {
             },
         ),
         content_key(TODOS, "Todos.vue", &spec(None, &[])),
+        content_key(
+            TODOS,
+            "Todos.vue",
+            &PluginSpec {
+                name: "other",
+                ..base
+            },
+        ),
+        content_key(
+            TODOS,
+            "Todos.vue",
+            &PluginSpec {
+                visit: Some(&strings(&["ui.for"])),
+                ..base
+            },
+        ),
     ];
     assert_eq!(
         variants.iter().filter(|variant| **variant == key).count(),
         0
     );
+}
+
+#[test]
+fn cached_diagnostics_survive_a_new_cache_instance_and_reject_bad_disk_entries() {
+    let dir = tempfile::tempdir().expect("cache dir");
+    let key = content_key(TODOS, "Todos.vue", &spec(None, &[]));
+    let document = PluginDocument::build(TODOS, "Todos.vue").expect("document");
+    let expected = diagnostics(
+        &document,
+        "team",
+        r#"[{"rule":"index-key","node":3,"message":"use an id"}]"#,
+    )
+    .expect("diagnostic");
+    let mut first = PluginCache::default();
+    assert_eq!(first.get(&key, Some(dir.path())), None);
+    first.put(&key, expected.clone(), Some(dir.path()));
+    let mut second = PluginCache::default();
+    assert_eq!(second.get(&key, Some(dir.path())), Some(expected.clone()));
+
+    let entry = std::fs::read_dir(dir.path())
+        .expect("cache dir")
+        .next()
+        .expect("cache entry")
+        .expect("cache path")
+        .path();
+    std::fs::write(&entry, b"{\"schema\":999}").expect("corrupt entry");
+    assert_eq!(PluginCache::default().get(&key, Some(dir.path())), None);
+    std::fs::write(&entry, b"unfinished").expect("tear entry");
+    assert_eq!(PluginCache::default().get(&key, Some(dir.path())), None);
 }
 
 #[test]

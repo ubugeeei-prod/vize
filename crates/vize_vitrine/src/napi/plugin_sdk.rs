@@ -14,11 +14,11 @@
 //!   resolved against the fact registry before anything runs; the batch
 //!   carries only declared groups.
 //! - **Cost attribution and content keys.** Every plugin's time is in the
-//!   lint output; every result has a content key over the plugin's own
-//!   version and code fingerprint, the batch schema and the file.
+//!   lint output; every result has an S0 content key and a P5-1b manifest
+//!   covering the plugin's version, code, visit and demand sets, and file.
 //!
-//! GA (all four hook families, the `@vizejs/plugin-sdk` package, the
-//! persistent cache) is P6-7 after P5-13.
+//! P5-13 adds cross-process disk reuse. GA (all four hook families and the
+//! `@vizejs/plugin-sdk` package) is P6-7.
 
 #![allow(
     clippy::disallowed_types,
@@ -30,11 +30,11 @@ mod batch;
 mod document;
 mod error;
 mod facts;
+mod plugin_cache;
 #[cfg(test)]
 mod tests;
 
-use std::collections::HashMap;
-use std::sync::{Mutex, OnceLock};
+use std::path::Path;
 use std::time::Instant;
 
 use napi::Env;
@@ -42,10 +42,11 @@ use napi::bindgen_prelude::{Error, FunctionRef, Result, Status};
 use napi_derive::napi;
 use vize_davinci::fact::FactManager;
 
-use batch::{PluginDiagnostic, PluginSpec, build_batch, content_key, diagnostics, sort};
+use batch::{PluginDiagnostic, PluginSpec, build_batch, diagnostics, sort, validate_spec};
 use document::PluginDocument;
 use error::HostError;
 use facts::{REGISTRY, TemplateScopes, resolve_demands};
+use plugin_cache::{cache, content_key};
 
 /// A plugin as the SDK's `definePlugin` hands it to the host.
 #[napi(object, object_to_js = false)]
@@ -66,6 +67,8 @@ pub struct PluginLintOptionsNapi {
     pub filename: Option<String>,
     /// Reuse a result whose content key this process has already seen.
     pub cache: Option<bool>,
+    /// Optional directory for reusing results across Node processes.
+    pub cache_dir: Option<String>,
 }
 
 #[napi(object)]
@@ -111,11 +114,6 @@ fn host_error(error: HostError) -> Error {
     Error::new(Status::InvalidArg, error.to_string())
 }
 
-fn cache() -> &'static Mutex<HashMap<String, Vec<PluginDiagnostic>>> {
-    static CACHE: OnceLock<Mutex<HashMap<String, Vec<PluginDiagnostic>>>> = OnceLock::new();
-    CACHE.get_or_init(Mutex::default)
-}
-
 fn to_napi(diagnostic: PluginDiagnostic) -> PluginDiagnosticNapi {
     PluginDiagnosticNapi {
         rule_id: diagnostic.rule_id,
@@ -145,6 +143,7 @@ pub fn lint_with_plugins(
         .filename
         .unwrap_or_else(|| "anonymous.vue".to_owned());
     let use_cache = options.cache == Some(true);
+    let cache_dir = options.cache_dir.as_deref().map(Path::new);
     let document = PluginDocument::build(&source, &filename).map_err(host_error)?;
     let mut manager = FactManager::new(&REGISTRY);
     let mut all = Vec::new();
@@ -159,9 +158,10 @@ pub fn lint_with_plugins(
             visit: plugin.visit.as_deref(),
             demands: &demands,
         };
+        validate_spec(&spec).map_err(host_error)?;
         let key = content_key(&source, &filename, &spec);
         let hit = use_cache
-            .then(|| cache().lock().ok()?.get(&key).cloned())
+            .then(|| cache().lock().ok()?.get(&key, cache_dir))
             .flatten();
         let (found, nodes, bytes, js_ns, cached) = match hit {
             Some(found) => (found, 0, 0, 0.0, true),
@@ -174,7 +174,7 @@ pub fn lint_with_plugins(
                 let js_ns = called.elapsed().as_nanos() as f64;
                 let found = diagnostics(&document, &plugin.name, &reports).map_err(host_error)?;
                 if use_cache && let Ok(mut map) = cache().lock() {
-                    map.insert(key.clone(), found.clone());
+                    map.put(&key, found.clone(), cache_dir);
                 }
                 (found, built.nodes, bytes, js_ns, false)
             }

@@ -23,6 +23,7 @@ mod plugin_sdk_host {
     mod document;
     mod error;
     mod facts;
+    mod plugin_cache;
     mod tests;
 }
 

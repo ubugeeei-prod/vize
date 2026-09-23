@@ -14,7 +14,6 @@
 )]
 
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use vize_davinci::fact::FactManager;
 
 use super::document::{PluginDocument, PluginNode};
@@ -89,18 +88,7 @@ pub fn build_batch(
     spec: &PluginSpec<'_>,
     manager: &mut FactManager<'_, PluginDocument>,
 ) -> Result<BuiltBatch, HostError> {
-    if let Some(kind) = spec
-        .visit
-        .into_iter()
-        .flatten()
-        .find(|k| !NODE_KINDS.contains(&k.as_str()))
-    {
-        return Err(HostError::UnknownKind {
-            plugin: spec.name.to_owned(),
-            kind: kind.clone(),
-        });
-    }
-    let demand = resolve_demands(spec.name, spec.demands)?;
+    let demand = validate_spec(spec)?;
     let visited = |node: &&PluginNode| {
         spec.visit
             .is_none_or(|kinds| kinds.iter().any(|k| k == node.kind))
@@ -121,31 +109,20 @@ pub fn build_batch(
     Ok(BuiltBatch { json, nodes: count })
 }
 
-/// The content key of `spec`'s result over one file: SHA-256 over the batch
-/// schema, the plugin's name, version and code fingerprint, its visit and
-/// demand lists, the filename and the source — every input its output can
-/// depend on, each length-prefixed.
-#[must_use]
-pub fn content_key(source: &str, filename: &str, spec: &PluginSpec<'_>) -> String {
-    let mut hasher = Sha256::new();
-    let mut field = |bytes: &[u8]| {
-        hasher.update((bytes.len() as u64).to_le_bytes());
-        hasher.update(bytes);
-    };
-    field(&BATCH_SCHEMA.to_le_bytes());
-    for text in [spec.name, spec.version, spec.fingerprint, filename, source] {
-        field(text.as_bytes());
-    }
-    let visit = spec
+/// Reject unknown manifest inputs before a cache hit can skip batch building.
+pub fn validate_spec(spec: &PluginSpec<'_>) -> Result<vize_davinci::fact::Demand, HostError> {
+    if let Some(kind) = spec
         .visit
-        .map_or_else(|| "*".to_owned(), |kinds| kinds.join("\u{0}"));
-    field(visit.as_bytes());
-    field(spec.demands.join("\u{0}").as_bytes());
-    hasher
-        .finalize()
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect()
+        .into_iter()
+        .flatten()
+        .find(|k| !NODE_KINDS.contains(&k.as_str()))
+    {
+        return Err(HostError::UnknownKind {
+            plugin: spec.name.to_owned(),
+            kind: kind.clone(),
+        });
+    }
+    resolve_demands(spec.name, spec.demands)
 }
 
 /// One report as a plugin returns it.
@@ -157,7 +134,7 @@ struct Report {
 }
 
 /// One plugin diagnostic, anchored on the host's own span for the node.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PluginDiagnostic {
     pub rule_id: String,
     pub plugin: String,

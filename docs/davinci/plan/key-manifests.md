@@ -35,6 +35,11 @@
 | `corsa-version`     | the Corsa (TypeScript) build the session runs                          |
 | `feature-flags`     | every feature flag that changes the stage's output                     |
 | `platform`          | the host target triple (a native session is not portable across hosts) |
+| `plugin-identity`   | the JS plugin name and the filename passed in its batch                |
+| `plugin-version`    | the JS plugin's declared version                                       |
+| `plugin-code`       | the SDK digest of the JS plugin's rule sources                         |
+| `plugin-visits`     | the node kinds the JS plugin requests                                  |
+| `plugin-demands`    | the fact groups the JS plugin requests                                 |
 
 <!-- ambient-inputs:end -->
 
@@ -42,13 +47,14 @@
 
 <!-- key-manifests:start -->
 
-| Artifact                | Content key stages | Ambient inputs                                                                                            | Consumer                |
-| ----------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `s0.source-block`       | `s0`               | `toolchain-version`                                                                                       | resident tier (P5-4a)   |
-| `s1.surface-page`       | `s1`               | `toolchain-version`, `feature-flags`                                                                      | resident tier (P5-4a)   |
-| `s2.page`               | `s2`               | `project-config`, `toolchain-version`, `feature-flags`                                                    | resident tier (P5-4a)   |
-| `projection.virtual-ts` | `s0`, `s2`         | `tsconfig-content`, `project-config`, `toolchain-version`, `feature-flags`                                | projection reuse (P5-7) |
-| `corsa.session`         | none               | `project-identity`, `tsconfig-content`, `toolchain-version`, `corsa-version`, `feature-flags`, `platform` | Corsa sessions (P5-8)   |
+| Artifact                | Content key stages | Ambient inputs                                                                                                              | Consumer                |
+| ----------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `s0.source-block`       | `s0`               | `toolchain-version`                                                                                                         | resident tier (P5-4a)   |
+| `s1.surface-page`       | `s1`               | `toolchain-version`, `feature-flags`                                                                                        | resident tier (P5-4a)   |
+| `s2.page`               | `s2`               | `project-config`, `toolchain-version`, `feature-flags`                                                                      | resident tier (P5-4a)   |
+| `projection.virtual-ts` | `s0`, `s2`         | `tsconfig-content`, `project-config`, `toolchain-version`, `feature-flags`                                                  | projection reuse (P5-7) |
+| `corsa.session`         | none               | `project-identity`, `tsconfig-content`, `toolchain-version`, `corsa-version`, `feature-flags`, `platform`                   | Corsa sessions (P5-8)   |
+| `plugin.result`         | `s0`               | `toolchain-version`, `feature-flags`, `plugin-identity`, `plugin-version`, `plugin-code`, `plugin-visits`, `plugin-demands` | JS plugin host (P5-13)  |
 
 <!-- key-manifests:end -->
 
@@ -73,3 +79,9 @@
   (canonical path, size, mtime), the caller's flags and the host — and a test
   flips each one and asserts a different key. The session map and its
   lifecycle in `vize check-server` consume it.
+- **`plugin.result`** — the full SFC source is the conservative S0 content
+  key because diagnostic positions depend on text before the template. The
+  batch also reads the filename, plugin code/version, visit list and demanded
+  facts. These inputs are folded through the manifest; the toolchain version
+  and compiled feature flags invalidate changes to S2 lowering or fact
+  producers. The in-process and on-disk caches share this key.

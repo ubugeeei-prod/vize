@@ -3,10 +3,13 @@
 // cost in the lint output, content-keyed results. Needs the native build
 // (`build:native:test`, which `test:scripts` runs first).
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { corpus, measure } from "./fixtures/davinci-plugin-sdk/bench.mjs";
 import { definePlugin, runProxy } from "./fixtures/davinci-plugin-sdk/sdk.mjs";
@@ -109,6 +112,57 @@ test("results are content-keyed by the plugin's own version and code", () => {
       [false, false],
     ],
   );
+});
+
+test("plugin results persist across Node processes under the manifest key", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "vize-plugin-cache-"));
+  const child = `
+    import { createRequire } from "node:module";
+    const native = createRequire(import.meta.url)(${JSON.stringify(path.join(root, "npm/native/index.js"))});
+    const { default: team } = await import(${JSON.stringify(pathToFileURL(path.join(root, "tests/tooling/fixtures/davinci-plugin-sdk/team-conventions.mjs")).href)});
+    const output = native.lintWithPlugins(${JSON.stringify(TODO_LIST)}, [team], {
+      filename: "TodoList.vue", cache: true, cacheDir: process.argv[1]
+    });
+    process.stdout.write(JSON.stringify({ diagnostics: output.diagnostics, plugin: {
+      contentKey: output.plugins[0].contentKey, cached: output.plugins[0].cached
+    }}));
+  `;
+  const run = () => {
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", child, dir], {
+      encoding: "utf8",
+    });
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(result.stdout);
+  };
+  try {
+    const first = run();
+    const second = run();
+    assert.deepEqual(first.diagnostics, EXPECTED);
+    assert.deepEqual(second.diagnostics, EXPECTED);
+    assert.deepEqual(
+      [first.plugin.cached, second.plugin.cached, first.plugin.contentKey],
+      [false, true, second.plugin.contentKey],
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("declared demands independently invalidate plugin results", () => {
+  const plugin = {
+    name: "static-rule",
+    version: "1.0.0",
+    fingerprint: "same-code",
+    visit: ["ui.element"],
+    demands: [],
+    run: () => "[]",
+  };
+  const first = lint(TODO_LIST, [plugin], { cache: true });
+  const second = lint(TODO_LIST, [{ ...plugin, demands: ["templateScopes"] }], {
+    cache: true,
+  });
+  assert.deepEqual([first.plugins[0].cached, second.plugins[0].cached], [false, false]);
+  assert.notEqual(first.plugins[0].contentKey, second.plugins[0].contentKey);
 });
 
 test("demands are static: unknown groups refuse, undeclared reads throw", () => {

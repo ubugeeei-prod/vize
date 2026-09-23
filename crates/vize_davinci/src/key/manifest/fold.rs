@@ -13,7 +13,7 @@ use crate::stage::Stage;
 
 /// A set of ambient inputs.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash)]
-pub struct InputSet(u8);
+pub struct InputSet(u16);
 
 impl InputSet {
     /// The empty set.
@@ -49,7 +49,7 @@ impl InputSet {
     }
 }
 
-const fn bit(input: AmbientInput) -> u8 {
+const fn bit(input: AmbientInput) -> u16 {
     1 << input as u8
 }
 

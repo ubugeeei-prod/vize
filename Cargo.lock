@@ -4800,7 +4800,6 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
- "sha2 0.11.0",
  "tempfile",
  "vize",
  "vize_atelier_core",
