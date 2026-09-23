@@ -47,6 +47,11 @@ the commands that re-derive it, and the local measurements taken so far.
   with both prefix settings. A mounted trace checks live prop and text updates
   through the published DOM, native Vapor, and retained Vapor runtimes; repaired
   paragraph nesting still selects the legacy lane.
+- Empty textarea models emit the same code as the retained lane with either
+  prefix setting. A mounted trace observes the live textarea value, its model
+  update on input, and a later external patch on DOM, native Vapor, and retained
+  Vapor. Child content and conflicting value sources still select legacy;
+  mutating S3's `element-kind` away from its input/textarea owner is rejected.
 - References beginning with `$event` remain in the legacy lane. Their handler
   semantics follow Vue: a reference names a component/setup binding; only an
   inline statement receives the implicit event parameter. The Chromium contract

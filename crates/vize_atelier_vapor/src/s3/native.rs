@@ -138,6 +138,8 @@ struct Binding<'a> {
     modifiers: Vec<'a, &'a str>,
     /// A static `class` merged ahead of this dynamic `:class`.
     merge: Option<&'a str>,
+    /// S3's element-kind operand for a model; checked against the target tag.
+    model_element: Option<&'a str>,
     /// Authored position, which orders an element's spread sources.
     position: u32,
     /// Authored spans of the name and of the untrimmed value.
@@ -152,8 +154,8 @@ enum BindingKind {
     Show,
     Html,
     Text,
-    /// `v-model` on an input: `value` is the model reference, `modifiers` the
-    /// `lazy`/`number`/`trim` options.
+    /// `v-model` on an input or textarea: `value` is the model reference,
+    /// `modifiers` the `lazy`/`number`/`trim` options.
     Model,
     /// Slot content on a `<template #name>` or its component: `name` is the
     /// slot name, `value` the parameter pattern (empty when there is none).
