@@ -234,13 +234,16 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     &mut discovery,
                 )
             };
-            if package_route.is_none_or(|route| !file.starts_with(&route.package_root)) {
+            let own_package_entry = package_route.is_some_and(|route| {
+                registration::importer_is_inside_own_package_entry(&file, route, specifier.as_str())
+            });
+            if !own_package_entry {
                 package_routes.extend(discovery.package_routes);
             }
             let in_package_graph = package_graph || package_route.is_some();
             if let Some(route) = package_route
                 && needs_registration
-                && !file.starts_with(&route.package_root)
+                && !own_package_entry
             {
                 if !package_graph && registered.insert(file.clone()) {
                     registrations.push(file.clone());
@@ -249,7 +252,6 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     .as_ref()
                     .expect("a positive package route came from a package lookup");
                 let mut route = route.clone();
-                // Re-sort only when this walk extended the dependency list (#4426).
                 let before = route.dependency_paths.len();
                 route.dependency_paths.extend(
                     discovery

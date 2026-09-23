@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -12,6 +12,8 @@ use std::{
 
 #[path = "../common.rs"]
 mod common;
+#[path = "corpus_paths.rs"]
+mod corpus_paths;
 
 pub const SCHEMA: &str = "vize.davinciCorpusBaseline";
 pub const SCHEMA_VERSION: u64 = 1;
@@ -660,7 +662,7 @@ fn reduce_run(
         let value = payload
             .get(*field)
             .ok_or_else(|| format!("{project_id}/{tool} payload has no {field} field"))?;
-        content.insert((*field).to_string(), value.clone());
+        content.insert((*field).to_string(), hash_field(tool, field, value));
     }
     let file_count = payload_file_count(tool, &payload)?;
     if run.get("fileCount").and_then(Value::as_u64) != Some(file_count) {
@@ -675,6 +677,16 @@ fn reduce_run(
         file_count,
         content_hash: sha256(&canonical_json(&Value::Object(content))),
     })
+}
+
+fn hash_field(tool: &str, field: &str, value: &Value) -> Value {
+    if tool == "typechecker"
+        && matches!(field, "stderr" | "stdout")
+        && let Some(text) = value.as_str()
+    {
+        return Value::String(corpus_paths::normalize_machine_paths(text));
+    }
+    value.clone()
 }
 
 fn hashed_fields(tool: &str) -> Option<&'static [&'static str]> {

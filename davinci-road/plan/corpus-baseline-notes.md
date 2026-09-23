@@ -280,3 +280,19 @@ rust-script tools/commands/davinci/corpus-baseline.rs --clean-fixtures --shards 
 Result: 576/576 comparisons, 144 projects x 4 surfaces, 156274 files.
 The compiler-surface proof against the refreshed artifact passed with
 144/144 comparisons and 37448 compiler files.
+
+## Re-record 4 — typechecker paths are not part of the hash (2026-09-23)
+
+`vize check` prints the absolute fixture directory on stderr, and some
+projects repeat it inside diagnostic text. A clean tree therefore hashed
+differently on every checkout. The reducer now rewrites each absolute path
+to `<abs>` before the typechecker content hash (`tools/support/davinci/corpus_paths.rs`).
+Relative paths and diagnostic wording stay in the hash. `file_count` is
+still compared on its own, so a gained or lost file remains a gating drift.
+
+Pinned behavior stays in the file set: dot directories matched by `**/*.vue`
+(#5701) and in-root scripts imported by a checked file. A package that
+imports its own name no longer pulls that package's TypeScript tree into
+the check; `wave-ui` stays the 219 Vue files recorded before that widening.
+This record replaces the typechecker rows only. Compiler, formatter, and
+linter rows are untouched.

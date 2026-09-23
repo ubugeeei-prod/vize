@@ -54,6 +54,23 @@ struct RegistrationFrontier {
     queue: Vec<PathBuf>,
 }
 
+/// A file inside a package that imports that package's own name pulls the
+/// package entry, not an internal alias such as `#/composables/file`.
+pub(super) fn importer_is_inside_own_package_entry(
+    importer: &Path,
+    route: &vize_canon::PackageRoute,
+    specifier: &str,
+) -> bool {
+    let Some(name) = route.package_name.as_deref() else {
+        return false;
+    };
+    let own_entry = specifier == name
+        || specifier
+            .strip_prefix(name)
+            .is_some_and(|rest| rest.starts_with('/'));
+    own_entry && importer.starts_with(&route.package_root)
+}
+
 pub(super) fn non_relative_import_needs_virtual_registration(
     path: &Path,
     canonical_paths: &mut CanonicalPathCache,
