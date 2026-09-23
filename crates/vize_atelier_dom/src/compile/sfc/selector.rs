@@ -20,7 +20,16 @@ fn source_contains_parser_recovery(source: &str) -> bool {
             let closing_name_start = name_start + 1;
             let closing_name_end = scan_tag_name(bytes, closing_name_start);
             if closing_name_end > closing_name_start {
-                pop_closed_tag(&mut tags, &source[closing_name_start..closing_name_end]);
+                let closing_name = &source[closing_name_start..closing_name_end];
+                // The shipped HTML parser reports `</img>` (and other void
+                // end tags) as fatal. S2 cannot emit before that diagnostic.
+                if is_html_void_tag_name(closing_name)
+                    || (closing_name.bytes().any(|byte| byte.is_ascii_uppercase())
+                        && is_html_void_tag_name(&closing_name.to_ascii_lowercase()))
+                {
+                    return true;
+                }
+                pop_closed_tag(&mut tags, closing_name);
                 index = scan_tag_end(bytes, closing_name_end);
                 continue;
             }

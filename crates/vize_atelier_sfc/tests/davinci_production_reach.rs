@@ -127,33 +127,46 @@ fn nested_interactive_recoveries_keep_production_dom_parity() {
 }
 
 #[test]
-fn nested_form_recovery_keeps_production_dom_parity() {
+fn tree_construction_parse_errors_keep_production_dom_parity() {
     let _guard = PROFILER_TEST_LOCK.lock().unwrap();
-    let source = "<template><form><div><form>inner</form></div></form></template><script setup>const label = 'inner'</script>";
-    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
-    let shape = Shape::DomInline;
-    let profiler = global_profiler();
-    profiler.clear();
-    profiler.enable();
-    let selected = compile(&descriptor, "NestedForm.vue", shape);
-    let counters = profiler.counter_summary();
-    profiler.disable();
-    profiler.clear();
-    assert_eq!(
-        classify(shape, &counters),
-        Ok(Lane::Legacy("parse_error".to_owned()))
-    );
+    for (source, filename) in [
+        (
+            "<template><form><div><form>inner</form></div></form></template><script setup>const label = 'inner'</script>",
+            "NestedForm.vue",
+        ),
+        (
+            "<template><div><img src='x'></img></div></template><script setup>const label = 'inner'</script>",
+            "VoidEndTag.vue",
+        ),
+    ] {
+        let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+        let shape = Shape::DomInline;
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
+        let selected = compile(&descriptor, filename, shape);
+        let counters = profiler.counter_summary();
+        profiler.disable();
+        profiler.clear();
+        assert_eq!(
+            classify(shape, &counters),
+            Ok(Lane::Legacy("parse_error".to_owned())),
+            "{filename}"
+        );
 
-    let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
-        compile(&descriptor, "NestedForm.vue", shape)
-    });
-    match (selected, legacy) {
-        (Ok(selected), legacy) => assert_eq!(divergence(&selected, &legacy), None),
-        (Err(selected), Err(legacy)) => {
-            assert_eq!(selected.code, legacy.code);
-            assert_eq!(selected.message, legacy.message);
+        let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+            compile(&descriptor, filename, shape)
+        });
+        match (selected, legacy) {
+            (Ok(selected), legacy) => assert_eq!(divergence(&selected, &legacy), None),
+            (Err(selected), Err(legacy)) => {
+                assert_eq!(selected.code, legacy.code);
+                assert_eq!(selected.message, legacy.message);
+            }
+            (selected, legacy) => {
+                panic!("{filename} compile result differs: {selected:?} {legacy:?}")
+            }
         }
-        (selected, legacy) => panic!("nested form compile result differs: {selected:?} {legacy:?}"),
     }
 }
 
