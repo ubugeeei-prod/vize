@@ -7,6 +7,7 @@
 struct ExtensionInfo {
   extension_id : String
   publisher : String
+  name : String
   version : String
 }
 
@@ -50,6 +51,7 @@ fn extension_info_from_package_json(value : Json) -> ExtensionInfo? {
   Some(ExtensionInfo::{
     extension_id: publisher + "." + name,
     publisher,
+    name,
     version,
   })
 }
@@ -73,13 +75,15 @@ fn json_has_extension_version(value : Json, expected : String) -> Bool {
 
 ///|
 async fn extension_version_is_visible(
-  vp_bin : String,
-  extension_id : String,
+  publisher : String,
+  name : String,
   version : String,
 ) -> Bool {
-  let (exit_code, stdout, _) = @process.collect_output(vp_bin, [
-    "dlx", "-p", "ovsx@^1.0.0", "ovsx", "get", extension_id, "--metadata", "--versionRange",
-    version,
+  // The exact-version API returns the version directly. `ovsx get --metadata`
+  // now returns `allVersions`, which is not the `versions` array checked below.
+  let url = "https://open-vsx.org/api/" + publisher + "/" + name + "/" + version
+  let (exit_code, stdout, _) = @process.collect_output("curl", [
+    "--fail", "--silent", "--show-error", url,
   ])
   if exit_code != 0 {
     return false
@@ -94,15 +98,16 @@ async fn extension_version_is_visible(
 
 ///|
 async fn wait_for_extension_visibility(
-  vp_bin : String,
   extension_id : String,
+  publisher : String,
+  name : String,
   version : String,
   max_attempts : Int,
   delay_seconds : Int,
 ) -> Bool {
   let mut attempt = 1
   while attempt <= max_attempts {
-    if extension_version_is_visible(vp_bin, extension_id, version) {
+    if extension_version_is_visible(publisher, name, version) {
       println("\{extension_id} \{version} is visible in Open VSX.")
       return true
     }
@@ -186,8 +191,8 @@ async fn run_app() -> Int {
     "PUBLISH_RESOLUTION_RETRY_DELAY", 0, 10,
   )
   if extension_version_is_visible(
-      vp_bin,
-      extension_info.extension_id,
+      extension_info.publisher,
+      extension_info.name,
       extension_info.version,
     ) {
     println(
@@ -208,8 +213,9 @@ async fn run_app() -> Int {
     @tool.resolve_path(args[0]),
   ])
   if wait_for_extension_visibility(
-      vp_bin,
       extension_info.extension_id,
+      extension_info.publisher,
+      extension_info.name,
       extension_info.version,
       resolution_attempts,
       resolution_delay_seconds,

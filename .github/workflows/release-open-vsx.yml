@@ -43,7 +43,26 @@ jobs:
           test "$resolved_tag" = "$RELEASE_TAG_NAME"
           printf 'tag_name=%s\n' "$resolved_tag" >> "$GITHUB_OUTPUT"
 
+      - name: Check published Open VSX version
+        id: published
+        env:
+          RELEASE_TAG_NAME: ${{ steps.release.outputs.tag_name }}
+        run: |
+          version=${RELEASE_TAG_NAME#v}
+          response=$(mktemp)
+          status=$(curl --silent --show-error --output "$response" --write-out '%{http_code}' "https://open-vsx.org/api/ubugeeei/vize/$version")
+          if [ "$status" = 200 ]; then
+            jq --exit-status --arg version "$version" '.version == $version' "$response" > /dev/null
+            echo 'existing=true' >> "$GITHUB_OUTPUT"
+          elif [ "$status" = 404 ]; then
+            echo 'existing=false' >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Open VSX lookup returned HTTP $status."
+            exit 1
+          fi
+
       - name: Require Open VSX credentials
+        if: steps.published.outputs.existing != 'true'
         run: |
           if [ -z "${OVSX_PAT:-}" ]; then
             echo "::error::OVSX_PAT is required in the protected open-vsx-registry environment."
@@ -51,23 +70,28 @@ jobs:
           fi
 
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: steps.published.outputs.existing != 'true'
         with:
           ref: ${{ steps.release.outputs.tag_name }}
           persist-credentials: false
 
       - name: Setup Vite+ and Node.js
+        if: steps.published.outputs.existing != 'true'
         uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
           run-install: false
       - uses: ./.github/actions/setup-moonbit
+        if: steps.published.outputs.existing != 'true'
 
       - name: Download VSIX from GitHub Release
+        if: steps.published.outputs.existing != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release download "${{ steps.release.outputs.tag_name }}" --pattern "*.vsix" --dir open-vsx-artifacts
 
       - name: Publish Open VSX extension
+        if: steps.published.outputs.existing != 'true'
         run: |
           mapfile -t vsix_files < <(find open-vsx-artifacts -type f -name '*.vsix' -print)
           test "${#vsix_files[@]}" -eq 1
