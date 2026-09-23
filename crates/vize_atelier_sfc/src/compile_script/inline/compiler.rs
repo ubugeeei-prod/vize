@@ -38,7 +38,7 @@ pub(crate) use trace::SetupTrace;
 use trace::traced_sections;
 
 /// Compile script setup with inline template (Vue's inline template mode)
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub fn compile_script_setup_inline(
     content: &str,
     component_name: &str,
@@ -88,7 +88,7 @@ pub fn compile_script_setup_inline(
     Ok(result)
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(crate) fn compile_script_setup_inline_with_context(
     ctx: ScriptCompileContext,
     content: &str,

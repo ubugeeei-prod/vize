@@ -24,7 +24,7 @@ use super::{
     trace::{SetupTrace, Tracer},
 };
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn compile_script_setup_inline_body(
     ctx: ScriptCompileContext,
     component_name: &str,
@@ -225,7 +225,7 @@ pub(super) fn compile_script_setup_inline_body(
     // only because we need cheap `extend_from_slice` during script assembly. No
     // raw non-UTF-8 bytes are ever appended, so validating the whole script again
     // would only add work to the hot SFC compile path.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "unchecked UTF-8")]
     let output_str: std::string::String =
         unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };
 

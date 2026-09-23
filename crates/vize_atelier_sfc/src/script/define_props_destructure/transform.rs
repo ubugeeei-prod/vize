@@ -36,7 +36,7 @@ pub fn transform_destructured_props(
 /// so a caller can carry source-map provenance through the rewrite (Davinci
 /// P3-9). The edits are `None` when rewrites overlap and no such list
 /// describes the result.
-#[allow(clippy::type_complexity)]
+#[expect(clippy::type_complexity, reason = "single-use tuple")]
 pub(crate) fn transform_destructured_props_with_edits(
     source: &str,
     destructured: &PropsDestructuredBindings,
@@ -103,7 +103,9 @@ pub(crate) fn transform_destructured_props_with_edits(
         .rev()
         .map(|(start, end, replacement)| (*start, *end, replacement.len()))
         .collect();
-    let disjoint = edits.windows(2).all(|pair| pair[0].1 <= pair[1].0);
+    let disjoint = edits
+        .windows(2)
+        .all(|pair| matches!(pair, [left, right] if left.1 <= right.0));
     let mut result = source.to_compact_string();
     for (start, end, replacement) in rewrites {
         result.replace_range(start..end, &replacement);

@@ -34,8 +34,10 @@ pub fn process_props_destructure(
                 BindingPattern::AssignmentPattern(assign) => {
                     if let BindingPattern::BindingIdentifier(id) = &assign.left {
                         let local = id.name.to_compact_string();
-                        let default_expr = &source
-                            [assign.right.span().start as usize..assign.right.span().end as usize];
+                        let default_span = assign.right.span();
+                        let default_expr = source
+                            .get(default_span.start as usize..default_span.end as usize)
+                            .unwrap_or_default();
                         let (needs_factory, skip_factory) = classify_default_value(&assign.right);
 
                         result.keys.push(key.clone());

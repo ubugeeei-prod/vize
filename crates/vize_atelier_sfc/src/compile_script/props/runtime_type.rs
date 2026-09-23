@@ -16,12 +16,6 @@ pub(crate) fn runtime_prop_key(name: &str) -> String {
             escaped
         })
 }
-#[allow(dead_code)]
-pub(super) fn type_includes_top_level_undefined(ts_type: &str) -> bool {
-    split_type_at_top_level(ts_type.trim(), '|')
-        .into_iter()
-        .any(|part| part.trim() == "undefined")
-}
 pub(super) fn type_includes_top_level_null(ts_type: &str) -> bool {
     split_type_at_top_level(ts_type.trim(), '|')
         .into_iter()
@@ -33,8 +27,7 @@ pub fn add_null_to_runtime_type(js_type: &str, nullable: bool) -> String {
         return js_type.to_compact_string();
     }
 
-    if js_type.starts_with('[') && js_type.ends_with(']') {
-        let inner = &js_type[1..js_type.len() - 1];
+    if let Some(inner) = js_type.strip_prefix('[').and_then(|s| s.strip_suffix(']')) {
         if inner
             .split(',')
             .map(|part| part.trim())
@@ -330,11 +323,9 @@ pub fn resolve_prop_js_type(
     }
 
     // It resolved to null - try to look up the type name and resolve based on the actual definition
-    let base_name = if let Some(idx) = trimmed.find('<') {
-        trimmed[..idx].trim()
-    } else {
-        trimmed
-    };
+    let base_name = trimmed
+        .split_once('<')
+        .map_or(trimmed, |(base, _)| base.trim());
 
     // Look up in type aliases first
     if let Some(body) = type_aliases.get(base_name) {

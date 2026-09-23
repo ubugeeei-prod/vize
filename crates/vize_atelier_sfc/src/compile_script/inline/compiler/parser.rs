@@ -471,16 +471,12 @@ pub(super) fn parse_script_content(
         // Guard: ensure the word after `type ` is a valid identifier start (letter, _, {),
         // not an operator like `===`. This avoids misdetecting `type === 'foo'` as a TS type.
         // `{` is also valid: `export type { Foo }` (re-export syntax).
-        if (trimmed.starts_with("type ")
-            && trimmed[5..]
-                .chars()
-                .next()
-                .is_some_and(|c| c.is_ascii_alphabetic() || c == '_' || c == '{'))
-            || (trimmed.starts_with("export type ")
-                && trimmed[12..]
-                    .chars()
-                    .next()
-                    .is_some_and(|c| c.is_ascii_alphabetic() || c == '_' || c == '{'))
+        let type_alias_start = |rest: Option<&str>| {
+            rest.and_then(|rest| rest.chars().next())
+                .is_some_and(|c| c.is_ascii_alphabetic() || c == '_' || c == '{')
+        };
+        if type_alias_start(trimmed.strip_prefix("type "))
+            || type_alias_start(trimmed.strip_prefix("export type "))
         {
             // Check if it's a single-line type
             let has_equals = trimmed.contains('=');

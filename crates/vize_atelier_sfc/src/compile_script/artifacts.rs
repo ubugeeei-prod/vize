@@ -55,11 +55,10 @@ pub(crate) fn extract_macro_artifacts(
 
         let start = call.span.start as usize;
         let end = call.span.end as usize;
-        if start > end || end > content.len() {
+        let Some(source) = content.get(start..end) else {
             continue;
-        }
-
-        let source = content[start..end].to_compact_string();
+        };
+        let source = source.to_compact_string();
         let payload = call
             .arguments
             .first()
@@ -182,10 +181,10 @@ fn argument_source(arg: &Argument<'_>, source: &str) -> String {
     let span = arg.span();
     let start = span.start as usize;
     let end = span.end as usize;
-    if start > end || end > source.len() {
-        return String::default();
-    }
-    source[start..end].to_compact_string()
+    source
+        .get(start..end)
+        .map(ToCompactString::to_compact_string)
+        .unwrap_or_default()
 }
 
 fn collect_static_imports<'a>(
@@ -205,11 +204,11 @@ fn collect_static_imports<'a>(
         let span = stmt.span();
         let start = span.start as usize;
         let end = span.end as usize;
-        if start > end || end > content.len() {
+        let Some(import) = content.get(start..end) else {
             continue;
-        }
+        };
 
-        imports.push_str(content[start..end].trim());
+        imports.push_str(import.trim());
         imports.push('\n');
     }
 

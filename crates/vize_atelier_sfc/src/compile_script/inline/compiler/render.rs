@@ -157,22 +157,8 @@ fn build_vapor_render_alias_candidate(suffix: usize) -> String {
 }
 
 fn append_usize(target: &mut String, value: usize) {
-    let mut buffer = [0u8; 20];
-    let mut index = buffer.len();
-    let mut remaining = value;
-
-    loop {
-        index -= 1;
-        buffer[index] = b'0' + (remaining % 10) as u8;
-        remaining /= 10;
-        if remaining == 0 {
-            break;
-        }
-    }
-
-    for digit in &buffer[index..] {
-        target.push(*digit as char);
-    }
+    use std::fmt::Write as _;
+    let _ = write!(target, "{value}");
 }
 
 fn collect_setup_bindings(

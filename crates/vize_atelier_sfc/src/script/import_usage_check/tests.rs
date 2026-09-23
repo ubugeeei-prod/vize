@@ -138,8 +138,8 @@ fn test_builtin_directive_not_added() {
 fn test_is_used_in_template() {
     let allocator = Allocator::new();
     let (root, _) = parse(&allocator, "<div>{{ msg }}</div>");
-    assert_eq!(is_used_in_template("msg", &root), true);
-    assert_eq!(is_used_in_template("other", &root), false);
+    assert!(is_used_in_template("msg", &root));
+    assert!(!is_used_in_template("other", &root));
 }
 
 #[test]

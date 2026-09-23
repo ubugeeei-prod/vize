@@ -7,7 +7,7 @@
 
 use vize_carton::{FxHashSet, String, ToCompactString};
 
-use oxc_ast::ast::{CallExpression, Expression, TSSignature, TSType, TSTypeLiteral};
+use oxc_ast::ast::{CallExpression, Expression};
 use oxc_span::GetSpan;
 use std::sync::LazyLock;
 
@@ -17,7 +17,6 @@ pub use vize_croquis::macros::DEFINE_EMITS;
 
 /// Result of processing defineEmits
 #[derive(Debug, Clone, Default)]
-#[allow(dead_code)]
 pub struct DefineEmitsResult {
     /// Runtime declaration (the argument passed to defineEmits)
     pub runtime_decl: Option<String>,
@@ -31,7 +30,6 @@ pub struct DefineEmitsResult {
 ///
 /// Returns true if this was a defineEmits call, false otherwise.
 /// Mutates ctx to store the emits information.
-#[allow(dead_code)]
 pub fn process_define_emits(
     ctx: &mut ScriptCompileContext,
     call: &CallExpression<'_>,
@@ -45,26 +43,20 @@ pub fn process_define_emits(
     ctx.has_define_emits_call = true;
 
     // Store runtime declaration (first argument)
-    let runtime_decl = if !call.arguments.is_empty() {
-        let arg = &call.arguments[0];
+    let runtime_decl = call.arguments.first().map(|arg| {
         let start = arg.span().start as usize;
         let end = arg.span().end as usize;
-        Some(String::from(source[start..end].trim()))
-    } else {
-        None
-    };
+        String::from(source.get(start..end).unwrap_or_default().trim())
+    });
 
     // Store type declaration (type parameter)
     let type_decl = call.type_arguments.as_ref().map(|params| {
         let start = params.span.start as usize;
         let end = params.span.end as usize;
-        let type_str = &source[start..end];
+        let type_str = source.get(start..end).unwrap_or_default();
         // Remove the < and > from type params
-        if type_str.starts_with('<') && type_str.ends_with('>') {
-            String::from(&type_str[1..type_str.len() - 1])
-        } else {
-            String::from(type_str)
-        }
+        let inner = type_str.strip_prefix('<').and_then(|s| s.strip_suffix('>'));
+        String::from(inner.unwrap_or(type_str))
     });
 
     // Store emits info in macros
@@ -78,7 +70,6 @@ pub fn process_define_emits(
 /// Generate runtime emits declaration
 ///
 /// Returns the emits array/object as a string for use in the compiled output.
-#[allow(dead_code)]
 pub fn gen_runtime_emits(ctx: &ScriptCompileContext, model_names: &[String]) -> Option<String> {
     fn debug_string<T: std::fmt::Debug>(value: &T) -> String {
         let mut out = String::default();
@@ -148,7 +139,6 @@ pub fn gen_runtime_emits(ctx: &ScriptCompileContext, model_names: &[String]) -> 
 /// Extract runtime emits from type declaration
 ///
 /// Parses the type declaration to extract event names.
-#[allow(dead_code)]
 pub fn extract_runtime_emits(ctx: &ScriptCompileContext) -> FxHashSet<String> {
     let mut emits = FxHashSet::default();
 
@@ -212,122 +202,6 @@ fn extract_events_from_type_literal(type_str: &str, emits: &mut FxHashSet<String
                 }
             }
         }
-    }
-}
-
-/// Extract event names from AST (for OXC-based parsing)
-#[allow(dead_code)]
-pub fn extract_event_names_from_ts_type(
-    ts_type: &TSType<'_>,
-    emits: &mut FxHashSet<String>,
-    #[allow(clippy::only_used_in_recursion)] source: &str,
-) {
-    match ts_type {
-        TSType::TSFunctionType(func_type) => {
-            // Extract from first parameter's type annotation
-            if let Some(first_param) = func_type.params.items.first()
-                && let Some(type_ann) = &first_param.type_annotation
-            {
-                extract_literal_values_from_ts_type(&type_ann.type_annotation, emits, source);
-            }
-        }
-        TSType::TSTypeLiteral(type_lit) => {
-            extract_from_ts_type_literal(type_lit, emits, source);
-        }
-        TSType::TSUnionType(union) => {
-            for member in union.types.iter() {
-                extract_event_names_from_ts_type(member, emits, source);
-            }
-        }
-        TSType::TSIntersectionType(intersection) => {
-            for member in intersection.types.iter() {
-                extract_event_names_from_ts_type(member, emits, source);
-            }
-        }
-        TSType::TSParenthesizedType(paren) => {
-            extract_event_names_from_ts_type(&paren.type_annotation, emits, source);
-        }
-        _ => {}
-    }
-}
-
-/// Extract from TSTypeLiteral (object type with properties and call signatures)
-fn extract_from_ts_type_literal(
-    type_lit: &TSTypeLiteral<'_>,
-    emits: &mut FxHashSet<String>,
-    source: &str,
-) {
-    let mut has_property = false;
-    let mut has_call_signature = false;
-
-    // First pass: collect property names and check for call signatures
-    for member in type_lit.members.iter() {
-        match member {
-            TSSignature::TSPropertySignature(prop) => {
-                has_property = true;
-                // Get the property key name
-                if let Some(name) = get_property_key_name(&prop.key, source) {
-                    emits.insert(name);
-                }
-            }
-            TSSignature::TSCallSignatureDeclaration(_call) => {
-                has_call_signature = true;
-            }
-            _ => {}
-        }
-    }
-
-    // Second pass: extract from call signatures if no properties
-    if has_call_signature && !has_property {
-        for member in type_lit.members.iter() {
-            if let TSSignature::TSCallSignatureDeclaration(call) = member
-                && let Some(first_param) = call.params.items.first()
-                && let Some(type_ann) = &first_param.type_annotation
-            {
-                extract_literal_values_from_ts_type(&type_ann.type_annotation, emits, source);
-            }
-        }
-    }
-}
-
-/// Extract literal string values from a TSType (for event names)
-fn extract_literal_values_from_ts_type(
-    ts_type: &TSType<'_>,
-    emits: &mut FxHashSet<String>,
-    #[allow(clippy::only_used_in_recursion)] source: &str,
-) {
-    match ts_type {
-        TSType::TSLiteralType(lit_type) => {
-            match &lit_type.literal {
-                oxc_ast::ast::TSLiteral::StringLiteral(s) => {
-                    emits.insert(s.value.to_compact_string());
-                }
-                oxc_ast::ast::TSLiteral::NumericLiteral(n) => {
-                    emits.insert(n.value.to_compact_string());
-                }
-                // Skip UnaryExpression and TemplateLiteral as per Vue's implementation
-                _ => {}
-            }
-        }
-        TSType::TSUnionType(union) => {
-            for member in union.types.iter() {
-                extract_literal_values_from_ts_type(member, emits, source);
-            }
-        }
-        TSType::TSParenthesizedType(paren) => {
-            extract_literal_values_from_ts_type(&paren.type_annotation, emits, source);
-        }
-        _ => {}
-    }
-}
-
-/// Get property key name from a PropertyKey
-fn get_property_key_name(key: &oxc_ast::ast::PropertyKey<'_>, _source: &str) -> Option<String> {
-    match key {
-        oxc_ast::ast::PropertyKey::StaticIdentifier(id) => Some(id.name.to_compact_string()),
-        oxc_ast::ast::PropertyKey::StringLiteral(s) => Some(s.value.to_compact_string()),
-        oxc_ast::ast::PropertyKey::NumericLiteral(n) => Some(n.value.to_compact_string()),
-        _ => None,
     }
 }
 

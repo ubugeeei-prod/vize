@@ -142,8 +142,9 @@ fn contains_identifier(source: &str, name: &str) -> bool {
     source.match_indices(name).any(|(start, _)| {
         let bytes = source.as_bytes();
         let end = start + name.len();
-        (start == 0 || !is_identifier_byte(bytes[start - 1]))
-            && (end == bytes.len() || !is_identifier_byte(bytes[end]))
+        let before = start.checked_sub(1).and_then(|prev| bytes.get(prev));
+        before.is_none_or(|&byte| !is_identifier_byte(byte))
+            && bytes.get(end).is_none_or(|&byte| !is_identifier_byte(byte))
     })
 }
 
@@ -177,10 +178,11 @@ pub(crate) fn validate_macro_scope_for_descriptor(
     program: Option<&Program<'_>>,
     descriptor: &SfcDescriptor<'_>,
 ) -> Result<(), SfcError> {
-    let setup = descriptor
-        .script_setup
-        .as_ref()
-        .expect("script setup exists while compiling its context");
+    // Without a `<script setup>` block there are no setup-local values to
+    // reject, so there is nothing to validate.
+    let Some(setup) = descriptor.script_setup.as_ref() else {
+        return Ok(());
+    };
     match program {
         Some(program) => validate_macro_scope_references_in_program(
             ctx,

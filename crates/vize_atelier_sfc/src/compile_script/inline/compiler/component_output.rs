@@ -7,7 +7,7 @@ pub(super) struct ComponentState {
     pub(super) has_options: bool,
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_component_definition(
     output: &mut vize_carton::Vec<u8>,
     ctx: &ScriptCompileContext,
@@ -180,9 +180,11 @@ fn render_uses_dollar_emit(template: &TemplateParts<'_>) -> bool {
 /// guards the left boundary, so only the right boundary needs checking.
 fn contains_identifier(haystack: &str, needle: &str) -> bool {
     let mut start = 0;
-    while let Some(pos) = haystack[start..].find(needle) {
+    while let Some(pos) = haystack.get(start..).and_then(|rest| rest.find(needle)) {
         let abs = start + pos;
-        let after = haystack[abs + needle.len()..].chars().next();
+        let after = haystack
+            .get(abs + needle.len()..)
+            .and_then(|rest| rest.chars().next());
         if after.is_none_or(|c| !(c.is_alphanumeric() || c == '_' || c == '$')) {
             return true;
         }

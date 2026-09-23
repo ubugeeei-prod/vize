@@ -20,7 +20,7 @@ use super::ScriptCompileContext;
 use super::helpers::{
     extract_args_from_call, extract_macro_from_expr, extract_type_args_from_call,
     infer_binding_type, is_call_of, is_import_type_only, macro_binding_name,
-    register_binding_pattern,
+    register_binding_pattern, span_text,
 };
 use crate::script::{build_interface_type_source, register_enum};
 
@@ -64,9 +64,8 @@ impl ScriptCompileContext {
                 }
                 Statement::TSTypeAliasDeclaration(type_alias) => {
                     let name = type_alias.id.name.to_compact_string();
-                    let type_start = type_alias.type_annotation.span().start as usize;
-                    let type_end = type_alias.type_annotation.span().end as usize;
-                    let type_body = String::from(&source[type_start..type_end]);
+                    let type_body =
+                        String::from(span_text(source, type_alias.type_annotation.span()));
                     self.type_aliases.insert(name, type_body);
                 }
                 // Handle exported types: `export type X = ...` and `export interface X { ... }`
@@ -85,9 +84,10 @@ impl ScriptCompileContext {
                             }
                             oxc_ast::ast::Declaration::TSTypeAliasDeclaration(type_alias) => {
                                 let name = type_alias.id.name.to_compact_string();
-                                let type_start = type_alias.type_annotation.span().start as usize;
-                                let type_end = type_alias.type_annotation.span().end as usize;
-                                let type_body = String::from(&source[type_start..type_end]);
+                                let type_body = String::from(span_text(
+                                    source,
+                                    type_alias.type_annotation.span(),
+                                ));
                                 self.type_aliases.insert(name, type_body);
                             }
                             _ => {}
@@ -141,9 +141,8 @@ impl ScriptCompileContext {
                 }
                 Statement::TSTypeAliasDeclaration(type_alias) => {
                     let name = type_alias.id.name.to_compact_string();
-                    let type_start = type_alias.type_annotation.span().start as usize;
-                    let type_end = type_alias.type_annotation.span().end as usize;
-                    let type_body = String::from(&source[type_start..type_end]);
+                    let type_body =
+                        String::from(span_text(source, type_alias.type_annotation.span()));
                     self.type_aliases.entry(name).or_insert(type_body);
                 }
                 Statement::ExportNamedDeclaration(export_decl) => {
@@ -161,9 +160,10 @@ impl ScriptCompileContext {
                             }
                             oxc_ast::ast::Declaration::TSTypeAliasDeclaration(type_alias) => {
                                 let name = type_alias.id.name.to_compact_string();
-                                let type_start = type_alias.type_annotation.span().start as usize;
-                                let type_end = type_alias.type_annotation.span().end as usize;
-                                let type_body = String::from(&source[type_start..type_end]);
+                                let type_body = String::from(span_text(
+                                    source,
+                                    type_alias.type_annotation.span(),
+                                ));
                                 self.type_aliases.entry(name).or_insert(type_body);
                             }
                             _ => {}
@@ -237,7 +237,7 @@ impl ScriptCompileContext {
                             self.macros.with_defaults = Some(MacroCall::new(
                                 call.span.start as usize,
                                 call.span.end as usize,
-                                source[call.span.start as usize..call.span.end as usize].into(),
+                                span_text(source, call.span).into(),
                                 None,
                                 binding_name.as_deref().map(Into::into),
                             ));
@@ -413,7 +413,7 @@ impl ScriptCompileContext {
                     self.macros.with_defaults = Some(MacroCall::new(
                         call.span.start as usize,
                         call.span.end as usize,
-                        source[call.span.start as usize..call.span.end as usize].into(),
+                        span_text(source, call.span).into(),
                         None,
                         None,
                     ));

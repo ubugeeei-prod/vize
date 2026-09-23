@@ -6,14 +6,14 @@ pub(crate) fn build_interface_type_source(
     body_start: usize,
     body_end: usize,
 ) -> String {
-    let body = source[body_start..body_end].trim();
-    let header = source[name_end..body_start].trim();
+    let body = source.get(body_start..body_end).unwrap_or_default().trim();
+    let header = source.get(name_end..body_start).unwrap_or_default().trim();
 
-    let Some(extends_idx) = find_heritage_extends(header) else {
+    let Some(extends_clause) = heritage_extends_clause(header) else {
         return body.to_compact_string();
     };
 
-    let extends_clause = header[extends_idx + "extends".len()..].trim();
+    let extends_clause = extends_clause.trim();
     if extends_clause.is_empty() {
         return body.to_compact_string();
     }
@@ -49,17 +49,17 @@ pub(crate) fn build_interface_type_source(
     }
 }
 
-/// Find the heritage-clause `extends` keyword in an interface header,
+/// Return the text after the heritage-clause `extends` in an interface header,
 /// skipping the generic parameter list. For
 /// `interface Foo<T extends Bar = Bar> extends Pick<Baz, 'x'>` the header is
 /// `<T extends Bar = Bar> extends Pick<Baz, 'x'>`; a naive `find("extends")`
 /// would hit the type-parameter constraint and mangle the whole clause.
-fn find_heritage_extends(header: &str) -> Option<usize> {
+fn heritage_extends_clause(header: &str) -> Option<&str> {
     let bytes = header.as_bytes();
     let mut depth = 0usize;
     let mut i = 0;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(rest @ [byte, ..]) = bytes.get(i..) {
+        match *byte {
             b'<' => depth += 1,
             b'>' => depth = depth.saturating_sub(1),
             // `=>` inside a generic default (e.g. `<T = () => void>`) must
@@ -68,13 +68,16 @@ fn find_heritage_extends(header: &str) -> Option<usize> {
                 i += 2;
                 continue;
             }
-            b'e' if depth == 0 && bytes[i..].starts_with(b"extends") => {
-                let before_ok = i == 0 || !is_identifier_byte(bytes[i - 1]);
+            b'e' if depth == 0 && rest.starts_with(b"extends") => {
+                let before_ok = i
+                    .checked_sub(1)
+                    .and_then(|prev| bytes.get(prev))
+                    .is_none_or(|&b| !is_identifier_byte(b));
                 let after_ok = bytes
                     .get(i + "extends".len())
                     .is_none_or(|&b| !is_identifier_byte(b));
                 if before_ok && after_ok {
-                    return Some(i);
+                    return header.get(i + "extends".len()..);
                 }
             }
             _ => {}
@@ -180,9 +183,11 @@ fn resolve_type_to_object_body_inner(
         return Some(merged);
     }
 
-    if trimmed.starts_with('{') && trimmed.ends_with('}') {
-        let inner = trimmed[1..trimmed.len() - 1].trim();
-        return Some(inner.to_compact_string());
+    if let Some(inner) = trimmed
+        .strip_prefix('{')
+        .and_then(|rest| rest.strip_suffix('}'))
+    {
+        return Some(inner.trim().to_compact_string());
     }
 
     // Resolve utility types structurally when their inner type is known.
@@ -228,13 +233,14 @@ fn resolve_utility_type(
             let inner = type_args.first()?;
             let body = resolve_type_to_object_body_inner(inner, interfaces, type_aliases, stack)?;
             let mut members = parse_members(&body);
+            let (optional, readonly) = match name {
+                "Partial" => (Some(true), false),
+                "Required" => (Some(false), false),
+                _ => (None, true),
+            };
             for member in &mut members {
-                match name {
-                    "Partial" => member.optional = true,
-                    "Required" => member.optional = false,
-                    "Readonly" => member.readonly = true,
-                    _ => unreachable!(),
-                }
+                member.optional = optional.unwrap_or(member.optional);
+                member.readonly |= readonly;
             }
             Some(render_members(&members))
         }
@@ -277,17 +283,12 @@ fn resolve_utility_type(
 
 /// Split a generic type reference `Name<args>` into `("Name", "args")`.
 fn split_generic_call(type_expr: &str) -> Option<(&str, &str)> {
-    let open = type_expr.find('<')?;
+    let (name, rest) = type_expr.split_once('<')?;
     if !type_expr.trim_end().ends_with('>') {
         return None;
     }
-    let close = type_expr.rfind('>')?;
-    if close <= open {
-        return None;
-    }
-    let name = type_expr[..open].trim();
-    let args = type_expr[open + 1..close].trim();
-    Some((name, args))
+    let (args, _) = rest.rsplit_once('>')?;
+    Some((name.trim(), args.trim()))
 }
 
 /// Parse a resolved object-literal member body (`a?: string; b: number`) into
@@ -318,12 +319,14 @@ fn strip_comments(body: &str) -> String {
     let mut out = String::with_capacity(body.len());
     let mut keep_start = 0;
     let mut i = 0;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             quote @ (b'\'' | b'"' | b'`') => {
                 i += 1;
-                while i < bytes.len() && bytes[i] != quote {
-                    if bytes[i] == b'\\' {
+                while let Some(&c) = bytes.get(i)
+                    && c != quote
+                {
+                    if c == b'\\' {
                         i += 1;
                     }
                     i += 1;
@@ -331,19 +334,19 @@ fn strip_comments(body: &str) -> String {
                 i += 1;
             }
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
-                out.push_str(&body[keep_start..i]);
-                let close = bytes[i + 2..]
-                    .windows(2)
-                    .position(|w| w == b"*/")
+                out.push_str(body.get(keep_start..i).unwrap_or_default());
+                let close = bytes
+                    .get(i + 2..)
+                    .and_then(|rest| rest.windows(2).position(|w| w == b"*/"))
                     .map_or(bytes.len(), |offset| i + 2 + offset + 2);
                 i = close;
                 keep_start = i;
             }
             b'/' if bytes.get(i + 1) == Some(&b'/') => {
-                out.push_str(&body[keep_start..i]);
-                let eol = bytes[i..]
-                    .iter()
-                    .position(|&b| b == b'\n')
+                out.push_str(body.get(keep_start..i).unwrap_or_default());
+                let eol = bytes
+                    .get(i..)
+                    .and_then(|rest| rest.iter().position(|&b| b == b'\n'))
                     .map_or(bytes.len(), |offset| i + offset);
                 i = eol;
                 keep_start = i;
@@ -351,7 +354,7 @@ fn strip_comments(body: &str) -> String {
             _ => i += 1,
         }
     }
-    out.push_str(&body[keep_start..]);
+    out.push_str(body.get(keep_start..).unwrap_or_default());
     out
 }
 
@@ -368,12 +371,13 @@ fn parse_member(part: &str) -> Option<Member> {
     }
 
     let colon = find_top_level_colon(text)?;
-    let mut key = text[..colon].trim();
-    let ty = text[colon + 1..].trim();
+    let (key, ty) = text.split_at_checked(colon)?;
+    let mut key = key.trim();
+    let ty = ty.get(1..)?.trim();
 
     let optional = key.ends_with('?');
-    if optional {
-        key = key[..key.len() - 1].trim();
+    if let Some(stripped) = key.strip_suffix('?') {
+        key = stripped.trim();
     }
     if key.is_empty() || ty.is_empty() {
         return None;
@@ -451,11 +455,7 @@ fn parse_string_literal_union(arg: &str) -> Vec<String> {
 }
 
 fn strip_generic_params(name: &str) -> &str {
-    if let Some(idx) = name.find('<') {
-        name[..idx].trim()
-    } else {
-        name.trim()
-    }
+    name.split_once('<').map_or(name, |(base, _)| base).trim()
 }
 
 fn split_top_level(input: &str, delimiter: char) -> Vec<String> {

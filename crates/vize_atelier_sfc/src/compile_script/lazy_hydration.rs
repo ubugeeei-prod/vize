@@ -137,17 +137,17 @@ fn collect_lazy_hydration_edits(
         if callee.name.as_str() != "defineLazyHydrationComponent" {
             continue;
         }
-        if call.arguments.len() < 2 {
+        let [strategy_arg, loader_arg, ..] = call.arguments.as_slice() else {
             continue;
-        }
+        };
 
-        let Some(strategy) = strategy_from_argument(&call.arguments[0]) else {
+        let Some(strategy) = strategy_from_argument(strategy_arg) else {
             continue;
         };
-        let Some(import_id) = import_id_from_loader(&call.arguments[1]) else {
+        let Some(import_id) = import_id_from_loader(loader_arg) else {
             continue;
         };
-        let Some(loader_source) = argument_source(&call.arguments[1], content) else {
+        let Some(loader_source) = argument_source(loader_arg, content) else {
             continue;
         };
 
@@ -251,10 +251,9 @@ fn argument_source(arg: &Argument<'_>, source: &str) -> Option<String> {
     let span = arg.span();
     let start = span.start as usize;
     let end = span.end as usize;
-    if start > end || end > source.len() {
-        return None;
-    }
-    Some(source[start..end].to_compact_string())
+    source
+        .get(start..end)
+        .map(ToCompactString::to_compact_string)
 }
 
 fn build_lazy_hydration_preamble(strategies: &[LazyHydrationStrategy]) -> String {

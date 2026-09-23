@@ -54,29 +54,25 @@ impl ScriptCompileContext {
         // Handle object syntax: { msg: String, count: Number }
         let args = call.args.trim();
 
-        if args.starts_with('[') && args.ends_with(']') {
+        if let Some(inner) = args.strip_prefix('[').and_then(|s| s.strip_suffix(']')) {
             // Array syntax
-            let inner = &args[1..args.len() - 1];
             for part in inner.split(',') {
                 let part = part.trim();
                 // Extract string literal
-                if (part.starts_with('\'') && part.ends_with('\''))
-                    || (part.starts_with('"') && part.ends_with('"'))
-                {
-                    let name = &part[1..part.len() - 1];
+                let quoted = |quote: char| part.strip_prefix(quote)?.strip_suffix(quote);
+                if let Some(name) = quoted('\'').or_else(|| quoted('"')) {
                     self.bindings
                         .bindings
                         .insert(name.to_compact_string(), BindingType::Props);
                 }
             }
-        } else if args.starts_with('{') && args.ends_with('}') {
+        } else if let Some(inner) = args.strip_prefix('{').and_then(|s| s.strip_suffix('}')) {
             // Object syntax - extract keys
-            let inner = &args[1..args.len() - 1];
             for part in inner.split(',') {
                 let part = part.trim();
                 // Find key before : or whitespace
-                if let Some(colon_pos) = part.find(':') {
-                    let key = part[..colon_pos].trim();
+                if let Some((key, _)) = part.split_once(':') {
+                    let key = key.trim();
                     if !key.is_empty() && is_valid_identifier(key) {
                         self.bindings
                             .bindings
@@ -200,12 +196,11 @@ fn type_prop_definition(segment: &str) -> Option<PropDefinition> {
         return None;
     }
 
-    let colon_pos = trimmed.find(':')?;
-    let name_part = &trimmed[..colon_pos];
+    let (name_part, prop_type) = trimmed.split_once(':')?;
     let raw_name = normalize_type_prop_name(name_part);
     let optional = name_part.trim().trim_end().ends_with('?');
     let name = unquote_prop_name(raw_name)?;
-    let prop_type = trimmed[colon_pos + 1..].trim();
+    let prop_type = prop_type.trim();
     if prop_type.is_empty() {
         return None;
     }
@@ -220,10 +215,8 @@ fn type_prop_definition(segment: &str) -> Option<PropDefinition> {
 
 fn unquote_prop_name(name: &str) -> Option<&str> {
     if name.len() >= 2 {
-        let first = name.as_bytes()[0];
-        let last = name.as_bytes()[name.len() - 1];
-        if matches!((first, last), (b'\'', b'\'') | (b'"', b'"')) {
-            let unquoted = &name[1..name.len() - 1];
+        let quoted = |quote: char| name.strip_prefix(quote)?.strip_suffix(quote);
+        if let Some(unquoted) = quoted('\'').or_else(|| quoted('"')) {
             return (!unquoted.is_empty()).then_some(unquoted);
         }
     }

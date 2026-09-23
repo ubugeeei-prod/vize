@@ -1,7 +1,7 @@
 //! Tests for inline script compilation.
 
 #[cfg(test)]
-#[allow(clippy::module_inception)]
+#[expect(clippy::module_inception, reason = "scopes test imports")]
 mod tests {
     use super::super::compiler::compile_script_setup_inline;
     use crate::compile_script::TemplateParts;

@@ -20,7 +20,7 @@ use crate::script::ScriptCompileContext;
 /// `const max = …` shadowing a hoistable top-level `const max = 7` was ripped
 /// out of its function into module scope — a duplicate declaration referencing
 /// setup bindings that do not exist there (#3944).
-#[allow(clippy::type_complexity)]
+#[expect(clippy::type_complexity, reason = "single-use tuple")]
 pub(super) fn separate_hoisted_consts(
     transformed_setup: &str,
     ctx: &ScriptCompileContext,
@@ -55,15 +55,17 @@ pub(super) fn separate_hoisted_consts(
     for statement in &parsed.program.body {
         let span = statement.span();
         let (start, end) = (span.start as usize, span.end as usize);
-        if start < prev_end || end > transformed_setup.len() || start > end {
+        let (Some(gap), Some(slice)) = (
+            transformed_setup.get(prev_end..start),
+            transformed_setup.get(start..end),
+        ) else {
             return keep_everything();
-        }
+        };
         // Gaps (blank lines, comments) stay with the setup body in order.
-        let gap = &transformed_setup[prev_end..start];
         if !gap.trim().is_empty() {
             body.push(trimmed_newlines(gap, prev_end));
         }
-        let slice: String = transformed_setup[start..end].into();
+        let slice: String = slice.into();
         if is_hoistable_literal_const(statement, ctx) {
             hoisted.push((slice, start));
         } else {
@@ -71,7 +73,7 @@ pub(super) fn separate_hoisted_consts(
         }
         prev_end = end;
     }
-    let tail = &transformed_setup[prev_end..];
+    let tail = transformed_setup.get(prev_end..).unwrap_or_default();
     if !tail.trim().is_empty() {
         body.push(trimmed_newlines(tail, prev_end));
     }
@@ -92,10 +94,12 @@ fn is_hoistable_literal_const(statement: &Statement<'_>, ctx: &ScriptCompileCont
     let Statement::VariableDeclaration(declaration) = statement else {
         return false;
     };
-    if declaration.kind != VariableDeclarationKind::Const || declaration.declarations.len() != 1 {
+    let [declarator] = declaration.declarations.as_slice() else {
+        return false;
+    };
+    if declaration.kind != VariableDeclarationKind::Const {
         return false;
     }
-    let declarator = &declaration.declarations[0];
     let BindingPattern::BindingIdentifier(identifier) = &declarator.id else {
         return false;
     };

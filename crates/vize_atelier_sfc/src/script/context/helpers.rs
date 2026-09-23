@@ -13,6 +13,13 @@ use vize_croquis::macros::is_builtin_macro;
 use super::super::MacroCall;
 use vize_carton::{String, ToCompactString};
 
+/// The source text covered by `span`, or `""` if it falls outside `source`.
+pub(super) fn span_text(source: &str, span: oxc_span::Span) -> &str {
+    source
+        .get(span.start as usize..span.end as usize)
+        .unwrap_or_default()
+}
+
 /// Extract macro call from expression
 pub(super) fn extract_macro_from_expr(
     expr: &Expression<'_>,
@@ -122,12 +129,9 @@ pub(super) fn extract_type_args_from_call(
         let start = params.span.start as usize;
         let end = params.span.end as usize;
         // Remove the < and > from the type args
-        let type_str = &source[start..end];
-        if type_str.starts_with('<') && type_str.ends_with('>') {
-            String::from(&type_str[1..type_str.len() - 1])
-        } else {
-            type_str.to_compact_string()
-        }
+        let type_str = source.get(start..end).unwrap_or_default();
+        let inner = type_str.strip_prefix('<').and_then(|s| s.strip_suffix('>'));
+        String::from(inner.unwrap_or(type_str))
     })
 }
 
@@ -141,7 +145,11 @@ pub(super) fn extract_args_from_call(call: &CallExpression<'_>, source: &str) ->
     let last_end = call.arguments.last().map(|a| a.span().end).unwrap_or(0);
 
     if first_start < last_end {
-        String::from(&source[first_start as usize..last_end as usize])
+        String::from(
+            source
+                .get(first_start as usize..last_end as usize)
+                .unwrap_or_default(),
+        )
     } else {
         String::default()
     }
@@ -167,11 +175,12 @@ pub(super) fn is_import_type_only(import_decl: &ImportDeclaration<'_>, source: &
     let span = import_decl.span();
     let start = span.start as usize;
     let end = span.end as usize;
-    if start >= end || end > source.len() {
+    if start >= end {
         return false;
     }
-    let raw = &source[start..end];
-    raw.trim_start().starts_with("import type")
+    source
+        .get(start..end)
+        .is_some_and(|raw| raw.trim_start().starts_with("import type"))
 }
 
 pub(super) fn macro_binding_name(id: &BindingPattern<'_>) -> Option<String> {

@@ -158,8 +158,8 @@ fn walk_element(
     let mut tag = element.tag;
 
     // Handle member expression tags like Foo.Bar
-    if let Some(dot_pos) = tag.find('.') {
-        tag = &tag[..dot_pos];
+    if let Some((head, _)) = tag.split_once('.') {
+        tag = head;
     }
 
     // If not a native tag or built-in component, add to identifiers
@@ -314,10 +314,10 @@ fn extract_v_for_source_identifiers(exp: &ExpressionNode, ids: &mut FxHashSet<St
         let content = simple.content;
 
         // Find " in " or " of " to split the expression
-        let source_part = if let Some(pos) = content.find(" in ") {
-            &content[pos + 4..]
-        } else if let Some(pos) = content.find(" of ") {
-            &content[pos + 4..]
+        let source_part = if let Some((_, source)) = content.split_once(" in ") {
+            source
+        } else if let Some((_, source)) = content.split_once(" of ") {
+            source
         } else {
             // No "in" or "of" found, use the whole expression
             content

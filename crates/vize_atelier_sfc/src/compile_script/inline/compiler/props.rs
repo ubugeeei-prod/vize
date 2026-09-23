@@ -239,7 +239,7 @@ pub(super) fn build_user_props_decl(
     }
 
     // SAFETY: assembled from UTF-8 source slices and ASCII glue only.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "unchecked UTF-8")]
     let s = unsafe { std::string::String::from_utf8_unchecked(decl) };
     Some(s.into())
 }

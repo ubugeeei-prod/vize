@@ -30,8 +30,7 @@ pub(super) fn combine_runtime_js_types(types: impl IntoIterator<Item = String>) 
 }
 
 fn push_runtime_js_type(js_types: &mut Vec<String>, js_type: &str) {
-    if js_type.starts_with('[') && js_type.ends_with(']') {
-        let inner = &js_type[1..js_type.len() - 1];
+    if let Some(inner) = js_type.strip_prefix('[').and_then(|s| s.strip_suffix(']')) {
         for part in inner
             .split(',')
             .map(str::trim)

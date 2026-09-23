@@ -1,7 +1,7 @@
 //! Tests for props destructure handling.
 
 #[cfg(test)]
-#[allow(clippy::module_inception)]
+#[expect(clippy::module_inception, reason = "scopes test imports")]
 mod tests {
     use super::super::helpers::gen_props_access_exp;
     use super::super::transform::transform_destructured_props;
@@ -334,7 +334,7 @@ return { msg, count }"#;
 
     // ==================== Snapshot tests ====================
 
-    #[allow(clippy::disallowed_macros)]
+    #[expect(clippy::disallowed_macros, reason = "insta uses format!")]
     mod snapshots {
         use super::{
             PropsDestructureBinding, PropsDestructuredBindings, make_bindings,

@@ -121,14 +121,14 @@ fn extract_sections(
         let start = span.start as usize;
         let end = span.end as usize;
 
-        if start < prev_end || end > content.len() || start > end {
+        let (Some(gap), Some(slice)) = (content.get(prev_end..start), content.get(start..end))
+        else {
             return None;
-        }
+        };
 
         pending_gap_runs.copy(pending_gap.len(), prev_end, start - prev_end);
-        pending_gap.push_str(&content[prev_end..start]);
+        pending_gap.push_str(gap);
 
-        let slice = &content[start..end];
         let bucket = classify_statement(
             stmt,
             slice,
@@ -169,14 +169,15 @@ fn extract_sections(
                     trace_non_empty_lines(&mut trace.setup_lines, &segment, &segment_runs);
                 }
             }
-            StatementBucket::Macro => unreachable!("macro statements are skipped above"),
+            // Macro statements were skipped before the segment was taken.
+            StatementBucket::Macro => {}
         }
 
         prev_end = end;
     }
 
     pending_gap_runs.copy(pending_gap.len(), prev_end, content.len() - prev_end);
-    pending_gap.push_str(&content[prev_end..]);
+    pending_gap.push_str(content.get(prev_end..).unwrap_or_default());
     if !pending_gap.trim().is_empty() {
         push_non_empty_lines(&mut setup_lines, &pending_gap);
         if let Some(trace) = trace {
@@ -311,7 +312,11 @@ fn push_non_empty_lines(lines: &mut Vec<String>, segment: &str) {
 /// [`normalize_statement_segment`] appends is not a copy).
 fn preserved_segment_runs(segment: &str, runs: &Runs) -> Runs {
     let lead = segment.len() - segment.trim_start_matches(['\n', '\r']).len();
-    let kept = segment[lead..].trim_end_matches(['\n', '\r']).len();
+    let kept = segment
+        .get(lead..)
+        .unwrap_or_default()
+        .trim_end_matches(['\n', '\r'])
+        .len();
     runs.slice(lead, kept)
 }
 

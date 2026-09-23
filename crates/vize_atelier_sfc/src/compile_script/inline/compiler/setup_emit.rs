@@ -25,23 +25,18 @@ fn replace_props_alias_access(code: &str, local: &str, replacement: &str) -> Str
 
     let mut result = String::with_capacity(code.len());
     let mut cursor = 0;
-    while let Some(rel_pos) = code[cursor..].find(needle.as_str()) {
-        let start = cursor + rel_pos;
-        let end = start + needle.len();
-        let after_ok = code[end..]
-            .chars()
-            .next()
+    for (start, matched) in code.match_indices(needle.as_str()) {
+        let end = start + matched.len();
+        let after_ok = code
+            .get(end..)
+            .and_then(|rest| rest.chars().next())
             .is_none_or(|c| !is_identifier_continue(c));
 
-        result.push_str(&code[cursor..start]);
-        if after_ok {
-            result.push_str(replacement);
-        } else {
-            result.push_str(&code[start..end]);
-        }
+        result.push_str(code.get(cursor..start).unwrap_or_default());
+        result.push_str(if after_ok { replacement } else { matched });
         cursor = end;
     }
-    result.push_str(&code[cursor..]);
+    result.push_str(code.get(cursor..).unwrap_or_default());
     result
 }
 
@@ -89,7 +84,7 @@ fn transform_css_var_expression(
     rewrite_props_aliases(code, &ctx.bindings)
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_setup_body(
     output: &mut vize_carton::Vec<u8>,
     ctx: &ScriptCompileContext,

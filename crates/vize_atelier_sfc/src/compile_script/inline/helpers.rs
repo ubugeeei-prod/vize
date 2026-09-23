@@ -13,31 +13,32 @@ pub(crate) fn strip_comments_for_counting(line: &str) -> String {
     let mut in_string = false;
     let mut string_char = b'"';
 
-    while i < bytes.len() {
+    while let Some(&byte) = bytes.get(i) {
         if in_string {
-            if bytes[i] == string_char && (i == 0 || bytes[i - 1] != b'\\') {
+            let escaped = i.checked_sub(1).and_then(|prev| bytes.get(prev)) == Some(&b'\\');
+            if byte == string_char && !escaped {
                 in_string = false;
             }
-            result.push(bytes[i] as char);
+            result.push(byte as char);
             i += 1;
             continue;
         }
 
-        match bytes[i] {
+        match byte {
             b'\'' | b'"' | b'`' => {
                 in_string = true;
-                string_char = bytes[i];
-                result.push(bytes[i] as char);
+                string_char = byte;
+                result.push(byte as char);
                 i += 1;
             }
-            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'/' => {
+            b'/' if bytes.get(i + 1) == Some(&b'/') => {
                 // Line comment: skip rest of line
                 break;
             }
-            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'*' => {
+            b'/' if bytes.get(i + 1) == Some(&b'*') => {
                 // Block comment: skip until */
                 i += 2;
-                while i + 1 < bytes.len() && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                while bytes.get(i..i + 2).is_some_and(|pair| pair != b"*/") {
                     i += 1;
                 }
                 if i + 1 < bytes.len() {
@@ -45,7 +46,7 @@ pub(crate) fn strip_comments_for_counting(line: &str) -> String {
                 }
             }
             _ => {
-                result.push(bytes[i] as char);
+                result.push(byte as char);
                 i += 1;
             }
         }

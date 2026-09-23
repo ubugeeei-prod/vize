@@ -19,33 +19,34 @@ fn strip_ts_comments(input: &str) -> String {
     let mut in_string = false;
     let mut string_char = b'"';
 
-    while i < bytes.len() {
+    while let Some(&byte) = bytes.get(i) {
         if in_string {
-            if bytes[i] == string_char && (i == 0 || bytes[i - 1] != b'\\') {
+            let escaped = i.checked_sub(1).and_then(|prev| bytes.get(prev)) == Some(&b'\\');
+            if byte == string_char && !escaped {
                 in_string = false;
             }
-            result.push(bytes[i] as char);
+            result.push(byte as char);
             i += 1;
             continue;
         }
 
-        match bytes[i] {
+        match byte {
             b'\'' | b'"' | b'`' => {
                 in_string = true;
-                string_char = bytes[i];
-                result.push(bytes[i] as char);
+                string_char = byte;
+                result.push(byte as char);
                 i += 1;
             }
-            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'/' => {
+            b'/' if bytes.get(i + 1) == Some(&b'/') => {
                 // Line comment: skip until newline
-                while i < bytes.len() && bytes[i] != b'\n' {
+                while bytes.get(i).is_some_and(|&b| b != b'\n') {
                     i += 1;
                 }
             }
-            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'*' => {
+            b'/' if bytes.get(i + 1) == Some(&b'*') => {
                 // Block comment: skip until */
                 i += 2;
-                while i + 1 < bytes.len() && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
+                while bytes.get(i..i + 2).is_some_and(|pair| pair != b"*/") {
                     i += 1;
                 }
                 if i + 1 < bytes.len() {
@@ -53,7 +54,7 @@ fn strip_ts_comments(input: &str) -> String {
                 }
             }
             _ => {
-                result.push(bytes[i] as char);
+                result.push(byte as char);
                 i += 1;
             }
         }
@@ -114,11 +115,10 @@ fn extract_prop_types_from_type_text(type_args: &str) -> Vec<(String, PropTypeIn
     // Join multi-line union/intersection types (lines starting with | or &)
     let joined = join_union_continuation_lines(&stripped);
     let content = joined.trim();
-    let content = if content.starts_with('{') && content.ends_with('}') {
-        &content[1..content.len() - 1]
-    } else {
-        content
-    };
+    let content = content
+        .strip_prefix('{')
+        .and_then(|inner| inner.strip_suffix('}'))
+        .unwrap_or(content);
 
     // Split by commas/semicolons/newlines in a single character pass. Keeping
     // `prev` avoids building a `Vec<char>` just to look behind for `=>`, which
@@ -181,20 +181,19 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
     }
 
     // Parse "name?: Type" or "name: Type"
-    if let Some(colon_pos) = trimmed.find(':') {
+    if let Some((name_part, type_part)) = trimmed.split_once(':') {
         // Method-signature props (`onChange(e: E): void`, `update?(): T`)
         // have a `(` somewhere in the parameter list *before* this colon.
-        // Detect by scanning the bytes up to `colon_pos` for `(`; on a hit,
+        // Detect by scanning the text before the colon for `(`; on a hit,
         // recover the name from before that `(` and treat the prop as
         // `Function`-typed. Plain props (`name: Type`) skip this branch
         // because there's no `(` before the colon. (#967)
-        let before_colon_bytes = &trimmed.as_bytes()[..colon_pos];
-        if let Some(paren_pos) = before_colon_bytes.iter().position(|&b| b == b'(') {
-            let before_paren = &trimmed[..paren_pos];
+        if let Some(paren_pos) = name_part.find('(') {
+            let (before_paren, signature) = trimmed.split_at_checked(paren_pos).unwrap_or_default();
             let optional = before_paren.trim_end().ends_with('?');
             let name = before_paren.trim_end_matches('?').trim();
             if !name.is_empty() && is_valid_identifier(name) {
-                let ts_type_str: String = trimmed[paren_pos..].to_compact_string();
+                let ts_type_str: String = signature.to_compact_string();
                 if !props.iter().any(|(n, _)| n == name) {
                     props.push((
                         name.to_compact_string(),
@@ -209,8 +208,6 @@ fn extract_prop_type_info(segment: &str, props: &mut Vec<(String, PropTypeInfo)>
             }
             return;
         }
-        let name_part = &trimmed[..colon_pos];
-        let type_part = &trimmed[colon_pos + 1..];
 
         // Per Vue's type-only inference, a property is `required: false` only
         // when the declaration carries the `?` optional modifier. `T |

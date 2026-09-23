@@ -146,7 +146,7 @@ fn extract_script_summary(
                 let type_end = type_alias.type_annotation.span().end as usize;
                 summary.type_aliases.push((
                     type_alias.id.name.to_compact_string(),
-                    String::from(&source[type_start..type_end]),
+                    String::from(source.get(type_start..type_end).unwrap_or_default()),
                 ));
             }
             Statement::ImportDeclaration(import_decl) => {
@@ -197,7 +197,7 @@ fn extract_script_summary(
                             let type_end = type_alias.type_annotation.span().end as usize;
                             summary.type_aliases.push((
                                 type_alias.id.name.to_compact_string(),
-                                String::from(&source[type_start..type_end]),
+                                String::from(source.get(type_start..type_end).unwrap_or_default()),
                             ));
                         }
                         _ => {}

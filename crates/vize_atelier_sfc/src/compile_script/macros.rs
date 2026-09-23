@@ -15,10 +15,9 @@ pub fn is_macro_call_line(line: &str) -> bool {
 
     // Check if line contains a macro that is being called (not just mentioned in a string)
     for macro_name in runtime_erased_macro_names() {
-        if let Some(pos) = line.find(macro_name) {
+        if let Some((before, after)) = line.split_once(macro_name) {
             // Check that this is an actual call, not just a substring or string literal
             // 1. Check that macro is followed by '(' or '<' (with optional whitespace)
-            let after = &line[pos + macro_name.len()..];
             let after_trimmed = after.trim_start();
             let is_call = after_trimmed.starts_with('(') || after_trimmed.starts_with('<');
             if !is_call {
@@ -27,7 +26,6 @@ pub fn is_macro_call_line(line: &str) -> bool {
 
             // 2. Check that macro is not inside a string literal
             // Look at the content before the macro position
-            let before = &line[..pos];
             // Count unescaped quotes - if odd number, we're inside a string
             let single_quotes = count_unescaped_quotes(before, '\'');
             let double_quotes = count_unescaped_quotes(before, '"');
@@ -71,9 +69,8 @@ pub fn is_paren_macro_start(line: &str) -> bool {
 
     // Check if line contains a macro call that isn't complete on the same line
     for macro_name in runtime_erased_macro_names() {
-        if let Some(pos) = line.find(macro_name) {
+        if let Some((before, after)) = line.split_once(macro_name) {
             // Check that this is an actual call, not a string literal
-            let after = &line[pos + macro_name.len()..];
             let after_trimmed = after.trim_start();
             let is_call = after_trimmed.starts_with('(') || after_trimmed.starts_with('<');
             if !is_call {
@@ -81,7 +78,6 @@ pub fn is_paren_macro_start(line: &str) -> bool {
             }
 
             // Check not inside string literal
-            let before = &line[..pos];
             let single_quotes = count_unescaped_quotes(before, '\'');
             let double_quotes = count_unescaped_quotes(before, '"');
             let backticks = count_unescaped_quotes(before, '`');
@@ -112,9 +108,8 @@ pub fn is_multiline_macro_start(line: &str) -> bool {
 
     // Check if line contains a macro with type args that spans multiple lines
     for macro_name in runtime_erased_macro_names() {
-        if let Some(pos) = line.find(macro_name) {
+        if let Some((before, after)) = line.split_once(macro_name) {
             // Check that this is an actual call, not a string literal
-            let after = &line[pos + macro_name.len()..];
             let after_trimmed = after.trim_start();
             let is_call = after_trimmed.starts_with('(') || after_trimmed.starts_with('<');
             if !is_call {
@@ -122,7 +117,6 @@ pub fn is_multiline_macro_start(line: &str) -> bool {
             }
 
             // Check not inside string literal
-            let before = &line[..pos];
             let single_quotes = count_unescaped_quotes(before, '\'');
             let double_quotes = count_unescaped_quotes(before, '"');
             let backticks = count_unescaped_quotes(before, '`');

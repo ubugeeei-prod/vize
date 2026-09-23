@@ -16,7 +16,7 @@ pub(super) struct PreambleState {
     pub(super) has_default_export: bool,
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn emit_preamble(
     output: &mut vize_carton::Vec<u8>,
     template: &TemplateParts<'_>,
@@ -152,8 +152,10 @@ pub(super) fn emit_preamble(
     }
     let traced = origins.len() == combined_imports.len();
     for import in &deduped_imports {
-        if let Some((runs, statement)) = origins.get(import.index).filter(|_| traced) {
-            let authored = combined_imports[import.index].as_str();
+        if let Some((runs, statement)) = origins.get(import.index).filter(|_| traced)
+            && let Some(authored) = combined_imports.get(import.index)
+        {
+            let authored = authored.as_str();
             if import.verbatim {
                 let lead = authored.len() - authored.trim_start().len();
                 tracer.copy(output.len(), Some(&runs.slice(lead, authored.trim().len())));

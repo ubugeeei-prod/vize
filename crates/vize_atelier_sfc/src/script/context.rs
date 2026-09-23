@@ -146,15 +146,12 @@ impl ScriptCompileContext {
         if let Some(ref emits_call) = self.macros.define_emits {
             // Parse emits from the macro call args if available
             let trimmed = emits_call.args.trim();
-            if trimmed.starts_with('[') && trimmed.ends_with(']') {
+            if let Some(inner) = trimmed.strip_prefix('[').and_then(|s| s.strip_suffix(']')) {
                 // Array syntax: ['click', 'update']
-                let inner = &trimmed[1..trimmed.len() - 1];
                 for part in inner.split(',') {
                     let part = part.trim();
-                    if (part.starts_with('\'') && part.ends_with('\''))
-                        || (part.starts_with('"') && part.ends_with('"'))
-                    {
-                        let name = &part[1..part.len() - 1];
+                    let quoted = |quote: char| part.strip_prefix(quote)?.strip_suffix(quote);
+                    if let Some(name) = quoted('\'').or_else(|| quoted('"')) {
                         summary.macros.add_emit(EmitDefinition {
                             name: CompactString::new(name),
                             payload_type: None,

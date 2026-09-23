@@ -57,7 +57,6 @@ pub struct TemplateParts<'a> {
 }
 
 /// Compile script block(s)
-#[allow(dead_code)]
 pub fn compile_script(
     descriptor: &SfcDescriptor,
     _options: &ScriptCompileOptions,

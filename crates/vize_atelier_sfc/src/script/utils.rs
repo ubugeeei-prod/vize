@@ -1,9 +1,6 @@
 //! Script compilation utilities.
 //!
 //! Common utilities used across script compilation modules.
-//!
-//! Note: Some functions in this module are kept for tests but replaced by OXC-based
-//! parsing in production. They are marked with `#[allow(dead_code)]`.
 
 use vize_carton::{String, ToCompactString};
 use vize_croquis::macros::runtime_erased_macro_names;
@@ -63,12 +60,11 @@ impl MacroCall {
 
 pub(crate) fn model_modifiers_binding_name(source: &str, call: &MacroCall) -> Option<String> {
     let before_call = source.get(..call.start)?;
-    let eq_index = before_call.rfind('=')?;
-    let statement = &before_call[..eq_index];
-    let statement_start = statement
-        .rfind(|c| ['\n', ';'].contains(&c))
-        .map_or(0, |index| index + 1);
-    let mut lhs = statement[statement_start..].trim();
+    let (statement, _) = before_call.rsplit_once('=')?;
+    let mut lhs = statement
+        .rsplit_once(['\n', ';'])
+        .map_or(statement, |(_, lhs)| lhs)
+        .trim();
 
     for keyword in ["const ", "let ", "var "] {
         if let Some(rest) = lhs.strip_prefix(keyword) {
@@ -78,7 +74,7 @@ pub(crate) fn model_modifiers_binding_name(source: &str, call: &MacroCall) -> Op
     }
 
     if let Some(index) = last_top_level_comma(lhs) {
-        lhs = lhs[index + 1..].trim_start();
+        lhs = lhs.get(index + 1..).unwrap_or_default().trim_start();
     }
 
     let inner = lhs.strip_prefix('[')?.trim_end().strip_suffix(']')?.trim();
@@ -91,13 +87,13 @@ fn nth_top_level_item(input: &str, target_index: usize) -> Option<&str> {
     let mut start = 0;
     for (comma, _) in top_level_commas(input) {
         if index == target_index {
-            return Some(&input[start..comma]);
+            return input.get(start..comma);
         }
         index += 1;
         start = comma + 1;
     }
     if index == target_index {
-        Some(&input[start..])
+        input.get(start..)
     } else {
         None
     }
@@ -145,121 +141,15 @@ fn simple_binding_name(input: &str) -> Option<&str> {
         return None;
     }
 
-    let name_end = input
-        .find(|c: char| !(c.is_alphanumeric() || c == '_' || c == '$'))
-        .unwrap_or(input.len());
-    let name = &input[..name_end];
+    let name = input
+        .split(|c: char| !(c.is_alphanumeric() || c == '_' || c == '$'))
+        .next()
+        .unwrap_or_default();
     if is_valid_identifier(name) {
         Some(name)
     } else {
         None
     }
-}
-
-/// Find matching closing parenthesis
-#[allow(dead_code)]
-pub fn find_matching_paren(s: &str) -> Option<usize> {
-    let mut depth = 0;
-    let mut in_string = false;
-    let mut string_char = '"';
-
-    for (i, c) in s.char_indices() {
-        if in_string {
-            if c == string_char && !s[..i].ends_with('\\') {
-                in_string = false;
-            }
-        } else {
-            match c {
-                '"' | '\'' | '`' => {
-                    in_string = true;
-                    string_char = c;
-                }
-                '(' => depth += 1,
-                ')' => {
-                    depth -= 1;
-                    if depth == 0 {
-                        return Some(i);
-                    }
-                }
-                _ => {}
-            }
-        }
-    }
-
-    None
-}
-
-/// Find the opening paren after macro name, skipping type args
-#[allow(dead_code)]
-pub fn find_call_paren(s: &str) -> Option<usize> {
-    let mut angle_depth = 0;
-    let mut in_string = false;
-    let mut string_char = '"';
-    let chars: Vec<char> = s.chars().collect();
-
-    for (i, &c) in chars.iter().enumerate() {
-        if in_string {
-            if c == string_char && (i == 0 || chars[i - 1] != '\\') {
-                in_string = false;
-            }
-        } else {
-            match c {
-                '"' | '\'' | '`' => {
-                    in_string = true;
-                    string_char = c;
-                }
-                '<' => angle_depth += 1,
-                '>' => {
-                    // Check for => arrow function
-                    if i > 0 && chars[i - 1] == '=' {
-                        continue;
-                    }
-                    if angle_depth > 0 {
-                        angle_depth -= 1;
-                    }
-                }
-                '(' if angle_depth == 0 => return Some(i),
-                _ => {}
-            }
-        }
-    }
-
-    None
-}
-
-/// Extract type arguments from before a function call
-#[allow(dead_code)]
-pub fn extract_type_args(before_call: &str) -> Option<String> {
-    let trimmed = before_call.trim_end();
-    if !trimmed.ends_with('>') {
-        return None;
-    }
-
-    // Find matching < while handling => (arrow function)
-    let chars: Vec<char> = trimmed.chars().collect();
-    let mut depth = 0;
-
-    for i in (0..chars.len()).rev() {
-        let c = chars[i];
-        match c {
-            '>' => {
-                // Check if this is part of =>
-                if i > 0 && chars[i - 1] == '=' {
-                    // Skip arrow function =>
-                    continue;
-                }
-                depth += 1;
-            }
-            '<' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(String::from(&trimmed[i + 1..trimmed.len() - 1]));
-                }
-            }
-            _ => {}
-        }
-    }
-    None
 }
 
 /// Check if a line contains a compiler macro call
@@ -296,32 +186,7 @@ pub fn get_escaped_prop_name(key: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        extract_type_args, find_matching_paren, get_escaped_prop_name, is_valid_identifier,
-    };
-    use vize_carton::ToCompactString;
-
-    #[test]
-    fn test_find_matching_paren() {
-        assert_eq!(find_matching_paren("()"), Some(1));
-        assert_eq!(find_matching_paren("(a, b)"), Some(5));
-        assert_eq!(find_matching_paren("((nested))"), Some(9));
-        assert_eq!(find_matching_paren("(\"string)\")"), Some(10));
-    }
-
-    #[test]
-    fn test_extract_type_args() {
-        assert_eq!(
-            extract_type_args("defineProps<{ msg: string }>"),
-            Some("{ msg: string }".to_compact_string())
-        );
-        assert_eq!(extract_type_args("defineProps"), None);
-        // Arrow function inside type args
-        assert_eq!(
-            extract_type_args("defineEmits<(e: 'click') => void>"),
-            Some("(e: 'click') => void".to_compact_string())
-        );
-    }
+    use super::{get_escaped_prop_name, is_valid_identifier};
 
     #[test]
     fn test_is_valid_identifier() {

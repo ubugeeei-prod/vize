@@ -177,11 +177,11 @@ fn split_package_specifier(specifier: &str) -> Option<(String, String)> {
     if seen < segment_count {
         split_at = specifier.len();
     }
-    let package = &specifier[..split_at];
+    let (package, subpath) = specifier.split_at_checked(split_at)?;
     if package.is_empty() {
         return None;
     }
-    let subpath = specifier[split_at..].trim_start_matches('/');
+    let subpath = subpath.trim_start_matches('/');
     Some((package.to_compact_string(), subpath.to_compact_string()))
 }
 

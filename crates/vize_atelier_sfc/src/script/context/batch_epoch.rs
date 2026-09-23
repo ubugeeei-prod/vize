@@ -22,10 +22,11 @@ static BATCH_EPOCH_STATE: Mutex<BatchEpochState> = Mutex::new(BatchEpochState {
 });
 
 fn next_batch_epoch(state: &mut BatchEpochState) -> u64 {
-    let epoch = state
-        .last_epoch
-        .checked_add(1)
-        .expect("type-resolution batch epoch exhausted");
+    // Once the generations run out, fall back to the no-batch sentinel: every
+    // lookup then revalidates its metadata, which is always correct.
+    let Some(epoch) = state.last_epoch.checked_add(1) else {
+        return NO_EPOCH;
+    };
     state.last_epoch = epoch;
     epoch
 }
@@ -84,10 +85,7 @@ pub fn begin_type_resolution_batch() -> TypeResolutionBatchGuard {
     let mut state = BATCH_EPOCH_STATE
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
-    let active_batches = state
-        .active_batches
-        .checked_add(1)
-        .expect("too many overlapping type-resolution batches");
+    let active_batches = state.active_batches.saturating_add(1);
     let epoch = next_batch_epoch(&mut state);
     state.active_batches = active_batches;
     ACTIVE_BATCH_EPOCH.store(epoch, Ordering::Relaxed);

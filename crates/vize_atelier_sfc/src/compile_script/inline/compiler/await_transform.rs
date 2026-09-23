@@ -112,21 +112,21 @@ fn rewrite_awaits(source: &str, is_ts: bool, runs: &mut Runs) -> Option<String> 
         }
 
         runs.copy(transformed.len(), cursor, stmt_start - cursor);
-        transformed.push_str(&source[cursor..stmt_start]);
+        transformed.push_str(source.get(cursor..stmt_start)?);
 
         if let Some(replacement) = transform_await_statement(source, stmt, offset) {
             runs.point(transformed.len(), stmt_start);
             transformed.push_str(&replacement);
         } else {
             runs.copy(transformed.len(), stmt_start, stmt_end - stmt_start);
-            transformed.push_str(&source[stmt_start..stmt_end]);
+            transformed.push_str(source.get(stmt_start..stmt_end)?);
         }
 
         cursor = stmt_end;
     }
 
     runs.copy(transformed.len(), cursor, source.len() - cursor);
-    transformed.push_str(&source[cursor..]);
+    transformed.push_str(source.get(cursor..)?);
     Some(transformed)
 }
 

@@ -28,7 +28,6 @@ use super::imports::dedupe_imports;
 use super::model::emit_model_bindings;
 
 /// Compile script setup content following Vue.js core format
-#[allow(dead_code)]
 pub fn compile_script_setup(
     content: &str,
     component_name: &str,
@@ -277,7 +276,7 @@ pub fn compile_script_setup(
     // data, so the generated script remains valid UTF-8 by construction.
     // Avoiding a second full-buffer validation matters for large script-setup
     // blocks in function mode.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "unchecked UTF-8")]
     let output_str: std::string::String =
         unsafe { std::string::String::from_utf8_unchecked(output.into_iter().collect()) };
 
@@ -567,7 +566,7 @@ fn emit_expose(output: &mut vize_carton::Vec<u8>, ctx: &ScriptCompileContext) {
 ///
 /// Filters out compiler macros, destructured props, props bindings, and typed props.
 /// Includes imported identifiers used in the template.
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 fn build_returned_bindings(
     ctx: &mut ScriptCompileContext,
     _has_props_destructure: bool,
