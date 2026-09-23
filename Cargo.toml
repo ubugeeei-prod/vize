@@ -236,6 +236,13 @@ debug-assertions = false
 overflow-checks = false
 incremental = false
 
+# Release archives contain the vize CLI directly. Strip the executable's
+# symbols while leaving other release artifacts available for symbolized
+# diagnostics and sampling. For a symbolized CLI build, pass
+# --config 'profile.release.package.vize.strip="none"' to cargo build.
+[profile.release.package.vize]
+strip = "symbols"
+
 [profile.ci]
 inherits = "dev"
 debug = false
@@ -250,3 +257,7 @@ codegen-units = 256
 inherits = "release"
 lto = "thin"
 codegen-units = 16
+
+# TS-44 measures the same stripped CLI payload shipped by the release job.
+[profile.ci-opt.package.vize]
+strip = "symbols"
