@@ -167,10 +167,25 @@ fn s3_style_merge_matches_official_vapor_in_both_authored_orders() {
             "{source}: {:?}",
             compiled.error_messages
         );
-        assert!(
-            compiled.code.contains(effect),
-            "{source}: {}",
-            compiled.code
+        let expected_code = format!(
+            r#"import {{ child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setStyle as _setStyle, renderEffect as _renderEffect, template as _template }} from 'vue';
+const t0 = _template("<main data-id=\"root\"><div data-id=\"box\"> </div><i data-id=\"tail\">tail</i></main>", true)
+
+export function render(_ctx) {{
+  const n0 = t0()
+  const n1 = _child(n0)
+  const x1 = _txt(n1)
+  _renderEffect(() => {{
+    {effect}
+    _setText(x1, _toDisplayString(_ctx.label))
+  }})
+  return n0
+}}
+"#
+        );
+        assert_eq!(
+            compiled.code, expected_code,
+            "{source}: generated Vapor code"
         );
         assert_eq!(
             WalkCounts::snapshot().since(before).total_walks(),
