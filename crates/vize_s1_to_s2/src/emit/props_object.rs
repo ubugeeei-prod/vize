@@ -4,6 +4,7 @@ mod pieces;
 
 use alloc::vec::Vec as StdVec;
 pub(in crate::emit) use hoist_gap::check as check_hoist_gap;
+pub(in crate::emit) use hoist_gap::shipped_constant;
 use vize_s2::expr::{ExprRef, OpaqueReason};
 use vize_s2::op::DynamicName;
 

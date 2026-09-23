@@ -80,9 +80,9 @@ pub(in crate::emit) fn check(
     }
 }
 
-/// `is_constant_simple_expression(exp, None)` over the authored AST:
-/// `Some(reads_local)` when the shipped classifier admits the value.
-fn shipped_constant(expr: &js::Expression<'_>, source: &str) -> Option<bool> {
+/// `is_constant_simple_expression(exp, None)` over the supplied AST and
+/// expression bytes: `Some(reads_local)` when the shipped classifier admits it.
+pub(in crate::emit) fn shipped_constant(expr: &js::Expression<'_>, source: &str) -> Option<bool> {
     if source.contains("_ctx.")
         || source.contains("$setup.")
         || source.contains("__props.")

@@ -22,11 +22,25 @@ use vize_s1_to_s2::{
 
 const BINDINGS: &[(&str, BindingType, BindingKind)] = &[
     ("Card", BindingType::SetupConst, BindingKind::SetupConst),
+    (
+        "Form",
+        BindingType::SetupMaybeRef,
+        BindingKind::SetupMaybeRef,
+    ),
+    (
+        "Link",
+        BindingType::SetupMaybeRef,
+        BindingKind::SetupMaybeRef,
+    ),
     ("items", BindingType::SetupRef, BindingKind::SetupRef),
     ("draft", BindingType::SetupLet, BindingKind::SetupLet),
 ];
 
 fn s2(source: &str, inline: bool) -> Result<String, EmitError> {
+    s2_with_ts(source, inline, false)
+}
+
+fn s2_with_ts(source: &str, inline: bool, is_ts: bool) -> Result<String, EmitError> {
     let table = BindingTable::new(
         BINDINGS.iter().map(|(name, _, kind)| (*name, *kind)),
         [],
@@ -42,6 +56,7 @@ fn s2(source: &str, inline: bool) -> Result<String, EmitError> {
             prefix_identifiers: true,
             inline,
             cache_handlers: inline,
+            is_ts,
             bindings: Some(&table),
             ..DomEmitOptions::DEFAULT
         },
@@ -50,6 +65,10 @@ fn s2(source: &str, inline: bool) -> Result<String, EmitError> {
 }
 
 fn shipped(source: &str, inline: bool) -> String {
+    shipped_with_ts(source, inline, false)
+}
+
+fn shipped_with_ts(source: &str, inline: bool, is_ts: bool) -> String {
     let mut metadata = BindingMetadata {
         is_script_setup: true,
         ..Default::default()
@@ -66,12 +85,40 @@ fn shipped(source: &str, inline: bool) -> String {
             prefix_identifiers: true,
             inline,
             cache_handlers: inline,
+            is_ts,
             binding_metadata: Some(metadata),
             ..Default::default()
         },
     );
     assert!(errors.is_empty(), "{source:?}: {errors:?}");
     format!("{}\n{}", old.preamble, old.code)
+}
+
+#[test]
+fn typed_component_callback_props_match_shipped_hoists() {
+    let cases = [
+        // The shipped hoist check still sees the typed local declaration in
+        // the callback body, so this nested Form keeps its props inline.
+        r#"<div><Form action="/users" method="post" :optimistic="(props, formData) => { const name: string = formData.name; return { ...props, name } }" :transform="(data) => { const email: string = data.email; return { email } }"><input name="name" /><input name="email" /></Form></div>"#,
+        // A typed parameter is erased before the shipped constant walk; its
+        // self-bound name and allowed global together permit the root hoist.
+        r#"<Form action="/form-component/view-transition" method="post" :options="{ viewTransition: (transition: ViewTransition) => { transition.ready.then(() => console.log('ready')) } }"><button type="submit">Submit</button></Form>"#,
+        r#"<Link href="/view-transition/page-b" :view-transition="(transition: ViewTransition) => { transition.ready.then(() => console.log('ready')) }">Link to Page B</Link>"#,
+    ];
+    for source in cases {
+        let legacy = shipped_with_ts(source, true, true);
+        let emitted = s2_with_ts(source, true, true)
+            .unwrap_or_else(|error| panic!("{source:?} must emit, got {error:?}"));
+        assert_eq!(emitted, legacy, "{source:?}");
+    }
+}
+
+#[test]
+fn conditional_named_slot_outlet_props_match_shipped_hoists() {
+    let source = r#"<Tabs><template #apiTab><div class="py-2"><slot name="api" /></div></template><template v-if="showInstallation" #creditsTab><div class="py-2"><slot name="credits" /></div></template></Tabs>"#;
+    let legacy = shipped(source, true);
+    let emitted = s2(source, true).unwrap_or_else(|error| panic!("{source:?}: {error:?}"));
+    assert_eq!(emitted, legacy, "{source:?}");
 }
 
 fn refused(source: &str) -> Reason {

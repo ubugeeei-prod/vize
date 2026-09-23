@@ -14,6 +14,7 @@ use super::on::admit_on;
 pub(in crate::emit) use constness::handler_is_constant;
 pub(super) use constness::{bind_value_is_static_patchless, bind_value_text};
 pub(super) use static_expr::bind_value_uses_legacy_patchless_runtime_expr;
+pub(in crate::emit) use ts_view::ts_view;
 
 pub(super) use super::props_bind::{
     BindName, StaticBindKeyCasing, bind_name, emit_dynamic_bind_pair, has_prop_modifier,

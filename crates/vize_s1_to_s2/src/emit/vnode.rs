@@ -227,18 +227,23 @@ pub(super) fn emit_call(
         && has_interpolation_descendant(element);
     let should_hoist_props = super::props_static::should_hoist(cx, id, prop_hoist)
         || scoped_for_slot_component_slot_child_props(cx, element, prop_hoist);
-    let hoisted_props =
-        if allow_hoist && if_key.is_none() && !conditional_v_for_dynamic_text && should_hoist_props
-        {
-            super::props_static::root_hoist_props(
-                &element.attributes,
-                &element.bindings,
-                cx.is_ts,
-                cx.scope_id,
-            )?
-        } else {
-            None
-        };
+    let hoisted_props = if allow_hoist
+        && if_key.is_none()
+        // A conditional named-slot branch does not enter the shipped hoist
+        // walk at its first child, even when that child's props are static.
+        && !slot_branch_root
+        && !conditional_v_for_dynamic_text
+        && should_hoist_props
+    {
+        super::props_static::root_hoist_props(
+            &element.attributes,
+            &element.bindings,
+            cx.is_ts,
+            cx.scope_id,
+        )?
+    } else {
+        None
+    };
     let hoist = hoisted_props.is_some();
     let patch = cx.materialize_patch_facts(id, &element.bindings, false, if_key, for_item);
     let text_flag = !once && !memo_block && children_need_text_flag(cx, &element.children);
