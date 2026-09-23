@@ -66,7 +66,7 @@ impl CssRule for PreferSlotted {
             let finder = memmem::Finder::new(pattern.as_bytes());
 
             let mut search_start = 0;
-            while let Some(pos) = finder.find(&bytes[search_start..]) {
+            while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
                 let absolute_pos = search_start + pos;
 
                 result.add_diagnostic(
@@ -93,26 +93,21 @@ impl CssRule for PreferSlotted {
             let finder = memmem::Finder::new(b"slot");
             let mut search_start = 0;
 
-            while let Some(pos) = finder.find(&bytes[search_start..]) {
+            while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
                 let absolute_pos = search_start + pos;
 
                 // Check if "slot" is part of a selector (not inside a value or comment)
                 // Look for preceding characters that indicate selector context
-                let is_selector = if absolute_pos > 0 {
-                    let prev = bytes[absolute_pos - 1];
-                    prev == b' ' || prev == b'\n' || prev == b'{' || prev == b',' || prev == b'>'
-                } else {
-                    true
-                };
+                let is_selector = absolute_pos
+                    .checked_sub(1)
+                    .and_then(|prev| bytes.get(prev))
+                    .is_none_or(|prev| matches!(prev, b' ' | b'\n' | b'{' | b',' | b'>'));
 
                 // Check if followed by selector-like characters
                 let after_pos = absolute_pos + 4;
-                let is_followed_by_selector = after_pos < bytes.len()
-                    && (bytes[after_pos] == b' '
-                        || bytes[after_pos] == b'{'
-                        || bytes[after_pos] == b'.'
-                        || bytes[after_pos] == b'['
-                        || bytes[after_pos] == b'>');
+                let is_followed_by_selector = bytes
+                    .get(after_pos)
+                    .is_some_and(|next| matches!(next, b' ' | b'{' | b'.' | b'[' | b'>'));
 
                 if is_selector && is_followed_by_selector {
                     result.add_diagnostic(

@@ -44,7 +44,7 @@ impl CssRule for NoVBindPerformance {
         let bytes = source.as_bytes();
 
         let mut search_start = 0;
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
+        while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
             let absolute_pos = search_start + pos;
 
             // Find the closing parenthesis
@@ -76,7 +76,7 @@ fn find_closing_paren(source: &str, start: usize) -> Option<usize> {
     let mut depth = 1;
     let bytes = source.as_bytes();
 
-    for (offset, &byte) in bytes[start..].iter().enumerate() {
+    for (offset, &byte) in bytes.get(start..)?.iter().enumerate() {
         match byte {
             b'(' => depth += 1,
             b')' => {

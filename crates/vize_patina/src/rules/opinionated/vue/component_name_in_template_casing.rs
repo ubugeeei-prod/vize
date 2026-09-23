@@ -194,8 +194,7 @@ fn is_nuxt_builtin_component(tag: &str) -> bool {
 /// `v-` followed by a lowercase ASCII letter as a known component name and
 /// skips casing/self-closing diagnostics for it.
 fn is_vuetify_tag(tag: &str) -> bool {
-    let bytes = tag.as_bytes();
-    bytes.len() >= 3 && bytes[0] == b'v' && bytes[1] == b'-' && bytes[2].is_ascii_lowercase()
+    matches!(tag.as_bytes(), [b'v', b'-', third, ..] if third.is_ascii_lowercase())
 }
 
 #[cfg(test)]

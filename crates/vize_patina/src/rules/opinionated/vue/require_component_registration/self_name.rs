@@ -30,12 +30,12 @@ pub(super) fn define_options_name(analysis: &Croquis) -> Option<&str> {
 fn options_name_property(args: &str) -> Option<&str> {
     let bytes = args.as_bytes();
     let mut search = 0usize;
-    while let Some(found) = args[search..].find("name") {
+    while let Some(found) = args.get(search..).and_then(|rest| rest.find("name")) {
         let start = search + found;
         search = start + "name".len();
         // The key may be bare (`name:`) or quoted (`"name":`); anything else
         // directly before it (`fullname:`) is a different key.
-        let before = start.checked_sub(1).map(|i| bytes[i]);
+        let before = start.checked_sub(1).and_then(|i| bytes.get(i).copied());
         let quoted_key = matches!(before, Some(b'\'' | b'"'));
         if !matches!(before, None | Some(b'{' | b',' | b'\'' | b'"'))
             && !before.is_some_and(|b| b.is_ascii_whitespace())
@@ -65,9 +65,11 @@ fn options_name_property(args: &str) -> Option<&str> {
         };
         cursor += 1;
         let value_start = cursor;
-        while cursor < bytes.len() && bytes[cursor] != quote {
+        while let Some(&byte) = bytes.get(cursor)
+            && byte != quote
+        {
             // Stay conservative on escapes and template interpolation.
-            if bytes[cursor] == b'\\' || (quote == b'`' && bytes[cursor] == b'$') {
+            if byte == b'\\' || (quote == b'`' && byte == b'$') {
                 return None;
             }
             cursor += 1;
@@ -75,7 +77,7 @@ fn options_name_property(args: &str) -> Option<&str> {
         if cursor >= bytes.len() {
             return None;
         }
-        return Some(&args[value_start..cursor]);
+        return args.get(value_start..cursor);
     }
     None
 }

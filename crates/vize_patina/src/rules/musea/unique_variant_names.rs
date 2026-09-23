@@ -25,15 +25,18 @@ impl MuseaRule for UniqueVariantNames {
         let mut seen_names: FxHashSet<&str> = FxHashSet::default();
         let mut search_start = 0;
 
-        while let Some(variant_pos) = source[search_start..].find("<variant") {
+        while let Some(variant_pos) = source
+            .get(search_start..)
+            .and_then(|rest| rest.find("<variant"))
+        {
             let abs_pos = search_start + variant_pos;
-            let remaining = &source[abs_pos..];
+            let remaining = source.get(abs_pos..).unwrap_or_default();
 
             let Some(tag_end) = remaining.find('>') else {
                 break;
             };
 
-            let variant_tag = &remaining[..tag_end];
+            let variant_tag = remaining.get(..tag_end).unwrap_or_default();
 
             // Extract name attribute value
             if let Some(name) = extract_name_attr(variant_tag) {
@@ -61,7 +64,7 @@ impl MuseaRule for UniqueVariantNames {
 fn extract_name_attr(tag: &str) -> Option<&str> {
     // Find name=" or name='
     let name_pos = tag.find("name=")?;
-    let after_eq = &tag[name_pos + 5..];
+    let after_eq = tag.get(name_pos + 5..).unwrap_or_default();
     let trimmed = after_eq.trim_start();
 
     if trimmed.is_empty() {
@@ -73,10 +76,10 @@ fn extract_name_attr(tag: &str) -> Option<&str> {
         return None;
     }
 
-    let after_quote = &trimmed[1..];
+    let after_quote = trimmed.get(1..).unwrap_or_default();
     let end_quote = after_quote.find(quote)?;
 
-    Some(&after_quote[..end_quote])
+    after_quote.get(..end_quote)
 }
 
 #[cfg(test)]

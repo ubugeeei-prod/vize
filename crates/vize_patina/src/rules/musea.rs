@@ -153,11 +153,10 @@ impl MuseaLinter {
         };
 
         // Find the end of the opening tag
-        let Some(tag_end) = memchr::memchr(b'>', &bytes[art_start..]) else {
+        let Some((art_tag, _)) = bytes.get(art_start..).and_then(split_at_tag_end) else {
             return;
         };
-
-        let art_tag = &bytes[art_start..art_start + tag_end];
+        let tag_end = art_tag.len();
         let define_art = define_art_rule_info(source);
 
         // Check for title attribute
@@ -196,19 +195,20 @@ impl MuseaLinter {
         let mut search_start = 0;
         let mut seen_names: FxHashSet<&[u8]> = FxHashSet::default();
 
-        while let Some(variant_pos) = variant_finder.find(&bytes[search_start..]) {
+        while let Some(variant_pos) = bytes
+            .get(search_start..)
+            .and_then(|rest| variant_finder.find(rest))
+        {
             let abs_pos = search_start + variant_pos;
-            let remaining = &bytes[abs_pos..];
-
             // Find the end of the opening tag
-            let Some(tag_end) = memchr::memchr(b'>', remaining) else {
+            let Some((variant_tag, after_tag)) = bytes.get(abs_pos..).and_then(split_at_tag_end)
+            else {
                 break;
             };
-
-            let variant_tag = &remaining[..tag_end];
+            let tag_end = variant_tag.len();
 
             // Check for self-closing tag
-            let is_self_closing = tag_end > 0 && remaining[tag_end - 1] == b'/';
+            let is_self_closing = variant_tag.last() == Some(&b'/');
 
             // Check valid-variant: name attribute required
             let name_value = extract_name_attr_bytes(variant_tag);
@@ -261,9 +261,9 @@ impl MuseaLinter {
                 }
 
                 // Find the closing tag
-                let after_open = &remaining[tag_end + 1..];
+                let after_open = after_tag.get(1..).unwrap_or_default();
                 if let Some(close_pos) = memmem::find(after_open, b"</variant>") {
-                    let content = &after_open[..close_pos];
+                    let content = after_open.get(..close_pos).unwrap_or_default();
                     if is_whitespace_only(content) {
                         result.add_diagnostic(
                             LintDiagnostic::warn(
@@ -340,27 +340,19 @@ fn define_art_rule_info(source: &str) -> DefineArtRuleInfo {
 fn extract_name_attr_bytes(tag: &[u8]) -> Option<&[u8]> {
     // Find name=" or name='
     let name_pos = memmem::find(tag, b"name=")?;
-    let after_eq = &tag[name_pos + 5..];
-
-    // Skip whitespace
-    let mut i = 0;
-    while i < after_eq.len() && after_eq[i].is_ascii_whitespace() {
-        i += 1;
-    }
-
-    if i >= after_eq.len() {
-        return None;
-    }
-
-    let quote = after_eq[i];
+    let after_eq = tag.get(name_pos + 5..)?;
+    let value_start = after_eq.iter().position(|b| !b.is_ascii_whitespace())?;
+    let (&quote, after_quote) = after_eq.get(value_start..)?.split_first()?;
     if quote != b'"' && quote != b'\'' {
         return None;
     }
+    after_quote.get(..memchr::memchr(quote, after_quote)?)
+}
 
-    let after_quote = &after_eq[i + 1..];
-    let end_quote = memchr::memchr(quote, after_quote)?;
-
-    Some(&after_quote[..end_quote])
+/// Split `bytes` at the first `>`: the opening tag before it and the rest from it.
+#[inline]
+fn split_at_tag_end(bytes: &[u8]) -> Option<(&[u8], &[u8])> {
+    bytes.split_at_checked(memchr::memchr(b'>', bytes)?)
 }
 
 /// Check if bytes contain only whitespace

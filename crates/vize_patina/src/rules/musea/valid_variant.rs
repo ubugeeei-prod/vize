@@ -22,12 +22,15 @@ impl MuseaRule for ValidVariant {
     fn check(&self, source: &str, result: &mut MuseaLintResult) {
         let mut search_start = 0;
 
-        while let Some(variant_pos) = source[search_start..].find("<variant") {
+        while let Some(variant_pos) = source
+            .get(search_start..)
+            .and_then(|rest| rest.find("<variant"))
+        {
             let abs_pos = search_start + variant_pos;
-            let tag_content = &source[abs_pos..];
+            let tag_content = source.get(abs_pos..).unwrap_or_default();
 
             if let Some(tag_end) = tag_content.find('>') {
-                let variant_tag = &tag_content[..tag_end];
+                let variant_tag = tag_content.get(..tag_end).unwrap_or_default();
 
                 // Check for name attribute
                 if !variant_tag.contains("name=") && !variant_tag.contains("name =") {

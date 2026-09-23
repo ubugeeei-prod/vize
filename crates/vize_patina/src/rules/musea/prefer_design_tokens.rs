@@ -96,23 +96,27 @@ impl PreferDesignTokens {
         let style_close_finder = memmem::Finder::new(b"</style>");
         let mut search_start = 0;
 
-        while let Some(style_pos) = style_finder.find(&bytes[search_start..]) {
+        while let Some(style_pos) = style_finder.find(bytes.get(search_start..).unwrap_or_default())
+        {
             let abs_style_start = search_start + style_pos;
 
             // Find > to get end of opening tag
-            let Some(tag_end_offset) = memchr::memchr(b'>', &bytes[abs_style_start..]) else {
+            let rest = bytes.get(abs_style_start..).unwrap_or_default();
+            let Some(tag_end_offset) = memchr::memchr(b'>', rest) else {
                 break;
             };
             let content_start = abs_style_start + tag_end_offset + 1;
 
             // Find </style>
-            let Some(close_pos) = style_close_finder.find(&bytes[content_start..]) else {
+            let rest = bytes.get(content_start..).unwrap_or_default();
+            let Some(close_pos) = style_close_finder.find(rest) else {
                 break;
             };
             let content_end = content_start + close_pos;
 
             // Extract and check the CSS content
-            if let Ok(css_content) = std::str::from_utf8(&bytes[content_start..content_end]) {
+            let css_bytes = bytes.get(content_start..content_end).unwrap_or_default();
+            if let Ok(css_content) = std::str::from_utf8(css_bytes) {
                 self.check_css_block(css_content, content_start, result);
             }
 
@@ -137,8 +141,8 @@ impl PreferDesignTokens {
             }
 
             // Check for property: value pattern
-            if let Some(colon_pos) = trimmed.find(':') {
-                let value_part = trimmed[colon_pos + 1..].trim();
+            if let Some((_, value_part)) = trimmed.split_once(':') {
+                let value_part = value_part.trim();
                 // Remove trailing semicolon and !important
                 let value_part = value_part
                     .trim_end_matches(';')
@@ -151,12 +155,7 @@ impl PreferDesignTokens {
                 }
 
                 // Check individual value tokens (split on whitespace for shorthand properties)
-                let line_byte_offset = css[..css
-                    .lines()
-                    .take(line_idx)
-                    .map(|l| l.len() + 1)
-                    .sum::<usize>()]
-                    .len();
+                let line_byte_offset: usize = css.lines().take(line_idx).map(|l| l.len() + 1).sum();
                 let line_start = block_offset + line_byte_offset;
                 let line_end = line_start + line.len();
 
@@ -164,10 +163,9 @@ impl PreferDesignTokens {
                 let normalized_full = normalize_value(value_part);
                 if let Some(tokens) = self.config.value_map.get(&normalized_full) {
                     // Prefer primitive tokens for warnings
-                    let token = tokens
-                        .iter()
-                        .find(|t| t.tier == "primitive")
-                        .unwrap_or(&tokens[0]);
+                    let Some(token) = preferred_token(tokens) else {
+                        continue;
+                    };
 
                     let message = if token.tier == "primitive" {
                         format!(
@@ -210,10 +208,9 @@ impl PreferDesignTokens {
                 for part in value_part.split_whitespace() {
                     let normalized = normalize_value(part);
                     if let Some(tokens) = self.config.value_map.get(&normalized) {
-                        let token = tokens
-                            .iter()
-                            .find(|t| t.tier == "primitive")
-                            .unwrap_or(&tokens[0]);
+                        let Some(token) = preferred_token(tokens) else {
+                            continue;
+                        };
 
                         let message = if token.tier == "primitive" {
                             format!(
@@ -257,26 +254,24 @@ impl PreferDesignTokens {
 }
 
 /// Normalize a CSS value for comparison
+/// The token to suggest for a value: the first primitive one, else the first.
+fn preferred_token(tokens: &[TokenInfo]) -> Option<&TokenInfo> {
+    let primitive = tokens.iter().find(|t| t.tier == "primitive");
+    primitive.or(tokens.first())
+}
+
 fn normalize_value(value: &str) -> String {
     let v = value.trim().to_lowercase();
 
-    // Normalize hex colors: #fff -> #ffffff
-    if let Some(hex) = v.strip_prefix('#') {
-        if hex.len() == 3 {
-            let expanded: String = hex
-                .chars()
-                .flat_map(|c| std::iter::repeat_n(c, 2))
-                .collect();
-            return format!("#{}", expanded).into();
-        }
-        if hex.len() == 4 {
-            // #rgba -> #rrggbbaa
-            let expanded: String = hex
-                .chars()
-                .flat_map(|c| std::iter::repeat_n(c, 2))
-                .collect();
-            return format!("#{}", expanded).into();
-        }
+    // Normalize hex colors: #fff -> #ffffff, #rgba -> #rrggbbaa
+    if let Some(hex) = v.strip_prefix('#')
+        && (hex.len() == 3 || hex.len() == 4)
+    {
+        let expanded: String = hex
+            .chars()
+            .flat_map(|c| std::iter::repeat_n(c, 2))
+            .collect();
+        return format!("#{}", expanded).into();
     }
 
     // Normalize leading zero: .5rem -> 0.5rem

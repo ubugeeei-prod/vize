@@ -125,7 +125,7 @@ impl CssRule for NoUtilityClasses {
             let finder = memmem::Finder::new(pattern.as_bytes());
 
             let mut search_start = 0;
-            while let Some(pos) = finder.find(&bytes[search_start..]) {
+            while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
                 let absolute_pos = search_start + pos;
 
                 // Check if this is at the start of a selector
@@ -166,7 +166,7 @@ impl CssRule for NoUtilityClasses {
             let finder = memmem::Finder::new(pattern.as_bytes());
 
             let mut search_start = 0;
-            while let Some(pos) = finder.find(&bytes[search_start..]) {
+            while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
                 let absolute_pos = search_start + pos;
 
                 // Check if this is at the start of a selector
@@ -178,16 +178,14 @@ impl CssRule for NoUtilityClasses {
 
                 // Check if followed by a digit (utility class pattern)
                 let next_pos = absolute_pos + pattern.len();
-                let is_followed_by_digit =
-                    next_pos < bytes.len() && bytes[next_pos].is_ascii_digit();
+                let is_followed_by_digit = bytes.get(next_pos).is_some_and(u8::is_ascii_digit);
 
                 if is_selector_start && is_followed_by_digit {
                     // Find the end of the class name
                     let mut end = next_pos;
-                    while end < bytes.len()
-                        && (bytes[end].is_ascii_alphanumeric()
-                            || bytes[end] == b'-'
-                            || bytes[end] == b'_')
+                    while bytes
+                        .get(end)
+                        .is_some_and(|&b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
                     {
                         end += 1;
                     }

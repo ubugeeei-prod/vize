@@ -39,7 +39,7 @@ impl CssRule for NoImportant {
         let finder = memmem::Finder::new(b"!important");
 
         let mut search_start = 0;
-        while let Some(pos) = finder.find(&bytes[search_start..]) {
+        while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
             let abs_pos = search_start + pos;
 
             // Verify it's not inside a comment or string
@@ -66,10 +66,10 @@ impl NoImportant {
         let mut in_comment = false;
         let mut i = 0;
         while i < pos && i + 1 < bytes.len() {
-            if !in_comment && bytes[i] == b'/' && bytes[i + 1] == b'*' {
+            if !in_comment && bytes.get(i..i + 2) == Some(b"/*".as_slice()) {
                 in_comment = true;
                 i += 2;
-            } else if in_comment && bytes[i] == b'*' && bytes[i + 1] == b'/' {
+            } else if in_comment && bytes.get(i..i + 2) == Some(b"*/".as_slice()) {
                 in_comment = false;
                 i += 2;
             } else {

@@ -81,13 +81,18 @@ impl Rule for NoUselessVBind {
 fn is_static_string_literal(raw: &str) -> bool {
     let s = raw.trim();
     let bytes = s.as_bytes();
+    let (Some(&first), Some(&last)) = (bytes.first(), bytes.last()) else {
+        return false;
+    };
     if bytes.len() < 2 {
         return false;
     }
-    let first = bytes[0];
-    let last = bytes[bytes.len() - 1];
     match first {
-        b'\'' | b'"' => first == last && !s[1..s.len() - 1].contains(first as char),
+        b'\'' | b'"' => {
+            first == last
+                && s.get(1..s.len() - 1)
+                    .is_some_and(|inner| !inner.contains(first as char))
+        }
         b'`' => last == b'`' && !s.contains("${"),
         _ => false,
     }

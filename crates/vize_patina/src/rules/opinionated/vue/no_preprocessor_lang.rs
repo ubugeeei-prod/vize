@@ -41,13 +41,15 @@ impl Rule for NoPreprocessorLang {
 
         // Find all <style tags
         let mut pos = 0;
-        while let Some(style_start) = source[pos..].find("<style") {
+        while let Some(style_start) = source.get(pos..).and_then(|rest| rest.find("<style")) {
             let abs_pos = pos + style_start;
             pos = abs_pos + 6;
 
             // Find the closing >
-            if let Some(tag_end) = source[abs_pos..].find('>') {
-                let tag_content = &source[abs_pos..abs_pos + tag_end + 1];
+            if let Some(tag_end) = source.get(abs_pos..).and_then(|rest| rest.find('>')) {
+                let tag_content = source
+                    .get(abs_pos..abs_pos + tag_end + 1)
+                    .unwrap_or_default();
 
                 // Check for preprocessor langs
                 let preprocessor = if tag_content.contains("lang=\"sass\"")

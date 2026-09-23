@@ -61,6 +61,18 @@ enum LandmarkLabel {
     Dynamic,
 }
 
+/// Landmark roles an explicit `role` attribute can declare.
+const EXPLICIT_LANDMARK_ROLES: [&str; 8] = [
+    "banner",
+    "complementary",
+    "contentinfo",
+    "form",
+    "main",
+    "navigation",
+    "region",
+    "search",
+];
+
 /// Get the landmark role for an element (from tag or explicit role attribute)
 fn get_landmark_role<'a>(element: &ElementNode<'a>) -> Option<&'static str> {
     // Check explicit role attribute first
@@ -69,21 +81,9 @@ fn get_landmark_role<'a>(element: &ElementNode<'a>) -> Option<&'static str> {
             && attr.name == "role"
             && let Some(value) = &attr.value
         {
-            return match value.content {
-                "banner" | "complementary" | "contentinfo" | "form" | "main" | "navigation"
-                | "region" | "search" => Some(match value.content {
-                    "banner" => "banner",
-                    "complementary" => "complementary",
-                    "contentinfo" => "contentinfo",
-                    "form" => "form",
-                    "main" => "main",
-                    "navigation" => "navigation",
-                    "region" => "region",
-                    "search" => "search",
-                    _ => unreachable!(),
-                }),
-                _ => None,
-            };
+            return EXPLICIT_LANDMARK_ROLES
+                .into_iter()
+                .find(|role| *role == value.content);
         }
     }
 
@@ -169,7 +169,7 @@ impl Rule for LandmarkRoles {
         // Check 1: Duplicate main landmarks
         let mains: Vec<&LandmarkInfo> = landmarks.iter().filter(|l| l.role == "main").collect();
         if mains.len() > 1 {
-            for main in &mains[1..] {
+            for main in mains.iter().skip(1) {
                 let message = ctx.t("a11y/landmark-roles.duplicate_main");
                 let diag = LintDiagnostic::warn(META.name, message, main.start, main.end)
                     .with_help(

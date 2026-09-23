@@ -50,12 +50,12 @@ impl MuseaRule for RequireTitle {
         };
 
         // Find the end of the opening tag
-        let tag_content = &source[art_start..];
+        let tag_content = source.get(art_start..).unwrap_or_default();
         let Some(tag_end) = tag_content.find('>') else {
             return;
         };
 
-        let art_tag = &tag_content[..tag_end];
+        let art_tag = tag_content.get(..tag_end).unwrap_or_default();
 
         // Check for title attribute or defineArt metadata.
         if !has_attribute(art_tag, "title") && !define_art_has_title(source) {

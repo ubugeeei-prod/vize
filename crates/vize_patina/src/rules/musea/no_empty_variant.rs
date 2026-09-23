@@ -22,9 +22,12 @@ impl MuseaRule for NoEmptyVariant {
     fn check(&self, source: &str, result: &mut MuseaLintResult) {
         let mut search_start = 0;
 
-        while let Some(variant_pos) = source[search_start..].find("<variant") {
+        while let Some(variant_pos) = source
+            .get(search_start..)
+            .and_then(|rest| rest.find("<variant"))
+        {
             let abs_pos = search_start + variant_pos;
-            let remaining = &source[abs_pos..];
+            let remaining = source.get(abs_pos..).unwrap_or_default();
 
             // Find the opening tag end
             let Some(tag_end) = remaining.find('>') else {
@@ -32,7 +35,10 @@ impl MuseaRule for NoEmptyVariant {
             };
 
             // Check for self-closing tag
-            if remaining[..tag_end].ends_with('/') {
+            if remaining
+                .get(..tag_end)
+                .is_some_and(|tag| tag.ends_with('/'))
+            {
                 result.add_diagnostic(
                     LintDiagnostic::warn(
                         META.name,
@@ -47,9 +53,9 @@ impl MuseaRule for NoEmptyVariant {
             }
 
             // Find the closing tag
-            let after_open = &remaining[tag_end + 1..];
+            let after_open = remaining.get(tag_end + 1..).unwrap_or_default();
             if let Some(close_pos) = after_open.find("</variant>") {
-                let content = &after_open[..close_pos];
+                let content = after_open.get(..close_pos).unwrap_or_default();
                 let trimmed = content.trim();
 
                 if trimmed.is_empty() {

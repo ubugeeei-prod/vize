@@ -69,13 +69,15 @@ impl Rule for NoSrcAttribute {
             let pattern = format!("<{}", block_type);
             let mut pos = 0;
 
-            while let Some(block_start) = source[pos..].find(&pattern) {
+            while let Some(block_start) = source.get(pos..).and_then(|rest| rest.find(&*pattern)) {
                 let abs_pos = pos + block_start;
                 pos = abs_pos + pattern.len();
 
                 // Find the closing >
-                if let Some(tag_end) = source[abs_pos..].find('>') {
-                    let tag_content = &source[abs_pos..abs_pos + tag_end + 1];
+                if let Some(tag_end) = source.get(abs_pos..).and_then(|rest| rest.find('>')) {
+                    let tag_content = source
+                        .get(abs_pos..abs_pos + tag_end + 1)
+                        .unwrap_or_default();
 
                     // Check for src attribute
                     let src_patterns = [

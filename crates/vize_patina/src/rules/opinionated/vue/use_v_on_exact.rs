@@ -80,8 +80,8 @@ impl Rule for UseVOnExact {
                 .iter()
                 .any(|&(name, sys_mod, _, i)| name == event_name && sys_mod && i != idx);
 
-            if has_modified_sibling {
-                let loc = &element.props[idx].loc();
+            if has_modified_sibling && let Some(prop) = element.props.get(idx) {
+                let loc = &prop.loc();
                 ctx.warn_with_help(
                     ctx.t_fmt("vue/use-v-on-exact.message", &[("event", event_name)]),
                     loc,

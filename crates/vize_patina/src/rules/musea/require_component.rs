@@ -27,12 +27,12 @@ impl MuseaRule for RequireComponent {
             return;
         };
 
-        let tag_content = &source[art_start..];
+        let tag_content = source.get(art_start..).unwrap_or_default();
         let Some(tag_end) = tag_content.find('>') else {
             return;
         };
 
-        let art_tag = &tag_content[..tag_end];
+        let art_tag = tag_content.get(..tag_end).unwrap_or_default();
 
         if !art_tag.contains("component=")
             && !art_tag.contains("component =")

@@ -126,7 +126,7 @@ impl Rule for PreferStaticClass {
         let trimmed = exp_content.trim();
         if is_string_literal(trimmed) {
             // Extract the string value
-            let inner = &trimmed[1..trimmed.len() - 1];
+            let inner = trimmed.get(1..trimmed.len() - 1).unwrap_or_default();
 
             // Check if element already has a static class attribute
             let has_static_class = element.props.iter().any(|p| {
@@ -171,13 +171,13 @@ impl Rule for PreferStaticClass {
 
 /// Check if a string is a simple string literal
 fn is_string_literal(s: &str) -> bool {
-    if s.len() < 2 {
+    let bytes = s.as_bytes();
+    let (Some(&first), Some(&last)) = (bytes.first(), bytes.last()) else {
+        return false;
+    };
+    if bytes.len() < 2 {
         return false;
     }
-
-    let bytes = s.as_bytes();
-    let first = bytes[0];
-    let last = bytes[bytes.len() - 1];
 
     // Check for 'string', "string", or `string`
     // But not template literals with expressions like `${foo}`

@@ -153,7 +153,7 @@ fn v_for_index_alias(raw: &str) -> Option<&str> {
         return None;
     }
 
-    let inner = &alias_part[1..alias_part.len() - 1];
+    let inner = alias_part.get(1..alias_part.len() - 1).unwrap_or_default();
     let parts: Vec<&str> = inner
         .split(',')
         .map(str::trim)
@@ -181,9 +181,9 @@ fn v_for_index_alias(raw: &str) -> Option<&str> {
 fn split_for_alias(content: &str) -> Option<&str> {
     let bytes = content.as_bytes();
     if let Some(idx) = find_pattern(bytes, b" in ") {
-        Some(&content[..idx])
+        content.get(..idx)
     } else {
-        find_pattern(bytes, b" of ").map(|idx| &content[..idx])
+        find_pattern(bytes, b" of ").and_then(|idx| content.get(..idx))
     }
 }
 

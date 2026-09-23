@@ -133,6 +133,7 @@ impl DisabledRules {
         let enable_finder = memmem::Finder::new(b"vize-enable ");
         let disable_line_finder = memmem::Finder::new(b"vize-disable-line ");
         let disable_next_line_finder = memmem::Finder::new(b"vize-disable-next-line ");
+        let find_from = |finder: &memmem::Finder, from: usize| finder.find(bytes.get(from..)?);
 
         // Track line numbers
         let mut line_starts: Vec<usize> = vec![0];
@@ -147,7 +148,7 @@ impl DisabledRules {
 
         // Find block disable/enable comments
         let mut search_start = 0;
-        while let Some(pos) = disable_finder.find(&bytes[search_start..]) {
+        while let Some(pos) = find_from(&disable_finder, search_start) {
             let abs_pos = search_start + pos;
             // Check if inside a CSS comment
             if Self::is_in_css_comment(bytes, abs_pos) {
@@ -161,7 +162,7 @@ impl DisabledRules {
         }
 
         search_start = 0;
-        while let Some(pos) = enable_finder.find(&bytes[search_start..]) {
+        while let Some(pos) = find_from(&enable_finder, search_start) {
             let abs_pos = search_start + pos;
             if Self::is_in_css_comment(bytes, abs_pos) {
                 let line = get_line_number(abs_pos);
@@ -175,7 +176,7 @@ impl DisabledRules {
 
         // Find line-specific disable comments
         search_start = 0;
-        while let Some(pos) = disable_line_finder.find(&bytes[search_start..]) {
+        while let Some(pos) = find_from(&disable_line_finder, search_start) {
             let abs_pos = search_start + pos;
             if Self::is_in_css_comment(bytes, abs_pos) {
                 let line = get_line_number(abs_pos);
@@ -197,7 +198,7 @@ impl DisabledRules {
 
         // Find next-line disable comments
         search_start = 0;
-        while let Some(pos) = disable_next_line_finder.find(&bytes[search_start..]) {
+        while let Some(pos) = find_from(&disable_next_line_finder, search_start) {
             let abs_pos = search_start + pos;
             if Self::is_in_css_comment(bytes, abs_pos) {
                 let line = get_line_number(abs_pos);
@@ -236,10 +237,10 @@ impl DisabledRules {
         // Look backwards for /* and make sure no */ before pos
         let mut i = pos.saturating_sub(1);
         loop {
-            if i + 1 < bytes.len() && bytes[i] == b'/' && bytes[i + 1] == b'*' {
+            if bytes.get(i..i + 2) == Some(b"/*".as_slice()) {
                 // Found comment start, now check there's no close before pos
                 for j in (i + 2)..pos {
-                    if j + 1 < bytes.len() && bytes[j] == b'*' && bytes[j + 1] == b'/' {
+                    if bytes.get(j..j + 2) == Some(b"*/".as_slice()) {
                         return false;
                     }
                 }
@@ -261,8 +262,7 @@ impl DisabledRules {
         }
 
         let mut end = start;
-        while end < bytes.len() {
-            let b = bytes[end];
+        while let Some(&b) = bytes.get(end) {
             if b.is_ascii_alphanumeric() || b == b'-' || b == b'/' || b == b'_' {
                 end += 1;
             } else {
@@ -270,7 +270,8 @@ impl DisabledRules {
             }
         }
 
-        source[start..end].to_compact_string()
+        let name = source.get(start..end).unwrap_or_default();
+        name.to_compact_string()
     }
 
     /// Check if a rule is disabled at a given line
@@ -305,36 +306,27 @@ impl DisabledRules {
 /// Strip vize disable comments from CSS source for compilation
 pub fn strip_vize_comments(source: &str) -> String {
     let mut result = String::with_capacity(source.len());
-    let bytes = source.as_bytes();
-    let mut i = 0;
+    let mut rest = source;
 
-    while i < bytes.len() {
-        // Check for comment start
-        if i + 1 < bytes.len() && bytes[i] == b'/' && bytes[i + 1] == b'*' {
-            // Find comment end
-            let comment_start = i;
-            i += 2;
-            while i + 1 < bytes.len() && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
-                i += 1;
-            }
-            if i + 1 < bytes.len() {
-                i += 2; // Skip */
-            }
-
-            let comment = &source[comment_start..i];
-            // Only strip vize-related comments
-            if !comment.contains("vize-disable")
-                && !comment.contains("vize-enable")
-                && !comment.contains("vize-disable-line")
-                && !comment.contains("vize-disable-next-line")
-            {
-                result.push_str(comment);
-            }
-        } else {
-            result.push(bytes[i] as char);
-            i += 1;
+    while let Some((before, from_comment)) =
+        rest.find("/*").and_then(|at| rest.split_at_checked(at))
+    {
+        result.push_str(before);
+        // An unterminated comment runs to the end of the source.
+        let comment_len = from_comment
+            .get(2..)
+            .and_then(|body| body.find("*/"))
+            .map_or(from_comment.len(), |end| end + 4);
+        let (comment, after) = from_comment
+            .split_at_checked(comment_len)
+            .unwrap_or((from_comment, ""));
+        // Only strip vize-related comments
+        if !comment.contains("vize-disable") && !comment.contains("vize-enable") {
+            result.push_str(comment);
         }
+        rest = after;
     }
+    result.push_str(rest);
 
     result
 }
@@ -607,5 +599,12 @@ mod disable_tests {
         .baz { color: green; }"#;
         let stripped = strip_vize_comments(source);
         insta::assert_snapshot!(stripped.as_str());
+    }
+
+    #[test]
+    fn test_strip_vize_comments_keeps_non_ascii_text() {
+        let source = ".日本 { content: \"é\"; } /* vize-disable */ /* ok é */";
+        let expected = ".日本 { content: \"é\"; }  /* ok é */";
+        assert_eq!(strip_vize_comments(source).as_str(), expected);
     }
 }

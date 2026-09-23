@@ -58,8 +58,10 @@ impl Rule for NoTemplateLang {
         // Find <template tag
         if let Some(template_start) = source.find("<template") {
             // Find the closing >
-            if let Some(tag_end) = source[template_start..].find('>') {
-                let tag_content = &source[template_start..template_start + tag_end + 1];
+            if let Some(tag_end) = source.get(template_start..).and_then(|rest| rest.find('>')) {
+                let tag_content = source
+                    .get(template_start..template_start + tag_end + 1)
+                    .unwrap_or_default();
 
                 // Check for lang attribute
                 let lang_patterns = [

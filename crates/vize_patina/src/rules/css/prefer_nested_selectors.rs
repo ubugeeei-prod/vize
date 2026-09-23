@@ -75,14 +75,14 @@ fn scan(source: &str, offset: usize, result: &mut CssLintResult) {
     let mut frames: Vec<Frame> = Vec::new();
     let mut prelude_start = 0usize;
     let mut i = 0usize;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
                 i = skip_comment(bytes, i);
                 continue;
             }
-            b'"' | b'\'' => {
-                i = skip_string(bytes, i);
+            quote @ (b'"' | b'\'') => {
+                i = skip_string(bytes, i, quote);
                 continue;
             }
             b';' => {
@@ -95,7 +95,8 @@ fn scan(source: &str, offset: usize, result: &mut CssLintResult) {
                 prelude_start = i;
             }
             b'{' => {
-                let prelude = source[prelude_start..i].trim();
+                let raw_prelude = source.get(prelude_start..i).unwrap_or_default();
+                let prelude = raw_prelude.trim();
                 if let Some(keyword) = at_keyword(prelude) {
                     if is_opaque_at_rule(keyword) {
                         i = skip_balanced_block(bytes, i);
@@ -111,8 +112,7 @@ fn scan(source: &str, offset: usize, result: &mut CssLintResult) {
                     {
                         // Point at the selector, not the whitespace
                         // that separated it from the previous rule.
-                        let lead = source[prelude_start..i].len()
-                            - source[prelude_start..i].trim_start().len();
+                        let lead = raw_prelude.len() - raw_prelude.trim_start().len();
                         report(
                             prelude_start + lead,
                             prelude_start + lead + prelude.len(),
@@ -145,7 +145,7 @@ fn report(start: usize, end: usize, offset: usize, result: &mut CssLintResult) {
 fn skip_comment(bytes: &[u8], start: usize) -> usize {
     let mut i = start + 2;
     while i + 1 < bytes.len() {
-        if bytes[i] == b'*' && bytes[i + 1] == b'/' {
+        if bytes.get(i..i + 2) == Some(b"*/".as_slice()) {
             return i + 2;
         }
         i += 1;
@@ -153,11 +153,10 @@ fn skip_comment(bytes: &[u8], start: usize) -> usize {
     bytes.len()
 }
 
-fn skip_string(bytes: &[u8], start: usize) -> usize {
-    let quote = bytes[start];
+fn skip_string(bytes: &[u8], start: usize, quote: u8) -> usize {
     let mut i = start + 1;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'\\' => i += 2,
             byte if byte == quote => return i + 1,
             _ => i += 1,
@@ -173,7 +172,7 @@ fn at_keyword(prelude: &str) -> Option<&str> {
     let end = rest
         .find(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != '_')
         .unwrap_or(rest.len());
-    (end > 0).then(|| &rest[..end])
+    rest.get(..end).filter(|keyword| !keyword.is_empty())
 }
 
 fn is_opaque_at_rule(keyword: &str) -> bool {
@@ -185,8 +184,8 @@ fn is_opaque_at_rule(keyword: &str) -> bool {
 fn skip_balanced_block(bytes: &[u8], open_pos: usize) -> usize {
     let mut depth: i32 = 0;
     let mut i = open_pos;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'{' => depth += 1,
             b'}' => {
                 depth -= 1;
@@ -239,11 +238,9 @@ fn split_descendant_selector(selector: &str) -> Option<(&str, &str)> {
             b'(' => paren += 1,
             b')' => paren = paren.saturating_sub(1),
             b' ' | b'>' | b'+' | b'~' if bracket == 0 && paren == 0 => {
-                let parent = selector[..i].trim();
-                let child = selector[i..]
-                    .trim()
-                    .trim_start_matches([' ', '>', '+', '~'])
-                    .trim();
+                let (parent, child) = selector.split_at_checked(i)?;
+                let parent = parent.trim();
+                let child = child.trim().trim_start_matches([' ', '>', '+', '~']).trim();
                 if !parent.is_empty() && !child.is_empty() {
                     return Some((parent, child));
                 }

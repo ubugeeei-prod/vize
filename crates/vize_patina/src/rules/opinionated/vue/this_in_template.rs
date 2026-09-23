@@ -51,22 +51,19 @@ impl ThisInTemplate {
     /// match.
     fn has_this_member_access(expr: &str) -> bool {
         let bytes = expr.as_bytes();
-        let len = bytes.len();
         let mut i = 0;
 
-        while i < len {
-            let b = bytes[i];
-
+        while let Some(&b) = bytes.get(i) {
             // Skip string literals so `this.` inside a string is never flagged.
             if b == b'\'' || b == b'"' || b == b'`' {
                 let quote = b;
                 i += 1;
-                while i < len {
-                    if bytes[i] == b'\\' {
+                while let Some(&c) = bytes.get(i) {
+                    if c == b'\\' {
                         i += 2; // skip the escaped character
                         continue;
                     }
-                    if bytes[i] == quote {
+                    if c == quote {
                         i += 1;
                         break;
                     }
@@ -80,10 +77,10 @@ impl ThisInTemplate {
             if is_ident_start(b) {
                 let start = i;
                 i += 1;
-                while i < len && is_ident_continue(bytes[i]) {
+                while bytes.get(i).copied().is_some_and(is_ident_continue) {
                     i += 1;
                 }
-                let ident = &expr[start..i];
+                let ident = expr.get(start..i).unwrap_or_default();
 
                 if ident == "this" {
                     // Look past whitespace for a `.` that begins a member access
@@ -91,15 +88,15 @@ impl ThisInTemplate {
                     // intentionally ignores bare `this`, `this[...]`, and a
                     // trailing `this.` with nothing after it.
                     let mut j = i;
-                    while j < len && bytes[j].is_ascii_whitespace() {
+                    while bytes.get(j).is_some_and(u8::is_ascii_whitespace) {
                         j += 1;
                     }
-                    if j < len && bytes[j] == b'.' {
+                    if bytes.get(j) == Some(&b'.') {
                         let mut k = j + 1;
-                        while k < len && bytes[k].is_ascii_whitespace() {
+                        while bytes.get(k).is_some_and(u8::is_ascii_whitespace) {
                             k += 1;
                         }
-                        if k < len && is_ident_start(bytes[k]) {
+                        if bytes.get(k).copied().is_some_and(is_ident_start) {
                             return true;
                         }
                     }

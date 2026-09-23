@@ -66,13 +66,15 @@ impl Rule for NoScriptNonStandardLang {
 
         // Find all <script tags
         let mut pos = 0;
-        while let Some(script_start) = source[pos..].find("<script") {
+        while let Some(script_start) = source.get(pos..).and_then(|rest| rest.find("<script")) {
             let abs_pos = pos + script_start;
             pos = abs_pos + 7;
 
             // Find the closing >
-            if let Some(tag_end) = source[abs_pos..].find('>') {
-                let tag_content = &source[abs_pos..abs_pos + tag_end + 1];
+            if let Some(tag_end) = source.get(abs_pos..).and_then(|rest| rest.find('>')) {
+                let tag_content = source
+                    .get(abs_pos..abs_pos + tag_end + 1)
+                    .unwrap_or_default();
 
                 // Extract lang value if present
                 if let Some(lang_value) = Self::extract_lang_value(tag_content) {
@@ -103,8 +105,11 @@ impl NoScriptNonStandardLang {
         for (pattern, end_char) in patterns {
             if let Some(start) = tag_content.find(pattern) {
                 let value_start = start + pattern.len();
-                if let Some(end) = tag_content[value_start..].find(end_char) {
-                    return Some(&tag_content[value_start..value_start + end]);
+                if let Some(end) = tag_content
+                    .get(value_start..)
+                    .and_then(|rest| rest.find(end_char))
+                {
+                    return tag_content.get(value_start..value_start + end);
                 }
             }
         }

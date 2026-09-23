@@ -83,17 +83,17 @@ impl Rule for NoUselessMustaches {
 fn static_string_literal_inner(raw: &str) -> Option<&str> {
     let s = raw.trim();
     let bytes = s.as_bytes();
+    let (&first, &last) = (bytes.first()?, bytes.last()?);
     if bytes.len() < 2 {
         return None;
     }
-    let first = bytes[0];
-    let last = bytes[bytes.len() - 1];
+    let inner = s.get(1..s.len() - 1)?;
     let is_literal = match first {
-        b'\'' | b'"' => first == last && !s[1..s.len() - 1].contains(first as char),
+        b'\'' | b'"' => first == last && !inner.contains(first as char),
         b'`' => last == b'`' && !s.contains("${"),
         _ => false,
     };
-    is_literal.then(|| &s[1..s.len() - 1])
+    is_literal.then_some(inner)
 }
 
 /// Whether the (non-empty) literal content renders as whitespace only,

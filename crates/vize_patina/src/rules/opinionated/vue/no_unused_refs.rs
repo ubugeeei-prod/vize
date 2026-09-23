@@ -210,7 +210,7 @@ fn token_present(source: &str, name: &str) -> bool {
     }
     let bytes = source.as_bytes();
     source.match_indices(name).any(|(index, _)| {
-        let before = index.checked_sub(1).map(|i| bytes[i]);
+        let before = index.checked_sub(1).and_then(|i| bytes.get(i).copied());
         let after = bytes.get(index + name.len()).copied();
         is_token_boundary(before) && is_token_boundary(after)
     })
@@ -226,7 +226,7 @@ fn is_token_boundary(byte: Option<u8>) -> bool {
 fn mentions_refs_token(source: &str) -> bool {
     let bytes = source.as_bytes();
     source.match_indices("$refs").any(|(index, _)| {
-        let before = index.checked_sub(1).map(|i| bytes[i]);
+        let before = index.checked_sub(1).and_then(|i| bytes.get(i).copied());
         // `$` cannot follow an identifier char in a real `$refs`, but guard the
         // alphanumeric/underscore case anyway to avoid matching `x$refs`.
         !before.is_some_and(|b| b.is_ascii_alphanumeric() || b == b'_')
@@ -242,13 +242,13 @@ fn has_opaque_refs_access(source: &str) -> bool {
     let bytes = source.as_bytes();
     for (index, _) in source.match_indices(NEEDLE) {
         // Require a real `$refs` token (not e.g. `my$refs`).
-        let before = index.checked_sub(1).map(|i| bytes[i]);
+        let before = index.checked_sub(1).and_then(|i| bytes.get(i).copied());
         if before.is_some_and(|b| b.is_ascii_alphanumeric() || b == b'_') {
             continue;
         }
         // Inspect the first non-whitespace byte after `$refs`.
         let mut cursor = index + NEEDLE.len();
-        while cursor < bytes.len() && bytes[cursor].is_ascii_whitespace() {
+        while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
             cursor += 1;
         }
         match bytes.get(cursor).copied() {
