@@ -19,8 +19,8 @@ pub(crate) fn tokenize_expression(
     let bytes = expr.as_bytes();
     let mut i = 0;
 
-    while i < bytes.len() {
-        let c = bytes[i] as char;
+    while let Some(&byte) = bytes.get(i) {
+        let c = byte as char;
 
         // Skip whitespace
         if c.is_whitespace() {
@@ -29,19 +29,19 @@ pub(crate) fn tokenize_expression(
         }
 
         // Numbers
-        if c.is_ascii_digit()
-            || (c == '.' && i + 1 < bytes.len() && (bytes[i + 1] as char).is_ascii_digit())
-        {
+        if c.is_ascii_digit() || (c == '.' && bytes.get(i + 1).is_some_and(u8::is_ascii_digit)) {
             let start = i;
-            while i < bytes.len() {
-                let ch = bytes[i] as char;
+            let mut prev = 0u8;
+            while let Some(&next) = bytes.get(i) {
+                let ch = next as char;
                 if ch.is_ascii_digit()
                     || ch == '.'
                     || ch == 'e'
                     || ch == 'E'
                     || ch == '_'
-                    || (ch == '-' && i > start && (bytes[i - 1] == b'e' || bytes[i - 1] == b'E'))
+                    || (ch == '-' && i > start && (prev == b'e' || prev == b'E'))
                 {
+                    prev = next;
                     i += 1;
                 } else {
                     break;
@@ -52,7 +52,7 @@ pub(crate) fn tokenize_expression(
             tokens.push(AbsoluteToken {
                 line: base_line + line,
                 start: col,
-                length: utf16_len(&expr[start..i]),
+                length: utf16_len(expr.get(start..i).unwrap_or_default()),
                 token_type: TokenType::Number as u32,
                 modifiers: 0,
             });
@@ -64,8 +64,10 @@ pub(crate) fn tokenize_expression(
             let quote = c;
             let start = i;
             i += 1;
-            while i < bytes.len() && bytes[i] as char != quote {
-                if bytes[i] == b'\\' && i + 1 < bytes.len() {
+            while let Some(&next) = bytes.get(i)
+                && next as char != quote
+            {
+                if next == b'\\' && i + 1 < bytes.len() {
                     i += 2; // skip escaped char
                 } else {
                     i += 1;
@@ -74,12 +76,17 @@ pub(crate) fn tokenize_expression(
             if i < bytes.len() {
                 i += 1; // closing quote
             }
+            // An escape before a multi-byte character can leave `i` inside it;
+            // such a literal is malformed, so skip it instead of emitting garbage.
+            let Some(literal) = expr.get(start..i) else {
+                continue;
+            };
             let abs_offset = expr_offset + start;
             let (line, col) = offset_to_line_col(template, abs_offset);
             tokens.push(AbsoluteToken {
                 line: base_line + line,
                 start: col,
-                length: utf16_len(&expr[start..i]),
+                length: utf16_len(literal),
                 token_type: TokenType::String as u32,
                 modifiers: 0,
             });
@@ -89,10 +96,15 @@ pub(crate) fn tokenize_expression(
         // Identifiers and keywords
         if is_ident_start(c) {
             let start = i;
-            while i < bytes.len() && is_ident_char(bytes[i] as char) {
+            while bytes
+                .get(i)
+                .is_some_and(|&next| is_ident_char(next as char))
+            {
                 i += 1;
             }
-            let ident = &expr[start..i];
+            let Some(ident) = expr.get(start..i) else {
+                continue;
+            };
             let abs_offset = expr_offset + start;
             let (line, col) = offset_to_line_col(template, abs_offset);
 
@@ -121,14 +133,15 @@ pub(crate) fn tokenize_expression(
         if is_operator_start(c) {
             let start = i;
             // Multi-character operators: ===, !==, >=, <=, ==, !=, &&, ||, ??, ?., +=, -=, etc.
-            let op_len = operator_length(&expr[i..]);
+            let op_len = operator_length(bytes.get(i..).unwrap_or_default());
             i += op_len;
             let abs_offset = expr_offset + start;
             let (line, col) = offset_to_line_col(template, abs_offset);
             tokens.push(AbsoluteToken {
                 line: base_line + line,
                 start: col,
-                length: utf16_len(&expr[start..i]),
+                // Operators are ASCII, so the operator length is its UTF-16 length.
+                length: op_len as u32,
                 token_type: TokenType::Operator as u32,
                 modifiers: 0,
             });
@@ -148,43 +161,41 @@ fn is_operator_start(c: char) -> bool {
     )
 }
 
-/// Get the length of an operator at the start of the string.
-fn operator_length(s: &str) -> usize {
-    let bytes = s.as_bytes();
-    if bytes.len() >= 3 {
-        let three = &s[..3];
-        if matches!(
+/// Get the length of an operator at the start of the bytes.
+fn operator_length(bytes: &[u8]) -> usize {
+    if let Some(three) = bytes.get(..3)
+        && matches!(
             three,
-            "===" | "!==" | ">>>" | "<<=" | ">>=" | "&&=" | "||=" | "??="
-        ) {
-            return 3;
-        }
+            b"===" | b"!==" | b">>>" | b"<<=" | b">>=" | b"&&=" | b"||=" | b"??="
+        )
+    {
+        return 3;
     }
-    if bytes.len() >= 2 {
-        let two = &s[..2];
-        if matches!(
+    if let Some(two) = bytes.get(..2)
+        && matches!(
             two,
-            "==" | "!="
-                | "<="
-                | ">="
-                | "&&"
-                | "||"
-                | "??"
-                | "?."
-                | "++"
-                | "--"
-                | "+="
-                | "-="
-                | "*="
-                | "/="
-                | "%="
-                | "<<"
-                | ">>"
-                | "=>"
-                | "**"
-        ) {
-            return 2;
-        }
+            b"=="
+                | b"!="
+                | b"<="
+                | b">="
+                | b"&&"
+                | b"||"
+                | b"??"
+                | b"?."
+                | b"++"
+                | b"--"
+                | b"+="
+                | b"-="
+                | b"*="
+                | b"/="
+                | b"%="
+                | b"<<"
+                | b">>"
+                | b"=>"
+                | b"**"
+        )
+    {
+        return 2;
     }
     1
 }
@@ -243,16 +254,18 @@ fn looks_like_property_access(expr: &str, offset: usize) -> bool {
         return false;
     }
 
-    let bytes = expr.as_bytes();
-    let mut i = offset - 1;
+    let Some(before) = expr.as_bytes().get(..offset) else {
+        return false;
+    };
 
     // Skip whitespace
-    while i > 0 && (bytes[i] as char).is_whitespace() {
-        i -= 1;
-    }
+    let last_non_ws = before
+        .iter()
+        .rposition(|&byte| !(byte as char).is_whitespace())
+        .unwrap_or(0);
 
     // Check for dot
-    bytes[i] == b'.'
+    before.get(last_non_ws) == Some(&b'.')
 }
 
 /// Check if identifier looks like a function call.
@@ -261,17 +274,23 @@ pub(crate) fn looks_like_function_call(expr: &str, offset: usize) -> bool {
     let mut i = offset;
 
     // Skip the identifier
-    while i < bytes.len() && is_ident_char(bytes[i] as char) {
+    while bytes
+        .get(i)
+        .is_some_and(|&byte| is_ident_char(byte as char))
+    {
         i += 1;
     }
 
     // Skip whitespace
-    while i < bytes.len() && (bytes[i] as char).is_whitespace() {
+    while bytes
+        .get(i)
+        .is_some_and(|&byte| (byte as char).is_whitespace())
+    {
         i += 1;
     }
 
     // Check for opening paren
-    i < bytes.len() && bytes[i] == b'('
+    bytes.get(i) == Some(&b'(')
 }
 
 /// Extract identifiers from an expression.
@@ -298,12 +317,12 @@ pub(crate) fn extract_identifiers(expr: &str) -> Vec<(&str, usize)> {
             i += 1;
         }
 
-        if start < i {
-            let ident = &expr[start..i];
-            // Skip keywords and literals
-            if !super::encoding::is_keyword_or_literal(ident) {
-                identifiers.push((ident, start));
-            }
+        // Skip keywords and literals
+        if start < i
+            && let Some(ident) = expr.get(start..i)
+            && !super::encoding::is_keyword_or_literal(ident)
+        {
+            identifiers.push((ident, start));
         }
     }
 

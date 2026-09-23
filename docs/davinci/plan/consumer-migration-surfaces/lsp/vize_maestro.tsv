@@ -239,7 +239,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/pr
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/protocol/readiness.rs	3	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_tests.rs	343	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/selection_range/markup.rs	112	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/art.rs	294	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/art.rs	276	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/encoding.rs	13	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help.rs	180	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help/tests/fixture.rs	155	s0	S0	stage	vize_s0	preferred	1

@@ -15,9 +15,11 @@ mod encoding;
 mod expressions;
 mod style;
 mod template;
+mod template_attrs;
 mod types;
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod resident_tests;
 #[cfg(test)]
 mod tests;

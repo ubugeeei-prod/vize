@@ -12,7 +12,7 @@ pub(crate) fn collect_style_tokens(style: &str, base_line: u32, tokens: &mut Vec
     // Find v-bind() in CSS
     let pattern = "v-bind(";
     let mut pos = 0;
-    while let Some(start) = style[pos..].find(pattern) {
+    while let Some(start) = style.get(pos..).and_then(|rest| rest.find(pattern)) {
         let abs_start = pos + start;
         let (line, col) = offset_to_line_col(style, abs_start);
 
@@ -26,9 +26,9 @@ pub(crate) fn collect_style_tokens(style: &str, base_line: u32, tokens: &mut Vec
         });
 
         // Find the variable inside
-        if let Some(end) = style[abs_start + pattern.len()..].find(')') {
-            let var_start = abs_start + pattern.len();
-            let raw_var = &style[var_start..var_start + end];
+        let var_start = abs_start + pattern.len();
+        if let Some((raw_var, _)) = style.get(var_start..).and_then(|rest| rest.split_once(')')) {
+            let end = raw_var.len();
             let leading_ws = raw_var.len() - raw_var.trim_start().len();
             let trimmed = raw_var.trim();
             let leading_quote = usize::from(

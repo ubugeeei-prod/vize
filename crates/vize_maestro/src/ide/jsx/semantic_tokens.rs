@@ -68,13 +68,13 @@ impl JsxSemanticTokensService {
         for expr in &exprs {
             let start = (expr.start as usize).min(content.len());
             let end = (expr.end as usize).min(content.len());
-            if start >= end {
+            let Some(expr_text) = content.get(start..end).filter(|text| !text.is_empty()) else {
                 continue;
-            }
+            };
             // Tokenize the expression text against the whole document so the
             // emitted positions are absolute source `(line, character)` pairs;
             // `base_line` is 0 because `content` already spans from line 0.
-            tokenize_expression(&content[start..end], content, start, 0, &mut tokens);
+            tokenize_expression(expr_text, content, start, 0, &mut tokens);
         }
 
         tokens.sort_by_key(|token| (token.line, token.start));

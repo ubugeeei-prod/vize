@@ -6,6 +6,10 @@
 use super::{
     encoding::{is_ident_char, offset_to_line_col, utf16_len},
     expressions::tokenize_expression,
+    template_attrs::{
+        attribute_value, dynamic_argument_value, is_attribute_name_boundary, is_attribute_start,
+        shorthand_name_end,
+    },
     types::{AbsoluteToken, TokenType},
 };
 
@@ -51,7 +55,7 @@ fn collect_directive_tokens(template: &str, base_line: u32, tokens: &mut Vec<Abs
 
     for directive in directives {
         let mut pos = 0;
-        while let Some(found) = template[pos..].find(directive) {
+        while let Some(found) = template.get(pos..).and_then(|rest| rest.find(directive)) {
             let abs_pos = pos + found;
             let directive_end = abs_pos + directive.len();
             let is_directive_attr = is_attribute_start(template, abs_pos)
@@ -84,12 +88,12 @@ pub(crate) fn collect_interpolation_tokens(
     tokens: &mut Vec<AbsoluteToken>,
 ) {
     let mut pos = 0;
-    while let Some(start) = template[pos..].find("{{") {
+    while let Some(start) = template.get(pos..).and_then(|rest| rest.find("{{")) {
         let abs_start = pos + start;
-        if let Some(end) = template[abs_start..].find("}}") {
+        if let Some(end) = template.get(abs_start..).and_then(|rest| rest.find("}}")) {
             let expr_start = abs_start + 2;
             let expr_end = abs_start + end;
-            let expr = &template[expr_start..expr_end];
+            let expr = template.get(expr_start..expr_end).unwrap_or_default();
 
             // Tokenize the entire expression
             tokenize_expression(expr, template, expr_start, base_line, tokens);
@@ -104,7 +108,7 @@ pub(crate) fn collect_interpolation_tokens(
 /// Collect event handler tokens (@click, @input, etc.)
 fn collect_event_tokens(template: &str, base_line: u32, tokens: &mut Vec<AbsoluteToken>) {
     let mut pos = 0;
-    while let Some(start) = template[pos..].find('@') {
+    while let Some(start) = template.get(pos..).and_then(|rest| rest.find('@')) {
         let abs_start = pos + start;
         if !is_attribute_start(template, abs_start) {
             pos = abs_start + 1;
@@ -122,7 +126,7 @@ fn collect_event_tokens(template: &str, base_line: u32, tokens: &mut Vec<Absolut
             tokens.push(AbsoluteToken {
                 line: base_line + line,
                 start: col,
-                length: utf16_len(&template[abs_start..token_end]),
+                length: utf16_len(template.get(abs_start..token_end).unwrap_or_default()),
                 token_type: TokenType::Event as u32,
                 modifiers: 0,
             });
@@ -136,11 +140,11 @@ fn collect_event_tokens(template: &str, base_line: u32, tokens: &mut Vec<Absolut
 fn collect_bind_tokens(template: &str, base_line: u32, tokens: &mut Vec<AbsoluteToken>) {
     // Find :prop patterns (but not ::)
     let mut pos = 0;
-    while let Some(start) = template[pos..].find(':') {
+    while let Some(start) = template.get(pos..).and_then(|rest| rest.find(':')) {
         let abs_start = pos + start;
 
         // Skip :: (CSS pseudo-elements)
-        if abs_start + 1 < template.len() && template.as_bytes()[abs_start + 1] == b':' {
+        if template.as_bytes().get(abs_start + 1) == Some(&b':') {
             pos = abs_start + 2;
             continue;
         }
@@ -159,7 +163,7 @@ fn collect_bind_tokens(template: &str, base_line: u32, tokens: &mut Vec<Absolute
             tokens.push(AbsoluteToken {
                 line: base_line + line,
                 start: col,
-                length: utf16_len(&template[abs_start..token_end]),
+                length: utf16_len(template.get(abs_start..token_end).unwrap_or_default()),
                 token_type: TokenType::Property as u32,
                 modifiers: 0,
             });
@@ -178,16 +182,16 @@ pub(crate) fn collect_directive_expression_tokens(
     let bytes = template.as_bytes();
     let mut pos = 0;
 
-    while pos < bytes.len() {
+    while let Some(&byte) = bytes.get(pos) {
         // Look for attribute patterns
-        let attr_start = if bytes[pos] == b':' || bytes[pos] == b'@' {
+        let attr_start = if byte == b':' || byte == b'@' {
             // Shorthand :prop or @event
             if is_attribute_start(template, pos) {
                 Some(pos)
             } else {
                 None
             }
-        } else if pos + 2 < bytes.len() && bytes[pos] == b'v' && bytes[pos + 1] == b'-' {
+        } else if pos + 2 < bytes.len() && byte == b'v' && bytes.get(pos + 1) == Some(&b'-') {
             // v-* directive
             if is_attribute_start(template, pos) {
                 Some(pos)
@@ -200,12 +204,12 @@ pub(crate) fn collect_directive_expression_tokens(
 
         if let Some(start) = attr_start {
             if let Some((arg_start, arg_end)) = dynamic_argument_value(template, start) {
-                let arg = &template[arg_start..arg_end];
+                let arg = template.get(arg_start..arg_end).unwrap_or_default();
                 tokenize_expression(arg, template, arg_start, base_line, tokens);
             }
 
             if let Some((expr_start, expr_end)) = attribute_value(template, start) {
-                let expr = &template[expr_start..expr_end];
+                let expr = template.get(expr_start..expr_end).unwrap_or_default();
                 tokenize_expression(expr, template, expr_start, base_line, tokens);
 
                 pos = expr_end + 1;
@@ -214,207 +218,6 @@ pub(crate) fn collect_directive_expression_tokens(
         }
 
         pos += 1;
-    }
-}
-
-fn shorthand_name_end(
-    template: &str,
-    attr_start: usize,
-    is_plain_name_char: impl Fn(char) -> bool,
-    include_modifiers: bool,
-) -> Option<usize> {
-    let mut pos = attr_start + 1;
-    if pos >= template.len() {
-        return None;
-    }
-
-    if template[pos..].starts_with('[') {
-        pos = find_matching_square_bracket(template, pos)? + 1;
-        if include_modifiers {
-            pos = consume_modifier_suffix(template, pos);
-        }
-        return Some(pos);
-    }
-
-    let name_start = pos;
-    while pos < template.len() {
-        let ch = template[pos..].chars().next()?;
-        if !is_plain_name_char(ch) {
-            break;
-        }
-        pos += ch.len_utf8();
-    }
-
-    if pos == name_start { None } else { Some(pos) }
-}
-
-fn consume_modifier_suffix(template: &str, mut pos: usize) -> usize {
-    while pos < template.len() && template[pos..].starts_with('.') {
-        pos += 1;
-        while pos < template.len() {
-            let Some(ch) = template[pos..].chars().next() else {
-                break;
-            };
-            if !ch.is_ascii_alphanumeric() && ch != '-' && ch != '_' {
-                break;
-            }
-            pos += ch.len_utf8();
-        }
-    }
-    pos
-}
-
-fn dynamic_argument_value(template: &str, attr_start: usize) -> Option<(usize, usize)> {
-    let name_end = attribute_name_end(template, attr_start);
-    let search = &template[attr_start..name_end];
-    let bracket_offset = search.find('[')? + attr_start;
-    let bracket_end = find_matching_square_bracket(template, bracket_offset)?;
-    Some((bracket_offset + 1, bracket_end))
-}
-
-fn find_matching_square_bracket(template: &str, open_offset: usize) -> Option<usize> {
-    if !template[open_offset..].starts_with('[') {
-        return None;
-    }
-
-    let mut depth = 0i32;
-    let mut quote = None;
-    let mut prev = '\0';
-
-    for (relative, ch) in template[open_offset..].char_indices() {
-        if let Some(open_quote) = quote {
-            if ch == open_quote && prev != '\\' {
-                quote = None;
-            }
-            prev = ch;
-            continue;
-        }
-
-        match ch {
-            '"' | '\'' | '`' => quote = Some(ch),
-            '[' => depth += 1,
-            ']' => {
-                depth -= 1;
-                if depth == 0 {
-                    return Some(open_offset + relative);
-                }
-            }
-            _ => {}
-        }
-        prev = ch;
-    }
-
-    None
-}
-
-fn is_attribute_start(template: &str, offset: usize) -> bool {
-    if offset >= template.len() || !template.is_char_boundary(offset) {
-        return false;
-    }
-
-    let Some(prev) = template[..offset].chars().next_back() else {
-        return false;
-    };
-    if !prev.is_ascii_whitespace() {
-        return false;
-    }
-
-    let Some(tag_start) = template[..offset].rfind('<') else {
-        return false;
-    };
-
-    let mut quote = None;
-    for ch in template[tag_start + 1..offset].chars() {
-        if let Some(open_quote) = quote {
-            if ch == open_quote {
-                quote = None;
-            }
-            continue;
-        }
-
-        match ch {
-            '"' | '\'' => quote = Some(ch),
-            '>' => return false,
-            _ => {}
-        }
-    }
-
-    if quote.is_some() {
-        return false;
-    }
-
-    let tag_body = template[tag_start + 1..offset].trim_start();
-    !tag_body.is_empty()
-        && !tag_body.starts_with('/')
-        && !tag_body.starts_with('!')
-        && !tag_body.starts_with('?')
-}
-
-fn is_attribute_name_boundary(template: &str, offset: usize) -> bool {
-    template[offset..].chars().next().is_none_or(|ch| {
-        matches!(ch, '=' | ':' | '.' | '/' | '>' | '"' | '\'') || ch.is_ascii_whitespace()
-    })
-}
-
-fn attribute_name_end(template: &str, start: usize) -> usize {
-    let mut end = start;
-    for (relative, ch) in template[start..].char_indices() {
-        if ch == '=' || ch == '/' || ch == '>' || ch.is_ascii_whitespace() {
-            break;
-        }
-        end = start + relative + ch.len_utf8();
-    }
-    end
-}
-
-fn attribute_value(template: &str, attr_start: usize) -> Option<(usize, usize)> {
-    let mut pos = attribute_name_end(template, attr_start);
-
-    while pos < template.len() {
-        let ch = template[pos..].chars().next()?;
-        if !ch.is_ascii_whitespace() {
-            break;
-        }
-        pos += ch.len_utf8();
-    }
-
-    if template[pos..].chars().next()? != '=' {
-        return None;
-    }
-    pos += 1;
-
-    while pos < template.len() {
-        let ch = template[pos..].chars().next()?;
-        if !ch.is_ascii_whitespace() {
-            break;
-        }
-        pos += ch.len_utf8();
-    }
-
-    let quote = template.as_bytes().get(pos).copied()?;
-    if quote == b'"' || quote == b'\'' {
-        let value_start = pos + 1;
-        let quote_char = quote as char;
-        let value_end = template[value_start..].find(quote_char)? + value_start;
-        return Some((value_start, value_end));
-    }
-
-    let value_start = pos;
-    while pos < template.len() {
-        let ch = template[pos..].chars().next()?;
-        if ch.is_ascii_whitespace()
-            || ch == '>'
-            || (ch == '/' && template[pos + ch.len_utf8()..].starts_with('>'))
-        {
-            break;
-        }
-        pos += ch.len_utf8();
-    }
-
-    if pos == value_start {
-        None
-    } else {
-        Some((value_start, pos))
     }
 }
 
@@ -451,43 +254,54 @@ pub(crate) fn collect_script_tokens(script: &str, base_line: u32, tokens: &mut V
         "inject",
     ];
 
+    let modifiers = TokenModifier::encode(&[TokenModifier::DefaultLibrary]);
     // Highlight compiler macros with Macro token type
-    for macro_name in compiler_macros {
-        #[allow(clippy::disallowed_macros)]
-        let pattern = format!("{}(", macro_name);
-        let mut pos = 0;
-        while let Some(found) = script[pos..].find(pattern.as_str()) {
-            let abs_pos = pos + found;
-
-            // Check word boundary
-            let is_start = abs_pos == 0 || !is_ident_char(script.as_bytes()[abs_pos - 1] as char);
-
-            if is_start {
-                let (line, col) = offset_to_line_col(script, abs_pos);
-
-                tokens.push(AbsoluteToken {
-                    line: base_line + line,
-                    start: col,
-                    length: utf16_len(macro_name),
-                    token_type: TokenType::Macro as u32,
-                    modifiers: TokenModifier::encode(&[TokenModifier::DefaultLibrary]),
-                });
-            }
-
-            pos = abs_pos + macro_name.len();
-        }
-    }
-
+    push_call_tokens(
+        script,
+        &compiler_macros,
+        TokenType::Macro,
+        modifiers,
+        base_line,
+        tokens,
+    );
     // Highlight Vue functions with Function token type
-    for func in vue_functions {
-        #[allow(clippy::disallowed_macros)]
-        let pattern = format!("{}(", func);
+    push_call_tokens(
+        script,
+        &vue_functions,
+        TokenType::Function,
+        modifiers,
+        base_line,
+        tokens,
+    );
+}
+
+/// Push a token for every `name(` call whose name starts at a word boundary.
+fn push_call_tokens(
+    script: &str,
+    names: &[&str],
+    token_type: TokenType,
+    modifiers: u32,
+    base_line: u32,
+    tokens: &mut Vec<AbsoluteToken>,
+) {
+    for name in names {
         let mut pos = 0;
-        while let Some(found) = script[pos..].find(pattern.as_str()) {
+        while let Some(found) = script.get(pos..).and_then(|rest| rest.find(name)) {
             let abs_pos = pos + found;
+            let name_end = abs_pos + name.len();
+            if !script
+                .get(name_end..)
+                .is_some_and(|rest| rest.starts_with('('))
+            {
+                pos = abs_pos + 1;
+                continue;
+            }
 
             // Check word boundary
-            let is_start = abs_pos == 0 || !is_ident_char(script.as_bytes()[abs_pos - 1] as char);
+            let is_start = abs_pos
+                .checked_sub(1)
+                .and_then(|prev| script.as_bytes().get(prev))
+                .is_none_or(|&byte| !is_ident_char(byte as char));
 
             if is_start {
                 let (line, col) = offset_to_line_col(script, abs_pos);
@@ -495,13 +309,13 @@ pub(crate) fn collect_script_tokens(script: &str, base_line: u32, tokens: &mut V
                 tokens.push(AbsoluteToken {
                     line: base_line + line,
                     start: col,
-                    length: utf16_len(func),
-                    token_type: TokenType::Function as u32,
-                    modifiers: TokenModifier::encode(&[TokenModifier::DefaultLibrary]),
+                    length: utf16_len(name),
+                    token_type: token_type as u32,
+                    modifiers,
                 });
             }
 
-            pos = abs_pos + func.len();
+            pos = name_end;
         }
     }
 }
