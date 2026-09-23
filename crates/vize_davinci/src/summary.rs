@@ -16,10 +16,14 @@
 
 mod facet;
 mod folio;
+mod global;
 mod usage;
 
 pub use facet::schema;
 pub use facet::{Facet, SummaryError};
+pub use global::{
+    GlobalEntry, GlobalError, GlobalFacet, GlobalFacts, GlobalResolution, GlobalSummary,
+};
 pub use usage::Usage;
 
 use alloc::vec::Vec;
@@ -54,10 +58,20 @@ impl fmt::Debug for Fingerprint {
 const DOMAIN: &[u8] = b"vize.davinci.sfc-summary\0";
 
 fn fingerprint(facet: Facet, name: &str, contract: &str) -> Fingerprint {
+    digest(DOMAIN, facet.group(), facet.schema(), name, contract)
+}
+
+pub(super) fn digest(
+    domain: &[u8],
+    group: &str,
+    schema: u16,
+    name: &str,
+    contract: &str,
+) -> Fingerprint {
     let mut hasher = StableHasher128::new();
-    hasher.update(DOMAIN);
-    feed_str(&mut hasher, facet.group());
-    hasher.update(&facet.schema().to_le_bytes());
+    hasher.update(domain);
+    feed_str(&mut hasher, group);
+    hasher.update(&schema.to_le_bytes());
     feed_str(&mut hasher, name);
     feed_str(&mut hasher, contract);
     Fingerprint(hasher.digest())
