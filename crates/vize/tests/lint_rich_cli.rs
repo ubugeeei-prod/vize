@@ -89,8 +89,20 @@ fn rich_output_honors_explicit_force_color_when_piped() {
         .expect("vize runs");
     assert_eq!(output.status.code(), Some(1));
     let stdout = std::str::from_utf8(&output.stdout).expect("UTF-8 stdout");
-    assert!(stdout.starts_with("\x1b[1;91merror[vue/require-v-for-key]\x1b[0m"));
-    assert!(stdout.ends_with("\x1b[1m1 error and 0 warnings in 1 file\x1b[0m\n"));
+    assert_eq!(
+        stdout,
+        concat!(
+            "\x1b[1;91merror[vue/require-v-for-key]\x1b[0m",
+            "\x1b[1m: Elements in iteration expect to have 'v-bind:key' directives. Element: <li>\x1b[0m\n",
+            " \x1b[1;94m-->\x1b[0m src/TodoList.vue:9:9\n",
+            "  \x1b[1;94m|\x1b[0m\n",
+            "\x1b[1;94m9\x1b[0m \x1b[1;94m|\x1b[0m     <li v-for=\"todo in todos\">{{ todo.title }}</li>\n",
+            "  \x1b[1;94m|\x1b[0m         \x1b[1;91m^^^^^^^^^^^^^^^^^^^^^\x1b[0m\n",
+            "  \x1b[1;94m|\x1b[0m\n",
+            "  \x1b[1;94m=\x1b[0m \x1b[1mhelp\x1b[0m: Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\n",
+            "\n\x1b[1m1 error and 0 warnings in 1 file\x1b[0m\n",
+        )
+    );
 }
 
 #[test]
