@@ -88,7 +88,8 @@ pub(super) fn apply<S: AsRef<str>>(
         .collect();
     let resolve = |file: u32, tag: &str| -> Option<u32> {
         let file_id = ids.get(&(file as usize))?;
-        let target = analyzer.resolve_imported_component(*file_id, tag)?;
+        let target =
+            vize_croquis_cf::facts::imported_render_target(analyzer.registry(), *file_id, tag)?;
         let index = *file_indexes.get(&target)?;
         templates[index].as_ref().map(|_| index as u32)
     };

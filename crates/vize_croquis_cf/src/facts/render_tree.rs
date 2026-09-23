@@ -78,9 +78,7 @@ pub fn component_usage_targets(registry: &ModuleRegistry, caller: FileId) -> Vec
         .expect("render tree demand");
     let mut targets = Vec::new();
     for tag in source_tags(entry) {
-        let Some((target, export_name)) =
-            resolve_tag(registry, entry, entry.path.parent(), tag.as_str())
-        else {
+        let Some((target, export_name)) = resolve_tag(registry, entry, tag.as_str()) else {
             continue;
         };
         let key = RenderEdgeKey {
@@ -121,12 +119,10 @@ fn edges_of(
     entry: &ModuleEntry,
 ) -> BTreeMap<RenderEdgeKey, Vec<RenderSite>> {
     let mut grouped = BTreeMap::new();
-    let from_dir = entry.path.parent();
     for usage in vize_croquis::facts::component_usage_list(&entry.analysis) {
         push_edge(
             registry,
             entry,
-            from_dir,
             usage.name.as_str(),
             Some(RenderSite {
                 start: usage.start,
@@ -140,7 +136,7 @@ fn edges_of(
             .iter()
             .any(|usage| names_match(usage.name.as_str(), name.as_str()));
         if !covered {
-            push_edge(registry, entry, from_dir, name.as_str(), None, &mut grouped);
+            push_edge(registry, entry, name.as_str(), None, &mut grouped);
         }
     }
     for sites in grouped.values_mut() {
@@ -152,12 +148,11 @@ fn edges_of(
 fn push_edge(
     registry: &ModuleRegistry,
     entry: &ModuleEntry,
-    from_dir: Option<&Path>,
     tag: &str,
     site: Option<RenderSite>,
     grouped: &mut BTreeMap<RenderEdgeKey, Vec<RenderSite>>,
 ) {
-    let Some((target, export_name)) = resolve_tag(registry, entry, from_dir, tag) else {
+    let Some((target, export_name)) = resolve_tag(registry, entry, tag) else {
         return;
     };
     let key = RenderEdgeKey {
@@ -168,19 +163,36 @@ fn push_edge(
     grouped.entry(key).or_default().extend(site);
 }
 
+/// The file a tag renders through this file's imports, with re-exports
+/// followed. A project-wide unique name is not a resolution.
+pub fn imported_render_target(
+    registry: &ModuleRegistry,
+    caller: FileId,
+    tag: &str,
+) -> Option<FileId> {
+    let entry = registry.get(caller)?;
+    resolve_imported(registry, entry, tag).map(|(file, _)| file)
+}
+
 fn resolve_tag(
     registry: &ModuleRegistry,
     entry: &ModuleEntry,
-    from_dir: Option<&Path>,
+    tag: &str,
+) -> Option<(FileId, CompactString)> {
+    resolve_imported(registry, entry, tag).or_else(|| {
+        unique_component(registry, tag).map(|target| (target, CompactString::new("default")))
+    })
+}
+
+fn resolve_imported(
+    registry: &ModuleRegistry,
+    entry: &ModuleEntry,
     tag: &str,
 ) -> Option<(FileId, CompactString)> {
     let identity = component_identity(&entry.analysis, tag);
-    if let Some(module) = identity.module.as_deref()
-        && let Some(resolved) = resolve_module(registry, module, from_dir)
-    {
-        return follow_forwards(registry, resolved, identity.export_name, 0);
-    }
-    unique_component(registry, tag).map(|target| (target, CompactString::new("default")))
+    let module = identity.module.as_deref()?;
+    let resolved = resolve_module(registry, module, entry.path.parent())?;
+    follow_forwards(registry, resolved, identity.export_name, 0)
 }
 
 fn follow_forwards(

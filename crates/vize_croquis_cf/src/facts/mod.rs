@@ -12,7 +12,9 @@ use vize_croquis::facts::{Bindings, Demand, FactConsumer, FactGroup};
 use vize_davinci::fact::{FactManager, FactRegistry};
 
 pub(crate) use render_tree::resolve_module;
-pub use render_tree::{RenderEdgeKey, RenderSite, RenderTree, component_usage_targets};
+pub use render_tree::{
+    RenderEdgeKey, RenderSite, RenderTree, component_usage_targets, imported_render_target,
+};
 
 use crate::registry::ModuleRegistry;
 
