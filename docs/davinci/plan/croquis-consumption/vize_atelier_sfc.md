@@ -51,7 +51,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `artifact_macro_names`                    |     1 |     1 |
 | `extract_and_transform_v_bind`            |     1 |     1 |
 | `extract_and_transform_v_bind_with_scope` |     1 |     1 |
-| `find_matching_paren`                     |     2 |     2 |
+| `find_matching_paren`                     |     1 |     1 |
 | `is_builtin_component`                    |     1 |     1 |
 | `is_builtin_macro`                        |     2 |     2 |
 | `is_global_allowed`                       |     1 |     1 |

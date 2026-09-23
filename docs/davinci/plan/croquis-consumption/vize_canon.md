@@ -13,7 +13,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Analyzer`                     | type  | `analyzer`          |    42 |   160 |
 | `AnalyzerOptions`              | type  | `analyzer`          |    42 |   156 |
 | `ComponentUsage`               | type  | `croquis::template` |    20 |    44 |
-| `Croquis`                      | type  | `croquis`           |    92 |   216 |
+| `Croquis`                      | type  | `croquis`           |    92 |   215 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     1 |
@@ -54,6 +54,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | ------------------------------ | ----: | ----: |
 | `BindingType`                  |    11 |    28 |
 | `Bindings`                     |     3 |    12 |
+| `BindingsTable`                |     1 |     3 |
 | `CroquisFacts`                 |     4 |     7 |
 | `DEFINE_EMITS`                 |     1 |     1 |
 | `DEFINE_EXPOSE`                |     1 |     1 |
@@ -75,7 +76,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SfcError`                     |     2 |     2 |
 | `SfcParseOptions`              |    13 |    19 |
 | `SfcTemplateBlock`             |     2 |     2 |
-| `UndefinedRefs`                |     3 |     8 |
+| `UndefinedRefs`                |     3 |     7 |
 | `ViolationSeverity`            |     1 |     3 |
 | `WITH_DEFAULTS`                |     1 |     1 |
 | `classify_event_handler`       |     2 |     3 |
@@ -105,7 +106,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `AnalyzerOptions`         |      156 |  238 |
 | `COMPILER_MACRO_NAMES`    |        0 |    1 |
 | `ComponentUsage`          |       44 |   64 |
-| `Croquis`                 |      216 |  321 |
+| `Croquis`                 |      215 |  320 |
 | `Drawer`                  |        0 |    1 |
 | `EventHandlerScopeData`   |        9 |   16 |
 | `EventListener`           |        3 |    5 |
@@ -118,7 +119,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `ScopeId`                 |       22 |   29 |
 | `ScopeKind`               |       59 |   76 |
 | `SlotUsage`               |        1 |    3 |
-| `Span`                    |        0 |   61 |
+| `Span`                    |        0 |   62 |
 | `SpreadProp`              |        6 |   10 |
 | `Symbol`                  |        0 |    4 |
 | `SymbolId`                |        0 |    3 |
