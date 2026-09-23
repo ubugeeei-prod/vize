@@ -9,7 +9,9 @@ mod collector;
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub(super) enum TemplateQueryKind {
     CallCallee,
+    CallReturn,
     Expression,
+    ForSource,
 }
 
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -56,6 +58,18 @@ impl TemplateQuery {
             (TemplateQueryKind::CallCallee, TemplateContext::Interpolation) => {
                 "Template interpolation calls a value with an unsafe `any` or `unknown` type"
             }
+            (TemplateQueryKind::CallReturn, TemplateContext::Binding) => {
+                "Template binding resolves to an unsafe `any` or `unknown` type"
+            }
+            (TemplateQueryKind::CallReturn, TemplateContext::Directive) => {
+                "Template directive expression resolves to an unsafe `any` or `unknown` type"
+            }
+            (TemplateQueryKind::CallReturn, TemplateContext::Event) => {
+                "Template event handler resolves to an unsafe `any` or `unknown` type"
+            }
+            (TemplateQueryKind::CallReturn, TemplateContext::Interpolation) => {
+                "Template interpolation resolves to an unsafe `any` or `unknown` type"
+            }
             (TemplateQueryKind::Expression, TemplateContext::Binding) => {
                 "Template binding resolves to an unsafe `any` or `unknown` type"
             }
@@ -67,6 +81,9 @@ impl TemplateQuery {
             }
             (TemplateQueryKind::Expression, TemplateContext::Interpolation) => {
                 "Template interpolation resolves to an unsafe `any` or `unknown` type"
+            }
+            (TemplateQueryKind::ForSource, _) => {
+                "Template v-for source contains an unsafe `any` or `unknown` item type"
             }
         };
 
@@ -170,6 +187,23 @@ pub(super) fn generated_offset_for_text(
         }
     }
     virtual_ts.generated_offset(probe_offset)
+}
+
+/// Probe the inferred iterable from a `v-for` source instead of the last byte
+/// of its generated expression. A trailing call parenthesis or `as T[]` type
+/// assertion has no useful symbol type even when the iterable is fully typed.
+pub(super) fn v_for_source_binding_offset(generated: &str, expression_offset: u32) -> Option<u32> {
+    let offset = expression_offset as usize;
+    let line_start = generated.get(..offset)?.rfind('\n').map_or(0, |at| at + 1);
+    let line_end = generated
+        .get(offset..)?
+        .find('\n')
+        .map_or(generated.len(), |at| offset + at);
+    let line = generated.get(line_start..line_end)?;
+    let marker = "const __vize_v_for_source_";
+    let name_start = line.find(marker)? + "const ".len();
+    let name_end = name_start + line.get(name_start..)?.find(" = ")?;
+    u32::try_from(line_start + name_end.checked_sub(1)?).ok()
 }
 
 fn probe_offset_for_text(source_start: u32, source_text: &str) -> Option<u32> {

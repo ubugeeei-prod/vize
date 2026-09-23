@@ -284,7 +284,7 @@ defineExpose(exposed);
     <Portal v-if="present" :to :disabled="portalDisabled" :defer>
       <Presence :present="context.open.value" :force-mount>
         <Positioner v-bind="positionerProps">
-          <template #default="{ placement: positionerPlacement }">
+          <template #default="{ placement: positionerPlacement }: { placement: Placement }">
             <span
               v-if="guarded"
               ref="beforeGuard"

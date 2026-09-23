@@ -683,6 +683,88 @@ const unsafeValue: any = 'unsafe'
 }
 
 #[test]
+fn typed_v_for_sources_use_the_inferred_iterable_type() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+type Item = { readonly name: string }
+const items: readonly Item[] = [{ name: 'safe' }]
+function getNames(): string[] { return ['safe'] }
+</script>
+<template>
+  <span v-for="item in items as readonly Item[]" :key="item.name" />
+  <span v-for="name in getNames()" :key="name" />
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "TypedForSources.vue");
+    assert!(
+        !result
+            .diagnostics
+            .iter()
+            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
+        "typed v-for sources should stay safe: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn unsafe_v_for_source_still_reports() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const items: any = ['unsafe']
+</script>
+<template><span v-for="item in items" /></template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "UnsafeForSource.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING),
+        "an explicit any iterable must remain unsafe: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn slot_spread_calls_use_return_type_without_hiding_any() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+defineSlots<{ default(props: { label: string }): unknown }>()
+function typed(): { label: string } { return { label: 'safe' } }
+function unsafe(): any { return { label: 'unsafe' } }
+</script>
+<template>
+  <slot v-bind="typed()" />
+  <slot v-bind="unsafe()" />
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "SlotSpreadCalls.vue");
+    let warnings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
+        .collect();
+    assert_eq!(
+        warnings.len(),
+        1,
+        "unexpected slot spread warnings: {warnings:?}"
+    );
+    assert_eq!(
+        warnings[0].start,
+        source.find("unsafe()\" />").unwrap() as u32
+    );
+}
+
+#[test]
 fn relative_imports_keep_template_bindings_typed_across_source_directories() {
     use std::path::PathBuf;
     use vize_s0::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
