@@ -43,7 +43,10 @@ test("obsolete main validation is cancelled when the branch advances", () => {
     parse(readRepoFile(".github", "workflows", "davinci-contracts.yml")) as typeof workflow,
   ]) {
     assert.equal(candidate.concurrency?.["cancel-in-progress"], true);
-    assert.match(candidate.concurrency?.group ?? "", /github\.event\.pull_request\.number \|\| github\.ref/);
+    assert.match(
+      candidate.concurrency?.group ?? "",
+      /github\.event\.pull_request\.number \|\| github\.ref/,
+    );
     assert.doesNotMatch(candidate.concurrency?.group ?? "", /github\.sha/);
   }
 });
