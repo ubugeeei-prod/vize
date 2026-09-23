@@ -127,7 +127,6 @@ fn is_vue_file(path: &Path) -> bool {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::disallowed_methods)]
 
     use tower_lsp::lsp_types::Url;
     use vize_s0::cstr;

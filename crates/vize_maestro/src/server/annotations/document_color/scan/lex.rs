@@ -23,8 +23,11 @@ pub(super) fn is_identifier_boundary(bytes: &[u8], start: usize, region_start: u
     let Some(previous) = start.checked_sub(1) else {
         return true;
     };
-    let whitespace_start = match bytes[previous] {
-        b'\n' if previous > region_start && bytes[previous - 1] == b'\r' => previous - 1,
+    let Some(&previous_byte) = bytes.get(previous) else {
+        return true;
+    };
+    let whitespace_start = match previous_byte {
+        b'\n' if previous > region_start && bytes.get(previous - 1) == Some(&b'\r') => previous - 1,
         b'\t' | b'\n' | b'\x0c' | b'\r' | b' ' => previous,
         _ => return true,
     };
@@ -68,7 +71,7 @@ pub(super) fn is_declaration_name(
 
 fn skip_trivia(bytes: &[u8], mut cursor: usize, limit: usize) -> usize {
     loop {
-        while cursor < limit && bytes[cursor].is_ascii_whitespace() {
+        while cursor < limit && bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
             cursor += 1;
         }
         if pair_at(bytes, cursor, b"/*") {
@@ -95,13 +98,16 @@ fn comment_end(bytes: &[u8], start: usize, limit: usize) -> Option<usize> {
 }
 
 pub(super) fn skip_string(bytes: &[u8], start: usize, limit: usize) -> usize {
-    let quote = bytes[start];
+    let Some(&quote) = bytes.get(start) else {
+        return limit;
+    };
     let mut cursor = start + 1;
     while cursor < limit {
-        match bytes[cursor] {
-            b'\\' => cursor = (cursor + 2).min(limit),
-            byte if byte == quote => return cursor + 1,
-            _ => cursor += 1,
+        match bytes.get(cursor) {
+            Some(b'\\') => cursor = (cursor + 2).min(limit),
+            Some(&byte) if byte == quote => return cursor + 1,
+            Some(_) => cursor += 1,
+            None => break,
         }
     }
     limit
@@ -110,7 +116,7 @@ pub(super) fn skip_string(bytes: &[u8], start: usize, limit: usize) -> usize {
 pub(super) fn identifier_end(bytes: &[u8], start: usize, limit: usize) -> usize {
     let mut cursor = start;
     while cursor < limit {
-        if bytes[cursor] == b'\\' {
+        if bytes.get(cursor) == Some(&b'\\') {
             cursor = escape_end(bytes, cursor, limit);
         } else if is_identifier_byte(bytes.get(cursor)) {
             cursor += 1;
@@ -133,10 +139,9 @@ pub(super) fn decode_identifier(
     let mut cursor = start;
     let mut output_len = 0;
     while cursor < end {
-        let (byte, next) = if bytes[cursor] == b'\\' {
-            decoded_escape(bytes, cursor, end)
-        } else {
-            (Some(bytes[cursor]), cursor + 1)
+        let (byte, next) = match bytes.get(cursor) {
+            Some(b'\\') => decoded_escape(bytes, cursor, end),
+            byte => (byte.copied(), cursor + 1),
         };
         let byte = byte?;
         *output.get_mut(output_len)? = byte;
@@ -169,7 +174,7 @@ pub(super) fn skipped_function_end(content: &str, start: usize, limit: usize) ->
 fn escape_end(bytes: &[u8], slash: usize, limit: usize) -> usize {
     let mut cursor = slash + 1;
     let mut digits = 0;
-    while cursor < limit && digits < 6 && bytes[cursor].is_ascii_hexdigit() {
+    while cursor < limit && digits < 6 && bytes.get(cursor).is_some_and(u8::is_ascii_hexdigit) {
         cursor += 1;
         digits += 1;
     }
@@ -185,10 +190,9 @@ fn identifier_eq(bytes: &[u8], start: usize, end: usize, expected: &[u8]) -> boo
     let mut cursor = start;
     let mut expected_cursor = 0;
     while cursor < end {
-        let (byte, next) = if bytes[cursor] == b'\\' {
-            decoded_escape(bytes, cursor, end)
-        } else {
-            (Some(bytes[cursor]), cursor + 1)
+        let (byte, next) = match bytes.get(cursor) {
+            Some(b'\\') => decoded_escape(bytes, cursor, end),
+            byte => (byte.copied(), cursor + 1),
         };
         let Some(byte) = byte else {
             return false;
@@ -206,8 +210,11 @@ fn decoded_escape(bytes: &[u8], slash: usize, limit: usize) -> (Option<u8>, usiz
     let mut cursor = slash + 1;
     let mut value = 0u32;
     let mut digits = 0;
-    while cursor < limit && digits < 6 && bytes[cursor].is_ascii_hexdigit() {
-        value = value * 16 + u32::from(hex_value(bytes[cursor]));
+    while cursor < limit && digits < 6 {
+        let Some(&digit) = bytes.get(cursor).filter(|byte| byte.is_ascii_hexdigit()) else {
+            break;
+        };
+        value = value * 16 + u32::from(hex_value(digit));
         cursor += 1;
         digits += 1;
     }
@@ -244,15 +251,18 @@ pub(super) fn function_end(bytes: &[u8], open: usize, limit: usize) -> Option<us
     let mut cursor = open;
     let mut depth = 0usize;
     while cursor < limit {
+        let Some(&byte) = bytes.get(cursor) else {
+            break;
+        };
         if pair_at(bytes, cursor, b"/*") {
             cursor = comment_end(bytes, cursor, limit)?;
             continue;
         }
-        if matches!(bytes[cursor], b'\'' | b'"') {
+        if matches!(byte, b'\'' | b'"') {
             cursor = skip_string(bytes, cursor, limit);
             continue;
         }
-        match bytes[cursor] {
+        match byte {
             b'\\' => cursor = escape_end(bytes, cursor, limit),
             b'(' => {
                 depth += 1;

@@ -3,7 +3,10 @@
 //! This module intentionally stays tiny: a single-thread `block_on`, a shared
 //! timer helper, and thread-backed adapters that let blocking stdio/TCP handles
 //! satisfy `futures::io` traits without depending on Tokio.
-#![allow(clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "`thread::Builder::name` takes a std String and timer and writer wakeups share state through std Arc"
+)]
 
 use std::cmp::Ordering as CmpOrdering;
 use std::collections::BinaryHeap;
@@ -253,10 +256,11 @@ where
                 match reader.read(&mut buffer) {
                     Ok(0) => break,
                     Ok(len) => {
-                        if futures::executor::block_on(
-                            tx.send(ReadChunk::Data(buffer[..len].to_vec())),
-                        )
-                        .is_err()
+                        let Some(chunk) = buffer.get(..len) else {
+                            break;
+                        };
+                        if futures::executor::block_on(tx.send(ReadChunk::Data(chunk.to_vec())))
+                            .is_err()
                         {
                             break;
                         }
@@ -284,10 +288,15 @@ impl AsyncRead for ThreadedReader {
         }
 
         loop {
-            if self.offset < self.pending.len() {
-                let len = (self.pending.len() - self.offset).min(out.len());
-                out[..len].copy_from_slice(&self.pending[self.offset..self.offset + len]);
-                self.offset += len;
+            let this = &mut *self;
+            if let Some(pending) = this.pending.get(this.offset..)
+                && !pending.is_empty()
+            {
+                let len = pending.len().min(out.len());
+                if let (Some(dst), Some(src)) = (out.get_mut(..len), pending.get(..len)) {
+                    dst.copy_from_slice(src);
+                }
+                this.offset += len;
 
                 if self.offset == self.pending.len() {
                     self.pending.clear();
@@ -505,92 +514,4 @@ pub async fn accept_tcp(name: &str, listener: TcpListener) -> io::Result<(TcpStr
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::sync::mpsc as std_mpsc;
-
-    use futures::task::noop_waker;
-
-    struct BlockingFlushWriter {
-        writes: std_mpsc::Sender<Vec<u8>>,
-        flush_started: std_mpsc::Sender<()>,
-        flush_continue: std_mpsc::Receiver<()>,
-    }
-
-    impl Write for BlockingFlushWriter {
-        fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-            self.writes
-                .send(buf.to_vec())
-                .map_err(|_| io::Error::new(io::ErrorKind::BrokenPipe, "write log closed"))?;
-            Ok(buf.len())
-        }
-
-        fn flush(&mut self) -> io::Result<()> {
-            self.flush_started
-                .send(())
-                .map_err(|_| io::Error::new(io::ErrorKind::BrokenPipe, "flush log closed"))?;
-            self.flush_continue
-                .recv()
-                .map_err(|_| io::Error::new(io::ErrorKind::BrokenPipe, "flush gate closed"))?;
-            Ok(())
-        }
-    }
-
-    #[test]
-    fn threaded_writer_waits_for_pending_flush_before_accepting_more_writes() {
-        let (writes_tx, writes_rx) = std_mpsc::channel();
-        let (flush_started_tx, flush_started_rx) = std_mpsc::channel();
-        let (flush_continue_tx, flush_continue_rx) = std_mpsc::channel();
-        let blocking_writer = BlockingFlushWriter {
-            writes: writes_tx,
-            flush_started: flush_started_tx,
-            flush_continue: flush_continue_rx,
-        };
-        let mut writer = threaded_writer("vize-test-writer", blocking_writer).unwrap();
-        let waker = noop_waker();
-        let mut cx = Context::from_waker(&waker);
-
-        assert!(matches!(
-            Pin::new(&mut writer).poll_write(&mut cx, b"first"),
-            Poll::Ready(Ok(5))
-        ));
-        assert!(matches!(
-            Pin::new(&mut writer).poll_flush(&mut cx),
-            Poll::Pending
-        ));
-        assert_eq!(
-            writes_rx.recv_timeout(Duration::from_secs(1)).unwrap(),
-            b"first"
-        );
-        flush_started_rx
-            .recv_timeout(Duration::from_secs(1))
-            .unwrap();
-
-        assert!(matches!(
-            Pin::new(&mut writer).poll_write(&mut cx, b"second"),
-            Poll::Pending
-        ));
-        assert!(writes_rx.try_recv().is_err());
-
-        flush_continue_tx.send(()).unwrap();
-        futures::executor::block_on(futures::future::poll_fn(|cx| {
-            Pin::new(&mut writer).poll_flush(cx)
-        }))
-        .unwrap();
-
-        assert!(matches!(
-            Pin::new(&mut writer).poll_write(&mut cx, b"second"),
-            Poll::Ready(Ok(6))
-        ));
-        assert_eq!(
-            writes_rx.recv_timeout(Duration::from_secs(1)).unwrap(),
-            b"second"
-        );
-
-        drop(writer);
-        flush_started_rx
-            .recv_timeout(Duration::from_secs(1))
-            .unwrap();
-        flush_continue_tx.send(()).unwrap();
-    }
-}
+mod tests;

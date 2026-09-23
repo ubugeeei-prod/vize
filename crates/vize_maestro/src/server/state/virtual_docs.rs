@@ -159,7 +159,9 @@ impl ServerState {
                 docs.template = Some(template_doc.clone());
             }
 
-            docs.art_templates[index] = Some(template_doc);
+            if let Some(slot) = docs.art_templates.get_mut(index) {
+                *slot = Some(template_doc);
+            }
         }
 
         // Generate script_setup virtual doc using SFC parser

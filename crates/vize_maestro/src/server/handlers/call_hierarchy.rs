@@ -37,7 +37,9 @@ pub(super) async fn prepare(
             return Ok(None);
         };
 
-        let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
+        let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+            return Ok(None);
+        };
         if crate::utils::is_jsx_path(uri.path()) && !server.state.jsx_typecheck_enabled() {
             return Ok(None);
         }

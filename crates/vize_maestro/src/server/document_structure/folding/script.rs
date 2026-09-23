@@ -88,7 +88,9 @@ impl ScriptRegionCollector<'_> {
 
     fn end_braced(&mut self, pending: PendingRegion) {
         let close_line = self.advance_to(pending.close);
-        self.ranges[pending.index] = region(pending.open_line, close_line, None, None);
+        if let Some(slot) = self.ranges.get_mut(pending.index) {
+            *slot = region(pending.open_line, close_line, None, None);
+        }
     }
 
     /// AST enter/exit events follow authored source order, so this cursor only
@@ -101,10 +103,9 @@ impl ScriptRegionCollector<'_> {
         if byte_offset < self.cursor {
             return self.line;
         }
-        self.line += self.source[self.cursor..byte_offset]
-            .iter()
-            .filter(|byte| **byte == b'\n')
-            .count() as u32;
+        self.line += self.source.get(self.cursor..byte_offset).map_or(0, |span| {
+            span.iter().filter(|byte| **byte == b'\n').count() as u32
+        });
         self.cursor = byte_offset;
         self.line
     }

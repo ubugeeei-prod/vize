@@ -15,11 +15,9 @@
 //! nearest-rank p50/p95 and the maximum per feature, and of the whole wave per
 //! keystroke, in microseconds.
 
-// A measurement tool: owned std strings and formatting keep it short.
-#![allow(
-    clippy::disallowed_types,
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "a measurement tool: `to_string` keeps the owned document text short"
 )]
 
 use std::path::{Path, PathBuf};
@@ -35,10 +33,11 @@ fn main() {
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         if arg == "--keystrokes" {
-            keystrokes = args
-                .next()
-                .and_then(|n| n.parse().ok())
-                .expect("--keystrokes N");
+            let Some(count) = args.next().and_then(|n| n.parse().ok()) else {
+                eprintln!("usage: --keystrokes N");
+                std::process::exit(2);
+            };
+            keystrokes = count;
         } else {
             roots.push(PathBuf::from(arg));
         }
@@ -60,9 +59,15 @@ fn main() {
             skipped += 1;
             continue;
         };
+        let Some(uri) = std::fs::canonicalize(file)
+            .ok()
+            .and_then(|path| Url::from_file_path(path).ok())
+        else {
+            skipped += 1;
+            continue;
+        };
         measured += 1;
         let state = ServerState::new();
-        let uri = Url::from_file_path(std::fs::canonicalize(file).unwrap()).unwrap();
         for k in 0..keystrokes {
             let mut text = source.clone();
             text.push_str(if k % 2 == 0 { " " } else { "  " });
@@ -72,22 +77,22 @@ fn main() {
             state.update_virtual_docs(&uri, &text);
             let wave = [
                 time(|| {
-                    let ctx = IdeContext::new(&state, &uri, offset).expect("document is open");
-                    HoverService::hover(&ctx).is_some()
+                    IdeContext::new(&state, &uri, offset)
+                        .is_some_and(|ctx| HoverService::hover(&ctx).is_some())
                 }),
                 time(|| {
-                    let ctx = IdeContext::new(&state, &uri, offset).expect("document is open");
-                    CompletionService::complete(&ctx).is_some()
+                    IdeContext::new(&state, &uri, offset)
+                        .is_some_and(|ctx| CompletionService::complete(&ctx).is_some())
                 }),
                 time(|| {
-                    let ctx = IdeContext::new(&state, &uri, offset).expect("document is open");
-                    DefinitionService::definition(&ctx).is_some()
+                    IdeContext::new(&state, &uri, offset)
+                        .is_some_and(|ctx| DefinitionService::definition(&ctx).is_some())
                 }),
             ];
-            for (feature, micros) in wave.iter().enumerate() {
-                samples[feature].push(*micros);
+            let total: u128 = wave.iter().sum();
+            for (bucket, micros) in samples.iter_mut().zip(wave.into_iter().chain([total])) {
+                bucket.push(micros);
             }
-            samples[3].push(wave.iter().sum());
         }
     }
 
@@ -123,7 +128,7 @@ fn rank(values: &[u128], percentile: usize) -> u128 {
         return 0;
     }
     let index = (values.len() * percentile).div_ceil(100).max(1) - 1;
-    values[index]
+    values.get(index).copied().unwrap_or(0)
 }
 
 fn collect_vue(path: &Path, files: &mut Vec<PathBuf>) {

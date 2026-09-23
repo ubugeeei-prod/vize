@@ -7,6 +7,7 @@ use tower_lsp::{
 mod formatting;
 #[cfg(feature = "native")]
 mod initial_diagnostics;
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod lifecycle;
 mod requests;
 

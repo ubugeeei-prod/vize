@@ -113,11 +113,12 @@ fn is_tag_name_boundary(byte: u8) -> bool {
 }
 
 fn trim_template_range(content: &str, start: usize, end: usize) -> (usize, usize) {
-    if start >= end || end > content.len() {
+    let Some(segment) = content
+        .get(start..end)
+        .filter(|segment| !segment.is_empty())
+    else {
         return (end, end);
-    }
-
-    let segment = &content[start..end];
+    };
     let Some((first, _)) = segment.char_indices().find(|(_, ch)| !ch.is_whitespace()) else {
         return (end, end);
     };

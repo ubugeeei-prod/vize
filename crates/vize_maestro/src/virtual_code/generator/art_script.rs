@@ -200,10 +200,9 @@ fn push_statement(
     start: usize,
     end: usize,
 ) {
-    if start >= end {
+    let Some(text) = script.get(start..end) else {
         return;
-    }
-    let text = &script[start..end];
+    };
     if text.trim().is_empty() {
         return;
     }
@@ -263,7 +262,7 @@ fn contains_range(outer: (usize, usize), inner: (usize, usize)) -> bool {
 fn is_escaped(source: &str, idx: usize) -> bool {
     let mut count = 0usize;
     let mut pos = idx;
-    while pos > 0 && source.as_bytes()[pos - 1] == b'\\' {
+    while pos > 0 && source.as_bytes().get(pos - 1) == Some(&b'\\') {
         count += 1;
         pos -= 1;
     }

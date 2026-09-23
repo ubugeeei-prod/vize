@@ -1,5 +1,8 @@
 //! LSP server capabilities declaration.
-#![allow(clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "lsp_types fields store std String"
+)]
 
 use tower_lsp::lsp_types::{
     CallHierarchyServerCapability, CodeActionKind, CodeActionOptions, CodeActionProviderCapability,

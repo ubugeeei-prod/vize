@@ -37,7 +37,10 @@ fn is_declaration_uri(uri: &Url) -> bool {
 
 #[cfg(test)]
 mod tests {
-    #![allow(clippy::disallowed_methods)]
+    #![expect(
+        clippy::disallowed_methods,
+        reason = "lsp_types fields store std String"
+    )]
 
     use super::{ServerState, Url, open_typecheck_dependents};
 

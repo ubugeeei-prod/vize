@@ -3,6 +3,8 @@
 //! The scaling half lives in [`super::corsa_overlays_perf_tests`], which
 //! reuses the fixtures below.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::path::PathBuf;
 use std::sync::Arc;
 

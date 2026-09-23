@@ -1,5 +1,4 @@
 //! LSP protocol handler implementations.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
 
 use tower_lsp::{
     LanguageServer,
@@ -76,8 +75,8 @@ impl LanguageServer for MaestroServer {
         Ok(InitializeResult {
             capabilities: server_capabilities(self.state.lsp_features()),
             server_info: Some(ServerInfo {
-                name: "vize-maestro".to_string(),
-                version: Some(env!("CARGO_PKG_VERSION").to_string()),
+                name: "vize-maestro".to_owned(),
+                version: Some(env!("CARGO_PKG_VERSION").to_owned()),
             }),
         })
     }
@@ -132,11 +131,11 @@ impl LanguageServer for MaestroServer {
         let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+        let Some(ctx) = position_to_offset(&content, position.line, position.character)
+            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
+        else {
             return Ok(None);
         };
-
-        let ctx = IdeContext::new(&self.state, uri, offset).expect("document is open");
 
         // Type-aware hover for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         // Routed before the SFC path since JSX documents never produce an SFC
@@ -178,11 +177,11 @@ impl LanguageServer for MaestroServer {
         let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+        let Some(ctx) = position_to_offset(&content, position.line, position.character)
+            .and_then(|offset| IdeContext::at_completion(&self.state, uri, offset))
+        else {
             return Ok(None);
         };
-
-        let ctx = IdeContext::at_completion(&self.state, uri, offset).expect("document is open");
         // JSX completion is opt-in so React remains untouched.
         #[cfg(feature = "native")]
         if crate::utils::is_jsx_path(uri.path()) {
@@ -281,11 +280,11 @@ impl LanguageServer for MaestroServer {
         let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+        let Some(ctx) = position_to_offset(&content, position.line, position.character)
+            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
+        else {
             return Ok(None);
         };
-
-        let ctx = IdeContext::new(&self.state, uri, offset).expect("document is open");
 
         Ok(DocumentHighlightService::highlights(&ctx))
     }
@@ -321,11 +320,11 @@ impl LanguageServer for MaestroServer {
         let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+        let Some(ctx) = position_to_offset(&content, position.line, position.character)
+            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
+        else {
             return Ok(None);
         };
-
-        let ctx = IdeContext::new(&self.state, uri, offset).expect("document is open");
 
         // Type-aware prepare-rename for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         #[cfg(feature = "native")]
@@ -361,11 +360,11 @@ impl LanguageServer for MaestroServer {
         let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
+        let Some(ctx) = position_to_offset(&content, position.line, position.character)
+            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
+        else {
             return Ok(None);
         };
-
-        let ctx = IdeContext::new(&self.state, uri, offset).expect("document is open");
 
         // Type-aware rename for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
         #[cfg(feature = "native")]
@@ -634,4 +633,5 @@ impl LanguageServer for MaestroServer {
 }
 
 #[cfg(test)]
+#[expect(clippy::disallowed_methods, reason = "fixtures use std String")]
 mod tests;

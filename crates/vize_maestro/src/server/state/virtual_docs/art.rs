@@ -52,7 +52,9 @@ pub(super) fn add_inline_art_template_virtual_docs(
                     .to_string(),
             );
 
-            docs.art_templates[current_variant_index] = Some(template_doc);
+            if let Some(slot) = docs.art_templates.get_mut(current_variant_index) {
+                *slot = Some(template_doc);
+            }
         }
     }
 }

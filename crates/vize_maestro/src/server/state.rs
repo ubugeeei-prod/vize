@@ -1,5 +1,9 @@
 //! Server state management.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "lsp_types fields store std String; shared state lives in std Arc"
+)]
 
 mod art_template_context;
 mod config;
@@ -39,11 +43,9 @@ use vize_s0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 use vize_s0::dialect::VueDialect;
 
 #[cfg(feature = "native")]
-use std::sync::OnceLock;
-
-#[cfg(feature = "native")]
 use futures::lock::Mutex as AsyncMutex;
-
+#[cfg(feature = "native")]
+use std::sync::OnceLock;
 #[cfg(feature = "native")]
 use vize_canon::{BatchTypeChecker, CorsaBridge};
 

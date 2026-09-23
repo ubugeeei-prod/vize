@@ -18,6 +18,10 @@ pub(super) fn service_with_options(
     service
 }
 
+#[expect(
+    clippy::disallowed_types,
+    reason = "serde_json::Map keys are std String"
+)]
 pub(super) fn quiet_options(
     mut overrides: serde_json::Map<String, serde_json::Value>,
 ) -> serde_json::Value {

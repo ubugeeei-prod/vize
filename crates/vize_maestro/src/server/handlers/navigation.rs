@@ -42,7 +42,9 @@ pub(super) async fn goto_definition(
         return Ok(None);
     };
 
-    let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
+    let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+        return Ok(None);
+    };
 
     // Type-aware go-to-definition for `.jsx`/`.tsx` (opt-in
     // `typeChecker.jsxTypecheck`). React `.tsx` is untouched when off.
@@ -93,7 +95,9 @@ pub(super) async fn goto_type_definition(
             return Ok(None);
         };
 
-        let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
+        let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+            return Ok(None);
+        };
 
         if crate::utils::is_jsx_path(uri.path()) {
             if server.state.jsx_typecheck_enabled() {
@@ -138,7 +142,9 @@ pub(super) async fn goto_declaration(
             return Ok(None);
         };
 
-        let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
+        let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+            return Ok(None);
+        };
 
         if crate::utils::is_jsx_path(uri.path()) {
             if server.state.jsx_typecheck_enabled() {
@@ -179,7 +185,9 @@ pub(super) async fn goto_implementation(
             return Ok(None);
         };
 
-        let ctx = IdeContext::new(&server.state, uri, offset).expect("document is open");
+        let Some(ctx) = IdeContext::new(&server.state, uri, offset) else {
+            return Ok(None);
+        };
 
         if crate::utils::is_jsx_path(uri.path()) {
             if server.state.jsx_typecheck_enabled() {

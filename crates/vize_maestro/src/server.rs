@@ -44,7 +44,10 @@ pub struct MaestroServer {
     /// LSP client for sending notifications
     client: Client,
     /// Server state
-    #[allow(clippy::disallowed_types)] // Shared only with the single diagnostics worker.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "shared only with the single diagnostics worker"
+    )]
     state: std::sync::Arc<ServerState>,
     /// Single background lane for the type-diagnostic work scheduled by
     /// `didOpen`. Keeping the sender on the foreground server lets the worker
@@ -55,7 +58,10 @@ pub struct MaestroServer {
 
 impl MaestroServer {
     /// Create a new Maestro server instance.
-    #[allow(clippy::disallowed_types)] // One diagnostics worker shares the live server state.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "one diagnostics worker shares the live server state"
+    )]
     pub fn new(client: Client) -> Self {
         let state = std::sync::Arc::new(ServerState::new());
 

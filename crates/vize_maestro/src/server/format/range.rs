@@ -63,8 +63,13 @@ pub(crate) fn format_range(
         if selection_start > authored_end || authored_start > selection_end {
             continue;
         }
-        let new_text = &formatted.code[target_start..target_end];
-        if new_text == &content[authored_start..authored_end] {
+        let (Some(new_text), Some(authored_text)) = (
+            formatted.code.get(target_start..target_end),
+            content.get(authored_start..authored_end),
+        ) else {
+            continue;
+        };
+        if new_text == authored_text {
             continue;
         }
         edits.push(TextEdit {
@@ -72,8 +77,7 @@ pub(crate) fn format_range(
                 start: offset_position(content, authored_start),
                 end: offset_position(content, authored_end),
             },
-            #[allow(clippy::disallowed_methods)]
-            new_text: new_text.to_string(),
+            new_text: new_text.to_owned(),
         });
     }
 

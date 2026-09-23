@@ -7,7 +7,10 @@
 //! `handlers.rs`, which is already over the per-file length budget) makes that
 //! shared contract explicit, the same way `document_structure` groups folding
 //! and selection ranges.
-#![allow(clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "lsp_types fields store std String"
+)]
 
 mod document_color;
 

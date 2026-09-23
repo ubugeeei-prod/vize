@@ -99,7 +99,7 @@ impl DocumentText {
             .ignored_breaks
             .partition_point(|entry| entry.after <= end);
         self.ignored_breaks.drain(first..last);
-        for entry in &mut self.ignored_breaks[first..] {
+        for entry in self.ignored_breaks.iter_mut().skip(first) {
             entry.after = entry.after - end + start + inserted.len();
         }
         self.ignored_breaks.insert_many(
@@ -143,9 +143,9 @@ fn ignored_break_ends(source: &str, scan_unicode: bool) -> impl Iterator<Item = 
         .peekable();
     let unicode_bytes = if scan_unicode { bytes } else { &[] };
     let mut unicode = memchr::memchr2_iter(0xc2, 0xe2, unicode_bytes)
-        .filter_map(|at| match &unicode_bytes[at..] {
-            [0xc2, 0x85, ..] => Some(at + 2),
-            [0xe2, 0x80, 0xa8 | 0xa9, ..] => Some(at + 3),
+        .filter_map(|at| match unicode_bytes.get(at..) {
+            Some([0xc2, 0x85, ..]) => Some(at + 2),
+            Some([0xe2, 0x80, 0xa8 | 0xa9, ..]) => Some(at + 3),
             _ => None,
         })
         .peekable();
@@ -159,4 +159,5 @@ fn ignored_break_ends(source: &str, scan_unicode: bool) -> impl Iterator<Item = 
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

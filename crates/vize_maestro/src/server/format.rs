@@ -42,7 +42,10 @@ pub(crate) fn format_document(
             start: Position::new(0, 0),
             end: eof_position(content),
         },
-        #[allow(clippy::disallowed_methods)]
+        #[expect(
+            clippy::disallowed_methods,
+            reason = "lsp_types fields store std String"
+        )]
         new_text: formatted.code.to_string(),
     }])
 }
@@ -71,7 +74,10 @@ fn eof_position(content: &str) -> Position {
 // `insta`'s snapshot macros expand through the disallowed `std::format!`; the
 // expansion is inside `insta`, so only an allow at the test module can silence
 // it. See CONTRIBUTING.md, "Snapshot assertions in test targets".
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "lsp_types fields store std String"
+)]
 #[cfg(all(test, feature = "glyph"))]
 mod tests {
     use super::{eof_position, format_document};

@@ -1,7 +1,10 @@
 //! Virtual code generator that transforms SFC into virtual documents.
 //!
 //! Uses arena allocation from vize_s0 for optimal performance.
-#![allow(clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "VirtualDocument fields store std String"
+)]
 
 mod art_script;
 mod binding;
@@ -9,15 +12,14 @@ mod block;
 mod checker_document;
 mod inline_art;
 
-// Both test modules below: `insta`'s snapshot macros expand through the
-// disallowed `std::format!`, and the expansion is inside `insta`, so only an
-// allow at the test module can silence it. See CONTRIBUTING.md, "Snapshot
-// assertions in test targets".
-#[allow(clippy::disallowed_macros)]
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
-#[allow(clippy::disallowed_macros)]
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "`insta` snapshot macros expand through `std::format!`; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""
+)]
 mod tests_semantic_bindings;
 
 use vize_atelier_sfc::SfcDescriptor;
@@ -88,7 +90,10 @@ impl VirtualCodeGenerator {
             let (ast, _errors) = vize_armature::parse(&allocator, template_content);
             template_expressions = extract_expressions(&ast);
             docs.template = Some(checker_document::template_document(
-                descriptor, &ast, base_uri,
+                descriptor,
+                &ast,
+                template.loc.start as u32,
+                base_uri,
             ));
         }
 
@@ -144,7 +149,10 @@ impl VirtualCodeGenerator {
             let (ast, _errors) = vize_armature::parse(allocator, template_content);
             template_expressions = extract_expressions(&ast);
             docs.template = Some(checker_document::template_document(
-                descriptor, &ast, base_uri,
+                descriptor,
+                &ast,
+                template.loc.start as u32,
+                base_uri,
             ));
         }
 

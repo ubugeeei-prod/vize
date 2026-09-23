@@ -2,7 +2,11 @@
 //!
 //! Provides block snippet completions, lint hover info, and
 //! diagnostic publishing utilities.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "lsp_types fields store std String"
+)]
 
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, DiagnosticSeverity, Hover, HoverContents, InsertTextFormat,
@@ -242,12 +246,12 @@ impl MaestroServer {
                 append!(markdown, "### {severity_icon} {rule}\n\n");
             }
 
-            let parts: Vec<&str> = diag.message.split("\n\nHelp: ").collect();
-            markdown.push_str(parts[0]);
+            let mut parts = diag.message.split("\n\nHelp: ");
+            markdown.push_str(parts.next().unwrap_or_default());
             markdown.push_str("\n\n");
 
-            if parts.len() > 1 {
-                append!(markdown, "**Help:** {}\n\n", parts[1]);
+            if let Some(help) = parts.next() {
+                append!(markdown, "**Help:** {help}\n\n");
             }
 
             if let Some(ref code_desc) = diag.code_description {

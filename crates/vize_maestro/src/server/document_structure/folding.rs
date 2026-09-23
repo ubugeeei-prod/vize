@@ -112,7 +112,11 @@ impl AuthoredLineMap {
     }
 
     fn line_at(&self, byte_offset: usize) -> u32 {
-        self.lines[byte_offset.min(self.lines.len() - 1)]
+        self.lines
+            .get(byte_offset)
+            .or_else(|| self.lines.last())
+            .copied()
+            .unwrap_or_default()
     }
 }
 
@@ -153,53 +157,61 @@ struct OpenElement<'a> {
 fn markup_regions(content: &str, region_span: (usize, usize)) -> Vec<FoldingRange> {
     let (region_start, region_end) = region_span;
     let bytes = content.as_bytes();
-    let mut line = newlines(&content[..region_start]);
+    let mut line = newlines(bytes, 0, region_start);
     let mut stack: Vec<OpenElement<'_>> = Vec::new();
     let mut ranges = Vec::new();
     let mut cursor = region_start;
 
     while cursor < region_end {
-        if bytes[cursor] == b'\n' {
-            line += 1;
-            cursor += 1;
-            continue;
+        match bytes.get(cursor) {
+            Some(b'\n') => {
+                line += 1;
+                cursor += 1;
+                continue;
+            }
+            Some(b'<') => {}
+            Some(_) => {
+                cursor += 1;
+                continue;
+            }
+            None => break,
         }
-        if bytes[cursor] != b'<' {
-            cursor += 1;
-            continue;
-        }
+        let rest = content.get(cursor..region_end).unwrap_or_default();
 
-        if content[cursor..region_end].starts_with("<!--") {
-            let close = content[cursor..region_end]
+        if rest.starts_with("<!--") {
+            let close = rest
                 .find("-->")
                 .map_or(region_end, |relative| cursor + relative);
-            let close_line = line + newlines(&content[cursor..close]);
+            let close_line = line + newlines(bytes, cursor, close);
             if let Some(range) = region(line, close_line, Some(FoldingRangeKind::Comment), None) {
                 ranges.push(range);
             }
             let past = (close + 3).min(region_end);
-            line = close_line + newlines(&content[close..past]);
+            line = close_line + newlines(bytes, close, past);
             cursor = past;
             continue;
         }
 
         if bytes.get(cursor + 1) == Some(&b'/') {
             let name_start = cursor + 2;
-            let name = &content[name_start..tag_name_end(bytes, name_start, region_end)];
+            let name = content
+                .get(name_start..tag_name_end(bytes, name_start, region_end))
+                .unwrap_or_default();
             // `rposition` recovers from unclosed inner elements: the nearest
             // matching open tag wins, and everything above it is dropped
             // unfolded because it never got a closing line.
             if let Some(index) = stack.iter().rposition(|open| open.name == name) {
-                let open = &stack[index];
-                if let Some(range) = region(open.open_line, line, None, None) {
+                if let Some(open) = stack.get(index)
+                    && let Some(range) = region(open.open_line, line, None, None)
+                {
                     ranges.push(range);
                 }
                 stack.truncate(index);
             }
-            let past = content[cursor..region_end]
+            let past = rest
                 .find('>')
                 .map_or(region_end, |relative| cursor + relative + 1);
-            line += newlines(&content[cursor..past]);
+            line += newlines(bytes, cursor, past);
             cursor = past;
             continue;
         }
@@ -214,15 +226,17 @@ fn markup_regions(content: &str, region_span: (usize, usize)) -> Vec<FoldingRang
             break;
         };
 
-        let name = &content[name_start..name_end];
-        let self_closing = content[..tag_end - 1].trim_end().ends_with('/');
+        let name = content.get(name_start..name_end).unwrap_or_default();
+        let self_closing = content
+            .get(..tag_end - 1)
+            .is_some_and(|head| head.trim_end().ends_with('/'));
         if !self_closing && !vize_s0::is_void_tag(name) {
             stack.push(OpenElement {
                 name,
                 open_line: line,
             });
         }
-        line += newlines(&content[cursor..tag_end]);
+        line += newlines(bytes, cursor, tag_end);
         cursor = tag_end;
     }
 
@@ -234,14 +248,18 @@ fn markup_regions(content: &str, region_span: (usize, usize)) -> Vec<FoldingRang
 }
 
 #[inline]
-fn newlines(text: &str) -> u32 {
-    text.bytes().filter(|byte| *byte == b'\n').count() as u32
+fn newlines(bytes: &[u8], start: usize, end: usize) -> u32 {
+    bytes.get(start..end).map_or(0, |span| {
+        span.iter().filter(|byte| **byte == b'\n').count() as u32
+    })
 }
 
 fn tag_name_end(bytes: &[u8], name_start: usize, limit: usize) -> usize {
     let mut end = name_start;
     while end < limit
-        && (bytes[end].is_ascii_alphanumeric() || matches!(bytes[end], b'-' | b'_' | b'.' | b':'))
+        && bytes.get(end).is_some_and(|byte| {
+            byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b':')
+        })
     {
         end += 1;
     }
@@ -255,7 +273,9 @@ fn start_tag_end(content: &str, tag_start: usize, limit: usize) -> Option<usize>
     let mut quote: Option<u8> = None;
 
     while cursor < limit {
-        let byte = bytes[cursor];
+        let Some(&byte) = bytes.get(cursor) else {
+            break;
+        };
         match quote {
             Some(open) if byte == open => quote = None,
             Some(_) => {}

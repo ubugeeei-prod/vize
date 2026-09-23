@@ -13,7 +13,11 @@
 //! JavaScript expression, not CSS, and is left alone.
 //!
 //! Ranges are authored `.vue` coordinates, never virtual TypeScript.
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "lsp_types fields store std String"
+)]
 
 mod named;
 mod scan;
@@ -150,7 +154,10 @@ fn static_style_attributes(content: &str, region: (usize, usize)) -> Vec<(usize,
     let mut spans = Vec::new();
     let mut cursor = region_start;
 
-    while let Some(relative) = content[cursor..region_end].find("style") {
+    while let Some(relative) = content
+        .get(cursor..region_end)
+        .and_then(|rest| rest.find("style"))
+    {
         let name_start = cursor + relative;
         cursor = name_start + "style".len();
 
@@ -170,7 +177,10 @@ fn static_style_attributes(content: &str, region: (usize, usize)) -> Vec<(usize,
             _ => continue,
         };
         let value_start = cursor + 2;
-        let Some(relative_end) = content[value_start..region_end].find(quote as char) else {
+        let Some(relative_end) = content
+            .get(value_start..region_end)
+            .and_then(|value| value.find(quote as char))
+        else {
             break;
         };
         let value_end = value_start + relative_end;

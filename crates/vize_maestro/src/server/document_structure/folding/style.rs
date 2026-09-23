@@ -42,8 +42,7 @@ fn collect_style_regions(
     let mut ranges = Vec::new();
     let mut cursor = 0;
 
-    while cursor < bytes.len() {
-        let byte = bytes[cursor];
+    while let Some(&byte) = bytes.get(cursor) {
         match state {
             ScanState::Code => {
                 // A URL payload is opaque: `https://`, braces, and quotes in
@@ -77,8 +76,10 @@ fn collect_style_regions(
                         cursor += 1;
                     }
                     b'}' => {
-                        if let Some((open_line, index)) = stack.pop() {
-                            ranges[index] = region(open_line, line, None, None);
+                        if let Some((open_line, index)) = stack.pop()
+                            && let Some(slot) = ranges.get_mut(index)
+                        {
+                            *slot = region(open_line, line, None, None);
                         }
                         cursor += 1;
                     }
@@ -135,7 +136,10 @@ pub(super) fn style_regions_with_metrics(
 }
 
 fn url_open_paren(bytes: &[u8], cursor: usize) -> Option<usize> {
-    if cursor > 0 && is_identifier_byte(bytes[cursor - 1]) {
+    if bytes
+        .get(cursor.wrapping_sub(1))
+        .is_some_and(|byte| is_identifier_byte(*byte))
+    {
         return None;
     }
     if !bytes.get(cursor..cursor + 3)?.eq_ignore_ascii_case(b"url") {
@@ -165,8 +169,7 @@ fn is_identifier_byte(byte: u8) -> bool {
 fn skip_url(bytes: &[u8], cursor: &mut usize, line: &mut u32) {
     let mut quote = None;
     let mut depth = 1;
-    while *cursor < bytes.len() {
-        let byte = bytes[*cursor];
+    while let Some(&byte) = bytes.get(*cursor) {
         match quote {
             Some(_) if byte == b'\\' => skip_escape(bytes, cursor, line),
             Some(open) if byte == open => {
@@ -204,10 +207,9 @@ fn skip_url(bytes: &[u8], cursor: &mut usize, line: &mut u32) {
 }
 
 fn advance_to(bytes: &[u8], cursor: &mut usize, end: usize, line: &mut u32) {
-    *line += bytes[*cursor..end]
-        .iter()
-        .filter(|byte| **byte == b'\n')
-        .count() as u32;
+    *line += bytes.get(*cursor..end).map_or(0, |span| {
+        span.iter().filter(|byte| **byte == b'\n').count() as u32
+    });
     *cursor = end;
 }
 

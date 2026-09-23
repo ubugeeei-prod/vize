@@ -1,7 +1,11 @@
 //! Script virtual code generation.
 //!
 //! Preserves script content and generates bindings export for template.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "VirtualDocument fields store std String"
+)]
 
 use vize_atelier_sfc::SfcScriptBlock;
 use vize_croquis::{Drawer, DrawerOptions};

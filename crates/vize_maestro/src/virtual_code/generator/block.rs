@@ -283,9 +283,9 @@ fn find_variant_template_body_range(
         return None;
     }
 
-    let tag_end = source[variant_start..variant_end].find('>')? + variant_start;
+    let tag_end = source.get(variant_start..variant_end)?.find('>')? + variant_start;
     let body_start = tag_end + 1;
-    let close_start = source[body_start..variant_end].rfind("</variant>")? + body_start;
+    let close_start = source.get(body_start..variant_end)?.rfind("</variant>")? + body_start;
 
     Some((body_start, close_start))
 }

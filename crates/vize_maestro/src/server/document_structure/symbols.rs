@@ -5,7 +5,11 @@
 //! and selection ranges read.
 // `DocumentSymbol::deprecated` is deprecated in the LSP crate but still part of
 // the struct literal.
-#![allow(deprecated, clippy::disallowed_methods)]
+#![expect(
+    deprecated,
+    clippy::disallowed_methods,
+    reason = "lsp_types still requires the deprecated `DocumentSymbol::deprecated` field; lsp_types fields store std String"
+)]
 
 use tower_lsp::lsp_types::{
     DocumentSymbol, DocumentSymbolParams, DocumentSymbolResponse, Position, Range, SymbolKind,
@@ -98,7 +102,10 @@ pub(crate) fn document_symbols(
 
     for (i, style) in descriptor.styles.iter().enumerate() {
         let (range, selection_range) = block_ranges(&line_index, &style.loc, "style");
-        #[allow(clippy::disallowed_macros)]
+        #[expect(
+            clippy::disallowed_macros,
+            reason = "lsp_types fields store std String"
+        )]
         let name = if let Some(ref module) = style.module {
             format!("style module={}", module)
         } else if style.scoped {

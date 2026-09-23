@@ -1,7 +1,11 @@
 //! Style virtual code generation.
 //!
 //! Preserves style content with 1:1 source mapping for CSS features.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "VirtualDocument fields store std String"
+)]
 
 use vize_atelier_sfc::SfcStyleBlock;
 

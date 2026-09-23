@@ -10,7 +10,7 @@ pub(super) fn literal(
 ) -> Option<ColorLiteral> {
     let arguments_start = identifier_end + 1;
     let end = super::lex::function_end(content.as_bytes(), identifier_end, limit)?;
-    let arguments = normalize_comments(&content[arguments_start..end - 1])?;
+    let arguments = normalize_comments(content.get(arguments_start..end.checked_sub(1)?)?)?;
     let (hue, saturation, lightness, alpha) = components(&arguments)?;
     let [red, green, blue] = to_rgb(hue, saturation, lightness);
     Some(ColorLiteral {
@@ -69,9 +69,10 @@ fn hue(part: &str) -> Option<f32> {
     ]
     .into_iter()
     .find_map(|(unit, factor)| {
-        part.get(part.len().checked_sub(unit.len())?..)
-            .is_some_and(|suffix| suffix.eq_ignore_ascii_case(unit))
-            .then(|| (&part[..part.len() - unit.len()], factor))
+        let (number, suffix) = part.split_at_checked(part.len().checked_sub(unit.len())?)?;
+        suffix
+            .eq_ignore_ascii_case(unit)
+            .then_some((number, factor))
     })
     .unwrap_or((part, 1.0));
     let degrees = super::rgb::parse_css_number(number)? * factor;
@@ -124,14 +125,14 @@ fn is_css_whitespace(character: char) -> bool {
 fn normalize_comments(arguments: &str) -> Option<String> {
     let mut normalized = String::with_capacity(arguments.len());
     let mut cursor = 0;
-    while cursor < arguments.len() {
-        if arguments[cursor..].starts_with("/*") {
-            let close = arguments[cursor + 2..].find("*/")? + cursor + 2;
+    while let Some(rest) = arguments.get(cursor..).filter(|rest| !rest.is_empty()) {
+        if let Some(comment) = rest.strip_prefix("/*") {
+            let close = comment.find("*/")? + cursor + 2;
             normalized.push(' ');
             cursor = close + 2;
             continue;
         }
-        let character = arguments[cursor..].chars().next()?;
+        let character = rest.chars().next()?;
         normalized.push(character);
         cursor += character.len_utf8();
     }

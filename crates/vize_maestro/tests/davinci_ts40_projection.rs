@@ -4,13 +4,24 @@
 //! Canon and the content mapper keep their own producers. This is not evidence
 //! that S2 owns the projection.
 
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 mod davinci_ts40_projection_support;
 
 use davinci_ts40_projection_support::{Drift, capture_fixture, load_matrix, verify_exact};
 use vize_s0::{String, cstr};
 
 #[test]
-#[allow(clippy::disallowed_macros)] // `insta` expands to `format!`.
+#[expect(
+    clippy::disallowed_macros,
+    reason = "`insta` expands to `std::format!`; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""
+)]
 fn current_projection_matrix_is_exact_and_non_empty() {
     let matrix = load_matrix();
     assert!(

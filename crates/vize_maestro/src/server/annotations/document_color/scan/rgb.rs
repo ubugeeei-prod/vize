@@ -7,7 +7,9 @@ pub(super) fn is_function_name(content: &str, start: usize, end: usize) -> bool 
     let Some(len) = decode_identifier(content.as_bytes(), start, end, &mut decoded) else {
         return false;
     };
-    decoded[..len].eq_ignore_ascii_case(b"rgb") || decoded[..len].eq_ignore_ascii_case(b"rgba")
+    decoded
+        .get(..len)
+        .is_some_and(|name| name.eq_ignore_ascii_case(b"rgb") || name.eq_ignore_ascii_case(b"rgba"))
 }
 
 /// Comma- or space-separated notation with an optional alpha after `,` or `/`.
@@ -20,10 +22,11 @@ pub(super) fn literal(
     #[cfg(test)]
     super::RGB_PROBES.set(super::RGB_PROBES.get() + 1);
     let arguments_start = identifier_end + 1;
-    let close = content[arguments_start..limit].find(')')? + arguments_start;
+    let close = content.get(arguments_start..limit)?.find(')')? + arguments_start;
     let end = close + 1;
 
-    let mut components = content[arguments_start..close]
+    let mut components = content
+        .get(arguments_start..close)?
         .split(|ch: char| ch == ',' || ch == '/' || ch.is_ascii_whitespace())
         .filter(|part| !part.is_empty());
     let red = channel(components.next()?, 255.0)?;

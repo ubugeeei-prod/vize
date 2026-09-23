@@ -90,12 +90,18 @@ impl PendingInitialDiagnostics {
 
 pub(super) struct InitialDiagnosticsScheduler {
     sender: Option<mpsc::SyncSender<()>>,
-    #[allow(clippy::disallowed_types)] // Shared only with the single diagnostics worker.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "shared only with the single diagnostics worker"
+    )]
     pending: std::sync::Arc<Mutex<PendingInitialDiagnostics>>,
 }
 
 impl InitialDiagnosticsScheduler {
-    #[allow(clippy::disallowed_types)] // One bounded queue is shared with its worker thread.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "one bounded queue is shared with its worker thread"
+    )]
     pub(super) fn new(mut worker: MaestroServer) -> Self {
         // The channel carries only a wake token. The authoritative queue keeps
         // at most one pending version per URI, so repeated opens cannot build
@@ -253,7 +259,10 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::disallowed_macros)] // Test-only URI generation stays local and explicit.
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "test-only URI generation stays local and explicit"
+    )]
     fn pending_jobs_evict_the_oldest_uri_at_capacity() {
         let now = Instant::now();
         let mut pending = PendingInitialDiagnostics::default();
@@ -270,6 +279,6 @@ mod tests {
 
         assert_eq!(pending.jobs.len(), MAX_PENDING_DOCUMENTS);
         assert!(!pending.jobs.contains_key(&oldest));
-        assert_eq!(pending.jobs.get(&newest).unwrap().version, 99);
+        assert_eq!(pending.jobs[&newest].version, 99);
     }
 }

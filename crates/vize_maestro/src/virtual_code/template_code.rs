@@ -2,7 +2,11 @@
 //!
 //! The editor template document is the checker virtual TypeScript. This module
 //! only lists the expressions a `<script setup>` export set needs.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "VirtualDocument fields store std String"
+)]
 
 use vize_armature::RootNode;
 use vize_relief::{DirectiveNode, ExpressionNode, PropNode, SourceLocation, TemplateChildNode};

@@ -98,7 +98,7 @@ pub fn position_to_offset_str(content: &str, line: u32, character: u32) -> usize
         .nth(line as usize)
         .unwrap_or(content.len());
     let mut utf16_units = 0u32;
-    for (at, ch) in content[start..].char_indices() {
+    for (at, ch) in content.get(start..).unwrap_or_default().char_indices() {
         if matches!(ch, '\r' | '\n') || utf16_units >= character {
             return start + at;
         }

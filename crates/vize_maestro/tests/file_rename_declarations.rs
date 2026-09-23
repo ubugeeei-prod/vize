@@ -1,3 +1,5 @@
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;

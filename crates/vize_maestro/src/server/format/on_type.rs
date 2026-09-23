@@ -80,20 +80,24 @@ pub(crate) fn format_on_type(
         return Some(Vec::new());
     };
 
-    let (authored_start, authored_end) = authored[index];
-    let (target_start, target_end) = target[index];
+    let (Some(&(authored_start, authored_end)), Some(&(target_start, target_end))) =
+        (authored.get(index), target.get(index))
+    else {
+        return Some(Vec::new());
+    };
+    let (Some(authored_block), Some(target_block), Some(block_head)) = (
+        content.get(authored_start..authored_end),
+        formatted.code.get(target_start..target_end),
+        content.get(authored_start..line_start),
+    ) else {
+        return Some(Vec::new());
+    };
     // Splitting on '\n' leaves the '\r' of a CRLF pair on the line. The
     // formatter writes the configured newline, which need not be the authored
     // one, so a surviving '\r' would make every CRLF line look rewritten and
     // silence the handler on CRLF documents.
-    let authored_lines: Vec<&str> = content[authored_start..authored_end]
-        .split('\n')
-        .map(strip_cr)
-        .collect();
-    let target_lines: Vec<&str> = formatted.code[target_start..target_end]
-        .split('\n')
-        .map(strip_cr)
-        .collect();
+    let authored_lines: Vec<&str> = authored_block.split('\n').map(strip_cr).collect();
+    let target_lines: Vec<&str> = target_block.split('\n').map(strip_cr).collect();
     // Line N of this block must still be line N after formatting.
     if authored_lines.len() != target_lines.len() {
         return Some(Vec::new());
@@ -101,7 +105,7 @@ pub(crate) fn format_on_type(
 
     // Block content opens partway through the tag's own line, so relative line
     // 0 is the tail of `<script …>` rather than a line of its own.
-    let relative = content[authored_start..line_start].matches('\n').count();
+    let relative = block_head.matches('\n').count();
     if relative == 0 {
         return Some(Vec::new());
     }
@@ -111,13 +115,11 @@ pub(crate) fn format_on_type(
         return Some(Vec::new());
     };
 
-    let authored_indent = indent_of(authored_line);
-    let target_indent = indent_of(target_line);
+    let (authored_indent, authored_rest) = split_indent(authored_line);
+    let (target_indent, target_rest) = split_indent(target_line);
     // Everything after the indent must already match: this request re-indents,
     // it never rewrites what the user is in the middle of typing.
-    if authored_line[authored_indent.len()..] != target_line[target_indent.len()..]
-        || authored_indent == target_indent
-    {
+    if authored_rest != target_rest || authored_indent == target_indent {
         return Some(Vec::new());
     }
 
@@ -128,8 +130,7 @@ pub(crate) fn format_on_type(
             // length is also the character offset the client expects.
             end: Position::new(position.line, authored_indent.len() as u32),
         },
-        #[allow(clippy::disallowed_methods)]
-        new_text: target_indent.to_string(),
+        new_text: target_indent.to_owned(),
     }])
 }
 
@@ -139,14 +140,12 @@ fn strip_cr(line: &str) -> &str {
     line.strip_suffix('\r').unwrap_or(line)
 }
 
-/// The leading run of spaces and tabs. Deliberately not `trim_start`, which
-/// also eats non-breaking spaces and other Unicode whitespace that is authored
-/// content rather than indentation.
-fn indent_of(line: &str) -> &str {
-    let end = line
-        .find(|ch: char| ch != ' ' && ch != '\t')
-        .unwrap_or(line.len());
-    &line[..end]
+/// The leading run of spaces and tabs, and the rest of the line. Deliberately
+/// not `trim_start`, which also eats non-breaking spaces and other Unicode
+/// whitespace that is authored content rather than indentation.
+fn split_indent(line: &str) -> (&str, &str) {
+    let rest = line.trim_start_matches([' ', '\t']);
+    (line.strip_suffix(rest).unwrap_or_default(), rest)
 }
 
 #[cfg(test)]

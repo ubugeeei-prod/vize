@@ -1,5 +1,3 @@
-#![allow(clippy::disallowed_methods)]
-
 use super::{open_importers, resolve_import};
 use crate::server::ServerState;
 use tower_lsp::lsp_types::Url;

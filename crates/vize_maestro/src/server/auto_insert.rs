@@ -1,5 +1,5 @@
 //! `volar/client/autoInsert` custom JSON-RPC request.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "lsp_types fields store std String")]
 
 use serde::Deserialize;
 use tower_lsp::jsonrpc::Result;
@@ -64,7 +64,9 @@ impl MaestroServer {
             return Ok(None);
         }
 
-        let ctx = IdeContext::new(&self.state, uri, selection_offset).expect("document is open");
+        let Some(ctx) = IdeContext::new(&self.state, uri, selection_offset) else {
+            return Ok(None);
+        };
         Ok(
             AutoInsertService::snippet(&ctx, selection_offset, range_offset, &params.change.text)
                 .await,

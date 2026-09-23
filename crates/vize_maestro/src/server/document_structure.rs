@@ -5,7 +5,10 @@
 //! gated on the same `folding_ranges` feature flag. Keeping them together (and
 //! out of `handlers.rs`, which is already over the per-file length budget)
 //! makes that shared contract explicit.
-#![allow(clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "lsp_types fields store std String"
+)]
 
 mod folding;
 mod symbols;

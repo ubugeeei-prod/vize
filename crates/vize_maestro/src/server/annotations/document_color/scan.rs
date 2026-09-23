@@ -78,24 +78,27 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
     while cursor < region_end {
         #[cfg(test)]
         SCAN_STEPS.set(SCAN_STEPS.get() + 1);
+        let Some(&byte) = bytes.get(cursor) else {
+            break;
+        };
         if pair_at(bytes, cursor, b"/*") {
             cursor = skip_comment(bytes, cursor, region_end);
             continue;
         }
         if mode.has_line_comments() && pair_at(bytes, cursor, b"//") {
-            cursor = bytes[cursor..region_end]
+            cursor = bytes
+                .get(cursor..region_end)
+                .unwrap_or_default()
                 .iter()
                 .position(|byte| matches!(byte, b'\r' | b'\n'))
                 .map_or(region_end, |offset| cursor + offset);
             continue;
         }
-        if matches!(bytes[cursor], b'\'' | b'"') {
+        if matches!(byte, b'\'' | b'"') {
             cursor = skip_string(bytes, cursor, region_end);
             continue;
         }
-        if mode == CssMode::IndentedSass
-            && parenthesis_depth == 0
-            && matches!(bytes[cursor], b'\r' | b'\n')
+        if mode == CssMode::IndentedSass && parenthesis_depth == 0 && matches!(byte, b'\r' | b'\n')
         {
             tentative_value = None;
             in_value = false;
@@ -104,7 +107,7 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
             continue;
         }
 
-        match bytes[cursor] {
+        match byte {
             b'{' => {
                 if let Some(checkpoint) = tentative_value.take() {
                     found.truncate(checkpoint);
@@ -155,9 +158,9 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
         }
 
         let mut identifier_token_end = None;
-        let literal = if bytes[cursor] == b'#' {
+        let literal = if byte == b'#' {
             hex_literal(content, cursor, region_end)
-        } else if (bytes[cursor].is_ascii_alphabetic() || bytes[cursor] == b'\\')
+        } else if (byte.is_ascii_alphabetic() || byte == b'\\')
             && is_identifier_boundary(bytes, cursor, region_start)
         {
             let end = identifier_end(bytes, cursor, region_end);
@@ -208,7 +211,7 @@ pub(crate) fn colors_in(content: &str, region: (usize, usize), mode: CssMode) ->
 fn named_color_literal(content: &str, start: usize, end: usize) -> Option<ColorLiteral> {
     let mut decoded = [0u8; 32];
     let decoded_len = decode_identifier(content.as_bytes(), start, end, &mut decoded)?;
-    let [red, green, blue, alpha] = named::rgba_bytes(&decoded[..decoded_len])?;
+    let [red, green, blue, alpha] = named::rgba_bytes(decoded.get(..decoded_len)?)?;
     Some(ColorLiteral {
         start,
         end,
@@ -224,7 +227,9 @@ fn is_hsl_function_name(content: &str, start: usize, end: usize) -> bool {
     let Some(len) = decode_identifier(content.as_bytes(), start, end, &mut decoded) else {
         return false;
     };
-    decoded[..len].eq_ignore_ascii_case(b"hsl") || decoded[..len].eq_ignore_ascii_case(b"hsla")
+    decoded
+        .get(..len)
+        .is_some_and(|name| name.eq_ignore_ascii_case(b"hsl") || name.eq_ignore_ascii_case(b"hsla"))
 }
 
 /// `#` followed by exactly 3, 4, 6 or 8 hex digits and nothing that could
@@ -232,10 +237,10 @@ fn is_hsl_function_name(content: &str, start: usize, end: usize) -> bool {
 fn hex_literal(content: &str, start: usize, limit: usize) -> Option<ColorLiteral> {
     let bytes = content.as_bytes();
     let mut end = start + 1;
-    while end < limit && bytes[end].is_ascii_hexdigit() {
+    while end < limit && bytes.get(end).is_some_and(u8::is_ascii_hexdigit) {
         end += 1;
     }
-    let digits = &content[start + 1..end];
+    let digits = content.get(start + 1..end)?;
     if !matches!(digits.len(), 3 | 4 | 6 | 8) || is_identifier_byte(bytes.get(end)) {
         return None;
     }
@@ -266,13 +271,14 @@ fn hex_literal(content: &str, start: usize, limit: usize) -> Option<ColorLiteral
         *channel = raw as f32 / 255.0;
     }
 
+    let [red, green, blue, alpha] = channels;
     Some(ColorLiteral {
         start,
         end,
-        red: channels[0],
-        green: channels[1],
-        blue: channels[2],
-        alpha: channels[3],
+        red,
+        green,
+        blue,
+        alpha,
     })
 }
 

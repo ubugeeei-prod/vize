@@ -18,7 +18,7 @@ pub(super) fn rgba_bytes(name: &[u8]) -> Option<[u8; 4]> {
                 .cmp(name.iter().map(|byte| byte.to_ascii_lowercase()))
         })
         .ok()?;
-    Some(CSS_NAMED_COLORS[index].1.to_be_bytes())
+    Some(CSS_NAMED_COLORS.get(index)?.1.to_be_bytes())
 }
 
 /// Packed as `0xRRGGBBAA` so every table row stays visually auditable against

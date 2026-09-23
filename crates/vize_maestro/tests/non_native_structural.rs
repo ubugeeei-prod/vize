@@ -1,3 +1,9 @@
+#![expect(
+    clippy::string_slice,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
+
 mod non_native_structural {
     mod lexical;
 }

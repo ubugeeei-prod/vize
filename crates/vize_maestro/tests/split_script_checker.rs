@@ -4,6 +4,8 @@
 //! document has to feed that same text, and map setup spans through the
 //! authored block rather than the joined string.
 
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+
 use vize_maestro::VirtualCodeGenerator;
 
 #[test]

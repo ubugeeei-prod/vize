@@ -18,12 +18,9 @@ use super::super::{VirtualDocument, VirtualLanguage};
 pub(super) fn template_document(
     descriptor: &SfcDescriptor<'_>,
     root: &RootNode<'_>,
+    template_offset: u32,
     base_uri: &str,
 ) -> VirtualDocument {
-    let template = descriptor
-        .template
-        .as_ref()
-        .expect("template document is only built for a template block");
     let mut options = SfcCroquisOptions::lint_demand();
     options.analyzer_options.collect_template_expressions = true;
     let analysis = analyze_sfc_descriptor_with_context(descriptor, Some(root), options);
@@ -32,7 +29,7 @@ pub(super) fn template_document(
         analysis.script_content.as_deref(),
         Some(root),
         analysis.script_offset,
-        template.loc.start as u32,
+        template_offset,
         &VirtualTsOptions::default(),
         analysis.split_script_setup_offsets(descriptor),
     );

@@ -202,32 +202,28 @@ where
     F: Fn(u8) -> bool,
 {
     let bytes = content.as_bytes();
-    if bytes.is_empty() {
-        return None;
-    }
+    let mut cursor = offset.min(bytes.len().checked_sub(1)?);
+    let is_token_at = |index: usize| bytes.get(index).is_some_and(|&byte| is_token_char(byte));
 
-    let mut cursor = offset.min(bytes.len());
-    if cursor == bytes.len() {
-        cursor = cursor.saturating_sub(1);
-    }
-
-    if !is_token_char(bytes[cursor]) {
-        if cursor > 0 && is_token_char(bytes[cursor - 1]) {
+    if !is_token_at(cursor) {
+        if cursor > 0 && is_token_at(cursor - 1) {
             cursor -= 1;
         } else {
             return None;
         }
     }
 
-    let mut start = cursor;
-    while start > 0 && is_token_char(bytes[start - 1]) {
-        start -= 1;
-    }
-
-    let mut end = cursor + 1;
-    while end < bytes.len() && is_token_char(bytes[end]) {
-        end += 1;
-    }
+    let (before, after) = bytes.split_at_checked(cursor)?;
+    let start = before
+        .iter()
+        .rposition(|&byte| !is_token_char(byte))
+        .map_or(0, |index| index + 1);
+    let end = cursor
+        + after
+            .iter()
+            .skip(1)
+            .position(|&byte| !is_token_char(byte))
+            .map_or(after.len(), |index| index + 1);
 
     Some((start, end))
 }
@@ -238,7 +234,7 @@ where
     F: Fn(u8) -> bool,
 {
     let (start, end) = token_span_at_offset(content, offset, is_token_char)?;
-    Some(content[start..end].to_string())
+    content.get(start..end).map(str::to_string)
 }
 
 fn standalone_html_block_at_offset(content: &str, offset: usize) -> BlockType {
@@ -253,7 +249,9 @@ fn standalone_html_block_at_offset(content: &str, offset: usize) -> BlockType {
 
 fn is_inside_raw_html_element(content: &str, offset: usize, tag_name: &str) -> bool {
     let cursor = offset.min(content.len());
-    let before = content[..cursor].to_ascii_lowercase();
+    let Some(before) = content.get(..cursor).map(str::to_ascii_lowercase) else {
+        return false;
+    };
     let Some(open_start) = last_start_tag(&before, tag_name) else {
         return false;
     };
@@ -270,7 +268,9 @@ fn is_inside_raw_html_element(content: &str, offset: usize, tag_name: &str) -> b
         return false;
     }
 
-    before[open_start..].contains('>')
+    before
+        .get(open_start..)
+        .is_some_and(|open_tag| open_tag.contains('>'))
 }
 
 fn last_start_tag(content: &str, tag_name: &str) -> Option<usize> {
@@ -283,14 +283,15 @@ fn last_start_tag(content: &str, tag_name: &str) -> Option<usize> {
     let mut search_start = 0;
     let mut last = None;
 
-    while let Some(relative) = content[search_start..].find(needle) {
+    while let Some(relative) = content
+        .get(search_start..)
+        .and_then(|rest| rest.find(needle))
+    {
         let start = search_start + relative;
         let after_name = start + needle.len();
-        if (after_name == bytes.len()
-            || matches!(
-                bytes[after_name],
-                b'>' | b'/' | b' ' | b'\t' | b'\n' | b'\r'
-            ))
+        if bytes
+            .get(after_name)
+            .is_none_or(|byte| matches!(byte, b'>' | b'/' | b' ' | b'\t' | b'\n' | b'\r'))
             && !is_inside_html_comment_at(content, start)
         {
             last = Some(start);
@@ -302,7 +303,9 @@ fn last_start_tag(content: &str, tag_name: &str) -> Option<usize> {
 }
 
 fn is_inside_html_comment_at(content: &str, offset: usize) -> bool {
-    let before = &content[..offset.min(content.len())];
+    let Some(before) = content.get(..offset.min(content.len())) else {
+        return false;
+    };
     let Some(open) = before.rfind("<!--") else {
         return false;
     };

@@ -1,5 +1,9 @@
 //! Document store implementation using Rope for efficient text operations.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "documents arrive from lsp_types as std String and are handed back to std String consumers"
+)]
 
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicU64, Ordering};

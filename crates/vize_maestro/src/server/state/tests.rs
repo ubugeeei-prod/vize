@@ -328,4 +328,5 @@ fn apply_lsp_initialization_options() {
     assert!(features.typecheck);
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod virtual_docs;
