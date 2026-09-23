@@ -61,6 +61,27 @@ pub fn error_divergence(
     }
 }
 
+fn first_diff(left: &str, right: &str) -> usize {
+    left.bytes()
+        .zip(right.bytes())
+        .position(|(left, right)| left != right)
+        .unwrap_or_else(|| left.len().min(right.len()))
+}
+
+fn window(source: &str, other: &str) -> String {
+    let diff = first_diff(source, other);
+    let start = source[..diff]
+        .char_indices()
+        .rev()
+        .nth(120)
+        .map_or(0, |(index, _)| index);
+    let end = source[diff..]
+        .char_indices()
+        .nth(200)
+        .map_or(source.len(), |(index, _)| diff + index);
+    source[start..end].to_owned()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -98,25 +119,4 @@ mod tests {
             .is_some()
         );
     }
-}
-
-fn first_diff(left: &str, right: &str) -> usize {
-    left.bytes()
-        .zip(right.bytes())
-        .position(|(left, right)| left != right)
-        .unwrap_or_else(|| left.len().min(right.len()))
-}
-
-fn window(source: &str, other: &str) -> String {
-    let diff = first_diff(source, other);
-    let start = source[..diff]
-        .char_indices()
-        .rev()
-        .nth(120)
-        .map_or(0, |(index, _)| index);
-    let end = source[diff..]
-        .char_indices()
-        .nth(200)
-        .map_or(source.len(), |(index, _)| diff + index);
-    source[start..end].to_owned()
 }
