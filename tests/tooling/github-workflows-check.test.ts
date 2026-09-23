@@ -81,7 +81,10 @@ test("SemVer checks run on exact-SHA release dispatches", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "semver-checks");
 
-  assert.match(job, /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch'\s*\}\}/);
+  assert.match(
+    job,
+    /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && \(startsWith\(github\.ref, 'refs\/heads\/release\/v'\) \|\| startsWith\(github\.ref, 'refs\/tags\/v'\)\)\s*\}\}/,
+  );
   assert.match(job, /name: Use candidate version for SemVer classification/);
   assert.match(job, /: > "\$RUNNER_TEMP\/semver-change-marker\.txt"/);
   assert.match(

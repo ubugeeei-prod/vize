@@ -67,8 +67,26 @@ const nativeSmokeTargets = [
   "win32-arm64-msvc",
 ];
 
+// Keep in sync with check.yml's semver-checks matrix and the Rust preflight.
+const requiredSemverCrates = [
+  "vize_armature",
+  "vize_atelier_core",
+  "vize_atelier_dom",
+  "vize_atelier_sfc",
+  "vize_atelier_ssr",
+  "vize_atelier_vapor",
+  "vize_carton",
+  "vize_croquis",
+  "vize_fresco",
+  "vize_musea",
+  "vize_relief",
+];
+
 const requiredJobNames = new Map([
-  ["Check", ["test-scripts"]],
+  [
+    "Check",
+    ["test-scripts", ...requiredSemverCrates.map((name) => `cargo-semver-checks (${name})`)],
+  ],
   ["Benchmark", ["pr-benchmark-budget"]],
   [
     "Fuzz",
@@ -98,6 +116,10 @@ const requiredJobNames = new Map([
     ),
   ],
 ]);
+
+export function requiredWorkflowJobNames(workflowName) {
+  return requiredJobNames.get(workflowName) ?? [];
+}
 
 function compareRuns(left, right) {
   const order = (run) => [

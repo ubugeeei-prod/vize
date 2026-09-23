@@ -74,7 +74,7 @@
 
 **Lane:** B
 
-**Deliverable:** versioned, prebuilt contract artifacts published per release — WIT bindings, a Rust SDK crate `crates/vize_extension_sdk/`, JS/TS types in `npm/extension-sdk/` — so no consumer ever compiles vize internals (the Swift macro-crisis countermeasure).
+**Deliverable:** versioned, prebuilt contract artifacts published per release — WIT bindings, a Rust SDK crate `crates/vize_extension_sdk/`, JS/TS types in `npm/extension-sdk/` — so no consumer ever compiles vize internals (the Swift macro-crisis countermeasure). Lane B owns the crate implementation, manifest, README, examples, and JS/TS package; lane A owns the WIT and released surface history that the SDK packages.
 
 **Steps:**
 

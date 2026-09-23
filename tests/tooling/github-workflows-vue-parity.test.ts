@@ -9,14 +9,15 @@ import {
 import { vueParityAction } from "./support/check-vue-parity-action.ts";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-test("the full typecheck divergence ratchet runs on main, schedule, and dispatch", () => {
+test("the full typecheck divergence ratchet runs on schedule and dispatch", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
 
   assert.match(workflow, /\n  pull_request:\n    branches: \[main, davinci\]\n/);
   assert.match(workflow, /\n  workflow_dispatch:\n/);
+  assert.match(workflow, /\n  schedule:\n/);
   assert.match(
     workflowJobBody(workflow, "vue-parity"),
-    /if: \$\{\{ github\.event_name != 'pull_request' \}\}/,
+    /^ {4}if: \$\{\{ github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch' \}\}$/m,
   );
 });
 
@@ -92,11 +93,11 @@ test("Vue parity structurally gates compiler fixtures and incremental LSP behavi
   assert.deepEqual(parity?.env, { VIZE_TEST_BIN: "target/ci/vize" });
   assert.equal(parity?.run, "vp run --filter './tests' test:check:fixtures");
   const phaseFiles = checkFixturePhases.map((phase) => phase.file);
-  // The per-PR drop-in compatibility ratchet must ride the same lane: it is
-  // the only pre-merge gate holding the vize/vue-tsc divergence ledger.
+  // The full compatibility ratchet must ride this scheduled and manual lane;
+  // the routine check keeps a separate, bounded repository gate.
   assert.ok(
     phaseFiles.includes("tooling/compat-ratchet.test.ts"),
-    "test:check:fixtures must run the per-PR compat ratchet",
+    "test:check:fixtures must run the full compat ratchet",
   );
   assert.deepEqual(
     { ...CHECK_FIXTURE_ENV },

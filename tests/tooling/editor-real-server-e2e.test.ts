@@ -197,7 +197,7 @@ test("CI executes the packaged Emacs ERT suite", () => {
   assert.ok(setupIndex < runIndex, "Emacs setup must run before the ERT suite");
 });
 
-test("check.yml keeps the editor real-server job in main and manual Check", () => {
+test("check.yml keeps the editor real-server job in scheduled and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
 
   assert.match(
@@ -206,7 +206,7 @@ test("check.yml keeps the editor real-server job in main and manual Check", () =
   );
   assert.match(
     workflow,
-    /\n  editor-host-smoke:\n    runs-on: [^\n]+\n    if: \$\{\{ github\.event_name != 'pull_request' \}\}/,
+    /\n  editor-host-smoke:\n    runs-on: [^\n]+\n    if: \$\{\{ github\.event_name == 'schedule' \|\| github\.event_name == 'workflow_dispatch' \}\}/,
   );
 });
 

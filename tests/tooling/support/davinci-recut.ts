@@ -9,6 +9,7 @@ export interface RecutPhase {
   taskFiles: readonly string[];
   predecessorFiles: readonly string[];
   provisionalGateLines: readonly string[];
+  strictDisjointPaths?: boolean;
 }
 
 export interface Contract {
@@ -236,7 +237,7 @@ export function registerRecutChecks(config: RecutPhase): void {
       for (const inner of owned) {
         if (outer.lane === inner.lane || !inner.path.startsWith(outer.path)) continue;
         assert.ok(
-          outer.cell.includes(`minus lane ${inner.lane}`),
+          !config.strictDisjointPaths && outer.cell.includes(`minus lane ${inner.lane}`),
           `lane ${outer.lane} path ${outer.path} overlaps lane ${inner.lane} ${inner.path}`,
         );
       }

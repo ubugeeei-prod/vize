@@ -190,6 +190,45 @@ test("verify-only mode accepts flat job evidence returned by pagination", () => 
   }
 });
 
+test("verify-only mode rejects missing, skipped, or failed candidate SemVer jobs", () => {
+  const jobName = "cargo-semver-checks (vize_armature)";
+  for (const conclusion of ["missing", "skipped", "failure"] as const) {
+    const tempDir = fs.mkdtempSync(path.join(tmpdir(), `vize-release-semver-${conclusion}-`));
+    try {
+      const fixture = createReleasePreflightVerifyOnlyFixture(tempDir, {
+        mutateJobs(jobs) {
+          const checkJobs = jobs[101];
+          assert.ok(checkJobs);
+          const index = checkJobs.findIndex((job) => job.name === jobName);
+          assert.notEqual(index, -1);
+          if (conclusion === "missing") checkJobs.splice(index, 1);
+          else checkJobs[index] = { ...checkJobs[index], conclusion };
+        },
+      });
+      const result = spawnSync(
+        "rust-script",
+        ["tools/commands/ci/github/release-preflight.rs", "--verify-only"],
+        {
+          cwd: repoRoot,
+          encoding: "utf8",
+          env: {
+            ...process.env,
+            PATH: `${fixture.binDir}${path.delimiter}${process.env.PATH ?? ""}`,
+            ...fixture.env,
+          },
+        },
+      );
+      assert.ifError(result.error);
+      assert.equal(result.status, 1, `${result.stderr}\n${result.stdout}`.trim());
+      assert.match(result.stderr, /cargo-semver-checks \(vize_armature\)/);
+      if (conclusion === "missing") assert.match(result.stderr, /found 0/);
+      else assert.match(result.stderr, new RegExp(`completed/${conclusion}`));
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  }
+});
+
 test("verify-only mode does not block on an optional failed Benchmark", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-optional-benchmark-"));
   try {
