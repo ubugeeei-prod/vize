@@ -71,9 +71,10 @@ pub(super) fn template_binding_is_unsafe(
 
 pub(super) fn bind_template_expressions(document: &mut TypeAwareDocument) {
     let mut text = std::string::String::from(document.content.as_str());
+    let props_object = super::options_prop_shape::options_props_object(&text).map(str::to_string);
     let mut edits = Vec::new();
     let mut index = 0u32;
-    collect_void_wrappers(&text, &mut edits, &mut index);
+    collect_void_wrappers(&text, props_object.as_deref(), &mut edits, &mut index);
     collect_handler_arguments(&text, &mut edits, &mut index);
     edits.sort_by_key(|(start, _, _, _, _)| *start);
     for (start, end, expr_start, expr_end, new_stmt) in edits.into_iter().rev() {
@@ -97,6 +98,7 @@ pub(super) fn bind_template_expressions(document: &mut TypeAwareDocument) {
 
 fn collect_void_wrappers(
     text: &str,
+    props_object: Option<&str>,
     edits: &mut Vec<(usize, usize, usize, usize, String)>,
     index: &mut u32,
 ) {
@@ -118,7 +120,11 @@ fn collect_void_wrappers(
             continue;
         }
         let expr = &text[expr_start..expr_end];
-        let new_stmt = format!("const __expr_{index} = {expr}");
+        let new_stmt = match super::options_prop_shape::options_prop_annotation(props_object, expr)
+        {
+            Some(annotation) => format!("const __expr_{index}: {annotation} = {expr}"),
+            None => format!("const __expr_{index} = {expr}"),
+        };
         let old_end = void_at + VOID_OPEN.len() + expr.len() + 1;
         edits.push((void_at, old_end, expr_start, expr_end, new_stmt));
         *index += 1;
@@ -205,6 +211,29 @@ mod tests {
         assert_eq!(
             &document.content[generated..generated + "actions[method]".len()],
             "actions[method]"
+        );
+    }
+
+    #[test]
+    fn an_options_prop_binding_uses_the_runtime_shape() {
+        let source = "  void (isOpened); // VBind\n  void (type); // VBind\n  const __vize_options_props = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n";
+        let expr_at = source.find("isOpened").expect("expr");
+        let mut document = TypeAwareDocument {
+            content: VizeString::from(source),
+            mapping: ProjectionMapping::from_spans(vec![VizeMapping::new(
+                expr_at..expr_at + "isOpened".len(),
+                4..11,
+            )]),
+        };
+        bind_template_expressions(&mut document);
+        assert_eq!(
+            document.content.as_str(),
+            "  const __expr_0: __VizeOptionsPropShape<typeof __vize_options_props>[\"isOpened\"] = isOpened; // VBind\n  const __expr_1 = type; // VBind\n  const __vize_options_props = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n"
+        );
+        let generated = document.mapping.to_generated(4).expect("row");
+        assert_eq!(
+            &document.content[generated..generated + "isOpened".len()],
+            "isOpened"
         );
     }
 }

@@ -13,6 +13,7 @@ mod document;
 mod driver;
 mod expression_bindings;
 mod markers;
+mod options_prop_shape;
 mod parsing;
 mod reactivity_loss;
 mod relative_imports;
