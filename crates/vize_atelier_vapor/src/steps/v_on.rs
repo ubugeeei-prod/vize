@@ -155,6 +155,10 @@ pub fn generate_event_handler(
     result
 }
 
+#[expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 #[cfg(test)]
 mod tests {
     use super::generate_event_handler;

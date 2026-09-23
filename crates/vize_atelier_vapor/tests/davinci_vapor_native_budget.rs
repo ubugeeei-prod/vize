@@ -7,7 +7,11 @@
 //! P3-6 evidence record. Improvements ratchet a ceiling down; nothing raises
 //! one.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 use davinci_harness::alloc::{CountingAllocator, mark_installed, measure};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};

@@ -79,7 +79,7 @@ impl Emitter<'_, '_> {
     /// `name` is not that token (a synthesized `default` stays a stub).
     pub(super) fn slot_name_anchor(&mut self, carrier: usize, name: &str) -> Option<AuthoredSpan> {
         let (directive, open) = {
-            let node = &self.artifact.nodes[carrier];
+            let node = self.artifact.nodes.get(carrier)?;
             let open = match node.content {
                 Content::Element {
                     tag: "template",
@@ -92,7 +92,8 @@ impl Emitter<'_, '_> {
                 .bindings
                 .iter()
                 .find(|binding| binding.kind == BindingKind::Slot)
-                .map(|binding| binding.spans[0])?;
+                .map(|binding| binding.spans)?;
+            let [directive, _] = directive;
             (directive, open)
         };
         let (start, _) = self.token(directive, |raw| slot_name_offset(raw, name))?;

@@ -179,7 +179,7 @@ pub(super) fn controlled_regions<'a>(
             let &(parent, owner) = meta
                 .get(slot)
                 .ok_or(AdmissionFailure::Invalid("region does not resolve"))?;
-            if let Some(known) = memo[slot] {
+            if let Some(&Some(known)) = memo.get(slot) {
                 controlled = known;
                 break;
             }
@@ -200,7 +200,9 @@ pub(super) fn controlled_regions<'a>(
             cursor = parent;
         }
         for slot in &path {
-            memo[*slot] = Some(controlled);
+            if let Some(known) = memo.get_mut(*slot) {
+                *known = Some(controlled);
+            }
         }
     }
     Ok(Vec::from_iter_in(

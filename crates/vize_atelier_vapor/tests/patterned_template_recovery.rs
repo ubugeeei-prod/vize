@@ -1,4 +1,12 @@
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::expect_used,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};

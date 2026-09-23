@@ -19,6 +19,11 @@
 //! expression re-parse counter is sampled around one fused compile per
 //! fixture for the `davinci.expr.parses` baseline.
 
+#![expect(
+    clippy::expect_used,
+    reason = "benchmark setup aborts on a broken fixture"
+)]
+
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::{LADDER, template_block};
 use davinci_harness::stage::bench_stage_with_metrics;

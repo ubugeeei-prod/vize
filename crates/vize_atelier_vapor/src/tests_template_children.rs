@@ -1,5 +1,10 @@
 //! Complete-output regressions for transparent `<template>` children (#3595).
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 use super::{VaporCompilerOptions, compile_vapor};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};

@@ -4,6 +4,8 @@
 //! attributes, interpolations and comments, empty modifiers), and hand-written
 //! malformed markup.
 
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+
 use super::{VaporS3BridgeStatus, lower_source_for_vapor, options};
 use crate::compile::{VaporCompilerOptions, parser_options};
 use vize_atelier_core::{

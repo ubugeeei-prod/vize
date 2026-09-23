@@ -26,14 +26,16 @@ use crate::generate::spans::{TemplateSpans, VaporSourceSpans};
 use crate::ir::{BlockIRNode, ChildRefIRNode, IREffect, NextRefIRNode, OperationNode, RootIRNode};
 
 /// The shared emitter IR for `artifact`; with `spans`, also the template and
-/// control-flow anchors a source map needs (Davinci P3-9).
+/// control-flow anchors a source map needs (Davinci P3-9). `None` when the
+/// payload breaks a shape admission checked; the caller then keeps the
+/// legacy lane instead of emitting a partial render.
 pub(super) fn emit<'a>(
     mut artifact: NativeArtifact<'a>,
     allocator: &'a Allocator,
     source: &'a str,
     scope_id: Option<&str>,
     spans: bool,
-) -> (RootIRNode<'a>, Option<VaporSourceSpans>) {
+) -> Option<(RootIRNode<'a>, Option<VaporSourceSpans>)> {
     let mut ir = RootIRNode {
         node: RootNode::new(allocator, ""),
         source,
@@ -54,16 +56,20 @@ pub(super) fn emit<'a>(
     let mut dynamic = Vec::with_capacity_in(artifact.nodes.len(), &allocator);
     dynamic.resize(artifact.nodes.len(), false);
     for (index, node) in artifact.nodes.iter().enumerate().rev() {
-        dynamic[index] = match node.content {
+        let is_dynamic = match node.content {
             Content::Text { dynamic, .. } => dynamic,
             Content::Element { .. } => {
-                !node.bindings.is_empty() || node.children.iter().any(|child| dynamic[*child])
+                !node.bindings.is_empty()
+                    || (node.children.iter()).any(|child| dynamic.get(*child) == Some(&true))
             }
             Content::If { .. }
             | Content::For(_)
             | Content::Component { .. }
             | Content::Outlet { .. } => true,
         };
+        if let Some(slot) = dynamic.get_mut(index) {
+            *slot = is_dynamic;
+        }
     }
     ir.element_template_map.reserve(artifact.nodes.len());
     let roots = take(allocator, &mut artifact.roots);
@@ -79,8 +85,12 @@ pub(super) fn emit<'a>(
         units: FxHashMap::default(),
         else_units: FxHashMap::default(),
         tags: FxHashMap::default(),
+        broken: core::cell::Cell::new(false),
     };
     let block = emitter.block(&roots);
+    if emitter.broken.get() {
+        return None;
+    }
     let spans = spans.then(|| {
         VaporSourceSpans::native(
             std::mem::take(&mut emitter.template_spans),
@@ -90,7 +100,7 @@ pub(super) fn emit<'a>(
         )
     });
     ir.block = block;
-    (ir, spans)
+    Some((ir, spans))
 }
 
 struct Emitter<'a, 'b> {
@@ -109,6 +119,9 @@ struct Emitter<'a, 'b> {
     else_units: FxHashMap<u32, u32>,
     /// Component tag -> authored start of its tag name (the byte after `<`).
     tags: FxHashMap<String, u32>,
+    /// Set when the payload breaks a shape admission checked; the render is
+    /// then discarded (see [`emit`]).
+    broken: core::cell::Cell<bool>,
 }
 
 impl<'a> Emitter<'a, '_> {
@@ -132,7 +145,11 @@ impl<'a> Emitter<'a, '_> {
                 return block;
             }
             for &child in children {
-                match self.artifact.nodes[child].content {
+                let Some(node) = self.artifact.nodes.get(child) else {
+                    self.invariant_broken();
+                    continue;
+                };
+                match node.content {
                     Content::Element { .. } => self.element(child, &mut block),
                     Content::Text { .. } => self.text_roots(child, &mut block),
                     Content::If { .. } | Content::For(_) => {
@@ -149,6 +166,11 @@ impl<'a> Emitter<'a, '_> {
             }
             block
         })
+    }
+
+    /// Record that the payload broke an admission-checked shape.
+    fn invariant_broken(&self) {
+        self.broken.set(true);
     }
 
     fn id(&mut self) -> usize {

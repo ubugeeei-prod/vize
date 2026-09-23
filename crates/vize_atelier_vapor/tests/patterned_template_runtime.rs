@@ -1,9 +1,16 @@
 //! RFC 823 shape matching through real DOM, Vapor, and SSR runtimes.
 
-#![allow(
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 use serde_json::{Value, json};

@@ -91,15 +91,11 @@ pub(crate) fn transform_directive<'a>(
                     );
                     let key = Box::new_in(key_node, &ctx.allocator);
 
-                    let values = if let Some(ref exp) = dir.exp {
-                        if let ExpressionNode::Simple(val_exp) = exp {
-                            let mut v = Vec::new_in(&ctx.allocator);
-                            let val_node = SimpleExpressionNode::from_node(val_exp);
-                            v.push(Box::new_in(val_node, &ctx.allocator));
-                            v
-                        } else {
-                            Vec::new_in(&ctx.allocator)
-                        }
+                    let values = if let Some(ExpressionNode::Simple(val_exp)) = &dir.exp {
+                        let mut v = Vec::new_in(&ctx.allocator);
+                        let val_node = SimpleExpressionNode::from_node(val_exp);
+                        v.push(Box::new_in(val_node, &ctx.allocator));
+                        v
                     } else {
                         Vec::new_in(&ctx.allocator)
                     };
@@ -150,13 +146,9 @@ pub(crate) fn transform_directive<'a>(
                     let key_node = SimpleExpressionNode::from_node(key_exp);
                     let key = Box::new_in(key_node, &ctx.allocator);
 
-                    let value = if let Some(ref exp) = dir.exp {
-                        if let ExpressionNode::Simple(val_exp) = exp {
-                            let val_node = SimpleExpressionNode::from_node(val_exp);
-                            Some(Box::new_in(val_node, &ctx.allocator))
-                        } else {
-                            None
-                        }
+                    let value = if let Some(ExpressionNode::Simple(val_exp)) = &dir.exp {
+                        let val_node = SimpleExpressionNode::from_node(val_exp);
+                        Some(Box::new_in(val_node, &ctx.allocator))
                     } else {
                         None
                     };

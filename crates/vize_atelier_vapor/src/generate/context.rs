@@ -21,7 +21,6 @@ pub(crate) struct GenerateContext<'a> {
     /// The source string node-loc spans index into.
     pub(crate) source: &'a str,
     indent_level: u32,
-    #[allow(dead_code)]
     pub(crate) element_template_map: &'a FxHashMap<usize, usize>,
     temp_count: usize,
     /// Used helpers for import generation
@@ -41,10 +40,8 @@ pub(crate) struct GenerateContext<'a> {
     /// For-loop scope stack
     pub(crate) for_scopes: std::vec::Vec<ForScope>,
     /// Slot scope stack for scoped slots
-    #[allow(dead_code)]
     pub(crate) slot_scopes: std::vec::Vec<SlotScope>,
     /// Counter for slot scope variable names
-    #[allow(dead_code)]
     pub(crate) slot_scope_count: usize,
     /// Components that have already been resolved (to avoid duplicate resolveComponent calls)
     pub(crate) resolved_components: FxHashSet<String>,
@@ -128,9 +125,11 @@ impl<'a> GenerateContext<'a> {
         // parameter declared inside a loop shadows the loop's alias.
         let (mut loops, mut slots) = (self.for_scopes.len(), self.slot_scopes.len());
         while loops > 0 || slots > 0 {
-            if slots > 0 && self.slot_scopes[slots - 1].for_depth >= loops {
+            if let Some(scope) = (slots.checked_sub(1))
+                .and_then(|slot| self.slot_scopes.get(slot))
+                .filter(|scope| scope.for_depth >= loops)
+            {
                 slots -= 1;
-                let scope = &self.slot_scopes[slots];
                 if scope
                     .names
                     .iter()
@@ -144,8 +143,12 @@ impl<'a> GenerateContext<'a> {
                 }
                 continue;
             }
+            // Every slot scope sits inside `loops >= 0` loop scopes, so a
+            // remaining slot scope is taken above and `loops > 0` here.
             loops -= 1;
-            let scope = &self.for_scopes[loops];
+            let Some(scope) = self.for_scopes.get(loops) else {
+                continue;
+            };
             if let Some(ref value_alias) = scope.value_alias {
                 let for_var = cstr!("_for_item{}", scope.depth);
 
@@ -288,12 +291,6 @@ impl<'a> GenerateContext<'a> {
         if self.indent_level > 0 {
             self.indent_level -= 1;
         }
-    }
-
-    /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)
-    #[allow(dead_code)]
-    pub(crate) fn push_str(&mut self, s: &str) {
-        self.out.push_str(s);
     }
 
     /// Push formatted line (format_args! + newline with indentation)

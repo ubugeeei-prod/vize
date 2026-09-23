@@ -93,8 +93,7 @@ pub fn generate_text_expression(parts: &[(bool, String)]) -> String {
         return String::from("\"\"");
     }
 
-    if parts.len() == 1 {
-        let (is_static, content) = &parts[0];
+    if let [(is_static, content)] = parts {
         if *is_static {
             return cstr!("\"{}\"", escape_text(content));
         } else {
@@ -126,6 +125,10 @@ fn escape_text(s: &str) -> String {
         .into()
 }
 
+#[expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 #[cfg(test)]
 mod tests {
     use super::generate_text_expression;

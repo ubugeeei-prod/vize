@@ -5,7 +5,12 @@
 //! lane and the native S3 lane. The decoder is local on purpose: it must not
 //! share code with the encoder it checks.
 
-#![allow(clippy::disallowed_types, clippy::disallowed_macros)]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 use super::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor,

@@ -67,7 +67,12 @@ pub(super) fn admit<'a>(
         {
             edges.push(order::edge(previous, op.id, EdgeKind::EffectOrder));
         }
-        let values = &operands[starts[index]..starts[index + 1]];
+        let values = (starts.get(index..=index + 1))
+            .and_then(|range| match range {
+                [start, end] => operands.get(*start..*end),
+                _ => None,
+            })
+            .ok_or(AdmissionFailure::Invalid(DANGLING))?;
         let content = match op.kind {
             OpKind::InsertNode => operands::element(values, alloc)?,
             OpKind::SetText if values.iter().all(|value| value.role == Role::Text) => {
@@ -145,7 +150,7 @@ pub(super) fn admit<'a>(
             edges.push(order::edge(previous, op.id, EdgeKind::DomOrder));
         }
         members.push(nodes.len());
-        slots[index] = Some((nodes.len(), op.region));
+        *at_mut(&mut slots, index)? = Some((nodes.len(), op.region));
         nodes.push(Node {
             content,
             children: Vec::new_in(&alloc),
@@ -161,7 +166,7 @@ pub(super) fn admit<'a>(
     tree::check_nesting(&nodes, &parents, alloc)?;
     // The root fragment may hold several nodes, text included.
     let roots = std::mem::replace(
-        &mut regions[RegionId::ROOT.index() as usize],
+        at_mut(&mut regions, RegionId::ROOT.index() as usize)?,
         Vec::new_in(&alloc),
     );
     if roots.is_empty() {
@@ -182,17 +187,19 @@ fn by_op<'p, 'a>(
             .get_mut(operand.op.index() as usize + 1)
             .ok_or(AdmissionFailure::Invalid("operand op does not resolve"))? += 1;
     }
-    for index in 1..starts.len() {
-        starts[index] += starts[index - 1];
+    let mut total = 0;
+    for start in starts.iter_mut() {
+        total += *start;
+        *start = total;
     }
     let operands = if program.operands.is_sorted_by_key(|operand| operand.op) {
-        Cow::Borrowed(&program.operands[..])
+        Cow::Borrowed(program.operands.as_slice())
     } else {
         let mut cursor = starts.to_vec();
         let mut placed = program.operands.to_vec();
         for operand in &program.operands {
-            let slot = &mut cursor[operand.op.index() as usize];
-            placed[*slot] = *operand;
+            let slot = at_mut(&mut cursor, operand.op.index() as usize)?;
+            *at_mut(&mut placed, *slot)? = *operand;
             *slot += 1;
         }
         Cow::Owned(placed)
@@ -201,6 +208,20 @@ fn by_op<'p, 'a>(
 }
 
 /// `len` copies of `value` in the arena (`vec![value; len]`).
+/// `items[index]`, or the payload is inconsistent.
+fn at<T>(items: &[T], index: usize) -> Result<&T> {
+    items.get(index).ok_or(AdmissionFailure::Invalid(DANGLING))
+}
+
+/// [`at`] for a mutable slot.
+fn at_mut<T>(items: &mut [T], index: usize) -> Result<&mut T> {
+    items
+        .get_mut(index)
+        .ok_or(AdmissionFailure::Invalid(DANGLING))
+}
+
+const DANGLING: &str = "native payload index does not resolve";
+
 fn filled<'a, T: Clone>(alloc: &'a Allocator, value: T, len: usize) -> Vec<'a, T> {
     let mut table = Vec::with_capacity_in(len, &alloc);
     table.resize(len, value);

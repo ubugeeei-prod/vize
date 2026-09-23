@@ -1,7 +1,7 @@
-#![allow(
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(
     clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 use vize_atelier_core::parser::patterns::parse_match_attribute;

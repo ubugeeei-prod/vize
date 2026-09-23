@@ -2,6 +2,19 @@
 //! pinned Vue compilers/runtimes. The dedicated Davinci Actions lane runs this
 //! explicitly; ordinary Rust suites do not require a browser installation.
 
+#![expect(
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+
 use serde_json::{Value, json};
 use std::{
     io::Write,
@@ -115,8 +128,10 @@ fn fixture(
 fn compile(backend: &str, mode: &str, source: &str) -> String {
     let allocator = Allocator::new();
     if backend == "vdom" {
-        let mut bindings = BindingMetadata::default();
-        bindings.is_script_setup = true;
+        let mut bindings = BindingMetadata {
+            is_script_setup: true,
+            ..Default::default()
+        };
         for name in ["$event", "save", "actions", "count"] {
             bindings.bindings.insert(name.into(), BindingType::SetupLet);
         }
@@ -189,7 +204,7 @@ fn expected(setup: &str, calls: &str, increment: bool, sibling: bool, vapor: boo
         let mounted = phase != "unmount";
         snapshots.push(json!({"phase": phase, "count": count,
             "text": mounted.then(|| count.to_string()),
-            "sibling": (mounted && sibling).then(|| if second {"setup-b"} else {"setup-a"}),
+            "sibling": (mounted && sibling).then_some(if second {"setup-b"} else {"setup-a"}),
             "present": mounted, "connected": mounted, "sameNode": mounted,
             "events": events, "diagnostics": diagnostics}));
     }

@@ -126,23 +126,22 @@ fn assert_resolve_agrees(ctx: &GenerateContext<'_>, expr: &str, retained: &str, 
     wrapped.push('(');
     wrapped.push_str(expr);
     wrapped.push(')');
-    let parsed = Parser::new(&allocator, wrapped.as_str(), source_type)
+    // A legacy parse failure is a divergence too: the dialect gate admitted
+    // an expression the legacy vapor parse rejects.
+    let legacy = Parser::new(&allocator, wrapped.as_str(), source_type)
         .parse_expression()
-        .unwrap_or_else(|_| {
-            panic!(
-                "davinci-differential (P1-7): the dialect gate admitted an \
-                 expression the legacy vapor parse rejects: {expr:?}"
-            )
+        .ok()
+        .map(|parsed| {
+            let mut collector = ExpressionRewriteCollector::new(ctx);
+            if event_local {
+                collector.add_event_parameter();
+            }
+            collector.visit_expression(&parsed);
+            apply_rewrites(expr, collector.rewrites, 1)
         });
-    let mut collector = ExpressionRewriteCollector::new(ctx);
-    if event_local {
-        collector.add_event_parameter();
-    }
-    collector.visit_expression(&parsed);
-    let legacy = apply_rewrites(expr, collector.rewrites, 1);
     assert_eq!(
-        retained,
-        legacy.as_str(),
+        Some(retained),
+        legacy.as_deref(),
         "davinci-differential (P1-7): retained vapor resolve diverged from the legacy re-parse for expression {expr:?}"
     );
     vize_atelier_core::retained::differential::record_vapor_resolve_comparison();

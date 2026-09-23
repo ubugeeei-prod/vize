@@ -57,20 +57,18 @@ fn parse_pattern(pattern: &str, prefix: String, bindings: &mut std::vec::Vec<Des
     while let Some((pattern, prefix)) = pending.pop() {
         let pattern = strip_wrapping_parens(strip_default(pattern.trim()));
 
-        if pattern.starts_with('{') && pattern.ends_with('}') {
-            let inner = &pattern[1..pattern.len() - 1];
+        if let Some(inner) = pattern.strip_prefix('{').and_then(|p| p.strip_suffix('}')) {
             for part in split_top_level(inner).into_iter().rev() {
                 let part = part.trim();
                 if part.is_empty() || part.starts_with("...") {
                     continue;
                 }
 
-                if let Some(colon) = find_top_level_char(part, ':') {
-                    let key = part[..colon].trim();
-                    let Some(segment) = object_path_segment(key) else {
+                if let Some((key, value)) = split_at_top_level_char(part, ':') {
+                    let Some(segment) = object_path_segment(key.trim()) else {
                         continue;
                     };
-                    pending.push((part[colon + 1..].trim(), cstr!("{prefix}{segment}")));
+                    pending.push((value.trim(), cstr!("{prefix}{segment}")));
                     continue;
                 }
 
@@ -79,8 +77,7 @@ fn parse_pattern(pattern: &str, prefix: String, bindings: &mut std::vec::Vec<Des
                     pending.push((name, cstr!("{prefix}.{}", name)));
                 }
             }
-        } else if pattern.starts_with('[') && pattern.ends_with(']') {
-            let inner = &pattern[1..pattern.len() - 1];
+        } else if let Some(inner) = pattern.strip_prefix('[').and_then(|p| p.strip_suffix(']')) {
             for (index, part) in split_top_level(inner).into_iter().enumerate().rev() {
                 let part = part.trim();
                 if part.is_empty() || part.starts_with("...") {
@@ -98,19 +95,16 @@ fn parse_pattern(pattern: &str, prefix: String, bindings: &mut std::vec::Vec<Des
 }
 
 fn strip_default(pattern: &str) -> &str {
-    if let Some(index) = find_top_level_char(pattern, '=') {
-        pattern[..index].trim()
-    } else {
-        pattern.trim()
+    match split_at_top_level_char(pattern, '=') {
+        Some((before, _)) => before.trim(),
+        None => pattern.trim(),
     }
 }
 
 fn strip_wrapping_parens(pattern: &str) -> &str {
-    if pattern.starts_with('(') && pattern.ends_with(')') && matching_outer_pair(pattern, '(', ')')
-    {
-        pattern[1..pattern.len() - 1].trim()
-    } else {
-        pattern
+    match pattern.strip_prefix('(').and_then(|p| p.strip_suffix(')')) {
+        Some(inner) if matching_outer_pair(pattern, '(', ')') => inner.trim(),
+        _ => pattern,
     }
 }
 
@@ -131,14 +125,12 @@ fn object_path_segment(key: &str) -> Option<String> {
 }
 
 fn strip_string_literal(value: &str) -> Option<&str> {
-    let quote = value.as_bytes().first().copied()?;
-    if quote != b'\'' && quote != b'"' {
-        return None;
-    }
-    if value.as_bytes().last().copied()? != quote {
-        return None;
-    }
-    Some(&value[1..value.len() - 1])
+    let quote = match value.as_bytes().first()? {
+        b'\'' => '\'',
+        b'"' => '"',
+        _ => return None,
+    };
+    value.strip_prefix(quote)?.strip_suffix(quote)
 }
 
 fn escape_js_string_literal(value: &str) -> String {
@@ -177,7 +169,7 @@ fn split_top_level(s: &str) -> std::vec::Vec<&str> {
             '{' | '[' | '(' => depth += 1,
             '}' | ']' | ')' => depth -= 1,
             ',' if depth == 0 => {
-                parts.push(&s[start..index]);
+                parts.extend(s.get(start..index));
                 start = index + ch.len_utf8();
             }
             _ => {}
@@ -185,8 +177,14 @@ fn split_top_level(s: &str) -> std::vec::Vec<&str> {
         prev = ch;
     }
 
-    parts.push(&s[start..]);
+    parts.extend(s.get(start..));
     parts
+}
+
+/// `s` split around its first top-level `needle`, which is dropped.
+fn split_at_top_level_char(s: &str, needle: char) -> Option<(&str, &str)> {
+    let (before, rest) = s.split_at_checked(find_top_level_char(s, needle)?)?;
+    Some((before, rest.strip_prefix(needle)?))
 }
 
 fn find_top_level_char(s: &str, needle: char) -> Option<usize> {

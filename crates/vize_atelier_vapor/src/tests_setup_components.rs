@@ -1,3 +1,8 @@
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 use super::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor,
     compile_vapor_with_experimental_options,

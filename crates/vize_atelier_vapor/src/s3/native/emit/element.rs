@@ -25,14 +25,18 @@ impl<'a> Emitter<'a, '_> {
     /// Ids for the element's component and outlet children, in order: a
     /// consecutive run minted before the element's own id.
     fn reserve(&mut self, index: usize) -> std::ops::Range<usize> {
-        let count = self.artifact.nodes[index]
-            .children
-            .iter()
+        let Some(node) = self.artifact.nodes.get(index) else {
+            self.invariant_broken();
+            return self.next_id..self.next_id;
+        };
+        let count = (node.children.iter())
             .filter(|child| {
-                matches!(
-                    self.artifact.nodes[**child].content,
-                    Content::Component { .. } | Content::Outlet { .. }
-                )
+                self.artifact.nodes.get(**child).is_some_and(|child| {
+                    matches!(
+                        child.content,
+                        Content::Component { .. } | Content::Outlet { .. }
+                    )
+                })
             })
             .count();
         let first = self.next_id;
@@ -50,15 +54,15 @@ impl<'a> Emitter<'a, '_> {
     ) {
         ensure_sufficient_stack(|| {
             // Linking reborrows the emitter, so the open tag is copied out first.
-            let (tag, tag_span, attributes) = {
-                let node = &self.artifact.nodes[index];
+            let open = self.artifact.nodes.get(index).and_then(|node| {
+                // Templates start at elements.
                 let Content::Element {
                     tag,
                     tag_span,
                     ref attributes,
                 } = node.content
                 else {
-                    unreachable!("templates start at elements")
+                    return None;
                 };
                 // A `v-bind` object merges the static attributes at runtime.
                 let merged =
@@ -68,7 +72,10 @@ impl<'a> Emitter<'a, '_> {
                 } else {
                     Vec::from_iter_in(attributes.iter().copied(), &self.allocator)
                 };
-                (tag, tag_span, attributes)
+                Some((tag, tag_span, attributes))
+            });
+            let Some((tag, tag_span, attributes)) = open else {
+                return self.invariant_broken();
             };
             template.push_char('<');
             // S3 keeps element and attribute spans; the tokens inside them
@@ -113,7 +120,10 @@ impl<'a> Emitter<'a, '_> {
     ) {
         // Children are read in place: nothing below reads its parent's list,
         // and the list is restored once every child is emitted.
-        let children = take(self.allocator, &mut self.artifact.nodes[index].children);
+        let Some(node) = self.artifact.nodes.get_mut(index) else {
+            return self.invariant_broken();
+        };
+        let children = take(self.allocator, &mut node.children);
         // Upstream's fast-remove flag clears the whole parent, so it is sound
         // only when a loop is the parent's sole child.
         let only_child = children.len() == 1;
@@ -122,16 +132,23 @@ impl<'a> Emitter<'a, '_> {
         // The last referenced element child and its offset: a later element
         // sibling is reached from it, as the retained lane and upstream do.
         let mut previous: Option<(usize, usize)> = None;
-        while cursor < children.len() {
-            let child = children[cursor];
+        while let Some(&child) = children.get(cursor) {
             cursor += 1;
-            match self.artifact.nodes[child].content {
+            let Some(node) = self.artifact.nodes.get(child) else {
+                self.invariant_broken();
+                continue;
+            };
+            match node.content {
                 Content::Text { .. } => {
                     cursor = self.text_run(&children, cursor - 1, parent, offset, template, block);
                 }
                 Content::Element { .. } => {
-                    let (id, nested) = if self.dynamic[child] {
-                        let parent = parent.expect("dynamic ancestry is materialized");
+                    let (id, nested) = if self.dynamic.get(child) == Some(&true) {
+                        // Dynamic ancestry is materialized.
+                        let Some(parent) = parent else {
+                            self.invariant_broken();
+                            continue;
+                        };
                         let id = match previous {
                             Some((prev_id, prev_offset)) => {
                                 self.next(prev_id, offset - prev_offset, block)
@@ -148,21 +165,38 @@ impl<'a> Emitter<'a, '_> {
                 Content::If { .. } | Content::For(_) => {
                     // The placeholder is the authored insertion position.
                     template.push_str("<!---->");
-                    let parent = parent.expect("control-flow parent is materialized");
+                    let Some(parent) = parent else {
+                        self.invariant_broken();
+                        continue;
+                    };
                     let anchor = self.child(parent, offset, block);
                     self.control(child, Some((parent, anchor, only_child)), block);
                 }
                 Content::Component { .. } => {
                     template.push_str("<!---->");
-                    let parent = parent.expect("component parent is materialized");
-                    let id = reserved.next().expect("component numbered by its parent");
+                    let Some(parent) = parent else {
+                        self.invariant_broken();
+                        continue;
+                    };
+                    // The parent numbered it in `reserve`.
+                    let Some(id) = reserved.next() else {
+                        self.invariant_broken();
+                        continue;
+                    };
                     let anchor = self.child(parent, offset, block);
                     self.component(child, Some(id), Some((parent, anchor)), block);
                 }
                 Content::Outlet { .. } => {
                     template.push_str("<!---->");
-                    let parent = parent.expect("outlet parent is materialized");
-                    let id = reserved.next().expect("outlet numbered by its parent");
+                    let Some(parent) = parent else {
+                        self.invariant_broken();
+                        continue;
+                    };
+                    // The parent numbered it in `reserve`.
+                    let Some(id) = reserved.next() else {
+                        self.invariant_broken();
+                        continue;
+                    };
                     let anchor = self.child(parent, offset, block);
                     self.outlet(child, id, block);
                     let mut elements = Vec::new_in(&self.allocator);
@@ -178,6 +212,8 @@ impl<'a> Emitter<'a, '_> {
             }
             offset += 1;
         }
-        self.artifact.nodes[index].children = children;
+        if let Some(node) = self.artifact.nodes.get_mut(index) {
+            node.children = children;
+        }
     }
 }

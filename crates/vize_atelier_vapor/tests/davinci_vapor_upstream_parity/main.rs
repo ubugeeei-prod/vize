@@ -1,23 +1,25 @@
 //! TS-33: S3 Vapor and official compiler-vapor output must have the same
 //! mounted behavior under the same published runtime, including node identity.
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking and compare std-string fixtures"
 )]
 
-use std::{
-    io::Write,
-    path::Path,
-    process::{Command, Stdio},
-};
+mod trace;
 
 use serde::Deserialize;
 use serde_json::{Value, json};
 use vize_atelier_core::walk_probe::WalkCounts;
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
+
+use trace::trace;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -28,37 +30,10 @@ struct Fixture {
     expected: Vec<Value>,
 }
 
-fn trace(runner: &str, input: Value) -> Vec<Value> {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../tests/tooling/support")
-        .join(runner);
-    let mut child = Command::new("node")
-        .arg(path)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("start TS-33 mounted runner (install workspace JS dependencies first)");
-    child
-        .stdin
-        .take()
-        .unwrap()
-        .write_all(input.to_string().as_bytes())
-        .unwrap();
-    let output = child.wait_with_output().unwrap();
-    assert!(
-        output.status.success(),
-        "{runner} failed:\n{}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    serde_json::from_slice(&output.stdout)
-        .unwrap_or_else(|error| panic!("{error}: {}", String::from_utf8_lossy(&output.stdout)))
-}
-
 #[test]
 fn s3_branch_matches_official_vapor_state_and_identity_trace() {
     let fixture: Fixture = serde_json::from_str(include_str!(
-        "../../../tests/_fixtures/davinci-ts33-vapor-branch.json"
+        "../../../../tests/_fixtures/davinci-ts33-vapor-branch.json"
     ))
     .unwrap();
     assert!(!fixture.steps.is_empty());

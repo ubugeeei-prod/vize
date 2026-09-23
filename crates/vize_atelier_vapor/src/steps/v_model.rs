@@ -111,6 +111,10 @@ pub fn generate_model_handler(value_expr: &str, modifiers: &[String]) -> String 
     cstr!("$event => {{ {value_expr} = {event_value} }}")
 }
 
+#[expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 #[cfg(test)]
 mod tests {
     use super::generate_model_handler;

@@ -13,10 +13,14 @@ type Values<'a> = Vec<'a, Box<'a, SimpleExpressionNode<'a>>>;
 
 impl<'a> Emitter<'a, '_> {
     fn parts(&self, index: usize) -> &[TextPart<'a>] {
-        let Content::Text { ref parts, .. } = self.artifact.nodes[index].content else {
-            unreachable!("text payload checked by the caller")
-        };
-        parts
+        // The caller checked the text payload.
+        match self.artifact.nodes.get(index).map(|node| &node.content) {
+            Some(Content::Text { parts, .. }) => parts,
+            _ => {
+                self.invariant_broken();
+                &[]
+            }
+        }
     }
 
     /// A block of only text with at least two parts and one expression is
@@ -26,10 +30,7 @@ impl<'a> Emitter<'a, '_> {
         children: &[usize],
         block: &mut BlockIRNode<'a>,
     ) -> bool {
-        if !children
-            .iter()
-            .all(|child| matches!(self.artifact.nodes[*child].content, Content::Text { .. }))
-        {
+        if !children.iter().all(|child| self.is_text(*child)) {
             return false;
         }
         let parts: Vec<'a, TextPart<'a>> = Vec::from_iter_in(
@@ -103,14 +104,11 @@ impl<'a> Emitter<'a, '_> {
         template: &mut EmitDocument,
         block: &mut BlockIRNode<'a>,
     ) -> usize {
-        let end = children[start..]
-            .iter()
-            .position(|child| !matches!(self.artifact.nodes[*child].content, Content::Text { .. }))
-            .map_or(children.len(), |length| start + length);
+        let run = children.get(start..).unwrap_or_default();
+        let length = run.iter().take_while(|child| self.is_text(**child)).count();
+        let end = start + length;
         let parts: Vec<'a, TextPart<'a>> = Vec::from_iter_in(
-            children[start..end]
-                .iter()
-                .flat_map(|child| self.parts(*child).iter().copied()),
+            (run.iter().take(length)).flat_map(|child| self.parts(*child).iter().copied()),
             &self.allocator,
         );
         let dynamic = parts.iter().any(|part| part.dynamic);
@@ -127,7 +125,11 @@ impl<'a> Emitter<'a, '_> {
             }
         }
         if dynamic {
-            let parent = parent.expect("dynamic ancestry is materialized");
+            // Dynamic ancestry is materialized.
+            let Some(parent) = parent else {
+                self.invariant_broken();
+                return end;
+            };
             let element = if offset == 0 {
                 parent
             } else {
@@ -145,6 +147,11 @@ impl<'a> Emitter<'a, '_> {
             );
         }
         end
+    }
+
+    fn is_text(&self, index: usize) -> bool {
+        (self.artifact.nodes.get(index))
+            .is_some_and(|node| matches!(node.content, Content::Text { .. }))
     }
 
     /// Dynamic compound parts keep the whole `{{ expr }}`; map the expression

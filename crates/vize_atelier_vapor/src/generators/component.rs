@@ -136,6 +136,10 @@ pub fn generate_keep_alive(
     }
 }
 
+#[expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 #[cfg(test)]
 mod tests {
     use super::{generate_keep_alive, generate_resolve_component};

@@ -110,7 +110,7 @@ fn transform_dynamic_children_with_ids<'a>(
     debug_assert_eq!(child_id_index, child_ids.len());
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "the walk's cursors recurse")]
 fn transform_dynamic_children_in_slice<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],
@@ -170,7 +170,10 @@ fn transform_dynamic_children_in_slice<'a>(
         }
 
         if !is_static_element(child_el) {
-            let child_id = child_ids[*child_id_index];
+            // One id was allocated per non-static child, in this order.
+            let Some(&child_id) = child_ids.get(*child_id_index) else {
+                continue;
+            };
             *child_id_index += 1;
 
             if is_template_backed_element(child_el) {

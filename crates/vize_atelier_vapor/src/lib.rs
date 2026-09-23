@@ -8,8 +8,6 @@
 //! **Experimental.** Public APIs and generated output may change in any release. See the
 //! [Rust crate support tiers](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/stability.md#rust-crate-support-tiers).
 
-#![allow(clippy::collapsible_match)]
-
 pub mod compile;
 pub mod generate;
 pub mod generators;
@@ -20,6 +18,11 @@ pub mod s3;
 pub mod steps;
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 mod tests;
 #[cfg(test)]
 mod tests_davinci_differential;
@@ -49,7 +52,7 @@ pub use compile::{
     compile_vapor_with_template_syntax_and_diagnostics,
     compile_vapor_with_template_syntax_and_experimental_options,
 };
-#[allow(deprecated)]
+#[expect(deprecated, reason = "re-exported until their removal")]
 pub use compile::{
     compile_vapor_with_vue_parser_quirks, compile_vapor_with_vue_parser_quirks_and_diagnostics,
 };

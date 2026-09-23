@@ -5,7 +5,7 @@ use vize_carton::{Allocator, Vec};
 use vize_s3::op::Program;
 
 use super::super::{Content, Node};
-use super::{Result, Slots};
+use super::{Result, Slots, at, at_mut};
 use crate::s3::{AdmissionFailure, LegacyReason};
 
 /// Returns each node's owning node. Branch roots and loop bodies are owned by
@@ -33,17 +33,19 @@ pub(super) fn assemble<'a>(
             return Err(LegacyReason::Structure.into());
         }
         for child in &children {
-            parents[*child] = Some(index);
+            *at_mut(&mut parents, *child)? = Some(index);
         }
         // A body is its carrier element, or the non-empty fragment a
         // `<template>` carrier unwrapped (text and nested control flow too).
         let element = matches!(
             children.as_slice(),
-            [child] if matches!(nodes[*child].content, Content::Element { .. })
+            [child] if matches!(nodes.get(*child), Some(Node { content: Content::Element { .. }, .. }))
         );
-        match &mut nodes[index].content {
+        let owner_owned = at_mut(&mut owned, index)?;
+        let node = at_mut(nodes, index)?;
+        match &mut node.content {
             Content::Element { tag, .. } => {
-                if std::mem::replace(&mut owned[index], true)
+                if std::mem::replace(owner_owned, true)
                     || super::ident::admitted_void(tag) && !children.is_empty()
                 {
                     return Err(LegacyReason::Structure.into());
@@ -63,7 +65,7 @@ pub(super) fn assemble<'a>(
                 continue;
             }
             Content::For(body) => {
-                if std::mem::replace(&mut owned[index], true) {
+                if std::mem::replace(owner_owned, true) {
                     return Err(AdmissionFailure::Invalid("loop owns several bodies"));
                 }
                 if !(element || body.template && !children.is_empty()) {
@@ -72,13 +74,13 @@ pub(super) fn assemble<'a>(
             }
             // Slot content and fallbacks are fragments rendered by their own block.
             Content::Component { .. } | Content::Outlet { .. } => {
-                if std::mem::replace(&mut owned[index], true) {
+                if std::mem::replace(owner_owned, true) {
                     return Err(AdmissionFailure::Invalid("slot owner has several regions"));
                 }
             }
             Content::Text { .. } => return Err(LegacyReason::Structure.into()),
         }
-        nodes[index].children = children;
+        node.children = children;
     }
     for (node, &owned) in nodes.iter().zip(owned.iter()) {
         match &node.content {
@@ -155,9 +157,13 @@ pub(super) fn check_nesting(
 ) -> Result<()> {
     let mut open = super::filled(alloc, (0_u8, 0_u32), nodes.len());
     for (index, node) in nodes.iter().enumerate() {
-        let (mut flags, depth) = parents[index].map_or((0, 0), |parent| open[parent]);
-        if let Some(parent) = parents[index] {
-            match nodes[parent].content {
+        let parent = *at(parents, index)?;
+        let (mut flags, depth) = match parent {
+            Some(parent) => *at(&open, parent)?,
+            None => (0, 0),
+        };
+        if let Some(parent) = parent {
+            match at(nodes, parent)?.content {
                 Content::Element {
                     tag: "ul" | "ol", ..
                 } => flags &= !ITEM,
@@ -190,7 +196,7 @@ pub(super) fn check_nesting(
         {
             return Err(LegacyReason::Structure.into());
         }
-        open[index] = (flags | own, depth);
+        *at_mut(&mut open, index)? = (flags | own, depth);
     }
     Ok(())
 }

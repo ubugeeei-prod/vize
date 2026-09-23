@@ -25,7 +25,9 @@ fn compound_parts_outlive_their_source_and_drive_generation() {
     let VaporS3BridgeStatus::Accepted(artifact) = admit(s3, &Retained::new(&allocator)) else {
         panic!("expected native compound text artifact")
     };
-    let ir = artifact.into_ir(&allocator, "<b>decoy</b>", None);
+    let ir = artifact
+        .into_ir(&allocator, "<b>decoy</b>", None)
+        .expect("an admitted artifact emits");
     let code = crate::generate::generate_vapor(&ir, None).code;
     assert!(
         code.contains("\"Hello \" + _toDisplayString(_ctx.changed) + \"!\""),

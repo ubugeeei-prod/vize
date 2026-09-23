@@ -112,11 +112,10 @@ pub(crate) fn generate_vapor_with_spans(
     }
 
     let mut root_template_indices: FxHashSet<usize> = FxHashSet::default();
-    if ir.block.returns.len() == 1 {
-        let element_id = ir.block.returns[0];
-        if let Some(&template_index) = ir.element_template_map.get(&element_id) {
-            root_template_indices.insert(template_index);
-        }
+    if let [element_id] = ir.block.returns.as_slice()
+        && let Some(&template_index) = ir.element_template_map.get(element_id)
+    {
+        root_template_indices.insert(template_index);
     }
     for op in ir.block.operation.iter() {
         if let OperationNode::If(if_node) = op {

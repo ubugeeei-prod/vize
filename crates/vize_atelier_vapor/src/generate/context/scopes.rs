@@ -56,7 +56,6 @@ pub(crate) struct ForScope {
 
 /// Slot scope entry for scoped slots
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
 pub(crate) struct SlotScope {
     /// Destructured variable names (e.g., ["item", "index"] from "{ item, index }")
     pub(crate) names: std::vec::Vec<String>,

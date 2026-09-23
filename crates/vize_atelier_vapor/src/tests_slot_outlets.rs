@@ -4,6 +4,12 @@
 //! the source-file-length limit; the small assertion helpers mirror the ones
 //! defined there.
 
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+
 use super::compile_vapor;
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;

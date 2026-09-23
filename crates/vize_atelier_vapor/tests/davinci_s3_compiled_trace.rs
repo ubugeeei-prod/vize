@@ -1,9 +1,15 @@
 //! TS-28 compiled-runtime bridge for the S3 backend reference traces.
 
-#![allow(
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 use std::{

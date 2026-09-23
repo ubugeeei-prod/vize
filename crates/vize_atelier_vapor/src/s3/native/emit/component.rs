@@ -21,32 +21,46 @@ impl<'a> Emitter<'a, '_> {
         placement: Option<(usize, usize)>,
         block: &mut BlockIRNode<'a>,
     ) {
-        let Content::Component {
-            tag,
-            tag_span,
-            ref mut props,
-            is,
-        } = self.artifact.nodes[index].content
+        // The caller checked the component payload.
+        let Some(Node {
+            content:
+                Content::Component {
+                    tag,
+                    tag_span,
+                    props,
+                    is,
+                },
+            children,
+            ..
+        }) = self.artifact.nodes.get_mut(index)
         else {
-            unreachable!("component payload checked by the caller")
+            return self.invariant_broken();
         };
+        let (tag, tag_span, is) = (*tag, *tag_span, *is);
         // Each node is emitted once, so its payload moves out of the artifact.
         let props = take(self.allocator, props);
-        let children = take(self.allocator, &mut self.artifact.nodes[index].children);
+        let children = take(self.allocator, children);
         // Before slot bodies, so the outer tag wins over a nested one.
         self.note_component_tag(tag, tag_span);
         // Named templates each render their content block and then take the
         // template's own id; otherwise the children are one slot, `default`
         // unless the component's own `v-slot` names it.
         let mut slots = Vec::new_in(&self.allocator);
-        let own = slot_of(&self.artifact.nodes[index]);
-        let named = children
-            .first()
-            .is_some_and(|child| slot_of(&self.artifact.nodes[*child]).is_some());
+        let own = self.artifact.nodes.get(index).and_then(slot_of);
+        let named = (children.first())
+            .is_some_and(|child| self.artifact.nodes.get(*child).and_then(slot_of).is_some());
         if named {
             for child in children {
-                let slot = slot_of(&self.artifact.nodes[child]).expect("validated slot template");
-                let content = take(self.allocator, &mut self.artifact.nodes[child].children);
+                // Admission checked that every named child is a slot template.
+                let Some(node) = self.artifact.nodes.get_mut(child) else {
+                    self.invariant_broken();
+                    continue;
+                };
+                let Some(slot) = slot_of(node) else {
+                    self.invariant_broken();
+                    continue;
+                };
+                let content = take(self.allocator, &mut node.children);
                 let block = self.block(&content);
                 self.id();
                 slots.push(self.slot(child, slot, block));
@@ -85,15 +99,18 @@ impl<'a> Emitter<'a, '_> {
     /// A `<slot>` outlet with its already assigned id; the fallback block is
     /// numbered after it.
     pub(super) fn outlet(&mut self, index: usize, id: usize, block: &mut BlockIRNode<'a>) {
-        let Content::Outlet {
-            name,
-            ref mut props,
-        } = self.artifact.nodes[index].content
+        // The caller checked the outlet payload.
+        let Some(Node {
+            content: Content::Outlet { name, props },
+            children,
+            ..
+        }) = self.artifact.nodes.get_mut(index)
         else {
-            unreachable!("outlet payload checked by the caller")
+            return self.invariant_broken();
         };
+        let name = *name;
         let props = take(self.allocator, props);
-        let children = take(self.allocator, &mut self.artifact.nodes[index].children);
+        let children = take(self.allocator, children);
         let fallback = (!children.is_empty()).then(|| self.block(&children));
         let props = self.props(&props, false);
         let name = self.expression(Expr::plain(name), true);

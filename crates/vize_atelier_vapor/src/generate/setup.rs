@@ -78,12 +78,13 @@ pub(crate) fn escape_js_string_literal(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
 
     fn push_hex4(out: &mut String, value: u32) {
-        const HEX: &[u8; 16] = b"0123456789abcdef";
         out.push_str("\\u");
-        out.push(HEX[((value >> 12) & 0xF) as usize] as char);
-        out.push(HEX[((value >> 8) & 0xF) as usize] as char);
-        out.push(HEX[((value >> 4) & 0xF) as usize] as char);
-        out.push(HEX[(value & 0xF) as usize] as char);
+        for shift in [12, 8, 4, 0] {
+            // A nibble is always a hex digit.
+            if let Some(digit) = char::from_digit((value >> shift) & 0xF, 16) {
+                out.push(digit);
+            }
+        }
     }
 
     for char in s.chars() {

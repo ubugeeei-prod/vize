@@ -34,7 +34,9 @@ pub(super) fn generated(
         panic!("expected an executable artifact: {status:?}");
     };
     // The decoy source cannot provide any of the generated DOM or expressions.
-    let ir = artifact.into_ir(allocator, "<aside>decoy</aside>", None);
+    let ir = artifact
+        .into_ir(allocator, "<aside>decoy</aside>", None)
+        .expect("an admitted artifact emits");
     crate::generate::generate_vapor(&ir, None).code
 }
 

@@ -188,8 +188,8 @@ fn collect_component_prop_values(
 }
 
 fn merge_component_prop_values(values: &[String]) -> String {
-    if values.len() == 1 {
-        cstr!("() => ({})", values[0])
+    if let [value] = values {
+        cstr!("() => ({})", value)
     } else {
         cstr!("() => ([{}])", values.join(", "))
     }

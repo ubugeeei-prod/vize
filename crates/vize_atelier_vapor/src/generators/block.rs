@@ -166,6 +166,10 @@ pub fn escape_template(s: &str) -> String {
         .into()
 }
 
+#[expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 #[cfg(test)]
 mod tests {
     use super::{GenerateContext, escape_template};

@@ -44,11 +44,7 @@ pub fn transform_if_branches<'a>(
     source: &'a str,
     id_generator: &mut impl FnMut() -> usize,
 ) -> Option<OperationNode<'a>> {
-    if branches.is_empty() {
-        return None;
-    }
-
-    let first_branch = &branches[0];
+    let (first_branch, rest) = branches.split_first()?;
     let condition = if let Some(ref cond) = first_branch.condition {
         extract_expression(allocator, cond, source)
     } else {
@@ -60,16 +56,16 @@ pub fn transform_if_branches<'a>(
 
     let positive = transform_children(allocator, &first_branch.children);
 
-    let negative = if branches.len() > 1 {
+    let negative = if rest.is_empty() {
+        None
+    } else {
         Some(transform_remaining_branches(
             allocator,
-            &branches[1..],
+            rest,
             &transform_children,
             source,
             id_generator,
         ))
-    } else {
-        None
     };
 
     let if_node = IfIRNode {
@@ -96,27 +92,25 @@ fn transform_remaining_branches<'a>(
     source: &'a str,
     id_generator: &mut impl FnMut() -> usize,
 ) -> NegativeBranch<'a> {
-    if branches.is_empty() {
+    let Some((branch, rest)) = branches.split_first() else {
         return NegativeBranch::Block(BlockIRNode::new(allocator));
-    }
-
-    let branch = &branches[0];
+    };
 
     if let Some(ref cond) = branch.condition {
         // v-else-if
         let condition = extract_expression(allocator, cond, source);
         let positive = transform_children(allocator, &branch.children);
 
-        let negative = if branches.len() > 1 {
+        let negative = if rest.is_empty() {
+            None
+        } else {
             Some(transform_remaining_branches(
                 allocator,
-                &branches[1..],
+                rest,
                 transform_children,
                 source,
                 id_generator,
             ))
-        } else {
-            None
         };
 
         let nested_if = IfIRNode {

@@ -43,6 +43,9 @@ pub(crate) enum LegacyReason {
     ControlFlow,
     Component,
     Selected,
+    /// Admission accepted the artifact but native emission found it
+    /// inconsistent.
+    Emission,
 }
 
 impl LegacyReason {
@@ -58,6 +61,7 @@ impl LegacyReason {
             Self::ControlFlow => "davinci.s3_vapor.legacy.control_flow",
             Self::Component => "davinci.s3_vapor.legacy.component",
             Self::Selected => "davinci.s3_vapor.legacy.selected",
+            Self::Emission => "davinci.s3_vapor.legacy.emission",
         }
     }
 }
@@ -93,23 +97,23 @@ impl<'a> VaporS3Artifact<'a> {
         allocator: &'a Allocator,
         source: &'a str,
         scope_id: Option<&str>,
-    ) -> crate::ir::RootIRNode<'a> {
+    ) -> Option<crate::ir::RootIRNode<'a>> {
         self.into_ir_with_spans(allocator, source, scope_id, false)
-            .0
+            .map(|(ir, _)| ir)
     }
 
     /// [`Self::into_ir`] that also returns the authored anchors when `spans`
-    /// is set (Davinci P3-9).
+    /// is set (Davinci P3-9). `None` sends the compile to the legacy lane.
     pub(crate) fn into_ir_with_spans(
         self,
         allocator: &'a Allocator,
         source: &'a str,
         scope_id: Option<&str>,
         spans: bool,
-    ) -> (
+    ) -> Option<(
         crate::ir::RootIRNode<'a>,
         Option<crate::generate::spans::VaporSourceSpans>,
-    ) {
+    )> {
         self.0
             .into_ir_with_spans(allocator, source, scope_id, spans)
     }

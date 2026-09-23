@@ -22,9 +22,12 @@ impl<'a> Emitter<'a, '_> {
         element: usize,
         block: &mut BlockIRNode<'a>,
     ) {
-        let node = &self.artifact.nodes[index];
+        // Bindings attach to elements.
+        let Some(node) = self.artifact.nodes.get(index) else {
+            return self.invariant_broken();
+        };
         let Content::Element { ref attributes, .. } = node.content else {
-            unreachable!("bindings attach to elements")
+            return self.invariant_broken();
         };
         let mut entries: Vec<'a, (u32, Entry<'a>)> = Vec::from_iter_in(
             attributes.iter().map(|&(name, value, span)| {
@@ -41,7 +44,11 @@ impl<'a> Emitter<'a, '_> {
             let entry = match binding.kind {
                 BindingKind::Spread => Entry::Object(binding.value),
                 BindingKind::Prop => Entry::Prop(binding.name, binding.value, false),
-                _ => unreachable!("a spread element binds only props"),
+                // Admission lets a spread element bind only props.
+                _ => {
+                    self.invariant_broken();
+                    continue;
+                }
             };
             entries.push((binding.position, entry));
         }

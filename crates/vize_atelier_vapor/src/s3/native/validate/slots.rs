@@ -76,11 +76,15 @@ fn pattern(text: &str) -> bool {
     {
         Some(fields) => {
             let names: std::vec::Vec<&str> = fields.split(',').map(str::trim).collect();
-            names.iter().all(|name| identifier(name))
-                && (1..names.len()).all(|at| !names[..at].contains(&names[at]))
+            names.iter().all(|name| identifier(name)) && !has_repeat(&names)
         }
         None => identifier(text),
     }
+}
+
+/// Whether some item equals an earlier one.
+fn has_repeat<T: PartialEq>(items: &[T]) -> bool {
+    (items.iter().enumerate()).any(|(at, item)| items.iter().take(at).any(|seen| seen == item))
 }
 
 /// The slot binding's name, when `node` carries one.
@@ -100,7 +104,9 @@ pub(super) fn check(nodes: &[Node<'_>], parents: &[Option<usize>]) -> Result<()>
             Content::Element {
                 tag: "template", ..
             } => {
-                let parent = parents[index].map(|parent| &nodes[parent].content);
+                let parent = (parents.get(index).copied().flatten())
+                    .and_then(|parent| nodes.get(parent))
+                    .map(|parent| &parent.content);
                 if slot_name(node).is_none() || !matches!(parent, Some(Content::Component { .. })) {
                     return Err(LegacyReason::Element.into());
                 }
@@ -109,11 +115,11 @@ pub(super) fn check(nodes: &[Node<'_>], parents: &[Option<usize>]) -> Result<()>
                 let named: std::vec::Vec<_> = node
                     .children
                     .iter()
-                    .filter_map(|child| slot_name(&nodes[*child]))
+                    .filter_map(|child| nodes.get(*child).and_then(slot_name))
                     .collect();
                 let mixed = !named.is_empty()
                     && (slot_name(node).is_some() || named.len() != node.children.len());
-                if mixed || (1..named.len()).any(|at| named[..at].contains(&named[at])) {
+                if mixed || has_repeat(&named) {
                     return Err(LegacyReason::Component.into());
                 }
             }

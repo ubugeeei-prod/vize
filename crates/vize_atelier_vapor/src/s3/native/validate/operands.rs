@@ -216,9 +216,9 @@ pub(super) fn text<'a>(values: &[Operand<'a>], retained: &Retained<'_, 'a>) -> R
                 || value.region.is_some()
                 || value.name.is_some()
         })
-        || values
-            .windows(2)
-            .any(|pair| pair[0].value.span.end != pair[1].value.span.start)
+        || values.windows(2).any(
+            |pair| matches!(pair, [left, right] if left.value.span.end != right.value.span.start),
+        )
     {
         return Err(AdmissionFailure::Invalid("invalid native text run"));
     }

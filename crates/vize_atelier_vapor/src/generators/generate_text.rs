@@ -25,8 +25,8 @@ pub fn generate_set_text(ctx: &mut GenerateContext, set_text: &SetTextIRNode<'_>
         })
         .collect();
 
-    if values.len() == 1 {
-        ctx.push_line_fmt(format_args!("_{helper}({element}, {})", values[0]));
+    if let [value] = values.as_slice() {
+        ctx.push_line_fmt(format_args!("_{helper}({element}, {})", value));
     } else if values.is_empty() {
         ctx.push_line_fmt(format_args!("_{helper}({element}, \"\")"));
     } else {
@@ -73,8 +73,7 @@ pub fn build_text_expression(parts: &[(bool, &str)]) -> String {
         return String::from("\"\"");
     }
 
-    if parts.len() == 1 {
-        let (is_static, content) = parts[0];
+    if let [(is_static, content)] = *parts {
         if is_static {
             return cstr!("\"{}\"", escape_text(content));
         } else {
@@ -102,6 +101,10 @@ pub fn can_inline_text(content: &str) -> bool {
     !content.contains("{{") && !content.contains('\n')
 }
 
+#[expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 #[cfg(test)]
 mod tests {
     use super::{build_text_expression, escape_text, generate_to_display_string};

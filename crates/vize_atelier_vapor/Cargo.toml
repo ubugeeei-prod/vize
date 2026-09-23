@@ -55,3 +55,6 @@ harness = false
 # unchanged, so additive preview fields are allowed and release validation owns
 # the versioning decision.
 constructible_struct_adds_field = "allow"
+
+[lints]
+workspace = true

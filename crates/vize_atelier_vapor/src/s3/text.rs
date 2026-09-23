@@ -65,7 +65,7 @@ pub(super) fn capture<'a>(
             || parts
                 .parts
                 .windows(2)
-                .any(|pair| pair[0].span.end != pair[1].span.start)
+                .any(|pair| matches!(pair, [left, right] if left.span.end != right.span.start))
             || !rebuilds(&parts.parts, value.text)
         {
             return Err(AdmissionFailure::Invalid("compound text parts are stale"));

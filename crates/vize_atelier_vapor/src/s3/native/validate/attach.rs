@@ -9,7 +9,7 @@ use vize_carton::{Allocator, Vec};
 use vize_s3::op::{OpId, RegionId};
 
 use super::super::{Binding, BindingKind, Content, Node, Prop};
-use super::{Result, Slots, component::component_prop};
+use super::{Result, Slots, at, at_mut, component::component_prop};
 use crate::s3::{AdmissionFailure, LegacyReason};
 
 type Pending<'a> = (OpId, RegionId, u32, Binding<'a>);
@@ -43,7 +43,7 @@ pub(super) fn bindings<'a>(
         if binding.kind == BindingKind::Spread
             && let Some(&Some((index, _))) = slots.get(target.index() as usize)
         {
-            spreads[index] = true;
+            *at_mut(&mut spreads, index)? = true;
         }
     }
     for (target, region, position, mut binding) in bindings {
@@ -59,25 +59,21 @@ pub(super) fn bindings<'a>(
         // Slot content binds to its `<template>` or to its component (only
         // the default slot there); the structure is checked once attached.
         if binding.kind == BindingKind::Slot {
-            let admitted = match nodes[index].content {
+            let node = at_mut(nodes, index)?;
+            let admitted = match node.content {
                 Content::Element {
                     tag: "template", ..
                 } => true,
                 Content::Component { .. } => binding.name == "default",
                 _ => false,
             };
-            if !admitted
-                || nodes[index]
-                    .bindings
-                    .iter()
-                    .any(|b| b.kind == BindingKind::Slot)
-            {
+            if !admitted || node.bindings.iter().any(|b| b.kind == BindingKind::Slot) {
                 return Err(LegacyReason::Component.into());
             }
-            nodes[index].bindings.push(binding);
+            node.bindings.push(binding);
             continue;
         }
-        match &mut nodes[index].content {
+        match &mut at_mut(nodes, index)?.content {
             Content::Element { .. } => {}
             // A `<component>` takes its `:is` once; everything else is a prop.
             Content::Component {
@@ -119,17 +115,17 @@ pub(super) fn bindings<'a>(
                 ));
             }
         }
-        if !fresh && spreads[index] {
+        if !fresh && *at(&spreads, index)? {
             // Only a `:class`/`:style` beside its static attribute repeats.
             if binding.kind != BindingKind::Prop
                 || !matches!(binding.name, "class" | "style")
-                || (nodes[index].bindings.iter())
+                || (at(nodes, index)?.bindings.iter())
                     .any(|b| b.kind == binding.kind && b.name == binding.name)
             {
                 return Err(LegacyReason::Binding.into());
             }
         } else if !fresh {
-            binding.merge = static_class_or_style(&mut nodes[index], &binding);
+            binding.merge = static_class_or_style(at_mut(nodes, index)?, &binding);
             if binding.merge.is_none() {
                 return Err(LegacyReason::Binding.into());
             }
@@ -139,7 +135,10 @@ pub(super) fn bindings<'a>(
         }
         if binding.kind == BindingKind::Prop && binding.name == "key" {
             // Only the body element of an element-carried loop owns a key.
-            let owner = parents[index].map(|parent| &mut nodes[parent].content);
+            let owner = match *at(parents, index)? {
+                Some(parent) => Some(&mut at_mut(nodes, parent)?.content),
+                None => None,
+            };
             // A `<template v-for>` keys the loop on its wrapper.
             let Some(Content::For(owner)) =
                 owner.filter(|owner| !matches!(owner, Content::For(looped) if looped.template))
@@ -147,16 +146,18 @@ pub(super) fn bindings<'a>(
                 return Err(LegacyReason::Binding.into());
             };
             owner.key_prop = Some(binding.value);
-            owner.spans.key_prop = Some(binding.spans[1]);
+            let [_, value_span] = binding.spans;
+            owner.spans.key_prop = Some(value_span);
             continue;
         }
         // Content directives replace the element's children at runtime.
+        let node = at_mut(nodes, index)?;
         if matches!(binding.kind, BindingKind::Html | BindingKind::Text)
-            && !nodes[index].children.is_empty()
+            && !node.children.is_empty()
         {
             return Err(LegacyReason::Structure.into());
         }
-        nodes[index].bindings.push(binding);
+        node.bindings.push(binding);
     }
     for node in nodes.iter_mut() {
         if let Content::Component {
@@ -220,7 +221,8 @@ fn static_class_or_style<'a>(
     let position = attributes
         .iter()
         .position(|(name, value, _)| *name == binding.name && value.is_some())?;
-    let static_span = attributes[position].2;
-    let after = binding.name == "style" && static_span.0 > binding.spans[0].0;
+    let (_, _, static_span) = *attributes.get(position)?;
+    let [name_span, _] = binding.spans;
+    let after = binding.name == "style" && static_span.0 > name_span.0;
     attributes.remove(position).1.map(|value| (value, after))
 }

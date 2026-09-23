@@ -1,9 +1,17 @@
 //! TS-30 mounted behavior through the published Vue DOM and Vapor runtimes.
 
-#![allow(
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 use serde::Deserialize;

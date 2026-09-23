@@ -102,7 +102,10 @@ fn single_string_literal(expr: &str) -> bool {
     let Some(quote) = expr.chars().next().filter(|c| matches!(c, '"' | '\'')) else {
         return false;
     };
-    let Some(body) = expr[1..].strip_suffix(quote) else {
+    let Some(body) = expr
+        .strip_prefix(quote)
+        .and_then(|rest| rest.strip_suffix(quote))
+    else {
         return false;
     };
     let mut escaped = false;
@@ -316,10 +319,9 @@ impl<'ast> ExpressionScope<'ast> for ExpressionRewriteCollector<'_, '_> {
         self.local_scopes.pop();
     }
     fn add_local(&mut self, name: &str) {
-        let scope = self
-            .local_scopes
-            .last_mut()
-            .expect("expression binding owns a scope");
-        scope.insert(String::new(name));
+        // An expression binding always pushes its scope first.
+        if let Some(scope) = self.local_scopes.last_mut() {
+            scope.insert(String::new(name));
+        }
     }
 }

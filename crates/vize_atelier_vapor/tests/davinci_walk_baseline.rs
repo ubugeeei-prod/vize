@@ -19,6 +19,12 @@
 //! The probe is process-global and monotone, so this file holds a single
 //! `#[test]` in its own binary - the `davinci_expr_reparse_floor.rs` shape.
 
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};

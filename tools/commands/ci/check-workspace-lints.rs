@@ -23,7 +23,6 @@ const PENDING: &[&str] = &[
     "crates/vize_atelier_jsx",
     "crates/vize_atelier_sfc",
     "crates/vize_atelier_ssr",
-    "crates/vize_atelier_vapor",
     "crates/vize_canon",
     "crates/vize_carton",
     "crates/vize_croquis",

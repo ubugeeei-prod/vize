@@ -17,6 +17,8 @@
 //! Multi-step jumps must use `_nthChild(parent, index)`, which honours the
 //! index in both modes — the same rule `@vue/compiler-vapor` follows.
 
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+
 use super::compile_vapor;
 use vize_carton::{Allocator, String};
 

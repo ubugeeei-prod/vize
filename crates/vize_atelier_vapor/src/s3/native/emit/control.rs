@@ -29,7 +29,11 @@ impl<'a> Emitter<'a, '_> {
             (Some(parent), Some(anchor))
         });
         // Each node is emitted once, so its payload moves out of the artifact.
-        let operation = match &mut self.artifact.nodes[index].content {
+        let Some(node) = self.artifact.nodes.get_mut(index) else {
+            self.invariant_broken();
+            return id;
+        };
+        let operation = match &mut node.content {
             Content::If { branches } => {
                 let branches = take(self.allocator, branches);
                 let branches = Vec::from_iter_in(
@@ -38,8 +42,11 @@ impl<'a> Emitter<'a, '_> {
                         .map(|branch| (branch.condition, branch.span, branch.roots.as_slice())),
                     &self.allocator,
                 );
-                let (condition, positive) = self.branch(&branches);
-                let negative = self.remaining(&branches[1..], parent, anchor);
+                let Some((condition, positive)) = self.branch(&branches) else {
+                    return id;
+                };
+                let negative =
+                    self.remaining(branches.get(1..).unwrap_or_default(), parent, anchor);
                 let node = IfIRNode {
                     id,
                     condition,
@@ -53,7 +60,7 @@ impl<'a> Emitter<'a, '_> {
             }
             Content::For(body) => {
                 let body = *body;
-                let members = take(self.allocator, &mut self.artifact.nodes[index].children);
+                let members = take(self.allocator, &mut node.children);
                 self.id();
                 let render = self.body(&members);
                 let spans = body.spans;
@@ -89,21 +96,30 @@ impl<'a> Emitter<'a, '_> {
                 };
                 OperationNode::For(Box::new_in(node, &self.allocator))
             }
-            _ => unreachable!("control payload checked by the caller"),
+            // The caller checked the control payload.
+            _ => {
+                self.invariant_broken();
+                return id;
+            }
         };
         block.operation.push(operation);
         id
     }
 
-    /// The leading conditional branch of `branches` and its block.
+    /// The leading conditional branch of `branches` and its block; `None`
+    /// (with the emission marked broken) when admission's leading condition
+    /// is missing.
     fn branch(
         &mut self,
         branches: Branches<'_, 'a>,
-    ) -> (
+    ) -> Option<(
         vize_carton::Box<'a, vize_atelier_core::SimpleExpressionNode<'a>>,
         BlockIRNode<'a>,
-    ) {
-        let (condition, span, roots) = branches[0];
+    )> {
+        let Some(&(Some(condition), span, roots)) = branches.first() else {
+            self.invariant_broken();
+            return None;
+        };
         let key = self.trimmed(span);
         if self.source.is_some()
             && let Some(start) = self.branch_anchor(key, roots)
@@ -117,13 +133,9 @@ impl<'a> Emitter<'a, '_> {
         {
             self.else_units.insert(key.0, else_span.0);
         }
-        let condition = self.spanned(
-            condition.expect("validated leading condition"),
-            false,
-            Some(key),
-        );
+        let condition = self.spanned(condition, false, Some(key));
         self.id();
-        (condition, self.body(roots))
+        Some((condition, self.body(roots)))
     }
 
     /// Chained branches share the chain's placement. An inline `v-else-if`
@@ -140,12 +152,13 @@ impl<'a> Emitter<'a, '_> {
                 Some(NegativeBranch::Block(self.body(roots)))
             }
             (Some(_), ..) => {
-                let (condition, positive) = self.branch(branches);
-                let negative = if branches.len() > 1 {
-                    self.id();
-                    self.remaining(&branches[1..], parent, anchor)
-                } else {
-                    None
+                let (condition, positive) = self.branch(branches)?;
+                let negative = match branches.get(1..) {
+                    Some(rest) if !rest.is_empty() => {
+                        self.id();
+                        self.remaining(rest, parent, anchor)
+                    }
+                    _ => None,
                 };
                 let node = IfIRNode {
                     id: 0,
@@ -174,7 +187,7 @@ impl<'a> Emitter<'a, '_> {
         let [root] = roots else {
             return None;
         };
-        match self.artifact.nodes[*root].content {
+        match self.artifact.nodes.get(*root)?.content {
             Content::Element { tag_span, .. } => Some(tag_span.0),
             _ => None,
         }
@@ -182,27 +195,14 @@ impl<'a> Emitter<'a, '_> {
 
     /// Start of the open tag that contains the authored byte `inside`.
     fn carrier_lt(&self, inside: u32) -> Option<u32> {
-        let bytes = self.source?.as_bytes();
-        let mut i = inside as usize;
-        if i > bytes.len() {
-            return None;
-        }
-        while i > 0 && bytes[i - 1].is_ascii_whitespace() {
-            i -= 1;
-        }
-        if i == 0 {
-            return None;
-        }
-        i -= 1;
-        if matches!(bytes[i], b'"' | b'\'') {
-            if i == 0 {
-                return None;
-            }
-            i -= 1;
+        let head = self.source?.as_bytes().get(..inside as usize)?;
+        // The last authored byte before `inside`, past a closing quote.
+        let mut end = head.iter().rposition(|byte| !byte.is_ascii_whitespace())?;
+        if matches!(head.get(end), Some(b'"' | b'\'')) {
+            end = end.checked_sub(1)?;
         }
         let mut quote = None;
-        loop {
-            let byte = bytes[i];
+        for (i, &byte) in head.get(..=end)?.iter().enumerate().rev() {
             match quote {
                 Some(q) if byte == q => quote = None,
                 Some(_) => {}
@@ -210,10 +210,7 @@ impl<'a> Emitter<'a, '_> {
                 None if byte == b'<' => return Some(i as u32),
                 _ => {}
             }
-            if i == 0 {
-                return None;
-            }
-            i -= 1;
         }
+        None
     }
 }

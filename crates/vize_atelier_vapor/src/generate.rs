@@ -206,8 +206,8 @@ fn generate_block_guarded(
 
     // Generate effects. Multiple reactive updates in the same block share a
     // single effect, matching Vue Vapor output for sibling dynamic children.
-    if block.effect.len() == 1 {
-        generate_effect(ctx, &block.effect[0], element_template_map);
+    if let [effect] = block.effect.as_slice() {
+        generate_effect(ctx, effect, element_template_map);
     } else if !block.effect.is_empty() {
         ctx.use_helper("renderEffect");
         ctx.push_line("_renderEffect(() => {");
@@ -273,21 +273,19 @@ fn collect_root_if_templates_guarded(
     root_indices: &mut FxHashSet<usize>,
 ) {
     // Only mark as root if the branch returns a single element
-    if if_node.positive.returns.len() == 1 {
-        let element_id = if_node.positive.returns[0];
-        if let Some(&template_index) = element_template_map.get(&element_id) {
-            root_indices.insert(template_index);
-        }
+    if let [element_id] = if_node.positive.returns.as_slice()
+        && let Some(&template_index) = element_template_map.get(element_id)
+    {
+        root_indices.insert(template_index);
     }
     // Handle negative branch
     if let Some(ref negative) = if_node.negative {
         match negative {
             crate::ir::NegativeBranch::Block(block) => {
-                if block.returns.len() == 1 {
-                    let element_id = block.returns[0];
-                    if let Some(&template_index) = element_template_map.get(&element_id) {
-                        root_indices.insert(template_index);
-                    }
+                if let [element_id] = block.returns.as_slice()
+                    && let Some(&template_index) = element_template_map.get(element_id)
+                {
+                    root_indices.insert(template_index);
                 }
             }
             crate::ir::NegativeBranch::If(nested_if) => {

@@ -22,7 +22,7 @@ pub(super) fn legacy_diagnosed(
             *slot = true;
         }
     }
-    program.ops.iter().enumerate().any(|(index, op)| {
+    program.ops.iter().zip(bindings.iter()).any(|(op, &bound)| {
         let Some(markup) = source.get(op.span.start as usize..op.span.end as usize) else {
             return true;
         };
@@ -32,7 +32,7 @@ pub(super) fn legacy_diagnosed(
             {
                 !closed(markup, op.kind == OpKind::InsertNode)
             }
-            _ if bindings[index] => empty_modifier(markup),
+            _ if bound => empty_modifier(markup),
             _ => false,
         }
     })
@@ -44,7 +44,9 @@ pub(super) fn legacy_diagnosed(
 /// of its own; S1 performs that repair without a trace. Components and slot
 /// outlets may self-close.
 fn closed(markup: &str, element: bool) -> bool {
-    let open = &markup[1..];
+    let Some(open) = markup.strip_prefix('<') else {
+        return true;
+    };
     if open.starts_with('!') {
         return true;
     }
@@ -52,7 +54,7 @@ fn closed(markup: &str, element: bool) -> bool {
     let end = (open.bytes())
         .position(|b| b.is_ascii_whitespace() || b == b'/' || b == b'>')
         .unwrap_or(open.len());
-    let tag = &open[..end];
+    let (tag, _) = open.split_at_checked(end).unwrap_or((open, ""));
     if element && void_tag(tag) || !element && markup.ends_with("/>") {
         return true;
     }
@@ -100,13 +102,15 @@ fn empty_modifier(attribute: &str) -> bool {
             depth == 0 && (b == b'=' || b.is_ascii_whitespace())
         })
         .unwrap_or(bytes.len());
-    let name = &bytes[..end];
-    let modifiers = &name[name.iter().rposition(|b| *b == b']').map_or(0, |at| at + 1)..];
+    let name = bytes.get(..end).unwrap_or(bytes);
+    let modifiers_start = name.iter().rposition(|b| *b == b']').map_or(0, |at| at + 1);
+    let modifiers = name.get(modifiers_start..).unwrap_or_default();
     // A segment after the first is empty exactly when two dots meet or the
     // modifiers end with a dot.
     modifiers.windows(2).any(|pair| pair == b"..") || modifiers.last() == Some(&b'.')
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{empty_modifier, void_tag};

@@ -181,17 +181,18 @@ impl<'a> NativeArtifact<'a> {
     /// for an accepted artifact. No source parsing or AST lowering occurs here.
     /// With `spans`, payload slices borrowed from `source` keep their authored
     /// spans and the template and control-flow anchors are returned (Davinci
-    /// P3-9).
+    /// P3-9). `None` when emission found the payload inconsistent; the
+    /// caller then compiles through the legacy lane.
     pub(super) fn into_ir_with_spans(
         self,
         allocator: &'a Allocator,
         source: &'a str,
         scope_id: Option<&str>,
         spans: bool,
-    ) -> (
+    ) -> Option<(
         crate::ir::RootIRNode<'a>,
         Option<crate::generate::spans::VaporSourceSpans>,
-    ) {
+    )> {
         emit::emit(self, allocator, source, scope_id, spans)
     }
 }

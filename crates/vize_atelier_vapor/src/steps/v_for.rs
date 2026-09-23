@@ -118,8 +118,7 @@ pub fn parse_for_alias(content: &str) -> (Option<String>, Option<String>, Option
     let content = content.trim();
 
     // Handle "(item, index)" or "(item, key, index)" patterns
-    if content.starts_with('(') && content.ends_with(')') {
-        let inner = &content[1..content.len() - 1];
+    if let Some(inner) = content.strip_prefix('(').and_then(|c| c.strip_suffix(')')) {
         let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
 
         let value = parts

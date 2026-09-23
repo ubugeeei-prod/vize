@@ -79,8 +79,8 @@ fn key<'a>(
         .ok_or(LegacyReason::ControlFlow)?;
     // A valueless `:key` reads `key` and has no value text to locate.
     let equals = authored.find('=').ok_or(LegacyReason::ControlFlow)?;
-    let at = authored[equals..]
-        .find(text)
+    let at = (authored.get(equals..))
+        .and_then(|value| value.find(text))
         .ok_or(LegacyReason::ControlFlow)?
         + equals;
     let start = attribute.start + at as u32;

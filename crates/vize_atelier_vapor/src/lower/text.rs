@@ -90,7 +90,7 @@ pub(crate) fn transform_text_children<'a>(
     );
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "the run's accumulators recurse")]
 fn collect_text_runs<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],

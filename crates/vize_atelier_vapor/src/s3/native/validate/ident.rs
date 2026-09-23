@@ -35,8 +35,7 @@ pub(super) fn path_root(text: &str) -> Option<&str> {
     if !bytes.split(|b| *b == b'.').all(identifier_segment) {
         return None;
     }
-    let end = bytes.iter().position(|b| *b == b'.').unwrap_or(bytes.len());
-    Some(&text[..end])
+    Some(text.split_once('.').map_or(text, |(root, _)| root))
 }
 
 /// oxc's `RESERVED_KEYWORDS`, spelled out so admission avoids its SipHash

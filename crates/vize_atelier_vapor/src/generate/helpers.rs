@@ -19,15 +19,14 @@ pub(crate) fn generate_effect(
     ctx.use_helper("renderEffect");
 
     // If only one operation, use single-line format
-    if effect.operations.len() == 1 {
-        let op = &effect.operations[0];
-        if let Some(op_code) = generate_operation_inline(ctx, op) {
-            ctx.push_indent();
-            ctx.push("_renderEffect(() => ");
-            ctx.push_spanned(&op_code);
-            ctx.push(")\n");
-            return;
-        }
+    if let [op] = effect.operations.as_slice()
+        && let Some(op_code) = generate_operation_inline(ctx, op)
+    {
+        ctx.push_indent();
+        ctx.push("_renderEffect(() => ");
+        ctx.push_spanned(&op_code);
+        ctx.push(")\n");
+        return;
     }
 
     ctx.push_line("_renderEffect(() => {");
