@@ -62,11 +62,12 @@ the commands that re-derive it, and the local measurements taken so far.
   states and node identities through updates and unmount, and the pinned
   official `@vue/compiler-vapor` output under the same runtime. Empty static
   style attributes still select legacy.
-- The first TS-33 fixture compiles one conditional element and its static
-  sibling through Vize S3 and pinned official `@vue/compiler-vapor`. Both
-  outputs mount on the same pinned `@vue/runtime-vapor`; five exact snapshots
-  include DOM state, branch recreation identity and unchanged sibling identity.
-  A zero-legacy-walk assertion ensures the Vize side actually exercises S3.
+- TS-33 compiles a conditional element, `v-cloak`, empty textarea model,
+  semantic phrasing elements, and both static/dynamic style orders through
+  Vize S3 and pinned official `@vue/compiler-vapor`. Both outputs mount on the
+  same pinned `@vue/runtime-vapor`; exact snapshots cover branch recreation,
+  live and sibling identity, model input/external patch, and style precedence.
+  Zero-legacy-walk assertions ensure the Vize side actually exercises S3.
 - References beginning with `$event` remain in the legacy lane. Their handler
   semantics follow Vue: a reference names a component/setup binding; only an
   inline statement receives the implicit event parameter. The Chromium contract

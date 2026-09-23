@@ -199,3 +199,148 @@ fn s3_style_merge_matches_official_vapor_in_both_authored_orders() {
         assert_eq!(vize, upstream, "{source}: TS-33 behavior-level parity");
     }
 }
+
+fn assert_native_upstream_trace(source: &str, context: Value, steps: Value, expected: Vec<Value>) {
+    let allocator = Allocator::new();
+    let before = WalkCounts::snapshot();
+    let compiled = compile_vapor(
+        &allocator,
+        source,
+        VaporCompilerOptions {
+            prefix_identifiers: true,
+            ..Default::default()
+        },
+    );
+    assert!(
+        compiled.error_messages.is_empty(),
+        "{source}: {:?}",
+        compiled.error_messages
+    );
+    assert_eq!(
+        WalkCounts::snapshot().since(before).total_walks(),
+        0,
+        "{source}: TS-33 must exercise native S3"
+    );
+    let vize = trace(
+        "davinci-mounted-trace.mjs",
+        json!({
+            "backend": "vapor",
+            "code": compiled.code,
+            "context": context.clone(),
+            "steps": steps.clone(),
+            "identities": true,
+        }),
+    );
+    let upstream = trace(
+        "davinci-upstream-vapor-trace.mjs",
+        json!({"source": source, "context": context, "steps": steps}),
+    );
+    assert_eq!(vize, expected, "{source}: Vize native S3 trace");
+    assert_eq!(
+        upstream, expected,
+        "{source}: official compiler-vapor trace"
+    );
+    assert_eq!(vize, upstream, "{source}: TS-33 behavior-level parity");
+}
+
+#[test]
+fn s3_cloak_matches_official_vapor_across_branch_recreation() {
+    let source = r#"<main data-id="root"><div v-if="open" v-cloak data-id="cloak" :title="tip">{{ label }}</div><p data-id="tail">tail</p></main>"#;
+    let cloak = |title: &str, label: &str| json!({"tag": "div", "attributes": {"data-id": "cloak", "title": title}, "children": [label]});
+    let tail = json!({"tag": "p", "attributes": {"data-id": "tail"}, "children": ["tail"]});
+    let view = |children: Value, identities: Value| {
+        json!({
+            "tree": [{"tag": "main", "attributes": {"data-id": "root"}, "children": children}],
+            "events": [],
+            "identities": identities,
+        })
+    };
+    assert_native_upstream_trace(
+        source,
+        json!({"open": true, "tip": "first", "label": "A"}),
+        json!([
+            {"patch": {"tip": "second", "label": "B"}},
+            {"patch": {"open": false}},
+            {"patch": {"open": true}},
+        ]),
+        vec![
+            view(
+                json!([cloak("first", "A"), tail]),
+                json!([["root", 0], ["cloak", 1], ["tail", 2]]),
+            ),
+            view(
+                json!([cloak("second", "B"), tail]),
+                json!([["root", 0], ["cloak", 1], ["tail", 2]]),
+            ),
+            view(json!([tail]), json!([["root", 0], ["tail", 2]])),
+            view(
+                json!([cloak("second", "B"), tail]),
+                json!([["root", 0], ["cloak", 3], ["tail", 2]]),
+            ),
+            json!({"tree": [], "events": [], "identities": []}),
+        ],
+    );
+}
+
+#[test]
+fn s3_textarea_model_matches_official_vapor_input_and_external_patch() {
+    let source = r#"<section data-id="root"><textarea data-id="field" v-model="content"></textarea><p data-id="label">{{ content }}</p></section>"#;
+    let view = |content: &str| {
+        json!({
+            "tree": [{
+                "tag": "section",
+                "attributes": {"data-id": "root"},
+                "children": [
+                    {"tag": "textarea", "attributes": {"data-id": "field"}, "children": [], "value": content},
+                    {"tag": "p", "attributes": {"data-id": "label"}, "children": [content]},
+                ],
+            }],
+            "events": [],
+            "identities": [["root", 0], ["field", 1], ["label", 2]],
+        })
+    };
+    assert_native_upstream_trace(
+        source,
+        json!({"content": "initial"}),
+        json!([
+            {"event": "input", "selector": "textarea", "value": "typed"},
+            {"patch": {"content": "external"}},
+        ]),
+        vec![
+            view("initial"),
+            view("typed"),
+            view("external"),
+            json!({"tree": [], "events": [], "identities": []}),
+        ],
+    );
+}
+
+#[test]
+fn s3_phrasing_elements_match_official_vapor_updates_in_place() {
+    let source = r#"<p data-id="root"><code data-id="code" :title="tip">{{ label }}</code><mark data-id="mark">new</mark><time data-id="time" :datetime="date">{{ date }}</time></p>"#;
+    let view = |tip: &str, label: &str, date: &str| {
+        json!({
+            "tree": [{
+                "tag": "p",
+                "attributes": {"data-id": "root"},
+                "children": [
+                    {"tag": "code", "attributes": {"data-id": "code", "title": tip}, "children": [label]},
+                    {"tag": "mark", "attributes": {"data-id": "mark"}, "children": ["new"]},
+                    {"tag": "time", "attributes": {"data-id": "time", "datetime": date}, "children": [date]},
+                ],
+            }],
+            "events": [],
+            "identities": [["root", 0], ["code", 1], ["mark", 2], ["time", 3]],
+        })
+    };
+    assert_native_upstream_trace(
+        source,
+        json!({"tip": "first", "label": "A", "date": "2026-09-23"}),
+        json!([{"patch": {"tip": "second", "label": "B", "date": "2026-09-24"}}]),
+        vec![
+            view("first", "A", "2026-09-23"),
+            view("second", "B", "2026-09-24"),
+            json!({"tree": [], "events": [], "identities": []}),
+        ],
+    );
+}
