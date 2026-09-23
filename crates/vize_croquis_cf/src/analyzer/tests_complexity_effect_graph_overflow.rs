@@ -70,7 +70,11 @@ const right = computed(() => left.value)
         let summary = analyzer.effect_graph_summary(file_id).unwrap();
         let analysis = analyzer.get_analysis(file_id).unwrap();
 
-        assert_eq!(analysis.reactivity.count(), 2, "path={path}");
+        assert_eq!(
+            vize_croquis::facts::reactivity_count(&analysis),
+            2,
+            "path={path}"
+        );
         assert_eq!(summary.edge_count, 2, "path={path}");
         assert_eq!(summary.cycle_count, 1, "path={path}");
     }

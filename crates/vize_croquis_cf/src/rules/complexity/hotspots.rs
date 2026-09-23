@@ -74,7 +74,7 @@ fn local_input(entry: &ModuleEntry, effect_graph: EffectGraphSummary) -> Complex
             .iter()
             .map(|usage| usage.props.len())
             .fold(0usize, usize::saturating_add),
-        reactive_node_count: analysis.reactivity.count(),
+        reactive_node_count: vize_croquis::facts::reactivity_count(analysis),
         reactive_edge_count: effect_graph.edge_count,
         reactive_cycle_count: effect_graph.cycle_count,
         ..ComplexityInput::default()

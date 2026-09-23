@@ -19,6 +19,7 @@
 //! | [`Bindings`] | [`BindingKey`] — the script-setup marker, then binding names | P4-3a |
 //! | [`UndefinedRefs`] | walk-order ordinal | P4-3a |
 //! | [`ComponentUsages`] | [`ComponentIdentity`] — module plus exported name | P4-3b |
+//! | [`Reactivity`] | registration ordinal, then loss ordinal | P4-3d |
 //!
 //! Every group carries a declarative specification and a naive evaluator in
 //! [`spec`] (TS-34, the Polonius discipline).
@@ -48,11 +49,16 @@
 
 pub mod bindings;
 pub mod components;
+pub mod reactivity;
 pub mod spec;
 pub mod undefined_refs;
 
 pub use bindings::{BindingFact, BindingKey, Bindings, BindingsTable};
 pub use components::{ComponentIdentity, ComponentUsages, GroupedComponentUse, component_identity};
+pub use reactivity::{
+    Reactivity, ReactivityFact, ReactivityKey, SourceFact, reactivity_count, reactivity_has_losses,
+    reactivity_is_reactive, reactivity_lookup, reactivity_losses, reactivity_sources,
+};
 
 mod access;
 pub use access::{
@@ -71,6 +77,7 @@ pub const CROQUIS_FACTS: FactRegistry<Croquis> = FactRegistry::new(&[
     ProducerEntry::of::<Bindings>(),
     ProducerEntry::of::<UndefinedRefs>(),
     ProducerEntry::of::<ComponentUsages>(),
+    ProducerEntry::of::<Reactivity>(),
 ]);
 
 /// One drawn [`Croquis`] and the facts computed over it.
@@ -120,7 +127,7 @@ impl<'c> CroquisFacts<'c> {
 #[cfg(test)]
 mod tests {
     use super::{Bindings, CROQUIS_FACTS, CroquisFacts, Demand, FactConsumer, FactGroup};
-    use super::{ComponentUsages, FactError, UndefinedRefs};
+    use super::{ComponentUsages, FactError, Reactivity, UndefinedRefs};
     use crate::Croquis;
     use vize_davinci::fact::ids;
 
@@ -138,10 +145,21 @@ mod tests {
                 .with(ids::BINDINGS)
                 .with(ids::UNDEFINED_REFS)
                 .with(ids::COMPONENT_USAGES)
+                .with(ids::REACTIVITY)
         );
         assert_eq!(
-            (Bindings::ID, UndefinedRefs::ID, ComponentUsages::ID),
-            (ids::BINDINGS, ids::UNDEFINED_REFS, ids::COMPONENT_USAGES)
+            (
+                Bindings::ID,
+                UndefinedRefs::ID,
+                ComponentUsages::ID,
+                Reactivity::ID
+            ),
+            (
+                ids::BINDINGS,
+                ids::UNDEFINED_REFS,
+                ids::COMPONENT_USAGES,
+                ids::REACTIVITY
+            )
         );
     }
 

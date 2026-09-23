@@ -11,12 +11,12 @@ pub(super) struct PropLoss {
     pub(super) reason: ReactivityLossReason,
 }
 
-pub(super) fn reactive_source_from_expression<'a>(
-    analysis: &'a vize_croquis::Croquis,
+pub(super) fn reactive_source_from_expression(
+    analysis: &vize_croquis::Croquis,
     expression: &str,
-) -> Option<&'a vize_croquis::reactivity::ReactiveSource> {
+) -> Option<vize_croquis::facts::SourceFact> {
     let root = expression_root_identifier(expression)?;
-    analysis.reactivity.lookup(root)
+    vize_croquis::facts::reactivity_lookup(analysis, root)
 }
 
 fn expression_root_identifier(expression: &str) -> Option<&str> {
@@ -44,7 +44,7 @@ pub(super) fn prop_reactivity_loss(
     analysis: &vize_croquis::Croquis,
     prop_name: &str,
 ) -> Option<PropLoss> {
-    for loss in analysis.reactivity.losses() {
+    for loss in vize_croquis::facts::reactivity_losses(analysis) {
         match &loss.kind {
             ReactivityLossKind::PropsDestructure { .. } => {}
             ReactivityLossKind::ReactiveDestructure {

@@ -8,7 +8,7 @@ pub(super) fn append_reactivity_losses(
 ) {
     // Check for reactivity loss patterns detected by the parser
     // These are strict, AST-based detections
-    for loss in analysis.reactivity.losses() {
+    for loss in vize_croquis::facts::reactivity_losses(analysis) {
         use vize_croquis::reactivity::ReactivityLossKind;
         match &loss.kind {
             ReactivityLossKind::ReactiveDestructure {
@@ -150,21 +150,20 @@ pub(super) fn append_reactivity_losses(
             }
             ReactivityLossKind::ReactiveReassign { source_name } => {
                 // Get the original reactive type for better diagnostics
-                let original_type = analysis
-                    .reactivity
-                    .lookup(source_name.as_str())
-                    .map(|s| match s.kind {
-                        ReactiveKind::Ref => "ref",
-                        ReactiveKind::ShallowRef => "shallowRef",
-                        ReactiveKind::Reactive => "reactive",
-                        ReactiveKind::ShallowReactive => "shallowReactive",
-                        ReactiveKind::Computed => "computed",
-                        ReactiveKind::Readonly => "readonly",
-                        ReactiveKind::ShallowReadonly => "shallowReadonly",
-                        ReactiveKind::ToRef => "toRef",
-                        ReactiveKind::ToRefs => "toRefs",
-                    })
-                    .unwrap_or("reactive");
+                let original_type =
+                    vize_croquis::facts::reactivity_lookup(analysis, source_name.as_str())
+                        .map(|s| match s.kind {
+                            ReactiveKind::Ref => "ref",
+                            ReactiveKind::ShallowRef => "shallowRef",
+                            ReactiveKind::Reactive => "reactive",
+                            ReactiveKind::ShallowReactive => "shallowReactive",
+                            ReactiveKind::Computed => "computed",
+                            ReactiveKind::Readonly => "readonly",
+                            ReactiveKind::ShallowReadonly => "shallowReadonly",
+                            ReactiveKind::ToRef => "toRef",
+                            ReactiveKind::ToRefs => "toRefs",
+                        })
+                        .unwrap_or("reactive");
 
                 issues.push(InternalIssue {
                     kind: ReactivityIssueKind::ReactivityLost {

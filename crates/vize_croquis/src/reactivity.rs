@@ -155,7 +155,7 @@ pub enum ReactivityLossKind {
 }
 
 /// A detected reactivity loss
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReactivityLoss {
     pub kind: ReactivityLossKind,
     pub start: u32,

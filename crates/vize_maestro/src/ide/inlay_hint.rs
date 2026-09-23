@@ -161,7 +161,7 @@ impl InlayHintService {
         use tower_lsp::lsp_types::{InlayHintKind, InlayHintLabel, Position};
         use vize_croquis::reactivity::ReactiveKind;
 
-        for source in croquis.reactivity.sources() {
+        for source in vize_croquis::facts::reactivity_sources(croquis) {
             // Only attach the hint to ref-family bindings; reactive() objects
             // are direct, no wrapper to surface.
             let wrapper = match source.kind {

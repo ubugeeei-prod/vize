@@ -33,7 +33,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.provide_inject`               | field | `croquis`           |    10 |    26 |
 | `Croquis.race_conditions`              | field | `croquis`           |     1 |     1 |
 | `Croquis.re_export_forwards`           | field | `croquis`           |     1 |     1 |
-| `Croquis.reactivity`                   | field | `croquis`           |    11 |    22 |
+| `Croquis.reactivity`                   | field | `croquis`           |     2 |     2 |
 | `Croquis.scopes`                       | field | `croquis`           |    12 |    17 |
 | `Croquis.setup_context`                | field | `croquis`           |     1 |     1 |
 | `Croquis.template_expressions`         | field | `croquis`           |     1 |     3 |
@@ -60,16 +60,21 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `RaceConditionRisk`          |     2 |     4 |
 | `RaceConditionRiskKind`      |     2 |     3 |
 | `ReactiveKind`               |     7 |    37 |
-| `ReactiveSource`             |     1 |     1 |
 | `ReactivityLossKind`         |     2 |    18 |
 | `SetupContextViolation`      |     1 |     1 |
 | `SetupContextViolationKind`  |     2 |    11 |
 | `SfcParseOptions`            |     2 |     2 |
+| `SourceFact`                 |     1 |     1 |
 | `ViolationSeverity`          |     1 |     6 |
 | `component_identity`         |     1 |     1 |
 | `component_usage_list`       |     9 |    14 |
 | `parse_sfc`                  |     1 |     1 |
 | `parse_sfc_without_css_vars` |     1 |     1 |
+| `reactivity_count`           |     3 |     3 |
+| `reactivity_is_reactive`     |     1 |     5 |
+| `reactivity_lookup`          |     2 |     2 |
+| `reactivity_losses`          |     2 |     2 |
+| `reactivity_sources`         |     3 |     5 |
 | `to_pascal_case`             |     1 |     2 |
 | `used_component_contains`    |     1 |     1 |
 | `used_component_name_list`   |     4 |     6 |

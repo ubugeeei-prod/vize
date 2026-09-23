@@ -28,7 +28,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.component_shape`      | field | `croquis`           |     1 |     1 |
 | `Croquis.macros`               | field | `croquis`           |     7 |    14 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     3 |
-| `Croquis.reactivity`           | field | `croquis`           |     5 |     6 |
 | `Croquis.scopes`               | field | `croquis`           |     8 |    15 |
 | `Croquis.template_expressions` | field | `croquis`           |     1 |     2 |
 
@@ -52,6 +51,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `extract_identifiers_oxc`     |     2 |     2 |
 | `is_kebab_case`               |     1 |     1 |
 | `parse_script_setup`          |     2 |     4 |
+| `reactivity_lookup`           |     3 |     3 |
+| `reactivity_sources`          |     3 |     3 |
 | `v_bind_expression_ranges`    |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)

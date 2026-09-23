@@ -12,7 +12,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | -------------------- | ----- | --------- | ----: | ----: |
 | `Croquis`            | type  | `croquis` |     3 |     7 |
 | `Croquis.bindings`   | field | `croquis` |     1 |     2 |
-| `Croquis.reactivity` | field | `croquis` |     1 |     5 |
+| `Croquis.reactivity` | field | `croquis` |     1 |     4 |
 
 ## Non-product `vize_croquis` imports
 
@@ -23,6 +23,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Demand`                |     1 |     2 |
 | `FactConsumer`          |     1 |     1 |
 | `ReactiveKind`          |     1 |     4 |
+| `reactivity_sources`    |     1 |     1 |
 | `used_components_empty` |     1 |     1 |
 
 ## Naive grep disagreements (resolved/grep)

@@ -63,21 +63,15 @@ pub(super) fn analyze_component_reactivity(analysis: &vize_croquis::Croquis) -> 
 
     // Check for toRefs usage - this is the correct pattern, no warning needed
     // Check for reactive sources that indicate proper usage
-    let torefs_sources: FxHashSet<&str> = analysis
-        .reactivity
-        .sources()
+    let sources = vize_croquis::facts::reactivity_sources(analysis);
+    let torefs_sources: FxHashSet<&str> = sources
         .iter()
         .filter(|s| matches!(s.kind, ReactiveKind::ToRef | ReactiveKind::ToRefs))
         .map(|s| s.name.as_str())
         .collect();
 
     // Build a set of all reactive sources (from vue imports)
-    let _reactive_sources: FxHashSet<&str> = analysis
-        .reactivity
-        .sources()
-        .iter()
-        .map(|s| s.name.as_str())
-        .collect();
+    let _reactive_sources: FxHashSet<&str> = sources.iter().map(|s| s.name.as_str()).collect();
 
     // Track props defined via defineProps
     let props: FxHashSet<&str> = analysis
@@ -104,7 +98,7 @@ pub(super) fn analyze_component_reactivity(analysis: &vize_croquis::Croquis) -> 
     // Report if vue imports are present but not used properly
     if !vue_imports.is_empty() {
         // Check if reactive sources are actually used
-        for source in analysis.reactivity.sources() {
+        for source in &sources {
             // Verify the reactive function was imported from 'vue'
             let function_name = match source.kind {
                 ReactiveKind::Ref => "ref",
@@ -127,7 +121,7 @@ pub(super) fn analyze_component_reactivity(analysis: &vize_croquis::Croquis) -> 
     }
 
     // Check for prop passed to ref() which creates a copy
-    for source in analysis.reactivity.sources() {
+    for source in &sources {
         if source.kind == ReactiveKind::Ref {
             // Check if this ref is initialized with a prop
             if props.contains(source.name.as_str()) {

@@ -206,8 +206,8 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
         for (name, binding_type) in bindings.typed() {
             let (kind, mut type_detail, mut doc) =
                 items::binding_type_to_completion_info(binding_type);
-            let reactive_source = croquis.reactivity.lookup(name);
-            if let Some(source) = reactive_source
+            let reactive_source = vize_croquis::facts::reactivity_lookup(&croquis, name);
+            if let Some(ref source) = reactive_source
                 && let Some((reactive_detail, reactive_doc)) =
                     reactive_completion_info(&script_content, name, source.kind)
             {
@@ -251,7 +251,7 @@ pub(crate) fn complete_script(ctx: &IdeContext, is_setup: bool) -> Vec<Completio
         // already emitted by the bindings loop above with their reactive type
         // detail, so skip any source whose name is a known binding to avoid
         // listing the same identifier twice.
-        for source in croquis.reactivity.sources() {
+        for source in vize_croquis::facts::reactivity_sources(&croquis) {
             if bindings.contains_binding(source.name.as_str()) {
                 continue;
             }

@@ -78,7 +78,7 @@ Each ID links to its contract; the box is checked only in the PR that satisfies 
 - [ ] [P4-3a](./phase-4-tasks.md#p4-3a--bindings-and-undefined-refs-fact-groups) Bindings and undefined-refs fact groups — lane B · startable now
 - [x] [P4-3b](./phase-4-tasks.md#p4-3b--component-usage-fact-groups) Component-usage fact groups — lane B · startable now
 - [ ] [P4-3c](./phase-4-tasks.md#p4-3c--unused-bindings-fact-group-and-lint-consumer) Unused-bindings fact group and lint consumer — lane B · startable now
-- [ ] [P4-3d](./phase-4-tasks.md#p4-3d--reactivity-merges-into-the-s3-lattice) Reactivity merges into the S3 lattice — lane B · startable now
+- [x] [P4-3d](./phase-4-tasks.md#p4-3d--reactivity-merges-into-the-s3-lattice) Reactivity merges into the S3 lattice — lane B · startable now
 - [ ] [P4-3e](./phase-4-tasks.md#p4-3e--effect-graph-fact-group) Effect-graph fact group — lane B · gated on P3-6
 - [ ] [P4-3f](./phase-4-tasks.md#p4-3f--provide-inject-and-race-fact-groups) Provide/inject and race fact groups — lane B · startable now
 - [x] [P4-4a](./phase-4-tasks.md#p4-4a--orphan-verdicts-for-non-effect-products) Orphan verdicts for non-effect products — lane B · startable now

@@ -13,7 +13,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             let analysis = &entry.analysis;
 
             // Collect from reactivity sources
-            for source in analysis.reactivity.sources() {
+            for source in vize_croquis::facts::reactivity_sources(analysis) {
                 let id = ReactiveValueId {
                     file_id,
                     name: source.name.clone(),
@@ -38,7 +38,7 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
             let file_id = entry.id;
             let analysis = &entry.analysis;
 
-            for source in analysis.reactivity.sources() {
+            for source in vize_croquis::facts::reactivity_sources(analysis) {
                 let id = ReactiveValueId {
                     file_id,
                     name: source.name.clone(),
@@ -83,12 +83,11 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                         if name.starts_with("use") {
                             // This is likely a composable
                             // Collect its reactive returns
-                            let reactive_returns: Vec<(CompactString, ReactiveKind)> = analysis
-                                .reactivity
-                                .sources()
-                                .iter()
-                                .map(|s| (s.name.clone(), s.kind))
-                                .collect();
+                            let reactive_returns: Vec<(CompactString, ReactiveKind)> =
+                                vize_croquis::facts::reactivity_sources(analysis)
+                                    .into_iter()
+                                    .map(|source| (source.name, source.kind))
+                                    .collect();
 
                             composable_infos.push(ComposableInfo {
                                 name: CompactString::new(name),

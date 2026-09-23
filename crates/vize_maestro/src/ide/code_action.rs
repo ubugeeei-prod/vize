@@ -668,7 +668,7 @@ fn is_reactive_ref_in_script(ctx: &IdeContext, name: &str) -> bool {
     });
     analyzer.analyze_script_setup(&script_setup.content);
     let croquis = analyzer.finish();
-    croquis.reactivity.lookup(name).is_some_and(|source| {
+    vize_croquis::facts::reactivity_lookup(&croquis, name).is_some_and(|source| {
         matches!(
             source.kind,
             ReactiveKind::Ref

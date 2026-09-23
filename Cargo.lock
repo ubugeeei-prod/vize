@@ -4377,6 +4377,7 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_carton",
  "vize_davinci",
+ "vize_impeto",
  "vize_relief",
 ]
 

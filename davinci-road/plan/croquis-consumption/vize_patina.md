@@ -23,7 +23,6 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.element_ids`             | field | `croquis`           |     1 |     2 |
 | `Croquis.import_statements`       | field | `croquis`           |     1 |     1 |
 | `Croquis.macros`                  | field | `croquis`           |     8 |    22 |
-| `Croquis.reactivity`              | field | `croquis`           |     1 |     1 |
 | `Croquis.scopes`                  | field | `croquis`           |     2 |     4 |
 
 ## Non-product `vize_croquis` imports
@@ -57,6 +56,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `parse_script_setup_with_generic_and_jsx` |     1 |     1 |
 | `parse_script_with_options`               |     1 |     1 |
 | `parse_v_for_expression`                  |     1 |     1 |
+| `reactivity_lookup`                       |     1 |     1 |
 | `to_pascal_case`                          |     2 |     3 |
 | `used_component_name_list`                |     1 |     1 |
 
@@ -79,7 +79,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `UnusedVarContext`      |        4 |    5 |
 | `Croquis.bindings`      |        0 |   10 |
 | `Croquis.macros`        |       22 |   31 |
-| `Croquis.reactivity`    |        1 |    4 |
+| `Croquis.reactivity`    |        0 |    3 |
 | `Croquis.scopes`        |        4 |   27 |
 | `Croquis.template_info` |        0 |    1 |
 | `Croquis.types`         |        0 |    1 |

@@ -8,10 +8,8 @@ pub(super) fn provided_value_reactive_kind(
 ) -> Option<ReactiveKind> {
     let value = value.trim();
 
-    if let Some(source) = analysis
-        .reactivity
-        .sources()
-        .iter()
+    if let Some(source) = vize_croquis::facts::reactivity_sources(analysis)
+        .into_iter()
         .find(|source| source.name.as_str() == value)
     {
         return Some(source.kind);

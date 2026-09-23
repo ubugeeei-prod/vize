@@ -13,6 +13,7 @@ vize_armature.workspace = true
 vize_carton.workspace = true
 vize_relief.workspace = true
 vize_davinci.workspace = true
+vize_impeto.workspace = true
 phf.workspace = true
 once_cell.workspace = true
 rustc-hash.workspace = true

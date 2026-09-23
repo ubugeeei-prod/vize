@@ -54,7 +54,7 @@ test("the Croquis fact specs agree with production over the corpus shard", (t) =
   assert.equal(result.status, 0, output.trim());
   // The scope proof travels in the printed lines: one per group, each must
   // have compared facts. The Rust verdict already fails a zero-fact run.
-  for (const group of ["bindings", "undefined-refs"]) {
+  for (const group of ["bindings", "undefined-refs", "reactivity"]) {
     const scope = output
       .split("\n")
       .find((line) => line.startsWith(`fact spec ${group} corpus shard: `));

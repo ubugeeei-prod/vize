@@ -24,11 +24,21 @@ const nameRef = toRef(props, 'item')"#,
         .unwrap();
 
     // Check reactivity tracking
-    assert!(analysis.reactivity.is_reactive("count"));
-    assert!(analysis.reactivity.is_reactive("doubled"));
-    assert!(analysis.reactivity.is_reactive("state"));
-    assert!(analysis.reactivity.is_reactive("shallow"));
-    assert!(analysis.reactivity.is_reactive("nameRef"));
+    assert!(vize_croquis::facts::reactivity_is_reactive(
+        &analysis, "count"
+    ));
+    assert!(vize_croquis::facts::reactivity_is_reactive(
+        &analysis, "doubled"
+    ));
+    assert!(vize_croquis::facts::reactivity_is_reactive(
+        &analysis, "state"
+    ));
+    assert!(vize_croquis::facts::reactivity_is_reactive(
+        &analysis, "shallow"
+    ));
+    assert!(vize_croquis::facts::reactivity_is_reactive(
+        &analysis, "nameRef"
+    ));
 }
 
 #[test]

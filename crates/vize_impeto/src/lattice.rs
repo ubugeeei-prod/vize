@@ -9,6 +9,7 @@ mod class;
 mod effect;
 mod evaluate;
 mod folio;
+mod from_kind;
 mod id;
 mod input;
 
@@ -16,6 +17,7 @@ pub use class::ReactivityClass;
 pub use effect::{EffectKind, EffectSet};
 pub use evaluate::{LatticeFacts, evaluate, evaluate_binding};
 pub use folio::{FolioBinding, ReactivityFolio};
+pub use from_kind::SourceKind;
 pub use id::BindingId;
 pub use input::{BindingFact, BindingInput, BindingOrigin, EscapeKind, Verdict};
 

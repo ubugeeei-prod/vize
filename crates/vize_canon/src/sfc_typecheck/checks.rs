@@ -188,7 +188,7 @@ pub fn check_reactivity(
         SfcTypeSeverity::Warning
     };
 
-    for loss in summary.reactivity.losses() {
+    for loss in vize_croquis::facts::reactivity_losses(summary) {
         let message = match &loss.kind {
             ReactivityLossKind::ReactiveDestructure { source_name, .. } => {
                 cstr!("Destructuring reactive object '{source_name}' loses reactivity")

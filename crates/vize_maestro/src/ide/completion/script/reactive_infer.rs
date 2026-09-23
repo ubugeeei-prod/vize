@@ -44,7 +44,7 @@ pub(super) fn reactive_kind_for_name(script_content: &str, name: &str) -> Option
     analyzer.analyze_script_setup(script_content);
     let croquis = analyzer.finish();
 
-    if let Some(source) = croquis.reactivity.lookup(name) {
+    if let Some(source) = vize_croquis::facts::reactivity_lookup(&croquis, name) {
         return Some(source.kind);
     }
 

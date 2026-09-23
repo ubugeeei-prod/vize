@@ -40,7 +40,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.options_descriptor`   | field | `croquis`           |     2 |     2 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     4 |
 | `Croquis.re_exports`           | field | `croquis`           |     1 |     1 |
-| `Croquis.reactivity`           | field | `croquis`           |     2 |     3 |
+| `Croquis.reactivity`           | field | `croquis`           |     1 |     2 |
 | `Croquis.scopes`               | field | `croquis`           |    31 |    59 |
 | `Croquis.setup_context`        | field | `croquis`           |     1 |     1 |
 | `Croquis.template_expressions` | field | `croquis`           |    12 |    14 |
@@ -90,6 +90,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `is_runtime_builtin_component` |     1 |     1 |
 | `is_vue_builtin`               |     1 |     1 |
 | `parse_program_for_analysis`   |     4 |     7 |
+| `reactivity_losses`            |     1 |     1 |
 | `strip_js_comments`            |     3 |     3 |
 | `to_pascal_case`               |     2 |     2 |
 | `used_component_contains`      |     1 |     1 |

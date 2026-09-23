@@ -139,7 +139,7 @@ pub(crate) fn analyzed_template_binding_completions(
             });
         }
 
-        for source in croquis.reactivity.sources() {
+        for source in vize_croquis::facts::reactivity_sources(&croquis) {
             // Reactive bindings are already surfaced by the bindings loop
             // above; skip known bindings so an identifier is not offered twice.
             if bindings.contains_binding(source.name.as_str())

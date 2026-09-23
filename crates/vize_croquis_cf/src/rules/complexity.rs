@@ -319,7 +319,10 @@ fn complexity_input(
                 .map(|usage| usage.props.len())
                 .fold(0usize, usize::saturating_add),
         );
-        add_count(&mut input.reactive_node_count, analysis.reactivity.count());
+        add_count(
+            &mut input.reactive_node_count,
+            vize_croquis::facts::reactivity_count(analysis),
+        );
         let effect_graph = effect_graphs.get(&entry.id).copied().unwrap_or_default();
         add_count(&mut input.reactive_edge_count, effect_graph.edge_count);
         add_count(&mut input.reactive_cycle_count, effect_graph.cycle_count);

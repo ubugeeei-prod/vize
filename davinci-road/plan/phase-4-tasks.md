@@ -144,9 +144,9 @@
 
 **Steps:**
 
-- [ ] `crates/vize_croquis/src/facts/reactivity.rs` maps `ReactiveKind` sources onto the lattice's value axis; the only `vize_impeto` edit is one new constructor file (P3-6/P3-15 own the rest of that crate)
-- [ ] Readers of `Croquis.reactivity` / `ReactiveKind` outside lane C switched to the group
-- [ ] TS-34 spec over the lattice's join laws
+- [x] `crates/vize_croquis/src/facts/reactivity.rs` maps `ReactiveKind` sources onto the lattice's value axis; the only `vize_impeto` edit is one new constructor file (P3-6/P3-15 own the rest of that crate)
+- [x] Readers of `Croquis.reactivity` / `ReactiveKind` outside lane C switched to the group
+- [x] TS-34 spec over the lattice's join laws
 
 **Acceptance:** TS-34 agreement over the matrix plane and a corpus shard; P3-2's `[s3-reactivity-folio]` fixtures byte-identical (TS-16/TS-17); croquis_cf reactivity diagnostics unchanged (TS-9); TS-35; TS-12.
 

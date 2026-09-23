@@ -77,18 +77,16 @@ pub(super) fn projectable(croquis: &Croquis, metadata: Option<&BindingMetadata>)
         .all(|(name, kind)| kind != BindingType::SetupConst || metadata.bindings.contains_key(name))
 }
 
-/// Attach the reactivity tracker's `lookup(name)` answers to `table`.
+/// Attach each name's last lattice registration to `table`.
 pub(super) fn with_reactive_reads(table: BindingTable, croquis: &Croquis) -> BindingTable {
-    let tracker = &croquis.reactivity;
-    table.with_reactive_reads(tracker.reactive_names().iter().filter_map(|name| {
-        tracker.lookup(name).map(|source| {
-            let read = if source.kind.needs_value_access() {
-                ReactiveRead::Value
-            } else {
-                ReactiveRead::Direct
-            };
-            (name.as_str(), read)
-        })
+    let sources = vize_croquis::facts::reactivity_sources(croquis);
+    table.with_reactive_reads(sources.iter().map(|source| {
+        let read = if source.kind.needs_value_access() {
+            ReactiveRead::Value
+        } else {
+            ReactiveRead::Direct
+        };
+        (source.name.as_str(), read)
     }))
 }
 

@@ -322,10 +322,9 @@ impl Rule for NoMutatingProps {
                 }
             }
 
-            let has_props_object_binding = analysis
-                .reactivity
-                .lookup("props")
-                .is_some_and(|source| matches!(source.kind, ReactiveKind::Readonly));
+            let has_props_object_binding =
+                vize_croquis::facts::reactivity_lookup(analysis, "props")
+                    .is_some_and(|source| matches!(source.kind, ReactiveKind::Readonly));
 
             (names, has_props_object_binding)
         };
