@@ -175,7 +175,9 @@ pub(super) fn emit_dom_observed<'f>(
     } else {
         emitted_unref
     };
-    if unref_visit != u32::MAX {
+    // The preference walk can encounter a model read that the final render
+    // body does not wrap. A visit orders a helper; it does not create one.
+    if emitted_unref != u32::MAX {
         if authored_unref < authored_for {
             // A dynamic slot can pre-register renderList at its owning
             // component before visiting earlier default-slot expressions.
