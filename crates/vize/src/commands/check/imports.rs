@@ -234,9 +234,18 @@ pub(super) fn collect_transitive_local_imports_with_session(
                     &mut discovery,
                 )
             };
-            let own_package_entry = package_route.is_some_and(|route| {
-                registration::importer_is_inside_own_package_entry(&file, route, specifier.as_str())
-            });
+            // A package checked on its own should not widen to its sibling
+            // sources through a self-import. Once an app has already reached
+            // that package, however, nested self-references are authored
+            // members of the same dependency graph and own diagnostics.
+            let own_package_entry = !package_graph
+                && package_route.is_some_and(|route| {
+                    registration::importer_is_inside_own_package_entry(
+                        &file,
+                        route,
+                        specifier.as_str(),
+                    )
+                });
             if !own_package_entry {
                 package_routes.extend(discovery.package_routes);
             }
