@@ -150,7 +150,25 @@ pub(super) fn generated_offset_for_text(
     source_start: u32,
     source_text: &str,
 ) -> Option<u32> {
+    let trimmed = source_text.trim_end_matches(char::is_whitespace);
     let probe_offset = probe_offset_for_text(source_start, source_text)?;
+    let source_end = source_start as usize + trimmed.len();
+    // A shorthand binding (`:name`) and a bare event handler (`@click="save"`)
+    // map the same authored text to both a synthetic check identifier and the
+    // actual expression. Probe the expression's exact sub-span so synthetic
+    // `unknown`/`any` types cannot become false unsafe-binding diagnostics.
+    for row in virtual_ts
+        .mapping
+        .rows_containing_authored(probe_offset as usize)
+    {
+        for sub_span in &row.span.sub_spans {
+            if sub_span.src_range == (source_start as usize..source_end)
+                && virtual_ts.content.get(sub_span.gen_range.clone()) == Some(trimmed)
+            {
+                return u32::try_from(sub_span.gen_range.end.checked_sub(1)?).ok();
+            }
+        }
+    }
     virtual_ts.generated_offset(probe_offset)
 }
 

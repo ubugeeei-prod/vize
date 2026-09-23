@@ -653,6 +653,36 @@ const anyHandler: any = () => {}
 }
 
 #[test]
+fn typed_shorthand_binding_and_bare_event_handler_are_safe() {
+    if !corsa_available() {
+        return;
+    }
+
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const name: string = 'ready'
+function onClick(event: MouseEvent): void { void event }
+const unsafeValue: any = 'unsafe'
+</script>
+<template>
+  <button :name @click="onClick">{{ unsafeValue }}</button>
+</template>"#;
+    let result = lint_sfc_with_corsa(&linter, source, "ShorthandAndHandler.vue");
+    let unsafe_start = source.find("unsafeValue }}</button>").unwrap() as u32;
+    let warnings: Vec<_> = result
+        .diagnostics
+        .iter()
+        .filter(|diag| diag.rule_name == RULE_NO_UNSAFE_TEMPLATE_BINDING)
+        .collect();
+    assert_eq!(
+        warnings.len(),
+        1,
+        "unexpected unsafe bindings: {warnings:?}"
+    );
+    assert_eq!(warnings[0].start, unsafe_start);
+}
+
+#[test]
 fn relative_imports_keep_template_bindings_typed_across_source_directories() {
     use std::path::PathBuf;
     use vize_s0::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
