@@ -176,7 +176,7 @@ pub(super) fn emit_dom_observed<'f>(
         emitted_unref
     };
     if unref_visit != u32::MAX {
-        if cx.reordered_slots && authored_unref < authored_for {
+        if authored_unref < authored_for {
             // A dynamic slot can pre-register renderList at its owning
             // component before visiting earlier default-slot expressions.
             // The shipped transform registers their unref first.
