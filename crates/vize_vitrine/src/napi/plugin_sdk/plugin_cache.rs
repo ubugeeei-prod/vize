@@ -21,18 +21,88 @@ use serde::{Deserialize, Serialize};
 use vize_davinci::key::{AmbientInput, CachedArtifact, KeyManifest, source_block_key};
 
 use super::batch::{BATCH_SCHEMA, PluginDiagnostic, PluginSpec};
+use super::error::HostError;
 
 const CACHE_SCHEMA: u32 = 1;
 
+/// An explicitly declared plugin-owned input, such as a rule option or env value.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PluginCacheInput<'a> {
+    pub name: &'a str,
+    pub value: &'a str,
+}
+
+/// A cache opt-in is invalid until the author declares even an empty input
+/// list; equal names cannot hide different values by their order.
+pub fn validate_cache_inputs(
+    plugin: &str,
+    declared: bool,
+    inputs: &[PluginCacheInput<'_>],
+) -> Result<(), HostError> {
+    if !declared {
+        return Err(HostError::InvalidCacheInputs {
+            plugin: plugin.to_owned(),
+            detail: "declare cacheInputs, even when it is empty".to_owned(),
+        });
+    }
+    let mut names: Vec<&str> = inputs.iter().map(|input| input.name).collect();
+    names.sort_unstable();
+    if let Some(name) = names.iter().find(|name| name.is_empty()) {
+        return Err(HostError::InvalidCacheInputs {
+            plugin: plugin.to_owned(),
+            detail: format!("input name `{name}` is empty"),
+        });
+    }
+    if let Some(pair) = names.windows(2).find(|pair| pair[0] == pair[1]) {
+        return Err(HostError::InvalidCacheInputs {
+            plugin: plugin.to_owned(),
+            detail: format!("input name `{}` is duplicated", pair[0]),
+        });
+    }
+    Ok(())
+}
+
 /// The S0 content key with every non-content batch input declared and folded.
 #[must_use]
-pub fn content_key(source: &str, filename: &str, spec: &PluginSpec<'_>) -> String {
+pub fn content_key(
+    source: &str,
+    filename: &str,
+    spec: &PluginSpec<'_>,
+    inputs: &[PluginCacheInput<'_>],
+) -> String {
+    content_key_for_build(
+        source,
+        filename,
+        spec,
+        inputs,
+        env!("VIZE_PLUGIN_HOST_BUILD_ID"),
+    )
+}
+
+/// The build identity is explicit here so a test can pin revision invalidation.
+#[must_use]
+pub fn content_key_for_build(
+    source: &str,
+    filename: &str,
+    spec: &PluginSpec<'_>,
+    inputs: &[PluginCacheInput<'_>],
+    build_id: &str,
+) -> String {
     let identity = serde_json::json!([spec.name, filename]).to_string();
     let visits = serde_json::to_string(&spec.visit).expect("plugin visit names serialize");
     let demands = serde_json::to_string(spec.demands).expect("plugin demand names serialize");
+    let mut inputs = inputs.to_vec();
+    inputs.sort_unstable_by(|left, right| left.name.cmp(right.name));
+    let inputs = serde_json::to_string(
+        &inputs
+            .iter()
+            .map(|input| (input.name, input.value))
+            .collect::<Vec<_>>(),
+    )
+    .expect("plugin input names and values serialize");
     let toolchain = format!(
-        "{}:{BATCH_SCHEMA}:{CACHE_SCHEMA}",
-        env!("CARGO_PKG_VERSION")
+        "{}:{BATCH_SCHEMA}:{CACHE_SCHEMA}:{build_id}",
+        env!("CARGO_PKG_VERSION"),
     );
     let features = format!(
         "legacy={};glyph={}",
@@ -46,7 +116,8 @@ pub fn content_key(source: &str, filename: &str, spec: &PluginSpec<'_>) -> Strin
         .with(AmbientInput::PluginVersion, spec.version)
         .with(AmbientInput::PluginCode, spec.fingerprint)
         .with(AmbientInput::PluginVisits, &visits)
-        .with(AmbientInput::PluginDemands, &demands);
+        .with(AmbientInput::PluginDemands, &demands)
+        .with(AmbientInput::PluginInputs, &inputs);
     source_block_key("plugin-document", &[], source)
         .with_manifest(CachedArtifact::PluginResult, &manifest)
         .expect("the plugin result manifest declares every input")

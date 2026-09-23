@@ -21,6 +21,8 @@ pub enum HostError {
     },
     /// A manifest listed a node kind S2 does not have.
     UnknownKind { plugin: String, kind: String },
+    /// Caching needs an explicit, unique list of plugin-owned ambient inputs.
+    InvalidCacheInputs { plugin: String, detail: String },
     /// A plugin's `run` returned something other than a report array.
     BadReports { plugin: String, detail: String },
     /// A report named a node id outside the document.
@@ -46,6 +48,9 @@ impl fmt::Display for HostError {
             ),
             Self::UnknownKind { plugin, kind } => {
                 write!(f, "{plugin}: `{kind}` is not an S2 node kind")
+            }
+            Self::InvalidCacheInputs { plugin, detail } => {
+                write!(f, "{plugin}: invalid cacheInputs ({detail})")
             }
             Self::BadReports { plugin, detail } => {
                 write!(

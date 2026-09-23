@@ -40,6 +40,7 @@
 | `plugin-code`       | the SDK digest of the JS plugin's rule sources                         |
 | `plugin-visits`     | the node kinds the JS plugin requests                                  |
 | `plugin-demands`    | the fact groups the JS plugin requests                                 |
+| `plugin-inputs`     | declared plugin configuration and ambient input values                 |
 
 <!-- ambient-inputs:end -->
 
@@ -47,14 +48,14 @@
 
 <!-- key-manifests:start -->
 
-| Artifact                | Content key stages | Ambient inputs                                                                                                              | Consumer                |
-| ----------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `s0.source-block`       | `s0`               | `toolchain-version`                                                                                                         | resident tier (P5-4a)   |
-| `s1.surface-page`       | `s1`               | `toolchain-version`, `feature-flags`                                                                                        | resident tier (P5-4a)   |
-| `s2.page`               | `s2`               | `project-config`, `toolchain-version`, `feature-flags`                                                                      | resident tier (P5-4a)   |
-| `projection.virtual-ts` | `s0`, `s2`         | `tsconfig-content`, `project-config`, `toolchain-version`, `feature-flags`                                                  | projection reuse (P5-7) |
-| `corsa.session`         | none               | `project-identity`, `tsconfig-content`, `toolchain-version`, `corsa-version`, `feature-flags`, `platform`                   | Corsa sessions (P5-8)   |
-| `plugin.result`         | `s0`               | `toolchain-version`, `feature-flags`, `plugin-identity`, `plugin-version`, `plugin-code`, `plugin-visits`, `plugin-demands` | JS plugin host (P5-13)  |
+| Artifact                | Content key stages | Ambient inputs                                                                                                                               | Consumer                |
+| ----------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `s0.source-block`       | `s0`               | `toolchain-version`                                                                                                                          | resident tier (P5-4a)   |
+| `s1.surface-page`       | `s1`               | `toolchain-version`, `feature-flags`                                                                                                         | resident tier (P5-4a)   |
+| `s2.page`               | `s2`               | `project-config`, `toolchain-version`, `feature-flags`                                                                                       | resident tier (P5-4a)   |
+| `projection.virtual-ts` | `s0`, `s2`         | `tsconfig-content`, `project-config`, `toolchain-version`, `feature-flags`                                                                   | projection reuse (P5-7) |
+| `corsa.session`         | none               | `project-identity`, `tsconfig-content`, `toolchain-version`, `corsa-version`, `feature-flags`, `platform`                                    | Corsa sessions (P5-8)   |
+| `plugin.result`         | `s0`               | `toolchain-version`, `feature-flags`, `plugin-identity`, `plugin-version`, `plugin-code`, `plugin-visits`, `plugin-demands`, `plugin-inputs` | JS plugin host (P5-13)  |
 
 <!-- key-manifests:end -->
 
@@ -82,6 +83,8 @@
 - **`plugin.result`** — the full SFC source is the conservative S0 content
   key because diagnostic positions depend on text before the template. The
   batch also reads the filename, plugin code/version, visit list and demanded
-  facts. These inputs are folded through the manifest; the toolchain version
-  and compiled feature flags invalidate changes to S2 lowering or fact
-  producers. The in-process and on-disk caches share this key.
+  facts. Plugins opting into caching explicitly declare every configuration
+  and ambient input value they read; omitted declarations refuse caching.
+  The toolchain build identity includes its source revision and the plugin
+  host's source closure, so same-version builds cannot share stale entries.
+  The in-process and on-disk caches share this key.

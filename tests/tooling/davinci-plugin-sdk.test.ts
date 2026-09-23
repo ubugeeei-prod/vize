@@ -148,6 +148,84 @@ test("plugin results persist across Node processes under the manifest key", () =
   }
 });
 
+test("captured plugin configuration invalidates a persisted result across processes", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "vize-plugin-config-cache-"));
+  const child = `
+    import { createRequire } from "node:module";
+    const native = createRequire(import.meta.url)(${JSON.stringify(path.join(root, "npm/native/index.js"))});
+    const { definePlugin } = await import(${JSON.stringify(pathToFileURL(path.join(root, "tests/tooling/fixtures/davinci-plugin-sdk/sdk.mjs")).href)});
+    const threshold = process.argv[2];
+    const plugin = definePlugin({
+      name: "captured-config", version: "1", visit: ["ui.element"], demands: [],
+      cacheInputs: [{ name: "threshold", value: threshold }],
+      rules: { check(ctx) { ctx.report(ctx.nodes[0], threshold); } }
+    });
+    const output = native.lintWithPlugins(${JSON.stringify(TODO_LIST)}, [plugin], {
+      filename: "TodoList.vue", cache: true, cacheDir: process.argv[1]
+    });
+    process.stdout.write(JSON.stringify({
+      fingerprint: plugin.fingerprint,
+      key: output.plugins[0].contentKey,
+      cached: output.plugins[0].cached,
+      messages: output.diagnostics.map((diagnostic) => diagnostic.message)
+    }));
+  `;
+  const run = (threshold: string) => {
+    const result = spawnSync(
+      process.execPath,
+      ["--input-type=module", "-e", child, dir, threshold],
+      { encoding: "utf8" },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(result.stdout);
+  };
+  try {
+    const first = run("one");
+    const changed = run("two");
+    const hit = run("two");
+    assert.equal(first.fingerprint, changed.fingerprint);
+    assert.notEqual(first.key, changed.key);
+    assert.deepEqual(
+      [first.cached, changed.cached, hit.cached, changed.key, hit.key],
+      [false, false, true, hit.key, changed.key],
+    );
+    assert.deepEqual([first.messages, changed.messages, hit.messages], [["one"], ["two"], ["two"]]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("cache opt-in refuses missing or duplicate ambient declarations", () => {
+  const plugin = {
+    name: "ambient-rule",
+    version: "1",
+    fingerprint: "same-code",
+    visit: ["ui.element"],
+    demands: [],
+    run: () => "[]",
+  };
+  assert.throws(() => lint(TODO_LIST, [plugin], { cache: true }), {
+    message: "ambient-rule: invalid cacheInputs (declare cacheInputs, even when it is empty)",
+  });
+  assert.throws(
+    () =>
+      lint(
+        TODO_LIST,
+        [
+          {
+            ...plugin,
+            cacheInputs: [
+              { name: "config", value: "one" },
+              { name: "config", value: "two" },
+            ],
+          },
+        ],
+        { cache: true },
+      ),
+    { message: "ambient-rule: invalid cacheInputs (input name `config` is duplicated)" },
+  );
+});
+
 test("declared demands independently invalidate plugin results", () => {
   const plugin = {
     name: "static-rule",
@@ -155,6 +233,7 @@ test("declared demands independently invalidate plugin results", () => {
     fingerprint: "same-code",
     visit: ["ui.element"],
     demands: [],
+    cacheInputs: [],
     run: () => "[]",
   };
   const first = lint(TODO_LIST, [plugin], { cache: true });

@@ -11,12 +11,12 @@ export const BATCH_SCHEMA = 1;
  * rules `(ctx) => void`. `run` is what the native host calls, once per
  * document: batch JSON in, report JSON out.
  */
-export function definePlugin({ name, version, visit, demands = [], rules }) {
+export function definePlugin({ name, version, visit, demands = [], cacheInputs, rules }) {
   const code = Object.entries(rules).map(([id, rule]) => [id, String(rule)]);
   const fingerprint = createHash("sha256")
     .update(JSON.stringify([name, version, visit ?? null, demands, code]))
     .digest("hex");
-  const plugin = { name, version, fingerprint, visit, demands, rules };
+  const plugin = { name, version, fingerprint, visit, demands, cacheInputs, rules };
   plugin.run = (batchJson) => JSON.stringify(runBatch(plugin, JSON.parse(batchJson)));
   return plugin;
 }

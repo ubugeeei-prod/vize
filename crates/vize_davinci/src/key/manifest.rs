@@ -47,11 +47,13 @@ pub enum AmbientInput {
     PluginVisits,
     /// The fact groups the JS plugin demands.
     PluginDemands,
+    /// Values of JS plugin configuration and ambient inputs declared by its author.
+    PluginInputs,
 }
 
 impl AmbientInput {
     /// Every ambient input, in manifest order.
-    pub const ALL: [Self; 12] = [
+    pub const ALL: [Self; 13] = [
         Self::ProjectIdentity,
         Self::TsconfigContent,
         Self::ProjectConfig,
@@ -64,6 +66,7 @@ impl AmbientInput {
         Self::PluginCode,
         Self::PluginVisits,
         Self::PluginDemands,
+        Self::PluginInputs,
     ];
 
     /// The stable spelling used in `key-manifests.md`.
@@ -82,6 +85,7 @@ impl AmbientInput {
             Self::PluginCode => "plugin-code",
             Self::PluginVisits => "plugin-visits",
             Self::PluginDemands => "plugin-demands",
+            Self::PluginInputs => "plugin-inputs",
         }
     }
 }
@@ -148,8 +152,8 @@ impl CachedArtifact {
     pub const fn inputs(self) -> &'static [AmbientInput] {
         use AmbientInput::{
             CorsaVersion, FeatureFlags, Platform, PluginCode, PluginDemands, PluginIdentity,
-            PluginVersion, PluginVisits, ProjectConfig, ProjectIdentity, ToolchainVersion,
-            TsconfigContent,
+            PluginInputs, PluginVersion, PluginVisits, ProjectConfig, ProjectIdentity,
+            ToolchainVersion, TsconfigContent,
         };
         match self {
             Self::SourceBlock => &[ToolchainVersion],
@@ -177,6 +181,7 @@ impl CachedArtifact {
                 PluginCode,
                 PluginVisits,
                 PluginDemands,
+                PluginInputs,
             ],
         }
     }

@@ -12,7 +12,9 @@ use super::batch::{PluginSpec, build_batch, diagnostics};
 use super::document::PluginDocument;
 use super::error::HostError;
 use super::facts::{REGISTRY, TemplateScopes, resolve_demands};
-use super::plugin_cache::{PluginCache, content_key};
+use super::plugin_cache::{
+    PluginCache, PluginCacheInput, content_key_for_build, validate_cache_inputs,
+};
 
 const TODOS: &str = "<template>\n  <ul>\n    <li v-for=\"(todo, i) in todos\" :key=\"i\">{{ todo.title }}</li>\n  </ul>\n</template>\n";
 
@@ -28,6 +30,10 @@ fn spec<'p>(visit: Option<&'p [String]>, demands: &'p [String]) -> PluginSpec<'p
         visit,
         demands,
     }
+}
+
+fn content_key(source: &str, filename: &str, spec: &PluginSpec<'_>) -> String {
+    super::plugin_cache::content_key(source, filename, spec, &[])
 }
 
 #[test]
@@ -246,6 +252,59 @@ fn cached_diagnostics_survive_a_new_cache_instance_and_reject_bad_disk_entries()
     assert_eq!(PluginCache::default().get(&key, Some(dir.path())), None);
     std::fs::write(&entry, b"unfinished").expect("tear entry");
     assert_eq!(PluginCache::default().get(&key, Some(dir.path())), None);
+}
+
+#[test]
+fn plugin_inputs_and_same_version_builds_invalidate_the_key_independently() {
+    let base = spec(None, &[]);
+    let one = [PluginCacheInput {
+        name: "threshold",
+        value: "one",
+    }];
+    let two = [PluginCacheInput {
+        name: "threshold",
+        value: "two",
+    }];
+    let first = content_key_for_build(TODOS, "Todos.vue", &base, &one, "revision-a");
+    assert_eq!(
+        first,
+        content_key_for_build(TODOS, "Todos.vue", &base, &one, "revision-a")
+    );
+    assert_ne!(
+        first,
+        content_key_for_build(TODOS, "Todos.vue", &base, &two, "revision-a")
+    );
+    assert_ne!(
+        first,
+        content_key_for_build(TODOS, "Todos.vue", &base, &one, "revision-b")
+    );
+    let reordered = [
+        PluginCacheInput {
+            name: "flag",
+            value: "yes",
+        },
+        one[0],
+    ];
+    let opposite = [one[0], reordered[0]];
+    assert_eq!(
+        content_key_for_build(TODOS, "Todos.vue", &base, &reordered, "revision-a"),
+        content_key_for_build(TODOS, "Todos.vue", &base, &opposite, "revision-a")
+    );
+    assert_eq!(
+        validate_cache_inputs("team", false, &[]),
+        Err(HostError::InvalidCacheInputs {
+            plugin: "team".to_owned(),
+            detail: "declare cacheInputs, even when it is empty".to_owned(),
+        })
+    );
+    assert_eq!(validate_cache_inputs("team", true, &one), Ok(()));
+    assert_eq!(
+        validate_cache_inputs("team", true, &[one[0], two[0]]),
+        Err(HostError::InvalidCacheInputs {
+            plugin: "team".to_owned(),
+            detail: "input name `threshold` is duplicated".to_owned(),
+        })
+    );
 }
 
 #[test]

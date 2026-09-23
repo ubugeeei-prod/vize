@@ -714,8 +714,16 @@ export interface JsPluginNapi {
   fingerprint: string;
   visit?: Array<string>;
   demands?: Array<string>;
+  /** Configuration and ambient values read by the rule. Required for caching. */
+  cacheInputs?: Array<PluginCacheInputNapi>;
   /** `(batchJson) => reportsJson` — one call per document. */
   run: (arg: string) => string;
+}
+
+/** One stable value a cached JS plugin declares it reads outside the batch. */
+export interface PluginCacheInputNapi {
+  name: string;
+  value: string;
 }
 
 export interface PluginLintOptionsNapi {

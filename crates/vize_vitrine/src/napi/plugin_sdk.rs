@@ -46,7 +46,7 @@ use batch::{PluginDiagnostic, PluginSpec, build_batch, diagnostics, sort, valida
 use document::PluginDocument;
 use error::HostError;
 use facts::{REGISTRY, TemplateScopes, resolve_demands};
-use plugin_cache::{cache, content_key};
+use plugin_cache::{PluginCacheInput, cache, content_key, validate_cache_inputs};
 
 /// A plugin as the SDK's `definePlugin` hands it to the host.
 #[napi(object, object_to_js = false)]
@@ -57,8 +57,17 @@ pub struct JsPluginNapi {
     pub fingerprint: String,
     pub visit: Option<Vec<String>>,
     pub demands: Option<Vec<String>>,
+    /// Configuration and ambient values read by the rule. Required for caching.
+    pub cache_inputs: Option<Vec<PluginCacheInputNapi>>,
     /// `(batchJson) => reportsJson` — one call per document.
     pub run: FunctionRef<String, String>,
+}
+
+/// One stable value a cached JS plugin declares it reads outside the batch.
+#[napi(object)]
+pub struct PluginCacheInputNapi {
+    pub name: String,
+    pub value: String,
 }
 
 #[napi(object)]
@@ -159,7 +168,21 @@ pub fn lint_with_plugins(
             demands: &demands,
         };
         validate_spec(&spec).map_err(host_error)?;
-        let key = content_key(&source, &filename, &spec);
+        let cache_inputs: Vec<PluginCacheInput<'_>> = plugin
+            .cache_inputs
+            .as_deref()
+            .unwrap_or_default()
+            .iter()
+            .map(|input| PluginCacheInput {
+                name: &input.name,
+                value: &input.value,
+            })
+            .collect();
+        if use_cache {
+            validate_cache_inputs(&plugin.name, plugin.cache_inputs.is_some(), &cache_inputs)
+                .map_err(host_error)?;
+        }
+        let key = content_key(&source, &filename, &spec, &cache_inputs);
         let hit = use_cache
             .then(|| cache().lock().ok()?.get(&key, cache_dir))
             .flatten();

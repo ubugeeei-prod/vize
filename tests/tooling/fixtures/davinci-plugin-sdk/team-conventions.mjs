@@ -11,6 +11,7 @@ export default definePlugin({
   version: "1.0.0",
   visit: ["ui.for", "ui.bind"],
   demands: ["templateScopes"],
+  cacheInputs: [],
   rules: {
     "no-index-key"(ctx) {
       const scopes = ctx.facts("templateScopes");
