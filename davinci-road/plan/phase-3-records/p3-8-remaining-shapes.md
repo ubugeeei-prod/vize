@@ -24,11 +24,11 @@ Emitter sweep, `VIZE_DAVINCI_DIFFERENTIAL_CORPUS` = the checkout, 0
 divergences, 0 rejected: **764 of 779** compared templates emit from the plan
 (was 750 of 779 before this slice). Legacy reasons:
 
-| reason | count | shapes |
-| --- | ---: | --- |
-| `surface_semantics` | 9 | `@vize:` comments (legacy renders them; S2 drops them), `<slot>` with `v-show` / `v-model` / `v-once` / `v-memo` / `v-pre`, dropped attributes on structural `<template>` (an S2 info diagnostic) |
-| `binding` | 3 | non-identifier dynamic key (`:[row.field]`), dynamic `v-model` argument, `<Suspense>` default slot |
-| `operation` | 3 | non-identifier dynamic slot names (`#[names.current]`, template-literal names) |
+| reason              | count | shapes                                                                                                                                                                                            |
+| ------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `surface_semantics` |     9 | `@vize:` comments (legacy renders them; S2 drops them), `<slot>` with `v-show` / `v-model` / `v-once` / `v-memo` / `v-pre`, dropped attributes on structural `<template>` (an S2 info diagnostic) |
+| `binding`           |     3 | non-identifier dynamic key (`:[row.field]`), dynamic `v-model` argument, `<Suspense>` default slot                                                                                                |
+| `operation`         |     3 | non-identifier dynamic slot names (`#[names.current]`, template-literal names)                                                                                                                    |
 
 Production adapter sweep, same checkout, 0 divergences: **179 of 784**
 compared (`legacy.croquis` 597, `surface_semantics` 6, `operation` 2,

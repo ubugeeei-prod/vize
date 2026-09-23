@@ -179,6 +179,29 @@ impl ProjectionMapping {
         self.spans.is_empty()
     }
 
+    /// Move generated ranges after a replacement of `old_len` bytes at `start`.
+    ///
+    /// Ranges that begin at or after the old end move by the length delta.
+    /// A range that starts before the replacement and ends after it grows or
+    /// shrinks with that delta. Authored ranges stay put.
+    pub fn note_generated_replacement(&mut self, start: usize, old_len: usize, new_len: usize) {
+        let old_end = start.saturating_add(old_len);
+        let delta = new_len as isize - old_len as isize;
+        if delta == 0 {
+            return;
+        }
+        for span in &mut self.spans {
+            shift_generated_range(&mut span.gen_range, start, old_end, delta);
+            for sub in &mut span.sub_spans {
+                shift_generated_range(&mut sub.gen_range, start, old_end, delta);
+            }
+        }
+        for link in &mut self.semantic_links {
+            shift_generated_range(&mut link.source_range, start, old_end, delta);
+            shift_generated_range(&mut link.target_range, start, old_end, delta);
+        }
+    }
+
     /// The rows and semantic links, dropping metadata and base.
     pub fn into_parts(self) -> (Vec<VizeMapping>, Vec<VizeSemanticLink>) {
         (self.spans, self.semantic_links)
@@ -270,6 +293,22 @@ impl ProjectionMapping {
 fn clamped_byte(from: &Range<usize>, to: &Range<usize>, offset: usize) -> usize {
     let relative = offset - from.start;
     to.start + relative.min(to.end.saturating_sub(to.start).saturating_sub(1))
+}
+
+fn shift_generated_range(range: &mut Range<usize>, start: usize, old_end: usize, delta: isize) {
+    let shift = |value: usize| -> usize {
+        if delta >= 0 {
+            value + delta as usize
+        } else {
+            value.saturating_sub((-delta) as usize)
+        }
+    };
+    if range.start >= old_end {
+        range.start = shift(range.start);
+        range.end = shift(range.end);
+    } else if range.end > start && range.end >= old_end {
+        range.end = shift(range.end);
+    }
 }
 
 fn authored_disjoint(spans: &[VizeMapping]) -> bool {

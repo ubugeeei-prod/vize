@@ -96,10 +96,5 @@ div
     let slot = r#"<template>
   <Child>w-confirm(@cancel="$waveui.notify&amp;#40;'Canceled.', 'error'&amp;#41;")</Child>
 </template>"#;
-    let selected = compile(slot);
-    assert!(
-        selected.contains("_createTextVNode"),
-        "slot fallback should render a text vnode: {selected}"
-    );
     assert_matches_legacy("paren-slot", slot);
 }

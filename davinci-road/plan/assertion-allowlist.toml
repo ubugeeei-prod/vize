@@ -204,8 +204,6 @@ paths = [
   "crates/vize_croquis/src/hoist.rs",
   "crates/vize_croquis/src/import_resolver.rs",
   "crates/vize_croquis/src/reactivity_tracking/summary.rs",
-  "crates/vize_croquis/tests/macro_type_arguments.rs",
-  "crates/vize_croquis/tests/template_globals.rs",
   "crates/vize_croquis_cf/src/module_paths.rs",
   "crates/vize_croquis_cf/src/registry.rs",
   "crates/vize_croquis_cf/src/rules/cross_file_reactivity/store_detection.rs",

@@ -36,15 +36,9 @@ const x = 1
     let mut generator = VirtualCodeGenerator::new();
     let docs = generator.generate(&descriptor, "AllBlocks.vue");
     let template = docs.template.expect("template document");
-    assert!(
-        template.content.contains("void __default__"),
-        "normal script is part of the checker document:\n{}",
-        template.content
-    );
-    assert!(
-        template.content.contains("const x = 1"),
-        "script setup is part of the checker document:\n{}",
-        template.content
+    assert_eq!(
+        template.content.as_str(),
+        include_str!("fixtures/split_script_checker.virtual.ts")
     );
 
     let export_at = source.find("export default").unwrap();
@@ -52,12 +46,10 @@ const x = 1
         .source_map
         .to_generated(export_at)
         .expect("normal script maps into the checker document");
-    assert!(
-        template.content[export_generated..].starts_with("const __default__")
-            || template.content[export_generated..].starts_with("export default")
-            || template.content[export_generated..].starts_with("defineComponent"),
-        "mapped export default at {export_generated}:\n{}",
-        template.content
+    let mapped = "const __default__";
+    assert_eq!(
+        &template.content[export_generated..export_generated + mapped.len()],
+        mapped
     );
 
     let setup_at = source.find("const x = 1").unwrap();

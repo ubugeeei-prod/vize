@@ -205,3 +205,5 @@
 **Deps:** P5-6b, P4-10a.
 
 **Non-goals:** new LSP features.
+
+**Landed 2026-09-23** — full record: [phase-5-records/p5-6c.md](./phase-5-records/p5-6c.md).

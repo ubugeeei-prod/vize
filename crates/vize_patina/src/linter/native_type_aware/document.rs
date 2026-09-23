@@ -31,6 +31,7 @@ pub(super) fn project_type_aware<'a>(
     template: Option<&RootNode<'a>>,
     script_offset: u32,
     template_offset: u32,
+    filename: &str,
 ) -> TypeAwareDocument {
     // Lint analysis skips template expressions. The checker document needs
     // them so a probe can type the expression the author wrote.
@@ -45,10 +46,12 @@ pub(super) fn project_type_aware<'a>(
         template_offset,
         &VirtualTsOptions::default(),
     );
-    TypeAwareDocument {
+    let mut document = TypeAwareDocument {
         content: output.code,
         mapping: output.mapping,
-    }
+    };
+    super::relative_imports::absolutize_relative_imports(&mut document, filename);
+    document
 }
 
 #[cfg(test)]
@@ -72,13 +75,11 @@ mod tests {
             Some(&root),
             script.loc.start as u32,
             template.loc.start as u32,
+            "Fixture.vue",
         );
         let insert = marker_insert_offset(&document.content).expect("setup close");
-        assert!(
-            document.content[insert..].starts_with("}\n\n// Invoke setup to verify types\n"),
-            "{}",
-            &document.content[insert.saturating_sub(40)..]
-        );
+        let marker = "}\n\n// Invoke setup to verify types\n";
+        assert_eq!(&document.content[insert..insert + marker.len()], marker);
     }
 
     #[test]
@@ -97,6 +98,7 @@ mod tests {
             Some(&root),
             script.loc.start as u32,
             template.loc.start as u32,
+            "Fixture.vue",
         );
         let body = template.content.as_ref();
         let at = body.find("payload.title").expect("expression");

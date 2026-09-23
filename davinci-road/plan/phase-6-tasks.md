@@ -64,6 +64,8 @@
 
 **Non-goals:** Volt itself (P6-6).
 
+**Landed 2026-09-23** — full record: [phase-6-records/p6-1c.md](./phase-6-records/p6-1c.md).
+
 ## P6-2 — Prebuilt versioned SDK
 
 **Landed 2026-09-22** — full record: [phase-6-records/p6-2.md](./phase-6-records/p6-2.md).

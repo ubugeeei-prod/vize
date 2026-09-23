@@ -14,8 +14,8 @@ use oxc_syntax::scope::ScopeFlags;
 use vize_s2::expr::ExprRef;
 use vize_s2::op::{BindingOp, DynamicName, Op};
 
-use super::PreferCx;
 use super::super::options::{BindingKind, BindingTable};
+use super::PreferCx;
 
 pub(super) fn note_op(cx: &PreferCx<'_>, op: &Op<'_>, visit: u32) {
     if cx.authored_unref.get() != u32::MAX || !cx.inline {

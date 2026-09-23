@@ -40,8 +40,7 @@ fn request_wave(state: &ServerState, uri: &Url, text: &str) {
     let offset = text.find("{{ count").unwrap() + "{{ co".len();
     let hover = IdeContext::testing(state, uri, offset, String::from(text));
     let _hover = HoverService::hover(&hover);
-    let completion =
-        IdeContext::testing_completion(state, uri, offset, String::from(text));
+    let completion = IdeContext::testing_completion(state, uri, offset, String::from(text));
     let _completion = CompletionService::complete(&completion);
     let definition = IdeContext::testing(state, uri, offset, String::from(text));
     let _definition = DefinitionService::definition(&definition);

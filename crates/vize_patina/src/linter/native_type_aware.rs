@@ -14,6 +14,7 @@ mod driver;
 mod markers;
 mod parsing;
 mod reactivity_loss;
+mod relative_imports;
 mod rule_queries;
 mod script_options;
 mod source_path;

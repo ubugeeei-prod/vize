@@ -55,12 +55,12 @@ pub fn used_component_name_list(croquis: &Croquis) -> Vec<CompactString> {
         let mut extra: Vec<(u32, CompactString)> = Vec::new();
         for use_ in uses {
             if let Some(ordinal) = use_.name_ordinal {
-                if named.iter().any(|(_, tag)| tag == &use_.tag) {
+                if named.iter().any(|(_, tag)| tag == use_.tag) {
                     continue;
                 }
                 named.push((ordinal, use_.tag.clone()));
-            } else if !extra.iter().any(|(_, tag)| tag == &use_.tag)
-                && !named.iter().any(|(_, tag)| tag == &use_.tag)
+            } else if !extra.iter().any(|(_, tag)| tag == use_.tag)
+                && !named.iter().any(|(_, tag)| tag == use_.tag)
             {
                 extra.push((use_.usage_index.unwrap_or(u32::MAX), use_.tag.clone()));
             }

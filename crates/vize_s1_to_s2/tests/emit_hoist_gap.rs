@@ -83,16 +83,23 @@ fn refused(source: &str) -> Reason {
 
 #[test]
 fn inline_root_surfaces_the_shipped_lane_hoists_match() {
-    for source in [
-        r#"<Card :format="(row) => row.name" />"#,
-        r#"<Card title="a" :format="(v) => v.toFixed(2)" /><Card :format="(v) => v" />"#,
-        r#"<div :format="(v) => v.toFixed(2)" class="a"></div>"#,
-    ] {
+    let cases = [
+        (
+            r#"<Card :format="(row) => row.name" />"#,
+            "import { openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst _hoisted_1 = { format: (row) => row.name }\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createBlock(Card, _hoisted_1, null, 8 /* PROPS */, [\"format\"]))\n}",
+        ),
+        (
+            r#"<Card title="a" :format="(v) => v.toFixed(2)" /><Card :format="(v) => v" />"#,
+            "import { createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n\nconst _hoisted_1 = { title: \"a\", format: (v) => v.toFixed(2) }\nconst _hoisted_2 = { format: (v) => v }\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createVNode(Card, _hoisted_1, null, 8 /* PROPS */, [\"format\"]),\n    _createVNode(Card, _hoisted_2, null, 8 /* PROPS */, [\"format\"])\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+        ),
+        (
+            r#"<div :format="(v) => v.toFixed(2)" class="a"></div>"#,
+            "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { format: (v) => v.toFixed(2), class: \"a\" }\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, null, 8 /* PROPS */, [\"format\"]))\n}",
+        ),
+    ];
+    for (source, expected) in cases {
         let legacy = shipped(source, true);
-        assert!(
-            legacy.contains("_hoisted_1"),
-            "{source:?}: the shipped inline lane hoists this surface"
-        );
+        assert_eq!(legacy, expected, "{source:?}");
         let emitted =
             s2(source, true).unwrap_or_else(|error| panic!("{source:?} must emit, got {error:?}"));
         assert_eq!(emitted, legacy, "{source:?}");
@@ -100,9 +107,9 @@ fn inline_root_surfaces_the_shipped_lane_hoists_match() {
     // A local mixed with a free name is still under-classified, so the
     // inline lane refuses instead of spelling a different props object.
     let mixed = r#"<Card :format="(row) => Math.max(row, 1)" />"#;
-    assert!(
-        shipped(mixed, true).contains("_hoisted_1"),
-        "the shipped lane hoists an allowlisted global inside the arrow"
+    assert_eq!(
+        shipped(mixed, true),
+        "import { openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nconst _hoisted_1 = { format: (row) => Math.max(row, 1) }\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createBlock(Card, _hoisted_1, null, 8 /* PROPS */, [\"format\"]))\n}"
     );
     assert_eq!(refused(mixed), Reason::HoistConstantGap);
 }

@@ -159,6 +159,7 @@ pub(super) fn lint_with_descriptor<'a>(
                 .and_then(|(root, _, _, has_fatal)| (!*has_fatal).then_some(root)),
             script_block.loc.start as u32,
             template_offset,
+            filename,
         )
     );
 

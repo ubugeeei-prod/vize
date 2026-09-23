@@ -84,11 +84,9 @@ fn a_non_canonical_page_is_refused() {
         },
     )
     .expect_err("canonical");
-    assert!(
-        error.to_string().starts_with(
-            "emit-document-page is not canonical: it differs from its reprint at byte "
-        ),
-        "{error}"
+    assert_eq!(
+        error.to_string(),
+        "emit-document-page is not canonical: it differs from its reprint at byte 33"
     );
 }
 

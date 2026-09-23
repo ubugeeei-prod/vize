@@ -46,8 +46,7 @@ fn classification_separates_local_shared_and_unaffected_symbols() {
         ("row.toFixed", Navigation::Local),
         ("row in", Navigation::Local),
     ] {
-        let ctx =
-            IdeContext::testing(&state, &uri, SOURCE.find(needle).unwrap(), SOURCE.into());
+        let ctx = IdeContext::testing(&state, &uri, SOURCE.find(needle).unwrap(), SOURCE.into());
         assert_eq!(classify(&ctx), expected, "{needle}");
     }
     let unicode = SOURCE.replace("rows", "\u{6570}\u{5024}");
@@ -55,8 +54,7 @@ fn classification_separates_local_shared_and_unaffected_symbols() {
         ("\u{6570}\u{5024} =", Navigation::Shared),
         ("\u{6570}\u{5024}.length }}", Navigation::Local),
     ] {
-        let ctx =
-            IdeContext::testing(&state, &uri, unicode.find(needle).unwrap(), unicode.clone());
+        let ctx = IdeContext::testing(&state, &uri, unicode.find(needle).unwrap(), unicode.clone());
         assert_eq!(classify(&ctx), expected);
     }
     let malformed = SOURCE.replace("{ const rows }", "{ const rows, const rows }");

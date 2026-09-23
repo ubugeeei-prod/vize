@@ -24,6 +24,9 @@ mod trace;
 pub use battery::{BatteryCensus, JSX, PINNED_BATTERY_CENSUS, TEMPLATES, run_battery};
 pub use trace::TraceRecorder;
 
+#[cfg(test)]
+mod probe;
+
 use crate::context::LintContext;
 use crate::ir::TemplateSyntax;
 use crate::markup::{MarkupContext, MarkupDocument, S2Markup, S2Template};

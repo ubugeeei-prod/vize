@@ -84,6 +84,8 @@
 
 **Non-goals:** CSS-driven layout checks; dynamic components.
 
+**Landed 2026-09-23** — full record: [phase-4-records/p4-11b.md](./phase-4-records/p4-11b.md).
+
 ## P4-12a — Style specification
 
 **Start gate:** startable now — P3-independent.

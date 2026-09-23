@@ -115,6 +115,8 @@
 
 **Non-goals:** props/emits contract checking as new rules (a later consumer); complexity (P4-9b); HTML composition (P4-11b).
 
+**Landed 2026-09-23** — full record: [phase-4-records/p4-3b.md](./phase-4-records/p4-3b.md).
+
 ## P4-3c — Unused-bindings fact group and lint consumer
 
 **Start gate:** startable now — P3-independent.
@@ -154,6 +156,8 @@
 
 **Non-goals:** lattice theorems (P3-15); effect graphs (P4-3e); Vapor planning (P3-6).
 
+**Landed 2026-09-23** — full record: [phase-4-records/p4-3d.md](./phase-4-records/p4-3d.md).
+
 ## P4-3e — Effect-graph fact group
 
 **Start gate:** gated on P3-6 — Vapor on S3 is the consumer this group is shaped for.
@@ -191,6 +195,8 @@
 
 **Non-goals:** the soundness verdict (P4-4a); new rules.
 
+**Landed 2026-09-23** — full record: [phase-4-records/p4-3f.md](./phase-4-records/p4-3f.md).
+
 ## P4-4a — Orphan verdicts for non-effect products
 
 **Start gate:** startable now — P3-independent.
@@ -209,6 +215,8 @@
 **Deps:** P4-3a, P4-3b, P4-3c, P4-3d, P4-3f.
 
 **Non-goals:** `EffectGraph` (P4-4b); deleting a product that has a consumer.
+
+**Landed 2026-09-23** — full record: [phase-4-records/p4-4a.md](./phase-4-records/p4-4a.md).
 
 ## P4-4b — Effect-graph verdict
 
@@ -269,6 +277,8 @@
 **Deps:** P4-5a, P3-9.
 
 **Non-goals:** MoonBit projection (P6-4); incremental reuse (P5-7); route types (P4-10b).
+
+**Landed 2026-09-23** — full record: [phase-4-records/p4-5b.md](./phase-4-records/p4-5b.md).
 
 ## P4-5c — Consumers switch and three generators deleted
 
