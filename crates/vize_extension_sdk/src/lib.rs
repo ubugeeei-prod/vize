@@ -26,9 +26,9 @@
 //! vize_extension_sdk::export_input_dialect!(Dialect);
 //! ```
 //!
-//! The crate carries the WIT package (`wit/`, byte-equal to the repository's
-//! `contracts/wit/`), its bindings, the handshake constants the host
-//! negotiates, writers for the pages the host accepts ([`pages`]), and — with
+//! The crate owns the canonical WIT package (`wit/`) and released surfaces
+//! (`versions/`), its bindings, the handshake constants the host negotiates,
+//! writers for the pages the host accepts ([`pages`]), and — with
 //! the default `runtime` feature, on `wasm32` — what an import-free `no_std`
 //! guest must provide itself: a global allocator, `cabi_realloc`,
 //! `memcmp`/`bcmp` and a panic handler. The world imports no host function,

@@ -11,7 +11,7 @@
 
 **Lane:** A
 
-**Deliverable:** `contracts/wit/input-dialect.wit`: block in → S1 surface tree and S2 page out, as coarse-grained calls (one call per block, canonical-ABI copy cost paid once), plus the `get-capability` handshake — integer protocol version and feature strings (the Swift import) — shared by every world.
+**Deliverable:** `crates/vize_extension_sdk/wit/input-dialect.wit`: block in → S1 surface tree and S2 page out, as coarse-grained calls (one call per block, canonical-ABI copy cost paid once), plus the `get-capability` handshake — integer protocol version and feature strings (the Swift import) — shared by every world.
 
 **Steps:**
 
@@ -33,7 +33,7 @@
 
 **Lane:** A
 
-**Deliverable:** `contracts/wit/expression-dialect.wit`: environment + expression body in → analysis facts (referenced bindings, const-ness, spans — P2-5b's capability contract) and a checkable projection with span links out (charter #14).
+**Deliverable:** `crates/vize_extension_sdk/wit/expression-dialect.wit`: environment + expression body in → analysis facts (referenced bindings, const-ness, spans — P2-5b's capability contract) and a checkable projection with span links out (charter #14).
 
 **Steps:**
 
@@ -52,7 +52,7 @@
 
 **Lane:** A
 
-**Deliverable:** `contracts/wit/output-target.wit`: canonical S3/S2 in → emitted document (P3-9's span-carrying S4 document) out.
+**Deliverable:** `crates/vize_extension_sdk/wit/output-target.wit`: canonical S3/S2 in → emitted document (P3-9's span-carrying S4 document) out.
 
 **Steps:**
 

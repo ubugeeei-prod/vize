@@ -3,7 +3,7 @@
 > [!NOTE]
 > The written compatibility policy charter #15's extension contracts carry
 > from day one (the Swift macro lesson), committed before the contracts GA
-> (P6-8). It governs the `vize:contracts` WIT package in `contracts/wit/`
+> (P6-8). It governs the `vize:contracts` WIT package in `crates/vize_extension_sdk/wit/`
 > and every payload that crosses it. Vize-internal formats stay free until
 > GA under charter #23; this policy is what GA freezes.
 
@@ -11,7 +11,7 @@
 
 A contract release is four facts moving together, recorded as one canonical
 **contract surface** (`vize_marquette::ContractSurface`) per released version
-in `contracts/versions/<package>@<version>.json`:
+in `crates/vize_extension_sdk/versions/<package>@<version>.json`:
 
 | Fact                 | Where it lives                                          | Who checks it                   |
 | -------------------- | ------------------------------------------------------- | ------------------------------- |
@@ -74,7 +74,7 @@ a deliberate host change, not a relaxation of this rule.
 TS-48's goldens and guests are pinned to the package version they exercise:
 `crates/vize_extension_host/tests/contract_surface.rs` holds every released
 surface to this policy pairwise, and holds the newest one to what
-`contracts/wit/` and the host's handshake constants describe today, byte for
+`crates/vize_extension_sdk/wit/` and the host's handshake constants describe today, byte for
 byte. Changing the WIT therefore means choosing the version this policy
 requires and committing its surface (`VIZE_CONTRACT_SURFACE_BLESS=1` writes it
 for review) in the same change as the TS-48 golden updates. The classifier

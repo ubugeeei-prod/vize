@@ -11,7 +11,7 @@ use crate::output::{EmitRequest, Emitted, OutputTargetGuest};
 
 mod bindings {
     wasmtime::component::bindgen!({
-        path: "../../contracts/wit",
+        path: "../vize_extension_sdk/wit",
         world: "output-target",
         with: {
             "vize:contracts/types": crate::wasm::bindings::vize::contracts::types,

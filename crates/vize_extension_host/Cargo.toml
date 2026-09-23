@@ -1,7 +1,7 @@
 # The extension-contract host (Davinci phase 6, P6-1a / P6-3).
 #
 # Hosts input-dialect guests over the `vize:contracts` WIT package in
-# `contracts/wit/`: the capability handshake, host-side acceptance of the
+# `crates/vize_extension_sdk/wit/`: the capability handshake, host-side acceptance of the
 # serialized S1/S2 pages, the in-tree Vue dialect behind the same trait
 # (charter #15's first-party tier), and the external tier's transports.
 #

@@ -33,7 +33,7 @@ Lanes own disjoint paths within this phase; registration touchpoints (`Cargo.tom
 
 | Lane | Tasks               | Owns (only this lane edits)                                                       |
 | ---- | ------------------- | --------------------------------------------------------------------------------- |
-| A    | P6-1a, P6-1b, P6-1c | `contracts/wit/`                                                                  |
+| A    | P6-1a, P6-1b, P6-1c | `crates/vize_extension_sdk/wit/`                                                  |
 | B    | P6-2                | `crates/vize_extension_sdk/`, `npm/extension-sdk/`                                |
 | C    | P6-3                | `crates/vize_extension_host/`                                                     |
 | D    | P6-4a, P6-4b, P6-5  | `crates/vize_dialect_moonbit/`, `davinci-road/plan/exprref-validation.md`         |

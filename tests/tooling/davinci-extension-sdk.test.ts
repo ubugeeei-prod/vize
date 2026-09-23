@@ -6,7 +6,8 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 // P6-2: the extension SDK depends on no vize implementation crate, carries the
-// contract WIT verbatim, and its JS/TS mirror matches the released surface.
+// canonical contract WIT and released surfaces, and its JS/TS mirror matches
+// the latest released surface.
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const read = (...parts: string[]) => fs.readFileSync(path.join(root, ...parts), "utf8");
@@ -98,12 +99,19 @@ test("no workspace crate is reachable from the SDK", () => {
   );
 });
 
-test("the SDK carries contracts/wit verbatim", () => {
-  const files = (dir: string) => fs.readdirSync(path.join(root, dir)).toSorted();
-  assert.deepEqual(files("crates/vize_extension_sdk/wit"), files("contracts/wit"));
-  for (const file of files("contracts/wit")) {
-    assert.equal(read("crates/vize_extension_sdk/wit", file), read("contracts/wit", file), file);
-  }
+test("the SDK owns the canonical WIT and released surfaces", () => {
+  assert.equal(fs.existsSync(path.join(root, "contracts")), false);
+  assert.deepEqual(fs.readdirSync(path.join(root, "crates/vize_extension_sdk/wit")).toSorted(), [
+    "expression-dialect.wit",
+    "handshake.wit",
+    "input-dialect.wit",
+    "output-target.wit",
+    "types.wit",
+  ]);
+  assert.match(
+    read("crates/vize_extension_sdk/wit/types.wit"),
+    new RegExp(`^package vize:contracts@${newestSurface().version.replaceAll(".", "\\.")};$`, "mu"),
+  );
 });
 
 type Surface = {
@@ -121,13 +129,13 @@ type Surface = {
 };
 
 function newestSurface(): Surface {
-  const files = fs.readdirSync(path.join(root, "contracts/versions")).toSorted();
+  const files = fs.readdirSync(path.join(root, "crates/vize_extension_sdk/versions")).toSorted();
   assert.deepEqual(files, [
     "vize-contracts@0.1.0.json",
     "vize-contracts@0.1.1.json",
     "vize-contracts@0.1.2.json",
   ]);
-  return JSON.parse(read("contracts/versions", files.at(-1)!)) as Surface;
+  return JSON.parse(read("crates/vize_extension_sdk/versions", files.at(-1)!)) as Surface;
 }
 
 const pascal = (name: string) =>

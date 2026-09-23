@@ -16,7 +16,7 @@ description = "SDK for Vize extension-contract guests: WIT bindings, handshake, 
 # record); until then CI packs the crate and builds guests from the tarball.
 publish = false
 metadata.vize.stability = "experimental"
-include = ["Cargo.toml", "README.md", "src/**", "wit/**"]
+include = ["Cargo.toml", "README.md", "src/**", "wit/**", "versions/**"]
 
 [features]
 default = ["runtime"]

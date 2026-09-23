@@ -5,7 +5,7 @@
 //! breaking changes in the release notes.
 //!
 //! Charter #15's two tiers meet here. External input dialects are
-//! component-model guests of the `input-dialect` world in `contracts/wit/`,
+//! component-model guests of the `input-dialect` world in `crates/vize_extension_sdk/wit/`,
 //! reached over a serialized contract; the first-party Vue dialect
 //! ([`vue::VueDialect`]) implements the same [`InputDialectGuest`] trait
 //! compiled in, with no transport at all. Either way the host treats the

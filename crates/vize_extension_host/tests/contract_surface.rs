@@ -1,11 +1,11 @@
 //! The released `vize:contracts` surfaces, versioned alongside the WIT
 //! (P6-8, `davinci-road/contracts-compat-policy.md`).
 //!
-//! `contracts/versions/` holds one canonical surface per released package
-//! version. This test holds the history to the policy — every consecutive
+//! `crates/vize_extension_sdk/versions/` holds one canonical surface per
+//! released package version. This test holds the history to the policy — every consecutive
 //! pair is classified and its version movement checked — and pins the newest
-//! entry to what `contracts/wit/` and this host's handshake constants
-//! describe today, byte for byte. Changing the WIT therefore means choosing
+//! entry to what `crates/vize_extension_sdk/wit/` and this host's handshake
+//! constants describe today, byte for byte. Changing the WIT therefore means choosing
 //! a version the policy accepts and committing its surface
 //! (`VIZE_CONTRACT_SURFACE_BLESS=1` writes it for review).
 
@@ -26,8 +26,8 @@ use vize_s0::{String, cstr};
 
 const BLESS_ENV: &str = "VIZE_CONTRACT_SURFACE_BLESS";
 
-fn contracts() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../contracts")
+fn sdk() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("../vize_extension_sdk")
 }
 
 fn features(required: &[&str]) -> BTreeSet<String> {
@@ -65,8 +65,8 @@ fn host_protocol() -> Protocol {
 
 /// Every committed surface, oldest first, with its file bytes.
 fn released() -> Vec<(ContractVersion, ContractSurface, Vec<u8>)> {
-    let mut released: Vec<_> = std::fs::read_dir(contracts().join("versions"))
-        .expect("contracts/versions exists")
+    let mut released: Vec<_> = std::fs::read_dir(sdk().join("versions"))
+        .expect("crates/vize_extension_sdk/versions exists")
         .map(|entry| {
             let path = entry.expect("readable entry").path();
             let bytes = std::fs::read(&path).expect("readable surface");
@@ -130,8 +130,8 @@ fn released_surfaces_are_canonical_and_follow_the_policy() {
 
 #[test]
 fn the_newest_released_surface_is_the_wit_and_this_host() {
-    let current = surface_from_wit(&contracts().join("wit"), &host_protocol())
-        .unwrap_or_else(|error| panic!("contracts/wit: {error}"));
+    let current = surface_from_wit(&sdk().join("wit"), &host_protocol())
+        .unwrap_or_else(|error| panic!("crates/vize_extension_sdk/wit: {error}"));
     let canonical = canonical_surface_json(&current);
     if std::env::var_os(BLESS_ENV).is_some() {
         let name = cstr!(
@@ -139,7 +139,7 @@ fn the_newest_released_surface_is_the_wit_and_this_host() {
             current.package.replace(':', "-"),
             current.version
         );
-        std::fs::write(contracts().join("versions").join(name.as_str()), &canonical)
+        std::fs::write(sdk().join("versions").join(name.as_str()), &canonical)
             .expect("writes the surface");
     }
     let released = released();
@@ -153,6 +153,6 @@ fn the_newest_released_surface_is_the_wit_and_this_host() {
     assert_eq!(
         std::str::from_utf8(&canonical).expect("UTF-8"),
         std::str::from_utf8(bytes).expect("UTF-8"),
-        "contracts/wit changed without a new version"
+        "crates/vize_extension_sdk/wit changed without a new version"
     );
 }

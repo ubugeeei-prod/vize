@@ -44,7 +44,7 @@ const formatterSensitiveContentIgnorePatterns = [
   "benchmarks/davinci_harness/fixtures/**",
   // Released extension-contract surfaces are canonical bytes checked by
   // `vize_extension_host`'s `contract_surface` test (P6-8).
-  "contracts/versions/**",
+  "crates/vize_extension_sdk/versions/**",
   "crates/**/tests/fixtures/**",
   // Formatter input/output witnesses must retain their authored bytes.
   "crates/vize_glyph/tests/style_spec/**",

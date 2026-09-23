@@ -11,7 +11,7 @@ use crate::expression::{Analysis, ExpressionBatch, ExpressionDialectGuest};
 
 mod bindings {
     wasmtime::component::bindgen!({
-        path: "../../contracts/wit",
+        path: "../vize_extension_sdk/wit",
         world: "expression-dialect",
         with: {
             "vize:contracts/types": crate::wasm::bindings::vize::contracts::types,

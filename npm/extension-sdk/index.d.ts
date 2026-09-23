@@ -2,7 +2,7 @@
 // mapping (records as camelCase interfaces, enums as kebab-case string unions,
 // variants as `{ tag, val }`, `option<T>` as `T | undefined`, `u32` as
 // `number`). `tests/tooling/davinci-extension-sdk.test.ts` pins every
-// interface below to the released surface in `contracts/versions/`.
+// interface below to the released surface in `crates/vize_extension_sdk/versions/`.
 
 // interface types
 

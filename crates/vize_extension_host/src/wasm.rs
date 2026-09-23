@@ -28,7 +28,7 @@ pub use output::WasmOutputGuest;
 
 pub(crate) mod bindings {
     wasmtime::component::bindgen!({
-        path: "../../contracts/wit",
+        path: "../vize_extension_sdk/wit",
         world: "input-dialect",
     });
 }
