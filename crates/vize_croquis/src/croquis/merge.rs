@@ -33,6 +33,7 @@ impl Croquis {
         self.type_exports.extend(plain.type_exports);
         self.import_statements.extend(plain.import_statements);
         self.re_exports.extend(plain.re_exports);
+        self.re_export_forwards.extend(plain.re_export_forwards);
         self.component_registrations
             .extend(plain.component_registrations);
 

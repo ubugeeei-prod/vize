@@ -96,7 +96,7 @@ pub use croquis::{
     AnalysisStats, BindingMetadata, COMPILER_MACRO_NAMES, ComponentShape, Croquis,
     CroquisSemanticSnapshot, CroquisSemanticSummary, CroquisStats, ImportStatementInfo,
     InvalidExport, InvalidExportKind, OptionGroup, OptionKey, OptionMember, OptionsDescriptor,
-    ReExportInfo, SemanticBindingSnapshot, SemanticComponentUsageSnapshot,
+    ReExportForward, ReExportInfo, SemanticBindingSnapshot, SemanticComponentUsageSnapshot,
     SemanticEventListenerSnapshot, SemanticInjectSnapshot, SemanticPassedPropSnapshot,
     SemanticProvideSnapshot, SemanticReactiveSourceSnapshot, SemanticReactivityLossSnapshot,
     SemanticScopeBindingSnapshot, SemanticScopeSnapshot, SemanticSlotUsageSnapshot,

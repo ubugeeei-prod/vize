@@ -97,6 +97,8 @@ pub struct ScriptParseResult {
     pub import_statements: Vec<ImportStatementInfo>,
     /// Re-export statement spans (`export { ... } from "..."`)
     pub re_exports: Vec<ReExportInfo>,
+    /// Names re-exported from another module.
+    pub re_export_forwards: Vec<crate::croquis::ReExportForward>,
     /// Components registered through Options API `components`.
     pub component_registrations: Vec<ComponentRegistration>,
     /// API shape of the component's default export (e.g. class component).
@@ -296,6 +298,7 @@ impl ScriptParseResult {
         summary.setup_context = self.setup_context;
         summary.import_statements = self.import_statements;
         summary.re_exports = self.re_exports;
+        summary.re_export_forwards = self.re_export_forwards;
         summary.component_registrations = self.component_registrations;
         summary.component_shape = self.component_shape;
         summary.binding_spans = self.binding_spans;

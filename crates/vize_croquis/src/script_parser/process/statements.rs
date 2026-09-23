@@ -9,7 +9,9 @@
 use oxc_ast::ast::{Class, Declaration, Expression, Function, Statement, VariableDeclaration};
 use oxc_span::GetSpan;
 
-use crate::croquis::{InvalidExport, InvalidExportKind, ReExportInfo, TypeExport, TypeExportKind};
+use crate::croquis::{
+    InvalidExport, InvalidExportKind, ReExportForward, ReExportInfo, TypeExport, TypeExportKind,
+};
 use crate::scope::{BlockKind, BlockScopeData, ClosureScopeData};
 use vize_carton::CompactString;
 use vize_relief::BindingType;
@@ -58,6 +60,7 @@ pub fn process_statement(result: &mut ScriptParseResult, stmt: &Statement<'_>, s
                     start: export.span.start,
                     end: export.span.end,
                 });
+                record_reexport_forwards(result, export);
                 return;
             }
 
@@ -238,5 +241,27 @@ fn process_exported_value_declaration(
             process_enum_declaration(result, enumeration)
         }
         _ => {}
+    }
+}
+
+fn record_reexport_forwards(
+    result: &mut ScriptParseResult,
+    export: &oxc_ast::ast::ExportNamedDeclaration<'_>,
+) {
+    if export.export_kind.is_type() {
+        return;
+    }
+    let Some(source) = export.source.as_ref() else {
+        return;
+    };
+    for specifier in &export.specifiers {
+        if specifier.export_kind.is_type() {
+            continue;
+        }
+        result.re_export_forwards.push(ReExportForward {
+            source: CompactString::new(source.value.as_str()),
+            imported: CompactString::new(specifier.local.name().as_str()),
+            exported: CompactString::new(specifier.exported.name().as_str()),
+        });
     }
 }

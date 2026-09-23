@@ -48,8 +48,8 @@ mod vir;
 // Re-export all public croquis data types from their focused modules.
 pub use bindings::{
     BindingMetadata, COMPILER_MACRO_NAMES, ComponentShape, ImportStatementInfo, InvalidExport,
-    InvalidExportKind, ReExportInfo, TypeExport, TypeExportKind, UndefinedRef, UnusedTemplateVar,
-    UnusedVarContext,
+    InvalidExportKind, ReExportForward, ReExportInfo, TypeExport, TypeExportKind, UndefinedRef,
+    UnusedTemplateVar, UnusedVarContext,
 };
 pub use model::{AnalysisStats, CroquisStats};
 pub use options_descriptor::{OptionGroup, OptionKey, OptionMember, OptionsDescriptor};
@@ -158,6 +158,8 @@ pub struct Croquis {
 
     /// Re-export statement spans (`export { ... } from "..."`) in script content
     pub re_exports: Vec<ReExportInfo>,
+    /// Names re-exported from another module, for cross-file identity.
+    pub re_export_forwards: Vec<ReExportForward>,
 
     /// Definition spans for bindings (name -> (start, end) offset in script)
     /// Used for Go-to-Definition support.

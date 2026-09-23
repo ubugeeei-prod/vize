@@ -52,7 +52,7 @@ pub mod spec;
 pub mod undefined_refs;
 
 pub use bindings::{BindingFact, BindingKey, Bindings, BindingsTable};
-pub use components::{ComponentIdentity, ComponentUsageSite, ComponentUsages};
+pub use components::{ComponentIdentity, ComponentUsageSite, ComponentUsages, component_identity};
 pub use undefined_refs::UndefinedRefs;
 pub use vize_davinci::fact::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, FactRegistry, FactTable, FactView,

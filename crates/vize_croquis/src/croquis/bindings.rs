@@ -192,6 +192,17 @@ pub struct ReExportInfo {
     pub end: u32,
 }
 
+/// One name a module re-exports from another module.
+///
+/// `export { Foo as Bar } from './Foo.vue'` stores `imported = Foo`,
+/// `exported = Bar`. A default re-export stores `imported = default`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReExportForward {
+    pub source: CompactString,
+    pub imported: CompactString,
+    pub exported: CompactString,
+}
+
 /// Invalid export in script setup
 #[derive(Debug, Clone)]
 pub struct InvalidExport {

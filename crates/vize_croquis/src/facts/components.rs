@@ -72,6 +72,10 @@ impl FactProducer<Croquis> for ComponentUsages {
 /// The identity a template tag renders: through an Options API registration,
 /// then through a value import, preferring an exact local name over a
 /// Pascal/kebab spelling of it.
+pub fn component_identity(croquis: &Croquis, tag: &str) -> ComponentIdentity {
+    resolve(croquis, tag)
+}
+
 fn resolve(croquis: &Croquis, tag: &str) -> ComponentIdentity {
     let bound = registration_local(croquis, tag).unwrap_or(tag);
     if let Some((module, export_name)) = imported_export(croquis, bound) {

@@ -13,7 +13,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Analyzer`                     | type  | `analyzer`          |    42 |   160 |
 | `AnalyzerOptions`              | type  | `analyzer`          |    42 |   156 |
 | `ComponentUsage`               | type  | `croquis::template` |    20 |    44 |
-| `Croquis`                      | type  | `croquis`           |    92 |   215 |
+| `Croquis`                      | type  | `croquis`           |    92 |   216 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     1 |
@@ -102,7 +102,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `AnalyzerOptions`         |      156 |  238 |
 | `COMPILER_MACRO_NAMES`    |        0 |    1 |
 | `ComponentUsage`          |       44 |   64 |
-| `Croquis`                 |      215 |  319 |
+| `Croquis`                 |      216 |  321 |
 | `Drawer`                  |        0 |    1 |
 | `EventHandlerScopeData`   |        9 |   16 |
 | `EventListener`           |        3 |    5 |

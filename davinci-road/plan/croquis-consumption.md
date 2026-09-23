@@ -88,6 +88,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `PassedProp`                           | type  | `croquis::template`  |
 | `ProvideInjectTracker`                 | type  | `provide`            |
 | `RaceConditionTracker`                 | type  | `race`               |
+| `ReExportForward`                      | type  | `croquis`            |
 | `ReExportInfo`                         | type  | `croquis`            |
 | `ReactivityEffectEdgeOverlay`          | type  | `reactivity_overlay` |
 | `ReactivityEffectGraphOverlay`         | type  | `reactivity_overlay` |
@@ -154,6 +155,7 @@ Cross-crate aggregates — per-product totals, the products with no external con
 | `Croquis.pattern_diagnostics`          | field | `croquis`            |
 | `Croquis.provide_inject`               | field | `croquis`            |
 | `Croquis.race_conditions`              | field | `croquis`            |
+| `Croquis.re_export_forwards`           | field | `croquis`            |
 | `Croquis.re_exports`                   | field | `croquis`            |
 | `Croquis.reactivity`                   | field | `croquis`            |
 | `Croquis.scopes`                       | field | `croquis`            |
