@@ -54,6 +54,50 @@ fn expression_and_content_directive_shapes_are_admitted() {
 }
 
 #[test]
+fn static_and_bound_styles_merge_in_authored_order() {
+    for (source, effect) in [
+        (
+            r#"<div style="color: red;" :style="theme"></div>"#,
+            "_setStyle(n0, [\"color: red;\", _ctx.theme])",
+        ),
+        (
+            r#"<div :style="theme" style="color: red;"></div>"#,
+            "_setStyle(n0, [_ctx.theme, \"color: red;\"])",
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        let compiled = crate::compile_vapor(
+            &allocator,
+            source,
+            crate::VaporCompilerOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+        assert!(
+            compiled.error_messages.is_empty(),
+            "{source}: {:?}",
+            compiled.error_messages
+        );
+        assert!(
+            compiled.code.contains(effect),
+            "{source}: {}",
+            compiled.code
+        );
+        assert!(
+            compiled.code.contains("_template(\"<div></div>\", true)"),
+            "{source}: {}",
+            compiled.code
+        );
+    }
+}
+
+#[test]
 fn cloak_is_a_native_one_shot_directive_in_static_and_branch_regions() {
     for source in [
         r#"<div v-cloak></div>"#,
@@ -116,7 +160,7 @@ fn unsupported_attribute_shapes_select_exact_legacy_reasons() {
     for (source, reason) in [
         (r#"<div v-html="markup"><b>child</b></div>"#, Structure),
         (r#"<div v-text="label">child</div>"#, Structure),
-        (r#"<div style="color: red" :style="s"></div>"#, Binding),
+        (r#"<div style :style="s"></div>"#, Binding),
         (r#"<div class :class="c"></div>"#, Binding),
         (r#"<div :class="a" :class="b"></div>"#, Binding),
         (r#"<input :type="kind" v-model="value">"#, Binding),

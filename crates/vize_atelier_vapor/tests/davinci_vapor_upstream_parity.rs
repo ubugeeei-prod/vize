@@ -107,3 +107,95 @@ fn s3_branch_matches_official_vapor_state_and_identity_trace() {
     assert_eq!(upstream, fixture.expected, "official compiler-vapor trace");
     assert_eq!(vize, upstream, "TS-33 behavior-level parity");
 }
+
+#[test]
+fn s3_style_merge_matches_official_vapor_in_both_authored_orders() {
+    let context = json!({
+        "theme": {"color": "blue", "backgroundColor": "yellow"},
+        "label": "A",
+    });
+    let steps = json!([
+        {"patch": {"theme": {"backgroundColor": "orange"}, "label": "B"}},
+        {"patch": {"theme": {}, "label": "C"}},
+    ]);
+    let view = |style: &str, label: &str| {
+        json!({
+            "tree": [{
+                "tag": "main",
+                "attributes": {"data-id": "root"},
+                "children": [
+                    {"tag": "div", "attributes": {"data-id": "box", "style": style}, "children": [label]},
+                    {"tag": "i", "attributes": {"data-id": "tail"}, "children": ["tail"]},
+                ],
+            }],
+            "events": [],
+            "identities": [["root", 0], ["box", 1], ["tail", 2]],
+        })
+    };
+    for (source, first_style, second_style, effect) in [
+        (
+            r#"<main data-id="root"><div data-id="box" style="color: red;" :style="theme">{{ label }}</div><i data-id="tail">tail</i></main>"#,
+            "color: blue; background-color: yellow;",
+            "color: red; background-color: orange;",
+            "_setStyle(n1, [\"color: red;\", _ctx.theme])",
+        ),
+        (
+            r#"<main data-id="root"><div data-id="box" :style="theme" style="color: red;">{{ label }}</div><i data-id="tail">tail</i></main>"#,
+            "background-color: yellow; color: red;",
+            "background-color: orange; color: red;",
+            "_setStyle(n1, [_ctx.theme, \"color: red;\"])",
+        ),
+    ] {
+        let expected = vec![
+            view(first_style, "A"),
+            view(second_style, "B"),
+            view("color: red;", "C"),
+            json!({"tree": [], "events": [], "identities": []}),
+        ];
+        let allocator = Allocator::new();
+        let before = WalkCounts::snapshot();
+        let compiled = compile_vapor(
+            &allocator,
+            source,
+            VaporCompilerOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+        assert!(
+            compiled.error_messages.is_empty(),
+            "{source}: {:?}",
+            compiled.error_messages
+        );
+        assert!(
+            compiled.code.contains(effect),
+            "{source}: {}",
+            compiled.code
+        );
+        assert_eq!(
+            WalkCounts::snapshot().since(before).total_walks(),
+            0,
+            "{source}: TS-33 must exercise native S3"
+        );
+        let vize = trace(
+            "davinci-mounted-trace.mjs",
+            json!({
+                "backend": "vapor",
+                "code": compiled.code,
+                "context": context.clone(),
+                "steps": steps.clone(),
+                "identities": true,
+            }),
+        );
+        let upstream = trace(
+            "davinci-upstream-vapor-trace.mjs",
+            json!({"source": source, "context": context.clone(), "steps": steps.clone()}),
+        );
+        assert_eq!(vize, expected, "{source}: Vize native S3 trace");
+        assert_eq!(
+            upstream, expected,
+            "{source}: official compiler-vapor trace"
+        );
+        assert_eq!(vize, upstream, "{source}: TS-33 behavior-level parity");
+    }
+}

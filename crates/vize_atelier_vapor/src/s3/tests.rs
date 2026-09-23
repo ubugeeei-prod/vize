@@ -193,7 +193,7 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<MyComp v-model=\"checked\" />",
         "<div :[key]=\"value\"></div>",
         "<div ref=\"node\"></div>",
-        "<div :style=\"s\" style=\"color: red\"></div>",
+        "<div :style=\"s\" style></div>",
         "<div @click=\"a++; b++\"></div>",
         "<button @click=\"$event\"></button>",
         "<svg><circle /></svg>",

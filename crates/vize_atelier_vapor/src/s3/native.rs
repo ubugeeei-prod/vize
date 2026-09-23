@@ -136,8 +136,8 @@ struct Binding<'a> {
     name: &'a str,
     value: Expr<'a>,
     modifiers: Vec<'a, &'a str>,
-    /// A static `class` merged ahead of this dynamic `:class`.
-    merge: Option<&'a str>,
+    /// Static class/style value and whether it followed the bound value.
+    merge: Option<(&'a str, bool)>,
     /// S3's element-kind operand for a model; checked against the target tag.
     model_element: Option<&'a str>,
     /// Authored position, which orders an element's spread sources.

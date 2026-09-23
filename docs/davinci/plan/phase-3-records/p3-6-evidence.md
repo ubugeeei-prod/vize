@@ -57,6 +57,11 @@ the commands that re-derive it, and the local measurements taken so far.
   retained template equality and rejection of a stale directive kind. The
   independent mounted trace checks that the cloak attribute is absent after
   each mount while the live node and untouched sibling keep their identities.
+- Static `style` beside `:style` now projects to one `_setStyle` call in
+  authored source order. Both orders match independently specified mounted DOM
+  states and node identities through updates and unmount, and the pinned
+  official `@vue/compiler-vapor` output under the same runtime. Empty static
+  style attributes still select legacy.
 - The first TS-33 fixture compiles one conditional element and its static
   sibling through Vize S3 and pinned official `@vue/compiler-vapor`. Both
   outputs mount on the same pinned `@vue/runtime-vapor`; five exact snapshots

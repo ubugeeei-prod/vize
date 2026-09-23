@@ -81,10 +81,13 @@ impl<'a> Emitter<'a, '_> {
             }
             BindingKind::Prop => {
                 let mut values = Vec::new_in(&self.allocator);
-                if let Some(merge) = binding.merge {
+                if let Some((merge, false)) = binding.merge {
                     values.push(self.expression(Expr::plain(merge), true));
                 }
                 values.push(self.spanned(binding.value, false, value_span));
+                if let Some((merge, true)) = binding.merge {
+                    values.push(self.expression(Expr::plain(merge), true));
+                }
                 let key = self.spanned(Expr::plain(binding.name), true, name_span);
                 self.effect(
                     OperationNode::SetProp(SetPropIRNode {
