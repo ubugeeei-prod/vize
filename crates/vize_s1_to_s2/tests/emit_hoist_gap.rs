@@ -114,6 +114,14 @@ fn typed_component_callback_props_match_shipped_hoists() {
 }
 
 #[test]
+fn typed_parameter_and_local_callback_props_match_shipped_hoists() {
+    let source = r#"<Form :handler="(x: number) => { const y: number = x; return y }" />"#;
+    let legacy = shipped_with_ts(source, true, true);
+    let emitted = s2_with_ts(source, true, true).expect("S2 emit");
+    assert_eq!(emitted, legacy, "{source:?}");
+}
+
+#[test]
 fn conditional_named_slot_outlet_props_match_shipped_hoists() {
     let source = r#"<Tabs><template #apiTab><div class="py-2"><slot name="api" /></div></template><template v-if="showInstallation" #creditsTab><div class="py-2"><slot name="credits" /></div></template></Tabs>"#;
     let legacy = shipped(source, true);
