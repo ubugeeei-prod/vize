@@ -48,6 +48,14 @@ export class MappedModule {
     this.code = next;
     if (this.map === null || next === previous) return;
 
+    // Native asset rewriting can change several disjoint spans. Keep the
+    // unchanged spans between them instead of treating the whole region as one
+    // replacement. Offsets use UTF-16 code units, as Rspack's sources API does.
+    const changes = diffChars(previous, next, { maxEditLength: 10_000, timeout: 100 });
+    if (!changes) {
+      this.map = null;
+      return;
+    }
     const original = new sources.SourceMapSource(
       previous,
       this.map.file ?? "sfc.js",
@@ -55,11 +63,7 @@ export class MappedModule {
     );
     const edited = new sources.ConcatSource();
     let offset = 0;
-
-    // Native asset rewriting can change several disjoint spans. Keep the
-    // unchanged spans between them instead of treating the whole region as one
-    // replacement. Offsets use UTF-16 code units, as Rspack's sources API does.
-    for (const change of diffChars(previous, next)) {
+    for (const change of changes) {
       if (change.added) edited.add(change.value);
       else if (change.removed) offset += change.value.length;
       else {

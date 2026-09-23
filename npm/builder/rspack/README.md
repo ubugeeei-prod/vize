@@ -150,7 +150,7 @@ export default {
   },
 
   plugins: [
-    new VizePlugin({}),
+    new VizePlugin({ css: { native: false } }),
 
     ...(isProduction
       ? [

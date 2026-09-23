@@ -207,6 +207,7 @@ export default {
   plugins: [
     new VizePlugin({
       autoRules: false,
+      css: { native: false },
     }),
 
     ...(isProduction

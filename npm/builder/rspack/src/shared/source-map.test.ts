@@ -79,3 +79,15 @@ void test("module assembly without a map preserves the transformed code", () => 
   assert.equal(mapped.code, "const _sfc_main = {};\nexport default _sfc_main;");
   assert.equal(mapped.map, null);
 });
+
+void test("large rewrites retain code when mapping alignment exceeds the edit budget", () => {
+  const code = "a".repeat(12_000);
+  const mapped = new MappedModule(
+    code,
+    new sources.OriginalSource(code, "App.vue").map({ columns: true })!,
+  );
+  const next = "b".repeat(12_000);
+  mapped.edit(next);
+  assert.equal(mapped.code, next);
+  assert.equal(mapped.map, null);
+});
