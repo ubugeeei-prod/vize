@@ -40,7 +40,9 @@ fn is_void_route_context(content: &str, offset: usize) -> bool {
 }
 
 fn is_link_href_context(content: &str, offset: usize) -> bool {
-    let before_open = &content[..offset];
+    let Some(before_open) = content.get(..offset) else {
+        return false;
+    };
     let before_attr = before_open.trim_end();
     let is_href_value = before_attr.ends_with("href=")
         || before_attr.ends_with(":href=")
@@ -49,16 +51,14 @@ fn is_link_href_context(content: &str, offset: usize) -> bool {
         return false;
     }
 
-    let Some(tag_start) = find_link_tag_start(before_open) else {
-        return false;
-    };
-
-    !before_open[tag_start..].contains('>')
+    find_link_tag_start(before_open)
+        .and_then(|tag_start| before_open.get(tag_start..))
+        .is_some_and(|tag| !tag.contains('>'))
 }
 
 fn find_link_tag_start(before: &str) -> Option<usize> {
     let mut cursor = before.len();
-    while let Some(found) = before[..cursor].rfind("<Link") {
+    while let Some(found) = before.get(..cursor).and_then(|head| head.rfind("<Link")) {
         let after_tag = found + "<Link".len();
         let boundary = before
             .as_bytes()

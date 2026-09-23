@@ -92,13 +92,11 @@ pub(in crate::ide::file_rename) fn relative_module_path(
     let from_components = from_dir.components().collect::<Vec<_>>();
     let to_components = to_path.components().collect::<Vec<_>>();
 
-    let mut common = 0usize;
-    while common < from_components.len()
-        && common < to_components.len()
-        && from_components[common] == to_components[common]
-    {
-        common += 1;
-    }
+    let common = from_components
+        .iter()
+        .zip(&to_components)
+        .take_while(|(from, to)| from == to)
+        .count();
 
     if common == 0
         && matches!(from_components.first(), Some(Component::Prefix(_)))
@@ -111,7 +109,7 @@ pub(in crate::ide::file_rename) fn relative_module_path(
     for _ in common..from_components.len() {
         parts.push("..".to_string());
     }
-    for component in &to_components[common..] {
+    for component in to_components.iter().skip(common) {
         let part = match component {
             Component::Normal(value) => value.to_string_lossy().to_string(),
             Component::CurDir => ".".to_string(),
@@ -220,7 +218,9 @@ pub(in crate::ide::file_rename) fn candidate_exists(state: &ServerState, path: &
 
 pub(in crate::ide::file_rename) fn split_specifier_suffix(specifier: &str) -> (&str, &str) {
     let split_at = specifier.find(['?', '#']).unwrap_or(specifier.len());
-    (&specifier[..split_at], &specifier[split_at..])
+    specifier
+        .split_at_checked(split_at)
+        .unwrap_or((specifier, ""))
 }
 
 pub(in crate::ide::file_rename) fn normalize_path_buf(path: &Path) -> PathBuf {

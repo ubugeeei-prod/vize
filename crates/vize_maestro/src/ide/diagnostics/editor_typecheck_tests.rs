@@ -1,4 +1,9 @@
 //! Native editor type-checking regressions.
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    reason = "tests assert by panicking"
+)]
 
 use super::editor_typecheck_fixture::{
     assert_no_import_or_unknown_record_diagnostics, resolve_test_tsgo_binary, state_for_fixture,

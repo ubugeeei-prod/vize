@@ -4,7 +4,17 @@
 //! - Template bindings (variables, functions, etc.)
 //! - Script identifiers
 //! - CSS variables in v-bind()
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "tower-lsp lsp_types take std String values"
+)]
+#![cfg_attr(
+    feature = "native",
+    expect(
+        clippy::disallowed_methods,
+        reason = "to_string builds lsp_types Strings"
+    )
+)]
 
 #[cfg(feature = "native")]
 mod canonical;
@@ -14,14 +24,14 @@ mod corsa_event_variants_tests;
 mod corsa_model_tests;
 #[cfg(all(test, feature = "native", unix))]
 pub(in crate::ide) mod corsa_session_tests;
-#[cfg(all(test, feature = "native"))]
+// Plain `cfg(test)` lets clippy's test exemptions apply inside the module.
+#[cfg(test)]
+#[cfg(feature = "native")]
 mod corsa_tests;
 
 use std::collections::HashMap;
 #[cfg(feature = "native")]
 use std::sync::Arc;
-#[cfg(test)]
-use tower_lsp::lsp_types::{Position, Range};
 use tower_lsp::lsp_types::{PrepareRenameResponse, WorkspaceEdit};
 
 #[cfg(feature = "native")]
@@ -284,35 +294,6 @@ impl RenameService {
             .ok()??;
         let edit = serde_json::from_value(edit).ok()?;
         corsa::map_corsa_workspace_edit(ctx, edit)
-    }
-
-    /// Get the word at the given offset.
-    #[cfg(test)]
-    fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
-        crate::ide::token_at_offset(content, offset, |c| Self::is_ident_char(c as char))
-    }
-
-    /// Convert byte offset range to LSP Range.
-    #[cfg(test)]
-    fn offset_range_to_lsp(content: &str, start: usize, end: usize) -> Range {
-        let start_pos = Self::offset_to_position(content, start);
-        let end_pos = Self::offset_to_position(content, end);
-        Range {
-            start: start_pos,
-            end: end_pos,
-        }
-    }
-
-    /// Convert byte offset to LSP Position.
-    #[cfg(test)]
-    fn offset_to_position(content: &str, offset: usize) -> Position {
-        crate::utils::offset_to_position_str(content, offset)
-    }
-
-    /// Check if character can be part of the native ASCII word probe.
-    #[cfg(test)]
-    fn is_ident_char(c: char) -> bool {
-        c.is_ascii_alphanumeric() || c == '_' || c == '$'
     }
 
     /// Check JavaScript identifier syntax, including Unicode identifiers.

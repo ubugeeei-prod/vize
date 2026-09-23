@@ -147,6 +147,7 @@ fn map_text_edit(
     Some(edit)
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;

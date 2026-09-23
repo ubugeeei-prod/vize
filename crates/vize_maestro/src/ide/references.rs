@@ -3,7 +3,10 @@
 //! Provides find-all-references for:
 //! - Script bindings used in template
 //! - Script bindings used in other script code
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 //! - Script bindings used in style v-bind()
 
 #[cfg(feature = "native")]

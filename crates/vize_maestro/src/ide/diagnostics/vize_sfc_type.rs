@@ -118,14 +118,13 @@ impl DiagnosticService {
                     code: diagnostic
                         .code
                         .as_ref().map(|code| NumberOrString::String(code.to_string())),
-                    code_description: (diagnostic.code.as_deref() == Some("fallthrough-attrs")).then(|| CodeDescription {
-                        href: Url::parse(
+                    code_description: (diagnostic.code.as_deref() == Some("fallthrough-attrs")).then(|| {
+                        Url::parse(
                             "https://github.com/ubugeeei-prod/vize/wiki/type-errors#fallthrough-attrs",
                         )
-                        .unwrap_or_else(|_| {
-                            Url::parse("https://github.com/ubugeeei-prod/vize").unwrap()
-                        }),
-                    }),
+                    })
+                    .and_then(Result::ok)
+                    .map(|href| CodeDescription { href }),
                     source: Some(sources::TYPE_CHECKER.to_string()),
                     message,
                     ..Default::default()

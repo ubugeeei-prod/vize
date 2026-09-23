@@ -1,3 +1,8 @@
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
 use std::{path::PathBuf, sync::Arc};
 
 use tower_lsp::lsp_types::{CallHierarchyItem, Url};

@@ -59,13 +59,18 @@ impl ReferencesService {
 
         for line in content.split_inclusive('\n') {
             let mut search_start = 0;
-            while let Some(relative_vbind_pos) = line[search_start..].find("v-bind(") {
+            while let Some(relative_vbind_pos) = line
+                .get(search_start..)
+                .and_then(|rest| rest.find("v-bind("))
+            {
                 let vbind_pos = search_start + relative_vbind_pos;
-                let argument = &line[vbind_pos + 7..];
-                let Some(close_paren) = argument.find(')') else {
+                let Some((raw, _)) = line
+                    .get(vbind_pos + 7..)
+                    .and_then(|argument| argument.split_once(')'))
+                else {
                     break;
                 };
-                let raw = &argument[..close_paren];
+                let close_paren = raw.len();
                 if raw.trim() == word {
                     let leading = raw.len() - raw.trim_start().len();
                     refs.push(line_start + vbind_pos + 7 + leading);

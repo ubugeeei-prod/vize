@@ -264,6 +264,7 @@ fn collect_positions(
     }
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::{Location, Position, Range, Url};

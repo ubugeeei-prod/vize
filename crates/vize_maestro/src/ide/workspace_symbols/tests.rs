@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::WorkspaceSymbolsService;
 use tower_lsp::lsp_types::{Position, Range, SymbolKind};
 

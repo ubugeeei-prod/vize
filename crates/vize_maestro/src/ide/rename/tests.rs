@@ -1,4 +1,29 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::RenameService;
+use tower_lsp::lsp_types::{Position, Range};
+
+/// Offset helpers the rename tests probe; the service itself works on
+/// references-provider spans.
+impl RenameService {
+    fn get_word_at_offset(content: &str, offset: usize) -> Option<String> {
+        crate::ide::token_at_offset(content, offset, |c| Self::is_ident_char(c as char))
+    }
+
+    fn offset_range_to_lsp(content: &str, start: usize, end: usize) -> Range {
+        Range {
+            start: Self::offset_to_position(content, start),
+            end: Self::offset_to_position(content, end),
+        }
+    }
+
+    fn offset_to_position(content: &str, offset: usize) -> Position {
+        crate::utils::offset_to_position_str(content, offset)
+    }
+
+    fn is_ident_char(c: char) -> bool {
+        c.is_ascii_alphanumeric() || c == '_' || c == '$'
+    }
+}
 
 #[cfg(feature = "native")]
 #[path = "corsa_options_api_tests.rs"]

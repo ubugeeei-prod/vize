@@ -104,7 +104,7 @@ pub(crate) fn route_param_diagnostics(
     let mut diagnostics = Vec::new();
     let mut pos = 0usize;
 
-    while let Some(found) = content[pos..].find(".params.") {
+    while let Some(found) = content.get(pos..).and_then(|rest| rest.find(".params.")) {
         let dot = pos + found;
         let Some(object_name) = object_name_before_dot(content, dot) else {
             pos = dot + ".params.".len();
@@ -161,11 +161,14 @@ fn route_param_completions(
 }
 
 fn is_route_param_completion_context(content: &str, offset: usize) -> bool {
-    let before = &content[..offset.min(content.len())];
-    let Some(params_pos) = before.rfind(".params.") else {
+    let Some(before) = content.get(..offset.min(content.len())) else {
         return false;
     };
-    if before[params_pos + ".params.".len()..]
+    let Some((head, typed)) = before.rsplit_once(".params.") else {
+        return false;
+    };
+    let params_pos = head.len();
+    if typed
         .bytes()
         .any(|byte| !super::context::is_ident_byte(byte))
     {
@@ -266,22 +269,21 @@ fn collect_segment_params(
     seen: &mut FxHashSet<String>,
     params: &mut Vec<RouteParam>,
 ) {
-    let mut cursor = 0usize;
-    while let Some(open_rel) = segment[cursor..].find('[') {
-        let open = cursor + open_rel;
-        let optional = segment[open..].starts_with("[[");
-        let value_start = open + if optional { 2 } else { 1 };
+    let mut rest = segment;
+    while let Some((_, after_open)) = rest.split_once('[') {
+        let (optional, value) = match after_open.strip_prefix('[') {
+            Some(value) => (true, value),
+            None => (false, after_open),
+        };
         let close_marker = if optional { "]]" } else { "]" };
-        let Some(close_rel) = segment[value_start..].find(close_marker) else {
+        let Some((name, after_close)) = value.split_once(close_marker) else {
             break;
         };
-        let close = value_start + close_rel;
-        let repeatable = segment[close + close_marker.len()..].starts_with('+');
-        let mut name = &segment[value_start..close];
-        let catch_all = name.starts_with("...");
-        if catch_all {
-            name = &name[3..];
-        }
+        let repeatable = after_close.starts_with('+');
+        let (catch_all, name) = match name.strip_prefix("...") {
+            Some(name) => (true, name),
+            None => (false, name),
+        };
 
         if !name.is_empty() {
             let name = String::from(name);
@@ -293,7 +295,7 @@ fn collect_segment_params(
                 });
             }
         }
-        cursor = close + close_marker.len() + usize::from(repeatable);
+        rest = after_close.strip_prefix('+').unwrap_or(after_close);
     }
 }
 
@@ -311,7 +313,7 @@ fn route_identifiers(content: &str) -> FxHashSet<&str> {
     identifiers.insert("$route");
 
     let mut pos = 0usize;
-    while let Some(found) = content[pos..].find("useRoute") {
+    while let Some(found) = content.get(pos..).and_then(|rest| rest.find("useRoute")) {
         let call_start = pos + found;
         let after_name = call_start + "useRoute".len();
         let Some(next) = content.as_bytes().get(after_name).copied() else {
@@ -331,31 +333,24 @@ fn route_identifiers(content: &str) -> FxHashSet<&str> {
 }
 
 fn assigned_identifier_before(content: &str, call_start: usize) -> Option<&str> {
-    let window_start = call_start.saturating_sub(160);
-    let before_call = &content[window_start..call_start];
-    let eq = before_call.rfind('=')?;
-    let before_eq = before_call[..eq].trim_end();
-    let end = before_eq.len();
-    let start = before_eq[..end]
-        .rfind(|ch: char| !(ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'))
-        .map(|pos| pos + 1)
-        .unwrap_or(0);
-    let identifier = &before_eq[start..end];
+    let window_start = content.ceil_char_boundary(call_start.saturating_sub(160));
+    let before_call = content.get(window_start..call_start)?;
+    let (before_eq, _) = before_call.rsplit_once('=')?;
+    let before_eq = before_eq.trim_end();
+    let identifier = before_eq
+        .rsplit_once(|ch: char| !(ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'))
+        .map_or(before_eq, |(_, identifier)| identifier);
     (!identifier.is_empty()).then_some(identifier)
 }
 
 fn object_name_before_dot(content: &str, dot: usize) -> Option<&str> {
-    let bytes = content.as_bytes();
-    let mut start = dot;
-    while start > 0 {
-        let byte = bytes[start - 1];
-        if super::context::is_ident_byte(byte) || byte == b'$' {
-            start -= 1;
-        } else {
-            break;
-        }
-    }
-    (start < dot).then_some(&content[start..dot])
+    let before = content.get(..dot)?;
+    let name_len = before
+        .bytes()
+        .rev()
+        .take_while(|byte| super::context::is_ident_byte(*byte) || *byte == b'$')
+        .count();
+    before.get(dot - name_len..).filter(|name| !name.is_empty())
 }
 
 fn identifier_at(content: &str, start: usize) -> Option<(&str, usize)> {
@@ -371,7 +366,7 @@ fn identifier_at(content: &str, start: usize) -> Option<(&str, usize)> {
     {
         end += 1;
     }
-    Some((&content[start..end], end))
+    Some((content.get(start..end)?, end))
 }
 
 fn offset_range(content: &str, start: usize, end: usize) -> Range {
@@ -421,22 +416,23 @@ fn is_route_name_context(content: &str, offset: usize) -> bool {
         return false;
     }
 
-    let search_start = ctx.open.saturating_sub(512);
-    let nearby = &content[search_start..ctx.open];
+    let search_start = content.ceil_char_boundary(ctx.open.saturating_sub(512));
+    let nearby = content.get(search_start..ctx.open).unwrap_or_default();
     nearby.contains(ROUTER_PUSH)
         || nearby.contains(ROUTER_REPLACE)
         || is_router_link_to_binding(content, ctx.open)
 }
 
 fn is_router_link_to_binding(content: &str, offset: usize) -> bool {
-    let before = &content[..offset];
-    let Some(tag_start) = find_router_link_tag_start(before) else {
+    let Some(before) = content.get(..offset) else {
         return false;
     };
-    if before[tag_start..].contains('>') {
+    let Some(tag) = find_router_link_tag_start(before).and_then(|start| before.get(start..)) else {
+        return false;
+    };
+    if tag.contains('>') {
         return false;
     }
-    let tag = &before[tag_start..];
     tag.contains(":to=") || tag.contains("v-bind:to=")
 }
 
@@ -457,10 +453,10 @@ fn is_json_lang(block: &vize_atelier_sfc::SfcCustomBlock<'_>) -> bool {
 
 fn collect_define_page_names(source: &str, seen: &mut FxHashSet<String>, names: &mut Vec<String>) {
     let mut pos = 0usize;
-    while let Some(found) = source[pos..].find("definePage") {
+    while let Some(found) = source.get(pos..).and_then(|rest| rest.find("definePage")) {
         let call_start = pos + found;
-        let window_end = (call_start + 512).min(source.len());
-        if let Some(name) = property_string(&source[call_start..window_end], "name") {
+        let window = source.get(call_start..source.floor_char_boundary(call_start + 512));
+        if let Some(name) = window.and_then(|window| property_string(window, "name")) {
             push_name(name, seen, names);
         }
         pos = call_start + "definePage".len();
@@ -473,10 +469,10 @@ fn collect_define_page_paths(
     params: &mut Vec<RouteParam>,
 ) {
     let mut pos = 0usize;
-    while let Some(found) = source[pos..].find("definePage") {
+    while let Some(found) = source.get(pos..).and_then(|rest| rest.find("definePage")) {
         let call_start = pos + found;
-        let window_end = (call_start + 512).min(source.len());
-        if let Some(path) = property_string(&source[call_start..window_end], "path") {
+        let window = source.get(call_start..source.floor_char_boundary(call_start + 512));
+        if let Some(path) = window.and_then(|window| property_string(window, "path")) {
             collect_path_params(path, seen, params);
         }
         pos = call_start + "definePage".len();
@@ -485,7 +481,7 @@ fn collect_define_page_paths(
 
 fn property_string<'a>(source: &'a str, property: &str) -> Option<&'a str> {
     let mut pos = 0usize;
-    while let Some(found) = source[pos..].find(property) {
+    while let Some(found) = source.get(pos..).and_then(|rest| rest.find(property)) {
         let key_start = pos + found;
         let before_ok = key_start == 0
             || source
@@ -515,15 +511,10 @@ fn property_string<'a>(source: &'a str, property: &str) -> Option<&'a str> {
             pos = cursor + 1;
             continue;
         }
-        let value_start = cursor + 1;
-        let mut value_end = value_start;
-        while value_end < source.len() {
-            if source.as_bytes()[value_end] == quote {
-                return Some(&source[value_start..value_end]);
-            }
-            value_end += 1;
-        }
-        return None;
+        let value = source.get(cursor + 1..)?;
+        return value
+            .find(char::from(quote))
+            .and_then(|value_end| value.get(..value_end));
     }
 
     None

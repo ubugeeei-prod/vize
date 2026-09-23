@@ -2,7 +2,11 @@
 //!
 //! This module generates virtual TypeScript from Vue SFCs and uses the Corsa
 //! LSP bridge to collect type-checking diagnostics.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 
 #[cfg(test)]
 mod art_variant_tests;

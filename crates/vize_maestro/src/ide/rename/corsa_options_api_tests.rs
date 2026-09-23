@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::{fs, sync::Arc};
 
 use tower_lsp::lsp_types::{PrepareRenameResponse, Range, Url};

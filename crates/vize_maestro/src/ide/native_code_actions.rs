@@ -1,5 +1,8 @@
 //! Atomic, versioned TypeScript fixes for exact authored Vue ranges.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 
 use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, DocumentChanges, OneOf,

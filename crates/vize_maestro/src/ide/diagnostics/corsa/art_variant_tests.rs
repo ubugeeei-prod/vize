@@ -1,5 +1,6 @@
 //! Every authored `<variant>` of a `.art.vue` file must reach the checker in
 //! its own typed document over the authored script context (#4015).
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use tower_lsp::lsp_types::Url;
 use vize_canon::virtual_ts::VirtualTsOptions;

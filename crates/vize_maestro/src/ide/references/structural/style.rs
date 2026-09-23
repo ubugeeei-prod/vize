@@ -31,7 +31,9 @@ pub(super) fn analyze(ctx: &IdeContext<'_>, semantic: &Semantic<'_>) -> Analysis
     let mut result = Analysis::default();
     for style in &descriptor.styles {
         for range in vize_croquis::sfc::__internal::v_bind_expression_ranges(&style.content) {
-            let expression = &style.content[range.clone()];
+            let Some(expression) = style.content.get(range.clone()) else {
+                continue;
+            };
             let code = cstr!("({expression})");
             let allocator = Allocator::default();
             let parsed = Parser::new(&allocator, &code, SourceType::ts()).parse();

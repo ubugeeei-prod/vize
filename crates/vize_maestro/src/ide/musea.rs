@@ -212,7 +212,7 @@ fn component_source_path_completions(
 
 fn split_path_completion_prefix(path: &str) -> Option<(&str, &str)> {
     let slash = path.rfind('/')?;
-    Some((&path[..slash + 1], &path[slash + 1..]))
+    path.split_at_checked(slash + 1)
 }
 
 fn path_completion_item(

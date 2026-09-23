@@ -4,7 +4,12 @@
 //! - Lint fixes from vize_patina
 //! - Quick fixes for common issues
 //! - Refactoring actions
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::disallowed_macros,
+    reason = "tower-lsp code actions take std String titles/edits and a std HashMap of changes"
+)]
 
 use super::IdeContext;
 use tower_lsp::lsp_types::{
@@ -59,10 +64,9 @@ impl CodeActionService {
     /// index built in #722 knows about.
     fn collect_auto_import(ctx: &IdeContext, range: Range) -> Vec<CodeActionOrCommand> {
         let _ = range;
-        let Some(identifier_range) = identifier_at_cursor(&ctx.content, ctx.offset) else {
+        let Some((_, identifier)) = identifier_at_cursor(&ctx.content, ctx.offset) else {
             return Vec::new();
         };
-        let identifier = &ctx.content[identifier_range.clone()];
         if identifier.is_empty()
             || identifier
                 .chars()
@@ -104,7 +108,6 @@ impl CodeActionService {
             Some(s) => s,
             None => return Vec::new(),
         };
-        #[allow(clippy::disallowed_macros)]
         let import_statement = match entry.kind {
             crate::ide::auto_import::AutoImportKind::VueComponent => {
                 format!("import {} from '{}'\n", entry.name, import_specifier)
@@ -140,7 +143,6 @@ impl CodeActionService {
             }],
         );
 
-        #[allow(clippy::disallowed_macros)]
         let action = CodeAction {
             title: format!("Auto-import `{}` from `{}`", entry.name, import_specifier),
             kind: Some(CodeActionKind::QUICKFIX),
@@ -174,24 +176,28 @@ impl CodeActionService {
 
         // Look for a `.value` token straddling the cursor.
         let cursor = ctx.offset.min(ctx.content.len());
-        let before = &ctx.content[..cursor];
-        let after = &ctx.content[cursor..];
+        let Some((before, after)) = ctx.content.split_at_checked(cursor) else {
+            return Vec::new();
+        };
         let dot_pos = match (before.rfind(".value"), after.starts_with("value")) {
             (Some(p), _) if cursor >= p && cursor <= p + ".value".len() => p,
             (Some(p), _) if cursor == p + ".value".len() => p,
             _ if before.ends_with('.') && after.starts_with("value") => cursor - 1,
             _ => return Vec::new(),
         };
-        if !before[..dot_pos].ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '$') {
+        let Some(prefix) = before.get(..dot_pos) else {
+            return Vec::new();
+        };
+        if !prefix.ends_with(|c: char| c.is_alphanumeric() || c == '_' || c == '$') {
             return Vec::new();
         }
         // Resolve the receiver identifier just before the `.`.
-        let bytes = ctx.content.as_bytes();
-        let mut start = dot_pos;
-        while start > 0 && is_ident_byte(bytes[start - 1]) {
-            start -= 1;
-        }
-        let receiver = &ctx.content[start..dot_pos];
+        let ident_len = prefix
+            .bytes()
+            .rev()
+            .take_while(|b| is_ident_byte(*b))
+            .count();
+        let receiver = prefix.get(prefix.len() - ident_len..).unwrap_or_default();
         if !is_reactive_ref_in_script(ctx, receiver) {
             return Vec::new();
         }
@@ -219,7 +225,6 @@ impl CodeActionService {
             }],
         );
 
-        #[allow(clippy::disallowed_macros)]
         let action = CodeAction {
             title: format!("Unwrap `.value` from `{receiver}`"),
             kind: Some(CodeActionKind::QUICKFIX),
@@ -252,10 +257,10 @@ impl CodeActionService {
             return Vec::new();
         }
 
-        let Some(identifier_range) = identifier_at_cursor(&ctx.content, ctx.offset) else {
+        let Some((identifier_range, identifier)) = identifier_at_cursor(&ctx.content, ctx.offset)
+        else {
             return Vec::new();
         };
-        let identifier = &ctx.content[identifier_range.clone()];
         if !is_reactive_ref_in_script(ctx, identifier) {
             return Vec::new();
         }
@@ -281,7 +286,6 @@ impl CodeActionService {
             }],
         );
 
-        #[allow(clippy::disallowed_macros)]
         let action = CodeAction {
             title: format!("Wrap `{identifier}` with `.value`"),
             kind: Some(CodeActionKind::QUICKFIX),
@@ -358,7 +362,6 @@ impl CodeActionService {
                 .collect();
 
             // Create workspace edit
-            #[allow(clippy::disallowed_types)]
             let mut changes = std::collections::HashMap::new();
             changes.insert(ctx.uri.clone(), edits);
 
@@ -369,7 +372,6 @@ impl CodeActionService {
             };
 
             // Create code action
-            #[allow(clippy::disallowed_macros)]
             let action = CodeAction {
                 title: format!("Fix: {}", fix.message),
                 kind: Some(CodeActionKind::QUICKFIX),
@@ -398,8 +400,8 @@ impl CodeActionService {
         let template_content = lint.content.as_str();
         let newline = if ctx
             .content
-            .find('\n')
-            .is_some_and(|end| ctx.content[..end].ends_with('\r'))
+            .split_once('\n')
+            .is_some_and(|(first_line, _)| first_line.ends_with('\r'))
         {
             "\r\n"
         } else {
@@ -421,12 +423,12 @@ impl CodeActionService {
             let indent = get_line_indent(template_content, lint_diag.start as usize);
 
             // The first content line can follow `<template>` on the same line.
-            let line_start = template_content[..lint_diag.start as usize]
-                .rfind('\n')
+            let line_start = template_content
+                .get(..lint_diag.start as usize)
+                .and_then(|head| head.rfind('\n'))
                 .map_or(0, |offset| offset + 1);
             let insert_pos = template_position(&ctx.content, lint.start_offset, line_start);
 
-            #[allow(clippy::disallowed_macros)]
             let new_text = format!(
                 "{}<!-- @vize:forget {} -->{newline}",
                 indent, lint_diag.rule_name
@@ -440,7 +442,6 @@ impl CodeActionService {
                 new_text,
             };
 
-            #[allow(clippy::disallowed_types)]
             let mut changes = std::collections::HashMap::new();
             changes.insert(ctx.uri.clone(), vec![edit]);
 
@@ -450,7 +451,6 @@ impl CodeActionService {
                 change_annotations: None,
             };
 
-            #[allow(clippy::disallowed_macros)]
             let action = CodeAction {
                 title: format!("Suppress with @vize:forget ({})", lint_diag.rule_name),
                 kind: Some(CodeActionKind::QUICKFIX),
@@ -494,7 +494,6 @@ impl CodeActionService {
                                 edit.end as usize,
                             ),
                         },
-                        #[allow(clippy::disallowed_methods)]
                         new_text: edit.new_text.to_string(),
                     });
                 }
@@ -525,7 +524,6 @@ impl CodeActionService {
             }
         }
 
-        #[allow(clippy::disallowed_types)]
         let mut changes = std::collections::HashMap::new();
         changes.insert(ctx.uri.clone(), filtered_edits);
 
@@ -544,26 +542,22 @@ fn template_position(source: &str, template_start: usize, offset: usize) -> Posi
 
 /// Get the leading whitespace (indentation) for the line containing the given byte offset.
 fn get_line_indent(source: &str, offset: usize) -> &str {
-    let bytes = source.as_bytes();
-
     // Find the start of the line
-    let line_start = if offset == 0 {
-        0
-    } else {
-        bytes[..offset]
-            .iter()
-            .rposition(|&b| b == b'\n')
-            .map_or(0, |pos| pos + 1)
-    };
+    let line_start = source
+        .as_bytes()
+        .iter()
+        .take(offset)
+        .rposition(|&b| b == b'\n')
+        .map_or(0, |pos| pos + 1);
 
     // Collect whitespace from the start of the line
-    let rest = &source[line_start..];
+    let rest = source.get(line_start..).unwrap_or_default();
     let indent_len = rest
         .bytes()
         .take_while(|b| *b == b' ' || *b == b'\t')
         .count();
 
-    &source[line_start..line_start + indent_len]
+    rest.get(..indent_len).unwrap_or_default()
 }
 
 /// Check if two ranges overlap.
@@ -630,21 +624,20 @@ fn diff_paths(target: &std::path::Path, base: &std::path::Path) -> Option<std::p
     Some(comps.iter().map(|c| c.as_os_str()).collect::<PathBuf>())
 }
 
-fn identifier_at_cursor(content: &str, offset: usize) -> Option<std::ops::Range<usize>> {
-    let bytes = content.as_bytes();
+fn identifier_at_cursor(content: &str, offset: usize) -> Option<(std::ops::Range<usize>, &str)> {
     let end = offset.min(content.len());
-    let mut start = end;
-    while start > 0 && is_ident_byte(bytes[start - 1]) {
-        start -= 1;
-    }
-    let mut walk = end;
-    while walk < bytes.len() && is_ident_byte(bytes[walk]) {
-        walk += 1;
-    }
+    let (before, after) = content.as_bytes().split_at_checked(end)?;
+    let start = end
+        - before
+            .iter()
+            .rev()
+            .take_while(|b| is_ident_byte(**b))
+            .count();
+    let walk = end + after.iter().take_while(|b| is_ident_byte(**b)).count();
     if start == walk {
         return None;
     }
-    Some(start..walk)
+    Some((start..walk, content.get(start..walk)?))
 }
 
 fn is_ident_byte(b: u8) -> bool {

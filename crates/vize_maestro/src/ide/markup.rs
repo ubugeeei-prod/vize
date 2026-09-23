@@ -14,13 +14,19 @@ impl Markdown {
         }
     }
 
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+    )]
     pub(crate) fn title(mut self, title: &str) -> Self {
         self.sections.push(format!("**{}**", title));
         self
     }
 
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+    )]
     pub(crate) fn meta(mut self, text: &str) -> Self {
         self.sections.push(format!("_{}_", text));
         self
@@ -36,7 +42,10 @@ impl Markdown {
         self
     }
 
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+    )]
     pub(crate) fn section(mut self, heading: &str, body: &str) -> Self {
         self.sections.push(format!("**{}**\n\n{}", heading, body));
         self
@@ -59,12 +68,18 @@ impl Markdown {
     }
 }
 
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 pub(crate) fn code_block(language: &str, source: &str) -> String {
     format!("```{}\n{}\n```", language, source.trim_end())
 }
 
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 pub(crate) fn link(label: &str, url: &str) -> String {
     format!("[{}]({})", label, url)
 }
@@ -82,37 +97,34 @@ pub(crate) fn markdown_documentation(value: String) -> Documentation {
 
 pub(crate) fn snippet_for_docs(snippet: &str) -> String {
     let mut output = String::with_capacity(snippet.len());
-    let mut cursor = 0;
+    let mut rest = snippet;
 
-    while cursor < snippet.len() {
-        let rest = &snippet[cursor..];
-        if let Some(stripped) = rest.strip_prefix('$')
-            && let Some(ch) = stripped.chars().next()
-        {
-            if ch.is_ascii_digit() {
-                if ch != '0' {
+    while let Some(ch) = rest.chars().next() {
+        if let Some(stripped) = rest.strip_prefix('$') {
+            let mut after_digit = stripped.chars();
+            if let Some(digit) = after_digit.next().filter(char::is_ascii_digit) {
+                if digit != '0' {
                     output.push_str("...");
                 }
-                cursor += 1 + ch.len_utf8();
+                rest = after_digit.as_str();
                 continue;
             }
-            if ch == '{'
-                && let Some(end) = stripped.find('}')
+            if let Some((placeholder, after)) = stripped
+                .strip_prefix('{')
+                .and_then(|body| body.split_once('}'))
             {
-                let placeholder = &stripped[1..end];
                 if let Some((_, default)) = placeholder.split_once(':') {
                     output.push_str(default);
                 } else if !placeholder.starts_with('0') {
                     output.push_str("...");
                 }
-                cursor += 1 + end + 1;
+                rest = after;
                 continue;
             }
         }
 
-        let ch = rest.chars().next().expect("cursor is inside snippet");
         output.push(ch);
-        cursor += ch.len_utf8();
+        rest = rest.get(ch.len_utf8()..).unwrap_or_default();
     }
 
     let trimmed = output.trim();

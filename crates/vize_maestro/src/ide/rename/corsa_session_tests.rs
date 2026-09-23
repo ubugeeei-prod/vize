@@ -1,3 +1,11 @@
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::string_slice,
+    clippy::unreachable,
+    reason = "tests assert by panicking"
+)]
 use std::sync::{Arc, Barrier};
 
 use harness::RealCorsaRenameSession;

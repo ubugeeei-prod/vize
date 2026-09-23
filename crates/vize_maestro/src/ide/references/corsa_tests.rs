@@ -1,3 +1,10 @@
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    clippy::string_slice,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
 use std::fs;
 use std::sync::Arc;
 

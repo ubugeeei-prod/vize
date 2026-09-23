@@ -6,7 +6,10 @@
 //! split has exactly one). Comment stripping is string-aware — every `paths`
 //! pattern contains `/*` (`"@/*"`), so a stripper that ignores string state
 //! destroys exactly the value these features need.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 
 use std::path::{Path, PathBuf};
 

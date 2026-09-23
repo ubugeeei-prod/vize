@@ -1,8 +1,9 @@
 //! Workspace-wide symbol search for Vue components, script bindings, and styles.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "tower-lsp SymbolInformation takes std String names built with format!/to_string"
 )]
 
 #[cfg(feature = "native")]
@@ -62,7 +63,10 @@ impl WorkspaceSymbolsService {
     }
 
     /// Collect symbols from a single document.
-    #[allow(deprecated)] // SymbolInformation.deprecated is deprecated in favor of tags
+    #[expect(
+        deprecated,
+        reason = "SymbolInformation.deprecated is deprecated in favor of tags"
+    )]
     fn collect_symbols_from_document(
         uri: &Url,
         content: &str,
@@ -143,7 +147,10 @@ impl WorkspaceSymbolsService {
     }
 
     /// Surface Vue-specific entities (emits, slots) discovered by Croquis.
-    #[allow(deprecated)] // SymbolInformation.deprecated is deprecated in favor of tags
+    #[expect(
+        deprecated,
+        reason = "SymbolInformation.deprecated is deprecated in favor of tags"
+    )]
     fn collect_vue_specific_symbols(
         uri: &Url,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
@@ -259,17 +266,9 @@ impl WorkspaceSymbolsService {
         let Some(raw) = source.get(start..end) else {
             return (start, end);
         };
-        let bytes = raw.as_bytes();
-        if bytes.len() < 2 {
-            return (start, end);
-        }
-        let Some(last) = bytes.last() else {
-            return (start, end);
-        };
-        if matches!(bytes[0], b'\'' | b'"') && *last == bytes[0] {
-            (start + 1, end - 1)
-        } else {
-            (start, end)
+        match raw.as_bytes() {
+            [first @ (b'\'' | b'"'), .., last] if last == first => (start + 1, end - 1),
+            _ => (start, end),
         }
     }
 
@@ -277,11 +276,12 @@ impl WorkspaceSymbolsService {
     /// column calculator — workspace symbols don't go through the heavier
     /// position mapping used by diagnostics.
     fn offset_to_position(source: &str, offset: usize) -> Position {
-        let bounded = offset.min(source.len());
-        let prefix = &source[..bounded];
+        let prefix = source
+            .get(..source.floor_char_boundary(offset))
+            .unwrap_or_default();
         let line = prefix.matches('\n').count() as u32;
         let last_nl = prefix.rfind('\n').map(|p| p + 1).unwrap_or(0);
-        let character = (bounded - last_nl) as u32;
+        let character = (prefix.len() - last_nl) as u32;
         Position { line, character }
     }
 
@@ -463,7 +463,6 @@ impl WorkspaceSymbolsService {
             // CSS class selectors
             for class in Self::extract_css_classes(trimmed) {
                 if class.to_lowercase().contains(query) {
-                    #[allow(clippy::disallowed_macros)]
                     symbols.push(Self::create_symbol(
                         format!(".{}", class),
                         SymbolKind::STRING,
@@ -477,7 +476,6 @@ impl WorkspaceSymbolsService {
             // CSS ID selectors
             for id in Self::extract_css_ids(trimmed) {
                 if id.to_lowercase().contains(query) {
-                    #[allow(clippy::disallowed_macros)]
                     symbols.push(Self::create_symbol(
                         format!("#{}", id),
                         SymbolKind::STRING,
@@ -509,84 +507,54 @@ impl WorkspaceSymbolsService {
     /// Extract identifier from string.
     fn extract_identifier(s: &str) -> Option<String> {
         let s = s.trim_start();
-        if s.is_empty() {
+        // Destructuring patterns (`{`, `[`) are not identifier starts either.
+        if !Self::is_ident_start(char::from(*s.as_bytes().first()?)) {
             return None;
         }
 
-        let bytes = s.as_bytes();
-        let first = bytes[0] as char;
-
-        // Skip destructuring
-        if first == '{' || first == '[' {
-            return None;
-        }
-
-        if !Self::is_ident_start(first) {
-            return None;
-        }
-
-        let mut end = 1;
-        while end < bytes.len() && Self::is_ident_char(bytes[end] as char) {
-            end += 1;
-        }
-
-        Some(s[..end].to_string())
+        let end = s
+            .bytes()
+            .take_while(|byte| Self::is_ident_char(char::from(*byte)))
+            .count();
+        Some(s.get(..end)?.to_string())
     }
 
     /// Extract CSS class names from a selector line.
     fn extract_css_classes(line: &str) -> Vec<String> {
-        let mut classes = Vec::new();
-        let mut pos = 0;
-
-        while let Some(dot_pos) = line[pos..].find('.') {
-            let abs_pos = pos + dot_pos + 1;
-            if abs_pos < line.len() {
-                let rest = &line[abs_pos..];
-                let end = rest
-                    .find(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != '_')
-                    .unwrap_or(rest.len());
-
-                if end > 0 {
-                    classes.push(rest[..end].to_string());
-                }
-
-                pos = abs_pos + end;
-            } else {
-                break;
-            }
-        }
-
-        classes
+        Self::extract_css_names(line, '.')
     }
 
     /// Extract CSS ID names from a selector line.
     fn extract_css_ids(line: &str) -> Vec<String> {
-        let mut ids = Vec::new();
-        let mut pos = 0;
+        Self::extract_css_names(line, '#')
+    }
 
-        while let Some(hash_pos) = line[pos..].find('#') {
-            let abs_pos = pos + hash_pos + 1;
-            if abs_pos < line.len() {
-                let rest = &line[abs_pos..];
-                let end = rest
-                    .find(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != '_')
-                    .unwrap_or(rest.len());
+    /// Names following each `marker` (`.class`, `#id`) in a selector line.
+    fn extract_css_names(line: &str, marker: char) -> Vec<String> {
+        let mut names = Vec::new();
+        let mut rest = line;
 
-                if end > 0 {
-                    ids.push(rest[..end].to_string());
-                }
-
-                pos = abs_pos + end;
-            } else {
+        while let Some((_, after)) = rest.split_once(marker) {
+            let end = after
+                .find(|c: char| !c.is_ascii_alphanumeric() && c != '-' && c != '_')
+                .unwrap_or(after.len());
+            let Some((name, tail)) = after.split_at_checked(end) else {
                 break;
+            };
+            if !name.is_empty() {
+                names.push(name.to_string());
             }
+            rest = tail;
         }
 
-        ids
+        names
     }
 
     /// Create a symbol information entry.
-    #[allow(deprecated)]
+    #[expect(
+        deprecated,
+        reason = "SymbolInformation.deprecated is deprecated in favor of tags"
+    )]
     fn create_symbol(
         name: String,
         kind: SymbolKind,

@@ -1,4 +1,9 @@
-#![allow(clippy::disallowed_macros, clippy::disallowed_methods)]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    reason = "test fixtures and expectations are built as std Strings with to_string/format!"
+)]
 
 use super::manual::{collect_import_rename_edits, rename_open_documents};
 use crate::server::ServerState;

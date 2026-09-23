@@ -8,7 +8,7 @@ use crate::server::ServerState;
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Url};
 
 #[derive(Debug)]
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read only through Debug snapshots")]
 struct DiagnosticSnapshot {
     source: Option<String>,
     severity: Option<&'static str>,

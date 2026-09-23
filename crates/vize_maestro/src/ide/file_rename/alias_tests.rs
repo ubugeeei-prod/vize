@@ -1,4 +1,7 @@
-#![allow(clippy::disallowed_macros, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and expectations are built as std Strings with to_string/format!"
+)]
 
 //! Rename edits for `paths`-aliased specifiers (#3917).
 

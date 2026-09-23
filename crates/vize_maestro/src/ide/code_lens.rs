@@ -3,7 +3,11 @@
 //! Provides code lenses for:
 //! - Script setup bindings (usage count)
 //! - Component references
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 //! - Event handler references
 
 use crate::server::ServerState;
@@ -90,7 +94,7 @@ impl CodeLensService {
                             character: 0,
                         },
                     },
-                    #[allow(clippy::disallowed_macros)]
+                    #[expect(clippy::disallowed_macros, reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!")]
                     command: Some(Command {
                         title: format!(
                             "{} reference{}",
@@ -152,28 +156,16 @@ impl CodeLensService {
     /// Extract first identifier from a string.
     fn extract_first_identifier(s: &str) -> Option<String> {
         let s = s.trim_start();
-        if s.is_empty() {
+        // Destructuring (`const { a, b } = ...`) is not an identifier start either.
+        if !Self::is_ident_start(char::from(*s.as_bytes().first()?)) {
             return None;
         }
 
-        let bytes = s.as_bytes();
-        let first = bytes[0] as char;
-
-        // Handle destructuring: const { a, b } = ...
-        if first == '{' || first == '[' {
-            return None;
-        }
-
-        if !Self::is_ident_start(first) {
-            return None;
-        }
-
-        let mut end = 1;
-        while end < bytes.len() && Self::is_ident_char(bytes[end] as char) {
-            end += 1;
-        }
-
-        Some(s[..end].to_string())
+        let end = s
+            .bytes()
+            .take_while(|byte| Self::is_ident_char(char::from(*byte)))
+            .count();
+        Some(s.get(..end)?.to_string())
     }
 
     /// Count occurrences of an identifier in text.
@@ -183,19 +175,22 @@ impl CodeLensService {
         let mut count = 0;
         let mut pos = 0;
 
-        while let Some(found) = text[pos..].find(word) {
+        let step = word.chars().next().map_or(1, char::len_utf8);
+        let is_boundary =
+            |byte: Option<&u8>| byte.is_none_or(|b| !Self::is_ident_char(char::from(*b)));
+
+        while let Some(found) = text.get(pos..).and_then(|rest| rest.find(word)) {
             let abs_pos = pos + found;
 
             // Check word boundaries
-            let before_ok = abs_pos == 0 || !Self::is_ident_char(bytes[abs_pos - 1] as char);
-            let after_ok = abs_pos + word_len >= bytes.len()
-                || !Self::is_ident_char(bytes[abs_pos + word_len] as char);
+            let before_ok = abs_pos == 0 || is_boundary(bytes.get(abs_pos - 1));
+            let after_ok = is_boundary(bytes.get(abs_pos + word_len));
 
             if before_ok && after_ok {
                 count += 1;
             }
 
-            pos = abs_pos + 1;
+            pos = abs_pos + step;
         }
 
         count
@@ -207,11 +202,14 @@ impl CodeLensService {
         let mut count = 0;
         let mut pos = 0;
 
-        while let Some(start) = css[pos..].find(pattern) {
+        while let Some(start) = css.get(pos..).and_then(|rest| rest.find(pattern)) {
             let abs_start = pos + start + pattern.len();
 
-            if let Some(end) = css[abs_start..].find(')') {
-                let content = css[abs_start..abs_start + end].trim();
+            if let Some(end) = css.get(abs_start..).and_then(|rest| rest.find(')')) {
+                let content = css
+                    .get(abs_start..abs_start + end)
+                    .unwrap_or_default()
+                    .trim();
                 let var_name = content.trim_matches(|c| c == '"' || c == '\'');
 
                 if var_name == word {

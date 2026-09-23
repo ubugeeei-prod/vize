@@ -8,7 +8,11 @@
 //! `paths`. Style is preserved per specifier: an aliased import stays aliased
 //! when the moved file remains under the alias target, and falls back to a
 //! relative spelling when it leaves the subtree — the oracle's behavior.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 
 use std::path::{Path, PathBuf};
 

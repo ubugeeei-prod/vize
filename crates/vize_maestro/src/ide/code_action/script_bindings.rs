@@ -1,6 +1,9 @@
 //! The auto-import code action's script-binding check, read through a
 //! declared fact demand (Davinci P4-3a).
-#![allow(clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 
 use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
 
@@ -39,7 +42,8 @@ pub(super) fn sfc_script_declares(
     let croquis = analyzer.finish();
     let mut facts = CroquisFacts::new(&croquis);
     let view = facts.prepare::<AutoImportBindingCheck>();
+    // The demand is declared above; if it were ever missing, treat the name
+    // as declared so no spurious auto-import is offered.
     view.get::<Bindings>()
-        .expect("declared demand")
-        .contains_binding(name)
+        .map_or(true, |bindings| bindings.contains_binding(name))
 }

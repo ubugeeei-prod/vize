@@ -16,11 +16,8 @@ pub(super) fn string_literal_at_cursor(
 
     let offset = offset.min(content.len());
     let bytes = content.as_bytes();
-    let mut pos = offset;
 
-    while pos > 0 {
-        pos -= 1;
-        let byte = bytes[pos];
+    for (pos, &byte) in bytes.get(..offset)?.iter().enumerate().rev() {
         if byte == b'\n' || byte == b'\r' {
             return None;
         }
@@ -29,7 +26,7 @@ pub(super) fn string_literal_at_cursor(
                 return None;
             }
             return Some(StringLiteralContext {
-                before_open: &content[..pos],
+                before_open: content.get(..pos)?,
                 open: pos,
             });
         }
@@ -58,26 +55,24 @@ pub(super) fn is_ident_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
-fn is_escaped(bytes: &[u8], quote: usize) -> bool {
-    let mut slash_count = 0usize;
-    let mut pos = quote;
-    while pos > 0 && bytes[pos - 1] == b'\\' {
-        slash_count += 1;
-        pos -= 1;
-    }
+pub(super) fn is_escaped(bytes: &[u8], quote: usize) -> bool {
+    let slash_count = bytes
+        .iter()
+        .take(quote)
+        .rev()
+        .take_while(|byte| **byte == b'\\')
+        .count();
     slash_count % 2 == 1
 }
 
-fn cursor_is_before_closing_quote(bytes: &[u8], mut pos: usize, cursor: usize, quote: u8) -> bool {
-    while pos < bytes.len() {
-        let byte = bytes[pos];
+fn cursor_is_before_closing_quote(bytes: &[u8], start: usize, cursor: usize, quote: u8) -> bool {
+    for (pos, &byte) in bytes.iter().enumerate().skip(start) {
         if byte == b'\n' || byte == b'\r' {
             return false;
         }
         if byte == quote && !is_escaped(bytes, pos) {
             return cursor <= pos;
         }
-        pos += 1;
     }
     false
 }

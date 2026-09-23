@@ -218,14 +218,16 @@ fn virtual_result<'a>(
         })
 }
 
+/// `'…'` or `"…"`: at least two bytes, opened and closed by the same quote.
+fn is_quoted_literal(text: &str) -> bool {
+    matches!(text.as_bytes(), [open @ (b'\'' | b'"'), .., close] if open == close)
+}
+
 fn mapping_is_model_declaration(source: &str, filename: &str, mapping: &Range<usize>) -> bool {
     let Some(authored) = source.get(mapping.clone()) else {
         return false;
     };
-    if authored.len() < 2
-        || !matches!(authored.as_bytes()[0], b'\'' | b'"')
-        || authored.as_bytes()[0] != authored.as_bytes()[authored.len() - 1]
-    {
+    if !is_quoted_literal(authored) {
         return false;
     }
     declaration_ranges(source, filename)
@@ -235,12 +237,9 @@ fn mapping_is_model_declaration(source: &str, filename: &str, mapping: &Range<us
                 return false;
             };
             let end = range.end.saturating_add(1);
-            source.get(start..end).is_some_and(|authored| {
-                authored.len() >= 2
-                    && matches!(authored.as_bytes()[0], b'\'' | b'"')
-                    && authored.as_bytes()[0] == authored.as_bytes()[authored.len() - 1]
-                    && &(start..end) == mapping
-            })
+            source
+                .get(start..end)
+                .is_some_and(|authored| is_quoted_literal(authored) && &(start..end) == mapping)
         })
 }
 
@@ -253,6 +252,7 @@ fn annotatable_range(
     }
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{declaration_ranges, usage_ranges};

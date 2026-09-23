@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::{DiagnosticService, DiagnosticSeverity, Url, sources, state_with_lsp_diagnostics};
 
 #[test]

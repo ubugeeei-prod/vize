@@ -1,6 +1,10 @@
 //! Shared Corsa helpers for mapping virtual document responses back to Vue SFCs.
 #![cfg(feature = "native")]
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 
 use tower_lsp::lsp_types::{Location, PrepareRenameResponse, Range, Url};
 #[cfg(test)]

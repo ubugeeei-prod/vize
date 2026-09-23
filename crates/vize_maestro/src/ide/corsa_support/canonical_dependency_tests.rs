@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use tower_lsp::lsp_types::Url;
 use vize_canon::{LspLocation, LspPosition, LspRange};
 

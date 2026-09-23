@@ -5,7 +5,11 @@
 //! - Template parser errors
 //! - vize_patina (linter)
 //! - Future: vize_canon (type checker)
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 
 #[cfg(all(test, feature = "native"))]
 mod art_dependency_typecheck_tests;
@@ -33,15 +37,15 @@ mod linter_options;
 mod native;
 mod service;
 mod severity;
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshot macros expand through std::format!; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""
+)]
+#[cfg(test)]
+mod tests;
 #[cfg(all(test, feature = "native"))]
 mod typecheck_unavailable_tests;
 mod vize_sfc_type;
-// `insta`'s snapshot macros expand through the disallowed `std::format!`; the
-// expansion is inside `insta`, so only an allow at the test module can silence
-// it. See CONTRIBUTING.md, "Snapshot assertions in test targets".
-#[allow(clippy::disallowed_macros)]
-#[cfg(test)]
-mod tests;
 #[cfg(all(test, feature = "native"))]
 mod vize_sfc_type_tests;
 

@@ -1,7 +1,8 @@
 //! Bounded log previews must not make authored Unicode crash diagnostics.
 
 pub(super) fn log_preview(text: &str, max_bytes: usize) -> &str {
-    &text[..text.floor_char_boundary(max_bytes)]
+    text.get(..text.floor_char_boundary(max_bytes))
+        .unwrap_or_default()
 }
 
 #[cfg(test)]

@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::names_at;
 
 /// Resolve the names at the caret marked with `|` and render them back into the

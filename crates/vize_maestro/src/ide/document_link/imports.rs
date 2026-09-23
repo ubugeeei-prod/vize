@@ -91,27 +91,26 @@ fn module_specifier(path: &str, start: u32, end: u32) -> ModuleSpecifier {
 /// Returns (content, start, end_offset) where offsets include quotes.
 pub(super) fn extract_string_literal(text: &str) -> Option<(String, usize, usize)> {
     let bytes = text.as_bytes();
-    if bytes.is_empty() {
+    let quote = *bytes.first()?;
+    if quote != b'"' && quote != b'\'' {
         return None;
     }
 
-    let quote = bytes[0] as char;
-    if quote != '"' && quote != '\'' {
-        return None;
-    }
-
-    let mut i = 1;
-    while i < bytes.len() {
-        if bytes[i] == quote as u8 && (i == 1 || bytes[i - 1] != b'\\') {
-            let content = text[1..i].to_string();
-            return Some((content, 0, i + 1));
-        }
-        i += 1;
+    // The opening quote is never a backslash, so every closing candidate can
+    // be checked against its preceding byte.
+    if let Some(close) = bytes
+        .windows(2)
+        .position(|pair| matches!(pair, [prev, byte] if *byte == quote && *prev != b'\\'))
+    {
+        let i = close + 1;
+        let content = text.get(1..i)?.to_string();
+        return Some((content, 0, i + 1));
     }
 
     None
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{collect_static_module_specifiers, extract_string_literal, script_source_type};

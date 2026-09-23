@@ -85,10 +85,9 @@ fn is_inside_html_comment(content: &str, offset: usize) -> bool {
     let Some(before) = content.get(..offset) else {
         return false;
     };
-    let Some(comment_start) = before.rfind("<!--") else {
+    let Some((_, after_start)) = before.rsplit_once("<!--") else {
         return false;
     };
-    let after_start = &before[comment_start + 4..];
     !after_start.contains("-->")
 }
 
@@ -102,19 +101,19 @@ fn detect_member_access<'a>(content: &'a str, offset: usize) -> Option<CursorCon
     }
     let dot_offset = trimmed.len() - 1;
 
-    let receiver_end = dot_offset;
-    let bytes = content.as_bytes();
-    let mut receiver_start = receiver_end;
-    while receiver_start > 0 && is_receiver_byte(bytes[receiver_start - 1]) {
-        receiver_start -= 1;
-    }
-
-    if receiver_start == receiver_end {
+    let head = content.get(..dot_offset)?;
+    let receiver_len = head
+        .bytes()
+        .rev()
+        .take_while(|byte| is_receiver_byte(*byte))
+        .count();
+    let receiver = head.get(dot_offset - receiver_len..)?;
+    if receiver.is_empty() {
         return None;
     }
 
     Some(CursorContext::MemberAccess {
-        receiver: &content[receiver_start..receiver_end],
+        receiver,
         dot_offset,
     })
 }
@@ -131,11 +130,14 @@ fn detect_identifier<'a>(content: &'a str, offset: usize) -> CursorContext<'a> {
     if offset > content.len() {
         return CursorContext::Other;
     }
-    let bytes = content.as_bytes();
-    let mut start = offset;
-    while start > 0 && is_ident_byte(bytes[start - 1]) {
-        start -= 1;
-    }
+    let start = offset
+        - content
+            .as_bytes()
+            .iter()
+            .take(offset)
+            .rev()
+            .take_while(|byte| is_ident_byte(**byte))
+            .count();
     if start == offset {
         return CursorContext::Other;
     }

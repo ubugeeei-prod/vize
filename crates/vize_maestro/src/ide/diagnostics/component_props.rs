@@ -1,5 +1,9 @@
 //! Component-surface diagnostics that need template usage plus imported metadata.
-#![allow(clippy::disallowed_methods, clippy::disallowed_macros)]
+#![expect(
+    clippy::disallowed_methods,
+    clippy::disallowed_macros,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 
 use tower_lsp::lsp_types::{
     CodeDescription, Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range, Url,
@@ -64,8 +68,9 @@ impl DiagnosticService {
             return Vec::new();
         }
 
-        let metadata_ctx =
-            IdeContext::new(state, uri, template.loc.start).expect("document is open");
+        let Some(metadata_ctx) = IdeContext::new(state, uri, template.loc.start) else {
+            return Vec::new();
+        };
         let mut diagnostics = Vec::new();
 
         for usage in vize_croquis::facts::component_usage_list(&croquis) {

@@ -1,8 +1,9 @@
 //! Diagnostic collectors for SFC parser, template parser, linter, and Musea.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "tower-lsp Diagnostic fields (message, code, source) are std String"
 )]
 
 use tower_lsp::lsp_types::{
@@ -40,7 +41,6 @@ impl DiagnosticService {
                 let (end_line, end_col) = line_index.line_col(lint_diag.end as usize);
 
                 // Build the diagnostic message with help text (render as plain text for LSP)
-                #[allow(clippy::disallowed_macros)]
                 let message = if let Some(ref help) = lint_diag.help {
                     format!(
                         "{}\n\nHelp: {}",
@@ -67,12 +67,11 @@ impl DiagnosticService {
                         vize_patina::Severity::Warning => DiagnosticSeverity::WARNING,
                     }),
                     code: Some(NumberOrString::String(lint_diag.rule_name.to_string())),
-                    code_description: Some(CodeDescription {
-                        href: Url::parse("https://github.com/ubugeeei-prod/vize/wiki/musea-rules")
-                            .unwrap_or_else(|_| {
-                                Url::parse("https://github.com/ubugeeei-prod/vize").unwrap()
-                            }),
-                    }),
+                    code_description: Url::parse(
+                        "https://github.com/ubugeeei-prod/vize/wiki/musea-rules",
+                    )
+                    .ok()
+                    .map(|href| CodeDescription { href }),
                     source: Some(sources::MUSEA.to_string()),
                     message,
                     ..Default::default()
@@ -126,7 +125,6 @@ impl DiagnosticService {
                         vize_atelier_jsx::Severity::Warning => DiagnosticSeverity::WARNING,
                     }),
                     source: Some(sources::JSX_COMPILER.to_string()),
-                    #[allow(clippy::disallowed_methods)]
                     message: diag.message.to_string(),
                     ..Default::default()
                 }
@@ -154,7 +152,6 @@ impl DiagnosticService {
             }
 
             // The linter expects a full art file, so wrap the block content.
-            #[allow(clippy::disallowed_macros)]
             let art_content = format!(
                 "<art{}>\n{}\n</art>",
                 custom.attrs.iter().fold(String::new(), |mut acc, (k, v)| {
@@ -176,7 +173,6 @@ impl DiagnosticService {
                     let (end_line, end_col) =
                         line_index.line_col(custom.loc.tag_end.min(content.len()));
 
-                    #[allow(clippy::disallowed_macros)]
                     let message = if let Some(ref help) = lint_diag.help {
                         format!(
                             "{}\n\nHelp: {}",
@@ -219,7 +215,6 @@ impl DiagnosticService {
                     let (start_line, start_col) = line_index.line_col(sfc_start.min(content.len()));
                     let (end_line, end_col) = line_index.line_col(sfc_end.min(content.len()));
 
-                    #[allow(clippy::disallowed_macros)]
                     let message = if let Some(ref help) = lint_diag.help {
                         format!(
                             "{}\n\nHelp: {}",
@@ -307,7 +302,6 @@ impl DiagnosticService {
                     severity: Some(severity),
                     code: Some(NumberOrString::Number(error.code as i32)),
                     source: Some(sources::TEMPLATE_PARSER.to_string()),
-                    #[allow(clippy::disallowed_methods)]
                     message: error.message.to_string(),
                     ..Default::default()
                 })
@@ -478,7 +472,6 @@ impl DiagnosticService {
                 let (end_line, end_col) = line_index.line_col(lint_diag.end as usize);
 
                 // Build the diagnostic message with help text (render as plain text for LSP)
-                #[allow(clippy::disallowed_macros)]
                 let message = if let Some(ref help) = lint_diag.help {
                     format!(
                         "{}\n\nHelp: {}",
@@ -489,7 +482,6 @@ impl DiagnosticService {
                     lint_diag.message.to_string()
                 };
 
-                #[allow(clippy::disallowed_macros)]
                 Diagnostic {
                     range: Range {
                         start: Position {
@@ -506,16 +498,16 @@ impl DiagnosticService {
                         vize_patina::Severity::Warning => DiagnosticSeverity::WARNING,
                     }),
                     code: Some(NumberOrString::String(lint_diag.rule_name.to_string())),
-                    code_description: Some(CodeDescription {
-                        href: Url::parse(&format!(
-                            "https://eslint.vuejs.org/rules/{}.html",
-                            lint_diag
-                                .rule_name
-                                .strip_prefix("vue/")
-                                .unwrap_or(lint_diag.rule_name)
-                        ))
-                        .unwrap_or_else(|_| Url::parse("https://eslint.vuejs.org/rules/").unwrap()),
-                    }),
+                    code_description: Url::parse(&format!(
+                        "https://eslint.vuejs.org/rules/{}.html",
+                        lint_diag
+                            .rule_name
+                            .strip_prefix("vue/")
+                            .unwrap_or(lint_diag.rule_name)
+                    ))
+                    .or_else(|_| Url::parse("https://eslint.vuejs.org/rules/"))
+                    .ok()
+                    .map(|href| CodeDescription { href }),
                     source: Some(sources::LINTER.to_string()),
                     message,
                     ..Default::default()

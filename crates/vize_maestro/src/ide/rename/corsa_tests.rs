@@ -1,10 +1,10 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::{fs, sync::Arc};
 
 use tower_lsp::lsp_types::{PrepareRenameResponse, Range, TextEdit, Url};
 use vize_canon::{CorsaBridge, CorsaBridgeConfig};
 
-use super::RenameService;
-use crate::{ide::IdeContext, server::ServerState};
+use crate::{ide::IdeContext, ide::rename::RenameService, server::ServerState};
 
 mod component_props;
 mod package_routes;

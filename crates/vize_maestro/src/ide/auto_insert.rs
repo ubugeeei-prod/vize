@@ -5,10 +5,11 @@
 //! server. Markup insertions are syntax-only. `.value` is different: it is
 //! returned only when Corsa's TypeScript quick info identifies the symbol as a
 //! Vue ref; authored source is never scanned to guess its type.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
 )]
 
 #[cfg(feature = "native")]
@@ -73,7 +74,7 @@ fn auto_close_tag(ctx: &IdeContext<'_>, selection: usize) -> Option<String> {
         return None;
     }
     let (name, tag_start) = start_tag_before(&ctx.content, region, end)?;
-    if ctx.content[tag_start..end].trim_end().ends_with('/')
+    if ctx.content.get(tag_start..end)?.trim_end().ends_with('/')
         || vize_s0::is_void_tag(name)
         || already_has_close_tag(&ctx.content, selection, name)
     {
@@ -96,12 +97,16 @@ fn markup_region(ctx: &IdeContext<'_>, offset: usize) -> Option<(usize, usize)> 
 }
 
 fn inside_open_start_tag(content: &str, region: (usize, usize), offset: usize) -> bool {
-    let bytes = content.as_bytes();
-    let mut cursor = region.0;
     let mut tag_start = None;
     let mut quote = None;
-    while cursor <= offset && cursor < region.1 {
-        let byte = bytes[cursor];
+    let limit = offset.saturating_add(1).min(region.1);
+    for (cursor, &byte) in content
+        .as_bytes()
+        .iter()
+        .enumerate()
+        .take(limit)
+        .skip(region.0)
+    {
         match quote {
             Some(open) if byte == open => quote = None,
             Some(_) => {}
@@ -110,18 +115,22 @@ fn inside_open_start_tag(content: &str, region: (usize, usize), offset: usize) -
             None if byte == b'>' => tag_start = None,
             None => {}
         }
-        cursor += 1;
     }
-    tag_start.is_some_and(|start| !content[start..].starts_with("</")) && quote.is_none()
+    tag_start.is_some_and(|start| content.as_bytes().get(start + 1) != Some(&b'/'))
+        && quote.is_none()
 }
 
 fn start_tag_before(content: &str, region: (usize, usize), end: usize) -> Option<(&str, usize)> {
-    let bytes = content.as_bytes();
-    let mut cursor = region.0;
     let mut start = None;
     let mut quote = None;
-    while cursor < end && cursor < region.1 {
-        let byte = bytes[cursor];
+    let limit = end.min(region.1);
+    for (cursor, &byte) in content
+        .as_bytes()
+        .iter()
+        .enumerate()
+        .take(limit)
+        .skip(region.0)
+    {
         match quote {
             Some(open) if byte == open => quote = None,
             Some(_) => {}
@@ -130,7 +139,6 @@ fn start_tag_before(content: &str, region: (usize, usize), end: usize) -> Option
             None if byte == b'>' => start = None,
             None => {}
         }
-        cursor += 1;
     }
     let start = start?;
     let tail = content.get(start + 1..end)?;
@@ -141,7 +149,9 @@ fn start_tag_before(content: &str, region: (usize, usize), end: usize) -> Option
         .bytes()
         .position(|byte| !is_tag_name_byte(byte))
         .unwrap_or(tail.len());
-    (name_end > 0).then(|| (&tail[..name_end], start))
+    tail.get(..name_end)
+        .filter(|name| !name.is_empty())
+        .map(|name| (name, start))
 }
 
 fn already_has_close_tag(content: &str, selection: usize, name: &str) -> bool {
@@ -161,22 +171,25 @@ fn nearest_unclosed_tag(content: &str, region: (usize, usize), before: usize) ->
     let mut cursor = region.0;
     let limit = before.min(region.1);
     while cursor < limit {
-        if bytes[cursor] != b'<' {
+        if bytes.get(cursor) != Some(&b'<') {
             cursor += 1;
             continue;
         }
-        if content[cursor..limit].starts_with("<!--") {
-            cursor = content[cursor..limit]
+        let rest = content.get(cursor..limit)?;
+        if rest.starts_with("<!--") {
+            cursor = rest
                 .find("-->")
                 .map_or(limit, |relative| cursor + relative + 3);
             continue;
         }
         let closing = bytes.get(cursor + 1) == Some(&b'/');
         let name_start = cursor + if closing { 2 } else { 1 };
-        let mut name_end = name_start;
-        while name_end < limit && is_tag_name_byte(bytes[name_end]) {
-            name_end += 1;
-        }
+        let name_end = name_start
+            + bytes.get(name_start..limit).map_or(0, |tail| {
+                tail.iter()
+                    .take_while(|byte| is_tag_name_byte(**byte))
+                    .count()
+            });
         let name = content.get(name_start..name_end)?;
         let tag_end = find_tag_end(content, name_end, limit)?;
         if closing {
@@ -185,10 +198,9 @@ fn nearest_unclosed_tag(content: &str, region: (usize, usize), before: usize) ->
             }
         } else if !name.is_empty()
             && !vize_s0::is_void_tag(name)
-            && !content[cursor..tag_end]
-                .trim_end_matches('>')
-                .trim_end()
-                .ends_with('/')
+            && content
+                .get(cursor..tag_end)
+                .is_some_and(|tag| !tag.trim_end_matches('>').trim_end().ends_with('/'))
         {
             stack.push(name);
         }
@@ -200,7 +212,7 @@ fn nearest_unclosed_tag(content: &str, region: (usize, usize), before: usize) ->
 fn find_tag_end(content: &str, start: usize, limit: usize) -> Option<usize> {
     let bytes = content.as_bytes();
     let mut quote = None;
-    for (relative, byte) in bytes[start..limit].iter().copied().enumerate() {
+    for (relative, byte) in bytes.get(start..limit)?.iter().copied().enumerate() {
         match quote {
             Some(open) if byte == open => quote = None,
             Some(_) => {}
@@ -250,8 +262,13 @@ fn dot_value_candidate(
     {
         return false;
     }
-    let line_start = ctx.content[..start].rfind('\n').map_or(0, |at| at + 1);
-    let before = ctx.content[line_start..start].trim_start();
+    let Some(head) = ctx.content.get(..start) else {
+        return false;
+    };
+    let before = head
+        .rsplit_once('\n')
+        .map_or(head, |(_, line)| line)
+        .trim_start();
     !is_declaration_or_pass_through(before, ctx.content.get(end..).unwrap_or_default())
 }
 

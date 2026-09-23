@@ -1,5 +1,3 @@
-#![allow(clippy::disallowed_methods)]
-
 use std::fs;
 
 use tower_lsp::lsp_types::FileRename;

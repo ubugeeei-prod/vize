@@ -159,6 +159,7 @@ fn has_math_ml_element_tag_name_map_entry(tag_name: &str) -> bool {
         )
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     #[test]

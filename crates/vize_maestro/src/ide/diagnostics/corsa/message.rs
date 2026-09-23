@@ -17,26 +17,40 @@ pub(super) fn strip_corsa_overlay_paths(message: &str) -> String {
     let mut cursor = 0;
     let mut changed = false;
 
-    while let Some(relative_marker) = message[cursor..].find(MARKER) {
+    while let Some(relative_marker) = message.get(cursor..).and_then(|rest| rest.find(MARKER)) {
         let marker = cursor + relative_marker;
         let after_marker = marker + MARKER.len();
-        let Some(relative_overlays) = message[after_marker..].find(OVERLAYS) else {
-            rewritten.push_str(&message[cursor..after_marker]);
+        let Some(relative_overlays) = message
+            .get(after_marker..)
+            .and_then(|rest| rest.find(OVERLAYS))
+        else {
+            rewritten.push_str(message.get(cursor..after_marker).unwrap_or_default());
             cursor = after_marker;
             continue;
         };
         let overlays = after_marker + relative_overlays;
         let overlay_source_start = overlays + OVERLAYS.len();
-        if !message[overlay_source_start..].starts_with('/') {
-            rewritten.push_str(&message[cursor..overlay_source_start]);
+        if !message
+            .get(overlay_source_start..)
+            .is_some_and(|rest| rest.starts_with('/'))
+        {
+            rewritten.push_str(
+                message
+                    .get(cursor..overlay_source_start)
+                    .unwrap_or_default(),
+            );
             cursor = overlay_source_start;
             continue;
         }
 
         let path_start = previous_path_boundary(message, marker);
         let path_end = next_path_boundary(message, overlay_source_start);
-        rewritten.push_str(&message[cursor..path_start]);
-        rewritten.push_str(&message[overlay_source_start..path_end]);
+        rewritten.push_str(message.get(cursor..path_start).unwrap_or_default());
+        rewritten.push_str(
+            message
+                .get(overlay_source_start..path_end)
+                .unwrap_or_default(),
+        );
         cursor = path_end;
         changed = true;
     }
@@ -45,12 +59,14 @@ pub(super) fn strip_corsa_overlay_paths(message: &str) -> String {
         return message.to_string();
     }
 
-    rewritten.push_str(&message[cursor..]);
+    rewritten.push_str(message.get(cursor..).unwrap_or_default());
     rewritten
 }
 
 fn previous_path_boundary(message: &str, before: usize) -> usize {
-    message[..before]
+    message
+        .get(..before)
+        .unwrap_or_default()
         .char_indices()
         .rev()
         .find_map(|(index, character)| {
@@ -60,7 +76,9 @@ fn previous_path_boundary(message: &str, before: usize) -> usize {
 }
 
 fn next_path_boundary(message: &str, after: usize) -> usize {
-    message[after..]
+    message
+        .get(after..)
+        .unwrap_or_default()
         .char_indices()
         .find_map(|(offset, character)| is_path_boundary(character).then_some(after + offset))
         .unwrap_or(message.len())

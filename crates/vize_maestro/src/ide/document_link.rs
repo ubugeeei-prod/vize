@@ -3,7 +3,11 @@
 //! Provides clickable links for:
 //! - Import statements in script blocks
 //! - src attributes on script/style/template blocks
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 //! - CSS @import statements
 //!
 //! SFC blocks come from the resident descriptor (P5-6c): one parse per buffer
@@ -137,9 +141,9 @@ impl DocumentLinkService {
         // Match: @import "path" or @import 'path' or @import url("path")
         let mut pos = 0;
 
-        while let Some(import_pos) = css[pos..].find("@import") {
+        while let Some(import_pos) = css.get(pos..).and_then(|rest| rest.find("@import")) {
             let start = pos + import_pos;
-            let after_import = &css[start + 7..];
+            let after_import = css.get(start + 7..).unwrap_or_default();
             let trimmed = after_import.trim_start();
             let ws_len = after_import.len() - trimmed.len();
 
@@ -178,7 +182,7 @@ impl DocumentLinkService {
 
         // Find src="..." or src='...'
         let src_pos = tag.find("src=")?;
-        let after_src = &tag[src_pos + 4..];
+        let after_src = tag.get(src_pos + 4..)?;
 
         let quote = after_src.chars().next()?;
         if quote != '"' && quote != '\'' {
@@ -186,7 +190,7 @@ impl DocumentLinkService {
         }
 
         let value_start = src_pos + 5; // src=" plus quote
-        let value_end = after_src[1..].find(quote)?;
+        let value_end = after_src.get(1..)?.find(quote)?;
 
         Some((tag_start + value_start, tag_start + value_start + value_end))
     }

@@ -2,6 +2,7 @@
 //!
 //! A single generated document per art file only ever type-checked the default
 //! variant, so an authored type error in any other variant was silent.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use std::path::{Path, PathBuf};
 

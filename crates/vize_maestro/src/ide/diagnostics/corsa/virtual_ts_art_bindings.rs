@@ -10,12 +10,12 @@ pub(super) fn add_art_target_component_bindings(
     }
 
     let mut facts = vize_croquis::facts::CroquisFacts::new(summary);
-    let bindings = facts
+    let has_component_binding = facts
         .prepare::<ArtTargetBindings>()
         .get::<vize_croquis::facts::Bindings>()
-        .expect("declared demand");
-    let has_component_binding =
-        vize_croquis::facts::BindingsTable::contains_binding(bindings, target.name.as_str());
+        .is_ok_and(|bindings| {
+            vize_croquis::facts::BindingsTable::contains_binding(bindings, target.name.as_str())
+        });
     let mut component_ref = target.name.clone();
 
     if !has_component_binding {

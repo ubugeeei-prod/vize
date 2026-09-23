@@ -114,13 +114,15 @@ fn coalesce_document_changes(changes: DocumentChanges) -> Option<DocumentChanges
                 if let Some(&index) = indices.get(uri) {
                     // Moving edits across a resource mutation needs a separate
                     // post-operation coordinate/version contract. Fail closed.
-                    if operations[index + 1..].iter().any(|operation| {
+                    if operations.get(index + 1..).is_some_and(|later| later.iter().any(|operation| {
                         matches!(operation, DocumentChangeOperation::Op(resource) if resource_touches(resource, uri))
-                    }) {
+                    })) {
                         return None;
                     }
-                    let DocumentChangeOperation::Edit(existing) = &mut operations[index] else {
-                        unreachable!();
+                    // `indices` only records positions of pushed edits.
+                    let Some(DocumentChangeOperation::Edit(existing)) = operations.get_mut(index)
+                    else {
+                        return None;
                     };
                     for entry in edit.edits {
                         push_annotatable_edit_to(existing, entry);
@@ -167,16 +169,16 @@ fn merge_document_change_sets(current: &mut Option<DocumentChanges>, incoming: D
             current.append(&mut incoming);
         }
         (current @ DocumentChanges::Edits(_), DocumentChanges::Operations(mut incoming)) => {
-            let DocumentChanges::Edits(edits) =
-                std::mem::replace(current, DocumentChanges::Operations(Vec::new()))
-            else {
-                unreachable!();
-            };
-            let DocumentChanges::Operations(current) = current else {
-                unreachable!();
-            };
-            current.extend(edits.into_iter().map(DocumentChangeOperation::Edit));
-            current.append(&mut incoming);
+            let mut operations =
+                match std::mem::replace(current, DocumentChanges::Operations(Vec::new())) {
+                    DocumentChanges::Edits(edits) => edits
+                        .into_iter()
+                        .map(DocumentChangeOperation::Edit)
+                        .collect(),
+                    DocumentChanges::Operations(operations) => operations,
+                };
+            operations.append(&mut incoming);
+            *current = DocumentChanges::Operations(operations);
         }
         (DocumentChanges::Operations(current), DocumentChanges::Edits(incoming)) => {
             current.extend(incoming.into_iter().map(DocumentChangeOperation::Edit));

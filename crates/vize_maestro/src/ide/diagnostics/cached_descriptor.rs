@@ -3,7 +3,10 @@
 //! A rejected buffer is the same memo as a successful one: the parser
 //! diagnostic is built from the stored error, and a second request for that
 //! revision does not parse again.
-#![allow(clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+)]
 
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Position, Range, Url};
 use vize_resident::{DescriptorParseError, ParsedSfc, SharedDescriptor};
@@ -14,7 +17,10 @@ use crate::server::ServerState;
 impl DiagnosticService {
     /// The document's resident descriptor, or the one SFC parser diagnostic
     /// the collect path publishes before skipping dependent diagnostics.
-    #[allow(clippy::result_large_err)]
+    #[expect(
+        clippy::result_large_err,
+        reason = "the parser diagnostic is returned by value to the single collect caller"
+    )]
     pub(super) fn descriptor_for_collect(
         state: &ServerState,
         uri: &Url,

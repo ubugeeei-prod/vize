@@ -75,9 +75,9 @@ fn collect_css_imports(
     push_edit: &mut impl FnMut(&str, usize, usize),
 ) {
     let mut pos = 0;
-    while let Some(import_pos) = css[pos..].find("@import") {
+    while let Some(import_pos) = css.get(pos..).and_then(|rest| rest.find("@import")) {
         let start = pos + import_pos;
-        let after_import = &css[start + 7..];
+        let after_import = css.get(start + 7..).unwrap_or_default();
         let trimmed = after_import.trim_start();
         let ws_len = after_import.len() - trimmed.len();
 
@@ -103,13 +103,14 @@ fn extract_css_specifier(text: &str) -> Option<(&str, usize, usize)> {
     let bytes = text.as_bytes();
     let first = *bytes.first()?;
     if first == b'"' || first == b'\'' {
-        let quote = first as char;
-        let end = text[1..].find(quote)? + 1;
-        return Some((&text[1..end], 1, end));
+        let (specifier, _) = text.get(1..)?.split_once(char::from(first))?;
+        return Some((specifier, 1, specifier.len() + 1));
     }
 
-    let end = text.find([')', ';', '\n']).unwrap_or(text.len());
-    let specifier = text[..end].trim_end();
+    let specifier = text
+        .split_once([')', ';', '\n'])
+        .map_or(text, |(head, _)| head)
+        .trim_end();
     if specifier.is_empty() {
         None
     } else {
@@ -120,18 +121,18 @@ fn extract_css_specifier(text: &str) -> Option<(&str, usize, usize)> {
 fn find_src_attr_range(content: &str, tag_start: usize) -> Option<(usize, usize)> {
     let tag = content.get(tag_start..)?.split_once('>')?.0;
     let src_pos = tag.find("src=")?;
-    let after_src = &tag[src_pos + 4..];
+    let after_src = tag.get(src_pos + 4..)?;
     let quote = after_src.chars().next()?;
     if quote != '"' && quote != '\'' {
         return None;
     }
     let value_start = src_pos + 5;
-    let value_end = after_src[1..].find(quote)?;
+    let value_end = after_src.get(1..)?.find(quote)?;
     Some((tag_start + value_start, tag_start + value_start + value_end))
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
 mod tests {
     use super::{collect_css_imports, find_src_attr_range};
 

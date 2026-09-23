@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::{CorsaDocument, assemble_corsa_diagnostics, corsa_diagnostic_code, finished_from_lsp};
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Position, Range};
 use vize_canon::ImportSourceMap;

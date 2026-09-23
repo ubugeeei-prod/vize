@@ -1,4 +1,7 @@
-#![allow(clippy::disallowed_macros, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_methods,
+    reason = "test fixtures and expectations are built as std Strings with to_string/format!"
+)]
 
 use tower_lsp::lsp_types::{
     DocumentChangeOperation, DocumentChanges, OneOf, OptionalVersionedTextDocumentIdentifier,

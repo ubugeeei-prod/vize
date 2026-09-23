@@ -77,12 +77,16 @@ pub(super) fn semantic_position(
                 .virtual_result
                 .import_source_map
                 .get_virtual_offset(mapping.gen_range.end as u32) as usize;
-            let line_start = document.virtual_result.code[..start]
-                .rfind('\n')
-                .map_or(0, |index| index + 1);
-            let is_navigation = document.virtual_result.code[line_start..start]
-                .trim_start()
-                .starts_with("void __vize_kebab_events_nav_");
+            let is_navigation = document
+                .virtual_result
+                .code
+                .get(..start)
+                .is_some_and(|head| {
+                    head.rsplit_once('\n')
+                        .map_or(head, |(_, line)| line)
+                        .trim_start()
+                        .starts_with("void __vize_kebab_events_nav_")
+                });
             (is_navigation
                 && document.virtual_result.code.get(start..end) == Some(semantic.as_str()))
             .then(|| {
@@ -201,6 +205,7 @@ pub(super) fn offset_range(source: &str, range: OffsetRange<usize>) -> Range {
     }
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::Url;

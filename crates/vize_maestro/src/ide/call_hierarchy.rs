@@ -1,6 +1,13 @@
 //! Checker-backed call hierarchy over authored Vue and script project sources.
 
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![cfg_attr(
+    feature = "native",
+    expect(
+        clippy::disallowed_types,
+        clippy::disallowed_methods,
+        reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
+    )
+)]
 
 #[cfg(feature = "native")]
 use std::sync::Arc;

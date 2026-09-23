@@ -270,8 +270,9 @@ fn is_json_block(source: &str, block: &vize_atelier_sfc::SfcCustomBlock<'_>) -> 
         return false;
     }
 
-    let open_tag = &source[block.loc.tag_start..block.loc.start.min(source.len())];
-    open_tag.contains("<i18n")
+    source
+        .get(block.loc.tag_start..block.loc.start.min(source.len()))
+        .is_some_and(|open_tag| open_tag.contains("<i18n"))
 }
 
 fn has_locale_roots(value: &Value) -> bool {
@@ -334,7 +335,7 @@ fn collect_call_hints(
     hints: &mut Vec<InlayHint>,
 ) {
     let mut pos = 0usize;
-    while let Some(found) = content[pos..].find(call_name) {
+    while let Some(found) = content.get(pos..).and_then(|rest| rest.find(call_name)) {
         let call_start = pos + found;
         if call_start > 0
             && content
@@ -383,7 +384,7 @@ fn collect_missing_call_keys(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     let mut pos = 0usize;
-    while let Some(found) = content[pos..].find(call_name) {
+    while let Some(found) = content.get(pos..).and_then(|rest| rest.find(call_name)) {
         let call_start = pos + found;
         if call_start > 0
             && content
@@ -428,15 +429,13 @@ fn literal_first_arg(content: &str, mut pos: usize) -> Option<(&str, usize, usiz
         return None;
     }
     let start = pos + 1;
-    pos = start;
-    while pos < bytes.len() {
-        if bytes[pos] == quote && !is_escaped(bytes, pos) {
-            return Some((&content[start..pos], start, pos));
+    for (pos, &byte) in bytes.iter().enumerate().skip(start) {
+        if byte == quote && !super::context::is_escaped(bytes, pos) {
+            return Some((content.get(start..pos)?, start, pos));
         }
-        if bytes[pos] == b'\n' || bytes[pos] == b'\r' {
+        if byte == b'\n' || byte == b'\r' {
             return None;
         }
-        pos += 1;
     }
     None
 }
@@ -445,16 +444,6 @@ fn skip_ascii_ws(bytes: &[u8], pos: &mut usize) {
     while bytes.get(*pos).is_some_and(u8::is_ascii_whitespace) {
         *pos += 1;
     }
-}
-
-fn is_escaped(bytes: &[u8], quote: usize) -> bool {
-    let mut slash_count = 0usize;
-    let mut pos = quote;
-    while pos > 0 && bytes[pos - 1] == b'\\' {
-        slash_count += 1;
-        pos -= 1;
-    }
-    slash_count % 2 == 1
 }
 
 fn offset_range(content: &str, start: usize, end: usize) -> Range {

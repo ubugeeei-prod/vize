@@ -15,14 +15,14 @@ lsp	LSP	source	crates/vize_maestro/src/document/store.rs	83	s0	S0	stage	vize_s0	
 lsp	LSP	source	crates/vize_maestro/src/document/text.rs	6	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/document/text/tests.rs	4	s0	S0	stage	vize_s0	preferred	8
 lsp	LSP	source	crates/vize_maestro/src/ide.rs	98	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	77	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy.rs	133	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/auto_insert.rs	78	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy.rs	140	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/call_hierarchy/document.rs	48	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/call_hierarchy/tests.rs	217	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	14	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/code_action.rs	658	croquis	Croquis analysis	old	vize_croquis	legacy	4
-lsp	LSP	source	crates/vize_maestro/src/ide/code_action/script_bindings.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	3
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/code_action/source_position_tests.rs	51	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/call_hierarchy/tests.rs	222	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/code_action.rs	19	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/code_action.rs	651	croquis	Croquis analysis	old	vize_croquis	legacy	4
+lsp	LSP	source	crates/vize_maestro/src/ide/code_action/script_bindings.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	3
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/code_action/source_position_tests.rs	52	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/component_props_tests.rs	318	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/items.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/resolve/visibility.rs	3	s0	S0	stage	vize_s0	preferred	1
@@ -62,10 +62,10 @@ lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/slot_outlets.rs	5
 lsp	LSP	source	crates/vize_maestro/src/ide/completion/template/slot_outlets.rs	5	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/tests.rs	8	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/completion/tests.rs	8	old_ast	old AST/parser	old	vize_relief	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	152	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	152	old_ast	old AST/parser	old	vize_relief	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	152	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support.rs	58	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	154	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	154	old_ast	old AST/parser	old	vize_relief	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/context.rs	154	old_ast	old AST/parser	old	vize_armature	legacy	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support.rs	62	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical.rs	3	s0	S0	stage	vize_s0	preferred	5
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/mapping.rs	4	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/open.rs	136	s0	S0	stage	vize_s0	preferred	3
@@ -77,9 +77,9 @@ lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/external_mirror.rs	10
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/html_attribute.rs	2	s0	S0	stage	vize_s0	preferred	10
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/html_tag.rs	2	s0	S0	stage	vize_s0	preferred	6
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/virtual_document.rs	4	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/workspace_edit.rs	159	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/declaration.rs	118	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/declaration/tests.rs	117	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/workspace_edit.rs	160	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/declaration.rs	124	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/declaration/tests.rs	123	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/art.rs	10	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/definition/corsa_tests.rs	32	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/facts.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
@@ -95,17 +95,17 @@ lsp	LSP	source	crates/vize_maestro/src/ide/definition/template.rs	4	old_ast	old 
 lsp	LSP	source	crates/vize_maestro/src/ide/definition/template.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/definition/tests/contexts.rs	4	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/assembly_parity_tests.rs	14	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	12	s0	S0	stage	vize_s0	preferred	3
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	12	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	12	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	3
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	13	s0	S0	stage	vize_s0	preferred	3
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	13	old_ast	old AST/parser	old	vize_armature	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	13	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	13	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	12	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	3
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect_virtual.rs	15	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs	15	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/log_preview.rs	10	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	79	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/log_preview.rs	11	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	97	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	151	s0	S0	stage	vize_s0	preferred	4
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/tests.rs	1	s0	S0	stage	vize_s0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art_bindings.rs	5	s0	S0	stage	vize_s0	preferred	4
@@ -116,8 +116,8 @@ lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_art.rs	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	13	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	13	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/virtual_ts_inline_art.rs	13	croquis	Croquis analysis	old	vize_croquis	legacy	2
-lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_fixture.rs	212	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_tests.rs	10	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_fixture.rs	213	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/editor_typecheck_tests.rs	15	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/line_index.rs	7	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/line_index.rs	9	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/linter_options.rs	6	s0	S0	stage	vize_s0	preferred	21
@@ -132,7 +132,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router_project.rs	12	s0	S0	
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router_project.rs	12	croquis	Croquis analysis	old	vize_croquis_cf	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router.rs	8	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/router.rs	8	croquis	Croquis analysis	old	vize_croquis_cf	legacy	2
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router.rs	551	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/ecosystem/router.rs	542	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/ecosystem/void.rs	7	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/file_rename/manual/script.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/file_rename/manual/script.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	3
@@ -165,7 +165,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/hover/template.rs	12	s0	S0	stage	vize
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/template.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/template.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/hover/template.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	source	crates/vize_maestro/src/ide/implementation.rs	117	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/implementation.rs	123	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/inlay_hint.rs	26	s0	S0	stage	vize_s0	preferred	4
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/inlay_hint.rs	26	croquis	Croquis analysis	old	vize_croquis	legacy	4
 lsp	LSP	source	crates/vize_maestro/src/ide/jsx/code_action.rs	27	s0	S0	stage	vize_s0	preferred	1
@@ -186,7 +186,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/native_code_actions/binding_origins.r
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/canonical.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/corsa_tests.rs	293	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/references/corsa_tests.rs	300	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/corsa_tests/project_surface.rs	6	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/structural.rs	5	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/structural.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
@@ -208,12 +208,12 @@ lsp	LSP	source	crates/vize_maestro/src/ide/references/structural/style.rs	3	raw_
 lsp	LSP	source	crates/vize_maestro/src/ide/references/structural/template.rs	3	s0	S0	stage	vize_s0	preferred	2
 lsp	LSP	source	crates/vize_maestro/src/ide/references/structural/template.rs	3	old_ast	old AST/parser	old	vize_relief	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/references/structural/template.rs	3	old_ast	old AST/parser	old	vize_armature	legacy	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename.rs	320	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename.rs	301	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical.rs	8	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	4	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	3
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	207	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/canonical/event_rename.rs	212	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename/model.rs	4	s0	S0	stage	vize_s0	preferred	3
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename/model.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/event_rename/model.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
@@ -225,10 +225,10 @@ lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/patterns.rs	
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/patterns.rs	6	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/execute/patterns.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/canonical/failure.rs	2	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_event_variants_tests.rs	212	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_model_tests.rs	285	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_options_api_tests.rs	129	s0	S0	stage	vize_s0	preferred	2
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_session_tests.rs	4	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_event_variants_tests.rs	218	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_model_tests.rs	291	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_options_api_tests.rs	130	s0	S0	stage	vize_s0	preferred	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/rename/corsa_session_tests.rs	12	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/direct_first.rs	3	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness.rs	9	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/rename/corsa_session_tests/harness/assertions.rs	9	s0	S0	stage	vize_s0	preferred	1
@@ -243,7 +243,7 @@ lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/art.rs	276	s0	S0	stag
 lsp	LSP	source	crates/vize_maestro/src/ide/semantic_tokens/encoding.rs	13	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help.rs	180	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/signature_help/tests/fixture.rs	155	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/tag_pair.rs	119	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/tag_pair.rs	122	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/template_expression.rs	158	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/template_expression/dynamic_argument.rs	56	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/template_scope/analysis.rs	7	s0	S0	stage	vize_s0	preferred	1
@@ -263,8 +263,8 @@ lsp	LSP	test/dev	crates/vize_maestro/src/ide/type_definition/tests.rs	114	s0	S0	
 lsp	LSP	source	crates/vize_maestro/src/ide/type_service.rs	130	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/type_service/diagnostics.rs	291	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/type_service/type_context.rs	224	s0	S0	stage	vize_s0	preferred	14
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/workspace_symbols.rs	16	s0	S0	stage	vize_s0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/workspace_symbols.rs	16	croquis	Croquis analysis	old	vize_croquis	legacy	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/workspace_symbols.rs	17	s0	S0	stage	vize_s0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/workspace_symbols.rs	17	croquis	Croquis analysis	old	vize_croquis	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/lib.rs	160	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/runtime.rs	27	s0	S0	stage	vize_s0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/server/document_structure/folding.rs	233	s0	S0	stage	vize_s0	preferred	1

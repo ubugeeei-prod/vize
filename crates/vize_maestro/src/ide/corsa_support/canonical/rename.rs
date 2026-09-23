@@ -168,11 +168,9 @@ fn push_annotatable_edit(
     uri: Url,
     edit: OneOf<TextEdit, AnnotatedTextEdit>,
 ) {
-    let edits = if let Some((_, edits)) = groups.iter_mut().find(|(existing, _)| *existing == uri) {
-        edits
-    } else {
-        groups.push((uri, Vec::new()));
-        &mut groups.last_mut().expect("inserted group").1
+    let Some((_, edits)) = groups.iter_mut().find(|(existing, _)| *existing == uri) else {
+        groups.push((uri, vec![edit]));
+        return;
     };
     let (range, new_text) = annotatable_identity(&edit);
     if !edits.iter().any(|existing| {

@@ -65,7 +65,8 @@ impl<'a> IdeContext<'a> {
     /// Tests use this so the store, not a side string, is the source of text.
     pub fn testing(state: &'a ServerState, uri: &'a Url, offset: usize, content: String) -> Self {
         state.documents.open(uri.clone(), content, 0, "vue".into());
-        Self::new(state, uri, offset).expect("testing document is open")
+        let content = state.documents.text(uri).unwrap_or_default();
+        Self::assemble(state, uri, offset, content, false)
     }
 
     /// [`Self::testing`] for a completion cursor.
@@ -76,7 +77,8 @@ impl<'a> IdeContext<'a> {
         content: String,
     ) -> Self {
         state.documents.open(uri.clone(), content, 0, "vue".into());
-        Self::at_completion(state, uri, offset).expect("testing document is open")
+        let content = state.documents.text(uri).unwrap_or_default();
+        Self::assemble(state, uri, offset, content, true)
     }
 
     fn read(state: &'a ServerState, uri: &'a Url, offset: usize, completion: bool) -> Option<Self> {

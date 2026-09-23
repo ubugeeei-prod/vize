@@ -1,8 +1,8 @@
 //! Corsa-backed Vue ref classification for automatic `.value` insertion.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
 )]
 
 use std::sync::Arc;
@@ -95,9 +95,10 @@ fn quick_info_has_ref_type(value: &str) -> bool {
     .iter()
     .any(|needle| {
         value.match_indices(needle).any(|(offset, _)| {
-            offset == 0
-                || !value.as_bytes()[offset - 1].is_ascii_alphanumeric()
-                    && value.as_bytes()[offset - 1] != b'_'
+            offset
+                .checked_sub(1)
+                .and_then(|before| value.as_bytes().get(before))
+                .is_none_or(|byte| !byte.is_ascii_alphanumeric() && *byte != b'_')
         })
     })
 }

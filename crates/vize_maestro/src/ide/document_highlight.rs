@@ -87,7 +87,7 @@ impl DocumentHighlightService {
         }
 
         let (start, end) = token_span_at_offset(&ctx.content, offset, is_identifier_char)?;
-        let symbol = &ctx.content[start..end];
+        let symbol = ctx.content.get(start..end)?;
         if !is_highlightable_symbol(symbol) {
             return None;
         }
@@ -102,7 +102,10 @@ fn identifier_highlights(content: &str, symbol: &str) -> Vec<DocumentHighlight> 
     // every offset to a position with a single forward walk over the document.
     let mut spans = Vec::new();
     let mut search_start = 0usize;
-    while let Some(relative) = content[search_start..].find(symbol) {
+    while let Some(relative) = content
+        .get(search_start..)
+        .and_then(|rest| rest.find(symbol))
+    {
         let start = search_start + relative;
         let end = start + symbol.len();
         if is_identifier_boundary(content.as_bytes(), start, end) {
@@ -118,7 +121,8 @@ fn identifier_highlights(content: &str, symbol: &str) -> Vec<DocumentHighlight> 
     let mut highlights = Vec::with_capacity(spans.len());
     for (start, end) in spans {
         let (start_line, start_character) = walker.position_at(start);
-        let kind = highlight_kind_for_prefix(&content[walker.line_start()..start]);
+        let kind =
+            highlight_kind_for_prefix(content.get(walker.line_start()..start).unwrap_or_default());
         let (end_line, end_character) = walker.position_at(end);
         highlights.push(span_highlight(
             start_line,

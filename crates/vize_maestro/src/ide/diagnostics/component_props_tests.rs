@@ -1,7 +1,6 @@
-#![allow(
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros,
-    clippy::disallowed_types
+    reason = "test fixtures and expectations are built as std Strings with to_string/format!"
 )]
 
 use std::fs;

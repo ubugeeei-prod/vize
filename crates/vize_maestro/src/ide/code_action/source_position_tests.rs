@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::*;
 use crate::server::ServerState;
 use tower_lsp::lsp_types::Url;

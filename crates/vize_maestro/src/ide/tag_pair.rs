@@ -42,13 +42,14 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
     let mut cursor = region_start;
 
     while cursor < region_end {
-        if bytes[cursor] != b'<' {
+        if bytes.get(cursor) != Some(&b'<') {
             cursor += 1;
             continue;
         }
 
-        if content[cursor..region_end].starts_with("<!--") {
-            cursor = content[cursor..region_end]
+        let rest = content.get(cursor..region_end)?;
+        if rest.starts_with("<!--") {
+            cursor = rest
                 .find("-->")
                 .map_or(region_end, |relative| cursor + relative + 3);
             continue;
@@ -60,18 +61,18 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
             if name_end == name_start {
                 // `</` with no name yet: a zero-width span the cursor would
                 // "sit on", which must not become a zero-width highlight.
-                cursor = content[cursor..region_end]
+                cursor = rest
                     .find('>')
                     .map_or(region_end, |relative| cursor + relative + 1);
                 continue;
             }
             let close_span = (name_start, name_end);
-            let name = &content[name_start..name_end];
+            let name = content.get(name_start..name_end)?;
 
             // `rposition` recovers from unclosed inner elements: the nearest
             // matching open tag wins.
             if let Some(index) = stack.iter().rposition(|open| open.name == name) {
-                let open = stack[index];
+                let open = stack.get(index).copied()?;
                 stack.truncate(index);
                 if contains(open.name_span, offset) || contains(close_span, offset) {
                     return Some(TagNames {
@@ -88,7 +89,7 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
                 });
             }
 
-            cursor = content[cursor..region_end]
+            cursor = rest
                 .find('>')
                 .map_or(region_end, |relative| cursor + relative + 1);
             continue;
@@ -101,7 +102,7 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
             continue;
         }
 
-        let name = &content[name_start..name_end];
+        let name = content.get(name_start..name_end)?;
         let name_span = (name_start, name_end);
         // A start tag with no `>` is a name being typed (or a stray `<`): no tag
         // in the rest of the region can close either, so stop instead of
@@ -115,7 +116,9 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
             }
             break;
         };
-        let self_closing = content[..tag_end - 1].trim_end().ends_with('/');
+        let self_closing = content
+            .get(..tag_end - 1)
+            .is_some_and(|head| head.trim_end().ends_with('/'));
         if self_closing || vize_s0::is_void_tag(name) {
             if contains(name_span, offset) {
                 return Some(TagNames {
@@ -147,23 +150,27 @@ fn contains(span: (usize, usize), offset: usize) -> bool {
 }
 
 fn tag_name_end(bytes: &[u8], name_start: usize, limit: usize) -> usize {
-    let mut end = name_start;
-    while end < limit
-        && (bytes[end].is_ascii_alphanumeric() || matches!(bytes[end], b'-' | b'_' | b'.' | b':'))
-    {
-        end += 1;
-    }
-    end
+    name_start
+        + bytes.get(name_start..limit).map_or(0, |name| {
+            name.iter()
+                .take_while(|byte| {
+                    byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b':')
+                })
+                .count()
+        })
 }
 
 /// Byte offset just past the `>` that closes the start tag at `tag_start`.
 fn start_tag_end(content: &str, tag_start: usize, limit: usize) -> Option<usize> {
-    let bytes = content.as_bytes();
-    let mut cursor = tag_start + 1;
     let mut quote: Option<u8> = None;
 
-    while cursor < limit {
-        let byte = bytes[cursor];
+    for (cursor, &byte) in content
+        .as_bytes()
+        .iter()
+        .enumerate()
+        .take(limit)
+        .skip(tag_start + 1)
+    {
         match quote {
             Some(open) if byte == open => quote = None,
             Some(_) => {}
@@ -171,7 +178,6 @@ fn start_tag_end(content: &str, tag_start: usize, limit: usize) -> Option<usize>
             None if byte == b'>' => return Some(cursor + 1),
             None => {}
         }
-        cursor += 1;
     }
 
     None
