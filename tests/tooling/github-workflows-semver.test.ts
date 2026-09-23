@@ -10,7 +10,10 @@ test("release SemVer checks classify the exact candidate without push metadata",
 
   assert.match(job, /permissions:\n(?:[^\S\n]+\S.*\n)*[^\S\n]+contents:\s*read\n/);
   assert.doesNotMatch(job, /pull-requests:\s*read/);
-  assert.match(job, /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch'\s*\}\}/);
+  assert.match(
+    job,
+    /if:\s*\$\{\{\s*github\.event_name == 'workflow_dispatch' && \(startsWith\(github\.ref, 'refs\/heads\/release\/v'\) \|\| startsWith\(github\.ref, 'refs\/tags\/v'\)\)\s*\}\}/,
+  );
   assert.match(job, /- name:\s*Use candidate version for SemVer classification/);
   assert.doesNotMatch(job, /- name:\s*Resolve SemVer change marker/);
   assert.match(job, /bash tools\/commands\/ci\/github\/check-semver\.sh/);
