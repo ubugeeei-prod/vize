@@ -207,7 +207,7 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/script/analyze_script_bindi
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context.rs	14	s0	S0	stage	vize_carton	compat	5
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context.rs	14	croquis	Croquis analysis	old	vize_croquis	legacy	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context.rs	14	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/context.rs	194	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/context.rs	191	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/external_types.rs	6	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/external_types.rs	6	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/external_types.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	3
@@ -225,19 +225,16 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/props.rs	6	s
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/context/props.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_emits.rs	8	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_emits.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_emits.rs	8	raw_oxc	raw OXC	raw	oxc_ast	raw	7
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/define_emits.rs	344	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_expose.rs	11	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_expose.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_emits.rs	8	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/define_emits.rs	218	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_expose.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_model_metadata.rs	1	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_model_metadata.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_model_metadata.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_model_metadata.rs	1	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_model_metadata.rs	1	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_model.rs	11	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_model.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_options.rs	11	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_options.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_model.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_options.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/define_props_destructure.rs	15	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_props_destructure/collector.rs	6	s0	S0	stage	vize_carton	compat	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_props_destructure/collector.rs	6	raw_oxc	raw OXC	raw	oxc_ast	raw	15
@@ -248,10 +245,8 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/define_props_destr
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_props_destructure/transform.rs	10	s0	S0	stage	vize_carton	compat	2
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_props_destructure/transform.rs	10	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_props_destructure/transform.rs	10	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_props.rs	11	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_props.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_slots.rs	11	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_slots.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_props.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/script/define_slots.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/import_usage_check.rs	11	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/import_usage_check.rs	11	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/import_usage_check/expressions.rs	3	s0	S0	stage	vize_carton	compat	1
@@ -266,9 +261,8 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/static_expression.
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/static_expression.rs	69	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/static_expression.rs	69	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/script/type_resolution.rs	1	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/utils.rs	8	s0	S0	stage	vize_carton	compat	1
-compiler	Compiler	source	crates/vize_atelier_sfc/src/script/utils.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/script/utils.rs	302	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/script/utils.rs	5	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_sfc/src/script/utils.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/snapshot_tests.rs	15	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/style.rs	3	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/template_tests.rs	12	s0	S0	stage	vize_carton	compat	3
