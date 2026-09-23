@@ -1,3 +1,6 @@
+// Build scripts cannot depend on the runtime's CompactString types or macros.
+#![allow(clippy::disallowed_types, clippy::disallowed_macros)]
+
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
