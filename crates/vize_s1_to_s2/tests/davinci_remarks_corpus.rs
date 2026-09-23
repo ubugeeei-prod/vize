@@ -26,6 +26,8 @@
 //!     --test davinci_remarks_corpus -- --nocapture
 //! ```
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod davinci_remarks_corpus_support;
 
 use davinci_remarks_corpus_support as support;

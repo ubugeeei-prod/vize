@@ -1,4 +1,3 @@
-#![allow(clippy::disallowed_types)] // Fixture files arrive through `std::fs` as std strings.
 //! Davinci P4-12c corpus-runnable entry for the pug dialect — the P2-8
 //! lane shape (`davinci_lowering_corpus.rs`) for `<template lang="pug">`,
 //! and the corpus half of the P4-12c compile oracle.
@@ -25,6 +24,17 @@
 //!     cargo test -p vize_s1_to_s2 --features davinci-differential \
 //!     --test davinci_pug_corpus -- --nocapture
 //! ```
+
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 mod support;
 

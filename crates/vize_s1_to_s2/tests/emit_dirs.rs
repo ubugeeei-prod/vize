@@ -1,25 +1,15 @@
 //! Custom `vue.directive` emit pins (`resolveDirective` / `withDirectives`).
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 mod support;
 
-use support::with_transformed;
+use support::assembled_dom as assembled;
 use vize_s0::Allocator;
-use vize_s1_to_s2::emit_dom;
-
-fn assembled(source: &str) -> String {
-    with_transformed(source, |lowered, _folio, facts, _budget| {
-        emit_dom(lowered, facts)
-            .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
-            .assembled()
-            .to_string()
-    })
-}
 
 /// Vue's extra `newline()` after `genAssets` leaves indent on the blank line.
 fn pin(visual: &str) -> String {

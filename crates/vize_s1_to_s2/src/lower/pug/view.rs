@@ -89,6 +89,17 @@ impl PugBlockView {
     }
 }
 
+/// The derivation for a `body` range that is not a slice of the host: an
+/// empty template carrying one refusal.
+fn refuse_range() -> PugTemplate {
+    let mut template = derive_template_source_with("", PugRendering::AuthoredOrder);
+    template.diagnostics.push(crate::exemptions::lowering(
+        vize_s0::Span::new(0, 0),
+        "the pug block range is not a UTF-8 slice of the host source",
+    ));
+    template
+}
+
 #[cfg(test)]
 mod tests {
     use super::PugBlockView;
@@ -125,15 +136,4 @@ mod tests {
         let refused = PugBlockView::new(host, 0..host.len()).expect_err("refused");
         assert!(refused.has_errors());
     }
-}
-
-/// The derivation for a `body` range that is not a slice of the host: an
-/// empty template carrying one refusal.
-fn refuse_range() -> PugTemplate {
-    let mut template = derive_template_source_with("", PugRendering::AuthoredOrder);
-    template.diagnostics.push(crate::exemptions::lowering(
-        vize_s0::Span::new(0, 0),
-        "the pug block range is not a UTF-8 slice of the host source",
-    ));
-    template
 }

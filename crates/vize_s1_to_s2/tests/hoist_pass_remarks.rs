@@ -13,6 +13,8 @@
 //! - **The detachment law.** Explaining changes nothing: the facts under a
 //!   remark collector equal the facts under `NoObserver`.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::path::{Path, PathBuf};
 
 use vize_davinci::assert_folio_snapshot;

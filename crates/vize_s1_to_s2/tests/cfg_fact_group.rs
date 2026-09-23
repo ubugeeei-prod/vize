@@ -4,7 +4,7 @@
 //! undeclared one gets the exact refusal, and the table equals the pass
 //! run directly — shifted into its file, the file-absolute lowering.
 
-#![allow(clippy::disallowed_methods, clippy::disallowed_types)]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use vize_davinci::fact::{
     Demand, FactConsumer, FactError, FactGroup, FactManager, produced_count, undeclared_accesses,

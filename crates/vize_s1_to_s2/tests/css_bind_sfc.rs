@@ -1,6 +1,12 @@
 //! P2-10 acceptance: a committed `v-bind()`-bearing SFC whose S2 folio
 //! pins the style ops beside the template tree.
 
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 mod support;
 
 use support::assert_authored_artifact;

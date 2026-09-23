@@ -10,6 +10,8 @@
 //! as lowered — while the canonical grouping (default-name synthesis
 //! included) shows only in the facts and provenance beside it.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::path::{Path, PathBuf};

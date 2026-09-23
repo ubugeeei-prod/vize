@@ -1,7 +1,15 @@
 //! P2-12b groundwork: S2 DOM emission exposes a walk budget without
 //! changing the shipped-compatible render output.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 use std::path::Path;
 

@@ -1,3 +1,13 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+#![expect(
+    dead_code,
+    reason = "shared integration-test support: each test crate uses a subset"
+)]
 mod allowlist;
 mod sfc_inputs;
 
@@ -16,7 +26,6 @@ use vize_s1_to_s2::{
 };
 
 /// Which shipped-lane option surface the comparison runs under.
-#[allow(dead_code)]
 #[derive(Clone, Copy)]
 pub enum Lane {
     /// `compile_template` defaults.
@@ -55,7 +64,6 @@ pub struct Report {
     pub divergences: Vec<String>,
 }
 
-#[allow(dead_code)]
 pub fn compare_sweep(sweep: &CorpusSweep) -> Report {
     compare_sweep_lane(sweep, Lane::Default)
 }
@@ -91,7 +99,6 @@ fn component_name_of(path: &str) -> std::string::String {
         .to_owned()
 }
 
-#[allow(dead_code)]
 pub fn compare_sfc_template(name: &str, source: &str, report: &mut Report) {
     compare_sfc_template_lane(name, source, report, Lane::Default)
 }

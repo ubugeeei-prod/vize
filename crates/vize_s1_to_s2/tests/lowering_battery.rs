@@ -8,6 +8,8 @@
 //! the cfg-regression witness the corpus lane re-pins: a change to the
 //! lowering's decision surface moves a pinned number loudly in both lanes.
 
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+
 mod support;
 
 use davinci_test_support::surface_fixture as battery;

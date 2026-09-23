@@ -67,11 +67,13 @@ pub(in crate::emit) fn strip_typescript_from_expression(content: &str) -> String
 /// or dropped by the printer; slice the initializer back out.
 fn extract_initializer(printed: &str) -> Option<String> {
     const PREFIX: &str = "const _expr_ = ";
-    let start = printed.find(PREFIX)? + PREFIX.len();
-    let end = printed[start..].rfind(';')?;
-    let expr = printed[start..start + end].trim();
-    if expr.starts_with('(') && expr.ends_with(')') && has_matching_outer_parens(expr) {
-        return Some(String::from(&expr[1..expr.len() - 1]));
+    let (_, initializer) = printed.split_once(PREFIX)?;
+    let (initializer, _) = initializer.rsplit_once(';')?;
+    let expr = initializer.trim();
+    if has_matching_outer_parens(expr)
+        && let Some(inner) = expr.strip_prefix('(').and_then(|e| e.strip_suffix(')'))
+    {
+        return Some(String::from(inner));
     }
     Some(String::from(expr))
 }
@@ -79,10 +81,9 @@ fn extract_initializer(printed: &str) -> Option<String> {
 /// Whether the outermost parentheses pair with each other: `(foo)` does,
 /// `(isOpen) => foo(x)` does not.
 fn has_matching_outer_parens(s: &str) -> bool {
-    if !s.starts_with('(') || !s.ends_with(')') {
+    let Some(inner) = s.strip_prefix('(').and_then(|s| s.strip_suffix(')')) else {
         return false;
-    }
-    let inner = &s[1..s.len() - 1];
+    };
     let mut depth: i32 = 0;
     let mut in_string = false;
     let mut string_char = ' ';

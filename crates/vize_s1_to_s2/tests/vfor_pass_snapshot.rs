@@ -11,6 +11,8 @@
 //! surface — while the vif pass's extractions (the `term` branch key in
 //! `loops.vue`) still show as moved.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::path::{Path, PathBuf};

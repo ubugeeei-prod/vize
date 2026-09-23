@@ -7,6 +7,8 @@
 //! cases the port's lowering-absorption argument rests on. The TS-17
 //! folio snapshots live in `text_pass_snapshot.rs`.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use vize_davinci::id::NodeId;

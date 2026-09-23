@@ -94,3 +94,6 @@ required-features = ["davinci-differential"]
 [[test]]
 name = "davinci_remarks_corpus"
 required-features = ["davinci-differential"]
+
+[lints]
+workspace = true

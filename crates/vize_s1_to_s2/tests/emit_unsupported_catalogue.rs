@@ -2,8 +2,6 @@
 //! direct-S2-covered, a defensive guard around an already-filtered helper, or a
 //! retired bucket kept stable for already-recorded census output.
 
-#![allow(clippy::disallowed_types)]
-
 use std::vec::Vec;
 
 use vize_s1_to_s2::UnsupportedReason as Reason;

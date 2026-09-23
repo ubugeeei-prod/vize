@@ -1,6 +1,12 @@
 //! Source-block lowering facts: side tables and provenance keep file-absolute
 //! spans after SFC block slicing.
 
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 mod support;
 
 use support::{Artifact, assert_authored_artifact};

@@ -156,6 +156,7 @@ fn split_top_level(input: &str) -> ForAliases<'_> {
     aliases
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{split_aliases, split_for};

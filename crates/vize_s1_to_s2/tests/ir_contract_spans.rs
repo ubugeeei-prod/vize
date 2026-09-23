@@ -1,6 +1,8 @@
 //! P2-17 mechanical span gate: the owned S2 folio carries no span that
 //! cannot be resolved against the authored source.
 
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::fs;

@@ -6,10 +6,12 @@
 //! the pass still under-classifies (a local mixed with a free name) stays
 //! refused rather than guessed.
 
-#![allow(
+#![expect(clippy::panic, reason = "tests assert by panicking")]
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode};

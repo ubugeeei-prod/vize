@@ -6,6 +6,8 @@
 //! The snapshot is the oracle; the walk accounting, facts and
 //! diagnostics are the targeted structural supplements (assurance §4).
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::path::{Path, PathBuf};

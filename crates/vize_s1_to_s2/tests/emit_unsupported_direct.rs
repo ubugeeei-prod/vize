@@ -1,9 +1,9 @@
 //! Direct S2 refusal fixtures for malformed or fact-incomplete handoffs.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
 )]
 
 use std::vec::Vec as StdVec;

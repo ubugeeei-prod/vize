@@ -1,4 +1,3 @@
-#![allow(clippy::disallowed_types)] // Fixture files arrive through `std::fs` as std strings.
 //! TS-20 for the pug dialect (Davinci P4-12c): the pug → Vue-template
 //! desugaring and the S2 lowering behind it.
 //!
@@ -10,6 +9,17 @@
 //!   through `lower_pug` with the Vue lowering's soundness laws holding on
 //!   the derived template and every diagnostic inside the authored pug.
 //! - **Provenance.** Derived-template spans map back onto authored pug.
+
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 mod support;
 

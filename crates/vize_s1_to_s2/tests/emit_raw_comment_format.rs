@@ -1,9 +1,14 @@
 //! Raw JS comment formatting parity for emitted prop expressions.
 
-#![allow(
-    clippy::disallowed_macros,
+#![expect(
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_methods,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 mod support;

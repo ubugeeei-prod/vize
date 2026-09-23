@@ -10,6 +10,8 @@
 //! platform-specific; wall time remains report-only until the reference runner
 //! records it.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use criterion::{Criterion, criterion_group};
 use davinci_harness::stage::bench_stage_with_metrics;
 use vize_davinci::pass::NoObserver;

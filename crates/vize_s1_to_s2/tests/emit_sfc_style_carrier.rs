@@ -1,9 +1,14 @@
 //! P2-11: SFC style-block carriers are facts for consumers, not DOM output.
 
-#![allow(
-    clippy::disallowed_macros,
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 mod support;

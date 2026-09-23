@@ -2,6 +2,8 @@
 //! scope facts for the well-formed side only. Expression interiors are not
 //! recovered.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_davinci::diagnostic::Diagnostic;
 use vize_s0::{Allocator, Span};
 use vize_s1::parse;
@@ -88,16 +90,15 @@ fn an_unexpected_hole_does_not_drop_facts_on_either_side() {
     assert_eq!(facts.binding_at(row_use, "item"), None);
 
     let inside = stray + 2;
-    assert_eq!(facts.in_unexpected(inside), true);
+    assert!(facts.in_unexpected(inside));
     assert_eq!(facts.binding_at(inside, "item"), None);
     assert_eq!(facts.binding_at(inside, "row"), None);
     assert_eq!(facts.visible_names(inside), Vec::<&str>::new());
-    assert_eq!(
-        facts
+    assert!(
+        !facts
             .regions()
             .iter()
-            .any(|(_, region)| region.span == stray_span),
-        false
+            .any(|(_, region)| region.span == stray_span)
     );
 
     // A stray end tag is a hole fact. The tokenizer did not emit a
@@ -114,12 +115,11 @@ fn a_missing_close_keeps_the_for_binding_beside_the_hole() {
     let item = facts.binding_at(use_at, "item").expect("item");
     assert_eq!(item.role, ScopeRole::Value);
     assert_eq!(item.name.as_str(), "item");
-    assert_eq!(
+    assert!(
         facts
             .holes()
             .iter()
-            .any(|(_, hole)| hole.kind == HoleKind::Missing),
-        true
+            .any(|(_, hole)| hole.kind == HoleKind::Missing)
     );
     assert_eq!(messages(&diagnostics), vec!["Element is missing end tag."]);
 }
@@ -161,7 +161,7 @@ fn a_slot_prop_beside_an_unexpected_hole_stays_a_fact() {
         prop.name_span,
         Span::new(at(source, "props"), at(source, "props") + 5)
     );
-    assert_eq!(facts.in_unexpected(at(source, "</stray>") + 2), true);
+    assert!(facts.in_unexpected(at(source, "</stray>") + 2));
     assert_eq!(facts.binding_at(at(source, "</stray>") + 2, "props"), None);
 }
 

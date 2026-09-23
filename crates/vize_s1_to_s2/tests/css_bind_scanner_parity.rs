@@ -1,7 +1,7 @@
 //! P2-10 follow-up: keep the ricalco CSS `v-bind()` scanner byte-for-byte
 //! aligned with the shipped SFC extractor while the scanner remains local.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_methods)]
+#![expect(clippy::panic, reason = "tests assert by panicking")]
 
 use vize_atelier_sfc::style::extract_css_vars;
 use vize_croquis::drawer::extract_identifier_refs_oxc;

@@ -62,8 +62,7 @@ fn patch_facts_materialize_lattice_handler_gate() {
 fn patch_facts_table_retains_owner_keyed_entries() {
     let mut table = PatchFactsTable::new();
     let owner = NodeId::from_index(7).expect("test owner id exists");
-    let mut dynamic_props = StdVec::new();
-    dynamic_props.push(String::from("id"));
+    let dynamic_props = alloc::vec![String::from("id")];
     let first = PatchFacts {
         flag: 8,
         dynamic_props,

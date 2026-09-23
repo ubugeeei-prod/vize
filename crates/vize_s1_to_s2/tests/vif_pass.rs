@@ -5,6 +5,14 @@
 //! trail — plus the classification and rigor laws the review point
 //! names. The TS-17 folio snapshots live in `vif_pass_snapshot.rs`.
 
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 mod support;
 
 use vize_davinci::diagnostic::{Severity, Stage};
@@ -225,7 +233,7 @@ fn the_pipeline_reports_one_walk_per_barrier_pass() {
 fn lowering_publishes_vif_facts_before_transform() {
     let source = r#"<p v-if="a" key="x">1</p><p v-else>2</p>"#;
     with_lowered(source, |lowered, folio| {
-        assert!(folio.ops.first().is_some(), "the chain lowered to an op");
+        assert!(!folio.ops.is_empty(), "the chain lowered to an op");
         let entries = lowered.if_facts.sorted_entries();
         assert_eq!(entries.len(), 1);
         assert_eq!(

@@ -1,9 +1,11 @@
 //! Focused DOM parity pins for implicit HTML table tree construction.
 
-#![allow(
+#![expect(clippy::panic, reason = "tests assert by panicking")]
+#![expect(
     clippy::disallowed_macros,
+    clippy::disallowed_methods,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 mod support;

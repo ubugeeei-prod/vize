@@ -6,6 +6,8 @@
 //! them; the fault table, diagnostics, and walk accounting are the
 //! structural supplements (assurance §4).
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::path::{Path, PathBuf};

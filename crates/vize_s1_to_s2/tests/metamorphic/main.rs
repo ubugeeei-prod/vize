@@ -21,6 +21,14 @@
 //!   `tests/tooling/davinci-metamorphic-corpus.test.ts`; the full-corpus
 //!   recipe is the same variable pointed at `tests/_fixtures/_git`.
 
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 mod mutators;
 mod normalize;
 mod predicates;

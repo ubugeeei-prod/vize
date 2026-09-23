@@ -2,10 +2,12 @@
 //! S1 lowers to S2. The AIRI DOM corpus exposed this with same-named ancestor
 //! wrappers around nested `<a>` and `<button>` elements.
 
-#![allow(
+#![expect(clippy::panic, reason = "tests assert by panicking")]
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 use vize_s0::Allocator;

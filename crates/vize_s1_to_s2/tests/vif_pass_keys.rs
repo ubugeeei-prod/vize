@@ -3,6 +3,14 @@
 //! authored-order precedence, and the outlet surface — split from
 //! `vif_pass.rs` under the source budget. The series-1 pins stay there.
 
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 mod support;
 
 use vize_davinci::id::NodeId;

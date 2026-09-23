@@ -1,16 +1,15 @@
 //! Focused Davinci parity pins for static-props/static-vnode hoist order.
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 mod support;
 
-use support::with_transformed;
+use support::assembled_dom as emitted;
 use vize_s0::Allocator;
-use vize_s1_to_s2::emit_dom;
 
 fn shipped(source: &str) -> String {
     let allocator = Allocator::new();
@@ -21,15 +20,6 @@ fn shipped(source: &str) -> String {
         .collect();
     assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
     format!("{}\n{}", old.preamble, old.code)
-}
-
-fn emitted(source: &str) -> String {
-    with_transformed(source, |lowered, _folio, facts, _budget| {
-        emit_dom(lowered, facts)
-            .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
-            .assembled()
-            .to_string()
-    })
 }
 
 fn assert_shipped_parity(source: &str) {

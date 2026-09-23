@@ -4,8 +4,6 @@
 //! `davinci_dom_corpus`, with both lanes compiled under
 //! `prefix_identifiers: true`.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
-
 mod davinci_dom_corpus_support;
 
 use davinci_dom_corpus_support::{

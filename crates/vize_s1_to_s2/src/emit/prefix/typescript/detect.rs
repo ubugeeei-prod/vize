@@ -27,6 +27,7 @@ pub(in crate::emit) fn needs_typescript_stripping(content: &str) -> bool {
         let mut in_paren = false;
         let mut after_ident = false;
         for (i, &b) in bytes.iter().enumerate() {
+            let next = bytes.get(i + 1);
             match b {
                 b'(' => {
                     in_paren = true;
@@ -38,7 +39,7 @@ pub(in crate::emit) fn needs_typescript_stripping(content: &str) -> bool {
                 }
                 b':' if in_paren && after_ident => {
                     // `::` is a namespace separator, not an annotation.
-                    if i + 1 < bytes.len() && bytes[i + 1] != b':' {
+                    if next.is_some_and(|next| *next != b':') {
                         return true;
                     }
                 }
@@ -56,9 +57,8 @@ pub(in crate::emit) fn needs_typescript_stripping(content: &str) -> bool {
     // A non-null assertion follows an expression (`foo!`, `foo()!`,
     // `foo[0]!`); logical NOT precedes one.
     let bytes = content.as_bytes();
-    for (i, &b) in bytes.iter().enumerate() {
-        if b == b'!' && i > 0 {
-            let prev = bytes[i - 1];
+    for pair in bytes.windows(2) {
+        if let [prev, b'!'] = *pair {
             let is_non_null_assertion = prev.is_ascii_alphanumeric()
                 || prev == b'_'
                 || prev == b'$'
@@ -88,9 +88,11 @@ fn contains_unquoted_word(content: &str, word: &str) -> bool {
 
         match ch {
             '"' | '\'' | '`' => quote = Some(ch),
-            _ if content[index..].starts_with(word) => {
-                let before = content[..index].chars().next_back();
-                let after = content[index + word.len()..].chars().next();
+            _ if let Some((head, rest)) = content.split_at_checked(index)
+                && let Some(tail) = rest.strip_prefix(word) =>
+            {
+                let before = head.chars().next_back();
+                let after = tail.chars().next();
                 let before_boundary = before.is_none_or(|ch| !is_ident_char(ch));
                 let after_boundary = after.is_none_or(|ch| !is_ident_char(ch));
                 if before_boundary && after_boundary {
@@ -122,7 +124,7 @@ fn contains_generic_call(content: &str) -> bool {
             '"' | '\'' | '`' => quote = Some(ch),
             '<' if previous_non_whitespace(content, index).is_some_and(is_ident_char) => {
                 if let Some(close) = find_matching_angle(content, index) {
-                    let after = content[close + 1..].trim_start();
+                    let after = content.get(close + 1..).unwrap_or_default().trim_start();
                     if after.starts_with('(') {
                         return true;
                     }
@@ -137,7 +139,8 @@ fn contains_generic_call(content: &str) -> bool {
 }
 
 fn previous_non_whitespace(content: &str, index: usize) -> Option<char> {
-    content[..index]
+    content
+        .get(..index)?
         .chars()
         .rev()
         .find(|ch| !ch.is_whitespace())
@@ -148,7 +151,7 @@ fn find_matching_angle(content: &str, open_index: usize) -> Option<usize> {
     let mut quote = None;
     let mut prev = '\0';
 
-    for (relative, ch) in content[open_index..].char_indices() {
+    for (relative, ch) in content.get(open_index..)?.char_indices() {
         if let Some(open_quote) = quote {
             if ch == open_quote && prev != '\\' {
                 quote = None;

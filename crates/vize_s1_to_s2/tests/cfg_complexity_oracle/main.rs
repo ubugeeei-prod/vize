@@ -13,10 +13,15 @@
 //!   test-scripts submodules in CI), which also prints the distribution
 //!   table the metric spec records.
 
-#![allow(
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    reason = "tests assert by panicking"
+)]
+#![expect(
     clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 mod ast;

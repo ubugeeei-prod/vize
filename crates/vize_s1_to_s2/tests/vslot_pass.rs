@@ -6,6 +6,8 @@
 //! relief's exact wording, and the tree preservation. The TS-17 folio
 //! snapshots live in `vslot_pass_snapshot.rs`.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use vize_davinci::id::NodeId;

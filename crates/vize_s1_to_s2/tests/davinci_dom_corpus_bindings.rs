@@ -5,8 +5,6 @@
 //! `prefix_identifiers: true` and the SFC's own (non-inline) binding
 //! metadata — the dev-server shape of a `<script setup>` component.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
-
 mod davinci_dom_corpus_support;
 
 use davinci_dom_corpus_support::{

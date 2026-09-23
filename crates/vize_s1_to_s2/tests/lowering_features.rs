@@ -16,6 +16,12 @@
 //!    every fact table — while the pass counts differ, so the comparison
 //!    cannot pass vacuously.
 
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+
 mod support;
 
 use vize_davinci::diagnostic::Diagnostic;
@@ -54,9 +60,12 @@ fn features_of(source: &str) -> LoweringFeatures {
     lower(&allocator, &tree, &errors).features
 }
 
+/// A family's name, a template that builds its op, and the bit it must set.
+type FamilyCase = (&'static str, &'static str, fn(LoweringFeatures) -> bool);
+
 #[test]
 fn each_family_sets_exactly_its_own_bit() {
-    let cases: &[(&str, &str, fn(LoweringFeatures) -> bool)] = &[
+    let cases: &[FamilyCase] = &[
         (
             "v-if",
             "<div v-if=\"ok\">y</div>",
@@ -169,7 +178,7 @@ fn a_family_free_template_sets_no_bit() {
                 "{name} should reach the planner with no family claimed",
             );
         } else {
-            unreachable!("{name} has no non-structural planned pass case");
+            panic!("{name} has no non-structural planned pass case");
         }
     }
 }

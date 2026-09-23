@@ -1,6 +1,8 @@
 //! P2-10: style-block `v-bind()` lowers to `vue.css-bind` on a carrier
 //! `ui.element style`. Spans are file-absolute.
 
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, SourceFrameError, SourceRoot};
 use vize_s1_to_s2::{lower_style_block, lower_style_block_in};

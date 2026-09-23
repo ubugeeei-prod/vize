@@ -2,8 +2,22 @@
 //! lowered artifact must pass, whatever the input, plus the owned
 //! artifact snapshot the exact-pin suites compare against.
 
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+#![expect(
+    dead_code,
+    reason = "shared integration-test support: each test crate uses a subset"
+)]
+
 // Each test binary uses the subset of these helpers it needs.
-#![allow(dead_code)]
 
 mod authored;
 mod folio_spans;
@@ -89,6 +103,17 @@ pub fn with_transformed<R>(
     ) -> R,
 ) -> R {
     with_transformed_caps(source, LegacyCaps::VUE3, f)
+}
+
+/// The assembled DOM render module for `source` after the S2 transform.
+pub fn assembled_dom(source: &str) -> String {
+    with_transformed(
+        source,
+        |lowered, _folio, facts, _budget| match vize_s1_to_s2::emit_dom(lowered, facts) {
+            Ok(emitted) => emitted.assembled(),
+            Err(error) => panic!("emit refused {source:?}: {error:?}"),
+        },
+    )
 }
 
 /// [`with_transformed`] under an explicit Vue dialect.

@@ -44,7 +44,6 @@ const PENDING: &[&str] = &[
     "crates/vize_relief",
     "crates/vize_resident",
     "crates/vize_s1",
-    "crates/vize_s1_to_s2",
     "crates/vize_s2",
     "crates/vize_vitrine",
     "tests/davinci_test_support",

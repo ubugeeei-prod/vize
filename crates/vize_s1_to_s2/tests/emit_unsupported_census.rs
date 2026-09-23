@@ -1,10 +1,10 @@
 //! P2-11 refusal census: every unsupported source fixture has a typed,
 //! span-carrying reason, and the committed counts are stable.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
 )]
 
 mod support;

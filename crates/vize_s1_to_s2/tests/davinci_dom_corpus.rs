@@ -8,7 +8,10 @@
 //! closed unless its gitlink inventory reconciles (see
 //! `davinci_test_support::corpus`).
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 mod davinci_dom_corpus_support;
 

@@ -7,8 +7,13 @@
 //! walk), the pipeline product equal to a standalone run, and the empty
 //! diagnostics channel (assurance §4).
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+
 // The shared `support` oracle builds std strings for its span checks.
-#![allow(clippy::disallowed_types)]
 
 mod support;
 
@@ -31,7 +36,6 @@ fn fixture(name: &str) -> vize_s0::String {
 
 /// Snapshot one fixture under explicit names (`<stem>_folio`,
 /// `<stem>_breakdown`); returns `(cyclomatic, cognitive)` for the pins.
-#[allow(clippy::disallowed_macros)]
 fn snapshot(stem: &str, budget_text: &str) -> (u32, u32) {
     let name = format!("{stem}.vue");
     let source = fixture(&name);

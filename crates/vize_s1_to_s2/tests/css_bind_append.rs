@@ -1,6 +1,10 @@
 //! P2-10/P2-11 boundary: append only style facts the DOM skipper can see.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_methods)]
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
 
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, SourceRoot};

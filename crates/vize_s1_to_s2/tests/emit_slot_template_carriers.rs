@@ -2,10 +2,11 @@
 //! direct slot group emit as inline `<template>` nodes, matching the
 //! shipped lane's fallback path.
 
-#![allow(
-    clippy::disallowed_macros,
+#![expect(clippy::panic, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_methods,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 mod support;

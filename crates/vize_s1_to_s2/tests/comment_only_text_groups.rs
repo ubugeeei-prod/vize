@@ -1,5 +1,7 @@
 //! Comment-only whitespace groups keep authored decisions and boundaries.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use vize_s0::{Allocator, Span, String};
