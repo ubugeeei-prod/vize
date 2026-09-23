@@ -34,7 +34,7 @@ pub(super) fn extend_options_api_descriptor_names(names: &mut Vec<String>, summa
         )
         .then_some(member.name.as_str())
         .filter(|name| is_safe_value_identifier(name))
-        .map(|name| String::from(name))
+        .map(String::from)
     }));
 }
 
