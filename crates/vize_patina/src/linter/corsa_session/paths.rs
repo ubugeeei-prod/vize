@@ -62,7 +62,7 @@ pub(super) fn virtual_file_path(
         });
     let mut output = session_root.join(relative);
     let filename = output.file_name().unwrap_or_default().to_string_lossy();
-    output.set_file_name(format!("{filename}.patina.ts"));
+    output.set_file_name(&*cstr!("{filename}.patina.ts"));
     output
 }
 
