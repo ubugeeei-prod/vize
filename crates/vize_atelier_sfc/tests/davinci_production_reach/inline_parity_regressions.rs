@@ -1,17 +1,12 @@
 //! Inline production compiles must retain transform-time scope and helper order.
-#![cfg(feature = "davinci-dom-differential")]
 
-#[path = "davinci_production_reach/shapes.rs"]
-#[allow(dead_code)]
-mod shapes;
-
-use shapes::Shape;
+use super::shapes::{Shape, compile};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_s0::profiler::global_profiler;
 
 #[test]
 fn inline_scope_and_helper_order_match_shipped_compiler() {
-    // One test keeps the global selection profiler free of parallel races.
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
     assert_inline_parity(
         "for-value-shadow.vue",
         r#"<script setup lang="ts">
@@ -76,7 +71,7 @@ fn assert_inline_parity(filename: &str, source: &str) {
     let profiler = global_profiler();
     profiler.clear();
     profiler.enable();
-    let emitted = shapes::compile(&descriptor, filename, Shape::DomInline).expect("S2 compile");
+    let emitted = compile(&descriptor, filename, Shape::DomInline).expect("S2 compile");
     let counters = profiler.counter_summary();
     profiler.disable();
     profiler.clear();
@@ -88,7 +83,7 @@ fn assert_inline_parity(filename: &str, source: &str) {
         "{filename} must reach S2: {counters:?}"
     );
     let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
-        shapes::compile(&descriptor, filename, Shape::DomInline)
+        compile(&descriptor, filename, Shape::DomInline)
     })
     .expect("legacy compile");
     assert_eq!(emitted.code, legacy.code, "{filename}");

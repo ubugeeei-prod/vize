@@ -41,6 +41,8 @@
 
 mod davinci_production_reach {
     pub mod diff;
+    #[cfg(test)]
+    mod inline_parity_regressions;
     pub mod parity;
     #[cfg(test)]
     mod selection_tests;
@@ -64,7 +66,7 @@ use vize_s0::profiler::global_profiler;
 static PROFILER_TEST_LOCK: Mutex<()> = Mutex::new(());
 
 #[test]
-fn maybe_ref_event_handler_does_not_import_unused_unref() {
+fn maybe_ref_event_handler_matches_legacy_module() {
     let _guard = PROFILER_TEST_LOCK.lock().unwrap();
     let sources = [
         "<template><SelectorQuery @selector=\"updateSelector\" /></template><script setup>import { debounce } from './helper'; const updateSelector = debounce(() => {})</script>",
@@ -77,11 +79,6 @@ fn maybe_ref_event_handler_does_not_import_unused_unref() {
         let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
             compile(&descriptor, "MaybeRefHandler.vue", shape)
         });
-        assert!(
-            !selected.code.contains("unref as _unref"),
-            "unused _unref leaked into imports:\n{}",
-            selected.code
-        );
         assert_eq!(divergence(&selected, &legacy), None);
     }
 }

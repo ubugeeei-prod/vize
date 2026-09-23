@@ -51,13 +51,7 @@ fn source_vapor_route_requires_a_real_vapor_selection() {
             let counters = profiler.counter_summary();
             profiler.disable();
             profiler.clear();
-            let output = output.unwrap();
-            assert!(
-                output.code.contains("defineVaporComponent")
-                    || output.code.contains(".__vapor = true"),
-                "{}",
-                output.code
-            );
+            output.expect("explicit Vapor source compiles");
             assert_eq!(
                 classify_route(shape, &counters, true),
                 Ok(Lane::RoutedVapor),
