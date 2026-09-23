@@ -56,12 +56,6 @@ test("release gate plans bind exact SHAs to expected evidence titles", () => {
     })),
     [
       {
-        workflowName: "Benchmark",
-        workflowId: "benchmark.yml",
-        inputs: { base_sha: "b".repeat(40), head_sha: releaseSha },
-        expectedRunName: `Benchmark ${"b".repeat(40)}...${releaseSha}`,
-      },
-      {
         workflowName: "Fuzz",
         workflowId: "fuzz.yml",
         inputs: { mode: "replay" },
@@ -116,8 +110,12 @@ test("release gate plans reject ambiguous SHAs and missing refs", () => {
   }
 });
 
-test("Benchmark dispatch exposes an exact base and head range", () => {
-  const benchmark = readWorkflow(findReleasePlan("Benchmark").workflowId);
+test("Benchmark keeps an on-demand exact range while release bootstrap leaves it optional", () => {
+  assert.equal(
+    releasePlans().some((plan) => plan.workflowName === "Benchmark"),
+    false,
+  );
+  const benchmark = readWorkflow("benchmark.yml");
   const benchmarkInputs = benchmark.on?.workflow_dispatch?.inputs ?? {};
   assert.deepEqual(Object.keys(benchmarkInputs).sort(), ["base_sha", "head_sha"]);
   assert.equal(benchmarkInputs.base_sha?.required, true);
@@ -143,7 +141,7 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
   assert.throws(
     () => selectRequiredWorkflowRuns(runs, releaseSha, requiredReleaseWorkflows, qualifiers),
-    /Benchmark: missing workflow_dispatch run/,
+    /Fuzz: missing schedule\/workflow_dispatch run/,
   );
   for (const plan of plans) {
     const run = findEvidenceRun(runs, plan.workflowName);
@@ -153,7 +151,7 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
   }
   assert.throws(
     () => selectRequiredWorkflowRuns(runs, releaseSha, requiredReleaseWorkflows, qualifiers),
-    /Benchmark: missing workflow_dispatch run/,
+    /Fuzz: missing schedule\/workflow_dispatch run/,
   );
   for (const plan of plans) {
     const run = findEvidenceRun(runs, plan.workflowName);
@@ -168,7 +166,7 @@ test("on-demand gates correlate expanded display titles, never workflow names", 
 test("release gate bootstrap reuses evidence that already exists at the SHA", async () => {
   const plans = releasePlans();
   const runs = requiredReleaseWorkflows.map((name, index) => successfulReleaseRun(name, index + 1));
-  for (const workflowName of ["Benchmark", "Fuzz", "Real Project Matrix"]) {
+  for (const workflowName of ["Fuzz", "Real Project Matrix"]) {
     const run = findEvidenceRun(runs, workflowName);
     run.display_title = findReleasePlan(workflowName).expectedRunName;
     run.event = "workflow_dispatch";
@@ -244,7 +242,7 @@ test("release gate bootstrap attempts every missing dispatch before reporting fa
         throw new Error(`dispatch denied for ${plan.workflowName}`);
       },
     }),
-    /Failed to dispatch release gates:[\s\S]*Benchmark: dispatch denied[\s\S]*Fuzz: dispatch denied[\s\S]*Real Project Matrix: dispatch denied/,
+    /Failed to dispatch release gates:[\s\S]*Fuzz: dispatch denied[\s\S]*Real Project Matrix: dispatch denied/,
   );
   assert.deepEqual(
     attempts,
@@ -260,8 +258,8 @@ test("release gate bootstrap never retries or hides a red latest run", async () 
     run.display_title = plan.expectedRunName;
     run.event = "workflow_dispatch";
   }
-  const benchmark = findEvidenceRun(runs, "Benchmark");
-  benchmark.conclusion = "failure";
+  const fuzz = findEvidenceRun(runs, "Fuzz");
+  fuzz.conclusion = "failure";
   const dispatched: string[] = [];
 
   await assert.rejects(
@@ -271,7 +269,7 @@ test("release gate bootstrap never retries or hides a red latest run", async () 
       listRuns: async () => runs,
       dispatchWorkflow: async (plan) => dispatched.push(plan.workflowName),
     }),
-    /Benchmark: completed\/failure/,
+    /Fuzz: completed\/failure/,
   );
   assert.deepEqual(dispatched, []);
 });

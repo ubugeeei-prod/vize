@@ -27,6 +27,12 @@ The command performs the whole release:
 5. Publish the artifacts already built by that Release run. Wait until all
    publication jobs succeed and the GitHub Release is publicly available.
 
+Release preflight requires successful Check, Fuzz replay, Miri, Real Project
+Matrix, and Docs build evidence. For a version-only release commit it accepts
+the parent's main push evidence, including Check's `test-scripts` job. The
+Benchmark workflow remains available on demand, but is not dispatched or
+waited on by release preflight.
+
 Your original worktree stays untouched. Only the command's generated release
 branch can be refreshed, using a lease to reject concurrent edits. Another
 release changing `main`'s version stops this candidate instead of changing its
