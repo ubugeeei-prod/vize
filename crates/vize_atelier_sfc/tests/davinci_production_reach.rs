@@ -51,6 +51,7 @@ mod davinci_production_reach {
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 use davinci_production_reach::diff::divergence;
 use davinci_production_reach::parity::parity_failures;
@@ -59,14 +60,101 @@ use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, flo
 use vize_atelier_sfc::{SfcCompileResult, SfcParseOptions, parse_sfc};
 use vize_s0::profiler::global_profiler;
 
+// The production reach and focused parity tests all read the global profiler.
+static PROFILER_TEST_LOCK: Mutex<()> = Mutex::new(());
+
 #[test]
 fn production_compiles_report_and_hold_their_davinci_reach() {
+    let _guard = PROFILER_TEST_LOCK.lock().unwrap();
     std::thread::Builder::new()
         .stack_size(256 * 1024 * 1024)
         .spawn(production_reach_body)
         .expect("spawn P3-17 production reach thread")
         .join()
         .expect("P3-17 production reach thread must not panic");
+}
+
+#[test]
+fn nested_interactive_recoveries_keep_production_dom_parity() {
+    let _guard = PROFILER_TEST_LOCK.lock().unwrap();
+    const NESTED_ANCHOR: &str =
+        "Nested anchor start tag closed the previous anchor before inserting the new one.";
+    const IGNORED_END: &str = "HTML tree construction ignored this end tag because the element was already closed before a nested start tag.";
+    let cases = [
+        (
+            "<template><a href='/outer'><a href='/inner'>inner</a></a></template><script setup>const label = 'inner'</script>",
+            1,
+        ),
+        (
+            "<template><a><a>one</a></a><a><a>two</a></a></template><script setup>const label = 'inner'</script>",
+            2,
+        ),
+    ];
+
+    for (source, recoveries) in cases {
+        let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+        let shape = Shape::DomInline;
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
+        let selected = compile(&descriptor, "NestedAnchor.vue", shape).unwrap();
+        let counters = profiler.counter_summary();
+        profiler.disable();
+        profiler.clear();
+        assert_eq!(
+            classify(shape, &counters),
+            Ok(Lane::Accepted),
+            "{shape:?}: {source}"
+        );
+
+        let expected: Vec<_> = [NESTED_ANCHOR, IGNORED_END]
+            .into_iter()
+            .cycle()
+            .take(recoveries * 2)
+            .collect();
+        let warnings: Vec<_> = selected
+            .warnings
+            .iter()
+            .map(|warning| warning.message.as_str())
+            .collect();
+        assert_eq!(warnings, expected, "{shape:?}: {source}");
+
+        let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+            compile(&descriptor, "NestedAnchor.vue", shape)
+        });
+        assert_eq!(divergence(&selected, &legacy), None, "{shape:?}: {source}");
+    }
+}
+
+#[test]
+fn nested_form_recovery_keeps_production_dom_parity() {
+    let _guard = PROFILER_TEST_LOCK.lock().unwrap();
+    let source = "<template><form><div><form>inner</form></div></form></template><script setup>const label = 'inner'</script>";
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    let shape = Shape::DomInline;
+    let profiler = global_profiler();
+    profiler.clear();
+    profiler.enable();
+    let selected = compile(&descriptor, "NestedForm.vue", shape);
+    let counters = profiler.counter_summary();
+    profiler.disable();
+    profiler.clear();
+    assert_eq!(
+        classify(shape, &counters),
+        Ok(Lane::Legacy("parse_error".to_owned()))
+    );
+
+    let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+        compile(&descriptor, "NestedForm.vue", shape)
+    });
+    match (selected, legacy) {
+        (Ok(selected), legacy) => assert_eq!(divergence(&selected, &legacy), None),
+        (Err(selected), Err(legacy)) => {
+            assert_eq!(selected.code, legacy.code);
+            assert_eq!(selected.message, legacy.message);
+        }
+        (selected, legacy) => panic!("nested form compile result differs: {selected:?} {legacy:?}"),
+    }
 }
 
 fn production_reach_body() {

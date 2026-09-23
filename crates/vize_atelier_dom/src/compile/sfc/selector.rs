@@ -1,9 +1,11 @@
 pub(super) fn s2_sfc_fast_path_supported_source(source: &str) -> bool {
-    !source_contains_non_void_native_self_closing_tag(source)
-        && !super::p_end::source_has_invalid_p_end_tag(source)
+    !source_contains_parser_recovery(source) && !super::p_end::source_has_invalid_p_end_tag(source)
 }
 
-fn source_contains_non_void_native_self_closing_tag(source: &str) -> bool {
+/// The SFC fast path skips the shipped parser, so it cannot return its HTML
+/// tree-construction notices. Route possible recovery cases through the
+/// shared parse path before S2 emission.
+fn source_contains_parser_recovery(source: &str) -> bool {
     let bytes = source.as_bytes();
     let mut tags = Vec::new();
     let mut index = 0;
@@ -39,6 +41,16 @@ fn source_contains_non_void_native_self_closing_tag(source: &str) -> bool {
         let namespace = tag_namespace(name, tags.last().copied());
         let tag_end = scan_tag_end(bytes, name_end);
         let self_closing = tag_closes_self_closing(bytes, name_end, tag_end);
+        if namespace == SourceNamespace::Html
+            && (name.eq_ignore_ascii_case("a")
+                || name.eq_ignore_ascii_case("button")
+                || name.eq_ignore_ascii_case("form"))
+            && tags.iter().rev().any(|open| {
+                open.namespace == SourceNamespace::Html && open.name.eq_ignore_ascii_case(name)
+            })
+        {
+            return true;
+        }
         if namespace == SourceNamespace::Html
             && is_plain_native_html_tag_name(name)
             && !is_html_void_tag_name(name)
