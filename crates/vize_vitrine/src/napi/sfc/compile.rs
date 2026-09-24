@@ -232,12 +232,11 @@ mod whitespace_tests {
             assert!(default.errors.is_empty(), "{:?}", default.errors);
             assert!(preserved.errors.is_empty(), "{:?}", preserved.errors);
             assert_ne!(default.code, preserved.code, "ssr={ssr}");
-            assert!(
-                preserved.code.contains("foo  \\n  bar ")
-                    || preserved.code.contains("foo  \n  bar "),
-                "{}",
-                preserved.code
-            );
+            if ssr {
+                insta::assert_snapshot!("sfc_whitespace_preserve_ssr", preserved.code);
+            } else {
+                insta::assert_snapshot!("sfc_whitespace_preserve_client", preserved.code);
+            }
         }
     }
 }

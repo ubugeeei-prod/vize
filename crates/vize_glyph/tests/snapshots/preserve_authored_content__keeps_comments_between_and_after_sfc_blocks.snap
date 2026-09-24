@@ -1,0 +1,15 @@
+---
+source: crates/vize_glyph/tests/preserve_authored_content.rs
+expression: formatted
+---
+<script setup lang="ts">
+const label = "hello";
+</script>
+
+<!-- NOTE: this comment explains the template below -->
+
+<template>
+  <div class="box">{{ label }}</div>
+</template>
+
+<!-- NOTE: keep the closing note too -->

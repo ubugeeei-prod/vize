@@ -1,0 +1,10 @@
+---
+source: crates/vize_vitrine/src/napi/template.rs
+expression: result.code
+---
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("p", null, [
+    _createTextVNode(_toDisplayString(_ctx.name) + "\n", 1 /* TEXT */),
+    _createElementVNode("i")
+  ]))
+}

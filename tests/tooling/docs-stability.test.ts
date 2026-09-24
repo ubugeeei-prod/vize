@@ -97,7 +97,9 @@ test("npm package support table matches package metadata", () => {
   const rows = table
     .split("\n")
     .filter((line) =>
-      /^\| (Alpha-supported|Compatibility preview|Experimental|Incubating)\s+\|/.test(line),
+      /^\| (Alpha-supported|Compatibility preview|Experimental(?: \(workspace only\))?|Incubating)\s+\|/.test(
+        line,
+      ),
     )
     .flatMap(parseNpmPackageRows);
   const rowsByPackage = new Map<string, NpmPackageRow>();
@@ -114,6 +116,13 @@ test("npm package support table matches package metadata", () => {
   assert.deepEqual(
     [...rowsByPackage.keys()].toSorted(),
     publicPackages.map((pkg) => pkg.name).toSorted(),
+  );
+  assert.deepEqual(
+    rows
+      .filter((row) => row.tier === "Experimental (workspace only)")
+      .map((row) => row.packageName)
+      .toSorted(),
+    ["@vizejs/data", "@vizejs/devtools", "@vizejs/router", "@vizejs/state"],
   );
 
   const tierLabels = new Map([
@@ -135,7 +144,11 @@ test("npm package support table matches package metadata", () => {
 
     const row = rowsByPackage.get(pkg.name);
     assert.ok(row, `missing npm support row for ${pkg.name}`);
-    assert.equal(row.tier, tierLabels.get(stabilityMetadata), `${pkg.name} tier drift`);
+    assert.equal(
+      row.tier === "Experimental (workspace only)" ? "Experimental" : row.tier,
+      tierLabels.get(stabilityMetadata),
+      `${pkg.name} tier drift`,
+    );
     assert.ok(row.contract, `${pkg.name} must inherit a documented support contract`);
   }
 });

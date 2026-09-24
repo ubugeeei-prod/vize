@@ -1,0 +1,8 @@
+---
+source: crates/vize_glyph/tests/preserve_authored_content.rs
+expression: formatted
+---
+.box {
+  color: grey;
+  border: 1px solid lightgrey;
+}

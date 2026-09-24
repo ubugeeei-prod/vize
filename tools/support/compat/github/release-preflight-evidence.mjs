@@ -80,6 +80,7 @@ const requiredSemverCrates = [
   "vize_fresco",
   "vize_musea",
   "vize_relief",
+  "vize_s1_to_s2",
 ];
 
 const requiredJobNames = new Map([

@@ -1,0 +1,14 @@
+---
+source: crates/vize_vitrine/src/napi/sfc/compile.rs
+expression: preserved.code
+---
+import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<p${_ssrRenderAttrs(_attrs)}>foo  
+  bar <i></i></p>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

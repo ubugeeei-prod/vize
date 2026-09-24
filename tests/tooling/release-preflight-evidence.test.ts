@@ -107,7 +107,7 @@ test("release Check job evidence covers the exact SemVer matrix in Rust and JS",
   assert.equal(semverJob?.name, "cargo-semver-checks (${{ matrix.crate }})");
   const crates = semverJob?.strategy?.matrix?.crate;
   assert.ok(crates);
-  assert.equal(crates.length, 11);
+  assert.equal(crates.length, 12);
   assert.deepEqual(requiredWorkflowJobNames("Check"), [
     "test-scripts",
     ...crates.map((name) => `cargo-semver-checks (${name})`),

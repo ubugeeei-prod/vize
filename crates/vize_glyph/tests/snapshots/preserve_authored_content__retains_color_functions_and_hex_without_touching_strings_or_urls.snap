@@ -1,0 +1,10 @@
+---
+source: crates/vize_glyph/tests/preserve_authored_content.rs
+expression: formatted
+---
+.box {
+  color: #D3D3D3;
+  background: linear-gradient(rgb(255 0 0), lightgrey);
+  content: "grey";
+  background-image: url("/grey.svg");
+}

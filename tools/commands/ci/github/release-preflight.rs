@@ -47,6 +47,7 @@ const REQUIRED_SEMVER_CRATES: &[&str] = &[
     "vize_fresco",
     "vize_musea",
     "vize_relief",
+    "vize_s1_to_s2",
 ];
 const PARENT_EVIDENCE_REUSABLE_WORKFLOWS: &[&str] = &["Fuzz", "Real Project Matrix"];
 const RELEASE_PACKAGE_ROOTS: &[&str] = &["editors", "npm"];

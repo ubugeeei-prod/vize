@@ -1,0 +1,12 @@
+---
+source: crates/vize_vitrine/src/napi/sfc/compile.rs
+expression: preserved.code
+---
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("p", null, [
+    _createTextVNode("foo  \n  bar "),
+    _createElementVNode("i")
+  ]))
+}

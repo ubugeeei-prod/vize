@@ -1,0 +1,26 @@
+---
+source: crates/vize_atelier_sfc/tests/module_mode_setup_bindings.rs
+expression: result.code.as_str()
+---
+import { openBlock as _openBlock, createBlock as _createBlock } from "vue";
+export function render(_ctx, _cache, $props, $setup, $data, $options) {
+  return _openBlock(), _createBlock($setup.ItemTab, { label: $props.item.label ?? "none" }, null, 8, ["label"]);
+}
+import ItemTab from "./ItemTab.vue";
+export default {
+  __name: "anonymous",
+  props: { item: {
+    type: null,
+    required: false,
+    default: () => ({})
+  } },
+  render,
+  setup(__props) {
+    const __returned__ = { ItemTab };
+    Object.defineProperty(__returned__, "__isScriptSetup", {
+      enumerable: false,
+      value: true
+    });
+    return __returned__;
+  }
+};

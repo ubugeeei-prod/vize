@@ -1,0 +1,10 @@
+---
+source: crates/vize_vitrine/src/napi/template.rs
+expression: condense.code
+---
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("p", null, [
+    _createTextVNode("foo bar "),
+    _createElementVNode("i")
+  ]))
+}

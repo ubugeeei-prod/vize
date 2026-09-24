@@ -12,10 +12,7 @@ fn keeps_comments_between_and_after_sfc_blocks() {
     );
     let options = FormatOptions::default();
     let formatted = format_sfc(source, &options).unwrap().code;
-    assert!(
-        formatted.contains("<!-- NOTE: this comment explains the template below -->\n\n<template>")
-    );
-    assert!(formatted.ends_with("<!-- NOTE: keep the closing note too -->\n"));
+    insta::assert_snapshot!(formatted);
     assert_eq!(format_sfc(&formatted, &options).unwrap().code, formatted);
 }
 
@@ -29,10 +26,7 @@ fn comments_follow_their_block_when_sfc_blocks_are_sorted() {
     );
     let options = FormatOptions::default();
     let formatted = format_sfc(source, &options).unwrap().code;
-    assert!(
-        formatted.starts_with("<!-- template note -->\n\n<!-- script note -->\n\n<script setup>")
-    );
-    assert!(formatted.contains("</script>\n\n<template>"));
+    insta::assert_snapshot!(formatted);
     assert_eq!(format_sfc(&formatted, &options).unwrap().code, formatted);
 }
 
@@ -41,11 +35,7 @@ fn retains_authored_css_color_spellings() {
     let source = ".box { color: grey; border: 1px solid lightgrey; }";
     let options = FormatOptions::default();
     let formatted = format_style(source, &options).unwrap();
-    assert!(formatted.contains("color: grey;"), "{formatted}");
-    assert!(
-        formatted.contains("border: 1px solid lightgrey;"),
-        "{formatted}"
-    );
+    insta::assert_snapshot!(formatted);
     assert_eq!(format_style(&formatted, &options).unwrap(), formatted);
 }
 
@@ -61,13 +51,7 @@ fn retains_color_functions_and_hex_without_touching_strings_or_urls() {
     );
     let options = FormatOptions::default();
     let formatted = format_style(source, &options).unwrap();
-    assert!(formatted.contains("color: #D3D3D3;"), "{formatted}");
-    assert!(
-        formatted.contains("linear-gradient(rgb(255 0 0), lightgrey)"),
-        "{formatted}"
-    );
-    assert!(formatted.contains("content: \"grey\";"), "{formatted}");
-    assert!(formatted.contains("url(\"/grey.svg\")"), "{formatted}");
+    insta::assert_snapshot!(formatted);
     assert_eq!(format_style(&formatted, &options).unwrap(), formatted);
 }
 
@@ -81,10 +65,6 @@ fn retains_authored_css_color_spellings_in_sfc() {
     );
     let options = FormatOptions::default();
     let formatted = format_sfc(source, &options).unwrap().code;
-    assert!(formatted.contains("color: grey;"), "{formatted}");
-    assert!(
-        formatted.contains("border: 1px solid lightgrey;"),
-        "{formatted}"
-    );
+    insta::assert_snapshot!(formatted);
     assert_eq!(format_sfc(&formatted, &options).unwrap().code, formatted);
 }

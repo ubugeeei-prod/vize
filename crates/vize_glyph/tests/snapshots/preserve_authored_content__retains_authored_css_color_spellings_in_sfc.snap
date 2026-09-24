@@ -1,0 +1,14 @@
+---
+source: crates/vize_glyph/tests/preserve_authored_content.rs
+expression: formatted
+---
+<template>
+  <div class="box" />
+</template>
+
+<style scoped>
+.box {
+  color: grey;
+  border: 1px solid lightgrey;
+}
+</style>

@@ -374,12 +374,8 @@ mod tests {
             }),
         )
         .expect("default should compile");
-        assert!(
-            preserve.code.contains("foo  \\n  bar "),
-            "{}",
-            preserve.code
-        );
-        assert!(condense.code.contains("foo bar "), "{}", condense.code);
+        insta::assert_snapshot!("template_whitespace_preserve", preserve.code);
+        insta::assert_snapshot!("template_whitespace_condense", condense.code);
         assert!(
             compile(
                 template,
@@ -404,12 +400,6 @@ mod tests {
             }),
         )
         .expect("migration mode should compile");
-        assert!(
-            result
-                .code
-                .contains("_toDisplayString(_ctx.name) + \"\\n\""),
-            "{}",
-            result.code
-        );
+        insta::assert_snapshot!("template_vue2_line_breaks", result.code);
     }
 }
