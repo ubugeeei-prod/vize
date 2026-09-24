@@ -16,6 +16,7 @@ const publicCssAssets = [
   "component-badge.css",
   "component-breadcrumb.css",
   "component-button.css",
+  "component-button-group.css",
   "component-card.css",
   "component-checkbox.css",
   "component-dialog.css",
@@ -25,8 +26,10 @@ const publicCssAssets = [
   "component-scroll-area.css",
   "component-switch.css",
   "component-stepper.css",
+  "component-table.css",
   "component-tabs.css",
   "component-textarea.css",
+  "component-toolbar.css",
   "component-tooltip.css",
   "motion.css",
 ].sort();

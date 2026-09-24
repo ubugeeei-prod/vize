@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../dist/theme-preset-signal.css" />
     <link rel="stylesheet" href="../dist/theme-preset-atelier.css" />
     <link rel="stylesheet" href="../dist/component-button.css" />
+    <link rel="stylesheet" href="../dist/component-button-group.css" />
     <link rel="stylesheet" href="../dist/component-input.css" />
     <link rel="stylesheet" href="../dist/component-textarea.css" />
     <link rel="stylesheet" href="../dist/component-checkbox.css" />
@@ -23,6 +24,8 @@
     <link rel="stylesheet" href="../dist/component-breadcrumb.css" />
     <link rel="stylesheet" href="../dist/component-pagination.css" />
     <link rel="stylesheet" href="../dist/component-stepper.css" />
+    <link rel="stylesheet" href="../dist/component-table.css" />
+    <link rel="stylesheet" href="../dist/component-toolbar.css" />
     <style>
       body {
         margin: 0;
@@ -202,6 +205,23 @@
         font-size: var(--vize-ui-type-size-sm);
       }
 
+      .data-actions-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .table-scroll {
+        max-inline-size: 100%;
+        overflow-x: auto;
+        scrollbar-width: thin;
+      }
+
+      .table-scroll:focus-visible {
+        outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+        outline-offset: var(--vize-ui-focus-ring-offset);
+      }
+
       @media (max-width: 40rem) {
         .form-grid,
         .surface-grid {
@@ -253,6 +273,107 @@
           </button>
         </div>
         <small>Hover, press, and keyboard focus use short, purposeful feedback.</small>
+      </section>
+      <section aria-label="Data and grouped actions">
+        <h2>Data and grouped actions</h2>
+        <div class="data-actions-strip">
+          <div
+            data-vize-ui="toolbar"
+            role="toolbar"
+            aria-label="Editing tools"
+            data-orientation="horizontal"
+          >
+            <button type="button" data-vize-ui="toolbar-item" data-state="idle" data-value="undo">
+              Undo
+            </button>
+            <button type="button" data-vize-ui="toolbar-item" data-state="idle" data-value="redo">
+              Redo
+            </button>
+            <button type="button" data-vize-ui="toolbar-item" data-state="idle" data-value="export">
+              Export
+            </button>
+            <button
+              type="button"
+              data-vize-ui="toolbar-item"
+              data-state="disabled"
+              data-disabled="true"
+              disabled
+            >
+              Delete
+            </button>
+          </div>
+          <div
+            data-vize-ui="button-group"
+            role="group"
+            aria-label="View options"
+            data-orientation="horizontal"
+          >
+            <button
+              type="button"
+              data-vize-ui="button-group-item"
+              data-state="idle"
+              data-value="list"
+            >
+              List
+            </button>
+            <button
+              type="button"
+              data-vize-ui="button-group-item"
+              data-state="idle"
+              data-value="grid"
+            >
+              Grid
+            </button>
+            <button
+              type="button"
+              data-vize-ui="button-group-item"
+              data-state="idle"
+              data-value="calendar"
+            >
+              Calendar
+            </button>
+          </div>
+        </div>
+        <div class="table-scroll" role="region" aria-label="Recent publications" tabindex="0">
+          <table data-vize-ui="table" data-layout="auto" data-density="normal">
+            <caption data-vize-ui="table-caption" data-caption-side="top">
+              Recent publications · September 2026
+            </caption>
+            <thead data-vize-ui="table-head" data-section="head">
+              <tr data-vize-ui="table-row" data-state="default">
+                <th data-vize-ui="table-header" scope="col">No.</th>
+                <th data-vize-ui="table-header" scope="col">Title</th>
+                <th data-vize-ui="table-header" scope="col">Desk</th>
+                <th data-vize-ui="table-header" scope="col">Updated</th>
+                <th data-vize-ui="table-header" scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody data-vize-ui="table-body" data-section="body">
+              <tr data-vize-ui="table-row" data-state="default">
+                <td data-vize-ui="table-cell">01</td>
+                <td data-vize-ui="table-cell">Glass House</td>
+                <td data-vize-ui="table-cell">Editorial</td>
+                <td data-vize-ui="table-cell">12 Sep 2026</td>
+                <td data-vize-ui="table-cell">Published</td>
+              </tr>
+              <tr data-vize-ui="table-row" data-state="selected" data-selected="true">
+                <td data-vize-ui="table-cell">02</td>
+                <td data-vize-ui="table-cell">North Field</td>
+                <td data-vize-ui="table-cell">Research</td>
+                <td data-vize-ui="table-cell">18 Sep 2026</td>
+                <td data-vize-ui="table-cell">Review</td>
+              </tr>
+              <tr data-vize-ui="table-row" data-state="default">
+                <td data-vize-ui="table-cell">03</td>
+                <td data-vize-ui="table-cell">Index of Forms</td>
+                <td data-vize-ui="table-cell">Archive</td>
+                <td data-vize-ui="table-cell">22 Sep 2026</td>
+                <td data-vize-ui="table-cell">Published</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <small>The table remains native; its own labeled region scrolls on narrow screens.</small>
       </section>
       <section aria-label="Form controls">
         <h2>Form controls</h2>

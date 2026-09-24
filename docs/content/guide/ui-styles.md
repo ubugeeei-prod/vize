@@ -11,6 +11,7 @@ optional styles, import the base, one palette, and the components your page uses
 import "@vizejs/ui/base.css";
 import "@vizejs/ui/theme-preset-paper.css";
 import "@vizejs/ui/component-button.css";
+import "@vizejs/ui/component-button-group.css";
 import "@vizejs/ui/component-input.css";
 import "@vizejs/ui/component-textarea.css";
 import "@vizejs/ui/component-checkbox.css";
@@ -24,6 +25,8 @@ import "@vizejs/ui/component-tabs.css";
 import "@vizejs/ui/component-breadcrumb.css";
 import "@vizejs/ui/component-pagination.css";
 import "@vizejs/ui/component-stepper.css";
+import "@vizejs/ui/component-table.css";
+import "@vizejs/ui/component-toolbar.css";
 // Add these only when their low-level behavior is used without the JS entry:
 // import "@vizejs/ui/component-progress-bar.css";
 // import "@vizejs/ui/component-scroll-area.css";
@@ -69,6 +72,40 @@ On narrow screens, Stepper retains its horizontal order and scrolls when labels
 need more room. Motion stops under `prefers-reduced-motion`; focus and selected
 states remain legible in forced-colors mode. Scoped Paper, Signal, and Atelier
 overrides reset at nested themes and Shadow DOM hosts.
+
+Table, Toolbar, and ButtonGroup also ship as independent CSS files. Table keeps
+its native table, caption, header, and cell elements; the visual file gives
+compact and spacious rows distinct padding, marks selected rows, and uses
+tabular figures for numbers. For a narrow layout, wrap the table in your own
+scroll container so its columns remain readable without changing table
+semantics:
+
+```vue
+<div class="table-scroll" role="region" aria-label="Recent records" tabindex="0">
+  <Table density="compact">
+    <!-- caption, head, and body -->
+  </Table>
+</div>
+
+<style>
+.table-scroll {
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+.table-scroll:focus-visible {
+  outline: 2px solid var(--vize-ui-focus-ring-color);
+  outline-offset: 2px;
+}
+</style>
+```
+
+Toolbar and ButtonGroup style their existing roving-focus and disabled item
+hooks without changing keyboard behavior. They scroll when a horizontal strip
+outgrows its container; vertical orientation stays stacked. Their press and
+hover feedback is brief, and all three files remove transitions under
+`prefers-reduced-motion`. Theme-scoped values reset for nested palettes and
+Shadow DOM hosts; forced-colors mode keeps focus and selected rows visible.
 
 The existing ProgressBar and ScrollArea structure and motion recipes are also
 published as standalone CSS-only files. Their JavaScript entries already pull

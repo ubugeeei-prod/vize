@@ -235,6 +235,13 @@ const cssOnlyEntries = [
     maximumCssGzipBytes: 1_100,
   },
   {
+    name: "component-button-group.css",
+    packageEntry: "@vizejs/ui/component-button-group.css",
+    retainedSignature: /data-vize-ui=button-group-item/,
+    rejectedSignature: /data-vize-ui=toolbar-item/,
+    maximumCssGzipBytes: 1_250,
+  },
+  {
     name: "component-card.css",
     packageEntry: "@vizejs/ui/component-card.css",
     retainedSignature: /data-vize-ui=card/,
@@ -298,6 +305,13 @@ const cssOnlyEntries = [
     maximumCssGzipBytes: 1_600,
   },
   {
+    name: "component-table.css",
+    packageEntry: "@vizejs/ui/component-table.css",
+    retainedSignature: /data-vize-ui=table-cell/,
+    rejectedSignature: /data-vize-ui=toolbar-item/,
+    maximumCssGzipBytes: 1_250,
+  },
+  {
     name: "component-tabs.css",
     packageEntry: "@vizejs/ui/component-tabs.css",
     retainedSignature: /data-vize-ui=tabs-trigger/,
@@ -310,6 +324,13 @@ const cssOnlyEntries = [
     retainedSignature: /data-vize-ui=textarea/,
     rejectedSignature: /data-vize-ui=input/,
     maximumCssGzipBytes: 1_000,
+  },
+  {
+    name: "component-toolbar.css",
+    packageEntry: "@vizejs/ui/component-toolbar.css",
+    retainedSignature: /data-vize-ui=toolbar-item/,
+    rejectedSignature: /data-vize-ui=button-group-item/,
+    maximumCssGzipBytes: 1_250,
   },
   {
     name: "component-tooltip.css",

@@ -83,6 +83,10 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/actions/button/button-visual.css",
   },
   {
+    fileName: "component-button-group.css",
+    source: "src/families/actions/button-group/button-group-visual.css",
+  },
+  {
     fileName: "component-card.css",
     source: "src/families/layout/card/card-visual.css",
   },
@@ -119,12 +123,20 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/navigation/stepper/stepper-visual.css",
   },
   {
+    fileName: "component-table.css",
+    source: "src/families/data/table/table-visual.css",
+  },
+  {
     fileName: "component-tabs.css",
     source: "src/families/navigation/tabs/tabs-visual.css",
   },
   {
     fileName: "component-textarea.css",
     source: "src/families/form/textarea/textarea-visual.css",
+  },
+  {
+    fileName: "component-toolbar.css",
+    source: "src/families/actions/toolbar/toolbar-visual.css",
   },
   {
     fileName: "component-tooltip.css",
