@@ -42,7 +42,16 @@ test("every public entry exposes generated JavaScript and declarations", async (
   assert.equal(manifest.exports["./style.css"], "./dist/style.css");
   assert.equal(manifest.exports["./base.css"], manifest.exports["./theme.css"]);
 
-  for (const name of ["button", "dialog", "progress-bar", "scroll-area"]) {
+  for (const name of [
+    "button",
+    "checkbox",
+    "dialog",
+    "input",
+    "progress-bar",
+    "scroll-area",
+    "switch",
+    "textarea",
+  ]) {
     const entry = `./component-${name}.css`;
     const target = manifest.exports[entry];
     assert.equal(target, `./dist/component-${name}.css`);
@@ -76,7 +85,7 @@ test("every public entry exposes generated JavaScript and declarations", async (
 test("optional component styles stay separate from headless JavaScript", async () => {
   const aggregate = await readFile(path.resolve("dist/style.css"), "utf8");
 
-  for (const name of ["button", "dialog"]) {
+  for (const name of ["button", "checkbox", "dialog", "input", "switch", "textarea"]) {
     const stylesheet = await readFile(path.resolve(`dist/component-${name}.css`), "utf8");
     const entry = await readFile(path.resolve(`dist/${name}.mjs`), "utf8");
 

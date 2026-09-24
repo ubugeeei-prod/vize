@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="../dist/theme-preset-signal.css" />
     <link rel="stylesheet" href="../dist/theme-preset-atelier.css" />
     <link rel="stylesheet" href="../dist/component-button.css" />
+    <link rel="stylesheet" href="../dist/component-input.css" />
+    <link rel="stylesheet" href="../dist/component-textarea.css" />
+    <link rel="stylesheet" href="../dist/component-checkbox.css" />
+    <link rel="stylesheet" href="../dist/component-switch.css" />
     <link rel="stylesheet" href="../dist/component-dialog.css" />
     <style>
       body {
@@ -101,6 +105,48 @@
         padding-block-start: 1rem;
       }
 
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.25rem;
+      }
+
+      .form-field {
+        display: grid;
+        align-content: start;
+        gap: 0.4rem;
+        font-size: var(--vize-ui-type-size-sm);
+      }
+
+      .form-field-wide {
+        grid-column: 1 / -1;
+      }
+
+      .form-field :is(input, textarea) {
+        inline-size: 100%;
+      }
+
+      .choice-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem 2rem;
+        margin-block-start: 1.5rem;
+      }
+
+      .choice-row label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.65rem;
+        font-size: var(--vize-ui-type-size-sm);
+        cursor: pointer;
+      }
+
+      @media (max-width: 40rem) {
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
       small {
         display: block;
         margin-block-start: 0.75rem;
@@ -146,6 +192,59 @@
         </div>
         <small>Hover, press, and keyboard focus use short, purposeful feedback.</small>
       </section>
+      <section aria-labelledby="form-heading">
+        <h2 id="form-heading">Form controls</h2>
+        <div class="form-grid">
+          <label class="form-field" for="project-name">
+            <span>Project name</span>
+            <input
+              id="project-name"
+              data-vize-ui="input"
+              data-state="editable"
+              placeholder="A concise name"
+            />
+          </label>
+          <label class="form-field" for="project-key">
+            <span>Project key</span>
+            <input
+              id="project-key"
+              data-vize-ui="input"
+              data-state="disabled"
+              value="Assigned on save"
+              disabled
+            />
+          </label>
+          <label class="form-field form-field-wide" for="release-note">
+            <span>Release note</span>
+            <textarea
+              id="release-note"
+              data-vize-ui="textarea"
+              data-state="editable"
+              placeholder="What changed?"
+              rows="3"
+            ></textarea>
+          </label>
+        </div>
+        <div class="choice-row">
+          <label>
+            <input type="checkbox" data-vize-ui="checkbox" data-state="checked" checked />
+            Include changelog
+          </label>
+          <label>
+            <button
+              type="button"
+              role="switch"
+              data-vize-ui="switch"
+              data-state="unchecked"
+              data-checked="false"
+              aria-checked="false"
+              aria-label="Live preview"
+            ></button>
+            Live preview
+          </label>
+        </div>
+        <small>Keyboard focus stays clear; checking and switching give brief state feedback.</small>
+      </section>
     </main>
     <div data-vize-ui="dialog-overlay" data-state="open" hidden></div>
     <div
@@ -170,6 +269,8 @@
       const overlay = document.querySelector('[data-vize-ui="dialog-overlay"]');
       const dialog = document.querySelector('[data-vize-ui="dialog-content"]');
       const opener = document.querySelector("#open-dialog");
+      const checkbox = document.querySelector('[data-vize-ui="checkbox"]');
+      const switchControl = document.querySelector('[data-vize-ui="switch"]');
 
       for (const button of themeButtons) {
         button.addEventListener("click", () => {
@@ -179,6 +280,16 @@
           }
         });
       }
+
+      checkbox.addEventListener("change", () => {
+        checkbox.dataset.state = checkbox.checked ? "checked" : "unchecked";
+      });
+      switchControl.addEventListener("click", () => {
+        const checked = switchControl.getAttribute("aria-checked") !== "true";
+        switchControl.setAttribute("aria-checked", String(checked));
+        switchControl.dataset.checked = String(checked);
+        switchControl.dataset.state = checked ? "checked" : "unchecked";
+      });
 
       function closeDialog() {
         overlay.hidden = true;

@@ -71,8 +71,16 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/actions/button/button-visual.css",
   },
   {
+    fileName: "component-checkbox.css",
+    source: "src/families/selection/checkbox/checkbox-visual.css",
+  },
+  {
     fileName: "component-dialog.css",
     source: "src/families/overlays/dialog/dialog-visual.css",
+  },
+  {
+    fileName: "component-input.css",
+    source: "src/families/form/input/input-visual.css",
   },
   {
     fileName: "component-progress-bar.css",
@@ -81,6 +89,14 @@ const cssAssetEntrypoints = Object.freeze([
   {
     fileName: "component-scroll-area.css",
     source: "src/families/layout/scroll-area/scroll-area.css",
+  },
+  {
+    fileName: "component-switch.css",
+    source: "src/families/selection/switch/switch-visual.css",
+  },
+  {
+    fileName: "component-textarea.css",
+    source: "src/families/form/textarea/textarea-visual.css",
   },
   {
     fileName: "motion.css",
