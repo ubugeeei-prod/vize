@@ -252,8 +252,6 @@ fn encode_relative_uri(path: &str) -> String {
 mod unit_tests {
     use std::collections::BTreeMap;
 
-    use vize_s0::ToCompactString;
-
     use super::{SarifMissingSourcePolicy, SarifPlan, encode_relative_uri};
     use crate::{
         AnalysisProvenance, DoctorCategory, DoctorFinding, DoctorReport, FindingAssessment,
@@ -295,16 +293,15 @@ mod unit_tests {
         plan.rules.clear();
         let error = serde_json::to_vec(&super::super::wire::SarifLog::new(&plan))
             .expect_err("a missing rule must fail serialization");
-        assert!(error.to_compact_string().contains("omitted a finding rule"));
+        assert_eq!(error.to_string(), "SARIF preflight omitted a finding rule");
 
         plan.rules.push(&report.findings()[0]);
         plan.artifacts.clear();
         let error = serde_json::to_vec(&super::super::wire::SarifLog::new(&plan))
             .expect_err("a missing artifact must fail serialization");
-        assert!(
-            error
-                .to_compact_string()
-                .contains("omitted a finding artifact")
+        assert_eq!(
+            error.to_string(),
+            "SARIF preflight omitted a finding artifact"
         );
     }
 }

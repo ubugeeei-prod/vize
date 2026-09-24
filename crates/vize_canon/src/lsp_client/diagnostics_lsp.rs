@@ -272,9 +272,9 @@ mod tests {
         .unwrap_err();
         server.join().unwrap();
         let error = error.to_string();
-        assert!(
-            error.contains("trailing characters"),
-            "malformed readiness response escaped the frame reader: {error}"
+        assert_eq!(
+            error,
+            "protocol error: trailing characters at line 1 column 39"
         );
     }
 }
