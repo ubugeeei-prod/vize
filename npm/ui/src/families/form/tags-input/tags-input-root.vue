@@ -333,32 +333,54 @@ function reject(
   return false;
 }
 
-function tryAddTag(tag: T, text: string, source: TagsInputAddSource): boolean {
-  if (locked.value) return false;
-  const rejection = evaluateTag(tag, tags.value, {
+function tryAddTag(
+  tag: T,
+  text: string,
+  source: TagsInputAddSource,
+  currentTags: readonly T[] = tags.value,
+): readonly T[] | null {
+  if (locked.value) return null;
+  const rejection = evaluateTag(tag, currentTags, {
     allowDuplicates,
     equals,
     max,
     validate,
   });
-  if (rejection !== null) return reject(text, tag, rejection.reason, rejection.message);
-  const next = appendTag(tags.value, tag);
+  if (rejection !== null) {
+    reject(text, tag, rejection.reason, rejection.message);
+    return null;
+  }
+  const next = appendTag(currentTags, tag);
   valueState.set(next);
   emit("add", tag, next.length - 1, source);
-  return true;
+  return next;
 }
 
-function tryAddText(text: string, source: TagsInputAddSource): boolean {
-  if (locked.value) return false;
+function tryAddText(
+  text: string,
+  source: TagsInputAddSource,
+  currentTags: readonly T[] = tags.value,
+): readonly T[] | null {
+  if (locked.value) return null;
   const trimmed = text.trim();
-  if (trimmed.length === 0) return false;
+  if (trimmed.length === 0) return null;
   const tag = parse(trimmed);
-  if (tag === null) return reject(trimmed, null, "parse", null);
-  return tryAddTag(tag, trimmed, source);
+  if (tag === null) {
+    reject(trimmed, null, "parse", null);
+    return null;
+  }
+  return tryAddTag(tag, trimmed, source, currentTags);
 }
 
 function commitSegments(segments: readonly string[], source: TagsInputAddSource): string[] {
-  return segments.filter((segment) => !tryAddText(segment, source));
+  const rejected: string[] = [];
+  let currentTags = tags.value;
+  for (const segment of segments) {
+    const next = tryAddText(segment, source, currentTags);
+    if (next === null) rejected.push(segment);
+    else currentTags = next;
+  }
+  return rejected;
 }
 
 function restoreRejected(rejected: readonly string[], rest: string): string {
@@ -417,11 +439,11 @@ function removeAt(index: number, source: TagsInputRemoveSource): boolean {
 }
 
 function add(text: string): boolean {
-  return tryAddText(text, "api");
+  return tryAddText(text, "api") !== null;
 }
 
 function addTag(tag: T): boolean {
-  return tryAddTag(tag, textOf(tag), "api");
+  return tryAddTag(tag, textOf(tag), "api") !== null;
 }
 
 function remove(index: number): boolean {

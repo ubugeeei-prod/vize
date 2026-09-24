@@ -518,6 +518,20 @@ test("controlled tags wait for the parent to accept updates", async () => {
   handle.unmount();
 });
 
+test("controlled paste validates later segments against earlier accepted tags", async () => {
+  const handle = mountTags({ max: 2, modelValue: ["a"] });
+  const field = input(handle);
+
+  assert.equal(await paste(field, "b,c"), true);
+  assert.deepEqual(handle.wrapper.emitted("update:modelValue"), [[["a", "b"]]]);
+  assert.deepEqual(
+    emitted(handle, "invalid").map(([event]) => (event as TagsInputInvalidEvent<unknown>).reason),
+    ["max"],
+  );
+  assert.equal(field.value, "c");
+  handle.unmount();
+});
+
 test("addOnBlur commits on blur and IME composition never commits", async () => {
   const handle = mountTags({ addOnBlur: true });
   const field = input(handle);
