@@ -1,7 +1,9 @@
 use super::dynamic_component_alias::dynamic_component_alias;
 use crate::croquis::{TemplateExpression, TemplateExpressionKind};
 use crate::drawer::Drawer;
-use crate::drawer::helpers::is_builtin_directive;
+use crate::drawer::helpers::{
+    extract_identifier_refs_oxc, is_builtin_directive, parse_v_for_scope_expression,
+};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
@@ -10,6 +12,7 @@ use vize_carton::{CompactString, profile};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, JsExpression, PropNode};
 
 use super::super::slot_names::slot_argument_is_runtime_dynamic;
+use super::v_for_scope::v_for_scope_bindings;
 
 impl Drawer {
     pub(super) fn process_element_conditional_directive(
@@ -233,11 +236,47 @@ impl Drawer {
             // Any other `:is` expression (a conditional, a lookup, a call) is
             // a component in its own right. It is aliased for checking only at
             // the template root, where the alias cannot capture loop or slot
-            // bindings that would be out of scope where it is declared.
-            self.in_template_root_scope()
-                .then(|| CompactString::new(dynamic_component_alias(el.loc.span.start)))
+            // bindings that would be out of scope where it is declared. The
+            // same element's v-for scope has not been entered yet here, so
+            // inspect its aliases as well before emitting a root-level alias.
+            (self.in_template_root_scope()
+                && !dynamic_is_captures_same_element_for_alias(
+                    el,
+                    expression_content(exp, &self.template_source),
+                    &self.template_source,
+                ))
+            .then(|| CompactString::new(dynamic_component_alias(el.loc.span.start)))
         })
     }
+}
+
+fn dynamic_is_captures_same_element_for_alias(
+    el: &ElementNode<'_>,
+    is_expression: &str,
+    template_source: &str,
+) -> bool {
+    let references = extract_identifier_refs_oxc(is_expression);
+    if references.is_empty() {
+        return false;
+    }
+    el.props.iter().any(|prop| {
+        let PropNode::Directive(dir) = prop else {
+            return false;
+        };
+        if dir.name != "for" {
+            return false;
+        }
+        let Some(exp) = dir.exp.as_ref() else {
+            return false;
+        };
+        parse_v_for_scope_expression(expression_content(exp, template_source)).is_some_and(
+            |aliases| {
+                v_for_scope_bindings(&aliases)
+                    .iter()
+                    .any(|alias| references.iter().any(|reference| reference.name == *alias))
+            },
+        )
+    })
 }
 
 fn is_bind_is_directive(dir: &DirectiveNode<'_>) -> bool {

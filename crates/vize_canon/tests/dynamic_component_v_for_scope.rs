@@ -28,7 +28,54 @@ fn dynamic_component_is_before_v_for_sees_loop_alias() {
     );
 }
 
+#[test]
+fn conditional_dynamic_is_resolves_loop_alias_in_both_attribute_orders_with_strict_context() {
+    use vize_canon::{BatchTypeCheckerOptions, virtual_ts::VirtualTsOptions};
+
+    for (label, attributes) in [
+        (
+            "is-before-for",
+            ":is=\"part.type === 'text' ? 'span' : 'a'\" v-for=\"part in parts\"",
+        ),
+        (
+            "for-before-is",
+            "v-for=\"part in parts\" :is=\"part.type === 'text' ? 'span' : 'a'\"",
+        ),
+    ] {
+        let project = tempfile::tempdir().expect("temp project should be created");
+        let source = format!(
+            "<script setup lang=\"ts\">\nconst parts = [{{ type: 'text', key: '0', value: 'a' }}];\n</script>\n<template><article><p><component {attributes} :key=\"part.key\">{{{{ part.value }}}}</component></p></article></template>\n"
+        );
+        write_project_with_sfc(project.path(), &source);
+
+        let options = BatchTypeCheckerOptions {
+            virtual_ts_options: VirtualTsOptions {
+                strict_instance_globals: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let mut checker = BatchTypeChecker::with_options(project.path(), options)
+            .expect("batch checker should be created");
+        checker.scan_project().expect("project should scan");
+        let result = checker.check_project().expect("project should check");
+        let relevant: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.file.ends_with("App.vue"))
+            .filter(|diagnostic| {
+                matches!(diagnostic.code, Some(2304 | 2339)) && diagnostic.message.contains("part")
+            })
+            .collect();
+        assert!(relevant.is_empty(), "{label}: {relevant:#?}");
+    }
+}
+
 fn write_project(root: &Path) {
+    write_project_with_sfc(root, APP_SFC);
+}
+
+fn write_project_with_sfc(root: &Path, sfc: &str) {
     write_file(
         root,
         "tsconfig.json",
@@ -64,7 +111,7 @@ export type NativeElements = Record<string, Record<string, unknown>>;
 export type Directive<T = unknown, V = unknown> = (element: unknown, binding: { value: V }) => void;
 "#,
     );
-    write_file(root, "src/App.vue", APP_SFC);
+    write_file(root, "src/App.vue", sfc);
 }
 
 fn write_file(root: &Path, path: &str, source: &str) {

@@ -1,6 +1,6 @@
 //! Visibility of template-scope bindings at a template-relative offset.
 
-use vize_croquis::{Croquis, Scope, ScopeKind};
+use vize_croquis::{Croquis, Scope, ScopeId, ScopeKind};
 
 /// Whether `name` is already bound where a template expression uses it.
 ///
@@ -38,6 +38,32 @@ pub(super) fn is_visible_template_binding(
 ) -> bool {
     super::super::super::script_facts::contains_binding(summary, name)
         || binds_in_enclosing_template_scope(summary, name, template_offset)
+}
+
+/// Template expressions carry the lexical scope in which the drawer visited
+/// them. This is more reliable than source order for same-element directives:
+/// Vue's `v-for` aliases are already in scope for `:is`/`:key` even when those
+/// attributes precede the authored `v-for` token. `v-if` is visited before the
+/// loop and therefore retains its parent scope.
+pub(super) fn is_visible_template_binding_in_scope(
+    summary: &Croquis,
+    name: &str,
+    scope_id: ScopeId,
+) -> bool {
+    if super::super::super::script_facts::contains_binding(summary, name) {
+        return true;
+    }
+    let mut current = Some(scope_id);
+    while let Some(id) = current {
+        let Some(scope) = summary.scopes.get_scope(id) else {
+            return false;
+        };
+        if is_template_introduced_scope(scope.kind) && scope.get_binding(name).is_some() {
+            return true;
+        }
+        current = scope.parent();
+    }
+    false
 }
 
 pub(super) fn is_inside_template_scope(summary: &Croquis, template_offset: u32) -> bool {

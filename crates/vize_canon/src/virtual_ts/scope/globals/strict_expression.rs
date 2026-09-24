@@ -11,7 +11,7 @@ use super::{
     is_template_instance_global_name,
     member_root::{is_call_root_occurrence, is_member_root_occurrence},
     strict_candidate::is_strict_template_context_candidate,
-    template_scope::{is_inside_template_scope, is_visible_template_binding},
+    template_scope::{is_inside_template_scope, is_visible_template_binding_in_scope},
 };
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
@@ -47,7 +47,7 @@ pub(super) fn generate_strict_expression_refs(
                 || is_declared_template_context_name(name, options)
                 || template_binding_access.contains(name)
                 || type_export_names.contains(name)
-                || is_visible_template_binding(summary, name, local_start)
+                || is_visible_template_binding_in_scope(summary, name, expr.scope_id)
                 || head.ends_with('.')
                 || head.ends_with("?.")
             {

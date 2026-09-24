@@ -22,7 +22,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 /// rather than trusting the literals to stay in range.
 const SCRIPT: &str = "interface Option { name: string, to: string, hide?: boolean, disabled?: boolean }\nconst { options } = defineProps<{ options: Option[] }>()\n";
 
-fn strict_context_reads(template: &str, script: Option<&str>) -> Vec<String> {
+fn strict_virtual_ts(template: &str, script: Option<&str>) -> String {
     let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
@@ -32,7 +32,7 @@ fn strict_context_reads(template: &str, script: Option<&str>) -> Vec<String> {
     analyzer.analyze_template(&root);
     let summary = analyzer.finish();
 
-    let output = generate_virtual_ts_with_offsets(
+    generate_virtual_ts_with_offsets(
         &summary,
         script,
         Some(&root),
@@ -42,11 +42,16 @@ fn strict_context_reads(template: &str, script: Option<&str>) -> Vec<String> {
             strict_instance_globals: true,
             ..Default::default()
         },
-    );
+    )
+    .code
+    .to_string()
+}
 
+fn strict_context_reads(template: &str, script: Option<&str>) -> Vec<String> {
+    let code = strict_virtual_ts(template, script);
     let mut reads = Vec::new();
-    for (index, _) in output.code.match_indices("__vize_strict_template_context.") {
-        let rest = &output.code[index + "__vize_strict_template_context.".len()..];
+    for (index, _) in code.match_indices("__vize_strict_template_context.") {
+        let rest = &code[index + "__vize_strict_template_context.".len()..];
         let end = rest
             .find(|c: char| !(c.is_ascii_alphanumeric() || c == '_' || c == '$'))
             .unwrap_or(rest.len());
@@ -99,4 +104,56 @@ fn undeclared_names_inside_a_template_scope_still_read_the_strict_context() {
         strict_context_reads(template, Some(SCRIPT)),
         vec!["missingBody".to_string(), "missingKey".to_string()]
     );
+}
+
+#[test]
+fn dynamic_is_before_or_after_same_element_v_for_sees_its_alias() {
+    let script = "const parts = [{ type: 'text', key: '0', value: 'a' }];";
+    for template in [
+        "<component :is=\"part.type === 'text' ? 'span' : 'a'\" v-for=\"part in parts\" :key=\"part.key\">{{ part.value }}</component>",
+        "<component v-for=\"part in parts\" :is=\"part.type === 'text' ? 'span' : 'a'\" :key=\"part.key\">{{ part.value }}</component>",
+    ] {
+        assert_eq!(
+            strict_context_reads(template, Some(script)),
+            Vec::<String>::new()
+        );
+        let code = strict_virtual_ts(template, Some(script));
+        assert!(
+            !code.contains("const __vize_dynamic_is_"),
+            "the dynamic target must not escape its v-for scope:\n{code}"
+        );
+    }
+}
+
+#[test]
+fn dynamic_is_in_same_element_v_for_still_reports_unknown_name() {
+    let script = "const parts = [{ type: 'text' }];";
+    let template = "<component :is=\"missing.type === 'text' ? 'span' : 'a'\" v-for=\"part in parts\">{{ part.type }}</component>";
+    assert_eq!(
+        strict_context_reads(template, Some(script)),
+        vec!["missing"]
+    );
+}
+
+#[test]
+fn dynamic_is_independent_of_same_element_v_for_keeps_component_inference() {
+    let script = "const parts = [1]; const flag = true;";
+    let template =
+        "<component :is=\"flag ? 'span' : 'a'\" v-for=\"part in parts\">{{ part }}</component>";
+    let code = strict_virtual_ts(template, Some(script));
+    assert!(
+        code.contains("const __vize_dynamic_is_"),
+        "an independent :is expression should keep its inferred component target:\n{code}"
+    );
+}
+
+#[test]
+fn same_element_v_if_still_cannot_read_v_for_alias() {
+    let script = "const parts = [{ type: 'text' }];";
+    for template in [
+        "<component v-if=\"part.type === 'text'\" v-for=\"part in parts\" :is=\"'span'\" />",
+        "<component v-for=\"part in parts\" v-if=\"part.type === 'text'\" :is=\"'span'\" />",
+    ] {
+        assert_eq!(strict_context_reads(template, Some(script)), vec!["part"]);
+    }
 }
