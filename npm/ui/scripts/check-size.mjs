@@ -73,7 +73,8 @@ const budgets = new Map([
   ["kbd.mjs", 875],
   ["list.mjs", 900],
   ["listbox.mjs", 16_000],
-  ["combobox.mjs", 49_500],
+  // Async status clipping ships in the shared stylesheet so it works without base.css.
+  ["combobox.mjs", 54_300],
   ["select.mjs", 45_500],
   ["pagination.mjs", 6_750],
   ["text.mjs", 950],
@@ -110,7 +111,7 @@ const budgets = new Map([
   ["measure.mjs", 2_400],
   // Styled entries statically import the shared dist/style.css, so their
   // budgets cover the packaged stylesheet alongside their JavaScript.
-  ["motion.mjs", 6_850],
+  ["motion.mjs", 6_900],
   ["move.mjs", 5_150],
   ["pointer-grace.mjs", 1_800],
   ["portal.mjs", 1_700],
@@ -125,7 +126,7 @@ const budgets = new Map([
   ["shortcut.mjs", 7_400],
   ["sortable.mjs", 17_000],
   ["spatial-navigation.mjs", 3_725],
-  ["theme.mjs", 6_550],
+  ["theme.mjs", 6_600],
   ["theme-scope.mjs", 2_600],
   ["transition.mjs", 3_000],
   ["typeahead.mjs", 2_000],

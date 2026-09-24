@@ -117,6 +117,7 @@ for (const { canonicalName: family, bundleBudget } of treeShakingEntries) {
   // Styled families pull the shared packaged stylesheet (dist has exactly one
   // style.css); unstyled families must not retain any CSS at all.
   const styledFamilySignatures = new Map([
+    ["combobox", /data-vize-ui=combobox-status/],
     ["motion", /--vize-ui-motion-duration-fast/],
     ["progress-bar", /--vize-ui-progress-bar-percent/],
     ["scroll-area", /--vize-ui-scroll-area-overflow-y/],

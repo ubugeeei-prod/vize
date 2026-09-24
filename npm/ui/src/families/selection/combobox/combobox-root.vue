@@ -803,14 +803,7 @@ defineExpose(exposed);
       v-if="loadItems !== undefined"
       role="status"
       aria-live="polite"
-      style="
-        position: absolute;
-        inline-size: 1px;
-        block-size: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-      "
+      data-vize-ui="combobox-status"
     >
       {{ loadAnnouncement }}
     </span>
@@ -831,5 +824,15 @@ defineExpose(exposed);
 </template>
 
 <style scoped>
-/* Headless by design. Native CSS remains entirely consumer-owned. */
+@layer vize.ui {
+  /* Keep async announcements audible without painting them. */
+  [data-vize-ui="combobox-status"] {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 </style>

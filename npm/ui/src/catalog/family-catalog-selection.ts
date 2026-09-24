@@ -82,9 +82,10 @@ export const selectionFamilyCatalog = [
         "controllable-state",
         "typeahead",
       ],
-      // Includes the accessible async result announcement (13,112 bytes measured).
+      // Includes the accessible async result announcement and its packaged
+      // structural stylesheet, including the shared style.css asset.
       maximumJavaScriptGzipBytes: 13_200,
-      maximumCssGzipBytes: 0,
+      maximumCssGzipBytes: 7_800,
     },
     aliases: [
       "combobox",
