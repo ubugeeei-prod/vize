@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, useId } from "vue";
 import type { DesignToken } from "../../api";
 
 const props = defineProps<{
@@ -16,13 +16,25 @@ const emit = defineEmits<{
   submit: [path: string, token: Omit<DesignToken, "$resolvedValue">];
 }>();
 
+const NO_TOKEN_TYPE = "__none__";
 const tokenPath = ref("");
 const tokenValue = ref<string>("");
-const tokenType = ref("");
+const tokenType = ref(NO_TOKEN_TYPE);
 const tokenDescription = ref("");
 const tier = ref<"primitive" | "semantic">("primitive");
 const reference = ref("");
 const validationError = ref<string | null>(null);
+const modalRef = ref<HTMLElement | null>(null);
+const pathInputRef = ref<HTMLInputElement | null>(null);
+const fieldIds = {
+  title: useId(),
+  path: useId(),
+  tier: useId(),
+  value: useId(),
+  reference: useId(),
+  type: useId(),
+  description: useId(),
+};
 
 const TOKEN_TYPES = [
   "color",
@@ -45,22 +57,25 @@ watch(
       if (props.mode === "edit" && props.editToken && props.editPath) {
         tokenPath.value = props.editPath;
         tokenValue.value = String(props.editToken.value);
-        tokenType.value = props.editToken.type ?? "";
+        tokenType.value = props.editToken.type || NO_TOKEN_TYPE;
         tokenDescription.value = props.editToken.description ?? "";
         tier.value = props.editToken.$tier ?? "primitive";
         reference.value = props.editToken.$reference ?? "";
       } else {
         tokenPath.value = "";
         tokenValue.value = "";
-        tokenType.value = "";
+        tokenType.value = NO_TOKEN_TYPE;
         tokenDescription.value = "";
         tier.value = "primitive";
         reference.value = "";
       }
       validationError.value = null;
       nextTick(() => {
-        const input = document.querySelector(".token-form-path-input") as HTMLInputElement | null;
-        input?.focus();
+        if (pathInputRef.value?.disabled) {
+          modalRef.value?.querySelector<HTMLInputElement>("input:not([disabled])")?.focus();
+        } else {
+          pathInputRef.value?.focus();
+        }
       });
     }
   },
@@ -102,7 +117,7 @@ function handleSubmit() {
     value: tier.value === "semantic" ? `{${reference.value}}` : tokenValue.value,
     $tier: tier.value,
   };
-  if (tokenType.value) token.type = tokenType.value;
+  if (tokenType.value !== NO_TOKEN_TYPE) token.type = tokenType.value;
   if (tokenDescription.value) token.description = tokenDescription.value;
   if (tier.value === "semantic") token.$reference = reference.value;
 
@@ -112,16 +127,67 @@ function handleSubmit() {
 function selectReference(path: string) {
   reference.value = path;
 }
+
+function closeForm() {
+  emit("close");
+}
+
+function onModalKeydown(event: KeyboardEvent) {
+  if (!props.isOpen) return;
+  if (event.key === "Escape") {
+    closeForm();
+    return;
+  }
+  if (event.key !== "Tab") return;
+
+  const focusable = modalRef.value?.querySelectorAll<HTMLElement>(
+    "button:not([disabled]), input:not([disabled]), select:not([disabled])",
+  );
+  if (!focusable?.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (!(event.target instanceof Node) || !modalRef.value?.contains(event.target)) {
+    event.preventDefault();
+    first.focus();
+  } else if (event.shiftKey && event.target === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && event.target === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+onMounted(() => document.addEventListener("keydown", onModalKeydown));
+onUnmounted(() => document.removeEventListener("keydown", onModalKeydown));
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
-        <div class="modal-content">
+      <div v-if="isOpen" class="modal-overlay">
+        <button
+          type="button"
+          class="modal-backdrop"
+          aria-label="Close token form"
+          tabindex="-1"
+          @click="closeForm"
+        />
+        <div
+          ref="modalRef"
+          class="modal-content"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="fieldIds.title"
+        >
           <div class="modal-header">
-            <h2 class="modal-title">{{ title }}</h2>
-            <button type="button" class="modal-close" @click="emit('close')">
+            <h2 :id="fieldIds.title" class="modal-title">{{ title }}</h2>
+            <button
+              type="button"
+              class="modal-close"
+              aria-label="Close token form"
+              @click="closeForm"
+            >
               <svg
                 width="18"
                 height="18"
@@ -138,8 +204,10 @@ function selectReference(path: string) {
 
           <form class="modal-form" @submit.prevent="handleSubmit">
             <div class="form-field">
-              <label class="form-label">Token Path</label>
+              <label class="form-label" :for="fieldIds.path">Token Path</label>
               <input
+                :id="fieldIds.path"
+                ref="pathInputRef"
                 v-model="tokenPath"
                 class="form-input token-form-path-input"
                 :disabled="mode === 'edit'"
@@ -148,14 +216,26 @@ function selectReference(path: string) {
             </div>
 
             <div class="form-field">
-              <label class="form-label">Tier</label>
-              <div class="tier-radio-group">
+              <span :id="fieldIds.tier" class="form-label">Tier</span>
+              <div class="tier-radio-group" role="radiogroup" :aria-labelledby="fieldIds.tier">
                 <label class="tier-radio" :class="{ 'tier-radio--active': tier === 'primitive' }">
-                  <input v-model="tier" type="radio" value="primitive" class="tier-radio-input" />
+                  <input
+                    v-model="tier"
+                    type="radio"
+                    :name="fieldIds.tier"
+                    value="primitive"
+                    class="tier-radio-input"
+                  />
                   <span class="tier-radio-label">Primitive</span>
                 </label>
                 <label class="tier-radio" :class="{ 'tier-radio--active': tier === 'semantic' }">
-                  <input v-model="tier" type="radio" value="semantic" class="tier-radio-input" />
+                  <input
+                    v-model="tier"
+                    type="radio"
+                    :name="fieldIds.tier"
+                    value="semantic"
+                    class="tier-radio-input"
+                  />
                   <span class="tier-radio-label">Semantic</span>
                 </label>
               </div>
@@ -163,8 +243,9 @@ function selectReference(path: string) {
 
             <template v-if="tier === 'primitive'">
               <div class="form-field">
-                <label class="form-label">Value</label>
+                <label class="form-label" :for="fieldIds.value">Value</label>
                 <input
+                  :id="fieldIds.value"
                   v-model="tokenValue"
                   class="form-input"
                   placeholder="e.g. #3b82f6, 16px, 400"
@@ -174,8 +255,13 @@ function selectReference(path: string) {
 
             <template v-else>
               <div class="form-field">
-                <label class="form-label">Reference</label>
-                <input v-model="reference" class="form-input" placeholder="e.g. color.blue.500" />
+                <label class="form-label" :for="fieldIds.reference">Reference</label>
+                <input
+                  :id="fieldIds.reference"
+                  v-model="reference"
+                  class="form-input"
+                  placeholder="e.g. color.blue.500"
+                />
                 <div v-if="referenceOptions.length > 0" class="reference-list">
                   <button
                     v-for="opt in referenceOptions.slice(0, 8)"
@@ -183,7 +269,7 @@ function selectReference(path: string) {
                     type="button"
                     class="reference-option"
                     :class="{ 'reference-option--selected': opt === reference }"
-                    @click="selectReference(opt)"
+                    @click="() => selectReference(opt)"
                   >
                     {{ opt }}
                   </button>
@@ -192,16 +278,17 @@ function selectReference(path: string) {
             </template>
 
             <div class="form-field">
-              <label class="form-label">Type</label>
-              <select v-model="tokenType" class="form-input form-select">
-                <option value="">None</option>
+              <label class="form-label" :for="fieldIds.type">Type</label>
+              <select :id="fieldIds.type" v-model="tokenType" class="form-input form-select">
+                <option :value="NO_TOKEN_TYPE">None</option>
                 <option v-for="t in TOKEN_TYPES" :key="t" :value="t">{{ t }}</option>
               </select>
             </div>
 
             <div class="form-field">
-              <label class="form-label">Description</label>
+              <label class="form-label" :for="fieldIds.description">Description</label>
               <input
+                :id="fieldIds.description"
                 v-model="tokenDescription"
                 class="form-input"
                 placeholder="Optional description"
@@ -213,9 +300,7 @@ function selectReference(path: string) {
             </div>
 
             <div class="modal-footer">
-              <button type="button" class="btn btn--secondary" @click="emit('close')">
-                Cancel
-              </button>
+              <button type="button" class="btn btn--secondary" @click="closeForm">Cancel</button>
               <button type="submit" class="btn btn--primary">
                 {{ mode === "create" ? "Create" : "Save" }}
               </button>
@@ -231,7 +316,7 @@ function selectReference(path: string) {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--musea-layer-modal);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -239,7 +324,16 @@ function selectReference(path: string) {
   backdrop-filter: blur(4px);
 }
 
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
 .modal-content {
+  position: relative;
   background: var(--musea-bg-secondary);
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-lg, 12px);
@@ -300,7 +394,7 @@ function selectReference(path: string) {
 }
 
 .form-input {
-  background: var(--musea-bg-primary, #0d0d0d);
+  background: var(--musea-bg-primary);
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-md);
   padding: 0.5rem 0.75rem;
@@ -323,9 +417,11 @@ function selectReference(path: string) {
   cursor: pointer;
 }
 
-.form-select option {
-  background: var(--musea-bg-secondary);
-  color: var(--musea-text);
+.form-select {
+  option {
+    background: var(--musea-bg-secondary);
+    color: var(--musea-text);
+  }
 }
 
 .tier-radio-group {
@@ -334,6 +430,7 @@ function selectReference(path: string) {
 }
 
 .tier-radio {
+  position: relative;
   flex: 1;
   display: flex;
   align-items: center;
@@ -347,11 +444,19 @@ function selectReference(path: string) {
 
 .tier-radio--active {
   border-color: var(--musea-accent);
-  background: rgba(163, 72, 40, 0.1);
+  background: color-mix(in srgb, var(--musea-token-selection) 10%, transparent);
 }
 
 .tier-radio-input {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.tier-radio:focus-within {
+  outline: 2px solid var(--musea-accent);
+  outline-offset: 2px;
 }
 
 .tier-radio-label {
@@ -387,15 +492,15 @@ function selectReference(path: string) {
 
 .reference-option--selected {
   border-color: var(--musea-accent);
-  background: rgba(163, 72, 40, 0.15);
+  background: color-mix(in srgb, var(--musea-token-selection) 15%, transparent);
   color: var(--musea-text);
 }
 
 .form-error {
-  color: #ef4444;
+  color: var(--musea-token-error);
   font-size: 0.8125rem;
   padding: 0.5rem;
-  background: rgba(239, 68, 68, 0.1);
+  background: color-mix(in srgb, var(--musea-token-error) 10%, transparent);
   border-radius: var(--musea-radius-md);
 }
 
@@ -440,9 +545,11 @@ function selectReference(path: string) {
   transition: opacity 0.2s ease;
 }
 
-.modal-enter-active .modal-content,
-.modal-leave-active .modal-content {
-  transition: transform 0.2s ease;
+.modal-enter-active,
+.modal-leave-active {
+  .modal-content {
+    transition: transform 0.2s ease;
+  }
 }
 
 .modal-enter-from,
@@ -450,11 +557,10 @@ function selectReference(path: string) {
   opacity: 0;
 }
 
-.modal-enter-from .modal-content {
-  transform: scale(0.95);
-}
-
-.modal-leave-to .modal-content {
-  transform: scale(0.95);
+.modal-enter-from,
+.modal-leave-to {
+  .modal-content {
+    transform: scale(0.95);
+  }
 }
 </style>

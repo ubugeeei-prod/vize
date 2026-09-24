@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, onUnmounted, defineAsyncComponent } from "vue";
-import hljs from "highlight.js/lib/core";
-import xml from "highlight.js/lib/languages/xml";
-import json from "highlight.js/lib/languages/json";
 import { usePalette } from "../composables/usePalette";
 import { useArts } from "../composables/useArts";
 import { getPreviewUrl } from "../api";
 import { sendMessage } from "../composables/usePostMessage";
 import { indentUsage, usageScript } from "../utils/usageCode";
+import { safeUrl } from "../utils/safeUrl";
 import TextControl from "./controls/TextControl.vue";
 import NumberControl from "./controls/NumberControl.vue";
 import BooleanControl from "./controls/BooleanControl.vue";
@@ -16,11 +14,9 @@ import SelectControl from "./controls/SelectControl.vue";
 import ColorControl from "./controls/ColorControl.vue";
 import ObjectControl from "./controls/ObjectControl.vue";
 import SlotEditor from "./SlotEditor.vue";
+import HighlightedCode from "./HighlightedCode.vue";
 
 const MonacoEditor = defineAsyncComponent(() => import("./MonacoEditor.vue"));
-
-hljs.registerLanguage("xml", xml);
-hljs.registerLanguage("json", json);
 
 const props = defineProps<{
   artPath: string;
@@ -193,6 +189,18 @@ function onSaveValues() {
   saveStatus.value = "saved";
 }
 
+function setControlsMode(mode: "controls" | "code") {
+  controlsMode.value = mode;
+}
+
+function openAddForm() {
+  showAddForm.value = true;
+}
+
+function closeAddForm() {
+  showAddForm.value = false;
+}
+
 function onSlotsUpdate(slots: Record<string, string>) {
   slotContent.value = slots;
 }
@@ -264,11 +272,7 @@ const usageCode = computed(() => {
   );
 });
 
-const usageHighlighted = computed(() => hljs.highlight(usageCode.value, { language: "xml" }).value);
-
-const valuesHighlighted = computed(
-  () => hljs.highlight(JSON.stringify(mergedValues.value, null, 2), { language: "json" }).value,
-);
+const valuesJson = computed(() => JSON.stringify(mergedValues.value, null, 2));
 
 async function copyUsage() {
   try {
@@ -329,13 +333,18 @@ const controlKindOptions = [
     <template v-else-if="palette">
       <div class="props-split">
         <!-- Left: Live Preview -->
-        <div v-if="previewUrl" class="props-split-left">
+        <div v-if="safeUrl(previewUrl)" class="props-split-left">
           <div class="props-preview">
             <div class="props-preview-header">
               <span class="props-preview-label">Live Preview</span>
             </div>
             <div class="props-preview-frame">
-              <iframe ref="iframeRef" :src="previewUrl" />
+              <iframe
+                ref="iframeRef"
+                :src="safeUrl(previewUrl)"
+                title="Live component preview"
+                sandbox="allow-scripts allow-same-origin"
+              />
             </div>
           </div>
 
@@ -345,7 +354,7 @@ const controlKindOptions = [
               <span>Usage</span>
               <button type="button" class="props-copy-btn" @click="copyUsage">
                 <svg
-                  v-if="!copiedUsage"
+                  v-if="copiedUsage"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -353,8 +362,7 @@ const controlKindOptions = [
                   width="12"
                   height="12"
                 >
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  <polyline points="20 6 9 17 4 12" />
                 </svg>
                 <svg
                   v-else
@@ -365,17 +373,22 @@ const controlKindOptions = [
                   width="12"
                   height="12"
                 >
-                  <polyline points="20 6 9 17 4 12" />
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                 </svg>
                 {{ copiedUsage ? "Copied!" : "Copy" }}
               </button>
             </div>
-            <pre class="props-usage-code hljs"><code v-html="usageHighlighted"></code></pre>
+            <pre
+              class="props-usage-code hljs"
+            ><HighlightedCode :code="usageCode" language="xml" /></pre>
           </div>
 
           <div class="props-json">
             <div class="props-json-header">Current Values</div>
-            <pre class="props-json-code hljs"><code v-html="valuesHighlighted"></code></pre>
+            <pre
+              class="props-json-code hljs"
+            ><HighlightedCode :code="valuesJson" language="json" /></pre>
           </div>
         </div>
 
@@ -389,7 +402,7 @@ const controlKindOptions = [
                   type="button"
                   class="props-mode-btn"
                   :class="{ active: controlsMode === 'controls' }"
-                  @click="controlsMode = 'controls'"
+                  @click="() => setControlsMode('controls')"
                 >
                   Controls
                 </button>
@@ -397,7 +410,7 @@ const controlKindOptions = [
                   type="button"
                   class="props-mode-btn"
                   :class="{ active: controlsMode === 'code' }"
-                  @click="controlsMode = 'code'"
+                  @click="() => setControlsMode('code')"
                 >
                   Code
                 </button>
@@ -448,7 +461,7 @@ const controlKindOptions = [
                       type="button"
                       class="props-remove-btn"
                       title="Remove prop"
-                      @click="removeProp(control.name)"
+                      @click="() => removeProp(control.name)"
                     >
                       <svg
                         viewBox="0 0 24 24"
@@ -492,7 +505,7 @@ const controlKindOptions = [
                     type="button"
                     class="props-remove-btn"
                     title="Remove prop"
-                    @click="removeProp(control.name)"
+                    @click="() => removeProp(control.name)"
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -512,12 +525,40 @@ const controlKindOptions = [
 
             <!-- Add Prop -->
             <div class="props-add-section">
-              <button
-                v-if="!showAddForm"
-                type="button"
-                class="props-add-btn"
-                @click="showAddForm = true"
-              >
+              <div v-if="showAddForm" class="props-add-form">
+                <input
+                  v-model="newPropName"
+                  type="text"
+                  class="props-add-input"
+                  aria-label="Prop name"
+                  placeholder="Prop name"
+                  @keyup.enter="onAddProp"
+                />
+                <select
+                  v-model="newPropControl"
+                  class="props-add-select"
+                  aria-label="Prop control type"
+                >
+                  <option v-for="opt in controlKindOptions" :key="opt.value" :value="opt.value">
+                    {{ opt.label }}
+                  </option>
+                </select>
+                <input
+                  v-model="newPropDefault"
+                  type="text"
+                  class="props-add-input"
+                  aria-label="Default value"
+                  placeholder="Default value"
+                  @keyup.enter="onAddProp"
+                />
+                <div class="props-add-actions">
+                  <button type="button" class="props-add-confirm" @click="onAddProp">Add</button>
+                  <button type="button" class="props-add-cancel" @click="closeAddForm">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+              <button v-else type="button" class="props-add-btn" @click="openAddForm">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -531,40 +572,14 @@ const controlKindOptions = [
                 </svg>
                 Add Prop
               </button>
-              <div v-else class="props-add-form">
-                <input
-                  v-model="newPropName"
-                  type="text"
-                  class="props-add-input"
-                  placeholder="Prop name"
-                  @keyup.enter="onAddProp"
-                />
-                <select v-model="newPropControl" class="props-add-select">
-                  <option v-for="opt in controlKindOptions" :key="opt.value" :value="opt.value">
-                    {{ opt.label }}
-                  </option>
-                </select>
-                <input
-                  v-model="newPropDefault"
-                  type="text"
-                  class="props-add-input"
-                  placeholder="Default value"
-                  @keyup.enter="onAddProp"
-                />
-                <div class="props-add-actions">
-                  <button type="button" class="props-add-confirm" @click="onAddProp">Add</button>
-                  <button type="button" class="props-add-cancel" @click="showAddForm = false">
-                    Cancel
-                  </button>
-                </div>
-              </div>
             </div>
           </template>
 
           <!-- Code Mode -->
           <template v-else>
             <div class="props-code-editor">
-              <MonacoEditor
+              <component
+                :is="MonacoEditor"
                 :model-value="codeEditorContent"
                 language="json"
                 height="360px"
@@ -695,7 +710,7 @@ const controlKindOptions = [
 }
 
 .props-mode-btn:not(:last-child) {
-  border-right: 1px solid var(--musea-border);
+  border-inline-end: 1px solid var(--musea-border);
 }
 
 .props-mode-btn.active {
@@ -753,6 +768,10 @@ const controlKindOptions = [
   display: flex;
   align-items: flex-start;
   gap: 0.25rem;
+
+  &:hover .props-remove-btn {
+    opacity: 1;
+  }
 }
 
 .props-control-content {
@@ -761,8 +780,8 @@ const controlKindOptions = [
 }
 
 .props-control-custom {
-  border-left: 2px dashed var(--musea-accent);
-  padding-left: 0.5rem;
+  border-inline-start: 2px dashed var(--musea-accent);
+  padding-inline-start: 0.5rem;
 }
 
 .props-custom-badge {
@@ -793,10 +812,6 @@ const controlKindOptions = [
   opacity: 0;
   transition: all var(--musea-transition);
   margin-top: 0.25rem;
-}
-
-.props-control-row:hover .props-remove-btn {
-  opacity: 1;
 }
 
 .props-remove-btn:hover {
@@ -973,12 +988,12 @@ const controlKindOptions = [
   aspect-ratio: 4 / 3;
   background: #fff;
   max-height: 300px;
-}
 
-.props-preview-frame iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
 }
 
 .props-slot-editor {
@@ -1041,17 +1056,17 @@ const controlKindOptions = [
   text-align: center;
   color: var(--musea-text-muted);
   font-size: 0.875rem;
+
+  code {
+    background: var(--musea-bg-tertiary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    font-family: var(--musea-font-mono);
+  }
 }
 
 .props-empty-hint {
   margin-top: 0.5rem;
   font-size: 0.8125rem;
-}
-
-.props-empty code {
-  background: var(--musea-bg-tertiary);
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
-  font-family: var(--musea-font-mono);
 }
 </style>

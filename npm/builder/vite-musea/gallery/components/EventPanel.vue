@@ -23,10 +23,15 @@ const emit = defineEmits<{
 const selectedEvent = ref<CapturedEvent | null>(null);
 const isCollapsed = ref(false);
 const detailTab = ref<"info" | "raw">("info");
+const ALL_EVENTS_OPTION = "__all__";
 
 const displayEvents = computed(() => {
   return [...props.events].reverse();
 });
+
+const rawEntries = computed(() =>
+  Object.entries(selectedEvent.value?.rawEvent ?? {}).map(([name, value]) => ({ name, value })),
+);
 
 const formatTimestamp = (ts: number) => {
   const date = new Date(ts);
@@ -50,22 +55,43 @@ const formatPayload = (payload: unknown) => {
 
 const getEventTypeColor = (type: string) => {
   const colors: Record<string, string> = {
-    click: "#60a5fa",
-    input: "#4ade80",
-    change: "#fbbf24",
-    focus: "#a78bfa",
-    blur: "#f472b6",
-    keydown: "#f87171",
-    keyup: "#fb923c",
-    submit: "#22d3d8",
+    click: "var(--musea-event-click)",
+    input: "var(--musea-event-input)",
+    change: "var(--musea-event-change)",
+    focus: "var(--musea-event-focus)",
+    blur: "var(--musea-event-blur)",
+    keydown: "var(--musea-event-keydown)",
+    keyup: "var(--musea-event-keyup)",
+    submit: "var(--musea-event-submit)",
   };
-  return colors[type] || "#9ca3af";
+  return colors[type] || "var(--musea-event-other)";
 };
 
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value;
   emit("toggle-panel");
 };
+
+function changeFilter(event: Event) {
+  const value = (event.target as HTMLSelectElement).value;
+  emit("filter", value === ALL_EVENTS_OPTION ? "" : value);
+}
+
+function togglePause() {
+  emit("toggle-pause");
+}
+
+function clearEvents() {
+  emit("clear");
+}
+
+function clearSelection() {
+  selectedEvent.value = null;
+}
+
+function selectDetailTab(tab: "info" | "raw") {
+  detailTab.value = tab;
+}
 
 const selectEvent = (event: CapturedEvent) => {
   if (selectedEvent.value?.id === event.id) {
@@ -102,8 +128,9 @@ const getRawValueClass = (value: unknown): string => {
         <button
           type="button"
           class="collapse-btn"
-          @click="toggleCollapse"
+          :aria-label="isCollapsed ? 'Expand events' : 'Collapse events'"
           :title="isCollapsed ? 'Expand' : 'Collapse'"
+          @click="toggleCollapse"
         >
           <MdiIcon
             :class="['collapse-icon', { 'collapse-icon--collapsed': isCollapsed }]"
@@ -120,10 +147,11 @@ const getRawValueClass = (value: unknown): string => {
         <!-- Filter -->
         <select
           class="filter-select"
-          :value="filterType"
-          @change="emit('filter', ($event.target as HTMLSelectElement).value)"
+          :value="filterType || ALL_EVENTS_OPTION"
+          aria-label="Filter events by type"
+          @change="changeFilter"
         >
-          <option value="">All Events</option>
+          <option value="__all__">All Events</option>
           <option v-for="type in eventTypes" :key="type" :value="type">
             {{ type }} ({{ eventCounts[type] || 0 }})
           </option>
@@ -133,8 +161,9 @@ const getRawValueClass = (value: unknown): string => {
         <button
           type="button"
           :class="['control-btn', { 'control-btn--active': isPaused }]"
-          @click="emit('toggle-pause')"
+          :aria-label="isPaused ? 'Resume events' : 'Pause events'"
           :title="isPaused ? 'Resume' : 'Pause'"
+          @click="togglePause"
         >
           {{ isPaused ? "▶" : "⏸" }}
         </button>
@@ -143,8 +172,9 @@ const getRawValueClass = (value: unknown): string => {
         <button
           type="button"
           class="control-btn control-btn--danger"
-          @click="emit('clear')"
+          aria-label="Clear events"
           title="Clear Events"
+          @click="clearEvents"
         >
           🗑
         </button>
@@ -154,18 +184,20 @@ const getRawValueClass = (value: unknown): string => {
     <!-- Event List -->
     <div v-if="!isCollapsed" class="event-content">
       <div class="event-list">
-        <div
+        <button
           v-for="event in displayEvents"
           :key="event.id"
+          type="button"
           :class="['event-item', { 'event-item--selected': selectedEvent?.id === event.id }]"
-          @click="selectEvent(event)"
+          :aria-pressed="selectedEvent?.id === event.id"
+          @click="() => selectEvent(event)"
         >
           <span class="event-time">{{ formatTimestamp(event.timestamp) }}</span>
           <span class="event-type" :style="{ '--event-color': getEventTypeColor(event.type) }">
             {{ event.type }}
           </span>
           <span class="event-target">{{ event.target || "(unknown)" }}</span>
-        </div>
+        </button>
 
         <div v-if="!events.length" class="event-empty">
           <span>No events captured</span>
@@ -176,20 +208,29 @@ const getRawValueClass = (value: unknown): string => {
       <div v-if="selectedEvent" class="event-detail">
         <div class="detail-header">
           <span class="detail-title">Event Details</span>
-          <button type="button" class="detail-close" @click="selectedEvent = null">×</button>
+          <button
+            type="button"
+            class="detail-close"
+            aria-label="Close event details"
+            @click="clearSelection"
+          >
+            ×
+          </button>
         </div>
         <div class="detail-tabs">
           <button
             type="button"
             :class="['detail-tab', { 'detail-tab--active': detailTab === 'info' }]"
-            @click="detailTab = 'info'"
+            :aria-pressed="detailTab === 'info'"
+            @click="() => selectDetailTab('info')"
           >
             Info
           </button>
           <button
             type="button"
             :class="['detail-tab', { 'detail-tab--active': detailTab === 'raw' }]"
-            @click="detailTab = 'raw'"
+            :aria-pressed="detailTab === 'raw'"
+            @click="() => selectDetailTab('raw')"
           >
             Raw
           </button>
@@ -225,11 +266,11 @@ const getRawValueClass = (value: unknown): string => {
           </template>
           <template v-else-if="detailTab === 'raw'">
             <div v-if="selectedEvent.rawEvent" class="raw-event-grid">
-              <template v-for="(value, key) in selectedEvent.rawEvent" :key="key">
-                <div v-if="value !== undefined" class="raw-event-item">
-                  <span class="raw-event-key">{{ key }}</span>
-                  <span class="raw-event-value" :class="getRawValueClass(value)">{{
-                    formatRawValue(value)
+              <template v-for="entry in rawEntries" :key="entry.name">
+                <div v-if="entry.value !== undefined" class="raw-event-item">
+                  <span class="raw-event-key">{{ entry.name }}</span>
+                  <span class="raw-event-value" :class="getRawValueClass(entry.value)">{{
+                    formatRawValue(entry.value)
                   }}</span>
                 </div>
               </template>
@@ -356,15 +397,15 @@ const getRawValueClass = (value: unknown): string => {
 }
 
 .control-btn--active {
-  background: rgba(74, 222, 128, 0.15);
-  border-color: #4ade80;
-  color: #4ade80;
+  background: color-mix(in srgb, var(--musea-event-input) 15%, transparent);
+  border-color: var(--musea-event-input);
+  color: var(--musea-event-input);
 }
 
 .control-btn--danger:hover {
-  background: rgba(248, 113, 113, 0.15);
-  border-color: #f87171;
-  color: #f87171;
+  background: color-mix(in srgb, var(--musea-event-keydown) 15%, transparent);
+  border-color: var(--musea-event-keydown);
+  color: var(--musea-event-keydown);
 }
 
 .event-content {
@@ -381,11 +422,17 @@ const getRawValueClass = (value: unknown): string => {
 
 .event-item {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 0.75rem;
   padding: 0.375rem 0.75rem;
+  background: transparent;
+  border: 0;
   border-bottom: 1px solid var(--musea-border);
+  color: inherit;
   cursor: pointer;
+  font-family: inherit;
+  text-align: start;
   transition: background-color 0.1s;
 }
 
@@ -406,8 +453,8 @@ const getRawValueClass = (value: unknown): string => {
 .event-type {
   font-size: 0.6875rem;
   padding: 0.0625rem 0.375rem;
-  background: color-mix(in srgb, var(--event-color, #9ca3af) 20%, transparent);
-  color: var(--event-color, #9ca3af);
+  background: color-mix(in srgb, var(--event-color, var(--musea-event-other)) 20%, transparent);
+  color: var(--event-color, var(--musea-event-other));
   border-radius: 2px;
   font-weight: 500;
   flex-shrink: 0;
@@ -432,7 +479,7 @@ const getRawValueClass = (value: unknown): string => {
 
 .event-detail {
   width: 280px;
-  border-left: 1px solid var(--musea-border);
+  border-inline-start: 1px solid var(--musea-border);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -545,8 +592,8 @@ const getRawValueClass = (value: unknown): string => {
 
 .detail-value--type {
   padding: 0.0625rem 0.375rem;
-  background: color-mix(in srgb, var(--event-color, #9ca3af) 20%, transparent);
-  color: var(--event-color, #9ca3af);
+  background: color-mix(in srgb, var(--event-color, var(--musea-event-other)) 20%, transparent);
+  color: var(--event-color, var(--musea-event-other));
   border-radius: 2px;
   font-weight: 500;
 }
@@ -596,19 +643,19 @@ const getRawValueClass = (value: unknown): string => {
 }
 
 .raw-value--true {
-  color: #4ade80;
+  color: var(--musea-event-input);
 }
 
 .raw-value--false {
-  color: #f87171;
+  color: var(--musea-event-keydown);
 }
 
 .raw-value--number {
-  color: #60a5fa;
+  color: var(--musea-event-click);
 }
 
 .raw-value--string {
-  color: #fbbf24;
+  color: var(--musea-event-change);
 }
 
 .raw-event-empty {
