@@ -15,6 +15,7 @@ contract violation.
 | A5  | SSR/hydration | isolated requests    | server markup is byte-identical per request and hydrates without replacing the root                                    | `renders stable, accessible markup across isolated SSR requests`; hydration conformance |
 | A6  | public types  | invalid role/variant | compilation rejects unsupported live-region roles and variants                                                         | `src/families/feedback/alert/alert.types.test-d.ts`                                     |
 
-The primitive intentionally ships no built-in dismiss button or CSS. Dismissal
-chrome is application-owned in this slice and can consume slot state while the
-subpath remains tree-shakable with zero packaged CSS.
+The primitive intentionally ships no built-in dismiss button. Dismissal chrome
+is application-owned and can consume slot state. The component subpath remains
+tree-shakable with zero packaged CSS; consumers can separately import
+`@vizejs/ui/component-alert.css` for a restrained visual treatment.

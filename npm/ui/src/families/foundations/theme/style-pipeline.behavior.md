@@ -12,6 +12,8 @@ the real package build.
 `@vizejs/ui/base.css` aliases the existing CSS-only `theme.css` token and
 accessibility-policy asset. `@vizejs/ui/component-button.css` and
 `@vizejs/ui/component-dialog.css` are separate, opt-in visual assets. They are
+joined by `component-card.css`, `component-badge.css`, `component-alert.css`,
+and `component-tooltip.css`, each independently selectable. They are
 lowered to the same browser floor and never imported by the headless JavaScript
 entries or appended to `style.css`. Existing behavior-critical CSS for progress
 bar, scroll area, and motion is also available as `component-progress-bar.css`,

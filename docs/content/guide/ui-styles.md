@@ -16,6 +16,10 @@ import "@vizejs/ui/component-textarea.css";
 import "@vizejs/ui/component-checkbox.css";
 import "@vizejs/ui/component-switch.css";
 import "@vizejs/ui/component-dialog.css";
+import "@vizejs/ui/component-card.css";
+import "@vizejs/ui/component-badge.css";
+import "@vizejs/ui/component-alert.css";
+import "@vizejs/ui/component-tooltip.css";
 // Add these only when their low-level behavior is used without the JS entry:
 // import "@vizejs/ui/component-progress-bar.css";
 // import "@vizejs/ui/component-scroll-area.css";
@@ -44,6 +48,15 @@ visible for keyboard users, and forced-colors mode keeps native checkbox marks.
 The component files reset their local overrides at each theme boundary, so a
 Paper form nested inside a Signal page keeps Paper's type and proportions.
 
+Card, Badge, Alert, and Tooltip each have a separate visual file as well. Card
+uses its `variant`, `density`, and `tone` hooks; Badge distinguishes labels,
+counts, and status text; Alert follows its live-region variant without adding
+a dismiss button. Tooltip keeps the trigger's keyboard focus visible and starts
+its short entrance only after its floating position is measured. Static Card
+surfaces do not animate. Badge tone changes and Alert/Tooltip entrances stop
+under `prefers-reduced-motion`; forced-colors mode restores system boundaries.
+These styles reset at nested theme boundaries, including Shadow DOM hosts.
+
 The existing ProgressBar and ScrollArea structure and motion recipes are also
 published as standalone CSS-only files. Their JavaScript entries already pull
 the legacy aggregate stylesheet for required behavior. Import the standalone
@@ -68,16 +81,18 @@ document.documentElement.dataset.vizeTheme = "signal";
 ```
 
 The existing `midnight`, `play`, `high-contrast`, and `headless` presets remain
-available. Set `data-vize-theme` on `<html>` when a dialog is teleported to the
-document body, so the overlay inherits the same palette as the page. For a
+available. Set `data-vize-theme` on `<html>` when a dialog or tooltip is teleported to the
+document body, so floating content inherits the same palette as the page. For a
 stored preference, `@vizejs/ui/theme-scope` provides a pre-paint bootstrap
 script. The old `theme.css`, `theme-preset-*.css`, and `style.css` imports
 continue to work; avoid importing `style.css` alongside `base.css` because it
 already contains the base and every legacy preset.
 
-Button has short hover, press, and focus feedback. Dialog animates its arrival
-without delaying focus or dismissal. It closes immediately because the
-headless Dialog currently removes closed content; an exit animation would
-require a presence-aware lifecycle. Both visual files disable motion for
-`prefers-reduced-motion` and retain clear boundaries in forced-colors mode.
+Button has short hover, press, and focus feedback. With `dialog.css`, Dialog
+animates its arrival and a 200ms exit. Closing releases focus containment,
+outside inert, and scroll lock immediately; the exiting sheet stays inert and
+hidden from assistive technology until its animation ends. Headless Dialog
+still unmounts immediately, as does styled Dialog when
+`prefers-reduced-motion: reduce` matches. Both visual files retain clear
+boundaries in forced-colors mode.
 Application CSS outside Vize's cascade layers can override any rule.

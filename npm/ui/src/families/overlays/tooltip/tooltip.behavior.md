@@ -1,5 +1,10 @@
 # Tooltip Behavior
 
+`@vizejs/ui/component-tooltip.css` is an optional visual stylesheet. The
+component entry stays headless. Its enter motion starts only after Positioner
+has measured the floating host; reduced-motion and forced-colors policies stop
+the animation. Closed content follows the component's native presence policy.
+
 | Case | Given                                | Action                                                               | Expected                                                                                               | Evidence              |
 | ---- | ------------------------------------ | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------- |
 | T1   | `tooltip-root.vue` owns a closed tip | trigger receives mouse or pen hover                                  | content opens after `delayDuration`, trigger receives `aria-describedby`, content has `role="tooltip"` | `tooltip.test.ts`     |

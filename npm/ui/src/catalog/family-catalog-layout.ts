@@ -59,6 +59,7 @@ export const layoutFamilyCatalog = [
     entryFile: `${cardFamilyRoot}card.ts`,
     sourceFiles: [
       `${cardFamilyRoot}card.vue`,
+      `${cardFamilyRoot}card-visual.css`,
       `${cardFamilyRoot}card.ts`,
       `${cardFamilyRoot}card-types.ts`,
     ],

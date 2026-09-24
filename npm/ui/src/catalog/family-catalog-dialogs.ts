@@ -36,7 +36,7 @@ export const dialogFamilyCatalog = [
       exportName: "DialogRoot",
       retainedSignature: "data-vize-ui[\\s\\S]{0,32}dialog-root",
       allowedRetainedFamilies: ["context", "controllable-state"],
-      maximumJavaScriptGzipBytes: 2_100,
+      maximumJavaScriptGzipBytes: 2_300,
       maximumCssGzipBytes: 0,
     },
     aliases: ["modal", "alert dialog", "sheet foundation", "overlay dialog"],

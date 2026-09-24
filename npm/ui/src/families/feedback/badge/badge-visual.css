@@ -1,0 +1,133 @@
+/* Optional Badge appearance, including the published tone and usage variants. */
+@layer vize.preset {
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-badge-radius: var(--vize-ui-radius-sm);
+    --vize-ui-badge-count-radius: var(--vize-ui-radius-full);
+    --vize-ui-badge-fill-base: var(--vize-ui-color-surface);
+    --vize-ui-badge-fill-strength: 9%;
+    --vize-ui-badge-family: var(--vize-ui-type-family-sans);
+    --vize-ui-badge-size: var(--vize-ui-type-size-xs);
+    --vize-ui-badge-spacing: normal;
+    --vize-ui-badge-case: none;
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-badge-radius: var(--vize-ui-radius-sm);
+    --vize-ui-badge-count-radius: var(--vize-ui-radius-full);
+    --vize-ui-badge-fill-base: var(--vize-ui-color-surface);
+    --vize-ui-badge-fill-strength: 0%;
+    --vize-ui-badge-family: var(--vize-ui-type-family-sans);
+    --vize-ui-badge-size: var(--vize-ui-type-size-xs);
+    --vize-ui-badge-spacing: 0.01em;
+    --vize-ui-badge-case: none;
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-badge-radius: 0;
+    --vize-ui-badge-count-radius: 0;
+    --vize-ui-badge-fill-base: transparent;
+    --vize-ui-badge-fill-strength: 0%;
+    --vize-ui-badge-family: var(--vize-ui-type-family-mono);
+    --vize-ui-badge-size: 0.6875rem;
+    --vize-ui-badge-spacing: 0.04em;
+    --vize-ui-badge-case: uppercase;
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-badge-radius: var(--vize-ui-radius-full);
+    --vize-ui-badge-count-radius: var(--vize-ui-radius-full);
+    --vize-ui-badge-fill-base: var(--vize-ui-color-surface);
+    --vize-ui-badge-fill-strength: 9%;
+    --vize-ui-badge-family: var(--vize-ui-type-family-sans);
+    --vize-ui-badge-size: var(--vize-ui-type-size-xs);
+    --vize-ui-badge-spacing: normal;
+    --vize-ui-badge-case: none;
+  }
+
+  :where([data-vize-ui="badge"]) {
+    --vize-ui-badge-ink: var(--vize-ui-color-neutral);
+
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--vize-ui-space-xs);
+    max-inline-size: 100%;
+    min-block-size: 1.375rem;
+    padding-block: 0.125rem;
+    padding-inline: var(--vize-ui-space-sm);
+    border: var(--vize-ui-border-width-thin) solid
+      color-mix(in oklab, var(--vize-ui-badge-ink) 35%, transparent);
+    border-radius: var(--vize-ui-badge-radius, var(--vize-ui-radius-sm));
+    background: color-mix(
+      in oklab,
+      var(--vize-ui-badge-ink) var(--vize-ui-badge-fill-strength, 9%),
+      var(--vize-ui-badge-fill-base, var(--vize-ui-color-surface))
+    );
+    color: var(--vize-ui-badge-ink);
+    font-family: var(--vize-ui-badge-family, var(--vize-ui-type-family-sans));
+    font-size: var(--vize-ui-badge-size, var(--vize-ui-type-size-xs));
+    font-weight: var(--vize-ui-type-weight-medium);
+    letter-spacing: var(--vize-ui-badge-spacing, normal);
+    line-height: var(--vize-ui-type-leading-tight);
+    text-transform: var(--vize-ui-badge-case, none);
+    vertical-align: middle;
+    transition:
+      background-color var(--vize-ui-motion-duration-fast, 120ms) ease-out,
+      border-color var(--vize-ui-motion-duration-fast, 120ms) ease-out,
+      color var(--vize-ui-motion-duration-fast, 120ms) ease-out;
+  }
+
+  :where([data-vize-ui="badge"][data-variant="count"]) {
+    justify-content: center;
+    min-inline-size: 1.375rem;
+    padding-inline: var(--vize-ui-space-xs);
+    border-radius: var(--vize-ui-badge-count-radius, var(--vize-ui-radius-full));
+    font-variant-numeric: tabular-nums;
+  }
+
+  :where([data-vize-ui="badge"][data-variant="status"])::before {
+    content: "";
+    flex: none;
+    inline-size: 0.375rem;
+    block-size: 0.375rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  :where([data-vize-ui="badge"][data-tone="accent"]) {
+    --vize-ui-badge-ink: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-ui="badge"][data-tone="info"]) {
+    --vize-ui-badge-ink: var(--vize-ui-color-info);
+  }
+
+  :where([data-vize-ui="badge"][data-tone="success"]) {
+    --vize-ui-badge-ink: var(--vize-ui-color-success);
+  }
+
+  :where([data-vize-ui="badge"][data-tone="warning"]) {
+    --vize-ui-badge-ink: var(--vize-ui-color-warning);
+  }
+
+  :where([data-vize-ui="badge"][data-tone="danger"]) {
+    --vize-ui-badge-ink: var(--vize-ui-color-danger);
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="badge"]) {
+      transition: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="badge"]) {
+      border-color: ButtonBorder;
+      background: Canvas;
+      color: CanvasText;
+      transition: none;
+    }
+  }
+}
