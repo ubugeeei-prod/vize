@@ -101,7 +101,11 @@ test("fresh-project package managers use exact Corepack runners where needed", (
     const manager = PACKAGE_MANAGERS[managerId];
     assert.equal(manager.corepackSpec, corepackSpec);
     assert.deepEqual(managerCommand(manager, ["install"]), {
-      command: "corepack",
+      command: process.platform === "win32" ? "corepack.cmd" : "corepack",
+      args: [corepackSpec, "install"],
+    });
+    assert.deepEqual(managerCommand(manager, ["install"], "win32"), {
+      command: "corepack.cmd",
       args: [corepackSpec, "install"],
     });
     assert.equal(managerEnv(manager).COREPACK_ENABLE_PROJECT_SPEC, "0");

@@ -35,13 +35,18 @@ export function managerBinary(manager) {
   return process.env[manager.binaryEnv] || manager.binary;
 }
 
-export function managerCommand(manager, args) {
+export function managerCommand(manager, args, platform = process.platform) {
   const envBinary = process.env[manager.binaryEnv];
   if (envBinary !== undefined) {
     return { command: envBinary, args };
   }
   if (manager.corepackSpec !== undefined) {
-    return { command: "corepack", args: [manager.corepackSpec, ...args] };
+    // Node's spawnSync does not resolve Windows .cmd shims by their extensionless
+    // name. runResult routes the explicit batch file through cmd.exe.
+    return {
+      command: platform === "win32" ? "corepack.cmd" : "corepack",
+      args: [manager.corepackSpec, ...args],
+    };
   }
   return { command: manager.binary, args };
 }
