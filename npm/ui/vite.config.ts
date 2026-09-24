@@ -227,6 +227,8 @@ export default defineConfig({
       kbd: "src/families/typography/kbd/kbd.ts",
       list: "src/families/layout/list/list.ts",
       listbox: "src/families/selection/listbox/listbox.ts",
+      combobox: "src/families/selection/combobox/combobox.ts",
+      select: "src/families/selection/select/select.ts",
       pagination: "src/families/navigation/pagination/pagination.ts",
       text: "src/families/typography/text/text.ts",
       textarea: "src/families/form/textarea/textarea.ts",

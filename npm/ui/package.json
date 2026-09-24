@@ -344,6 +344,16 @@
       "import": "./dist/listbox.mjs",
       "default": "./dist/listbox.mjs"
     },
+    "./combobox": {
+      "types": "./dist/combobox.d.mts",
+      "import": "./dist/combobox.mjs",
+      "default": "./dist/combobox.mjs"
+    },
+    "./select": {
+      "types": "./dist/select.d.mts",
+      "import": "./dist/select.mjs",
+      "default": "./dist/select.mjs"
+    },
     "./pagination": {
       "types": "./dist/pagination.d.mts",
       "import": "./dist/pagination.mjs",
