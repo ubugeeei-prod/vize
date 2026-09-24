@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/data",
-  "version": "0.426.1",
+  "version": "0.426.2",
   "description": "Typed SSR data resource foundations for Vize applications",
   "keywords": [
     "data-fetching",
