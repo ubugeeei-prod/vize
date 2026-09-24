@@ -45,6 +45,7 @@ import { toolbarRuntimeFixtures } from "../families/actions/toolbar/runtime-conf
 import { fieldRuntimeFixtures } from "../families/form/field/runtime-conformance-field-fixtures.ts";
 import { formInputRuntimeFixtures } from "../families/form/runtime-conformance-form-input-fixtures.ts";
 import { formCompositeRuntimeFixtures } from "../families/form/runtime-conformance-form-composite-fixtures.ts";
+import { formStructureRuntimeFixtures } from "../families/form/runtime-conformance-form-structure-fixtures.ts";
 import { interactionHooksRuntimeFixture } from "../families/interaction/interaction-hooks/runtime-conformance-interaction-hooks-fixtures.ts";
 import { progressBarRuntimeFixture } from "../families/feedback/progress-bar/runtime-conformance-progress-bar-fixtures.ts";
 import { progressRuntimeFixture } from "../families/feedback/progress/runtime-conformance-progress-fixtures.ts";
@@ -153,6 +154,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...selectionRuntimeFixtures,
   ...formInputRuntimeFixtures,
   ...formCompositeRuntimeFixtures,
+  ...formStructureRuntimeFixtures,
   {
     name: "deterministic-id-provider",
     sourceFile: "families/foundations/id/deterministic-id-provider.vue",

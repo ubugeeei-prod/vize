@@ -61,7 +61,7 @@ export const feedbackLoadingCatalog = [
       retainedSignature: "data-vize-ui[\\s\\S]{0,40}progress-bar",
       maximumJavaScriptGzipBytes: 2_550,
       // Covers the shared packaged stylesheet used by styled families.
-      maximumCssGzipBytes: 7_600,
+      maximumCssGzipBytes: 7_700,
     },
     aliases: ["progress", "loading progress", "task progress", "upload progress"],
     upstreamCoverage: ["WAI-ARIA progressbar role", "React Aria ProgressBar", "HTML progress"],

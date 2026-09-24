@@ -190,7 +190,12 @@ export default defineConfig({
     entry: {
       index: "src/index.ts",
       "input-mask": "src/families/form/input-mask/input-mask.ts",
+      "angle-picker": "src/families/form/angle-picker/angle-picker.ts",
+      fieldset: "src/families/form/fieldset/fieldset.ts",
+      "form-wizard": "src/families/form/form-wizard/form-wizard.ts",
+      knob: "src/families/form/knob/knob.ts",
       "number-field": "src/families/form/number-field/number-field.ts",
+      "phone-field": "src/families/form/phone-field/phone-field.ts",
       "range-slider": "src/families/form/range-slider/range-slider.ts",
       theme: "src/families/foundations/theme/theme.ts",
       "theme-scope": "src/families/foundations/theme/theme-scope.ts",

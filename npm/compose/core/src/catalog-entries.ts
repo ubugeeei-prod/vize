@@ -112,6 +112,7 @@ export const rootEntry = {
     "./use-file-dialog",
     "./use-file-system-access",
     "./use-form",
+    "./use-form-field-props",
     "./use-fullscreen",
     "./use-gamepad",
     "./use-hid",
@@ -964,6 +965,18 @@ export const entries = [
     gzipBudgetBytes: 7 * 1024,
     runtimeExports: ["useForm"],
     utilities: ["useForm"],
+  },
+  {
+    subpath: "./use-form-field-props",
+    source: "src/use-form-field-props.ts",
+    gzipBudgetBytes: 2.5 * 1024,
+    runtimeExports: [
+      "formFieldId",
+      "toFormFieldErrors",
+      "useFormErrorSummaryFields",
+      "useFormFieldProps",
+    ],
+    utilities: ["useFormFieldProps", "useFormErrorSummaryFields"],
   },
   {
     subpath: "./use-fullscreen",
