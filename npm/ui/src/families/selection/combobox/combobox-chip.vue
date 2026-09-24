@@ -20,9 +20,9 @@ const disabled = computed(
   () => context.disabled.value || context.readonly.value || context.isValueDisabled(value),
 );
 
-function remove(): boolean {
+function remove(event: Event | null = null): boolean {
   if (disabled.value) return false;
-  const removed = context.remove(value);
+  const removed = context.remove(value, event);
   context.inputElement.value?.focus();
   return removed;
 }

@@ -66,7 +66,9 @@ const itemDisabled = computed(
   () => context.disabled.value || disabled || context.isValueDisabled(value),
 );
 const selected = computed(() => context.isSelected(value));
-const visible = computed(() => context.isItemVisible(value, textValue ?? context.textOf(value)));
+const visible = computed(() =>
+  context.isItemVisible(value, () => textValue ?? context.textOf(value)),
+);
 const active = computed(() => context.activeKey.value === optionId.value);
 const state = computed<SelectItemState>(() => (selected.value ? "checked" : "unchecked"));
 const slotState = computed<SelectItemSlotState<T>>(() => ({

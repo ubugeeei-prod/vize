@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, shallowRef, watch } from "v
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../foundations/controllable-state/controllable-state.ts";
+import VisuallyHidden from "../../accessibility/visually-hidden/visually-hidden.vue";
 import {
   deriveDeterministicId,
   useDeterministicId,
@@ -141,7 +142,7 @@ const collection = useSelectCollection<ComboboxEntry>({
   typeahead: () => false,
   typeaheadTimeout: () => 500,
 });
-const textCache = shallowRef<ReadonlyMap<string, string>>(new Map());
+const textCache = shallowRef<ReadonlyMap<T, string>>(new Map());
 
 function serialize(value: T): string {
   return formValue?.(value) ?? serializeSelectValue(value, by);
@@ -159,11 +160,15 @@ function registeredText(value: T): string | undefined {
 
 function textFor(value: T): string {
   return (
-    itemText?.(value) ??
-    textCache.value.get(serialize(value)) ??
-    registeredText(value) ??
-    defaultSelectText(value, by)
+    itemText?.(value) ?? cachedText(value) ?? registeredText(value) ?? defaultSelectText(value, by)
   );
+}
+
+function cachedText(value: T): string | undefined {
+  for (const [candidate, text] of textCache.value) {
+    if (equals.value(candidate, value)) return text;
+  }
+  return undefined;
 }
 
 function selectionLabel(): string {
@@ -241,6 +246,12 @@ const formEntries = computed<readonly FormEntry[]>(() => {
   return selected.value.map((value, index) => ({ key: `${index}`, value: serialize(value) }));
 });
 const nativeRequired = computed(() => requiredState.value && selected.value.length === 0);
+const loadAnnouncement = computed(() => {
+  if (status.value === "loading") return "Loading…";
+  if (status.value === "success") return `${filteredItems.value.length} results available.`;
+  if (status.value === "error") return "Results could not be loaded.";
+  return "";
+});
 
 const inputElement = shallowRef<HTMLInputElement | null>(null);
 const anchorElement = shallowRef<HTMLElement | null>(null);
@@ -274,6 +285,14 @@ function currentOpen(): boolean {
 
 function input(): HTMLInputElement | null {
   return inputElement.value;
+}
+
+function syncRequiredValidity(): void {
+  const element = input();
+  if (element === null) return;
+  const unselectedText =
+    requiredState.value && strict && selected.value.length === 0 && element.value.trim().length > 0;
+  element.setCustomValidity(unselectedText ? "Select an option from the list." : "");
 }
 
 function setText(next: string): void {
@@ -348,7 +367,7 @@ function choose(value: T, nativeEvent: Event | null): boolean {
 }
 
 function create(nativeEvent: Event | null): boolean {
-  const typed = text.value.trim();
+  const typed = query.value.trim();
   if (
     disabledState.value ||
     readonlyState.value ||
@@ -362,9 +381,9 @@ function create(nativeEvent: Event | null): boolean {
   return choose(value, nativeEvent);
 }
 
-function remove(value: T): boolean {
+function remove(value: T, nativeEvent: Event | null = null): boolean {
   if (disabledState.value || readonlyState.value) return false;
-  return commit(removeFromList(currentSelection(), value, equals.value), null);
+  return commit(removeFromList(currentSelection(), value, equals.value), nativeEvent);
 }
 
 function chooseActive(nativeEvent: Event): boolean {
@@ -409,6 +428,7 @@ function onInput(event: Event): void {
   query.value = typed;
   setText(typed);
   if (typed.length === 0 && !multipleState.value && strict) commit(Object.freeze([]), event);
+  syncRequiredValidity();
   if (!isOpen.value) openWith(null, event);
   const deleting = event instanceof InputEvent && event.inputType.startsWith("delete");
   if ((autocomplete === "inline" || autocomplete === "both") && !deleting) {
@@ -473,7 +493,11 @@ function onKeydown(event: KeyboardEvent): void {
         setOpen(false, event);
         return;
       }
-      if (clearOnEscape && !readonlyState.value && (text.value !== "" || selected.value.length)) {
+      if (
+        clearOnEscape &&
+        !readonlyState.value &&
+        (text.value !== "" || (!multipleState.value && selected.value.length > 0))
+      ) {
         event.preventDefault();
         query.value = "";
         setText("");
@@ -566,6 +590,10 @@ function scheduleLoad(immediate: boolean): void {
 }
 
 watch(query, () => scheduleLoad(false));
+watch([inputElement, text, selected, requiredState], syncRequiredValidity, {
+  flush: "post",
+  immediate: true,
+});
 watch(filteredItems, () => {
   if (isOpen.value && query.value.length > 0 && autocomplete !== "none") highlightFirst();
 });
@@ -575,10 +603,9 @@ watch(selected, () => {
 
 function rememberText(value: T, next: string): void {
   if (next.length === 0) return;
-  const key = serialize(value);
-  if (textCache.value.get(key) === next) return;
+  if (cachedText(value) === next) return;
   const map = new Map(textCache.value);
-  map.set(key, next);
+  map.set(value, next);
   textCache.value = map;
 }
 
@@ -630,7 +657,7 @@ const popupContext: SelectContextValue<T> = {
   isItemVisible: (value, itemTextValue) => {
     const match = currentFilter();
     if (sourceItems.value !== undefined || match === null || query.value.length === 0) return true;
-    return match(value, query.value, itemTextValue);
+    return match(value, query.value, itemTextValue());
   },
   isSelected: (value) => includesSelectValue(selected.value, value, equals.value),
   isValueDisabled: (value) => itemDisabled?.(value) === true,
@@ -773,6 +800,9 @@ defineExpose(exposed);
     :data-loading="status === 'loading' ? 'true' : undefined"
   >
     <slot v-bind="slotState" />
+    <VisuallyHidden v-if="loadItems !== undefined" role="status" aria-live="polite">
+      {{ loadAnnouncement }}
+    </VisuallyHidden>
     <template v-if="name !== undefined">
       <input
         v-for="entry in formEntries as readonly FormEntry[]"

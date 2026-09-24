@@ -352,5 +352,5 @@ export interface ComboboxChipSlotState<T> {
   readonly disabled: boolean;
 
   /** Remove this value from the selection. */
-  readonly remove: () => boolean;
+  readonly remove: (event?: Event | null) => boolean;
 }

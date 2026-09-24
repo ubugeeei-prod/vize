@@ -72,6 +72,20 @@ test("required uses native validation on the input until something is selected",
   filled.handle.unmount();
 });
 
+test("strict required rejects unselected free text", async () => {
+  const { form, handle, input } = mountForm({ required: true });
+  await type(input, "unknown city");
+  assert.equal(input.value, "unknown city");
+  assert.equal(input.validity.customError, true);
+  assert.equal(form.checkValidity(), false);
+  handle.unmount();
+
+  const free = mountForm({ required: true, strict: false });
+  await type(free.input, "unknown city");
+  assert.equal(free.form.checkValidity(), true);
+  free.handle.unmount();
+});
+
 test("form reset restores the default selection and text", async () => {
   const { form, handle, hidden, input } = mountForm({ defaultValue: cities[1] });
   await type(input, "", "deleteContentBackward");

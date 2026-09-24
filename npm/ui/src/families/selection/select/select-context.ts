@@ -46,7 +46,7 @@ export interface SelectContextValue<T> {
   readonly listboxLabelledby: ComputedRef<string | undefined>;
   readonly dismissBranches: ComputedRef<readonly Element[]>;
   isSelected(value: T): boolean;
-  isItemVisible(value: T, text: string): boolean;
+  isItemVisible(value: T, text: () => string): boolean;
   choose(value: T, event: Event | null): boolean;
   setOpen(open: boolean, event: Event | null): boolean;
   onTriggerKeydown(event: KeyboardEvent): void;

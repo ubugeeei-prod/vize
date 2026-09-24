@@ -66,6 +66,7 @@ test("loadItems runs on open and per query, exposes loading, and ignores stale r
     [""],
   );
   assert.equal(handle.root().getAttribute("data-loading"), "true");
+  assert.equal(handle.root().querySelector("[role='status']")?.textContent?.trim(), "Loading…");
   assert.equal(
     handle.root().querySelector("[data-vize-ui='combobox-loading']")?.textContent,
     "Loading…",
@@ -86,6 +87,10 @@ test("loadItems runs on open and per query, exposes loading, and ignores stale r
   requests[1]?.result.resolve(cities.slice(0, 3));
   await settle();
   assert.deepEqual(visibleOptions(handle), ["Berlin", "Bogotá", "Boston"]);
+  assert.equal(
+    handle.root().querySelector("[role='status']")?.textContent?.trim(),
+    "3 results available.",
+  );
   assert.equal(handle.root().getAttribute("data-loading"), null);
 
   await type(input, "zz");

@@ -20,7 +20,7 @@ defineSlots<{
 const chip = comboboxChipContext.use();
 const label = computed(() => ariaLabel ?? `Remove ${chip.text.value}`);
 const handlers = computed(() => ({
-  onClick: () => chip.remove(),
+  onClick: (event: MouseEvent) => chip.remove(event),
   onPointerdown: (event: PointerEvent) => event.preventDefault(),
 }));
 </script>

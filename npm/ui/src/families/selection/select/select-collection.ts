@@ -192,7 +192,18 @@ export function useSelectCollection<T>(options: SelectCollectionOptions): Select
   function navigate(command: CompositeNavigationCommand, event: Event | null = null): void {
     if (toValue(options.disabled)) return;
     const adapter = virtual.value;
-    const current = activeItem.value?.value.index;
+    const current = pendingIndex.value ?? activeItem.value?.value.index;
+    if (adapter !== null && (command === "next" || command === "previous")) {
+      const step = command === "next" ? 1 : -1;
+      const start = current ?? (step === 1 ? -1 : adapter.count());
+      const target =
+        nextEnabledIndex(start + step, step) ??
+        (toValue(options.loop)
+          ? nextEnabledIndex(step === 1 ? 0 : adapter.count() - 1, step)
+          : null);
+      if (target !== null) activateIndex(target);
+      return;
+    }
     if (adapter !== null && (command === "first" || command === "last")) {
       const target =
         command === "first" ? nextEnabledIndex(0, 1) : nextEnabledIndex(adapter.count() - 1, -1);
