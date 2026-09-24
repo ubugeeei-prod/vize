@@ -37,7 +37,11 @@ export function validateFixtures(fixtures = FIXTURES) {
     assert.ok(typeof source === "string" && source.length > 0);
     return name;
   });
-  assert.deepEqual([...names].sort(), EXPECTED, "Vapor fixture set must match Criterion");
+  assert.deepEqual(
+    [...names].sort((left, right) => left.localeCompare(right)),
+    EXPECTED,
+    "Vapor fixture set must match Criterion",
+  );
   return fixtures;
 }
 
@@ -51,7 +55,7 @@ export function compareThreeLanes(criterionExport, officialMeasurements, fixture
   validateFixtures(fixtures);
   const pairs = compareVaporNativePairs(criterionExport, criterionExport);
   assert.deepEqual(
-    Object.keys(officialMeasurements).sort(),
+    Object.keys(officialMeasurements).sort((left, right) => left.localeCompare(right)),
     EXPECTED,
     "Official measurements must cover the complete shared corpus",
   );

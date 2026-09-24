@@ -20,7 +20,7 @@ const exportFor = (names) => ({
   ),
 });
 
-test("three-compiler report requires the same complete fixture set", () => {
+void test("three-compiler report requires the same complete fixture set", () => {
   const names = fixtures.map(({ name }) => name);
   const official = Object.fromEntries(names.map((name) => [name, 8000]));
   const rows = compareThreeLanes(exportFor(names), official);
