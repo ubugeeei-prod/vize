@@ -144,8 +144,7 @@ mod tests {
     #[test]
     fn test_render_markdown_keeps_non_ascii_text() {
         let result = formatting::render_markdown_to_ansi("理由: `v-model` を使う * é");
-        assert!(result.starts_with("理由: "), "{result}");
-        assert!(result.ends_with(" を使う * é"), "{result}");
+        assert_eq!(result, "理由: \x1b[36mv-model\x1b[39m を使う * é");
     }
 
     #[test]
