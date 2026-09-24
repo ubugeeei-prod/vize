@@ -41,6 +41,7 @@ description: "`@vizejs/ui` 的所有系列：props、事件、插槽、暴露成
 | --- | --- | --- |
 | [Infinite Scroll](../../../guide/ui/infinite-scroll.md) | stable | Headless infinite scroll: sentinel-driven paging, load-more fallback, live status, and APG feed. |
 | [Table](../../../guide/ui/table.md) | stable | Native semantic table component family for accessible tabular data composition. |
+| [Timeline](../../../guide/ui/timeline.md) | stable | Accessible, unstyled timeline built on a native ordered list with progress states. |
 | [Tree](../../../guide/ui/tree.md) | stable | Accessible, unstyled, data-driven tree view with typed nodes, lazy loading, and virtualization. |
 
 ## date-time
@@ -48,7 +49,11 @@ description: "`@vizejs/ui` 的所有系列：props、事件、插槽、暴露成
 | Family | Maturity | Summary |
 | --- | --- | --- |
 | [Calendar](../../../guide/ui/calendar.md) | stable | Accessible, unstyled calendar compound primitive with a timezone-free date model. |
+| [Date Field](../../../guide/ui/date-field.md) | stable | Accessible, unstyled segmented date input whose segment order follows the locale. |
+| [Date Picker](../../../guide/ui/date-picker.md) | stable | Accessible, unstyled date picker: a segmented DateField plus a popover Calendar. |
+| [Date Range Picker](../../../guide/ui/date-range-picker.md) | stable | Accessible, unstyled date range picker: start/end DateFields plus a popover RangeCalendar. |
 | [Range Calendar](../../../guide/ui/range-calendar.md) | stable | Accessible, unstyled two-click date range calendar that reuses the Calendar grid parts. |
+| [Time Field](../../../guide/ui/time-field.md) | stable | Accessible, unstyled segmented time input with 12/24-hour clocks and hour/minute/second granularity. |
 
 ## disclosure
 
@@ -73,12 +78,14 @@ description: "`@vizejs/ui` 的所有系列：props、事件、插槽、暴露成
 | [Skeleton](../../../guide/ui/skeleton.md) | stable | Headless Skeleton; covers WAI-ARIA status role, shadcn/ui Skeleton, React Aria ProgressBar. |
 | [Spinner](../../../guide/ui/spinner.md) | stable | Accessible, unstyled status/progress indicator for pending work. |
 | [StatusLight](../../../guide/ui/status-light.md) | stable | Accessible, unstyled state indicator for presence and health UI. |
+| [Toast](../../../guide/ui/toast.md) | stable | Headless toast queue, provider, region, and parts with typed imperative API. |
 
 ## form
 
 | Family | Maturity | Summary |
 | --- | --- | --- |
 | [Color Picker](../../../guide/ui/color-picker.md) | stable | Accessible, unstyled color picker: 2D area, channel sliders, swatches, text field, and eye dropper. |
+| [Editable](../../../guide/ui/editable.md) | stable | Inline edit: a focusable preview that swaps to an input, submitting on Enter/blur and cancelling on Escape. |
 | [Error Summary](../../../guide/ui/error-summary.md) | stable | Headless Error Summary; covers WCAG 2.2 error identification, focusable validation summaries. |
 | [Field](../../../guide/ui/field.md) | stable | Accessible, unstyled Field compound primitive for form label, help, and error wiring. |
 | [Field Wiring](../../../guide/ui/field-wiring.md) | stable | Headless Field Wiring; covers React Aria useField, WAI-ARIA description relations. |
@@ -87,10 +94,13 @@ description: "`@vizejs/ui` 的所有系列：props、事件、插槽、暴露成
 | [Input](../../../guide/ui/input.md) | stable | Accessible, unstyled native text input with controlled and uncontrolled state. |
 | [Input Mask](../../../guide/ui/input-mask.md) | stable | Native text input driven by a typed pattern mask (phone numbers, dates, card numbers, codes). |
 | [Number Field](../../../guide/ui/number-field.md) | stable | Locale-aware APG spinbutton with formatting, stepping, press-and-hold triggers, and form association. |
+| [Password Field](../../../guide/ui/password-field.md) | stable | Password input with a visibility toggle, Caps Lock detection, and a pluggable strength meter. |
+| [PIN Input](../../../guide/ui/pin-input.md) | stable | One-time-code and PIN entry split across single-character fields with paste distribution. |
 | [Range Slider](../../../guide/ui/range-slider.md) | stable | Multi-thumb APG slider for value ranges with pointer dragging, keyboard, and form association. |
 | [Rating](../../../guide/ui/rating.md) | stable | Accessible, unstyled native-radio rating control with controlled and uncontrolled state. |
 | [Search Field](../../../guide/ui/search-field.md) | stable | Headless Search Field; covers HTML search input, React Aria SearchField, Reka UI Primitive. |
 | [Slider](../../../guide/ui/slider.md) | stable | Accessible, unstyled native range slider with controlled and uncontrolled state. |
+| [Tags Input](../../../guide/ui/tags-input.md) | stable | Accessible, unstyled TagsInput with typed tags, delimiters, paste splitting, and form association. |
 | [Textarea](../../../guide/ui/textarea.md) | stable | Accessible, unstyled native textarea with controlled and uncontrolled state. |
 
 ## foundations
@@ -125,6 +135,7 @@ description: "`@vizejs/ui` 的所有系列：props、事件、插槽、暴露成
 | [Move](../../../guide/ui/move.md) | stable | Headless Move; covers React Aria useMove, Pointer Events capture. |
 | [Pointer Grace](../../../guide/ui/pointer-grace.md) | stable | Headless Pointer Grace; covers safe triangle, hover intent polygon. |
 | [Press](../../../guide/ui/press.md) | stable | Headless Press; covers React Aria usePress, Pointer Events activation. |
+| [Scroll Spy](../../../guide/ui/scroll-spy.md) | stable | Headless Scroll Spy; covers Bootstrap Scrollspy, VueUse useIntersectionObserver, IntersectionObserver. |
 | [Shortcut](../../../guide/ui/shortcut.md) | stable | Headless Shortcut; covers VS Code keybindings, React Aria useKeyboard, GitHub Hotkey. |
 | [Sortable](../../../guide/ui/sortable.md) | stable | Headless Sortable; covers React Aria useDraggableCollection, ARIA APG drag reordering. |
 | [Spatial Navigation](../../../guide/ui/spatial-navigation.md) | stable | Headless Spatial Navigation; covers CSS Spatial Navigation, ARIA grid navigation. |
@@ -159,24 +170,37 @@ description: "`@vizejs/ui` 的所有系列：props、事件、插槽、暴露成
 | [Image](../../../guide/ui/image.md) | stable | Headless image with loading states, candidate fallback chains, and deferred loading. |
 | [QR Code](../../../guide/ui/qr-code.md) | stable | Dependency-free QR Code encoder and headless SVG renderer. |
 
+## menus
+
+| Family | Maturity | Summary |
+| --- | --- | --- |
+| [Context Menu](../../../guide/ui/context-menu.md) | stable | Accessible, unstyled ContextMenu: opens a menu at the pointer on `contextmenu`, at the focused element on Shift+F10 or the ContextMenu key, and at the touch point after a long press. Items and submenus are the shared Menu parts re-exported under ContextMenu names. |
+| [Dropdown Menu](../../../guide/ui/dropdown-menu.md) | stable | Accessible, unstyled DropdownMenu: a menu button (WAI-ARIA APG) that opens a positioned menu. Items, groups, radio/checkbox items, and submenus are the shared Menu parts re-exported under DropdownMenu names. |
+| [Menu](../../../guide/ui/menu.md) | stable | Accessible, unstyled Menu compound primitive (WAI-ARIA APG menu and menu button). Every menu surface — DropdownMenu, ContextMenu, and Menubar — shares this core: roving focus, typeahead, submenus with pointer grace, dismissal, focus return, positioning, portals, and presence. |
+| [Menubar](../../../guide/ui/menubar.md) | stable | Accessible, unstyled Menubar (WAI-ARIA APG menubar): a horizontal row of menu triggers with roving focus, typeahead, and Left/Right hand-off between open menus. Menu content, items, and submenus are the shared Menu parts re-exported under Menubar names. |
+
 ## navigation
 
 | Family | Maturity | Summary |
 | --- | --- | --- |
 | [Breadcrumb](../../../guide/ui/breadcrumb.md) | stable | Accessible, unstyled breadcrumb navigation primitive for route hierarchies. |
 | [Link](../../../guide/ui/link.md) | stable | Accessible, unstyled native anchor link with disabled and inert guards. |
+| [Navigation Menu](../../../guide/ui/navigation-menu.md) | stable | Accessible, unstyled site navigation with hover-intent flyouts, an indicator, and a measured viewport. |
 | [Pagination](../../../guide/ui/pagination.md) | stable | Accessible, unstyled Pagination primitive with controlled page state and SSR-stable ids. |
 | [Skip Link](../../../guide/ui/skip-link.md) | stable | Accessible, headless skip-link primitive for same-document navigation. |
 | [Stepper](../../../guide/ui/stepper.md) | stable | Accessible, unstyled Stepper primitive for multi-step flows. |
 | [Tabs](../../../guide/ui/tabs.md) | stable | Accessible, unstyled tabset primitive with roving focus and SSR-stable ids. |
+| [Table of Contents](../../../guide/ui/toc.md) | stable | Accessible, unstyled table of contents that tracks the section in view. |
 
 ## overlays
 
 | Family | Maturity | Summary |
 | --- | --- | --- |
 | [Alert Dialog](../../../guide/ui/alert-dialog.md) | stable | Opinionated alert-dialog compound primitive built on Dialog. |
+| [Confirm](../../../guide/ui/confirm.md) | stable | Promise-based confirmation helper rendered through the AlertDialog primitive. |
 | [Dialog](../../../guide/ui/dialog.md) | stable | Accessible, unstyled modal Dialog compound primitive. |
 | [Dismissable Layer](../../../guide/ui/dismissable-layer.md) | stable | Headless Dismissable Layer; covers Radix DismissableLayer, React Aria overlay dismissal, Reka UI DismissableLayer. |
+| [Drawer](../../../guide/ui/drawer.md) | stable | Accessible, unstyled side drawer (sheet) built on native `<dialog>` and the Dialog contract. |
 | [Hover Card](../../../guide/ui/hover-card.md) | stable | Accessible, unstyled hover card for previewing linked content on hover or focus. |
 | [Motion Tokens](../../../guide/ui/motion.md) | stable | Headless Motion Tokens; covers View Transitions API, CSS @starting-style, prefers-reduced-motion. |
 | [Popover](../../../guide/ui/popover.md) | stable | Accessible, unstyled Popover compound primitive. |
@@ -192,6 +216,7 @@ description: "`@vizejs/ui` 的所有系列：props、事件、插槽、暴露成
 | Family | Maturity | Summary |
 | --- | --- | --- |
 | [Checkbox](../../../guide/ui/checkbox.md) | stable | Headless Checkbox; covers shadcn/ui Checkbox, Reka UI Checkbox, React Aria Checkbox. |
+| [Checkbox Group](../../../guide/ui/checkbox-group.md) | stable | Typed multi-select group of native checkboxes with an optional tri-state select-all parent. |
 | [Combobox](../../../guide/ui/combobox.md) | stable | Accessible, unstyled Combobox: an editable APG combobox with a typed listbox popup. Popup structure is shared with Select: `ComboboxContent`, `ComboboxItem`, `ComboboxGroup`, `ComboboxLabel`, `ComboboxSeparator`, `ComboboxViewport`, `ComboboxItemIndicator`, `ComboboxScrollButton`, and `ComboboxVirtualizer` are the Select parts, which publish `data-vize-ui="combobox-*"` inside a `ComboboxRoot`. |
 | [Listbox](../../../guide/ui/listbox.md) | stable | Accessible, unstyled Listbox with active-descendant focus and typed selection. |
 | [Native Select](../../../guide/ui/native-select.md) | stable | Accessible, unstyled native select with controlled and uncontrolled selection. |
