@@ -14,6 +14,14 @@ import { hoverCardRuntimeFixtures } from "../families/overlays/hover-card/runtim
 import { confirmRuntimeFixture } from "../families/overlays/confirm/runtime-conformance-confirm-fixtures.ts";
 import { drawerRuntimeFixtures } from "../families/overlays/drawer/runtime-conformance-drawer-fixtures.ts";
 import { toastRuntimeFixtures } from "../families/feedback/toast/runtime-conformance-toast-fixtures.ts";
+import { popconfirmRuntimeFixtures } from "../families/overlays/popconfirm/runtime-conformance-popconfirm-fixtures.ts";
+import { notificationCenterRuntimeFixtures } from "../families/feedback/notification-center/runtime-conformance-notification-center-fixtures.ts";
+import { commandPaletteRuntimeFixtures } from "../families/overlays/command-palette/runtime-conformance-command-palette-fixtures.ts";
+import { floatingActionButtonRuntimeFixtures } from "../families/actions/floating-action-button/runtime-conformance-floating-action-button-fixtures.ts";
+import { backToTopRuntimeFixtures } from "../families/actions/back-to-top/runtime-conformance-back-to-top-fixtures.ts";
+import { sidebarRuntimeFixtures } from "../families/layout/sidebar/runtime-conformance-sidebar-fixtures.ts";
+import { resizableRuntimeFixtures } from "../families/layout/resizable/runtime-conformance-resizable-fixtures.ts";
+import { stickyRuntimeFixtures } from "../families/layout/sticky/runtime-conformance-sticky-fixtures.ts";
 import { calloutRuntimeFixture } from "../families/feedback/callout/runtime-conformance-callout-fixtures.ts";
 import { calendarRuntimeFixtures } from "../families/date-time/calendar/runtime-conformance-calendar-fixtures.ts";
 import { dateFieldRuntimeFixture } from "../families/date-time/date-field/runtime-conformance-date-field-fixtures.ts";
@@ -115,6 +123,14 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   confirmRuntimeFixture,
   ...drawerRuntimeFixtures,
   ...toastRuntimeFixtures,
+  ...popconfirmRuntimeFixtures,
+  ...notificationCenterRuntimeFixtures,
+  ...commandPaletteRuntimeFixtures,
+  ...floatingActionButtonRuntimeFixtures,
+  ...backToTopRuntimeFixtures,
+  ...sidebarRuntimeFixtures,
+  ...resizableRuntimeFixtures,
+  ...stickyRuntimeFixtures,
   ...layoutRuntimeFixtures,
   ...menusRuntimeFixtures,
   ...typographyRuntimeFixtures,

@@ -235,6 +235,16 @@
       "import": "./dist/button.mjs",
       "default": "./dist/button.mjs"
     },
+    "./floating-action-button": {
+      "types": "./dist/floating-action-button.d.mts",
+      "import": "./dist/floating-action-button.mjs",
+      "default": "./dist/floating-action-button.mjs"
+    },
+    "./back-to-top": {
+      "types": "./dist/back-to-top.d.mts",
+      "import": "./dist/back-to-top.mjs",
+      "default": "./dist/back-to-top.mjs"
+    },
     "./button-group": {
       "types": "./dist/button-group.d.mts",
       "import": "./dist/button-group.mjs",
@@ -295,10 +305,20 @@
       "import": "./dist/popover.mjs",
       "default": "./dist/popover.mjs"
     },
+    "./popconfirm": {
+      "types": "./dist/popconfirm.d.mts",
+      "import": "./dist/popconfirm.mjs",
+      "default": "./dist/popconfirm.mjs"
+    },
     "./tooltip": {
       "types": "./dist/tooltip.d.mts",
       "import": "./dist/tooltip.mjs",
       "default": "./dist/tooltip.mjs"
+    },
+    "./notification-center": {
+      "types": "./dist/notification-center.d.mts",
+      "import": "./dist/notification-center.mjs",
+      "default": "./dist/notification-center.mjs"
     },
     "./tour": {
       "types": "./dist/tour.d.mts",
@@ -359,6 +379,21 @@
       "types": "./dist/stack.d.mts",
       "import": "./dist/stack.mjs",
       "default": "./dist/stack.mjs"
+    },
+    "./sidebar": {
+      "types": "./dist/sidebar.d.mts",
+      "import": "./dist/sidebar.mjs",
+      "default": "./dist/sidebar.mjs"
+    },
+    "./resizable": {
+      "types": "./dist/resizable.d.mts",
+      "import": "./dist/resizable.mjs",
+      "default": "./dist/resizable.mjs"
+    },
+    "./sticky": {
+      "types": "./dist/sticky.d.mts",
+      "import": "./dist/sticky.mjs",
+      "default": "./dist/sticky.mjs"
     },
     "./scroll-area": {
       "types": "./dist/scroll-area.d.mts",
@@ -539,6 +574,11 @@
       "types": "./dist/drawer.d.mts",
       "import": "./dist/drawer.mjs",
       "default": "./dist/drawer.mjs"
+    },
+    "./command-palette": {
+      "types": "./dist/command-palette.d.mts",
+      "import": "./dist/command-palette.mjs",
+      "default": "./dist/command-palette.mjs"
     },
     "./dismissable-layer": {
       "types": "./dist/dismissable-layer.d.mts",

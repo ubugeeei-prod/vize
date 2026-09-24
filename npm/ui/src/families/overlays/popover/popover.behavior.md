@@ -1,19 +1,19 @@
 # Popover behavior contract
 
-| Surface   | Contract                                                                                                                                                                                    |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| State     | `PopoverRoot` supports uncontrolled `defaultOpen` and controlled `open` with `update:open` and `open-change` events; disabled roots request closure and publish `data-disabled`.            |
-| Trigger   | `PopoverTrigger` renders a native button with deterministic ids, `aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`, `part="trigger"`, `data-state`, and disabled data hooks.       |
-| Content   | `PopoverContent` composes `Portal`, `Presence`, `Positioner`, `DismissableLayer`, and optional focus/isolation controllers; it renders `role="dialog"` with deterministic content ids.      |
-| Dismissal | Escape, outside pointer-down, and outside focus request closing unless the preventable callback was canceled; trigger interaction is treated as an inside branch and toggles through state. |
-| Focus     | Open content auto-focuses the provided `initialFocus`, the first eligible descendant, or the content fallback; close restores focus to the trigger when focus restoration is enabled.       |
-| Modal     | `modal` content may contain focus, add focus guards, inert outside content, and lock scroll; non-modal content skips those document-isolating effects while preserving dialog semantics.    |
-| Portal    | Content teleports to `to` after hydration by default; `portalDisabled` renders in place and `forceMount` keeps closed content hidden without activating document controllers.               |
-| Position  | `placement`, `direction`, collision, arrow, safe-area, and size props forward to `Positioner`; content publishes `data-placement`, `data-side`, `data-align`, and `data-top-layer`.         |
-| Arrow     | `PopoverArrow` is a measured `Positioner` arrow with `part="arrow"`, Popover state data hooks, and slot coordinates; it is decorative and emits no role or label of its own.                |
-| Styling   | Popover emits no component CSS beyond scoped empty blocks; consumers style with `data-vize-ui`, `part`, `data-state`, `data-side`, `data-align`, and Positioner CSS variables.              |
-| CSS vars  | `PopoverContent` forwards Positioner sizing variables, including `--vize-ui-positioner-available-width` and `--vize-ui-positioner-available-height`, when `size` is enabled.                |
-| SSR       | Server output is deterministic, renders portal content in place, includes no document listeners, and activates dismissal, focus, inert, and scroll-lock controllers only after mount.       |
+| Surface   | Contract                                                                                                                                                                                                               |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| State     | `PopoverRoot` supports uncontrolled `defaultOpen` and controlled `open` with `update:open` and `open-change` events; disabled roots request closure and publish `data-disabled`.                                       |
+| Trigger   | `PopoverTrigger` renders a native button with deterministic ids, `aria-haspopup="dialog"`, `aria-expanded`, `aria-controls`, `part="trigger"`, `data-state`, and disabled data hooks.                                  |
+| Content   | `PopoverContent` composes `Portal`, `Presence`, `Positioner`, `DismissableLayer`, and optional focus/isolation controllers; it renders `role="dialog"` (or `"alertdialog"` via `role`) with deterministic content ids. |
+| Dismissal | Escape, outside pointer-down, and outside focus request closing unless the preventable callback was canceled; trigger interaction is treated as an inside branch and toggles through state.                            |
+| Focus     | Open content auto-focuses the provided `initialFocus`, the first eligible descendant, or the content fallback; close restores focus to the trigger when focus restoration is enabled.                                  |
+| Modal     | `modal` content may contain focus, add focus guards, inert outside content, and lock scroll; non-modal content skips those document-isolating effects while preserving dialog semantics.                               |
+| Portal    | Content teleports to `to` after hydration by default; `portalDisabled` renders in place and `forceMount` keeps closed content hidden without activating document controllers.                                          |
+| Position  | `placement`, `direction`, collision, arrow, safe-area, and size props forward to `Positioner`; content publishes `data-placement`, `data-side`, `data-align`, and `data-top-layer`.                                    |
+| Arrow     | `PopoverArrow` is a measured `Positioner` arrow with `part="arrow"`, Popover state data hooks, and slot coordinates; it is decorative and emits no role or label of its own.                                           |
+| Styling   | Popover emits no component CSS beyond scoped empty blocks; consumers style with `data-vize-ui`, `part`, `data-state`, `data-side`, `data-align`, and Positioner CSS variables.                                         |
+| CSS vars  | `PopoverContent` forwards Positioner sizing variables, including `--vize-ui-positioner-available-width` and `--vize-ui-positioner-available-height`, when `size` is enabled.                                           |
+| SSR       | Server output is deterministic, renders portal content in place, includes no document listeners, and activates dismissal, focus, inert, and scroll-lock controllers only after mount.                                  |
 
 | Component             | State x input                           | Outcome                                                                                                             |
 | --------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |

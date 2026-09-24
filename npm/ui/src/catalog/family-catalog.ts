@@ -1,4 +1,12 @@
 import { accordionFamilyCatalog } from "./family-catalog-accordion.ts";
+import { popconfirmFamilyCatalog } from "./family-catalog-popconfirm.ts";
+import { notificationCenterFamilyCatalog } from "./family-catalog-notification-center.ts";
+import { commandPaletteFamilyCatalog } from "./family-catalog-command-palette.ts";
+import { floatingActionButtonFamilyCatalog } from "./family-catalog-floating-action-button.ts";
+import { backToTopFamilyCatalog } from "./family-catalog-back-to-top.ts";
+import { sidebarFamilyCatalog } from "./family-catalog-sidebar.ts";
+import { resizableFamilyCatalog } from "./family-catalog-resizable.ts";
+import { stickyFamilyCatalog } from "./family-catalog-sticky.ts";
 import { actionFamilyCatalog } from "./family-catalog-actions.ts";
 import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
@@ -52,6 +60,14 @@ export {
 
 const allFamilyCatalogEntries = [
   ...accordionFamilyCatalog,
+  ...popconfirmFamilyCatalog,
+  ...notificationCenterFamilyCatalog,
+  ...commandPaletteFamilyCatalog,
+  ...floatingActionButtonFamilyCatalog,
+  ...backToTopFamilyCatalog,
+  ...sidebarFamilyCatalog,
+  ...resizableFamilyCatalog,
+  ...stickyFamilyCatalog,
   ...actionFamilyCatalog,
   ...accessibilityFamilyCatalog,
   ...basicFamilyCatalog,

@@ -299,7 +299,7 @@ export const accessibilityFamilyCatalog = [
       retainedSignature: "visually-hidden",
       maximumJavaScriptGzipBytes: 400,
       // Covers the shared packaged stylesheet and motion tokens shipped with styled families.
-      maximumCssGzipBytes: 7_600,
+      maximumCssGzipBytes: 7_700,
     },
     aliases: ["screen reader only", "sr-only", "visually hidden"],
     upstreamCoverage: ["React Aria VisuallyHidden", "Radix VisuallyHidden"],

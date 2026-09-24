@@ -1,5 +1,9 @@
 import { colorPickerRendererFixtures } from "./renderer-fixtures-color-picker.ts";
 import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
+import { overlay3aRendererFixtures } from "./renderer-fixtures-overlay-3a.ts";
+import { commandPaletteRendererFixtures } from "./renderer-fixtures-command-palette.ts";
+import { overlay3cRendererFixtures } from "./renderer-fixtures-overlay-3c.ts";
+import { overlay3bRendererFixtures } from "./renderer-fixtures-overlay-3b.ts";
 import { dataRendererFixtures } from "./renderer-fixtures-data.ts";
 import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
 import { disclosureRendererFixtures } from "./renderer-fixtures-disclosure.ts";
@@ -25,6 +29,10 @@ import { wayfindingRendererFixtures } from "./renderer-fixtures-wayfinding.ts";
 export const groupedRendererFixtures = [
   ...colorPickerRendererFixtures,
   ...commandRendererFixtures,
+  ...overlay3aRendererFixtures,
+  ...commandPaletteRendererFixtures,
+  ...overlay3cRendererFixtures,
+  ...overlay3bRendererFixtures,
   ...dataRendererFixtures,
   ...dialogRendererFixtures,
   ...disclosureRendererFixtures,
