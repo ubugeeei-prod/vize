@@ -166,6 +166,26 @@ fn explicit_inputs_can_select_files_under_normally_excluded_directories() {
 }
 
 #[test]
+fn excluded_name_in_project_path_does_not_enable_nested_dependencies() {
+    let dir = tempfile::tempdir().unwrap();
+    let project = dir.path().join("node_modules/project");
+    let source = project.join("src/App.vue");
+    let dependency = project.join("node_modules/vue/index.vue");
+    for file in [&source, &dependency] {
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, "").unwrap();
+    }
+
+    let files = collect_lint_file_collection(
+        &[project.join("**/*.vue").display().to_string().into()],
+        None,
+    )
+    .files;
+
+    assert_eq!(files, vec![source]);
+}
+
+#[test]
 fn collection_reports_each_pattern_with_no_lintable_matches() {
     let dir = tempfile::tempdir().unwrap();
     let src = dir.path().join("src");
