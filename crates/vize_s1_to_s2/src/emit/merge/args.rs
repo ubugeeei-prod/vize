@@ -59,10 +59,9 @@ pub(super) fn force_multiline_object_arg(
     let after = rest.get(1..).unwrap_or_default();
     let after_spread = before.iter().any(Arg::is_spread);
     if !after_spread || pieces.is_empty() {
-        return pieces.len() == 1
-            && for_item
-            && after.iter().any(Arg::is_spread)
-            && has_object_with_props(after);
+        // A v-for item with one authored prop followed by a spread keeps the
+        // authored object multiline in the shipped component codegen.
+        return pieces.len() == 1 && for_item && after.iter().any(Arg::is_spread);
     }
     let has_later_spread = after.iter().any(Arg::is_spread);
     if has_later_spread && single_static_attr_before_object_on(args, index, pieces, for_item) {
@@ -166,18 +165,6 @@ fn has_unsuppressed_key_only_branch_before_spread(args: &[Arg<'_>]) -> bool {
                 pieces,
                 suppressed_authored_key: false,
             } if pieces.is_empty()
-        )
-    })
-}
-
-fn has_object_with_props(args: &[Arg<'_>]) -> bool {
-    args.iter().any(|arg| {
-        matches!(
-            arg,
-            Arg::Object {
-                pieces,
-                ..
-            } if !pieces.is_empty()
         )
     })
 }
