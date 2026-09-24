@@ -28,6 +28,6 @@ _None._
 | `Drawer`           |        1 |    2 |
 | `Scope`            |        0 |    1 |
 | `ScopeBinding`     |        0 |    4 |
-| `Span`             |        0 |   75 |
+| `Span`             |        0 |   76 |
 | `Croquis.bindings` |        1 |   38 |
 | `Croquis.scopes`   |        0 |   11 |
