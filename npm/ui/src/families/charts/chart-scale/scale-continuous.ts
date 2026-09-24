@@ -168,7 +168,7 @@ function withoutNice<Options extends ContinuousScaleOptions>(
   options: Options,
   resolved: ResolvedContinuous,
 ): Options {
-  return { ...options, domain: resolved.domain, nice: false };
+  return { ...options, domain: resolved.domain, range: resolved.range, nice: false };
 }
 
 /**
@@ -198,7 +198,7 @@ export function scaleLinear(options: ContinuousScaleOptions = {}): LinearScale {
       numberTickFormat(first, last, count, format),
     nice: (count = 10) => scaleLinear({ ...current, nice: count }),
     with: (next: ContinuousScaleOptions) => scaleLinear({ ...current, ...next }),
-    options: () => current,
+    options: () => ({ ...current }),
   });
 }
 
@@ -239,7 +239,7 @@ export function scalePow(options: PowScaleOptions = {}): PowScale {
       numberTickFormat(first, last, count, format),
     nice: (count = 10) => scalePow({ ...current, nice: count }),
     with: (next: PowScaleOptions) => scalePow({ ...current, ...next }),
-    options: () => current,
+    options: () => ({ ...current }),
   });
 }
 
@@ -360,6 +360,6 @@ export function scaleLog(options: LogScaleOptions = {}): LogScale {
     },
     nice: () => scaleLog({ ...current, nice: true }),
     with: (next: LogScaleOptions) => scaleLog({ ...current, ...next }),
-    options: () => current,
+    options: () => ({ ...current }),
   });
 }

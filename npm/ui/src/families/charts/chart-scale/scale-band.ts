@@ -11,6 +11,10 @@ import type {
 
 type DiscreteKey = string | number;
 
+function copyValue<Domain extends DiscreteValue>(value: Domain): Domain {
+  return (value instanceof Date ? new Date(value.getTime()) : value) as Domain;
+}
+
 /** Identity key for discrete values; dates compare by timestamp like d3's InternMap. */
 export function discreteKey(value: DiscreteValue): DiscreteKey {
   return value instanceof Date ? value.getTime() : value;
@@ -28,7 +32,7 @@ function uniqueDomain<Domain extends DiscreteValue>(
     const key = discreteKey(value);
     if (index.has(key)) continue;
     index.set(key, domain.length);
-    domain.push(value);
+    domain.push(copyValue(value));
   }
   return { domain: Object.freeze(domain), index };
 }
@@ -61,13 +65,17 @@ export function scaleOrdinal<Domain extends DiscreteValue, Output>(
       throw new RangeError("VIZE_UI_SCALE_EMPTY_RANGE: ordinal range is empty");
     return output;
   };
-  return Object.assign(lookup, {
+  const scale = Object.assign(lookup, {
     kind: "ordinal" as const,
-    domain,
     range,
     with: (next: Partial<OrdinalScaleOptions<Domain, Output>>) =>
       scaleOrdinal<Domain, Output>({ ...options, domain, range, ...next }),
+  }) as OrdinalScale<Domain, Output>;
+  Object.defineProperty(scale, "domain", {
+    enumerable: true,
+    get: () => Object.freeze(domain.map(copyValue)),
   });
+  return scale;
 }
 
 interface BandLayout {
@@ -122,21 +130,25 @@ function createBand<Domain extends DiscreteValue>(
     options.round ?? false,
   );
   const current: BandScaleOptions<Domain> = { ...options, domain, range };
-  return Object.assign(
+  const scale = Object.assign(
     (value: Domain) => {
       const position = index.get(discreteKey(value));
       return position === undefined ? Number.NaN : (layout.starts[position] ?? Number.NaN);
     },
     {
       kind,
-      domain,
       range,
       bandwidth: layout.bandwidth,
       step: layout.step,
-      ticks: () => [...domain],
+      ticks: () => domain.map(copyValue),
       with: (next: BandScaleOptions<Domain>) => createBand<Domain>({ ...current, ...next }, kind),
     },
-  );
+  ) as BandScale<Domain>;
+  Object.defineProperty(scale, "domain", {
+    enumerable: true,
+    get: () => Object.freeze(domain.map(copyValue)),
+  });
+  return scale;
 }
 
 /**

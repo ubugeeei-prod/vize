@@ -257,3 +257,43 @@ test("scales are immutable and expose their options", () => {
   const time = scaleTime({ domain: [0, 1000] }).with({ timeZone: "Europe/Paris" });
   assert.equal(time.timeZone, "Europe/Paris");
 });
+
+test("scales snapshot mutable caller options and returned time domains", () => {
+  const range = [0, 10];
+  const linear = scaleLinear({ domain: [0, 10], range });
+  const logarithmic = scaleLog({ domain: [1, 10], range });
+  const start = new Date(Date.UTC(2024, 0, 1));
+  const time = scaleTime({ domain: [start, new Date(Date.UTC(2024, 0, 2))], range });
+  range[1] = 100;
+  start.setUTCFullYear(2030);
+
+  assert.deepEqual(linear.options().range, [0, 10]);
+  assert.deepEqual(logarithmic.options().range, [0, 10]);
+  assert.deepEqual(time.options().range, [0, 10]);
+  assert.equal(linear.with({ clamp: true })(10), 10);
+  assert.equal(logarithmic.with({ clamp: true })(10), 10);
+  assert.equal(time.with({ clamp: true })(Date.UTC(2024, 0, 2)), 10);
+
+  const changedOptions = linear.options() as { range: number[] };
+  changedOptions.range = [0, 100];
+  assert.deepEqual(linear.options().range, [0, 10]);
+  const firstDomain = time.domain[0];
+  assert.ok(firstDomain);
+  firstDomain.setUTCFullYear(2030);
+  assert.equal(time.domain[0]?.getUTCFullYear(), 2024);
+  assert.equal(time.with({ clamp: true }).domain[0]?.getUTCFullYear(), 2024);
+
+  const category = new Date(0);
+  const band = scaleBand({ domain: [category], range: [0, 10] });
+  const ordinal = scaleOrdinal({ domain: [category], range: ["first"] });
+  category.setTime(1000);
+  band.domain[0]?.setTime(2000);
+  ordinal.domain[0]?.setTime(2000);
+  band.ticks()[0]?.setTime(2000);
+  assert.equal(band(new Date(0)), 0);
+  assert.equal(band.domain[0]?.getTime(), 0);
+  assert.equal(band.with({}).domain[0]?.getTime(), 0);
+  assert.equal(ordinal(new Date(0)), "first");
+  assert.equal(ordinal.domain[0]?.getTime(), 0);
+  assert.equal(ordinal.with({}).domain[0]?.getTime(), 0);
+});

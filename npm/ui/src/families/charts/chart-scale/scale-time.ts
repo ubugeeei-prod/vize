@@ -67,7 +67,7 @@ export function scaleTime(options: TimeScaleOptions = {}): TimeScale {
     unknown: options.unknown ?? Number.NaN,
     untransform: identity,
   });
-  const current: TimeScaleOptions = { ...options, domain, nice: false, timeZone };
+  const current: TimeScaleOptions = { ...options, domain, range, nice: false, timeZone };
   const first = domain[0] ?? 0;
   const last = domain.at(-1) ?? 0;
 
@@ -82,27 +82,36 @@ export function scaleTime(options: TimeScaleOptions = {}): TimeScale {
     return "year";
   };
 
-  return Object.assign((value: Date | number | null | undefined) => core.map(epochOf(value)), {
-    kind: "time" as const,
-    timeZone,
-    domain: Object.freeze(domain.map((epoch) => new Date(epoch))),
-    range,
-    clamp: options.clamp ?? false,
-    round: options.round ?? false,
-    invert: (value: number) => new Date(core.invert(value)),
-    ticks: (count = 10) => {
-      const reverse = last < first;
-      const [start, stop] = reverse ? [last, first] : [first, last];
-      const interval = timeTickInterval(intervals, start, stop, count, tickStep);
-      const values = interval === null ? [] : interval.range(start, stop + 1);
-      const dates = values.map((epoch) => new Date(epoch));
-      return reverse ? dates.reverse() : dates;
+  const scale = Object.assign(
+    (value: Date | number | null | undefined) => core.map(epochOf(value)),
+    {
+      kind: "time" as const,
+      timeZone,
+      range,
+      clamp: options.clamp ?? false,
+      round: options.round ?? false,
+      invert: (value: number) => new Date(core.invert(value)),
+      ticks: (count = 10) => {
+        const reverse = last < first;
+        const [start, stop] = reverse ? [last, first] : [first, last];
+        const interval = timeTickInterval(intervals, start, stop, count, tickStep);
+        const values = interval === null ? [] : interval.range(start, stop + 1);
+        const dates = values.map((epoch) => new Date(epoch));
+        return reverse ? dates.reverse() : dates;
+      },
+      tickGranularity,
+      tickFormat: (format: TimeTickFormatOptions = {}) =>
+        timeTickFormat(timeZone, tickGranularity, format),
+      nice: (count = 10) => scaleTime({ ...current, nice: count }),
+      with: (next: TimeScaleOptions) => scaleTime({ ...current, ...next }),
+      options: () => ({ ...current }),
     },
-    tickGranularity,
-    tickFormat: (format: TimeTickFormatOptions = {}) =>
-      timeTickFormat(timeZone, tickGranularity, format),
-    nice: (count = 10) => scaleTime({ ...current, nice: count }),
-    with: (next: TimeScaleOptions) => scaleTime({ ...current, ...next }),
-    options: () => current,
+  ) as TimeScale;
+  // Date is mutable even in a readonly array. Keep the epoch snapshot private
+  // so changing a returned domain value cannot change later copies or `with()`.
+  Object.defineProperty(scale, "domain", {
+    enumerable: true,
+    get: () => Object.freeze(domain.map((epoch) => new Date(epoch))),
   });
+  return scale;
 }
