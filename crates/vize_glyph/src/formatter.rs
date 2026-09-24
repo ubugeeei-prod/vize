@@ -42,6 +42,17 @@ enum Block<'b> {
     Custom(&'b vize_atelier_sfc::SfcCustomBlock<'b>),
 }
 
+impl Block<'_> {
+    fn location(&self) -> &vize_atelier_sfc::BlockLocation {
+        match self {
+            Self::Script(block) => &block.loc,
+            Self::Template(block) => &block.loc,
+            Self::Style(block) => &block.loc,
+            Self::Custom(block) => &block.loc,
+        }
+    }
+}
+
 impl<'a> GlyphFormatter<'a> {
     /// Create a new formatter with the given options and allocator
     #[inline]
@@ -106,9 +117,33 @@ impl<'a> GlyphFormatter<'a> {
             blocks.push((order, Block::Custom(block)));
         }
 
+        // The SFC descriptor contains blocks but not the top-level content
+        // between them. Attach each gap to the following block before block
+        // sorting, so comments stay with the block they document. The document
+        // prologue is separate and remains at the start after sorting.
+        let mut source_order: Vec<_> = blocks.iter().map(|(_, block)| block.location()).collect();
+        source_order.sort_by_key(|loc| loc.tag_start);
+        let first_tag_start = source_order
+            .first()
+            .map_or(source.len(), |loc| loc.tag_start);
+        let prologue = source.get(..first_tag_start).unwrap_or_default().trim();
+        let mut leading_content = FxHashMap::default();
+        let mut previous_end = first_tag_start;
+        for loc in source_order {
+            if let Some(content) = source
+                .get(previous_end..loc.tag_start)
+                .map(str::trim)
+                .filter(|content| !content.is_empty())
+            {
+                leading_content.insert(loc.tag_start, content);
+            }
+            previous_end = loc.tag_end;
+        }
+        let trailing_content = source.get(previous_end..).unwrap_or_default().trim();
+
         blocks.sort_by_key(|(order, _)| *order);
 
-        if let Some(prologue) = document_prologue(source, &blocks) {
+        if !prologue.is_empty() {
             output.extend_from_slice(prologue.as_bytes());
             if !blocks.is_empty() {
                 output.extend_from_slice(newline);
@@ -119,6 +154,11 @@ impl<'a> GlyphFormatter<'a> {
         // Format each block in order
         for (i, (_, block)) in blocks.iter().enumerate() {
             if i > 0 {
+                output.extend_from_slice(newline);
+                output.extend_from_slice(newline);
+            }
+            if let Some(content) = leading_content.get(&block.location().tag_start) {
+                output.extend_from_slice(content.as_bytes());
                 output.extend_from_slice(newline);
                 output.extend_from_slice(newline);
             }
@@ -143,6 +183,12 @@ impl<'a> GlyphFormatter<'a> {
                     custom_block::format(&mut output, block, self.options, source)?
                 }
             }
+        }
+
+        if !trailing_content.is_empty() && !blocks.is_empty() {
+            output.extend_from_slice(newline);
+            output.extend_from_slice(newline);
+            output.extend_from_slice(trailing_content.as_bytes());
         }
 
         // Trim trailing whitespace efficiently
@@ -184,21 +230,6 @@ impl<'a> GlyphFormatter<'a> {
 
         size
     }
-}
-
-fn document_prologue<'a>(source: &'a str, blocks: &[(usize, Block<'_>)]) -> Option<&'a str> {
-    let first_tag_start = blocks
-        .iter()
-        .map(|(_, block)| match block {
-            Block::Script(block) => block.loc.tag_start,
-            Block::Template(block) => block.loc.tag_start,
-            Block::Style(block) => block.loc.tag_start,
-            Block::Custom(block) => block.loc.tag_start,
-        })
-        .min()
-        .unwrap_or(source.len());
-    let prologue = source.get(..first_tag_start).unwrap_or_default().trim();
-    (!prologue.is_empty()).then_some(prologue)
 }
 
 fn write_remaining_attrs(

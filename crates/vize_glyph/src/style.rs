@@ -3,6 +3,7 @@
 //! This module provides formatting for CSS/SCSS/Less content
 //! in Vue SFC `<style>` blocks using lightningcss for parsing and printing.
 
+mod color;
 mod comment_scan;
 mod number;
 mod stabilization;
@@ -79,7 +80,11 @@ fn format_with_preserved_top_level_comments(
 }
 
 fn format_chunk(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {
-    stabilization::format_to_fixed_point(trimmed, |source| format_chunk_once(source, options))
+    let colors = color::protect(trimmed);
+    let formatted = stabilization::format_to_fixed_point(colors.source.as_str(), |source| {
+        format_chunk_once(source, options)
+    })?;
+    Ok(colors.restore(formatted))
 }
 
 fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, FormatError> {
