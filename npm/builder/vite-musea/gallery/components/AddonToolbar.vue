@@ -45,7 +45,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="toolbar-toggle"
         :class="{ active: outlineEnabled }"
         title="Toggle Outline (Alt+O)"
-        @click="toggleOutline()"
+        @click="toggleOutline"
       >
         <MdiIcon :path="mdiSquareOutline" :size="14" />
         <span>Outline</span>
@@ -57,7 +57,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         class="toolbar-toggle"
         :class="{ active: measureEnabled }"
         title="Toggle Measure (Alt+M)"
-        @click="toggleMeasure()"
+        @click="toggleMeasure"
       >
         <MdiIcon :path="mdiRulerSquare" :size="14" />
         <span>Measure</span>
@@ -93,6 +93,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 }
 
 .toolbar-toggle {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.25rem;
@@ -117,13 +118,14 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
   background: var(--musea-accent-subtle);
 }
 
-.toolbar-toggle svg {
-  width: 10px;
-  height: 10px;
+.toolbar-toggle {
+  svg {
+    width: 10px;
+    height: 10px;
+  }
 }
 
 .toolbar-kbd {
-  display: none;
   padding: 0 0.125rem;
   border: 1px solid var(--musea-border);
   border-radius: 2px;
@@ -134,9 +136,14 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
   line-height: 1.2;
 }
 
-@media (min-width: 1024px) {
+@media (max-width: 1023px) {
   .toolbar-kbd {
-    display: inline-block;
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 </style>

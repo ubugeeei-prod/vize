@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted } from "vue";
 import { mdiOpenInNew, mdiClose } from "@mdi/js";
 import { useAddons } from "../composables/useAddons";
 import { getPreviewUrl } from "../api";
+import { safeUrl } from "../utils/safeUrl";
 import MdiIcon from "./MdiIcon.vue";
 
 const { fullscreenVariant, closeFullscreen } = useAddons();
@@ -16,13 +17,24 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key === "Escape") closeFullscreen();
 }
 
+function openInNewTab() {
+  const url = safeUrl(previewUrl.value);
+  if (url) window.open(url, "_blank", "noopener,noreferrer");
+}
+
 onMounted(() => document.addEventListener("keydown", onKeydown));
 onUnmounted(() => document.removeEventListener("keydown", onKeydown));
 </script>
 
 <template>
   <Teleport to="body">
-    <div v-if="fullscreenVariant" class="fullscreen-overlay" @click.self="closeFullscreen()">
+    <div v-if="fullscreenVariant" class="fullscreen-overlay">
+      <button
+        type="button"
+        class="fullscreen-backdrop"
+        aria-label="Close fullscreen preview"
+        @click="closeFullscreen"
+      />
       <div class="fullscreen-container">
         <div class="fullscreen-header">
           <span class="fullscreen-title">{{ fullscreenVariant.variantName }}</span>
@@ -31,7 +43,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
               type="button"
               class="fullscreen-action-btn"
               title="Open in new tab"
-              @click="window.open(previewUrl, '_blank')"
+              @click="openInNewTab"
             >
               <MdiIcon :path="mdiOpenInNew" :size="16" />
             </button>
@@ -39,7 +51,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
               type="button"
               class="fullscreen-close-btn"
               title="Close (Esc)"
-              @click="closeFullscreen()"
+              @click="closeFullscreen"
             >
               <MdiIcon :path="mdiClose" :size="18" />
             </button>
@@ -47,23 +59,20 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         </div>
         <iframe
           class="fullscreen-iframe"
-          :src="previewUrl"
+          :src="safeUrl(previewUrl)"
           :title="fullscreenVariant.variantName"
+          sandbox="allow-scripts allow-same-origin allow-forms"
         />
       </div>
     </div>
   </Teleport>
 </template>
 
-<script lang="ts">
-const window = globalThis.window;
-</script>
-
 <style scoped>
 .fullscreen-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--musea-z-fullscreen, 9999);
   background: var(--musea-overlay);
   backdrop-filter: blur(4px);
   display: flex;
@@ -71,6 +80,14 @@ const window = globalThis.window;
   justify-content: center;
   padding: 2rem;
   animation: fadeIn 0.15s ease;
+}
+
+.fullscreen-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
 }
 
 @keyframes fadeIn {
@@ -82,7 +99,14 @@ const window = globalThis.window;
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .fullscreen-overlay {
+    animation: none;
+  }
+}
+
 .fullscreen-container {
+  position: relative;
   width: 100%;
   height: 100%;
   max-width: 1600px;
@@ -139,6 +163,6 @@ const window = globalThis.window;
   flex: 1;
   width: 100%;
   border: none;
-  background: #fff;
+  background: var(--musea-preview-canvas, #fff);
 }
 </style>

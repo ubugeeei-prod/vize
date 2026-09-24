@@ -27,6 +27,7 @@
       color-mix(in oklab, oklch(0.93 0.008 255) 68%, oklch(0.155 0.012 255))
     );
     --vize-ui-color-accent: light-dark(oklch(0.545 0.175 275), oklch(0.72 0.15 275));
+    --vize-ui-focus-ring-color: var(--vize-ui-color-accent);
     --vize-ui-color-accent-contrast: light-dark(oklch(1 0 0), oklch(0.17 0.015 275));
 
     /* The light border derives from the canvas through relative color. */

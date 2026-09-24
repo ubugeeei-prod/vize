@@ -22,6 +22,7 @@ export type {
   MuseaAutogenConfig,
   GlobalTypesConfig,
   GlobalTypeDeclaration,
+  LibConfig,
   LoadConfigOptions,
   ConfigEnv,
   VueConfig,

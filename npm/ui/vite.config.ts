@@ -21,7 +21,7 @@ import { defineConfig } from "vite-plus";
  */
 export const cssBrowserFloor = ["chrome111", "edge111", "firefox113", "safari16.4"];
 
-type ThemeStyleEntrypoint = {
+type CssAssetEntrypoint = {
   readonly fileName: `${string}.css`;
   readonly source: `src/${string}.css`;
 };
@@ -36,7 +36,7 @@ type LightningCssModule = {
   }) => { readonly code: Uint8Array };
 };
 
-const themeStyleEntrypoints = Object.freeze([
+const cssAssetEntrypoints = Object.freeze([
   { fileName: "theme.css", source: "src/families/foundations/theme/theme.css" },
   {
     fileName: "theme-preset-headless.css",
@@ -66,7 +66,27 @@ const themeStyleEntrypoints = Object.freeze([
     fileName: "theme-preset-high-contrast.css",
     source: "src/families/foundations/theme/theme-preset-high-contrast.css",
   },
-] as const satisfies readonly ThemeStyleEntrypoint[]);
+  {
+    fileName: "component-button.css",
+    source: "src/families/actions/button/button-visual.css",
+  },
+  {
+    fileName: "component-dialog.css",
+    source: "src/families/overlays/dialog/dialog-visual.css",
+  },
+  {
+    fileName: "component-progress-bar.css",
+    source: "src/families/feedback/progress-bar/progress-bar.css",
+  },
+  {
+    fileName: "component-scroll-area.css",
+    source: "src/families/layout/scroll-area/scroll-area.css",
+  },
+  {
+    fileName: "motion.css",
+    source: "src/families/overlays/motion/motion.css",
+  },
+] as const satisfies readonly CssAssetEntrypoint[]);
 const themeLayerPrelude = "@layer vize.tokens,vize.ui,vize.preset,vize.policy;";
 const browserTargetQueries = cssBrowserFloor.map((target) =>
   target.replace(/^([a-z]+)(\d)/, "$1 $2"),
@@ -79,15 +99,15 @@ function loadLightningCss(): LightningCssModule {
   return cssRequire("lightningcss") as LightningCssModule;
 }
 
-function themeCssEntrypointPlugin(): Plugin {
+function cssAssetEntrypointPlugin(): Plugin {
   return {
-    name: "vize-ui-theme-css-entrypoints",
+    name: "vize-ui-css-assets",
     async generateBundle() {
       const { browserslistToTargets, transform } = loadLightningCss();
       const targets = browserslistToTargets(browserTargetQueries);
 
       await Promise.all(
-        themeStyleEntrypoints.map(async ({ fileName, source }) => {
+        cssAssetEntrypoints.map(async ({ fileName, source }) => {
           const sourceCode = await readFile(new URL(source, import.meta.url));
           const output = transform({
             filename: source,
@@ -134,9 +154,12 @@ export default defineConfig({
       banner: "src/families/feedback/banner/banner.ts",
       "block-ui": "src/families/feedback/block-ui/block-ui.ts",
       callout: "src/families/feedback/callout/callout.ts",
+      calendar: "src/families/date-time/calendar/calendar.ts",
+      "range-calendar": "src/families/date-time/range-calendar/range-calendar.ts",
       blockquote: "src/families/typography/blockquote/blockquote.ts",
       breadcrumb: "src/families/navigation/breadcrumb/breadcrumb.ts",
       tabs: "src/families/navigation/tabs/tabs.ts",
+      tree: "src/families/data/tree/tree.ts",
       stepper: "src/families/navigation/stepper/stepper.ts",
       card: "src/families/layout/card/card.ts",
       code: "src/families/typography/code/code.ts",
@@ -163,12 +186,16 @@ export default defineConfig({
       "radio-group": "src/families/selection/radio-group/radio-group.ts",
       rating: "src/families/form/rating/rating.ts",
       carousel: "src/families/media/carousel/carousel.ts",
+      "color-picker": "src/families/form/color-picker/color-picker.ts",
+      "file-upload": "src/families/form/file-upload/file-upload.ts",
       image: "src/families/media/image/image.ts",
       "infinite-scroll": "src/families/data/infinite-scroll/infinite-scroll.ts",
       "qr-code": "src/families/media/qr-code/qr-code.ts",
+      tour: "src/families/overlays/tour/tour.ts",
       "search-field": "src/families/form/search-field/search-field.ts",
       slider: "src/families/form/slider/slider.ts",
       separator: "src/families/layout/separator/separator.ts",
+      splitter: "src/families/layout/splitter/splitter.ts",
       spacer: "src/families/layout/spacer/spacer.ts",
       stack: "src/families/layout/stack/stack.ts",
       "scroll-area": "src/families/layout/scroll-area/scroll-area.ts",
@@ -242,7 +269,7 @@ export default defineConfig({
     },
     format: "esm",
     dts: { vue: true },
-    plugins: [vue(), themeCssEntrypointPlugin()],
+    plugins: [vue(), cssAssetEntrypointPlugin()],
     css: {
       inject: true,
       minify: true,

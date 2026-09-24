@@ -12,7 +12,7 @@ import {
 import { useArts } from "../composables/useArts";
 import { useSearch } from "../composables/useSearch";
 import { useTheme } from "../composables/useTheme";
-import Sidebar from "./Sidebar.vue";
+import MuseaSidebar from "./MuseaSidebar.vue";
 import SearchModal from "./SearchModal.vue";
 import MdiIcon from "./MdiIcon.vue";
 import { useResizable } from "../composables/useResizable";
@@ -188,7 +188,7 @@ function openSearchModal() {
         :class="{ collapsed: sidebarCollapsed }"
         :style="sidebarStyle"
       >
-        <Sidebar v-show="!sidebarCollapsed" :arts="results" />
+        <MuseaSidebar v-show="!sidebarCollapsed" :arts="results" />
         <button
           v-if="!sidebarCollapsed"
           type="button"

@@ -15,6 +15,7 @@ export const actionFamilyCatalog = [
     sourceFiles: [
       `${buttonFamilyRoot}button.vue`,
       `${buttonFamilyRoot}button.ts`,
+      `${buttonFamilyRoot}button-visual.css`,
       `${buttonFamilyRoot}button-keyboard.ts`,
     ],
     behaviorContract: `${buttonFamilyRoot}button.behavior.md`,

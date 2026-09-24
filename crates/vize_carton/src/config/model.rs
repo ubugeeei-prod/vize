@@ -7,7 +7,9 @@ mod experimentals;
 mod formatter;
 mod global_types;
 mod language_server;
+mod library;
 mod linter;
+mod linter_feature_flags;
 mod linter_rule_options;
 mod type_checker;
 mod vue;
@@ -29,8 +31,10 @@ pub use formatter::{
 };
 pub use global_types::{GlobalTypeDeclaration, GlobalTypesConfig, RawGlobalTypesConfig};
 pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, LspConfig};
+pub use library::LibConfig;
 pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
+pub use linter_feature_flags::LinterFeatureFlags;
 pub use linter_rule_options::{
     ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
     CustomEventNameCasingOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions,
@@ -139,34 +143,6 @@ impl Default for ConfigFeatureFlags {
     }
 }
 
-/// Lint-only feature switches derived from config compatibility keys.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct LinterFeatureFlags {
-    pub vue_version: Option<VueVersion>,
-    pub vapor: Option<bool>,
-}
-
-impl LinterFeatureFlags {
-    pub(crate) fn from_config_features(
-        features: ConfigFeatureFlags,
-        compiler_compatibility_vue_version: Option<VueVersion>,
-        compiler_vapor: Option<bool>,
-    ) -> Self {
-        let vue_version = features
-            .vue_version
-            .or(compiler_compatibility_vue_version)
-            .or_else(|| {
-                (features.type_checker_legacy_vue2
-                    || features.language_server_legacy_vue2 == Some(true))
-                .then_some(VueVersion::V2_7)
-            });
-        Self {
-            vue_version,
-            vapor: compiler_vapor,
-        }
-    }
-}
-
 /// Raw config representation with legacy aliases preserved for migration.
 #[derive(Debug, Clone, Default, Deserialize)]
 #[serde(default)]
@@ -189,6 +165,7 @@ pub(crate) struct RawVizeConfig {
     language_server: RawLanguageServerConfig,
     #[serde(rename = "globalTypes")]
     pub global_types: RawGlobalTypesConfig,
+    pub(crate) lib: LibConfig,
     pub ignores: Option<Vec<String>>,
     pub entries: Option<Vec<RawConfigEntry>>,
     #[serde(rename = "check")]
@@ -265,6 +242,7 @@ impl RawVizeConfig {
             type_checker: raw_type_checker,
             language_server: raw_language_server,
             global_types,
+            lib: _,
             ignores: _,
             entries: _,
             legacy_check,

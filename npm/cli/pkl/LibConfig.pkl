@@ -1,0 +1,20 @@
+/// `vize lib` source distribution configuration.
+///
+/// Paths are relative to the directory that holds the config file. Pulled
+/// files keep the registry layout below the chosen directory, so relative
+/// imports between pulled items resolve without rewrites.
+module vize.LibConfig
+
+class LibConfig {
+  /// Destination for every registry kind unless a kind-specific directory is set.
+  dir: String? = null
+
+  /// Destination for `@vizejs/ui` items. Default: `src/components/vize`.
+  uiDir: String? = null
+
+  /// Destination for `@vizejs/composable` items. Default: `src/composables/vize`.
+  composableDir: String? = null
+
+  /// Lockfile path. Default: `vize-lib.lock.json`.
+  lockfile: String? = null
+}

@@ -1,0 +1,119 @@
+/* Optional visual treatment. Button's JavaScript and authored markup remain headless. */
+@layer vize.preset {
+  /* Theme boundaries must not inherit another palette's component overrides. */
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-button-radius: initial;
+    --vize-ui-button-shadow: initial;
+    --vize-ui-button-letter-spacing: initial;
+    --vize-ui-button-fill: initial;
+    --vize-ui-button-ink: initial;
+    --vize-ui-button-height: initial;
+    --vize-ui-button-padding-inline: initial;
+    --vize-ui-button-font-family: initial;
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-button-radius: var(--vize-ui-radius-md);
+    --vize-ui-button-shadow: var(--vize-ui-elevation-raised);
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-button-radius: 0.1875rem;
+    --vize-ui-button-shadow: none;
+    --vize-ui-button-letter-spacing: 0.025em;
+    --vize-ui-button-fill: var(--vize-ui-color-text);
+    --vize-ui-button-ink: var(--vize-ui-color-canvas);
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-button-radius: 0.125rem;
+    --vize-ui-button-shadow: none;
+    --vize-ui-button-letter-spacing: 0.01em;
+    --vize-ui-button-height: var(--vize-ui-size-control-sm);
+    --vize-ui-button-padding-inline: var(--vize-ui-space-md);
+    --vize-ui-button-font-family: var(--vize-ui-type-family-mono);
+  }
+
+  :where([data-vize-ui="button"]) {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--vize-ui-space-sm);
+    min-block-size: var(--vize-ui-button-height, var(--vize-ui-size-control-md));
+    padding-inline: var(--vize-ui-button-padding-inline, var(--vize-ui-space-lg));
+    border: var(--vize-ui-border-width-thin) solid
+      var(--vize-ui-button-fill, var(--vize-ui-color-accent));
+    border-radius: var(--vize-ui-button-radius, var(--vize-ui-radius-md));
+    background-color: var(--vize-ui-button-fill, var(--vize-ui-color-accent));
+    color: var(--vize-ui-button-ink, var(--vize-ui-color-accent-contrast));
+    box-shadow: var(--vize-ui-button-shadow, var(--vize-ui-elevation-raised));
+    font-family: var(--vize-ui-button-font-family, var(--vize-ui-type-family-sans));
+    font-size: var(--vize-ui-type-size-sm);
+    font-weight: var(--vize-ui-type-weight-medium);
+    line-height: var(--vize-ui-type-leading-tight);
+    letter-spacing: var(--vize-ui-button-letter-spacing, 0);
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition-property: background-color, border-color, box-shadow, translate;
+    transition-duration: var(--vize-ui-motion-duration-fast, 120ms);
+    transition-timing-function: var(--vize-ui-motion-ease-standard, ease-out);
+  }
+
+  :where([data-vize-ui="button"]:hover:not(:disabled):not([aria-disabled="true"])) {
+    background-color: color-mix(
+      in oklab,
+      var(--vize-ui-button-fill, var(--vize-ui-color-accent)) 89%,
+      var(--vize-ui-color-text)
+    );
+  }
+
+  :where([data-vize-ui="button"]:active:not(:disabled):not([aria-disabled="true"])) {
+    translate: 0 1px;
+    box-shadow: none;
+  }
+
+  :where([data-vize-ui="button"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+
+  :where([data-vize-ui="button"]:disabled, [data-vize-ui="button"][aria-disabled="true"]) {
+    opacity: var(--vize-ui-opacity-disabled);
+    cursor: default;
+  }
+
+  :where([data-vize-ui="button"][data-state="loading"]) {
+    cursor: progress;
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="button"]) {
+      transition-duration: 0ms;
+      translate: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="button"]) {
+      background-color: ButtonFace;
+      border-color: ButtonBorder;
+      color: ButtonText;
+      box-shadow: none;
+    }
+
+    :where([data-vize-ui="button"]:focus-visible) {
+      outline-color: Highlight;
+    }
+
+    :where([data-vize-ui="button"]:disabled, [data-vize-ui="button"][aria-disabled="true"]) {
+      color: GrayText;
+      opacity: 1;
+    }
+  }
+}

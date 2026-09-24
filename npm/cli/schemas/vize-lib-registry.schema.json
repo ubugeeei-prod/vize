@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/ubugeeei-prod/vize/main/npm/cli/schemas/vize-lib-registry.schema.json",
+  "title": "Vize lib source registry",
+  "description": "registry/registry.json shipped inside the @vizejs/ui and @vizejs/composable npm tarballs. Describes every source unit `vize lib pull` can copy into a project. Raw files live under <registry dir>/<filesDirectory>/<files[].path>. The registry is immutable per published package version.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "registryKind",
+    "package",
+    "kind",
+    "filesDirectory",
+    "defaultTargetDirectory",
+    "items"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "description": "Document schema version. Consumers must reject versions they do not understand.",
+      "const": 1
+    },
+    "registryKind": {
+      "description": "Discriminator for this document type.",
+      "const": "vize-lib"
+    },
+    "package": {
+      "description": "npm package and exact version that published this registry.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "kind": {
+      "description": "Kind shared by every item in this registry.",
+      "$ref": "#/$defs/itemKind"
+    },
+    "filesDirectory": {
+      "description": "Directory, relative to registry.json, that holds files[].path.",
+      "const": "files"
+    },
+    "defaultTargetDirectory": {
+      "description": "Project-relative directory used when neither --dir nor vize.config lib.dir is set.",
+      "type": "string",
+      "minLength": 1
+    },
+    "items": {
+      "description": "Pullable items sorted by name.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "itemKind": {
+      "enum": ["ui", "composable"]
+    },
+    "sha256": {
+      "description": "Lowercase hexadecimal SHA-256 digest.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "relativePath": {
+      "description": "POSIX path relative to the package src/ directory; never absolute and never contains '..'.",
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$"
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "role", "sha256", "size"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "role": {
+          "description": "entry: public re-export module; component: Vue SFC; style: side-effect CSS; types: type-only module; module: other runtime module.",
+          "enum": ["entry", "component", "style", "types", "module"]
+        },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "npmDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "range", "kind"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "range": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["peer", "runtime"] }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind",
+        "title",
+        "description",
+        "aliases",
+        "packageSubpath",
+        "entry",
+        "files",
+        "registryDependencies",
+        "dependencies",
+        "contentHash"
+      ],
+      "properties": {
+        "name": {
+          "description": "Canonical, unique item name.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "kind": { "$ref": "#/$defs/itemKind" },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "aliases": {
+          "description": "Alternate names accepted by info/pull, sorted and unique.",
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "packageSubpath": {
+          "description": "Package export subpath exposing the same unit.",
+          "type": "string",
+          "pattern": "^\\.(?:/.+)?$"
+        },
+        "entry": { "$ref": "#/$defs/relativePath" },
+        "files": {
+          "description": "Files owned by this item, sorted by path. Test files are never published.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/file" }
+        },
+        "registryDependencies": {
+          "description": "Complete transitive closure of other item names this item imports through relative paths, sorted.",
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+        },
+        "dependencies": {
+          "description": "npm packages imported by this item's own files, sorted by name.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/npmDependency" }
+        },
+        "contentHash": {
+          "description": "SHA-256 over path + NUL + sha256 + LF for every file in path order.",
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    }
+  }
+}

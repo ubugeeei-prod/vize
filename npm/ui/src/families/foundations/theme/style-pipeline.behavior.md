@@ -3,11 +3,20 @@
 Normative contract for the `@vizejs/ui` packaged stylesheet (`dist/style.css`,
 exported as `@vizejs/ui/style.css`) and the CSS-only theme entrypoints
 (`@vizejs/ui/theme.css` and `@vizejs/ui/theme-preset-*.css`). Component styles
-are authored in scoped SFC style blocks — `visually-hidden.vue` is the
+that are required for behavior are authored in scoped SFC style blocks — `visually-hidden.vue` is the
 canonical example — using native CSS only, and the package build lowers them
 with the Lightning CSS transform in `vite-plus` pack (`pack.css` in
 `vite.config.ts`). Every row is proven by `src/families/foundations/theme/style-pipeline.test.ts` against
 the real package build.
+
+`@vizejs/ui/base.css` aliases the existing CSS-only `theme.css` token and
+accessibility-policy asset. `@vizejs/ui/component-button.css` and
+`@vizejs/ui/component-dialog.css` are separate, opt-in visual assets. They are
+lowered to the same browser floor and never imported by the headless JavaScript
+entries or appended to `style.css`. Existing behavior-critical CSS for progress
+bar, scroll area, and motion is also available as `component-progress-bar.css`,
+`component-scroll-area.css`, and `motion.css`. Each asset declares the same
+layer-order prelude; import `base.css`, one preset, then only the CSS needed.
 
 | #   | Authored feature                      | At the declared floor | Shipped output                                     | Proven by                                                                                |
 | --- | ------------------------------------- | --------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------- |

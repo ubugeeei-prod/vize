@@ -2,6 +2,7 @@
 import { computed, ref, watch, onMounted } from "vue";
 import type { ArtVariant } from "../../src/types/index.js";
 import { getPreviewUrl } from "../api";
+import { safeUrl } from "../utils/safeUrl";
 import { useAddons } from "../composables/useAddons";
 import { sendMessage } from "../composables/usePostMessage";
 
@@ -139,7 +140,8 @@ async function copyTemplate() {
 }
 
 function openInNewTab() {
-  window.open(previewUrl.value, "_blank");
+  const url = safeUrl(previewUrl.value);
+  if (url) window.open(url, "_blank", "noopener,noreferrer");
 }
 </script>
 
@@ -148,9 +150,10 @@ function openInNewTab() {
     <div class="preview-area" :class="{ 'viewport-mode': isCustomViewport }">
       <iframe
         ref="iframeRef"
-        :src="previewUrl"
+        :src="safeUrl(previewUrl)"
         :title="variant.name"
         :style="viewportStyle"
+        sandbox="allow-scripts allow-same-origin allow-forms"
         @load="onIframeLoad"
       />
     </div>
@@ -168,25 +171,19 @@ function openInNewTab() {
           :title="copied ? 'Copied!' : 'Copy template'"
           @click="copyTemplate"
         >
-          <svg
-            v-if="!copied"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          <svg v-if="copied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12" />
           </svg>
           <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12" />
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
           </svg>
         </button>
         <button
           type="button"
           class="toolbar-btn"
           title="Fullscreen"
-          @click="openFullscreen(artPath, variant.name)"
+          @click="() => openFullscreen(artPath, variant.name)"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path
@@ -227,15 +224,19 @@ function openInNewTab() {
   overflow: auto;
 }
 
-.preview-area iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  background: white;
+.preview-area {
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: white;
+  }
 }
 
-.preview-area.viewport-mode iframe {
-  flex-shrink: 0;
+.preview-area.viewport-mode {
+  iframe {
+    flex-shrink: 0;
+  }
 }
 
 .preview-toolbar {
@@ -300,8 +301,10 @@ function openInNewTab() {
   background: var(--musea-accent-subtle);
 }
 
-.toolbar-btn svg {
-  width: 14px;
-  height: 14px;
+.toolbar-btn {
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 }
 </style>

@@ -2,6 +2,7 @@ import { actionFamilyCatalog } from "./family-catalog-actions.ts";
 import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { dataFamilyCatalog } from "./family-catalog-data.ts";
+import { dateTimeFamilyCatalog } from "./family-catalog-date-time.ts";
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
@@ -13,11 +14,15 @@ import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 import { ratingFamilyCatalog } from "./family-catalog-rating.ts";
+import { colorPickerFamilyCatalog } from "./family-catalog-color-picker.ts";
+import { fileUploadFamilyCatalog } from "./family-catalog-file-upload.ts";
 import { infiniteScrollFamilyCatalog } from "./family-catalog-infinite-scroll.ts";
 import { mediaFamilyCatalog } from "./family-catalog-media.ts";
 import { qrCodeFamilyCatalog } from "./family-catalog-qr-code.ts";
+import { tourFamilyCatalog } from "./family-catalog-tour.ts";
 import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import { sliderFamilyCatalog } from "./family-catalog-slider.ts";
+import { structureFamilyCatalog } from "./family-catalog-structure.ts";
 import { typographyFamilyCatalog } from "./family-catalog-typography.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
 
@@ -34,6 +39,7 @@ const allFamilyCatalogEntries = [
   ...accessibilityFamilyCatalog,
   ...basicFamilyCatalog,
   ...dataFamilyCatalog,
+  ...dateTimeFamilyCatalog,
   ...feedbackFamilyCatalog,
   ...foundationFamilyCatalog,
   ...focusFamilyCatalog,
@@ -45,11 +51,15 @@ const allFamilyCatalogEntries = [
   ...navigationFamilyCatalog,
   ...overlayFamilyCatalog,
   ...ratingFamilyCatalog,
+  ...colorPickerFamilyCatalog,
+  ...fileUploadFamilyCatalog,
   ...infiniteScrollFamilyCatalog,
   ...mediaFamilyCatalog,
   ...qrCodeFamilyCatalog,
+  ...tourFamilyCatalog,
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
+  ...structureFamilyCatalog,
   ...typographyFamilyCatalog,
 ] as const satisfies readonly UiFamilyCatalogEntry[];
 

@@ -1,7 +1,9 @@
+import { colorPickerRendererFixtures } from "./renderer-fixtures-color-picker.ts";
 import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
 import { dataRendererFixtures } from "./renderer-fixtures-data.ts";
 import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
 import { feedbackRendererFixtures } from "./renderer-fixtures-feedback.ts";
+import { fileUploadRendererFixtures } from "./renderer-fixtures-file-upload.ts";
 import { formInputRendererFixtures } from "./renderer-fixtures-form-inputs.ts";
 import { iconRendererFixtures } from "./renderer-fixtures-icon.ts";
 import { layoutRendererFixtures } from "./renderer-fixtures-layout.ts";
@@ -11,12 +13,16 @@ import { overlayRendererFixtures } from "./renderer-fixtures-overlays.ts";
 import { primitiveRendererFixtures } from "./renderer-fixtures-primitives.ts";
 import { qrCodeRendererFixtures } from "./renderer-fixtures-qr-code.ts";
 import { selectionRendererFixtures } from "./renderer-fixtures-selection.ts";
+import { tourRendererFixtures } from "./renderer-fixtures-tour.ts";
+import { structureRendererFixtures } from "./renderer-fixtures-structure.ts";
 
 export const groupedRendererFixtures = [
+  ...colorPickerRendererFixtures,
   ...commandRendererFixtures,
   ...dataRendererFixtures,
   ...dialogRendererFixtures,
   ...feedbackRendererFixtures,
+  ...fileUploadRendererFixtures,
   ...formInputRendererFixtures,
   ...iconRendererFixtures,
   ...layoutRendererFixtures,
@@ -26,4 +32,6 @@ export const groupedRendererFixtures = [
   ...primitiveRendererFixtures,
   ...qrCodeRendererFixtures,
   ...selectionRendererFixtures,
+  ...tourRendererFixtures,
+  ...structureRendererFixtures,
 ] as const;

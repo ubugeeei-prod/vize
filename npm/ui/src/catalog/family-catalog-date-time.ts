@@ -1,0 +1,92 @@
+import {
+  catalogOwner,
+  componentQualityGates,
+  type UiFamilyCatalogEntry,
+} from "./family-catalog-types.ts";
+
+const dateTimeRoot = "src/families/date-time/";
+
+/** Date and time families: calendar grids, segmented fields, and popover pickers. */
+export const dateTimeFamilyCatalog = [
+  {
+    canonicalName: "calendar",
+    title: "Calendar",
+    packageSubpath: "./calendar",
+    entryFile: `${dateTimeRoot}calendar/calendar.ts`,
+    sourceFiles: [
+      `${dateTimeRoot}calendar/calendar-context.ts`,
+      `${dateTimeRoot}calendar/calendar-grid.vue`,
+      `${dateTimeRoot}calendar/calendar-heading.vue`,
+      `${dateTimeRoot}calendar/calendar-locale.ts`,
+      `${dateTimeRoot}calendar/calendar-month-select.vue`,
+      `${dateTimeRoot}calendar/calendar-next.vue`,
+      `${dateTimeRoot}calendar/calendar-prev.vue`,
+      `${dateTimeRoot}calendar/calendar-root.vue`,
+      `${dateTimeRoot}calendar/calendar-runtime.ts`,
+      `${dateTimeRoot}calendar/calendar-selection.ts`,
+      `${dateTimeRoot}calendar/calendar-today.ts`,
+      `${dateTimeRoot}calendar/calendar-types.ts`,
+      `${dateTimeRoot}calendar/calendar-year-select.vue`,
+      `${dateTimeRoot}calendar/calendar.ts`,
+      `${dateTimeRoot}calendar/plain-date.ts`,
+    ],
+    behaviorContract: `${dateTimeRoot}calendar/calendar.behavior.md`,
+    tests: [
+      `${dateTimeRoot}calendar/calendar-ssr.test.ts`,
+      `${dateTimeRoot}calendar/calendar.test.ts`,
+      `${dateTimeRoot}calendar/plain-date.test.ts`,
+    ],
+    typeTests: [`${dateTimeRoot}calendar/calendar.types.test-d.ts`],
+    rendererFixture: "families/date-time/calendar/calendar-root.vue",
+    qualityGates: componentQualityGates,
+    bundleBudget: {
+      exportName: "CalendarRoot",
+      retainedSignature: 'data-vize-ui":(?:`calendar`|"calendar"|\'calendar\')',
+      allowedRetainedFamilies: ["context", "controllable-state", "locale"],
+      maximumJavaScriptGzipBytes: 8_100,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["calendar", "date grid", "month view", "mini calendar", "day picker"],
+    upstreamCoverage: [
+      "WAI-ARIA APG date picker dialog grid",
+      "React Aria Calendar",
+      "Reka UI Calendar",
+      "Radix-style calendar composition",
+    ],
+    dependencies: ["context", "controllable-state", "id", "locale"],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+  {
+    canonicalName: "range-calendar",
+    title: "Range Calendar",
+    packageSubpath: "./range-calendar",
+    entryFile: `${dateTimeRoot}range-calendar/range-calendar.ts`,
+    sourceFiles: [
+      `${dateTimeRoot}range-calendar/range-calendar-root.vue`,
+      `${dateTimeRoot}range-calendar/range-calendar-selection.ts`,
+      `${dateTimeRoot}range-calendar/range-calendar-types.ts`,
+      `${dateTimeRoot}range-calendar/range-calendar.ts`,
+    ],
+    behaviorContract: `${dateTimeRoot}range-calendar/range-calendar.behavior.md`,
+    tests: [
+      `${dateTimeRoot}range-calendar/range-calendar-ssr.test.ts`,
+      `${dateTimeRoot}range-calendar/range-calendar.test.ts`,
+    ],
+    typeTests: [`${dateTimeRoot}range-calendar/range-calendar.types.test-d.ts`],
+    rendererFixture: "families/date-time/range-calendar/range-calendar-root.vue",
+    qualityGates: componentQualityGates,
+    bundleBudget: {
+      exportName: "RangeCalendarRoot",
+      retainedSignature: "data-mode[\\s\\S]{0,16}range",
+      allowedRetainedFamilies: ["calendar", "context", "controllable-state", "locale"],
+      maximumJavaScriptGzipBytes: 8_600,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["date range calendar", "booking calendar", "two-click range"],
+    upstreamCoverage: ["React Aria RangeCalendar", "Reka UI RangeCalendar", "WAI-ARIA APG grid"],
+    dependencies: ["calendar", "context", "controllable-state", "id", "locale"],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
+] as const satisfies readonly UiFamilyCatalogEntry[];

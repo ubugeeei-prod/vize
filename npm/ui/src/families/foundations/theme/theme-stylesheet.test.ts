@@ -132,6 +132,14 @@ test("ships semantic feedback tone tokens through every theme surface", () => {
 
 test("ships density scopes that retune the shared factor", () => {
   const tokens = layerBlock("vize.tokens");
+  const densityScope = /:where\(\[data-vize-density\]\)\{([^}]*)\}/.exec(tokens)?.[1];
+  assert.ok(densityScope, "derived tokens must be recomputed at the density boundary");
+
+  for (const token of [...themeTokensForPack("space"), ...themeTokensForPack("size")]) {
+    const scopedValue = new RegExp(`--vize-ui-${token}:([^;}]+)`).exec(densityScope)?.[1];
+    assert.ok(scopedValue, `${token} must follow scoped density`);
+    assert.equal(normalizeCss(scopedValue), normalizeCss(themeTokens[token]), token);
+  }
 
   for (const [scale, factor] of Object.entries(themeDensityScales)) {
     const pattern = new RegExp(
@@ -172,6 +180,11 @@ test("scopes published presets to their opt-in attributes", () => {
     const rule = shippedPresetRule(name);
     assert.match(rule, /color-scheme:light dark/);
     assert.match(rule, /--vize-ui-color-accent:/);
+    assert.match(
+      rule,
+      /--vize-ui-focus-ring-color:var\(--vize-ui-color-accent\)/,
+      `${name} focus rings must resolve in the preset scope`,
+    );
     assert.match(rule, /--vize-ui-elevation-raised:/);
   }
   assert.match(shippedPresetRule("high-contrast"), /--vize-ui-border-width-thin:2px/);

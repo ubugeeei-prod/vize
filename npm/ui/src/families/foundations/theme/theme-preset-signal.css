@@ -16,6 +16,7 @@
       color-mix(in oklab, oklch(0.92 0.007 225) 62%, oklch(0.16 0.012 230))
     );
     --vize-ui-color-accent: light-dark(oklch(0.49 0.11 184), oklch(0.78 0.105 176));
+    --vize-ui-focus-ring-color: var(--vize-ui-color-accent);
     --vize-ui-color-accent-contrast: light-dark(oklch(1 0 0), oklch(0.13 0.025 180));
     --vize-ui-color-border: light-dark(
       oklch(from oklch(0.975 0.004 225) calc(l - 0.12) c h),

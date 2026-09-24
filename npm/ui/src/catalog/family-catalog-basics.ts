@@ -62,7 +62,7 @@ export const basicFamilyCatalog = [
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Link",
-      retainedSignature: "aria-current",
+      retainedSignature: 'data-vize-ui":(?:`link`|"link"|\'link\')',
       maximumJavaScriptGzipBytes: 1_650,
       maximumCssGzipBytes: 0,
     },

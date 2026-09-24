@@ -171,6 +171,13 @@ const utilityEntries = [
 
 const cssOnlyEntries = [
   {
+    name: "base.css",
+    packageEntry: "@vizejs/ui/base.css",
+    retainedSignature: /--vize-ui-color-canvas:Canvas/,
+    rejectedSignature: /data-vize-theme~=atelier/,
+    maximumCssGzipBytes: 1_450,
+  },
+  {
     name: "theme.css",
     packageEntry: "@vizejs/ui/theme.css",
     retainedSignature: /--vize-ui-color-canvas:Canvas/,
@@ -190,6 +197,41 @@ const cssOnlyEntries = [
     retainedSignature: /data-vize-theme~=high-contrast/,
     rejectedSignature: /--vize-ui-color-canvas:Canvas/,
     maximumCssGzipBytes: 900,
+  },
+  {
+    name: "component-button.css",
+    packageEntry: "@vizejs/ui/component-button.css",
+    retainedSignature: /data-vize-ui=button/,
+    rejectedSignature: /data-vize-ui=dialog-content/,
+    maximumCssGzipBytes: 1_100,
+  },
+  {
+    name: "component-dialog.css",
+    packageEntry: "@vizejs/ui/component-dialog.css",
+    retainedSignature: /data-vize-ui=dialog-content/,
+    rejectedSignature: /data-vize-ui=button/,
+    maximumCssGzipBytes: 1_300,
+  },
+  {
+    name: "component-progress-bar.css",
+    packageEntry: "@vizejs/ui/component-progress-bar.css",
+    retainedSignature: /--vize-ui-progress-bar-percent/,
+    rejectedSignature: /data-vize-ui=scroll-area/,
+    maximumCssGzipBytes: 1_600,
+  },
+  {
+    name: "component-scroll-area.css",
+    packageEntry: "@vizejs/ui/component-scroll-area.css",
+    retainedSignature: /--vize-ui-scroll-area-overflow-y/,
+    rejectedSignature: /data-vize-ui=progress-bar/,
+    maximumCssGzipBytes: 1_600,
+  },
+  {
+    name: "motion.css",
+    packageEntry: "@vizejs/ui/motion.css",
+    retainedSignature: /--vize-ui-motion-duration-fast/,
+    rejectedSignature: /data-vize-ui=button/,
+    maximumCssGzipBytes: 2_400,
   },
 ];
 

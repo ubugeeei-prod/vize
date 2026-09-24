@@ -156,7 +156,7 @@ export const layoutFamilyCatalog = [
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Grid",
-      retainedSignature: "data-vize-ui[\\s\\S]{0,32}grid",
+      retainedSignature: 'data-vize-ui":(?:`grid`|"grid"|\'grid\')',
       maximumJavaScriptGzipBytes: 1_200,
       maximumCssGzipBytes: 0,
     },

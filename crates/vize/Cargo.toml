@@ -95,6 +95,9 @@ mimalloc.workspace = true
 tempfile.workspace = true
 sha2.workspace = true
 
+# Unified diffs for `vize lib diff` / `update`
+similar.workspace = true
+
 [dev-dependencies]
 corsa.workspace = true
 corsa_lsp.workspace = true

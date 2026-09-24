@@ -15,6 +15,7 @@ pub mod fmt;
 #[cfg(feature = "maestro")]
 pub mod ide;
 pub mod inspector;
+pub mod library;
 pub mod lint;
 #[cfg(feature = "maestro")]
 pub mod lsp;

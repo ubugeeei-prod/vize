@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import hljs from "highlight.js/lib/core";
-import xml from "highlight.js/lib/languages/xml";
-
-hljs.registerLanguage("xml", xml);
+import { ref } from "vue";
+import HighlightedCode from "./HighlightedCode.vue";
 
 const props = defineProps<{
   code: string;
@@ -11,17 +8,9 @@ const props = defineProps<{
 
 const copied = ref(false);
 
-const highlightedCode = computed(() => {
+async function copyCode() {
   try {
-    return hljs.highlight(props.code, { language: "xml" }).value;
-  } catch {
-    return props.code;
-  }
-});
-
-async function copyCode(code: string) {
-  try {
-    await navigator.clipboard.writeText(code);
+    await navigator.clipboard.writeText(props.code);
     copied.value = true;
     setTimeout(() => {
       copied.value = false;
@@ -36,9 +25,9 @@ async function copyCode(code: string) {
   <div class="source-code">
     <div class="source-header">
       <span class="source-label">Template</span>
-      <button type="button" class="source-copy-btn" @click="copyCode(code)">
+      <button type="button" class="source-copy-btn" @click="copyCode">
         <svg
-          v-if="!copied"
+          v-if="copied"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -46,8 +35,7 @@ async function copyCode(code: string) {
           width="12"
           height="12"
         >
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          <polyline points="20 6 9 17 4 12" />
         </svg>
         <svg
           v-else
@@ -58,12 +46,15 @@ async function copyCode(code: string) {
           width="12"
           height="12"
         >
-          <polyline points="20 6 9 17 4 12" />
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
         {{ copied ? "Copied!" : "Copy" }}
       </button>
     </div>
-    <pre class="source-pre"><code class="source-code-text hljs" v-html="highlightedCode" /></pre>
+    <pre
+      class="source-pre"
+    ><HighlightedCode class="source-code-text hljs" :code language="xml" /></pre>
   </div>
 </template>
 

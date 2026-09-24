@@ -10,7 +10,10 @@ import LinkAnchor from "../families/navigation/link/link-anchor.vue";
 import { skipLinkRuntimeFixture } from "../families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { calloutRuntimeFixture } from "../families/feedback/callout/runtime-conformance-callout-fixtures.ts";
+import { calendarRuntimeFixtures } from "../families/date-time/calendar/runtime-conformance-calendar-fixtures.ts";
+import { rangeCalendarRuntimeFixture } from "../families/date-time/range-calendar/runtime-conformance-range-calendar-fixtures.ts";
 import { tableRuntimeFixtures } from "../families/data/table/runtime-conformance-table-fixtures.ts";
+import { treeRuntimeFixtures } from "../families/data/tree/runtime-conformance-tree-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { meterRuntimeFixture } from "../families/feedback/meter/runtime-conformance-meter-fixtures.ts";
 import { selectionRuntimeFixtures } from "../families/selection/runtime-conformance-selection-fixtures.ts";
@@ -36,6 +39,7 @@ import { progressBarRuntimeFixture } from "../families/feedback/progress-bar/run
 import { progressRuntimeFixture } from "../families/feedback/progress/runtime-conformance-progress-fixtures.ts";
 import { ratingRuntimeFixture } from "../families/form/rating/runtime-conformance-rating-fixtures.ts";
 import { richRuntimeFixtures } from "./runtime-conformance-rich-fixtures.ts";
+import { splitterRuntimeFixtures } from "../families/layout/splitter/runtime-conformance-splitter-fixtures.ts";
 import { sliderRuntimeFixture } from "../families/form/slider/runtime-conformance-slider-fixtures.ts";
 import { spinnerRuntimeFixture } from "../families/feedback/spinner/runtime-conformance-spinner-fixtures.ts";
 import { statusLightRuntimeFixture } from "../families/feedback/status-light/runtime-conformance-status-light-fixtures.ts";
@@ -72,8 +76,12 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   badgeRuntimeFixture,
   bannerRuntimeFixture,
   blockUIRuntimeFixture,
+  ...calendarRuntimeFixtures,
   calloutRuntimeFixture,
+  rangeCalendarRuntimeFixture,
   ...tableRuntimeFixtures,
+  ...treeRuntimeFixtures,
+  ...splitterRuntimeFixtures,
   ...breadcrumbRuntimeFixtures,
   ...tabsRuntimeFixtures,
   ...stepperRuntimeFixtures,

@@ -20,7 +20,8 @@
     "directory": "npm/ui"
   },
   "files": [
-    "dist"
+    "dist",
+    "registry"
   ],
   "type": "module",
   "sideEffects": [
@@ -69,6 +70,16 @@
       "import": "./dist/block-ui.mjs",
       "default": "./dist/block-ui.mjs"
     },
+    "./calendar": {
+      "types": "./dist/calendar.d.mts",
+      "import": "./dist/calendar.mjs",
+      "default": "./dist/calendar.mjs"
+    },
+    "./range-calendar": {
+      "types": "./dist/range-calendar.d.mts",
+      "import": "./dist/range-calendar.mjs",
+      "default": "./dist/range-calendar.mjs"
+    },
     "./callout": {
       "types": "./dist/callout.d.mts",
       "import": "./dist/callout.mjs",
@@ -103,6 +114,11 @@
       "types": "./dist/tabs.d.mts",
       "import": "./dist/tabs.mjs",
       "default": "./dist/tabs.mjs"
+    },
+    "./tree": {
+      "types": "./dist/tree.d.mts",
+      "import": "./dist/tree.mjs",
+      "default": "./dist/tree.mjs"
     },
     "./stepper": {
       "types": "./dist/stepper.d.mts",
@@ -219,6 +235,11 @@
       "import": "./dist/tooltip.mjs",
       "default": "./dist/tooltip.mjs"
     },
+    "./tour": {
+      "types": "./dist/tour.d.mts",
+      "import": "./dist/tour.mjs",
+      "default": "./dist/tour.mjs"
+    },
     "./input": {
       "types": "./dist/input.d.mts",
       "import": "./dist/input.mjs",
@@ -248,6 +269,11 @@
       "types": "./dist/separator.d.mts",
       "import": "./dist/separator.mjs",
       "default": "./dist/separator.mjs"
+    },
+    "./splitter": {
+      "types": "./dist/splitter.d.mts",
+      "import": "./dist/splitter.mjs",
+      "default": "./dist/splitter.mjs"
     },
     "./spacer": {
       "types": "./dist/spacer.d.mts",
@@ -339,6 +365,11 @@
       "import": "./dist/collection.mjs",
       "default": "./dist/collection.mjs"
     },
+    "./color-picker": {
+      "types": "./dist/color-picker.d.mts",
+      "import": "./dist/color-picker.mjs",
+      "default": "./dist/color-picker.mjs"
+    },
     "./composite-navigation": {
       "types": "./dist/composite-navigation.d.mts",
       "import": "./dist/composite-navigation.mjs",
@@ -398,6 +429,11 @@
       "types": "./dist/field-wiring.d.mts",
       "import": "./dist/field-wiring.mjs",
       "default": "./dist/field-wiring.mjs"
+    },
+    "./file-upload": {
+      "types": "./dist/file-upload.d.mts",
+      "import": "./dist/file-upload.mjs",
+      "default": "./dist/file-upload.mjs"
     },
     "./form": {
       "types": "./dist/form.d.mts",
@@ -601,6 +637,12 @@
     },
     "./style.css": "./dist/style.css",
     "./theme.css": "./dist/theme.css",
+    "./base.css": "./dist/theme.css",
+    "./component-button.css": "./dist/component-button.css",
+    "./component-dialog.css": "./dist/component-dialog.css",
+    "./component-progress-bar.css": "./dist/component-progress-bar.css",
+    "./component-scroll-area.css": "./dist/component-scroll-area.css",
+    "./motion.css": "./dist/motion.css",
     "./theme-preset-headless.css": "./dist/theme-preset-headless.css",
     "./theme-preset-atelier.css": "./dist/theme-preset-atelier.css",
     "./theme-preset-midnight.css": "./dist/theme-preset-midnight.css",
@@ -628,7 +670,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "vp pack && vp exec node scripts/build-source-registry.ts",
     "dev": "vp pack --watch",
     "lint:sfc": "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
     "pretest": "vp pack && pnpm check:size && pnpm check:tree-shaking",
@@ -638,6 +680,7 @@
     "check:story-testbed": "vp exec node scripts/story-testbed.ts check --format json",
     "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
+    "build:registry": "vp exec node scripts/build-source-registry.ts",
     "check:size": "node scripts/check-size.mjs",
     "check:tree-shaking": "node scripts/check-tree-shaking.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"

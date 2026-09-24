@@ -16,6 +16,7 @@ Commands:
   curator         Curator utilities for diagnostics and reports
   doctor          Analyze whole-application health
   clean           Remove Vize-generated cache artifacts
+  lib             Pull versioned @vizejs/ui and @vizejs/composable sources into the project
   check-server    Start type check JSON-RPC server (Unix only)
   content-mapper  Start the TypeScript content-mapper protocol server
   musea           Start component gallery server

@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import hljs from "highlight.js/lib/core";
-import json from "highlight.js/lib/languages/json";
 import { mdiChevronUp, mdiChevronDown } from "@mdi/js";
 import { useActions, type ActionEvent } from "../composables/useActions";
+import HighlightedCode from "./HighlightedCode.vue";
 import MdiIcon from "./MdiIcon.vue";
 
 const props = withDefaults(
@@ -15,12 +14,21 @@ const props = withDefaults(
   },
 );
 
-hljs.registerLanguage("json", json);
-
 const { events, clear } = useActions();
-const expandedIndex = ref<number | null>(null);
+const expandedId = ref<number | null>(null);
+const eventIds = new WeakMap<ActionEvent, number>();
+let nextEventId = 0;
 
-const reversedEvents = computed(() => [...events.value].reverse());
+const reversedEvents = computed(() =>
+  [...events.value].reverse().map((event) => {
+    let id = eventIds.get(event);
+    if (id === undefined) {
+      id = ++nextEventId;
+      eventIds.set(event, id);
+    }
+    return { event, id };
+  }),
+);
 const tracksMousemove = computed(() =>
   props.captureEvents.some((eventName) => eventName === "mousemove"),
 );
@@ -33,8 +41,8 @@ function formatTarget(target?: string): string {
   return target ? target.toLowerCase() : "document";
 }
 
-function toggleExpand(index: number) {
-  expandedIndex.value = expandedIndex.value === index ? null : index;
+function toggleExpand(id: number) {
+  expandedId.value = expandedId.value === id ? null : id;
 }
 
 function formatTime(timestamp: number): string {
@@ -54,10 +62,6 @@ function formatRawEvent(event: ActionEvent): string {
   }
   return JSON.stringify(event.rawEvent, null, 2);
 }
-
-function highlightJson(str: string): string {
-  return hljs.highlight(str, { language: "json" }).value;
-}
 </script>
 
 <template>
@@ -75,7 +79,7 @@ function highlightJson(str: string): string {
           </span>
         </span>
       </div>
-      <button v-if="events.length > 0" type="button" class="actions-clear-btn" @click="clear()">
+      <button v-if="events.length > 0" type="button" class="actions-clear-btn" @click="clear">
         Clear
       </button>
     </div>
@@ -97,26 +101,30 @@ function highlightJson(str: string): string {
 
     <div v-else class="actions-list">
       <div
-        v-for="(event, index) in reversedEvents"
-        :key="index"
+        v-for="{ event, id } in reversedEvents"
+        :key="id"
         class="action-item"
-        :class="{ expanded: expandedIndex === index }"
-        @click="toggleExpand(index)"
+        :class="{ expanded: expandedId === id }"
       >
-        <div class="action-row">
+        <button
+          type="button"
+          class="action-row"
+          :aria-expanded="expandedId === id"
+          @click="() => toggleExpand(id)"
+        >
           <span class="action-time">{{ formatTime(event.timestamp) }}</span>
           <span class="action-type" :class="event.source">{{ event.name }}</span>
           <span class="action-target">{{ formatTarget(event.target) }}</span>
           <MdiIcon
             class="action-expand-icon"
-            :path="expandedIndex === index ? mdiChevronUp : mdiChevronDown"
+            :path="expandedId === id ? mdiChevronUp : mdiChevronDown"
             :size="12"
           />
-        </div>
-        <div v-if="expandedIndex === index" class="action-detail">
+        </button>
+        <div v-if="expandedId === id" class="action-detail">
           <pre
             class="action-raw hljs"
-          ><code v-html="highlightJson(formatRawEvent(event))"></code></pre>
+          ><HighlightedCode :code="formatRawEvent(event)" language="json" /></pre>
         </div>
       </div>
     </div>
@@ -219,15 +227,15 @@ function highlightJson(str: string): string {
 .actions-note {
   font-size: 0.6875rem;
   color: var(--musea-text-muted);
-}
 
-.actions-note code {
-  font-family: var(--musea-font-mono, monospace);
-  font-size: 0.625rem;
-  padding: 0.125rem 0.25rem;
-  border-radius: var(--musea-radius-sm);
-  background: var(--musea-bg-secondary);
-  border: 1px solid var(--musea-border-subtle);
+  code {
+    font-family: var(--musea-font-mono, monospace);
+    font-size: 0.625rem;
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--musea-radius-sm);
+    background: var(--musea-bg-secondary);
+    border: 1px solid var(--musea-border-subtle);
+  }
 }
 
 .actions-list {
@@ -244,10 +252,10 @@ function highlightJson(str: string): string {
   transition:
     background var(--musea-transition),
     border-color var(--musea-transition);
-}
 
-.action-item + .action-item {
-  margin-top: 0.375rem;
+  & + & {
+    margin-top: 0.375rem;
+  }
 }
 
 .action-item:hover {
@@ -267,6 +275,19 @@ function highlightJson(str: string): string {
   column-gap: 0.625rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.6875rem;
+  width: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.action-row:focus-visible {
+  outline: 2px solid var(--musea-accent);
+  outline-offset: 2px;
 }
 
 .action-time {
@@ -282,13 +303,13 @@ function highlightJson(str: string): string {
   font-size: 0.5625rem;
   font-weight: 600;
   flex-shrink: 0;
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background: color-mix(in srgb, var(--musea-info) 15%, transparent);
+  color: var(--musea-info);
 }
 
 .action-type.vue {
-  background: rgba(52, 211, 153, 0.15);
-  color: #34d399;
+  background: color-mix(in srgb, var(--musea-success) 15%, transparent);
+  color: var(--musea-success);
 }
 
 .action-target {
@@ -304,7 +325,7 @@ function highlightJson(str: string): string {
 .action-expand-icon {
   width: 12px;
   height: 12px;
-  margin-left: auto;
+  margin-inline-start: auto;
   color: var(--musea-text-muted);
   flex-shrink: 0;
 }

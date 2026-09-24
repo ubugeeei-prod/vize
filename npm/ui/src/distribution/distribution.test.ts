@@ -40,6 +40,17 @@ test("every public entry exposes generated JavaScript and declarations", async (
 
   assert.deepEqual(manifest.sideEffects, ["./dist/*.css"]);
   assert.equal(manifest.exports["./style.css"], "./dist/style.css");
+  assert.equal(manifest.exports["./base.css"], manifest.exports["./theme.css"]);
+
+  for (const name of ["button", "dialog", "progress-bar", "scroll-area"]) {
+    const entry = `./component-${name}.css`;
+    const target = manifest.exports[entry];
+    assert.equal(target, `./dist/component-${name}.css`);
+    assert.equal(typeof target, "string", `${entry} must remain CSS-only`);
+    await assert.doesNotReject(readFile(path.resolve(`dist/component-${name}.css`)));
+  }
+  assert.equal(manifest.exports["./motion.css"], "./dist/motion.css");
+  await assert.doesNotReject(readFile(path.resolve("dist/motion.css")));
 
   for (const entry of publicThemeCssEntries) {
     const target = manifest.exports[entry];
@@ -59,6 +70,22 @@ test("every public entry exposes generated JavaScript and declarations", async (
     assert.equal(target.import, target.default);
     await assert.doesNotReject(readFile(path.resolve(target.import)));
     await assert.doesNotReject(readFile(path.resolve(target.types)));
+  }
+});
+
+test("optional component styles stay separate from headless JavaScript", async () => {
+  const aggregate = await readFile(path.resolve("dist/style.css"), "utf8");
+
+  for (const name of ["button", "dialog"]) {
+    const stylesheet = await readFile(path.resolve(`dist/component-${name}.css`), "utf8");
+    const entry = await readFile(path.resolve(`dist/${name}.mjs`), "utf8");
+
+    assert.match(stylesheet, /^@layer vize\.tokens,vize\.ui,vize\.preset,vize\.policy;/);
+    assert.match(stylesheet, new RegExp(`data-vize-ui=${name}`));
+    assert.match(stylesheet, /prefers-reduced-motion:reduce/);
+    assert.match(stylesheet, /forced-colors:active/);
+    assert.doesNotMatch(entry, new RegExp(`component-${name}\\.css`));
+    assert.doesNotMatch(aggregate, new RegExp(`vize-ui-${name}-(?:radius|shadow)`));
   }
 });
 
