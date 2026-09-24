@@ -532,8 +532,11 @@ export function snapColorChannelValue(channel: ColorChannel, value: number, step
  * Human-readable channel value for `aria-valuetext`, e.g. `"Hue 210°"`,
  * `"Saturation 40%"`, `"Red 128"`, or `"Alpha 50%"`.
  */
-export function formatColorChannelValue(channel: ColorChannel, value: number): string {
-  const label = CHANNEL_LABELS[channel];
+export function formatColorChannelValue(
+  channel: ColorChannel,
+  value: number,
+  label: string = CHANNEL_LABELS[channel],
+): string {
   switch (channel) {
     case "hue":
       return `${label} ${round(value)}°`;

@@ -135,3 +135,21 @@ export interface CarouselIndicatorGroupExpose {
   /** Rendered tablist element. */
   readonly element: HTMLDivElement | null;
 }
+
+/**
+ * Localizable accessible strings for Carousel parts. Every entry is optional;
+ * omitted entries fall back to the English WAI-ARIA example wording.
+ */
+export interface CarouselMessages {
+  /** `aria-roledescription` of the root. @default "carousel" */
+  readonly carousel?: string;
+
+  /** `aria-roledescription` of each slide. @default "slide" */
+  readonly slide?: string;
+
+  /** Slide name from its one-based position. @default `${position} of ${count}` */
+  readonly slideLabel?: (position: number, count: number) => string;
+
+  /** Indicator name from its one-based position. @default `Slide ${position}` */
+  readonly indicatorLabel?: (position: number, count: number) => string;
+}

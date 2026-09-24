@@ -47,6 +47,7 @@ export type {
   ColorPickerChannelSliderExpose,
   ColorPickerChannelSliderSlotState,
   ColorPickerDirection,
+  ColorPickerMessages,
   ColorPickerEyeDropperExpose,
   ColorPickerEyeDropperFallback,
   ColorPickerEyeDropperSlotState,

@@ -17,13 +17,18 @@ import {
   TourTitle,
   padTourRect,
   resolveTourTarget,
+  type TourAfterLeaveContext,
+  type TourBeforeEnter,
+  type TourBeforeEnterContext,
   type TourCloseReason,
   type TourContentExpose,
   type TourContentPlacement,
   type TourContentSlotState,
   type TourControlSlotState,
   type TourDismissReason,
+  type TourMessages,
   type TourMissingTargetBehavior,
+  type TourNavigationDirection,
   type TourProgressSlotState,
   type TourRootExpose,
   type TourSlotState,
@@ -135,3 +140,38 @@ typedRoot({
 });
 // @ts-expect-error steps are required
 h(TourRoot, { defaultOpen: true });
+
+type _DirectionIsLiteral = Expect<Equal<TourNavigationDirection, "backward" | "forward">>;
+type _SlotPending = Expect<Equal<typeof slot.pending, boolean>>;
+type _ControlPending = Expect<Equal<typeof control.pending, boolean>>;
+type _RootPending = Expect<Equal<typeof root.pending, boolean>>;
+type _ProgressMessage = Expect<
+  Equal<TourMessages["progress"], (current: number, total: number) => string>
+>;
+type _HookStepIsInferred = Expect<Equal<TourBeforeEnterContext<ProductStep>["step"], ProductStep>>;
+type _HookSignal = Expect<Equal<TourBeforeEnterContext["signal"], AbortSignal>>;
+type _LeaveTarget = Expect<Equal<TourAfterLeaveContext<ProductStep>["to"], ProductStep | null>>;
+
+const asyncHook: TourBeforeEnter<ProductStep> = async ({ step }) => step.title.length > 0;
+const syncHook: TourBeforeEnter<ProductStep> = () => undefined;
+// @ts-expect-error hooks settle with booleans or nothing
+const badHook: TourBeforeEnter<ProductStep> = () => "yes";
+void asyncHook;
+void syncHook;
+void badHook;
+
+typedRoot({
+  steps: productSteps,
+  beforeEnter: ({ step, from }) => {
+    type _EnteringIsProductStep = Expect<Equal<typeof step, ProductStep>>;
+    type _FromIsProductStep = Expect<Equal<typeof from, ProductStep | null>>;
+    return step.value !== "profile";
+  },
+  messages: { progress: (current, total) => `${current}/${total}` },
+  "onNavigation-error": (error, value) => {
+    type _ErrorValueIsNarrow = Expect<Equal<typeof value, "welcome" | "search" | "profile">>;
+    void error;
+  },
+});
+// @ts-expect-error messages are typed
+typedRoot({ steps: productSteps, messages: { progress: "1 of 3" } });

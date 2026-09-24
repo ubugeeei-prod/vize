@@ -53,11 +53,65 @@ export type QrCodeErrorCorrection = "L" | "M" | "Q" | "H";
 /** One of the eight standard data mask patterns. */
 export type QrCodeMask = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-/** Data encoding mode. Kanji and ECI segments are intentionally not emitted. */
-export type QrCodeMode = "numeric" | "alphanumeric" | "byte";
+/**
+ * Data encoding mode. `kanji` packs Shift_JIS double-byte characters into 13
+ * bits each and requires a {@link QrCodeKanjiEncoder}.
+ */
+export type QrCodeMode = "numeric" | "alphanumeric" | "byte" | "kanji";
 
-/** Data accepted by the encoder: text is UTF-8 encoded, bytes are used as-is. */
-export type QrCodeValue = string | Uint8Array;
+/** Segment kind: a data mode, or an ECI header that switches the character set. */
+export type QrCodeSegmentMode = QrCodeMode | "eci";
+
+/**
+ * One encoded segment. Create segments with the `createQrCode*Segment`
+ * helpers and pass an array of them as the value for full manual control.
+ */
+export interface QrCodeSegment {
+  /** Segment kind. */
+  readonly mode: QrCodeSegmentMode;
+
+  /** Character (or byte) count written to the count indicator; `0` for ECI. */
+  readonly count: number;
+
+  /** Encoded payload bits (0 or 1), excluding the mode indicator and count. */
+  readonly bits: readonly number[];
+}
+
+/**
+ * Data accepted by the encoder: text (segmented automatically, byte runs are
+ * UTF-8), raw bytes (one byte segment), or explicit segments.
+ */
+export type QrCodeValue = string | Uint8Array | readonly QrCodeSegment[];
+
+/**
+ * How text is split into segments.
+ *
+ * - `optimal`: mixes numeric, alphanumeric, byte, and kanji segments to
+ *   minimize the bit length for each version range.
+ * - `single`: the most compact single mode that represents the whole text.
+ */
+export type QrCodeSegmentation = "optimal" | "single";
+
+/**
+ * Maps Unicode characters to Shift_JIS for Kanji mode. The full JIS X 0208
+ * table ships separately as `qrCodeKanjiEncoder` so it is only bundled on demand.
+ */
+export interface QrCodeKanjiEncoder {
+  /**
+   * Shift_JIS double-byte code (`0x8140..0x9FFC` or `0xE040..0xEBBF`) for a
+   * Unicode code point, or `undefined` when the character has none.
+   */
+  readonly toShiftJis: (codePoint: number) => number | undefined;
+}
+
+/** Mode and count of one encoded segment, reported on {@link QrCodeMatrix}. */
+export interface QrCodeSegmentSummary {
+  /** Segment kind. */
+  readonly mode: QrCodeSegmentMode;
+
+  /** Character or byte count; the ECI designator for ECI segments. */
+  readonly count: number;
+}
 
 /** Stable diagnostic codes thrown by {@link QrCodeEncodeError}. */
 export type QrCodeEncodeErrorCode =
@@ -111,12 +165,44 @@ export interface QrCodeEncodeOptions {
   readonly mask?: QrCodeMask | "auto";
 
   /**
-   * Forced encoding mode, or `"auto"` for the most compact single mode that
-   * represents the whole value. Byte values always use byte mode.
+   * Forced single encoding mode for text, or `"auto"` to follow
+   * {@link segmentation}. Byte values always use byte mode; explicit segment
+   * arrays ignore this option.
    *
    * @default "auto"
    */
   readonly mode?: QrCodeMode | "auto";
+
+  /**
+   * How automatic mode splits text into segments.
+   *
+   * @default "optimal"
+   */
+  readonly segmentation?: QrCodeSegmentation;
+
+  /**
+   * Shift_JIS mapping that enables Kanji mode, typically `qrCodeKanjiEncoder`
+   * from `qr-code-kanji.ts`. Without it, Japanese text is encoded as UTF-8 bytes.
+   *
+   * @default undefined
+   */
+  readonly kanji?: QrCodeKanjiEncoder | undefined;
+
+  /**
+   * Extended Channel Interpretation designator (`0..999999`) written before the
+   * data, e.g. `26` for UTF-8 or `20` for Shift_JIS.
+   *
+   * @default undefined
+   */
+  readonly eci?: number | undefined;
+
+  /**
+   * Declare UTF-8 byte data with ECI 26 so strict scanners do not assume ISO-8859-1.
+   * Must agree with {@link eci} when both are set.
+   *
+   * @default false
+   */
+  readonly utf8Eci?: boolean;
 }
 
 /** Immutable encoded QR Code symbol, excluding the quiet zone. */
@@ -133,8 +219,17 @@ export interface QrCodeMatrix {
   /** Data mask applied to the symbol. */
   readonly mask: QrCodeMask;
 
-  /** Encoding mode used for the data segment, or `null` for an empty value. */
-  readonly mode: QrCodeMode | null;
+  /**
+   * Mode shared by every data segment, `"mixed"` when data segments use
+   * different modes, or `null` for an empty value.
+   */
+  readonly mode: QrCodeMode | "mixed" | null;
+
+  /** Encoded segments in order, including any ECI header. */
+  readonly segments: readonly QrCodeSegmentSummary[];
+
+  /** ECI designator written before the data, or `null`. */
+  readonly eci: number | null;
 
   /** Row-major module colors: `true` is dark, index is `y * size + x`. */
   readonly modules: readonly boolean[];

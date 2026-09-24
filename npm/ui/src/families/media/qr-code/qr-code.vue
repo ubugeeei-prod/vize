@@ -7,10 +7,12 @@ import { normalizeQrCodeQuietZone, qrCodeToSvgPath } from "./qr-code-svg.ts";
 import type {
   QrCodeEncodeErrorLike,
   QrCodeErrorCorrection,
+  QrCodeKanjiEncoder,
   QrCodeExpose,
   QrCodeMask,
   QrCodeMatrix,
   QrCodeMode,
+  QrCodeSegmentation,
   QrCodeSlotState,
   QrCodeState,
   QrCodeValue,
@@ -24,13 +26,20 @@ const {
   version = "auto",
   mask = "auto",
   mode = "auto",
+  segmentation = "optimal",
+  kanji = undefined,
+  eci = undefined,
+  utf8Eci = false,
   quietZone = 4,
   label = undefined,
   decorative = false,
   foreground = "currentColor",
   background = "none",
 } = defineProps<{
-  /** Text (UTF-8 encoded) or bytes to encode. @default required */
+  /**
+   * Text (segmented automatically; byte runs are UTF-8), bytes, or explicit
+   * segments from the `createQrCode*Segment` helpers. @default required
+   */
   readonly value: QrCodeValue;
 
   /**
@@ -62,11 +71,41 @@ const {
   readonly mask?: QrCodeMask | "auto";
 
   /**
-   * Forced encoding mode, or `"auto"` for the most compact single mode.
+   * Forced single encoding mode, or `"auto"` to follow {@link segmentation}.
    *
    * @default "auto"
    */
   readonly mode?: QrCodeMode | "auto";
+
+  /**
+   * Automatic segmentation: `"optimal"` mixes modes for the fewest bits,
+   * `"single"` keeps the most compact single mode.
+   *
+   * @default "optimal"
+   */
+  readonly segmentation?: QrCodeSegmentation;
+
+  /**
+   * Shift_JIS mapping enabling Kanji segments, e.g. `qrCodeKanjiEncoder`
+   * imported from the opt-in Kanji table module.
+   *
+   * @default undefined
+   */
+  readonly kanji?: QrCodeKanjiEncoder;
+
+  /**
+   * ECI designator written before the data (`26` = UTF-8, `20` = Shift_JIS).
+   *
+   * @default undefined
+   */
+  readonly eci?: number;
+
+  /**
+   * Declare UTF-8 byte data with ECI 26.
+   *
+   * @default false
+   */
+  readonly utf8Eci?: boolean;
 
   /**
    * Light margin in modules around the symbol. Scanners expect 4.
@@ -127,9 +166,13 @@ const encoding = computed<QrCodeEncoding>(() => {
     const zone = normalizeQrCodeQuietZone(quietZone);
     const matrix = encodeQrCode(value, {
       boostErrorCorrection,
+      eci,
       errorCorrection,
+      kanji,
       mask,
       mode,
+      segmentation,
+      utf8Eci,
       version,
     });
     return { matrix, error: null, quietZone: zone };

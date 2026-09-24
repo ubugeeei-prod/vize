@@ -22,19 +22,30 @@ function createProbe(defaultOpen: boolean) {
   return defineComponent({
     name: "TourSsrProbe",
     setup: () => () =>
-      h(TourRoot, { steps, defaultOpen, defaultStep: "search" }, () => [
-        h(TourSpotlight),
-        h(TourContent, { portalDisabled: true }, () => [
-          h(TourTitle, null, () => "Search"),
-          h(TourDescription, null, () => "Find anything"),
-          h(TourStep, { value: "search" }, () => "Search step"),
-          h(TourProgress),
-          h(TourPrev, null, () => "Back"),
-          h(TourNext, null, () => "Next"),
-          h(TourClose, null, () => "Close"),
-          h(TourArrow),
-        ]),
-      ]),
+      h(
+        TourRoot,
+        {
+          steps,
+          defaultOpen,
+          defaultStep: "search",
+          // Hooks only run for client navigation requests, never while rendering.
+          beforeEnter: () => new Promise<boolean>(() => undefined),
+          messages: { progress: (current: number, total: number) => `${current} / ${total}` },
+        },
+        () => [
+          h(TourSpotlight),
+          h(TourContent, { portalDisabled: true }, () => [
+            h(TourTitle, null, () => "Search"),
+            h(TourDescription, null, () => "Find anything"),
+            h(TourStep, { value: "search" }, () => "Search step"),
+            h(TourProgress),
+            h(TourPrev, null, () => "Back"),
+            h(TourNext, null, () => "Next"),
+            h(TourClose, null, () => "Close"),
+            h(TourArrow),
+          ]),
+        ],
+      ),
   });
 }
 
@@ -59,6 +70,7 @@ test("renders byte-identical open tour markup across isolated SSR requests", asy
   assert.match(html, /2 \/ 2/);
   assert.match(html, /data-vize-ui="tour-spotlight"/);
   assert.doesNotMatch(html, /--vize-ui-tour-target/);
+  assert.doesNotMatch(html, /data-pending/);
 });
 
 test("renders a closed tour without dialog content", async () => {

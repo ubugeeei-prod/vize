@@ -61,9 +61,9 @@ test("formats sizes with SI locale units and IEC suffixes", () => {
   assert.equal(formatFileSize(3e15 * 1000), "3,000 PB");
   assert.equal(formatFileSize(-5), "0 bytes");
   assert.equal(formatFileSize(Number.NaN), "0 bytes");
-  assert.equal(formatFileSize(1536, { standard: "iec" }), "1.5 KiB");
-  assert.equal(formatFileSize(1024 * 1024 * 3, { standard: "iec" }), "3 MiB");
-  assert.equal(formatFileSize(512, { standard: "iec" }), "512 B");
+  assert.equal(formatFileSize(1536, { standard: "iec" }), "1.5\u00a0KiB");
+  assert.equal(formatFileSize(1024 * 1024 * 3, { standard: "iec" }), "3\u00a0MiB");
+  assert.equal(formatFileSize(512, { standard: "iec" }), "512\u00a0B");
   assert.equal(formatFileSize(1_234_567, { maximumFractionDigits: 2 }), "1.23 MB");
   assert.equal(formatFileSize(1500, { locale: "de-DE" }), "1,5 kB");
 });

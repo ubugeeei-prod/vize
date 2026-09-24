@@ -26,16 +26,21 @@ const emit = defineEmits<{
 }>();
 
 defineSlots<{
-  /** Control label. Receives position and availability state. */
+  /** Control label. Receives position and availability state; defaults to the TourRoot `messages` label. */
   default(props: TourControlSlotState): unknown;
 }>();
 
 const context = tourContext.use();
-const controlDisabled = computed(() => disabled || !context.open.value || context.first.value);
+const controlDisabled = computed(
+  () => disabled || !context.open.value || context.first.value || context.pending.value,
+);
+const label = computed(() => context.messages.value.previous);
 const slotState = computed<TourControlSlotState>(() => ({
   disabled: controlDisabled.value,
   first: context.first.value,
+  label: label.value,
   last: context.last.value,
+  pending: context.pending.value,
   state: context.state.value,
 }));
 
@@ -57,7 +62,7 @@ function onClick(event: MouseEvent): void {
     :data-disabled="controlDisabled ? 'true' : undefined"
     @click="onClick"
   >
-    <slot v-bind="slotState" />
+    <slot v-bind="slotState">{{ label }}</slot>
   </button>
 </template>
 

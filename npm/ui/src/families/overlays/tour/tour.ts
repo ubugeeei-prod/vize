@@ -12,7 +12,11 @@ export { default as TourStep } from "./tour-step.vue";
 export { default as TourTitle } from "./tour-title.vue";
 export { padTourRect, resolveTourTarget } from "./tour-state.ts";
 export type {
+  TourAfterLeave,
+  TourAfterLeaveContext,
   TourArrowSlotState,
+  TourBeforeEnter,
+  TourBeforeEnterContext,
   TourCloseReason,
   TourContentExpose,
   TourContentPlacement,
@@ -20,7 +24,10 @@ export type {
   TourControlSlotState,
   TourDirection,
   TourDismissReason,
+  TourHookResult,
+  TourMessages,
   TourMissingTargetBehavior,
+  TourNavigationDirection,
   TourProgressSlotState,
   TourRootExpose,
   TourSlotState,

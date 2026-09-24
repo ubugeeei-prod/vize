@@ -44,6 +44,71 @@ export type TourCloseReason = "close" | "skip";
 /** Reading direction used to map ArrowLeft and ArrowRight to previous and next. */
 export type TourDirection = "ltr" | "rtl";
 
+/** Direction of a step navigation request. */
+export type TourNavigationDirection = "backward" | "forward";
+
+/** Value a navigation hook may settle with. `false` cancels; anything else continues. */
+export type TourHookResult = boolean | undefined | void;
+
+/** Context passed to {@link TourBeforeEnter} hooks. */
+export interface TourBeforeEnterContext<Step extends TourStepDefinition = TourStepDefinition> {
+  /** Step about to become current. */
+  readonly step: Step;
+
+  /** Current step, or `null` when the tour is opening. */
+  readonly from: Step | null;
+
+  /** Direction of the request. */
+  readonly direction: TourNavigationDirection;
+
+  /** Aborted when a newer navigation request, a dismissal, or unmount supersedes this one. */
+  readonly signal: AbortSignal;
+}
+
+/**
+ * Runs before a step becomes current, e.g. to open a menu or route so the target exists.
+ * Returning (or resolving) `false` cancels the navigation; throwing or rejecting reports
+ * `navigation-error`. The target is resolved after the hook settles.
+ */
+export type TourBeforeEnter<Step extends TourStepDefinition = TourStepDefinition> = (
+  context: TourBeforeEnterContext<Step>,
+) => TourHookResult | PromiseLike<TourHookResult>;
+
+/** Context passed to {@link TourAfterLeave} hooks. */
+export interface TourAfterLeaveContext<Step extends TourStepDefinition = TourStepDefinition> {
+  /** Step that stopped being current. */
+  readonly step: Step;
+
+  /** New current step, or `null` when the tour closed. */
+  readonly to: Step | null;
+}
+
+/** Runs after a step stops being current, e.g. to close a menu opened by `beforeEnter`. */
+export type TourAfterLeave<Step extends TourStepDefinition = TourStepDefinition> = (
+  context: TourAfterLeaveContext<Step>,
+) => void;
+
+/** Overridable default strings rendered by Tour parts. */
+export interface TourMessages {
+  /** TourProgress fallback text. @default (current, total) => `${current} / ${total}` */
+  readonly progress: (current: number, total: number) => string;
+
+  /** TourPrev fallback label when no slot content is given. @default "" */
+  readonly previous: string;
+
+  /** TourNext fallback label before the last step. @default "" */
+  readonly next: string;
+
+  /** TourNext fallback label on the last step. @default "" */
+  readonly finish: string;
+
+  /** TourClose fallback label for `reason="close"`. @default "" */
+  readonly close: string;
+
+  /** TourClose fallback label for `reason="skip"`. @default "" */
+  readonly skip: string;
+}
+
 /**
  * One step definition. Consumers may extend it with their own fields (title,
  * body, media, analytics ids); TourRoot infers the exact step type and hands
@@ -80,6 +145,14 @@ export interface TourStepDefinition {
    * @default the TourRoot `missingTarget`
    */
   readonly missingTarget?: TourMissingTargetBehavior;
+
+  /**
+   * Hook run before this step becomes current, after the TourRoot `beforeEnter` hook.
+   * Use the TourRoot prop for hooks that need the inferred consumer step type.
+   *
+   * @default undefined
+   */
+  readonly beforeEnter?: TourBeforeEnter;
 }
 
 /** Step value union inferred from a step definition type. */
@@ -113,6 +186,9 @@ export interface TourSlotState<Step extends TourStepDefinition = TourStepDefinit
 
   /** Resolution status of the current step target. */
   readonly targetState: TourTargetState;
+
+  /** Whether a `beforeEnter` hook is pending. */
+  readonly pending: boolean;
 }
 
 /** State exposed to TourContent slots. */
@@ -167,6 +243,12 @@ export interface TourControlSlotState {
 
   /** Stable open state token. */
   readonly state: TourState;
+
+  /** Whether a `beforeEnter` hook is pending. Navigation controls are disabled meanwhile. */
+  readonly pending: boolean;
+
+  /** Fallback label resolved from TourRoot `messages`. */
+  readonly label: string;
 }
 
 /** State exposed to TourSpotlight slots. */

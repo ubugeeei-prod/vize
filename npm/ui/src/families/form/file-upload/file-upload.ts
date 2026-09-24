@@ -51,6 +51,7 @@ export type {
   FileUploadMessageDetail,
   FileUploadMessages,
   FileUploadPasteScope,
+  FileUploadRejectDragEffect,
   FileUploadPreviewState,
   FileUploadRejection,
   FileUploadRejectionCode,
