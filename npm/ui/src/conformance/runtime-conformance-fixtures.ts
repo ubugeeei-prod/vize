@@ -22,6 +22,7 @@ import { dateRangePickerRuntimeFixtures } from "../families/date-time/date-range
 import { rangeCalendarRuntimeFixture } from "../families/date-time/range-calendar/runtime-conformance-range-calendar-fixtures.ts";
 import { timeFieldRuntimeFixture } from "../families/date-time/time-field/runtime-conformance-time-field-fixtures.ts";
 import { tableRuntimeFixtures } from "../families/data/table/runtime-conformance-table-fixtures.ts";
+import { chartRuntimeFixtures } from "../families/charts/chart/runtime-conformance-chart-fixtures.ts";
 import { treeRuntimeFixtures } from "../families/data/tree/runtime-conformance-tree-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { menusRuntimeFixtures } from "../families/menus/runtime-conformance-menus-fixtures.ts";
@@ -101,6 +102,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   timeFieldRuntimeFixture,
   ...tableRuntimeFixtures,
   ...treeRuntimeFixtures,
+  ...chartRuntimeFixtures,
   ...splitterRuntimeFixtures,
   ...breadcrumbRuntimeFixtures,
   ...tabsRuntimeFixtures,

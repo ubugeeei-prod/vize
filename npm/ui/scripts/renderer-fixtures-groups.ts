@@ -20,6 +20,7 @@ import { selectionRendererFixtures } from "./renderer-fixtures-selection.ts";
 import { toastRendererFixtures } from "./renderer-fixtures-toast.ts";
 import { tourRendererFixtures } from "./renderer-fixtures-tour.ts";
 import { structureRendererFixtures } from "./renderer-fixtures-structure.ts";
+import { chartRendererFixtures } from "./renderer-fixtures-charts.ts";
 import { wayfindingRendererFixtures } from "./renderer-fixtures-wayfinding.ts";
 
 export const groupedRendererFixtures = [
@@ -45,5 +46,6 @@ export const groupedRendererFixtures = [
   ...toastRendererFixtures,
   ...tourRendererFixtures,
   ...structureRendererFixtures,
+  ...chartRendererFixtures,
   ...wayfindingRendererFixtures,
 ] as const;
