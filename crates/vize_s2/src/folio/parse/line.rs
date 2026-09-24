@@ -61,7 +61,7 @@ pub(super) fn take_quoted(rest: &str, line_no: usize) -> Result<(String, &str), 
     let mut chars = body.char_indices();
     while let Some((idx, c)) = chars.next() {
         match c {
-            '"' => return Ok((content, &body[idx + 1..])),
+            '"' => return Ok((content, body.get(idx + 1..).unwrap_or_default())),
             '\\' => match chars.next() {
                 Some((_, 'n')) => content.push('\n'),
                 Some((_, 'r')) => content.push('\r'),

@@ -1,6 +1,6 @@
 //! Deep S2 folio mirroring and printing stay heap-grown on small stacks.
 
-#![allow(clippy::disallowed_macros)]
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, Box, Span, Vec as ArenaVec};

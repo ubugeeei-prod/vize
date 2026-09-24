@@ -78,21 +78,21 @@ fn optional_fields(
     };
     let mut name = None;
     if let Some(skip) = field(rest, "name=", any_field) {
-        let (value, tail) = name_value(&rest[skip..], line_no)?;
+        let (value, tail) = name_value(rest.get(skip..).unwrap_or_default(), line_no)?;
         name = Some(value);
         rest = tail;
         any_field = true;
     }
     let mut modifiers = Vec::new();
     if let Some(skip) = field(rest, "mods=", any_field) {
-        let (parsed, tail) = take_mods(&rest[skip..], line_no)?;
+        let (parsed, tail) = take_mods(rest.get(skip..).unwrap_or_default(), line_no)?;
         modifiers = parsed;
         rest = tail;
         any_field = true;
     }
     let mut expr = None;
     if let Some(skip) = field(rest, expr_key, any_field) {
-        let (parsed, tail) = take_expr(&rest[skip..], line_no)?;
+        let (parsed, tail) = take_expr(rest.get(skip..).unwrap_or_default(), line_no)?;
         expr = Some(parsed);
         rest = tail;
         any_field = true;
@@ -235,8 +235,8 @@ pub(super) fn slot_scope(rest: &str, line_no: usize) -> Result<Item, FolioError>
     let mut rest = rest;
     let mut any_field = false;
     let mut name = None;
-    if rest.starts_with("name=") {
-        let (value, tail) = take_quoted(&rest["name=".len()..], line_no)?;
+    if let Some(value) = rest.strip_prefix("name=") {
+        let (value, tail) = take_quoted(value, line_no)?;
         name = Some(value);
         rest = tail;
         any_field = true;

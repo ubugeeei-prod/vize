@@ -111,8 +111,7 @@ fn split_filters(exp: &str) -> Option<Split<'_>> {
     let mut filters = alloc::vec::Vec::new();
     let mut prev: u8 = 0;
     let mut i = 0usize;
-    while i < bytes.len() {
-        let c = bytes[i];
+    while let Some(&c) = bytes.get(i) {
         if in_single {
             if c == b'\'' && prev != b'\\' {
                 in_single = false;
@@ -131,7 +130,7 @@ fn split_filters(exp: &str) -> Option<Split<'_>> {
             }
         } else if c == b'|'
             && bytes.get(i + 1).copied() != Some(b'|')
-            && (i == 0 || bytes[i - 1] != b'|')
+            && i.checked_sub(1).and_then(|p| bytes.get(p)) != Some(&b'|')
             && curly == 0
             && square == 0
             && paren == 0
@@ -157,7 +156,8 @@ fn split_filters(exp: &str) -> Option<Split<'_>> {
                 _ => {}
             }
             if c == b'/' {
-                let p = exp[..i].chars().rev().find(|&pc| pc != ' ');
+                let head = exp.get(..i).unwrap_or_default();
+                let p = head.chars().rev().find(|&pc| pc != ' ');
                 if p.is_none_or(|pc| !is_valid_division_char(pc)) {
                     in_regex = true;
                 }
@@ -181,7 +181,7 @@ fn split_filters(exp: &str) -> Option<Split<'_>> {
 }
 
 fn trimmed_segment(exp: &str, start: usize, end: usize) -> Segment<'_> {
-    let raw = &exp[start..end];
+    let raw = exp.get(start..end).unwrap_or_default();
     let text = raw.trim();
     let offset = start + raw.len() - raw.trim_start().len();
     Segment { text, offset }
@@ -192,13 +192,9 @@ fn parse_app(segment: Segment<'_>, parent: Span) -> Option<VueFilterApp<'_>> {
     if raw.is_empty() {
         return None;
     }
-    let (name, args) = match raw.find('(') {
+    let (name, args) = match raw.split_once('(') {
         None => (raw, None),
-        Some(idx) => {
-            let name = raw[..idx].trim();
-            let inner = raw[idx + 1..].strip_suffix(')').unwrap_or(&raw[idx + 1..]);
-            (name, Some(inner))
-        }
+        Some((name, rest)) => (name.trim(), Some(rest.strip_suffix(')').unwrap_or(rest))),
     };
     if !is_filter_name(name) {
         return None;

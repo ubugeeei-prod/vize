@@ -79,5 +79,5 @@ fn close_span(tail: &str, line_no: usize) -> Result<(Span, &str), FolioError> {
     };
     let (body, after) = tail.split_at(close);
     let span = final_span(body, line_no)?;
-    Ok((span, &after[1..]))
+    Ok((span, after.get(1..).unwrap_or_default()))
 }

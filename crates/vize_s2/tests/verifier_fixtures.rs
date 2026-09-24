@@ -9,6 +9,7 @@
 //! files** — no partial matching (TS-13). The fixture count is pinned so a
 //! fixture that stops being discovered fails loudly instead of silently
 //! shrinking the suite.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use std::path::PathBuf;
 

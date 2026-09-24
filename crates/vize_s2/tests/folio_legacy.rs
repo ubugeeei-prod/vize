@@ -2,6 +2,7 @@
 //! `vue.slot-scope`, and `vue.filter` round-trip through the folio.
 //! Split from `folio_laws.rs` so the original reference page stays the
 //! Vue 3 family pin and this file stays inside the source budget.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, Box, Span, String, Vec as ArenaVec};

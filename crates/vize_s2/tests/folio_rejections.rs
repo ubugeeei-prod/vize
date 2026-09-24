@@ -3,6 +3,7 @@
 //!
 //! Every message here is part of the format contract. The common prefix
 //! `P` puts the body's first line at line 5.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use vize_davinci::folio::{Folio, FolioError};
 use vize_s0::String;

@@ -79,6 +79,7 @@ impl KeyedArtifact for S2Folio {
 
     fn feed_key(&self, sink: &mut KeySink) {
         let style = print::Style::keyed(sink.block_start());
-        print::print(self, sink, style).expect("a key sink never fails a write");
+        // A key sink never fails a write, so there is no error to surface.
+        let _ = print::print(self, sink, style);
     }
 }

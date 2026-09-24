@@ -78,13 +78,19 @@ impl Parser {
 
     /// Attach a completed leaf binding (`ui.slot-content` /
     /// `vue.directive`) to the owner `guard_binding` admitted.
-    pub(super) fn push_leaf_binding(&mut self, binding: FolioBinding) {
+    pub(super) fn push_leaf_binding(
+        &mut self,
+        binding: FolioBinding,
+        line_no: usize,
+    ) -> Result<(), FolioError> {
         match self.stack.last_mut() {
             Some(Frame::Element(element, _)) => element.bindings.push(binding),
             Some(Frame::Component(component, _)) => component.bindings.push(binding),
             Some(Frame::Slot(slot, _)) => slot.bindings.push(binding),
-            _ => unreachable!("guard_binding admitted the owner"),
+            // `guard_binding` admitted the owner before the binding was parsed.
+            _ => return Err(err(line_no, cstr!("binding without an element-like owner"))),
         }
+        Ok(())
     }
 
     /// A binding line (`ui.bind` / `ui.on` / `ui.model` /
@@ -125,7 +131,7 @@ impl Parser {
     }
 
     /// Attach a finished op to the innermost open child position.
-    pub(super) fn attach_op(&mut self, op: FolioOp) {
+    pub(super) fn attach_op(&mut self, op: FolioOp, line_no: usize) -> Result<(), FolioError> {
         match self.stack.last_mut() {
             None => self.root.push(op),
             Some(Frame::Element(element, phase)) => {
@@ -142,26 +148,31 @@ impl Parser {
                 *phase = Phase::Children;
                 slot.fallback.push(op);
             }
+            // `guard_child` rejects these parents before the op is parsed.
             Some(Frame::If(_) | Frame::Model(_)) => {
-                unreachable!("guard_child rejects these parents")
+                return Err(err(line_no, cstr!("child under a `ui.if` or model frame")));
             }
         }
+        Ok(())
     }
 
     /// Close the innermost frame back into its owner.
-    pub(super) fn close_top(&mut self) {
+    pub(super) fn close_top(&mut self, line_no: usize) -> Result<(), FolioError> {
         let Some(frame) = self.stack.pop() else {
-            return;
+            return Ok(());
         };
         match frame {
-            Frame::Element(element, _) => self.attach_op(FolioOp::Element(element)),
-            Frame::Component(component, _) => self.attach_op(FolioOp::Component(component)),
-            Frame::If(if_op) => self.attach_op(FolioOp::If(if_op)),
-            Frame::For(for_op) => self.attach_op(FolioOp::For(for_op)),
-            Frame::Slot(slot, _) => self.attach_op(FolioOp::Slot(slot)),
+            Frame::Element(element, _) => self.attach_op(FolioOp::Element(element), line_no)?,
+            Frame::Component(component, _) => {
+                self.attach_op(FolioOp::Component(component), line_no)?;
+            }
+            Frame::If(if_op) => self.attach_op(FolioOp::If(if_op), line_no)?,
+            Frame::For(for_op) => self.attach_op(FolioOp::For(for_op), line_no)?,
+            Frame::Slot(slot, _) => self.attach_op(FolioOp::Slot(slot), line_no)?,
             Frame::Branch(branch) => match self.stack.last_mut() {
                 Some(Frame::If(if_op)) => if_op.branches.push(branch),
-                _ => unreachable!("branch frames only open under ui.if"),
+                // Branch frames only open under `ui.if`.
+                _ => return Err(err(line_no, cstr!("`branch` outside `ui.if`"))),
             },
             Frame::Model(model) => match self.stack.last_mut() {
                 Some(Frame::Element(element, _)) => {
@@ -173,8 +184,10 @@ impl Parser {
                 Some(Frame::Slot(slot, _)) => {
                     slot.bindings.push(FolioBinding::Model(model));
                 }
-                _ => unreachable!("model frames only open under an element-like owner"),
+                // Model frames only open under an element-like owner.
+                _ => return Err(err(line_no, cstr!("model outside an element"))),
             },
         }
+        Ok(())
     }
 }

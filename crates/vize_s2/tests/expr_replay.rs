@@ -11,6 +11,7 @@
 //! pooled arena, mirror, print, **drop the `pool::acquire()` guard**
 //! (arena reset), parse the surviving text, assert structural equality,
 //! then re-parse the retained payload into a second pooled arena.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, Box, Span, Vec as ArenaVec, pool};

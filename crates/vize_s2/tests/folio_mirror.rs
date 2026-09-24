@@ -5,6 +5,7 @@
 //! hand - mirrored through [`DisegnoFolio::of`] into the committed
 //! canonical page. The owned twin of this tree lives in
 //! `tests/folio_laws.rs`.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_s0::{Allocator, Box, Span, Vec as ArenaVec};

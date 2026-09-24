@@ -8,7 +8,8 @@
 //! is what `panic!` formats into, so the house string-type lint is
 //! file-allowed here for exactly that downcast, the
 //! `davinci_profile_export.rs` precedent.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 #[cfg(debug_assertions)]
 use std::panic::{AssertUnwindSafe, catch_unwind};

@@ -143,7 +143,7 @@ impl Parser {
             return Err(err(line_no, cstr!("over-indented line")));
         }
         while self.stack.len() > depth {
-            self.close_top();
+            self.close_top(line_no)?;
         }
         match line::parse_item(content, line_no)? {
             Item::Attr(attribute) => self.push_attr(attribute, line_no),
@@ -154,68 +154,55 @@ impl Parser {
             }
             Item::Bind(bind) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::Bind(bind));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::Bind(bind), line_no)
             }
             Item::On(on) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::On(on));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::On(on), line_no)
             }
             Item::SlotContent(content) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::SlotContent(content));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::SlotContent(content), line_no)
             }
             Item::Directive(directive) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueDirective(directive));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueDirective(directive), line_no)
             }
             Item::CssBind(bind) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueCssBind(bind));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueCssBind(bind), line_no)
             }
             Item::Sync(sync) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueSync(sync));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueSync(sync), line_no)
             }
             Item::SlotScope(scope) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueSlotScope(scope));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueSlotScope(scope), line_no)
             }
             Item::Once(once) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueOnce(once));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueOnce(once), line_no)
             }
             Item::Memo(memo) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueMemo(memo));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueMemo(memo), line_no)
             }
             Item::Show(show) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueShow(show));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueShow(show), line_no)
             }
             Item::Html(html) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueHtml(html));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueHtml(html), line_no)
             }
             Item::VueText(text) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueText(text));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueText(text), line_no)
             }
             Item::Cloak(cloak) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueCloak(cloak));
-                Ok(())
+                self.push_leaf_binding(FolioBinding::VueCloak(cloak), line_no)
             }
             Item::Branch(branch) => match self.stack.last() {
                 Some(Frame::If(_)) => {
@@ -245,7 +232,7 @@ impl Parser {
                     FolioOp::For(for_op) => self.stack.push(Frame::For(for_op)),
                     FolioOp::Slot(slot) => self.stack.push(Frame::Slot(slot, Phase::Attrs)),
                     FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {
-                        self.attach_op(op)
+                        return self.attach_op(op, line_no);
                     }
                 }
                 Ok(())
@@ -261,7 +248,7 @@ impl Parser {
             return Err(err(0, cstr!("missing field `ops`")));
         }
         while !self.stack.is_empty() {
-            self.close_top();
+            self.close_top(0)?;
         }
         Ok(S2Folio { ops: self.root })
     }

@@ -177,6 +177,10 @@ impl PassObserver for VerifyObserver {
 
 /// Panic with the aggregated report when `violations` is non-empty.
 #[cfg(debug_assertions)]
+#[expect(
+    clippy::panic,
+    reason = "debug-only verifier: a violated invariant must abort the pass"
+)]
 fn fail(event: &PassEvent<'_>, violations: &[Violation]) {
     if violations.is_empty() {
         return;
