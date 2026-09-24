@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/ubugeeei-prod/vize/main/npm/cli/schemas/vize-lib-lock.schema.json",
+  "title": "Vize lib lockfile",
+  "description": "vize-lib.lock.json written by `vize lib pull` / `update` / `remove`. Records which package version every pulled item came from and the SHA-256 of each file at pull time; those digests are the merge base that lets `vize lib status`, `diff`, and `update` separate local edits from upstream changes. Commit it next to the pulled sources.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["lockfileVersion", "items"],
+  "properties": {
+    "lockfileVersion": {
+      "description": "Lockfile format version.",
+      "const": 1
+    },
+    "items": {
+      "description": "Pulled items sorted by kind, then name.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind",
+        "package",
+        "version",
+        "contentHash",
+        "dir",
+        "direct",
+        "registryDependencies",
+        "files"
+      ],
+      "properties": {
+        "name": {
+          "description": "Canonical registry item name.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "kind": { "enum": ["ui", "composable"] },
+        "package": {
+          "description": "npm package that published the pulled version.",
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "description": "Exact package version the files were pulled from.",
+          "type": "string",
+          "minLength": 1
+        },
+        "contentHash": {
+          "description": "Registry contentHash of the pulled version.",
+          "$ref": "#/$defs/sha256"
+        },
+        "dir": {
+          "description": "Project-relative POSIX directory the registry layout was copied into; every item of one kind shares it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "direct": {
+          "description": "true when requested by name; false when pulled only as a registry dependency (removed with its last dependent).",
+          "type": "boolean"
+        },
+        "registryDependencies": {
+          "description": "Registry dependency closure at pull time.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "files": {
+          "description": "Registry-relative file path -> SHA-256 of the upstream bytes at pull time.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    }
+  }
+}

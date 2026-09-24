@@ -18,7 +18,10 @@ void test("the catalog is deterministic, serializable data", () => {
   assert.equal(COMPOSABLE_CATALOG.schemaVersion, 1);
   assert.equal(COMPOSABLE_CATALOG.catalogStability, "stable");
   assert.equal(COMPOSABLE_CATALOG.packageInstallation.status, "available");
-  assert.equal(COMPOSABLE_CATALOG.sourceInstallation.status, "unavailable");
+  assert.deepEqual(COMPOSABLE_CATALOG.sourceInstallation, {
+    status: "available",
+    specifier: "vize lib pull composable:<entry>",
+  });
 });
 
 void test("entries have one ordered export subpath, source, and integral size budget", () => {

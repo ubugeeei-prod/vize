@@ -3750,6 +3750,7 @@ invalid:
 valid:
   <li v-for="(item, index) in list" :key="item.id">{{ item }}</li>
   <li v-for="item in list" :key="item.id">{{ item }}</li>
+  <li v-for="(value, key) in object" :key="key">{{ value }}</li>
 
 help:
   Bind :key to a stable id from the item (e.g. :key="item.id"). The index changes when the list is reordered or filtered, so Vue reuses the wrong element state.

@@ -19,6 +19,7 @@ export type {
   MuseaViewport,
   GlobalTypeDeclaration,
   GlobalTypesConfig,
+  LibConfig,
 } from "./generated.js";
 
 export type { LintRuleName, LintRulesConfig } from "./rules.js";

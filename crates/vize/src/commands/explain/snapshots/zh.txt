@@ -3871,6 +3871,7 @@ vue/no-array-index-key · lint 规则
 正确示例:
   <li v-for="(item, index) in list" :key="item.id">{{ item }}</li>
   <li v-for="item in list" :key="item.id">{{ item }}</li>
+  <li v-for="(value, key) in object" :key="key">{{ value }}</li>
 
 帮助:
   请将 :key 绑定到项目中稳定的 id（例如 :key="item.id"）。当列表被重新排序或过滤时索引会变化，导致 Vue 复用错误的元素状态。

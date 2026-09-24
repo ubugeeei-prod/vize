@@ -153,6 +153,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["spacer", "src/families/layout/spacer/"],
   ["spatial-navigation", "src/families/interaction/spatial-navigation/"],
   ["spinner", "src/families/feedback/spinner/"],
+  ["splitter", "src/families/layout/splitter/"],
   ["stack", "src/families/layout/stack/"],
   ["status-light", "src/families/feedback/status-light/"],
   ["stepper", "src/families/navigation/stepper/"],
@@ -168,6 +169,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["tooltip", "src/families/overlays/tooltip/"],
   ["tour", "src/families/overlays/tour/"],
   ["transition", "src/families/overlays/transition/"],
+  ["tree", "src/families/data/tree/"],
   ["virtualizer", "src/families/interaction/virtualizer/"],
   ["visually-hidden", "src/families/accessibility/visually-hidden/"],
 ]);
