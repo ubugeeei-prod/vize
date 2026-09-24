@@ -1,0 +1,162 @@
+/* Optional table treatment. The native table and its semantic structure stay intact. */
+@layer vize.preset {
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-table-radius: initial;
+    --vize-ui-table-header-font: initial;
+    --vize-ui-table-header-spacing: initial;
+    --vize-ui-table-header-transform: initial;
+    --vize-ui-table-cell-pad-block: initial;
+    --vize-ui-table-cell-pad-inline: initial;
+    --vize-ui-table-row-hover: initial;
+    --vize-ui-table-row-selected: initial;
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-table-radius: var(--vize-ui-radius-md);
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-table-radius: 0.125rem;
+    --vize-ui-table-header-font: Georgia, serif;
+    --vize-ui-table-header-spacing: 0.01em;
+    --vize-ui-table-row-hover: color-mix(
+      in oklab,
+      var(--vize-ui-color-accent) 5%,
+      var(--vize-ui-color-surface)
+    );
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-table-radius: 0.125rem;
+    --vize-ui-table-header-font: var(--vize-ui-type-family-mono);
+    --vize-ui-table-header-spacing: 0.08em;
+    --vize-ui-table-header-transform: uppercase;
+    --vize-ui-table-cell-pad-block: var(--vize-ui-space-sm);
+    --vize-ui-table-cell-pad-inline: var(--vize-ui-space-md);
+  }
+
+  :where([data-vize-ui="table"]) {
+    box-sizing: border-box;
+    inline-size: 100%;
+    min-inline-size: var(--vize-ui-table-min-inline-size, max-content);
+    table-layout: var(--vize-ui-table-layout, auto);
+    border: var(--vize-ui-border-width-thin) solid var(--vize-ui-color-border);
+    border-spacing: 0;
+    border-radius: var(--vize-ui-table-radius, var(--vize-ui-radius-md));
+    background-color: var(--vize-ui-color-surface);
+    color: var(--vize-ui-color-text);
+    font-family: var(--vize-ui-type-family-sans);
+    font-size: var(--vize-ui-type-size-sm);
+    line-height: var(--vize-ui-type-leading-normal);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :where([data-vize-ui="table"][data-layout="fixed"]) {
+    min-inline-size: var(--vize-ui-table-min-inline-size, 0);
+  }
+
+  :where([data-vize-ui="table"][data-density="compact"]) {
+    --vize-ui-table-cell-pad-block: var(--vize-ui-space-xs);
+    --vize-ui-table-cell-pad-inline: var(--vize-ui-space-sm);
+  }
+
+  :where([data-vize-ui="table"][data-density="spacious"]) {
+    --vize-ui-table-cell-pad-block: var(--vize-ui-space-lg);
+    --vize-ui-table-cell-pad-inline: var(--vize-ui-space-xl);
+  }
+
+  :where([data-vize-ui="table-caption"]) {
+    padding-block: var(--vize-ui-space-md);
+    color: var(--vize-ui-color-text-muted);
+    font-size: var(--vize-ui-type-size-xs);
+    text-align: start;
+  }
+
+  :where([data-vize-ui="table-caption"][data-caption-side="bottom"]) {
+    padding-block: var(--vize-ui-space-sm);
+  }
+
+  :where([data-vize-ui="table-header"], [data-vize-ui="table-cell"]) {
+    box-sizing: border-box;
+    padding-block: var(--vize-ui-table-cell-pad-block, var(--vize-ui-space-md));
+    padding-inline: var(--vize-ui-table-cell-pad-inline, var(--vize-ui-space-lg));
+    border-block-end: var(--vize-ui-border-width-thin) solid var(--vize-ui-color-border);
+    text-align: var(--vize-ui-table-cell-align, start);
+    vertical-align: middle;
+  }
+
+  :where([data-vize-ui="table-header"]) {
+    background-color: var(--vize-ui-color-canvas);
+    color: var(--vize-ui-color-text-muted);
+    font-family: var(--vize-ui-table-header-font, var(--vize-ui-type-family-sans));
+    font-size: var(--vize-ui-type-size-xs);
+    font-weight: var(--vize-ui-type-weight-bold);
+    letter-spacing: var(--vize-ui-table-header-spacing, 0.025em);
+    text-transform: var(--vize-ui-table-header-transform, none);
+  }
+
+  :where([data-vize-ui="table-row"]:last-child > [data-vize-ui="table-cell"]) {
+    border-block-end: 0;
+  }
+
+  :where(
+    [data-vize-ui="table-row"][data-selected="true"] > [data-vize-ui="table-cell"],
+    [data-vize-ui="table-row"][data-selected="true"] > [data-vize-ui="table-header"]
+  ) {
+    background-color: var(
+      --vize-ui-table-row-selected,
+      color-mix(in oklab, var(--vize-ui-color-accent) 10%, var(--vize-ui-color-surface))
+    );
+  }
+
+  :where([data-vize-ui="table-cell"]) {
+    transition: background-color var(--vize-ui-motion-duration-fast, 120ms)
+      var(--vize-ui-motion-ease-standard, ease-out);
+  }
+
+  @media (hover: hover) {
+    :where(
+      [data-vize-ui="table-row"]:not([data-selected="true"]):hover > [data-vize-ui="table-cell"]
+    ) {
+      background-color: var(
+        --vize-ui-table-row-hover,
+        color-mix(in oklab, var(--vize-ui-color-accent) 6%, var(--vize-ui-color-surface))
+      );
+    }
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="table-cell"]) {
+      transition-duration: 0ms;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="table"]) {
+      border-color: CanvasText;
+      background-color: Canvas;
+      color: CanvasText;
+    }
+
+    :where([data-vize-ui="table-header"], [data-vize-ui="table-cell"]) {
+      border-color: ButtonBorder;
+    }
+
+    :where(
+      [data-vize-ui="table-row"][data-selected="true"] > [data-vize-ui="table-cell"],
+      [data-vize-ui="table-row"][data-selected="true"] > [data-vize-ui="table-header"]
+    ) {
+      border-block: 2px solid Highlight;
+    }
+
+    :where([data-vize-ui="table-row"][data-selected="true"] > :first-child) {
+      border-inline-start: 2px solid Highlight;
+    }
+
+    :where([data-vize-ui="table-row"][data-selected="true"] > :last-child) {
+      border-inline-end: 2px solid Highlight;
+    }
+  }
+}
