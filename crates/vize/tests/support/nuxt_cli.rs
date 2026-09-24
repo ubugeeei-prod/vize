@@ -1,3 +1,4 @@
+#![cfg(test)]
 use std::path::{Path, PathBuf};
 pub(crate) fn resolve_test_corsa_path() -> Option<PathBuf> {
     std::env::var_os("CORSA_PATH")

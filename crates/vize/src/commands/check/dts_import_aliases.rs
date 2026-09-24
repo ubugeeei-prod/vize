@@ -46,8 +46,7 @@ pub(super) fn rewrite_import_type_aliases(
 
     let mut out = String::with_capacity(type_annotation.len());
     let mut i = 0usize;
-    while i < type_annotation.len() {
-        let ch = type_annotation[i..].chars().next().unwrap();
+    while let Some(ch) = char_at(type_annotation, i) {
         if ch == '\'' || ch == '"' || ch == '`' {
             i = copy_quoted(type_annotation, i, &mut out);
             continue;
@@ -60,16 +59,12 @@ pub(super) fn rewrite_import_type_aliases(
 
         let start = i;
         i += ch.len_utf8();
-        while i < type_annotation.len() {
-            let ch = type_annotation[i..].chars().next().unwrap();
-            if !is_identifier_char(ch) {
-                break;
-            }
+        while let Some(ch) = char_at(type_annotation, i).filter(|&ch| is_identifier_char(ch)) {
             i += ch.len_utf8();
         }
 
-        let ident = &type_annotation[start..i];
-        let next = type_annotation[i..].chars().next();
+        let ident = type_annotation.get(start..i).unwrap_or_default();
+        let next = char_at(type_annotation, i);
         if let Some(alias) = aliases.aliases.get(ident) {
             match alias {
                 ImportTypeAlias::Namespace { module } if next == Some('.') => {
@@ -173,14 +168,16 @@ fn push_namespace_alias(local: &str, module: &str, aliases: &mut ImportTypeAlias
 }
 
 fn copy_quoted(input: &str, start: usize, out: &mut String) -> usize {
-    let quote = input[start..].chars().next().unwrap();
+    let Some(quote) = char_at(input, start) else {
+        return input.len();
+    };
     let mut i = start;
-    while i < input.len() {
-        let ch = input[i..].chars().next().unwrap();
+    while let Some(ch) = char_at(input, i) {
         out.push(ch);
         i += ch.len_utf8();
-        if ch == '\\' && i < input.len() {
-            let escaped = input[i..].chars().next().unwrap();
+        if ch == '\\'
+            && let Some(escaped) = char_at(input, i)
+        {
             out.push(escaped);
             i += escaped.len_utf8();
             continue;
@@ -192,6 +189,11 @@ fn copy_quoted(input: &str, start: usize, out: &mut String) -> usize {
     i
 }
 
+/// The character starting at byte `index`, if `index` is a boundary in `text`.
+fn char_at(text: &str, index: usize) -> Option<char> {
+    text.get(index..)?.chars().next()
+}
+
 fn render_named_reference(module: &str, imported: &str) -> String {
     cstr!("import('{module}').{imported}")
 }
@@ -201,7 +203,12 @@ fn render_namespace_reference(module: &str) -> String {
 }
 
 fn previous_non_whitespace(input: &str, index: usize) -> Option<char> {
-    input[..index].chars().rev().find(|ch| !ch.is_whitespace())
+    input
+        .get(..index)
+        .unwrap_or_default()
+        .chars()
+        .rev()
+        .find(|ch| !ch.is_whitespace())
 }
 
 fn is_identifier(value: &str) -> bool {

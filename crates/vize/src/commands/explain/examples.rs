@@ -66,7 +66,6 @@ fn walk(dir: &Path, found: &mut FxHashMap<String, Fixtures>) {
     }
 }
 
-#[allow(clippy::disallowed_types)]
 fn read_source(path: &Path) -> Option<String> {
     let owned = fs::read_to_string(path).ok()?;
     Some(String::from(owned.as_str()))
@@ -76,7 +75,7 @@ fn read_source(path: &Path) -> Option<String> {
 fn rule_name(source: &str) -> Option<String> {
     let mut rest = source;
     while let Some(at) = rest.find("name:") {
-        rest = &rest["name:".len() + at..];
+        rest = rest.get("name:".len() + at..).unwrap_or_default();
         let trimmed = rest.trim_start();
         let Some(body) = trimmed.strip_prefix('"') else {
             continue;
@@ -84,7 +83,7 @@ fn rule_name(source: &str) -> Option<String> {
         let Some(end) = body.find('"') else {
             continue;
         };
-        let name = &body[..end];
+        let name = body.get(..end).unwrap_or_default();
         if name.contains('/') && !name.contains(' ') && !name.contains('\\') {
             return Some(String::from(name));
         }

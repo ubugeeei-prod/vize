@@ -1,3 +1,6 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::path::Path;
 
 /// Replaces the per-run project root with `<project>` and every

@@ -6,7 +6,7 @@ use vize_s0::{String, cstr, profiler::global_profiler};
 use super::{DeclarationSummary, ProgramExecution};
 use crate::profile_support;
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn print_profile(
     executions: &[ProgramExecution],
     virtual_files: &[&vize_canon::VirtualFile],

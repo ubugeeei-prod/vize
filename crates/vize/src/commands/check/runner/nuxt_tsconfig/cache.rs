@@ -70,9 +70,10 @@ fn canonicalize_with_missing_tail(path: &Path) -> PathBuf {
 pub(super) fn encode_digest(digest: impl AsRef<[u8]>) -> String {
     let digest = digest.as_ref();
     let mut encoded = String::with_capacity(digest.len() * 2);
-    for byte in digest {
-        use std::fmt::Write as _;
-        write!(encoded, "{byte:02x}").expect("writing to a String cannot fail");
+    for nibble in digest.iter().flat_map(|byte| [byte >> 4, byte & 0x0f]) {
+        if let Some(digit) = char::from_digit(u32::from(nibble), 16) {
+            encoded.push(digit);
+        }
     }
     encoded
 }
@@ -139,7 +140,7 @@ pub(super) fn publish_config_atomically_with_hook(
     if path.exists() {
         return verify_published_config(path, content);
     }
-    let prefix = format!(".vize-nuxt-config-{}-", std::process::id());
+    let prefix = vize_s0::cstr!(".vize-nuxt-config-{}-", std::process::id());
     let mut pending = tempfile::Builder::new()
         .prefix(&prefix)
         .suffix(".pending")

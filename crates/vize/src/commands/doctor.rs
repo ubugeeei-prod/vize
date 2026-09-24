@@ -41,7 +41,6 @@ pub enum DoctorFormat {
 
 /// Arguments for whole-application health analysis.
 #[derive(Args, Debug)]
-#[allow(clippy::disallowed_types)]
 pub struct DoctorArgs {
     /// Files or directories to analyze. Defaults to the workspace root.
     #[arg(default_value = ".")]

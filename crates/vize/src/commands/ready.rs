@@ -14,7 +14,7 @@ use vize_s0::ToCompactString;
 use crate::commands::fmt::FmtArgs;
 
 #[derive(Args)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct ReadyArgs {
     /// Files or directories to process.
     pub patterns: Vec<String>,
@@ -144,7 +144,7 @@ pub fn run(args: ReadyArgs) {
     });
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn ready_patterns(patterns: &[String]) -> Vec<String> {
     if patterns.is_empty() {
         vec!["./**/*.vue".into()]
@@ -178,7 +178,7 @@ fn check_args(args: &ReadyArgs) -> CheckArgs {
     }
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn check_patterns(args: &ReadyArgs) -> Vec<String> {
     if args.patterns.is_empty()
         || args.tsconfig.is_some()

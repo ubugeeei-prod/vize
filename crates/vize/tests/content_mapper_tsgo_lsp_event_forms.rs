@@ -8,14 +8,13 @@ use lsp_types::Uri;
 use serde_json::{Value, json};
 use vize_s0::FxHashSet;
 
-#[allow(dead_code)]
 #[path = "content_mapper_tsgo_lsp_event_forms/cases.rs"]
 mod cases;
 use cases::EVENT_CASES;
 #[path = "content_mapper_tsgo_lsp_event_forms/model_props.rs"]
 mod model_props;
 
-mod content_mapper_lsp_support;
+pub mod content_mapper_lsp_support;
 use content_mapper_lsp_support::{
     EditorResponder, assert_completion, assert_no_generated_uri_or_zero_range,
     assert_prop_navigation, contains_location, contains_location_range, contains_text_edit,

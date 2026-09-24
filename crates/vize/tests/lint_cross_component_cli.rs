@@ -4,8 +4,9 @@
 //!
 //! Regenerate after an intended change:
 //! `VIZE_UPDATE_CROSS_COMPONENT=1 cargo test -p vize --test lint_cross_component_cli`
-
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::{path::PathBuf, process::Command};
 

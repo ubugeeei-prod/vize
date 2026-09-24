@@ -10,7 +10,7 @@
 //! filters, so inside the repository the checkout's `.gitignore` would hide
 //! `node_modules` on its own and the assertions would pass without the fix.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::{Path, PathBuf};
 

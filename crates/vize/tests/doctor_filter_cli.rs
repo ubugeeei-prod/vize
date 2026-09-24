@@ -1,3 +1,5 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::{fs, path::Path, process::Command};
 
 use vize_doctor::DoctorReport;

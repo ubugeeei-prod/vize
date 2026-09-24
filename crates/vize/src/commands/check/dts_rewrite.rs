@@ -3,41 +3,48 @@ use std::path::Path;
 use vize_s0::{String, ToCompactString};
 
 pub(super) fn rewrite_relative_import_types(type_annotation: &str, source_dir: &Path) -> String {
-    let bytes = type_annotation.as_bytes();
+    rewrite_import_type_specifiers(type_annotation, |specifier| {
+        rewrite_relative_specifier(specifier, source_dir)
+    })
+}
+
+/// Rewrite the specifier of every `import('…')` / `import("…")` type in
+/// `type_annotation` through `rewrite`, copying everything else verbatim.
+pub(super) fn rewrite_import_type_specifiers(
+    type_annotation: &str,
+    mut rewrite: impl FnMut(&str) -> String,
+) -> String {
     let mut out = String::with_capacity(type_annotation.len());
-    let mut i = 0usize;
+    let mut rest = type_annotation;
 
-    while i < bytes.len() {
-        let import_prefix = if type_annotation[i..].starts_with("import('") {
-            Some('\'')
-        } else if type_annotation[i..].starts_with("import(\"") {
-            Some('"')
+    while !rest.is_empty() {
+        let quote = if rest.starts_with("import('") {
+            '\''
+        } else if rest.starts_with("import(\"") {
+            '"'
         } else {
-            None
-        };
-
-        let Some(quote) = import_prefix else {
-            out.push(bytes[i] as char);
-            i += 1;
+            let mut chars = rest.chars();
+            if let Some(ch) = chars.next() {
+                out.push(ch);
+            }
+            rest = chars.as_str();
             continue;
         };
 
         out.push_str("import(");
         out.push(quote);
-        i += 8;
-
-        let start = i;
-        while i < bytes.len() && bytes[i] != quote as u8 {
-            i += 1;
-        }
-
-        let specifier = &type_annotation[start..i];
-        out.push_str(&rewrite_relative_specifier(specifier, source_dir));
-
-        if i < bytes.len() {
-            out.push(quote);
-            i += 1;
-        }
+        let after = rest.get("import('".len()..).unwrap_or_default();
+        let (specifier, tail) = after
+            .split_once(quote)
+            .map_or((after, None), |(specifier, tail)| (specifier, Some(tail)));
+        out.push_str(&rewrite(specifier));
+        rest = match tail {
+            Some(tail) => {
+                out.push(quote);
+                tail
+            }
+            None => "",
+        };
     }
 
     out

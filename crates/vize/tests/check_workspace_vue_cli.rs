@@ -6,12 +6,10 @@
 //! `TS7006` on handler parameters. The reachability pass registers those
 //! files, so the single-root invocation reports what the two-root control
 //! run always did.
-
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::{path::Path, process::Command};
 

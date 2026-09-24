@@ -1,3 +1,5 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 use super::extract_module_specifier_occurrences;
 use vize_canon::PackageResolutionMode::{Contextual, Import, Require};
 

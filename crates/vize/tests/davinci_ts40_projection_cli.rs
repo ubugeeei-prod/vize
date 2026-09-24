@@ -3,7 +3,7 @@
 //! The socket intentionally supplies a deterministic projection oracle. Canon,
 //! Content Mapper, and Maestro generation are frozen independently by the
 //! companion `vize_maestro` integration test.
-
+#![cfg(test)]
 #![cfg(unix)]
 
 use std::collections::BTreeMap;
@@ -21,7 +21,7 @@ const SOCKET_ACCEPT_POLL_INTERVAL: Duration = Duration::from_millis(10);
 const NO_CONNECT_TEST_TIMEOUT: Duration = Duration::from_millis(25);
 
 #[test]
-#[allow(clippy::disallowed_macros)] // `insta` expands to `format!`.
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")] // `insta` expands to `format!`.
 fn show_virtual_ts_presents_the_exact_fixture_matrix() {
     let root = workspace_root();
     let matrix: serde_json::Value = serde_json::from_str(
@@ -64,7 +64,7 @@ fn show_virtual_ts_presents_the_exact_fixture_matrix() {
             .unwrap();
         let mut reader = std::io::BufReader::new(stream.try_clone().unwrap());
         for _ in 0..expected_count {
-            #[allow(clippy::disallowed_types)]
+            #[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
             let mut line = std::string::String::new();
             reader.read_line(&mut line).unwrap();
             let request: serde_json::Value = serde_json::from_str(&line).unwrap();

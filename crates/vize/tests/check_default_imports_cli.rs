@@ -1,3 +1,6 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[path = "check_default_imports_cli/aliased_diagnostics.rs"]
 mod aliased_diagnostics;
 #[path = "check_default_imports_cli/base_url_diagnostics.rs"]

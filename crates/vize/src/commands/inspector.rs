@@ -104,7 +104,6 @@ impl From<InspectorTemplateSyntaxArg> for curator_inspector::InspectorTemplateSy
 }
 
 #[derive(Args, Default)]
-#[allow(clippy::disallowed_types)]
 pub struct InspectorArgs {
     /// File, directory, or glob pattern(s) to include (default: ./**/*.vue)
     #[arg(default_value = "./**/*.vue")]
@@ -775,7 +774,6 @@ for (const file of input.files) {
 process.stdout.write(JSON.stringify({ files }));
 "#;
 
-#[allow(clippy::disallowed_types)]
 fn collect_files(patterns: &[String], max_files: Option<usize>) -> Vec<PathBuf> {
     let mut files = BTreeSet::new();
 

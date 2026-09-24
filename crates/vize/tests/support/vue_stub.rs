@@ -1,3 +1,4 @@
+#![cfg(test)]
 use std::path::Path;
 
 pub fn install_vue_jsx_type_stub(project_root: &Path) {

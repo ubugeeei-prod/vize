@@ -1,4 +1,6 @@
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::{fs, path::Path, process::Command};
 

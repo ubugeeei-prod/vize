@@ -63,7 +63,9 @@ pub(crate) fn reduce(
                     exhausted: true,
                 });
             }
-            let chunk = &list[index..(index + size).min(list.len())];
+            let chunk = list
+                .get(index..(index + size).min(list.len()))
+                .unwrap_or_default();
             let attempt = delete(&current, chunk);
             if attempt.len() < current.len() {
                 runs += 1;

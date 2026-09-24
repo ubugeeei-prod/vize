@@ -86,7 +86,7 @@ pub fn run_from_env() {
     run(Cli::parse());
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub fn run_from_args(args: Vec<String>) {
     let args = std::iter::once("vize").chain(args.iter().map(String::as_str));
     run(Cli::parse_from(args));
@@ -123,6 +123,8 @@ fn run(cli: Cli) {
     }
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::{Cli, Commands};

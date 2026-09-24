@@ -1,4 +1,5 @@
-#![allow(dead_code)]
+#![cfg(test)]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use std::{path::Path, str::FromStr};
 
@@ -16,24 +17,19 @@ mod process_output;
 pub mod raw_requests;
 mod responder;
 mod stop;
-#[allow(unused_imports)]
 pub use component_oracles::{
     assert_component_completions, assert_component_members, assert_component_navigation,
     assert_prop_navigation,
 };
-#[allow(unused_imports)]
 pub use declaration_workspace::{emit_vue_declaration_library, install_packed_vue_consumer};
 pub use leak_assertions::{assert_no_generated_uri, assert_no_generated_uri_or_zero_range};
-#[allow(unused_imports)]
 pub use navigation::{
     assert_hover, assert_location_range, contains_location_range, contains_range,
     contains_text_edit, document_highlights, references, rename,
 };
 pub use package_install::install_packages;
-#[allow(unused_imports)]
 pub use process_output::output_text;
 pub use responder::EditorResponder;
-#[allow(unused_imports)]
 pub use stop::StopOnDrop;
 
 struct RawDocumentDiagnostic;

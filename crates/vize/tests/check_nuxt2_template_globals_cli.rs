@@ -1,3 +1,4 @@
+#![cfg(test)]
 #![cfg(feature = "legacy")]
 
 #[path = "support/corsa_requirement.rs"]

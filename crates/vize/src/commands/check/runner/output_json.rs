@@ -10,7 +10,7 @@ use super::super::{
 use super::{DeclarationSummary, RenderedDiagnostics};
 use crate::commands::check::path_cache::CanonicalPathCache;
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn emit_json(
     args: &CheckArgs,
     cwd: &Path,

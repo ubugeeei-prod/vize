@@ -102,9 +102,9 @@ fn ensure_owned_directory(
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
         Err(error) => return Err(error),
     }
-    let marker_name = format!(".{kind}-owner");
+    let marker_name = vize_s0::cstr!(".{kind}-owner");
     let marker = path.join(&marker_name);
-    let expected = format!("vize-nuxt-{kind}:v2:{identity}\n");
+    let expected = vize_s0::cstr!("vize-nuxt-{kind}:v2:{identity}\n");
     match inspect_markerless_directory(&path, &marker_name)? {
         MarkerlessDirectoryState::Publishable => {
             publish_config_atomically(&marker, expected.as_bytes())?;
@@ -193,7 +193,7 @@ fn validate_owned_directory(
     kind: &str,
 ) -> Result<(), std::io::Error> {
     validate_directory_path(parent, path)?;
-    let marker = path.join(format!(".{kind}-owner"));
+    let marker = path.join(vize_s0::cstr!(".{kind}-owner"));
     let metadata = fs::symlink_metadata(&marker)?;
     if metadata.file_type().is_symlink() || !metadata.is_file() {
         return Err(std::io::Error::new(
@@ -201,7 +201,7 @@ fn validate_owned_directory(
             "Nuxt config cache ownership marker is not a regular file",
         ));
     }
-    let expected = format!("vize-nuxt-{kind}:v2:{identity}\n");
+    let expected = vize_s0::cstr!("vize-nuxt-{kind}:v2:{identity}\n");
     if fs::read(&marker)? != expected.as_bytes() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::InvalidData,

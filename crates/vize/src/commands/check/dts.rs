@@ -1,7 +1,5 @@
 //! Helpers for lightweight `.d.ts` parsing used by `vize check`.
 
-#![allow(clippy::disallowed_macros)]
-
 use std::{fs, path::Path};
 
 use vize_s0::{String, ToCompactString, profile, profiler::global_profiler};

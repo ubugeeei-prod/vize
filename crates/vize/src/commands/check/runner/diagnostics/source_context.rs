@@ -82,21 +82,21 @@ fn binding_context_from_line(line: &str, column: usize) -> Option<CompactString>
     let mut best_distance = usize::MAX;
     let mut quote = None;
     let bytes = line.as_bytes();
-    while cursor < line.len() {
+    while let Some(&byte) = bytes.get(cursor) {
         if !line.is_char_boundary(cursor) {
             cursor += 1;
             continue;
         }
 
         if let Some(active_quote) = quote {
-            if bytes[cursor] == active_quote {
+            if byte == active_quote {
                 quote = None;
             }
             cursor += 1;
             continue;
         }
-        if matches!(bytes[cursor], b'\'' | b'"') {
-            quote = Some(bytes[cursor]);
+        if matches!(byte, b'\'' | b'"') {
+            quote = Some(byte);
             cursor += 1;
             continue;
         }
@@ -107,10 +107,14 @@ fn binding_context_from_line(line: &str, column: usize) -> Option<CompactString>
         }
 
         let mut end = cursor;
-        while end < bytes.len() && is_template_binding_byte(bytes[end]) {
+        while bytes
+            .get(end)
+            .is_some_and(|&byte| is_template_binding_byte(byte))
+        {
             end += 1;
         }
-        if let Some(context) = binding_context_from_token(&line[cursor..end]) {
+        if let Some(context) = binding_context_from_token(line.get(cursor..end).unwrap_or_default())
+        {
             let distance = cursor.abs_diff(column);
             if distance < best_distance {
                 best = Some(context);
@@ -129,7 +133,10 @@ fn valid_binding_start_at(line: &str, cursor: usize) -> bool {
 }
 
 fn is_attribute_boundary(line: &str, cursor: usize) -> bool {
-    cursor == 0 || line.as_bytes()[cursor - 1].is_ascii_whitespace()
+    cursor
+        .checked_sub(1)
+        .and_then(|prev| line.as_bytes().get(prev))
+        .is_none_or(u8::is_ascii_whitespace)
 }
 
 fn is_inside_quoted_attribute_value(line: &str, cursor: usize) -> bool {
@@ -150,7 +157,7 @@ fn is_inside_quoted_attribute_value(line: &str, cursor: usize) -> bool {
 }
 
 fn contextual_binding_starts_at(line: &str, cursor: usize) -> bool {
-    let rest = &line[cursor..];
+    let rest = line.get(cursor..).unwrap_or_default();
     rest.starts_with(':')
         || rest.starts_with('@')
         || rest.starts_with('#')
@@ -167,14 +174,21 @@ fn source_token_at(line: &str, column: usize) -> Option<(usize, &str)> {
         cursor -= 1;
     }
     let mut start = cursor;
-    while start > 0 && is_template_binding_byte(bytes[start - 1]) {
+    while start
+        .checked_sub(1)
+        .and_then(|prev| bytes.get(prev))
+        .is_some_and(|&byte| is_template_binding_byte(byte))
+    {
         start -= 1;
     }
     let mut end = cursor;
-    while end < bytes.len() && is_template_binding_byte(bytes[end]) {
+    while bytes
+        .get(end)
+        .is_some_and(|&byte| is_template_binding_byte(byte))
+    {
         end += 1;
     }
-    (start < end).then(|| (start, &line[start..end]))
+    (start < end).then(|| (start, line.get(start..end).unwrap_or_default()))
 }
 
 fn is_template_binding_byte(byte: u8) -> bool {
@@ -227,6 +241,9 @@ fn prefixed_binding_name_context(prefix: &str, token: &str) -> Option<CompactStr
     Some(cstr!("{prefix}{name}"))
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::{binding_context, binding_context_from_token, utf16_column_to_byte_offset};

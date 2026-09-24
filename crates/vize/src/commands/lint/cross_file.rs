@@ -36,9 +36,9 @@ pub(super) fn apply_sfc_cross_file_lint(
         .collect();
     let inputs: Vec<_> = targets
         .iter()
-        .map(|index| {
-            let (path, _, source, _) = &results[*index];
-            (path.clone(), source.clone())
+        .filter_map(|index| {
+            let (path, _, source, _) = results.get(*index)?;
+            Some((path.clone(), source.clone()))
         })
         .collect();
     let output = build_cross_file_lint_output_with_report(
@@ -112,12 +112,13 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
             .get(&diagnostic.primary_file)
             .copied()
             .unwrap_or_default();
-        let source_len = files[index].1.as_ref().len();
-        results[index]
-            .diagnostics
-            .push(cross_file_diagnostic_to_lint(
-                diagnostic, offsets, source_len, help_level,
-            ));
+        let (Some((_, source)), Some(result)) = (files.get(index), results.get_mut(index)) else {
+            continue;
+        };
+        let source_len = source.as_ref().len();
+        result.diagnostics.push(cross_file_diagnostic_to_lint(
+            diagnostic, offsets, source_len, help_level,
+        ));
     }
 
     component::apply(files, &analyzer, &file_indexes, &mut results, help_level);

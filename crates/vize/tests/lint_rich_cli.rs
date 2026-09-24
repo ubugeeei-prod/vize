@@ -1,6 +1,7 @@
 //! `vize lint --format rich` (P4-14a): lint results through the Davinci
 //! diagnostic renderer, in the locale `--locale` selects, pinned end to end.
 //! Text snapshots pipe output without inherited forced-color overrides.
+#![cfg(test)]
 
 use std::{fs, path::Path, process::Command};
 

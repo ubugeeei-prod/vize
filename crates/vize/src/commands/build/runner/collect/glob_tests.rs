@@ -1,4 +1,4 @@
-#![allow(clippy::disallowed_macros, clippy::disallowed_methods)]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
 use super::BuildGlob;
 use std::path::{Path, PathBuf};

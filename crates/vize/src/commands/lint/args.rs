@@ -7,7 +7,6 @@ use vize_s0::String;
 use super::patterns::LINT_DEFAULT_PATTERNS;
 
 #[derive(Args)]
-#[allow(clippy::disallowed_types)]
 pub struct LintArgs {
     /// Glob pattern(s) to match files supported by vize lint
     #[arg(default_values = LINT_DEFAULT_PATTERNS)]

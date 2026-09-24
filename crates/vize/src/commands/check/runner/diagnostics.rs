@@ -24,7 +24,7 @@ pub(super) fn emit_json_output(json_output: JsonOutput) -> Result<(), CompactStr
     Ok(())
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(super) fn render_diagnostics(
     diagnostics: &[vize_canon::BatchDiagnostic],
     include_source_context: bool,

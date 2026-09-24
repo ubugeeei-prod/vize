@@ -1,3 +1,4 @@
+#![cfg(test)]
 use std::io::Write;
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;

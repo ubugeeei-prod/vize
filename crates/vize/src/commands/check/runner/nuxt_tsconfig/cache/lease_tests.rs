@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{CacheLock, acquire, collect, collect_projects};
 use crate::commands::check::runner::nuxt_tsconfig::cache::ownership::{
     ensure_bucket, ensure_entry, ensure_project,

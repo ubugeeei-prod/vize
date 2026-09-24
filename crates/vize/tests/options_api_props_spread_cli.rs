@@ -1,3 +1,8 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 

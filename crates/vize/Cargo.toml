@@ -100,3 +100,6 @@ corsa.workspace = true
 corsa_lsp.workspace = true
 insta.workspace = true
 lsp-types.workspace = true
+
+[lints]
+workspace = true

@@ -1,4 +1,5 @@
 #![cfg(unix)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::fs;
 use std::os::unix::fs::PermissionsExt;

@@ -1,3 +1,5 @@
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::path::{Path, PathBuf};
 
 use super::collect_ambient_declaration_files;

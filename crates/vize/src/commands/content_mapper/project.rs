@@ -62,7 +62,7 @@ impl ProjectRegistry {
 #[serde(rename_all = "camelCase")]
 pub(super) struct OpenProjectParams {
     /// The absolute project configuration file name, or empty when none exists.
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "read via Debug snapshots")]
     #[serde(default)]
     config_file_name: CompactString,
     pub project_handle: CompactString,

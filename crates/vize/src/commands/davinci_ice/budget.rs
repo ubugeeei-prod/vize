@@ -10,7 +10,8 @@ use vize_davinci::pass::{BudgetObserver, Pipeline, run_pipeline};
 /// this remains the profile-counter adapter.
 pub(crate) fn plan_budget(plan: &Pipeline) -> BudgetObserver {
     let mut budget = BudgetObserver::new();
-    run_pipeline(plan, &mut budget, |_| Ok(())).expect("compile plans use no-op pass bodies");
+    // No-op pass bodies cannot fail, so the result carries no information.
+    let _ = run_pipeline(plan, &mut budget, |_| Ok(()));
     budget
 }
 

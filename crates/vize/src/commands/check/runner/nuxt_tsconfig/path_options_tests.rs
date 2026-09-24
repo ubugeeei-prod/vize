@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::{fs, path::Path};
 
 use super::write_nuxt_fallback_tsconfig_in_cache;
@@ -242,10 +243,7 @@ fn dependency_tree_components_are_rejected_case_insensitively() {
 }
 
 fn target(root: &Path, relative: &str) -> String {
-    root.join(relative)
-        .to_string_lossy()
-        .replace('\\', "/")
-        .into()
+    root.join(relative).to_string_lossy().replace('\\', "/")
 }
 
 fn physical_target(root: &Path, relative: &str) -> String {
@@ -253,7 +251,6 @@ fn physical_target(root: &Path, relative: &str) -> String {
         .join(relative)
         .to_string_lossy()
         .replace('\\', "/")
-        .into()
 }
 
 fn write(root: &Path, relative: &str, content: &str) {

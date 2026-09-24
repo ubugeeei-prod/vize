@@ -112,10 +112,27 @@ impl std::fmt::Display for OutputError {
     }
 }
 
+/// The output formats that write files (`--format stats` writes none).
+#[derive(Clone, Copy)]
+pub(super) enum WrittenFormat {
+    Js,
+    Json,
+}
+
+impl WrittenFormat {
+    pub(super) const fn of(format: OutputFormat) -> Option<Self> {
+        match format {
+            OutputFormat::Js => Some(Self::Js),
+            OutputFormat::Json => Some(Self::Json),
+            OutputFormat::Stats => None,
+        }
+    }
+}
+
 pub(super) fn write_outputs<'a>(
     outputs: impl IntoIterator<Item = CompiledBuildOutput<'a>>,
     output_directory: &Path,
-    format: OutputFormat,
+    format: WrittenFormat,
     script_extension: ScriptExtension,
 ) -> Result<(), OutputError> {
     let outputs: Vec<_> = outputs.into_iter().collect();
@@ -123,11 +140,10 @@ pub(super) fn write_outputs<'a>(
         .iter()
         .map(|compiled| {
             let extension = match format {
-                OutputFormat::Js => {
+                WrittenFormat::Js => {
                     get_output_extension(&compiled.output.script_lang, script_extension)
                 }
-                OutputFormat::Json => "json",
-                OutputFormat::Stats => unreachable!(),
+                WrittenFormat::Json => "json",
             };
             OutputPath {
                 source: &compiled.input.source,
@@ -144,19 +160,14 @@ pub(super) fn write_outputs<'a>(
         .zip(paths)
         .map(|(compiled, path)| {
             let content: String = match format {
-                OutputFormat::Js => compiled.output.code,
-                OutputFormat::Json =>
-                {
-                    #[allow(clippy::disallowed_methods)]
-                    serde_json::to_string_pretty(&compiled.output)
-                        .map_err(|source| OutputError::Serialize {
-                            source_path: compiled.input.source.clone(),
-                            output_path: path.output.clone(),
-                            source,
-                        })?
-                        .into()
-                }
-                OutputFormat::Stats => unreachable!(),
+                WrittenFormat::Js => compiled.output.code,
+                WrittenFormat::Json => serde_json::to_string_pretty(&compiled.output)
+                    .map_err(|source| OutputError::Serialize {
+                        source_path: compiled.input.source.clone(),
+                        output_path: path.output.clone(),
+                        source,
+                    })?
+                    .into(),
             };
             Ok((compiled.input, path.output, content))
         })

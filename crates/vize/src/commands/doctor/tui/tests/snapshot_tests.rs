@@ -1,4 +1,6 @@
 //! Terminal-free visual contracts for every supported Doctor TUI profile.
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use vize_fresco::{
     CapabilityReason, ColorSupport, DiagnosticWorkspaceFocus, DiagnosticWorkspaceMode,

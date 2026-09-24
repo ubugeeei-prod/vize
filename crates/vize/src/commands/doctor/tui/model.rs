@@ -216,10 +216,10 @@ impl<'a> DoctorTuiModel<'a> {
         while offset > 0 && !source.source.is_char_boundary(offset) {
             offset -= 1;
         }
-        let prefix = &source.source[..offset];
+        let prefix = source.source.get(..offset).unwrap_or_default();
         let line = prefix.bytes().filter(|byte| *byte == b'\n').count() as u64 + 1;
         let line_start = prefix.rfind('\n').map_or(0, |index| index + 1);
-        let column = prefix[line_start..].chars().count() as u64 + 1;
+        let column = prefix.get(line_start..).unwrap_or_default().chars().count() as u64 + 1;
         (line, column)
     }
 
@@ -285,8 +285,11 @@ impl<'a> DoctorTuiModel<'a> {
             let severity_matches = self
                 .severity_value()
                 .is_none_or(|severity| finding.assessment.severity == severity);
-            let search_matches =
-                query.is_empty() || self.search_documents[index].contains(query.as_str());
+            let search_matches = query.is_empty()
+                || self
+                    .search_documents
+                    .get(index)
+                    .is_some_and(|document| document.contains(query.as_str()));
             if category_matches && severity_matches && search_matches {
                 self.finding_keys.push(index);
             }

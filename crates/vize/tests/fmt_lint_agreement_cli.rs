@@ -4,6 +4,9 @@
 //! fixtures; this test pins the specific way it broke in #3343 — the formatter
 //! split a line covered by `eslint-disable-next-line`, so the suppression stopped
 //! applying and `a11y/form-control-has-label` went from 2 findings to 3.
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::{collections::BTreeMap, fs, path::Path, process::Command};
 

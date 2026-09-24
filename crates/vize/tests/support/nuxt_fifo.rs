@@ -1,3 +1,4 @@
+#![cfg(test)]
 #[cfg(unix)]
 pub(crate) fn create_fifo(path: &std::path::Path) {
     use std::{ffi::CString, os::unix::ffi::OsStrExt};

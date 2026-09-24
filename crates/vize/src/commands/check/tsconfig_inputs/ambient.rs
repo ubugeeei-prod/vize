@@ -85,8 +85,7 @@ fn collect_ambient_declaration_files_from(
     }
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut index = 0;
-    while index < files.len() {
-        let path = files[index].clone();
+    while let Some(path) = files.get(index).cloned() {
         index += 1;
         if !is_declaration_file(&path) {
             continue;
@@ -166,7 +165,9 @@ fn contributes_ambient_declarations(content: &str) -> bool {
 
 fn contains_declare_scope(content: &str, needle: &str) -> bool {
     content.match_indices(&needle).any(|(index, _)| {
-        content[..index]
+        content
+            .get(..index)
+            .unwrap_or_default()
             .chars()
             .next_back()
             .is_none_or(|ch| !ch.is_alphanumeric() && ch != '_' && ch != '$')
@@ -177,14 +178,19 @@ fn ambient_module_specifiers(content: &str) -> Vec<std::string::String> {
     const NEEDLE: &str = "declare module";
     let mut specifiers = Vec::new();
     for (index, _) in content.match_indices(NEEDLE) {
-        let preceded_by_boundary = content[..index]
+        let preceded_by_boundary = content
+            .get(..index)
+            .unwrap_or_default()
             .chars()
             .next_back()
             .is_none_or(|ch| !ch.is_alphanumeric() && ch != '_' && ch != '$');
         if !preceded_by_boundary {
             continue;
         }
-        let mut chars = content[index + NEEDLE.len()..].chars();
+        let mut chars = content
+            .get(index + NEEDLE.len()..)
+            .unwrap_or_default()
+            .chars();
         let Some(quote) = chars.find(|ch| !ch.is_whitespace()) else {
             continue;
         };
@@ -253,14 +259,14 @@ fn reference_path_attribute(line: &str) -> Option<&str> {
 }
 
 fn attribute_value<'a>(line: &'a str, name: &str) -> Option<&'a str> {
-    let needle = format!("{name}=");
-    let start = line.find(&needle)? + needle.len();
-    let quote = line[start..].chars().next()?;
+    let needle = vize_s0::cstr!("{name}=");
+    let start = line.find(needle.as_str())? + needle.len();
+    let quote = line.get(start..).unwrap_or_default().chars().next()?;
     if quote != '"' && quote != '\'' {
         return None;
     }
     let value_start = start + quote.len_utf8();
-    let value_end = line[value_start..].find(quote)? + value_start;
+    let value_end = line.get(value_start..).unwrap_or_default().find(quote)? + value_start;
     line.get(value_start..value_end)
 }
 

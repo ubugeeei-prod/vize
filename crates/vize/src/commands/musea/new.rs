@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use vize_s0::{String, ToCompactString, cstr};
 
 #[derive(Args)]
-#[allow(clippy::disallowed_types)]
 pub struct NewArgs {
     /// Name of the Musea project (defaults to current directory name)
     pub name: Option<String>,
@@ -16,7 +15,6 @@ pub struct NewArgs {
 
 pub fn run(args: NewArgs) {
     let target_dir = args.path.unwrap_or_else(|| PathBuf::from("."));
-    #[allow(clippy::disallowed_types, clippy::disallowed_methods)]
     let project_name = args.name.unwrap_or_else(|| {
         std::env::current_dir()
             .ok()

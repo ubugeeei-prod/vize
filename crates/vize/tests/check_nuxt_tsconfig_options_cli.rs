@@ -1,3 +1,6 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 #[path = "support/nuxt_cli.rs"]
@@ -73,7 +76,7 @@ fn assert_authored_option_diagnostic(
     )
     .unwrap();
     let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project)
+        .current_dir(project)
         .env("CORSA_PATH", corsa_path)
         .args([
             "check",

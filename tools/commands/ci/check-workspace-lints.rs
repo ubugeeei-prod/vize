@@ -16,7 +16,6 @@ use std::{fs, process::ExitCode};
 /// Members that have not joined the contract yet. Remove a line in the same
 /// PR that adds `[lints] workspace = true` to that member.
 const PENDING: &[&str] = &[
-    "crates/vize",
     "crates/vize_croquis_cf",
     "crates/vize_marquette",
     "crates/vize_vitrine",

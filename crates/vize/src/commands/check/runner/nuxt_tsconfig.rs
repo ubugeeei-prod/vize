@@ -106,7 +106,7 @@ fn wait_for_config_test_barrier(
     if !prepared.is_generated() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
-            format!("{phase} barrier requires a generated Nuxt checker config"),
+            vize_s0::cstr!("{phase} barrier requires a generated Nuxt checker config"),
         ));
     }
     let participant = std::env::var_os("VIZE_TEST_NUXT_CONFIG_PARTICIPANT").ok_or_else(|| {
@@ -127,7 +127,7 @@ fn wait_for_config_test_barrier(
         let mut release = [0_u8; 3];
         fs::OpenOptions::new()
             .read(true)
-            .open(barrier.join(format!("release-{}", participant.to_string_lossy())))?
+            .open(barrier.join(vize_s0::cstr!("release-{}", participant.to_string_lossy())))?
             .read_exact(&mut release)?;
         if release != *b"go\n" {
             return Err(std::io::Error::new(

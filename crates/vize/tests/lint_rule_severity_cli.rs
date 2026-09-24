@@ -1,3 +1,6 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::{fs, path::Path, process::Command};
 
 fn write_file(root: &Path, path: &str, content: &str) {

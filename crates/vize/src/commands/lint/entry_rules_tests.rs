@@ -210,7 +210,11 @@ fn resolves_whole_rule_maps_for_each_distinct_glob_set_once() {
     assert_eq!(resolved.configs.len(), 4);
 }
 
-fn lint_imported_store(config: &LinterConfig, filename: &PathBuf, pinia_available: bool) -> usize {
+fn lint_imported_store(
+    config: &LinterConfig,
+    filename: &std::path::Path,
+    pinia_available: bool,
+) -> usize {
     Linter::with_preset(LintPreset::Ecosystem)
         .with_disabled_rules(resolved_disabled_rules(config, pinia_available))
         .lint_sfc(IMPORTED_STORE_SFC, filename.to_string_lossy().as_ref())

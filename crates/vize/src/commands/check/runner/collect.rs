@@ -17,7 +17,7 @@ const NODE_MODULES_DIR: &str = "node_modules";
 const VIZE_CACHE_DIR: &str = ".vize";
 
 #[cfg(test)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(super) fn collect_check_files(
     patterns: &[std::string::String],
     include_jsx: bool,
@@ -32,7 +32,7 @@ pub(super) fn collect_check_files(
     )
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(super) fn collect_check_files_with_ignores(
     patterns: &[std::string::String],
     options: CheckFileOptions,
@@ -76,7 +76,7 @@ pub(super) fn collect_check_files_with_ignores(
     files
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(super) fn collect_vue_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let mut seen = FxHashSet::default();
@@ -205,11 +205,11 @@ fn is_ignored(path: &Path, ignore_set: Option<&CheckIgnoreSet>) -> bool {
 
 fn base_dir_from_pattern(pattern: &str) -> PathBuf {
     let glob_start = pattern.find(['*', '?', '[', '{']).unwrap_or(pattern.len());
-    let prefix = &pattern[..glob_start];
+    let prefix = pattern.get(..glob_start).unwrap_or_default();
     let base = if prefix.is_empty() {
         "."
     } else if let Some(index) = prefix.rfind('/') {
-        &prefix[..index]
+        prefix.get(..index).unwrap_or_default()
     } else {
         prefix
     };

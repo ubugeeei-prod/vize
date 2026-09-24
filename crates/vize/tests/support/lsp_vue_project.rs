@@ -1,5 +1,9 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 // Each integration target uses a different subset of this shared fixture.
-#![allow(dead_code)]
+#![expect(dead_code, reason = "read via Debug snapshots")]
 
 use super::lsp_process::{LspProcess, file_uri};
 use serde_json::{Value, json};

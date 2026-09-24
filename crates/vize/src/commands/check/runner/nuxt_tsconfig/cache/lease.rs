@@ -49,7 +49,7 @@ pub(super) fn acquire(
     let entry = ensure_entry(&project_cache, config_digest)?;
     cleanup_dead_leases(&entry)?;
     let lease = tempfile::Builder::new()
-        .prefix(&format!(".lease-{}-", std::process::id()))
+        .prefix(&vize_s0::cstr!(".lease-{}-", std::process::id()))
         .tempfile_in(&entry)?;
     lease.as_file().lock()?;
     let (file, path) = lease.keep().map_err(|error| error.error)?;
@@ -186,7 +186,7 @@ fn record_project_access(project: &Path) -> Result<(), std::io::Error> {
             "Nuxt project cache access marker is not a regular file",
         ));
     }
-    fs::write(path, format!("{:039}\n", elapsed.as_nanos()))
+    fs::write(path, vize_s0::cstr!("{:039}\n", elapsed.as_nanos()))
 }
 
 fn project_access_order(project: &Path) -> u128 {
@@ -245,7 +245,7 @@ impl CacheLock {
         {
             return Err(std::io::Error::new(
                 ErrorKind::InvalidData,
-                format!("Nuxt config {scope} lock is not a regular file"),
+                vize_s0::cstr!("Nuxt config {scope} lock is not a regular file"),
             ));
         }
         let file = fs::OpenOptions::new()
@@ -265,7 +265,7 @@ impl CacheLock {
             if started.elapsed() >= LOCK_TIMEOUT {
                 return Err(std::io::Error::new(
                     ErrorKind::TimedOut,
-                    format!("timed out waiting for the Nuxt config {scope} lock"),
+                    vize_s0::cstr!("timed out waiting for the Nuxt config {scope} lock"),
                 ));
             }
             thread::sleep(Duration::from_millis(10));
@@ -293,7 +293,7 @@ fn project_lock_path(project_cache: &Path) -> Result<PathBuf, std::io::Error> {
             "Nuxt project cache has no identity",
         )
     })?;
-    Ok(bucket.join(format!(".project-{}.lock", digest.to_string_lossy())))
+    Ok(bucket.join(vize_s0::cstr!(".project-{}.lock", digest.to_string_lossy())))
 }
 
 fn cleanup_dead_leases(entry: &Path) -> Result<(), std::io::Error> {

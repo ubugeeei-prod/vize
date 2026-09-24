@@ -1,3 +1,4 @@
+#![cfg(test)]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 

@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::{DoctorSource, analysis::analyze_application, discovery::discover_sources};
 use std::{fs, path::Path};
 use vize_doctor::ContentFingerprint;

@@ -77,7 +77,7 @@ pub(super) fn declared_name(stub: &str) -> Option<&str> {
         let end = rest
             .find(['<', '(', ':', '=', ';', ' '])
             .unwrap_or(rest.len());
-        let name = rest[..end].trim();
+        let name = rest.get(..end).unwrap_or_default().trim();
         if !name.is_empty() {
             return Some(name);
         }
@@ -91,7 +91,7 @@ pub(super) fn is_template_component_binding(name: &str) -> bool {
         .is_some_and(|first| first == '_' || first.is_ascii_uppercase())
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(super) fn tracked_read_to_string(path: &Path) -> Result<std::string::String, std::io::Error> {
     match profile!("cli.check.nuxt.read", fs::read_to_string(path)) {
         Ok(content) => {

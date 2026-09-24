@@ -3,8 +3,6 @@
 //! Contains internal data types used during the compilation pipeline:
 //! statistics tracking, per-file profiling, error collection, and output formats.
 
-#![allow(clippy::disallowed_macros)]
-
 use std::{
     path::PathBuf,
     sync::atomic::{AtomicU64, AtomicUsize, Ordering},

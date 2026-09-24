@@ -12,7 +12,6 @@ const VIZE_CACHE_DIR: &str = ".vize";
 #[path = "files_tests.rs"]
 mod files_tests;
 
-#[allow(clippy::disallowed_types)]
 pub(crate) fn collect_files(
     patterns: &[impl AsRef<str>],
     ignore_set: Option<&FmtIgnoreSet>,

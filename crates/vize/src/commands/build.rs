@@ -50,7 +50,7 @@ impl From<TemplateSyntaxArg> for vize_atelier_core::TemplateSyntaxMode {
 }
 
 #[derive(Args, Default)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct BuildArgs {
     /// File, directory, or glob inputs (output paths stay relative to their common root)
     ///

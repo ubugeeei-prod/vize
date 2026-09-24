@@ -170,7 +170,7 @@ export {}
             options
                 .auto_import_stubs
                 .iter()
-                .any(|stub| stub.contains(&format!("declare const {name}:"))),
+                .any(|stub| stub.contains(vize_s0::cstr!("declare const {name}:").as_str())),
             "expected {name} stub, got: {:#?}",
             options.auto_import_stubs
         );

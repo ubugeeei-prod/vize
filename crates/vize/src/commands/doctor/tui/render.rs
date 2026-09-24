@@ -125,10 +125,14 @@ fn render_findings(
         .visible_range()
         .enumerate()
     {
-        let Some(key) = model.finding_keys().get(position).copied() else {
+        let Some((key, finding)) = model
+            .finding_keys()
+            .get(position)
+            .copied()
+            .and_then(|key| Some((key, model.report().findings().get(key)?)))
+        else {
             continue;
         };
-        let finding = &model.report().findings()[key];
         let marker = if selected == Some(key) {
             capabilities.select_symbol("›", ">")
         } else {

@@ -5,16 +5,16 @@ pub(super) const FORMAT_EXTENSIONS: &[&str] = &[
 
 pub(super) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown";
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(super) fn default_fmt_patterns() -> Vec<std::string::String> {
     FORMAT_EXTENSIONS
         .iter()
-        .map(|extension| format!("./**/*.{extension}"))
+        .map(|extension| vize_s0::cstr!("./**/*.{extension}").into())
         .collect()
 }
 
 #[inline]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(super) fn has_explicit_patterns(patterns: &[std::string::String]) -> bool {
     patterns != default_fmt_patterns().as_slice()
 }
@@ -32,7 +32,7 @@ mod tests {
     fn default_patterns_cover_each_format_extension_once() {
         let expected = FORMAT_EXTENSIONS
             .iter()
-            .map(|extension| format!("./**/*.{extension}"))
+            .map(|extension| vize_s0::cstr!("./**/*.{extension}"))
             .collect::<Vec<_>>();
 
         assert_eq!(default_fmt_patterns(), expected);

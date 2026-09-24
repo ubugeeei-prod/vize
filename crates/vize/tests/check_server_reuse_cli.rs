@@ -1,6 +1,7 @@
 //! P5-8: `vize check` diagnostics match with and without check-server, and the
 //! second check through the server does not initialize the TypeScript project.
-
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![cfg(unix)]
 
 use std::{

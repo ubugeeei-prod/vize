@@ -115,7 +115,7 @@ pub fn run(args: LintArgs) {
         .par_iter()
         .zip(resolved_rules.file_config_indices.par_iter())
         .filter_map(|(path, config_index)| {
-            let linter = &linters[*config_index];
+            let linter = linters.get(*config_index)?;
             let file_start = args.profile.then(Instant::now);
             let read_start = args.profile.then(Instant::now);
             let source: String = match profile!("cli.lint.file.read", fs::read_to_string(path)) {

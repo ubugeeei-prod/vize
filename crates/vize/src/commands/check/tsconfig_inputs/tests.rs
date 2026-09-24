@@ -1,10 +1,8 @@
 //! Tests for tsconfig-driven default input collection.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
-
 use super::{TsconfigInputCache, load_tsconfig_declaration_options, resolve_extended_tsconfig};
-use std::fs;
 use std::path::{Path, PathBuf};
+use std::{fs, slice};
 use vize_s0::{cstr, path::canonicalize_non_verbatim};
 mod allow_js;
 mod codegen;
@@ -1089,8 +1087,9 @@ fn shared_run_cache_matches_fresh_cache_results() {
         false,
         &mut cache,
     );
+    let apps = slice::from_ref(&app);
     let owner_shared_again =
-        super::resolve_tsconfig_for_files(Some(&tsconfig), &[app.clone()], false, &mut cache);
+        super::resolve_tsconfig_for_files(Some(&tsconfig), apps, false, &mut cache);
     let files_shared =
         super::collect_default_check_files(&case_dir, Some(&tsconfig), false, &mut cache);
     let ambient_shared =

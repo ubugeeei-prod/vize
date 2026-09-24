@@ -1,4 +1,6 @@
 //! Regression coverage for the Vite child process used by `vize musea --build`.
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::fs;
 use std::path::{Path, PathBuf};

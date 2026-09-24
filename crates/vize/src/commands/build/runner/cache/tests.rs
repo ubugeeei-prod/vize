@@ -6,6 +6,7 @@
 //! by other files. These tests pin that the entries are owned — once by
 //! construction (`'static`), once by running the scenario against the real
 //! compiler and comparing the read-back exactly.
+#![expect(clippy::unreachable, reason = "tests assert by panicking")]
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_s0::hash::hash_str;

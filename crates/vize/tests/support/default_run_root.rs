@@ -4,6 +4,9 @@
 //! and a broken SFC in that app — varying only where the project's
 //! `node_modules` lives and which markers the app carries. Workspaces are built
 //! under `std::env::temp_dir()` so the tests run from a clean checkout.
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::{
     path::{Path, PathBuf},

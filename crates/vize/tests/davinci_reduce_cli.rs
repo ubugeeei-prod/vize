@@ -9,6 +9,9 @@
 //! preserved a content-dependent oracle, not a vacuous one. The `.vue` checks
 //! (remark, folio, diagnostic, budget, script) and every refusal are pinned
 //! with exact output too.
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};

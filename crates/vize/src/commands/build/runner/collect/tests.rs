@@ -1,8 +1,5 @@
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
 use super::{BuildInput, classify_input, collect_files, contains_glob_metacharacter};
 use std::{

@@ -1,11 +1,8 @@
 //! Nuxt's fallback alias wrapper must not turn a TS 5-era project config into
 //! TypeScript 7 option errors (#3682).
-
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;

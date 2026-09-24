@@ -36,7 +36,7 @@ fn write_all_retry<W: Write>(writer: &mut W, bytes: &[u8]) -> io::Result<()> {
     let mut written = 0;
     let mut would_block_count = 0;
     while written < bytes.len() {
-        match writer.write(&bytes[written..]) {
+        match writer.write(bytes.get(written..).unwrap_or_default()) {
             Ok(0) => {
                 return Err(io::Error::new(
                     io::ErrorKind::WriteZero,

@@ -38,8 +38,12 @@ fn apply_route_typing(results: &mut [CliLintFileResult], help_level: HelpLevel) 
         return;
     };
     for finding in findings {
-        let index = indexes[finding.module.index()];
-        let (_, filename, source, result) = &mut results[index];
+        let Some((_, filename, source, result)) = indexes
+            .get(finding.module.index())
+            .and_then(|&index| results.get_mut(index))
+        else {
+            continue;
+        };
         let extra = LintResult {
             filename: filename.clone(),
             error_count: usize::from(finding.diagnostic.severity() == Severity::Error),

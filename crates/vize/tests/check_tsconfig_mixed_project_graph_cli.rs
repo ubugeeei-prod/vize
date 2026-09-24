@@ -1,3 +1,5 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[path = "support/corsa_path.rs"]
 mod corsa_path;
 #[path = "support/corsa_requirement.rs"]

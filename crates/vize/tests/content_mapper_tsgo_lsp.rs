@@ -7,7 +7,7 @@ use corsa_lsp::{LspClient, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEven
 use lsp_types::Uri;
 use serde_json::json;
 
-mod content_mapper_lsp_support;
+pub mod content_mapper_lsp_support;
 use content_mapper_lsp_support::raw_requests::{
     RawInitialize, RawInitialized, RawSetContentMapperContributions,
 };

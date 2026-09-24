@@ -4,8 +4,8 @@ pub(super) fn has_top_level_import_or_export(content: &str) -> bool {
     let mut brace_depth = 0usize;
     let mut at_statement_start = true;
 
-    while index < bytes.len() {
-        match bytes[index] {
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
             b'/' if bytes.get(index + 1) == Some(&b'/') => {
                 index = skip_line_comment(bytes, index + 2);
             }
@@ -51,7 +51,7 @@ pub(super) fn has_top_level_import_or_export(content: &str) -> bool {
 }
 
 fn starts_with_statement_keyword(bytes: &[u8], index: usize, keyword: &[u8]) -> bool {
-    if !bytes[index..].starts_with(keyword) {
+    if !bytes.get(index..).unwrap_or_default().starts_with(keyword) {
         return false;
     }
     let after = index + keyword.len();
@@ -74,24 +74,28 @@ fn starts_with_statement_keyword(bytes: &[u8], index: usize, keyword: &[u8]) -> 
 }
 
 fn skip_line_comment(bytes: &[u8], mut index: usize) -> usize {
-    while index < bytes.len() && bytes[index] != b'\n' {
+    while index < bytes.len() && bytes.get(index) != Some(&b'\n') {
         index += 1;
     }
     index
 }
 
 fn skip_block_comment(bytes: &[u8], mut index: usize) -> usize {
-    while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/') {
+    while index + 1 < bytes.len()
+        && !(bytes.get(index) == Some(&b'*') && bytes.get(index + 1) == Some(&b'/'))
+    {
         index += 1;
     }
     (index + 2).min(bytes.len())
 }
 
 fn skip_quoted(bytes: &[u8], mut index: usize) -> usize {
-    let quote = bytes[index];
+    let Some(&quote) = bytes.get(index) else {
+        return bytes.len();
+    };
     index += 1;
-    while index < bytes.len() {
-        match bytes[index] {
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
             b'\\' => {
                 index = (index + 2).min(bytes.len());
             }
@@ -107,11 +111,17 @@ fn skip_quoted(bytes: &[u8], mut index: usize) -> usize {
 }
 
 fn skip_token(bytes: &[u8], mut index: usize) -> usize {
-    if !is_identifier_start(bytes[index]) {
+    if !bytes
+        .get(index)
+        .is_some_and(|&byte| is_identifier_start(byte))
+    {
         return index + 1;
     }
     index += 1;
-    while index < bytes.len() && is_identifier_continue(bytes[index]) {
+    while bytes
+        .get(index)
+        .is_some_and(|&byte| is_identifier_continue(byte))
+    {
         index += 1;
     }
     index

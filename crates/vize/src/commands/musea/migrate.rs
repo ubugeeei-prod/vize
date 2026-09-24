@@ -1,7 +1,5 @@
 //! `vize musea migrate` - convert Storybook CSF stories to Musea `.art.vue`.
 
-#![allow(clippy::disallowed_macros)]
-
 mod csf;
 mod emit;
 mod jsx;
@@ -21,7 +19,7 @@ use csf::extract_csf;
 use emit::emit_art;
 
 #[derive(Args)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct MigrateArgs {
     /// Glob pattern(s) matching Storybook CSF story files
     #[arg(default_values_t = default_migrate_patterns())]
@@ -36,7 +34,7 @@ pub struct MigrateArgs {
     pub dry_run: bool,
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn default_migrate_patterns() -> Vec<std::string::String> {
     vec![
         "**/*.stories.tsx".into(),
@@ -86,7 +84,7 @@ pub fn run(args: MigrateArgs) {
     }
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn collect_story_files(patterns: &[std::string::String]) -> Vec<PathBuf> {
     collect_files(patterns, None)
         .into_iter()

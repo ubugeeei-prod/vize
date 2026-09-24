@@ -115,7 +115,7 @@ fn fence_marker(stripped: &str) -> Option<FenceMarker> {
         Some(FenceMarker {
             ch,
             len,
-            blank_tail: stripped[len..].trim().is_empty(),
+            blank_tail: stripped.get(len..).unwrap_or_default().trim().is_empty(),
         })
     } else {
         None
@@ -136,7 +136,7 @@ fn trim_trailing(line: &str) -> String {
         return String::default();
     }
     let mut out = String::from(trimmed);
-    if &line[trimmed.len()..] == "  " {
+    if line.get(trimmed.len()..).unwrap_or_default() == "  " {
         out.push_str("  ");
     }
     out

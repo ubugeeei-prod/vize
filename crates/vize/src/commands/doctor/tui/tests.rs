@@ -1,3 +1,5 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 mod exit_tests;
 mod signal_tests;
 mod snapshot_tests;
@@ -86,7 +88,7 @@ fn session_completion_keeps_each_single_failure_exact() {
     let session_only = finish_session(Err(session), Ok(())).unwrap_err();
     assert!(matches!(session_only, DoctorTuiError::NonInteractive(_)));
 
-    let restoration = io::Error::new(io::ErrorKind::Other, "injected restoration failure");
+    let restoration = io::Error::other("injected restoration failure");
     let restoration_only = finish_session(Ok(()), Err(restoration)).unwrap_err();
     let DoctorTuiError::Io(restoration_only) = restoration_only else {
         panic!("restoration-only failure must retain the terminal error");

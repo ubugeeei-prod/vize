@@ -1,6 +1,7 @@
 //! Standard-tsgo oracle for importer-scoped package identity (#4002).
-
-#![allow(clippy::disallowed_macros, clippy::disallowed_methods)]
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
 use std::{
     path::{Path, PathBuf},
@@ -23,13 +24,11 @@ fn install_package(root: &Path, app: &str, prop: &str, ty: &str) {
     write(
         root,
         &format!("{package}/package.json"),
-        &format!(
-            r##"{{
+        r##"{
   "name":"@scope/ui",
-  "exports":{{".":{{"oracle":"./src/Selected.vue","types":"./src/Fallback.vue"}}}},
-  "imports":{{"#internal":"./src/Internal.vue"}}
-}}"##
-        ),
+  "exports":{".":{"oracle":"./src/Selected.vue","types":"./src/Fallback.vue"}},
+  "imports":{"#internal":"./src/Internal.vue"}
+}"##,
     );
     write(
         root,

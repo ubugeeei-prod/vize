@@ -259,7 +259,7 @@ fn split_package_specifier(extends: &str) -> Option<(&str, Option<&str>)> {
         let subpath = extends
             .get(package_len + 1..)
             .filter(|value| !value.is_empty());
-        return Some((&extends[..package_len], subpath));
+        return Some((extends.get(..package_len)?, subpath));
     }
 
     let subpath = extends

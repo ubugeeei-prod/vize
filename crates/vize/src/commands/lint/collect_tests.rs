@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 use super::{LintIgnoreSet, base_dir_from_lint_pattern, collect_lint_file_collection};
 use std::fs;
 

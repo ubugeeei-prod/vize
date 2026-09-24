@@ -1,3 +1,5 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use serde_json::{Value, json};
 
 #[path = "support/lsp_process.rs"]

@@ -163,12 +163,11 @@ fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<()
     for file in files {
         let path = vize_s0::path::canonicalize_non_verbatim(file);
         if !path.starts_with(&root) {
-            return Err(format!(
+            return Err(vize_s0::cstr!(
                 "explicit check input `{}` is outside project root `{}`.",
                 path.display(),
                 root.display()
-            )
-            .into());
+            ));
         }
     }
     Ok(())
@@ -202,7 +201,7 @@ fn common_file_parent(files: &[PathBuf]) -> Option<PathBuf> {
         .and_then(|path| path.parent())
         .map(Path::to_path_buf)?;
 
-    for file in &files[1..] {
+    for file in files.iter().skip(1) {
         let parent = file.parent().unwrap_or(file.as_path());
         while !parent.starts_with(&common) {
             if !common.pop() {
@@ -265,14 +264,14 @@ pub(super) fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), 
         return Err("typeChecker.servers must be at least 1.".into());
     }
     if servers > MAX_CORSA_SERVERS {
-        return Err(format!(
+        return Err(vize_s0::cstr!(
             "typeChecker.servers={servers} exceeds the supported maximum of {MAX_CORSA_SERVERS}."
-        )
-        .into());
+        ));
     }
     Ok(())
 }
 
+#[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::resolve_project_root;

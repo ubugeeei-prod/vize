@@ -6,7 +6,6 @@ use super::patterns::{has_explicit_patterns, is_format_extension};
 use super::{FmtArgs, files::FmtPattern};
 use crate::config;
 
-#[allow(clippy::disallowed_types)]
 pub(super) struct ResolvedFmtPatterns {
     pub(super) values: Vec<String>,
     pub(super) explicit: bool,
@@ -16,7 +15,6 @@ pub(super) struct FmtEntryFileSet {
     entries: Vec<FmtEntryFileScope>,
 }
 
-#[allow(clippy::disallowed_types)]
 pub(super) fn resolve_patterns(args: &FmtArgs) -> ResolvedFmtPatterns {
     let explicit = has_explicit_patterns(&args.patterns);
     let values = if explicit {
@@ -31,7 +29,7 @@ pub(super) fn resolve_patterns(args: &FmtArgs) -> ResolvedFmtPatterns {
 }
 
 impl FmtEntryFileSet {
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     pub(super) fn expand_patterns(&self, patterns: &[std::string::String]) -> Vec<String> {
         let mut expanded = Vec::new();
         for pattern in patterns {
@@ -140,7 +138,7 @@ impl FmtEntryFileScope {
         if is_format_target(path) {
             return self.files.iter().any(|file| file.matcher.matches(path));
         }
-        let directory_prefix = format!("{}/", normalized.trim_end_matches('/'));
+        let directory_prefix = vize_s0::cstr!("{}/", normalized.trim_end_matches('/'));
         self.files
             .iter()
             .any(|file| file.raw == normalized || file.raw.starts_with(directory_prefix.as_str()))
@@ -207,10 +205,10 @@ fn glob_patterns_may_overlap(configured: &str, requested: &str) -> bool {
 
 fn static_prefix_before_glob(pattern: &str) -> &str {
     let glob_index = pattern.find(['*', '?', '[']).unwrap_or(pattern.len());
-    let prefix = &pattern[..glob_index];
+    let prefix = pattern.get(..glob_index).unwrap_or_default();
     prefix
         .rfind('/')
-        .map(|index| &prefix[..=index])
+        .map(|index| prefix.get(..=index).unwrap_or_default())
         .unwrap_or("")
 }
 
@@ -243,7 +241,7 @@ fn push_unique(patterns: &mut Vec<String>, pattern: String) {
     }
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn compact_patterns(patterns: &[std::string::String]) -> Vec<String> {
     patterns
         .iter()

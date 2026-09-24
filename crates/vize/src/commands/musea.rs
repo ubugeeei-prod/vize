@@ -33,7 +33,6 @@ pub enum MuseaCommand {
 }
 
 #[derive(Args, Clone, Debug, PartialEq, Eq)]
-#[allow(clippy::disallowed_types)]
 pub struct ServeArgs {
     /// Shared Vize config file path
     #[arg(short, long, value_name = "FILE")]

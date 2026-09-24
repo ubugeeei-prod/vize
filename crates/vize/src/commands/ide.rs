@@ -173,7 +173,7 @@ fn vscode_status() {
 
     match output {
         Ok(out) => {
-            #[allow(clippy::disallowed_types)]
+            #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
             let extensions = std::string::String::from_utf8_lossy(&out.stdout);
             if vscode_extension_is_installed(&extensions) {
                 println!("✓ Vize extension is installed in VSCode");

@@ -1,3 +1,7 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 
@@ -131,7 +135,7 @@ fn check_explicit_vue_keeps_generated_graphql_schema_out_of_canon() {
     let project_root = project.path();
     std::fs::create_dir_all(project_root.join("fragments")).unwrap();
     std::fs::create_dir_all(project_root.join("pages")).unwrap();
-    link_workspace_vue(&project_root).unwrap();
+    link_workspace_vue(project_root).unwrap();
     std::fs::write(
         project_root.join("tsconfig.json"),
         r#"{
@@ -206,14 +210,14 @@ void childComponents
     )
     .unwrap();
 
-    run_check_json(&project_root, &corsa_path);
+    run_check_json(project_root, &corsa_path);
     assert!(
-        vize_canon::project_virtual_root(&project_root)
+        vize_canon::project_virtual_root(project_root)
             .join("pages/_studyInfoId.vue.ts")
             .exists()
     );
     assert!(
-        !vize_canon::project_virtual_root(&project_root)
+        !vize_canon::project_virtual_root(project_root)
             .join("types/codegen/schema.d.ts")
             .exists()
     );
@@ -236,7 +240,7 @@ fn check_barrel_reexport_preserves_generated_graphql_identity() {
     std::fs::create_dir_all(project_root.join("fragments")).unwrap();
     std::fs::create_dir_all(project_root.join("pages")).unwrap();
     std::fs::create_dir_all(project_root.join("types/codegen")).unwrap();
-    link_workspace_vue(&project_root).unwrap();
+    link_workspace_vue(project_root).unwrap();
     std::fs::write(
         project_root.join("tsconfig.json"),
         r#"{
@@ -323,13 +327,13 @@ void childComponents
     )
     .unwrap();
 
-    let stdout = run_check_json(&project_root, &corsa_path);
+    let stdout = run_check_json(project_root, &corsa_path);
     assert!(
         !stdout.contains("TS1360"),
         "generated GraphQL symbols should keep one type identity:\n{stdout}"
     );
     assert!(
-        !vize_canon::project_virtual_root(&project_root)
+        !vize_canon::project_virtual_root(project_root)
             .join("types/codegen/schema.d.ts")
             .exists()
     );

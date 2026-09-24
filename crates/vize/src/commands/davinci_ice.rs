@@ -31,8 +31,6 @@
 //! unwind builds only) so a guarded failure reports through the build's
 //! error channel once, not twice.
 
-use std::cell::RefCell;
-use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
 use std::sync::Once;
 
@@ -40,8 +38,8 @@ use vize_davinci::folio::repro::{ReproFolio, failure_text};
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::legacy_plan;
 use vize_davinci::pass::{
-    BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, TimingObserver,
-    parse_pipelines, pipeline::PipelineSpec, run_pipeline,
+    BudgetObserver, Fusability, Pair, PassDesc, PassFailure, PassKind, Pipeline, Preserved,
+    TimingObserver, parse_pipelines, pipeline::PipelineSpec, run_pipeline,
 };
 use vize_s0::{FxHashMap, String, cstr};
 
@@ -175,7 +173,7 @@ pub(crate) fn silence_panics() {
 /// Extract a panic payload's text, newline-normalized so it fits a
 /// line-atomic folio scalar. Record and replay both pass through here, so
 /// exact failure equality survives the normalization.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(crate) fn panic_reason(payload: Box<dyn core::any::Any + Send>) -> String {
     let text: &str = if let Some(text) = payload.downcast_ref::<&str>() {
         text
@@ -215,48 +213,46 @@ fn build_plans(segments: &[PipelineSpec<'_>]) -> Vec<Pipeline> {
         .collect()
 }
 
-/// Drive `pipeline` through the pass manager with no-op bodies, panicking at
-/// `inject_pass`, and catch the unwind. `Err` carries the exactly-attributed
-/// failure; `Ok` means no pass by that name ran (a stale repro replayed
-/// against a renamed pass).
+/// Drive `pipeline` through the pass manager with no-op bodies, failing at
+/// `inject_pass`. `Err` carries the exactly-attributed failure; `Ok` means no
+/// pass by that name ran (a stale repro replayed against a renamed pass) or
+/// the pipeline string does not parse.
+///
+/// The injected pass fails through the pass manager's error channel rather
+/// than by unwinding, so the CLI never aborts on its own fault injection. The
+/// reason text keeps the historical wording so recorded repros still compare
+/// equal on replay.
 pub(crate) fn run_injected(pipeline: &str, inject_pass: &str) -> Result<(), IceFailure> {
-    silence_panics();
-    let segments =
-        parse_pipelines(pipeline).expect("repro pipeline strings are validated before this call");
-    let plans = build_plans(&segments);
-    let last: RefCell<Option<(String, String)>> = RefCell::new(None);
-    let outcome = catch_unwind(AssertUnwindSafe(|| {
-        for plan in &plans {
-            // The timing observer keeps a --profile-json build's export
-            // honest about davinci-driven walks; with profiling off it costs
-            // one atomic load per walk.
-            let mut observers = Pair(TimingObserver::new(), BudgetObserver::new());
-            run_pipeline(plan, &mut observers, |event| {
-                *last.borrow_mut() = Some((
-                    String::from(event.pipeline.stage),
-                    String::from(event.desc().name),
-                ));
-                if event.desc().name == inject_pass {
-                    panic!("injected davinci panic in pass `{inject_pass}`");
-                }
-                Ok(())
-            })
-            .expect("injected panics unwind; no-op bodies cannot fail");
-        }
-    }));
-    match outcome {
-        Ok(()) => Ok(()),
-        Err(payload) => {
-            let (stage, pass) = last
-                .into_inner()
-                .expect("a panic inside run_pipeline recorded the pass it entered");
-            Err(IceFailure {
+    let Ok(segments) = parse_pipelines(pipeline) else {
+        return Ok(());
+    };
+    for plan in &build_plans(&segments) {
+        let mut last: Option<(String, String)> = None;
+        // The timing observer keeps a --profile-json build's export honest
+        // about davinci-driven walks; with profiling off it costs one atomic
+        // load per walk.
+        let mut observers = Pair(TimingObserver::new(), BudgetObserver::new());
+        let outcome = run_pipeline(plan, &mut observers, |event| {
+            last = Some((
+                String::from(event.pipeline.stage),
+                String::from(event.desc().name),
+            ));
+            if event.desc().name == inject_pass {
+                return Err(PassFailure::new("injected davinci failure"));
+            }
+            Ok(())
+        });
+        if outcome.is_err()
+            && let Some((stage, pass)) = last
+        {
+            return Err(IceFailure {
                 stage,
                 pass,
-                reason: panic_reason(payload),
-            })
+                reason: cstr!("injected davinci panic in pass `{inject_pass}`"),
+            });
         }
     }
+    Ok(())
 }
 
 /// Assemble the repro for a compile-path failure whose last-good stage is

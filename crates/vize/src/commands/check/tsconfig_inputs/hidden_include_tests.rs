@@ -1,6 +1,6 @@
 //! Hidden include-root tests split out from the large tsconfig suite.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::{
     fs,

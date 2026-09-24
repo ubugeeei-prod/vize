@@ -1,3 +1,4 @@
+#![cfg(test)]
 use std::sync::Mutex;
 
 use serde_json::{Value, json};

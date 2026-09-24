@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 #[path = "support/nuxt_cli.rs"]

@@ -1,3 +1,5 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 use std::error::Error;
 
 use vize_fresco::{TerminalSignalHookError, TerminalSignalHookInstallation};

@@ -1,4 +1,6 @@
 //! `vize fmt` applies conservative YAML/Markdown normalization end to end.
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::{fs, path::Path, process::Command};
 

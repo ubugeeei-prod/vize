@@ -4,7 +4,7 @@ use clap::Args;
 use vize_canon::{CorsaServer, ServerConfig};
 
 #[derive(Args)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct CheckServerArgs {
     /// Unix socket path (if not specified, uses stdin/stdout)
     #[arg(long, short)]

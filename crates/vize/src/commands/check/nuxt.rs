@@ -1,7 +1,5 @@
 //! Nuxt-specific auto-import and plugin injection helpers.
 
-#![allow(clippy::disallowed_macros)]
-
 use std::path::Path;
 
 use vize_canon::virtual_ts::VirtualTsOptions;
@@ -177,20 +175,18 @@ fn missing_generated_types_warning(
 ) -> Option<String> {
     (!has_generated_imports).then(|| {
         if legacy_vue2 {
-            return format!(
+            return vize_s0::cstr!(
                 "vize check: no generated `{}` types found; Nuxt auto-imports fall back to `any` \
                  stubs and some type errors will be missed. For Nuxt 2/Bridge, run the project's \
                  Nuxt type-generation step or build once so the generated type directory exists.",
                 generated_dir.display()
-            )
-            .into();
+            );
         }
 
-        format!(
+        vize_s0::cstr!(
             "vize check: no generated `{}` types found; Nuxt auto-imports fall back to `any` \
              stubs and some type errors will be missed. Run `nuxi prepare` to generate them.",
             generated_dir.display()
         )
-        .into()
     })
 }

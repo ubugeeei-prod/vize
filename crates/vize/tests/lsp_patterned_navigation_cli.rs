@@ -1,3 +1,6 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use serde_json::{Value, json};
 
 #[path = "support/lsp_process.rs"]
@@ -188,7 +191,7 @@ fn native_pattern_single_unused_binding_does_not_fall_back_to_same_named_symbols
 fn native_outer_binding_keeps_style_references_without_pattern_binding_leaks() {
     let mut fixture = Fixture::new(SOURCE, true);
     assert_eq!(fixture.open(SOURCE), json!([]));
-    let ranges = vec![
+    let ranges = [
         range(SOURCE, "rows =", 4),
         range(SOURCE, "rows.toUpperCase() }}</p>\n</template>", 4),
         range(SOURCE, "rows);", 4),

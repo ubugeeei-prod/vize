@@ -10,6 +10,7 @@
 //! This project writes its own `node_modules` instead of linking the
 //! workspace's, so the floor is pinned regardless of which `vue` the developer
 //! happens to have installed.
+#![cfg(test)]
 
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;

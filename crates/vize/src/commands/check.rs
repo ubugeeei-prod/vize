@@ -23,7 +23,7 @@ use clap::Args;
 use std::path::PathBuf;
 
 #[derive(Args)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct CheckArgs {
     /// Files or directories to type-check (`.vue`, `.ts`, `.tsx`, `.mts`, `.cts`, `.jsx`, `.d.ts`, `.d.mts`, `.d.cts`).
     /// When omitted, `tsconfig.json` include/exclude/files are used if available.
@@ -106,7 +106,7 @@ pub struct CheckArgs {
 
 /// Serde types for check-server JSON-RPC communication (Unix only).
 #[cfg(unix)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(crate) mod unix_types {
     use serde::Deserialize;
 
@@ -137,7 +137,7 @@ pub(crate) mod unix_types {
 
     #[derive(Deserialize)]
     pub(crate) struct JsonRpcError {
-        #[allow(dead_code)]
+        #[expect(dead_code, reason = "read via Debug snapshots")]
         pub code: i64,
         pub message: String,
     }

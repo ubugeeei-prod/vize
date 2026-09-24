@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::{path::Path, sync::atomic::AtomicUsize};
 
 use super::write_nuxt_fallback_tsconfig_in_cache;

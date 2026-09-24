@@ -24,7 +24,7 @@ use declarations::emit_declarations;
 use json::emit_json;
 use profile::print_profile;
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 type RenderedDiagnostics =
     std::collections::BTreeMap<std::string::String, Vec<std::string::String>>;
 
@@ -229,7 +229,7 @@ fn report_executions(
     ))
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn print_text(
     args: &CheckArgs,
     virtual_files: &[&vize_canon::VirtualFile],

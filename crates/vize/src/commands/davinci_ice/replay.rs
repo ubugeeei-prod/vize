@@ -63,7 +63,7 @@ pub(crate) fn replay(folio: &ReproFolio) -> Result<Option<IceFailure>, String> {
     };
     silence_panics();
     let segments = parse_pipelines(folio.pipeline.as_str())
-        .expect("repro pipeline strings are validated at folio parse time");
+        .map_err(|error| cstr!("invalid repro pipeline: {error:?}"))?;
     let stage = segments.first().map_or("", |segment| segment.stage);
     match catch_unwind(AssertUnwindSafe(|| {
         compile_source(folio.artifact.as_str(), ssr, vapor);

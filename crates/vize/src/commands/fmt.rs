@@ -1,7 +1,5 @@
 //! Format command - High-performance Vue and script formatting using vize_glyph
 
-#![allow(clippy::disallowed_macros)]
-
 use clap::Args;
 use oxc_span::SourceType;
 use rayon::prelude::*;
@@ -33,7 +31,7 @@ use ignores::load_fmt_ignore_set;
 use patterns::{FORMAT_EXTENSIONS_DISPLAY, default_fmt_patterns};
 
 #[derive(Args)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct FmtArgs {
     /// Glob pattern(s) to match files supported by vize fmt
     #[arg(default_values_t = default_fmt_patterns())]
@@ -376,7 +374,7 @@ fn build_format_options(args: &FmtArgs) -> FormatOptions {
 }
 
 #[inline]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn process_file(
     path: &PathBuf,
     options: &FormatOptions,
@@ -394,7 +392,7 @@ fn process_file(
         }
         Err(error) => {
             global_profiler().record_fs_read_to_string_failure();
-            return Err(format!("Failed to read file: {}", error));
+            return Err(vize_s0::cstr!("Failed to read file: {}", error).into());
         }
     };
     let read_time = read_start
@@ -403,7 +401,7 @@ fn process_file(
 
     let format_start = profile.then(Instant::now);
     let result = format_file_source(path, &source, options, allocator)
-        .map_err(|e| format!("Format error: {}", e))?;
+        .map_err(|e| vize_s0::cstr!("Format error: {}", e))?;
     let format_time = format_start
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
@@ -422,7 +420,7 @@ fn process_file(
                 atomic_write(path, result.code.as_bytes())
             ) {
                 global_profiler().record_fs_write_failure(bytes);
-                return Err(format!("Failed to write file: {}", error));
+                return Err(vize_s0::cstr!("Failed to write file: {}", error).into());
             }
             global_profiler().record_fs_write(bytes);
             eprintln!("Reformatted: {}", path.display());
@@ -510,6 +508,7 @@ struct FormatFileProfile {
     read_time: Duration,
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::format_file_source;

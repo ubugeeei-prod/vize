@@ -7,6 +7,9 @@
 //! (stage, pass, reason) - the comparison lives inside the tool and exit 0
 //! is its verdict. The negative verdicts (diverged, did-not-reproduce,
 //! malformed) are pinned with exact output too.
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::fs;
 use std::path::{Path, PathBuf};

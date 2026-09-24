@@ -160,7 +160,7 @@ fn base_dir_from_lint_pattern(pattern: &str) -> PathBuf {
     let glob_start = normalized
         .find(['*', '?', '[', '{'])
         .unwrap_or(normalized.len());
-    let prefix = &normalized[..glob_start];
+    let prefix = normalized.get(..glob_start).unwrap_or_default();
     if prefix.is_empty() || (glob_start < normalized.len() && !prefix.contains('/')) {
         return PathBuf::from(".");
     }
@@ -169,9 +169,9 @@ fn base_dir_from_lint_pattern(pattern: &str) -> PathBuf {
             return PathBuf::from("/");
         }
         if is_windows_drive_root(prefix, index) {
-            return PathBuf::from(&prefix[..=index]);
+            return PathBuf::from(prefix.get(..=index).unwrap_or_default());
         }
-        return PathBuf::from(&prefix[..index]);
+        return PathBuf::from(prefix.get(..index).unwrap_or_default());
     }
     PathBuf::from(prefix)
 }

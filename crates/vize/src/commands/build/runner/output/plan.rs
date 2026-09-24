@@ -103,11 +103,7 @@ fn deduplicate_source_aliases(
         identities.insert(source_identity(&first.source, cwd));
         let layout_key = first.layout_key.clone();
         unique.push((first.source, first.normalized));
-        while files
-            .peek()
-            .is_some_and(|candidate| candidate.layout_key == layout_key)
-        {
-            let candidate = files.next().expect("peeked source must exist");
+        while let Some(candidate) = files.next_if(|candidate| candidate.layout_key == layout_key) {
             if identities.insert(source_identity(&candidate.source, cwd)) {
                 unique.push((candidate.source, candidate.normalized));
             }
@@ -204,8 +200,10 @@ pub(super) fn validate_output_paths(
     });
 
     for pair in comparable.windows(2) {
-        if pair[0].key == pair[1].key {
-            return Err(collision(&pair[0], &pair[1]));
+        if let [left, right] = pair
+            && left.key == right.key
+        {
+            return Err(collision(left, right));
         }
     }
     for path in &comparable {
@@ -215,8 +213,12 @@ pub(super) fn validate_output_paths(
                 break;
             }
             let key = portable_key(candidate);
-            if let Ok(index) = comparable.binary_search_by(|entry| entry.key.cmp(&key)) {
-                return Err(collision(&comparable[index], path));
+            if let Some(existing) = comparable
+                .binary_search_by(|entry| entry.key.cmp(&key))
+                .ok()
+                .and_then(|index| comparable.get(index))
+            {
+                return Err(collision(existing, path));
             }
             parent = candidate.parent();
         }

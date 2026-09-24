@@ -5,7 +5,7 @@ use serde_json::{Map, Value};
 
 /// JSON output structure for `--format json`.
 #[derive(Serialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(crate) struct JsonOutput {
     pub files: Vec<JsonFileResult>,
     pub programs: Vec<JsonProgramResult>,
@@ -21,7 +21,7 @@ pub(crate) struct JsonOutput {
 
 /// Effective TypeScript program evidence in JSON output.
 #[derive(Serialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(crate) struct JsonProgramResult {
     pub root: std::string::String,
     #[serde(rename = "tsconfig", skip_serializing_if = "Option::is_none")]
@@ -33,7 +33,7 @@ pub(crate) struct JsonProgramResult {
 
 /// Per-file result in JSON output.
 #[derive(Serialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(crate) struct JsonFileResult {
     pub file: std::string::String,
     #[serde(rename = "virtualTs", skip_serializing_if = "Option::is_none")]

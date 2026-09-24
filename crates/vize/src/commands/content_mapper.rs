@@ -39,7 +39,7 @@ pub fn run(_: ContentMapperArgs) {
 
 #[derive(Deserialize)]
 struct Request {
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "read via Debug snapshots")]
     jsonrpc: Option<CompactString>,
     id: Option<Value>,
     method: CompactString,
@@ -50,7 +50,7 @@ struct Request {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct InitializeParams {
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "read via Debug snapshots")]
     locale: Option<CompactString>,
     position_encodings: Vec<CompactString>,
 }
@@ -195,9 +195,12 @@ fn read_frame<R: BufRead>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
             break;
         }
         if let Some(separator) = line.iter().position(|byte| *byte == b':')
-            && line[..separator].eq_ignore_ascii_case(b"content-length")
+            && line
+                .get(..separator)
+                .unwrap_or_default()
+                .eq_ignore_ascii_case(b"content-length")
         {
-            let value = std::str::from_utf8(&line[separator + 1..])
+            let value = std::str::from_utf8(line.get(separator + 1..).unwrap_or_default())
                 .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "invalid Content-Length"))?
                 .trim();
             content_length = Some(value.parse::<usize>().map_err(|_| {

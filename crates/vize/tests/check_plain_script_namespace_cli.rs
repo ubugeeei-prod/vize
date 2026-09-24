@@ -5,6 +5,10 @@
 //! reached it so consumers got TS2614 as well. These cases run the real Corsa
 //! CLI so the diagnostics come from a type checker rather than from string
 //! inspection of the generated module.
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;

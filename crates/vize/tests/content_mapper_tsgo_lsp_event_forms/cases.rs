@@ -2,7 +2,19 @@
 
 /// `(file, usage, declaration, name, ty, renamed, reference_shift, reference_len,
 /// rename_supported)` for every authored event form the oracle navigates.
-pub(crate) const EVENT_CASES: [(&str, &str, &str, &str, &str, &str, usize, usize, bool); 11] = [
+type EventCase = (
+    &'static str,
+    &'static str,
+    &'static str,
+    &'static str,
+    &'static str,
+    &'static str,
+    usize,
+    usize,
+    bool,
+);
+
+pub(crate) const EVENT_CASES: [EventCase; 11] = [
     (
         "Child.vue",
         "@save",

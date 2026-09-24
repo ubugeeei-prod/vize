@@ -21,7 +21,8 @@ pub(super) struct BuildGlob {
 impl BuildGlob {
     pub(super) fn new(input: &str) -> Result<Self, PatternError> {
         let current_dir_prefix_len = current_dir_prefix_len(input);
-        let normalized = normalize_separators(&input[current_dir_prefix_len..]);
+        let normalized =
+            normalize_separators(input.get(current_dir_prefix_len..).unwrap_or_default());
         let pattern = Pattern::new(normalized.as_ref()).map_err(|error| PatternError {
             pos: error.pos + current_dir_prefix_len,
             msg: error.msg,
@@ -42,11 +43,10 @@ impl BuildGlob {
         self.max_depth
     }
 
-    #[allow(clippy::disallowed_methods)]
     pub(super) fn matches(&self, path: &Path) -> bool {
         let candidate = path.to_string_lossy();
         let prefix_len = current_dir_prefix_len(candidate.as_ref());
-        let candidate = normalize_separators(&candidate[prefix_len..]);
+        let candidate = normalize_separators(candidate.get(prefix_len..).unwrap_or_default());
         self.pattern
             .matches_with(candidate.as_ref(), match_options())
     }
@@ -76,19 +76,19 @@ fn current_dir_prefix_len(value: &str) -> usize {
 }
 
 fn first_metacharacter(pattern: &str) -> usize {
-    pattern
-        .find(GLOB_METACHARACTERS)
-        .expect("build globs always contain a metacharacter")
+    // Build globs always contain a metacharacter; a literal path is its own
+    // root.
+    pattern.find(GLOB_METACHARACTERS).unwrap_or(pattern.len())
 }
 
 fn literal_root(pattern: &str) -> PathBuf {
     let metacharacter = first_metacharacter(pattern);
-    let prefix = &pattern[..metacharacter];
+    let prefix = pattern.get(..metacharacter).unwrap_or_default();
 
     prefix.rfind(['/', '\\']).map_or_else(
         || PathBuf::from("."),
         |separator| {
-            let root = normalize_separators(&prefix[..=separator]);
+            let root = normalize_separators(prefix.get(..=separator).unwrap_or_default());
             PathBuf::from(root.as_ref())
         },
     )
@@ -96,12 +96,16 @@ fn literal_root(pattern: &str) -> PathBuf {
 
 fn maximum_depth(pattern: &str) -> Option<usize> {
     let metacharacter = first_metacharacter(pattern);
-    let suffix_start = pattern[..metacharacter]
+    let suffix_start = pattern
+        .get(..metacharacter)
+        .unwrap_or_default()
         .rfind(std::path::MAIN_SEPARATOR)
         .map_or(0, |separator| separator + 1);
     let mut depth = 0;
 
-    for component in pattern[suffix_start..]
+    for component in pattern
+        .get(suffix_start..)
+        .unwrap_or_default()
         .split(std::path::MAIN_SEPARATOR)
         .filter(|component| !component.is_empty())
     {

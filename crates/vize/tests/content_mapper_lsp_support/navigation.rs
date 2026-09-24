@@ -1,3 +1,4 @@
+#![cfg(test)]
 use corsa_lsp::LspClient;
 use serde_json::{Value, json};
 

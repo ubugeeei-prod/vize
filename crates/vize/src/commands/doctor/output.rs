@@ -103,6 +103,8 @@ fn write_finding(output: &mut impl Write, finding: &DoctorFinding) -> io::Result
     Ok(())
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::*;

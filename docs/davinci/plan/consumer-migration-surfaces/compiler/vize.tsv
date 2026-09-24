@@ -1,9 +1,9 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
-compiler	Compiler	source	crates/vize/src/commands/build/config.rs	16	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	source	crates/vize/src/commands/build/config.rs	14	s0	S0	stage	vize_s0	preferred	2
 compiler	Compiler	source	crates/vize/src/commands/build/runner.rs	22	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize/src/commands/build/runner/cache.rs	11	s0	S0	stage	vize_s0	preferred	1
-compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/cache/tests.rs	11	s0	S0	stage	vize_s0	preferred	2
-compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/collect/tests.rs	12	s0	S0	stage	vize_s0	preferred	1
+compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/cache/tests.rs	12	s0	S0	stage	vize_s0	preferred	2
+compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/collect/tests.rs	9	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize/src/commands/build/runner/compile_stats.rs	16	s0	S0	stage	vize_s0	preferred	6
 compiler	Compiler	source	crates/vize/src/commands/build/runner/compile.rs	41	s0	S0	stage	vize_s0	preferred	5
 compiler	Compiler	source	crates/vize/src/commands/build/runner/declarations.rs	65	s0	S0	stage	vize_s0	preferred	1

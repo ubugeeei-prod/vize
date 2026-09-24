@@ -128,6 +128,7 @@ fn bounded_offset(offset: usize) -> u32 {
     u32::try_from(offset).unwrap_or(u32::MAX)
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::*;

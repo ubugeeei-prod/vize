@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 use super::super::ignores::CheckIgnoreSet;
 use super::{
     base_dir_from_pattern, collect_check_files, collect_check_files_with_ignores, collect_vue_files,
@@ -55,7 +56,7 @@ fn collect_check_files_includes_ts_vue_and_declarations() {
     fs::write(case_dir.join("src/env.d.cts"), "").unwrap();
     fs::write(case_dir.join("src/skip.js"), "").unwrap();
 
-    let files = collect_check_files(&vec![case_dir.display().to_string()], false);
+    let files = collect_check_files(&[case_dir.display().to_string()], false);
 
     assert_eq!(
         files,
@@ -80,7 +81,7 @@ fn collect_check_files_includes_jsx_only_when_enabled() {
     fs::write(case_dir.join("src/App.tsx"), "").unwrap();
     fs::write(case_dir.join("src/skip.js"), "").unwrap();
 
-    let files = collect_check_files(&vec![case_dir.display().to_string()], true);
+    let files = collect_check_files(&[case_dir.display().to_string()], true);
 
     assert_eq!(
         files,
@@ -135,7 +136,7 @@ fn collect_check_files_filters_quoted_globs() {
     fs::write(case_dir.join("src/nested/model.ts"), "").unwrap();
 
     let files = collect_check_files(
-        &vec![case_dir.join("src/**/*.vue").display().to_string()],
+        &[case_dir.join("src/**/*.vue").display().to_string()],
         false,
     );
 
@@ -157,10 +158,7 @@ fn collect_check_files_recursive_globs_include_dot_directories() {
     fs::create_dir_all(case_dir.join("docs/.vitepress/components")).unwrap();
     let download_page = write_file(&case_dir, "docs/.vitepress/components/DownloadPage.vue", "");
 
-    let files = collect_check_files(
-        &vec![case_dir.join("**/*.vue").display().to_string()],
-        false,
-    );
+    let files = collect_check_files(&[case_dir.join("**/*.vue").display().to_string()], false);
 
     assert_eq!(files, vec![download_page]);
 
@@ -193,12 +191,12 @@ fn collect_check_files_applies_entry_ignores() {
     );
 
     let files = collect_check_files_with_ignores(
-        &vec![case_dir.display().to_string()],
+        &[case_dir.display().to_string()],
         CheckFileOptions::default(),
         ignore_set.as_ref(),
     );
     let explicit = collect_check_files_with_ignores(
-        &vec![case_dir.join("src/Ignored.vue").display().to_string()],
+        &[case_dir.join("src/Ignored.vue").display().to_string()],
         CheckFileOptions::default(),
         ignore_set.as_ref(),
     );
@@ -261,7 +259,7 @@ fn collect_check_files_normalizes_entry_ignore_paths_and_duplicates() {
     );
 
     let files = collect_check_files_with_ignores(
-        &vec![
+        &[
             case_dir.join("src").display().to_string(),
             case_dir.join("src/./App.vue").display().to_string(),
             case_dir.join("packages/admin/src").display().to_string(),

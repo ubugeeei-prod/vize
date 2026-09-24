@@ -75,6 +75,7 @@ pub(super) fn is_plain_script_extension(extension: &str) -> bool {
     matches!(extension, "js" | "mjs" | "cjs" | "ts" | "mts" | "cts")
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::{

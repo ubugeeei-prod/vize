@@ -1,5 +1,6 @@
 //! Tests for the lint command.
-
+#![expect(clippy::disallowed_macros, reason = "tests use format! and insta")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 mod fix_regressions;
 mod format_output;
 
@@ -403,7 +404,6 @@ watch(query, async () => {
 "#,
     )
     .unwrap();
-
     let files = [&provider, &child]
         .into_iter()
         .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))

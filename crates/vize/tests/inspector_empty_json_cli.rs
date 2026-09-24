@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::process::Command;
 
 #[test]

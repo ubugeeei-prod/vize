@@ -1,3 +1,4 @@
+#![cfg(test)]
 pub(crate) fn required_iterations() -> usize {
     let raw = std::env::var_os("VIZE_NUXT_CONFIG_ITERATIONS");
     if std::env::var_os("CI").is_some() {

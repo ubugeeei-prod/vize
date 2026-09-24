@@ -1,6 +1,7 @@
 //! Exact-upstream conformance for template diagnostic directives:
 //! `<!-- @vue-expect-error -->` and `<!-- @vue-ignore -->` travel to TypeScript
 //! through the content-mapper protocol's `diagnosticDirectives`.
+#![cfg(test)]
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};

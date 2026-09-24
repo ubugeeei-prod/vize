@@ -1,3 +1,5 @@
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::path::Path;
 
 use vize_s0::corsa_resolver::discover_corsa_in_ancestors;

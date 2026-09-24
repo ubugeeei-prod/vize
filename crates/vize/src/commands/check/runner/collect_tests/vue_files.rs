@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 use super::*;
 
 #[test]
@@ -8,7 +9,7 @@ fn collect_vue_files_stays_vue_only() {
     fs::write(case_dir.join("src/App.vue"), "").unwrap();
     fs::write(case_dir.join("src/main.ts"), "").unwrap();
 
-    let files = collect_vue_files(&vec![case_dir.display().to_string()]);
+    let files = collect_vue_files(&[case_dir.display().to_string()]);
 
     assert_eq!(files, vec![case_dir.join("src/App.vue")]);
 
@@ -24,9 +25,7 @@ fn collect_vue_files_filters_quoted_globs() {
     fs::write(case_dir.join("src/nested/View.vue"), "").unwrap();
     fs::write(case_dir.join("src/nested/Skip.vue"), "").unwrap();
 
-    let files = collect_vue_files(&vec![
-        case_dir.join("src/nested/*.vue").display().to_string(),
-    ]);
+    let files = collect_vue_files(&[case_dir.join("src/nested/*.vue").display().to_string()]);
 
     assert_eq!(
         files,
@@ -45,7 +44,7 @@ fn collect_vue_files_recursive_globs_include_dot_directories() {
     let _ = fs::remove_dir_all(&case_dir);
     let download_page = write_file(&case_dir, "docs/.vitepress/components/DownloadPage.vue", "");
 
-    let files = collect_vue_files(&vec![case_dir.join("**/*.vue").display().to_string()]);
+    let files = collect_vue_files(&[case_dir.join("**/*.vue").display().to_string()]);
 
     assert_eq!(files, vec![download_page]);
 

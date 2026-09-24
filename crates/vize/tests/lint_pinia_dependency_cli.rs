@@ -1,3 +1,4 @@
+#![cfg(test)]
 use std::{fs, path::Path, process::Command};
 
 const PINIA_RULE: &str = "ecosystem/pinia-prefer-store-to-refs";

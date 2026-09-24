@@ -21,21 +21,25 @@ pub(super) fn extract_module_specifier_occurrences(source: &str) -> Vec<ModuleSp
     let mut specifiers = Vec::new();
     let mut i = 0;
 
-    while i < len {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'\'' | b'"' | b'`' => {
                 i = skip_quoted(bytes, i).unwrap_or(len);
                 continue;
             }
             b'/' if bytes.get(i + 1) == Some(&b'/') => {
-                i = bytes[i + 2..]
+                i = bytes
+                    .get(i + 2..)
+                    .unwrap_or_default()
                     .iter()
                     .position(|byte| *byte == b'\n')
                     .map_or(len, |offset| i + 2 + offset + 1);
                 continue;
             }
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
-                i = bytes[i + 2..]
+                i = bytes
+                    .get(i + 2..)
+                    .unwrap_or_default()
                     .windows(2)
                     .position(|window| window == b"*/")
                     .map_or(len, |offset| i + 2 + offset + 2);
@@ -56,20 +60,19 @@ pub(super) fn extract_module_specifier_occurrences(source: &str) -> Vec<ModuleSp
 
         let mut j = skip_trivia(bytes, i + keyword_len);
         // `import('./x')` / `import ( './x' )` — step over the call paren.
-        let call_import = j < len && bytes[j] == b'(';
+        let call_import = j < len && bytes.get(j) == Some(&b'(');
         if call_import {
             j = skip_trivia(bytes, j + 1);
         }
 
-        if j < len && (bytes[j] == b'"' || bytes[j] == b'\'') {
-            let quote = bytes[j];
+        if let Some(&quote) = bytes.get(j).filter(|&&byte| byte == b'"' || byte == b'\'') {
             let start = j + 1;
             let mut k = start;
-            while k < len && bytes[k] != quote {
+            while bytes.get(k).is_some_and(|&byte| byte != quote) {
                 k += 1;
             }
             if k < len {
-                let specifier = &source[start..k];
+                let specifier = source.get(start..k).unwrap_or_default();
                 let default_mode = if call_import {
                     vize_canon::PackageResolutionMode::Import
                 } else {
@@ -146,8 +149,8 @@ fn object_literal_bounds(bytes: &[u8], start: usize) -> Option<(usize, usize)> {
     }
     let mut depth = 0usize;
     let mut cursor = start;
-    while cursor < bytes.len() {
-        match bytes[cursor] {
+    while let Some(&byte) = bytes.get(cursor) {
+        match byte {
             b'\'' | b'"' => {
                 cursor = skip_quoted(bytes, cursor)?;
                 continue;
@@ -181,18 +184,18 @@ fn string_literal_at(source: &str, start: usize) -> Option<(&str, usize)> {
         return None;
     }
     let end = skip_quoted(bytes, start)?;
-    Some((&source[start + 1..end - 1], end))
+    Some((source.get(start + 1..end - 1).unwrap_or_default(), end))
 }
 
 fn skip_quoted(bytes: &[u8], start: usize) -> Option<usize> {
     let quote = *bytes.get(start)?;
     let mut cursor = start + 1;
-    while cursor < bytes.len() {
-        if bytes[cursor] == b'\\' {
+    while let Some(&byte) = bytes.get(cursor) {
+        if byte == b'\\' {
             cursor += 2;
             continue;
         }
-        if bytes[cursor] == quote {
+        if byte == quote {
             return Some(cursor + 1);
         }
         cursor += 1;
@@ -246,7 +249,8 @@ fn line_terminator_len(bytes: &[u8], cursor: usize) -> Option<usize> {
 }
 
 fn skip_block_comment(bytes: &[u8], start: usize) -> Option<usize> {
-    bytes[start + 2..]
+    bytes
+        .get(start + 2..)?
         .windows(2)
         .position(|window| window == b"*/")
         .map(|offset| start + 2 + offset + 2)
@@ -254,12 +258,16 @@ fn skip_block_comment(bytes: &[u8], start: usize) -> Option<usize> {
 
 /// Whether `bytes[at..]` begins with `keyword` as a standalone identifier token.
 fn matches_keyword(bytes: &[u8], at: usize, keyword: &[u8]) -> bool {
-    if at + keyword.len() > bytes.len() || &bytes[at..at + keyword.len()] != keyword {
+    if bytes.get(at..at + keyword.len()) != Some(keyword) {
         return false;
     }
-    let before_ok = at == 0 || !is_identifier_byte(bytes[at - 1]);
-    let after = at + keyword.len();
-    let after_ok = after >= bytes.len() || !is_identifier_byte(bytes[after]);
+    let before_ok = !at
+        .checked_sub(1)
+        .and_then(|prev| bytes.get(prev))
+        .is_some_and(|&byte| is_identifier_byte(byte));
+    let after_ok = !bytes
+        .get(at + keyword.len())
+        .is_some_and(|&byte| is_identifier_byte(byte));
     before_ok && after_ok
 }
 

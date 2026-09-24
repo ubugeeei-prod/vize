@@ -250,16 +250,15 @@ pub(super) fn collect_transitive_local_imports_with_session(
                 package_routes.extend(discovery.package_routes);
             }
             let in_package_graph = package_graph || package_route.is_some();
+            // A positive package route always comes from a package lookup.
             if let Some(route) = package_route
                 && needs_registration
                 && !own_package_entry
+                && let Some((_, invalidation_paths, mode, context, _)) = package_lookup.as_ref()
             {
                 if !package_graph && registered.insert(file.clone()) {
                     registrations.push(file.clone());
                 }
-                let (_, invalidation_paths, mode, context, _) = package_lookup
-                    .as_ref()
-                    .expect("a positive package route came from a package lookup");
                 let mut route = route.clone();
                 let before = route.dependency_paths.len();
                 route.dependency_paths.extend(

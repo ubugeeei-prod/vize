@@ -22,7 +22,6 @@ use vize_s0::String;
 use catalog::{LocaleCatalog, color_enabled, parse_locale};
 
 #[derive(Args)]
-#[allow(clippy::disallowed_types)]
 pub struct ExplainArgs {
     /// Diagnostic code, for example vue/require-v-for-key
     pub code: Option<String>,
@@ -45,7 +44,7 @@ pub(crate) fn all_pages(catalog: &LocaleCatalog) -> String {
         out.push_str("=== ");
         out.push_str(subject.code());
         out.push('\n');
-        out.push_str(&page::page(&subject, catalog, false));
+        out.push_str(&page::page(subject, catalog, false));
     }
     out
 }
@@ -97,12 +96,15 @@ pub(crate) fn distance(left: &str, right: &str) -> usize {
     let mut previous: Vec<usize> = (0..=right.len()).collect();
     for (i, left) in left.chars().enumerate() {
         let mut current = Vec::with_capacity(right.len() + 1);
-        current.push(i + 1);
-        for (j, right) in right.iter().enumerate() {
-            let substitute = previous[j] + usize::from(left != *right);
-            current.push(substitute.min(previous[j + 1] + 1).min(current[j] + 1));
+        let mut last = i + 1;
+        current.push(last);
+        for ((&diagonal, &above), right) in previous.iter().zip(previous.iter().skip(1)).zip(&right)
+        {
+            let substitute = diagonal + usize::from(left != *right);
+            last = substitute.min(above + 1).min(last + 1);
+            current.push(last);
         }
         previous = current;
     }
-    previous[right.len()]
+    previous.last().copied().unwrap_or_default()
 }

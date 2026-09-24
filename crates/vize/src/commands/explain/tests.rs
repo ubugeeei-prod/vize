@@ -8,11 +8,7 @@
 //! Regenerate with `VIZE_EXPLAIN_SNAPSHOTS=overwrite cargo test -p vize --lib
 //! commands::explain`, then review every changed line.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
 use std::path::{Path, PathBuf};
 

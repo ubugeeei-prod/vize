@@ -1,7 +1,5 @@
 //! CLI integration regressions for Canon's shared referenced-project owner.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
-
 use std::path::{Path, PathBuf};
 
 use vize_s0::path::canonicalize_non_verbatim;

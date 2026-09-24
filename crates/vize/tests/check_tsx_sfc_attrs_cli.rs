@@ -9,8 +9,7 @@ fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
         .nth(2)
-        .expect("workspace root should exist")
-        .to_path_buf()
+        .map_or_else(|| PathBuf::from("."), Path::to_path_buf)
 }
 
 fn unique_case_dir(name: &str) -> PathBuf {

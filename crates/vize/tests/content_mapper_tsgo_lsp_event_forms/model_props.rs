@@ -1,4 +1,5 @@
 //! defineModel-derived prop navigation covered by the standard tsgo LSP oracle.
+#![cfg(test)]
 
 use corsa_lsp::LspClient;
 use serde_json::json;

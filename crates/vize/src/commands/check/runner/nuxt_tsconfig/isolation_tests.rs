@@ -1,3 +1,6 @@
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::{
     fs,
     io::{BufRead, BufReader, Write},

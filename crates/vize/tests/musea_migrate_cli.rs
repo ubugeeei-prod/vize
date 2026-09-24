@@ -1,4 +1,6 @@
 //! Integration tests for `vize musea migrate`.
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::fs;
 use std::process::Command;

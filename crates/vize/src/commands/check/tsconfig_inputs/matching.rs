@@ -96,10 +96,10 @@ pub(super) fn is_nuxt_import_manifest_path(path: &Path) -> bool {
         .collect::<Vec<_>>();
     components
         .windows(2)
-        .any(|window| window[0] == ".nuxt" && window[1] == file_name)
+        .any(|window| matches!(window, [".nuxt", name] if *name == file_name))
         || components
             .windows(3)
-            .any(|window| window[0] == ".nuxt" && window[1] == "types" && window[2] == file_name)
+            .any(|window| matches!(window, [".nuxt", "types", name] if *name == file_name))
 }
 
 pub(super) fn is_generated_codegen_declaration_path(path: &Path) -> bool {

@@ -1,3 +1,5 @@
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
     collect_tsconfig_type_packages, reference_type_packages,
     resolve_type_reference_declaration_files,

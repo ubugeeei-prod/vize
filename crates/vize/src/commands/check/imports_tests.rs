@@ -123,7 +123,7 @@ fn jsx_imports_are_resolved_only_when_jsx_typecheck_is_enabled() {
     let panel = write(&root, "src/Panel.jsx", "const Panel = () => <div />\n");
 
     let disabled = collect_transitive_local_imports(
-        &[entry.clone()],
+        std::slice::from_ref(&entry),
         &root,
         &mut CanonicalPathCache::default(),
         false,

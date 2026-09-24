@@ -65,7 +65,9 @@ pub(super) fn wildcard_segment_hits_package_folder(pattern: &str, relative: &Pat
         if head >= tail {
             return false;
         }
-        if is_wildcard_segment(segment) && is_package_folder(segments[head]) {
+        if is_wildcard_segment(segment)
+            && segments.get(head).copied().is_some_and(is_package_folder)
+        {
             return true;
         }
         head += 1;
@@ -75,20 +77,30 @@ pub(super) fn wildcard_segment_hits_package_folder(pattern: &str, relative: &Pat
         return false;
     };
 
-    for segment in pattern_segments[recursive_at + 1..].iter().rev() {
+    for segment in pattern_segments.iter().skip(recursive_at + 1).rev() {
         if *segment == RECURSIVE_SEGMENT {
             break;
         }
         if tail <= head {
             return false;
         }
-        if is_wildcard_segment(segment) && is_package_folder(segments[tail - 1]) {
+        if is_wildcard_segment(segment)
+            && segments
+                .get(tail - 1)
+                .copied()
+                .is_some_and(is_package_folder)
+        {
             return true;
         }
         tail -= 1;
     }
 
-    segments[head..tail].iter().copied().any(is_package_folder)
+    segments
+        .get(head..tail)
+        .unwrap_or_default()
+        .iter()
+        .copied()
+        .any(is_package_folder)
 }
 
 fn is_wildcard_segment(segment: &str) -> bool {

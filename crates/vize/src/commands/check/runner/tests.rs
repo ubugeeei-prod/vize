@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
     GlobalComponentStubOptions, collect_project_global_component_stubs, dialect_from_features,
     find_nearest_tsconfig_dir, is_suppressed_false_positive, resolve_declaration_dir,

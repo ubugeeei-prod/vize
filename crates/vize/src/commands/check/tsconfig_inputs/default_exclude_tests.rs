@@ -10,7 +10,7 @@
 //! in `package_folder_tests`: inside the checkout, `.gitignore` would hide
 //! `node_modules` on its own and hide the behavior under test.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::{Path, PathBuf};
 

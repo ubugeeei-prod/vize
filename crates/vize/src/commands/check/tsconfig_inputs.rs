@@ -4,7 +4,10 @@
 //! project's configured `files` / `include` / `exclude` fields instead of
 //! recursively scanning every TypeScript file under the working directory.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "tsconfig text and globs round-trip through std `String` APIs (fs, serde_json, glob)"
+)]
 
 use std::path::{Path, PathBuf};
 

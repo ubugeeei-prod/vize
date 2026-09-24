@@ -1,3 +1,6 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::{
     collections::BTreeMap,
     fs,

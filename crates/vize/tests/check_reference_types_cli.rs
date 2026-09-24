@@ -1,3 +1,4 @@
+#![cfg(test)]
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
 
@@ -179,13 +180,13 @@ if (import.meta.vitest) {
         .output()
         .unwrap();
 
-    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
-    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
     assert!(
         output.status.success(),
         "check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
     assert!(
         !stdout.contains("TS2304") && !stdout.contains("TS2339"),
@@ -257,13 +258,13 @@ defineArt("./MyButton.vue", {
         .output()
         .unwrap();
 
-    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
-    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
     assert!(
         output.status.success(),
         "check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
     assert!(
         !stdout.contains("TS2304") && !stdout.contains("defineArt"),
@@ -322,13 +323,13 @@ defineProps<{ itemTitle?: string }>()
         .output()
         .unwrap();
 
-    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
-    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
     assert!(
         output.status.success(),
         "check failed:\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
     assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
     assert!(
         !stdout.contains("TS2304") && !stdout.contains("__VizeComponentInputProps"),

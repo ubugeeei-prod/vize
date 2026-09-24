@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::{fs, process::Command};
 
 #[cfg(unix)]

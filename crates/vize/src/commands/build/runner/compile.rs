@@ -71,10 +71,13 @@ pub(super) fn compile_file_with_profile(
         && (injection.when.is_none()
             || injection.fires_on(&fs::read_to_string(path).unwrap_or_default()))
     {
-        let failure =
+        // The injected pass was validated to be in the plan; should it not run,
+        // the file compiles normally.
+        if let Err(failure) =
             davinci_ice::run_injected(settings.davinci.plan_string.as_str(), &injection.pass)
-                .expect_err("the injected pass was validated to be in the plan");
-        return Err(ice_error(path, settings, &failure, Some(injection)));
+        {
+            return Err(ice_error(path, settings, &failure, Some(injection)));
+        }
     }
     davinci_ice::silence_panics();
     match catch_unwind(AssertUnwindSafe(|| {

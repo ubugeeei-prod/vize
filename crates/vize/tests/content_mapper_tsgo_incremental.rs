@@ -1,3 +1,6 @@
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 

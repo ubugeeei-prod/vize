@@ -15,7 +15,7 @@ pub enum UpgradeSource {
 }
 
 #[derive(Args)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct UpgradeArgs {
     /// Update source.
     #[arg(long, value_enum, default_value = "package-manager")]

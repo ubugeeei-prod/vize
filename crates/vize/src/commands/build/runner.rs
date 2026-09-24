@@ -35,7 +35,7 @@ use cache::StatsCompileCache;
 use collect::{CollectedFiles, collect_files_or_exit};
 use compile::compile_file_with_profile;
 use compile_stats::compile_file_stats_with_cache;
-use output::{CompiledBuildOutput, plan_inputs, preflight_outputs, write_outputs};
+use output::{CompiledBuildOutput, WrittenFormat, plan_inputs, preflight_outputs, write_outputs};
 use settings::{CompileFileSettings, load_build_config};
 
 /// Main entry point for the build command.
@@ -198,19 +198,16 @@ pub(crate) fn run(args: BuildArgs) {
     let compile_elapsed = compile_start.elapsed();
 
     let io_start = Instant::now();
-    match args.format {
-        OutputFormat::Stats => {}
-        OutputFormat::Js | OutputFormat::Json => {
-            if let Err(error) = write_outputs(
-                results.into_iter().flatten(),
-                &args.output,
-                args.format,
-                args.script_ext,
-            ) {
-                eprintln!("\x1b[31mError:\x1b[0m {error}");
-                std::process::exit(1);
-            }
-        }
+    if let Some(format) = WrittenFormat::of(args.format)
+        && let Err(error) = write_outputs(
+            results.into_iter().flatten(),
+            &args.output,
+            format,
+            args.script_ext,
+        )
+    {
+        eprintln!("\x1b[31mError:\x1b[0m {error}");
+        std::process::exit(1);
     }
     let io_elapsed = io_start.elapsed();
 

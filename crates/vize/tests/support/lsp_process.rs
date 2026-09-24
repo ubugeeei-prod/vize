@@ -1,6 +1,7 @@
+#![cfg(test)]
 // Process pipes require std's growable UTF-8 buffer and the reader threads
 // require shared ownership; both are intentional at this test boundary.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::{
     io::{BufRead, Read, Write},

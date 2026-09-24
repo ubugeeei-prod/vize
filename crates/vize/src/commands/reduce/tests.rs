@@ -1,6 +1,7 @@
 //! Unit laws for the reducer's two halves: the deletion vocabulary's exact
 //! ranges and tree shape, and the driver's 1-minimality claim, checked
 //! independently of the driver's own bookkeeping.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use std::ops::Range;
 

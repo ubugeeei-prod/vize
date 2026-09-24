@@ -70,8 +70,10 @@ mod tests {
 
     #[test]
     fn collects_virtual_module_aliases_from_tsconfig_extends_chain() {
-        let root =
-            std::env::temp_dir().join(format!("vize-nuxt-tsconfig-aliases-{}", std::process::id()));
+        let root = std::env::temp_dir().join(vize_s0::cstr!(
+            "vize-nuxt-tsconfig-aliases-{}",
+            std::process::id()
+        ));
         let _ = std::fs::remove_dir_all(&root);
         std::fs::create_dir_all(&root).unwrap();
 

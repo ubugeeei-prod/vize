@@ -54,7 +54,7 @@ enum BuildInput<'a> {
     Glob(BuildGlob),
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(super) fn collect_files_or_exit(patterns: &[std::string::String]) -> CollectedFiles {
     collect_files(patterns).unwrap_or_else(|error| {
         eprintln!("{error}");
@@ -63,7 +63,7 @@ pub(super) fn collect_files_or_exit(patterns: &[std::string::String]) -> Collect
 }
 
 /// Collect `.vue` files from literal files, directories, and glob patterns.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(super) fn collect_files<'a>(
     patterns: &'a [std::string::String],
 ) -> Result<CollectedFiles, InputError<'a>> {

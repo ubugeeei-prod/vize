@@ -120,9 +120,9 @@ pub(crate) fn delete(source: &str, ranges: &[Range<usize>]) -> String {
             continue;
         }
         let start = range.start.max(cursor);
-        out.push_str(&source[cursor..start]);
+        out.push_str(source.get(cursor..start).unwrap_or_default());
         cursor = range.end;
     }
-    out.push_str(&source[cursor..]);
+    out.push_str(source.get(cursor..).unwrap_or_default());
     out
 }

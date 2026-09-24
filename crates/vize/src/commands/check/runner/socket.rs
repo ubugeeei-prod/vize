@@ -1,5 +1,3 @@
-#![allow(clippy::disallowed_macros)]
-
 use std::{
     fs,
     io::{BufRead, BufReader, Write},
@@ -27,7 +25,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     args.profile_export.begin(args.profile);
 
     let collect_start = Instant::now();
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     let default_patterns = vec![std::string::String::from(".")];
     let files = if args.patterns.is_empty() {
         collect_vue_files(&default_patterns)
@@ -67,12 +65,11 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     let mut total_errors = 0usize;
     let mut total_warnings = 0usize;
     let mut shown_shared_helpers = false;
-    #[allow(clippy::disallowed_types, clippy::disallowed_methods)]
+    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     let mut results: Vec<(std::string::String, ServerCheckResult)> = Vec::new();
 
     let request_start = Instant::now();
     for path in &files {
-        #[allow(clippy::disallowed_types)]
         let source = match profile!("cli.check.socket.file.read", fs::read_to_string(path)) {
             Ok(source) => {
                 global_profiler().record_fs_read_to_string(source.len());
@@ -85,7 +82,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
             }
         };
 
-        #[allow(clippy::disallowed_methods)]
+        #[expect(clippy::disallowed_methods, reason = "dependency API uses std String")]
         let filename = path.to_string_lossy().to_string();
 
         let request = serde_json::json!({
@@ -123,7 +120,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
         global_profiler().record_counter("syscall.socket.flush.calls", 1);
 
         let mut reader = BufReader::new(&stream);
-        #[allow(clippy::disallowed_types)]
+        #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
         let mut response_line = std::string::String::new();
         if reader.read_line(&mut response_line).is_err() {
             global_profiler().record_counter("io.socket.read.calls", 1);
@@ -335,7 +332,7 @@ pub(crate) fn run_with_socket(args: &CheckArgs, socket_path: &str) {
     println!("  {}", style.green("No type errors found!"));
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn render_socket_diagnostics(result: &ServerCheckResult) -> Vec<std::string::String> {
     let mut diagnostics = result
         .diagnostics

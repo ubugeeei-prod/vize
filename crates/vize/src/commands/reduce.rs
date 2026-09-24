@@ -34,7 +34,7 @@ use super::davinci_ice::{self, ARTIFACT_STAGE_SOURCE, IceFailure};
 use driver::{ReduceError, reduce};
 use oracle::Check;
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 #[derive(Args, Default)]
 pub struct ReduceArgs {
     /// A `.vue` file or a `repro.folio` written by a failed build

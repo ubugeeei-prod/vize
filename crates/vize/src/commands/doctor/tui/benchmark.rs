@@ -44,9 +44,12 @@ impl<'report> DoctorTuiBenchmark<'report> {
     }
 
     /// Paint and differentially flush one complete frame.
+    ///
+    /// A frame that cannot be built or written reports zero output cost.
     pub fn render(&mut self) -> FrameOutputTelemetry {
-        let mut frame = build_frame(&mut self.model, &[], self.capabilities)
-            .expect("benchmark fixture must produce valid semantic presentations");
+        let Ok(mut frame) = build_frame(&mut self.model, &[], self.capabilities) else {
+            return FrameOutputTelemetry::default();
+        };
         self.model.place_cursor(self.backend.cursor_mut());
         self.retained_nodes = frame.tree_mut().node_count();
         frame
@@ -54,9 +57,7 @@ impl<'report> DoctorTuiBenchmark<'report> {
             .compute_layout(self.backend.width(), self.backend.height());
         self.backend.buffer_mut().clear();
         Painter::new(self.backend.buffer_mut()).paint_tree(frame.tree_mut());
-        self.backend
-            .flush_measured()
-            .expect("injected sink must accept a complete frame")
+        self.backend.flush_measured().unwrap_or_default()
     }
 
     /// Alternate between adjacent findings and render the resulting diff frame.

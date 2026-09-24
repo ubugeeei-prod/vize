@@ -5,8 +5,6 @@
 //! `declare module "vue"` augmentations into the `VirtualTsOptions` the batch
 //! type checker consumes.
 
-#![allow(clippy::disallowed_macros)]
-
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -272,7 +270,7 @@ fn declared_stub_name(stub: &str) -> Option<&str> {
         let end = rest
             .find(['<', '(', ':', '=', ';', ' '])
             .unwrap_or(rest.len());
-        let name = rest[..end].trim();
+        let name = rest.get(..end).unwrap_or_default().trim();
         if !name.is_empty() {
             return Some(name);
         }

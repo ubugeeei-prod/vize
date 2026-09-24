@@ -2,8 +2,6 @@
 //! The direct runner materializes one Corsa program per owning tsconfig so
 //! project references retain their own compiler options.
 
-#![allow(clippy::disallowed_macros)]
-
 use std::{
     path::Path,
     time::{Duration, Instant},
@@ -73,7 +71,7 @@ use resolve::{find_nearest_tsconfig_dir, resolve_declaration_dir};
 pub(crate) use socket::run_with_socket;
 use text_style::TextStyle;
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn collect_roots(
     args: &CheckArgs,
     invocation_project_root: &Path,
@@ -130,7 +128,7 @@ fn collect_roots(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn prepare_and_execute(
     args: &CheckArgs,
     mut candidate: ProgramCandidate,

@@ -1,10 +1,7 @@
 //! TSX-generating Vue package sources must not be written into `.ts` probes (#4002).
-
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
+#![cfg(test)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 #[path = "support/corsa_path.rs"]
 mod corsa_path;

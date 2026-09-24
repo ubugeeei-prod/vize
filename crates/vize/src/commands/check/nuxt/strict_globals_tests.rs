@@ -1,5 +1,6 @@
 //! When Nuxt's generated declaration graph becomes the authority for
 //! `$`-prefixed template globals, and when the permissive stand-ins stay.
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};

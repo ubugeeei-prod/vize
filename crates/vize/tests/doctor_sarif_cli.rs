@@ -1,3 +1,5 @@
+#![cfg(test)]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::{fs, path::Path, process::Command};
 
 #[test]

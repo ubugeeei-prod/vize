@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
     collect_plugin_injection_stubs, extract_plugin_provide_keys_from_source,
     render_module_augmentation_stub, render_nuxt_composition_api_augmentation_stub,

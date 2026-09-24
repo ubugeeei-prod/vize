@@ -71,7 +71,9 @@ pub(crate) fn resolve_tsconfig_program_inputs(
                 .position(|project| project == &effective)
                 .unwrap_or(0)
         };
-        groups[owner].files.push(file);
+        if let Some(group) = groups.get_mut(owner) {
+            group.files.push(file);
+        }
     }
 
     groups.retain(|group| !group.files.is_empty());

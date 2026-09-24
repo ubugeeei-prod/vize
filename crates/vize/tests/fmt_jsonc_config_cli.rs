@@ -1,5 +1,7 @@
 //! `vize fmt` routes comment-bearing config JSON (tsconfig, .vscode, …) through
 //! the JSONC formatter while keeping plain `.json` strict.
+#![cfg(test)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::{fs, path::Path, process::Command};
 

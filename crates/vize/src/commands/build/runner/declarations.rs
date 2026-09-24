@@ -23,7 +23,7 @@ pub(super) fn emit(args: &BuildArgs, inputs: &[PlannedInput]) {
     crate::commands::check::runner::run_direct(&check_args);
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn declaration_check_args(args: &BuildArgs, patterns: Vec<std::string::String>) -> CheckArgs {
     CheckArgs {
         patterns,

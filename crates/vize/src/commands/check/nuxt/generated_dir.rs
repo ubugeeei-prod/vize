@@ -31,7 +31,7 @@ impl NuxtGeneratedDir {
 
     pub(super) fn imports_path(&self) -> PathBuf {
         for suffix in DECLARATION_SUFFIXES {
-            let path = self.path.join(format!("imports{suffix}"));
+            let path = self.path.join(vize_s0::cstr!("imports{suffix}"));
             if path.is_file() {
                 return path;
             }

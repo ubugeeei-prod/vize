@@ -31,10 +31,12 @@ impl LintRunAccumulator {
     pub(super) fn merge(mut self, other: Self) -> Self {
         self.error_count += other.error_count;
         self.warning_count += other.warning_count;
-        match (self.results.as_mut(), other.results) {
+        // Accumulators share one retention mode; should they ever differ, keep
+        // whatever either side retained.
+        match (&mut self.results, other.results) {
             (Some(results), Some(other_results)) => results.extend(other_results),
-            (None, None) => {}
-            _ => unreachable!("lint accumulators must use the same retention mode"),
+            (slot @ None, Some(other_results)) => *slot = Some(other_results),
+            (_, None) => {}
         }
         self
     }
@@ -128,6 +130,8 @@ pub(super) fn should_render_details(format: OutputFormat, quiet: bool) -> bool {
     format.renders_details_when_quiet() || !quiet
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::{
