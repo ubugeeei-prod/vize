@@ -354,11 +354,16 @@ const dialog = dialogContext.provide({
   titleId,
   descriptionId,
   open: isOpen,
+  // Drawer motion is driven by its own drag/snap state and consumer CSS, so it
+  // opts out of Dialog's optional-stylesheet exit animation: content unmounts
+  // as soon as the drawer closes.
+  exiting: shallowRef(false),
   modal: modalState,
   state,
   triggerElement: shallowRef<HTMLButtonElement | null>(null),
   overlayElement: shallowRef<HTMLElement | null>(null),
   contentElement: shallowRef<HTMLDivElement | null>(null),
+  completeExit: () => {},
   setOpen,
   openDialog: (nativeEvent = null) => setOpen(true, nativeEvent),
   close: (nativeEvent = null) => setOpen(false, nativeEvent),
