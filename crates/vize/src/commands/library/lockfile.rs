@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use vize_s0::{String, cstr};
 
 use super::error::{LibError, LibResult};
-use super::fs_ops::write_file;
+use super::fs_ops::{ensure_project_path, write_file};
 
 /// Lockfile format version.
 pub const LOCKFILE_VERSION: u32 = 1;
@@ -63,7 +63,8 @@ pub struct LockedItem {
 
 impl Lockfile {
     /// Read the lockfile, or an empty one when it does not exist.
-    pub fn read(path: &Path) -> LibResult<Self> {
+    pub fn read(root: &Path, path: &Path) -> LibResult<Self> {
+        ensure_project_path(root, path)?;
         let bytes = match fs::read(path) {
             Ok(bytes) => bytes,
             Err(error) if error.kind() == ErrorKind::NotFound => return Ok(Self::default()),
@@ -95,7 +96,8 @@ impl Lockfile {
     }
 
     /// Atomically write the lockfile, or delete it when no items remain.
-    pub fn write(&self, path: &Path) -> LibResult<()> {
+    pub fn write(&self, root: &Path, path: &Path) -> LibResult<()> {
+        ensure_project_path(root, path)?;
         if self.items.is_empty() {
             return match fs::remove_file(path) {
                 Ok(()) => Ok(()),
