@@ -31,10 +31,10 @@
 //! the gap is *visible* rather than implied. `BABEL_COMPAT_INVENTORY.md` is the
 //! prose form of the same table; the two are kept in sync by
 //! `tests/tooling/babel-jsx-oracle.test.ts`.
-
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 // The oracle fixtures deserialize into plain `serde` structs, so std `String`
 // is intentional here rather than the workspace `vize_s0::String`.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "serde derives into std String")]
 
 mod babel_compat;
 

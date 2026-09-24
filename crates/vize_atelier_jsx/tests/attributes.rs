@@ -1,5 +1,6 @@
 //! Lowering of JSX attributes into static attributes and `v-bind` directives.
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{as_attribute, as_directive, lower_one, lower_one_tsx, root_element, simple_content};

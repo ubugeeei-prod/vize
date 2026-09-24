@@ -6,7 +6,13 @@
 //! `$event => ($event => ($event => (({a:1}) = $event)))` — a module that does
 //! not parse. `@vue/babel-plugin-jsx` rejects the same inputs, so diagnosing
 //! here is both the correct behavior and the compatible one.
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "fixtures use std strings"
+)]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use vize_atelier_jsx::{JsxLang, VdomCompileOptions, compile_to_vdom, lower_source};

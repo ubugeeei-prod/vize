@@ -14,7 +14,14 @@
 //! (`v-slots={slots}`, #3467) has its own suite in `v_slots_forwarding.rs`;
 //! what stays here is the object-literal path plus the shapes both files agree
 //! are not a slots object at all.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use vize_atelier_jsx::{JsxLang, VdomCompileOptions, compile_to_vdom, lower_source};

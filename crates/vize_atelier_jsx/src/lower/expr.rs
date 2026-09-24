@@ -12,12 +12,14 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// slice covered by `span`. Vize's later transform steps parse and prefix
     /// the identifiers; the lowering layer only needs the raw text + location.
     pub(crate) fn dyn_expr(&self, span: Span) -> ExpressionNode<'a> {
+        ExpressionNode::Simple(self.dyn_simple_expr(span))
+    }
+
+    /// The simple (non-static) expression node behind [`Self::dyn_expr`].
+    pub(crate) fn dyn_simple_expr(&self, span: Span) -> Box<'a, SimpleExpressionNode<'a>> {
         let loc = self.mapper().location(span);
         let content = self.mapper().slice(span);
-        ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode::new(content, false, loc),
-            &self.bump(),
-        ))
+        Box::new_in(SimpleExpressionNode::new(content, false, loc), &self.bump())
     }
 
     /// A static simple expression with explicit `content` at `span` (used for

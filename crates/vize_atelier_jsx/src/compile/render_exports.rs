@@ -47,7 +47,12 @@ fn stateful_module_code(
     }
 
     let mut ordered: Vec<&JsxComponent> = components.iter().collect();
-    ordered.sort_by_key(|component| component.component_setup().unwrap().declaration_start);
+    // Every component carries a setup (checked above).
+    ordered.sort_by_key(|component| {
+        component
+            .component_setup()
+            .map(|setup| setup.declaration_start)
+    });
 
     let mut module = String::default();
     module.push_str(preamble);
@@ -71,11 +76,11 @@ fn stateful_module_code(
         }
         let render = local_render_code(component.code())?;
 
-        module.push_str(&source[cursor..declaration_start]);
+        module.push_str(source.get(cursor..declaration_start).unwrap_or_default());
         push_component_wrapper(&mut module, source, name, setup, render.as_str());
         cursor = declaration_end;
     }
-    module.push_str(&source[cursor..]);
+    module.push_str(source.get(cursor..).unwrap_or_default());
     Some(module)
 }
 
@@ -130,7 +135,9 @@ fn push_component_wrapper(
     module.push_str(setup_params(source, setup));
     module.push_str(") {\n");
 
-    let setup_source = &source[setup.setup_start as usize..setup.setup_end as usize];
+    let setup_source = source
+        .get(setup.setup_start as usize..setup.setup_end as usize)
+        .unwrap_or_default();
     push_indented_trimmed(module, setup_source, "    ");
     push_indented_trimmed(module, render, "    ");
 
@@ -240,11 +247,11 @@ pub(super) fn rename_render_export(code: &str, export_name: &str) -> String {
     for (needle, replacement_prefix) in replacements {
         if let Some(start) = code.find(needle) {
             let mut renamed = String::default();
-            renamed.push_str(&code[..start]);
+            renamed.push_str(code.get(..start).unwrap_or_default());
             renamed.push_str(replacement_prefix);
             renamed.push_str(export_name);
             renamed.push('(');
-            renamed.push_str(&code[start + needle.len()..]);
+            renamed.push_str(code.get(start + needle.len()..).unwrap_or_default());
             return renamed;
         }
     }

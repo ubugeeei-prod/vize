@@ -1,5 +1,6 @@
 //! Lowering of Vue directive (`v-x`) attribute syntax in JSX.
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{find_directive, lower_one, root_element, simple_content};

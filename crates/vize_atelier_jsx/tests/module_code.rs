@@ -3,6 +3,7 @@
 //! A module whose components are all block-body VDOM components is rebuilt as
 //! `_defineComponent({ name, setup(…) { … } })` around the authored source;
 //! everything else falls back to plain render exports.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
 use vize_s0::Allocator;

@@ -198,7 +198,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         }
 
         if let Some(idx) = modifiers_idx
-            && let Expression::ArrayExpression(modifiers) = elems[idx]
+            && let Some(Expression::ArrayExpression(modifiers)) = elems.get(idx)
         {
             for element in &modifiers.elements {
                 let Some(Expression::StringLiteral(s)) = element.as_expression() else {

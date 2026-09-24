@@ -12,6 +12,7 @@
 //! `@vue/babel-plugin-jsx`-shaped output; callers can opt in.
 
 #[cfg(all(test, feature = "davinci-differential"))]
+#[expect(clippy::expect_used, reason = "tests assert by panicking")]
 mod s2_differential;
 mod s2_emit;
 
@@ -146,7 +147,7 @@ pub fn compile_to_vdom(
 /// Compile a single already-lowered root to a VDOM [`VdomComponent`], appending
 /// any transform diagnostics. Shared by [`compile_to_vdom`] and the mode-aware
 /// dispatcher in [`crate::compile`].
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(crate) fn compile_root_to_vdom(
     allocator: &Allocator,
     lowered: LoweredRoot,

@@ -1,5 +1,7 @@
 //! Edge-case coverage for JSX/TSX lowering without partial string matching.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{as_attribute, as_directive, as_element, lower_one, lower_one_tsx, simple_content};

@@ -25,15 +25,14 @@ pub(crate) fn element_tag(name: &JSXElementName<'_>) -> String {
             tag.push_str(named.name.name.as_str());
             tag
         }
-        // Panic path by lowering invariant: `lower_element_node` asks
-        // `expression_tag_span` first and routes these into a dynamic
-        // component's `:is` binding, because they name a *value*, not a
-        // component name. Reaching this arm would mean that guard was bypassed,
-        // and the dotted path would be emitted as a component name — the
-        // `resolveComponent("a.b.c")` lookup of a component nobody registers
-        // that #3421 removed.
+        // `lower_element_node` asks `expression_tag_span` first and routes
+        // these into a dynamic component's `:is` binding, because they name a
+        // *value*, not a component name. The dotted path must never become a
+        // component name — the `resolveComponent("a.b.c")` lookup of a
+        // component nobody registers that #3421 removed — so the fallback is
+        // the dynamic component tag itself.
         JSXElementName::MemberExpression(_) | JSXElementName::ThisExpression(_) => {
-            unreachable!("member-expression tags lower to a dynamic component")
+            String::from("component")
         }
     }
 }

@@ -52,9 +52,9 @@ pub fn prepare_source_for_parse(source: &str, _lang: JsxLang) -> Cow<'_, str> {
 
     let mut output = None;
     let mut index = 0;
-    while index < bytes.len() {
-        match bytes[index] {
-            b'\'' | b'"' | b'`' => index = skip_quoted(bytes, index, bytes[index]),
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
+            b'\'' | b'"' | b'`' => index = skip_quoted(bytes, index, byte),
             b'/' if bytes.get(index + 1) == Some(&b'/') => {
                 index = skip_line_comment(bytes, index + 2);
             }
@@ -68,13 +68,11 @@ pub fn prepare_source_for_parse(source: &str, _lang: JsxLang) -> Cow<'_, str> {
         }
     }
 
-    match output {
-        Some(bytes) => Cow::Owned(
-            std::str::from_utf8(bytes.as_slice())
-                .expect("source stays utf-8")
-                .to_owned(),
-        ),
-        None => Cow::Borrowed(source),
+    // Only ASCII `-` bytes are rewritten, so the output stays UTF-8; were it
+    // not, the source is used unchanged.
+    match output.as_deref().map(std::str::from_utf8) {
+        Some(Ok(sanitized)) => Cow::Owned(sanitized.to_owned()),
+        _ => Cow::Borrowed(source),
     }
 }
 
@@ -145,8 +143,7 @@ fn sanitize_jsx_opening_tag(
 ) -> usize {
     let mut index = skip_jsx_tag_name(bytes, name_start);
     let mut braces = 0usize;
-    while index < bytes.len() {
-        let byte = bytes[index];
+    while let Some(&byte) = bytes.get(index) {
         if braces > 0 {
             index = skip_js_expression_byte(bytes, index, &mut braces);
             continue;
@@ -168,7 +165,7 @@ fn sanitize_jsx_opening_tag(
 }
 
 fn skip_js_expression_byte(bytes: &[u8], index: usize, braces: &mut usize) -> usize {
-    match bytes[index] {
+    match bytes.get(index).copied().unwrap_or_default() {
         b'{' => {
             *braces += 1;
             index + 1
@@ -177,7 +174,7 @@ fn skip_js_expression_byte(bytes: &[u8], index: usize, braces: &mut usize) -> us
             *braces = braces.saturating_sub(1);
             index + 1
         }
-        b'\'' | b'"' => skip_quoted(bytes, index, bytes[index]),
+        quote @ (b'\'' | b'"') => skip_quoted(bytes, index, quote),
         b'`' => skip_quoted(bytes, index, b'`'),
         b'/' if bytes.get(index + 1) == Some(&b'/') => skip_line_comment(bytes, index + 2),
         b'/' if bytes.get(index + 1) == Some(&b'*') => skip_block_comment(bytes, index + 2),
@@ -198,8 +195,10 @@ fn sanitize_possible_namespaced_attr(
     let local_start = namespace_end + 1;
     let local_end = skip_jsx_attr_name_part(bytes, local_start);
     for index in local_start..local_end {
-        if bytes[index] == b'-' {
-            output.get_or_insert_with(|| bytes.to_vec()).as_mut_slice()[index] = b'_';
+        if bytes.get(index) == Some(&b'-')
+            && let Some(byte) = output.get_or_insert_with(|| bytes.to_vec()).get_mut(index)
+        {
+            *byte = b'_';
         }
     }
     local_end
@@ -235,8 +234,8 @@ fn is_jsx_attr_name_part(byte: u8) -> bool {
 
 fn skip_quoted(bytes: &[u8], start: usize, quote: u8) -> usize {
     let mut index = start + 1;
-    while index < bytes.len() {
-        match bytes[index] {
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
             b'\\' => index += 2,
             byte if byte == quote => return index + 1,
             _ => index += 1,
@@ -252,14 +251,11 @@ fn skip_line_comment(bytes: &[u8], mut index: usize) -> usize {
     index
 }
 
-fn skip_block_comment(bytes: &[u8], mut index: usize) -> usize {
-    while index + 1 < bytes.len() {
-        if bytes[index] == b'*' && bytes[index + 1] == b'/' {
-            return index + 2;
-        }
-        index += 1;
-    }
-    bytes.len()
+fn skip_block_comment(bytes: &[u8], index: usize) -> usize {
+    bytes
+        .get(index..)
+        .and_then(|rest| rest.windows(2).position(|pair| pair == b"*/"))
+        .map_or(bytes.len(), |offset| index + offset + 2)
 }
 
 #[cfg(test)]

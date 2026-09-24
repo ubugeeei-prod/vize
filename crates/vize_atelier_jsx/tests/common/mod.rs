@@ -2,7 +2,13 @@
 //!
 //! Each integration test binary pulls in this module but uses only a subset of
 //! the helpers, so unused-helper warnings are expected and silenced.
-#![allow(dead_code)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::unwrap_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "tests assert by panicking; fixtures use std strings"
+)]
 
 use std::fmt::Write as _;
 use vize_atelier_jsx::{
@@ -88,7 +94,7 @@ pub fn snapshot_text(source: &str) -> std::string::String {
         if index > 0 {
             output.push('\n');
         }
-        output.push_str(line.trim_end_matches(|ch| ch == ' ' || ch == '\t'));
+        output.push_str(line.trim_end_matches([' ', '\t']));
     }
     output
 }

@@ -77,7 +77,7 @@ fn compile_case(source: &str, route: EmitRoute, projection: &str) -> Output {
     match route {
         EmitRoute::ForceS2 => {
             let s2 = root.s2.as_ref().expect(projection);
-            assert_eq!(super::root_is_supported(s2), true);
+            assert!(super::root_is_supported(s2));
             root.root.children.clear();
         }
         EmitRoute::ForceRelief => root.s2 = Err(S2Refusal::UnsupportedChild),

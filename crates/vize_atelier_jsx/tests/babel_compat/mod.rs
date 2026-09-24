@@ -1,7 +1,12 @@
 //! Fixture loading and Vize-side compilation for the `@vue/babel-plugin-jsx`
 //! differential oracle (see `../babel_compat_oracle.rs`).
-
-#![allow(dead_code)]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking; insta and fixtures use format!"
+)]
+#![expect(dead_code, reason = "shared oracle helpers; not every item is used")]
 
 mod verdicts;
 

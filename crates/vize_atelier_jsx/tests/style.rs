@@ -1,4 +1,11 @@
 //! `<style scoped>` JSX/TSX blocks (#1495).
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::string_slice,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking; insta and fixtures use format!; fixtures use std strings"
+)]
 
 use std::fmt::Write as _;
 use vize_atelier_jsx::{

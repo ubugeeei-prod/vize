@@ -260,7 +260,8 @@ fn lower_bind_or_on<'a>(
             },
             &allocator,
         ))),
-        _ => unreachable!("directive name was admitted above"),
+        // Only `bind`/`on` reach this function.
+        _ => Err(S2Refusal::Directive),
     }
 }
 

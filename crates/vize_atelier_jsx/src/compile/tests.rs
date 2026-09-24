@@ -2,6 +2,7 @@
 //!
 //! Split out of that module so it stays inside the per-file source-length
 //! budget.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use super::*;
 

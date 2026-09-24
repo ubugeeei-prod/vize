@@ -13,6 +13,12 @@
 //! babel would forward as a *container* (arrays, interpolated template literals,
 //! raw JSX, functions, sequences) stays diagnosed rather than emitted as a
 //! malformed module.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx};
 use vize_s0::Allocator;

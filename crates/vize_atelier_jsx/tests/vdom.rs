@@ -3,7 +3,9 @@
 //! These pin the generated render modules as snapshots. Exact snapshots are
 //! intentionally used instead of substring assertions so helper imports, patch
 //! flags, prop shapes, and closure semantics all move together in review.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{snapshot_lang_cases, vdom_code};

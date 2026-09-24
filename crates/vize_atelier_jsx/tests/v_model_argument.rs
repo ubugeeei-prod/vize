@@ -5,6 +5,12 @@
 //! `@vue/babel-plugin-jsx`. Everywhere else — native mode, Vapor, SSR, and any
 //! plain element — lowering rejects the input instead of silently binding
 //! `modelValue` and changing the component contract.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    reason = "tests assert by panicking; insta and fixtures use format!; fixtures use std strings"
+)]
 
 use vize_atelier_jsx::{
     JsxCompatMode, JsxCompileConfig, JsxLang, VdomCompileOptions, compile_jsx, compile_to_vdom,

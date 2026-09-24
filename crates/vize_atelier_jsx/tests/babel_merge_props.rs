@@ -1,4 +1,10 @@
 //! Babel JSX `mergeProps` option compatibility.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use oxc_allocator::Allocator;
 use vize_atelier_jsx::{

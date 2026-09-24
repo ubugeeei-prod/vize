@@ -5,7 +5,9 @@
 //! lowered to a `v-on` directive so the core codegen emits the suffixed
 //! listener key, while plain `onClick` (no recognized suffix) stays a `v-bind`
 //! exactly as before.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{as_directive, lower_one, root_element, simple_content, vdom_code};

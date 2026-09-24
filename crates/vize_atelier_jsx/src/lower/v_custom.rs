@@ -48,19 +48,15 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         }
 
         let value_expr = *elements.first()?;
-        let (arg, modifiers) = match elements.len() {
-            1 => (None, None),
-            2 => match elements[1] {
-                Expression::StringLiteral(argument) => (Some(argument), None),
-                Expression::ArrayExpression(modifiers) => (None, Some(modifiers)),
-                _ => return None,
-            },
-            3 => match (elements[1], elements[2]) {
-                (Expression::StringLiteral(argument), Expression::ArrayExpression(modifiers)) => {
-                    (Some(argument), Some(modifiers))
-                }
-                _ => return None,
-            },
+        let (arg, modifiers) = match elements.as_slice() {
+            [_] => (None, None),
+            [_, Expression::StringLiteral(argument)] => (Some(argument), None),
+            [_, Expression::ArrayExpression(modifiers)] => (None, Some(modifiers)),
+            [
+                _,
+                Expression::StringLiteral(argument),
+                Expression::ArrayExpression(modifiers),
+            ] => (Some(argument), Some(modifiers)),
             _ => return None,
         };
 

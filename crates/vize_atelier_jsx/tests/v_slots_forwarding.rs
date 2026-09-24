@@ -29,7 +29,14 @@
 //! unoptimized vnodes get that update for free (`shouldUpdateComponent` forces
 //! it for any children); Vize's are always optimized, so the vnode carries
 //! `1024 /* DYNAMIC_SLOTS */` to force it.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use vize_atelier_jsx::{

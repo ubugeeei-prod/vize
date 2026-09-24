@@ -49,7 +49,7 @@ fn compile_case(source: &str, route: EmitRoute) -> Output {
                 .s2
                 .as_ref()
                 .expect("component event option modifiers project to S2");
-            assert_eq!(super::root_is_supported(s2), true);
+            assert!(super::root_is_supported(s2));
             root.root.children.clear();
         }
         EmitRoute::ForceRelief => root.s2 = Err(S2Refusal::UnsupportedChild),

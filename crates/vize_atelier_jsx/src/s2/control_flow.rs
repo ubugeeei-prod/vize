@@ -86,7 +86,11 @@ fn empty_expression_at<'a>(allocator: &'a Allocator, source: &'a str, offset: u3
         .ok()
         .filter(|start| *start <= source.len())
         .unwrap_or(source.len());
-    ExprRef::parse_js_in(allocator, &source[start..start], Span::new(offset, offset))
+    ExprRef::parse_js_in(
+        allocator,
+        source.get(start..start).unwrap_or_default(),
+        Span::new(offset, offset),
+    )
 }
 
 fn attach_for_scope(cx: &mut ProjectCx, node: Option<NodeId>, binding: &ForBinding<'_>) {

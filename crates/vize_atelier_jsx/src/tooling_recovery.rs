@@ -58,10 +58,12 @@ fn is_missing_member(source: &str, offset: usize) -> bool {
     if !source.is_char_boundary(offset) {
         return false;
     }
-    let prefix = source[..offset].trim_end();
+    let prefix = source.get(..offset).unwrap_or_default().trim_end();
     prefix.ends_with('.')
         && !prefix.ends_with("...")
-        && source[offset..]
+        && source
+            .get(offset..)
+            .unwrap_or_default()
             .chars()
             .next()
             .is_none_or(|ch| matches!(ch, '}' | ')' | ']' | ';' | ','))

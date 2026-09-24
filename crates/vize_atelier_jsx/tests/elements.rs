@@ -1,5 +1,7 @@
 //! Lowering of JSX elements: tags, kinds, nesting, self-closing.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{as_directive, as_element, lower_one, root_element, simple_content, vdom_code};

@@ -1,5 +1,11 @@
 //! JSX/TSX -> Vue SSR compilation (#1580).
+#![expect(
+    clippy::disallowed_macros,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking; insta and fixtures use format!"
+)]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{snapshot_cases, snapshot_lang_cases};

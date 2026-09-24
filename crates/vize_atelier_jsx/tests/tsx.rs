@@ -1,5 +1,6 @@
 //! Lowering of TSX-specific syntax (type annotations, generics, casts).
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{lower_one_tsx, root_element, simple_content};

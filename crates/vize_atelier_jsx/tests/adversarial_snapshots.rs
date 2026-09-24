@@ -4,6 +4,9 @@
 //! isolation-oriented tests: destructured props, setup state, nested list aliases,
 //! slots, directives, SVG attributes, scoped styles, mixed output modes, and
 //! parse/lowering diagnostics.
+#![expect(clippy::disallowed_macros, reason = "insta uses format!")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
 use std::fmt::Write as _;
 use std::ops::Range;
@@ -640,13 +643,10 @@ fn diagnostics_summary(source: &str, diagnostics: &[JsxDiagnostic]) -> Vec<Diagn
 }
 
 fn source_slice(source: &str, range: Range<u32>) -> &str {
-    let start = (range.start as usize).min(source.len());
-    let end = (range.end as usize).min(source.len());
-    if start <= end {
-        &source[start..end]
-    } else {
-        ""
-    }
+    let clamp = |offset: u32| (offset as usize).min(source.len());
+    source
+        .get(clamp(range.start)..clamp(range.end))
+        .unwrap_or_default()
 }
 
 impl<'a> From<&'a vize_atelier_jsx::ScopedStyle> for ScopedStyleSummary<'a> {
@@ -658,21 +658,21 @@ impl<'a> From<&'a vize_atelier_jsx::ScopedStyle> for ScopedStyleSummary<'a> {
     }
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct NamedDiagnostics<'a> {
     name: &'a str,
     diagnostics: Vec<DiagnosticSummary>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct LowerSummary<'a> {
     diagnostics: Vec<DiagnosticSummary>,
     roots: Vec<RootSummary<'a>>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct RootSummary<'a> {
     component_name: Option<&'a str>,
@@ -682,7 +682,7 @@ struct RootSummary<'a> {
     root: Vec<ChildSummary>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct ExprSpanSummary<'a> {
     content: &'a str,
@@ -690,7 +690,7 @@ struct ExprSpanSummary<'a> {
     range: Range<u32>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 enum ChildSummary {
     Element {
@@ -734,14 +734,14 @@ enum ChildSummary {
     },
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct IfBranchSummary {
     condition: Option<String>,
     children: Vec<ChildSummary>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 enum PropSummary {
     Attribute {
@@ -758,7 +758,7 @@ enum PropSummary {
     },
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct DiagnosticSummary {
     severity: String,
@@ -767,28 +767,28 @@ struct DiagnosticSummary {
     range: Range<u32>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct VdomOutputSummary<'a> {
     diagnostics: Vec<DiagnosticSummary>,
     components: Vec<RenderComponentSummary<'a>>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct VaporOutputSummary<'a> {
     diagnostics: Vec<DiagnosticSummary>,
     components: Vec<RenderComponentSummary<'a>>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct CompileOutputSummary<'a> {
     diagnostics: Vec<DiagnosticSummary>,
     components: Vec<RenderComponentSummary<'a>>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct RenderComponentSummary<'a> {
     name: Option<&'a str>,
@@ -799,7 +799,7 @@ struct RenderComponentSummary<'a> {
     scoped_style: Option<ScopedStyleSummary<'a>>,
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "fields are read through Debug snapshots")]
 #[derive(Debug)]
 struct ScopedStyleSummary<'a> {
     scope_id: &'a str,

@@ -1,5 +1,6 @@
 //! Lowering of components, multiple roots, and slot-shaped children.
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{

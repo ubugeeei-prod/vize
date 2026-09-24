@@ -1,5 +1,7 @@
 //! Croquis semantic analysis exposed alongside the lowered roots.
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use vize_atelier_jsx::{JsxLang, analyze_jsx_program, lower_source, parse_module};

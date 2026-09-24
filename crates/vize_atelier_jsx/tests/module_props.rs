@@ -5,6 +5,11 @@
 //! is derived from the destructuring pattern alone, and is emitted only when
 //! every name is statically known — a partial list would look authoritative
 //! while silently routing the rest to `attrs`.
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "fixtures use std strings"
+)]
 
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
 use vize_s0::Allocator;

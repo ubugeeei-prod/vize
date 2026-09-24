@@ -1,5 +1,6 @@
 //! Lowering of JSX children: text cleaning, interpolation, mixed content.
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{as_text, lower_one, root_element, simple_content};

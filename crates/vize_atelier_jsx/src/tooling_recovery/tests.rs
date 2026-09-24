@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use crate::{JsxLang, lower_source, lower_source_for_typecheck};
 use vize_s0::{Allocator, cstr};
 

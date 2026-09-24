@@ -1,5 +1,7 @@
 //! TSX-syntax + mode-directive parity suite (Part of #1491).
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{snapshot_cases, vapor_code, vdom_code};

@@ -6,6 +6,12 @@
 //!
 //! The "default output is unchanged" test is the important one — flipping the
 //! default would be a silent compatibility break for every existing Vize user.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use oxc_allocator::Allocator;
 use vize_atelier_jsx::{

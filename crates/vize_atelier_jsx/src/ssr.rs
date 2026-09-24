@@ -120,7 +120,10 @@ pub(crate) fn compile_lowered_root_to_ssr(
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum SsrLane {
     Plan,
-    #[cfg_attr(not(test), allow(dead_code))]
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "only tests pin the legacy walker")
+    )]
     Legacy,
 }
 

@@ -4,6 +4,12 @@
 //! results may already be a slots object, while every other value becomes the
 //! raw default-slot child. `enableObjectSlots: false` disables only the runtime
 //! slots-object check. Native, Vapor, and SSR output must remain untouched.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use vize_atelier_jsx::{
     BabelJsxOptions, JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx,

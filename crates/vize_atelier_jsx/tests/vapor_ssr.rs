@@ -1,5 +1,7 @@
 //! JSX/TSX -> Vue Vapor SSR render codegen (#1533).
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{snapshot_cases, snapshot_lang_cases, vapor_code};

@@ -11,7 +11,13 @@
 //! `directives/v_models_mods`, `errors/v_models_not_array` and
 //! `errors/v_models_entry_not_array`); this file asserts the full Vize output for
 //! each shape plus the diagnostics for everything Vize refuses to lower.
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "fixtures use std strings"
+)]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use vize_atelier_jsx::{JsxLang, VdomCompileOptions, compile_to_vdom, lower_source};

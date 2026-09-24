@@ -3,8 +3,7 @@
 use oxc_ast::ast::{JSXChild, JSXExpression, JSXExpressionContainer, JSXSpreadChild};
 use oxc_span::GetSpan;
 use vize_relief::{
-    CompoundExpressionChild, CompoundExpressionNode, ExpressionNode, InterpolationNode,
-    TemplateChildNode, TextNode,
+    CompoundExpressionChild, CompoundExpressionNode, InterpolationNode, TemplateChildNode, TextNode,
 };
 use vize_s0::{Box, Vec};
 
@@ -136,9 +135,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     /// which is not what a spread means; report before doing so.
     fn lower_spread_child(&mut self, spread: &JSXSpreadChild<'_>) -> TemplateChildNode<'a> {
         if self.uses_babel_vdom_compat() {
-            let ExpressionNode::Simple(expression) = self.dyn_expr(spread.expression.span()) else {
-                unreachable!("span-backed JSX expressions are always simple expressions")
-            };
+            let expression = self.dyn_simple_expr(spread.expression.span());
             let mut compound =
                 CompoundExpressionNode::new(self.bump(), self.mapper().location(spread.span));
             compound
@@ -181,9 +178,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         expression_span: oxc_span::Span,
         container_span: oxc_span::Span,
     ) -> TemplateChildNode<'a> {
-        let ExpressionNode::Simple(expression) = self.dyn_expr(expression_span) else {
-            unreachable!("span-backed JSX expressions are always simple expressions")
-        };
+        let expression = self.dyn_simple_expr(expression_span);
         let mut compound =
             CompoundExpressionNode::new(self.bump(), self.mapper().location(container_span));
         compound

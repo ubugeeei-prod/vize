@@ -53,3 +53,6 @@ legacy = ["vize_atelier_sfc/legacy", "vize_atelier_ssr/legacy"]
 [[bench]]
 name = "jsx_compile"
 harness = false
+
+[lints]
+workspace = true

@@ -1,5 +1,11 @@
 //! Component-boundary detection: output-mode directives and component names.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::string_slice,
+    reason = "tests assert by panicking; insta and fixtures use format!"
+)]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::lower_single;

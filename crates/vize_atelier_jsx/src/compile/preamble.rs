@@ -42,8 +42,10 @@ pub(super) fn merge_preambles<'a>(preambles: impl Iterator<Item = &'a str>) -> S
                         if specifier.is_empty() {
                             continue;
                         }
-                        if seen_specifiers.insert((source, specifier)) {
-                            import_specifiers[group].push(specifier);
+                        if seen_specifiers.insert((source, specifier))
+                            && let Some(group) = import_specifiers.get_mut(group)
+                        {
+                            group.push(specifier);
                         }
                     }
                 }
@@ -87,19 +89,19 @@ fn parse_named_import(line: &str) -> Option<(&str, &str)> {
     if close < open {
         return None;
     }
-    let specifiers = &rest[open + 1..close];
+    let specifiers = rest.get(open + 1..close).unwrap_or_default();
 
-    let after = &rest[close + 1..];
+    let after = rest.get(close + 1..).unwrap_or_default();
     let from = after.find("from")?;
-    let quoted = after[from + "from".len()..].trim();
+    let quoted = after.get(from + "from".len()..).unwrap_or_default().trim();
     let bytes = quoted.as_bytes();
     let quote = *bytes.first()?;
     if quote != b'"' && quote != b'\'' {
         return None;
     }
-    let inner = &quoted[1..];
+    let inner = quoted.get(1..).unwrap_or_default();
     let end = inner.find(quote as char)?;
-    Some((specifiers, &inner[..end]))
+    Some((specifiers, inner.get(..end).unwrap_or_default()))
 }
 
 #[cfg(test)]

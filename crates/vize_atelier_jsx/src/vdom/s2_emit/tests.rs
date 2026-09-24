@@ -44,7 +44,7 @@ fn tsx_admitted_roots_emit_from_s2() {
     let mut root = lowered.roots.pop().expect("one JSX root");
     let s2 = root.s2.as_ref().expect("TSX root projects to S2");
 
-    assert_eq!(super::root_is_supported(s2), true);
+    assert!(super::root_is_supported(s2));
 
     root.root.children.clear();
     let mut diagnostics = Vec::new();
@@ -77,7 +77,7 @@ fn component_plain_children_emit_from_s2_with_slot_facts() {
     let mut root = lowered.roots.pop().expect("one JSX root");
     let s2 = root.s2.as_ref().expect("component child projects to S2");
 
-    assert_eq!(super::root_is_supported(s2), true);
+    assert!(super::root_is_supported(s2));
 
     root.root.children.clear();
     let mut diagnostics = Vec::new();
@@ -118,7 +118,7 @@ fn component_paramless_static_slots_emit_from_s2() {
     let mut root = lowered.roots.pop().expect("one JSX root");
     let s2 = root.s2.as_ref().expect("paramless slots project to S2");
 
-    assert_eq!(super::root_is_supported(s2), true);
+    assert!(super::root_is_supported(s2));
 
     root.root.children.clear();
     let mut diagnostics = Vec::new();
@@ -159,7 +159,7 @@ fn component_scoped_slots_emit_from_s2() {
     let mut root = lowered.roots.pop().expect("one JSX root");
     let s2 = root.s2.as_ref().expect("scoped slots project to S2");
 
-    assert_eq!(super::root_is_supported(s2), true);
+    assert!(super::root_is_supported(s2));
 
     root.root.children.clear();
     let mut diagnostics = Vec::new();
@@ -188,7 +188,7 @@ fn leaf_root_component_with_static_props_emits_from_s2() {
     let mut root = lowered.roots.pop().expect("one JSX root");
     let s2 = root.s2.as_ref().expect("leaf component projects to S2");
 
-    assert_eq!(super::root_is_supported(s2), true);
+    assert!(super::root_is_supported(s2));
 
     root.root.children.clear();
     let mut diagnostics = Vec::new();
@@ -226,7 +226,7 @@ fn component_spread_props_emit_from_s2() {
     let mut root = lowered.roots.pop().expect("one JSX root");
     let s2 = root.s2.as_ref().expect("component spread projects to S2");
 
-    assert_eq!(super::root_is_supported(s2), true);
+    assert!(super::root_is_supported(s2));
 
     root.root.children.clear();
     let mut diagnostics = Vec::new();
@@ -265,7 +265,7 @@ fn dynamic_component_tags_emit_from_s2() {
     let mut root = lowered.roots.pop().expect("one JSX root");
     let s2 = root.s2.as_ref().expect("dynamic component projects to S2");
 
-    assert_eq!(super::root_is_supported(s2), true);
+    assert!(super::root_is_supported(s2));
 
     root.root.children.clear();
     let mut diagnostics = Vec::new();
@@ -302,7 +302,7 @@ fn element_v_show_emits_from_s2() {
     let mut root = lowered.roots.pop().expect("one JSX root");
     let s2 = root.s2.as_ref().expect("v-show projects to S2");
 
-    assert_eq!(super::root_is_supported(s2), true);
+    assert!(super::root_is_supported(s2));
 
     root.root.children.clear();
     let mut diagnostics = Vec::new();

@@ -31,7 +31,7 @@ impl<'s> SpanMapper<'s> {
     pub fn slice(&self, span: Span) -> &'s str {
         let start = (span.start as usize).min(self.source.len());
         let end = (span.end as usize).min(self.source.len()).max(start);
-        &self.source[start..end]
+        self.source.get(start..end).unwrap_or_default()
     }
 
     /// Convert an OXC [`Span`] to a full [`SourceLocation`].

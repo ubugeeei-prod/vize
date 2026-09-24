@@ -222,20 +222,20 @@ fn add_scope_id_to_template_line(line: &str, scope_id: &str) -> String {
     let Some(start) = line.find("\"<") else {
         return String::from(line);
     };
-    let Some(end_rel) = line[start..].find(">\"") else {
+    let Some(end_rel) = line.get(start..).unwrap_or_default().find(">\"") else {
         return String::from(line);
     };
     let end = start + end_rel;
 
-    let prefix = &line[..start + 2]; // up to and including the opening `<`
-    let content = &line[start + 2..end + 1]; // element content (no closing quote)
-    let suffix = &line[end + 1..]; // closing quote + remainder
+    let prefix = line.get(..start + 2).unwrap_or_default(); // up to and including the opening `<`
+    let content = line.get(start + 2..end + 1).unwrap_or_default(); // element content (no closing quote)
+    let suffix = line.get(end + 1..).unwrap_or_default(); // closing quote + remainder
 
     let Some(tag_end) = content.find(|c: char| c.is_whitespace() || c == '>') else {
         return String::from(line);
     };
-    let tag_name = &content[..tag_end];
-    let rest = &content[tag_end..];
+    let tag_name = content.get(..tag_end).unwrap_or_default();
+    let rest = content.get(tag_end..).unwrap_or_default();
 
     let mut result = String::default();
     result.push_str(prefix);
@@ -254,16 +254,19 @@ fn add_scope_id_to_template_html(template: &str, scope_id: &str) -> String {
         return String::from(template);
     };
     let after_open = open + 1;
-    let Some(tag_end_rel) = template[after_open..].find(|c: char| c.is_whitespace() || c == '>')
+    let Some(tag_end_rel) = template
+        .get(after_open..)
+        .unwrap_or_default()
+        .find(|c: char| c.is_whitespace() || c == '>')
     else {
         return String::from(template);
     };
     let tag_end = after_open + tag_end_rel;
 
     let mut result = String::default();
-    result.push_str(&template[..tag_end]);
+    result.push_str(template.get(..tag_end).unwrap_or_default());
     result.push(' ');
     result.push_str(scope_id);
-    result.push_str(&template[tag_end..]);
+    result.push_str(template.get(tag_end..).unwrap_or_default());
     result
 }

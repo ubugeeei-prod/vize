@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use vize_croquis::Croquis;
 use vize_s0::Allocator;
 
@@ -14,7 +15,7 @@ fn scoped_style_scope_id_emits_from_s2_vdom() {
     let mut root = lowered.roots.pop().expect("one JSX root");
     let s2 = root.s2.as_ref().expect("scoped style root projects to S2");
 
-    assert_eq!(super::root_is_supported(s2), true);
+    assert!(super::root_is_supported(s2));
 
     root.root.children.clear();
     let mut diagnostics = Vec::new();

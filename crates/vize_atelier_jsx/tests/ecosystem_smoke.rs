@@ -17,11 +17,11 @@
 //! robustness/coverage signal over real-world JSX — not a byte-for-byte parity
 //! gate. A panic is always a Vize bug (the compiler must surface a diagnostic,
 //! never unwind), so the run fails if any input panics.
-
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 // Std-only manual test harness: the manifest deserializes into plain structs, so
 // std `String` (what `serde` derives into) is intentional here rather than the
 // workspace `vize_s0::String`.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "serde derives into std String")]
 
 use std::fs;
 use std::panic;

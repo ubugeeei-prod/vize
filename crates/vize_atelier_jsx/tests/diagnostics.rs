@@ -1,5 +1,7 @@
 //! Parse/lowering diagnostics and span mapping back to source.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use common::{lower_all, root_element};

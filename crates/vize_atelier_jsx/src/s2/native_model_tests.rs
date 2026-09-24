@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use vize_s0::Allocator;
 use vize_s2::op::{BindingOp, Op};
 

@@ -6,7 +6,9 @@
 //! children the SFC path produces, so the shared slot transform + codegen build
 //! a real `_withCtx` slots object — we are the parent *passing* slots, not the
 //! component rendering them, so the output uses `_withCtx` (not `_renderSlot`).
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
+#[expect(dead_code, reason = "shared test helpers; each binary uses a subset")]
 mod common;
 
 use vize_atelier_jsx::{JsxLang, lower_source};
