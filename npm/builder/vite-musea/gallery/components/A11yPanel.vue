@@ -10,6 +10,7 @@ import {
 } from "@mdi/js";
 import { useA11y, type A11yResult } from "../composables/useA11y";
 import { getPreviewUrl } from "../api";
+import { safeUrl } from "../utils/safeUrl";
 import MdiIcon from "./MdiIcon.vue";
 
 const props = defineProps<{
@@ -49,22 +50,6 @@ function runTest() {
 
 function toggleViolation(id: string) {
   expandedViolation.value = expandedViolation.value === id ? null : id;
-}
-
-function safeUrl(rawUrl: string, destination: "preview" | "help"): string | undefined {
-  if (!rawUrl) return undefined;
-  try {
-    const url = new URL(rawUrl, window.location.href);
-    if (destination === "preview" && url.origin === window.location.origin) {
-      return url.href;
-    }
-    if (destination === "help" && url.protocol === "https:") {
-      return url.href;
-    }
-  } catch {
-    // Ignore malformed URLs from a static gallery or an audit result.
-  }
-  return undefined;
 }
 
 function getImpactColor(impact: string): string {

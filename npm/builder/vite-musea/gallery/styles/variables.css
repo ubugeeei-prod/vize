@@ -23,6 +23,17 @@
   --musea-a11y-minor: #60a5fa;
   --musea-a11y-passed: #4ade80;
   --musea-a11y-unknown: #7b8494;
+  --musea-event-click: #60a5fa;
+  --musea-event-input: #4ade80;
+  --musea-event-change: #fbbf24;
+  --musea-event-focus: #a78bfa;
+  --musea-event-blur: #f472b6;
+  --musea-event-keydown: #f87171;
+  --musea-event-keyup: #fb923c;
+  --musea-event-submit: #22d3d8;
+  --musea-event-other: #9ca3af;
+  --musea-token-selection: #a34828;
+  --musea-token-error: #ef4444;
   --musea-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   --musea-overlay: rgba(18, 18, 18, 0.6);
   --musea-radius-sm: 4px;
@@ -33,6 +44,10 @@
   --musea-font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
   --musea-sidebar-width: 260px;
   --musea-header-height: 56px;
+  --musea-z-control: 10;
+  --musea-z-sticky: 20;
+  --musea-z-actions: 30;
+  --musea-z-header: 100;
   --musea-layer-modal: 1000;
 }
 

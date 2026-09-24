@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from "vue";
-import { useRouter } from "vue-router";
+import { RouterLink } from "vue-router";
 import {
   mdiPlay,
   mdiLoading,
@@ -15,10 +15,10 @@ import { useA11y, type A11yResult } from "../composables/useA11y";
 import { getPreviewUrl } from "../api";
 import MdiIcon from "../components/MdiIcon.vue";
 import { getVariantSectionId } from "../utils/variantSections";
+import { safeUrl } from "../utils/safeUrl";
 
 const POOL_SIZE = 4;
 
-const router = useRouter();
 const { arts, load } = useArts();
 const { init: initA11y, runA11yAsync, getResult, results: a11yResults } = useA11y();
 
@@ -148,7 +148,9 @@ async function runWorker(slotIndex: number, queueRef: { index: number }) {
 
     try {
       // Set iframe src and wait for load
-      poolSrcs.value[slotIndex] = getPreviewUrl(test.artPath, test.variantName);
+      const previewUrl = safeUrl(getPreviewUrl(test.artPath, test.variantName));
+      if (!previewUrl) throw new Error("Invalid preview URL");
+      poolSrcs.value[slotIndex] = previewUrl;
       await nextTick();
       await waitForIframeLoad(slotIndex);
 
@@ -215,15 +217,15 @@ const runAllTests = async () => {
 const getImpactColor = (impact: string): string => {
   switch (impact) {
     case "critical":
-      return "#f87171";
+      return "var(--musea-a11y-critical)";
     case "serious":
-      return "#fb923c";
+      return "var(--musea-a11y-serious)";
     case "moderate":
-      return "#fbbf24";
+      return "var(--musea-a11y-moderate)";
     case "minor":
-      return "#60a5fa";
+      return "var(--musea-a11y-minor)";
     default:
-      return "#7b8494";
+      return "var(--musea-a11y-unknown)";
   }
 };
 
@@ -243,22 +245,22 @@ const getStatusIconPath = (status: TestStatus["status"]) => {
 const getStatusColor = (status: TestStatus["status"]) => {
   switch (status) {
     case "passed":
-      return "#4ade80";
+      return "var(--musea-a11y-passed)";
     case "failed":
-      return "#f87171";
+      return "var(--musea-a11y-critical)";
     case "running":
-      return "#fbbf24";
+      return "var(--musea-a11y-moderate)";
     default:
-      return "#7b8494";
+      return "var(--musea-a11y-unknown)";
   }
 };
 
-const navigateToComponent = (artPath: string, variantName: string) => {
-  router.push({
+const componentRoute = (test: TestStatus) => {
+  return {
     name: "component",
-    params: { path: artPath },
-    hash: `#${getVariantSectionId(variantName)}`,
-  });
+    params: { path: test.artPath },
+    hash: `#${getVariantSectionId(test.variantName)}`,
+  };
 };
 
 onMounted(() => {
@@ -315,7 +317,7 @@ watch(
         <div class="stat-value">{{ summary.pending + summary.running }}</div>
         <div class="stat-label">Pending</div>
       </div>
-      <div class="stat violations" v-if="summary.violations > 0">
+      <div v-if="summary.violations > 0" class="stat violations">
         <div class="stat-value">{{ summary.violations }}</div>
         <div class="stat-label">Violations</div>
       </div>
@@ -347,16 +349,16 @@ watch(
     </div>
 
     <div class="test-list">
-      <div
-        v-for="(test, index) in testQueue"
+      <RouterLink
+        v-for="test in testQueue"
         :key="`${test.artPath}:${test.variantName}`"
+        :to="componentRoute(test)"
         class="test-item"
         :class="{
           running: test.status === 'running',
           passed: test.status === 'passed',
           failed: test.status === 'failed',
         }"
-        @click="navigateToComponent(test.artPath, test.variantName)"
       >
         <MdiIcon
           class="test-status"
@@ -388,7 +390,7 @@ watch(
           <span class="count passes">{{ test.result.passes }} passed</span>
         </div>
         <MdiIcon class="test-nav-icon" :path="mdiOpenInNew" :size="14" />
-      </div>
+      </RouterLink>
     </div>
 
     <!-- Iframe pool: POOL_SIZE reusable slots -->
@@ -397,7 +399,11 @@ watch(
         v-for="(src, i) in poolSrcs"
         :key="`pool-${i}`"
         :ref="(el) => setPoolIframeRef(i, el as HTMLIFrameElement)"
-        :src="src || undefined"
+        :src="safeUrl(src)"
+        :title="`Accessibility test worker ${i + 1}`"
+        sandbox="allow-scripts allow-same-origin"
+        aria-hidden="true"
+        tabindex="-1"
       />
     </div>
   </div>
@@ -439,6 +445,26 @@ watch(
   padding: 1rem 1.5rem;
   text-align: center;
   min-width: 100px;
+
+  &.total .stat-value {
+    color: var(--musea-text);
+  }
+
+  &.passed .stat-value {
+    color: var(--musea-a11y-passed);
+  }
+
+  &.failed .stat-value {
+    color: var(--musea-a11y-critical);
+  }
+
+  &.pending .stat-value {
+    color: var(--musea-a11y-unknown);
+  }
+
+  &.violations .stat-value {
+    color: var(--musea-a11y-serious);
+  }
 }
 
 .stat-value {
@@ -454,22 +480,6 @@ watch(
   letter-spacing: 0.05em;
 }
 
-.stat.total .stat-value {
-  color: var(--musea-text);
-}
-.stat.passed .stat-value {
-  color: #4ade80;
-}
-.stat.failed .stat-value {
-  color: #f87171;
-}
-.stat.pending .stat-value {
-  color: #7b8494;
-}
-.stat.violations .stat-value {
-  color: #fb923c;
-}
-
 .violation-breakdown {
   display: flex;
   gap: 0.5rem;
@@ -482,23 +492,26 @@ watch(
   border-radius: var(--musea-radius-sm);
   font-size: 0.75rem;
   font-weight: 600;
-}
 
-.violation-badge.critical {
-  background: rgba(248, 113, 113, 0.15);
-  color: #f87171;
-}
-.violation-badge.serious {
-  background: rgba(251, 146, 60, 0.15);
-  color: #fb923c;
-}
-.violation-badge.moderate {
-  background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
-}
-.violation-badge.minor {
-  background: rgba(96, 165, 250, 0.15);
-  color: #60a5fa;
+  &.critical {
+    background: color-mix(in srgb, var(--musea-a11y-critical) 15%, transparent);
+    color: var(--musea-a11y-critical);
+  }
+
+  &.serious {
+    background: color-mix(in srgb, var(--musea-a11y-serious) 15%, transparent);
+    color: var(--musea-a11y-serious);
+  }
+
+  &.moderate {
+    background: color-mix(in srgb, var(--musea-a11y-moderate) 15%, transparent);
+    color: var(--musea-a11y-moderate);
+  }
+
+  &.minor {
+    background: color-mix(in srgb, var(--musea-a11y-minor) 15%, transparent);
+    color: var(--musea-a11y-minor);
+  }
 }
 
 .summary-actions {
@@ -545,6 +558,25 @@ watch(
   border-radius: var(--musea-radius-sm);
   transition: all var(--musea-transition);
   cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover .test-nav-icon {
+    opacity: 1;
+  }
+
+  &.running {
+    border-color: var(--musea-a11y-moderate);
+    background: color-mix(in srgb, var(--musea-a11y-moderate) 5%, transparent);
+  }
+
+  &.passed {
+    border-color: color-mix(in srgb, var(--musea-a11y-passed) 30%, transparent);
+  }
+
+  &.failed {
+    border-color: color-mix(in srgb, var(--musea-a11y-critical) 30%, transparent);
+  }
 }
 
 .test-item:hover {
@@ -557,23 +589,6 @@ watch(
   opacity: 0;
   transition: opacity var(--musea-transition);
   flex-shrink: 0;
-}
-
-.test-item:hover .test-nav-icon {
-  opacity: 1;
-}
-
-.test-item.running {
-  border-color: #fbbf24;
-  background: rgba(251, 191, 36, 0.05);
-}
-
-.test-item.passed {
-  border-color: rgba(74, 222, 128, 0.3);
-}
-
-.test-item.failed {
-  border-color: rgba(248, 113, 113, 0.3);
 }
 
 .test-status {
@@ -621,14 +636,14 @@ watch(
 
 .count {
   color: var(--musea-text-muted);
-}
 
-.count.violations {
-  color: #f87171;
-}
+  &.violations {
+    color: var(--musea-a11y-critical);
+  }
 
-.count.passes {
-  color: #4ade80;
+  &.passes {
+    color: var(--musea-a11y-passed);
+  }
 }
 
 .hidden-iframes {
@@ -638,12 +653,12 @@ watch(
   opacity: 0;
   pointer-events: none;
   overflow: hidden;
-}
 
-.hidden-iframes iframe {
-  width: 1280px;
-  height: 720px;
-  border: none;
+  iframe {
+    width: 1280px;
+    height: 720px;
+    border: none;
+  }
 }
 
 @keyframes spin {
