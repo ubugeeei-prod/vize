@@ -70,6 +70,16 @@
       "import": "./dist/block-ui.mjs",
       "default": "./dist/block-ui.mjs"
     },
+    "./calendar": {
+      "types": "./dist/calendar.d.mts",
+      "import": "./dist/calendar.mjs",
+      "default": "./dist/calendar.mjs"
+    },
+    "./range-calendar": {
+      "types": "./dist/range-calendar.d.mts",
+      "import": "./dist/range-calendar.mjs",
+      "default": "./dist/range-calendar.mjs"
+    },
     "./callout": {
       "types": "./dist/callout.d.mts",
       "import": "./dist/callout.mjs",
@@ -89,6 +99,11 @@
       "types": "./dist/tabs.d.mts",
       "import": "./dist/tabs.mjs",
       "default": "./dist/tabs.mjs"
+    },
+    "./tree": {
+      "types": "./dist/tree.d.mts",
+      "import": "./dist/tree.mjs",
+      "default": "./dist/tree.mjs"
     },
     "./stepper": {
       "types": "./dist/stepper.d.mts",
@@ -239,6 +254,11 @@
       "types": "./dist/separator.d.mts",
       "import": "./dist/separator.mjs",
       "default": "./dist/separator.mjs"
+    },
+    "./splitter": {
+      "types": "./dist/splitter.d.mts",
+      "import": "./dist/splitter.mjs",
+      "default": "./dist/splitter.mjs"
     },
     "./spacer": {
       "types": "./dist/spacer.d.mts",
@@ -624,9 +644,13 @@
     "./theme.css": "./dist/theme.css",
     "./base.css": "./dist/theme.css",
     "./component-button.css": "./dist/component-button.css",
+    "./component-checkbox.css": "./dist/component-checkbox.css",
     "./component-dialog.css": "./dist/component-dialog.css",
+    "./component-input.css": "./dist/component-input.css",
     "./component-progress-bar.css": "./dist/component-progress-bar.css",
     "./component-scroll-area.css": "./dist/component-scroll-area.css",
+    "./component-switch.css": "./dist/component-switch.css",
+    "./component-textarea.css": "./dist/component-textarea.css",
     "./motion.css": "./dist/motion.css",
     "./theme-preset-headless.css": "./dist/theme-preset-headless.css",
     "./theme-preset-atelier.css": "./dist/theme-preset-atelier.css",

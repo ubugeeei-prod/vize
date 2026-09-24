@@ -921,6 +921,29 @@
         ]
       }
     },
+    "LibConfig": {
+      "description": "vize lib source distribution options; paths are relative to the config file",
+      "type": "object",
+      "properties": {
+        "dir": {
+          "description": "Destination for every registry kind unless a kind-specific directory is set",
+          "type": "string"
+        },
+        "uiDir": {
+          "description": "Destination for @vizejs/ui items (default: src/components/vize)",
+          "type": "string"
+        },
+        "composableDir": {
+          "description": "Destination for @vizejs/composable items (default: src/composables/vize)",
+          "type": "string"
+        },
+        "lockfile": {
+          "description": "Lockfile path (default: vize-lib.lock.json)",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
     "VizeConfigEntry": {
       "description": "Scoped Vize config entry for monorepos and workspaces",
       "type": "object",
@@ -1106,6 +1129,9 @@
     },
     "globalTypes": {
       "$ref": "#/definitions/GlobalTypesConfig"
+    },
+    "lib": {
+      "$ref": "#/definitions/LibConfig"
     },
     "entries": {
       "description": "Scoped config entries for monorepos and workspaces",

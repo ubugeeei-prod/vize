@@ -204,7 +204,7 @@ fn is_known_array_source(source: &str) -> bool {
 /// avoids falsely diagnosing object iteration; a visibly array-valued source
 /// still treats its second alias as an index regardless of its name.
 fn is_object_key_name(name: &str) -> bool {
-    matches!(name, "key" | "type" | "source" | "file")
+    matches!(name, "key" | "type" | "source" | "file" | "variantName")
 }
 
 /// Returns true when `expression` is exactly the identifier `name` (after

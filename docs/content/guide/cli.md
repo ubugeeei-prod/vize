@@ -81,6 +81,7 @@ When invoked without a command, `vize` defaults to `build`.
 | `doctor`         | Analyze whole-application health                                  |
 | `inspector`      | Create playground compiler inspector payloads                     |
 | `clean`          | Remove Vize-generated cache artifacts                             |
+| `lib`            | Pull versioned UI/composable sources ([guide](./lib-pull.md))     |
 | `ready`          | Run `fmt`, `lint`, `check`, and `build`                           |
 | `upgrade`        | Update the installed CLI                                          |
 | `check-server`   | Start the Unix JSON-RPC typecheck server                          |

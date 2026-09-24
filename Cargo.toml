@@ -211,6 +211,9 @@ taffy = "=0.10.1"
 unicode-width = "=0.2.2"
 unicode-segmentation = "=1.13.3"
 
+# Text diffs (`vize lib diff`)
+similar = "=2.7.0"
+
 # Testing and benchmarking
 insta = { version = "=1.48.0", features = ["toml"] }
 criterion = "=0.8.2"

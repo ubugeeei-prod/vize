@@ -48,7 +48,11 @@ void test("publishes one composable item per catalog entry except metadata", () 
   );
   for (const utility of COMPOSABLE_CATALOG.utilities) {
     const item = itemsByName.get(utility.entry.slice(2));
-    assert.ok(item?.aliases.includes(utility.name), `${utility.name} resolves to ${utility.entry}`);
+    // A utility named like its entry (for example `until`) resolves by item name.
+    assert.ok(
+      item !== undefined && (item.name === utility.name || item.aliases.includes(utility.name)),
+      `${utility.name} resolves to ${utility.entry}`,
+    );
   }
 });
 
