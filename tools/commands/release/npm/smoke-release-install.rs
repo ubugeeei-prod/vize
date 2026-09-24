@@ -620,6 +620,7 @@ const required = require("@vizejs/native");
                 "tempDir": temp_dir,
                 "peers": RUNTIME_PEER_DEPENDENCIES.iter().copied().collect::<BTreeMap<_, _>>(),
                 "packed": all_packages.iter().map(|package| (&package.name, &package.tarball)).collect::<BTreeMap<_, _>>(),
+                "compatiblePacked": packages.iter().map(|package| &package.name).collect::<Vec<_>>(),
                 "versions": all_packages.iter().map(|package| (&package.name, &package.version)).collect::<BTreeMap<_, _>>(),
             }),
         )?;

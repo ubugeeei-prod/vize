@@ -56,15 +56,25 @@ function runInit(context, projectRoot, args) {
  * table; npm does not, because it rejects an override that collides with a
  * direct spec.
  */
-function installPlannedDependencies(context, projectRoot, manager, shape) {
-  const manifestPath = path.join(projectRoot, "package.json");
-  const manifest = readJson(manifestPath);
+export function packedRedirects(context, manager, shape) {
   const redirects = {};
   for (const [name, tarball] of context.packed) {
+    // pnpm 11 links a foreign-platform optional `file:` dependency to the
+    // tarball itself. A later `pnpm install` then reads it as a package
+    // directory and fails with ENOTDIR. Only the current host's packages can
+    // execute here; their exact tarballs remain mandatory in the fresh tree.
+    if (!context.compatiblePacked.has(name)) continue;
     if (manager.redirectPlannedDependencies || !shape.plannedDependencies.includes(name)) {
       redirects[name] = `file:${tarball}`;
     }
   }
+  return redirects;
+}
+
+function installPlannedDependencies(context, projectRoot, manager, shape) {
+  const manifestPath = path.join(projectRoot, "package.json");
+  const manifest = readJson(manifestPath);
+  const redirects = packedRedirects(context, manager, shape);
   const redirectFiles = manager.redirect(manifest, redirects) ?? {};
   fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   writeFiles(projectRoot, redirectFiles);

@@ -12,6 +12,7 @@ import {
   runManager,
 } from "../../tools/support/compat/npm/smoke-release-init-project.mjs";
 import { PACKAGE_MANAGERS } from "../../tools/support/compat/npm/smoke-release-init-managers.mjs";
+import { packedRedirects } from "../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
 import { withPoisonedVizePath } from "../../tools/support/compat/npm/smoke-release-path-poison.mjs";
 import {
   FRESH_INIT_MATRIX,
@@ -26,6 +27,24 @@ import {
 } from "./support/release-smoke-init-contract.ts";
 
 const RUNTIME_PACKAGE_MANAGER_ACTION = "./.github/actions/setup-runtime-package-managers";
+
+test("fresh-project redirects only tarballs installable on this host", () => {
+  const context = {
+    packed: new Map([
+      ["vize", "/packs/vize.tgz"],
+      ["@vizejs/native", "/packs/native.tgz"],
+      ["@vizejs/native-darwin-arm64", "/packs/native-darwin-arm64.tgz"],
+      ["@vizejs/native-linux-x64-gnu", "/packs/native-linux-x64-gnu.tgz"],
+    ]),
+    compatiblePacked: new Set(["vize", "@vizejs/native", "@vizejs/native-darwin-arm64"]),
+  };
+  const shape = PROJECT_SHAPES["vite-vue-ts"];
+  const redirects = packedRedirects(context, PACKAGE_MANAGERS.pnpm, shape);
+  assert.equal(redirects["@vizejs/native"], "file:/packs/native.tgz");
+  assert.equal(redirects["@vizejs/native-darwin-arm64"], "file:/packs/native-darwin-arm64.tgz");
+  assert.equal(redirects["@vizejs/native-linux-x64-gnu"], undefined);
+  assert.equal(redirects.vize, "file:/packs/vize.tgz");
+});
 
 test("the fresh-project matrix is data, so new cells need no driver change", () => {
   assert.ok(FRESH_INIT_MATRIX.length > 0, "the fresh-project matrix must run at least one cell");

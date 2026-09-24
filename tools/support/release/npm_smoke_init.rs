@@ -15,6 +15,7 @@ const helper = (name) => import(pathToFileURL(path.join(context.repoRoot, "tools
 const { runInitTypecheckChecks } = await helper("smoke-release-init-typecheck.mjs");
 const { runFreshProjectInitChecks } = await helper("smoke-release-init-fresh.mjs");
 context.packed = new Map(Object.entries(context.packed));
+context.compatiblePacked = new Set(context.compatiblePacked);
 context.versions = new Map(Object.entries(context.versions));
 runInitTypecheckChecks(context.installDir, context.vizeBin, context.repoRoot, context.peers);
 runFreshProjectInitChecks(context);

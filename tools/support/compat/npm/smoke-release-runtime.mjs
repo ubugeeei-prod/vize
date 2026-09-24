@@ -227,6 +227,7 @@ export function runRuntimeChecks(
     runFreshProjectInitChecks({
       installDir,
       packed: new Map(allPackages.map((pkg) => [pkg.name, pkg.tarball])),
+      compatiblePacked: new Set(packages.map((pkg) => pkg.name)),
       peers: RUNTIME_PEER_DEPENDENCIES,
       repoRoot,
       tempDir,
