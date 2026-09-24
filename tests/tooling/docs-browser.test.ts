@@ -17,7 +17,10 @@ test("docs build uses the lazy browser bootstrap helper", () => {
     scripts: Record<string, string>;
   };
 
-  assert.equal(packageJson.scripts.build, "node ./scripts/ensure-browser.mjs && vp build");
+  assert.equal(
+    packageJson.scripts.build,
+    "node ./scripts/ensure-browser.mjs && pnpm generate:reference && vp build",
+  );
 });
 
 test("docs browser helper reuses an existing browser path without invoking Playwright install", () => {

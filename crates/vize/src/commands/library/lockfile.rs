@@ -199,7 +199,7 @@ mod tests {
         let parsed: Lockfile = serde_json::from_slice(&bytes).unwrap();
         let names: Vec<&str> = parsed.items.iter().map(|item| item.name.as_str()).collect();
         assert_eq!(names, ["use-toggle", "id", "switch"]);
-        assert!(bytes.ends_with(b"}\n"));
+        assert_eq!(bytes.get(bytes.len() - 2..), Some(&b"}\n"[..]));
     }
 
     #[test]

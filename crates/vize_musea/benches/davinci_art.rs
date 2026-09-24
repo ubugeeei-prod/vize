@@ -112,7 +112,7 @@ import Card from "./Card.vue";
 "#;
 
 /// An inline `<art>` block in a real gallery component.
-const INLINE: &str = include_str!("../../../examples/vite-musea/src/components/Badge.vue");
+const INLINE: &str = include_str!("../../../examples/vite-musea/src/components/MuseaBadge.vue");
 
 fn bench_case(criterion: &mut Criterion, id: &str, fixture: &str, source: &'static str) {
     bench_stage_with_metrics(criterion, id, fixture, |window| {
@@ -145,7 +145,7 @@ fn davinci_art(criterion: &mut Criterion) {
     bench_case(
         criterion,
         &cstr!("musea_parse_art_inline"),
-        "examples/vite-musea/src/components/Badge.vue",
+        "examples/vite-musea/src/components/MuseaBadge.vue",
         INLINE,
     );
 }

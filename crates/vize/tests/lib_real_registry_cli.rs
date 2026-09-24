@@ -145,13 +145,12 @@ fn pulls_real_items_that_compile_and_resolve_on_their_own() {
         .iter()
         .map(|item| item["name"].as_str().unwrap())
         .collect();
-    assert!(
-        names.contains(&"switch") && names.contains(&"use-storage"),
-        "{names:?}"
-    );
-    assert!(
-        names.contains(&"controllable-state"),
-        "switch pulls its foundations: {names:?}"
+    // The lockfile lists composables before ui items, each sorted by name:
+    // `use-storage` with its `scope` dependency, then `switch` with the
+    // foundations it pulls.
+    assert_eq!(
+        names,
+        ["scope", "use-storage", "controllable-state", "id", "switch"]
     );
 
     let mut files = Vec::new();

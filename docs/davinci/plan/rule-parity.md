@@ -27,18 +27,18 @@ Per-rule registration surface, SFC/JSX path membership, croquis usage, and a fir
 
 ## File accounting
 
-- `.rs` files under `crates/vize_patina/src/rules/**`: **384**
+- `.rs` files under `crates/vize_patina/src/rules/**`: **385**
 - rule-defining files (exactly one `static META` each): **249** → **249 rules**
-- non-rule files: **135** — 29 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 102 helper/data files (rule submodules, shared tables, private utilities)
+- non-rule files: **136** — 29 module organizers (a `<name>.rs` with a `<name>/` directory beside it), 4 `*_tests.rs` companions, 103 helper/data files (rule submodules, shared tables, private utilities)
 
 ## Summary
 
 - **total rules: 249**
 - by family: template-family 162, script 71, css 10, musea 6
-- by surface (a rule can have several): `css-text` 10, `markup-facade` 40, `musea-blocks` 6, `script-oxc` 66, `script-source` 5, `sfc-source` 10, `template-ast` 155, `type-aware-corsa` 5
-- path membership: SFC `lint_sfc` 243 · JSX `lint_jsx` 221 · **SFC∩JSX 221** · SFC-only 22 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
-- JSX lanes: `fallback` 110, `ir` 28, `ir-lowered` 12, `no-jsx-hooks` 12, `script` 71 — `ir` + `ir-lowered` is the markup-facade migration list (40 = 40 `markup-facade` rules)
-- classification: neutral-core-candidate **92** · vue-dialect-bound **133** · container-bound **24** (0 overridden)
+- by surface (a rule can have several): `css-text` 10, `markup-facade` 40, `musea-blocks` 6, `script-oxc` 66, `script-source` 5, `sfc-source` 11, `template-ast` 154, `type-aware-corsa` 5
+- path membership: SFC `lint_sfc` 243 · JSX `lint_jsx` 220 · **SFC∩JSX 220** · SFC-only 23 · JSX-only 0 · neither 6 (6 musea + 0 unregistered)
+- JSX lanes: `fallback` 109, `ir` 28, `ir-lowered` 12, `no-jsx-hooks` 13, `script` 71 — `ir` + `ir-lowered` is the markup-facade migration list (40 = 40 `markup-facade` rules)
+- classification: neutral-core-candidate **91** · vue-dialect-bound **133** · container-bound **25** (0 overridden)
 - precision tiers (`crates/vize_patina/src/rule_contracts/table.rs`): exact **200** · sound **0** · complete **32** · heuristic **17**
 - croquis adoption: **23** rules touch vize_croquis (19 direct imports, 12 via context analysis)
 
@@ -236,7 +236,7 @@ Sorted by rule name. File paths are relative to `crates/vize_patina/src/rules/`.
 | `vue/no-reserved-component-names`               | template-family | exact     | `vue/no_reserved_component_names.rs`                   | sfc-source                     | yes (sfc-hooks)                  | no (no JSX-reachable hooks) | direct 2: `builtins::is_builtin_component`                                                          | container-bound        |
 | `vue/no-root-v-if`                              | template-family | exact     | `opinionated/vue/no_root_v_if.rs`                      | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-script-non-standard-lang`               | template-family | exact     | `opinionated/vue/no_script_non_standard_lang.rs`       | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
-| `vue/no-src-attribute`                          | template-family | exact     | `opinionated/vue/no_src_attribute.rs`                  | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |
+| `vue/no-src-attribute`                          | template-family | exact     | `opinionated/vue/no_src_attribute.rs`                  | sfc-source                     | yes (sfc-hooks)                  | no (no JSX-reachable hooks) | —                                                                                                   | container-bound        |
 | `vue/no-static-inline-styles`                   | template-family | exact     | `vue/no_static_inline_styles.rs`                       | template-ast, markup-facade    | yes (template-visitor)           | yes (ir)                    | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-template-key`                           | template-family | exact     | `vue/no_template_key.rs`                               | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | vue-dialect-bound      |
 | `vue/no-template-lang`                          | template-family | exact     | `opinionated/vue/no_template_lang.rs`                  | template-ast                   | yes (template-visitor)           | yes (fallback)              | —                                                                                                   | neutral-core-candidate |

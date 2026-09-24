@@ -37,6 +37,10 @@ test("target-only mode verifies the hydrated main ref, HEAD, and the peeled remo
   });
   assert.equal(trackedManifests.status, 0, trackedManifests.stderr);
   fs.mkdirSync(binDir, { recursive: true });
+  // `git ls-files` output is passed through a file: the tracked tree is far
+  // larger than Linux's 128 KiB limit for a single environment variable.
+  const manifestsFile = path.join(tempDir, "tracked-manifests");
+  fs.writeFileSync(manifestsFile, trackedManifests.stdout);
   writeFakeCommand(
     binDir,
     "git",
@@ -45,7 +49,7 @@ test("target-only mode verifies the hydrated main ref, HEAD, and the peeled remo
       "const command = args.join(' ');",
       "if (command === 'rev-parse HEAD') console.log(process.env.TEST_HEAD_SHA);",
       "else if (command === 'rev-parse refs/remotes/origin/main') console.log(process.env.TEST_MAIN_SHA);",
-      "else if (args[0] === 'ls-files') process.stdout.write(JSON.parse(process.env.TEST_PACKAGE_MANIFESTS).join('\\0') + '\\0');",
+      "else if (args[0] === 'ls-files') process.stdout.write(require('node:fs').readFileSync(process.env.TEST_PACKAGE_MANIFESTS_FILE, 'utf8'));",
       "else if (args[0] === 'ls-remote') {",
       "  console.log(`${process.env.TEST_TAG_OBJECT}\\trefs/tags/${process.env.TEST_TAG}`);",
       "  console.log(`${process.env.TEST_TAG_SHA}\\trefs/tags/${process.env.TEST_TAG}^{}`);",
@@ -75,7 +79,7 @@ test("target-only mode verifies the hydrated main ref, HEAD, and the peeled remo
         TEST_TAG_OBJECT: "c".repeat(40),
         TEST_TAG_SHA: sha,
         TEST_BASE_SHA: "b".repeat(40),
-        TEST_PACKAGE_MANIFESTS: JSON.stringify(trackedManifests.stdout.split("\0").filter(Boolean)),
+        TEST_PACKAGE_MANIFESTS_FILE: manifestsFile,
         ...overrides,
       },
     });

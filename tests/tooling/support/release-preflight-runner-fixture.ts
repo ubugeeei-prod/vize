@@ -55,6 +55,10 @@ export function createReleasePreflightVerifyOnlyFixture(
   writeJson(path.join(dataDir, "runs.json"), runs);
   writeJson(path.join(dataDir, "artifacts.json"), artifacts);
   writeJson(path.join(dataDir, "jobs.json"), jobs);
+  // `git ls-files` output is passed through a file: the tracked tree is far
+  // larger than Linux's 128 KiB limit for a single environment variable.
+  const manifestsFile = path.join(dataDir, "tracked-manifests");
+  fs.writeFileSync(manifestsFile, `${trackedManifests.join("\0")}\0`);
 
   writeFlatJobEvidenceGitCommand(binDir);
   writeFlatJobEvidenceCurlCommand(binDir);
@@ -74,7 +78,7 @@ export function createReleasePreflightVerifyOnlyFixture(
       TEST_BASE_SHA: baseSha,
       TEST_JOBS_FILE: path.join(dataDir, "jobs.json"),
       TEST_MAIN_CARGO_TOML: `[workspace.package]\nversion = "${version}"\n`,
-      TEST_PACKAGE_MANIFESTS: JSON.stringify(trackedManifests),
+      TEST_PACKAGE_MANIFESTS_FILE: manifestsFile,
       TEST_RELEASE_SHA: releaseSha,
       TEST_REQUIRE_JOB_TIMEOUT_ARGS: options.requireJobTimeoutArgs === true ? "1" : "0",
       TEST_RUNS_FILE: path.join(dataDir, "runs.json"),
@@ -180,7 +184,7 @@ function writeFlatJobEvidenceGitCommand(binDir: string): void {
       "else if (command === 'rev-parse refs/remotes/origin/main') console.log(process.env.TEST_RELEASE_SHA);",
       "else if (command === 'rev-list --first-parent refs/remotes/origin/main') console.log(process.env.TEST_RELEASE_SHA);",
       "else if (command === 'show refs/remotes/origin/main:Cargo.toml') process.stdout.write(process.env.TEST_MAIN_CARGO_TOML);",
-      "else if (args[0] === 'ls-files') process.stdout.write(JSON.parse(process.env.TEST_PACKAGE_MANIFESTS).join('\\0') + '\\0');",
+      "else if (args[0] === 'ls-files') process.stdout.write(require('node:fs').readFileSync(process.env.TEST_PACKAGE_MANIFESTS_FILE, 'utf8'));",
       "else if (args[0] === 'ls-remote') console.log(`${process.env.TEST_TAG_SHA}\\trefs/tags/${process.env.TEST_TAG}`);",
       "else if (args[0] === 'rev-list') console.log(`${process.env.TEST_RELEASE_SHA} ${process.env.TEST_BASE_SHA}`);",
       "else if (args[0] === 'merge-base') process.exit(0);",
