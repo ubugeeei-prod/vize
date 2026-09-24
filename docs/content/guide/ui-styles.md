@@ -11,6 +11,10 @@ optional styles, import the base, one palette, and the components your page uses
 import "@vizejs/ui/base.css";
 import "@vizejs/ui/theme-preset-paper.css";
 import "@vizejs/ui/component-button.css";
+import "@vizejs/ui/component-input.css";
+import "@vizejs/ui/component-textarea.css";
+import "@vizejs/ui/component-checkbox.css";
+import "@vizejs/ui/component-switch.css";
 import "@vizejs/ui/component-dialog.css";
 // Add these only when their low-level behavior is used without the JS entry:
 // import "@vizejs/ui/component-progress-bar.css";
@@ -32,15 +36,23 @@ elements or alter unstyled Vize components. The component files are plain CSS
 assets and do not change the JavaScript or Vue API. Importing a component alone
 does not add any other component's visual rules.
 
+Input, Textarea, Checkbox, and Switch each have their own CSS export. Text
+fields retain native editing and resize behavior; Checkbox distinguishes
+checked from mixed, while Switch moves its thumb when the state changes. The
+small state transitions stop under `prefers-reduced-motion`. Focus remains
+visible for keyboard users, and forced-colors mode keeps native checkbox marks.
+The component files reset their local overrides at each theme boundary, so a
+Paper form nested inside a Signal page keeps Paper's type and proportions.
+
 The existing ProgressBar and ScrollArea structure and motion recipes are also
 published as standalone CSS-only files. Their JavaScript entries already pull
 the legacy aggregate stylesheet for required behavior. Import the standalone
 file when using the CSS hooks without the JavaScript entry, or when controlling
 stylesheets explicitly; avoid importing both paths on one page.
 
-| Preset    | Character                                                  |
-| --------- | ---------------------------------------------------------- |
-| `paper`   | Warm paper, ink, fine borders, and squared controls        |
+| Preset    | Character                                                 |
+| --------- | --------------------------------------------------------- |
+| `paper`   | Warm paper, ink, fine borders, and squared controls       |
 | `signal`  | Dense graphite surfaces with crisp edges and little depth |
 | `atelier` | Quiet studio neutrals with a single restrained accent     |
 

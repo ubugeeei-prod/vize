@@ -206,11 +206,25 @@ const cssOnlyEntries = [
     maximumCssGzipBytes: 1_100,
   },
   {
+    name: "component-checkbox.css",
+    packageEntry: "@vizejs/ui/component-checkbox.css",
+    retainedSignature: /data-vize-ui=checkbox/,
+    rejectedSignature: /data-vize-ui=switch/,
+    maximumCssGzipBytes: 1_000,
+  },
+  {
     name: "component-dialog.css",
     packageEntry: "@vizejs/ui/component-dialog.css",
     retainedSignature: /data-vize-ui=dialog-content/,
     rejectedSignature: /data-vize-ui=button/,
     maximumCssGzipBytes: 1_300,
+  },
+  {
+    name: "component-input.css",
+    packageEntry: "@vizejs/ui/component-input.css",
+    retainedSignature: /data-vize-ui=input/,
+    rejectedSignature: /data-vize-ui=textarea/,
+    maximumCssGzipBytes: 1_000,
   },
   {
     name: "component-progress-bar.css",
@@ -225,6 +239,20 @@ const cssOnlyEntries = [
     retainedSignature: /--vize-ui-scroll-area-overflow-y/,
     rejectedSignature: /data-vize-ui=progress-bar/,
     maximumCssGzipBytes: 1_600,
+  },
+  {
+    name: "component-switch.css",
+    packageEntry: "@vizejs/ui/component-switch.css",
+    retainedSignature: /data-vize-ui=switch/,
+    rejectedSignature: /data-vize-ui=checkbox/,
+    maximumCssGzipBytes: 1_000,
+  },
+  {
+    name: "component-textarea.css",
+    packageEntry: "@vizejs/ui/component-textarea.css",
+    retainedSignature: /data-vize-ui=textarea/,
+    rejectedSignature: /data-vize-ui=input/,
+    maximumCssGzipBytes: 1_000,
   },
   {
     name: "motion.css",
