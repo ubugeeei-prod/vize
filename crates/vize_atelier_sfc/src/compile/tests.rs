@@ -173,6 +173,26 @@ export default { count }
 }
 
 #[test]
+fn test_script_only_without_default_keeps_empty_component_fallback() {
+    let source = "<script>\nexport const name = 'ScriptOnly'\n</script>";
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse");
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            template: TemplateCompileOptions {
+                ssr: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        },
+    )
+    .expect("compile");
+    assert!(result.code.contains("export const name = 'ScriptOnly'"));
+    assert!(result.code.contains("const _sfc_main = {}"));
+    assert!(result.code.ends_with("export default _sfc_main"));
+}
+
+#[test]
 fn test_invalid_template_expression_fails_compile_with_diagnostic() {
     // An unparseable template expression must surface as a compile error
     // (matching @vue/compiler-sfc, where X_INVALID_EXPRESSION fails the

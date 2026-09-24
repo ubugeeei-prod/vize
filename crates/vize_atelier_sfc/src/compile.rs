@@ -185,14 +185,14 @@ fn compile_sfc_inner(
         // A script-only SFC needs no mutable component binding unless the
         // compiler must attach generated metadata. Preserve its default export
         // just as compiler-sfc does, including in SSR output.
-        let needs_component_binding =
+        let requires_generated_component =
             has_template || is_vapor || !compiled_styles.css_modules.is_empty();
-        let (mut final_script, script_runs) = module_trace::script_module(
+        let (mut final_script, script_runs, needs_component_binding) = module_trace::script_module(
             &script_content,
             script_runs,
             source_is_ts,
             is_ts,
-            needs_component_binding,
+            requires_generated_component,
         );
         // The script's position in the module, for its source-map provenance.
         let mut script_at = 0;

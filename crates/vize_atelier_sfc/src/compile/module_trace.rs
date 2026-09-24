@@ -44,29 +44,31 @@ pub(super) fn prepared_script(
 }
 
 /// A normal `<script>` block: rewrite its default export only when generated
-/// render or component metadata must be attached, then strip TypeScript when
-/// the output is JavaScript. Carry `runs` through both passes.
+/// render or component metadata must be attached, or when the authored script
+/// has no default export and needs the existing empty-component fallback.
+/// Strip TypeScript when the output is JavaScript, carrying `runs` through.
 pub(super) fn script_module(
     content: &str,
     runs: Option<Runs>,
     source_is_ts: bool,
     is_ts: bool,
-    needs_component_binding: bool,
-) -> (String, Option<Runs>) {
+    requires_generated_component: bool,
+) -> (String, Option<Runs>, bool) {
+    let (rewritten, has_default_export, rewrite_runs) = profile!(
+        "atelier.sfc.normal_script.rewrite_default",
+        rewrite_default_traced(content, "_sfc_main", source_is_ts)
+    );
+    let needs_component_binding = requires_generated_component || !has_default_export;
     let (rewritten, rewrite_runs) = if needs_component_binding {
-        let (rewritten, _, runs) = profile!(
-            "atelier.sfc.normal_script.rewrite_default",
-            rewrite_default_traced(content, "_sfc_main", source_is_ts)
-        );
-        (rewritten, runs)
+        (rewritten, rewrite_runs)
     } else {
         (content.to_compact_string(), Runs::identity(content.len()))
     };
     let runs = runs.map(|runs| rewrite_runs.compose(&runs));
     if !source_is_ts || is_ts {
-        return (rewritten, runs);
+        return (rewritten, runs, needs_component_binding);
     }
-    profile!(
+    let (script, runs) = profile!(
         "atelier.sfc.normal_script.ts_to_js",
         match runs {
             Some(runs) => {
@@ -75,7 +77,8 @@ pub(super) fn script_module(
             }
             None => (transform_typescript_to_js(&rewritten), None),
         }
-    )
+    );
+    (script, runs, needs_component_binding)
 }
 
 /// Carry `runs` through v-model demotion, which rewrote `const` to `let` at
