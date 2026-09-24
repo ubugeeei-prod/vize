@@ -88,7 +88,7 @@ Requires images to include `alt`. Decorative images should use `alt=""` rather t
 attribute.
 
 Default severity: `warning`
-Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`
+Presets: none (opt-in)
 Options: none
 
 Bad:

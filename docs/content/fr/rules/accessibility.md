@@ -14,7 +14,7 @@ avec la technologie d’assistance ou la navigation au clavier.
 Nécessite un attribut `alt` sur `<img>`.
 
 Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
+Presets : aucun (activation explicite)
 
 Mauvais :
 

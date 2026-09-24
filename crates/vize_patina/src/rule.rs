@@ -229,6 +229,7 @@ impl RuleRegistry {
 
     /// Register explicit opt-in rules into an existing registry.
     pub fn register_opt_in_rules(&mut self) {
+        crate::rules::a11y::register_opt_in(self);
         crate::rules::ecosystem::register_opt_in(self);
         crate::rules::petite_vue::register_opt_in(self);
         crate::rules::vue::register_opt_in(self);
@@ -285,7 +286,6 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vapor::NoVueLifecycleEvents));
         crate::rules::vue::register_security(&mut registry);
         // Accessibility rules with broadly applicable guidance.
-        registry.register(Box::new(crate::rules::a11y::ImgAlt));
         registry.register(Box::new(crate::rules::a11y::AnchorHasContent));
         registry.register(Box::new(crate::rules::a11y::HeadingHasContent));
         registry.register(Box::new(crate::rules::a11y::IframeHasTitle));

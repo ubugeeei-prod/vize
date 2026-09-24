@@ -14,7 +14,7 @@ usar com tecnologia assistiva ou navegação por teclado.
 Requer um atributo `alt` em `<img>`.
 
 Gravidade padrão: `warning`
-Presets: `happy-path`, `nuxt`, `opinionated`
+Presets: nenhum (ativação explícita)
 
 Ruim:
 

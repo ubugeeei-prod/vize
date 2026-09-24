@@ -14,7 +14,7 @@ title: 无障碍规则
 需要在`<img>`上有个`alt`属性。
 
 默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
+预设：无（需显式启用）
 
 缺点：
 

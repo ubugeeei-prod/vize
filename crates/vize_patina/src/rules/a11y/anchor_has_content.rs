@@ -10,8 +10,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::a11y::helpers::is_slot_element;
-use vize_relief::{ElementNode, PropNode, TemplateChildNode};
+use crate::rules::a11y::helpers::{is_slot_element, string_literal_value};
+use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/anchor-has-content",
@@ -59,11 +59,28 @@ impl AnchorHasContent {
                     // Check for img with alt
                     if el.tag == "img" {
                         for prop in &el.props {
-                            if let PropNode::Attribute(attr) = prop
-                                && attr.name == "alt"
-                                && attr.value.as_ref().is_some_and(|v| !v.content.is_empty())
-                            {
-                                return true;
+                            match prop {
+                                PropNode::Attribute(attr)
+                                    if attr.name == "alt"
+                                        && attr
+                                            .value
+                                            .as_ref()
+                                            .is_some_and(|value| !value.content.is_empty()) =>
+                                {
+                                    return true;
+                                }
+                                PropNode::Directive(dir) if dir.name == "bind" => {
+                                    if let Some(ExpressionNode::Simple(arg)) = &dir.arg
+                                        && arg.is_static
+                                        && arg.content == "alt"
+                                        && let Some(ExpressionNode::Simple(exp)) = &dir.exp
+                                        && string_literal_value(exp.content)
+                                            .is_none_or(|value| !value.is_empty())
+                                    {
+                                        return true;
+                                    }
+                                }
+                                _ => {}
                             }
                         }
                     }
@@ -145,5 +162,32 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<a href="/"><slot></slot></a>"#, "test.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_with_bound_img_alt() {
+        let linter = create_linter();
+        let result = linter.lint_template(
+            r#"<a :href="href"><img :src="src" :alt="alt" /></a>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 0, "{:?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_empty_img_alt_does_not_name_anchor() {
+        let linter = create_linter();
+        for source in [
+            r#"<a href="/"><img src="x.png" alt="" /></a>"#,
+            r#"<a href="/"><img src="x.png" :alt="''" /></a>"#,
+            r#"<a href="/"><img src="x.png" /></a>"#,
+        ] {
+            let result = linter.lint_template(source, "test.vue");
+            assert_eq!(
+                result.warning_count, 1,
+                "{source}: {:?}",
+                result.diagnostics
+            );
+        }
     }
 }

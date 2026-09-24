@@ -64,3 +64,11 @@ pub use no_role_presentation_on_focusable::NoRolePresentationOnFocusable;
 pub use no_static_element_interactions::NoStaticElementInteractions;
 pub use role_has_required_aria_props::RoleHasRequiredAriaProps;
 pub use tabindex_no_positive::TabindexNoPositive;
+
+/// Keep the narrow image-only rule available to explicit configurations, while
+/// presets use `a11y/alt-text` to cover images and other media once each.
+pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
+    if !registry.has_rule("a11y/img-alt") {
+        registry.register(Box::new(ImgAlt));
+    }
+}

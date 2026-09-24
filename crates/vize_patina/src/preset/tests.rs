@@ -4,6 +4,7 @@ use super::LintPreset;
 use crate::Linter;
 use crate::rule::RuleRegistry;
 use std::collections::BTreeSet;
+use vize_atelier_jsx::JsxLang;
 
 #[test]
 fn parses_common_aliases() {
@@ -25,6 +26,100 @@ fn parses_common_aliases() {
     assert_eq!(LintPreset::parse("ecosystem"), Some(LintPreset::Ecosystem));
     assert_eq!(LintPreset::parse("nuxt"), Some(LintPreset::Nuxt));
     assert_eq!(LintPreset::parse("unknown"), None);
+}
+
+#[test]
+fn presets_report_missing_image_alt_once() {
+    for preset in [
+        LintPreset::HappyPath,
+        LintPreset::Opinionated,
+        LintPreset::Ecosystem,
+        LintPreset::Nuxt,
+    ] {
+        let linter = Linter::with_preset(preset);
+        let result = linter.lint_template(r#"<img src="photo.jpg" />"#, "test.vue");
+        let alt_rules: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| matches!(diagnostic.rule_name, "a11y/alt-text" | "a11y/img-alt"))
+            .map(|diagnostic| diagnostic.rule_name)
+            .collect();
+        assert_eq!(alt_rules, ["a11y/alt-text"], "{}", preset.as_str());
+        assert!(!RuleRegistry::with_preset(preset).has_rule("a11y/img-alt"));
+    }
+
+    let result = Linter::with_preset(LintPreset::HappyPath).lint_jsx(
+        r#"const View = () => <img src="photo.jpg" />;"#,
+        "test.jsx",
+        JsxLang::Jsx,
+    );
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "a11y/alt-text")
+            .count(),
+        1,
+        "JSX must retain image alt coverage: {:?}",
+        result.diagnostics
+    );
+
+    let sfc = r#"<script setup lang="ts">defineProps<{ src: string }>();</script>
+<template><img :src="src" /></template>"#;
+    let result = Linter::with_preset(LintPreset::Opinionated).lint_sfc(sfc, "test.vue");
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| {
+                matches!(diagnostic.rule_name, "a11y/alt-text" | "a11y/img-alt")
+            })
+            .map(|diagnostic| diagnostic.rule_name)
+            .collect::<Vec<_>>(),
+        ["a11y/alt-text"],
+        "{:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn presets_accept_bound_image_alt_as_anchor_content() {
+    let template = r#"<a :href="href"><img :src="src" :alt="alt" /></a>"#;
+    for preset in [LintPreset::HappyPath, LintPreset::Opinionated] {
+        let result = Linter::with_preset(preset).lint_template(template, "test.vue");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != "a11y/anchor-has-content"),
+            "{}: {:?}",
+            preset.as_str(),
+            result.diagnostics
+        );
+    }
+
+    let sfc = r#"<script setup lang="ts">
+defineProps<{ href: string; src: string; alt: string }>();
+</script>
+<template><a :href="href"><img :src="src" :alt="alt" /></a></template>"#;
+    let result = Linter::with_preset(LintPreset::Opinionated).lint_sfc(sfc, "test.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "a11y/anchor-has-content"),
+        "{:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+fn narrow_img_alt_rule_remains_explicitly_selectable() {
+    let linter = Linter::with_preset(LintPreset::HappyPath)
+        .with_enabled_rules(Some(vec!["a11y/img-alt".into()]));
+    let result = linter.lint_template(r#"<img src="photo.jpg" />"#, "test.vue");
+    assert_eq!(result.diagnostics.len(), 1, "{:?}", result.diagnostics);
+    assert_eq!(result.diagnostics[0].rule_name, "a11y/img-alt");
 }
 
 #[test]
