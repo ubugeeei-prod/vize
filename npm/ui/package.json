@@ -130,6 +130,26 @@
       "import": "./dist/range-slider.mjs",
       "default": "./dist/range-slider.mjs"
     },
+    "./checkbox-group": {
+      "types": "./dist/checkbox-group.d.mts",
+      "import": "./dist/checkbox-group.mjs",
+      "default": "./dist/checkbox-group.mjs"
+    },
+    "./editable": {
+      "types": "./dist/editable.d.mts",
+      "import": "./dist/editable.mjs",
+      "default": "./dist/editable.mjs"
+    },
+    "./password-field": {
+      "types": "./dist/password-field.d.mts",
+      "import": "./dist/password-field.mjs",
+      "default": "./dist/password-field.mjs"
+    },
+    "./pin-input": {
+      "types": "./dist/pin-input.d.mts",
+      "import": "./dist/pin-input.mjs",
+      "default": "./dist/pin-input.mjs"
+    },
     "./tabs": {
       "types": "./dist/tabs.d.mts",
       "import": "./dist/tabs.mjs",
