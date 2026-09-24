@@ -339,6 +339,16 @@ impl EmitCx<'_> {
         self.buf.push(text.as_str());
         Ok(())
     }
+
+    pub(super) fn push_prefixed_decoded_expr(
+        &mut self,
+        expr: &ExprRef<'_>,
+        site: Site,
+    ) -> Result<(), EmitError> {
+        let text = self.prefixed_expr_content(expr, site, ContentShape::Decoded)?;
+        self.buf.push(text.as_str());
+        Ok(())
+    }
 }
 
 impl<'facts> EmitCx<'facts> {
