@@ -124,9 +124,16 @@ for (const { canonicalName: family, bundleBudget } of treeShakingEntries) {
     ["theme", /--vize-ui-color-canvas/],
     ["visually-hidden", /clip-path:inset\(50%\)/],
   ]);
-  const styledSignature = styledFamilySignatures.get(family);
-  if (styledSignature) {
-    assert.match(rootOutput.css, styledSignature);
+  // A family that composes an allowed styled family legitimately retains that
+  // family's stylesheet.
+  const styledSignatures = [family, ...allowedRetainedFamilies].flatMap((retainedFamily) => {
+    const signature = styledFamilySignatures.get(retainedFamily);
+    return signature === undefined ? [] : [signature];
+  });
+  if (styledSignatures.length > 0) {
+    for (const styledSignature of styledSignatures) {
+      assert.match(rootOutput.css, styledSignature);
+    }
   } else {
     assert.equal(rootOutput.css, "", `${exportName} retained another component's stylesheet`);
   }
@@ -214,6 +221,13 @@ const cssOnlyEntries = [
     maximumCssGzipBytes: 1_200,
   },
   {
+    name: "component-breadcrumb.css",
+    packageEntry: "@vizejs/ui/component-breadcrumb.css",
+    retainedSignature: /data-vize-ui=breadcrumb-link/,
+    rejectedSignature: /data-vize-ui=tabs-trigger/,
+    maximumCssGzipBytes: 950,
+  },
+  {
     name: "component-button.css",
     packageEntry: "@vizejs/ui/component-button.css",
     retainedSignature: /data-vize-ui=button/,
@@ -249,6 +263,13 @@ const cssOnlyEntries = [
     maximumCssGzipBytes: 1_000,
   },
   {
+    name: "component-pagination.css",
+    packageEntry: "@vizejs/ui/component-pagination.css",
+    retainedSignature: /data-vize-ui=pagination-page/,
+    rejectedSignature: /data-vize-ui=stepper-trigger/,
+    maximumCssGzipBytes: 1_250,
+  },
+  {
     name: "component-progress-bar.css",
     packageEntry: "@vizejs/ui/component-progress-bar.css",
     retainedSignature: /--vize-ui-progress-bar-percent/,
@@ -268,6 +289,20 @@ const cssOnlyEntries = [
     retainedSignature: /data-vize-ui=switch/,
     rejectedSignature: /data-vize-ui=checkbox/,
     maximumCssGzipBytes: 1_000,
+  },
+  {
+    name: "component-stepper.css",
+    packageEntry: "@vizejs/ui/component-stepper.css",
+    retainedSignature: /data-vize-ui=stepper-trigger/,
+    rejectedSignature: /data-vize-ui=pagination-page/,
+    maximumCssGzipBytes: 1_600,
+  },
+  {
+    name: "component-tabs.css",
+    packageEntry: "@vizejs/ui/component-tabs.css",
+    retainedSignature: /data-vize-ui=tabs-trigger/,
+    rejectedSignature: /data-vize-ui=stepper-trigger/,
+    maximumCssGzipBytes: 1_600,
   },
   {
     name: "component-textarea.css",

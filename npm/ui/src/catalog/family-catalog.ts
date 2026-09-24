@@ -2,17 +2,22 @@ import { accordionFamilyCatalog } from "./family-catalog-accordion.ts";
 import { actionFamilyCatalog } from "./family-catalog-actions.ts";
 import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
+import { chartFamilyCatalog } from "./family-catalog-charts.ts";
 import { dataFamilyCatalog } from "./family-catalog-data.ts";
 import { dateTimeFamilyCatalog } from "./family-catalog-date-time.ts";
+import { confirmFamilyCatalog, drawerFamilyCatalog } from "./family-catalog-drawer.ts";
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
 import { formInputFamilyCatalog } from "./family-catalog-form-inputs.ts";
+import { helperFamilyCatalog } from "./family-catalog-helpers.ts";
 import { hoverCardFamilyCatalog } from "./family-catalog-hover-card.ts";
+import { formCompositeFamilyCatalog } from "./family-catalog-form-composites.ts";
 import { i18nFamilyCatalog } from "./family-catalog-i18n.ts";
 import { interactionGestureFamilyCatalog } from "../families/interaction/catalog/gestures.ts";
 import { interactionSupportFamilyCatalog } from "../families/interaction/catalog/support.ts";
 import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
+import { menuFamilyCatalog } from "./family-catalog-menus.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 import { ratingFamilyCatalog } from "./family-catalog-rating.ts";
@@ -33,7 +38,16 @@ import { videoPlayerFamilyCatalog } from "./family-catalog-video-player.ts";
 import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import { sliderFamilyCatalog } from "./family-catalog-slider.ts";
 import { structureFamilyCatalog } from "./family-catalog-structure.ts";
+import { autocompleteFamilyCatalog } from "./family-catalog-autocomplete.ts";
+import { listboxGridFamilyCatalog } from "./family-catalog-listbox-grid.ts";
+import { mentionFamilyCatalog } from "./family-catalog-mention.ts";
+import { transferListFamilyCatalog } from "./family-catalog-transfer-list.ts";
+import { emojiPickerFamilyCatalog } from "./family-catalog-emoji-picker.ts";
+import { cascaderFamilyCatalog } from "./family-catalog-cascader.ts";
+import { toastFamilyCatalog } from "./family-catalog-toast.ts";
+import { tagsInputFamilyCatalog } from "./family-catalog-tags-input.ts";
 import { typographyFamilyCatalog } from "./family-catalog-typography.ts";
+import { wayfindingFamilyCatalog } from "./family-catalog-wayfinding.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
 
 export {
@@ -49,17 +63,23 @@ const allFamilyCatalogEntries = [
   ...actionFamilyCatalog,
   ...accessibilityFamilyCatalog,
   ...basicFamilyCatalog,
+  ...chartFamilyCatalog,
+  ...confirmFamilyCatalog,
   ...dataFamilyCatalog,
   ...dateTimeFamilyCatalog,
+  ...drawerFamilyCatalog,
   ...feedbackFamilyCatalog,
   ...foundationFamilyCatalog,
+  ...helperFamilyCatalog,
   ...focusFamilyCatalog,
   ...formInputFamilyCatalog,
   ...hoverCardFamilyCatalog,
+  ...formCompositeFamilyCatalog,
   ...i18nFamilyCatalog,
   ...interactionGestureFamilyCatalog,
   ...interactionSupportFamilyCatalog,
   ...layoutFamilyCatalog,
+  ...menuFamilyCatalog,
   ...navigationFamilyCatalog,
   ...overlayFamilyCatalog,
   ...ratingFamilyCatalog,
@@ -80,7 +100,16 @@ const allFamilyCatalogEntries = [
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
   ...structureFamilyCatalog,
+  ...autocompleteFamilyCatalog,
+  ...listboxGridFamilyCatalog,
+  ...mentionFamilyCatalog,
+  ...transferListFamilyCatalog,
+  ...emojiPickerFamilyCatalog,
+  ...cascaderFamilyCatalog,
+  ...toastFamilyCatalog,
+  ...tagsInputFamilyCatalog,
   ...typographyFamilyCatalog,
+  ...wayfindingFamilyCatalog,
 ] as const satisfies readonly UiFamilyCatalogEntry[];
 
 // Lane modules group families thematically, so canonical order is restored

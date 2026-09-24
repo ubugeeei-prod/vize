@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, useTemplateRef, watch } from "vue";
 
-import DialogContent from "../../overlays/dialog/dialog-content.vue";
-import DialogPortal from "../../overlays/dialog/dialog-portal.vue";
+import { DialogContent, DialogPortal } from "../../overlays/dialog/dialog.ts";
 import { lightboxContext } from "./lightbox-context.ts";
 import { classifyLightboxSwipe } from "./lightbox-state.ts";
 import type { LightboxContentExpose, LightboxPartSlotState } from "./lightbox-types.ts";

@@ -2,7 +2,7 @@
 import { computed, useTemplateRef } from "vue";
 import type { ComputedRef } from "vue";
 
-import { dialogContext } from "../../overlays/dialog/dialog-context.ts";
+import { dialogContext } from "../../overlays/dialog/dialog.ts";
 import { lightboxContext } from "./lightbox-context.ts";
 import type { LightboxButtonExpose, LightboxIndexSlotState } from "./lightbox-types.ts";
 

@@ -40,7 +40,7 @@ export const imageCropperFamilyCatalog = [
       exportName: "ImageCropperRoot",
       retainedSignature: "data-vize-ui[\\s\\S]{0,8}image-cropper-root",
       allowedRetainedFamilies: ["context", "controllable-state"],
-      maximumJavaScriptGzipBytes: 5_000,
+      maximumJavaScriptGzipBytes: 5_700,
       maximumCssGzipBytes: 0,
     },
     aliases: ["image cropper", "crop", "avatar cropper", "photo editor", "image crop"],

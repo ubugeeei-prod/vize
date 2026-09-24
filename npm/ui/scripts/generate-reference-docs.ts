@@ -1,6 +1,9 @@
 /**
  * Generate the UI and composable reference pages under `docs/content/guide/`.
  *
+ * The pages are build outputs (gitignored): `pnpm build` in docs/ runs this
+ * first, so catalog changes never need a regeneration commit.
+ *
  *   node scripts/generate-reference-docs.ts          # write
  *   node scripts/generate-reference-docs.ts --check  # fail when out of date
  *

@@ -8,7 +8,7 @@ import {
   deriveDeterministicId,
   useDeterministicId,
 } from "../../foundations/id/deterministic-id.ts";
-import DialogRoot from "../../overlays/dialog/dialog-root.vue";
+import { DialogRoot } from "../../overlays/dialog/dialog.ts";
 import { lightboxContext } from "./lightbox-context.ts";
 import type { LightboxContextValue } from "./lightbox-context.ts";
 import {

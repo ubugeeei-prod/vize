@@ -19,6 +19,8 @@ entries or appended to `style.css`. Existing behavior-critical CSS for progress
 bar, scroll area, and motion is also available as `component-progress-bar.css`,
 `component-scroll-area.css`, and `motion.css`. Each asset declares the same
 layer-order prelude; import `base.css`, one preset, then only the CSS needed.
+Tabs, Breadcrumb, Pagination, and Stepper also expose independent
+`component-*.css` assets; their JavaScript entries remain headless.
 
 | #   | Authored feature                      | At the declared floor | Shipped output                                     | Proven by                                                                                |
 | --- | ------------------------------------- | --------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------- |

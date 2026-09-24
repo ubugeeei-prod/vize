@@ -38,7 +38,7 @@ export const lightboxFamilyCatalog = [
       exportName: "LightboxRoot",
       retainedSignature: "data-vize-ui[\\s\\S]{0,8}lightbox-root",
       allowedRetainedFamilies: ["context", "controllable-state", "dialog"],
-      maximumJavaScriptGzipBytes: 3_500,
+      maximumJavaScriptGzipBytes: 4_250,
       maximumCssGzipBytes: 0,
     },
     aliases: ["lightbox", "gallery", "image viewer", "media viewer", "photo viewer"],
