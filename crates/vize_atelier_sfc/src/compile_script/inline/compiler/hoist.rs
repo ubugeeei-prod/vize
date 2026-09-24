@@ -87,6 +87,23 @@ fn trimmed_newlines(text: &str, offset: usize) -> (String, usize) {
     (text.trim_matches('\n').into(), offset + lead)
 }
 
+/// Strip type-only wrappers (`as`, `satisfies`, `!`, parentheses) so
+/// `const HREF = "#main" satisfies Href` hoists like the bare literal. Croquis
+/// already classifies such bindings as `LiteralConst`; hoisting must agree, or
+/// a props default that references the const is emitted outside setup while
+/// the declaration stays inside it (a `ReferenceError` at module evaluation).
+fn unwrap_type_only_wrappers<'e, 'a>(mut expression: &'e Expression<'a>) -> &'e Expression<'a> {
+    loop {
+        expression = match expression {
+            Expression::ParenthesizedExpression(inner) => &inner.expression,
+            Expression::TSAsExpression(inner) => &inner.expression,
+            Expression::TSSatisfiesExpression(inner) => &inner.expression,
+            Expression::TSNonNullExpression(inner) => &inner.expression,
+            _ => return expression,
+        };
+    }
+}
+
 /// A top-level `const <ident> = <literal>` whose name croquis classified as
 /// `LiteralConst`. The initializer check keeps rewritten or computed values in
 /// setup scope even when the analysis says the binding is literal-like.
@@ -104,7 +121,7 @@ fn is_hoistable_literal_const(statement: &Statement<'_>, ctx: &ScriptCompileCont
         return false;
     };
     let initializer_is_literal = matches!(
-        declarator.init,
+        declarator.init.as_ref().map(unwrap_type_only_wrappers),
         Some(
             Expression::NumericLiteral(_)
                 | Expression::StringLiteral(_)

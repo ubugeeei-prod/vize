@@ -326,3 +326,41 @@ const props = defineProps<{ itemKey: (item: string) => PropertyKey }>();
 
     insta::assert_snapshot!(result.code.as_str());
 }
+
+#[test]
+fn test_props_default_referencing_a_wrapped_literal_const_is_module_scoped() {
+    // `@vizejs/ui` skip-link: `const DEFAULT_HREF = "#main" satisfies Href`
+    // referenced by a destructured props default. The default is emitted in
+    // the component options, outside setup, so the const must hoist to module
+    // scope even though its literal sits behind `satisfies` / `as const`.
+    for (declaration, vapor) in [
+        (r##"const DEFAULT_HREF = "#main" satisfies string"##, false),
+        (r##"const DEFAULT_HREF = "#main" as const"##, false),
+        (r##"const DEFAULT_HREF = "#main" satisfies string"##, true),
+    ] {
+        let source = format!(
+            r#"<script setup lang="ts">
+{declaration}
+const {{ href = DEFAULT_HREF }} = defineProps<{{ href?: string }}>()
+</script>
+
+<template><a :href="href">skip</a></template>"#
+        );
+        let descriptor = parse_sfc(&source, SfcParseOptions::default()).expect("parse");
+        let opts = SfcCompileOptions {
+            vapor,
+            ..SfcCompileOptions::default()
+        };
+        let result = compile_sfc(&descriptor, opts).expect("compile");
+        let declared = result
+            .code
+            .find("const DEFAULT_HREF")
+            .expect("declaration kept");
+        let component = result.code.find("export default").expect("component");
+        assert!(
+            declared < component,
+            "{declaration} (vapor: {vapor}) must be declared before the component options:\n{}",
+            result.code
+        );
+    }
+}

@@ -157,7 +157,7 @@ pub(super) fn extract_args_from_call(call: &CallExpression<'_>, source: &str) ->
 
 /// Check if expression is a literal
 pub(super) fn is_literal(expr: &Expression<'_>) -> bool {
-    match expr {
+    match unwrap_type_only_wrappers(expr) {
         Expression::StringLiteral(_)
         | Expression::NumericLiteral(_)
         | Expression::BooleanLiteral(_)
@@ -233,5 +233,20 @@ fn simple_binding_name(id: &BindingPattern<'_>) -> Option<String> {
         BindingPattern::BindingIdentifier(id) => Some(id.name.to_compact_string()),
         BindingPattern::AssignmentPattern(pattern) => simple_binding_name(&pattern.left),
         _ => None,
+    }
+}
+
+/// Strip type-only wrappers (`as`, `satisfies`, `!`, parentheses), matching
+/// Vue's `unwrapTSNode`: `const HREF = "#main" satisfies Href` is as literal
+/// as `const HREF = "#main"`.
+fn unwrap_type_only_wrappers<'e, 'a>(mut expr: &'e Expression<'a>) -> &'e Expression<'a> {
+    loop {
+        expr = match expr {
+            Expression::ParenthesizedExpression(inner) => &inner.expression,
+            Expression::TSAsExpression(inner) => &inner.expression,
+            Expression::TSSatisfiesExpression(inner) => &inner.expression,
+            Expression::TSNonNullExpression(inner) => &inner.expression,
+            _ => return expr,
+        };
     }
 }

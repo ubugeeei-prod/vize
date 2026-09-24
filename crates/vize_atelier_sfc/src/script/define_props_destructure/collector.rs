@@ -470,6 +470,19 @@ pub(crate) fn collect_from_expression<'a>(
                                 }
                             }
                         } else {
+                            // `{ [side]: value }`: the computed key is an
+                            // expression that may read a destructured prop.
+                            if p.computed
+                                && let Some(key) = p.key.as_expression()
+                            {
+                                collect_from_expression(
+                                    key,
+                                    source,
+                                    local_to_key,
+                                    local_bindings,
+                                    rewrites,
+                                );
+                            }
                             collect_from_expression(
                                 &p.value,
                                 source,

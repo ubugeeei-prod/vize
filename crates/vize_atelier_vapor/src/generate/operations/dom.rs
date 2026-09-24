@@ -66,13 +66,33 @@ pub(crate) fn set_prop_call(
         ("setStyle", call("_setStyle", None, ""))
     } else if set_prop.prop_modifier {
         ("setDOMProp", call("_setDOMProp", Some(&named), ""))
-    } else if set_prop.camel && is_svg {
+    } else if is_svg {
+        // SVG properties are always attributes (Vue's `getRuntimeHelper`).
         ("setAttr", call("_setAttr", Some(&named), ", true"))
+    } else if should_set_as_attr(set_prop.tag, key) || key.contains('-') {
+        // Attribute-only keys (`form`, `list` on `<input>`, …) have read-only
+        // or differently typed DOM properties; `setProp` would try the
+        // property and fail. Mirrors runtime-dom `shouldSetAsAttr`.
+        ("setAttr", call("_setAttr", Some(&named), ""))
     } else {
         ("setProp", call("_setProp", Some(&named), ""))
     };
     ctx.use_helper(helper);
     line
+}
+
+/// Keys that Vue always sets as attributes, even though a DOM property of the
+/// same name exists (runtime-dom `shouldSetAsAttr`).
+fn should_set_as_attr(tag: &str, key: &str) -> bool {
+    match key {
+        "spellcheck" | "draggable" | "translate" | "autocorrect" | "form" => true,
+        "list" => tag.eq_ignore_ascii_case("input"),
+        "type" => tag.eq_ignore_ascii_case("textarea"),
+        "width" | "height" => ["img", "video", "canvas", "source"]
+            .iter()
+            .any(|candidate| tag.eq_ignore_ascii_case(candidate)),
+        _ => false,
+    }
 }
 
 /// One bound value: a static literal, or an expression with its anchors.
