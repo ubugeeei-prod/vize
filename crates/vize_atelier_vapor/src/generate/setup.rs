@@ -44,6 +44,7 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
             "withModifiers" => 41,
             "withKeys" => 42,
             "on" => 43,
+            "onBinding" => 43,
             "delegateEvents" => 44,
             "setDynamicEvents" => 45,
             "setInsertionState" => 78,

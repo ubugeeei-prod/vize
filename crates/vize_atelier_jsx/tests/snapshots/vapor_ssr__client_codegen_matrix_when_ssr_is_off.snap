@@ -24,21 +24,20 @@ export function render(_ctx) {
 ### source
 const A = () => <div>{cond ? <span>a</span> : <em>b</em>}</div>;
 ### output
-import { child as _child, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<span>a</span>", true)
 const t1 = _template("<em>b</em>", true)
-const t2 = _template("<div><!----></div>", true)
+const t2 = _template("<div></div>", true)
 
 export function render(_ctx) {
   const n0 = t2()
-  const n1 = _child(n0)
-  _setInsertionState(n0, n1, true)
-  const n2 = _createIf(() => (cond), () => {
-    const n4 = t0()
-    return n4
+  _setInsertionState(n0)
+  const n1 = _createIf(() => (cond), () => {
+    const n3 = t0()
+    return n3
   }, () => {
-    const n6 = t1()
-    return n6
+    const n5 = t1()
+    return n5
   })
   return n0
 }
@@ -48,19 +47,18 @@ export function render(_ctx) {
 ### source
 const A = () => <ul>{items.map((i) => <li>{i}</li>)}</ul>;
 ### output
-import { child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
 const t0 = _template("<li> </li>")
-const t1 = _template("<ul><!----></ul>", true)
+const t1 = _template("<ul></ul>", true)
 
 export function render(_ctx) {
   const n0 = t1()
-  const n1 = _child(n0)
-  _setInsertionState(n0, n1, true)
-  const n2 = _createFor(() => (items), (_for_item0) => {
-    const n4 = t0()
-    const x4 = _txt(n4)
-    _renderEffect(() => _setText(x4, _toDisplayString(_for_item0.value)))
-    return n4
+  _setInsertionState(n0)
+  const n1 = _createFor(() => (items), (_for_item0) => {
+    const n3 = t0()
+    const x3 = _txt(n3)
+    _renderEffect(() => _setText(x3, _toDisplayString(_for_item0.value)))
+    return n3
   })
   return n0
 }
@@ -70,28 +68,24 @@ export function render(_ctx) {
 ### source
 const A = () => <div>{a ? <p>A</p> : b ? <em>B</em> : <span>C</span>}</div>;
 ### output
-import { child as _child, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<p>A</p>", true)
 const t1 = _template("<em>B</em>", true)
 const t2 = _template("<span>C</span>", true)
-const t3 = _template("<div><!----></div>", true)
+const t3 = _template("<div></div>", true)
 
 export function render(_ctx) {
   const n0 = t3()
-  const n1 = _child(n0)
-  _setInsertionState(n0, n1, true)
-  const n2 = _createIf(() => (a), () => {
-    const n4 = t0()
-    return n4
+  _setInsertionState(n0)
+  const n1 = _createIf(() => (a), () => {
+    const n3 = t0()
+    return n3
+  }, () => _createIf(() => (b), () => {
+    const n5 = t1()
+    return n5
   }, () => {
-    _setInsertionState(n0, n1, true)
-    return _createIf(() => (b), () => {
-      const n6 = t1()
-      return n6
-    }, () => {
-      const n9 = t2()
-      return n9
-    })
-  })
+    const n8 = t2()
+    return n8
+  }))
   return n0
 }

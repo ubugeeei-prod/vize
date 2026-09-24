@@ -22,7 +22,11 @@ installDomGlobals();
 registerSfcHooks("vapor");
 const vue = await import("vue");
 const { loadRuntimeFixtures } = await import("./fixtures.ts");
-const fixtures = await loadRuntimeFixtures();
+// `VIZE_VAPOR_FIXTURES=a,b` narrows the lane to named fixtures while debugging.
+const only = process.env.VIZE_VAPOR_FIXTURES?.split(",").filter(Boolean);
+const fixtures = (await loadRuntimeFixtures()).filter(
+  (fixture) => only === undefined || only.includes(fixture.name),
+);
 
 function describe(error: unknown): string {
   return error instanceof Error ? (error.stack ?? error.message) : String(error);
@@ -43,8 +47,18 @@ process.on("unhandledRejection", (reason) => {
   asyncProblems.push(`unhandled rejection: ${describe(reason)}`);
 });
 
+// Vue 3.6 keeps the pending insertion parent in module state and clears it
+// only when the next block locates its hydration node, so a fixture that
+// fails mid-hydration would leak it into the next fixture. Each fixture starts
+// from a cleared state, as a fresh page would.
+const setInsertionState: unknown = Reflect.get(vue, "setInsertionState");
+function clearInsertionState(): void {
+  if (typeof setInsertionState === "function") setInsertionState(null);
+}
+
 const results: { name: string; problems: string[] }[] = [];
 for (const fixture of fixtures) {
+  clearInsertionState();
   const problems: string[] = [];
   asyncProblems = problems;
   const html = records.find((record) => record.name === fixture.name)?.html;

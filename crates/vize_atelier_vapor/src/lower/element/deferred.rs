@@ -1,6 +1,6 @@
 //! Deferred child ID allocation for dynamic and control-flow descendants.
 
-use crate::ir::InsertNodeIRNode;
+use crate::ir::InsertionAnchor;
 use vize_carton::ensure_sufficient_stack;
 
 use super::component::transform_component;
@@ -95,6 +95,7 @@ fn transform_dynamic_children_with_ids<'a>(
         .filter(|child| !matches!(child, TemplateChildNode::Comment(_)))
         .count()
         == 1;
+    let mut placeholders = super::insertion::block_placeholders(&el.children).into_iter();
     transform_dynamic_children_in_slice(
         ctx,
         &el.children,
@@ -106,6 +107,7 @@ fn transform_dynamic_children_with_ids<'a>(
         &mut in_text_run,
         &mut prev_template_backed_child,
         sole_child,
+        &mut placeholders,
     );
     debug_assert_eq!(child_id_index, child_ids.len());
 }
@@ -122,18 +124,21 @@ fn transform_dynamic_children_in_slice<'a>(
     in_text_run: &mut bool,
     prev_template_backed_child: &mut Option<(usize, usize)>,
     sole_child: bool,
+    placeholders: &mut std::vec::IntoIter<bool>,
 ) {
     for child in vize_atelier_core::walk_probe::vapor_children(children) {
         let TemplateChildNode::Element(child_el) = child else {
             match child {
                 TemplateChildNode::If(node) => {
-                    let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index);
+                    let anchor =
+                        insertion_anchor(ctx, block, parent_id, *rendered_index, placeholders);
                     transform_if_node_into_parent(ctx, node, block, parent_id, anchor);
                     *rendered_index += 1;
                     *in_text_run = false;
                 }
                 TemplateChildNode::For(node) => {
-                    let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index);
+                    let anchor =
+                        insertion_anchor(ctx, block, parent_id, *rendered_index, placeholders);
                     transform_for_node_into_parent(ctx, node, block, parent_id, anchor, sole_child);
                     *rendered_index += 1;
                     *in_text_run = false;
@@ -164,6 +169,7 @@ fn transform_dynamic_children_in_slice<'a>(
                     in_text_run,
                     prev_template_backed_child,
                     false,
+                    placeholders,
                 );
             });
             continue;
@@ -199,10 +205,10 @@ fn transform_dynamic_children_in_slice<'a>(
                     transform_existing_element(ctx, child_el, child_id, block);
                 });
             } else if child_el.tag_type == ElementType::Slot {
-                let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index);
+                let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index, placeholders);
                 transform_slot_outlet_child(ctx, child_el, child_id, parent_id, anchor, block);
             } else {
-                let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index);
+                let anchor = insertion_anchor(ctx, block, parent_id, *rendered_index, placeholders);
                 transform_component(
                     ctx,
                     child_el,
@@ -220,12 +226,18 @@ fn transform_dynamic_children_in_slice<'a>(
     }
 }
 
+/// The insertion anchor of the next block child: its template placeholder when
+/// a template-rendered sibling follows, otherwise an append at its unit index.
 fn insertion_anchor<'a>(
     ctx: &mut TransformContext<'a>,
     block: &mut BlockIRNode<'a>,
     parent_id: usize,
     offset: usize,
-) -> usize {
+    placeholders: &mut std::vec::IntoIter<bool>,
+) -> InsertionAnchor {
+    if !placeholders.next().unwrap_or(true) {
+        return InsertionAnchor::Index(offset);
+    }
     let child_id = ctx.next_id();
     block
         .operation
@@ -234,7 +246,7 @@ fn insertion_anchor<'a>(
             parent_id,
             offset,
         }));
-    child_id
+    InsertionAnchor::Node(child_id)
 }
 
 fn transform_slot_outlet_child<'a>(
@@ -242,7 +254,7 @@ fn transform_slot_outlet_child<'a>(
     el: &ElementNode<'a>,
     element_id: usize,
     parent_id: usize,
-    anchor: usize,
+    anchor: InsertionAnchor,
     block: &mut BlockIRNode<'a>,
 ) {
     let name = get_slot_outlet_name(ctx, el);
@@ -255,12 +267,7 @@ fn transform_slot_outlet_child<'a>(
             name,
             props,
             fallback,
-        }));
-    block
-        .operation
-        .push(OperationNode::InsertNode(InsertNodeIRNode {
-            elements: vize_carton::Vec::from_array_in([element_id], &ctx.allocator),
-            parent: parent_id,
+            parent: Some(parent_id),
             anchor: Some(anchor),
         }));
 }

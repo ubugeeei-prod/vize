@@ -21,7 +21,7 @@ pub(super) fn transform_component<'a>(
     block: &mut BlockIRNode<'a>,
     existing_id: Option<usize>,
     parent: Option<usize>,
-    anchor: Option<usize>,
+    anchor: Option<crate::ir::InsertionAnchor>,
     add_return: bool,
 ) {
     let tag = el.tag;

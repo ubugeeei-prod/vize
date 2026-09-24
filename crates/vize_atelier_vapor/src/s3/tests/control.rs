@@ -108,7 +108,7 @@ fn control_flow_payload_mutations_drive_generation() {
     for expected in [
         "_createFor(() => (_ctx.rows), (_for_item0, _for_key0, _for_index0) => {",
         "}, (item, name, position) => (item.uid))",
-        "_setProp(n4, \"title\", _for_key0.value)",
+        "_setProp(n3, \"title\", _for_key0.value)",
         "_toDisplayString(_for_index0.value)",
     ] {
         assert!(code.contains(expected), "missing {expected}: {code}");

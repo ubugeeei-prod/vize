@@ -8,7 +8,9 @@ use super::super::{context::GenerateContext, expression::is_simple_path_expressi
 
 /// Generate SetEvent
 pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEventIRNode<'_>) {
-    ctx.use_helper("createInvoker");
+    if !set_event.effect {
+        ctx.use_helper("createInvoker");
+    }
 
     let element = cstr!("n{}", set_event.element);
     let event_name = &set_event.key.content;
@@ -61,23 +63,37 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
         line.push_str(")");
         ctx.push_line_spanned(&line);
     } else if set_event.effect {
-        // Dynamic event - use renderEffect + _on
-        ctx.use_helper("on");
+        // A dynamic event name rebinds inside a render effect. Vue 3.6's
+        // `onBinding` wraps the handler and removes the previous listener
+        // through `onEffectCleanup`, so a renamed event never stays bound.
+        ctx.use_helper("onBinding");
         ctx.use_helper("renderEffect");
         let event_expr = ctx.resolve_expression_node(&set_event.key);
+        let options = event_listener_options(set_event);
         ctx.push_line("_renderEffect(() => {");
         ctx.indent();
-        ctx.push_line("");
-        ctx.push_line_fmt(format_args!(
-            "_on({}, {}, _createInvoker({}), {{",
-            element,
-            event_expr,
-            wrapped_handler.as_str()
-        ));
-        ctx.indent();
-        ctx.push_line("effect: true");
-        ctx.deindent();
-        ctx.push_line("})");
+        if options.is_empty() {
+            ctx.push_line_fmt(format_args!(
+                "_onBinding({}, {}, {})",
+                element,
+                event_expr,
+                wrapped_handler.as_str()
+            ));
+        } else {
+            ctx.push_line_fmt(format_args!(
+                "_onBinding({}, {}, {}, {{",
+                element,
+                event_expr,
+                wrapped_handler.as_str()
+            ));
+            ctx.indent();
+            for (index, opt) in options.iter().enumerate() {
+                let comma = if index + 1 < options.len() { "," } else { "" };
+                ctx.push_line_fmt(format_args!("{opt}{comma}"));
+            }
+            ctx.deindent();
+            ctx.push_line("})");
+        }
         ctx.deindent();
         ctx.push_line("})");
     } else {
@@ -141,4 +157,19 @@ fn wrap_handler(callee: &str, handler: &EmitDocument, list: &[&str]) -> EmitDocu
     }
     out.push_str("])");
     out
+}
+
+/// `addEventListener` options requested by `.once`, `.capture` and `.passive`.
+fn event_listener_options(set_event: &SetEventIRNode<'_>) -> std::vec::Vec<&'static str> {
+    let mut options = std::vec::Vec::new();
+    if set_event.modifiers.options.once {
+        options.push("once: true");
+    }
+    if set_event.modifiers.options.capture {
+        options.push("capture: true");
+    }
+    if set_event.modifiers.options.passive {
+        options.push("passive: true");
+    }
+    options
 }

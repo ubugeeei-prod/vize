@@ -2,25 +2,23 @@
 source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
-import { child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
 const t0 = _template("<span> </span>")
-const t1 = _template("<div><!----></div>", true)
+const t1 = _template("<div></div>", true)
 export function render(_ctx) {
 const n0 = t1()
-const n1 = _child(n0)
-_setInsertionState(n0, n1, true)
-const n2 = _createFor(() => (4), (_for_item0) => {
-_setInsertionState(n0, n1, true)
-const n4 = _createFor(() => (_ctx.icons), (_for_item1, _for_key1) => {
-const n6 = t0()
-const x6 = _txt(n6)
+_setInsertionState(n0)
+const n1 = _createFor(() => (4), (_for_item0) => {
+const n3 = _createFor(() => (_ctx.icons), (_for_item1, _for_key1) => {
+const n5 = t0()
+const x5 = _txt(n5)
 _renderEffect(() => {
-_setClass(n6, _for_item1.value)
-_setText(x6, _toDisplayString(_for_item1.value))
+_setClass(n5, _for_item1.value)
+_setText(x5, _toDisplayString(_for_item1.value))
 })
-return n6
+return n5
 }, (icon, i) => (`${_for_item0.value}-${i}`))
-return n4
+return n3
 }, (n) => (`set-${n}`), 4)
 return n0
 }

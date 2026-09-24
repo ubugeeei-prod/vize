@@ -4,7 +4,7 @@ use vize_carton::{FxHashMap, ToCompactString};
 
 use super::{
     super::{context::GenerateContext, generate_block},
-    insertion::{block_requires_parent_insertion_state, emit_insertion_state},
+    insertion::emit_insertion_state,
 };
 
 /// Generate If
@@ -33,9 +33,6 @@ fn generate_if_inner(
     let was_fragment = ctx.is_fragment;
     ctx.is_fragment = true;
     ctx.indent();
-    if block_requires_parent_insertion_state(&if_node.positive) {
-        emit_insertion_state(ctx, if_node.parent, if_node.anchor);
-    }
     ctx.push_component_scope();
     generate_block(ctx, &if_node.positive, element_template_map);
     ctx.pop_component_scope();
@@ -47,9 +44,6 @@ fn generate_if_inner(
                 let else_head = ctx.else_head(if_node);
                 ctx.push_line_spanned(&else_head);
                 ctx.indent();
-                if block_requires_parent_insertion_state(block) {
-                    emit_insertion_state(ctx, if_node.parent, if_node.anchor);
-                }
                 ctx.push_component_scope();
                 generate_block(ctx, block, element_template_map);
                 ctx.pop_component_scope();
@@ -57,22 +51,13 @@ fn generate_if_inner(
                 ctx.push_line("})");
             }
             NegativeBranch::If(nested_if) => {
-                if nested_if.parent.is_none() && nested_if.anchor.is_none() {
-                    ctx.push("}, () => ");
-                    generate_nested_if(ctx, nested_if, element_template_map);
-                    ctx.push(")");
-                    ctx.push("\n");
-                } else {
-                    ctx.push_line("}, () => {");
-                    ctx.indent();
-                    emit_insertion_state(ctx, nested_if.parent, nested_if.anchor);
-                    ctx.push_indent();
-                    ctx.push("return ");
-                    generate_nested_if(ctx, nested_if, element_template_map);
-                    ctx.push("\n");
-                    ctx.deindent();
-                    ctx.push_line("})");
-                }
+                // Nested `v-else-if` chains are branch roots of the outer `createIf`
+                // fragment: they never carry their own insertion state.
+                ctx.push_indent();
+                ctx.push("}, () => ");
+                generate_nested_if(ctx, nested_if, element_template_map);
+                ctx.push(")");
+                ctx.push("\n");
             }
         }
     } else {
@@ -95,9 +80,6 @@ fn generate_nested_if(
     ctx.push("\n");
 
     ctx.indent();
-    if block_requires_parent_insertion_state(&if_node.positive) {
-        emit_insertion_state(ctx, if_node.parent, if_node.anchor);
-    }
     ctx.push_component_scope();
     generate_block(ctx, &if_node.positive, element_template_map);
     ctx.pop_component_scope();
@@ -109,9 +91,6 @@ fn generate_nested_if(
                 let else_head = ctx.else_head(if_node);
                 ctx.push_line_spanned(&else_head);
                 ctx.indent();
-                if block_requires_parent_insertion_state(block) {
-                    emit_insertion_state(ctx, if_node.parent, if_node.anchor);
-                }
                 ctx.push_component_scope();
                 generate_block(ctx, block, element_template_map);
                 ctx.pop_component_scope();
@@ -120,22 +99,12 @@ fn generate_nested_if(
                 ctx.push("})");
             }
             NegativeBranch::If(nested_if) => {
-                if nested_if.parent.is_none() && nested_if.anchor.is_none() {
-                    ctx.push("}, () => ");
-                    generate_nested_if(ctx, nested_if, element_template_map);
-                    ctx.push(")");
-                } else {
-                    ctx.push_line("}, () => {");
-                    ctx.indent();
-                    emit_insertion_state(ctx, nested_if.parent, nested_if.anchor);
-                    ctx.push_indent();
-                    ctx.push("return ");
-                    generate_nested_if(ctx, nested_if, element_template_map);
-                    ctx.push("\n");
-                    ctx.deindent();
-                    ctx.push_indent();
-                    ctx.push("})");
-                }
+                // Nested `v-else-if` chains are branch roots of the outer `createIf`
+                // fragment: they never carry their own insertion state.
+                ctx.push_indent();
+                ctx.push("}, () => ");
+                generate_nested_if(ctx, nested_if, element_template_map);
+                ctx.push(")");
             }
         }
     } else {

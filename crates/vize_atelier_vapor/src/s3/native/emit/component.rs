@@ -7,8 +7,8 @@ use vize_carton::{Box, String, Vec};
 use super::super::{BindingKind, Content, Expr, Node, Prop};
 use super::{Emitter, take};
 use crate::ir::{
-    BlockIRNode, ComponentKind, CreateComponentIRNode, IRProp, IRSlot, OperationNode,
-    SlotOutletIRNode,
+    BlockIRNode, ComponentKind, CreateComponentIRNode, IRProp, IRSlot, InsertionAnchor,
+    OperationNode, SlotOutletIRNode,
 };
 
 impl<'a> Emitter<'a, '_> {
@@ -18,7 +18,7 @@ impl<'a> Emitter<'a, '_> {
         &mut self,
         index: usize,
         existing: Option<usize>,
-        placement: Option<(usize, usize)>,
+        placement: Option<(usize, InsertionAnchor)>,
         block: &mut BlockIRNode<'a>,
     ) {
         // The caller checked the component payload.
@@ -98,7 +98,13 @@ impl<'a> Emitter<'a, '_> {
 
     /// A `<slot>` outlet with its already assigned id; the fallback block is
     /// numbered after it.
-    pub(super) fn outlet(&mut self, index: usize, id: usize, block: &mut BlockIRNode<'a>) {
+    pub(super) fn outlet(
+        &mut self,
+        index: usize,
+        id: usize,
+        placement: Option<(usize, InsertionAnchor)>,
+        block: &mut BlockIRNode<'a>,
+    ) {
         // The caller checked the outlet payload.
         let Some(Node {
             content: Content::Outlet { name, props },
@@ -121,6 +127,8 @@ impl<'a> Emitter<'a, '_> {
                 name,
                 props,
                 fallback,
+                parent: placement.map(|(parent, _)| parent),
+                anchor: placement.map(|(_, anchor)| anchor),
             }));
     }
 

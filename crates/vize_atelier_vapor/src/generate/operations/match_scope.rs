@@ -13,7 +13,7 @@ use super::{
         context::{ForScope, GenerateContext},
         generate_block,
     },
-    insertion::{block_requires_parent_insertion_state, emit_insertion_state},
+    insertion::emit_insertion_state,
 };
 
 pub(super) fn generate_match_scope(
@@ -42,9 +42,6 @@ pub(super) fn generate_match_scope(
     let id = for_node.id.to_compact_string();
     ctx.push_line(&["const n", &id, " = ((", &scope_item, ") => {"].concat());
     ctx.indent();
-    if block_requires_parent_insertion_state(&for_node.render) {
-        emit_insertion_state(ctx, for_node.parent, for_node.anchor);
-    }
     ctx.push_component_scope();
     generate_block(ctx, &for_node.render, element_template_map);
     ctx.pop_component_scope();

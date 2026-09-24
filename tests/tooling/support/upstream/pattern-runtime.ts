@@ -6,8 +6,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { resolveVizeLaunchCommand } from "../lsp/launch.ts";
-import { root } from "../lsp/paths.ts";
 import { workspace } from "./vue-language-tools.ts";
+import { vueVaporBrowserRuntime } from "../vue-vapor-release.mjs";
 
 export type PatternBackend = "dom" | "ssr" | "vapor";
 export type PatternBuild = {
@@ -20,13 +20,12 @@ export type PatternBuild = {
 const backendFlags = { dom: [], ssr: ["--ssr"], vapor: ["--vapor"] } as const;
 
 /**
- * The one Vue build that carries both renderers. Node resolves `vue` to a
- * build without Vapor, so a parity run points every module at this file and
- * the two renderers share a single reactivity instance.
+ * The one Vue build that carries both renderers, from the release Vize's Vapor
+ * codegen targets. Node resolves `vue` to a build without Vapor, so a parity
+ * run points every module at this file and the two renderers share a single
+ * reactivity instance.
  */
-export const vaporRuntime = pathToFileURL(
-  path.join(root, "tests/node_modules/vue/dist/vue.runtime-with-vapor.esm-browser.js"),
-).href;
+export const vaporRuntime = pathToFileURL(vueVaporBrowserRuntime).href;
 
 /**
  * Build `components` (`Name.vue` -> source) for the client and the server.

@@ -1,33 +1,29 @@
-use crate::ir::{BlockIRNode, OperationNode};
-use vize_carton::{String, cstr};
+use crate::ir::InsertionAnchor;
+use vize_carton::cstr;
 
 use super::super::context::GenerateContext;
 
+/// Emit Vue 3.6's `setInsertionState(parent, anchor?)` before a block that
+/// needs insertion. A node anchor is the template placeholder the block is
+/// inserted before; an index anchor appends and carries the hydration start
+/// unit, omitted when it is zero exactly as upstream codegen does.
 pub(super) fn emit_insertion_state(
     ctx: &mut GenerateContext,
     parent: Option<usize>,
-    anchor: Option<usize>,
+    anchor: Option<InsertionAnchor>,
 ) {
     let Some(parent_id) = parent else {
         return;
     };
     ctx.use_helper("setInsertionState");
-    let anchor_expr = anchor
-        .map(|anchor_id| cstr!("n{}", anchor_id))
-        .unwrap_or_else(|| String::from("null"));
-    ctx.push_line(&cstr!(
-        "_setInsertionState(n{}, {}, true)",
-        parent_id,
-        anchor_expr
-    ));
-}
-
-pub(super) fn block_requires_parent_insertion_state(block: &BlockIRNode<'_>) -> bool {
-    block.operation.iter().any(|op| match op {
-        OperationNode::If(if_node) => if_node.parent.is_none(),
-        OperationNode::For(for_node) => for_node.parent.is_none(),
-        OperationNode::CreateComponent(component) => component.parent.is_none(),
-        OperationNode::SlotOutlet(_) => true,
-        _ => false,
-    })
+    let line = match anchor {
+        Some(InsertionAnchor::Node(anchor_id)) => {
+            cstr!("_setInsertionState(n{}, n{})", parent_id, anchor_id)
+        }
+        Some(InsertionAnchor::Index(index)) if index > 0 => {
+            cstr!("_setInsertionState(n{}, {})", parent_id, index)
+        }
+        Some(InsertionAnchor::Index(_)) | None => cstr!("_setInsertionState(n{})", parent_id),
+    };
+    ctx.push_line(&line);
 }

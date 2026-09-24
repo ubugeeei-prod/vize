@@ -5,14 +5,13 @@
 //! actual element lifetimes) must equal the Lean reference's from-scratch
 //! render in `ivm-matrix.behavior.jsonl`.
 //!
-//! One upstream defect is pinned exactly instead of hidden:
-//! `@vue/runtime-vapor` 3.6.0-beta.10 reuses positional `createFor` blocks
-//! with `update(block, getItem(source, i)[0])`, so an unkeyed object loop keeps
-//! each block's stale key alias after keys shift. The compiled Vapor reads
-//! `_for_key0.value` reactively, and VDOM matches the reference. Only
-//! `object-positional-*` Vapor traces may appear in `ivm-matrix.vapor-gaps.jsonl`.
-//! Each entry must still differ from the reference and must be reproduced
-//! exactly. Once upstream fixes the defect, this test fails until the entry is
+//! Upstream runtime defects may be pinned exactly instead of hidden, in
+//! `ivm-matrix.vapor-gaps.jsonl`. `@vue/runtime-vapor` 3.6.0-beta.10 reused
+//! positional `createFor` blocks with a stale key alias after keys shifted, so
+//! unkeyed `object-positional-*` Vapor traces were pinned there. The targeted
+//! release (see `tests/tooling/support/vue-vapor-release.mjs`) fixes it and the
+//! ledger is empty. Only that family may appear; each entry must still differ
+//! from the reference and be reproduced exactly, and a fixed entry fails until
 //! deleted. `VIZE_UPDATE_IVM_VAPOR_GAPS=1` re-records only that family.
 
 use crate::{Scenario, mounted_trace_with_identity};
@@ -76,17 +75,20 @@ fn run_family(prefix: &str) {
     let mut recorded = String::new();
     assert_eq!(cases.len(), behaviors.len());
     if !record {
-        // Exactly the pinned class, in matrix order: every unkeyed object case.
+        // Only the pinned class, in matrix order: unkeyed object cases.
         let pinned: Vec<&Value> = cases
             .iter()
             .map(|case| &case["name"])
             .filter(|name| name.as_str().unwrap().starts_with(GAP_FAMILY))
             .collect();
-        let listed: Vec<&Value> = gaps.iter().map(|gap| &gap["name"]).collect();
-        assert_eq!(
-            listed, pinned,
-            "gap entries must be exactly the pinned class"
-        );
+        let mut remaining = pinned.iter();
+        for gap in &gaps {
+            assert!(
+                remaining.any(|name| **name == gap["name"]),
+                "gap entries must stay within the pinned class, in matrix order: {}",
+                gap["name"]
+            );
+        }
     }
     let mut checked = 0;
     for (case, behavior) in cases.iter().zip(&behaviors) {

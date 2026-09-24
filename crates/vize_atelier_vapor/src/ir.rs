@@ -227,6 +227,20 @@ pub struct InsertNodeIRNode<'a> {
     pub anchor: Option<usize>,
 }
 
+/// Where a block that needs insertion (component, slot outlet, `v-if`,
+/// `v-for`) lands in its parent, in the Vue 3.6 `setInsertionState` model.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InsertionAnchor {
+    /// Insert before this template placeholder (`<!---->`). Emitted only when
+    /// a template-rendered sibling follows the block, as upstream does; during
+    /// hydration the placeholder's unit is the block's hydration target.
+    Node(usize),
+    /// Append to the parent. The value is the hydration start unit: the number
+    /// of logical units (text runs, elements, blocks) before the block, which
+    /// codegen omits when it is zero.
+    Index(usize),
+}
+
 /// Prepend node operation
 #[derive(Debug)]
 pub struct PrependNodeIRNode<'a> {
@@ -279,7 +293,7 @@ pub struct CreateComponentIRNode<'a> {
     /// v-show expression to apply after component creation
     pub v_show: Option<Box<'a, SimpleExpressionNode<'a>>>,
     pub parent: Option<usize>,
-    pub anchor: Option<usize>,
+    pub anchor: Option<InsertionAnchor>,
 }
 
 /// IR slot
@@ -297,6 +311,10 @@ pub struct SlotOutletIRNode<'a> {
     pub name: Box<'a, SimpleExpressionNode<'a>>,
     pub props: Vec<'a, IRProp<'a>>,
     pub fallback: Option<BlockIRNode<'a>>,
+    /// Parent element the outlet is inserted into, when it is not a block root.
+    pub parent: Option<usize>,
+    /// Insertion position within `parent`.
+    pub anchor: Option<InsertionAnchor>,
 }
 
 /// Get text child operation

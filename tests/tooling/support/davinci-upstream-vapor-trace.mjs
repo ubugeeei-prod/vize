@@ -1,16 +1,11 @@
 import assert from "node:assert/strict";
-import { createRequire } from "node:module";
 import process from "node:process";
 import { traceMountedBackend } from "./davinci-mounted-trace.mjs";
+import { officialCompilerVapor } from "./vue-vapor-release.mjs";
 
-const require = createRequire(import.meta.url);
-// The pinned beta SFC compiler depends on this exact compiler-vapor version.
-// Resolve through it so the official compiler and the mounted Vue runtime
-// cannot silently drift to different releases.
-const fromSfc = createRequire(require.resolve("@vue/compiler-sfc"));
-const compiler = fromSfc("@vue/compiler-vapor");
-const compilerVersion = fromSfc("@vue/compiler-vapor/package.json").version;
-assert.equal(compilerVersion, require("vue/package.json").version);
+// The official compiler and the mounted runtime come from the same Vue
+// release Vize's Vapor codegen targets (see `vue-vapor-release.mjs`).
+const compiler = officialCompilerVapor;
 
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);

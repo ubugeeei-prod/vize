@@ -174,17 +174,16 @@ export function render(_ctx) {
 ### source
 const A = () => <ul>{ok && <span/>}</ul>;
 ### output
-import { child as _child, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<span></span>", true)
-const t1 = _template("<ul><!----></ul>", true)
+const t1 = _template("<ul></ul>", true)
 
 export function render(_ctx) {
   const n0 = t1()
-  const n1 = _child(n0)
-  _setInsertionState(n0, n1, true)
-  const n2 = _createIf(() => (ok), () => {
-    const n4 = t0()
-    return n4
+  _setInsertionState(n0)
+  const n1 = _createIf(() => (ok), () => {
+    const n3 = t0()
+    return n3
   })
   return n0
 }
@@ -194,21 +193,20 @@ export function render(_ctx) {
 ### source
 const A = () => <div>{ok ? <a/> : <b/>}</div>;
 ### output
-import { child as _child, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+import { setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<a></a>", true)
 const t1 = _template("<b></b>", true)
-const t2 = _template("<div><!----></div>", true)
+const t2 = _template("<div></div>", true)
 
 export function render(_ctx) {
   const n0 = t2()
-  const n1 = _child(n0)
-  _setInsertionState(n0, n1, true)
-  const n2 = _createIf(() => (ok), () => {
-    const n4 = t0()
-    return n4
+  _setInsertionState(n0)
+  const n1 = _createIf(() => (ok), () => {
+    const n3 = t0()
+    return n3
   }, () => {
-    const n6 = t1()
-    return n6
+    const n5 = t1()
+    return n5
   })
   return n0
 }
@@ -218,17 +216,16 @@ export function render(_ctx) {
 ### source
 const A = () => <ul>{items.map((i) => <li/>)}</ul>;
 ### output
-import { child as _child, setInsertionState as _setInsertionState, createFor as _createFor, template as _template } from 'vue';
+import { setInsertionState as _setInsertionState, createFor as _createFor, template as _template } from 'vue';
 const t0 = _template("<li></li>")
-const t1 = _template("<ul><!----></ul>", true)
+const t1 = _template("<ul></ul>", true)
 
 export function render(_ctx) {
   const n0 = t1()
-  const n1 = _child(n0)
-  _setInsertionState(n0, n1, true)
-  const n2 = _createFor(() => (items), (_for_item0) => {
-    const n4 = t0()
-    return n4
+  _setInsertionState(n0)
+  const n1 = _createFor(() => (items), (_for_item0) => {
+    const n3 = t0()
+    return n3
   })
   return n0
 }

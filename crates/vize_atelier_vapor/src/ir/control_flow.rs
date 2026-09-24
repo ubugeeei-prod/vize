@@ -3,7 +3,7 @@
 use vize_atelier_core::SimpleExpressionNode;
 use vize_carton::Box;
 
-use super::BlockIRNode;
+use super::{BlockIRNode, InsertionAnchor};
 
 /// If operation
 #[derive(Debug)]
@@ -14,7 +14,7 @@ pub struct IfIRNode<'a> {
     pub negative: Option<NegativeBranch<'a>>,
     pub once: bool,
     pub parent: Option<usize>,
-    pub anchor: Option<usize>,
+    pub anchor: Option<InsertionAnchor>,
 }
 
 /// Negative branch of if
@@ -38,7 +38,7 @@ pub struct ForIRNode<'a> {
     pub component: bool,
     pub only_child: bool,
     pub parent: Option<usize>,
-    pub anchor: Option<usize>,
+    pub anchor: Option<InsertionAnchor>,
     /// The lexical scope a patterned-template `v-match` lowers to (RFC 823):
     /// the block runs once against a computed of the source instead of being
     /// rendered per list item, so it introduces no list fragment.

@@ -2,6 +2,7 @@ use crate::ir::SlotOutletIRNode;
 use vize_carton::{String, cstr};
 
 use super::super::{context::GenerateContext, generate_block, setup::escape_js_string_literal};
+use super::insertion::emit_insertion_state;
 
 /// Generate SlotOutlet
 ///
@@ -16,6 +17,7 @@ use super::super::{context::GenerateContext, generate_block, setup::escape_js_st
 ///   props slot when the outlet has no props.
 pub(super) fn generate_slot_outlet(ctx: &mut GenerateContext, slot: &SlotOutletIRNode<'_>) {
     ctx.use_helper("createSlot");
+    emit_insertion_state(ctx, slot.parent, slot.anchor);
     let name = cstr!("n{}", slot.id);
     let slot_name = if slot.name.is_static {
         cstr!("\"{}\"", escape_js_string_literal(slot.name.content))

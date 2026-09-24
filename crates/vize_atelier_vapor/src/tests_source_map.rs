@@ -161,7 +161,7 @@ fn both_lanes_map_templates_branches_and_loops_byte_exactly() {
     );
     assert_eq!(
         code,
-        "import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<li>Y</li>\", true)\nconst t1 = _template(\"<li>N</li>\", true)\nconst t2 = _template(\"<i> </i>\")\nconst t3 = _template(\"<ul><!----><!----></ul>\", true)\n\nexport function render(_ctx) {\n  const n0 = t3()\n  const n1 = _child(n0)\n  const n7 = _next(_child(n0), 1)\n  _setInsertionState(n0, n1, true)\n  const n2 = _createIf(() => (_ctx.ok), () => {\n    const n4 = t0()\n    return n4\n  }, () => {\n    const n6 = t1()\n    return n6\n  })\n  _setInsertionState(n0, n7, true)\n  const n8 = _createFor(() => (_ctx.xs), (_for_item0) => {\n    const n10 = t2()\n    const x10 = _txt(n10)\n    _renderEffect(() => _setText(x10, _toDisplayString(_for_item0.value)))\n    return n10\n  })\n  return n0\n}\n"
+        "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, createFor as _createFor, template as _template } from 'vue';\nconst t0 = _template(\"<li>Y</li>\", true)\nconst t1 = _template(\"<li>N</li>\", true)\nconst t2 = _template(\"<i> </i>\")\nconst t3 = _template(\"<ul></ul>\", true)\n\nexport function render(_ctx) {\n  const n0 = t3()\n  _setInsertionState(n0)\n  const n1 = _createIf(() => (_ctx.ok), () => {\n    const n3 = t0()\n    return n3\n  }, () => {\n    const n5 = t1()\n    return n5\n  })\n  _setInsertionState(n0, 1)\n  const n6 = _createFor(() => (_ctx.xs), (_for_item0) => {\n    const n8 = t2()\n    const x8 = _txt(n8)\n    _renderEffect(() => _setText(x8, _toDisplayString(_for_item0.value)))\n    return n8\n  })\n  return n0\n}\n"
     );
     assert_eq!(
         segments,
@@ -171,14 +171,14 @@ fn both_lanes_map_templates_branches_and_loops_byte_exactly() {
             r#"2:23 "li>N</li" -> "li v-els""#,
             r#"2:26 "N</li>\"," -> "N</li><i""#,
             r#"3:23 "i> </i>\"" -> "i v-for=""#,
-            r#"4:23 "ul><!---" -> "ul>⏎<li ""#,
+            r#"4:23 "ul></ul>" -> "ul>⏎<li ""#,
             r#"6:0 "export f" -> "<ul>⏎<li""#,
-            r#"11:13 "_createI" -> "<li v-if""#,
-            r#"11:30 "_ctx.ok)" -> "ok\">Y</l" [ok]"#,
-            r#"14:5 "() => {⏎" -> "<li v-el""#,
-            r#"19:13 "_createF" -> "<i v-for""#,
-            r#"19:31 "_ctx.xs)" -> "xs\">{{ x" [xs]"#,
-            r#"22:55 "_for_ite" -> "x }}</i>""#,
+            r#"9:13 "_createI" -> "<li v-if""#,
+            r#"9:30 "_ctx.ok)" -> "ok\">Y</l" [ok]"#,
+            r#"12:5 "() => {⏎" -> "<li v-el""#,
+            r#"17:13 "_createF" -> "<i v-for""#,
+            r#"17:31 "_ctx.xs)" -> "xs\">{{ x" [xs]"#,
+            r#"20:54 "_for_ite" -> "x }}</i>""#,
         ]
     );
 }
