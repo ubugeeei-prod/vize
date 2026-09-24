@@ -17,7 +17,7 @@ use crate::batch::error::CorsaResult;
 ///
 /// This keeps package `extends`, array `extends`, cycle handling, and
 /// diamond-graph memoization in the same authority used by batch checking.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub fn snapshot_tsconfig_compiler_options(
     project_root: &Path,
     tsconfig_path: &Path,
@@ -48,7 +48,7 @@ pub fn snapshot_tsconfig_compiler_options(
     Ok(options)
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn absolutize_string_option(
     options: &mut Map<std::string::String, Value>,
     name: &str,
@@ -66,7 +66,7 @@ fn absolutize_string_option(
     );
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn absolutize_array_option(
     options: &mut Map<std::string::String, Value>,
     name: &str,
@@ -83,7 +83,7 @@ fn absolutize_array_option(
     }
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn absolutize_paths(options: &mut Map<std::string::String, Value>, project_root: &Path) {
     let Some(paths) = options.get_mut("paths").and_then(Value::as_object_mut) else {
         return;

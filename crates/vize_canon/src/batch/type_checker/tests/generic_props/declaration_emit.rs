@@ -1,3 +1,7 @@
+#![expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshots expand to format!"
+)]
 use super::super::{BatchTypeChecker, DeclarationEmitOptions, relative_path};
 use super::*;
 

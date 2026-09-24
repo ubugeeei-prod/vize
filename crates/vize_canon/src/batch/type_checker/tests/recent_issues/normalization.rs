@@ -1,3 +1,5 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 pub(crate) fn normalize_component_check_props_tail(message: &str) -> std::string::String {
     const START: &str = "__VizeComponentCheckProps<Props, ";
     const STABLE_TYPE: &str = "__VizeComponentCheckProps<Props, __VizeFallthroughAttrs>";

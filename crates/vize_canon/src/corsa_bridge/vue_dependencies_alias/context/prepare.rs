@@ -18,7 +18,7 @@ impl AliasContext {
     }
 
     /// Build or reuse a context while every route input remains unchanged.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     pub(in crate::corsa_bridge) fn for_hosts_cached(
         source_path: &Path,
         content: &str,

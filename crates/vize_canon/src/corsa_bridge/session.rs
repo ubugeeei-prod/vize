@@ -1,5 +1,4 @@
 //! Corsa project-session construction, run on the bridge worker thread.
-#![allow(clippy::disallowed_types)]
 
 use super::types::{CorsaBridgeConfig, CorsaBridgeError};
 use crate::corsa_client::CorsaProjectClient;

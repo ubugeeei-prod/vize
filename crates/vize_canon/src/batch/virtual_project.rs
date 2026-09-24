@@ -106,6 +106,8 @@ pub(crate) use tsconfig_paths::{parse_jsonc_value, resolve_extended_tsconfig_pat
 mod vue_codegen;
 mod vue_compiler_comments;
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests;
 
@@ -208,7 +210,7 @@ pub struct VirtualProject {
 
     /// Shared self-invalidating resolver used when persistent snapshots refresh
     /// a package manifest, link, lockfile, or source without restarting Corsa.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "shared across threads")]
     package_route_resolver: std::sync::Arc<std::sync::Mutex<crate::PackageRouteResolver>>,
     package_routes_need_refresh: bool,
     package_route_refresh_keys: FxHashSet<crate::package_route::PackageRouteKey>,

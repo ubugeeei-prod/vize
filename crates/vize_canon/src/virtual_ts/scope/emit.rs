@@ -112,7 +112,7 @@ pub(super) fn append_v_for_comment(
 /// mis-typed objects and raised spurious TS2339/TS2537. The source expression is
 /// rewritten through the template-prop bridge so a source such as `messages`
 /// resolves to `__props.messages`; all other authored syntax stays verbatim.
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn emit_v_for_loop_open(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,

@@ -344,7 +344,7 @@ impl VirtualProject {
     }
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn compiler_option_enabled(options: &Map<std::string::String, Value>, name: &str) -> bool {
     options.get(name).and_then(Value::as_bool).unwrap_or(false)
 }

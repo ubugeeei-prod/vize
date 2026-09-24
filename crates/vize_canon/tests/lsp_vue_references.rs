@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use vize_canon::{
     CorsaBridge, CorsaBridgeConfig, ImportRewriter, batch::generate_vue_document_virtual_ts,
     virtual_ts::VirtualTsOptions,

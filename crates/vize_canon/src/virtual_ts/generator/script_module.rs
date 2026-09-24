@@ -232,6 +232,7 @@ fn contains_ts_suppression_directive(comment: &str) -> bool {
     comment.contains("@ts-ignore") || comment.contains("@ts-expect-error")
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{

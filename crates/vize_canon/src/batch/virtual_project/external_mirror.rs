@@ -98,19 +98,19 @@ fn decode_prefix(component: &str) -> Option<CompactString> {
     let mut decoded = CompactString::with_capacity(component.len());
     let mut rest = component;
     let mut escaped = false;
-    while let Some(index) = rest.find('%') {
-        decoded.push_str(&rest[..index]);
-        let character = match rest.get(index..index + 3)? {
-            "%25" => '%',
-            "%3A" => ':',
-            "%3F" => '?',
-            "%5C" => '\\',
-            "%2F" => '/',
+    while let Some((before, after)) = rest.split_once('%') {
+        decoded.push_str(before);
+        let character = match after.get(..2)? {
+            "25" => '%',
+            "3A" => ':',
+            "3F" => '?',
+            "5C" => '\\',
+            "2F" => '/',
             _ => return None,
         };
         decoded.push(character);
         escaped = true;
-        rest = &rest[index + 3..];
+        rest = after.get(2..)?;
     }
     decoded.push_str(rest);
     escaped.then_some(decoded)

@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 use std::fs;
 use std::path::PathBuf;
 

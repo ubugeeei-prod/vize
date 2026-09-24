@@ -1,7 +1,7 @@
 //! Core Corsa bridge implementation backed by `corsa-bind`.
 
 use serde_json::Value;
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "shared across threads")]
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
@@ -27,7 +27,7 @@ mod language_features;
 pub(super) use documents::normalize_document_uri;
 
 /// Bridge to Corsa for type checking and editor queries via project sessions.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct CorsaBridge {
     /// Configuration
     pub(super) config: CorsaBridgeConfig,
@@ -48,7 +48,7 @@ pub struct CorsaBridge {
     pub(super) editor_session: Arc<super::EditorMirrorSession>,
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 impl CorsaBridge {
     /// Create a new Corsa bridge with default configuration.
     pub fn new() -> Self {
@@ -56,7 +56,6 @@ impl CorsaBridge {
     }
 
     /// Create a new Corsa bridge with custom configuration.
-    #[allow(clippy::disallowed_types)]
     pub fn with_config(config: CorsaBridgeConfig) -> Self {
         Self::with_config_and_package_routes(config, crate::PackageRouteResolver::default())
     }

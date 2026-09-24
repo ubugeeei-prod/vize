@@ -10,6 +10,9 @@
 //! template offsets under test with the corresponding `v-for` / `v-slot` read,
 //! which is exactly elk's shape (#4423). A short script never reproduces the
 //! collision, so these scripts are load-bearing and must not be trimmed.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use super::{VirtualTsOptions, generate_virtual_ts_with_offsets};
 use vize_croquis::{Analyzer, AnalyzerOptions};

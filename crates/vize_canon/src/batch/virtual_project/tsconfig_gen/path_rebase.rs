@@ -18,7 +18,7 @@ use super::super::tsconfig_paths::normalize_tsconfig_path_target;
 /// root. They resolve against the tsconfig that declares them, so rebasing keeps
 /// the declaring config's meaning once the `extends` chain is flattened into one
 /// option set.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(super) fn onto_project_root(
     compiler_options: &mut Map<std::string::String, Value>,
     base_dir: &Path,
@@ -83,7 +83,7 @@ pub(super) fn is_url(value: &str) -> bool {
 
 /// Rebase relative `paths` targets from `anchor_dir` — the effective `baseUrl`
 /// directory, or the winning map's declaring directory — onto the project root.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(super) fn paths_onto_project_root(
     paths: &mut Map<std::string::String, Value>,
     anchor_dir: &Path,

@@ -6,6 +6,7 @@
 //! oracle line is quoted next to each case. Assertions compare the **complete**
 //! diagnostic list — file, code, line, column, severity and message — so a
 //! regression cannot hide behind a substring match.
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
 #[path = "support/jsx_component_props_project.rs"]
 mod project;

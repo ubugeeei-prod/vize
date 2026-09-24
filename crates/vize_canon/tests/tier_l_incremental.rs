@@ -1,3 +1,5 @@
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::panic, reason = "tests assert by panicking")]
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Instant;

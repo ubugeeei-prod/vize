@@ -26,7 +26,7 @@ struct PathAliasPattern {
 }
 
 impl VirtualAliasRewritePolicy {
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     pub(crate) fn from_paths(paths: &Map<std::string::String, Value>) -> Self {
         let patterns = paths
             .iter()
@@ -216,6 +216,8 @@ fn vue_rewrite_suffix_for_resolved_target(target: &Path, resolved: &Path) -> Opt
     .then_some("/index.vue.ts")
 }
 
+#[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use std::fs;

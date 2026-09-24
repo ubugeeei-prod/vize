@@ -1,3 +1,9 @@
+#![expect(clippy::panic, reason = "tests assert by panicking")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use vize_canon::VirtualProject;
 
 fn virtual_source(source: &str) -> String {

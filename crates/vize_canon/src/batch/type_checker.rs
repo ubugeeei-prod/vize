@@ -337,5 +337,11 @@ impl BatchTypeChecker {
     }
 }
 
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshots expand to format!"
+)]
+#[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests;

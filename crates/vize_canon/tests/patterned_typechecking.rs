@@ -1,3 +1,8 @@
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshots expand to format!"
+)]
 use std::path::Path;
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerTrait, SfcBlockType, SfcTypeCheckOptions, type_check_sfc,

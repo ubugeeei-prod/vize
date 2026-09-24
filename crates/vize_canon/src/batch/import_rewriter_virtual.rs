@@ -196,6 +196,7 @@ fn collect_import_specifiers(source: &str) -> Vec<String> {
         .collect()
 }
 
+#[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use std::fs;

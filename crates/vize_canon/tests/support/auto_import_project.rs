@@ -5,6 +5,10 @@
 //! The bundled `vue` declaration mirrors the real package's *branded* `Ref`, so
 //! the "a plain `{ value: T }` object is not a ref" control (#3767) is a real
 //! control and not an artefact of a structural stub.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::{Path, PathBuf};
 

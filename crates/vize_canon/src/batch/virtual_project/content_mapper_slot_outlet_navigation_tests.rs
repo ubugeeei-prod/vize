@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::ops::Range;
 use std::path::Path;
 

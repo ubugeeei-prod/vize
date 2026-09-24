@@ -1,4 +1,5 @@
 //! Emission of `$`-prefixed template instance globals in both forms.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use crate::virtual_ts::{VirtualTsOptions, VirtualTsOutput, generate_virtual_ts_with_offsets};
 use vize_croquis::{Analyzer, AnalyzerOptions};

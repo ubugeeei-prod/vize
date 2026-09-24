@@ -132,7 +132,7 @@ fn extract_exported_runtime_props(
     .unwrap_or_default()
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn collect_exported_specifier_props<'a>(
     export_decl: &'a oxc_ast::ast::ExportNamedDeclaration<'a>,
     exported_name: &str,
@@ -188,7 +188,7 @@ fn collect_exported_specifier_props<'a>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn collect_exported_declaration_props<'a>(
     declaration: &'a Declaration<'a>,
     exported_name: &str,

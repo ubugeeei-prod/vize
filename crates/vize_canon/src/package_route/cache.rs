@@ -30,7 +30,7 @@ pub struct PackageRouteResolver {
     // One cache identity is deliberately shared by CLI, Corsa, Maestro, and
     // persistent check-server consumers. A scoped reference cannot outlive
     // those independently owned sessions.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "shared across threads")]
     state: std::sync::Arc<std::sync::Mutex<PackageRouteResolverState>>,
 }
 

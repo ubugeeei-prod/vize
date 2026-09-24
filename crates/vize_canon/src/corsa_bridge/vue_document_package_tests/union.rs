@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
     TSCONFIG, build, host_source, package_fixture, package_manifest, request_path,
     selected_companion,
@@ -65,7 +66,7 @@ fn edited_overlays_keep_live_project_roots_and_replace_their_exact_code() {
         let overlay = project
             .documents
             .iter()
-            .find(|(path, _)| path == &uri)
+            .find(|(path, _)| *path == uri)
             .unwrap();
         assert_eq!(
             overlay.1, mirrored,

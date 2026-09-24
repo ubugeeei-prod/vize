@@ -100,5 +100,5 @@ required-features = ["davinci-differential"]
 name = "package_route"
 harness = false
 
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(coverage)'] }
+[lints]
+workspace = true

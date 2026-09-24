@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::vue_document::{
     CorsaVueVirtualDocumentOptions, build_vue_virtual_project,
     build_vue_virtual_project_with_overlays,

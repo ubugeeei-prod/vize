@@ -1,6 +1,6 @@
 //! Batched convenience API over one shared Corsa bridge.
 
-#![allow(clippy::disallowed_types)] // The bridge is intentionally shared across batch requests.
+#![expect(clippy::disallowed_types, reason = "shared across threads")] // The bridge is intentionally shared across batch requests.
 
 use std::sync::Arc;
 
@@ -8,13 +8,13 @@ use vize_carton::String;
 
 use super::{CorsaBridge, CorsaBridgeError, TypeCheckResult};
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "shared across threads")]
 pub struct BatchTypeChecker {
     bridge: Arc<CorsaBridge>,
     batch_size: usize,
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "shared across threads")]
 impl BatchTypeChecker {
     pub fn new(bridge: Arc<CorsaBridge>) -> Self {
         Self {

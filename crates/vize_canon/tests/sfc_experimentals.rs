@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use vize_canon::{SfcTypeCheckOptions, type_check_sfc, type_check_sfc_with_legacy_vue2};
 
 const COMMENTS: &str = "<script setup>const label = 'hello'</script>\n<template><button\n// caption\n:aria-label=\"label\">{{ label }}</button></template>";

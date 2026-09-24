@@ -1,3 +1,5 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use vize_s0::String;
 
 type DiagnosticSnapshot = Vec<(String, Option<u32>, String)>;

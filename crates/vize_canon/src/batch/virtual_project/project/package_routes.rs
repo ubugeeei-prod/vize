@@ -326,7 +326,7 @@ impl VirtualProject {
     #[cfg(test)]
     pub(crate) fn package_routes_snapshot(&self) -> Vec<crate::PackageRouteBinding> {
         let mut bindings = self.package_routes.values().cloned().collect::<Vec<_>>();
-        bindings.sort_by(|left, right| left.key().cmp(&right.key()));
+        bindings.sort_by_key(crate::PackageRouteBinding::key);
         bindings
     }
 

@@ -1,4 +1,4 @@
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 
 use super::{
     CorsaProjectClient,

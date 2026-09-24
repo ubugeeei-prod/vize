@@ -107,26 +107,6 @@ impl PackageSearchCache {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::{MANIFEST_CACHE_CAPACITY, PackageSearchCache};
-
-    #[test]
-    fn manifest_cache_has_a_measured_hard_bound() {
-        let root = tempfile::tempdir().unwrap();
-        let mut cache = PackageSearchCache::default();
-        for index in 0..=MANIFEST_CACHE_CAPACITY {
-            let package = root.path().join(index.to_string());
-            std::fs::create_dir_all(&package).unwrap();
-            std::fs::write(package.join("package.json"), r#"{"name":"bounded"}"#).unwrap();
-            assert!(cache.read_manifest(&package).is_some());
-        }
-
-        assert_eq!(cache.len(), MANIFEST_CACHE_CAPACITY);
-        assert_eq!(cache.evictions(), 1);
-    }
-}
-
 pub(super) struct PackageRequest<'a> {
     pub(super) package: &'a str,
     pub(super) subpath: Option<&'a str>,
@@ -222,4 +202,25 @@ pub(super) fn nearest_package_manifest(
 
 pub(super) fn read_manifest(root: &Path, cache: &mut PackageSearchCache) -> Option<Value> {
     cache.read_manifest(root)
+}
+
+#[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#[cfg(test)]
+mod tests {
+    use super::{MANIFEST_CACHE_CAPACITY, PackageSearchCache};
+
+    #[test]
+    fn manifest_cache_has_a_measured_hard_bound() {
+        let root = tempfile::tempdir().unwrap();
+        let mut cache = PackageSearchCache::default();
+        for index in 0..=MANIFEST_CACHE_CAPACITY {
+            let package = root.path().join(index.to_string());
+            std::fs::create_dir_all(&package).unwrap();
+            std::fs::write(package.join("package.json"), r#"{"name":"bounded"}"#).unwrap();
+            assert!(cache.read_manifest(&package).is_some());
+        }
+
+        assert_eq!(cache.len(), MANIFEST_CACHE_CAPACITY);
+        assert_eq!(cache.evictions(), 1);
+    }
 }

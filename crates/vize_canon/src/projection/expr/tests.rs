@@ -1,4 +1,5 @@
 //! S4 projection rows preserve the authored expression, including byte offsets.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use super::{project_template_expression_document, project_template_expressions};
 use crate::virtual_ts::{ProjectionMapping, VizeMapping};

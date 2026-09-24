@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::super::super::super::{create_project_case, resolve_test_tsgo_binary};
 use crate::batch::{BatchTypeChecker, TypeChecker};
 use crate::{PackageResolutionContext, PackageRouteBinding};

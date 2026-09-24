@@ -1,3 +1,5 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use super::BatchTypeChecker;
 use crate::batch::{
     TypeCheckResult, TypeChecker,

@@ -6,6 +6,8 @@
 //! `[key: string]: any`. A *generic* SFC instead compiles to a bare generic
 //! function component, which carries no such index signature — which is why the
 //! generated options object cannot simply always declare one.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 use vize_s0::String;

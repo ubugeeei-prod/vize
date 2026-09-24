@@ -8,6 +8,7 @@
 //! was excused by the on-disk-sibling suppression. The import rewriter now
 //! redirects such a specifier onto the target's mirror module, the same
 //! resolution the alias-mapped spelling gets from its `paths` candidate (#3300).
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use std::path::{Path, PathBuf};
 

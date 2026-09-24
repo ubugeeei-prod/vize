@@ -39,11 +39,16 @@ mod semantic_links;
 mod strict_template_global_enum_tests;
 #[cfg(test)]
 mod strict_template_global_fallback_tests;
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod strict_template_globals_tests;
 #[cfg(test)]
 mod strict_template_scope_tests;
 mod template_binding_access;
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests;
 mod type_dependencies;

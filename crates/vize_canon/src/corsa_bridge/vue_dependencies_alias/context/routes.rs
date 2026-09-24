@@ -9,7 +9,7 @@ use crate::batch::virtual_project::{
     PackageRouteReachability, package_resolution::PackageResolutionSettings,
 };
 
-#[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")] // Compiler-option aliases originate in serde_json maps.
 type CompilerAlias = (std::string::String, std::string::String);
 
 type ReachabilityCacheKey = (
@@ -20,7 +20,7 @@ type ReachabilityCacheKey = (
     u8,
 );
 
-#[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
+// Compiler-option aliases originate in serde_json maps.
 pub(super) struct RouteDiscovery<'a> {
     settings: &'a PackageResolutionSettings,
     resolver: &'a mut crate::PackageRouteResolver,

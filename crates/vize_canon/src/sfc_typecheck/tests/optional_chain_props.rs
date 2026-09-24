@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{SfcTypeCheckOptions, type_check_sfc};
 
 #[test]

@@ -1,6 +1,7 @@
+#![expect(clippy::expect_used, clippy::unwrap_used, reason = "tests panic")]
 use std::path::Path;
-
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, SfcTypeCheckOptions, type_check_sfc};
+use vize_s0::{String, cstr};
 
 #[test]
 fn enum_ref_template_comparisons_widen_initial_member() {
@@ -95,11 +96,11 @@ fn destructured_and_rest_props_do_not_emit_shadowing_template_aliases() {
 
     for name in ["leadingIcon", "appendIcon", "buttonProps"] {
         assert!(
-            !virtual_ts.contains(&format!("const {name} = props[")),
+            !virtual_ts.contains(cstr!("const {name} = props[").as_str()),
             "destructured/rest prop local `{name}` must not be shadowed by a generated template prop alias:\n{virtual_ts}"
         );
         assert!(
-            virtual_ts.contains(&format!("void {name};")),
+            virtual_ts.contains(cstr!("void {name};").as_str()),
             "destructured/rest prop local `{name}` should still be referenced for TS6133:\n{virtual_ts}"
         );
     }
@@ -174,7 +175,7 @@ fn snapshot_project_diagnostics(project_root: &Path) -> Option<Vec<(String, Opti
             (
                 relative_path(project_root, &diagnostic.file),
                 diagnostic.code,
-                format!(
+                cstr!(
                     "{}:{}:{} {}",
                     diagnostic.line + 1,
                     diagnostic.column + 1,
@@ -240,9 +241,8 @@ fn write_file(project_root: &Path, path: &str, source: &str) {
 }
 
 fn relative_path(root: &Path, file: &Path) -> String {
-    file.strip_prefix(root)
-        .map(|path| path.display().to_string())
-        .unwrap_or_else(|_| file.display().to_string())
+    let path = file.strip_prefix(root).unwrap_or(file);
+    cstr!("{}", path.display())
 }
 
 const ENUM_REF_SFC: &str = r#"<script setup lang="ts">

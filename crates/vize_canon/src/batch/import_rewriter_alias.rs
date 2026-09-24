@@ -13,7 +13,7 @@ use oxc_span::SourceType;
 use super::import_rewriter::{ImportRewriter, RewriteResult, rewrite_relative_vue_specifier};
 
 /// Resolver consulted before the generic relative/package rewrite.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub type AliasSpecifierResolver<'a> =
     &'a dyn Fn(&str, crate::PackageResolutionMode) -> Option<std::string::String>;
 

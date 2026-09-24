@@ -4,7 +4,7 @@
 //! requests must agree on the same effective `allowJs` / `checkJs` values.
 //! Keeping the classification here prevents each layer from growing a slightly
 //! different extension whitelist.
-#![allow(clippy::disallowed_types)] // serde_json::Map keys are std::string::String.
+#![expect(clippy::disallowed_types, reason = "serde_json keys are std String")] // serde_json::Map keys are std::string::String.
 
 use std::path::Path;
 

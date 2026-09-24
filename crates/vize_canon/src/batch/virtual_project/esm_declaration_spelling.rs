@@ -40,6 +40,7 @@ fn nearest_package_is_type_module(path: &Path) -> bool {
     false
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::should_preserve_esm_declaration_spelling;

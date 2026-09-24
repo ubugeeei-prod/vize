@@ -23,7 +23,7 @@
 use serde::{Deserialize, Serialize};
 use std::io::{BufRead, BufReader, Write};
 use std::os::unix::net::{UnixListener, UnixStream};
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "shared across threads")]
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
@@ -122,7 +122,7 @@ impl Default for ServerConfig {
 }
 
 /// Corsa server.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "shared across threads")]
 pub struct CorsaServer {
     config: ServerConfig,
     running: Arc<AtomicBool>,
@@ -145,7 +145,7 @@ impl CorsaServer {
     }
 
     /// Create a new server with custom configuration.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "shared across threads")]
     pub fn with_config(config: ServerConfig) -> Self {
         let idle_timeout = config.idle_timeout;
         Self {
@@ -182,7 +182,6 @@ impl CorsaServer {
             }
 
             let response = self.handle_request(&line);
-            #[allow(clippy::disallowed_methods)]
             let response_json = serde_json::to_string(&response).unwrap_or_else(|_| {
                 r#"{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"}}"#.into()
             });
@@ -242,7 +241,6 @@ impl CorsaServer {
             }
 
             let response = self.handle_request(&line);
-            #[allow(clippy::disallowed_methods)]
             let response_json = serde_json::to_string(&response).unwrap_or_else(|_| {
                 r#"{"jsonrpc":"2.0","error":{"code":-32603,"message":"Internal error"}}"#.into()
             });

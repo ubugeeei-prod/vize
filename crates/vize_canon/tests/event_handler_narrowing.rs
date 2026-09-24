@@ -3,6 +3,7 @@
 //!
 //! `vue-tsc` 3.3.4 / `vue` 3.6.0-beta.10 reports nothing on these fixtures,
 //! so any TS2367 here is a vize-only false positive.
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 #[path = "support/script_block_project.rs"]
 mod project;

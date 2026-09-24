@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::path::Path;
 
 use super::generate_vue_content_mapper_transform;

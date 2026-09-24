@@ -9,6 +9,8 @@
 //! [`fixtures::DOWNSTREAM`] compiles clean against vue-tsc's declarations, so it
 //! must compile clean — with every negative control still firing — against
 //! Vize's.
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::{Path, PathBuf};
 

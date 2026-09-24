@@ -88,7 +88,7 @@ struct ReachabilityBudget {
 #[path = "package_route_reachability_route_graph.rs"]
 mod route_graph;
 
-#[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")] // Compiler-option aliases originate in serde_json maps.
 pub(crate) fn package_route_reaches_vue(
     route: &crate::PackageRoute,
     aliases: &[(std::string::String, std::string::String)],
@@ -129,7 +129,7 @@ where
     )
 }
 
-#[allow(clippy::disallowed_types)] // Compiler-option aliases originate in serde_json maps.
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")] // Compiler-option aliases originate in serde_json maps.
 fn package_route_reaches_vue_with_budget(
     route: &crate::PackageRoute,
     aliases: &[(std::string::String, std::string::String)],

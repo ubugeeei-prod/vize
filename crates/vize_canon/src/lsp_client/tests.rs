@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
     bootstrap::resolve_corsa_executable, paths::resolve_temp_dir_base,
     session::materialize_session_document, session_paths::build_session_document_uri,

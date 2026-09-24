@@ -58,7 +58,7 @@ fn committing_one_source_cannot_acknowledge_an_unobserved_dependency_edit() {
     paths.commit_project_snapshot(&project);
     assert_eq!(
         paths.effective_changes(&root, &[a.clone(), b.clone()]),
-        [b.clone()]
+        std::slice::from_ref(&b)
     );
 
     project.register_path(&b).unwrap();

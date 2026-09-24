@@ -1,3 +1,4 @@
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 use std::path::{Path, PathBuf};
 
 use vize_canon::{CorsaBridge, CorsaBridgeConfig, LspHover, LspHoverContents, LspMarkedString};

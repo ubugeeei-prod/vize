@@ -1,6 +1,6 @@
 use serde_json::{Map, Value};
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(super) fn normalize_native_removed_options(options: &mut Map<std::string::String, Value>) {
     options.remove("downlevelIteration");
 
@@ -44,7 +44,7 @@ pub(super) fn normalize_native_removed_options(options: &mut Map<std::string::St
     }
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn compiler_option_string<'a>(
     options: &'a Map<std::string::String, Value>,
     name: &str,
@@ -52,12 +52,12 @@ fn compiler_option_string<'a>(
     options.get(name).and_then(Value::as_str)
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn ascii_lowercase(value: &str) -> std::string::String {
     value.to_ascii_lowercase()
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn module_supports_bundler_resolution(options: &Map<std::string::String, Value>) -> bool {
     compiler_option_string(options, "module")
         .map(ascii_lowercase)

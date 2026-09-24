@@ -5,6 +5,7 @@
 //! is reachable to nothing on disk, so a disk-only mirror never generates its
 //! target and the rewritten specifier keeps an unresolvable alias path until
 //! the user saves.
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use super::vue_document::{
     CorsaVueVirtualDocumentOptions, build_vue_virtual_project,

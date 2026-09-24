@@ -65,7 +65,7 @@ pub(super) fn collect_dependency_documents(
     paths
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_script_dependency_documents(
     documents: &mut Vec<(String, String)>,
     source_path: &Path,

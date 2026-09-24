@@ -14,6 +14,8 @@
 //! that divergence). The explicitly-imported variant is the vue-tsc-checked
 //! side; `tests/snapshots/check/template-ref-unwrap-oracle.ts` runs that
 //! comparison against the real `vue-tsc`.
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 #[path = "support/auto_import_project.rs"]
 mod support;

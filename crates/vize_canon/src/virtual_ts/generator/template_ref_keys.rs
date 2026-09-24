@@ -158,6 +158,7 @@ impl<'a> Visit<'a> for Collector<'_> {
     }
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::TemplateRefKeyChecks;

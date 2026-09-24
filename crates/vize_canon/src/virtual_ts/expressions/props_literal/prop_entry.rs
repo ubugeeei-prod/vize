@@ -12,7 +12,7 @@ use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 use vize_carton::{String, append};
 use vize_croquis::croquis::PassedProp;
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn append_prop_entry(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,

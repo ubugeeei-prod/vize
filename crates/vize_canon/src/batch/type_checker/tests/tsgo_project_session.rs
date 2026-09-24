@@ -1,3 +1,6 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use super::{link_workspace_node_modules, tsgo::resolve_test_tsgo_binary};
 use corsa::{
     CorsaError,

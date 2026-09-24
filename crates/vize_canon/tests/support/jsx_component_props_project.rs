@@ -5,6 +5,11 @@
 //! run (`vue-tsc -p . --noEmit`, `jsx: "preserve"`, `jsxImportSource: "vue"`,
 //! `strict`, `moduleResolution: "bundler"`), so the rows produced here are
 //! directly comparable to `vue-tsc`'s output.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::Path;
 

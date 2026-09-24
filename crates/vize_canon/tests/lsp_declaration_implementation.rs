@@ -1,3 +1,6 @@
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::path::{Path, PathBuf};
 
 use vize_canon::{CorsaBridge, CorsaBridgeConfig, LspLocation};

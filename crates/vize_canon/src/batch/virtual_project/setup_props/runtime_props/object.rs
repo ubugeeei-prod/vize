@@ -11,7 +11,7 @@ use crate::batch::virtual_project::setup_props::{
     syntax::{runtime_object_property_name, runtime_prop_shape_member_type},
 };
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_props_from_object<'a>(
     object: &'a ObjectExpression<'a>,
     source: &str,
@@ -52,7 +52,7 @@ pub(super) fn collect_props_from_object<'a>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn collect_props_from_spread_expression<'a>(
     expr: &'a Expression<'a>,
     source: &str,

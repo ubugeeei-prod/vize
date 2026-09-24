@@ -140,6 +140,7 @@ fn preceding_arguments(source: &str, element_start: usize) -> Option<std::ops::R
     }
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::preceding_arguments;

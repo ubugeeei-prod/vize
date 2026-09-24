@@ -5,6 +5,10 @@ pub(crate) mod runner;
 
 pub use runner::TypeChecker;
 
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshots expand to format!"
+)]
 #[cfg(test)]
 mod tests {
     use super::TypeChecker;

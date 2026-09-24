@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use vize_croquis::{Analyzer, AnalyzerOptions};
 
 use crate::virtual_ts::generate_virtual_ts;

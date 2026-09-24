@@ -9,7 +9,6 @@ use crate::corsa_bridge::types::{
     LspSignatureHelp,
 };
 
-#[allow(clippy::disallowed_types)]
 impl CorsaBridge {
     /// Get hover information at a position.
     pub async fn hover(

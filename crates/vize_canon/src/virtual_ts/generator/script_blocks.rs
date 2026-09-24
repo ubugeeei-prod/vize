@@ -164,6 +164,8 @@ fn is_identifier_char(character: char) -> bool {
     character.is_alphanumeric() || character == '_' || character == '$'
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::ScriptBlockScopes;

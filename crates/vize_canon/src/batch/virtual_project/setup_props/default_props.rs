@@ -233,7 +233,7 @@ fn extract_exported_default_names(
     .unwrap_or_default()
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn collect_exported_specifier_default_names<'a>(
     export_decl: &'a oxc_ast::ast::ExportNamedDeclaration<'a>,
     exported_name: &str,
@@ -285,7 +285,7 @@ fn collect_exported_specifier_default_names<'a>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn collect_exported_declaration_default_names<'a>(
     declaration: &'a Declaration<'a>,
     exported_name: &str,

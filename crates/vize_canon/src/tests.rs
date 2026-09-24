@@ -1,7 +1,7 @@
 //! Snapshot tests for vize_canon.
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 mod virtual_ts_tests {
     use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
 

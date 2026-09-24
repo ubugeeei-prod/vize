@@ -166,7 +166,7 @@ fn into_parts_returns_rows_and_links_in_producer_order() {
     };
     let spans = vec![VizeMapping::new(9..10, 0..1), VizeMapping::new(0..1, 5..6)];
     let mapping = ProjectionMapping::from_parts(spans.clone(), vec![link.clone()]);
-    assert_eq!(mapping.semantic_links(), [link.clone()]);
+    assert_eq!(mapping.semantic_links(), std::slice::from_ref(&link));
     assert_eq!(mapping.len(), 2);
     assert!(!mapping.is_empty());
     assert_eq!(mapping.into_parts(), (spans, vec![link]));

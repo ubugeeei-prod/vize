@@ -3,6 +3,7 @@
 //!
 //! Every expectation below was recorded from a `vue-tsc` 3.3.4 / `vue`
 //! 3.6.0-beta.10 run over byte-identical fixtures (issue #4151).
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 #[path = "support/script_block_project.rs"]
 mod project;

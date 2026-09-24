@@ -83,6 +83,7 @@ fn missing_from_disk(uri: &str, project_root: &Path) -> bool {
     })
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use corsa::api::FileChanges;

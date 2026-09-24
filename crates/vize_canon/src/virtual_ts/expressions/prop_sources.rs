@@ -182,6 +182,7 @@ fn anchor_token(name_region: &str, name: &str) -> Option<(usize, usize)> {
     Some((name_region.find(name)?, name.len()))
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{anchor_token, append_prop_value};

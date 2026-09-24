@@ -6,13 +6,13 @@
 use crate::corsa_bridge::{CorsaBridge, CorsaBridgeError};
 use crate::script_parse::{ScriptParseDiagnostic, collect_script_parse_diagnostics};
 use crate::virtual_ts::{VirtualTsOptions, VirtualTsOutput, generate_virtual_ts_with_offsets};
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "shared across threads")]
 use std::sync::Arc;
 use vize_carton::String;
 use vize_carton::cstr;
 
 /// Type check service for Vue SFCs.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "shared across threads")]
 pub struct TypeCheckService {
     /// The Corsa bridge.
     bridge: Arc<CorsaBridge>,
@@ -91,7 +91,7 @@ pub struct SfcRelatedInfo {
 
 impl TypeCheckService {
     /// Create a new type check service.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "shared across threads")]
     pub async fn new() -> Result<Self, CorsaBridgeError> {
         let bridge = CorsaBridge::new();
         bridge.spawn().await?;

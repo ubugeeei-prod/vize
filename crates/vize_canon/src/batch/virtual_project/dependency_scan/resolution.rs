@@ -23,7 +23,6 @@ pub(super) fn is_declaration_file(path: &Path) -> bool {
         })
 }
 
-#[allow(clippy::disallowed_types)]
 pub(super) fn alias_may_reach_first_party(
     pattern: &str,
     target: &str,
@@ -61,7 +60,7 @@ pub(super) fn may_resolve_a_dependency(
 }
 
 /// Resolve one specifier to a registrable first-party file, or `None`.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(crate) fn resolve_dependency(
     specifier: &str,
     importer_dir: &Path,
@@ -71,7 +70,7 @@ pub(crate) fn resolve_dependency(
     resolve_dependency_with_inputs(specifier, importer_dir, project_root, aliases).0
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(crate) fn resolve_dependency_with_inputs(
     specifier: &str,
     importer_dir: &Path,

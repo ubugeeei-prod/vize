@@ -90,13 +90,16 @@ pub mod corsa_server;
 #[cfg(feature = "native")]
 pub mod typecheck_service;
 
-#[cfg(all(test, feature = "native"))]
+#[cfg(test)]
+#[cfg(feature = "native")]
 mod template_ref_registry_scope;
 
-#[cfg(all(test, feature = "native"))]
+#[cfg(test)]
+#[cfg(feature = "native")]
 mod tests;
 
-#[cfg(all(test, feature = "native"))]
+#[cfg(test)]
+#[cfg(feature = "native")]
 mod type_only_import_anchors;
 
 pub use checker::TypeChecker;

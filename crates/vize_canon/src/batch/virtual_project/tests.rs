@@ -48,7 +48,7 @@ fn assert_tsx_parses(source: &str) {
     );
 }
 #[derive(Debug)]
-#[allow(dead_code)]
+#[expect(dead_code, reason = "read via Debug snapshots")]
 struct DiagnosticSnapshot<'a> {
     line: u32,
     column: u32,
@@ -76,7 +76,7 @@ fn snapshot_text(source: &str) -> std::string::String {
         if index > 0 {
             output.push('\n');
         }
-        output.push_str(line.trim_end_matches(|ch| ch == ' ' || ch == '\t'));
+        output.push_str(line.trim_end_matches([' ', '\t']));
     }
     output
 }

@@ -4,6 +4,8 @@
 //! changes. The leading character in particular keeps its case, so a prop
 //! declared `Template` stays `Template` instead of being renamed to `template`
 //! and reported missing (#3863).
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use vize_croquis::{Analyzer, AnalyzerOptions};
 

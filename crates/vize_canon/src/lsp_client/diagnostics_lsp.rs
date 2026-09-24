@@ -91,7 +91,7 @@ fn initialize_lsp_params(
         }),
         ..Default::default()
     };
-    #[allow(deprecated)]
+    #[expect(deprecated, reason = "root_path for older servers")]
     Ok(InitializeParams {
         process_id: Some(std::process::id()),
         root_path: Some(project_root.to_string_lossy().into_owned()),
@@ -189,7 +189,10 @@ async fn request_lsp_document_diagnostic_ack_async(
         .map_err(|error| cstr!("{error}"))
 }
 
-#[cfg(all(test, feature = "native", unix))]
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#[cfg(test)]
+#[cfg(all(feature = "native", unix))]
 mod tests {
     use super::initialize_lsp_params;
     use std::{

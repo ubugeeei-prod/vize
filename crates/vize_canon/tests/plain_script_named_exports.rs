@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -127,19 +128,16 @@ export function toPageCount(total: number) {
     }
 
     // A value-only declaration must not be handed a type meaning it never had.
-    for (value, absent_type_side) in [(
-        "export const pageSize = __vize_plain_script_exports.pageSize;",
-        "export type pageSize ",
-    )] {
-        assert!(
-            content.contains(value),
-            "value-only export must stay available: {value}\n{content}"
-        );
-        assert!(
-            !content.contains(absent_type_side),
-            "value-only export must not gain a type export: {absent_type_side}\n{content}"
-        );
-    }
+    let value = "export const pageSize = __vize_plain_script_exports.pageSize;";
+    let absent_type_side = "export type pageSize ";
+    assert!(
+        content.contains(value),
+        "value-only export must stay available: {value}\n{content}"
+    );
+    assert!(
+        !content.contains(absent_type_side),
+        "value-only export must not gain a type export: {absent_type_side}\n{content}"
+    );
 
     assert_ts_parses(content);
 

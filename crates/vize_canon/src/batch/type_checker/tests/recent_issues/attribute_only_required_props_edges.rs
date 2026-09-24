@@ -4,6 +4,8 @@
 //! spreads, and one diagnostic per defect.
 //!
 //! Oracle: `vue-tsc@3.3.4`, TypeScript `6.0.3`, Vue `3.6.0-beta.10`.
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 

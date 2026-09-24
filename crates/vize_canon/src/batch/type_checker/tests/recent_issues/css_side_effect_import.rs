@@ -12,6 +12,7 @@
 //! The cases build in a temp directory outside the workspace, and the checked
 //! surface includes a `.md` side-effect import: no `vite/client` wildcard
 //! covers it, so the pinned default is what decides, in every environment.
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
 use std::path::Path;
 

@@ -16,9 +16,11 @@ const VIZE_RUNTIME_NODE_MODULES_ENV: &str = "VIZE_RUNTIME_NODE_MODULES";
 const VIZE_TEST_WORKSPACE_NODE_MODULES_ENV: &str = "VIZE_TEST_WORKSPACE_NODE_MODULES";
 
 #[cfg(test)]
+type TestEnvOverrides = Vec<Vec<(&'static str, Option<OsString>)>>;
+
+#[cfg(test)]
 thread_local! {
-    static TEST_ENV_OVERRIDE_STACK: RefCell<Vec<Vec<(&'static str, Option<OsString>)>>> =
-        const { RefCell::new(Vec::new()) };
+    static TEST_ENV_OVERRIDE_STACK: RefCell<TestEnvOverrides> = const { RefCell::new(Vec::new()) };
 }
 
 #[cfg(test)]
@@ -233,6 +235,7 @@ fn resolve_ancestor_package(project_root: &Path, package: &str) -> Option<PathBu
     None
 }
 
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod test_override_tests {
     use std::sync::{Arc, Barrier};

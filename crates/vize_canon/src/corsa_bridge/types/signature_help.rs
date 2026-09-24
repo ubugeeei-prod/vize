@@ -1,7 +1,7 @@
 //! LSP signature-help payloads returned by the Corsa bridge.
 //!
 //! Uses `std::string::String` for serde deserialization compatibility.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 
 use serde::Deserialize;
 
@@ -9,7 +9,6 @@ use super::LspDocumentation;
 
 /// LSP signature-help response.
 #[derive(Debug, Clone, Deserialize)]
-#[allow(clippy::disallowed_types)]
 pub struct LspSignatureHelp {
     /// Candidate call signatures.
     pub signatures: Vec<LspSignatureInformation>,
@@ -23,7 +22,7 @@ pub struct LspSignatureHelp {
 
 /// One candidate call signature.
 #[derive(Debug, Clone, Deserialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct LspSignatureInformation {
     /// Display label for the complete signature.
     pub label: std::string::String,
@@ -38,7 +37,6 @@ pub struct LspSignatureInformation {
 
 /// One parameter in a signature-help response.
 #[derive(Debug, Clone, Deserialize)]
-#[allow(clippy::disallowed_types)]
 pub struct LspParameterInformation {
     /// Parameter label as text or UTF-16 offsets into the signature label.
     pub label: LspParameterLabel,
@@ -49,7 +47,7 @@ pub struct LspParameterInformation {
 /// LSP permits parameter labels as text or a two-offset tuple.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub enum LspParameterLabel {
     String(std::string::String),
     Offsets([u32; 2]),

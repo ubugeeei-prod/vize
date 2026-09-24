@@ -176,9 +176,9 @@ impl CorsaExecutor {
 
         if !output.status.success() {
             let exit_code = output.status.code().unwrap_or(-1);
-            #[allow(clippy::disallowed_types)]
+            #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
             let stderr = std::string::String::from_utf8_lossy(&output.stderr);
-            #[allow(clippy::disallowed_types)]
+            #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
             let stdout = std::string::String::from_utf8_lossy(&output.stdout);
             let message = if stderr.trim().is_empty() {
                 stdout.trim().to_owned().into()

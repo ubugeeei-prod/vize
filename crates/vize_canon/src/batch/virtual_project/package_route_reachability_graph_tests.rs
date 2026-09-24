@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
     Fixture, ReachabilityBudget, ReachabilityOutcome, generous_budget, route, route_with_entries,
     scan_package_route_reachability_with_budget,

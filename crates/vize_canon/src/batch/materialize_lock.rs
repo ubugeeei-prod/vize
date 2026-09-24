@@ -111,6 +111,7 @@ fn lock_path_with_suffix(virtual_root: &Path, suffix: &str) -> PathBuf {
     virtual_root.with_file_name(lock_name)
 }
 
+#[expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::*;

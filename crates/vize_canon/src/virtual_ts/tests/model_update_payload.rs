@@ -2,6 +2,8 @@
 //! optional model without a default carries `T | undefined` — its `ModelRef`
 //! type, and what vue-tsc's synthesized listener accepts — while required
 //! models and models with defaults keep the bare payload.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use crate::virtual_ts::generate_virtual_ts;
 

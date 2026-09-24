@@ -23,7 +23,7 @@ mod routes;
 
 // Project snapshots are shared by independent semantic requests in the
 // process-wide bounded cache; a scoped borrow cannot represent that lifetime.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "shared across threads")]
 pub(in crate::corsa_bridge) struct PreparedAliasContext {
     context: std::sync::Arc<AliasContext>,
     pub(in crate::corsa_bridge) materialized_changes:
@@ -45,7 +45,7 @@ impl std::ops::Deref for PreparedAliasContext {
 /// are never resolution targets — so first-party Vue imports must land on real
 /// generated files. Package routes retain the importer in their key instead of
 /// leaking into a global exact-specifier map.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub(in crate::corsa_bridge) struct AliasContext {
     pub(in crate::corsa_bridge) project_root: PathBuf,
     pub(in crate::corsa_bridge) aliases: Vec<(std::string::String, std::string::String)>,
@@ -82,7 +82,7 @@ impl AliasContext {
     }
 
     /// Resolve a Vue route to the materialized companion used by Corsa.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     pub(in crate::corsa_bridge) fn resolve_specifier_to_mirror_path(
         &self,
         specifier: &str,
@@ -105,7 +105,7 @@ impl AliasContext {
         None
     }
 
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     pub(in crate::corsa_bridge) fn resolve_relative_vue_to_mirror_path(
         &self,
         specifier: &str,
@@ -124,7 +124,7 @@ impl AliasContext {
         self.mirror_specifier_for_source(&source)
     }
 
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
     fn mirror_specifier_for_source(&self, source: &Path) -> Option<std::string::String> {
         let target = self
             .mirror

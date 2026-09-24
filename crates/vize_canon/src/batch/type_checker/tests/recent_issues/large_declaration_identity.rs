@@ -1,4 +1,6 @@
 //! Large first-party declaration modules must keep one module identity (#6000).
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use super::super::{BatchTypeChecker, relative_path, resolve_test_tsgo_binary, unique_case_dir};
 use crate::batch::TypeChecker;

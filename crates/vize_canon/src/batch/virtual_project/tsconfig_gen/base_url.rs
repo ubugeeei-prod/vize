@@ -23,7 +23,7 @@ use vize_carton::cstr;
 /// absolute when it escapes the root. A user-declared `"*"` entry wins — it is
 /// what TypeScript itself would consult first, and second-guessing it would
 /// change resolution order.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(super) fn insert_wildcard_alias(
     paths: &mut Map<std::string::String, Value>,
     base_url: Option<&str>,
@@ -42,6 +42,7 @@ pub(super) fn insert_wildcard_alias(
     paths.insert("*".into(), Value::Array(vec![Value::String(target.into())]));
 }
 
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use serde_json::{Map, Value, json};

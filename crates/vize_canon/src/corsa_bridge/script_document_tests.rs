@@ -34,7 +34,7 @@ fn script_virtual_project_syncs_vue_dependencies_without_opening_the_sfc() {
     assert_eq!(request_uri, path_to_file_uri(&mirror.join("Consumer.tsx")));
     let host_code = &documents
         .iter()
-        .find(|(uri, _)| uri == &request_uri)
+        .find(|(uri, _)| *uri == request_uri)
         .unwrap()
         .1;
     assert_eq!(
@@ -131,7 +131,7 @@ fn package_script_host_queries_the_importer_mirror_without_rewriting_the_bare_sp
     assert!(
         documents
             .iter()
-            .find(|(uri, _)| uri == &request_uri)
+            .find(|(uri, _)| *uri == request_uri)
             .is_some_and(|(_, code)| code.contains("from '@scope/ui'"))
     );
 }

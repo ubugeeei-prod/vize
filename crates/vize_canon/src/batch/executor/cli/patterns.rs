@@ -18,7 +18,7 @@ pub(super) fn only_pattern_warnings(output: &Output, project: &VirtualProject) -
     let mut found = 0;
     let mut mapper = DiagnosticMapper::new(project);
     for stream in [&output.stdout, &output.stderr] {
-        #[allow(clippy::disallowed_types)]
+        #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
         let text = std::string::String::from_utf8_lossy(stream);
         let mut follows_warning = false;
         for line in text.lines() {

@@ -20,10 +20,10 @@ pub(super) fn parse_output_diagnostics(
 ) -> Vec<Diagnostic> {
     let mut decoded = Vec::new();
     let mut mapper = DiagnosticMapper::new(project);
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
     let stdout = std::string::String::from_utf8_lossy(&output.stdout);
     decode_cli_diagnostics(stdout.as_ref(), project, &mut mapper, &mut decoded);
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
     let stderr = std::string::String::from_utf8_lossy(&output.stderr);
     decode_cli_diagnostics(stderr.as_ref(), project, &mut mapper, &mut decoded);
     let diagnostics = assemble_decoded(decoded, &mut mapper, owns);

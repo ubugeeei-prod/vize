@@ -117,6 +117,7 @@ fn is_specifier_shaped(candidate: &str) -> bool {
             .any(|character| character.is_whitespace() || matches!(character, '\'' | '"' | '`'))
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::{

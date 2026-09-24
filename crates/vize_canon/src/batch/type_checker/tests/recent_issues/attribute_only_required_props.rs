@@ -1,4 +1,5 @@
 //! Fallthrough-only component usages still check required props (#3566).
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 

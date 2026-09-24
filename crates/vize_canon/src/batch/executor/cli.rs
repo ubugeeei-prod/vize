@@ -422,7 +422,7 @@ fn run_cli_for_config(
 
 fn output_contains_diagnostic_lines(output: &Output) -> bool {
     [&output.stdout, &output.stderr].into_iter().any(|stream| {
-        #[allow(clippy::disallowed_types)]
+        #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
         let text = std::string::String::from_utf8_lossy(stream);
         text.lines()
             .any(|line| is_cli_diagnostic_line(line) || is_global_diagnostic_line(line))
@@ -467,9 +467,9 @@ fn is_cli_diagnostic_line(line: &str) -> bool {
 }
 
 fn output_message(output: &Output) -> String {
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
     let stderr = std::string::String::from_utf8_lossy(&output.stderr);
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
     let stdout = std::string::String::from_utf8_lossy(&output.stdout);
     let stderr = stderr.trim();
     let stdout = stdout.trim();

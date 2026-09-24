@@ -4,6 +4,7 @@
 //! emulation: a synthesized `"*"` alias keeps bare specifiers resolving, and
 //! relative `paths` targets anchor to the effective `baseUrl` the way
 //! TypeScript 5.x/6.x resolve them — not to the declaring config's directory.
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::fs;
 use std::path::Path;

@@ -1,5 +1,3 @@
-#![allow(clippy::disallowed_methods)]
-
 use super::super::super::{
     PackageResolutionContext, PackageResolutionMode, PackageRouteResolver, PackageSourceOptions,
 };

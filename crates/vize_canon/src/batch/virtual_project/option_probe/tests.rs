@@ -2,7 +2,7 @@ use serde_json::{Value, json};
 
 use super::{option_probe_is_needed, option_probe_value};
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 fn options(value: Value) -> serde_json::Map<std::string::String, Value> {
     value.as_object().unwrap().clone()
 }

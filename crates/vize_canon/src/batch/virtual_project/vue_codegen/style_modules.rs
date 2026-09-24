@@ -97,6 +97,7 @@ fn module_attribute_span(
     None
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::module_attribute_span;

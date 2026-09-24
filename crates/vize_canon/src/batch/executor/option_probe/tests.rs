@@ -1,3 +1,5 @@
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::path::{Path, PathBuf};
 
 use super::collect_option_diagnostics;
@@ -9,12 +11,10 @@ use crate::batch::virtual_project::option_probe::OptionDiagnosticNarrowing;
 /// toolchain of the repo's own parity fixtures — so the removal family is
 /// forwarded; [`the_removal_family_is_dropped_on_a_typescript_5_baseline`]
 /// covers the 5.x side.
-#[allow(clippy::disallowed_types)]
 fn narrowing(declared: &[&str]) -> OptionDiagnosticNarrowing {
     narrowing_with_baseline(declared, true)
 }
 
-#[allow(clippy::disallowed_types)]
 fn narrowing_with_baseline(
     declared: &[&str],
     removals_in_baseline: bool,

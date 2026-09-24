@@ -325,6 +325,8 @@ fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
     left.start < right.end && right.start < left.end
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+#[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]
 #[path = "content_mapper_tests.rs"]
 mod tests;

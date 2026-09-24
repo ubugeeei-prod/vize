@@ -5,6 +5,10 @@
 //! authored import. These tests pin the generated shadow pair
 //! (`type __R_x = typeof x;` + `var x: __U<__R_x>`) and every case that must
 //! *not* get one.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use vize_canon::virtual_ts::{
     TemplateGlobal, VirtualTsOptions, generate_virtual_ts_with_offsets,

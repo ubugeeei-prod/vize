@@ -76,8 +76,10 @@ import PageWidget from '@scope/compat/page'
 void OptionsWidget; void ClassWidget; void PageWidget
 </script>
 "#;
-    let mut virtual_options = crate::virtual_ts::VirtualTsOptions::default();
-    virtual_options.reference_paths = vec![nuxt_types.to_string_lossy().into_owned().into()];
+    let virtual_options = crate::virtual_ts::VirtualTsOptions {
+        reference_paths: vec![nuxt_types.to_string_lossy().into_owned().into()],
+        ..Default::default()
+    };
     let project = build_vue_virtual_project_with_overlays_and_options_and_package_routes(
         &host,
         source,

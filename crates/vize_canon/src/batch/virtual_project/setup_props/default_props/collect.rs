@@ -11,7 +11,7 @@ use crate::batch::virtual_project::setup_props::{
     syntax::runtime_object_property_name,
 };
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_default_names_from_argument<'expr, 'ctx>(
     arg: &'expr Argument<'expr>,
     source: &str,
@@ -97,7 +97,7 @@ pub(super) fn collect_default_names_from_argument<'expr, 'ctx>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_default_names_from_expression<'expr, 'ctx>(
     expr: &'expr Expression<'expr>,
     source: &str,
@@ -185,7 +185,7 @@ pub(super) fn collect_default_names_from_expression<'expr, 'ctx>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn collect_default_names_from_identifier<'ctx>(
     name: &str,
     source: &str,
@@ -220,7 +220,7 @@ fn collect_default_names_from_identifier<'ctx>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_default_names_from_call<'expr, 'ctx>(
     call: &'expr CallExpression<'expr>,
     source: &str,
@@ -269,7 +269,7 @@ pub(super) fn collect_default_names_from_call<'expr, 'ctx>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_default_names_from_object<'expr, 'ctx>(
     object: &'expr ObjectExpression<'expr>,
     source: &str,

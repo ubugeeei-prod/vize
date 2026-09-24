@@ -10,7 +10,7 @@ use crate::batch::virtual_project::setup_props::{
     imports::{RuntimeImport, RuntimePropVisitSet},
 };
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_props_from_default_declaration<'a>(
     declaration: &'a ExportDefaultDeclarationKind<'a>,
     source: &str,
@@ -120,7 +120,7 @@ pub(super) fn collect_props_from_default_declaration<'a>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_props_from_expression<'a>(
     expr: &'a Expression<'a>,
     source: &str,
@@ -209,7 +209,7 @@ pub(super) fn collect_props_from_expression<'a>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn collect_props_from_argument<'a>(
     arg: &'a Argument<'a>,
     source: &str,

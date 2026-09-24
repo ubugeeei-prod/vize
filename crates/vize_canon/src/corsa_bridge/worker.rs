@@ -27,7 +27,7 @@
 //! calls genuinely yield would activate the latent `IdeContext` shard-guard
 //! deadlock recorded in #3377; bounding without yielding keeps that hazard
 //! unreachable.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "shared across threads")]
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};

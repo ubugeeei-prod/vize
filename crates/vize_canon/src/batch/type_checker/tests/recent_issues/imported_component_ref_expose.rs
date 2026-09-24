@@ -17,6 +17,7 @@
 //! `vue-tsc --noEmit` (vue 3.6.0-beta.10) on the same sources; see the PR for
 //! the transcript. Only the printed type name differs, because each tool names
 //! its own generated instance type.
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use super::super::{
     BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,

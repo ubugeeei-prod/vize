@@ -6,12 +6,8 @@
 //! route per package. `collect_transitive_local_imports_with_resolver` calls
 //! these collectors once per import occurrence, so their cost in the nesting
 //! depth is what a large pnpm workspace pays (#4426).
-
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::{hint::black_box, path::PathBuf};

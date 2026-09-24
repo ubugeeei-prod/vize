@@ -7,6 +7,8 @@
 //! `tsconfig.json(15,5): error TS5101: Option 'baseUrl' is deprecated ...` for
 //! the config below and vize reported nothing, so the two tools disagreed about
 //! the whole diagnostic set from one unreported config error.
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::{Path, PathBuf};
 

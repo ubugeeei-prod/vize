@@ -1,3 +1,7 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::ops::Range;
 
 use super::*;
@@ -32,7 +36,7 @@ fn mapping_summary<'a>(
         .collect()
 }
 
-#[allow(dead_code)]
+#[expect(dead_code, reason = "read via Debug snapshots")]
 #[derive(Debug)]
 struct MappingSummary<'a> {
     generated: &'a str,

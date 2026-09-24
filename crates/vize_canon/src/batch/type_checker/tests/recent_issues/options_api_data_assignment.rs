@@ -1,4 +1,6 @@
 //! Options API `data()` members stay mutable in template assignment expressions.
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::Path;
 

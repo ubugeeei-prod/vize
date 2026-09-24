@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use oxc_span::SourceType;
 use tempfile::TempDir;
 

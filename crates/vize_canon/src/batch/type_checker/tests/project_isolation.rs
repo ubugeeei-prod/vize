@@ -1,4 +1,5 @@
 #![cfg(unix)]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use super::{BatchTypeChecker, DeclarationEmitOptions, resolve_test_tsgo_binary, unique_case_dir};
 use crate::batch::TypeChecker;

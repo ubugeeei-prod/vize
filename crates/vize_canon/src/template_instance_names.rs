@@ -47,6 +47,7 @@ pub fn template_content_range(source: &str) -> Option<Range<usize>> {
     Some(template.loc.start..template.loc.start + template.content.len())
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{instance_diagnostic, is_lexical_lookup_failure, template_content_range};

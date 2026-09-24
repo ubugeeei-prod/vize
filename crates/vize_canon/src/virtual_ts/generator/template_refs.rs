@@ -38,7 +38,7 @@ pub(super) struct TemplateRefUnwraps {
     hoist_shared_preamble: bool,
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_and_emit_scope_preamble(
     ts: &mut String,
     summary: &Croquis,

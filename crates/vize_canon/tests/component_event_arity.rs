@@ -1,3 +1,5 @@
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use std::path::Path;
 
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, SfcTypeCheckOptions, type_check_sfc};

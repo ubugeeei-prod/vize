@@ -10,6 +10,10 @@
 //! Every expectation below is transcribed from a real `vue-tsc` run over
 //! byte-identical fixtures (vue-tsc 3.3.4 / TypeScript 6.0.3 / vue 3.6.0-beta.10,
 //! `strict: true`). See the PR body for the recorded output.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::Path;
 

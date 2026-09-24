@@ -152,7 +152,7 @@ impl VirtualProject {
 
     // VirtualProject and its editor/check-server owners have independent
     // lifetimes, while the resolver must retain one shared cache identity.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "shared across threads")]
     pub(crate) fn set_package_route_resolver(&mut self, resolver: crate::PackageRouteResolver) {
         self.package_route_resolver = std::sync::Arc::new(std::sync::Mutex::new(resolver));
     }

@@ -7,6 +7,8 @@
 //! AST and emitted `invalid_sfc_fallback_virtual_ts()`, so every script type
 //! diagnostic in the file disappeared behind one missing space — the same
 //! false-negative shape #3294 fixed in the linter.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
 use vize_canon::VirtualProject;
 
@@ -43,12 +45,7 @@ fn virtual_ts_for(source: &str) -> vize_s0::String {
 
     let mut project = VirtualProject::new(&dir).unwrap();
     project.register_path(&path).unwrap();
-    project
-        .find_by_original(&path)
-        .unwrap()
-        .content
-        .clone()
-        .into()
+    project.find_by_original(&path).unwrap().content.clone()
 }
 
 #[test]

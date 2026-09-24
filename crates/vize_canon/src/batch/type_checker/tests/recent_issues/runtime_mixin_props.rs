@@ -1,4 +1,5 @@
 //! Runtime and mixin props keep Vue's public requiredness across SFC imports.
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
 use super::super::super::{
     BatchTypeChecker, TypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,

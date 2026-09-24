@@ -10,6 +10,8 @@
 //! Each case therefore registers a file *outside* the configured `rootDir`, so
 //! the inferred value and the configured one differ and the assertion can tell
 //! them apart.
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::fs;
 use std::path::Path;

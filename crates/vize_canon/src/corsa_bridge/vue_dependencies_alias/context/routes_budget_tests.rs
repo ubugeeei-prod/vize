@@ -71,7 +71,6 @@ fn exhausted_editor_route_keeps_native_spelling_and_invalidation_inputs() {
         &[],
     );
     assert!(!discovery.resolve(&host, "chart-like", crate::PackageResolutionMode::Import));
-    drop(discovery);
 
     let metrics = resolver.metrics();
     assert_eq!(metrics.reachability_checks, 1);
@@ -133,7 +132,6 @@ fn reachability_cache_separates_importer_and_resolution_context() {
         "typed-package",
         crate::PackageResolutionMode::Import,
     ));
-    drop(discovery);
 
     assert_eq!(reachability.len(), 3);
     assert_eq!(resolver.metrics().reachability_checks, 3);

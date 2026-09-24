@@ -4,7 +4,7 @@
 //! and result types used by the bridge.
 //!
 //! Many structs use `std::string::String` for serde deserialization compatibility.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -58,7 +58,7 @@ impl std::error::Error for CorsaBridgeError {}
 
 /// LSP diagnostic from Corsa.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub struct LspDiagnostic {
     /// Diagnostic range
     pub range: LspRange,
@@ -91,7 +91,7 @@ pub struct LspPosition {
 
 /// Related diagnostic information.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct LspRelatedInformation {
     pub location: LspLocation,
     pub message: std::string::String,
@@ -99,7 +99,7 @@ pub struct LspRelatedInformation {
 
 /// LSP location.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct LspLocation {
     pub uri: std::string::String,
     pub range: LspRange,
@@ -117,7 +117,7 @@ pub struct LspHover {
 /// LSP hover contents - can be markup or multiple items.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub enum LspHoverContents {
     /// A single MarkupContent
     Markup(LspMarkupContent),
@@ -129,7 +129,7 @@ pub enum LspHoverContents {
 
 /// LSP markup content.
 #[derive(Debug, Clone, Deserialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct LspMarkupContent {
     /// The type of the Markup ("markdown" | "plaintext")
     pub kind: std::string::String,
@@ -140,7 +140,7 @@ pub struct LspMarkupContent {
 /// LSP marked string (for hover arrays).
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub enum LspMarkedString {
     /// A simple string
     String(std::string::String),
@@ -153,7 +153,7 @@ pub enum LspMarkedString {
 
 /// LSP completion item.
 #[derive(Debug, Clone, Deserialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct LspCompletionItem {
     /// The label of this completion item
     pub label: std::string::String,
@@ -180,7 +180,7 @@ pub struct LspCompletionItem {
 /// LSP documentation - can be string or MarkupContent.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub enum LspDocumentation {
     /// A simple string
     String(std::string::String),
@@ -220,7 +220,7 @@ impl LspCompletionResponse {
 
 /// LSP location link (for definition responses).
 #[derive(Debug, Clone, Deserialize)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct LspLocationLink {
     /// Span of the origin of this link
     #[serde(rename = "originSelectionRange")]

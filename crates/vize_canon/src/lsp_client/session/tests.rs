@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
     ProjectSessionSpawnError, api_mode_for_executable, build_session_document_uri,
     classify_project_session_error, line_character_to_utf16_offset,

@@ -190,6 +190,10 @@ pub fn detect_package_manager(project_root: &Path) -> Option<PackageManager> {
     None
 }
 
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshots expand to format!"
+)]
 #[cfg(test)]
 mod tests {
     use super::{CorsaNotFoundError, PackageManager};

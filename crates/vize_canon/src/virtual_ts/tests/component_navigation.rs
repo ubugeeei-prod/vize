@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::generate_virtual_ts;
 
 fn generate(script: &str, template: &str, script_setup: bool) -> super::super::VirtualTsOutput {

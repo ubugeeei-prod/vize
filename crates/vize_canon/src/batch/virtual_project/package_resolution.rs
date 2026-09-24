@@ -3,7 +3,7 @@
 //! This records cache identity only. Raw package manifests remain the sole
 //! authority for target/condition selection inside TypeScript.
 
-#![allow(clippy::disallowed_types)] // serde_json::Map keys are std::string::String.
+#![expect(clippy::disallowed_types, reason = "serde_json keys are std String")] // serde_json::Map keys are std::string::String.
 
 use std::path::{Path, PathBuf};
 

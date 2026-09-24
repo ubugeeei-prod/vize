@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::{
     CompactString, PlainScriptExport, PlainScriptExportKind, collect_named_value_exports,
     emit_setup_invocation_and_exports,

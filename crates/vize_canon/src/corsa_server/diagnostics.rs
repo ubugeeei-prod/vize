@@ -187,6 +187,7 @@ fn map_host_position_to_source(
     Some(source_line_index.line_col(source_offset))
 }
 
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use oxc_span::SourceType;

@@ -5,6 +5,12 @@
 //! level of a module or namespace. Leaving one in the function body raised TS1235
 //! and the export bridge never reached it, so a consumer also got TS2614 — both
 //! false, because the authored `<script>` body *is* module scope. See #3383.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::fs;
 use std::path::{Path, PathBuf};

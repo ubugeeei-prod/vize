@@ -19,7 +19,7 @@ use super::super::tsconfig_paths::{
 };
 
 #[derive(Default)]
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 struct ChainLoad {
     active: FxHashSet<PathBuf>,
     completed: FxHashMap<PathBuf, Map<std::string::String, Value>>,
@@ -154,7 +154,7 @@ impl VirtualProject {
         self.virtual_ts_check_options.check_unknown_props
     }
 
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     fn load_vue_compiler_options(
         &self,
         tsconfig_path: Option<&Path>,
@@ -166,7 +166,7 @@ impl VirtualProject {
         self.load_vue_compiler_options_inner(tsconfig_path, &mut load)
     }
 
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     fn load_vue_compiler_options_inner(
         &self,
         tsconfig_path: &Path,
@@ -194,7 +194,7 @@ impl VirtualProject {
         flattened
     }
 
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     fn merge_extended_vue_compiler_options(
         &self,
         normalized: &Path,
@@ -229,7 +229,7 @@ impl VirtualProject {
     }
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn check_unknown_props_enabled(options: &Map<std::string::String, Value>) -> bool {
     if let Some(value) = options.get("checkUnknownProps").and_then(Value::as_bool) {
         return value;
@@ -257,7 +257,7 @@ mod tests {
             .join(cstr!("vue-compiler-options-{name}-{}", std::process::id()).as_str())
     }
 
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     fn bool_map(pairs: &[(&str, bool)]) -> Map<std::string::String, Value> {
         pairs
             .iter()

@@ -14,7 +14,7 @@ use super::{
     template_scope::{is_inside_template_scope, is_visible_template_binding},
 };
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn generate_strict_expression_refs(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,

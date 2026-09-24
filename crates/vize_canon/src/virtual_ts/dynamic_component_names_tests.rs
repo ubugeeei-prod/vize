@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::{VirtualTsOptions, generate_virtual_ts_with_offsets};
 use vize_croquis::{Analyzer, AnalyzerOptions};
 

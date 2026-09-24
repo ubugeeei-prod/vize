@@ -3,6 +3,7 @@
 //! declaration consumers must retain canonical required props and strict
 //! emits. A single generic constructor chooses between those contracts using
 //! an `unknown` default that cannot be confused with authored input.
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use super::super::{
     BatchTypeChecker, DeclarationEmitOptions, create_project_case, relative_path,

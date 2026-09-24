@@ -50,7 +50,7 @@ pub(super) fn option_diagnostics(corsa_path: &Path, project: &VirtualProject) ->
 
     let anchor = project.project_diagnostics_anchor();
     let mut diagnostics = Vec::new();
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
     for stream in [&output.stdout, &output.stderr] {
         let text = std::string::String::from_utf8_lossy(stream);
         collect_option_diagnostics(
@@ -111,7 +111,6 @@ fn collect_option_diagnostics(
 /// `Some(Some(..))` for an option diagnostic on the probe config, `Some(None)`
 /// for any other diagnostic header on it, `None` when the line is not a
 /// diagnostic header for that file at all.
-#[allow(clippy::type_complexity)]
 fn parse_option_diagnostic_line(
     line: &str,
     config_path: &Path,

@@ -5,6 +5,9 @@
 //! `vue-tsc` 3.3.4 + `vue` 3.6.0-beta.10 run over byte-identical fixtures, so
 //! the formatted rows produced here are directly comparable to `vue-tsc`'s
 //! `file(line,column): error TSxxxx: message` output.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::Path;
 

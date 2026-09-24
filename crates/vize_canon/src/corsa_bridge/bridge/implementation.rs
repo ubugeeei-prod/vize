@@ -3,7 +3,6 @@
 use super::{CorsaBridge, parse_lsp_locations};
 use crate::corsa_bridge::types::{CorsaBridgeError, LspLocation};
 
-#[allow(clippy::disallowed_types)]
 impl CorsaBridge {
     /// Get implementation locations for a symbol at a position.
     pub async fn implementation(

@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::fs;
 
 use crate::{PackageResolutionContext, PackageRoute, PackageRouteBinding};

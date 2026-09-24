@@ -1,3 +1,5 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 use crate::{BatchTypeChecker, BatchTypeCheckerTrait, SfcBlockType, project, write};
 
 #[test]

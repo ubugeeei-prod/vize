@@ -1,5 +1,8 @@
 //! Importer-scoped package shadows in editor sessions (#4002).
 #![cfg(unix)]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::{Path, PathBuf};
 

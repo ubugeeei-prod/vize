@@ -11,7 +11,7 @@ use crate::corsa_bridge::vue_document::{
     CorsaVueVirtualDependency, CorsaVueVirtualDocumentOptions,
 };
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn collect_queued_documents(
     documents: &mut Vec<(String, String)>,
     mut dependencies: Option<&mut Vec<CorsaVueVirtualDependency>>,

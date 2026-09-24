@@ -16,7 +16,7 @@ impl VirtualProject {
     /// source-tree path as a fallback, plus a trailing `.vue.ts` mirror
     /// candidate so extensionless SFC aliases resolve (see [`remap_path_targets`]).
     /// Absolute and non-string targets pass through unchanged.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     pub(super) fn remap_paths(
         &self,
         paths: &Map<std::string::String, Value>,

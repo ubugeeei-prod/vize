@@ -1,5 +1,5 @@
 //! Bounded session cache and strong disk fingerprints for alias contexts.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "shared across threads")]
 
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, MutexGuard};
@@ -229,7 +229,6 @@ pub(in crate::corsa_bridge) fn recover_lock<T>(mutex: &Mutex<T>) -> MutexGuard<'
 
 /// The import closure and disk inputs a cached editor route depends on.
 #[derive(Clone)]
-#[allow(clippy::disallowed_types)]
 pub(super) struct ContextFingerprint {
     host_content: u64,
     overlays: u64,
@@ -246,7 +245,6 @@ impl PartialEq for ContextFingerprint {
 }
 
 impl ContextFingerprint {
-    #[allow(clippy::disallowed_methods)]
     pub(super) fn capture(
         source_path: &Path,
         content: &str,
@@ -326,7 +324,6 @@ impl ContextFingerprint {
     }
 }
 
-#[allow(clippy::disallowed_methods)]
 #[cfg(test)]
 #[path = "cache/tests.rs"]
 mod tests;

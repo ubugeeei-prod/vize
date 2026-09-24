@@ -5,6 +5,11 @@
 //! Template diagnostics from `type_check_sfc` (the `vize check` binding
 //! check) on `tests/_fixtures` must sit inside both mappings. Script
 //! diagnostics are outside this projection.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::ops::Range;
 use std::path::{Path, PathBuf};
@@ -108,7 +113,7 @@ fn check_diagnostics_land_inside_the_projection() {
         if body.is_empty() {
             continue;
         }
-        let base = template.loc.start as usize;
+        let base = template.loc.start;
         let options = vize_canon::SfcTypeCheckOptions::new(path.display().to_string());
         let checked = vize_canon::type_check_sfc(&source, &options);
         let (old, new) = expression_ranges(body);

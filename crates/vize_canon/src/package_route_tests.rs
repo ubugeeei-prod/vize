@@ -1,5 +1,3 @@
-#![allow(clippy::disallowed_methods)]
-
 use std::path::Path;
 
 use serde_json::json;

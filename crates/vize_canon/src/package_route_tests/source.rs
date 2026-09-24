@@ -1,4 +1,4 @@
-#![allow(clippy::disallowed_methods)]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
 use super::super::{PackageRouteResolver, PackageSourceOptions};
 

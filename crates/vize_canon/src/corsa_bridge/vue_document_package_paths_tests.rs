@@ -1,4 +1,5 @@
 //! User-authored `paths` stay authoritative over installed package shadows.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use std::path::{Path, PathBuf};
 

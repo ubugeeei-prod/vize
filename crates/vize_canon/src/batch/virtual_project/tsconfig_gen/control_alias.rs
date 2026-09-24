@@ -23,7 +23,7 @@ const CONTROL_FILES: &[&str] = &[
 
 /// Add exact real-tree mappings wherever a wildcard or exact user target would
 /// otherwise expose a same-named control file at the virtual project root.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(super) fn protect_control_file_aliases(
     paths: &Map<std::string::String, Value>,
     remapped: &mut Map<std::string::String, Value>,
@@ -57,7 +57,7 @@ pub(super) fn protect_control_file_aliases(
     }
 }
 
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 fn exact_alias_for_target(alias: &str, target: &str, control_file: &str) -> Option<String> {
     if Path::new(target).is_absolute() {
         return None;
@@ -76,7 +76,7 @@ mod tests {
 
     use super::protect_control_file_aliases;
 
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     fn protect(paths: Value) -> Map<std::string::String, Value> {
         let paths = paths.as_object().unwrap();
         let mut remapped = paths.clone();

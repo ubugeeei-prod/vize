@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::fs;
 
 use super::{SHARED_HELPERS_FILE, VirtualProject, unique_case_dir};

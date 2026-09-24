@@ -47,7 +47,7 @@ impl DeclarationDirs {
 
 /// A flattened `extends` chain: the effective options plus the directories the
 /// surviving `paths` and `baseUrl` declarations came from.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 type FlattenedChain = (Map<std::string::String, Value>, DeclarationDirs);
 
 /// The state of one flattening operation.
@@ -68,7 +68,7 @@ struct ChainLoad {
 }
 
 /// Flattened options plus the effective `baseUrl` (#3886).
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 #[derive(Default)]
 pub(in super::super) struct FlattenedCompilerOptions {
     pub(in super::super) options: Map<std::string::String, Value>,
@@ -81,7 +81,7 @@ pub(in super::super) struct FlattenedCompilerOptions {
 }
 
 impl VirtualProject {
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     pub(in super::super) fn load_compiler_options(
         &self,
         tsconfig_path: Option<&Path>,
@@ -91,7 +91,7 @@ impl VirtualProject {
 
     /// Flatten the effective options without changing path spellings. The
     /// input-less option probe validates syntax only, so its paths stay inert.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     pub(in super::super) fn load_compiler_options_verbatim(
         &self,
         tsconfig_path: Option<&Path>,
@@ -108,7 +108,6 @@ impl VirtualProject {
     /// Flatten the chain and rebase `paths` targets onto the project root from
     /// the anchor TypeScript actually uses: the effective `baseUrl` when one is
     /// declared, the winning `paths` map's declaring directory otherwise.
-    #[allow(clippy::disallowed_types)]
     pub(in super::super) fn load_compiler_options_flattened(
         &self,
         tsconfig_path: Option<&Path>,
@@ -165,7 +164,6 @@ impl VirtualProject {
     /// one's overrides in place where TypeScript gives the later sibling's
     /// inherited values. Repeated work is avoided by `load.completed` instead,
     /// which reuses the flattened chain rather than suppressing it.
-    #[allow(clippy::disallowed_types)]
     fn load_compiler_options_inner(
         &self,
         tsconfig_path: &Path,
@@ -196,7 +194,6 @@ impl VirtualProject {
 
     /// The chain rooted at an already-normalized config, with `load.active`
     /// holding the configs between it and the entry point.
-    #[allow(clippy::disallowed_types)]
     fn load_extended_compiler_options(
         &self,
         normalized: &Path,

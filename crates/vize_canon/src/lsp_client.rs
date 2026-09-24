@@ -2,7 +2,7 @@
 //!
 //! The module path is still `lsp_client` for workspace compatibility, but the
 //! implementation now talks directly to `corsa`'s `ProjectSession` APIs.
-#![allow(clippy::disallowed_types)]
+#![expect(clippy::disallowed_types, reason = "shared across threads")]
 
 use corsa::api::{CapabilitiesResponse, ProjectSession};
 use lsp_types::Diagnostic;

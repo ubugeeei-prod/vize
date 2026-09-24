@@ -75,7 +75,7 @@ impl VirtualProject {
     /// `compilerOptions` of the config `tsconfig_gen` wrote for this run. Read
     /// back from disk rather than recomputed so the comparison can never drift
     /// from what the checker actually sees.
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     fn generated_options(&self) -> Map<std::string::String, Value> {
         let path = self.virtual_root.join("tsconfig.json");
         std::fs::read_to_string(path)
@@ -141,7 +141,7 @@ const NON_RELATIVE_PATHS: u32 = 5090;
 const DEPRECATION_CODES: [u32; 4] = [5101, 5102, 5107, 5108];
 
 impl OptionDiagnosticNarrowing {
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     pub(crate) fn from_declared(
         declared: &Map<std::string::String, Value>,
         removals_in_baseline: bool,
@@ -200,7 +200,7 @@ fn installed_typescript_reports_removals(project_root: &std::path::Path) -> bool
 /// names it, while the re-anchored `paths` map and `typeRoots` list keep their
 /// key and with it every diagnostic their presence triggers. Comparing only
 /// string-valued options draws exactly that line.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn option_probe_is_needed(
     declared: &Map<std::string::String, Value>,
     generated: &Map<std::string::String, Value>,
@@ -221,7 +221,7 @@ fn option_probe_is_needed(
 /// itself. Nothing else is touched — an option added here could *invent* a
 /// diagnostic the user's own config does not have (`noEmit` alone conflicts with
 /// several emit options), and a program with no inputs emits nothing regardless.
-#[allow(clippy::disallowed_types)]
+#[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 fn option_probe_value(mut declared: Map<std::string::String, Value>) -> Value {
     declared.insert("types".into(), Value::Array(Vec::new()));
 

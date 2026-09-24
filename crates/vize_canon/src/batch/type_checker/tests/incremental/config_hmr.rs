@@ -1,3 +1,5 @@
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::path::Path;
 
 use super::super::super::{BatchTypeChecker, create_project_case, resolve_test_tsgo_binary};

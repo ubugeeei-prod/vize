@@ -43,6 +43,7 @@ mod checks;
 pub(crate) mod patterns;
 mod runner;
 mod template_bindings;
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests;
 
