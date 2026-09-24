@@ -208,6 +208,11 @@
       "import": "./dist/magic-keys.mjs",
       "default": "./dist/magic-keys.mjs"
     },
+    "./math": {
+      "types": "./dist/math.d.mts",
+      "import": "./dist/math.mjs",
+      "default": "./dist/math.mjs"
+    },
     "./media-query": {
       "types": "./dist/media-query.d.mts",
       "import": "./dist/media-query.mjs",
@@ -388,6 +393,21 @@
       "import": "./dist/until.mjs",
       "default": "./dist/until.mjs"
     },
+    "./use-array": {
+      "types": "./dist/use-array.d.mts",
+      "import": "./dist/use-array.mjs",
+      "default": "./dist/use-array.mjs"
+    },
+    "./use-async-queue": {
+      "types": "./dist/use-async-queue.d.mts",
+      "import": "./dist/use-async-queue.mjs",
+      "default": "./dist/use-async-queue.mjs"
+    },
+    "./use-async-state": {
+      "types": "./dist/use-async-state.d.mts",
+      "import": "./dist/use-async-state.mjs",
+      "default": "./dist/use-async-state.mjs"
+    },
     "./use-broadcast-channel": {
       "types": "./dist/use-broadcast-channel.d.mts",
       "import": "./dist/use-broadcast-channel.mjs",
@@ -397,6 +417,11 @@
       "types": "./dist/use-clipboard.d.mts",
       "import": "./dist/use-clipboard.mjs",
       "default": "./dist/use-clipboard.mjs"
+    },
+    "./use-confirm-dialog": {
+      "types": "./dist/use-confirm-dialog.d.mts",
+      "import": "./dist/use-confirm-dialog.mjs",
+      "default": "./dist/use-confirm-dialog.mjs"
     },
     "./use-cookie": {
       "types": "./dist/use-cookie.d.mts",
@@ -417,6 +442,11 @@
       "types": "./dist/use-css-var.d.mts",
       "import": "./dist/use-css-var.mjs",
       "default": "./dist/use-css-var.mjs"
+    },
+    "./use-cycle-list": {
+      "types": "./dist/use-cycle-list.d.mts",
+      "import": "./dist/use-cycle-list.mjs",
+      "default": "./dist/use-cycle-list.mjs"
     },
     "./use-date-format": {
       "types": "./dist/use-date-format.d.mts",
@@ -503,10 +533,20 @@
       "import": "./dist/use-interval.mjs",
       "default": "./dist/use-interval.mjs"
     },
+    "./use-machine": {
+      "types": "./dist/use-machine.d.mts",
+      "import": "./dist/use-machine.mjs",
+      "default": "./dist/use-machine.mjs"
+    },
     "./use-media-controls": {
       "types": "./dist/use-media-controls.d.mts",
       "import": "./dist/use-media-controls.mjs",
       "default": "./dist/use-media-controls.mjs"
+    },
+    "./use-memoize": {
+      "types": "./dist/use-memoize.d.mts",
+      "import": "./dist/use-memoize.mjs",
+      "default": "./dist/use-memoize.mjs"
     },
     "./use-mounted": {
       "types": "./dist/use-mounted.d.mts",
@@ -528,6 +568,11 @@
       "import": "./dist/use-object-url.mjs",
       "default": "./dist/use-object-url.mjs"
     },
+    "./use-offset-pagination": {
+      "types": "./dist/use-offset-pagination.d.mts",
+      "import": "./dist/use-offset-pagination.mjs",
+      "default": "./dist/use-offset-pagination.mjs"
+    },
     "./use-permission": {
       "types": "./dist/use-permission.d.mts",
       "import": "./dist/use-permission.mjs",
@@ -548,10 +593,20 @@
       "import": "./dist/use-script-tag.mjs",
       "default": "./dist/use-script-tag.mjs"
     },
+    "./use-selection": {
+      "types": "./dist/use-selection.d.mts",
+      "import": "./dist/use-selection.mjs",
+      "default": "./dist/use-selection.mjs"
+    },
     "./use-share": {
       "types": "./dist/use-share.d.mts",
       "import": "./dist/use-share.mjs",
       "default": "./dist/use-share.mjs"
+    },
+    "./use-sorted": {
+      "types": "./dist/use-sorted.d.mts",
+      "import": "./dist/use-sorted.mjs",
+      "default": "./dist/use-sorted.mjs"
     },
     "./use-speech-recognition": {
       "types": "./dist/use-speech-recognition.d.mts",
@@ -562,6 +617,11 @@
       "types": "./dist/use-speech-synthesis.d.mts",
       "import": "./dist/use-speech-synthesis.mjs",
       "default": "./dist/use-speech-synthesis.mjs"
+    },
+    "./use-stepper": {
+      "types": "./dist/use-stepper.d.mts",
+      "import": "./dist/use-stepper.mjs",
+      "default": "./dist/use-stepper.mjs"
     },
     "./use-storage": {
       "types": "./dist/use-storage.d.mts",
