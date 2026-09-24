@@ -3,7 +3,6 @@ use crate::registry::ModuleRegistry;
 use std::path::Path;
 
 /// Try to resolve an import specifier to a file in the registry.
-#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 pub(super) fn resolve_import(
     specifier: &str,
     registry: &ModuleRegistry,
@@ -13,7 +12,7 @@ pub(super) fn resolve_import(
     if let Some(relative) = specifier.strip_prefix("@/") {
         // Check with common extensions
         for ext in &["", ".vue", ".ts", ".tsx", ".js", ".jsx"] {
-            let path = format!("src/{}{}", relative, ext);
+            let path = vize_carton::cstr!("src/{relative}{ext}");
             if registry.get_by_path(&path).is_some() {
                 return true;
             }

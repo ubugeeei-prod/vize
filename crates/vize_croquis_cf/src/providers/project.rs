@@ -189,7 +189,9 @@ impl ProjectSources {
             .map(|(index, module)| (ModuleId(index as u32), module))
     }
 
-    /// The module `id`, or `None` for an id from another project.
+    /// The module `id`. Pass ids from this `ProjectSources` only: an id is a
+    /// project-local index, so one from another project may name an
+    /// unrelated module. `None` when the index is out of range.
     #[must_use]
     pub fn module(&self, id: ModuleId) -> Option<&ProjectModule> {
         self.modules.get(id.index())

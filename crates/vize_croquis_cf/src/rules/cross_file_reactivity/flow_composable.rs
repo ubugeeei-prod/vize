@@ -37,9 +37,8 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
         for node in self.graph.nodes() {
             if let Some(entry) = self.registry.get(node.file_id) {
                 let path = entry.path.to_string_lossy();
-                #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
-                if path.ends_with(&format!("{}.ts", source_path))
-                    || path.ends_with(&format!("{}/index.ts", source_path))
+                if path.ends_with(vize_carton::cstr!("{source_path}.ts").as_str())
+                    || path.ends_with(vize_carton::cstr!("{source_path}/index.ts").as_str())
                     || path.contains(source_path)
                 {
                     return Some(node.file_id);

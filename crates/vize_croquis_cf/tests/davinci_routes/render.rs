@@ -52,7 +52,7 @@ pub fn fixture(
             let components: Vec<_> = record
                 .components
                 .iter()
-                .filter_map(|id| project.module(*id).map(|module| module.path()))
+                .map(|id| project.module(*id).expect("route component module").path())
                 .collect();
             writeln!(
                 out,
