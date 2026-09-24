@@ -125,16 +125,14 @@ fn validate_next_node<'a>(
     let Some(node) = nodes.next() else {
         return integrity("AI evidence graph is missing a deterministic node");
     };
-    let expected_id = index.map_or_else(
-        || finding.id.clone(),
-        |index| match kind {
-            AiEvidenceNodeKind::Evidence => cstr!("{}:evidence:{index}", finding.id),
-            AiEvidenceNodeKind::RelatedLocation => cstr!("{}:related:{index}", finding.id),
-            // Finding roots have no index; an indexed one can never match and
-            // fails the ordering check below.
-            AiEvidenceNodeKind::Finding => cstr!("{}:finding:{index}", finding.id),
-        },
-    );
+    let expected_id = match (kind, index) {
+        (AiEvidenceNodeKind::Finding, None) => finding.id.clone(),
+        (AiEvidenceNodeKind::Evidence, Some(index)) => cstr!("{}:evidence:{index}", finding.id),
+        (AiEvidenceNodeKind::RelatedLocation, Some(index)) => {
+            cstr!("{}:related:{index}", finding.id)
+        }
+        _ => return integrity("AI evidence graph has an invalid node index"),
+    };
     if node.id != expected_id || node.finding_id != finding.id || node.kind != kind {
         return integrity("AI evidence graph nodes are not deterministically ordered");
     }

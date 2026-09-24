@@ -22,13 +22,11 @@ pub(super) fn extract_source_snippet(
     let focus_start = floor_char_boundary(source, requested_start.min(source_len));
     let focus_end = ceil_char_boundary(source, requested_end.min(source_len), source_len);
     let line_start = source
-        .get(..focus_start)
-        .unwrap_or_default()
+        .get(..focus_start)?
         .rfind('\n')
         .map_or(0, |index| index + 1);
     let line_end = source
-        .get(focus_end..source_len)
-        .unwrap_or_default()
+        .get(focus_end..source_len)?
         .find('\n')
         .map_or(source_len, |index| focus_end + index + 1);
 
@@ -50,7 +48,7 @@ pub(super) fn extract_source_snippet(
         content_end: end as u32,
         focus_start: bounded_focus_start as u32,
         focus_end: bounded_focus_end as u32,
-        text: source.get(start..end).unwrap_or_default().into(),
+        text: source.get(start..end)?.into(),
         truncated_before: start > 0,
         truncated_after: end < source.len(),
         focus_truncated: requested_outside_source || start > focus_start || end < focus_end,

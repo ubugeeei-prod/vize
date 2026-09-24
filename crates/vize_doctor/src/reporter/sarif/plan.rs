@@ -121,8 +121,8 @@ impl<'report, 'source> SarifPlan<'report, 'source> {
         self.artifacts.get(path)
     }
 
-    pub(super) fn artifact_uri(&self, path: &str) -> &str {
-        self.artifact(path).map_or("", |artifact| artifact.uri())
+    pub(super) fn artifact_uri(&self, path: &str) -> Option<&str> {
+        self.artifact(path).map(ArtifactPlan::uri)
     }
 
     pub(super) fn region(&self, location: &SourceLocation) -> Option<SarifRegion> {
@@ -229,7 +229,6 @@ fn invalid_data(message: impl Into<String>) -> ReporterError {
 }
 
 fn encode_relative_uri(path: &str) -> String {
-    const HEX: &[u8; 16] = b"0123456789ABCDEF";
     let mut encoded = String::with_capacity(path.len());
     for byte in path.bytes() {
         if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'.' | b'_' | b'~' | b'/') {
@@ -237,10 +236,12 @@ fn encode_relative_uri(path: &str) -> String {
         } else {
             encoded.push('%');
             for nibble in [byte >> 4, byte & 0x0f] {
-                encoded.push(
-                    HEX.get(usize::from(nibble))
-                        .map_or('0', |&digit| char::from(digit)),
-                );
+                let digit = if nibble < 10 {
+                    b'0' + nibble
+                } else {
+                    b'A' + nibble - 10
+                };
+                encoded.push(char::from(digit));
             }
         }
     }
@@ -249,13 +250,61 @@ fn encode_relative_uri(path: &str) -> String {
 
 #[cfg(test)]
 mod unit_tests {
-    use super::encode_relative_uri;
+    use std::collections::BTreeMap;
+
+    use vize_s0::ToCompactString;
+
+    use super::{SarifMissingSourcePolicy, SarifPlan, encode_relative_uri};
+    use crate::{
+        AnalysisProvenance, DoctorCategory, DoctorFinding, DoctorReport, FindingAssessment,
+        FindingConfidence, FindingImpact, FindingSeverity, HealthPenalty, RuleCost, SourceLocation,
+    };
+
+    fn finding() -> DoctorFinding {
+        DoctorFinding::new(
+            "DOCTOR_001",
+            DoctorCategory::Accessibility,
+            FindingAssessment::new(
+                FindingSeverity::Warning,
+                FindingConfidence::High,
+                FindingImpact::Medium,
+                HealthPenalty::new(1, "fixture"),
+            ),
+            SourceLocation::new("src/example.vue", 0, 0),
+            "Fixture",
+            "Fixture finding",
+            AnalysisProvenance::new("fixture", RuleCost::Low),
+        )
+    }
 
     #[test]
     fn artifact_uris_are_relative_and_utf8_percent_encoded() {
         assert_eq!(
             encode_relative_uri("src/画面 #1%.vue"),
             "src/%E7%94%BB%E9%9D%A2%20%231%25.vue"
+        );
+    }
+
+    #[test]
+    fn corrupted_preflight_indexes_fail_serialization() {
+        let report = DoctorReport::new("workspace", [finding()]);
+        let sources = BTreeMap::new();
+        let mut plan = SarifPlan::new(&report, &sources, SarifMissingSourcePolicy::ArtifactOnly)
+            .expect("the fixture must pass preflight");
+
+        plan.rules.clear();
+        let error = serde_json::to_vec(&super::super::wire::SarifLog::new(&plan))
+            .expect_err("a missing rule must fail serialization");
+        assert!(error.to_compact_string().contains("omitted a finding rule"));
+
+        plan.rules.push(&report.findings()[0]);
+        plan.artifacts.clear();
+        let error = serde_json::to_vec(&super::super::wire::SarifLog::new(&plan))
+            .expect_err("a missing artifact must fail serialization");
+        assert!(
+            error
+                .to_compact_string()
+                .contains("omitted a finding artifact")
         );
     }
 }

@@ -136,7 +136,8 @@ impl Serialize for SarifResults<'_, '_, '_> {
         let findings = self.plan.report().findings();
         let mut sequence = serializer.serialize_seq(Some(findings.len()))?;
         for finding in findings {
-            sequence.serialize_element(&SarifResult::new(self.plan, finding))?;
+            let result = SarifResult::new(self.plan, finding).map_err(serde::ser::Error::custom)?;
+            sequence.serialize_element(&result)?;
         }
         sequence.end()
     }
@@ -146,8 +147,7 @@ impl Serialize for SarifResults<'_, '_, '_> {
 #[serde(rename_all = "camelCase")]
 struct SarifResult<'finding> {
     rule_id: &'finding str,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    rule_index: Option<usize>,
+    rule_index: usize,
     level: &'static str,
     message: SarifMessage<'finding>,
     locations: [SarifLocation<'finding>; 1],
@@ -160,38 +160,50 @@ struct SarifResult<'finding> {
 }
 
 impl<'finding> SarifResult<'finding> {
-    fn new<'source>(plan: &SarifPlan<'finding, 'source>, finding: &'finding DoctorFinding) -> Self {
+    fn new<'source>(
+        plan: &SarifPlan<'finding, 'source>,
+        finding: &'finding DoctorFinding,
+    ) -> Result<Self, &'static str> {
         let mut related_locations = finding
             .related
             .iter()
             .map(|related| {
                 SarifLocation::new(plan, &related.location, Some(&related.message), None)
             })
-            .collect::<Vec<_>>();
-        related_locations.extend(finding.evidence.iter().filter_map(|evidence| {
-            evidence.location.as_ref().map(|location| {
-                SarifLocation::new(plan, location, Some(&evidence.summary), Some(evidence))
-            })
-        }));
+            .collect::<Result<Vec<_>, _>>()?;
+        related_locations.extend(
+            finding
+                .evidence
+                .iter()
+                .filter_map(|evidence| {
+                    evidence.location.as_ref().map(|location| {
+                        SarifLocation::new(plan, location, Some(&evidence.summary), Some(evidence))
+                    })
+                })
+                .collect::<Result<Vec<_>, _>>()?,
+        );
         let fixes = finding
             .fix
             .as_ref()
             .filter(|fix| !fix.edits.is_empty() && plan.can_render_fix(fix))
-            .map(|fix| vec![SarifFix::new(plan, fix)])
+            .map(|fix| SarifFix::new(plan, fix).map(|fix| vec![fix]))
+            .transpose()?
             .unwrap_or_default();
-        Self {
+        Ok(Self {
             rule_id: &finding.code,
-            rule_index: plan.rule_index(&finding.code),
+            rule_index: plan
+                .rule_index(&finding.code)
+                .ok_or("SARIF preflight omitted a finding rule")?,
             level: sarif_level(finding.assessment.severity),
             message: SarifMessage::owned(cstr!("{}: {}", finding.title, finding.message)),
-            locations: [SarifLocation::new(plan, &finding.primary, None, None)],
+            locations: [SarifLocation::new(plan, &finding.primary, None, None)?],
             related_locations,
             partial_fingerprints: SarifPartialFingerprints {
                 baseline_key: finding.baseline_key(),
             },
             fixes,
             properties: SarifResultProperties::new(plan, finding),
-        }
+        })
     }
 }
 
@@ -217,11 +229,14 @@ impl<'finding> SarifLocation<'finding> {
         location: &'finding SourceLocation,
         message: Option<&'finding str>,
         evidence: Option<&'finding FindingEvidence>,
-    ) -> Self {
-        Self {
+    ) -> Result<Self, &'static str> {
+        Ok(Self {
             physical_location: SarifPhysicalLocation {
                 artifact_location: SarifArtifactLocation {
-                    uri: plan.artifact_uri(&location.path).into(),
+                    uri: plan
+                        .artifact_uri(&location.path)
+                        .ok_or("SARIF preflight omitted a finding artifact")?
+                        .into(),
                 },
                 region: plan.region(location),
             },
@@ -230,7 +245,7 @@ impl<'finding> SarifLocation<'finding> {
                 evidence_kind: evidence.kind,
                 evidence_details: &evidence.details,
             }),
-        }
+        })
     }
 }
 
