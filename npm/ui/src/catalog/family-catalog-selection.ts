@@ -82,7 +82,8 @@ export const selectionFamilyCatalog = [
         "controllable-state",
         "typeahead",
       ],
-      maximumJavaScriptGzipBytes: 13_000,
+      // Includes the accessible async result announcement (13,112 bytes measured).
+      maximumJavaScriptGzipBytes: 13_200,
       maximumCssGzipBytes: 0,
     },
     aliases: [
