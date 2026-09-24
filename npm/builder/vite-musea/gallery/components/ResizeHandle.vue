@@ -16,7 +16,7 @@ const emit = defineEmits<{
       `resize-handle--${direction}`,
       { 'resize-handle--active': isResizing },
     ]"
-    @pointerdown.stop.prevent="emit('pointerdown', $event)"
+    @pointerdown.stop.prevent="(event) => emit('pointerdown', event)"
   >
     <div class="resize-handle__indicator" />
   </div>
@@ -28,7 +28,7 @@ const emit = defineEmits<{
   flex-shrink: 0;
   background: transparent;
   transition: background-color 0.15s;
-  z-index: 10;
+  z-index: var(--musea-z-resize, 10);
   touch-action: none;
 }
 
@@ -44,7 +44,7 @@ const emit = defineEmits<{
 
 .resize-handle:hover,
 .resize-handle--active {
-  background: rgba(224, 112, 72, 0.3);
+  background: color-mix(in srgb, var(--musea-accent) 30%, transparent);
 }
 
 .resize-handle__indicator {
@@ -53,24 +53,30 @@ const emit = defineEmits<{
   transition: background-color 0.15s;
 }
 
-.resize-handle--horizontal .resize-handle__indicator {
-  left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  transform: translateX(-50%);
+.resize-handle--horizontal {
+  .resize-handle__indicator {
+    inset-inline-start: 50%;
+    inset-block-start: 0;
+    inset-block-end: 0;
+    width: 1px;
+    transform: translateX(-50%);
+  }
 }
 
-.resize-handle--vertical .resize-handle__indicator {
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  transform: translateY(-50%);
+.resize-handle--vertical {
+  .resize-handle__indicator {
+    inset-block-start: 50%;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    height: 1px;
+    transform: translateY(-50%);
+  }
 }
 
-.resize-handle:hover .resize-handle__indicator,
-.resize-handle--active .resize-handle__indicator {
-  background: var(--musea-accent);
+.resize-handle:hover,
+.resize-handle--active {
+  .resize-handle__indicator {
+    background: var(--musea-accent);
+  }
 }
 </style>

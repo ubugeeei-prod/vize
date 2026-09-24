@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { mdiHome, mdiPalette, mdiCheckCircleOutline, mdiChevronRight } from "@mdi/js";
 import type { ArtFileInfo } from "../../src/types/index.js";
 import MdiIcon from "./MdiIcon.vue";
@@ -10,7 +10,6 @@ const props = defineProps<{
 }>();
 
 const route = useRoute();
-const router = useRouter();
 
 // Track expanded categories
 const expandedCategories = ref<Set<string>>(new Set());
@@ -42,63 +41,61 @@ function toggleCategory(category: string) {
 function isCategoryExpanded(category: string) {
   return expandedCategories.value.has(category);
 }
-
-function selectArt(art: ArtFileInfo) {
-  router.push({ name: "component", params: { path: art.path } });
-}
 </script>
 
 <template>
   <aside class="sidebar">
     <div class="sidebar-section">
-      <router-link
+      <RouterLink
         :to="{ name: 'home' }"
         class="sidebar-home-link"
         :class="{ active: route.name === 'home' }"
       >
         <MdiIcon :path="mdiHome" :size="16" />
         Home
-      </router-link>
+      </RouterLink>
 
-      <router-link
+      <RouterLink
         :to="{ name: 'tokens' }"
         class="sidebar-home-link"
         :class="{ active: route.name === 'tokens' }"
       >
         <MdiIcon :path="mdiPalette" :size="16" />
         Design Tokens
-      </router-link>
+      </RouterLink>
 
-      <router-link
+      <RouterLink
         :to="{ name: 'tests' }"
         class="sidebar-home-link"
         :class="{ active: route.name === 'tests' }"
       >
         <MdiIcon :path="mdiCheckCircleOutline" :size="16" />
         Test Summary
-      </router-link>
+      </RouterLink>
     </div>
 
     <div v-for="[category, items] in categoryList" :key="category" class="sidebar-section">
-      <div
+      <button
+        type="button"
         class="category-header"
         :class="{ 'category-header--expanded': isCategoryExpanded(category) }"
-        @click="toggleCategory(category)"
+        :aria-expanded="isCategoryExpanded(category)"
+        @click="() => toggleCategory(category)"
       >
         <MdiIcon class="category-icon" :path="mdiChevronRight" :size="16" />
         <span class="category-label">{{ category }}</span>
         <span class="category-count">{{ items.length }}</span>
-      </div>
+      </button>
       <ul v-show="isCategoryExpanded(category)" class="art-list">
-        <li
-          v-for="art in items"
-          :key="art.path"
-          class="art-item"
-          :class="{ active: selectedPath === art.path }"
-          @click="selectArt(art)"
-        >
-          <span class="art-name">{{ art.metadata.title }}</span>
-          <span class="art-variant-count">{{ art.variants.length }}</span>
+        <li v-for="art in items" :key="art.path">
+          <RouterLink
+            :to="{ name: 'component', params: { path: art.path } }"
+            class="art-item"
+            :class="{ active: selectedPath === art.path }"
+          >
+            <span class="art-name">{{ art.metadata.title }}</span>
+            <span class="art-variant-count">{{ art.variants.length }}</span>
+          </RouterLink>
         </li>
       </ul>
     </div>
@@ -118,8 +115,10 @@ function selectArt(art: ArtFileInfo) {
   padding: 0.5rem 0.75rem;
 }
 
-.sidebar-section + .sidebar-section {
-  padding-top: 0;
+.sidebar-section {
+  & + & {
+    padding-top: 0;
+  }
 }
 
 .sidebar-home-link {
@@ -159,6 +158,11 @@ function selectArt(art: ArtFileInfo) {
   user-select: none;
   border-radius: var(--musea-radius-sm);
   transition: background var(--musea-transition);
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: start;
 }
 
 .category-header:hover {
@@ -172,8 +176,10 @@ function selectArt(art: ArtFileInfo) {
   flex-shrink: 0;
 }
 
-.category-header--expanded .category-icon {
-  transform: rotate(90deg);
+.category-header--expanded {
+  .category-icon {
+    transform: rotate(90deg);
+  }
 }
 
 .category-label {
@@ -185,7 +191,7 @@ function selectArt(art: ArtFileInfo) {
 }
 
 .category-count {
-  margin-left: auto;
+  margin-inline-start: auto;
   background: var(--musea-bg-tertiary);
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
@@ -210,12 +216,13 @@ function selectArt(art: ArtFileInfo) {
   color: var(--musea-text-secondary);
   transition: all var(--musea-transition);
   position: relative;
+  text-decoration: none;
 }
 
 .art-item::before {
   content: "";
   position: absolute;
-  left: 0.75rem;
+  inset-inline-start: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   width: 5px;
@@ -252,15 +259,17 @@ function selectArt(art: ArtFileInfo) {
 }
 
 .art-variant-count {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-size: 0.6875rem;
   color: var(--musea-text-muted);
   opacity: 0;
   transition: opacity var(--musea-transition);
 }
 
-.art-item:hover .art-variant-count {
-  opacity: 1;
+.art-item:hover {
+  .art-variant-count {
+    opacity: 1;
+  }
 }
 
 .sidebar-empty {

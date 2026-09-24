@@ -6,6 +6,10 @@ const { viewport, viewportRotated, setViewport, rotateViewport } = useAddons();
 const showDropdown = ref(false);
 const selectorRef = ref<HTMLElement | null>(null);
 
+function toggleDropdown() {
+  showDropdown.value = !showDropdown.value;
+}
+
 function selectPreset(preset: (typeof VIEWPORT_PRESETS)[number]) {
   setViewport(preset);
   showDropdown.value = false;
@@ -27,7 +31,9 @@ onUnmounted(() => document.removeEventListener("click", onClickOutside));
       type="button"
       class="viewport-btn"
       :class="{ active: viewport.width !== '100%' }"
-      @click="showDropdown = !showDropdown"
+      :aria-expanded="showDropdown"
+      aria-haspopup="true"
+      @click="toggleDropdown"
     >
       <svg
         viewBox="0 0 24 24"
@@ -50,7 +56,7 @@ onUnmounted(() => document.removeEventListener("click", onClickOutside));
       class="rotate-btn"
       title="Rotate"
       :class="{ active: viewportRotated }"
-      @click="rotateViewport()"
+      @click="rotateViewport"
     >
       <svg
         viewBox="0 0 24 24"
@@ -72,7 +78,7 @@ onUnmounted(() => document.removeEventListener("click", onClickOutside));
         type="button"
         class="viewport-option"
         :class="{ active: viewport.name === preset.name }"
-        @click="selectPreset(preset)"
+        @click="() => selectPreset(preset)"
       >
         <span class="viewport-option-name">{{ preset.name }}</span>
         <span v-if="preset.width !== '100%'" class="viewport-option-size">
@@ -146,15 +152,15 @@ onUnmounted(() => document.removeEventListener("click", onClickOutside));
 
 .viewport-dropdown {
   position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 0.25rem;
+  inset-block-start: 100%;
+  inset-inline-start: 0;
+  margin-block-start: 0.25rem;
   background: var(--musea-bg-secondary);
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-md);
   box-shadow: var(--musea-shadow);
   min-width: 200px;
-  z-index: 50;
+  z-index: var(--musea-z-popover, 50);
   overflow: hidden;
 }
 
@@ -171,7 +177,7 @@ onUnmounted(() => document.removeEventListener("click", onClickOutside));
   font-size: 0.75rem;
   cursor: pointer;
   transition: background var(--musea-transition);
-  text-align: left;
+  text-align: start;
 }
 
 .viewport-option:hover {

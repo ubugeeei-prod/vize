@@ -79,13 +79,6 @@ function getStatusIcon(result: VrtResult): string {
   if (result.passed) return "pass";
   return "fail";
 }
-
-function getStatusColor(result: VrtResult): string {
-  if (result.error) return "#f87171";
-  if (result.isNew) return "#60a5fa";
-  if (result.passed) return "#4ade80";
-  return "#f87171";
-}
 </script>
 
 <template>
@@ -105,14 +98,14 @@ function getStatusColor(result: VrtResult): string {
       </div>
     </div>
 
-    <div v-if="!hasRun" class="vrt-empty">
-      <p>Click "Run VRT" to capture and compare screenshots.</p>
-      <p class="vrt-hint">Requires Playwright to be installed.</p>
-    </div>
-
-    <div v-else-if="error" class="vrt-error">
+    <div v-if="error" class="vrt-error">
       <p>{{ error }}</p>
       <p class="vrt-hint">Make sure Playwright is installed: <code>npm install playwright</code></p>
+    </div>
+
+    <div v-else-if="!hasRun" class="vrt-empty">
+      <p>Click "Run VRT" to capture and compare screenshots.</p>
+      <p class="vrt-hint">Requires Playwright to be installed.</p>
     </div>
 
     <template v-else>
@@ -125,11 +118,11 @@ function getStatusColor(result: VrtResult): string {
           <span class="vrt-stat-value">{{ summary.passed }}</span>
           <span class="vrt-stat-label">Passed</span>
         </div>
-        <div class="vrt-stat failed" v-if="summary.failed > 0">
+        <div v-if="summary.failed > 0" class="vrt-stat failed">
           <span class="vrt-stat-value">{{ summary.failed }}</span>
           <span class="vrt-stat-label">Failed</span>
         </div>
-        <div class="vrt-stat new" v-if="summary.new > 0">
+        <div v-if="summary.new > 0" class="vrt-stat new">
           <span class="vrt-stat-value">{{ summary.new }}</span>
           <span class="vrt-stat-label">New</span>
         </div>
@@ -171,7 +164,7 @@ function getStatusColor(result: VrtResult): string {
             >
               <span class="vrt-viewport-name">{{ result.viewport }}</span>
               <div class="vrt-viewport-body">
-                <span class="vrt-status" :style="{ color: getStatusColor(result) }">
+                <span class="vrt-status" :class="getStatusIcon(result)">
                   <template v-if="result.error">Error</template>
                   <template v-else-if="result.isNew">New baseline</template>
                   <template v-else-if="result.passed">Pass</template>
@@ -269,19 +262,21 @@ function getStatusColor(result: VrtResult): string {
   opacity: 0.7;
 }
 
-.vrt-hint code {
-  background: var(--musea-bg-tertiary);
-  padding: 0.125rem 0.375rem;
-  border-radius: 3px;
-  font-family: var(--musea-font-mono);
+.vrt-hint {
+  code {
+    background: var(--musea-bg-tertiary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 3px;
+    font-family: var(--musea-font-mono);
+  }
 }
 
 .vrt-error {
   padding: 1rem;
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.2);
+  background: color-mix(in srgb, var(--musea-error) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--musea-error) 20%, transparent);
   border-radius: var(--musea-radius-sm);
-  color: #f87171;
+  color: var(--musea-error);
   font-size: 0.8125rem;
 }
 
@@ -356,14 +351,33 @@ function getStatusColor(result: VrtResult): string {
   letter-spacing: 0.05em;
 }
 
-.vrt-stat.passed .vrt-stat-value {
-  color: #4ade80;
+.vrt-stat.passed {
+  .vrt-stat-value {
+    color: var(--musea-success);
+  }
 }
-.vrt-stat.failed .vrt-stat-value {
-  color: #f87171;
+.vrt-stat.failed {
+  .vrt-stat-value {
+    color: var(--musea-error);
+  }
 }
-.vrt-stat.new .vrt-stat-value {
-  color: #60a5fa;
+.vrt-stat.new {
+  .vrt-stat-value {
+    color: var(--musea-info);
+  }
+}
+
+.vrt-status.pass {
+  color: var(--musea-success);
+}
+
+.vrt-status.fail,
+.vrt-status.error {
+  color: var(--musea-error);
+}
+
+.vrt-status.new {
+  color: var(--musea-info);
 }
 
 .vrt-results {

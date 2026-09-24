@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { useRouter } from "vue-router";
 import { useArts } from "../composables/useArts";
 import StatusBadge from "../components/StatusBadge.vue";
 
 const { arts, categories } = useArts();
-const router = useRouter();
 
 const categoryList = computed(() => Array.from(categories.value.entries()));
 
@@ -14,10 +12,6 @@ const stats = computed(() => ({
   variants: arts.value.reduce((sum, a) => sum + a.variants.length, 0),
   categories: categories.value.size,
 }));
-
-function goToArt(path: string) {
-  router.push({ name: "component", params: { path } });
-}
 </script>
 
 <template>
@@ -44,7 +38,12 @@ function goToArt(path: string) {
     <div v-for="[category, items] in categoryList" :key="category" class="home-category">
       <h2 class="home-category-title">{{ category }}</h2>
       <div class="home-category-grid">
-        <div v-for="art in items" :key="art.path" class="home-card" @click="goToArt(art.path)">
+        <RouterLink
+          v-for="art in items"
+          :key="art.path"
+          :to="{ name: 'component', params: { path: art.path } }"
+          class="home-card"
+        >
           <div class="home-card-header">
             <span class="home-card-title">{{ art.metadata.title }}</span>
             <StatusBadge :status="art.metadata.status" />
@@ -62,7 +61,7 @@ function goToArt(path: string) {
               </span>
             </div>
           </div>
-        </div>
+        </RouterLink>
       </div>
     </div>
 
@@ -152,12 +151,19 @@ function goToArt(path: string) {
   padding: 1.25rem;
   cursor: pointer;
   transition: all var(--musea-transition);
+  color: inherit;
+  text-decoration: none;
 }
 
 .home-card:hover {
   border-color: var(--musea-text-muted);
   box-shadow: var(--musea-shadow);
   transform: translateY(-2px);
+}
+
+.home-card:focus-visible {
+  outline: 2px solid var(--musea-accent);
+  outline-offset: 2px;
 }
 
 .home-card-header {
@@ -225,23 +231,25 @@ function goToArt(path: string) {
   align-items: center;
   justify-content: center;
   margin-bottom: 1.5rem;
+
+  svg {
+    width: 40px;
+    height: 40px;
+  }
 }
 
-.home-empty-icon svg {
-  width: 40px;
-  height: 40px;
-}
+.home-empty {
+  h2 {
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
+    color: var(--musea-text);
+  }
 
-.home-empty h2 {
-  font-size: 1.125rem;
-  margin-bottom: 0.5rem;
-  color: var(--musea-text);
-}
-
-.home-empty code {
-  background: var(--musea-bg-tertiary);
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
+  code {
+    background: var(--musea-bg-tertiary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+  }
 }
 </style>

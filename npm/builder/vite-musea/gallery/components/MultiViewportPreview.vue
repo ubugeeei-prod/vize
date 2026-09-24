@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { MULTI_VIEWPORT_PRESETS } from "../composables/useAddons";
 import { getPreviewUrl } from "../api";
+import { safeUrl } from "../utils/safeUrl";
 
 defineProps<{
   artPath: string;
@@ -17,10 +18,11 @@ defineProps<{
       </div>
       <div class="multi-viewport-frame" :style="{ width: preset.width }">
         <iframe
-          :src="getPreviewUrl(artPath, variantName)"
+          :src="safeUrl(getPreviewUrl(artPath, variantName))"
           :title="`${variantName} - ${preset.name}`"
           :style="{ width: preset.width, height: preset.height }"
           loading="lazy"
+          sandbox="allow-scripts allow-same-origin allow-forms"
         />
       </div>
     </div>
@@ -68,9 +70,11 @@ defineProps<{
   max-height: 500px;
 }
 
-.multi-viewport-frame iframe {
-  border: none;
-  background: #fff;
-  display: block;
+.multi-viewport-frame {
+  iframe {
+    border: none;
+    background: var(--musea-preview-canvas, #fff);
+    display: block;
+  }
 }
 </style>

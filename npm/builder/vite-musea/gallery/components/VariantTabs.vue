@@ -28,7 +28,7 @@ const emit = defineEmits<{
         :class="{ 'variant-toc-item--active': variant.name === selectedVariant }"
         :aria-controls="sectionIds[variant.name]"
         :aria-current="variant.name === selectedVariant ? 'true' : undefined"
-        @click="emit('select', variant.name)"
+        @click="() => emit('select', variant.name)"
       >
         <span class="variant-toc-index">{{ String(index + 1).padStart(2, "0") }}</span>
 
@@ -50,9 +50,9 @@ const emit = defineEmits<{
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 0 0 0 1.125rem;
+  padding-inline-start: 1.125rem;
   background: transparent;
-  border-left: 1px solid var(--musea-border-subtle);
+  border-inline-start: 1px solid var(--musea-border-subtle);
 }
 
 .variant-toc-header {
@@ -60,7 +60,7 @@ const emit = defineEmits<{
   align-items: baseline;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0 0.5rem 0 0.25rem;
+  padding-inline: 0.25rem 0.5rem;
 }
 
 .variant-toc-eyebrow {
@@ -84,7 +84,7 @@ const emit = defineEmits<{
   gap: 0.25rem;
   max-height: calc(100vh - var(--musea-header-height) - 4rem);
   overflow-y: auto;
-  padding-right: 0.125rem;
+  padding-inline-end: 0.125rem;
 }
 
 .variant-toc-item {
@@ -98,7 +98,7 @@ const emit = defineEmits<{
   border-radius: var(--musea-radius-md);
   color: var(--musea-text-muted);
   cursor: pointer;
-  text-align: left;
+  text-align: start;
   transition:
     background var(--musea-transition),
     color var(--musea-transition);
@@ -144,8 +144,10 @@ const emit = defineEmits<{
   color: var(--musea-text-muted);
 }
 
-.variant-toc-item--active .variant-toc-caption {
-  color: var(--musea-text-secondary);
+.variant-toc-item--active {
+  .variant-toc-caption {
+    color: var(--musea-text-secondary);
+  }
 }
 
 .variant-toc-badge {
@@ -163,10 +165,10 @@ const emit = defineEmits<{
 @media (max-width: 960px) {
   .variant-toc {
     position: static;
-    padding-left: 0;
-    border-left: none;
-    border-top: 1px solid var(--musea-border-subtle);
-    padding-top: 0.875rem;
+    padding-inline-start: 0;
+    border-inline-start: none;
+    border-block-start: 1px solid var(--musea-border-subtle);
+    padding-block-start: 0.875rem;
   }
 
   .variant-toc-list {

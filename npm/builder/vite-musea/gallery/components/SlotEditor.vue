@@ -69,21 +69,21 @@ const clearAllSlots = () => {
           :key="name"
           type="button"
           :class="['slot-tab', { 'slot-tab--active': activeSlot === name }]"
-          @click="selectSlot(name)"
+          @click="() => selectSlot(name)"
         >
           <span class="slot-tab-icon">#</span>
           {{ name }}
         </button>
       </div>
       <div class="slot-actions">
-        <button type="button" class="slot-action" @click="clearSlot" title="Clear current slot">
+        <button type="button" class="slot-action" title="Clear current slot" @click="clearSlot">
           Clear
         </button>
         <button
           type="button"
           class="slot-action slot-action--danger"
-          @click="clearAllSlots"
           title="Clear all slots"
+          @click="clearAllSlots"
         >
           Clear All
         </button>
@@ -177,8 +177,8 @@ const clearAllSlots = () => {
 }
 
 .slot-action--danger:hover {
-  border-color: #f87171;
-  color: #f87171;
+  border-color: var(--musea-error);
+  color: var(--musea-error);
 }
 
 .slot-content {
@@ -197,10 +197,12 @@ const clearAllSlots = () => {
   color: var(--musea-text-muted);
 }
 
-.slot-hint code {
-  padding: 0.0625rem 0.25rem;
-  background: var(--musea-bg-primary);
-  border-radius: 2px;
-  font-family: var(--musea-font-mono);
+.slot-hint {
+  code {
+    padding: 0.0625rem 0.25rem;
+    background: var(--musea-bg-primary);
+    border-radius: 2px;
+    font-family: var(--musea-font-mono);
+  }
 }
 </style>
