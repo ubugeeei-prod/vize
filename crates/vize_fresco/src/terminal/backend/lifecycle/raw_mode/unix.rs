@@ -188,12 +188,13 @@ fn fail_enable_transition(
     original: &libc::termios,
     enable: io::Error,
 ) -> io::Result<()> {
-    let rollback = set_terminal_attributes(fd, original);
-    if rollback.is_ok() {
-        deactivate_snapshot();
-        return Err(enable);
+    match set_terminal_attributes(fd, original) {
+        Ok(()) => {
+            deactivate_snapshot();
+            Err(enable)
+        }
+        Err(rollback) => Err(combine_transition_errors(enable, rollback)),
     }
-    Err(combine_transition_errors(enable, rollback.unwrap_err()))
 }
 
 pub(super) fn terminal_attributes(fd: RawFd) -> io::Result<libc::termios> {

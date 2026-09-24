@@ -53,7 +53,9 @@ fn to_ansi16(color: Color) -> Color {
         | Color::LightMagenta
         | Color::LightCyan
         | Color::LightWhite => color,
-        Color::Indexed(index) if index < 16 => ANSI_COLORS[usize::from(index)].0,
+        Color::Indexed(index) if let Some(&(color, _)) = ANSI_COLORS.get(usize::from(index)) => {
+            color
+        }
         Color::Indexed(index) => {
             let (red, green, blue) = ansi256_to_rgb(index);
             nearest_ansi16(red, green, blue)
@@ -101,7 +103,9 @@ fn cube_level(index: u8) -> u8 {
 
 fn ansi256_to_rgb(index: u8) -> (u8, u8, u8) {
     match index {
-        0..=15 => ANSI_COLORS[usize::from(index)].1,
+        0..=15 => ANSI_COLORS
+            .get(usize::from(index))
+            .map_or((0, 0, 0), |entry| entry.1),
         16..=231 => {
             let offset = index - 16;
             (

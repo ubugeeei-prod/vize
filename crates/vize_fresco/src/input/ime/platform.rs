@@ -95,12 +95,13 @@ impl PlatformIme for TerminalIme {
                     || self.state.mode.is_chinese()
                     || self.state.mode.is_korean()
                 {
-                    // In a real implementation, this would handle romaji->kana conversion etc.
-                    // For now, we just pass through printable characters
+                    // No romaji-to-kana (or pinyin/hangul) conversion happens
+                    // here: that is the host terminal IME's job, and what
+                    // arrives is already composed. A printable character is
+                    // committed as is.
                     if key.is_printable()
                         && let crate::input::keyboard::Key::Char(c) = key.key
                     {
-                        // Simple passthrough for now
                         return Some(ImeEvent::Commit(c.to_compact_string()));
                     }
                 }
@@ -125,8 +126,8 @@ impl PlatformIme for TerminalIme {
 
 /// Create platform-specific IME handler.
 pub fn create_ime() -> Box<dyn PlatformIme + Send> {
-    // For now, use the generic terminal IME on all platforms
-    // Platform-specific implementations can be added later
+    // Every platform uses the generic terminal IME; the per-platform modules
+    // record what native integration is not implemented.
     Box::new(TerminalIme::new())
 }
 

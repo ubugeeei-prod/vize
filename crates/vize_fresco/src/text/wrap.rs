@@ -282,32 +282,6 @@ impl TextWrap {
     }
 }
 
-/// A wrapped line with metadata.
-#[allow(dead_code)]
-#[derive(Debug, Clone)]
-pub struct WrappedLine {
-    /// The text content
-    pub content: CompactString,
-    /// Display width
-    pub width: usize,
-    /// Whether this line was wrapped from the previous
-    pub is_continuation: bool,
-}
-
-#[allow(dead_code)]
-impl WrappedLine {
-    /// Create a new wrapped line.
-    pub fn new(content: impl Into<CompactString>, is_continuation: bool) -> Self {
-        let content: CompactString = content.into();
-        let width = TextWidth::width(&content);
-        Self {
-            content,
-            width,
-            is_continuation,
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::{TextWrap, WrapMode};

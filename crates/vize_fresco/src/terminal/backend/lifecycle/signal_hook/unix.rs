@@ -96,8 +96,9 @@ pub(super) fn install_actions_with(
     previous: &[libc::sigaction],
     mut replace: impl FnMut(libc::c_int, &libc::sigaction) -> io::Result<()>,
 ) -> Result<(), InstallAttemptFailure> {
-    for (index, signal) in SUPERVISED_SIGNALS.into_iter().enumerate() {
-        let wrapped = wrapped_action(&previous[index]);
+    // `previous` holds one saved action per supervised signal.
+    for (index, (signal, saved)) in SUPERVISED_SIGNALS.into_iter().zip(previous).enumerate() {
+        let wrapped = wrapped_action(saved);
         if let Err(source) = replace(signal, &wrapped) {
             let rollback_failures = rollback_actions_with(previous, index, &mut replace);
             return Err(InstallAttemptFailure {
@@ -122,9 +123,9 @@ fn rollback_actions_with(
     replace: &mut impl FnMut(libc::c_int, &libc::sigaction) -> io::Result<()>,
 ) -> Vec<TerminalSignalRollbackFailure> {
     let mut failures = Vec::new();
-    for index in (0..installed).rev() {
-        let signal = SUPERVISED_SIGNALS[index];
-        if let Err(error) = replace(signal, &previous[index]) {
+    let installed_pairs = SUPERVISED_SIGNALS.into_iter().zip(previous).take(installed);
+    for (signal, saved) in installed_pairs.rev() {
+        if let Err(error) = replace(signal, saved) {
             failures.push(TerminalSignalRollbackFailure { signal, error });
         }
     }
@@ -153,7 +154,10 @@ fn wrapped_action(previous: &libc::sigaction) -> libc::sigaction {
     let mut wrapped = unsafe { ptr::read(previous) };
     wrapped.sa_sigaction = terminal_signal_handler as *const () as usize;
     // `sa_flags` differs in signedness and width on supported libc targets.
-    #[allow(unused_assignments)]
+    #[expect(
+        unused_assignments,
+        reason = "the dead initializer infers sa_flags' platform integer type"
+    )]
     let mut siginfo = wrapped.sa_flags;
     siginfo = libc::SA_SIGINFO as _;
     wrapped.sa_flags |= siginfo;
@@ -187,6 +191,8 @@ pub(super) unsafe extern "C" fn terminal_signal_handler(
     // SAFETY: the previous slot is initialized before this signal's wrapper is
     // installed and is never subsequently mutated.
     let previous = unsafe { PREVIOUS_ACTIONS.read(index) };
+    // `index` came from `signal_index` for a supervised signal, so its slot
+    // exists; without one there is no action to chain after restoring.
 
     restore_owned_presentation_modes(emergency_presentation_modes(), emergency_write_stdout);
     let _ = emergency_restore_raw_mode();
@@ -196,9 +202,12 @@ pub(super) unsafe extern "C" fn terminal_signal_handler(
     // SAFETY: `errno` remains this thread's live errno slot.
     unsafe { *errno = saved_errno };
 
-    // SAFETY: `previous` came from `sigaction` for this exact signal. Dispatch
-    // uses its original ABI flag and the kernel-provided pointers unchanged.
-    unsafe { chain_previous_action(signal, information, context, previous) };
+    if let Some(previous) = previous {
+        // SAFETY: `previous` came from `sigaction` for this exact signal.
+        // Dispatch uses its original ABI flag and the kernel-provided pointers
+        // unchanged.
+        unsafe { chain_previous_action(signal, information, context, previous) };
+    }
 }
 
 unsafe fn chain_previous_action(
@@ -226,7 +235,10 @@ unsafe fn chain_previous_action(
     }
 
     let handler = handler as *mut ();
-    #[allow(unused_assignments)]
+    #[expect(
+        unused_assignments,
+        reason = "the dead initializer infers sa_flags' platform integer type"
+    )]
     let mut siginfo = previous.sa_flags;
     siginfo = libc::SA_SIGINFO as _;
     if previous.sa_flags & siginfo == 0 {
@@ -265,17 +277,24 @@ impl PreviousActions {
     }
 
     fn write(&self, index: usize, action: &libc::sigaction) {
-        // SAFETY: process-global installation is serialized, the slot is not
-        // published to a handler until after this write, and the source is an
-        // initialized C action that does not own Rust resources.
-        unsafe { (*self.0.get())[index].write(ptr::read(action)) };
+        // SAFETY: process-global installation is serialized and the slot is
+        // not published to a handler until after this write.
+        if let Some(slot) = unsafe { (*self.0.get()).get_mut(index) } {
+            // SAFETY: the source is an initialized C action that does not own
+            // Rust resources.
+            slot.write(unsafe { ptr::read(action) });
+        }
     }
 
-    unsafe fn read(&self, index: usize) -> &'static libc::sigaction {
+    unsafe fn read(&self, index: usize) -> Option<&'static libc::sigaction> {
         // SAFETY: the caller established that this signal's slot was published
         // before the corresponding handler could run. Slots are never moved or
         // mutated after publication and the static storage lives forever.
-        unsafe { (*self.0.get())[index].assume_init_ref() }
+        unsafe {
+            (*self.0.get())
+                .get(index)
+                .map(|slot| slot.assume_init_ref())
+        }
     }
 }
 

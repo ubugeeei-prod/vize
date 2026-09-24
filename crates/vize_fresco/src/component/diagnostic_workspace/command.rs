@@ -250,7 +250,9 @@ impl<FindingKey: Clone + Eq, EvidenceKey: Clone + Eq>
             }
             DiagnosticWorkspaceCommand::FocusNext => self.focus_next(),
             DiagnosticWorkspaceCommand::FocusPrevious => self.focus_previous(),
-            _ => unreachable!("application commands returned before state dispatch"),
+            // Application commands returned as `Dispatch` above and change
+            // no workspace state.
+            _ => false,
         };
 
         if changed {

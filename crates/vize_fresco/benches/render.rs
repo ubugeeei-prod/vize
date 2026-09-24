@@ -1,5 +1,5 @@
 //! Render benchmarks.
-#![allow(deprecated)]
+#![expect(clippy::unwrap_used, reason = "bench setup aborts on a bad fixture")]
 
 use std::{hint::black_box, io};
 

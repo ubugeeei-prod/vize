@@ -2,55 +2,53 @@
 //!
 //! Provides JavaScript/Node.js bindings for the Fresco terminal UI framework.
 
-#[allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+#[expect(
+    clippy::disallowed_macros,
+    reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod frame_output;
-#[allow(
-    clippy::disallowed_types,
+#[expect(
+    clippy::disallowed_macros,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_types,
+    reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod input;
 mod input_size;
-#[allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+#[expect(
+    clippy::disallowed_macros,
+    reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod layout;
-#[allow(
+#[expect(
+    clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod render;
-#[allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+#[expect(
+    clippy::disallowed_macros,
+    reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod render_payload;
 #[cfg(test)]
 mod render_tests;
-#[allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+#[expect(
+    clippy::disallowed_macros,
+    reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod terminal;
-#[allow(
+#[expect(
+    clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod terminal_types;
-#[allow(
-    clippy::disallowed_types,
+#[expect(
+    clippy::disallowed_macros,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_types,
+    reason = "the N-API boundary exchanges std strings with napi-rs and its derives"
 )]
 mod types;
 

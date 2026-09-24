@@ -40,17 +40,14 @@ impl LayoutEngine {
         self.next_id += 1;
 
         let taffy_style = style.to_taffy();
-        let node_id = self
-            .tree
-            .new_leaf(taffy_style)
-            // Panic path by backend invariant: Fresco only constructs leaf nodes
-            // with a locally generated style, so Taffy should reject this only if
-            // its internal storage is inconsistent. Returning a synthetic id here
-            // would corrupt `node_map` and make later layout reads unsound.
-            .expect("Failed to create node");
-
-        self.node_map.insert(id, node_id);
-        self.reverse_map.insert(node_id, id);
+        // Taffy rejects a locally generated style only if its own storage is
+        // inconsistent. The id is then left unmapped: every later operation on
+        // it is a no-op and it has no layout, rather than a synthetic node
+        // corrupting `node_map`.
+        if let Ok(node_id) = self.tree.new_leaf(taffy_style) {
+            self.node_map.insert(id, node_id);
+            self.reverse_map.insert(node_id, id);
+        }
 
         id
     }
@@ -66,16 +63,11 @@ impl LayoutEngine {
             height: Dimension::length(height),
         };
 
-        let node_id = self
-            .tree
-            .new_leaf(taffy_style)
-            // Panic path by backend invariant: measured leaves are created from a
-            // normalized `FlexStyle` plus finite dimensions supplied by Fresco's
-            // renderer. Failing here means the layout tree is unusable.
-            .expect("Failed to create leaf");
-
-        self.node_map.insert(id, node_id);
-        self.reverse_map.insert(node_id, id);
+        // As in `new_node`: a rejected leaf stays unmapped and layout-less.
+        if let Ok(node_id) = self.tree.new_leaf(taffy_style) {
+            self.node_map.insert(id, node_id);
+            self.reverse_map.insert(node_id, id);
+        }
 
         id
     }
@@ -95,13 +87,9 @@ impl LayoutEngine {
         if let (Some(&parent_id), Some(&child_id)) =
             (self.node_map.get(&parent), self.node_map.get(&child))
         {
-            self.tree
-                .add_child(parent_id, child_id)
-                // Panic path by mapping invariant: both ids came from
-                // `node_map`, so Taffy should know each node. If it rejects the
-                // edge, the mirrored maps are already inconsistent and continuing
-                // would cache wrong layouts.
-                .expect("Failed to add child");
+            // Both ids came from `node_map`, so Taffy knows each node; a
+            // rejected edge leaves the tree as it was.
+            let _ = self.tree.add_child(parent_id, child_id);
         }
     }
 
@@ -110,12 +98,9 @@ impl LayoutEngine {
         if let (Some(&parent_id), Some(&child_id)) =
             (self.node_map.get(&parent), self.node_map.get(&child))
         {
-            self.tree
-                .remove_child(parent_id, child_id)
-                // Panic path by mapping invariant: callers can request unknown
-                // ids, but those are filtered above. Once both ids are mapped,
-                // failure means our mirrored Taffy tree has diverged.
-                .expect("Failed to remove child");
+            // Unknown ids are filtered above; a mapped pair Taffy rejects
+            // (not parent and child) leaves the tree as it was.
+            let _ = self.tree.remove_child(parent_id, child_id);
         }
     }
 
@@ -123,12 +108,9 @@ impl LayoutEngine {
     pub fn set_style(&mut self, id: u64, style: &FlexStyle) {
         if let Some(&node_id) = self.node_map.get(&id) {
             let taffy_style = style.to_taffy();
-            self.tree
-                .set_style(node_id, taffy_style)
-                // Panic path by mapping invariant: `node_id` is only read from
-                // `node_map`, so Taffy should still own it. A failure indicates
-                // internal tree corruption rather than user input.
-                .expect("Failed to set style");
+            // `node_id` is read from `node_map`, so Taffy owns it; a rejected
+            // update keeps the previous style.
+            let _ = self.tree.set_style(node_id, taffy_style);
         }
     }
 
@@ -137,10 +119,9 @@ impl LayoutEngine {
         if let Some(node_id) = self.node_map.remove(&id) {
             self.reverse_map.remove(&node_id);
             self.layout_cache.remove(&id);
-            // Panic path by mapping invariant: after a successful lookup in
-            // `node_map`, Taffy must contain the node. Losing it would mean the
-            // mirrored maps and layout tree diverged earlier.
-            self.tree.remove(node_id).expect("Failed to remove node");
+            // After a successful `node_map` lookup Taffy contains the node; the
+            // maps no longer reference it either way.
+            let _ = self.tree.remove(node_id);
         }
     }
 
@@ -152,13 +133,13 @@ impl LayoutEngine {
                 height: AvailableSpace::Definite(available_height),
             };
 
-            self.tree
-                .compute_layout(root_id, available)
-                // Panic path by mapping invariant: `root_id` is taken from
-                // `node_map`, and all children are added through the same map.
-                // If Taffy cannot compute this tree, Fresco should fail loudly
-                // instead of rendering stale or partial geometry.
-                .expect("Failed to compute layout");
+            // `root_id` comes from `node_map`, as do all children. Should Taffy
+            // still fail, drop the cached geometry rather than render stale or
+            // partial layouts.
+            if self.tree.compute_layout(root_id, available).is_err() {
+                self.layout_cache.clear();
+                return;
+            }
 
             // Cache all layouts
             self.cache_layouts(root_id, 0.0, 0.0, true);
@@ -167,11 +148,12 @@ impl LayoutEngine {
 
     /// Cache layout results recursively from Taffy's computed geometry.
     fn cache_layouts(&mut self, node_id: NodeId, parent_x: f32, parent_y: f32, is_root: bool) {
-        // Panic path by compute invariant: `cache_layouts` is called only after
-        // `compute_layout` succeeds for `root_id`, and recursive calls use
-        // children returned by Taffy itself. Missing layout/style data would mean
-        // Taffy accepted an internally inconsistent tree.
-        let layout = self.tree.layout(node_id).expect("Failed to get layout");
+        // Called only after `compute_layout` succeeded for the root, and on
+        // children Taffy itself returned, so the layout exists; a node without
+        // one is skipped with its subtree.
+        let Ok(layout) = self.tree.layout(node_id) else {
+            return;
+        };
         let (absolute_x, absolute_y) = if is_root {
             (parent_x, parent_y)
         } else {

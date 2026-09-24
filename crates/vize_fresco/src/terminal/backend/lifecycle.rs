@@ -257,7 +257,9 @@ impl<W: Write> Backend<W> {
         if failures.is_empty() {
             Ok(())
         } else {
-            let kind = failures[0].error.kind();
+            let kind = failures
+                .first()
+                .map_or(io::ErrorKind::Other, |failure| failure.error.kind());
             Err(io::Error::new(kind, TerminalRestorationError { failures }))
         }
     }

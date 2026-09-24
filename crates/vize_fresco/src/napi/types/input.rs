@@ -120,7 +120,6 @@ impl From<crate::input::Event> for InputEventNapi {
                     crate::input::Key::BackTab => "backtab",
                     crate::input::Key::Esc => "escape",
                     crate::input::Key::F(n) => {
-                        #[allow(clippy::disallowed_macros)]
                         return InputEventNapi {
                             event_type: "key".to_string(),
                             key: Some(format!("f{}", n)),

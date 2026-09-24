@@ -158,7 +158,10 @@ impl<'a> Painter<'a> {
     }
 
     /// Paint input field with text wrapping support.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "an input's independent display options"
+    )]
     fn paint_input(
         &mut self,
         value: &str,

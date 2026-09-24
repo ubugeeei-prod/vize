@@ -6,7 +6,9 @@
 //!
 //! Windows Terminal has better IME support than legacy cmd.exe.
 
-// TODO: Implement Windows-specific IME features
-// - ImmGetContext / ImmReleaseContext
-// - ImmSetCompositionWindow for positioning
-// - ImmGetCompositionString for preedit
+// Current support: none beyond the generic `TerminalIme`. Fresco does not use
+// IMM32 (`ImmGetContext`, `ImmSetCompositionWindow`,
+// `ImmGetCompositionString`) or TSF, so it cannot read the preedit string or
+// position the composition window. Composition happens in the console host
+// (Windows Terminal or conhost); Fresco sees the committed text as key or
+// bracketed-paste events.

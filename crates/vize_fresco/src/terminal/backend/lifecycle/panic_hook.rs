@@ -170,7 +170,7 @@ pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
         if written <= 0 || written as usize > bytes.len() {
             return false;
         }
-        bytes = &bytes[written as usize..];
+        bytes = bytes.get(written as usize..).unwrap_or_default();
     }
     true
 }
@@ -219,7 +219,7 @@ pub(super) fn emergency_write_stdout(mut bytes: &[u8]) -> bool {
             complete = false;
             break;
         }
-        bytes = &bytes[written as usize..];
+        bytes = bytes.get(written as usize..).unwrap_or_default();
     }
     if let Some(mode) = original_mode {
         let _ = set_console_output_mode(handle, mode);

@@ -90,13 +90,14 @@ impl Buffer {
     /// Get a cell at the given position.
     #[inline]
     pub fn get(&self, x: u16, y: u16) -> Option<&Cell> {
-        self.index(x, y).map(|i| &self.cells[i])
+        self.cells.get(self.index(x, y)?)
     }
 
     /// Get a mutable cell at the given position.
     #[inline]
     pub fn get_mut(&mut self, x: u16, y: u16) -> Option<&mut Cell> {
-        self.index(x, y).map(|i| &mut self.cells[i])
+        let index = self.index(x, y)?;
+        self.cells.get_mut(index)
     }
 
     /// Set a raw cell at the given position.
@@ -105,8 +106,8 @@ impl Buffer {
     /// operation intentionally does not repair adjacent continuation cells.
     #[inline]
     pub fn set(&mut self, x: u16, y: u16, cell: Cell) {
-        if let Some(i) = self.index(x, y) {
-            self.cells[i] = cell;
+        if let Some(slot) = self.get_mut(x, y) {
+            *slot = cell;
         }
     }
 
@@ -168,15 +169,17 @@ impl Buffer {
             return false;
         }
         self.clear_span(x, y, width);
-        let cell = self.get_mut(x, y).expect("validated grapheme origin");
+        // The origin and every continuation were validated to fit the row.
+        let Some(cell) = self.get_mut(x, y) else {
+            return false;
+        };
         cell.set_symbol(grapheme);
         cell.set_style(style);
         for offset in 1..width {
-            let continuation = self
-                .get_mut(x + offset, y)
-                .expect("validated grapheme continuation");
-            continuation.set_continuation();
-            continuation.set_style(style);
+            if let Some(continuation) = self.get_mut(x + offset, y) {
+                continuation.set_continuation();
+                continuation.set_style(style);
+            }
         }
         true
     }
@@ -193,14 +196,20 @@ impl Buffer {
         };
         let row_start = usize::from(y) * usize::from(self.width);
         let row_end = row_start + usize::from(self.width);
+        let continued =
+            |cells: &[Cell], at: usize| cells.get(at).is_some_and(|cell| cell.is_continuation);
         let mut leader = index;
-        while leader > row_start && self.cells[leader].is_continuation {
+        while leader > row_start && continued(&self.cells, leader) {
             leader -= 1;
         }
-        self.cells[leader].reset();
+        if let Some(cell) = self.cells.get_mut(leader) {
+            cell.reset();
+        }
         let mut continuation = leader + 1;
-        while continuation < row_end && self.cells[continuation].is_continuation {
-            self.cells[continuation].reset();
+        while continuation < row_end && continued(&self.cells, continuation) {
+            if let Some(cell) = self.cells.get_mut(continuation) {
+                cell.reset();
+            }
             continuation += 1;
         }
     }
@@ -273,7 +282,10 @@ impl Buffer {
             };
             let mut ox = 0;
             while ox < other.width {
-                let cell = other.get(ox, oy).expect("source coordinate is in bounds");
+                // `ox` and `oy` range over `other`'s own dimensions.
+                let Some(cell) = other.get(ox, oy) else {
+                    break;
+                };
                 if cell.is_continuation {
                     ox += 1;
                     continue;
@@ -292,10 +304,9 @@ impl Buffer {
                 if span <= self.width.saturating_sub(destination_x) {
                     self.clear_span(destination_x, destination_y, span);
                     for offset in 0..span {
-                        let source = other
-                            .get(ox + offset, oy)
-                            .expect("validated source grapheme span");
-                        self.set(destination_x + offset, destination_y, source.clone());
+                        if let Some(source) = other.get(ox + offset, oy) {
+                            self.set(destination_x + offset, destination_y, source.clone());
+                        }
                     }
                 }
                 ox += span;

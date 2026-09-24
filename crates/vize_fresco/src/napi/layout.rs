@@ -48,7 +48,6 @@ fn with_layout<T>(f: impl FnOnce(&LayoutEngine) -> Result<T>) -> Result<T> {
 
 /// Initialize layout engine.
 #[napi(js_name = "initLayout")]
-#[allow(clippy::disallowed_macros)]
 pub fn init_layout() -> Result<()> {
     LAYOUT.with(|layout| {
         *layout.try_borrow_mut().map_err(|e| {
@@ -63,7 +62,6 @@ pub fn init_layout() -> Result<()> {
 
 /// Create a new layout node.
 #[napi(js_name = "createLayoutNode")]
-#[allow(clippy::disallowed_macros)]
 pub fn create_layout_node(style: Option<FlexStyleNapi>) -> Result<i64> {
     with_layout_mut(|engine| {
         let flex_style = style.map(convert_flex_style).unwrap_or_default();
@@ -74,7 +72,6 @@ pub fn create_layout_node(style: Option<FlexStyleNapi>) -> Result<i64> {
 
 /// Create a new leaf layout node with measured size.
 #[napi(js_name = "createLayoutLeaf")]
-#[allow(clippy::disallowed_macros)]
 pub fn create_layout_leaf(width: f64, height: f64, style: Option<FlexStyleNapi>) -> Result<i64> {
     with_layout_mut(|engine| {
         let flex_style = style.map(convert_flex_style).unwrap_or_default();
@@ -85,7 +82,6 @@ pub fn create_layout_leaf(width: f64, height: f64, style: Option<FlexStyleNapi>)
 
 /// Set layout root node.
 #[napi(js_name = "setLayoutRoot")]
-#[allow(clippy::disallowed_macros)]
 pub fn set_layout_root(id: i64) -> Result<()> {
     with_layout_mut(|engine| {
         engine.set_root(id as u64);
@@ -95,7 +91,6 @@ pub fn set_layout_root(id: i64) -> Result<()> {
 
 /// Add child to parent node.
 #[napi(js_name = "addLayoutChild")]
-#[allow(clippy::disallowed_macros)]
 pub fn add_layout_child(parent: i64, child: i64) -> Result<()> {
     with_layout_mut(|engine| {
         engine.add_child(parent as u64, child as u64);
@@ -105,7 +100,6 @@ pub fn add_layout_child(parent: i64, child: i64) -> Result<()> {
 
 /// Remove child from parent node.
 #[napi(js_name = "removeLayoutChild")]
-#[allow(clippy::disallowed_macros)]
 pub fn remove_layout_child(parent: i64, child: i64) -> Result<()> {
     with_layout_mut(|engine| {
         engine.remove_child(parent as u64, child as u64);
@@ -115,7 +109,6 @@ pub fn remove_layout_child(parent: i64, child: i64) -> Result<()> {
 
 /// Update node style.
 #[napi(js_name = "setLayoutStyle")]
-#[allow(clippy::disallowed_macros)]
 pub fn set_layout_style(id: i64, style: FlexStyleNapi) -> Result<()> {
     with_layout_mut(|engine| {
         let flex_style = convert_flex_style(style);
@@ -126,7 +119,6 @@ pub fn set_layout_style(id: i64, style: FlexStyleNapi) -> Result<()> {
 
 /// Remove a node.
 #[napi(js_name = "removeLayoutNode")]
-#[allow(clippy::disallowed_macros)]
 pub fn remove_layout_node(id: i64) -> Result<()> {
     with_layout_mut(|engine| {
         engine.remove(id as u64);
@@ -136,7 +128,6 @@ pub fn remove_layout_node(id: i64) -> Result<()> {
 
 /// Compute layout.
 #[napi(js_name = "computeLayout")]
-#[allow(clippy::disallowed_macros)]
 pub fn compute_layout(width: i32, height: i32) -> Result<()> {
     with_layout_mut(|engine| {
         engine.compute(width as f32, height as f32);
@@ -146,7 +137,6 @@ pub fn compute_layout(width: i32, height: i32) -> Result<()> {
 
 /// Get layout result for a node.
 #[napi(js_name = "getLayout")]
-#[allow(clippy::disallowed_macros)]
 pub fn get_layout(id: i64) -> Result<Option<LayoutResultNapi>> {
     with_layout(|engine| {
         Ok(engine.layout(id as u64).map(|rect| LayoutResultNapi {
@@ -161,7 +151,6 @@ pub fn get_layout(id: i64) -> Result<Option<LayoutResultNapi>> {
 
 /// Get all layout results.
 #[napi(js_name = "getAllLayouts")]
-#[allow(clippy::disallowed_macros)]
 pub fn get_all_layouts() -> Result<Vec<LayoutResultNapi>> {
     with_layout(|engine| {
         let results: Vec<_> = engine
@@ -182,7 +171,6 @@ pub fn get_all_layouts() -> Result<Vec<LayoutResultNapi>> {
 
 /// Clear layout engine.
 #[napi(js_name = "clearLayout")]
-#[allow(clippy::disallowed_macros)]
 pub fn clear_layout() -> Result<()> {
     LAYOUT.with(|layout| {
         if let Some(ref mut engine) = *layout.try_borrow_mut().map_err(|e| {

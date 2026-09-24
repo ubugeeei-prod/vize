@@ -3,10 +3,8 @@
 //! Provides efficient differential rendering:
 //! - Render tree management
 //! - Node definitions
-//! - Diffing algorithm
 //! - Paint operations
 
-mod diff;
 mod frame;
 mod node;
 mod painter;

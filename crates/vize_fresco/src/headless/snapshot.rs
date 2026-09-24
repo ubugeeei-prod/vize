@@ -101,7 +101,7 @@ impl HeadlessSnapshot {
         let width = usize::from(self.viewport.width);
         let start = usize::from(y) * width;
         let mut row = CompactString::new("");
-        for cell in &self.cells[start..start + width] {
+        for cell in self.cells.get(start..start + width).unwrap_or_default() {
             if !cell.continuation {
                 row.push_str(&cell.symbol);
             }

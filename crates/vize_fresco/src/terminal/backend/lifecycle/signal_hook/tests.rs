@@ -1,3 +1,4 @@
+#![expect(clippy::unreachable, reason = "tests assert by panicking")]
 use super::*;
 
 #[cfg(unix)]
@@ -199,10 +200,16 @@ fn signal_hook_restores_and_preserves_existing_actions() {
         installed.sa_sigaction,
         terminal_signal_handler as *const () as usize
     );
-    #[allow(unused_assignments)]
+    #[expect(
+        unused_assignments,
+        reason = "the dead initializer infers sa_flags' platform integer type"
+    )]
     let mut restart = installed.sa_flags;
     restart = libc::SA_RESTART as _;
-    #[allow(unused_assignments)]
+    #[expect(
+        unused_assignments,
+        reason = "the dead initializer infers sa_flags' platform integer type"
+    )]
     let mut siginfo = installed.sa_flags;
     siginfo = libc::SA_SIGINFO as _;
     assert_ne!(installed.sa_flags & restart, 0);

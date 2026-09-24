@@ -10,7 +10,6 @@ use crate::input;
 ///
 /// Returns an event if available within the timeout, or null if no event.
 #[napi(js_name = "pollEvent")]
-#[allow(clippy::disallowed_macros)]
 pub fn poll_event(timeout_ms: u32) -> Result<Option<InputEventNapi>> {
     let event = input::poll(timeout_ms as u64)
         .map_err(|e| Error::new(Status::GenericFailure, format!("Poll error: {}", e)))?;
@@ -20,7 +19,6 @@ pub fn poll_event(timeout_ms: u32) -> Result<Option<InputEventNapi>> {
 
 /// Poll for input events without blocking.
 #[napi(js_name = "pollEventNonBlocking")]
-#[allow(clippy::disallowed_macros)]
 pub fn poll_event_non_blocking() -> Result<Option<InputEventNapi>> {
     let event = input::poll_nonblocking()
         .map_err(|e| Error::new(Status::GenericFailure, format!("Poll error: {}", e)))?;
@@ -30,7 +28,6 @@ pub fn poll_event_non_blocking() -> Result<Option<InputEventNapi>> {
 
 /// Read an input event, blocking until one is available.
 #[napi(js_name = "readEvent")]
-#[allow(clippy::disallowed_macros)]
 pub fn read_event() -> Result<InputEventNapi> {
     let event = input::read_event()
         .map_err(|e| Error::new(Status::GenericFailure, format!("Read error: {}", e)))?;

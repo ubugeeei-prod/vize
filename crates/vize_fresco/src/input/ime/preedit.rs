@@ -112,7 +112,7 @@ impl Preedit {
             self.text
                 .char_indices()
                 .filter_map(|(i, _)| {
-                    let prefix = &self.text[..i];
+                    let prefix = self.text.get(..i).unwrap_or_default();
                     let count = SegmentedText::new(prefix).grapheme_count;
                     if count == self.cursor { Some(i) } else { None }
                 })
@@ -120,8 +120,10 @@ impl Preedit {
                 .unwrap_or(0)
         };
 
-        let before = &self.text[..byte_pos];
-        let after = &self.text[byte_pos..];
+        let (before, after) = self
+            .text
+            .split_at_checked(byte_pos)
+            .unwrap_or((&self.text, ""));
         self.text = cstr!("{before}{text}{after}");
         self.cursor += SegmentedText::new(text).grapheme_count;
     }

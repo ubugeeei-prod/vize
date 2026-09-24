@@ -1,5 +1,7 @@
 //! Shared pseudo-terminal fixture for native lifecycle conformance tests.
 
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+
 use std::{
     mem::MaybeUninit,
     os::fd::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd, RawFd},

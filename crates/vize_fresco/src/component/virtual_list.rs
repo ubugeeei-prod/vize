@@ -179,9 +179,11 @@ impl<K: Clone + Eq> VirtualListState<K> {
             .as_ref()
             .and_then(|selected| keys.iter().position(|key| key == selected))
             .unwrap_or_else(|| previous_index.min(keys.len() - 1));
-        let changed = self.selected_key.as_ref() != Some(&keys[next_index]);
+        // `keys` is non-empty, so the clamped index resolves.
+        let next_key = keys.get(next_index);
+        let changed = self.selected_key.as_ref() != next_key;
         if changed {
-            self.selected_key = Some(keys[next_index].clone());
+            self.selected_key = next_key.cloned();
         }
         self.selected_index = Some(next_index);
         self.reveal_selection();
@@ -308,7 +310,7 @@ impl<K: Clone + Eq> VirtualListState<K> {
         let changed =
             self.selected_index != Some(index) || self.selected_key.as_ref() != keys.get(index);
         if changed {
-            self.selected_key = Some(keys[index].clone());
+            self.selected_key = keys.get(index).cloned();
             self.selected_index = Some(index);
         }
         self.reveal_selection();

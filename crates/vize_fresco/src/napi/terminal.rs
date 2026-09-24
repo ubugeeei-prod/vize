@@ -19,7 +19,6 @@ static BACKEND: Mutex<Option<Backend>> = Mutex::new(None);
 
 /// Initialize terminal for TUI mode.
 #[napi(js_name = "initTerminal")]
-#[allow(clippy::disallowed_macros)]
 pub fn init_terminal() -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -52,7 +51,6 @@ pub fn init_terminal() -> Result<()> {
 
 /// Initialize terminal with mouse capture.
 #[napi(js_name = "initTerminalWithMouse")]
-#[allow(clippy::disallowed_macros)]
 pub fn init_terminal_with_mouse() -> Result<()> {
     init_terminal_with_options(TerminalOptionsNapi {
         raw_mode: Some(true),
@@ -65,7 +63,6 @@ pub fn init_terminal_with_mouse() -> Result<()> {
 
 /// Initialize terminal with explicit TUI mode options.
 #[napi(js_name = "initTerminalWithOptions")]
-#[allow(clippy::disallowed_macros)]
 pub fn init_terminal_with_options(options: TerminalOptionsNapi) -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -106,7 +103,6 @@ pub fn init_terminal_with_options(options: TerminalOptionsNapi) -> Result<()> {
 
 /// Restore terminal to normal mode.
 #[napi(js_name = "restoreTerminal")]
-#[allow(clippy::disallowed_macros)]
 pub fn restore_terminal() -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -130,7 +126,6 @@ pub fn restore_terminal() -> Result<()> {
 /// Size discovery falls back to positive `COLUMNS` and `LINES` values, then
 /// 80x24. The result therefore remains available for redirected output.
 #[napi(js_name = "getTerminalInfo")]
-#[allow(clippy::disallowed_macros)]
 pub fn get_terminal_info() -> Result<TerminalInfoNapi> {
     Ok(terminal_info_from(TerminalCapabilities::detect_stdout()))
 }
@@ -158,7 +153,6 @@ fn terminal_info_from(capabilities: TerminalCapabilities) -> TerminalInfoNapi {
 
 /// Clear the screen.
 #[napi(js_name = "clearScreen")]
-#[allow(clippy::disallowed_macros)]
 pub fn clear_screen() -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -175,7 +169,6 @@ pub fn clear_screen() -> Result<()> {
 
 /// Flush the terminal buffer.
 #[napi(js_name = "flushTerminal")]
-#[allow(clippy::disallowed_macros)]
 pub fn flush_terminal() -> Result<()> {
     let mut guard = BACKEND
         .lock()
@@ -192,7 +185,6 @@ pub fn flush_terminal() -> Result<()> {
 
 /// Flush the terminal buffer and return exact presentation telemetry.
 #[napi(js_name = "flushTerminalMeasured")]
-#[allow(clippy::disallowed_macros)]
 pub fn flush_terminal_measured() -> Result<FrameOutputTelemetryNapi> {
     let mut guard = BACKEND
         .lock()
@@ -209,7 +201,6 @@ pub fn flush_terminal_measured() -> Result<FrameOutputTelemetryNapi> {
 
 /// Sync terminal size (call after resize events).
 #[napi(js_name = "syncTerminalSize")]
-#[allow(clippy::disallowed_macros)]
 pub fn sync_terminal_size() -> Result<bool> {
     let mut guard = BACKEND
         .lock()
@@ -229,7 +220,6 @@ pub fn sync_terminal_size() -> Result<bool> {
 }
 
 /// Get access to backend (internal use).
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn with_backend<T, F: FnOnce(&mut Backend) -> T>(f: F) -> Result<T> {
     let mut guard = BACKEND
         .lock()

@@ -52,12 +52,11 @@ impl TextWidth {
             end = i + c.len_utf8();
         }
 
-        (&s[..end], width)
+        (s.get(..end).unwrap_or(s), width)
     }
 
     /// Truncate string with ellipsis if needed.
     /// The ellipsis is "..." (3 columns).
-    #[allow(clippy::disallowed_macros)]
     pub fn truncate_with_ellipsis(s: &str, max_width: usize) -> CompactString {
         let width = Self::width(s);
         if width <= max_width {
@@ -70,11 +69,12 @@ impl TextWidth {
 
         let target_width = max_width - 3;
         let (truncated, _) = Self::truncate(s, target_width);
-        CompactString::from(format!("{}...", truncated))
+        let mut out = CompactString::from(truncated);
+        out.push_str("...");
+        out
     }
 
     /// Pad string to specified width.
-    #[allow(clippy::disallowed_macros)]
     pub fn pad_right(s: &str, target_width: usize) -> CompactString {
         let current_width = Self::width(s);
         if current_width >= target_width {
@@ -82,11 +82,12 @@ impl TextWidth {
         }
 
         let padding = target_width - current_width;
-        CompactString::from(format!("{}{}", s, " ".repeat(padding)))
+        let mut out = CompactString::from(s);
+        out.extend(std::iter::repeat_n(' ', padding));
+        out
     }
 
     /// Pad string to specified width (left padding).
-    #[allow(clippy::disallowed_macros)]
     pub fn pad_left(s: &str, target_width: usize) -> CompactString {
         let current_width = Self::width(s);
         if current_width >= target_width {
@@ -94,11 +95,12 @@ impl TextWidth {
         }
 
         let padding = target_width - current_width;
-        CompactString::from(format!("{}{}", " ".repeat(padding), s))
+        let mut out: CompactString = std::iter::repeat_n(' ', padding).collect();
+        out.push_str(s);
+        out
     }
 
     /// Center string within specified width.
-    #[allow(clippy::disallowed_macros)]
     pub fn center(s: &str, target_width: usize) -> CompactString {
         let current_width = Self::width(s);
         if current_width >= target_width {
@@ -109,12 +111,10 @@ impl TextWidth {
         let left_padding = total_padding / 2;
         let right_padding = total_padding - left_padding;
 
-        CompactString::from(format!(
-            "{}{}{}",
-            " ".repeat(left_padding),
-            s,
-            " ".repeat(right_padding)
-        ))
+        let mut out: CompactString = std::iter::repeat_n(' ', left_padding).collect();
+        out.push_str(s);
+        out.extend(std::iter::repeat_n(' ', right_padding));
+        out
     }
 }
 

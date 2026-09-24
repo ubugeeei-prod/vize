@@ -124,7 +124,9 @@ impl CandidateList {
     /// Get candidates for current page.
     pub fn current_page(&self) -> &[Candidate] {
         let end = (self.page_start + self.page_size).min(self.candidates.len());
-        &self.candidates[self.page_start..end]
+        self.candidates
+            .get(self.page_start..end)
+            .unwrap_or_default()
     }
 
     /// Get page info (current_page, total_pages).

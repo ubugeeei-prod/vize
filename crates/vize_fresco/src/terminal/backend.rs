@@ -262,8 +262,14 @@ impl<W: Write> Backend<W> {
 }
 
 impl Default for Backend<io::Stdout> {
+    /// [`Backend::new`], falling back to an 80x24 viewport when the terminal
+    /// size cannot be read (standard output is not a terminal).
     fn default() -> Self {
-        Self::new().expect("Failed to create backend")
+        Self::new().unwrap_or_else(|_| {
+            let mut backend = Self::with_writer(80, 24, io::stdout());
+            backend.process_terminal = true;
+            backend
+        })
     }
 }
 
