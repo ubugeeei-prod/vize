@@ -188,7 +188,7 @@ fn path_prefix(line: &str, line_no: usize) -> Result<(String, &str), FolioError>
         ));
     }
     let (path, consumed) = parse_string(line, line_no)?;
-    let rest = &line[consumed..];
+    let rest = line.get(consumed..).unwrap_or_default();
     Ok((path, rest.strip_prefix(' ').unwrap_or(rest)))
 }
 

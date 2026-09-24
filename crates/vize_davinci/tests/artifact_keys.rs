@@ -24,6 +24,12 @@
 //! UPDATE_KEY_GOLDENS=1 cargo test -p vize_davinci --test artifact_keys
 //! ```
 
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};

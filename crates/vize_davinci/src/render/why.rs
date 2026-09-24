@@ -72,7 +72,8 @@ fn group_phrase(group: AnalysisId) -> Option<Phrase> {
 /// [`SUBJECT_LIMIT`] characters), or its key when the span covers nothing.
 fn subject(file: &SourceFile<'_>, link: &WitnessLink) -> String {
     let (start, end) = file.range(link.span);
-    let text = file.text()[start..end].lines().next().unwrap_or("").trim();
+    let covered = file.text().get(start..end).unwrap_or_default();
+    let text = covered.lines().next().unwrap_or("").trim();
     let mut out = String::new("");
     if !text.is_empty() {
         out.push('`');
@@ -113,14 +114,13 @@ fn subject(file: &SourceFile<'_>, link: &WitnessLink) -> String {
 fn fill(template: &str, vars: &[(&str, &str)]) -> String {
     let mut out = String::new("");
     let mut rest = template;
-    while let Some(start) = rest.find('{') {
-        out.push_str(&rest[..start]);
-        let after = &rest[start + 1..];
-        let Some(end) = after.find('}') else {
-            out.push_str(&rest[start..]);
+    while let Some((head, after)) = rest.split_once('{') {
+        out.push_str(head);
+        let Some((name, tail)) = after.split_once('}') else {
+            out.push('{');
+            out.push_str(after);
             return out;
         };
-        let name = &after[..end];
         let value = vars
             .iter()
             .find(|(key, _)| *key == name)
@@ -132,7 +132,7 @@ fn fill(template: &str, vars: &[(&str, &str)]) -> String {
             out.push_str(name);
             out.push('}');
         }
-        rest = &after[end + 1..];
+        rest = tail;
     }
     out.push_str(rest);
     out

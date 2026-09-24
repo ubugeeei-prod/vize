@@ -5,6 +5,8 @@
 //! validator (TS-15), and its content equals the dump's pages
 //! exactly, escaping law included.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};

@@ -2,6 +2,8 @@
 //! writes the run's remark document (schema-valid, byte-exact), and the
 //! `[remarks]` page is a `--roundtrip` stage like any other folio.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};

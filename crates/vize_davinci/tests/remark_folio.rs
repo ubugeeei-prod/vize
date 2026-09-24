@@ -4,6 +4,8 @@
 //! committed schema (`docs/davinci/plan/remarks.schema.json`) through the
 //! shared strict validator (TS-15).
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;

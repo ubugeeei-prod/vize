@@ -177,7 +177,7 @@ impl Folio for ReproFolio {
                     state.enter_section(SECTION_ARTIFACT, "artifact", line_no)?;
                     // Terminal by design: the rest of the input is the
                     // artifact, verbatim - nothing after it is classified.
-                    artifact = String::from(&rest[advance..]);
+                    artifact = String::from(rest.get(advance..).unwrap_or_default());
                     break;
                 }
                 page::LineEvent::Section(other) => {
@@ -186,11 +186,16 @@ impl Folio for ReproFolio {
                 page::LineEvent::Entry(SECTION_CONFIG) => {
                     page::map_insert(&mut config, line, line_no)?;
                 }
+                // The artifact section ends the scan above, so no other
+                // section yields entry lines.
                 page::LineEvent::Entry(_) => {
-                    unreachable!("the artifact section never yields entry lines")
+                    return Err(FolioError::new(
+                        line_no,
+                        cstr!("entry line outside the [config] section"),
+                    ));
                 }
             }
-            rest = &rest[advance..];
+            rest = rest.get(advance..).unwrap_or_default();
         }
         state.require_header()?;
 

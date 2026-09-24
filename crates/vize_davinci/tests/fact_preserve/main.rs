@@ -4,6 +4,8 @@
 //!
 //! `cargo test -p vize_davinci --test fact_preserve`
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod numbers;
 
 use numbers::{

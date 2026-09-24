@@ -77,16 +77,16 @@ const fn is_inventory_name(name: &str) -> bool {
     if bytes.is_empty() {
         return false;
     }
-    let mut index = 0;
-    while index < bytes.len() {
-        let byte = bytes[index];
+    let mut rest = bytes;
+    while let [byte, tail @ ..] = rest {
+        let byte = *byte;
         let allowed = byte.is_ascii_lowercase()
             || byte.is_ascii_digit()
             || matches!(byte, b'_' | b'.' | b'/' | b'-');
         if !allowed {
             return false;
         }
-        index += 1;
+        rest = tail;
     }
     true
 }

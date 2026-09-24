@@ -227,7 +227,7 @@ impl SfcSummary {
             .declarations
             .binary_search_by(|decl| (decl.facet, decl.name.as_str()).cmp(&(facet, name)))
             .ok()?;
-        Some(self.declarations[index].fingerprint())
+        self.declarations.get(index).map(|decl| decl.fingerprint())
     }
 
     /// Declarations whose fingerprint differs, plus declarations only one

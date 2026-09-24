@@ -23,11 +23,16 @@ static UNDECLARED: AtomicU64 = AtomicU64::new(0);
 /// Verification recomputes are not productions and are not counted.
 #[must_use]
 pub fn produced_count(group: AnalysisId) -> u64 {
-    PRODUCED[group.index() as usize].load(Ordering::Relaxed)
+    // An `AnalysisId` is below `MAX_ANALYSES`, so it always has a slot.
+    PRODUCED
+        .get(group.index() as usize)
+        .map_or(0, |count| count.load(Ordering::Relaxed))
 }
 
 pub(crate) fn count_production(group: AnalysisId) {
-    PRODUCED[group.index() as usize].fetch_add(1, Ordering::Relaxed);
+    if let Some(count) = PRODUCED.get(group.index() as usize) {
+        count.fetch_add(1, Ordering::Relaxed);
+    }
 }
 
 /// How many undeclared accesses the detector has refused in this process —
@@ -81,18 +86,24 @@ impl Tables {
     }
 
     pub(crate) fn slot(&self, group: AnalysisId) -> Option<&(dyn Any + Send + Sync)> {
-        self.slots[group.index() as usize].as_deref()
+        self.slots
+            .get(group.index() as usize)
+            .and_then(Option::as_deref)
     }
 
     pub(crate) fn store(&mut self, group: AnalysisId, table: ErasedTable) {
-        self.slots[group.index() as usize] = Some(table);
-        self.computed = self.computed.with(group);
+        if let Some(slot) = self.slots.get_mut(group.index() as usize) {
+            *slot = Some(table);
+            self.computed = self.computed.with(group);
+        }
     }
 
     /// Drop every table in `groups`.
     pub(crate) fn drop_groups(&mut self, groups: Demand) {
         for group in groups.iter() {
-            self.slots[group.index() as usize] = None;
+            if let Some(slot) = self.slots.get_mut(group.index() as usize) {
+                *slot = None;
+            }
         }
         self.computed = self.computed.minus(groups);
     }
@@ -114,7 +125,10 @@ pub(crate) struct Declared {
 const _: () = assert!(size_of::<Declared>() == 0);
 
 impl Declared {
-    #[cfg_attr(not(debug_assertions), allow(unused_variables))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(unused_variables, reason = "the detector is empty in release builds")
+    )]
     pub(crate) const fn new(consumer: &'static str, demand: Demand) -> Self {
         Self {
             #[cfg(debug_assertions)]
@@ -124,7 +138,10 @@ impl Declared {
         }
     }
 
-    #[cfg_attr(not(debug_assertions), allow(unused_variables, clippy::unused_self))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(unused_variables, reason = "the detector is empty in release builds")
+    )]
     #[inline]
     fn check(self, group: AnalysisId) -> Result<(), FactError> {
         #[cfg(debug_assertions)]

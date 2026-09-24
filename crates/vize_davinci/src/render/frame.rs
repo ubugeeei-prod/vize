@@ -83,7 +83,7 @@ impl Frame {
 
     /// A numbered row with a custom rule mark (`+`/`-` in a fix), the text
     /// styled in `highlights` byte ranges.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments, reason = "one row's independent parts")]
     pub(crate) fn numbered(
         &self,
         out: &mut String,
@@ -173,11 +173,16 @@ fn write_highlighted(
         if start < at || start >= end {
             continue;
         }
-        text::push_display(out, &line[at..start]);
+        // Highlight ranges are byte spans of `line` that end on char
+        // boundaries; one that does not is left unstyled.
+        let (Some(before), Some(styled)) = (line.get(at..start), line.get(start..end)) else {
+            continue;
+        };
+        text::push_display(out, before);
         let opened = painter.open(out, style);
-        text::push_display(out, &line[start..end]);
+        text::push_display(out, styled);
         painter.close(out, opened);
         at = end;
     }
-    text::push_display(out, &line[at..]);
+    text::push_display(out, line.get(at..).unwrap_or_default());
 }

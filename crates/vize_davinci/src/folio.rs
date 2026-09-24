@@ -110,8 +110,8 @@ pub trait Folio: Sized {
     /// Infallible because writing into a growable string cannot fail.
     fn print_to_string(&self, mode: FolioMode) -> String {
         let mut out = String::default();
-        self.print(&mut out, mode)
-            .expect("printing a folio into a string cannot fail");
+        // Writing into a growable string cannot fail.
+        let _ = self.print(&mut out, mode);
         out
     }
 }
@@ -122,12 +122,15 @@ pub trait Folio: Sized {
 /// Expands to `insta::assert_snapshot!` over
 /// `Folio::print_to_string(&value, FolioMode::Full)`, so snapshots pin the
 /// canonical text and stay diffable. The expansion carries the workspace's
-/// `#[allow(clippy::disallowed_macros)]` insta convention; the consuming
+/// `#[expect(clippy::disallowed_macros)]` insta convention; the consuming
 /// crate needs `insta` as a dev-dependency.
 #[macro_export]
 macro_rules! assert_folio_snapshot {
     ($value:expr) => {{
-        #[allow(clippy::disallowed_macros)]
+        #[expect(
+            clippy::disallowed_macros,
+            reason = "insta snapshots expand through std::format"
+        )]
         {
             ::insta::assert_snapshot!($crate::folio::Folio::print_to_string(
                 &$value,

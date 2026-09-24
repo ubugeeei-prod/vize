@@ -48,7 +48,7 @@ pub use remark::{
 };
 pub use timing::TimingObserver;
 
-use super::{FusionGroup, PassDesc, Pipeline};
+use super::{Fusability, FusionGroup, PassDesc, PassKind, Pipeline, Preserved};
 
 /// One pass, in the walk it belongs to.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -69,7 +69,19 @@ impl<'a> PassEvent<'a> {
     #[inline]
     #[must_use]
     pub fn desc(&self) -> PassDesc {
-        self.pipeline.passes[self.pass_index]
+        // The runner only builds events for passes of `pipeline`; the
+        // unnamed barrier keeps this accessor total without being observed.
+        const UNKNOWN: PassDesc = PassDesc {
+            name: "",
+            kind: PassKind::MandatoryLowering,
+            fusability: Fusability::Barrier,
+            preserved: Preserved::NONE,
+        };
+        self.pipeline
+            .passes
+            .get(self.pass_index)
+            .copied()
+            .unwrap_or(UNKNOWN)
     }
 
     /// Whether this pass opens the walk.
@@ -93,7 +105,10 @@ impl<'a> PassEvent<'a> {
     #[inline]
     #[must_use]
     pub fn group_members(&self) -> &'a [PassDesc] {
-        &self.pipeline.passes[self.group.start..self.group.end()]
+        self.pipeline
+            .passes
+            .get(self.group.start..self.group.end())
+            .unwrap_or_default()
     }
 }
 
@@ -283,9 +298,10 @@ where
     let group_count = pipeline.group_count();
     let mut group_index = 0;
     while group_index < group_count {
-        let group = pipeline
-            .group(group_index)
-            .expect("group index below group_count always resolves");
+        // A group index below `group_count` always resolves.
+        let Some(group) = pipeline.group(group_index) else {
+            break;
+        };
         let mut pass_index = group.start;
         while pass_index < group.end() {
             let event = PassEvent {

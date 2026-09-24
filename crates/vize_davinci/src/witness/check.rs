@@ -194,15 +194,15 @@ impl WitnessChecks {
     #[must_use]
     pub const fn new(checks: &'static [WitnessCheck]) -> Self {
         let mut groups = Demand::NONE;
-        let mut index = 0;
-        while index < checks.len() {
-            let group = checks[index].group;
+        let mut rest = checks;
+        while let [check, tail @ ..] = rest {
+            let group = check.group;
             assert!(
                 !groups.contains(group),
                 "a witness registry names each fact group at most once"
             );
             groups = groups.with(group);
-            index += 1;
+            rest = tail;
         }
         Self { checks, groups }
     }

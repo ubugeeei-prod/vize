@@ -148,32 +148,26 @@ const fn is_ident_byte(byte: u8) -> bool {
 
 /// Read an identifier starting at `start`, returning it and the offset after.
 fn read_ident(input: &str, start: usize) -> Result<(&str, usize), PipelineSyntaxError> {
-    let bytes = input.as_bytes();
-    let mut end = start;
-    while end < bytes.len() && is_ident_byte(bytes[end]) {
-        end += 1;
-    }
-    if end == start {
+    let rest = input.get(start..).unwrap_or_default();
+    let len = rest.bytes().take_while(|byte| is_ident_byte(*byte)).count();
+    // Identifier bytes are ASCII, so the split lands on a char boundary.
+    let (ident, _) = rest.split_at_checked(len).unwrap_or((rest, ""));
+    if ident.is_empty() {
         // Report the offending character rather than "expected an ident", so
         // the caller can tell `S2(a)` (wrong case) from `(a)` (missing name).
-        return match bytes.get(start) {
-            Some(_) => {
-                let character = input[start..]
-                    .chars()
-                    .next()
-                    .expect("a non-empty remainder has a first char");
-                Err(PipelineSyntaxError::UnexpectedCharacter {
-                    offset: start,
-                    character,
-                })
-            }
+        return match rest.chars().next() {
+            Some(character) => Err(PipelineSyntaxError::UnexpectedCharacter {
+                offset: start,
+                character,
+            }),
             None => Err(PipelineSyntaxError::ExpectedStage { offset: start }),
         };
     }
-    if bytes[end - 1] == b'-' {
+    let end = start + ident.len();
+    if ident.ends_with('-') {
         return Err(PipelineSyntaxError::TrailingHyphen { offset: end - 1 });
     }
-    Ok((&input[start..end], end))
+    Ok((ident, end))
 }
 
 /// Parse a pipeline string into its segments.
@@ -210,11 +204,12 @@ pub fn parse_pipelines(input: &str) -> Result<Vec<PipelineSpec<'_>>, PipelineSyn
             offset += 1;
         } else {
             loop {
-                if offset >= bytes.len() {
-                    return Err(PipelineSyntaxError::UnterminatedPassList { offset });
-                }
-                if !is_ident_byte(bytes[offset]) {
-                    return Err(PipelineSyntaxError::ExpectedPass { offset });
+                match bytes.get(offset) {
+                    None => return Err(PipelineSyntaxError::UnterminatedPassList { offset }),
+                    Some(byte) if !is_ident_byte(*byte) => {
+                        return Err(PipelineSyntaxError::ExpectedPass { offset });
+                    }
+                    Some(_) => {}
                 }
                 let (name, after_name) = read_ident(input, offset)?;
                 passes.push(name);

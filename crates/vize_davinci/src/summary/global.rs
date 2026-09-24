@@ -115,7 +115,7 @@ impl GlobalSummary {
             .facts
             .binary_search_by(|fact| (fact.facet, fact.name.as_str()).cmp(&(facet, name)))
             .ok()?;
-        Some(self.facts[index].fingerprint())
+        self.facts.get(index).map(|fact| fact.fingerprint())
     }
 
     /// Files in `resolutions` order whose recorded project facts are not all

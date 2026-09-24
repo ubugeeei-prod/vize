@@ -68,7 +68,9 @@ impl PageModel {
         let mut fields = Vec::new();
         let mut sections = 0usize;
         for field in &named.named {
-            let ident = field.ident.clone().expect("named fields carry idents");
+            let Some(ident) = field.ident.clone() else {
+                return Err(Error::new_spanned(field, "a named field has no identifier"));
+            };
             let kind = classify(&field.ty);
             if kind != FieldKind::Scalar {
                 sections += 1;

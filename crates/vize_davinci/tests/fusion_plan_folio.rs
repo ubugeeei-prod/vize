@@ -4,6 +4,8 @@
 //! names are the walks the pass manager actually runs, observed through the
 //! run's own events rather than through the const grouping the page reads.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_davinci::folio::plan::{FolioPlanPass, FusionPlanFolio};
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::pass::{

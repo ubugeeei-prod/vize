@@ -55,7 +55,7 @@ impl<'d> Fix<'d> {
         let mut inserted = Vec::new();
         let mut cursor = region_start;
         for edit in edits {
-            new.push_str(&text[cursor..edit.start]);
+            new.push_str(text.get(cursor..edit.start).unwrap_or_default());
             if edit.end > edit.start {
                 removed.push((edit.start - region_start, edit.end - region_start));
             }
@@ -66,7 +66,7 @@ impl<'d> Fix<'d> {
             }
             cursor = edit.end;
         }
-        new.push_str(&text[cursor..region_end]);
+        new.push_str(text.get(cursor..region_end).unwrap_or_default());
 
         let insertions_only = edits
             .iter()
@@ -74,7 +74,7 @@ impl<'d> Fix<'d> {
         Self {
             title,
             first_line,
-            old: String::from(&text[region_start..region_end]),
+            old: String::from(text.get(region_start..region_end).unwrap_or_default()),
             new,
             removed,
             inserted,
@@ -123,8 +123,8 @@ impl<'d> Fix<'d> {
             frame.source(out, number, &blank, 0, line);
             let mut marks = Row::new();
             for (start, end) in spans {
-                let from = text::width(&line[..start]);
-                let to = from + text::width(&line[start..end]).max(1);
+                let from = text::width(line.get(..start).unwrap_or_default());
+                let to = from + text::width(line.get(start..end).unwrap_or_default()).max(1);
                 marks.fill(from, to, b'+', Style::Added);
             }
             frame.row(out, &marks);

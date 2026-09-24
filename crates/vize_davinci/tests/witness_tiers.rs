@@ -6,6 +6,8 @@
 //! `vize_davinci::diagnostic::tier`; the runtime panic pinned here is the
 //! same assertion reached outside a const context.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::panic::catch_unwind;
 
 use vize_davinci::diagnostic::{Advisory, Domain, RuleContract, Severity, Tier, Verdict};

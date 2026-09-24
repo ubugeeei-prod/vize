@@ -6,6 +6,12 @@
 //! inside the component body changes no fingerprint. A signature change
 //! invalidates exactly the consumers that recorded that declaration.
 
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 mod fixture;
 
 use fixture::{BARE, BUTTON, button_pages, entry, replace_once, signature, summarize, users};

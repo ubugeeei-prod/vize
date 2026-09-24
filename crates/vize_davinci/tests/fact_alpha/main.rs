@@ -4,6 +4,8 @@
 //!
 //! `cargo test -p vize_davinci --test fact_alpha`
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod groups;
 
 use groups::{Lengths, Longest, REGISTRY, Summary, Words, Words2};

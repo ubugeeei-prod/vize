@@ -226,13 +226,17 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
         RemarkCollector::new(),
     );
     for plan in build_plans(&segments) {
-        run_pipeline(&plan, &mut observers, |event| {
+        let run = run_pipeline(&plan, &mut observers, |event| {
             if let Some(dump) = dump.as_mut() {
                 dump.after_pass(event, printed.as_str());
             }
             Ok(())
-        })
-        .expect("a no-op pass body cannot fail");
+        });
+        // A no-op pass body cannot fail; report it rather than abort if it does.
+        if let Err(failure) = run {
+            eprintln!("davinci-opt: pipeline stopped: {}", failure.reason);
+            return ExitCode::from(1);
+        }
     }
     let Pair(Pair(_, budget), remarks) = observers;
     let log = RemarkLog::new(remarks.finish());

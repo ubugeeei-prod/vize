@@ -1,6 +1,8 @@
 //! `FolioDump` behavior: page naming, and the `--folio-after-change` hash
 //! gate (P2-13).
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_davinci::folio::dump::FolioDump;
 use vize_davinci::pass::{Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved};
 

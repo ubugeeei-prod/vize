@@ -83,7 +83,7 @@ impl TimingObserver {
     fn attribution(event: &PassEvent<'_>) -> SpanAttribution {
         SpanAttribution::new()
             .with_stage(event.pipeline.stage)
-            .with_pass(event.pipeline.passes[event.group.start].name)
+            .with_pass((event.pipeline.passes.get(event.group.start)).map_or("", |pass| pass.name))
     }
 }
 

@@ -10,6 +10,12 @@
 //!    rejections surfacing as usage errors - every message asserted
 //!    exactly (assurance §4).
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};

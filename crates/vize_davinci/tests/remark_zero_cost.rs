@@ -14,6 +14,8 @@
 //! This binary owns the process global allocator and holds a single test,
 //! so no concurrent test pollutes the counters.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use davinci_harness::alloc::{CountingAllocator, mark_installed, measure};
 use vize_davinci::pass::{
     BudgetObserver, Fusability, NoObserver, Pair, PassDesc, PassEvent, PassKind, PassObserver,

@@ -104,7 +104,10 @@ impl KeyManifest {
     pub fn set(&mut self, input: AmbientInput, value: &str) {
         let mut hasher = StableHasher128::new();
         hasher.update(value.as_bytes());
-        self.values[input as usize] = Some(hasher.digest());
+        // One slot per `AmbientInput` variant.
+        if let Some(slot) = self.values.get_mut(input as usize) {
+            *slot = Some(hasher.digest());
+        }
     }
 
     /// The inputs this manifest sets.
@@ -112,7 +115,7 @@ impl KeyManifest {
     pub fn inputs(&self) -> InputSet {
         let mut set = InputSet::EMPTY;
         for input in AmbientInput::ALL {
-            if self.values[input as usize].is_some() {
+            if self.values.get(input as usize).is_some_and(Option::is_some) {
                 set.0 |= bit(input);
             }
         }
@@ -149,7 +152,7 @@ impl KeyManifest {
     fn fold_into(&self, sink: &mut KeySink, artifact: CachedArtifact) {
         sink.feed_str(artifact.name());
         for input in AmbientInput::ALL {
-            if let Some(digest) = &self.values[input as usize] {
+            if let Some(Some(digest)) = self.values.get(input as usize) {
                 sink.feed_str(input.name());
                 sink.feed_digest(digest);
             }

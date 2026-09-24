@@ -163,7 +163,8 @@ pub(crate) fn push_remark_fields(out: &mut String, remark: &RecordedRemark) {
 #[must_use]
 pub fn entry_line(remark: &RecordedRemark) -> String {
     let mut out = String::default();
-    print_entry(&mut out, remark, FolioMode::Full).expect("printing into a string cannot fail");
+    // Writing into a growable string cannot fail.
+    let _ = print_entry(&mut out, remark, FolioMode::Full);
     out
 }
 
@@ -214,7 +215,8 @@ fn print_args<W: fmt::Write>(w: &mut W, args: &[RecordedArg]) -> fmt::Result {
 #[must_use]
 pub fn args_text(args: &[RecordedArg]) -> String {
     let mut out = String::default();
-    print_args(&mut out, args).expect("printing into a string cannot fail");
+    // Writing into a growable string cannot fail.
+    let _ = print_args(&mut out, args);
     match out.strip_prefix(' ') {
         Some(trimmed) => String::from(trimmed),
         None => out,

@@ -42,3 +42,6 @@ harness = false
 [[bench]]
 name = "davinci_fact"
 harness = false
+
+[lints]
+workspace = true

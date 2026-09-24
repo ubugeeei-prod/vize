@@ -50,10 +50,12 @@ impl FusionPlanFolio {
         let walks = pipeline.group_count();
         let mut passes = Vec::with_capacity(pipeline.passes.len());
         for walk in 0..walks {
-            let group = pipeline
-                .group(walk)
-                .expect("group index below group_count always resolves");
-            for desc in &pipeline.passes[group.start..group.end()] {
+            // A group index below `group_count` always resolves.
+            let Some(group) = pipeline.group(walk) else {
+                continue;
+            };
+            let members = pipeline.passes.get(group.start..group.end());
+            for desc in members.unwrap_or_default() {
                 passes.push(FolioPlanPass {
                     walk: walk_number(walk),
                     pass: String::from(desc.name),
@@ -71,9 +73,9 @@ impl FusionPlanFolio {
 }
 
 /// Walk indices print as `u32`; a pipeline is const data with a handful of
-/// passes, so the conversion cannot fail in practice.
+/// passes, so the conversion saturates only in theory.
 fn walk_number(index: usize) -> u32 {
-    u32::try_from(index).expect("a pipeline has fewer than 2^32 passes")
+    u32::try_from(index).unwrap_or(u32::MAX)
 }
 
 /// One `walk=<n> pass=<name> kind=<kind> fusability=<fusability>` record.

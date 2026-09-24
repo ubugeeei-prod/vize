@@ -49,14 +49,14 @@ pub enum StrataError {
 /// The first violation in registration order.
 pub const fn check_strata(groups: &[GroupDesc]) -> Result<(), StrataError> {
     let mut i = 0;
-    while i < groups.len() {
-        let group = groups[i];
-        let mut j = 0;
-        while j < i {
-            if groups[j].id.index() == group.id.index() {
+    while let Some((earlier, [group, ..])) = groups.split_at_checked(i) {
+        let group = *group;
+        let mut seen = earlier;
+        while let [previous, tail @ ..] = seen {
+            if previous.id.index() == group.id.index() {
                 return Err(StrataError::DuplicateId { id: group.id });
             }
-            j += 1;
+            seen = tail;
         }
         let mut index = 0;
         while index < MAX_ANALYSES {
@@ -86,12 +86,12 @@ pub const fn check_strata(groups: &[GroupDesc]) -> Result<(), StrataError> {
 }
 
 const fn stratum_of(groups: &[GroupDesc], id: AnalysisId) -> Option<u8> {
-    let mut i = 0;
-    while i < groups.len() {
-        if groups[i].id.index() == id.index() {
-            return Some(groups[i].stratum);
+    let mut rest = groups;
+    while let [group, tail @ ..] = rest {
+        if group.id.index() == id.index() {
+            return Some(group.stratum);
         }
-        i += 1;
+        rest = tail;
     }
     None
 }
@@ -251,24 +251,33 @@ impl<A: ?Sized + 'static> FactRegistry<A> {
             stratum: 0,
             depends: Demand::NONE,
         }; MAX_ANALYSES as usize];
-        let mut i = 0;
-        while i < producers.len() {
-            descs[i] = producers[i].desc;
-            i += 1;
+        let mut slots: &mut [GroupDesc] = &mut descs;
+        let mut entries = producers;
+        while let ([slot, slots_tail @ ..], [entry, entries_tail @ ..]) = (slots, entries) {
+            *slot = entry.desc;
+            slots = slots_tail;
+            entries = entries_tail;
         }
-        match check_strata(descs.split_at(producers.len()).0) {
-            Ok(()) => {}
-            Err(StrataError::DuplicateId { .. }) => {
-                panic!("fact registry: two producers register the same group id")
-            }
-            Err(StrataError::UnregisteredDependency { .. }) => {
-                panic!("fact registry: a group depends on a group no producer computes")
-            }
-            Err(StrataError::NotStrictlyLower { .. }) => panic!(
-                "fact registry: a group depends on a group in its own or a higher stratum \
-                 (a demand cycle is unrepresentable)"
-            ),
-        }
+        let registered = match descs.split_at_checked(producers.len()) {
+            Some((registered, _)) => registered,
+            None => &descs,
+        };
+        // Compile-time checks: a registry is built in a `const` item, where
+        // a failed assertion is a build error naming the violation.
+        let strata = check_strata(registered);
+        assert!(
+            !matches!(strata, Err(StrataError::DuplicateId { .. })),
+            "fact registry: two producers register the same group id"
+        );
+        assert!(
+            !matches!(strata, Err(StrataError::UnregisteredDependency { .. })),
+            "fact registry: a group depends on a group no producer computes"
+        );
+        assert!(
+            !matches!(strata, Err(StrataError::NotStrictlyLower { .. })),
+            "fact registry: a group depends on a group in its own or a higher stratum \
+             (a demand cycle is unrepresentable)"
+        );
         Self { producers }
     }
 

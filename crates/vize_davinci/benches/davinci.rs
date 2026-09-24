@@ -25,6 +25,12 @@
 //! crosses three walks — rather than a single pass, which would measure the
 //! call and not the loop.
 
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    reason = "benchmark setup aborts on a broken fixture"
+)]
+
 use criterion::{Criterion, criterion_group};
 use vize_davinci::pass::{
     Fusability, NoObserver, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,

@@ -17,6 +17,11 @@
 //! the same measured count, so a verify observer that starts allocating in
 //! release fails the exact alloc gate.
 
+#![expect(
+    clippy::expect_used,
+    reason = "benchmark setup aborts on a broken fixture"
+)]
+
 use criterion::{Criterion, criterion_group};
 use vize_davinci::fact::{
     Demand, FactConsumer, FactGroup, FactManager, FactProducer, FactRegistry, FactTable,

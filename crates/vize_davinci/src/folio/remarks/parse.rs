@@ -76,8 +76,8 @@ fn ident(text: &str, what: &str, line_no: usize) -> Result<(), FolioError> {
         && bytes
             .iter()
             .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || *byte == b'-')
-        && bytes[0] != b'-'
-        && bytes[bytes.len() - 1] != b'-';
+        && bytes.first() != Some(&b'-')
+        && bytes.last() != Some(&b'-');
     if well_formed {
         Ok(())
     } else {
@@ -107,7 +107,7 @@ fn parse_u32(text: &str) -> Option<u32> {
 fn parse_value(text: &str, line_no: usize) -> Result<(RemarkArgValue, &str), FolioError> {
     if text.starts_with('"') {
         let (value, consumed) = parse_string(text, line_no)?;
-        let rest = &text[consumed..];
+        let rest = text.get(consumed..).unwrap_or_default();
         return match rest.strip_prefix(' ') {
             Some(after) => Ok((RemarkArgValue::Str(value), after)),
             None if rest.is_empty() => Ok((RemarkArgValue::Str(value), rest)),

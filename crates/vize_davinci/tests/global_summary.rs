@@ -4,6 +4,8 @@
 //!
 //! Adding a global component invalidates exactly the files that resolve it.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_davinci::summary::{
     AlphaEntry, AlphaPages, Facet, GlobalEntry, GlobalError, GlobalFacet, GlobalFacts,
     GlobalResolution, GlobalSummary, SfcSummary, Signature,

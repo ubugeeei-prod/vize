@@ -39,8 +39,8 @@ fn parse_span(s: &str) -> Option<(u32, u32)> {
 /// Used by the `[macros]` accumulator to find the end of a (possibly
 /// multi-line) entry.
 pub(super) fn tail_is_span(line: &str) -> bool {
-    line.rfind(" @")
-        .is_some_and(|pos| parse_span(&line[pos + 2..]).is_some())
+    line.rsplit_once(" @")
+        .is_some_and(|(_, tail)| parse_span(tail).is_some())
 }
 
 /// `{prefix}{index}` where prefix is `~`, `!`, or `#`.
@@ -115,8 +115,10 @@ pub(super) fn parse_prop(line: &str, line_no: usize) -> Result<PropEntry, FolioE
     if pos == 0 {
         return Err(err(line_no, cstr!("prop line has an empty name")));
     }
-    let name = String::from(&line[..pos]);
-    let rest = &line[pos + req.len_utf8()..];
+    let (Some(name), Some(rest)) = (line.get(..pos), line.get(pos + req.len_utf8()..)) else {
+        return Err(err(line_no, cstr!("malformed prop line")));
+    };
+    let name = String::from(name);
     let (ty, has_default) = if rest.is_empty() {
         (None, false)
     } else if rest == "=" {
@@ -152,19 +154,17 @@ pub(super) fn parse_macro(text: &str, line_no: usize) -> Result<MacroEntry, Foli
     let body = text
         .strip_prefix('@')
         .ok_or_else(|| err(line_no, cstr!("macro line must start with @")))?;
-    let pos = body
-        .rfind(" @")
+    let (head, span) = body
+        .rsplit_once(" @")
         .ok_or_else(|| err(line_no, cstr!("macro line is missing a span")))?;
     let (start, end) =
-        parse_span(&body[pos + 2..]).ok_or_else(|| err(line_no, cstr!("malformed macro span")))?;
-    let head = &body[..pos];
-    let (name, type_args) = match head.find('<') {
-        Some(lt) => {
-            let ty = head[lt..]
-                .strip_prefix('<')
-                .and_then(|t| t.strip_suffix('>'))
+        parse_span(span).ok_or_else(|| err(line_no, cstr!("malformed macro span")))?;
+    let (name, type_args) = match head.split_once('<') {
+        Some((name, ty)) => {
+            let ty = ty
+                .strip_suffix('>')
                 .ok_or_else(|| err(line_no, cstr!("unterminated macro type arguments")))?;
-            (&head[..lt], Some(String::from(ty)))
+            (name, Some(String::from(ty)))
         }
         None => (head, None),
     };
@@ -183,10 +183,10 @@ pub(super) fn parse_macro(text: &str, line_no: usize) -> Result<MacroEntry, Foli
 pub(super) fn parse_extern(line: &str, line_no: usize) -> Result<ExternEntry, FolioError> {
     let (head, bindings) = match line.strip_suffix('}') {
         Some(rest) => {
-            let pos = rest
-                .rfind(" {")
+            let (head, names) = rest
+                .rsplit_once(" {")
                 .ok_or_else(|| err(line_no, cstr!("malformed extern binding list")))?;
-            (&rest[..pos], parse_name_list(&rest[pos + 2..], line_no)?)
+            (head, parse_name_list(names, line_no)?)
         }
         None => (line, Vec::new()),
     };
@@ -206,12 +206,11 @@ pub(super) fn parse_extern(line: &str, line_no: usize) -> Result<ExternEntry, Fo
 
 /// `{name}[^]{t|i}@{start}:{end}`
 pub(super) fn parse_type(line: &str, line_no: usize) -> Result<TypeEntry, FolioError> {
-    let pos = line
-        .rfind('@')
+    let (head, span) = line
+        .rsplit_once('@')
         .ok_or_else(|| err(line_no, cstr!("type line is missing a span")))?;
     let (start, end) =
-        parse_span(&line[pos + 1..]).ok_or_else(|| err(line_no, cstr!("malformed type span")))?;
-    let head = &line[..pos];
+        parse_span(span).ok_or_else(|| err(line_no, cstr!("malformed type span")))?;
     let (head, kind) = match head.strip_suffix('t') {
         Some(head) => (head, TypeExportMark::Type),
         None => match head.strip_suffix('i') {
@@ -254,30 +253,30 @@ pub(super) fn parse_scope(line: &str, line_no: usize) -> Result<ScopeEntry, Foli
     let mut rest = line;
 
     let mut parents = Vec::new();
-    if let Some(pos) = rest.rfind(" < ") {
-        for r in rest[pos + 3..].split(", ") {
+    if let Some((head, refs)) = rest.rsplit_once(" < ") {
+        for r in refs.split(", ") {
             let r = parse_ref(r)
                 .ok_or_else(|| err(line_no, cstr!("malformed scope parent reference")))?;
             parents.push(r);
         }
-        rest = &rest[..pos];
+        rest = head;
     }
 
     let mut bindings = Vec::new();
     if let Some(inner) = rest.strip_suffix(']') {
-        let pos = inner
-            .rfind(" [")
+        let (head, names) = inner
+            .rsplit_once(" [")
             .ok_or_else(|| err(line_no, cstr!("malformed scope binding list")))?;
-        bindings = parse_name_list(&inner[pos + 2..], line_no)?;
-        rest = &inner[..pos];
+        bindings = parse_name_list(names, line_no)?;
+        rest = head;
     }
 
-    let pos = rest
-        .rfind(" @")
+    let (head, span) = rest
+        .rsplit_once(" @")
         .ok_or_else(|| err(line_no, cstr!("scope line is missing a span")))?;
     let (start, end) =
-        parse_span(&rest[pos + 2..]).ok_or_else(|| err(line_no, cstr!("malformed scope span")))?;
-    rest = &rest[..pos];
+        parse_span(span).ok_or_else(|| err(line_no, cstr!("malformed scope span")))?;
+    rest = head;
 
     let (id, name) = rest
         .split_once(' ')
@@ -304,12 +303,11 @@ pub(super) fn parse_error(line: &str, line_no: usize) -> Result<ErrorEntry, Foli
     if name.is_empty() {
         return Err(err(line_no, cstr!("error line has an empty name")));
     }
-    let pos = rest
-        .rfind('@')
+    let (kind, span) = rest
+        .rsplit_once('@')
         .ok_or_else(|| err(line_no, cstr!("error line is missing a span")))?;
     let (start, end) =
-        parse_span(&rest[pos + 1..]).ok_or_else(|| err(line_no, cstr!("malformed error span")))?;
-    let kind = &rest[..pos];
+        parse_span(span).ok_or_else(|| err(line_no, cstr!("malformed error span")))?;
     if kind.is_empty() {
         return Err(err(line_no, cstr!("error line has an empty kind")));
     }

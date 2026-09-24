@@ -8,6 +8,8 @@
 //! positive half as exact values: what each constructor stores, what the
 //! accessors read back, and the witness types' own laws.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::panic::catch_unwind;
 
 use vize_davinci::diagnostic::{

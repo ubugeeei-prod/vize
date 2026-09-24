@@ -7,6 +7,12 @@
 //! `Pair` forwards to exactly the members that consume remarks, and the
 //! collector's canonical order is independent of emission order.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use vize_davinci::pass::observer::{

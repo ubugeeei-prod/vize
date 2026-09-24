@@ -85,7 +85,7 @@ impl<'a> SourceFile<'a> {
             return self.text.len();
         }
         let newline = self.line_start(line + 1) - 1;
-        if newline > 0 && self.text.as_bytes()[newline - 1] == b'\r' {
+        if newline > 0 && self.text.as_bytes().get(newline - 1) == Some(&b'\r') {
             newline - 1
         } else {
             newline
@@ -94,7 +94,9 @@ impl<'a> SourceFile<'a> {
 
     /// The content of `line`, without its terminator.
     pub(crate) fn line_text(&self, line: usize) -> &'a str {
-        &self.text[self.line_start(line)..self.line_end(line)]
+        (self.text)
+            .get(self.line_start(line)..self.line_end(line))
+            .unwrap_or_default()
     }
 
     /// Display column of byte `offset` within `line`: the terminal width of
@@ -103,7 +105,7 @@ impl<'a> SourceFile<'a> {
     pub(crate) fn column(&self, line: usize, offset: usize) -> usize {
         let start = self.line_start(line);
         let offset = offset.clamp(start, self.line_end(line));
-        text::width(&self.text[start..offset])
+        text::width(self.text.get(start..offset).unwrap_or_default())
     }
 
     /// One-based `(line, column)` of `offset` for the `-->` location, the

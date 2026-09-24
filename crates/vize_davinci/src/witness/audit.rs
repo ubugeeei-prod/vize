@@ -81,7 +81,10 @@ impl WitnessAudit {
 
     /// Re-check every witness in `diagnostics` against `facts`, the view of
     /// the consumer that produced them.
-    #[cfg_attr(not(debug_assertions), allow(unused_variables, clippy::unused_self))]
+    #[cfg_attr(
+        not(debug_assertions),
+        expect(unused_variables, reason = "the audit only runs in debug builds")
+    )]
     pub fn audit(
         &mut self,
         diagnostics: &[Diagnostic],

@@ -12,6 +12,8 @@
 //! UPDATE_FOLIO_FIXTURES=1 cargo test -p vize_davinci --test croquis_folio
 //! ```
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::path::{Path, PathBuf};
 
 use vize_atelier_core::Allocator;

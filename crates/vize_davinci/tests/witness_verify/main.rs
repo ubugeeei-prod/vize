@@ -9,6 +9,8 @@
 //! a group the producer never declared, a group the run never computed —
 //! each asserted equal to the whole error value.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod facts;
 
 use facts::{

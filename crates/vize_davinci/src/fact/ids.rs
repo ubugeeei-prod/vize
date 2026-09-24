@@ -67,12 +67,14 @@ pub const PRODUCTION: [AnalysisId; 15] = [
 
 // Unique, ascending, and below the fixture range.
 const _: () = {
-    let mut i = 0;
-    while i < PRODUCTION.len() {
-        assert!(PRODUCTION[i].index() < FIXTURE_BASE);
-        if i > 0 {
-            assert!(PRODUCTION[i - 1].index() < PRODUCTION[i].index());
+    let mut rest: &[AnalysisId] = &PRODUCTION;
+    let mut previous = None;
+    while let [id, tail @ ..] = rest {
+        assert!(id.index() < FIXTURE_BASE);
+        if let Some(previous) = previous {
+            assert!(previous < id.index());
         }
-        i += 1;
+        previous = Some(id.index());
+        rest = tail;
     }
 };

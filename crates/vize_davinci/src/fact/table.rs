@@ -23,7 +23,8 @@ impl<G: FactGroup> FactTable<G> {
         self.entries
             .binary_search_by(|(probe, _)| probe.cmp(key))
             .ok()
-            .map(|at| &self.entries[at].1)
+            .and_then(|at| self.entries.get(at))
+            .map(|(_, value)| value)
     }
 
     /// Whether a fact is stored under `key`.

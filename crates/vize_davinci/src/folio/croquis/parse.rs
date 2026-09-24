@@ -186,7 +186,14 @@ impl Parser {
             | Section::Expose
             | Section::Slots
             | Section::Reactivity
-            | Section::Macros => unreachable!("handled by the driver"),
+            | Section::Macros => {
+                // The driver buffers these sections itself and never routes
+                // their lines here.
+                return Err(err(
+                    no,
+                    cstr!("verbatim section line reached the entry parser"),
+                ));
+            }
         }
         Ok(())
     }
@@ -223,7 +230,8 @@ impl Parser {
                     self.folio.slots = entries;
                 }
             }
-            _ => unreachable!("verbatim sections are matched above"),
+            // Only verbatim sections get past the check above.
+            _ => {}
         }
         Ok(())
     }

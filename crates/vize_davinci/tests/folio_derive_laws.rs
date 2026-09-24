@@ -10,6 +10,8 @@
 //! type covering every supported field kind (bool / integer / `String`
 //! scalars, a `Vec` list section, an `FxHashMap` sorted map section).
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::pass::BudgetObserver;
 use vize_s0::{FxHashMap, String, cstr};

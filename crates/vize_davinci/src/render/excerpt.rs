@@ -92,11 +92,10 @@ impl<'d> Excerpt<'d> {
                 });
             } else {
                 let text = file.text();
-                let last_char = text[..annotation.end]
-                    .char_indices()
-                    .next_back()
+                let last_char = (text.get(..annotation.end))
+                    .and_then(|head| head.char_indices().next_back())
                     .map_or(annotation.start, |(at, _)| at);
-                let lead = &text[file.line_start(first)..annotation.start];
+                let lead = (text.get(file.line_start(first)..annotation.start)).unwrap_or_default();
                 multis.push(Multi {
                     first,
                     last,
@@ -115,8 +114,8 @@ impl<'d> Excerpt<'d> {
         for multi in &mut multis {
             let free = occupied_until.iter().position(|&last| last < multi.first);
             multi.depth = free.unwrap_or(occupied_until.len());
-            match free {
-                Some(depth) => occupied_until[depth] = multi.last,
+            match free.and_then(|depth| occupied_until.get_mut(depth)) {
+                Some(slot) => *slot = multi.last,
                 None => occupied_until.push(multi.last),
             }
         }
@@ -134,11 +133,13 @@ impl<'d> Excerpt<'d> {
         lines.sort_unstable();
         lines.dedup();
         let mut filled = Vec::with_capacity(lines.len());
-        for (index, &line) in lines.iter().enumerate() {
-            if index > 0 && line == lines[index - 1] + 2 {
+        let mut previous = None;
+        for &line in &lines {
+            if previous.is_some_and(|previous| line == previous + 2) {
                 filled.push(line - 1);
             }
             filled.push(line);
+            previous = Some(line);
         }
         Self {
             singles,
@@ -182,30 +183,34 @@ impl<'d> Excerpt<'d> {
         let offset = self.margin_width();
         let mut open = alloc::vec![false; self.multis.len()];
         let mut by_depth: Vec<usize> = (0..self.multis.len()).collect();
-        by_depth.sort_by_key(|&index| self.multis[index].depth);
-        for (index, &line) in self.lines.iter().enumerate() {
-            if index > 0 && line > self.lines[index - 1] + 1 {
+        by_depth.sort_by_key(|&index| self.multis.get(index).map_or(0, |multi| multi.depth));
+        let mut previous: Option<usize> = None;
+        for &line in &self.lines {
+            if previous.is_some_and(|previous| line > previous + 1) {
                 frame.elision(out, &self.margin(&open));
             }
+            previous = Some(line);
 
             let mut margin = self.margin(&open);
-            for (at, multi) in self.multis.iter().enumerate() {
+            for (multi, is_open) in self.multis.iter().zip(open.iter_mut()) {
                 if multi.first == line && multi.slash {
                     margin.put(multi.depth, b'/', multi.annotation.style);
-                    open[at] = true;
+                    *is_open = true;
                 }
             }
             frame.source(out, line + 1, &margin, offset, file.line_text(line));
 
             for &at in &by_depth {
-                let multi = &self.multis[at];
+                let Some(multi) = self.multis.get(at) else {
+                    continue;
+                };
                 if multi.first == line && !multi.slash {
                     let mut row = self.margin(&open);
                     let style = multi.annotation.style;
                     Self::rule(&mut row, multi.depth + 1, offset + multi.start, style);
                     row.put(offset + multi.start, multi.annotation.mark(), style);
                     frame.row(out, &row);
-                    open[at] = true;
+                    set_open(&mut open, at, true);
                 }
             }
 
@@ -221,7 +226,9 @@ impl<'d> Excerpt<'d> {
             }
 
             for &at in by_depth.iter().rev() {
-                let multi = &self.multis[at];
+                let Some(multi) = self.multis.get(at) else {
+                    continue;
+                };
                 if multi.last != line {
                     continue;
                 }
@@ -229,7 +236,7 @@ impl<'d> Excerpt<'d> {
                 let style = multi.annotation.style;
                 Self::rule(&mut row, multi.depth + 1, offset + multi.end, style);
                 row.put(offset + multi.end, multi.annotation.mark(), style);
-                open[at] = false;
+                set_open(&mut open, at, false);
                 let label_col = offset + multi.end + 2;
                 let mut label = multi.annotation.label.split('\n');
                 row.label(label_col, label.next().unwrap_or(""), style);
@@ -241,6 +248,13 @@ impl<'d> Excerpt<'d> {
                 }
             }
         }
+    }
+}
+
+/// Mark multi-line span `at` open or closed (one flag per span).
+fn set_open(open: &mut [bool], at: usize, value: bool) {
+    if let Some(flag) = open.get_mut(at) {
+        *flag = value;
     }
 }
 
@@ -306,7 +320,7 @@ fn single_rows<'d>(singles: &[&Single<'d>], margin: &Row<'d>, offset: usize) -> 
     for (index, single) in hanging.iter().enumerate() {
         for text in single.annotation.label.split('\n') {
             let mut row = margin.clone();
-            for pending in &hanging[index + 1..] {
+            for pending in hanging.get(index + 1..).unwrap_or_default() {
                 row.put(offset + pending.start, b'|', pending.annotation.style);
             }
             row.label(offset + single.start, text, single.annotation.style);

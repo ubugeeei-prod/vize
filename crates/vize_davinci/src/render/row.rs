@@ -30,7 +30,9 @@ impl<'t> Row<'t> {
         if self.cells.len() <= col {
             self.cells.resize(col + 1, (b' ', Style::Plain));
         }
-        self.cells[col] = (mark, style);
+        if let Some(cell) = self.cells.get_mut(col) {
+            *cell = (mark, style);
+        }
     }
 
     /// Set every cell in `[from, to)` to `mark`.
@@ -79,7 +81,7 @@ impl<'t> Row<'t> {
                     .iter()
                     .rposition(|&(mark, _)| mark != b' ')
                     .map_or(0, |last| last + 1);
-                &self.cells[..used]
+                self.cells.get(..used).unwrap_or_default()
             }
         };
         let mut run = String::new("");

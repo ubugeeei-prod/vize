@@ -164,7 +164,11 @@ impl PassObserver for RemarkCollector {
     fn on_remark(&mut self, event: &PassEvent<'_>, remark: &Remark<'_>) {
         for (index, arg) in remark.args.iter().enumerate() {
             assert!(
-                remark.args[..index].iter().all(|seen| seen.key != arg.key),
+                remark
+                    .args
+                    .iter()
+                    .take(index)
+                    .all(|seen| seen.key != arg.key),
                 "remark `{}` from pass `{}` repeats argument `{}`",
                 remark.name,
                 event.desc().name,

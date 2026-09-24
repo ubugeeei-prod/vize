@@ -4,6 +4,8 @@
 //!
 //! `cargo test -p vize_davinci --test fact_demand`
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod words;
 
 use vize_davinci::fact::{

@@ -2,6 +2,12 @@
 //! stratum order, each group at most once per artifact, and serves borrowed
 //! tables.
 
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    reason = "tests assert by panicking"
+)]
+
 mod groups;
 
 use groups::{

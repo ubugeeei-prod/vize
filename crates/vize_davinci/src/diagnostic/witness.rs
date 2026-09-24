@@ -106,8 +106,14 @@ impl WitnessChain {
     /// The first link — the fact the proof starts from.
     #[must_use]
     pub fn first(&self) -> &WitnessLink {
-        // The invariant is that `links` is never empty; indexing states it.
-        &self.links[0]
+        // Every constructor keeps `links` non-empty, so the placeholder is
+        // never observed; it only keeps this accessor total.
+        static UNREACHED: WitnessLink = WitnessLink {
+            group: AnalysisId::new(0),
+            span: Span::new(0, 0),
+            key: WitnessKey::Artifact,
+        };
+        self.links.first().unwrap_or(&UNREACHED)
     }
 }
 

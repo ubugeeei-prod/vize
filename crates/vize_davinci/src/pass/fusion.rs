@@ -72,15 +72,15 @@ impl Pipeline {
     #[must_use]
     pub const fn group_count(&self) -> usize {
         let mut groups = 0;
-        let mut index = 0;
+        let mut rest = self.passes;
         let mut previous_was_barrier = true;
-        while index < self.passes.len() {
-            let barrier = !self.passes[index].fusability.is_fusable();
+        while let [pass, tail @ ..] = rest {
+            let barrier = !pass.fusability.is_fusable();
             if barrier || previous_was_barrier {
                 groups += 1;
             }
             previous_was_barrier = barrier;
-            index += 1;
+            rest = tail;
         }
         groups
     }
@@ -90,14 +90,14 @@ impl Pipeline {
     pub const fn group(&self, index: usize) -> Option<FusionGroup> {
         let mut seen = 0;
         let mut start = 0;
-        while start < self.passes.len() {
+        while let Some((_, [first, ..])) = self.passes.split_at_checked(start) {
             let len = self.group_len_at(start);
             if seen == index {
                 return Some(FusionGroup {
                     start,
                     len,
                     preserved: self.preserved_from(start, len),
-                    is_barrier: !self.passes[start].fusability.is_fusable(),
+                    is_barrier: !first.fusability.is_fusable(),
                 });
             }
             seen += 1;
@@ -106,25 +106,45 @@ impl Pipeline {
         None
     }
 
-    /// How many passes the group starting at `start` holds.
+    /// How many passes the group starting at `start` holds (at least one,
+    /// so a walk over the groups always advances).
     const fn group_len_at(&self, start: usize) -> usize {
-        if !self.passes[start].fusability.is_fusable() {
+        let Some((_, [first, rest @ ..])) = self.passes.split_at_checked(start) else {
+            return 1;
+        };
+        if !first.fusability.is_fusable() {
             return 1;
         }
         let mut len = 1;
-        while start + len < self.passes.len() && self.passes[start + len].fusability.is_fusable() {
+        let mut tail = rest;
+        while let [pass, more @ ..] = tail {
+            if !pass.fusability.is_fusable() {
+                break;
+            }
             len += 1;
+            tail = more;
         }
         len
     }
 
     /// The intersection of the preserved sets over `passes[start..start + len]`.
+    /// An empty range preserves nothing.
     const fn preserved_from(&self, start: usize, len: usize) -> Preserved {
-        let mut preserved = self.passes[start].preserved;
-        let mut offset = 1;
-        while offset < len {
-            preserved = preserved.intersect(self.passes[start + offset].preserved);
-            offset += 1;
+        let Some((_, from)) = self.passes.split_at_checked(start) else {
+            return Preserved::NONE;
+        };
+        let group = match from.split_at_checked(len) {
+            Some((group, _)) => group,
+            None => from,
+        };
+        let [first, rest @ ..] = group else {
+            return Preserved::NONE;
+        };
+        let mut preserved = first.preserved;
+        let mut tail = rest;
+        while let [pass, more @ ..] = tail {
+            preserved = preserved.intersect(pass.preserved);
+            tail = more;
         }
         preserved
     }
@@ -162,15 +182,15 @@ impl Pipeline {
     /// The groups, in order.
     pub fn groups(&self) -> impl Iterator<Item = FusionGroup> + '_ {
         let count = self.group_count();
-        (0..count).map(move |index| {
-            self.group(index)
-                .expect("group index below group_count always resolves")
-        })
+        // A group index below `group_count` always resolves.
+        (0..count).filter_map(move |index| self.group(index))
     }
 
     /// The passes of `group`, in order.
     #[must_use]
     pub fn passes_of(&self, group: FusionGroup) -> &'static [PassDesc] {
-        &self.passes[group.start..group.end()]
+        self.passes
+            .get(group.start..group.end())
+            .unwrap_or_default()
     }
 }

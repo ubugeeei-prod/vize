@@ -217,8 +217,7 @@ impl<'c, C: Catalog> Renderer<'c, C> {
         let mut footers = Vec::new();
         let mut fixes = Vec::new();
         let mut index = 0;
-        while index < parts.len() {
-            let part = &parts[index];
+        while let Some(part) = parts.get(index) {
             match part.kind {
                 PartKind::Help => {
                     let titles_fix = parts
@@ -232,7 +231,7 @@ impl<'c, C: Catalog> Renderer<'c, C> {
                 PartKind::Suggestion => {
                     let titled = index
                         .checked_sub(1)
-                        .map(|previous| &parts[previous])
+                        .and_then(|previous| parts.get(previous))
                         .filter(|previous| previous.kind == PartKind::Help);
                     let mut title = titled.map_or_else(
                         || self.catalog.phrase(Phrase::SuggestedFix),

@@ -18,10 +18,16 @@
 //! line: the committed snapshot is the oracle, and a regenerated one is only
 //! as true as that review.
 
-#![allow(
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    clippy::unreachable,
+    reason = "tests assert by panicking"
+)]
+#![expect(
     clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
 )]
 
 /// `tests/diagnostic_render/…`, by ordinary module discovery.

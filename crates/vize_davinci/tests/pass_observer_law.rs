@@ -12,6 +12,8 @@
 //! asserted as an equality between what the observer counted and what the
 //! plan says, over pipelines whose grouping differs.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_davinci::pass::observer::{AnalysisEvent, FailEvent, Pair, PassEvent, PassObserver};
 use vize_davinci::pass::{
     BudgetObserver, Fusability, NoObserver, PassDesc, PassFailure, PassKind, Pipeline, Preserved,

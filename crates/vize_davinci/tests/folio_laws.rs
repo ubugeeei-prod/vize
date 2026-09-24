@@ -8,6 +8,8 @@
 //!   print.
 //! - `Display`: spans and default markers elided, no round-trip law.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_davinci::assert_folio_snapshot;
 use vize_davinci::folio::croquis::CroquisFolio;
 use vize_davinci::folio::{Folio, FolioError, FolioMode};

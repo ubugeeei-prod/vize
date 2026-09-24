@@ -42,10 +42,11 @@
 // on the host at build time, is never linked into any target, and speaks
 // syn/quote's std-String API - pulling vize_carton into a build dependency
 // to satisfy the lint would invert the point of the rule.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "a build-time proc macro speaks syn/quote's std String API"
 )]
 
 mod codegen;

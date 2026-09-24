@@ -5,6 +5,12 @@
 //! key the artifact at all; and `docs/davinci/plan/key-manifests.md` lists
 //! exactly the artifacts and inputs `vize_davinci::key::manifest` declares.
 
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 use std::fmt::Write as _;
 
 use vize_davinci::key::{

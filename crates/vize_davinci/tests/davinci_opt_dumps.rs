@@ -3,6 +3,13 @@
 //! `--timing-json` export validated against the committed P0-11 schema
 //! through the strict shared validator (TS-15).
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
