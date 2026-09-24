@@ -201,6 +201,13 @@ jobs:
         run: cargo build --profile ci -p vize
       - name: Install vize CLI
         run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+      # The CLI is built above from this commit, so new lint rule fixes are
+      # checked without waiting for an npm release or building a second binary.
+      - name: Lint authored source with the opinionated preset
+        run: vp node tools/commands/ci/opinionated-source-lint.mjs
+      - name: Test gallery Markdown renderer
+        working-directory: npm/builder/vite-musea
+        run: vp exec tsx --test gallery/components/MarkdownContent.test.ts
       - name: Check Vize app fixtures
         run: vp run --workspace-root check:ci:vize-apps
 

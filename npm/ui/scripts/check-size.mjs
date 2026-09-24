@@ -89,8 +89,9 @@ const budgets = new Map([
   ["polymorphic.mjs", 950],
   ["slot-utils.mjs", 1_450],
   ["variants.mjs", 2_200],
-  ["dialog.mjs", 21_500],
-  ["alert-dialog.mjs", 22_200],
+  // Both entries include DialogRoot's opt-in exit lifecycle.
+  ["dialog.mjs", 22_100],
+  ["alert-dialog.mjs", 22_700],
   ["dismissable-layer.mjs", 4_250],
   ["drag-and-drop.mjs", 12_650],
   ["error-summary.mjs", 4_500],
