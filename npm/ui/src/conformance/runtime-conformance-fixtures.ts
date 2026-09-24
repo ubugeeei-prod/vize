@@ -10,6 +10,8 @@ import LinkAnchor from "../families/navigation/link/link-anchor.vue";
 import { skipLinkRuntimeFixture } from "../families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { calloutRuntimeFixture } from "../families/feedback/callout/runtime-conformance-callout-fixtures.ts";
+import { calendarRuntimeFixtures } from "../families/date-time/calendar/runtime-conformance-calendar-fixtures.ts";
+import { rangeCalendarRuntimeFixture } from "../families/date-time/range-calendar/runtime-conformance-range-calendar-fixtures.ts";
 import { tableRuntimeFixtures } from "../families/data/table/runtime-conformance-table-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { meterRuntimeFixture } from "../families/feedback/meter/runtime-conformance-meter-fixtures.ts";
@@ -71,7 +73,9 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   badgeRuntimeFixture,
   bannerRuntimeFixture,
   blockUIRuntimeFixture,
+  ...calendarRuntimeFixtures,
   calloutRuntimeFixture,
+  rangeCalendarRuntimeFixture,
   ...tableRuntimeFixtures,
   ...breadcrumbRuntimeFixtures,
   ...tabsRuntimeFixtures,

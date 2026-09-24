@@ -131,6 +131,8 @@ export default defineConfig({
       banner: "src/families/feedback/banner/banner.ts",
       "block-ui": "src/families/feedback/block-ui/block-ui.ts",
       callout: "src/families/feedback/callout/callout.ts",
+      calendar: "src/families/date-time/calendar/calendar.ts",
+      "range-calendar": "src/families/date-time/range-calendar/range-calendar.ts",
       blockquote: "src/families/typography/blockquote/blockquote.ts",
       breadcrumb: "src/families/navigation/breadcrumb/breadcrumb.ts",
       tabs: "src/families/navigation/tabs/tabs.ts",
