@@ -100,6 +100,11 @@
       "import": "./dist/tabs.mjs",
       "default": "./dist/tabs.mjs"
     },
+    "./tree": {
+      "types": "./dist/tree.d.mts",
+      "import": "./dist/tree.mjs",
+      "default": "./dist/tree.mjs"
+    },
     "./stepper": {
       "types": "./dist/stepper.d.mts",
       "import": "./dist/stepper.mjs",
@@ -249,6 +254,11 @@
       "types": "./dist/separator.d.mts",
       "import": "./dist/separator.mjs",
       "default": "./dist/separator.mjs"
+    },
+    "./splitter": {
+      "types": "./dist/splitter.d.mts",
+      "import": "./dist/splitter.mjs",
+      "default": "./dist/splitter.mjs"
     },
     "./spacer": {
       "types": "./dist/spacer.d.mts",
@@ -624,9 +634,13 @@
     "./theme.css": "./dist/theme.css",
     "./base.css": "./dist/theme.css",
     "./component-button.css": "./dist/component-button.css",
+    "./component-checkbox.css": "./dist/component-checkbox.css",
     "./component-dialog.css": "./dist/component-dialog.css",
+    "./component-input.css": "./dist/component-input.css",
     "./component-progress-bar.css": "./dist/component-progress-bar.css",
     "./component-scroll-area.css": "./dist/component-scroll-area.css",
+    "./component-switch.css": "./dist/component-switch.css",
+    "./component-textarea.css": "./dist/component-textarea.css",
     "./motion.css": "./dist/motion.css",
     "./theme-preset-headless.css": "./dist/theme-preset-headless.css",
     "./theme-preset-atelier.css": "./dist/theme-preset-atelier.css",

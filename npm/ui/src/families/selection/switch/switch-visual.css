@@ -1,0 +1,125 @@
+/* Optional switch-track treatment. Labels can sit alongside the control. */
+@layer vize.preset {
+  /* A nested theme starts from the base treatment, not its parent's variant. */
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-switch-radius: initial;
+    --vize-ui-switch-thumb-radius: initial;
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-switch-radius: var(--vize-ui-radius-full);
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-switch-radius: 0.25rem;
+    --vize-ui-switch-thumb-radius: 0.125rem;
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-switch-radius: 0.125rem;
+    --vize-ui-switch-thumb-radius: 0.0625rem;
+  }
+
+  :where([data-vize-ui="switch"]) {
+    appearance: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    min-inline-size: 2.75rem;
+    min-block-size: 1.5rem;
+    padding: 0;
+    border: var(--vize-ui-border-width-thin) solid var(--vize-ui-color-border);
+    border-radius: var(--vize-ui-switch-radius, var(--vize-ui-radius-full));
+    background-color: var(--vize-ui-color-surface);
+    color: var(--vize-ui-color-text);
+    cursor: pointer;
+    vertical-align: middle;
+    touch-action: manipulation;
+    transition-property: border-color, background-color;
+    transition-duration: var(--vize-ui-motion-duration-fast, 120ms);
+    transition-timing-function: var(--vize-ui-motion-ease-standard, ease-out);
+  }
+
+  :where([data-vize-ui="switch"])::after {
+    position: absolute;
+    inset-block-start: 0.1875rem;
+    inset-inline-start: 0.1875rem;
+    inline-size: 1rem;
+    block-size: 1rem;
+    border-radius: var(--vize-ui-switch-thumb-radius, var(--vize-ui-radius-full));
+    background-color: var(--vize-ui-color-text-muted);
+    content: "";
+    pointer-events: none;
+    transition-property: inset-inline-start, background-color;
+    transition-duration: var(--vize-ui-motion-duration-base, 180ms);
+    transition-timing-function: var(--vize-ui-motion-ease-standard, cubic-bezier(0.2, 0.8, 0.2, 1));
+  }
+
+  :where([data-vize-ui="switch"][data-checked="true"]) {
+    border-color: var(--vize-ui-color-accent);
+    background-color: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-ui="switch"][data-checked="true"])::after {
+    inset-inline-start: calc(100% - 1.1875rem);
+    background-color: var(--vize-ui-color-accent-contrast);
+  }
+
+  :where([data-vize-ui="switch"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+
+  :where([data-vize-ui="switch"][aria-invalid]:not([aria-invalid="false"])) {
+    border-color: var(--vize-ui-color-danger);
+  }
+
+  :where([data-vize-ui="switch"][data-state="readonly"]) {
+    cursor: default;
+  }
+
+  :where([data-vize-ui="switch"]:disabled) {
+    opacity: var(--vize-ui-opacity-disabled);
+    cursor: not-allowed;
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="switch"]),
+    :where([data-vize-ui="switch"])::after {
+      transition-duration: 0ms;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="switch"]) {
+      border-color: ButtonBorder;
+      background-color: ButtonFace;
+      color: ButtonText;
+    }
+
+    :where([data-vize-ui="switch"])::after {
+      background-color: ButtonText;
+    }
+
+    :where([data-vize-ui="switch"][data-checked="true"]) {
+      border-color: Highlight;
+      background-color: Highlight;
+    }
+
+    :where([data-vize-ui="switch"][data-checked="true"])::after {
+      background-color: HighlightText;
+    }
+
+    :where([data-vize-ui="switch"]:focus-visible) {
+      outline-color: Highlight;
+    }
+
+    :where([data-vize-ui="switch"]:disabled) {
+      color: GrayText;
+      opacity: 1;
+    }
+  }
+}

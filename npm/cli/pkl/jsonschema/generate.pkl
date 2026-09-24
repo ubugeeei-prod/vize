@@ -444,6 +444,30 @@ local globalTypesConfigDef: JsonSchema = new JsonSchema {
   }
 }
 
+local libConfigDef: JsonSchema = new JsonSchema {
+  type = "object"
+  description = "vize lib source distribution options; paths are relative to the config file"
+  properties {
+    ["dir"] = new JsonSchema {
+      type = "string"
+      description = "Destination for every registry kind unless a kind-specific directory is set"
+    }
+    ["uiDir"] = new JsonSchema {
+      type = "string"
+      description = "Destination for @vizejs/ui items (default: src/components/vize)"
+    }
+    ["composableDir"] = new JsonSchema {
+      type = "string"
+      description = "Destination for @vizejs/composable items (default: src/composables/vize)"
+    }
+    ["lockfile"] = new JsonSchema {
+      type = "string"
+      description = "Lockfile path (default: vize-lib.lock.json)"
+    }
+  }
+  additionalProperties = false
+}
+
 local configEntryDef: JsonSchema = new JsonSchema {
   type = "object"
   description = "Scoped Vize config entry for monorepos and workspaces"
@@ -514,6 +538,7 @@ output {
       ["MuseaConfig"] = MuseaSchemaDefinitions.museaConfigDef
       ["GlobalTypeDeclaration"] = globalTypeDeclarationDef
       ["GlobalTypesConfig"] = globalTypesConfigDef
+      ["LibConfig"] = libConfigDef
       ["VizeConfigEntry"] = configEntryDef
     }
     properties {
@@ -555,6 +580,7 @@ output {
       ["lsp"] = new JsonSchema { `$ref` = "#/definitions/LanguageServerConfig" }
       ["musea"] = new JsonSchema { `$ref` = "#/definitions/MuseaConfig" }
       ["globalTypes"] = new JsonSchema { `$ref` = "#/definitions/GlobalTypesConfig" }
+      ["lib"] = new JsonSchema { `$ref` = "#/definitions/LibConfig" }
       ["entries"] = new JsonSchema {
         type = "array"
         items = new JsonSchema { `$ref` = "#/definitions/VizeConfigEntry" }
