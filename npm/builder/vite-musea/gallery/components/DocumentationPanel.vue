@@ -1,121 +1,32 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import { Marked, type Tokens } from "marked";
-import { markedHighlight } from "marked-highlight";
-import hljs from "highlight.js/lib/core";
-import xml from "highlight.js/lib/languages/xml";
-import javascript from "highlight.js/lib/languages/javascript";
-import typescript from "highlight.js/lib/languages/typescript";
-import css from "highlight.js/lib/languages/css";
-import bash from "highlight.js/lib/languages/bash";
+import { ref, watch } from "vue";
+import MarkdownContent from "./MarkdownContent";
 import { fetchDocs } from "../api";
 
-hljs.registerLanguage("xml", xml);
-hljs.registerLanguage("html", xml);
-hljs.registerLanguage("vue", xml);
-hljs.registerLanguage("javascript", javascript);
-hljs.registerLanguage("js", javascript);
-hljs.registerLanguage("typescript", typescript);
-hljs.registerLanguage("ts", typescript);
-hljs.registerLanguage("css", css);
-hljs.registerLanguage("bash", bash);
-hljs.registerLanguage("sh", bash);
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#x27;");
-}
-
-const URL_SCHEME_RE = /^[a-z][a-z\d+.-]*:/i;
-const ALLOWED_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
-
-function cleanUrl(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-
-  if (
-    trimmed.startsWith("#") ||
-    trimmed.startsWith("/") ||
-    trimmed.startsWith("./") ||
-    trimmed.startsWith("../")
-  ) {
-    return trimmed;
-  }
-
-  if (trimmed.startsWith("//")) return null;
-  if (!URL_SCHEME_RE.test(trimmed)) return trimmed;
-
-  try {
-    const url = new URL(trimmed, window.location.href);
-    return ALLOWED_URL_PROTOCOLS.has(url.protocol) ? trimmed : null;
-  } catch {
-    return null;
-  }
-}
-
-const markedInstance = new Marked(
-  {
-    renderer: {
-      html({ text }: Tokens.HTML | Tokens.Tag) {
-        return escapeHtml(text);
-      },
-      link({ href, title, tokens }: Tokens.Link) {
-        const cleanHref = cleanUrl(href);
-        const label = this.parser.parseInline(tokens);
-        if (!cleanHref) return label;
-
-        const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
-        return `<a href="${escapeHtml(cleanHref)}"${titleAttr} rel="noreferrer">${label}</a>`;
-      },
-      image({ href, title, text }: Tokens.Image) {
-        const cleanHref = cleanUrl(href);
-        if (!cleanHref) return escapeHtml(text);
-
-        const titleAttr = title ? ` title="${escapeHtml(title)}"` : "";
-        return `<img src="${escapeHtml(cleanHref)}" alt="${escapeHtml(text)}"${titleAttr}>`;
-      },
-    },
-  },
-  markedHighlight({
-    highlight(code: string, lang: string) {
-      if (lang && hljs.getLanguage(lang)) {
-        return hljs.highlight(code, { language: lang }).value;
-      }
-      return escapeHtml(code);
-    },
-  }),
-);
-
-const props = defineProps<{
-  artPath: string;
-}>();
-
+const props = defineProps<{ artPath: string }>();
 const markdown = ref("");
 const loading = ref(false);
 const error = ref<string | null>(null);
 
-const renderedHtml = computed(() => {
-  if (!markdown.value) return "";
-  return markedInstance.parse(markdown.value) as string;
-});
-
 watch(
   () => props.artPath,
-  async (path) => {
-    if (!path) return;
-    loading.value = true;
+  async (path, _previousPath, onCleanup) => {
+    let cancelled = false;
+    onCleanup(() => {
+      cancelled = true;
+    });
+    markdown.value = "";
     error.value = null;
+    if (!path) return;
+
+    loading.value = true;
     try {
       const data = await fetchDocs(path);
-      markdown.value = data.markdown;
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : String(e);
+      if (!cancelled) markdown.value = data.markdown;
+    } catch (cause) {
+      if (!cancelled) error.value = cause instanceof Error ? cause.message : String(cause);
     } finally {
-      loading.value = false;
+      if (!cancelled) loading.value = false;
     }
   },
   { immediate: true },
@@ -124,17 +35,17 @@ watch(
 
 <template>
   <div class="docs-panel">
-    <div v-if="loading" class="docs-loading">
-      <div class="loading-spinner" />
+    <div v-if="loading" class="docs-loading" role="status">
+      <div class="loading-spinner" aria-hidden="true" />
       Loading documentation...
     </div>
 
-    <div v-else-if="error" class="docs-error">
+    <div v-else-if="error" class="docs-error" role="alert">
       {{ error }}
     </div>
 
     <div v-else-if="markdown" class="docs-content">
-      <div class="docs-markdown" v-html="renderedHtml" />
+      <MarkdownContent :markdown />
     </div>
 
     <div v-else class="docs-empty">
@@ -161,9 +72,15 @@ watch(
   width: 20px;
   height: 20px;
   border: 2px solid var(--musea-border);
-  border-top-color: var(--musea-accent);
+  border-block-start-color: var(--musea-accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation-duration: 2s;
+  }
 }
 
 @keyframes spin {
@@ -193,115 +110,115 @@ watch(
   font-size: 0.875rem;
   line-height: 1.7;
   color: var(--musea-text-secondary);
-}
 
-.docs-markdown :deep(h1) {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--musea-text);
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--musea-border);
-}
+  & :deep(h1) {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--musea-text);
+    margin-block-end: 1rem;
+    padding-bottom: 0.5rem;
+    border-block-end: 1px solid var(--musea-border);
+  }
 
-.docs-markdown :deep(h2) {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--musea-text);
-  margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
-}
+  & :deep(h2) {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--musea-text);
+    margin-block-start: 1.5rem;
+    margin-block-end: 0.75rem;
+  }
 
-.docs-markdown :deep(h3) {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--musea-text);
-  margin-top: 1.25rem;
-  margin-bottom: 0.5rem;
-}
+  & :deep(h3) {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--musea-text);
+    margin-block-start: 1.25rem;
+    margin-block-end: 0.5rem;
+  }
 
-.docs-markdown :deep(p) {
-  margin-bottom: 0.75rem;
-}
+  & :deep(p) {
+    margin-block-end: 0.75rem;
+  }
 
-.docs-markdown :deep(ul),
-.docs-markdown :deep(ol) {
-  padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
-}
+  & :deep(ul),
+  & :deep(ol) {
+    padding-inline-start: 1.5rem;
+    margin-block-end: 0.75rem;
+  }
 
-.docs-markdown :deep(li) {
-  margin-bottom: 0.25rem;
-}
+  & :deep(li) {
+    margin-block-end: 0.25rem;
+  }
 
-.docs-markdown :deep(code) {
-  background: var(--musea-bg-tertiary);
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
-  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
-  font-size: 0.8125rem;
-}
+  & :deep(code) {
+    background: var(--musea-bg-tertiary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    font-size: 0.8125rem;
+  }
 
-.docs-markdown :deep(pre) {
-  background: var(--musea-bg-primary);
-  border: 1px solid var(--musea-border);
-  border-radius: var(--musea-radius-md);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  overflow-x: auto;
-  white-space: pre;
-}
+  & :deep(pre) {
+    background: var(--musea-bg-primary);
+    border: 1px solid var(--musea-border);
+    border-radius: var(--musea-radius-md);
+    padding: 1rem;
+    margin-block-end: 1rem;
+    overflow-x: auto;
+    white-space: pre;
+  }
 
-.docs-markdown :deep(pre code) {
-  background: none;
-  padding: 0;
-  font-size: 0.8125rem;
-  line-height: 1.6;
-  white-space: pre;
-  tab-size: 2;
-}
+  & :deep(pre code) {
+    background: none;
+    padding: 0;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    white-space: pre;
+    tab-size: 2;
+  }
 
-.docs-markdown :deep(table) {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
-}
+  & :deep(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-block-end: 1rem;
+  }
 
-.docs-markdown :deep(th),
-.docs-markdown :deep(td) {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--musea-border);
-  text-align: left;
-  font-size: 0.8125rem;
-}
+  & :deep(th),
+  & :deep(td) {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--musea-border);
+    text-align: left;
+    font-size: 0.8125rem;
+  }
 
-.docs-markdown :deep(th) {
-  background: var(--musea-bg-tertiary);
-  font-weight: 600;
-  color: var(--musea-text);
-}
+  & :deep(th) {
+    background: var(--musea-bg-tertiary);
+    font-weight: 600;
+    color: var(--musea-text);
+  }
 
-.docs-markdown :deep(blockquote) {
-  border-left: 3px solid var(--musea-accent);
-  padding-left: 1rem;
-  margin: 0.75rem 0;
-  color: var(--musea-text-muted);
-}
+  & :deep(blockquote) {
+    border-inline-start: 3px solid var(--musea-accent);
+    padding-inline-start: 1rem;
+    margin: 0.75rem 0;
+    color: var(--musea-text-muted);
+  }
 
-.docs-markdown :deep(hr) {
-  border: none;
-  border-top: 1px solid var(--musea-border);
-  margin: 1.5rem 0;
-}
+  & :deep(hr) {
+    border: none;
+    border-block-start: 1px solid var(--musea-border);
+    margin: 1.5rem 0;
+  }
 
-.docs-markdown :deep(a) {
-  color: var(--musea-accent);
-  text-decoration: underline;
-}
+  & :deep(a) {
+    color: var(--musea-accent);
+    text-decoration: underline;
+  }
 
-.docs-markdown :deep(strong) {
-  color: var(--musea-text);
-  font-weight: 600;
+  & :deep(strong) {
+    color: var(--musea-text);
+    font-weight: 600;
+  }
 }
 
 .docs-empty {

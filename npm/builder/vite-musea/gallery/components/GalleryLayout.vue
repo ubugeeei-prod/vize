@@ -12,7 +12,6 @@ import {
 import { useArts } from "../composables/useArts";
 import { useSearch } from "../composables/useSearch";
 import { useTheme } from "../composables/useTheme";
-import SearchBar from "./SearchBar.vue";
 import Sidebar from "./Sidebar.vue";
 import SearchModal from "./SearchModal.vue";
 import MdiIcon from "./MdiIcon.vue";
@@ -25,6 +24,8 @@ const { currentTheme, cycleTheme } = useTheme();
 
 const searchModalOpen = ref(false);
 const sidebarCollapsed = ref(false);
+const isCompact = ref(false);
+let compactMedia: MediaQueryList | null = null;
 const sidebarWidth = useResizable({
   direction: "horizontal",
   minSize: 200,
@@ -80,25 +81,57 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 };
 
+function syncCompactLayout(event: MediaQueryListEvent | MediaQueryList) {
+  isCompact.value = event.matches;
+}
+
+function resizeSidebarWithKeyboard(event: KeyboardEvent) {
+  const step = event.shiftKey ? 40 : 10;
+  if (event.key === "ArrowLeft") {
+    sidebarWidth.size.value = Math.max(200, sidebarWidth.size.value - step);
+  } else if (event.key === "ArrowRight") {
+    sidebarWidth.size.value = Math.min(
+      Math.max(240, window.innerWidth - 320),
+      sidebarWidth.size.value + step,
+    );
+  } else {
+    return;
+  }
+  event.preventDefault();
+  localStorage.setItem("musea-sidebar-width", String(sidebarWidth.size.value));
+}
+
 onMounted(() => {
   load();
   document.addEventListener("keydown", handleKeydown);
+  compactMedia = window.matchMedia("(max-width: 768px)");
+  syncCompactLayout(compactMedia);
+  compactMedia.addEventListener("change", syncCompactLayout);
 });
 
 onUnmounted(() => {
   document.removeEventListener("keydown", handleKeydown);
+  compactMedia?.removeEventListener("change", syncCompactLayout);
 });
 
-const handleSearchSelect = (art: { path: string }, variantName?: string) => {
+const handleSearchSelect = (art: { path: string }) => {
   router.push({ name: "component", params: { path: art.path } });
 };
+
+function closeSearchModal() {
+  searchModalOpen.value = false;
+}
+
+function openSearchModal() {
+  searchModalOpen.value = true;
+}
 </script>
 
 <template>
   <div class="gallery-layout">
     <header class="header">
       <div class="header-left">
-        <router-link to="/" class="logo">
+        <RouterLink to="/" class="logo">
           <svg class="logo-svg" viewBox="232 24 300 210" fill="none" aria-hidden="true">
             <g transform="translate(180, 50)">
               <g transform="translate(180, 80) skewX(-20)">
@@ -113,12 +146,12 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
             </g>
           </svg>
           Musea
-        </router-link>
-        <span class="header-subtitle">Component Gallery</span>
+        </RouterLink>
+        <span v-if="!isCompact" class="header-subtitle">Component Gallery</span>
       </div>
 
-      <div class="header-center">
-        <button type="button" class="search-trigger" @click="searchModalOpen = true">
+      <div v-if="!isCompact" class="header-center">
+        <button type="button" class="search-trigger" @click="openSearchModal">
           <MdiIcon class="search-icon" :path="mdiMagnify" :size="16" />
           <span>Search components...</span>
           <kbd>⌘K</kbd>
@@ -127,9 +160,19 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
 
       <div class="header-right">
         <button
+          v-if="isCompact"
+          type="button"
+          class="search-compact"
+          aria-label="Search components"
+          @click="openSearchModal"
+        >
+          <MdiIcon :path="mdiMagnify" :size="18" />
+        </button>
+        <button
           type="button"
           class="theme-toggle"
           :title="`Theme: ${themeLabel}`"
+          :aria-label="`Theme: ${themeLabel}. Change theme`"
           @click="cycleTheme"
         >
           <MdiIcon :path="themeIcon" :size="18" />
@@ -139,14 +182,21 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
 
     <main class="main" :class="{ 'sidebar-collapsed': sidebarCollapsed }" :style="mainStyle">
       <!-- Sidebar -->
-      <aside class="sidebar-wrapper" :class="{ collapsed: sidebarCollapsed }" :style="sidebarStyle">
+      <aside
+        v-if="!isCompact"
+        class="sidebar-wrapper"
+        :class="{ collapsed: sidebarCollapsed }"
+        :style="sidebarStyle"
+      >
         <Sidebar v-show="!sidebarCollapsed" :arts="results" />
-        <div
+        <button
           v-if="!sidebarCollapsed"
+          type="button"
           class="sidebar-resize-handle"
-          title="Resize sidebar"
+          aria-label="Resize sidebar with left and right arrow keys"
           @pointerdown.stop.prevent="sidebarWidth.onPointerDown"
-        />
+          @keydown="resizeSidebarWithKeyboard"
+        ></button>
         <button
           type="button"
           class="sidebar-toggle"
@@ -159,15 +209,15 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
 
       <!-- Main Content -->
       <section class="content">
-        <router-view />
+        <RouterView />
       </section>
     </main>
 
     <!-- Search Modal -->
     <SearchModal
-      :arts="arts"
+      :arts
       :is-open="searchModalOpen"
-      @close="searchModalOpen = false"
+      @close="closeSearchModal"
       @select="handleSearchSelect"
     />
   </div>
@@ -190,7 +240,7 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   justify-content: space-between;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--musea-z-header);
 }
 
 .header-left {
@@ -226,8 +276,8 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   color: var(--musea-text-muted);
   font-size: 0.8125rem;
   font-weight: 500;
-  padding-left: 1.5rem;
-  border-left: 1px solid var(--musea-border);
+  padding-inline-start: 1.5rem;
+  border-inline-start: 1px solid var(--musea-border);
 }
 
 .search-trigger {
@@ -243,6 +293,20 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   font-size: 0.875rem;
   cursor: pointer;
   transition: all var(--musea-transition);
+
+  & span {
+    flex: 1;
+    text-align: start;
+  }
+
+  & kbd {
+    padding: 0.125rem 0.375rem;
+    background: var(--musea-bg-primary);
+    border: 1px solid var(--musea-border);
+    border-radius: var(--musea-radius-sm);
+    font-size: 0.75rem;
+    font-family: var(--musea-font-mono);
+  }
 }
 
 .search-trigger:hover {
@@ -256,26 +320,14 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   flex-shrink: 0;
 }
 
-.search-trigger span {
-  flex: 1;
-  text-align: left;
-}
-
-.search-trigger kbd {
-  padding: 0.125rem 0.375rem;
-  background: var(--musea-bg-primary);
-  border: 1px solid var(--musea-border);
-  border-radius: var(--musea-radius-sm);
-  font-size: 0.75rem;
-  font-family: var(--musea-font-mono);
-}
-
 .header-right {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
-.theme-toggle {
+.theme-toggle,
+.search-compact {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,7 +341,8 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   transition: all var(--musea-transition);
 }
 
-.theme-toggle:hover {
+.theme-toggle:hover,
+.search-compact:hover {
   border-color: var(--musea-accent);
   color: var(--musea-text);
 }
@@ -312,50 +365,62 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   flex-direction: column;
   position: relative;
   background: var(--musea-bg-secondary);
-  border-right: 1px solid var(--musea-border);
+  border-inline-end: 1px solid var(--musea-border);
   min-width: 0;
-}
 
-.sidebar-wrapper.collapsed {
-  overflow: hidden;
-}
+  &.collapsed {
+    overflow: hidden;
 
-.sidebar-wrapper :deep(.sidebar) {
-  border-right: none;
+    & .sidebar-toggle {
+      inset-inline-end: auto;
+      inset-inline-start: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  & :deep(.sidebar) {
+    border-inline-end: none;
+  }
+
+  &:hover .sidebar-resize-handle::before {
+    background: color-mix(in srgb, var(--musea-border) 78%, transparent);
+  }
 }
 
 .sidebar-resize-handle {
   position: absolute;
   top: 0;
-  right: -4px;
+  inset-inline-end: -4px;
   width: 8px;
   height: 100%;
-  cursor: col-resize;
-  z-index: 20;
-  touch-action: none;
-}
-
-.sidebar-resize-handle::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
-  transform: translateX(-50%);
+  border: 0;
+  padding: 0;
   background: transparent;
-  transition: background-color var(--musea-transition);
-}
+  cursor: col-resize;
+  z-index: var(--musea-z-sticky);
+  touch-action: none;
 
-.sidebar-wrapper:hover .sidebar-resize-handle::before,
-.sidebar-resize-handle:hover::before {
-  background: color-mix(in srgb, var(--musea-border) 78%, transparent);
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    inset-inline-start: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: transparent;
+    transition: background-color var(--musea-transition);
+  }
+
+  &:hover::before {
+    background: color-mix(in srgb, var(--musea-border) 78%, transparent);
+  }
 }
 
 .sidebar-toggle {
   position: absolute;
   bottom: 0.75rem;
-  right: 0.75rem;
+  inset-inline-end: 0.75rem;
   width: 24px;
   height: 24px;
   display: flex;
@@ -367,13 +432,7 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   color: var(--musea-text-muted);
   cursor: pointer;
   transition: all var(--musea-transition);
-  z-index: 10;
-}
-
-.sidebar-wrapper.collapsed .sidebar-toggle {
-  right: auto;
-  left: 50%;
-  transform: translateX(-50%);
+  z-index: var(--musea-z-control);
 }
 
 .sidebar-toggle:hover {
@@ -388,20 +447,5 @@ const handleSearchSelect = (art: { path: string }, variantName?: string) => {
   height: calc(100vh - var(--musea-header-height));
   min-width: 0;
   flex: 1 1 auto;
-}
-
-@media (max-width: 768px) {
-  .main {
-    grid-template-columns: 1fr !important;
-  }
-  .sidebar-wrapper {
-    display: none;
-  }
-  .header-subtitle {
-    display: none;
-  }
-  .header-center {
-    display: none;
-  }
 }
 </style>

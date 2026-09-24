@@ -44,7 +44,7 @@ const actionsPanel = useResizable({
   documentClass: "musea-actions-resizing",
 });
 const selectedVariantName = ref<string>("");
-const variantSectionElements = new Map<string, HTMLElement>();
+const variantSectionElements = new Map<string, Element>();
 let variantObserver: IntersectionObserver | null = null;
 
 const artPath = computed(() => route.params.path as string);
@@ -134,8 +134,8 @@ function disconnectVariantObserver() {
   variantObserver = null;
 }
 
-function setVariantSectionRef(variantName: string, el: HTMLElement | null) {
-  if (el) {
+function setVariantSectionRef(variantName: string, el: unknown) {
+  if (typeof Element !== "undefined" && el instanceof Element) {
     variantSectionElements.set(variantName, el);
   } else {
     variantSectionElements.delete(variantName);
@@ -229,6 +229,14 @@ const handleVariantSelect = (variantName: string) => {
   targetEl?.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
+function selectTab(tab: typeof activeTab.value) {
+  activeTab.value = tab;
+}
+
+function toggleActions() {
+  actionsExpanded.value = !actionsExpanded.value;
+}
+
 watch(
   () => [art.value?.path, activeTab.value] as const,
   () => {
@@ -282,7 +290,8 @@ onUnmounted(() => {
           type="button"
           class="tab-btn"
           :class="{ active: activeTab === 'variants' }"
-          @click="activeTab = 'variants'"
+          :aria-pressed="activeTab === 'variants'"
+          @click="() => selectTab('variants')"
         >
           Variants
         </button>
@@ -290,7 +299,8 @@ onUnmounted(() => {
           type="button"
           class="tab-btn"
           :class="{ active: activeTab === 'props' }"
-          @click="activeTab = 'props'"
+          :aria-pressed="activeTab === 'props'"
+          @click="() => selectTab('props')"
         >
           Props
         </button>
@@ -298,7 +308,8 @@ onUnmounted(() => {
           type="button"
           class="tab-btn"
           :class="{ active: activeTab === 'docs' }"
-          @click="activeTab = 'docs'"
+          :aria-pressed="activeTab === 'docs'"
+          @click="() => selectTab('docs')"
         >
           Docs
         </button>
@@ -306,7 +317,8 @@ onUnmounted(() => {
           type="button"
           class="tab-btn"
           :class="{ active: activeTab === 'a11y' }"
-          @click="activeTab = 'a11y'"
+          :aria-pressed="activeTab === 'a11y'"
+          @click="() => selectTab('a11y')"
         >
           A11y
           <A11yBadge :art-path="art.path" :variant-name="selectedVariant?.name" />
@@ -315,7 +327,8 @@ onUnmounted(() => {
           type="button"
           class="tab-btn"
           :class="{ active: activeTab === 'vrt' }"
-          @click="activeTab = 'vrt'"
+          :aria-pressed="activeTab === 'vrt'"
+          @click="() => selectTab('vrt')"
         >
           VRT
         </button>
@@ -329,7 +342,7 @@ onUnmounted(() => {
             v-for="(variant, index) in art.variants"
             :id="variantSectionIds[variant.name]"
             :key="variant.name"
-            :ref="(el) => setVariantSectionRef(variant.name, el as HTMLElement | null)"
+            :ref="(el) => setVariantSectionRef(variant.name, el)"
             class="variant-section"
             :data-variant-name="variant.name"
           >
@@ -339,11 +352,7 @@ onUnmounted(() => {
               <span v-if="variant.isDefault" class="variant-section-badge">Default</span>
             </div>
 
-            <VariantCard
-              :art-path="art.path"
-              :variant="variant"
-              :component-name="art.metadata.title"
-            />
+            <VariantCard :art-path="art.path" :variant :component-name="art.metadata.title" />
           </section>
         </div>
 
@@ -390,7 +399,8 @@ onUnmounted(() => {
         <button
           type="button"
           class="actions-footer-toggle"
-          @click="actionsExpanded = !actionsExpanded"
+          :aria-expanded="actionsExpanded"
+          @click="toggleActions"
         >
           <span class="actions-footer-toggle-copy">
             <span class="actions-footer-toggle-line">
@@ -421,7 +431,7 @@ onUnmounted(() => {
   <div v-else class="component-not-found">
     <h2>Component not found</h2>
     <p>The requested component could not be found.</p>
-    <router-link to="/" class="back-link">Back to home</router-link>
+    <RouterLink to="/" class="back-link">Back to home</RouterLink>
   </div>
 </template>
 
@@ -472,17 +482,17 @@ onUnmounted(() => {
   border-radius: var(--musea-radius-sm);
   font-size: 0.75rem;
   color: var(--musea-text-muted);
-}
 
-.meta-tag svg {
-  width: 12px;
-  height: 12px;
+  & svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 .component-sticky-menu {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: var(--musea-z-sticky);
   margin-bottom: 1.5rem;
   padding-bottom: 0.875rem;
   background: linear-gradient(
@@ -493,8 +503,10 @@ onUnmounted(() => {
   );
 }
 
-.component-view :deep(.addon-toolbar) {
-  margin-bottom: 0.75rem;
+.component-view {
+  & :deep(.addon-toolbar) {
+    margin-block-end: 0.75rem;
+  }
 }
 
 .component-tabs {
@@ -619,7 +631,7 @@ onUnmounted(() => {
   position: sticky;
   bottom: 0;
   margin: 0 -2rem -2rem;
-  z-index: 30;
+  z-index: var(--musea-z-actions);
 }
 
 .actions-footer-shell {
@@ -628,8 +640,10 @@ onUnmounted(() => {
   backdrop-filter: blur(14px);
 }
 
-.actions-footer.expanded .actions-footer-shell {
-  box-shadow: 0 -12px 28px rgba(18, 18, 18, 0.08);
+.actions-footer.expanded {
+  & .actions-footer-shell {
+    box-shadow: 0 -12px 28px rgba(18, 18, 18, 0.08);
+  }
 }
 
 .actions-footer-resizer {
@@ -672,8 +686,10 @@ onUnmounted(() => {
   color: var(--musea-text);
 }
 
-.actions-footer.expanded .actions-footer-toggle {
-  border-bottom: 1px solid var(--musea-border-subtle);
+.actions-footer.expanded {
+  & .actions-footer-toggle {
+    border-block-end: 1px solid var(--musea-border-subtle);
+  }
 }
 
 .actions-footer-toggle-copy {
@@ -708,8 +724,10 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.actions-footer.expanded .actions-footer-chevron {
-  transform: rotate(180deg);
+.actions-footer.expanded {
+  & .actions-footer-chevron {
+    transform: rotate(180deg);
+  }
 }
 
 .actions-footer-content {
@@ -724,11 +742,11 @@ onUnmounted(() => {
   min-height: 400px;
   text-align: center;
   color: var(--musea-text-muted);
-}
 
-.component-not-found h2 {
-  color: var(--musea-text);
-  margin-bottom: 0.5rem;
+  & h2 {
+    color: var(--musea-text);
+    margin-block-end: 0.5rem;
+  }
 }
 
 .back-link {

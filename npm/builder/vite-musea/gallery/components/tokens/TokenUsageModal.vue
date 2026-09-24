@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch, nextTick, useId, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import type { DesignToken, TokenUsageEntry } from "../../api";
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
   tokenPath: string;
   token?: DesignToken;
@@ -17,6 +17,59 @@ const emit = defineEmits<{
 
 const router = useRouter();
 const expandedArts = ref<Set<string>>(new Set());
+const dialogRef = ref<HTMLElement | null>(null);
+const titleId = useId();
+let previousFocus: HTMLElement | null = null;
+
+watch(
+  () => props.isOpen,
+  async (open) => {
+    if (open) {
+      previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      await nextTick();
+      dialogRef.value?.addEventListener("keydown", onDialogKeydown);
+      dialogRef.value?.querySelector<HTMLElement>("button")?.focus();
+    } else {
+      dialogRef.value?.removeEventListener("keydown", onDialogKeydown);
+      previousFocus?.focus();
+      previousFocus = null;
+    }
+  },
+);
+
+onUnmounted(() => {
+  dialogRef.value?.removeEventListener("keydown", onDialogKeydown);
+});
+
+function close() {
+  emit("close");
+}
+
+function onDialogKeydown(event: KeyboardEvent) {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    close();
+    return;
+  }
+
+  if (event.key !== "Tab" || !dialogRef.value) return;
+  const focusable = [
+    ...dialogRef.value.querySelectorAll<HTMLElement>(
+      "button, a[href], [tabindex]:not([tabindex='-1'])",
+    ),
+  ];
+  if (focusable.length === 0) return;
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
 
 function toggleExpand(artPath: string) {
   if (expandedArts.value.has(artPath)) {
@@ -35,11 +88,25 @@ function viewComponent(artPath: string) {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
-        <div class="modal-panel">
+      <div v-if="isOpen" class="modal-overlay">
+        <button
+          type="button"
+          class="modal-backdrop"
+          aria-label="Close token usage"
+          aria-hidden="true"
+          tabindex="-1"
+          @click="close"
+        ></button>
+        <dialog
+          ref="dialogRef"
+          open
+          class="modal-panel"
+          aria-modal="true"
+          :aria-labelledby="titleId"
+        >
           <div class="modal-header">
             <div>
-              <h2 class="modal-title">Token Usage</h2>
+              <h2 :id="titleId" class="modal-title">Token Usage</h2>
               <p class="modal-subtitle">
                 <code>{{ tokenPath }}</code>
                 <span v-if="token" class="modal-value"
@@ -47,7 +114,7 @@ function viewComponent(artPath: string) {
                 >
               </p>
             </div>
-            <button type="button" class="modal-close" @click="emit('close')">
+            <button type="button" class="modal-close" aria-label="Close token usage" @click="close">
               <svg
                 width="18"
                 height="18"
@@ -88,8 +155,13 @@ function viewComponent(artPath: string) {
             </div>
             <div v-else class="usage-list">
               <div v-for="entry in usages" :key="entry.artPath" class="usage-entry">
-                <div class="usage-entry-header" @click="toggleExpand(entry.artPath)">
-                  <div class="usage-entry-info">
+                <button
+                  type="button"
+                  class="usage-entry-header"
+                  :aria-expanded="expandedArts.has(entry.artPath)"
+                  @click="() => toggleExpand(entry.artPath)"
+                >
+                  <span class="usage-entry-info">
                     <span class="usage-entry-title">{{ entry.artTitle }}</span>
                     <span v-if="entry.artCategory" class="usage-category-badge">{{
                       entry.artCategory
@@ -99,7 +171,7 @@ function viewComponent(artPath: string) {
                         entry.matches.length !== 1 ? "es" : ""
                       }}</span
                     >
-                  </div>
+                  </span>
                   <svg
                     class="expand-icon"
                     :class="{ 'expand-icon--open': expandedArts.has(entry.artPath) }"
@@ -112,10 +184,14 @@ function viewComponent(artPath: string) {
                   >
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
-                </div>
+                </button>
 
                 <div v-if="expandedArts.has(entry.artPath)" class="usage-matches">
-                  <div v-for="(match, idx) in entry.matches" :key="idx" class="usage-match-line">
+                  <div
+                    v-for="match in entry.matches"
+                    :key="`${match.line}:${match.property}:${match.lineContent}`"
+                    class="usage-match-line"
+                  >
                     <span class="match-line-number">{{ match.line }}</span>
                     <code class="match-line-content">{{ match.lineContent }}</code>
                     <span class="match-property">{{ match.property }}</span>
@@ -126,14 +202,14 @@ function viewComponent(artPath: string) {
                   <button
                     type="button"
                     class="usage-action-btn"
-                    @click="viewComponent(entry.artPath)"
+                    @click="() => viewComponent(entry.artPath)"
                   >
                     View Component
                   </button>
                   <button
                     type="button"
                     class="usage-action-btn usage-action-btn--edit"
-                    @click="emit('editSource', entry.artPath)"
+                    @click="() => emit('editSource', entry.artPath)"
                   >
                     Edit Source
                   </button>
@@ -141,7 +217,7 @@ function viewComponent(artPath: string) {
               </div>
             </div>
           </div>
-        </div>
+        </dialog>
       </div>
     </Transition>
   </Teleport>
@@ -151,16 +227,27 @@ function viewComponent(artPath: string) {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: color-mix(in srgb, var(--musea-overlay) 84%, #000 16%);
+  background: var(--musea-overlay);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--musea-layer-modal);
   padding: 2rem;
 }
 
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
 .modal-panel {
+  position: relative;
+  margin: 0;
+  color: var(--musea-text);
   background: var(--musea-bg-secondary);
   border: 1px solid color-mix(in srgb, var(--musea-border) 78%, var(--musea-text) 22%);
   border-radius: var(--musea-radius-lg, 12px);
@@ -192,13 +279,13 @@ function viewComponent(artPath: string) {
 .modal-subtitle {
   font-size: 0.75rem;
   color: var(--musea-text-muted);
-}
 
-.modal-subtitle code {
-  font-family: var(--musea-font-mono);
-  background: var(--musea-bg-secondary);
-  padding: 0.125rem 0.375rem;
-  border-radius: 4px;
+  & code {
+    font-family: var(--musea-font-mono);
+    background: var(--musea-bg-secondary);
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--musea-radius-sm);
+  }
 }
 
 .modal-value {
@@ -241,12 +328,12 @@ function viewComponent(artPath: string) {
   color: var(--musea-text-secondary);
   font-size: 0.8125rem;
   line-height: 1.4;
-}
 
-.primitive-warning svg {
-  flex-shrink: 0;
-  margin-top: 0.125rem;
-  color: var(--musea-warning);
+  & svg {
+    flex-shrink: 0;
+    margin-block-start: 0.125rem;
+    color: var(--musea-warning);
+  }
 }
 
 .no-usage {
@@ -271,13 +358,19 @@ function viewComponent(artPath: string) {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: 0.75rem 1rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
   cursor: pointer;
   transition: background var(--musea-transition);
-}
 
-.usage-entry-header:hover {
-  background: var(--musea-bg-secondary);
+  &:hover {
+    background: var(--musea-bg-secondary);
+  }
 }
 
 .usage-entry-info {
@@ -297,7 +390,7 @@ function viewComponent(artPath: string) {
   padding: 0.0625rem 0.375rem;
   border-radius: 9999px;
   background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  color: var(--musea-info);
   text-transform: uppercase;
   font-weight: 600;
 }
@@ -390,9 +483,11 @@ function viewComponent(artPath: string) {
   transition: opacity 0.2s ease;
 }
 
-.modal-enter-active .modal-panel,
-.modal-leave-active .modal-panel {
-  transition: transform 0.2s ease;
+.modal-enter-active,
+.modal-leave-active {
+  & .modal-panel {
+    transition: transform 0.2s ease;
+  }
 }
 
 .modal-enter-from,
@@ -400,11 +495,23 @@ function viewComponent(artPath: string) {
   opacity: 0;
 }
 
-.modal-enter-from .modal-panel {
-  transform: scale(0.95);
+.modal-enter-from {
+  & .modal-panel {
+    transform: scale(0.95);
+  }
 }
 
-.modal-leave-to .modal-panel {
-  transform: scale(0.95);
+.modal-leave-to {
+  & .modal-panel {
+    transform: scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter-active,
+  .modal-leave-active,
+  .modal-panel {
+    transition-duration: 0.01ms;
+  }
 }
 </style>
