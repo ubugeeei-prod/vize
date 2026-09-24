@@ -3,7 +3,6 @@ import { computed, nextTick, onMounted, onUnmounted, shallowRef, watch } from "v
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../foundations/controllable-state/controllable-state.ts";
-import VisuallyHidden from "../../accessibility/visually-hidden/visually-hidden.vue";
 import {
   deriveDeterministicId,
   useDeterministicId,
@@ -800,9 +799,21 @@ defineExpose(exposed);
     :data-loading="status === 'loading' ? 'true' : undefined"
   >
     <slot v-bind="slotState" />
-    <VisuallyHidden v-if="loadItems !== undefined" role="status" aria-live="polite">
+    <span
+      v-if="loadItems !== undefined"
+      role="status"
+      aria-live="polite"
+      style="
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+      "
+    >
       {{ loadAnnouncement }}
-    </VisuallyHidden>
+    </span>
     <template v-if="name !== undefined">
       <input
         v-for="entry in formEntries as readonly FormEntry[]"
