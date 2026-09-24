@@ -140,6 +140,11 @@
       "import": "./dist/grid.mjs",
       "default": "./dist/grid.mjs"
     },
+    "./dropdown-menu": {
+      "types": "./dist/dropdown-menu.d.mts",
+      "import": "./dist/dropdown-menu.mjs",
+      "default": "./dist/dropdown-menu.mjs"
+    },
     "./empty-state": {
       "types": "./dist/empty-state.d.mts",
       "import": "./dist/empty-state.mjs",
@@ -295,6 +300,16 @@
       "import": "./dist/skeleton.mjs",
       "default": "./dist/skeleton.mjs"
     },
+    "./menu": {
+      "types": "./dist/menu.d.mts",
+      "import": "./dist/menu.mjs",
+      "default": "./dist/menu.mjs"
+    },
+    "./menubar": {
+      "types": "./dist/menubar.d.mts",
+      "import": "./dist/menubar.mjs",
+      "default": "./dist/menubar.mjs"
+    },
     "./meter": {
       "types": "./dist/meter.d.mts",
       "import": "./dist/meter.mjs",
@@ -374,6 +389,11 @@
       "types": "./dist/context.d.mts",
       "import": "./dist/context.mjs",
       "default": "./dist/context.mjs"
+    },
+    "./context-menu": {
+      "types": "./dist/context-menu.d.mts",
+      "import": "./dist/context-menu.mjs",
+      "default": "./dist/context-menu.mjs"
     },
     "./controllable-state": {
       "types": "./dist/controllable-state.d.mts",

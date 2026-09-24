@@ -8,6 +8,7 @@ import { fileUploadRendererFixtures } from "./renderer-fixtures-file-upload.ts";
 import { iconRendererFixtures } from "./renderer-fixtures-icon.ts";
 import { layoutRendererFixtures } from "./renderer-fixtures-layout.ts";
 import { mediaRendererFixtures } from "./renderer-fixtures-media.ts";
+import { menuRendererFixtures } from "./renderer-fixtures-menus.ts";
 import { navigationRendererFixtures } from "./renderer-fixtures-navigation.ts";
 import { overlayRendererFixtures } from "./renderer-fixtures-overlays.ts";
 import { primitiveRendererFixtures } from "./renderer-fixtures-primitives.ts";
@@ -27,6 +28,7 @@ export const groupedRendererFixtures = [
   ...iconRendererFixtures,
   ...layoutRendererFixtures,
   ...mediaRendererFixtures,
+  ...menuRendererFixtures,
   ...navigationRendererFixtures,
   ...overlayRendererFixtures,
   ...primitiveRendererFixtures,
