@@ -1,7 +1,9 @@
-// plain-time leads: its dependency-free chunk is hoisted to the top of the
-// time-field, datetime-field, and time-picker subpath bundles, so it must also
-// precede every other module in the root bundle for the byte-equality gate.
+// The date-time model modules lead: every date-time subpath entry re-exports
+// them first, so their chunks precede every other module in those bundles and
+// must do the same in the root bundle for the byte-equality packaging gate.
+export * from "./families/date-time/calendar/plain-date.ts";
 export * from "./families/date-time/time-field/plain-time.ts";
+export * from "./families/date-time/datetime-field/plain-date-time.ts";
 // field-wiring stays first: it reaches the shared deterministic-id module
 // without any SFC, keeping module order identical between the root bundle and
 // the id/error-summary subpath bundles for the byte-equality packaging gate.
@@ -224,3 +226,6 @@ export * from "./families/interaction/swipe-actions/swipe-actions.ts";
 export * from "./families/navigation/pager/pager.ts";
 export * from "./families/accessibility/landmark/landmark.ts";
 export * from "./families/editor/rich-text/rich-text.ts";
+// scheduler stays last: it pulls the drag-and-drop and press chunks, which must
+// keep the position earlier families give them in the root bundle.
+export * from "./families/date-time/scheduler/scheduler.ts";

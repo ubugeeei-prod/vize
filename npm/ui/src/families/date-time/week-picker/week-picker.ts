@@ -1,4 +1,7 @@
 /** Accessible, unstyled calendar that selects whole weeks and shows ISO week numbers. */
+// Date-model helpers lead every date-time entry (and the root entry) so the shared
+// model chunks load first in both root and subpath bundles.
+export { formatIsoDate, parseIsoDate } from "../calendar/plain-date.ts";
 export { default as WeekPicker, default as WeekPickerRoot } from "./week-picker-root.vue";
 export { default as WeekPickerGrid } from "../calendar/calendar-grid.vue";
 export { default as WeekPickerHeading } from "../calendar/calendar-heading.vue";
