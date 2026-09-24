@@ -5,6 +5,7 @@ import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
 import { disclosureRendererFixtures } from "./renderer-fixtures-disclosure.ts";
 import { feedbackRendererFixtures } from "./renderer-fixtures-feedback.ts";
 import { fileUploadRendererFixtures } from "./renderer-fixtures-file-upload.ts";
+import { formInputRendererFixtures } from "./renderer-fixtures-form-inputs.ts";
 import { iconRendererFixtures } from "./renderer-fixtures-icon.ts";
 import { layoutRendererFixtures } from "./renderer-fixtures-layout.ts";
 import { mediaRendererFixtures } from "./renderer-fixtures-media.ts";
@@ -24,6 +25,7 @@ export const groupedRendererFixtures = [
   ...disclosureRendererFixtures,
   ...feedbackRendererFixtures,
   ...fileUploadRendererFixtures,
+  ...formInputRendererFixtures,
   ...iconRendererFixtures,
   ...layoutRendererFixtures,
   ...mediaRendererFixtures,
