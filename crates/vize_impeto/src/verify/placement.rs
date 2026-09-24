@@ -74,7 +74,9 @@ impl Plan<'_, '_, '_> {
     fn record(&self, op: OpId) -> Option<&PlacementRecord> {
         let start = self.records.partition_point(|entry| entry.0 < op);
         let (id, position) = *self.records.get(start)?;
-        (id == op).then(|| &self.index.program.placements[position as usize])
+        (id == op)
+            .then(|| self.index.program.placements.get(position as usize))
+            .flatten()
     }
 
     fn alternatives(&self, record: &PlacementRecord, op: &Op, position: usize) -> Option<String> {

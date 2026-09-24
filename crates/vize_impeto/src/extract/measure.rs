@@ -181,26 +181,27 @@ impl<'i, 'p, 'a> Model<'i, 'p, 'a> {
         let ops = &self.index.program.ops;
         let footprint = self.footprint(plan);
         let mut weight = alloc::vec![0u64; self.region_parent.len()];
-        for (position, state) in footprint.iter().enumerate() {
+        for (state, region) in footprint.iter().zip(&self.op_region) {
             if *state != Footprint::Interior {
-                self.walk_up(self.op_region[position], |region| weight[region] += 1);
+                self.walk_up(*region, |region| bump(&mut weight, region, 1));
             }
         }
         let mut unit: Vec<Option<usize>> = Vec::with_capacity(ops.len());
         let mut cost = alloc::vec![0u64; ops.len()];
         let (mut units, mut roots, mut cached) = (0u64, 0u64, 0u64);
-        for (position, op) in ops.iter().enumerate() {
-            let choice = plan[position];
-            roots += u64::from(footprint[position] == Footprint::Root);
+        // `plan` and `footprint` hold one entry per op.
+        let rows = ops.iter().zip(plan).zip(&footprint).enumerate();
+        for (position, ((op, &choice), &state)) in rows {
+            roots += u64::from(state == Footprint::Root);
             cached += u64::from(choice.placement == Placement::Cache);
             let own = op.effect.is_some()
-                && footprint[position] == Footprint::Live
+                && state == Footprint::Live
                 && choice.placement != Placement::Cache;
             // A member joins its leader's unit only while the leader heads one.
             let head = match (own, choice.placement, choice.leader) {
                 (false, _, _) => None,
                 (true, Placement::Group, Some(leader))
-                    if leader < position && unit[leader] == Some(leader) =>
+                    if leader < position && unit.get(leader) == Some(&Some(leader)) =>
                 {
                     Some(leader)
                 }
@@ -211,20 +212,22 @@ impl<'i, 'p, 'a> Model<'i, 'p, 'a> {
                 continue;
             };
             units += u64::from(head == position);
-            cost[head] += 1;
+            bump(&mut cost, head, 1);
             if matches!(op.kind, OpKind::If | OpKind::For) {
                 let start = self.owned.partition_point(|entry| entry.0 < position);
-                cost[head] += self.owned[start..]
+                let owned = self.owned.get(start..).unwrap_or_default();
+                let covered = owned
                     .iter()
                     .take_while(|entry| entry.0 == position)
-                    .map(|entry| weight[entry.1])
+                    .map(|entry| weight.get(entry.1).copied().unwrap_or(0))
                     .sum::<u64>();
+                bump(&mut cost, head, covered);
             }
         }
         let mut subscriptions: Vec<(usize, u32)> = self
             .keys
             .iter()
-            .filter_map(|(position, key)| Some((unit[*position as usize]?, *key)))
+            .filter_map(|(position, key)| Some(((*unit.get(*position as usize)?)?, *key)))
             .collect();
         subscriptions.sort_unstable();
         subscriptions.dedup();
@@ -234,19 +237,27 @@ impl<'i, 'p, 'a> Model<'i, 'p, 'a> {
                 + HOIST_BYTES * roots
                 + CACHE_BYTES * cached,
             reactive_edges: subscriptions.len() as u64,
-            update_path: subscriptions.iter().map(|(head, _)| cost[*head]).sum(),
+            update_path: subscriptions
+                .iter()
+                .map(|(head, _)| cost.get(*head).copied().unwrap_or(0))
+                .sum(),
         }
     }
 
     /// Hoisted roots and every op their subtree covers.
     fn footprint(&self, plan: &[Choice]) -> Vec<Footprint> {
         let ops = &self.index.program.ops;
-        let hoisted = |position: usize| plan[position].placement == Placement::Hoist;
+        let hoisted = |position: usize| {
+            plan.get(position)
+                .is_some_and(|choice| choice.placement == Placement::Hoist)
+        };
         let mut footprint: Vec<Footprint> = (0..ops.len())
             .map(|position| {
                 let mut covered = false;
-                self.walk_up(self.op_region[position], |region| {
-                    covered |= self.region_owner[region].is_some_and(hoisted);
+                let region = self.op_region.get(position).copied().flatten();
+                self.walk_up(region, |region| {
+                    let owner = self.region_owner.get(region).copied().flatten();
+                    covered |= owner.is_some_and(hoisted);
                 });
                 match (covered, hoisted(position)) {
                     (true, _) => Footprint::Interior,
@@ -256,12 +267,16 @@ impl<'i, 'p, 'a> Model<'i, 'p, 'a> {
             })
             .collect();
         for (root, op) in ops.iter().enumerate() {
-            if footprint[root] != Footprint::Root {
+            if footprint.get(root) != Some(&Footprint::Root) {
                 continue;
             }
             for (position, other) in ops.iter().enumerate() {
-                if position != root && other.region == op.region && contains(op.span, other.span) {
-                    footprint[position] = Footprint::Interior;
+                if position != root
+                    && other.region == op.region
+                    && contains(op.span, other.span)
+                    && let Some(state) = footprint.get_mut(position)
+                {
+                    *state = Footprint::Interior;
                 }
             }
         }
@@ -276,7 +291,14 @@ impl<'i, 'p, 'a> Model<'i, 'p, 'a> {
                 return;
             };
             visit(region);
-            current = self.region_parent[region];
+            current = self.region_parent.get(region).copied().flatten();
         }
+    }
+}
+
+/// Add `by` to `counts[at]` (one count per op or region position).
+fn bump(counts: &mut [u64], at: usize, by: u64) {
+    if let Some(count) = counts.get_mut(at) {
+        *count += by;
     }
 }

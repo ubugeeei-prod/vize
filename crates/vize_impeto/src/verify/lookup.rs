@@ -39,7 +39,7 @@ impl<'a> core::ops::Deref for Tables<'_, 'a> {
 }
 
 pub(super) fn op<'t>(program: &'t Tables<'_, '_>, id: OpId) -> Option<&'t Op> {
-    op_index(program, id).map(|index| &program.ops[index])
+    program.ops.get(op_index(program, id)?)
 }
 
 pub(super) fn op_index(program: &Tables<'_, '_>, id: OpId) -> Option<usize> {

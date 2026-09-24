@@ -67,11 +67,14 @@ fn plan(index: &Index<'_, '_>, tier: OptTier) -> (Vec<Placement>, Extraction) {
     let mut decisions = Vec::new();
     let mut chosen = Vec::with_capacity(program.placements.len());
     for record in program.placements.iter() {
-        let Some(position) = index.position(record.op) else {
+        let Some((position, op)) = index
+            .position(record.op)
+            .and_then(|position| Some((position, program.ops.get(position)?)))
+        else {
             chosen.push(Placement::Inline);
             continue;
         };
-        let span = program.ops[position].span;
+        let span = op.span;
         let mut committed = Placement::Inline;
         for placement in record.alternatives.iter() {
             // One committed shape per op; later alternatives are not tried.
@@ -89,7 +92,7 @@ fn plan(index: &Index<'_, '_>, tier: OptTier) -> (Vec<Placement>, Extraction) {
                     (Reason::BudgetExhausted, current)
                 } else {
                     left -= 1;
-                    plan[position] = choice;
+                    set(&mut plan, position, choice);
                     let after = model.measure(&plan);
                     match judge(current, after, &budget) {
                         Ok(()) => (Reason::Committed, after),
@@ -101,7 +104,7 @@ fn plan(index: &Index<'_, '_>, tier: OptTier) -> (Vec<Placement>, Extraction) {
                 committed = placement;
                 DecisionKind::Applied
             } else {
-                plan[position] = Choice::INLINE;
+                set(&mut plan, position, Choice::INLINE);
                 DecisionKind::Missed
             };
             decisions.push(Decision {
@@ -130,6 +133,13 @@ fn plan(index: &Index<'_, '_>, tier: OptTier) -> (Vec<Placement>, Extraction) {
     (chosen, extraction)
 }
 
+/// Set `position`'s choice; the plan holds one choice per op.
+fn set(plan: &mut [Choice], position: usize, choice: Choice) {
+    if let Some(slot) = plan.get_mut(position) {
+        *slot = choice;
+    }
+}
+
 /// Whether the committed plan already rules the candidate out, before any
 /// budget is spent on measuring it.
 fn blocked(
@@ -142,13 +152,13 @@ fn blocked(
     match choice.placement {
         Placement::Hoist => {
             let program = index.program;
-            let mut region = index.region(program.ops[position].region);
+            let mut region = index.region(program.ops.get(position)?.region);
             for _ in 0..=program.regions.len() {
                 let owner = index.position(region?.owner?)?;
-                if plan[owner].placement == Placement::Hoist {
+                if plan.get(owner)?.placement == Placement::Hoist {
                     return Some(Reason::Subsumed);
                 }
-                region = index.region(program.ops[owner].region);
+                region = index.region(program.ops.get(owner)?.region);
             }
             None
         }
@@ -162,7 +172,9 @@ fn blocked(
                 if pred == leader {
                     return None;
                 }
-                let member = index.position(pred).map(|pred| plan[pred]);
+                let member = index
+                    .position(pred)
+                    .and_then(|pred| plan.get(pred).copied());
                 if member.is_none_or(|member| {
                     member.placement != Placement::Group || member.leader != choice.leader
                 }) {

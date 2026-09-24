@@ -39,10 +39,10 @@ fn enumerate(index: &Index<'_, '_>) -> Vec<PlacementRecord> {
         .collect();
     let mut leaders: Vec<Option<OpId>> = Vec::with_capacity(program.ops.len());
     let mut records = Vec::new();
-    for (position, op) in program.ops.iter().enumerate() {
+    for ((position, op), &is_hoistable) in program.ops.iter().enumerate().zip(&hoistable) {
         let leader = group_leader(index, &leaders, position);
         leaders.push(leader);
-        let alternative = if hoistable[position] && !inside_hoistable(index, &hoistable, position) {
+        let alternative = if is_hoistable && !inside_hoistable(index, &hoistable, position) {
             Some(Placement::Hoist)
         } else if op.kind == OpKind::SetEvent
             && op.effect.is_some()
@@ -72,8 +72,8 @@ fn shapes(index: &Index<'_, '_>) -> Shapes {
         .collect();
     let mut open = alloc::vec![false; program.regions.len()];
     let mut dynamic = Vec::new();
-    for (position, op) in program.ops.iter().enumerate() {
-        if statics[position] {
+    for ((position, op), &is_static) in program.ops.iter().enumerate().zip(&statics) {
+        if is_static {
             continue;
         }
         dynamic.push((op.region, position as u32));
@@ -82,11 +82,11 @@ fn shapes(index: &Index<'_, '_>) -> Shapes {
             let Some(region) = current.and_then(|id| index.region_position(id)) else {
                 break;
             };
-            if open[region] {
-                break;
+            match open.get_mut(region) {
+                Some(seen) if !*seen => *seen = true,
+                _ => break,
             }
-            open[region] = true;
-            current = program.regions[region].parent;
+            current = program.regions.get(region).and_then(|region| region.parent);
         }
     }
     dynamic.sort_by_key(|entry| entry.0);
@@ -98,9 +98,11 @@ fn shapes(index: &Index<'_, '_>) -> Shapes {
 }
 
 fn hoistable(index: &Index<'_, '_>, shapes: &Shapes, position: usize) -> bool {
-    let op = &index.program.ops[position];
+    let Some(op) = index.program.ops.get(position) else {
+        return false;
+    };
     if op.kind != OpKind::InsertNode
-        || !shapes.statics[position]
+        || shapes.statics.get(position) != Some(&true)
         || index.position(op.id) != Some(position)
         || index.controller(op.region).is_none()
     {
@@ -109,37 +111,47 @@ fn hoistable(index: &Index<'_, '_>, shapes: &Shapes, position: usize) -> bool {
     let children_static = index.owned_regions(op.id).all(|region| {
         index
             .region_position(region)
-            .is_some_and(|region| !shapes.open[region])
+            .is_some_and(|region| shapes.open.get(region) == Some(&false))
     });
     let start = shapes.dynamic.partition_point(|entry| entry.0 < op.region);
-    let attached_static = shapes.dynamic[start..]
+    let attached_static = (shapes.dynamic.get(start..).unwrap_or_default())
         .iter()
         .take_while(|entry| entry.0 == op.region)
-        .all(|entry| !contains(op.span, index.program.ops[entry.1 as usize].span));
+        .all(|entry| {
+            (index.program.ops.get(entry.1 as usize))
+                .is_none_or(|other| !contains(op.span, other.span))
+        });
     children_static && attached_static
 }
 
 /// Whether the element owning this op's region is itself a hoist root.
 fn inside_hoistable(index: &Index<'_, '_>, hoistable: &[bool], position: usize) -> bool {
-    index
-        .region(index.program.ops[position].region)
+    (index.program.ops.get(position))
+        .and_then(|op| index.region(op.region))
         .and_then(|region| region.owner)
         .and_then(|owner| index.position(owner))
-        .is_some_and(|owner| hoistable[owner])
+        .is_some_and(|owner| hoistable.get(owner) == Some(&true))
 }
 
 fn group_leader(index: &Index<'_, '_>, leaders: &[Option<OpId>], position: usize) -> Option<OpId> {
     let ops = &index.program.ops;
-    let op = &ops[position];
+    let op = ops.get(position)?;
     let reference = index.reference(op)?;
     let pred = index.keyed_pred(op.id)?;
     let pred_position = index.position(pred)?;
-    if pred_position >= position || index.reference(&ops[pred_position])? != reference {
+    let pred_op = ops.get(pred_position)?;
+    if pred_position >= position || index.reference(pred_op)? != reference {
         return None;
     }
     let scope = index.group_scope(op.region)?;
-    if index.group_scope(ops[pred_position].region)? != scope {
+    if index.group_scope(pred_op.region)? != scope {
         return None;
     }
-    Some(leaders[pred_position].unwrap_or(pred))
+    Some(
+        leaders
+            .get(pred_position)
+            .copied()
+            .flatten()
+            .unwrap_or(pred),
+    )
 }

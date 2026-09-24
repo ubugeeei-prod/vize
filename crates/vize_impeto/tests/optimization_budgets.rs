@@ -3,6 +3,12 @@
 //! of truth: loosening or tightening it without the Rust table (or the
 //! reverse) fails here.
 
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
+
 use std::path::Path;
 
 use vize_impeto::extract::{Metric, OptTier, OptimizationBudget, TiePolicy};

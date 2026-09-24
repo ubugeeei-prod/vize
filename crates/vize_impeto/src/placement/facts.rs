@@ -42,7 +42,7 @@ fn first<K: Ord + Copy, V: Copy>(table: &[(K, V)], key: K) -> Option<V> {
 
 fn all<K: Ord + Copy, V: Copy>(table: &[(K, V)], key: K) -> impl Iterator<Item = V> + '_ {
     let start = table.partition_point(|entry| entry.0 < key);
-    table[start..]
+    (table.get(start..).unwrap_or_default())
         .iter()
         .take_while(move |entry| entry.0 == key)
         .map(|entry| entry.1)
@@ -78,12 +78,11 @@ impl<'p, 'a> Index<'p, 'a> {
     }
 
     pub(crate) fn op(&self, id: OpId) -> Option<&'p Op> {
-        self.position(id)
-            .map(|position| &self.program.ops[position])
+        self.program.ops.get(self.position(id)?)
     }
 
     pub(crate) fn region(&self, id: RegionId) -> Option<&'p Region> {
-        first(&self.regions, id).map(|position| &self.program.regions[position as usize])
+        self.program.regions.get(first(&self.regions, id)? as usize)
     }
 
     pub(crate) fn region_position(&self, id: RegionId) -> Option<usize> {
@@ -92,7 +91,7 @@ impl<'p, 'a> Index<'p, 'a> {
 
     pub(crate) fn operands(&self, id: OpId) -> impl Iterator<Item = &'p Operand<'a>> + '_ {
         let operands = &self.program.operands;
-        all(&self.operands, id).map(move |position| &operands[position as usize])
+        all(&self.operands, id).filter_map(move |position| operands.get(position as usize))
     }
 
     pub(crate) fn owned_regions(&self, owner: OpId) -> impl Iterator<Item = RegionId> + '_ {

@@ -112,7 +112,8 @@ pub fn write_reference_trace<W: Write>(writer: &mut W, program: &Program<'_>) ->
 #[must_use]
 pub fn backend_trace_text(backend: TraceBackend, program: &Program<'_>) -> String {
     let mut text = String::default();
-    write_backend_trace(&mut text, backend, program).expect("writing to String cannot fail");
+    // Writing into a growable string cannot fail.
+    let _ = write_backend_trace(&mut text, backend, program);
     text
 }
 
@@ -120,6 +121,7 @@ pub fn backend_trace_text(backend: TraceBackend, program: &Program<'_>) -> Strin
 #[must_use]
 pub fn reference_trace_text(program: &Program<'_>) -> String {
     let mut text = String::default();
-    write_reference_trace(&mut text, program).expect("writing to String cannot fail");
+    // Writing into a growable string cannot fail.
+    let _ = write_reference_trace(&mut text, program);
     text
 }

@@ -40,7 +40,12 @@ pub fn verify(program: &Program<'_>) -> Vec<Violation> {
 fn check_duplicates(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
     // Dense tables cannot repeat an id, so only the others are scanned.
     for (index, op) in (program.ops.iter().enumerate()).filter(|_| !program.dense_ops) {
-        if program.ops[..index].iter().any(|other| other.id == op.id) {
+        if program
+            .ops
+            .iter()
+            .take(index)
+            .any(|other| other.id == op.id)
+        {
             out.push(Violation {
                 code: ViolationCode::DuplicateId,
                 span: op.span,
@@ -49,8 +54,10 @@ fn check_duplicates(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
         }
     }
     for (index, region) in (program.regions.iter().enumerate()).filter(|_| !program.dense_regions) {
-        if program.regions[..index]
+        if program
+            .regions
             .iter()
+            .take(index)
             .any(|other| other.id == region.id)
         {
             out.push(Violation {
@@ -61,8 +68,10 @@ fn check_duplicates(program: &Tables<'_, '_>, out: &mut Vec<Violation>) {
         }
     }
     for (index, effect) in (program.effects.iter().enumerate()).filter(|_| !program.dense_effects) {
-        if program.effects[..index]
+        if program
+            .effects
             .iter()
+            .take(index)
             .any(|other| other.id == effect.id)
         {
             out.push(Violation {

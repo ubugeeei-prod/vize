@@ -2,6 +2,8 @@
 //! well-formed alternatives and committed choices, and try-measure-commit
 //! extraction chooses among them.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod placement {
     mod alternatives;
     mod choices;

@@ -7,6 +7,12 @@
 //! `tests/formal/impeto/Impeto/LatticeLaws.lean`. Regenerate the page with
 //! `VIZE_UPDATE_LATTICE_REFERENCE_FIXTURE=1` only when the rule spec changes.
 
+#![expect(
+    clippy::indexing_slicing,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
+
 use std::path::Path;
 
 use vize_davinci::folio::{Folio, FolioMode};
