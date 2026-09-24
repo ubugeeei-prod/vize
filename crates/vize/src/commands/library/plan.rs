@@ -102,9 +102,12 @@ impl ItemPlan {
 }
 
 /// Plan one registry item into `root/dir`, three-way against `existing`.
+///
+/// `source` is the lockfile key (`ui`, `composable`, or `@ns`).
 pub fn plan_item(
     root: &Path,
     dir: &str,
+    source: &str,
     registry: &LoadedRegistry,
     item: &RegistryItem,
     existing: Option<&LockedItem>,
@@ -159,7 +162,7 @@ pub fn plan_item(
     }
     files.sort_by(|left, right| left.path.cmp(&right.path));
     Ok(ItemPlan {
-        kind: item.kind.clone(),
+        kind: source.into(),
         name: item.name.clone(),
         direct,
         from_version: existing.map(|locked| locked.version.clone()),
@@ -169,7 +172,7 @@ pub fn plan_item(
         npm_dependencies: item.dependencies.clone(),
         lock: LockedItem {
             name: item.name.clone(),
-            kind: item.kind.clone(),
+            kind: source.into(),
             package: registry.manifest.package.name.clone(),
             version: registry.manifest.package.version.clone(),
             content_hash: item.content_hash.clone(),

@@ -3,16 +3,16 @@
 use serde::Serialize;
 use vize_s0::{String, cstr};
 
+use super::LibContext;
 use super::error::{LibError, LibResult};
 use super::output::{json, line};
 use super::registry::{LoadedRegistry, NpmDependency, RegistryFile};
-use super::resolve::RegistryKind;
-use super::{KindArg, LibContext};
+use super::resolve::Source;
 
-/// Parsed `[kind:]name[@version]`.
+/// Parsed `[ui:|composable:]name[@version]` or `@ns/name[@version]`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ItemSpec {
-    pub kind: Option<RegistryKind>,
+    pub source: Option<Source>,
     pub name: String,
     pub version: Option<String>,
 }
@@ -20,14 +20,29 @@ pub struct ItemSpec {
 impl ItemSpec {
     pub fn parse(raw: &str) -> LibResult<Self> {
         let raw = raw.trim();
-        let (kind, rest) = match raw.split_once(':') {
-            Some((prefix, rest)) => {
-                let kind = RegistryKind::parse(prefix).ok_or_else(|| {
-                    LibError::new(cstr!("unknown kind {prefix:?} (use ui: or composable:)"))
-                })?;
-                (Some(kind), rest)
+        let (source, rest) = if raw.starts_with('@') {
+            let (namespace, rest) = raw.split_once('/').ok_or_else(|| {
+                LibError::new(cstr!(
+                    "invalid item {raw:?}; namespaced items look like @ns/item"
+                ))
+            })?;
+            let source = Source::parse(namespace)
+                .ok_or_else(|| LibError::new(cstr!("invalid registry namespace {namespace:?}")))?;
+            (Some(source), rest)
+        } else {
+            match raw.split_once(':') {
+                Some((prefix, rest)) => {
+                    let source = Source::parse(prefix)
+                        .filter(|source| source.builtin_package().is_some())
+                        .ok_or_else(|| {
+                            LibError::new(cstr!(
+                                "unknown kind {prefix:?} (use ui:, composable:, or @ns/)"
+                            ))
+                        })?;
+                    (Some(source), rest)
+                }
+                None => (None, raw),
             }
-            None => (None, raw),
         };
         let (name, version) = match rest.rsplit_once('@') {
             Some((name, version)) if !name.is_empty() => (name, Some(version)),
@@ -37,7 +52,7 @@ impl ItemSpec {
             return Err(LibError::new(cstr!("invalid item {raw:?}")));
         }
         Ok(Self {
-            kind,
+            source,
             name: name.into(),
             version: version.map(String::from),
         })
@@ -47,7 +62,7 @@ impl ItemSpec {
 /// A spec resolved to exactly one registry item.
 #[derive(Debug, Clone)]
 pub struct ResolvedSpec {
-    pub kind: RegistryKind,
+    pub source: Source,
     pub name: String,
     pub version: Option<String>,
 }
@@ -55,15 +70,16 @@ pub struct ResolvedSpec {
 /// Resolve a spec against every candidate registry; errors when ambiguous.
 ///
 /// Registries available without the network (`--registry`, installed
-/// packages) are consulted first, so a name found locally never triggers an
-/// `npm pack` of the other package.
+/// packages, local namespaces) are consulted first, so a name found locally
+/// never triggers an `npm pack` or download of another source.
 pub fn resolve_spec(context: &mut LibContext, spec: &ItemSpec) -> LibResult<ResolvedSpec> {
-    let kinds = spec
-        .kind
-        .map_or_else(|| RegistryKind::ALL.to_vec(), |kind| vec![kind]);
-    let mut found: Vec<(RegistryKind, String)> = Vec::new();
-    for kind in &kinds {
-        let Some(registry) = context.resolver.local_registry(*kind) else {
+    let sources = spec
+        .source
+        .clone()
+        .map_or_else(|| context.resolver.all_sources(), |source| vec![source]);
+    let mut found: Vec<(Source, String)> = Vec::new();
+    for source in &sources {
+        let Some(registry) = context.resolver.local_registry(source) else {
             continue;
         };
         let version_matches = spec
@@ -71,16 +87,16 @@ pub fn resolve_spec(context: &mut LibContext, spec: &ItemSpec) -> LibResult<Reso
             .as_deref()
             .is_none_or(|version| registry.manifest.package.version == version);
         if let Some(item) = registry.find(&spec.name).filter(|_| version_matches) {
-            found.push((*kind, item.name.clone()));
+            found.push((source.clone(), item.name.clone()));
         }
     }
     let mut failures: Vec<String> = Vec::new();
     if found.is_empty() {
-        for kind in kinds {
-            match context.resolver.registry(kind, spec.version.as_deref()) {
+        for source in sources {
+            match context.resolver.registry(&source, spec.version.as_deref()) {
                 Ok(registry) => {
                     if let Some(item) = registry.find(&spec.name) {
-                        found.push((kind, item.name.clone()));
+                        found.push((source, item.name.clone()));
                     }
                 }
                 Err(error) => failures.push(error.message().into()),
@@ -88,12 +104,12 @@ pub fn resolve_spec(context: &mut LibContext, spec: &ItemSpec) -> LibResult<Reso
         }
     }
     match found.as_slice() {
-        [(kind, name)] => Ok(ResolvedSpec {
-            kind: *kind,
+        [(source, name)] => Ok(ResolvedSpec {
+            source: source.clone(),
             name: name.clone(),
             version: spec.version.clone(),
         }),
-        [] if !failures.is_empty() && spec.kind.is_some() => {
+        [] if !failures.is_empty() && spec.source.is_some() => {
             Err(LibError::new(failures.join("; ")))
         }
         [] => {
@@ -106,7 +122,7 @@ pub fn resolve_spec(context: &mut LibContext, spec: &ItemSpec) -> LibResult<Reso
         _ => {
             let candidates: Vec<String> = found
                 .iter()
-                .map(|(kind, name)| cstr!("{}:{name}", kind.as_str()))
+                .map(|(source, name)| source.label(name))
                 .collect();
             Err(LibError::new(cstr!(
                 "{:?} is ambiguous; use one of {}",
@@ -120,6 +136,7 @@ pub fn resolve_spec(context: &mut LibContext, spec: &ItemSpec) -> LibResult<Reso
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ItemSummary<'a> {
+    source: &'a str,
     kind: &'a str,
     name: &'a str,
     title: &'a str,
@@ -129,14 +146,19 @@ struct ItemSummary<'a> {
     version: &'a str,
 }
 
-fn registries(context: &mut LibContext, filter: Option<KindArg>) -> LibResult<Vec<RegistryKind>> {
+fn registries(context: &mut LibContext, filter: Option<&Source>) -> LibResult<Vec<Source>> {
     let mut available = Vec::new();
     let mut failures: Vec<String> = Vec::new();
     let explicit = context.resolver.has_explicit();
-    for kind in KindArg::kinds(filter) {
-        match context.resolver.registry(kind, None) {
-            Ok(_) => available.push(kind),
-            Err(error) if filter.is_none() && explicit => drop(error),
+    let sources = filter.map_or_else(
+        || context.resolver.all_sources(),
+        |source| vec![source.clone()],
+    );
+    for source in sources {
+        let optional = filter.is_none() && (explicit || source.builtin_package().is_none());
+        match context.resolver.registry(&source, None) {
+            Ok(_) => available.push(source),
+            Err(error) if optional => drop(error),
             Err(error) => failures.push(error.message().into()),
         }
     }
@@ -152,13 +174,13 @@ fn registries(context: &mut LibContext, filter: Option<KindArg>) -> LibResult<Ve
 
 fn render_items(
     context: &mut LibContext,
-    kinds: &[RegistryKind],
+    sources: &[Source],
     select: impl Fn(&LoadedRegistry) -> Vec<usize>,
 ) -> LibResult<String> {
     let mut summaries = Vec::new();
     let mut out = String::default();
-    for kind in kinds {
-        let registry = context.resolver.registry(*kind, None)?;
+    for source in sources {
+        let registry = context.resolver.registry(source, None)?;
         let indices = select(registry);
         if !context.json {
             line(
@@ -172,6 +194,7 @@ fn render_items(
             };
             if context.json {
                 summaries.push(serde_json::to_value(ItemSummary {
+                    source: source.as_str(),
                     kind: &item.kind,
                     name: &item.name,
                     title: &item.title,
@@ -183,7 +206,7 @@ fn render_items(
             } else {
                 line(
                     &mut out,
-                    format_args!("  {}:{:<28} {}", item.kind, item.name, item.description),
+                    format_args!("  {:<32} {}", source.label(&item.name), item.description),
                 );
             }
         }
@@ -197,16 +220,16 @@ fn render_items(
     Ok(out)
 }
 
-pub fn list(context: &mut LibContext, filter: Option<KindArg>) -> LibResult<String> {
-    let kinds = registries(context, filter)?;
-    render_items(context, &kinds, |registry| {
+pub fn list(context: &mut LibContext, filter: Option<&Source>) -> LibResult<String> {
+    let sources = registries(context, filter)?;
+    render_items(context, &sources, |registry| {
         (0..registry.manifest.items.len()).collect()
     })
 }
 
-pub fn search(context: &mut LibContext, query: &str, filter: Option<KindArg>) -> LibResult<String> {
-    let kinds = registries(context, filter)?;
-    render_items(context, &kinds, |registry| {
+pub fn search(context: &mut LibContext, query: &str, filter: Option<&Source>) -> LibResult<String> {
+    let sources = registries(context, filter)?;
+    render_items(context, &sources, |registry| {
         let matches = registry.search(query);
         registry
             .manifest
@@ -222,6 +245,7 @@ pub fn search(context: &mut LibContext, query: &str, filter: Option<KindArg>) ->
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ItemInfo<'a> {
+    source: &'a str,
     package: &'a str,
     version: &'a str,
     kind: &'a str,
@@ -243,12 +267,13 @@ pub fn info(context: &mut LibContext, raw: &str) -> LibResult<String> {
     let as_json = context.json;
     let registry = context
         .resolver
-        .registry(resolved.kind, resolved.version.as_deref())?;
+        .registry(&resolved.source, resolved.version.as_deref())?;
     let item = registry
         .item(&resolved.name)
         .ok_or_else(|| LibError::new(cstr!("unknown item {}", resolved.name)))?;
     if as_json {
         return json(&ItemInfo {
+            source: resolved.source.as_str(),
             package: &registry.manifest.package.name,
             version: &registry.manifest.package.version,
             kind: &item.kind,
@@ -267,7 +292,7 @@ pub fn info(context: &mut LibContext, raw: &str) -> LibResult<String> {
     let mut out = String::default();
     line(
         &mut out,
-        format_args!("{}:{} - {}", item.kind, item.name, item.title),
+        format_args!("{} - {}", resolved.source.label(&item.name), item.title),
     );
     line(&mut out, format_args!("  {}", item.description));
     line(

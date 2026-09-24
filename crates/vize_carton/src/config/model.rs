@@ -31,7 +31,7 @@ pub use formatter::{
 };
 pub use global_types::{GlobalTypeDeclaration, GlobalTypesConfig, RawGlobalTypesConfig};
 pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, LspConfig};
-pub use library::LibConfig;
+pub use library::{LibConfig, LibRegistryConfig};
 pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
 pub use linter_feature_flags::LinterFeatureFlags;

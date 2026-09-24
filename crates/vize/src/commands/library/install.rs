@@ -6,25 +6,26 @@ use serde::Serialize;
 use vize_s0::{String, cstr};
 
 use super::error::{LibError, LibResult};
+use super::fs_ops::join_relative;
 use super::fs_ops::project_relative_dir;
 use super::lockfile::Lockfile;
 use super::output::{declared_npm_packages, json, line, npm_hint, render_plan};
-use super::plan::{ItemPlan, apply, conflict_summary, plan_item};
+use super::plan::{ItemPlan, apply, conflict_summary, join_dir, plan_item};
 use super::query::{ItemSpec, resolve_spec};
 use super::registry::NpmDependency;
-use super::resolve::RegistryKind;
+use super::resolve::Source;
 use super::{LibContext, PullArgs, UpdateArgs};
 
 /// Items of one kind requested at one version.
 struct Request {
-    kind: RegistryKind,
+    kind: Source,
     version: Option<String>,
     names: Vec<String>,
 }
 
 fn group(
     requests: &mut Vec<Request>,
-    kind: RegistryKind,
+    kind: Source,
     version: Option<String>,
     name: String,
 ) -> LibResult<()> {
@@ -56,7 +57,7 @@ fn group(
 fn target_dir(
     context: &LibContext,
     lockfile: &Lockfile,
-    kind: RegistryKind,
+    kind: &Source,
     flag: Option<&Path>,
     registry_default: &str,
 ) -> LibResult<String> {
@@ -76,7 +77,13 @@ fn target_dir(
         ))),
         (Some(dir), _) | (None, Some(dir)) => Ok(dir),
         (None, None) => {
-            let configured = context.config.dir_for_kind(kind.as_str());
+            let configured = match kind {
+                Source::Namespace(name) => context
+                    .resolver
+                    .namespace(name)
+                    .and_then(|namespace| namespace.dir.as_deref()),
+                _ => context.config.dir_for_kind(kind.as_str()),
+            };
             project_relative_dir(
                 &context.root,
                 Path::new(configured.unwrap_or(registry_default)),
@@ -94,15 +101,15 @@ fn plan_request(
 ) -> LibResult<Vec<ItemPlan>> {
     let default_dir = context
         .resolver
-        .registry(request.kind, request.version.as_deref())?
+        .registry(&request.kind, request.version.as_deref())?
         .manifest
         .default_target_directory
         .clone();
-    let dir = target_dir(context, lockfile, request.kind, dir_flag, &default_dir)?;
+    let dir = target_dir(context, lockfile, &request.kind, dir_flag, &default_dir)?;
     let root = context.root.clone();
     let registry = context
         .resolver
-        .registry(request.kind, request.version.as_deref())?;
+        .registry(&request.kind, request.version.as_deref())?;
     let mut ordered: Vec<String> = Vec::new();
     for name in &request.names {
         let item = registry.item(name).ok_or_else(|| {
@@ -117,16 +124,53 @@ fn plan_request(
             }
         }
     }
-    let mut plans = Vec::with_capacity(ordered.len());
+    let mut plans: Vec<ItemPlan> = Vec::with_capacity(ordered.len());
     for name in &ordered {
         let Some(item) = registry.item(name) else {
             continue;
         };
         let existing = lockfile.get(request.kind.as_str(), name);
         let direct = direct_names.contains(name) || existing.is_some_and(|locked| locked.direct);
-        plans.push(plan_item(&root, &dir, registry, item, existing, direct)?);
+        plans.push(plan_item(
+            &root,
+            &dir,
+            request.kind.as_str(),
+            registry,
+            item,
+            existing,
+            direct,
+        )?);
     }
+    reject_foreign_owners(&root, lockfile, &plans)?;
     Ok(plans)
+}
+
+/// Refuse to write a file another source's or item's lock entry already owns.
+fn reject_foreign_owners(root: &Path, lockfile: &Lockfile, plans: &[ItemPlan]) -> LibResult<()> {
+    for plan in plans {
+        let base = join_dir(root, &plan.dir)?;
+        for file in &plan.files {
+            let target = join_relative(&base, &file.path)?;
+            for owner in &lockfile.items {
+                if owner.kind == plan.kind && owner.name == plan.name {
+                    continue;
+                }
+                let owner_base = join_dir(root, &owner.dir)?;
+                for path in owner.files.keys() {
+                    if join_relative(&owner_base, path)? == target {
+                        return Err(LibError::new(cstr!(
+                            "{} would overwrite {}, which belongs to pulled item {}:{}",
+                            plan.name,
+                            target.display(),
+                            owner.kind,
+                            owner.name
+                        )));
+                    }
+                }
+            }
+        }
+    }
+    Ok(())
 }
 
 #[derive(Serialize)]
@@ -211,7 +255,7 @@ pub fn pull(context: &mut LibContext, args: &PullArgs) -> LibResult<String> {
         let resolved = resolve_spec(context, &ItemSpec::parse(raw)?)?;
         group(
             &mut requests,
-            resolved.kind,
+            resolved.source,
             resolved.version,
             resolved.name,
         )?;
@@ -268,7 +312,7 @@ pub fn update(context: &mut LibContext, args: &UpdateArgs) -> LibResult<String> 
         targets
     };
     for (kind, name) in targets {
-        let kind = RegistryKind::parse(&kind)
+        let kind = Source::parse(&kind)
             .ok_or_else(|| LibError::new(cstr!("unknown kind {kind} in lockfile")))?;
         group(&mut requests, kind, args.to.clone(), name)?;
     }

@@ -10,14 +10,15 @@ use serde::{Deserialize, Serialize};
 use vize_s0::{String, cstr};
 
 use super::error::{LibError, LibResult};
-use super::fs_ops::{content_hash, join_relative, sha256_hex, validate_relative_path};
+use super::fs_ops::{join_relative, sha256_hex};
+use super::validate::validate_manifest;
 
 /// Registry document versions this CLI understands.
 pub const SUPPORTED_SCHEMA_VERSION: u32 = 1;
 
 /// Root of `registry.json`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RegistryManifest {
     pub schema_version: u32,
     pub registry_kind: String,
@@ -30,6 +31,7 @@ pub struct RegistryManifest {
 
 /// Package and version that published a registry.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RegistryPackage {
     pub name: String,
     pub version: String,
@@ -37,7 +39,7 @@ pub struct RegistryPackage {
 
 /// One pullable item.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RegistryItem {
     pub name: String,
     pub kind: String,
@@ -54,6 +56,7 @@ pub struct RegistryItem {
 
 /// One published file.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RegistryFile {
     pub path: String,
     pub role: String,
@@ -63,6 +66,7 @@ pub struct RegistryFile {
 
 /// One npm package an item imports.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct NpmDependency {
     pub name: String,
     pub range: String,
@@ -77,8 +81,19 @@ pub struct LoadedRegistry {
     pub manifest_path: PathBuf,
     /// How the registry was located (for messages).
     pub origin: String,
-    /// Keeps a temporary `npm pack` extraction alive.
+    /// Keeps a temporary `npm pack` / download directory alive.
     pub _temporary: Option<tempfile::TempDir>,
+    /// For URL registries: base URL and downloader for files fetched on demand.
+    pub remote: Option<RemoteFiles>,
+}
+
+/// Lazily downloaded files of an `https://` registry.
+#[derive(Debug, Clone)]
+pub struct RemoteFiles {
+    /// URL of the directory that holds `registry.json` (no trailing slash).
+    pub base_url: String,
+    /// curl executable.
+    pub curl: std::ffi::OsString,
 }
 
 impl LoadedRegistry {
@@ -92,43 +107,13 @@ impl LoadedRegistry {
                 manifest_path.display()
             ))
         })?;
-        if manifest.registry_kind != "vize-lib" {
-            return Err(LibError::new(cstr!(
-                "{} is not a vize-lib registry",
-                manifest_path.display()
-            )));
-        }
-        if manifest.schema_version != SUPPORTED_SCHEMA_VERSION {
-            return Err(LibError::new(cstr!(
-                "{} uses registry schema {}; this vize understands {} (upgrade vize)",
-                manifest_path.display(),
-                manifest.schema_version,
-                SUPPORTED_SCHEMA_VERSION
-            )));
-        }
-        validate_relative_path(&manifest.files_directory)?;
-        for item in &manifest.items {
-            for file in &item.files {
-                validate_relative_path(&file.path)?;
-            }
-            let expected = content_hash(
-                item.files
-                    .iter()
-                    .map(|file| (file.path.as_str(), file.sha256.as_str())),
-            );
-            if expected != item.content_hash {
-                return Err(LibError::new(cstr!(
-                    "{}: item {} has an inconsistent contentHash",
-                    manifest_path.display(),
-                    item.name
-                )));
-            }
-        }
+        validate_manifest(manifest_path, &manifest)?;
         Ok(Self {
             manifest,
             manifest_path: manifest_path.to_path_buf(),
             origin: origin.into(),
             _temporary: None,
+            remote: None,
         })
     }
 
@@ -151,6 +136,17 @@ impl LoadedRegistry {
             &join_relative(root, &self.manifest.files_directory)?,
             &file.path,
         )?;
+        if let Some(remote) = &self.remote
+            && !path.is_file()
+        {
+            let url = cstr!(
+                "{}/{}/{}",
+                remote.base_url,
+                self.manifest.files_directory,
+                file.path
+            );
+            super::fetch::download(&remote.curl, &url, &path)?;
+        }
         let bytes = fs::read(&path).map_err(|error| LibError::io("read", &path, &error))?;
         let actual = sha256_hex(&bytes);
         if actual != file.sha256 {

@@ -43,16 +43,19 @@ node_modules/@vizejs/ui/
 
 ## コマンド
 
-| コマンド                                 | 内容                                                                       |
-| ---------------------------------------- | -------------------------------------------------------------------------- |
-| `vize lib list [--kind ui\|composable]`  | 取得可能なアイテムを一覧表示します。                                       |
-| `vize lib search <words>`                | 名前、タイトル、説明、エイリアスで検索します。                             |
-| `vize lib info <name>`                   | ファイル、レジストリ依存、npm peer、パッケージバージョンを表示します。     |
-| `vize lib pull <item>... [--dir <dir>]`  | アイテムとレジストリ依存をコピーします。`--dry-run`、`--overwrite`。       |
-| `vize lib status`                        | 取得済みファイルをロックファイルとインストール済みレジストリと比較します。 |
-| `vize lib diff <name> [--to <version>]`  | ローカルのコピーからレジストリのバージョンへの unified diff を表示します。 |
-| `vize lib update [<name>...] [--to <v>]` | ローカルの編集を壊さずに upstream の変更を適用します。`--dry-run`、`--force`。 |
-| `vize lib remove <name>...`              | アイテムと、他に必要とされない依存を削除します。`--dry-run`、`--force`。   |
+| コマンド                                 | 内容                                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------------------- |
+| `vize lib init [--dry-run]`              | プロジェクト構成を検出して `lib` 設定セクションを書き込みます。                 |
+| `vize lib list [--kind ui\|composable]`  | 取得可能なアイテムを一覧表示します。                                            |
+| `vize lib search <words>`                | 名前、タイトル、説明、エイリアスで検索します。                                  |
+| `vize lib info <name>`                   | ファイル、レジストリ依存、npm peer、パッケージバージョンを表示します。          |
+| `vize lib pull <item>... [--dir <dir>]`  | アイテムとレジストリ依存をコピーします。`--dry-run`、`--overwrite`。            |
+| `vize lib add <item>...`                 | shadcn 互換の `pull` のエイリアス (`-p/--path`、`-o/--overwrite`、`-y/--yes`)。 |
+| `vize lib status`                        | 取得済みファイルをロックファイルとインストール済みレジストリと比較します。      |
+| `vize lib diff <name> [--to <version>]`  | ローカルのコピーからレジストリのバージョンへの unified diff を表示します。      |
+| `vize lib update [<name>...] [--to <v>]` | ローカルの編集を壊さずに upstream の変更を適用します。`--dry-run`、`--force`。  |
+| `vize lib remove <name>...`              | アイテムと、他に必要とされない依存を削除します。`--dry-run`、`--force`。        |
+| `vize lib outdated`                      | ロックされたバージョンをインストール済み・最新のレジストリと比較します。        |
 
 すべてのコマンドは機械可読な出力のための `--json` と、別のプロジェクトを対象にする `--root <dir>` を受け付けます。
 
@@ -92,6 +95,63 @@ export default defineConfig({
 取得したソースが import するのは相対パスと `vue` などの npm パッケージだけです。`pull` は `package.json` に
 まだ宣言されていない npm 依存を報告しますが、パッケージのインストールは行いません。
 
+## はじめに: `init`
+
+```bash
+vize lib init --dry-run   # 検出した構成と設定の変更を表示
+vize lib init             # 書き込む
+```
+
+`init` はソースディレクトリ (`src/`、Nuxt 4 では `app/`) と TypeScript を検出し、`lib.uiDir` / `lib.composableDir`
+を書き込みます。設定がなければ `vize.config.json` を作成し、既存の `vize.config.json` には他の部分を変えずに
+`lib` セクションを追加し、`vize.config.ts` / `.pkl` の場合はコードを編集せずにスニペットを表示します。既存の
+`lib` セクションは `--force` がない限り保持されます。`tsconfig.json` に `allowImportingTsExtensions` がない場合は
+その旨を表示します (取得したソースは兄弟ファイルを `./x.ts` として import します)。
+
+## 更新の確認: `outdated`
+
+`vize lib outdated` はレジストリがロックファイルと異なる取得済みアイテムを一覧表示します。
+
+| 列        | 意味                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------ |
+| `current` | `vize-lib.lock.json` に記録されたバージョン。                                              |
+| `wanted`  | `update` が使うレジストリのバージョン (インストール済みパッケージ、なければ最新)。         |
+| `latest`  | npm で公開されている最新バージョン (`npm view`。`--offline` では省略)。                    |
+| `state`   | `update-available`、`newer-release`、`removed-upstream`、`unknown` (または `up-to-date`)。 |
+
+`update-available` はアイテムの `contentHash` が異なることを意味します。アイテムのファイルに触れない
+バージョンアップでは `up-to-date` のままです。`--json` はすべてのアイテムを含みます。
+
+## サードパーティのレジストリ
+
+どのパッケージやサイトでも同じ形式のレジストリを公開し、名前空間の下で使えるようにできます。
+
+```json
+{
+  "lib": {
+    "registries": {
+      "@acme": "npm:@acme/vue-kit",
+      "@design": { "source": "https://design.example.com/r/registry.json", "dir": "src/design" },
+      "@local": { "source": "./registry", "dir": "src/local" }
+    }
+  }
+}
+```
+
+```bash
+vize lib pull @acme/data-table @design/button@2.1.0
+vize lib list --kind @acme
+```
+
+- `npm:<package>[@range]` はインストール済みパッケージの `registry/registry.json` を使い、なければ `npm pack` します。
+- `https://…/registry.json` は `curl` で取得し、各ファイルは隣の `files/<path>` から必要に応じてダウンロードします (https のみ)。
+- それ以外は設定ファイルからの相対パスです: `registry.json`、そのディレクトリ、またはパッケージディレクトリ。
+
+サードパーティのレジストリはファーストパーティと同じ JSON Schema で検証され (未知のフィールド、不正なダイジェスト、
+未知のロールや依存、不完全な依存閉包は拒否)、ダウンロードしたすべてのバイトは書き込み前に SHA-256 で検証されます。
+名前空間のアイテムはその `dir` (なければレジストリの `defaultTargetDirectory`) に置かれ、`@namespace` キーでロックされ、
+他の取得済みアイテムが所有するファイルを上書きすることはありません。
+
 ## バージョン管理と安全な更新
 
 `vize-lib.lock.json` (コミットしてください) には、アイテムごとに取得元のパッケージと正確なバージョン、
@@ -99,16 +159,16 @@ export default defineConfig({
 これらのダイジェストが **あなたのファイル**、**取得時のファイル**、**新しいレジストリのファイル** の 3-way 比較の
 マージベースになります。
 
-| あなたのファイル vs 取得時 | レジストリ vs 取得時 | `update` / `pull` の動作                                   |
-| -------------------------- | -------------------- | ---------------------------------------------------------- |
-| 変更なし                   | 変更なし             | 何もしない (`unchanged`)                                   |
-| 変更なし                   | 変更あり             | 置き換える (`update`)                                      |
-| 編集あり                   | 変更なし             | 編集を保持する (`keep-local`)                              |
-| 編集あり                   | 変更あり             | `--force` / `--overwrite` がなければ拒否 (`conflict`)      |
-| 変更なし                   | upstream で削除      | 削除する (`delete`)                                        |
-| 編集あり                   | upstream で削除      | `--force` がなければ拒否 (`conflict-delete`)               |
-| 存在しない                 | 任意                 | 復元する (`create`)                                        |
-| 存在するがロック外         | 任意                 | `--overwrite` がなければ拒否 (`conflict`)                  |
+| あなたのファイル vs 取得時 | レジストリ vs 取得時 | `update` / `pull` の動作                              |
+| -------------------------- | -------------------- | ----------------------------------------------------- |
+| 変更なし                   | 変更なし             | 何もしない (`unchanged`)                              |
+| 変更なし                   | 変更あり             | 置き換える (`update`)                                 |
+| 編集あり                   | 変更なし             | 編集を保持する (`keep-local`)                         |
+| 編集あり                   | 変更あり             | `--force` / `--overwrite` がなければ拒否 (`conflict`) |
+| 変更なし                   | upstream で削除      | 削除する (`delete`)                                   |
+| 編集あり                   | upstream で削除      | `--force` がなければ拒否 (`conflict-delete`)          |
+| 存在しない                 | 任意                 | 復元する (`create`)                                   |
+| 存在するがロック外         | 任意                 | `--overwrite` がなければ拒否 (`conflict`)             |
 
 未解決の競合がある間は何も書き込まれないため、拒否された更新はファイルもロックファイルも変更しません。
 `vize lib diff <name> --to <version>` で upstream の変更を確認し、手でマージしてから `update --force` を実行してください。

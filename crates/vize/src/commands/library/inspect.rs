@@ -12,7 +12,7 @@ use super::fs_ops::{file_sha256, join_relative};
 use super::lockfile::LockedItem;
 use super::output::{json, line};
 use super::plan::join_dir;
-use super::resolve::RegistryKind;
+use super::resolve::Source;
 
 /// Local state of one pulled file relative to the lockfile.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -74,8 +74,8 @@ pub fn status(context: &mut LibContext) -> LibResult<String> {
         } else {
             LocalState::Clean
         };
-        let upstream = RegistryKind::parse(&item.kind)
-            .and_then(|kind| context.resolver.local_registry(kind))
+        let upstream = Source::parse(&item.kind)
+            .and_then(|source| context.resolver.local_registry(&source))
             .map(|registry| {
                 let version = registry.manifest.package.version.clone();
                 match registry.item(&item.name) {
@@ -120,8 +120,13 @@ pub fn status(context: &mut LibContext) -> LibResult<String> {
         line(
             &mut out,
             format_args!(
-                "{}:{} {} {state}{upstream}{}",
+                "{}{}{} {} {state}{upstream}{}",
                 status.kind,
+                if status.kind.starts_with('@') {
+                    "/"
+                } else {
+                    ":"
+                },
                 status.name,
                 status.version,
                 if status.direct { "" } else { " (dependency)" }
@@ -164,11 +169,11 @@ pub fn diff(context: &mut LibContext, query: &str, to: Option<&str>) -> LibResul
             )));
         }
     };
-    let kind = RegistryKind::parse(&locked.kind)
+    let kind = Source::parse(&locked.kind)
         .ok_or_else(|| LibError::new(cstr!("unknown kind {} in lockfile", locked.kind)))?;
     let base = join_dir(&context.root, &locked.dir)?;
     let as_json = context.json;
-    let registry = context.resolver.registry(kind, to)?;
+    let registry = context.resolver.registry(&kind, to)?;
     let label = registry.package_label();
     let item = registry.item(&locked.name);
     let mut paths: BTreeSet<String> = locked.files.keys().cloned().collect();
@@ -229,10 +234,7 @@ pub fn diff(context: &mut LibContext, query: &str, to: Option<&str>) -> LibResul
     }
     let mut out = String::default();
     if diffs.is_empty() {
-        line(
-            &mut out,
-            format_args!("{}:{} matches {label}", locked.kind, locked.name),
-        );
+        line(&mut out, format_args!("{} matches {label}", locked.label()));
     }
     for file in diffs {
         out.push_str(&file.diff);
