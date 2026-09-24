@@ -103,9 +103,9 @@ pub(super) fn module_map(
     filename: &str,
 ) -> Option<serde_json::Value> {
     let mut placed = Runs::default();
-    // `compile_sfc` trims trailing newlines before building the map. Clip a
-    // verbatim script run to the emitted module so validation keeps the
-    // remaining authored bytes instead of discarding the whole run.
+    // Some generated SFC shapes trim trailing newlines before building the
+    // map. Clip a verbatim script run to the emitted module so validation
+    // keeps the remaining authored bytes instead of discarding the whole run.
     placed.append(at, &output?.slice(0, code.len().saturating_sub(at)));
     let provenance = match rewrite {
         Some(rewrite) => rewrite.compose(&placed),

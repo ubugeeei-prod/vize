@@ -390,7 +390,12 @@ fn compile_sfc_inner(
         }
 
         let rewrite = finalize_output_mode(&mut code, &mut warnings, &options, &codegen_options);
-        trim_trailing_newlines(&mut code);
+        // compiler-sfc returns the authored script body, including its final
+        // newline, when no component rewrite is needed. Generated module
+        // shapes still use the usual trimmed output convention.
+        if needs_component_binding {
+            trim_trailing_newlines(&mut code);
+        }
 
         return Ok(SfcCompileResult {
             map: module_trace::module_map(

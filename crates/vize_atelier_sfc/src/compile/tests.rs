@@ -144,7 +144,7 @@ export default defineComponent({ props: { count: Number as PropType<number> } })
         .expect("compile");
         assert_eq!(
             result.code,
-            "\nimport type { PropType } from 'vue'\nimport { defineComponent } from 'vue'\nexport default defineComponent({ props: { count: Number as PropType<number> } })"
+            "\nimport type { PropType } from 'vue'\nimport { defineComponent } from 'vue'\nexport default defineComponent({ props: { count: Number as PropType<number> } })\n"
         );
     }
 }
