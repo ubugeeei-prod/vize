@@ -348,6 +348,11 @@
       "import": "./dist/scroll-lock.mjs",
       "default": "./dist/scroll-lock.mjs"
     },
+    "./standard-schema": {
+      "types": "./dist/standard-schema.d.mts",
+      "import": "./dist/standard-schema.mjs",
+      "default": "./dist/standard-schema.mjs"
+    },
     "./swipe": {
       "types": "./dist/swipe.d.mts",
       "import": "./dist/swipe.mjs",
@@ -453,6 +458,11 @@
       "import": "./dist/use-date-format.mjs",
       "default": "./dist/use-date-format.mjs"
     },
+    "./use-date-time-format": {
+      "types": "./dist/use-date-time-format.d.mts",
+      "import": "./dist/use-date-time-format.mjs",
+      "default": "./dist/use-date-time-format.mjs"
+    },
     "./use-debounced": {
       "types": "./dist/use-debounced.d.mts",
       "import": "./dist/use-debounced.mjs",
@@ -462,6 +472,11 @@
       "types": "./dist/use-display-media.d.mts",
       "import": "./dist/use-display-media.mjs",
       "default": "./dist/use-display-media.mjs"
+    },
+    "./use-display-names": {
+      "types": "./dist/use-display-names.d.mts",
+      "import": "./dist/use-display-names.mjs",
+      "default": "./dist/use-display-names.mjs"
     },
     "./use-document-title": {
       "types": "./dist/use-document-title.d.mts",
@@ -493,6 +508,11 @@
       "import": "./dist/use-fetch.mjs",
       "default": "./dist/use-fetch.mjs"
     },
+    "./use-field": {
+      "types": "./dist/use-field.d.mts",
+      "import": "./dist/use-field.mjs",
+      "default": "./dist/use-field.mjs"
+    },
     "./use-file-dialog": {
       "types": "./dist/use-file-dialog.d.mts",
       "import": "./dist/use-file-dialog.mjs",
@@ -502,6 +522,11 @@
       "types": "./dist/use-file-system-access.d.mts",
       "import": "./dist/use-file-system-access.mjs",
       "default": "./dist/use-file-system-access.mjs"
+    },
+    "./use-form": {
+      "types": "./dist/use-form.d.mts",
+      "import": "./dist/use-form.mjs",
+      "default": "./dist/use-form.mjs"
     },
     "./use-fullscreen": {
       "types": "./dist/use-fullscreen.d.mts",
@@ -533,10 +558,20 @@
       "import": "./dist/use-interval.mjs",
       "default": "./dist/use-interval.mjs"
     },
+    "./use-list-format": {
+      "types": "./dist/use-list-format.d.mts",
+      "import": "./dist/use-list-format.mjs",
+      "default": "./dist/use-list-format.mjs"
+    },
     "./use-machine": {
       "types": "./dist/use-machine.d.mts",
       "import": "./dist/use-machine.mjs",
       "default": "./dist/use-machine.mjs"
+    },
+    "./use-map": {
+      "types": "./dist/use-map.d.mts",
+      "import": "./dist/use-map.mjs",
+      "default": "./dist/use-map.mjs"
     },
     "./use-media-controls": {
       "types": "./dist/use-media-controls.d.mts",
@@ -563,6 +598,11 @@
       "import": "./dist/use-now.mjs",
       "default": "./dist/use-now.mjs"
     },
+    "./use-number-format": {
+      "types": "./dist/use-number-format.d.mts",
+      "import": "./dist/use-number-format.mjs",
+      "default": "./dist/use-number-format.mjs"
+    },
     "./use-object-url": {
       "types": "./dist/use-object-url.d.mts",
       "import": "./dist/use-object-url.mjs",
@@ -578,25 +618,50 @@
       "import": "./dist/use-permission.mjs",
       "default": "./dist/use-permission.mjs"
     },
+    "./use-plural-rules": {
+      "types": "./dist/use-plural-rules.d.mts",
+      "import": "./dist/use-plural-rules.mjs",
+      "default": "./dist/use-plural-rules.mjs"
+    },
     "./use-previous": {
       "types": "./dist/use-previous.d.mts",
       "import": "./dist/use-previous.mjs",
       "default": "./dist/use-previous.mjs"
+    },
+    "./use-queue": {
+      "types": "./dist/use-queue.d.mts",
+      "import": "./dist/use-queue.mjs",
+      "default": "./dist/use-queue.mjs"
     },
     "./use-raf-fn": {
       "types": "./dist/use-raf-fn.d.mts",
       "import": "./dist/use-raf-fn.mjs",
       "default": "./dist/use-raf-fn.mjs"
     },
+    "./use-relative-time-format": {
+      "types": "./dist/use-relative-time-format.d.mts",
+      "import": "./dist/use-relative-time-format.mjs",
+      "default": "./dist/use-relative-time-format.mjs"
+    },
     "./use-script-tag": {
       "types": "./dist/use-script-tag.d.mts",
       "import": "./dist/use-script-tag.mjs",
       "default": "./dist/use-script-tag.mjs"
     },
+    "./use-segmenter": {
+      "types": "./dist/use-segmenter.d.mts",
+      "import": "./dist/use-segmenter.mjs",
+      "default": "./dist/use-segmenter.mjs"
+    },
     "./use-selection": {
       "types": "./dist/use-selection.d.mts",
       "import": "./dist/use-selection.mjs",
       "default": "./dist/use-selection.mjs"
+    },
+    "./use-set": {
+      "types": "./dist/use-set.d.mts",
+      "import": "./dist/use-set.mjs",
+      "default": "./dist/use-set.mjs"
     },
     "./use-share": {
       "types": "./dist/use-share.d.mts",
@@ -608,6 +673,11 @@
       "import": "./dist/use-sorted.mjs",
       "default": "./dist/use-sorted.mjs"
     },
+    "./use-sorted-locale": {
+      "types": "./dist/use-sorted-locale.d.mts",
+      "import": "./dist/use-sorted-locale.mjs",
+      "default": "./dist/use-sorted-locale.mjs"
+    },
     "./use-speech-recognition": {
       "types": "./dist/use-speech-recognition.d.mts",
       "import": "./dist/use-speech-recognition.mjs",
@@ -617,6 +687,11 @@
       "types": "./dist/use-speech-synthesis.d.mts",
       "import": "./dist/use-speech-synthesis.mjs",
       "default": "./dist/use-speech-synthesis.mjs"
+    },
+    "./use-stack": {
+      "types": "./dist/use-stack.d.mts",
+      "import": "./dist/use-stack.mjs",
+      "default": "./dist/use-stack.mjs"
     },
     "./use-stepper": {
       "types": "./dist/use-stepper.d.mts",

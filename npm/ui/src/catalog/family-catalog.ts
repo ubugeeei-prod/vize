@@ -1,3 +1,4 @@
+import { accordionFamilyCatalog } from "./family-catalog-accordion.ts";
 import { actionFamilyCatalog } from "./family-catalog-actions.ts";
 import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
@@ -6,6 +7,7 @@ import { dateTimeFamilyCatalog } from "./family-catalog-date-time.ts";
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
+import { hoverCardFamilyCatalog } from "./family-catalog-hover-card.ts";
 import { i18nFamilyCatalog } from "./family-catalog-i18n.ts";
 import { interactionGestureFamilyCatalog } from "../families/interaction/catalog/gestures.ts";
 import { interactionSupportFamilyCatalog } from "../families/interaction/catalog/support.ts";
@@ -34,6 +36,7 @@ export {
 } from "./family-catalog-types.ts";
 
 const allFamilyCatalogEntries = [
+  ...accordionFamilyCatalog,
   ...actionFamilyCatalog,
   ...accessibilityFamilyCatalog,
   ...basicFamilyCatalog,
@@ -42,6 +45,7 @@ const allFamilyCatalogEntries = [
   ...feedbackFamilyCatalog,
   ...foundationFamilyCatalog,
   ...focusFamilyCatalog,
+  ...hoverCardFamilyCatalog,
   ...i18nFamilyCatalog,
   ...interactionGestureFamilyCatalog,
   ...interactionSupportFamilyCatalog,
