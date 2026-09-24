@@ -1,0 +1,197 @@
+/* Optional tab treatment; the compound components remain headless. */
+@layer vize.preset {
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-tabs-list-background: initial;
+    --vize-ui-tabs-list-border: initial;
+    --vize-ui-tabs-list-radius: initial;
+    --vize-ui-tabs-list-gap: initial;
+    --vize-ui-tabs-trigger-background: initial;
+    --vize-ui-tabs-trigger-radius: initial;
+    --vize-ui-tabs-trigger-font: initial;
+    --vize-ui-tabs-selected-background: initial;
+    --vize-ui-tabs-selected-ink: initial;
+    --vize-ui-tabs-selected-line: initial;
+    --vize-ui-tabs-content-border: initial;
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-tabs-list-border: var(--vize-ui-color-border);
+    --vize-ui-tabs-list-gap: var(--vize-ui-space-lg);
+    --vize-ui-tabs-selected-ink: var(--vize-ui-color-text);
+    --vize-ui-tabs-selected-line: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-tabs-list-background: var(--vize-ui-color-canvas);
+    --vize-ui-tabs-list-border: var(--vize-ui-color-border);
+    --vize-ui-tabs-list-radius: 0.125rem;
+    --vize-ui-tabs-list-gap: 0px;
+    --vize-ui-tabs-trigger-radius: 0.125rem;
+    --vize-ui-tabs-trigger-font: var(--vize-ui-type-family-mono);
+    --vize-ui-tabs-selected-background: var(--vize-ui-color-surface);
+    --vize-ui-tabs-selected-ink: var(--vize-ui-color-text);
+    --vize-ui-tabs-selected-line: var(--vize-ui-color-accent);
+    --vize-ui-tabs-content-border: var(--vize-ui-color-border);
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-tabs-list-background: var(--vize-ui-color-canvas);
+    --vize-ui-tabs-list-radius: var(--vize-ui-radius-lg);
+    --vize-ui-tabs-list-gap: var(--vize-ui-space-xs);
+    --vize-ui-tabs-trigger-radius: var(--vize-ui-radius-md);
+    --vize-ui-tabs-selected-background: var(--vize-ui-color-surface);
+    --vize-ui-tabs-selected-ink: var(--vize-ui-color-text);
+    --vize-ui-tabs-selected-line: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-ui="tabs-root"]) {
+    color: var(--vize-ui-color-text);
+    font-family: var(--vize-ui-type-family-sans);
+  }
+
+  :where([data-vize-ui="tabs-list"]) {
+    display: flex;
+    align-items: stretch;
+    gap: var(--vize-ui-tabs-list-gap, var(--vize-ui-space-sm));
+    inline-size: fit-content;
+    max-inline-size: 100%;
+    padding: var(--vize-ui-space-xs);
+    border: var(--vize-ui-border-width-thin) solid transparent;
+    border-block-end-color: var(--vize-ui-tabs-list-border, transparent);
+    border-radius: var(--vize-ui-tabs-list-radius, 0);
+    background: var(--vize-ui-tabs-list-background, transparent);
+  }
+
+  :where([data-vize-ui="tabs-list"][data-orientation="vertical"]) {
+    flex-direction: column;
+    align-items: stretch;
+    inline-size: fit-content;
+    border-block-end-color: transparent;
+    border-inline-end-color: var(--vize-ui-tabs-list-border, transparent);
+  }
+
+  :where([data-vize-ui="tabs-trigger"]) {
+    appearance: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--vize-ui-size-control-md);
+    padding-inline: var(--vize-ui-space-md);
+    border: 0;
+    border-radius: var(--vize-ui-tabs-trigger-radius, 0);
+    background: var(--vize-ui-tabs-trigger-background, transparent);
+    color: var(--vize-ui-color-text-muted);
+    font-family: var(--vize-ui-tabs-trigger-font, inherit);
+    font-size: var(--vize-ui-type-size-sm);
+    font-weight: var(--vize-ui-type-weight-medium);
+    line-height: var(--vize-ui-type-leading-tight);
+    text-align: center;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      background-color var(--vize-ui-motion-duration-fast, 120ms)
+        var(--vize-ui-motion-ease-standard, ease-out),
+      color var(--vize-ui-motion-duration-fast, 120ms) var(--vize-ui-motion-ease-standard, ease-out);
+  }
+
+  :where([data-vize-ui="tabs-trigger"])::after {
+    position: absolute;
+    inset-inline: var(--vize-ui-space-sm);
+    inset-block-end: -2px;
+    block-size: 2px;
+    background: var(--vize-ui-tabs-selected-line, var(--vize-ui-color-accent));
+    content: "";
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform var(--vize-ui-motion-duration-base, 200ms)
+      var(--vize-ui-motion-ease-standard, ease-out);
+  }
+
+  :where([data-vize-ui="tabs-trigger"][data-orientation="vertical"])::after {
+    inset-inline: auto -2px;
+    inset-block: var(--vize-ui-space-sm);
+    inline-size: 2px;
+    block-size: auto;
+    transform: scaleY(0);
+  }
+
+  :where([data-vize-ui="tabs-trigger"][data-selected="true"]) {
+    background: var(--vize-ui-tabs-selected-background, transparent);
+    color: var(--vize-ui-tabs-selected-ink, var(--vize-ui-color-text));
+  }
+
+  :where([data-vize-ui="tabs-trigger"][data-selected="true"])::after {
+    transform: scale(1);
+  }
+
+  :where([data-vize-ui="tabs-trigger"]:hover:not(:disabled)) {
+    color: var(--vize-ui-color-text);
+  }
+
+  :where([data-vize-ui="tabs-trigger"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+    z-index: 1;
+  }
+
+  :where([data-vize-ui="tabs-trigger"]:disabled) {
+    opacity: var(--vize-ui-opacity-disabled);
+    cursor: default;
+  }
+
+  :where([data-vize-ui="tabs-content"]:not([hidden])) {
+    padding-block: var(--vize-ui-space-lg);
+    border-block-start: var(--vize-ui-border-width-thin) solid
+      var(--vize-ui-tabs-content-border, transparent);
+    animation: vize-ui-tabs-enter var(--vize-ui-motion-duration-base, 200ms)
+      var(--vize-ui-motion-ease-decelerate, ease-out) both;
+  }
+
+  :where([data-vize-ui="tabs-content"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+}
+
+@keyframes vize-ui-tabs-enter {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="tabs-trigger"]),
+    :where([data-vize-ui="tabs-trigger"])::after {
+      transition-duration: 0ms;
+    }
+    :where([data-vize-ui="tabs-content"]) {
+      animation: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="tabs-trigger"]) {
+      color: ButtonText;
+    }
+    :where([data-vize-ui="tabs-trigger"][data-selected="true"]) {
+      outline: 1px solid Highlight;
+      outline-offset: -1px;
+    }
+    :where([data-vize-ui="tabs-trigger"]:focus-visible) {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+    }
+    :where([data-vize-ui="tabs-trigger"]:disabled) {
+      color: GrayText;
+      opacity: 1;
+    }
+  }
+}

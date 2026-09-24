@@ -20,6 +20,10 @@ import "@vizejs/ui/component-card.css";
 import "@vizejs/ui/component-badge.css";
 import "@vizejs/ui/component-alert.css";
 import "@vizejs/ui/component-tooltip.css";
+import "@vizejs/ui/component-tabs.css";
+import "@vizejs/ui/component-breadcrumb.css";
+import "@vizejs/ui/component-pagination.css";
+import "@vizejs/ui/component-stepper.css";
 // Add these only when their low-level behavior is used without the JS entry:
 // import "@vizejs/ui/component-progress-bar.css";
 // import "@vizejs/ui/component-scroll-area.css";
@@ -56,6 +60,15 @@ its short entrance only after its floating position is measured. Static Card
 surfaces do not animate. Badge tone changes and Alert/Tooltip entrances stop
 under `prefers-reduced-motion`; forced-colors mode restores system boundaries.
 These styles reset at nested theme boundaries, including Shadow DOM hosts.
+
+Tabs, Breadcrumb, Pagination, and Stepper likewise have independent CSS-only
+exports. Tabs gives selection a short moving rule and gently reveals the active
+panel. Breadcrumb leaves the separator glyph to your markup. Pagination and
+Stepper show the current position without changing their headless navigation.
+On narrow screens, Stepper retains its horizontal order and scrolls when labels
+need more room. Motion stops under `prefers-reduced-motion`; focus and selected
+states remain legible in forced-colors mode. Scoped Paper, Signal, and Atelier
+overrides reset at nested themes and Shadow DOM hosts.
 
 The existing ProgressBar and ScrollArea structure and motion recipes are also
 published as standalone CSS-only files. Their JavaScript entries already pull

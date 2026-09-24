@@ -143,6 +143,8 @@ export * from "./families/interaction/spatial-navigation/spatial-navigation.ts";
 export * from "./families/overlays/transition/transition.ts";
 export * from "./families/interaction/typeahead/typeahead.ts";
 export * from "./families/interaction/virtualizer/virtualizer.ts";
+export * from "./families/charts/chart-shape/chart-shape.ts";
+export * from "./families/charts/chart-scale/chart-scale.ts";
 export * from "./families/data/tree/tree.ts";
 export * from "./families/navigation/navigation-menu/navigation-menu.ts";
 export * from "./families/interaction/scroll-spy/scroll-spy.ts";

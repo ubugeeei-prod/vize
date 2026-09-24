@@ -19,6 +19,10 @@
     <link rel="stylesheet" href="../dist/component-badge.css" />
     <link rel="stylesheet" href="../dist/component-alert.css" />
     <link rel="stylesheet" href="../dist/component-tooltip.css" />
+    <link rel="stylesheet" href="../dist/component-tabs.css" />
+    <link rel="stylesheet" href="../dist/component-breadcrumb.css" />
+    <link rel="stylesheet" href="../dist/component-pagination.css" />
+    <link rel="stylesheet" href="../dist/component-stepper.css" />
     <style>
       body {
         margin: 0;
@@ -187,6 +191,17 @@
         inset-inline-start: 0;
       }
 
+      .navigation-samples {
+        display: grid;
+        gap: 1.5rem;
+      }
+
+      .navigation-samples > div > p {
+        margin-block: 0 0.5rem;
+        color: var(--vize-ui-color-text-muted);
+        font-size: var(--vize-ui-type-size-sm);
+      }
+
       @media (max-width: 40rem) {
         .form-grid,
         .surface-grid {
@@ -320,6 +335,121 @@
         </div>
         <small>Card stays still. Status changes and the measured tooltip use brief motion.</small>
       </section>
+      <section aria-label="Navigation">
+        <h2>Navigation</h2>
+        <div class="navigation-samples">
+          <div>
+            <p>Path</p>
+            <nav data-vize-ui="breadcrumb" aria-label="Breadcrumb">
+              <ol data-vize-ui="breadcrumb-list">
+                <li data-vize-ui="breadcrumb-item">
+                  <a data-vize-ui="breadcrumb-link" href="#actions-heading">Library</a>
+                  <span data-vize-ui="breadcrumb-separator" aria-hidden="true">/</span>
+                </li>
+                <li data-vize-ui="breadcrumb-item" data-current="true">
+                  <span data-vize-ui="breadcrumb-link" data-current="true" aria-current="page"
+                    >Navigation</span
+                  >
+                </li>
+              </ol>
+            </nav>
+          </div>
+          <div>
+            <p>Sections</p>
+            <div data-vize-ui="tabs-root" data-visual-tabs>
+              <div data-vize-ui="tabs-list" role="tablist" aria-label="Preview sections">
+                <button
+                  type="button"
+                  role="tab"
+                  data-vize-ui="tabs-trigger"
+                  data-selected="true"
+                  aria-selected="true"
+                >
+                  Overview
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  data-vize-ui="tabs-trigger"
+                  data-selected="false"
+                  aria-selected="false"
+                >
+                  History
+                </button>
+              </div>
+              <div data-vize-ui="tabs-content" role="tabpanel" tabindex="0">
+                A clear place to begin.
+              </div>
+              <div data-vize-ui="tabs-content" role="tabpanel" tabindex="0" hidden>
+                Earlier changes stay available.
+              </div>
+            </div>
+          </div>
+          <div>
+            <p>Pages</p>
+            <nav data-vize-ui="pagination" aria-label="Preview pages">
+              <ol data-vize-ui="pagination-list">
+                <li data-vize-ui="pagination-item">
+                  <button type="button" data-vize-ui="pagination-previous">Previous</button>
+                </li>
+                <li data-vize-ui="pagination-item">
+                  <button type="button" data-vize-ui="pagination-page" data-current="false">
+                    1
+                  </button>
+                </li>
+                <li data-vize-ui="pagination-item">
+                  <button
+                    type="button"
+                    data-vize-ui="pagination-page"
+                    data-current="true"
+                    aria-current="page"
+                  >
+                    2
+                  </button>
+                </li>
+                <li data-vize-ui="pagination-item">
+                  <button type="button" data-vize-ui="pagination-page" data-current="false">
+                    3
+                  </button>
+                </li>
+                <li data-vize-ui="pagination-item">
+                  <button type="button" data-vize-ui="pagination-next">Next</button>
+                </li>
+              </ol>
+            </nav>
+          </div>
+          <div>
+            <p>Progress</p>
+            <div data-vize-ui="stepper-root">
+              <div data-vize-ui="stepper-list" role="list" aria-label="Preview steps">
+                <div data-vize-ui="stepper-item" role="listitem">
+                  <button type="button" data-vize-ui="stepper-trigger" data-completed="true">
+                    01 Draft
+                  </button>
+                </div>
+                <div data-vize-ui="stepper-item" role="listitem">
+                  <button
+                    type="button"
+                    data-vize-ui="stepper-trigger"
+                    data-current="true"
+                    aria-current="step"
+                  >
+                    02 Review
+                  </button>
+                </div>
+                <div data-vize-ui="stepper-item" role="listitem">
+                  <button type="button" data-vize-ui="stepper-trigger">03 Publish</button>
+                </div>
+              </div>
+              <div data-vize-ui="stepper-content">Review the details before publishing.</div>
+            </div>
+          </div>
+        </div>
+        <small
+          >Current position, keyboard focus, and density stay clear across all three
+          palettes.</small
+        >
+      </section>
     </main>
     <div data-vize-ui="dialog-overlay" data-state="open" hidden></div>
     <div
@@ -371,6 +501,88 @@
         switchControl.dataset.checked = String(checked);
         switchControl.dataset.state = checked ? "checked" : "unchecked";
       });
+
+      const previewTabs = [
+        ...document.querySelectorAll('[data-visual-tabs] [data-vize-ui="tabs-trigger"]'),
+      ];
+      const previewPanels = [
+        ...document.querySelectorAll('[data-visual-tabs] [data-vize-ui="tabs-content"]'),
+      ];
+      previewTabs.forEach((tab, index) => {
+        const panel = previewPanels[index];
+        tab.id = `visual-tab-${index}`;
+        panel.id = `visual-panel-${index}`;
+        tab.setAttribute("aria-controls", panel.id);
+        panel.setAttribute("aria-labelledby", tab.id);
+      });
+      function selectPreviewTab(selected, focus = false) {
+        previewTabs.forEach((tab, index) => {
+          const active = tab === selected;
+          tab.dataset.selected = String(active);
+          tab.setAttribute("aria-selected", String(active));
+          tab.tabIndex = active ? 0 : -1;
+          previewPanels[index].hidden = !active;
+        });
+        if (focus) selected.focus();
+      }
+      previewTabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => selectPreviewTab(tab));
+        tab.addEventListener("keydown", (event) => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          const next =
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? previewTabs.length - 1
+                : (index + (event.key === "ArrowRight" ? 1 : -1) + previewTabs.length) %
+                  previewTabs.length;
+          selectPreviewTab(previewTabs[next], true);
+        });
+      });
+      selectPreviewTab(previewTabs[0]);
+
+      const pageButtons = [...document.querySelectorAll('[data-vize-ui="pagination-page"]')];
+      const previousPage = document.querySelector('[data-vize-ui="pagination-previous"]');
+      const nextPage = document.querySelector('[data-vize-ui="pagination-next"]');
+      let currentPage = 2;
+      function selectPreviewPage(page) {
+        currentPage = Math.min(3, Math.max(1, page));
+        for (const button of pageButtons) {
+          const active = Number(button.textContent.trim()) === currentPage;
+          button.dataset.current = String(active);
+          if (active) button.setAttribute("aria-current", "page");
+          else button.removeAttribute("aria-current");
+        }
+        previousPage.disabled = currentPage === 1;
+        nextPage.disabled = currentPage === 3;
+      }
+      pageButtons.forEach((button) =>
+        button.addEventListener("click", () =>
+          selectPreviewPage(Number(button.textContent.trim())),
+        ),
+      );
+      previousPage.addEventListener("click", () => selectPreviewPage(currentPage - 1));
+      nextPage.addEventListener("click", () => selectPreviewPage(currentPage + 1));
+
+      const previewSteps = [...document.querySelectorAll('[data-vize-ui="stepper-trigger"]')];
+      const previewStepContent = document.querySelector('[data-vize-ui="stepper-content"]');
+      const stepDescriptions = [
+        "The draft is ready for review.",
+        "Review the details before publishing.",
+        "Everything is ready to publish.",
+      ];
+      previewSteps.forEach((button, index) =>
+        button.addEventListener("click", () => {
+          previewSteps.forEach((step, stepIndex) => {
+            step.dataset.current = String(stepIndex === index);
+            step.dataset.completed = String(stepIndex < index);
+            if (stepIndex === index) step.setAttribute("aria-current", "step");
+            else step.removeAttribute("aria-current");
+          });
+          previewStepContent.textContent = stepDescriptions[index];
+        }),
+      );
 
       function showTooltip(open) {
         tooltipRoot.dataset.state = open ? "open" : "closed";

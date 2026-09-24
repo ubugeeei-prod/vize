@@ -10,11 +10,23 @@ import path from "node:path";
 
 import ts from "typescript";
 
-import type { ApiMember, ComponentApi, ModuleExport, ModuleInterface } from "./api-types.ts";
+import type {
+  ApiMember,
+  ComponentApi,
+  ModuleExport,
+  ModuleInterface,
+  ModuleTypeAlias,
+} from "./api-types.ts";
 import { emitMembers, namedTypeMembers, slotMembers, typeMembers } from "./members.ts";
 import { TypeScope, commentText, memberName, oneLine, parse, readDoc } from "./ts-scope.ts";
 
-export type { ApiMember, ComponentApi, ModuleExport, ModuleInterface } from "./api-types.ts";
+export type {
+  ApiMember,
+  ComponentApi,
+  ModuleExport,
+  ModuleInterface,
+  ModuleTypeAlias,
+} from "./api-types.ts";
 
 function scriptBlocks(source: string): { setup: string; generic: string | null; other: string } {
   let setup = "";
@@ -190,6 +202,24 @@ export function moduleInterfaces(file: string): readonly ModuleInterface[] {
         name: statement.name.text,
         description: readDoc(statement).description,
         members: namedTypeMembers(statement.name.text, scope) ?? [],
+      },
+    ];
+  });
+}
+
+/** Exported aliases, needed by entries whose public surface is types only. */
+export function moduleTypeAliases(file: string): readonly ModuleTypeAlias[] {
+  const source = parse(file);
+  return source.statements.filter(ts.isTypeAliasDeclaration).flatMap((statement) => {
+    const exported = (ts.getModifiers(statement) ?? []).some(
+      (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
+    );
+    if (!exported) return [];
+    return [
+      {
+        name: statement.name.text,
+        signature: oneLine(statement.getText().replace(/^export\s+/, "")).replace(/;$/, ""),
+        description: readDoc(statement).description,
       },
     ];
   });

@@ -1,0 +1,198 @@
+/* Optional progress treatment; markup, focus order, and navigation stay headless. */
+@layer vize.preset {
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-stepper-radius: initial;
+    --vize-ui-stepper-font: initial;
+    --vize-ui-stepper-type-size: initial;
+    --vize-ui-stepper-padding-inline: initial;
+    --vize-ui-stepper-current-fill: initial;
+    --vize-ui-stepper-current-ink: initial;
+    --vize-ui-stepper-complete-fill: initial;
+    --vize-ui-stepper-complete-ink: initial;
+    --vize-ui-stepper-content-border: initial;
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-stepper-radius: 0.1875rem;
+    --vize-ui-stepper-current-fill: var(--vize-ui-color-text);
+    --vize-ui-stepper-current-ink: var(--vize-ui-color-canvas);
+    --vize-ui-stepper-complete-fill: var(--vize-ui-color-surface);
+    --vize-ui-stepper-complete-ink: var(--vize-ui-color-accent);
+    --vize-ui-stepper-content-border: var(--vize-ui-color-border);
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-stepper-radius: 0.125rem;
+    --vize-ui-stepper-font: var(--vize-ui-type-family-mono);
+    --vize-ui-stepper-type-size: var(--vize-ui-type-size-xs);
+    --vize-ui-stepper-padding-inline: var(--vize-ui-space-sm);
+    --vize-ui-stepper-current-fill: var(--vize-ui-color-accent);
+    --vize-ui-stepper-current-ink: var(--vize-ui-color-accent-contrast);
+    --vize-ui-stepper-complete-fill: var(--vize-ui-color-surface);
+    --vize-ui-stepper-complete-ink: var(--vize-ui-color-accent);
+    --vize-ui-stepper-content-border: var(--vize-ui-color-border);
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-stepper-radius: var(--vize-ui-radius-md);
+    --vize-ui-stepper-current-fill: var(--vize-ui-color-surface);
+    --vize-ui-stepper-current-ink: var(--vize-ui-color-accent);
+    --vize-ui-stepper-complete-fill: var(--vize-ui-color-canvas);
+    --vize-ui-stepper-complete-ink: var(--vize-ui-color-text);
+  }
+
+  :where([data-vize-ui="stepper-root"]) {
+    color: var(--vize-ui-color-text);
+    font-family: var(--vize-ui-stepper-font, var(--vize-ui-type-family-sans));
+  }
+
+  :where([data-vize-ui="stepper-list"]) {
+    display: flex;
+    align-items: stretch;
+    gap: var(--vize-ui-space-sm);
+    max-inline-size: 100%;
+    padding: calc(var(--vize-ui-focus-ring-width) + var(--vize-ui-focus-ring-offset));
+    margin: calc(0px - var(--vize-ui-focus-ring-width) - var(--vize-ui-focus-ring-offset));
+    overflow-x: auto;
+    scroll-padding-inline: calc(var(--vize-ui-focus-ring-width) + var(--vize-ui-focus-ring-offset));
+  }
+
+  :where([data-vize-ui="stepper-list"][data-orientation="vertical"]) {
+    flex-direction: column;
+  }
+
+  :where([data-vize-ui="stepper-item"]) {
+    position: relative;
+    display: flex;
+    flex: 1 0 max-content;
+    min-inline-size: max-content;
+  }
+
+  :where(
+    [data-vize-ui="stepper-list"][data-orientation="vertical"] > [data-vize-ui="stepper-item"]
+  ) {
+    flex: none;
+  }
+
+  :where([data-vize-ui="stepper-trigger"]) {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--vize-ui-space-sm);
+    inline-size: 100%;
+    min-block-size: var(--vize-ui-size-control-lg);
+    padding: var(--vize-ui-space-sm) var(--vize-ui-stepper-padding-inline, var(--vize-ui-space-md));
+    border: var(--vize-ui-border-width-thin) solid var(--vize-ui-color-border);
+    border-radius: var(--vize-ui-stepper-radius, var(--vize-ui-radius-sm));
+    background: var(--vize-ui-color-surface);
+    color: var(--vize-ui-color-text-muted);
+    font: inherit;
+    font-size: var(--vize-ui-stepper-type-size, var(--vize-ui-type-size-sm));
+    font-weight: var(--vize-ui-type-weight-medium);
+    line-height: var(--vize-ui-type-leading-tight);
+    text-align: center;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      background-color var(--vize-ui-motion-duration-base, 200ms)
+        var(--vize-ui-motion-ease-standard, ease-out),
+      border-color var(--vize-ui-motion-duration-base, 200ms)
+        var(--vize-ui-motion-ease-standard, ease-out),
+      color var(--vize-ui-motion-duration-base, 200ms) var(--vize-ui-motion-ease-standard, ease-out);
+  }
+
+  :where([data-vize-ui="stepper-trigger"][data-current="true"]) {
+    background: var(--vize-ui-stepper-current-fill, var(--vize-ui-color-accent));
+    border-color: var(--vize-ui-color-accent);
+    color: var(--vize-ui-stepper-current-ink, var(--vize-ui-color-accent-contrast));
+  }
+
+  :where([data-vize-ui="stepper-trigger"][data-completed="true"]:not([data-current="true"])) {
+    background: var(--vize-ui-stepper-complete-fill, var(--vize-ui-color-surface));
+    border-color: var(--vize-ui-color-accent);
+    color: var(--vize-ui-stepper-complete-ink, var(--vize-ui-color-accent));
+  }
+
+  :where([data-vize-ui="stepper-trigger"]:hover:not(:disabled):not([aria-disabled="true"])) {
+    border-color: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-ui="stepper-trigger"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+
+  :where(
+    [data-vize-ui="stepper-trigger"]:disabled,
+    [data-vize-ui="stepper-trigger"][aria-disabled="true"]
+  ) {
+    cursor: default;
+  }
+
+  :where([data-vize-ui="stepper-trigger"]:disabled) {
+    opacity: var(--vize-ui-opacity-disabled);
+  }
+
+  :where([data-vize-ui="stepper-trigger"][aria-disabled="true"]:not(:disabled)) {
+    border-style: dashed;
+  }
+
+  :where([data-vize-ui="stepper-content"]:not([hidden])) {
+    padding-block: var(--vize-ui-space-lg);
+    border-block-start: var(--vize-ui-border-width-thin) solid
+      var(--vize-ui-stepper-content-border, transparent);
+    animation: vize-ui-stepper-enter var(--vize-ui-motion-duration-base, 200ms)
+      var(--vize-ui-motion-ease-decelerate, ease-out) both;
+  }
+
+  :where([data-vize-ui="stepper-content"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+}
+
+@keyframes vize-ui-stepper-enter {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="stepper-trigger"]) {
+      transition-duration: 0ms;
+    }
+    :where([data-vize-ui="stepper-content"]) {
+      animation: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="stepper-trigger"]) {
+      background: ButtonFace;
+      border-color: ButtonBorder;
+      color: ButtonText;
+    }
+    :where([data-vize-ui="stepper-trigger"][data-current="true"]) {
+      background: Highlight;
+      border-color: Highlight;
+      color: HighlightText;
+    }
+    :where([data-vize-ui="stepper-trigger"][data-completed="true"]:not([data-current="true"])) {
+      border-color: Highlight;
+    }
+    :where([data-vize-ui="stepper-trigger"]:focus-visible) {
+      outline-color: Highlight;
+    }
+    :where([data-vize-ui="stepper-trigger"]:disabled) {
+      color: GrayText;
+      opacity: 1;
+    }
+  }
+}

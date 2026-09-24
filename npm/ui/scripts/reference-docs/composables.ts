@@ -5,7 +5,7 @@ import type {
   ComposableEntryMetadata,
   ComposableUtilityMetadata,
 } from "../../../compose/core/src/catalog.ts";
-import { moduleExports, moduleInterfaces } from "./extract.ts";
+import { moduleExports, moduleInterfaces, moduleSummary, moduleTypeAliases } from "./extract.ts";
 import { GENERATED_NOTICE, blocks, cell, frontmatter, membersTable, table } from "./markdown.ts";
 
 /** Entries that describe the package rather than ship behavior. */
@@ -32,6 +32,7 @@ export function composableCategory(
 
 /** Summary: TSDoc of the first documented export, else the export list. */
 export function composableSummary(packageRoot: string, entry: ComposableEntryMetadata): string {
+  if (entry.runtimeExports.length === 0) return moduleSummary(path.join(packageRoot, entry.source));
   const exports = moduleExports(path.join(packageRoot, entry.source));
   const documented = exports.find(
     (item) => item.description !== "" && entry.runtimeExports.includes(item.name),
@@ -56,6 +57,7 @@ export function renderComposablePage(
   const source = path.join(packageRoot, entry.source);
   const exports = moduleExports(source).filter((item) => entry.runtimeExports.includes(item.name));
   const interfaces = moduleInterfaces(source);
+  const aliases = entry.runtimeExports.length === 0 ? moduleTypeAliases(source) : [];
   const facts = table(
     ["", ""],
     [
@@ -107,11 +109,24 @@ export function renderComposablePage(
       blocks(`### \`${item.name}\``, item.description, membersTable(item.members)).trimEnd(),
     )
     .join("\n\n");
+  const aliasTypes = aliases
+    .map((item) =>
+      blocks(
+        `### \`${item.name}\``,
+        item.description,
+        ["```ts", item.signature, "```"].join("\n"),
+      ).trimEnd(),
+    )
+    .join("\n\n");
+  const typeOnly = entry.runtimeExports.length === 0;
+  const importNames = typeOnly
+    ? [...interfaces.map((item) => item.name), ...aliases.map((item) => item.name)]
+    : entry.runtimeExports;
   const usage = [
     "## Usage",
     "",
     "```ts",
-    `import { ${entry.runtimeExports.join(", ")} } from "@vizejs/composable/${name}";`,
+    `import ${typeOnly ? "type " : ""}{ ${importNames.join(", ")} } from "@vizejs/composable/${name}";`,
     "```",
   ].join("\n");
   return blocks(
@@ -123,7 +138,9 @@ export function renderComposablePage(
     usage,
     contract === "" ? "" : `## Runtime contract\n\n${contract}`,
     api === "" ? "" : `## API\n\n${api}`,
-    types === "" ? "" : `## Types\n\n${types}`,
+    types === "" && aliasTypes === ""
+      ? ""
+      : `## Types\n\n${[types, aliasTypes].filter(Boolean).join("\n\n")}`,
   );
 }
 

@@ -75,6 +75,10 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/feedback/badge/badge-visual.css",
   },
   {
+    fileName: "component-breadcrumb.css",
+    source: "src/families/navigation/breadcrumb/breadcrumb-visual.css",
+  },
+  {
     fileName: "component-button.css",
     source: "src/families/actions/button/button-visual.css",
   },
@@ -95,6 +99,10 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/form/input/input-visual.css",
   },
   {
+    fileName: "component-pagination.css",
+    source: "src/families/navigation/pagination/pagination-visual.css",
+  },
+  {
     fileName: "component-progress-bar.css",
     source: "src/families/feedback/progress-bar/progress-bar.css",
   },
@@ -105,6 +113,14 @@ const cssAssetEntrypoints = Object.freeze([
   {
     fileName: "component-switch.css",
     source: "src/families/selection/switch/switch-visual.css",
+  },
+  {
+    fileName: "component-stepper.css",
+    source: "src/families/navigation/stepper/stepper-visual.css",
+  },
+  {
+    fileName: "component-tabs.css",
+    source: "src/families/navigation/tabs/tabs-visual.css",
   },
   {
     fileName: "component-textarea.css",
@@ -313,6 +329,8 @@ export default defineConfig({
       transition: "src/families/overlays/transition/transition.ts",
       typeahead: "src/families/interaction/typeahead/typeahead.ts",
       virtualizer: "src/families/interaction/virtualizer/virtualizer.ts",
+      "chart-shape": "src/families/charts/chart-shape/chart-shape.ts",
+      "chart-scale": "src/families/charts/chart-scale/chart-scale.ts",
       "navigation-menu": "src/families/navigation/navigation-menu/navigation-menu.ts",
       "scroll-spy": "src/families/interaction/scroll-spy/scroll-spy.ts",
       toc: "src/families/navigation/toc/toc.ts",
