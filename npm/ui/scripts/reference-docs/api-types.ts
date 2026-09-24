@@ -35,3 +35,10 @@ export interface ModuleInterface {
   readonly description: string;
   readonly members: readonly ApiMember[];
 }
+
+/** One exported type alias of a TypeScript module. */
+export interface ModuleTypeAlias {
+  readonly name: string;
+  readonly signature: string;
+  readonly description: string;
+}

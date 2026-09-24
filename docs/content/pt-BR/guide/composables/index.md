@@ -139,8 +139,8 @@ Todas as entradas de `@vizejs/composable`: contrato de runtime (SSR, hidrataçã
 
 | Entry | Exports | Summary |
 | --- | --- | --- |
-| [timeout-scheduler](../../../guide/composables/timeout-scheduler.md) | — | Provides . |
-| [watch-source](../../../guide/composables/watch-source.md) | — | Provides . |
+| [timeout-scheduler](../../../guide/composables/timeout-scheduler.md) | — | Single-shot timer host used by the debounced and throttled state utilities. Implement this interface to integrate a deterministic test clock, a native runtime timer, or an application-owned scheduler. Handles are opaque: the utilities only hand them back to `TimeoutScheduler.clearTimeout`. This module declares types only and contributes no runtime code. |
+| [watch-source](../../../guide/composables/watch-source.md) | — | Shared source and callback typing for the watch helpers (`watchDebounced`, `watchThrottled`, `watchPausable`, `watchIgnorable`, `watchOnce`, `whenever`). The helpers accept the same sources as Vue's `watch`: a ref, a getter, a reactive object, or a tuple of those. This module declares types only and contributes no runtime code. |
 
 ## performance
 
