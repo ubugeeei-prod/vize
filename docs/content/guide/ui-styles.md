@@ -44,6 +44,17 @@ stylesheets explicitly; avoid importing both paths on one page.
 | `signal`  | Dense graphite surfaces with crisp edges and little depth |
 | `atelier` | Quiet studio neutrals with a single restrained accent     |
 
+To offer a style switcher, replace the single preset import above with the
+presets you want to offer. Each stylesheet activates only in its own scope:
+
+```ts
+import "@vizejs/ui/theme-preset-paper.css";
+import "@vizejs/ui/theme-preset-signal.css";
+import "@vizejs/ui/theme-preset-atelier.css";
+
+document.documentElement.dataset.vizeTheme = "signal";
+```
+
 The existing `midnight`, `play`, `high-contrast`, and `headless` presets remain
 available. Set `data-vize-theme` on `<html>` when a dialog is teleported to the
 document body, so the overlay inherits the same palette as the page. For a

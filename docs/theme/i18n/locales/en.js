@@ -38,6 +38,7 @@
       "/rules/musea-and-css": "Musea & CSS",
       "/rules/cross-file": "Cross-file Rules",
       "/guide/musea": "Musea",
+      "/guide/ui-styles": "UI Styles",
       "/integrations/nuxt": "Nuxt",
       "/integrations/vscode": "VS Code",
       "/integrations/mcp": "MCP Server",

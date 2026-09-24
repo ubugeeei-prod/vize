@@ -1,19 +1,26 @@
 /* Optional dialog surface. Exit is immediate because Dialog does not retain closed DOM. */
 @layer vize.preset {
-  :where([data-vize-theme~="atelier"]) {
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-dialog-radius: initial;
+    --vize-ui-dialog-shadow: initial;
+    --vize-ui-dialog-padding: initial;
+    --vize-ui-dialog-title-font: initial;
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
     --vize-ui-dialog-radius: var(--vize-ui-radius-lg);
     --vize-ui-dialog-shadow: var(--vize-ui-elevation-floating);
     --vize-ui-dialog-padding: var(--vize-ui-space-xl);
   }
 
-  :where([data-vize-theme~="paper"]) {
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
     --vize-ui-dialog-radius: 0.1875rem;
     --vize-ui-dialog-shadow: 0 8px 0 -6px var(--vize-ui-color-border);
     --vize-ui-dialog-padding: var(--vize-ui-space-2xl);
     --vize-ui-dialog-title-font: Georgia, serif;
   }
 
-  :where([data-vize-theme~="signal"]) {
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
     --vize-ui-dialog-radius: 0.125rem;
     --vize-ui-dialog-shadow: var(--vize-ui-elevation-overlay);
     --vize-ui-dialog-padding: var(--vize-ui-space-lg);

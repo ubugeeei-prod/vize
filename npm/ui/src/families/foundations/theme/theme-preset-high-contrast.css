@@ -14,6 +14,7 @@
     --vize-ui-color-text: light-dark(oklch(0 0 0), oklch(1 0 0));
     --vize-ui-color-text-muted: light-dark(oklch(0.32 0 0), oklch(0.82 0 0));
     --vize-ui-color-accent: light-dark(oklch(0.42 0.22 264), oklch(0.84 0.16 90));
+    --vize-ui-focus-ring-color: var(--vize-ui-color-accent);
     --vize-ui-color-accent-contrast: light-dark(oklch(1 0 0), oklch(0 0 0));
     --vize-ui-color-border: light-dark(oklch(0 0 0), oklch(1 0 0));
     --vize-ui-color-neutral: light-dark(oklch(0.22 0 0), oklch(0.9 0 0));

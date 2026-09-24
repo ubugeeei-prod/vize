@@ -76,6 +76,7 @@
       key: "tooling",
       paths: [
         "/guide/musea",
+        "/guide/ui-styles",
         "/integrations/vscode",
         "/integrations/mcp",
         "/guide/wasm",

@@ -250,6 +250,22 @@ void test("applyNavigationOrder keeps the stability contract in Start", () => {
   ]);
 });
 
+void test("applyNavigationOrder places UI styles in Tooling", () => {
+  const document = createNavigationDocument([
+    ["/guide/musea", "Musea"],
+    ["/guide/ui-styles", "UI styles"],
+  ]);
+
+  applyNavigation(document);
+
+  assert.deepEqual(sections(document), [
+    {
+      title: "Tooling",
+      labels: ["Musea", "UI Styles"],
+    },
+  ]);
+});
+
 void test("applyNavigationOrder keeps developer architecture pages together", () => {
   const document = createNavigationDocument([
     ["/architecture/overview", "Architecture"],

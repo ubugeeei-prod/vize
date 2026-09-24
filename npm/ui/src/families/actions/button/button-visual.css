@@ -1,11 +1,23 @@
 /* Optional visual treatment. Button's JavaScript and authored markup remain headless. */
 @layer vize.preset {
-  :where([data-vize-theme~="atelier"]) {
+  /* Theme boundaries must not inherit another palette's component overrides. */
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-button-radius: initial;
+    --vize-ui-button-shadow: initial;
+    --vize-ui-button-letter-spacing: initial;
+    --vize-ui-button-fill: initial;
+    --vize-ui-button-ink: initial;
+    --vize-ui-button-height: initial;
+    --vize-ui-button-padding-inline: initial;
+    --vize-ui-button-font-family: initial;
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
     --vize-ui-button-radius: var(--vize-ui-radius-md);
     --vize-ui-button-shadow: var(--vize-ui-elevation-raised);
   }
 
-  :where([data-vize-theme~="paper"]) {
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
     --vize-ui-button-radius: 0.1875rem;
     --vize-ui-button-shadow: none;
     --vize-ui-button-letter-spacing: 0.025em;
@@ -13,7 +25,7 @@
     --vize-ui-button-ink: var(--vize-ui-color-canvas);
   }
 
-  :where([data-vize-theme~="signal"]) {
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
     --vize-ui-button-radius: 0.125rem;
     --vize-ui-button-shadow: none;
     --vize-ui-button-letter-spacing: 0.01em;

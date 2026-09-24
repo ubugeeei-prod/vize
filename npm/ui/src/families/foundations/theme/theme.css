@@ -117,6 +117,22 @@
    * every space and size token in the annotated subtree.
    */
   :where([data-vize-density]) {
+    /*
+     * Recompute derived tokens at the density boundary. Inherited custom
+     * properties already resolve their var() references on the parent, so
+     * changing the factor alone would leave descendant controls at root size.
+     */
+    --vize-ui-space-xs: calc(0.25rem * var(--vize-ui-density));
+    --vize-ui-space-sm: calc(0.5rem * var(--vize-ui-density));
+    --vize-ui-space-md: calc(0.75rem * var(--vize-ui-density));
+    --vize-ui-space-lg: calc(1rem * var(--vize-ui-density));
+    --vize-ui-space-xl: calc(1.5rem * var(--vize-ui-density));
+    --vize-ui-space-2xl: calc(2rem * var(--vize-ui-density));
+    --vize-ui-space-3xl: calc(3rem * var(--vize-ui-density));
+    --vize-ui-size-control-sm: calc(1.75rem * var(--vize-ui-density));
+    --vize-ui-size-control-md: calc(2.25rem * var(--vize-ui-density));
+    --vize-ui-size-control-lg: calc(2.75rem * var(--vize-ui-density));
+
     &:where([data-vize-density="compact"]) {
       --vize-ui-density: 0.85;
     }
