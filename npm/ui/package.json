@@ -20,7 +20,8 @@
     "directory": "npm/ui"
   },
   "files": [
-    "dist"
+    "dist",
+    "registry"
   ],
   "type": "module",
   "sideEffects": [
@@ -613,7 +614,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "vp pack && vp exec node scripts/build-source-registry.ts",
     "dev": "vp pack --watch",
     "lint:sfc": "vp exec node scripts/lint-sfc.ts src && vp exec node scripts/check-renderers.ts src",
     "pretest": "vp pack && pnpm check:size && pnpm check:tree-shaking",
@@ -623,6 +624,7 @@
     "check:story-testbed": "vp exec node scripts/story-testbed.ts check --format json",
     "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
+    "build:registry": "vp exec node scripts/build-source-registry.ts",
     "check:size": "node scripts/check-size.mjs",
     "check:tree-shaking": "node scripts/check-tree-shaking.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"

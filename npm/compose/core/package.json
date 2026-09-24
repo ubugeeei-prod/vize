@@ -20,7 +20,8 @@
     "directory": "npm/compose/core"
   },
   "files": [
-    "dist"
+    "dist",
+    "registry"
   ],
   "type": "module",
   "sideEffects": false,
@@ -447,12 +448,13 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack",
+    "build": "vp pack && vp exec node scripts/build-source-registry.ts",
     "dev": "vp pack --watch",
     "pretest": "vp pack && pnpm check:size",
-    "test": "vp exec node --test 'src/**/*.test.ts'",
+    "test": "vp exec node --test 'src/**/*.test.ts' 'scripts/**/*.test.ts'",
     "check": "vp check src scripts vite.config.ts && pnpm check:types",
     "check:fix": "vp check --fix src scripts vite.config.ts",
+    "build:registry": "vp exec node scripts/build-source-registry.ts",
     "check:size": "node scripts/check-size.mjs",
     "check:types": "vp exec tsc --noEmit -p tsconfig.json",
     "fmt": "vp fmt --write src scripts vite.config.ts"
