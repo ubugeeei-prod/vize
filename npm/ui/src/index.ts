@@ -8,6 +8,10 @@ export * from "./families/form/field-wiring/field-wiring.ts";
 // layer contract is established before any layered rule;
 // src/families/foundations/theme/theme-stylesheet.test.ts pins the shipped order.
 export * from "./families/foundations/theme/theme.ts";
+// locale stays third: date-time families share its runtime chunk, which must
+// precede the shared SFC helper chunk in the root bundle exactly as it does in
+// the locale subpath bundle for the byte-equality packaging gate.
+export * from "./families/i18n/locale/locale.ts";
 export * from "./families/feedback/alert/alert.ts";
 export * from "./families/accessibility/announcer/announcer.ts";
 export * from "./families/layout/aspect-ratio/aspect-ratio.ts";
@@ -16,6 +20,8 @@ export * from "./families/feedback/badge/badge.ts";
 export * from "./families/feedback/banner/banner.ts";
 export * from "./families/feedback/block-ui/block-ui.ts";
 export * from "./families/feedback/callout/callout.ts";
+export * from "./families/date-time/calendar/calendar.ts";
+export * from "./families/date-time/range-calendar/range-calendar.ts";
 export * from "./families/typography/blockquote/blockquote.ts";
 export * from "./families/navigation/breadcrumb/breadcrumb.ts";
 export * from "./families/navigation/tabs/tabs.ts";
@@ -92,7 +98,6 @@ export * from "./families/accessibility/focus-guards/focus-guards.ts";
 export * from "./families/interaction/history/history.ts";
 export * from "./families/interaction/hover/hover.ts";
 export * from "./families/accessibility/live-region/live-region.ts";
-export * from "./families/i18n/locale/locale.ts";
 export * from "./families/interaction/long-press/long-press.ts";
 export * from "./families/interaction/measure/measure.ts";
 export * from "./families/overlays/motion/motion.ts";

@@ -78,6 +78,36 @@
       "import": "./dist/color-mode.mjs",
       "default": "./dist/color-mode.mjs"
     },
+    "./computed-async": {
+      "types": "./dist/computed-async.d.mts",
+      "import": "./dist/computed-async.mjs",
+      "default": "./dist/computed-async.mjs"
+    },
+    "./computed-with-control": {
+      "types": "./dist/computed-with-control.d.mts",
+      "import": "./dist/computed-with-control.mjs",
+      "default": "./dist/computed-with-control.mjs"
+    },
+    "./create-event-hook": {
+      "types": "./dist/create-event-hook.d.mts",
+      "import": "./dist/create-event-hook.mjs",
+      "default": "./dist/create-event-hook.mjs"
+    },
+    "./create-global-state": {
+      "types": "./dist/create-global-state.d.mts",
+      "import": "./dist/create-global-state.mjs",
+      "default": "./dist/create-global-state.mjs"
+    },
+    "./create-injection-state": {
+      "types": "./dist/create-injection-state.d.mts",
+      "import": "./dist/create-injection-state.mjs",
+      "default": "./dist/create-injection-state.mjs"
+    },
+    "./create-shared-composable": {
+      "types": "./dist/create-shared-composable.d.mts",
+      "import": "./dist/create-shared-composable.mjs",
+      "default": "./dist/create-shared-composable.mjs"
+    },
     "./device-motion": {
       "types": "./dist/device-motion.d.mts",
       "import": "./dist/device-motion.mjs",
@@ -178,6 +208,11 @@
       "import": "./dist/magic-keys.mjs",
       "default": "./dist/magic-keys.mjs"
     },
+    "./math": {
+      "types": "./dist/math.d.mts",
+      "import": "./dist/math.mjs",
+      "default": "./dist/math.mjs"
+    },
     "./media-query": {
       "types": "./dist/media-query.d.mts",
       "import": "./dist/media-query.mjs",
@@ -258,6 +293,26 @@
       "import": "./dist/preferred-languages.mjs",
       "default": "./dist/preferred-languages.mjs"
     },
+    "./reactify": {
+      "types": "./dist/reactify.d.mts",
+      "import": "./dist/reactify.mjs",
+      "default": "./dist/reactify.mjs"
+    },
+    "./ref-auto-reset": {
+      "types": "./dist/ref-auto-reset.d.mts",
+      "import": "./dist/ref-auto-reset.mjs",
+      "default": "./dist/ref-auto-reset.mjs"
+    },
+    "./ref-debounced": {
+      "types": "./dist/ref-debounced.d.mts",
+      "import": "./dist/ref-debounced.mjs",
+      "default": "./dist/ref-debounced.mjs"
+    },
+    "./ref-default": {
+      "types": "./dist/ref-default.d.mts",
+      "import": "./dist/ref-default.mjs",
+      "default": "./dist/ref-default.mjs"
+    },
     "./resize-observer": {
       "types": "./dist/resize-observer.d.mts",
       "import": "./dist/resize-observer.mjs",
@@ -298,6 +353,11 @@
       "import": "./dist/swipe.mjs",
       "default": "./dist/swipe.mjs"
     },
+    "./sync-ref": {
+      "types": "./dist/sync-ref.d.mts",
+      "import": "./dist/sync-ref.mjs",
+      "default": "./dist/sync-ref.mjs"
+    },
     "./temporal": {
       "types": "./dist/temporal.d.mts",
       "import": "./dist/temporal.mjs",
@@ -318,6 +378,11 @@
       "import": "./dist/timeout-scheduler.mjs",
       "default": "./dist/timeout-scheduler.mjs"
     },
+    "./to-reactive": {
+      "types": "./dist/to-reactive.d.mts",
+      "import": "./dist/to-reactive.mjs",
+      "default": "./dist/to-reactive.mjs"
+    },
     "./transition": {
       "types": "./dist/transition.d.mts",
       "import": "./dist/transition.mjs",
@@ -328,6 +393,21 @@
       "import": "./dist/until.mjs",
       "default": "./dist/until.mjs"
     },
+    "./use-array": {
+      "types": "./dist/use-array.d.mts",
+      "import": "./dist/use-array.mjs",
+      "default": "./dist/use-array.mjs"
+    },
+    "./use-async-queue": {
+      "types": "./dist/use-async-queue.d.mts",
+      "import": "./dist/use-async-queue.mjs",
+      "default": "./dist/use-async-queue.mjs"
+    },
+    "./use-async-state": {
+      "types": "./dist/use-async-state.d.mts",
+      "import": "./dist/use-async-state.mjs",
+      "default": "./dist/use-async-state.mjs"
+    },
     "./use-broadcast-channel": {
       "types": "./dist/use-broadcast-channel.d.mts",
       "import": "./dist/use-broadcast-channel.mjs",
@@ -337,6 +417,11 @@
       "types": "./dist/use-clipboard.d.mts",
       "import": "./dist/use-clipboard.mjs",
       "default": "./dist/use-clipboard.mjs"
+    },
+    "./use-confirm-dialog": {
+      "types": "./dist/use-confirm-dialog.d.mts",
+      "import": "./dist/use-confirm-dialog.mjs",
+      "default": "./dist/use-confirm-dialog.mjs"
     },
     "./use-cookie": {
       "types": "./dist/use-cookie.d.mts",
@@ -357,6 +442,11 @@
       "types": "./dist/use-css-var.d.mts",
       "import": "./dist/use-css-var.mjs",
       "default": "./dist/use-css-var.mjs"
+    },
+    "./use-cycle-list": {
+      "types": "./dist/use-cycle-list.d.mts",
+      "import": "./dist/use-cycle-list.mjs",
+      "default": "./dist/use-cycle-list.mjs"
     },
     "./use-date-format": {
       "types": "./dist/use-date-format.d.mts",
@@ -423,6 +513,11 @@
       "import": "./dist/use-history.mjs",
       "default": "./dist/use-history.mjs"
     },
+    "./use-id-generator": {
+      "types": "./dist/use-id-generator.d.mts",
+      "import": "./dist/use-id-generator.mjs",
+      "default": "./dist/use-id-generator.mjs"
+    },
     "./use-image": {
       "types": "./dist/use-image.d.mts",
       "import": "./dist/use-image.mjs",
@@ -438,10 +533,25 @@
       "import": "./dist/use-interval.mjs",
       "default": "./dist/use-interval.mjs"
     },
+    "./use-machine": {
+      "types": "./dist/use-machine.d.mts",
+      "import": "./dist/use-machine.mjs",
+      "default": "./dist/use-machine.mjs"
+    },
     "./use-media-controls": {
       "types": "./dist/use-media-controls.d.mts",
       "import": "./dist/use-media-controls.mjs",
       "default": "./dist/use-media-controls.mjs"
+    },
+    "./use-memoize": {
+      "types": "./dist/use-memoize.d.mts",
+      "import": "./dist/use-memoize.mjs",
+      "default": "./dist/use-memoize.mjs"
+    },
+    "./use-mounted": {
+      "types": "./dist/use-mounted.d.mts",
+      "import": "./dist/use-mounted.mjs",
+      "default": "./dist/use-mounted.mjs"
     },
     "./use-notification": {
       "types": "./dist/use-notification.d.mts",
@@ -457,6 +567,11 @@
       "types": "./dist/use-object-url.d.mts",
       "import": "./dist/use-object-url.mjs",
       "default": "./dist/use-object-url.mjs"
+    },
+    "./use-offset-pagination": {
+      "types": "./dist/use-offset-pagination.d.mts",
+      "import": "./dist/use-offset-pagination.mjs",
+      "default": "./dist/use-offset-pagination.mjs"
     },
     "./use-permission": {
       "types": "./dist/use-permission.d.mts",
@@ -478,10 +593,20 @@
       "import": "./dist/use-script-tag.mjs",
       "default": "./dist/use-script-tag.mjs"
     },
+    "./use-selection": {
+      "types": "./dist/use-selection.d.mts",
+      "import": "./dist/use-selection.mjs",
+      "default": "./dist/use-selection.mjs"
+    },
     "./use-share": {
       "types": "./dist/use-share.d.mts",
       "import": "./dist/use-share.mjs",
       "default": "./dist/use-share.mjs"
+    },
+    "./use-sorted": {
+      "types": "./dist/use-sorted.d.mts",
+      "import": "./dist/use-sorted.mjs",
+      "default": "./dist/use-sorted.mjs"
     },
     "./use-speech-recognition": {
       "types": "./dist/use-speech-recognition.d.mts",
@@ -493,6 +618,11 @@
       "import": "./dist/use-speech-synthesis.mjs",
       "default": "./dist/use-speech-synthesis.mjs"
     },
+    "./use-stepper": {
+      "types": "./dist/use-stepper.d.mts",
+      "import": "./dist/use-stepper.mjs",
+      "default": "./dist/use-stepper.mjs"
+    },
     "./use-storage": {
       "types": "./dist/use-storage.d.mts",
       "import": "./dist/use-storage.mjs",
@@ -502,6 +632,11 @@
       "types": "./dist/use-style-tag.d.mts",
       "import": "./dist/use-style-tag.mjs",
       "default": "./dist/use-style-tag.mjs"
+    },
+    "./use-supported": {
+      "types": "./dist/use-supported.d.mts",
+      "import": "./dist/use-supported.mjs",
+      "default": "./dist/use-supported.mjs"
     },
     "./use-throttled": {
       "types": "./dist/use-throttled.d.mts",
@@ -537,6 +672,11 @@
       "types": "./dist/use-user-media.d.mts",
       "import": "./dist/use-user-media.mjs",
       "default": "./dist/use-user-media.mjs"
+    },
+    "./use-v-model": {
+      "types": "./dist/use-v-model.d.mts",
+      "import": "./dist/use-v-model.mjs",
+      "default": "./dist/use-v-model.mjs"
     },
     "./use-vibrate": {
       "types": "./dist/use-vibrate.d.mts",

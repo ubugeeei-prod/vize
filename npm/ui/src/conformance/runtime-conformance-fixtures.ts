@@ -12,6 +12,8 @@ import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fi
 import { accordionRuntimeFixtures } from "../families/disclosure/accordion/runtime-conformance-accordion-fixtures.ts";
 import { hoverCardRuntimeFixtures } from "../families/overlays/hover-card/runtime-conformance-hover-card-fixtures.ts";
 import { calloutRuntimeFixture } from "../families/feedback/callout/runtime-conformance-callout-fixtures.ts";
+import { calendarRuntimeFixtures } from "../families/date-time/calendar/runtime-conformance-calendar-fixtures.ts";
+import { rangeCalendarRuntimeFixture } from "../families/date-time/range-calendar/runtime-conformance-range-calendar-fixtures.ts";
 import { tableRuntimeFixtures } from "../families/data/table/runtime-conformance-table-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { meterRuntimeFixture } from "../families/feedback/meter/runtime-conformance-meter-fixtures.ts";
@@ -73,7 +75,9 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   badgeRuntimeFixture,
   bannerRuntimeFixture,
   blockUIRuntimeFixture,
+  ...calendarRuntimeFixtures,
   calloutRuntimeFixture,
+  rangeCalendarRuntimeFixture,
   ...tableRuntimeFixtures,
   ...breadcrumbRuntimeFixtures,
   ...tabsRuntimeFixtures,

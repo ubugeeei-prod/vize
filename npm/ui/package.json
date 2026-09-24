@@ -70,6 +70,16 @@
       "import": "./dist/block-ui.mjs",
       "default": "./dist/block-ui.mjs"
     },
+    "./calendar": {
+      "types": "./dist/calendar.d.mts",
+      "import": "./dist/calendar.mjs",
+      "default": "./dist/calendar.mjs"
+    },
+    "./range-calendar": {
+      "types": "./dist/range-calendar.d.mts",
+      "import": "./dist/range-calendar.mjs",
+      "default": "./dist/range-calendar.mjs"
+    },
     "./callout": {
       "types": "./dist/callout.d.mts",
       "import": "./dist/callout.mjs",

@@ -3,6 +3,7 @@ import { actionFamilyCatalog } from "./family-catalog-actions.ts";
 import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { dataFamilyCatalog } from "./family-catalog-data.ts";
+import { dateTimeFamilyCatalog } from "./family-catalog-date-time.ts";
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
@@ -39,6 +40,7 @@ const allFamilyCatalogEntries = [
   ...accessibilityFamilyCatalog,
   ...basicFamilyCatalog,
   ...dataFamilyCatalog,
+  ...dateTimeFamilyCatalog,
   ...feedbackFamilyCatalog,
   ...foundationFamilyCatalog,
   ...focusFamilyCatalog,
