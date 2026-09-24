@@ -89,6 +89,8 @@ export const uiFamilyRoots = new Map<string, string>([
   ["card", "src/families/layout/card/"],
   ["carousel", "src/families/media/carousel/"],
   ["cascader", "src/families/selection/cascader/"],
+  ["chart-scale", "src/families/charts/chart-scale/"],
+  ["chart-shape", "src/families/charts/chart-shape/"],
   ["checkbox", "src/families/selection/checkbox/"],
   ["checkbox-group", "src/families/selection/checkbox-group/"],
   ["cluster", "src/families/layout/cluster/"],

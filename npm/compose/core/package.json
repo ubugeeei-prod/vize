@@ -413,6 +413,16 @@
       "import": "./dist/use-async-state.mjs",
       "default": "./dist/use-async-state.mjs"
     },
+    "./use-barcode-detector": {
+      "types": "./dist/use-barcode-detector.d.mts",
+      "import": "./dist/use-barcode-detector.mjs",
+      "default": "./dist/use-barcode-detector.mjs"
+    },
+    "./use-bluetooth": {
+      "types": "./dist/use-bluetooth.d.mts",
+      "import": "./dist/use-bluetooth.mjs",
+      "default": "./dist/use-bluetooth.mjs"
+    },
     "./use-broadcast-channel": {
       "types": "./dist/use-broadcast-channel.d.mts",
       "import": "./dist/use-broadcast-channel.mjs",
@@ -427,6 +437,11 @@
       "types": "./dist/use-confirm-dialog.d.mts",
       "import": "./dist/use-confirm-dialog.mjs",
       "default": "./dist/use-confirm-dialog.mjs"
+    },
+    "./use-contact-picker": {
+      "types": "./dist/use-contact-picker.d.mts",
+      "import": "./dist/use-contact-picker.mjs",
+      "default": "./dist/use-contact-picker.mjs"
     },
     "./use-cookie": {
       "types": "./dist/use-cookie.d.mts",
@@ -533,6 +548,16 @@
       "import": "./dist/use-fullscreen.mjs",
       "default": "./dist/use-fullscreen.mjs"
     },
+    "./use-gamepad": {
+      "types": "./dist/use-gamepad.d.mts",
+      "import": "./dist/use-gamepad.mjs",
+      "default": "./dist/use-gamepad.mjs"
+    },
+    "./use-hid": {
+      "types": "./dist/use-hid.d.mts",
+      "import": "./dist/use-hid.mjs",
+      "default": "./dist/use-hid.mjs"
+    },
     "./use-history": {
       "types": "./dist/use-history.d.mts",
       "import": "./dist/use-history.mjs",
@@ -613,6 +638,11 @@
       "import": "./dist/use-offset-pagination.mjs",
       "default": "./dist/use-offset-pagination.mjs"
     },
+    "./use-payment-request": {
+      "types": "./dist/use-payment-request.d.mts",
+      "import": "./dist/use-payment-request.mjs",
+      "default": "./dist/use-payment-request.mjs"
+    },
     "./use-permission": {
       "types": "./dist/use-permission.d.mts",
       "import": "./dist/use-permission.mjs",
@@ -643,6 +673,11 @@
       "import": "./dist/use-relative-time-format.mjs",
       "default": "./dist/use-relative-time-format.mjs"
     },
+    "./use-screen-details": {
+      "types": "./dist/use-screen-details.d.mts",
+      "import": "./dist/use-screen-details.mjs",
+      "default": "./dist/use-screen-details.mjs"
+    },
     "./use-script-tag": {
       "types": "./dist/use-script-tag.d.mts",
       "import": "./dist/use-script-tag.mjs",
@@ -657,6 +692,11 @@
       "types": "./dist/use-selection.d.mts",
       "import": "./dist/use-selection.mjs",
       "default": "./dist/use-selection.mjs"
+    },
+    "./use-serial": {
+      "types": "./dist/use-serial.d.mts",
+      "import": "./dist/use-serial.mjs",
+      "default": "./dist/use-serial.mjs"
     },
     "./use-set": {
       "types": "./dist/use-set.d.mts",
@@ -743,6 +783,16 @@
       "import": "./dist/use-url-search-params.mjs",
       "default": "./dist/use-url-search-params.mjs"
     },
+    "./use-usb": {
+      "types": "./dist/use-usb.d.mts",
+      "import": "./dist/use-usb.mjs",
+      "default": "./dist/use-usb.mjs"
+    },
+    "./use-user-activation": {
+      "types": "./dist/use-user-activation.d.mts",
+      "import": "./dist/use-user-activation.mjs",
+      "default": "./dist/use-user-activation.mjs"
+    },
     "./use-user-media": {
       "types": "./dist/use-user-media.d.mts",
       "import": "./dist/use-user-media.mjs",
@@ -762,6 +812,16 @@
       "types": "./dist/use-wake-lock.d.mts",
       "import": "./dist/use-wake-lock.mjs",
       "default": "./dist/use-wake-lock.mjs"
+    },
+    "./use-web-authn": {
+      "types": "./dist/use-web-authn.d.mts",
+      "import": "./dist/use-web-authn.mjs",
+      "default": "./dist/use-web-authn.mjs"
+    },
+    "./use-web-midi": {
+      "types": "./dist/use-web-midi.d.mts",
+      "import": "./dist/use-web-midi.mjs",
+      "default": "./dist/use-web-midi.mjs"
     },
     "./use-websocket": {
       "types": "./dist/use-websocket.d.mts",
