@@ -204,3 +204,58 @@ fn test_descendant_after_keyframes_still_warns() {
     let result = linter.lint(source, 0);
     assert_eq!(result.warning_count, 1);
 }
+
+#[test]
+fn comments_before_flat_selectors_do_not_warn() {
+    let linter = create_linter();
+    for source in [
+        "/* a comment */\n.bar { color: var(--c); }",
+        ".bar { color: var(--c); }\n/* between */\n.baz { color: var(--c); }",
+        "/* x */ .a, .b { color: red; }",
+        ".a , .b { color: red; }",
+        "/* first */ /* second */\n.bar { color: red; }",
+        "/* x */ @media print { /* y */ .bar { color: red; } }",
+    ] {
+        let result = linter.lint(source, 0);
+        assert_eq!(
+            result.warning_count, 0,
+            "{source}: {:?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
+fn comments_inside_selectors_keep_real_combinators_and_spans() {
+    let linter = create_linter();
+    let source = "/* lead */ .parent /* detail */ .child { color: red; }";
+    let result = linter.lint(source, 10);
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    let diagnostic = &result.diagnostics[0];
+    assert_eq!(
+        &source[diagnostic.start as usize - 10..diagnostic.end as usize - 10],
+        ".parent /* detail */ .child"
+    );
+
+    assert_eq!(
+        linter
+            .lint("/* lead */ .a, .parent .child { color: red; }", 0)
+            .warning_count,
+        1,
+        "a real descendant still reports inside a selector list",
+    );
+
+    for source in [
+        ".a/**/.b { color: red; }",
+        ".a/* a b */.b { color: red; }",
+        ".a/* a b */ { color: red; }",
+        "[data-text=\"/* a b */\"] { color: red; }",
+    ] {
+        let result = linter.lint(source, 0);
+        assert_eq!(
+            result.warning_count, 0,
+            "{source}: {:?}",
+            result.diagnostics
+        );
+    }
+}

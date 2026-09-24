@@ -2,6 +2,8 @@
 //!
 //! Recommend using CSS nesting for descendant selectors.
 
+use std::borrow::Cow;
+
 use lightningcss::stylesheet::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -73,12 +75,15 @@ enum Frame {
 fn scan(source: &str, offset: usize, result: &mut CssLintResult) {
     let bytes = source.as_bytes();
     let mut frames: Vec<Frame> = Vec::new();
+    let mut comments = Vec::new();
     let mut prelude_start = 0usize;
     let mut i = 0usize;
     while let Some(&byte) = bytes.get(i) {
         match byte {
             b'/' if bytes.get(i + 1) == Some(&b'*') => {
-                i = skip_comment(bytes, i);
+                let end = skip_comment(bytes, i);
+                comments.push((i, end));
+                i = end;
                 continue;
             }
             quote @ (b'"' | b'\'') => {
@@ -88,45 +93,99 @@ fn scan(source: &str, offset: usize, result: &mut CssLintResult) {
             b';' => {
                 i += 1;
                 prelude_start = i;
+                comments.clear();
             }
             b'}' => {
                 frames.pop();
                 i += 1;
                 prelude_start = i;
+                comments.clear();
             }
             b'{' => {
-                let raw_prelude = source.get(prelude_start..i).unwrap_or_default();
-                let prelude = raw_prelude.trim();
-                if let Some(keyword) = at_keyword(prelude) {
+                let (prelude, start, end) = selector_prelude(source, prelude_start, i, &comments);
+                if let Some(keyword) = at_keyword(&prelude) {
                     if is_opaque_at_rule(keyword) {
                         i = skip_balanced_block(bytes, i);
                         prelude_start = i;
+                        comments.clear();
                         continue;
                     }
                     frames.push(Frame::Group);
                 } else {
                     if !frames.contains(&Frame::Style)
                         && !prelude.is_empty()
-                        && !is_already_nested(prelude)
-                        && split_descendant_selector(prelude).is_some()
+                        && !is_already_nested(&prelude)
+                        && split_descendant_selector(&prelude).is_some()
                     {
-                        // Point at the selector, not the whitespace
-                        // that separated it from the previous rule.
-                        let lead = raw_prelude.len() - raw_prelude.trim_start().len();
-                        report(
-                            prelude_start + lead,
-                            prelude_start + lead + prelude.len(),
-                            offset,
-                            result,
-                        );
+                        report(start, end, offset, result);
                     }
                     frames.push(Frame::Style);
                 }
                 i += 1;
                 prelude_start = i;
+                comments.clear();
             }
             _ => i += 1,
         }
+    }
+}
+
+/// CSS comments are removed before tokenization. Keep their original byte
+/// ranges for diagnostics, but never treat their text or surrounding gap as
+/// part of a selector combinator.
+fn selector_prelude<'a>(
+    source: &'a str,
+    start: usize,
+    end: usize,
+    comments: &[(usize, usize)],
+) -> (Cow<'a, str>, usize, usize) {
+    if comments.is_empty() {
+        let raw = source.get(start..end).unwrap_or_default();
+        return (
+            Cow::Borrowed(raw.trim()),
+            start + raw.len() - raw.trim_start().len(),
+            start + raw.trim_end().len(),
+        );
+    }
+
+    let mut selector = String::with_capacity(end - start);
+    let mut first = None;
+    let mut last = start;
+    let mut cursor = start;
+    for &(comment_start, comment_end) in comments {
+        append_prelude_segment(
+            source,
+            cursor,
+            comment_start,
+            &mut selector,
+            &mut first,
+            &mut last,
+        );
+        cursor = comment_end;
+    }
+    append_prelude_segment(source, cursor, end, &mut selector, &mut first, &mut last);
+    (
+        Cow::Owned(selector.trim().to_owned()),
+        first.unwrap_or(end),
+        last,
+    )
+}
+
+fn append_prelude_segment(
+    source: &str,
+    start: usize,
+    end: usize,
+    selector: &mut String,
+    first: &mut Option<usize>,
+    last: &mut usize,
+) {
+    let segment = source.get(start..end).unwrap_or_default();
+    selector.push_str(segment);
+    if !segment.trim().is_empty() {
+        if first.is_none() {
+            *first = Some(start + segment.len() - segment.trim_start().len());
+        }
+        *last = start + segment.trim_end().len();
     }
 }
 
@@ -240,7 +299,13 @@ fn split_descendant_selector(selector: &str) -> Option<(&str, &str)> {
             b' ' | b'>' | b'+' | b'~' if bracket == 0 && paren == 0 => {
                 let (parent, child) = selector.split_at_checked(i)?;
                 let parent = parent.trim();
-                let child = child.trim().trim_start_matches([' ', '>', '+', '~']).trim();
+                let child = child.trim();
+                // A separator between entries in a selector list is not
+                // a descendant combinator (e.g. `.a, .b` or `.a , .b`).
+                if parent.ends_with(',') || child.starts_with(',') {
+                    continue;
+                }
+                let child = child.trim_start_matches([' ', '>', '+', '~']).trim();
                 if !parent.is_empty() && !child.is_empty() {
                     return Some((parent, child));
                 }
