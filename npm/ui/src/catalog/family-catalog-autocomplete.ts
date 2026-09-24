@@ -38,7 +38,8 @@ export const autocompleteFamilyCatalog = [
         "typeahead",
       ],
       maximumJavaScriptGzipBytes: 14_500,
-      maximumCssGzipBytes: 0,
+      // Combobox's accessible async status carries its structural stylesheet.
+      maximumCssGzipBytes: 7_800,
     },
     aliases: ["autocomplete", "address autocomplete", "search suggestions", "recent searches"],
     upstreamCoverage: [
