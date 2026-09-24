@@ -82,5 +82,5 @@ pub fn contract_for(rule: &str) -> Option<&'static RuleEntry> {
     RULE_CONTRACTS
         .binary_search_by(|entry| entry.name.cmp(rule))
         .ok()
-        .map(|index| &RULE_CONTRACTS[index])
+        .and_then(|index| RULE_CONTRACTS.get(index))
 }

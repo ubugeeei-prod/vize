@@ -195,4 +195,5 @@ fn is_runtime_context_api(name: &str) -> bool {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

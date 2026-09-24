@@ -6,12 +6,12 @@ use vize_s0::{String, cstr};
 pub(super) fn options_props_object(text: &str) -> Option<&str> {
     let marker = "const __vize_options_props = (";
     let at = text.find(marker)?;
-    let rest = text[at + marker.len()..].trim_start();
+    let rest = text.get(at + marker.len()..)?.trim_start();
     if !rest.starts_with('{') {
         return None;
     }
     let end = matching_close(rest)?;
-    Some(&rest[..=end])
+    rest.get(..=end)
 }
 
 pub(super) fn options_prop_annotation(object: Option<&str>, expr: &str) -> Option<String> {
@@ -28,8 +28,8 @@ fn object_has_depth1_key(object: &str, name: &str) -> bool {
     let bytes = object.as_bytes();
     let mut index = 0usize;
     let mut depth = 0i32;
-    while index < bytes.len() {
-        match bytes[index] {
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
             b'{' | b'[' | b'(' => {
                 depth += 1;
                 index += 1;
@@ -38,36 +38,39 @@ fn object_has_depth1_key(object: &str, name: &str) -> bool {
                 depth -= 1;
                 index += 1;
             }
-            b'\'' | b'"' | b'`' => {
-                let quote = bytes[index];
+            quote @ (b'\'' | b'"' | b'`') => {
                 let key_start = index + 1;
-                index = skip_quoted(bytes, index);
+                index = skip_quoted(bytes, index, quote);
                 if depth == 1
                     && quote != b'`'
                     && index > key_start
-                    && &object[key_start..index - 1] == name
+                    && object.get(key_start..index - 1) == Some(name)
                     && followed_by_colon(object, index)
                 {
                     return true;
                 }
             }
             b'/' if bytes.get(index + 1) == Some(&b'/') => {
-                index = object[index..]
+                index = object
+                    .get(index..)
+                    .unwrap_or_default()
                     .find('\n')
                     .map_or(bytes.len(), |at| index + at);
             }
             b'/' if bytes.get(index + 1) == Some(&b'*') => {
-                index = object[index + 2..]
+                index = object
+                    .get(index + 2..)
+                    .unwrap_or_default()
                     .find("*/")
                     .map_or(bytes.len(), |at| index + 2 + at + 2);
             }
             byte if depth == 1 && is_ident_start(byte) => {
                 let start = index;
                 index += 1;
-                while index < bytes.len() && is_ident_continue(bytes[index]) {
+                while bytes.get(index).copied().is_some_and(is_ident_continue) {
                     index += 1;
                 }
-                if &object[start..index] == name && followed_by_colon(object, index) {
+                if object.get(start..index) == Some(name) && followed_by_colon(object, index) {
                     return true;
                 }
             }
@@ -81,8 +84,8 @@ fn matching_close(source: &str) -> Option<usize> {
     let bytes = source.as_bytes();
     let mut index = 0usize;
     let mut depth = 0i32;
-    while index < bytes.len() {
-        match bytes[index] {
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
             b'{' | b'[' | b'(' => {
                 depth += 1;
                 index += 1;
@@ -94,14 +97,18 @@ fn matching_close(source: &str) -> Option<usize> {
                 }
                 index += 1;
             }
-            b'\'' | b'"' | b'`' => index = skip_quoted(bytes, index),
+            quote @ (b'\'' | b'"' | b'`') => index = skip_quoted(bytes, index, quote),
             b'/' if bytes.get(index + 1) == Some(&b'/') => {
-                index = source[index..]
+                index = source
+                    .get(index..)
+                    .unwrap_or_default()
                     .find('\n')
                     .map_or(bytes.len(), |at| index + at);
             }
             b'/' if bytes.get(index + 1) == Some(&b'*') => {
-                index = source[index + 2..]
+                index = source
+                    .get(index + 2..)
+                    .unwrap_or_default()
                     .find("*/")
                     .map_or(bytes.len(), |at| index + 2 + at + 2);
             }
@@ -111,15 +118,14 @@ fn matching_close(source: &str) -> Option<usize> {
     None
 }
 
-fn skip_quoted(bytes: &[u8], start: usize) -> usize {
-    let quote = bytes[start];
+fn skip_quoted(bytes: &[u8], start: usize, quote: u8) -> usize {
     let mut index = start + 1;
-    while index < bytes.len() {
-        if bytes[index] == b'\\' {
+    while let Some(&byte) = bytes.get(index) {
+        if byte == b'\\' {
             index = (index + 2).min(bytes.len());
             continue;
         }
-        if bytes[index] == quote {
+        if byte == quote {
             return index + 1;
         }
         index += 1;
@@ -128,7 +134,11 @@ fn skip_quoted(bytes: &[u8], start: usize) -> usize {
 }
 
 fn followed_by_colon(source: &str, index: usize) -> bool {
-    source[index..].trim_start().starts_with(':')
+    source
+        .get(index..)
+        .unwrap_or_default()
+        .trim_start()
+        .starts_with(':')
 }
 
 fn is_identifier(name: &str) -> bool {

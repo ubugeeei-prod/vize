@@ -15,7 +15,9 @@ pub(super) fn is_identifier_start(byte: u8) -> bool {
 }
 
 pub(super) fn identifier_end(bytes: &[u8], start: usize) -> usize {
-    bytes[start..]
+    bytes
+        .get(start..)
+        .unwrap_or_default()
         .iter()
         .position(|byte| {
             !(byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$') || *byte >= 0x80)
@@ -60,7 +62,9 @@ pub(super) fn is_jsx_start(bytes: &[u8], start: usize, tsx: bool) -> bool {
 fn is_generic_arrow_start(bytes: &[u8], start: usize) -> bool {
     const LOOKAHEAD_LIMIT: usize = 4 * 1024;
 
-    let bytes = &bytes[..bytes.len().min(start.saturating_add(LOOKAHEAD_LIMIT))];
+    let bytes = bytes
+        .get(..bytes.len().min(start.saturating_add(LOOKAHEAD_LIMIT)))
+        .unwrap_or_default();
     let Some(type_end) = matching_close(bytes, start, b'<', b'>') else {
         return false;
     };
@@ -71,7 +75,7 @@ fn is_generic_arrow_start(bytes: &[u8], start: usize) -> bool {
     let Some(parameters_end) = matching_close(bytes, parameters_start, b'(', b')') else {
         // TSX accepts a generic arrow before its closing `) =>` is visible when
         // the type-parameter grammar itself disambiguates it from JSX.
-        return disambiguates_type_parameters(&bytes[start + 1..type_end]);
+        return disambiguates_type_parameters(bytes.get(start + 1..type_end).unwrap_or_default());
     };
     let arrow_start = skip_trivia(bytes, parameters_end + 1);
     has_arrow_after_parameters(bytes, arrow_start)
@@ -93,8 +97,7 @@ fn has_arrow_after_parameters(bytes: &[u8], start: usize) -> bool {
     let mut line_comment = false;
     let mut block_comment = false;
     let mut cursor = start + 1;
-    while cursor < bytes.len() {
-        let byte = bytes[cursor];
+    while let Some(&byte) = bytes.get(cursor) {
         let next = bytes.get(cursor + 1).copied();
         if line_comment {
             line_comment = byte != b'\n';
@@ -146,8 +149,7 @@ fn disambiguates_type_parameters(bytes: &[u8]) -> bool {
     let mut brace_depth = 0usize;
     let mut quote = None;
     let mut cursor = 0;
-    while cursor < bytes.len() {
-        let byte = bytes[cursor];
+    while let Some(&byte) = bytes.get(cursor) {
         if let Some(active_quote) = quote {
             match byte {
                 b'\\' => cursor += 1,
@@ -162,7 +164,7 @@ fn disambiguates_type_parameters(bytes: &[u8]) -> bool {
                 b',' | b'=' if at_top_level => return true,
                 byte if at_top_level && is_identifier_start(byte) => {
                     let end = identifier_end(bytes, cursor);
-                    if matches!(&bytes[cursor..end], b"const" | b"extends") {
+                    if matches!(bytes.get(cursor..end), Some(b"const" | b"extends")) {
                         return true;
                     }
                     cursor = end - 1;
@@ -189,8 +191,7 @@ fn matching_close(bytes: &[u8], start: usize, open: u8, close: u8) -> Option<usi
     let mut line_comment = false;
     let mut block_comment = false;
     let mut cursor = start;
-    while cursor < bytes.len() {
-        let byte = bytes[cursor];
+    while let Some(&byte) = bytes.get(cursor) {
         let next = bytes.get(cursor + 1).copied();
         if line_comment {
             if byte == b'\n' {
@@ -237,7 +238,9 @@ fn matching_close(bytes: &[u8], start: usize, open: u8, close: u8) -> Option<usi
 
 fn skip_whitespace(bytes: &[u8], start: usize) -> usize {
     start
-        + bytes[start..]
+        + bytes
+            .get(start..)
+            .unwrap_or_default()
             .iter()
             .take_while(|byte| byte.is_ascii_whitespace())
             .count()
@@ -249,13 +252,17 @@ fn skip_trivia(bytes: &[u8], start: usize) -> usize {
         match (bytes.get(cursor), bytes.get(cursor + 1)) {
             (Some(b'/'), Some(b'/')) => {
                 cursor += 2;
-                cursor += bytes[cursor..]
+                cursor += bytes
+                    .get(cursor..)
+                    .unwrap_or_default()
                     .iter()
                     .position(|byte| *byte == b'\n')
                     .unwrap_or(bytes.len() - cursor);
             }
             (Some(b'/'), Some(b'*')) => {
-                let Some(end) = bytes[cursor + 2..]
+                let Some(end) = bytes
+                    .get(cursor + 2..)
+                    .unwrap_or_default()
                     .windows(2)
                     .position(|candidate| candidate == b"*/")
                 else {

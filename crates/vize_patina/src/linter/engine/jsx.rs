@@ -143,13 +143,14 @@ impl Linter {
     ) -> LintResult {
         let mut ctx = self.jsx_context(allocator, source, filename);
         ctx.set_dialect(VueDialect::Vue);
-        let rule_count = self.registry.rules().len();
+        // The visitor zips rules with their names and reads the mask with
+        // `get`, so unequal lengths cannot misalign or panic.
         let mut visitor = LintVisitor::with_rule_filter(
             &mut ctx,
-            &self.registry.rules()[..rule_count],
-            &self.rule_names()[..rule_count],
+            self.registry.rules(),
+            self.rule_names(),
             self.registry.has_exit_element_rules(),
-            &keep_mask[..rule_count],
+            keep_mask,
         );
         profile!("patina.jsx.fallback.visit", visitor.visit_root(root));
         finish_jsx(filename, ctx)

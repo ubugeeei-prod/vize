@@ -28,6 +28,7 @@
 
 mod computed_names;
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
 
 use super::template_scan::{TemplateCall, for_each_template_call};

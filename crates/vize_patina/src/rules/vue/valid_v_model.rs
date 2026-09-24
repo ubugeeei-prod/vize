@@ -235,6 +235,7 @@ fn is_optional_chaining_member_expression(expression: &OxcExpression<'_>) -> boo
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod assignment_target_tests;
 
 #[cfg(test)]

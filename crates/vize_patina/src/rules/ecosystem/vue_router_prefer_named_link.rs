@@ -100,7 +100,10 @@ fn object_path_literal_value(value: &str) -> Option<&str> {
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "snapshot fixture uses insta's format!"
+)]
 mod tests {
     use super::VueRouterPreferNamedLink;
     use crate::linter::Linter;

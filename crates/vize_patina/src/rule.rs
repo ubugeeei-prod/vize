@@ -85,45 +85,37 @@ pub trait Rule: Send + Sync {
     }
 
     /// Run on the full SFC source before template extraction.
-    #[allow(unused_variables)]
-    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {}
+    fn run_on_sfc<'a>(&self, _ctx: &mut LintContext<'a>) {}
 
     /// Run on template root node (called once per template)
-    #[allow(unused_variables)]
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {}
+    fn run_on_template<'a>(&self, _ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {}
 
     /// Called when entering an element node
-    #[allow(unused_variables)]
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {}
+    fn enter_element<'a>(&self, _ctx: &mut LintContext<'a>, _element: &ElementNode<'a>) {}
 
     /// Called when exiting an element node
-    #[allow(unused_variables)]
-    fn exit_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {}
+    fn exit_element<'a>(&self, _ctx: &mut LintContext<'a>, _element: &ElementNode<'a>) {}
 
     /// Called for each directive on an element
-    #[allow(unused_variables)]
     fn check_directive<'a>(
         &self,
-        ctx: &mut LintContext<'a>,
-        element: &ElementNode<'a>,
-        directive: &DirectiveNode<'a>,
+        _ctx: &mut LintContext<'a>,
+        _element: &ElementNode<'a>,
+        _directive: &DirectiveNode<'a>,
     ) {
     }
 
     /// Called for v-for nodes
-    #[allow(unused_variables)]
-    fn check_for<'a>(&self, ctx: &mut LintContext<'a>, for_node: &ForNode<'a>) {}
+    fn check_for<'a>(&self, _ctx: &mut LintContext<'a>, _for_node: &ForNode<'a>) {}
 
     /// Called for v-if nodes
-    #[allow(unused_variables)]
-    fn check_if<'a>(&self, ctx: &mut LintContext<'a>, if_node: &IfNode<'a>) {}
+    fn check_if<'a>(&self, _ctx: &mut LintContext<'a>, _if_node: &IfNode<'a>) {}
 
     /// Called for interpolation nodes {{ expr }}
-    #[allow(unused_variables)]
     fn check_interpolation<'a>(
         &self,
-        ctx: &mut LintContext<'a>,
-        interpolation: &InterpolationNode<'a>,
+        _ctx: &mut LintContext<'a>,
+        _interpolation: &InterpolationNode<'a>,
     ) {
     }
 }
@@ -163,8 +155,13 @@ impl RuleRegistry {
 
     pub(crate) fn replace(&mut self, rule: Box<dyn Rule>) {
         let rule_name = rule.meta().name;
-        if let Some(index) = self.rule_names.iter().position(|name| *name == rule_name) {
-            self.rules[index] = rule;
+        if let Some(slot) = self
+            .rule_names
+            .iter()
+            .position(|name| *name == rule_name)
+            .and_then(|index| self.rules.get_mut(index))
+        {
+            *slot = rule;
             return;
         }
         self.register(rule);

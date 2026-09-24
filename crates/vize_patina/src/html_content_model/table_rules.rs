@@ -73,7 +73,7 @@ pub(super) fn form_in_table(chain: &Chain) -> Scan {
     if !is_form {
         return (Tri::No, None);
     }
-    let parent = match len.checked_sub(2).map(|index| &chain.frames[index]) {
+    let parent = match len.checked_sub(2).and_then(|index| chain.frames.get(index)) {
         Some(frame) => ["table", "tbody", "thead", "tfoot", "tr"]
             .iter()
             .fold(Tri::No, |acc, tag| acc.or(frame.is_html(tag))),

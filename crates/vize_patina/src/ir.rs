@@ -3,7 +3,6 @@
 //! The IR abstracts over container formats such as Vue SFCs and standalone
 //! JSX/TSX modules while keeping source slices zero-copy.
 
-use oxc_span::SourceType;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_s0::CompactString;
 
@@ -114,21 +113,6 @@ impl ScriptLanguage {
             _ => Self::JavaScript,
         }
     }
-
-    /// The OXC [`SourceType`] used to parse a script block in this language.
-    ///
-    /// Scaffolding for the script-block parsing path of the rule IR; the markup
-    /// facade currently projects from already-parsed roots/programs, so this is
-    /// not yet exercised by a callsite in this crate.
-    #[allow(dead_code)]
-    pub(crate) fn source_type(self) -> SourceType {
-        match self {
-            Self::JavaScript => SourceType::default().with_module(true),
-            Self::Jsx => SourceType::jsx().with_module(true),
-            Self::TypeScript => SourceType::ts().with_module(true),
-            Self::Tsx => SourceType::tsx().with_module(true),
-        }
-    }
 }
 
 /// Byte range in the original source.
@@ -216,13 +200,6 @@ impl<'a> ScriptBlock<'a> {
     /// Start offset in the original source.
     pub const fn offset(&self) -> usize {
         self.range.start as usize
-    }
-
-    /// The OXC [`SourceType`] used to parse this script block. Scaffolding for
-    /// the script-block parsing path (see [`ScriptLanguage::source_type`]).
-    #[allow(dead_code)]
-    pub(crate) fn source_type(&self) -> SourceType {
-        self.language.source_type()
     }
 }
 

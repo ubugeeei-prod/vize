@@ -64,14 +64,16 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     ctx: &mut LintContext<'a>,
     input: Dispatch<'a>,
 ) {
-    let rules = &linter.registry.rules()[..input.rule_count];
-    let names = &linter.rule_names()[..input.rule_count];
+    let all_rules = linter.registry.rules();
+    let rules = all_rules.get(..input.rule_count).unwrap_or(all_rules);
+    let all_names = linter.rule_names();
+    let names = all_names.get(..input.rule_count).unwrap_or(all_names);
     let exit = linter.registry.has_exit_element_rules();
     let selected: Vec<_> = rules
         .iter()
+        .zip(names.iter().copied())
         .enumerate()
-        .filter_map(|(index, rule)| {
-            let name = names[index];
+        .filter_map(|(index, (rule, name))| {
             (input.rules.contains(&name) && linter.is_rule_enabled(name))
                 .then(|| rule.as_markup_rule().map(|rule| (index, rule.name(), rule)))
                 .flatten()
@@ -86,7 +88,9 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
 
     let mut keep = vec![true; input.rule_count];
     for (index, _, _) in &selected {
-        keep[*index] = false;
+        if let Some(slot) = keep.get_mut(*index) {
+            *slot = false;
+        }
     }
     {
         let mut visitor = LintVisitor::with_rule_filter(ctx, rules, names, exit, &keep);

@@ -15,7 +15,9 @@ pub(super) fn binding_offset(generated: &str, expression_offset: u32) -> Option<
     binding_on_line(generated, offset).or_else(|| {
         let before = generated.get(..offset)?;
         let previous_end = before.rfind('\n')?;
-        let previous_start = before[..previous_end]
+        let previous_start = before
+            .get(..previous_end)
+            .unwrap_or_default()
             .rfind('\n')
             .map_or(0, |index| index + 1);
         binding_on_line(generated, previous_start)
@@ -124,12 +126,14 @@ fn collect_void_wrappers(
     index: &mut u32,
 ) {
     let mut search = 0usize;
-    while let Some(relative) = text[search..].find(VOID_OPEN) {
+    while let Some(relative) = text.get(search..).and_then(|rest| rest.find(VOID_OPEN)) {
         let void_at = search + relative;
-        let line_end = text[void_at..]
+        let line_end = text
+            .get(void_at..)
+            .unwrap_or_default()
             .find('\n')
             .map_or(text.len(), |offset| void_at + offset);
-        let line = &text[void_at..line_end];
+        let line = text.get(void_at..line_end).unwrap_or_default();
         let Some(close) = line.rfind("); // ") else {
             search = line_end;
             continue;
@@ -140,7 +144,7 @@ fn collect_void_wrappers(
             search = line_end;
             continue;
         }
-        let expr = &text[expr_start..expr_end];
+        let expr = text.get(expr_start..expr_end).unwrap_or_default();
         let new_stmt = match super::options_prop_shape::options_prop_annotation(props_object, expr)
         {
             Some(annotation) => cstr!("const __expr_{index}: {annotation} = {expr}"),
@@ -159,16 +163,21 @@ fn collect_handler_arguments(
     index: &mut u32,
 ) {
     let mut search = 0usize;
-    while let Some(relative) = text[search..].find(HANDLER_MARK) {
+    while let Some(relative) = text.get(search..).and_then(|rest| rest.find(HANDLER_MARK)) {
         let expr_start = search + relative + HANDLER_MARK.len();
-        let Some(relative_end) = text[expr_start..].find("))") else {
+        let Some(relative_end) = text.get(expr_start..).and_then(|rest| rest.find("))")) else {
             break;
         };
         let expr_end = expr_start + relative_end;
-        let expr = &text[expr_start..expr_end];
-        let line_start = text[..expr_start].rfind('\n').map_or(0, |at| at + 1);
+        let expr = text.get(expr_start..expr_end).unwrap_or_default();
+        let line_start = text
+            .get(..expr_start)
+            .unwrap_or_default()
+            .rfind('\n')
+            .map_or(0, |at| at + 1);
         let indent = " ".repeat(
-            text[line_start..]
+            text.get(line_start..)
+                .unwrap_or_default()
                 .chars()
                 .take_while(|character| *character == ' ')
                 .count(),
@@ -181,6 +190,7 @@ fn collect_handler_arguments(
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use vize_canon::virtual_ts::{ProjectionMapping, VizeMapping};
     use vize_s0::String as VizeString;

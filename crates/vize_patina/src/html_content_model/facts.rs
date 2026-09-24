@@ -2,17 +2,18 @@
 //!
 //! The table is the single source of truth: this module owns no element
 //! lists of its own. Every row the checker consults is named by a [`Row`]
-//! variant, and loading fails (at first use, and in the crate's unit tests)
-//! if the table has a row the checker does not know, lacks one it needs, or
-//! repeats one — so data and checker cannot drift silently.
+//! variant, and the crate's unit tests fail if the table has a row the
+//! checker does not know, lacks one it needs, or repeats one — so data and
+//! checker cannot drift silently. At run time such a row is skipped.
 
 use std::sync::LazyLock;
 
 use vize_s0::{FxHashMap, SmallVec};
 
-use super::rows::ROWS;
 pub use super::rows::Row;
 use super::tri::Tri;
+
+mod load;
 
 /// The committed fact table.
 pub const WHATWG_TSV: &str = include_str!("whatwg.tsv");
@@ -67,34 +68,22 @@ pub enum Cond {
     BodyOk,
 }
 
-fn parse_cond(text: &str) -> Cond {
-    match text {
-        "href" => Cond::Has(Attr::Href),
-        "controls" => Cond::Has(Attr::Controls),
-        "usemap" => Cond::Has(Attr::Usemap),
-        "itemprop" => Cond::Has(Attr::Itemprop),
-        "type-hidden" => Cond::Has(Attr::TypeHidden),
-        "type-not-hidden" => Cond::Lacks(Attr::TypeHidden),
-        "font-presentational" => Cond::Has(Attr::FontPresentational),
-        "encoding-html" => Cond::Has(Attr::EncodingHtml),
-        "in-map" => Cond::InMap,
-        "body-ok" => Cond::BodyOk,
-        other => panic!("whatwg.tsv: unknown member condition `{other}`"),
-    }
-}
-
 /// A bitset over [`ElemId`]s.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Bits([u64; 4]);
 
 impl Bits {
     fn insert(&mut self, id: ElemId) {
-        self.0[usize::from(id / 64)] |= 1 << (id % 64);
+        if let Some(word) = self.0.get_mut(usize::from(id / 64)) {
+            *word |= 1 << (id % 64);
+        }
     }
 
     /// Whether `id` is a member.
     pub fn has(&self, id: ElemId) -> bool {
-        self.0[usize::from(id / 64)] & (1 << (id % 64)) != 0
+        self.0
+            .get(usize::from(id / 64))
+            .is_some_and(|word| word & (1 << (id % 64)) != 0)
     }
 
     fn union(&mut self, other: &Self) {
@@ -147,6 +136,8 @@ pub struct Facts {
     cased: Vec<(Ns, &'static str, ElemId)>,
     rows: Vec<Members>,
     children: FxHashMap<ElemId, Members>,
+    /// Returned for a row the table failed to provide.
+    empty: Members,
 }
 
 static FACTS: LazyLock<Facts> = LazyLock::new(|| Facts::parse(WHATWG_TSV));
@@ -157,120 +148,6 @@ pub fn facts() -> &'static Facts {
 }
 
 impl Facts {
-    /// Parse a fact table. Panics on any malformed, unknown, duplicate or
-    /// missing row: the table is committed data, so a bad table is a build
-    /// defect that the unit tests surface before any lint runs.
-    pub fn parse(tsv: &'static str) -> Self {
-        let mut facts = Self {
-            names: Vec::new(),
-            ids: FxHashMap::default(),
-            cased: Vec::new(),
-            rows: vec![Members::default(); ROWS.len()],
-            children: FxHashMap::default(),
-        };
-        let mut seen = [false; ROWS.len()];
-        let mut categories: FxHashMap<&'static str, Members> = FxHashMap::default();
-        for line in tsv
-            .lines()
-            .filter(|line| !line.is_empty() && !line.starts_with('#'))
-        {
-            let mut columns = line.split('\t');
-            let (Some(kind), Some(name), Some(anchor), Some(members), None) = (
-                columns.next(),
-                columns.next(),
-                columns.next(),
-                columns.next(),
-                columns.next(),
-            ) else {
-                panic!("whatwg.tsv: malformed row `{line}`");
-            };
-            let mut row = Members {
-                anchor,
-                ..Members::default()
-            };
-            for member in members.split(' ') {
-                facts.add_member(&mut row, member, &categories);
-            }
-            if kind == "children" {
-                let id = facts.intern(Ns::Html, name);
-                assert!(
-                    facts.children.insert(id, row).is_none(),
-                    "whatwg.tsv: duplicate children row `{name}`"
-                );
-                continue;
-            }
-            let index = ROWS
-                .iter()
-                .position(|(_, row_kind, row_name)| *row_kind == kind && *row_name == name)
-                .unwrap_or_else(|| panic!("whatwg.tsv: unknown row `{kind} {name}`"));
-            assert!(!seen[index], "whatwg.tsv: duplicate row `{kind} {name}`");
-            seen[index] = true;
-            if kind == "category" {
-                categories.insert(name, row.clone());
-            }
-            facts.rows[index] = row;
-        }
-        if let Some(missing) = seen.iter().position(|seen| !seen) {
-            panic!(
-                "whatwg.tsv: missing row `{} {}`",
-                ROWS[missing].1, ROWS[missing].2
-            );
-        }
-        facts
-    }
-
-    fn add_member(
-        &mut self,
-        row: &mut Members,
-        member: &'static str,
-        categories: &FxHashMap<&'static str, Members>,
-    ) {
-        if member == "#text" {
-            row.text = true;
-            return;
-        }
-        if let Some(category) = member.strip_prefix('@') {
-            let category = categories
-                .get(category)
-                .unwrap_or_else(|| panic!("whatwg.tsv: `@{category}` used before its row"));
-            row.absorb(category);
-            return;
-        }
-        let (name, cond) = match member.split_once('?') {
-            Some((name, cond)) => (name, Some(parse_cond(cond))),
-            None => (member, None),
-        };
-        let (ns, local) = if let Some(local) = name.strip_prefix("svg:") {
-            (Ns::Svg, local)
-        } else if let Some(local) = name.strip_prefix("math:") {
-            (Ns::MathMl, local)
-        } else {
-            (Ns::Html, name)
-        };
-        let id = self.intern(ns, local);
-        match cond {
-            Some(cond) => row.conditional.push((id, cond)),
-            None => row.always.insert(id),
-        }
-    }
-
-    fn intern(&mut self, ns: Ns, local: &'static str) -> ElemId {
-        if let Some(id) = self.ids.get(&(ns, local)) {
-            return *id;
-        }
-        let id = ElemId::try_from(self.names.len()).expect("element universe fits u16");
-        assert!(
-            id < 256,
-            "whatwg.tsv: element universe exceeds the 256-bit set width"
-        );
-        self.names.push((ns, local));
-        self.ids.insert((ns, local), id);
-        if local.bytes().any(|byte| byte.is_ascii_uppercase()) {
-            self.cased.push((ns, local, id));
-        }
-        id
-    }
-
     /// Look up an element. HTML and MathML names are matched ASCII
     /// case-insensitively (the tokenizer lowercases tag names); SVG names are
     /// matched after the §13.2.6.5 case adjustment, which is also
@@ -296,12 +173,16 @@ impl Facts {
 
     /// The `(namespace, local name)` of an element id.
     pub fn name(&self, id: ElemId) -> (Ns, &'static str) {
-        self.names[usize::from(id)]
+        // Ids only come from `intern`; an unknown one names nothing.
+        self.names
+            .get(usize::from(id))
+            .copied()
+            .unwrap_or((Ns::Html, ""))
     }
 
     /// A row's members.
     pub fn row(&self, row: Row) -> &Members {
-        &self.rows[row as usize]
+        self.rows.get(row as usize).unwrap_or(&self.empty)
     }
 
     /// Unconditional membership of `id` in `row` (`None` ids are ordinary

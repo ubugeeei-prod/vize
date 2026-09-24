@@ -139,4 +139,5 @@ fn is_boolean(expression: &Expression<'_>) -> bool {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

@@ -43,12 +43,11 @@
 //!
 //! Based on Biome's useUniqueElementIds rule.
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, PropNode, SourceLocation};
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/use-unique-element-ids",
@@ -257,7 +256,7 @@ impl UseUniqueElementIds {
             .map(|a| a.bindings.contains("useId"))
             .unwrap_or(false);
 
-        let full_key = format!("vue/use-unique-element-ids.{message_key_suffix}");
+        let full_key = cstr!("vue/use-unique-element-ids.{message_key_suffix}");
         let message = if is_reference {
             ctx.t_fmt(
                 "vue/use-unique-element-ids.message_reference",

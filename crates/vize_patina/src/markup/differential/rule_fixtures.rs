@@ -35,7 +35,10 @@ pub fn scan_rule_fixtures() -> RuleFixtureScan {
     let mut calls = 0;
     let mut skipped = 0;
     for file in files {
-        let text = std::fs::read_to_string(&file).expect("rule source is readable");
+        let Ok(text) = std::fs::read_to_string(&file) else {
+            skipped += 1;
+            continue;
+        };
         let label = file.strip_prefix(&root).unwrap_or(&file).display();
         for call in fixture_syntax::fixture_calls(&text) {
             calls += 1;

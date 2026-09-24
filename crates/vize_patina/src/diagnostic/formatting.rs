@@ -111,58 +111,61 @@ fn render_inline_markdown(out: &mut String, line: &str) {
     let len = bytes.len();
     let mut i = 0;
 
-    while i < len {
+    while let Some(&byte) = bytes.get(i) {
         // Inline code: `code`
-        if bytes[i] == b'`'
+        if byte == b'`'
             && let Some(end) = find_closing_backtick(bytes, i + 1)
         {
             out.push_str(ANSI_CYAN);
-            out.push_str(&line[i + 1..end]);
+            out.push_str(line.get(i + 1..end).unwrap_or_default());
             out.push_str(ANSI_CYAN_OFF);
             i = end + 1;
             continue;
         }
 
         // Bold: **text** or __text__
-        if i + 1 < len
-            && bytes[i] == b'*'
-            && bytes[i + 1] == b'*'
+        if bytes.get(i..i + 2) == Some(b"**".as_slice())
             && let Some(end) = find_closing_double(bytes, i + 2, b'*')
         {
             out.push_str(ANSI_BOLD);
             // Recursively process inline content within bold
-            render_inline_markdown(out, &line[i + 2..end]);
+            render_inline_markdown(out, line.get(i + 2..end).unwrap_or_default());
             out.push_str(ANSI_BOLD_OFF);
             i = end + 2;
             continue;
         }
-        if i + 1 < len
-            && bytes[i] == b'_'
-            && bytes[i + 1] == b'_'
+        if bytes.get(i..i + 2) == Some(b"__".as_slice())
             && let Some(end) = find_closing_double(bytes, i + 2, b'_')
         {
             out.push_str(ANSI_BOLD);
-            render_inline_markdown(out, &line[i + 2..end]);
+            render_inline_markdown(out, line.get(i + 2..end).unwrap_or_default());
             out.push_str(ANSI_BOLD_OFF);
             i = end + 2;
             continue;
         }
 
-        out.push(bytes[i] as char);
-        i += 1;
+        // Copy plain text up to the next delimiter byte. Delimiters are ASCII,
+        // so both ends stay on char boundaries and non-ASCII text survives.
+        let next = bytes
+            .get(i + 1..)
+            .and_then(|rest| rest.iter().position(|b| matches!(b, b'`' | b'*' | b'_')))
+            .map_or(len, |offset| i + 1 + offset);
+        out.push_str(line.get(i..next).unwrap_or_default());
+        i = next;
     }
 }
 
 /// Find closing backtick for inline code.
 fn find_closing_backtick(bytes: &[u8], start: usize) -> Option<usize> {
-    (start..bytes.len()).find(|&i| bytes[i] == b'`')
+    let offset = bytes.get(start..)?.iter().position(|&b| b == b'`')?;
+    Some(start + offset)
 }
 
 /// Find closing double delimiter (** or __).
 fn find_closing_double(bytes: &[u8], start: usize, ch: u8) -> Option<usize> {
     let mut i = start;
     while i + 1 < bytes.len() {
-        if bytes[i] == ch && bytes[i + 1] == ch {
+        if bytes.get(i..i + 2) == Some([ch, ch].as_slice()) {
             return Some(i);
         }
         i += 1;

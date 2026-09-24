@@ -86,6 +86,7 @@ mod s2;
 mod scope;
 mod source_ranges;
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
 mod visitor;
 

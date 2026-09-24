@@ -64,7 +64,7 @@ pub(in crate::markup) fn siblings_at<'a>(
         let index = children
             .partition_point(|child| child_start(source, child) <= start)
             .checked_sub(1)?;
-        let SurfaceChild::Element(element) = &children[index] else {
+        let SurfaceChild::Element(element) = children.get(index)? else {
             return None;
         };
         if offset_in(source, element.open.lt_name.text) == start {
@@ -137,8 +137,8 @@ impl<'a> SurfaceDirective<'a> {
         }
         let rest = name.strip_prefix("v-")?;
         let head_end = rest.find([':', '.']).unwrap_or(rest.len());
-        let head = &rest[..head_end];
-        let tail = &rest[head_end..];
+        let head = rest.get(..head_end).unwrap_or_default();
+        let tail = rest.get(head_end..).unwrap_or_default();
         Some(match tail.strip_prefix(':') {
             Some(after_colon) => Self::with_arg_first(head, after_colon),
             None => Self {
@@ -160,10 +160,10 @@ impl<'a> SurfaceDirective<'a> {
                     b']' => {
                         depth -= 1;
                         if depth == 0 {
-                            let rest = &inner_and_rest[index + 1..];
+                            let rest = inner_and_rest.get(index + 1..).unwrap_or_default();
                             return Self {
                                 name,
-                                arg: Some(&inner_and_rest[..index]),
+                                arg: inner_and_rest.get(..index),
                                 arg_static: false,
                                 modifiers: rest.strip_prefix('.').unwrap_or(""),
                                 prop_shorthand: false,
@@ -182,12 +182,16 @@ impl<'a> SurfaceDirective<'a> {
             };
         }
         let arg_end = text.find('.').unwrap_or(text.len());
-        let arg = &text[..arg_end];
+        let arg = text.get(..arg_end).unwrap_or_default();
         Self {
             name,
             arg: (!arg.is_empty()).then_some(arg),
             arg_static: true,
-            modifiers: text[arg_end..].strip_prefix('.').unwrap_or(""),
+            modifiers: text
+                .get(arg_end..)
+                .unwrap_or_default()
+                .strip_prefix('.')
+                .unwrap_or(""),
             prop_shorthand: false,
         }
     }

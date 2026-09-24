@@ -30,7 +30,7 @@ use vize_patina::markup::differential::{self, TemplateComparison, compare_templa
 #[test]
 fn markup_facade_observes_one_document() {
     // -- committed battery, exact-pinned census ------------------------
-    let census = differential::run_battery();
+    let census = differential::run_battery().unwrap_or_else(|divergence| panic!("{divergence}"));
     assert_eq!(
         census,
         differential::PINNED_BATTERY_CENSUS,

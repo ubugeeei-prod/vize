@@ -72,8 +72,6 @@
 //! </template>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 #[cfg(test)]
 mod tests;
 mod usage;
@@ -84,6 +82,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::RootNode;
 use vize_s0::String;
 use vize_s0::ToCompactString;
+use vize_s0::cstr;
 use vize_s0::{CompactString, FxHashSet};
 
 use self::usage::{
@@ -238,7 +237,7 @@ impl Rule for NoUnusedProperties {
             ctx.report_in_sfc(
                 crate::diagnostic::LintDiagnostic::warn(
                     ctx.current_rule,
-                    format!("Prop '{}' is defined but never used", prop_name),
+                    cstr!("Prop '{}' is defined but never used", prop_name),
                     start,
                     end,
                 )

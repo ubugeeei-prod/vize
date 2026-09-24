@@ -79,12 +79,14 @@ impl NestingEvidence {
                 .first()
                 .copied()
                 .unwrap_or((finding.file, finding.node));
-            let cited = finding.evidence.map(|(file, node)| {
-                let span = node_span(&skeletons[file as usize], node);
+            let cited = finding.evidence.and_then(|(file, node)| {
+                let span = node_span(skeletons.get(file as usize)?, node);
                 evidence.elements.push(ElementFact { span });
-                u32::try_from(evidence.elements.len() - 1).unwrap_or(u32::MAX)
+                Some(u32::try_from(evidence.elements.len() - 1).unwrap_or(u32::MAX))
             });
-            let span = node_span(&skeletons[file as usize], usage);
+            let span = skeletons
+                .get(file as usize)
+                .map_or(Span::new(0, 0), |skeleton| node_span(skeleton, usage));
             let fact = NestingFact {
                 span,
                 class: finding.class,
@@ -199,10 +201,11 @@ pub fn witnessed(evidence: &NestingEvidence, message: impl Fn(usize) -> String) 
         .zip(evidence.findings.iter())
         .map(|(key, (fact, cited))| {
             let nesting = WitnessLink::of::<HtmlComposedNesting>(&key, fact.span);
-            let chain = match cited {
-                Some(index) => {
-                    let element = evidence.elements[*index as usize];
-                    WitnessChain::new(WitnessLink::of::<HtmlElements>(index, element.span))
+            let element =
+                cited.and_then(|index| Some((index, evidence.elements.get(index as usize)?)));
+            let chain = match element {
+                Some((index, element)) => {
+                    WitnessChain::new(WitnessLink::of::<HtmlElements>(&index, element.span))
                         .then(nesting)
                 }
                 None => WitnessChain::new(nesting),

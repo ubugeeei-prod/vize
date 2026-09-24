@@ -24,10 +24,9 @@
 //! </art>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use super::{MuseaLintResult, MuseaRule, MuseaRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
+use vize_s0::cstr;
 
 static META: MuseaRuleMeta = MuseaRuleMeta {
     name: "musea/require-title",
@@ -88,10 +87,10 @@ fn define_art_has_title(source: &str) -> bool {
 
 /// Check if a tag has an attribute (simple check)
 fn has_attribute(tag: &str, attr_name: &str) -> bool {
-    let patterns = [format!("{}=", attr_name), format!("{} =", attr_name)];
+    let patterns = [cstr!("{}=", attr_name), cstr!("{} =", attr_name)];
 
     for pattern in patterns {
-        if tag.contains(&pattern) {
+        if tag.contains(pattern.as_str()) {
             return true;
         }
     }

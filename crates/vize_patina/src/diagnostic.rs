@@ -142,6 +142,13 @@ mod tests {
     }
 
     #[test]
+    fn test_render_markdown_keeps_non_ascii_text() {
+        let result = formatting::render_markdown_to_ansi("理由: `v-model` を使う * é");
+        assert!(result.starts_with("理由: "), "{result}");
+        assert!(result.ends_with(" を使う * é"), "{result}");
+    }
+
+    #[test]
     fn test_render_markdown_underscore_bold() {
         let result = formatting::render_markdown_to_ansi("__bold__ text");
         insta::assert_snapshot!(result.as_str());

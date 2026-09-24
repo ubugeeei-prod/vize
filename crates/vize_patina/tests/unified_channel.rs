@@ -3,6 +3,8 @@
 //! contract, the exemption an unwitnessed error reports under, the stage,
 //! the span and every structured part.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, PartKind, Stage};
 use vize_patina::output::unified::{UnifiedError, to_unified};
 use vize_patina::rule_contracts::contract_for;

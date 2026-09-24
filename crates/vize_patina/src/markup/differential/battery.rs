@@ -276,54 +276,64 @@ fn tally(census: &mut BatteryCensus, comparison: TemplateComparison) {
     }
 }
 
-/// Run the whole battery, panicking with the exact divergence on the first
+/// Run the whole battery, failing with the exact divergence on the first
 /// disagreement.
-pub fn run_battery() -> BatteryCensus {
+pub fn run_battery() -> Result<BatteryCensus, vize_s0::String> {
     let mut census = BatteryCensus::default();
     for (name, source) in TEMPLATES {
-        tally(&mut census, expect_same(name, compare_template(source)));
+        tally(&mut census, expect_same(name, compare_template(source))?);
         census.templates += 1;
     }
     let fixtures = super::rule_fixtures::scan_rule_fixtures();
     census.rule_fixture_calls = fixtures.calls;
     census.rule_fixture_skipped = fixtures.skipped;
     for (name, source) in fixtures.templates {
-        tally(&mut census, expect_same(&name, compare_template(&source)));
+        tally(&mut census, expect_same(&name, compare_template(&source))?);
         census.rule_fixtures += 1;
     }
-    let mut matrix: std::vec::Vec<_> = std::fs::read_dir(matrix_dir())
-        .expect("the P2-15 construct matrix is committed")
-        .map(|entry| entry.expect("matrix entry").path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "vue"))
-        .collect();
+    let entries = std::fs::read_dir(matrix_dir())
+        .map_err(|error| vize_s0::cstr!("the P2-15 construct matrix is committed: {error}"))?;
+    let mut matrix = std::vec::Vec::new();
+    for entry in entries {
+        let path = entry
+            .map_err(|error| vize_s0::cstr!("matrix entry: {error}"))?
+            .path();
+        if path.extension().is_some_and(|ext| ext == "vue") {
+            matrix.push(path);
+        }
+    }
     matrix.sort();
     for path in &matrix {
-        let source = std::fs::read_to_string(path).expect("matrix fixture is readable");
-        let descriptor =
-            parse_sfc(&source, SfcParseOptions::default()).expect("matrix fixture parses");
-        let template = descriptor.template.expect("matrix fixture has a template");
         let name = vize_s0::cstr!("{}", path.display());
+        let source = std::fs::read_to_string(path)
+            .map_err(|error| vize_s0::cstr!("{name}: unreadable: {error}"))?;
+        let descriptor = parse_sfc(&source, SfcParseOptions::default())
+            .map_err(|error| vize_s0::cstr!("{name}: does not parse: {error:?}"))?;
+        let template = descriptor
+            .template
+            .ok_or_else(|| vize_s0::cstr!("{name}: has no template"))?;
         tally(
             &mut census,
-            expect_same(&name, compare_template(&template.content)),
+            expect_same(&name, compare_template(&template.content))?,
         );
         census.matrix += 1;
     }
     for (name, lang, source) in JSX {
-        let comparison = expect_same(name, compare_jsx(source, *lang));
+        let comparison = expect_same(name, compare_jsx(source, *lang))?;
         census.jsx.roots += comparison.roots;
         census.jsx.refused += comparison.refused;
         census.jsx.lines += comparison.lines;
     }
-    census
+    Ok(census)
 }
 
-fn expect_same<T>(name: &str, result: Result<T, super::Divergence>) -> T {
-    match result {
-        Ok(value) => value,
-        Err(divergence) => panic!(
+fn expect_same<T>(name: &str, result: Result<T, super::Divergence>) -> Result<T, vize_s0::String> {
+    result.map_err(|divergence| {
+        vize_s0::cstr!(
             "{name}: markup facade diverged at trace line {}\n  relief: {:?}\n  s2:     {:?}",
-            divergence.line, divergence.relief, divergence.s2
-        ),
-    }
+            divergence.line,
+            divergence.relief,
+            divergence.s2
+        )
+    })
 }

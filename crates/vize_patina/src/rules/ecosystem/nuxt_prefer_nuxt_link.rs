@@ -70,7 +70,10 @@ fn is_internal_href(value: &str) -> bool {
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "snapshot fixture uses insta's format!"
+)]
 mod tests {
     use super::NuxtPreferNuxtLink;
     use crate::linter::Linter;

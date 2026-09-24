@@ -29,14 +29,13 @@ impl StyleDirectiveLexer {
         let bytes = line.as_bytes();
         let mut markers = CommentMarkers::default();
         let mut index = 0;
-        while index < bytes.len() {
+        while let Some(&current) = bytes.get(index) {
             if matches!(
                 self.context,
                 StyleContext::BlockComment | StyleContext::LineComment
             ) {
                 record_markers(bytes, index, &mut markers);
             }
-            let current = bytes[index];
             let next = bytes.get(index + 1).copied();
             match self.context {
                 StyleContext::Code => match (current, next) {

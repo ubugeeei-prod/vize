@@ -50,24 +50,28 @@ fn remove_example_asides(line: &str) -> String {
     let mut output = String::with_capacity(line.len());
     let mut index = 0;
 
-    while index < chars.len() {
-        let Some(close) = matching_parenthesis(chars[index]) else {
-            output.push(chars[index]);
+    while let Some(&character) = chars.get(index) {
+        let Some(close) = matching_parenthesis(character) else {
+            output.push(character);
             index += 1;
             continue;
         };
-        let Some(end) = find_matching_parenthesis(&chars, index, chars[index], close) else {
-            output.push(chars[index]);
+        let Some(end) = find_matching_parenthesis(&chars, index, character, close) else {
+            output.push(character);
             index += 1;
             continue;
         };
-        let content: String = chars[index + 1..end].iter().collect();
+        let content: String = chars
+            .get(index + 1..end)
+            .unwrap_or_default()
+            .iter()
+            .collect();
         if is_example_aside(content.trim()) {
             index = end + 1;
             continue;
         }
 
-        output.extend(chars[index..=end].iter());
+        output.extend(chars.get(index..=end).unwrap_or_default().iter());
         index = end + 1;
     }
 
@@ -118,7 +122,7 @@ fn truncate_before_reason(line: &str) -> &str {
         .iter()
         .filter_map(|marker| line.find(marker))
         .min()
-        .map_or(line, |index| &line[..index])
+        .map_or(line, |index| line.get(..index).unwrap_or(line))
 }
 
 fn first_sentence(line: &str) -> &str {
@@ -134,5 +138,5 @@ fn first_sentence(line: &str) -> &str {
         .into_iter()
         .chain(localized_end)
         .min()
-        .map_or(line, |end| &line[..end])
+        .map_or(line, |end| line.get(..end).unwrap_or(line))
 }

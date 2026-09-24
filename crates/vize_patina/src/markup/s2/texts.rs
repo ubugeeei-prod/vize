@@ -48,7 +48,7 @@ pub(super) fn lookup<'a>(
     let found = index
         .binary_search_by_key(&(span.start, span.end), |entry| (entry.start, entry.end))
         .ok()?;
-    texts.get(index[found].id)
+    texts.get(index.get(found)?.id)
 }
 
 #[cfg(test)]

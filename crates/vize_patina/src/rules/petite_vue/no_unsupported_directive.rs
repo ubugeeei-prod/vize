@@ -33,12 +33,11 @@
 //! <div v-if="ok" v-bind:title="title" @click="count++"></div>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode};
+use vize_s0::cstr;
 use vize_s0::{CompactString, ToCompactString};
 
 static META: RuleMeta = RuleMeta {
@@ -88,7 +87,7 @@ impl Rule for NoUnsupportedDirective {
         // message; fall back to the normalized `v-name` form.
         let display: CompactString = match &directive.raw_name {
             Some(raw) => raw.to_compact_string(),
-            None => format!("v-{name}").into(),
+            None => cstr!("v-{name}"),
         };
 
         ctx.error_with_help(

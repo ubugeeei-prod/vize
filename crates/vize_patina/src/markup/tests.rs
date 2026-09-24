@@ -41,6 +41,7 @@ mod require_datetime_tests;
 mod use_list_tests;
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod markup_ir_tests {
     use crate::context::LintContext;
     use crate::markup::*;

@@ -19,7 +19,7 @@ pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, file
     let mut edits = Vec::new();
     let mut from = 0usize;
     while let Some((start, end)) = next_relative_specifier(&text, from) {
-        let relative = &text[start..end];
+        let relative = text.get(start..end).unwrap_or_default();
         let resolved = parent.join(relative);
         let absolute = resolved
             .canonicalize()
@@ -54,14 +54,19 @@ fn next_relative_specifier(content: &str, from: usize) -> Option<(usize, usize)>
     while index + 6 < bytes.len() {
         if is_from_keyword(bytes, index) {
             let mut cursor = index + 4;
-            while cursor < bytes.len() && bytes[cursor] == b' ' {
+            while bytes.get(cursor) == Some(&b' ') {
                 cursor += 1;
             }
-            if cursor < bytes.len() && (bytes[cursor] == b'"' || bytes[cursor] == b'\'') {
-                let quote = bytes[cursor];
+            if let Some(&quote @ (b'"' | b'\'')) = bytes.get(cursor) {
                 let spec_start = cursor + 1;
-                if content[spec_start..].starts_with('.')
-                    && let Some(relative_end) = content[spec_start..].find(quote as char)
+                if content
+                    .get(spec_start..)
+                    .unwrap_or_default()
+                    .starts_with('.')
+                    && let Some(relative_end) = content
+                        .get(spec_start..)
+                        .unwrap_or_default()
+                        .find(quote as char)
                 {
                     return Some((spec_start, spec_start + relative_end));
                 }
@@ -73,7 +78,7 @@ fn next_relative_specifier(content: &str, from: usize) -> Option<(usize, usize)>
 }
 
 fn is_from_keyword(bytes: &[u8], index: usize) -> bool {
-    if !bytes[index..].starts_with(b"from") {
+    if !bytes.get(index..).unwrap_or_default().starts_with(b"from") {
         return false;
     }
     let before = index.checked_sub(1).and_then(|at| bytes.get(at).copied());
@@ -104,6 +109,7 @@ fn display_path(path: &Path) -> VizeString {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use vize_canon::virtual_ts::ProjectionMapping;
     use vize_canon::virtual_ts::VizeMapping;

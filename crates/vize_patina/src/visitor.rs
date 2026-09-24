@@ -80,7 +80,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     #[inline]
     fn rule_active(keep_mask: Option<&[bool]>, index: usize) -> bool {
         match keep_mask {
-            Some(mask) => mask[index],
+            Some(mask) => mask.get(index).copied().unwrap_or(false),
             None => true,
         }
     }

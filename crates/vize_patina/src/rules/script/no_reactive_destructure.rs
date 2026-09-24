@@ -32,9 +32,8 @@
 //! someFunction(toRef(state, 'count'))
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use memchr::memmem;
+use vize_s0::cstr;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -120,7 +119,7 @@ impl ScriptRule for NoReactiveDestructure {
         // Look for destructuring of these variables
         // Pattern: const { ... } = varName or let { ... } = varName
         for var in &reactive_vars {
-            let pattern = format!("}} = {}", var);
+            let pattern = cstr!("}} = {}", var);
             let pattern_bytes = pattern.as_bytes();
 
             let finder = memmem::Finder::new(pattern_bytes);

@@ -21,7 +21,7 @@ pub(crate) fn extract_template_fast(source: &str) -> Option<(String, u32)> {
 
     while pos < bytes.len() && depth > 0 {
         // Find next < character
-        let next_lt = match memchr::memchr(b'<', &bytes[pos..]) {
+        let next_lt = match bytes.get(pos..).and_then(|rest| memchr::memchr(b'<', rest)) {
             Some(p) => pos + p,
             None => break,
         };
@@ -31,8 +31,13 @@ pub(crate) fn extract_template_fast(source: &str) -> Option<(String, u32)> {
         // fragment); counting those as real tags would close the block early
         // and truncate the extracted template. An unterminated comment runs to
         // EOF, leaving no trustworthy closing tag, so the scan ends.
-        if bytes[next_lt..].starts_with(b"<!--") {
-            pos = memchr::memmem::find(&bytes[next_lt + 4..], b"-->")
+        if bytes
+            .get(next_lt..)
+            .is_some_and(|rest| rest.starts_with(b"<!--"))
+        {
+            pos = bytes
+                .get(next_lt + 4..)
+                .and_then(|rest| memchr::memmem::find(rest, b"-->"))
                 .map_or(bytes.len(), |offset| next_lt + 4 + offset + 3);
             continue;
         }
@@ -45,7 +50,7 @@ pub(crate) fn extract_template_fast(source: &str) -> Option<(String, u32)> {
             // tag and never mis-counted as a real tag of its own.
             let is_template = name.eq_ignore_ascii_case(b"template");
             if let Some(tag_end_pos) = find_start_tag_end(bytes, next_lt) {
-                if is_template && bytes[tag_end_pos - 1] != b'/' {
+                if is_template && bytes.get(..tag_end_pos).and_then(<[u8]>::last) != Some(&b'/') {
                     depth += 1;
                 }
                 pos = tag_end_pos + 1;
@@ -59,7 +64,7 @@ pub(crate) fn extract_template_fast(source: &str) -> Option<(String, u32)> {
         {
             depth -= 1;
             if depth == 0 {
-                let content = std::str::from_utf8(&bytes[content_start..next_lt]).ok()?;
+                let content = std::str::from_utf8(bytes.get(content_start..next_lt)?).ok()?;
                 return Some((content.to_compact_string(), content_start as u32));
             }
             pos = find_tag_end(bytes, next_lt).map_or(next_lt + 11, |gt| gt + 1);
@@ -75,10 +80,15 @@ fn find_template_block_start(bytes: &[u8]) -> Option<(usize, usize)> {
     let mut pos = 0;
 
     while pos < bytes.len() {
-        let next_lt = pos + memchr::memchr(b'<', &bytes[pos..])?;
+        let next_lt = pos + memchr::memchr(b'<', bytes.get(pos..)?)?;
 
-        if bytes[next_lt..].starts_with(b"<!--") {
-            pos = memchr::memmem::find(&bytes[next_lt + 4..], b"-->")
+        if bytes
+            .get(next_lt..)
+            .is_some_and(|rest| rest.starts_with(b"<!--"))
+        {
+            pos = bytes
+                .get(next_lt + 4..)
+                .and_then(|rest| memchr::memmem::find(rest, b"-->"))
                 .map_or(next_lt + 4, |offset| next_lt + 4 + offset + 3);
             continue;
         }
@@ -93,7 +103,7 @@ fn find_template_block_start(bytes: &[u8]) -> Option<(usize, usize)> {
             return Some((next_lt, tag_end + 1));
         }
 
-        if tag_end > next_lt && bytes[tag_end - 1] == b'/' {
+        if tag_end > next_lt && bytes.get(tag_end - 1) == Some(&b'/') {
             pos = tag_end + 1;
             continue;
         }

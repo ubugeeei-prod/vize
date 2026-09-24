@@ -23,13 +23,12 @@
 //!                              +-- OxlintBridge --> oxlint (future)
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::diagnostic::{HelpRenderTarget, Severity, render_help};
 use crate::linter::LintResult;
 use crate::output::{OutputFormat, format_results};
 use vize_s0::String;
 use vize_s0::ToCompactString;
+use vize_s0::cstr;
 pub use vize_s0::telegraph::Emitter;
 use vize_s0::telegraph::Telegraph as CartonTelegraph;
 
@@ -162,7 +161,7 @@ impl TextEmitter {
             return String::default();
         }
 
-        format!(
+        cstr!(
             "\nFound {} error{} and {} warning{} in {} file{}.\n",
             total_errors,
             if total_errors == 1 { "" } else { "s" },
@@ -171,7 +170,6 @@ impl TextEmitter {
             file_count,
             if file_count == 1 { "" } else { "s" },
         )
-        .into()
     }
 }
 
@@ -337,7 +335,8 @@ impl LspEmitter {
             .map(|d| LspDiagnostic {
                 range: LspRange {
                     start: LspPosition {
-                        // TODO: Convert byte offset to line/column using source
+                        // No source text: the byte offset stands in for the
+                        // column on line 0 (see the doc comment above).
                         line: 0,
                         character: d.start,
                     },
@@ -351,12 +350,11 @@ impl LspEmitter {
                     Severity::Warning => 2,
                 },
                 message: if let Some(help) = &d.help {
-                    format!(
+                    cstr!(
                         "{}\n{}",
                         d.message,
                         render_help(help, HelpRenderTarget::PlainText)
                     )
-                    .into()
                 } else {
                     d.message.to_compact_string()
                 },
@@ -391,12 +389,11 @@ impl LspEmitter {
                         Severity::Warning => 2,
                     },
                     message: if let Some(help) = &d.help {
-                        format!(
+                        cstr!(
                             "{}\n{}",
                             d.message,
                             render_help(help, HelpRenderTarget::PlainText)
                         )
-                        .into()
                     } else {
                         d.message.to_compact_string()
                     },

@@ -295,26 +295,22 @@ impl Linter {
         analysis: TemplateAnalysis<'a>,
         env: TemplateRuleEnv<'a>,
     ) -> LintResult {
-        if matches!(analysis, TemplateAnalysis::Disabled)
-            || !self.has_active_semantic_template_rules()
-        {
-            return self.run_template_rules(allocator, source, filename, root, None, env);
-        }
         let owned_analysis;
         let analysis = match analysis {
-            TemplateAnalysis::Disabled => unreachable!(),
-            TemplateAnalysis::Precomputed(analysis) => analysis,
+            TemplateAnalysis::Disabled => None,
+            _ if !self.has_active_semantic_template_rules() => None,
+            TemplateAnalysis::Precomputed(analysis) => Some(analysis),
             TemplateAnalysis::Lazy => {
                 owned_analysis = profile!("patina.template.croquis", {
                     let mut analyzer = Drawer::for_lint();
                     analyzer.analyze_template(root);
                     analyzer.finish()
                 });
-                &owned_analysis
+                Some(&owned_analysis)
             }
         };
 
-        self.run_template_rules(allocator, source, filename, root, Some(analysis), env)
+        self.run_template_rules(allocator, source, filename, root, analysis, env)
     }
 
     /// Lint a Vue template source.

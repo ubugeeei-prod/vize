@@ -46,13 +46,15 @@ impl CorsaTypeAwareSession {
         })?;
 
         let virtual_file_path = virtual_file_path(&session_root, &project_root, filename);
-        std::fs::create_dir_all(virtual_file_path.parent().unwrap()).map_err(|error| {
-            io_error_message(
-                "Failed to create patina virtual directory",
-                &virtual_file_path,
-                &error,
-            )
-        })?;
+        if let Some(parent) = virtual_file_path.parent() {
+            std::fs::create_dir_all(parent).map_err(|error| {
+                io_error_message(
+                    "Failed to create patina virtual directory",
+                    &virtual_file_path,
+                    &error,
+                )
+            })?;
+        }
         profile!(
             "patina.corsa_session.prime_virtual_file",
             std::fs::write(&virtual_file_path, "")
@@ -91,7 +93,7 @@ impl CorsaTypeAwareSession {
         .map(|capabilities| capabilities.overlay.update_snapshot_overlay_changes)
         .unwrap_or(false);
 
-        let session_root = cleanup_guard.keep();
+        cleanup_guard.disarm();
         Ok(Self {
             session,
             project_root,
@@ -117,13 +119,15 @@ impl CorsaTypeAwareSession {
         let previous_wire = if next_path == self.virtual_file_path {
             None
         } else {
-            std::fs::create_dir_all(next_path.parent().unwrap()).map_err(|error| {
-                io_error_message(
-                    "Failed to create patina virtual directory",
-                    &next_path,
-                    &error,
-                )
-            })?;
+            if let Some(parent) = next_path.parent() {
+                std::fs::create_dir_all(parent).map_err(|error| {
+                    io_error_message(
+                        "Failed to create patina virtual directory",
+                        &next_path,
+                        &error,
+                    )
+                })?;
+            }
             std::fs::write(&next_path, generated_source).map_err(|error| {
                 io_error_message(
                     "Failed to write patina virtual TypeScript",
@@ -225,8 +229,9 @@ impl SessionRootCleanup {
         Self { path: Some(path) }
     }
 
-    fn keep(mut self) -> std::path::PathBuf {
-        self.path.take().expect("session root cleanup path")
+    /// Keep the session root on disk: the session now owns it.
+    fn disarm(mut self) {
+        self.path = None;
     }
 }
 

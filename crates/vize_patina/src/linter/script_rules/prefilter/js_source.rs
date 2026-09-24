@@ -17,7 +17,10 @@ fn contains_keyword_followed_by(
     next_matches: impl Fn(&[u8], usize) -> bool,
 ) -> bool {
     let mut search_start = 0;
-    while let Some(relative) = memmem::find(&bytes[search_start..], keyword) {
+    while let Some(relative) = bytes
+        .get(search_start..)
+        .and_then(|rest| memmem::find(rest, keyword))
+    {
         let start = search_start + relative;
         let end = start + keyword.len();
         search_start = end;
@@ -35,7 +38,11 @@ fn contains_keyword_followed_by(
 }
 
 fn module_specifier_is_vue(bytes: &[u8], index: usize) -> bool {
-    bytes[index..].starts_with(b"'vue'") || bytes[index..].starts_with(b"\"vue\"")
+    bytes.get(index..).unwrap_or_default().starts_with(b"'vue'")
+        || bytes
+            .get(index..)
+            .unwrap_or_default()
+            .starts_with(b"\"vue\"")
 }
 
 fn keyword_at(bytes: &[u8], start: usize, keyword: &[u8]) -> bool {
@@ -68,7 +75,7 @@ fn skip_js_trivia(bytes: &[u8], mut index: usize) -> Option<usize> {
             .get(index..)
             .is_some_and(|rest| rest.starts_with(b"/*"))
         {
-            let rest = &bytes[index + 2..];
+            let rest = bytes.get(index + 2..).unwrap_or_default();
             let relative_end = memmem::find(rest, b"*/")?;
             index += 2 + relative_end + 2;
             continue;

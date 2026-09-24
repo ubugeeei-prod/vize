@@ -133,8 +133,9 @@ impl DelimiterState {
     pub(super) fn open_paren(&mut self) {
         let context = if std::mem::take(&mut self.next_paren_is_control) {
             ParenContext::Control
-        } else if self.function_type_depth == 0 && self.next_paren_is_function.is_some() {
-            let body = self.next_paren_is_function.take().unwrap();
+        } else if self.function_type_depth == 0
+            && let Some(body) = self.next_paren_is_function.take()
+        {
             self.function_type_depth = 0;
             ParenContext::Function(body)
         } else {
@@ -171,16 +172,21 @@ impl DelimiterState {
         let function_body_starts = self.return_type.as_ref().is_none_or(|return_type| {
             return_type.brace_depth == 0 && (return_type.can_end || expression_complete)
         });
-        let context = if self.pending_function_body.is_some() && function_body_starts {
+        let context = if function_body_starts && let Some(body) = self.pending_function_body.take()
+        {
             self.return_type = None;
-            self.pending_function_body.take().unwrap()
+            body
         } else if self.pending_function_body.is_some() {
-            self.return_type.as_mut().unwrap().brace_depth += 1;
+            // `function_body_starts` is false, so a return type is open.
+            if let Some(return_type) = self.return_type.as_mut() {
+                return_type.brace_depth += 1;
+            }
             BraceContext::TypeExpression
         } else if self.class_headers.last().is_some_and(|class_header| {
             class_header.angle_depth == 0 && class_header.paren_depth == self.parens.len()
-        }) {
-            self.class_headers.pop().unwrap().body
+        }) && let Some(class_header) = self.class_headers.pop()
+        {
+            class_header.body
         } else if let Some(context) = self.next_brace.take() {
             context
         } else if self.brace_expression_required {

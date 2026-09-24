@@ -230,7 +230,10 @@ fn expression_identifier_name<'a>(expression: &'a Expression<'a>) -> Option<&'a 
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "snapshot fixture uses insta's format!"
+)]
 mod tests {
     use super::{PiniaPreferStoreToRefs, ScriptLintResult, ScriptRule};
 

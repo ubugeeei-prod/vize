@@ -243,7 +243,7 @@ fn block_has_active_ast_rule(linter: &Linter, source: &str, filename: &str) -> b
 /// AST rules consume the shared parse when available and receive the
 /// cross-block `sfc` context (empty outside SFC linting). Byte rules run
 /// their source-level `check`, preserving the same rule-major ordering.
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "explicit per-block state")]
 fn run_builtin_script_rule(
     linter: &Linter,
     entry: &BuiltinScriptRuleEntry,

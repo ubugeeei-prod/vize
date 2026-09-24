@@ -36,8 +36,6 @@
 //!
 //! Variables starting with `_` are ignored by default (e.g., `_unused`).
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -45,6 +43,7 @@ use vize_croquis::UnusedVarContext;
 use vize_relief::RootNode;
 use vize_s0::String;
 use vize_s0::ToCompactString;
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-vars",
@@ -114,30 +113,31 @@ impl Rule for NoUnusedVars {
 
             let (message, help) = match &unused.context {
                 UnusedVarContext::VForValue => (
-                    format!(
+                    cstr!(
                         "Variable '{}' is defined by v-for but never used",
                         unused.name
                     ),
                     "If the variable is intentionally unused, prefix it with underscore: _item",
                 ),
                 UnusedVarContext::VForKey => (
-                    format!(
+                    cstr!(
                         "Key variable '{}' is defined by v-for but never used",
                         unused.name
                     ),
                     "Consider removing the key variable or prefix it with underscore: _key",
                 ),
                 UnusedVarContext::VForIndex => (
-                    format!(
+                    cstr!(
                         "Index variable '{}' is defined by v-for but never used",
                         unused.name
                     ),
                     "Consider removing the index variable or prefix it with underscore: _index",
                 ),
                 UnusedVarContext::VSlot { slot_name } => (
-                    format!(
+                    cstr!(
                         "Slot prop '{}' from slot '{}' is defined but never used",
-                        unused.name, slot_name
+                        unused.name,
+                        slot_name
                     ),
                     "Consider removing unused slot props or prefix with underscore",
                 ),
@@ -146,7 +146,7 @@ impl Rule for NoUnusedVars {
             ctx.report(
                 crate::diagnostic::LintDiagnostic::warn(
                     ctx.current_rule,
-                    &message,
+                    message,
                     unused.offset,
                     unused.offset + unused.name.len() as u32,
                 )

@@ -157,7 +157,19 @@ struct Walker<'s, 'h> {
 
 impl Walker<'_, '_> {
     fn origin(&self, chain: &Chain, frame: Option<usize>) -> Option<(u32, u32)> {
-        frame.and_then(|index| chain.frames[index].origin)
+        chain.frames.get(frame?)?.origin
+    }
+
+    fn set_parser(&mut self, index: u32, value: Option<bool>) {
+        if let Some(slot) = self.parser.get_mut(index as usize) {
+            *slot = value;
+        }
+    }
+
+    fn set_verdict(&mut self, index: u32, verdict: Verdict) {
+        if let Some(slot) = self.verdicts.get_mut(index as usize) {
+            *slot = verdict;
+        }
     }
 
     fn visit(&mut self, index: u32, chain: &mut Chain) {
@@ -180,15 +192,18 @@ impl Walker<'_, '_> {
                 let subject = Subject { element };
                 let (parser, ns) = evaluate_element(chain, &subject);
                 if let ParserVerdict::Diverges(class, frame) = parser {
-                    self.parser[index as usize] = Some(true);
-                    self.verdicts[index as usize] = Verdict::Proven {
-                        class,
-                        evidence: self.origin(chain, frame),
-                    };
+                    self.set_parser(index, Some(true));
+                    self.set_verdict(
+                        index,
+                        Verdict::Proven {
+                            class,
+                            evidence: self.origin(chain, frame),
+                        },
+                    );
                     return;
                 }
                 let stable = parser == ParserVerdict::Stable;
-                self.parser[index as usize] = stable.then_some(false);
+                self.set_parser(index, stable.then_some(false));
                 let (tri, class, frame) = if chain.top().is_some_and(|top| top.ns.is(Ns::Html)) {
                     content_rules::element(chain, &subject, ns)
                 } else {
@@ -203,7 +218,7 @@ impl Walker<'_, '_> {
                     (Tri::No, true) => Verdict::Refuted,
                     (Tri::Maybe, true) => Verdict::ContentUnknown,
                 };
-                self.verdicts[index as usize] = verdict;
+                self.set_verdict(index, verdict);
                 if element.dynamic_content {
                     return;
                 }
@@ -250,12 +265,15 @@ impl Walker<'_, '_> {
     }
 
     fn record_text(&mut self, index: u32, verdict: Verdict) {
-        self.parser[index as usize] = match verdict {
-            Verdict::Proven { class, .. } => Some(class.family() == Family::Parser),
-            Verdict::Refuted | Verdict::ContentUnknown => Some(false),
-            Verdict::Unknown | Verdict::Skipped => None,
-        };
-        self.verdicts[index as usize] = verdict;
+        self.set_parser(
+            index,
+            match verdict {
+                Verdict::Proven { class, .. } => Some(class.family() == Family::Parser),
+                Verdict::Refuted | Verdict::ContentUnknown => Some(false),
+                Verdict::Unknown | Verdict::Skipped => None,
+            },
+        );
+        self.set_verdict(index, verdict);
     }
 
     fn text(&self, chain: &mut Chain, whitespace_only: bool, dynamic: bool) -> Verdict {
@@ -266,11 +284,13 @@ impl Walker<'_, '_> {
                 Verdict::Unknown
             };
         };
-        let last = chain.frames.len() - 1;
+        let last = chain.frames.len().saturating_sub(1);
         let mut outcome: Option<Tri> = None;
         let mut proven = None;
         for (dispatch, ns) in top.dispatches() {
-            chain.frames[last].ns = NsSet::one(ns);
+            if let Some(frame) = chain.frames.get_mut(last) {
+                frame.ns = NsSet::one(ns);
+            }
             let tri = match dispatch {
                 Dispatch::Html => match html_text(chain, whitespace_only, dynamic) {
                     Some(Outcome::Diverge(class, frame)) => {
@@ -284,7 +304,9 @@ impl Walker<'_, '_> {
             };
             outcome = Some(outcome.map_or(tri, |acc| acc.join(tri)));
         }
-        chain.frames[last].ns = top.ns;
+        if let Some(frame) = chain.frames.get_mut(last) {
+            frame.ns = top.ns;
+        }
         match (outcome.unwrap_or(Tri::No), proven) {
             (Tri::Yes, Some((class, frame))) => Verdict::Proven {
                 class,

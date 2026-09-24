@@ -1,4 +1,9 @@
-#![allow(clippy::disallowed_types, clippy::disallowed_macros)] // Fixture files and signatures are std strings.
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_macros,
+    reason = "fixture files and signatures are std strings"
+)]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 //! Davinci P4-12c — `<template lang="pug">` lints through its derived Vue
 //! template. Differential: a pug SFC reports exactly the diagnostics
 //! (rule, severity, message) of the same SFC with its template replaced by

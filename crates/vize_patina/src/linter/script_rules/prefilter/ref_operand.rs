@@ -28,7 +28,7 @@ fn collect_direct_ref_bindings(source: &str) -> Vec<&str> {
         if *byte != b'=' || is_equality_or_arrow(bytes, index) {
             continue;
         }
-        let rest = source[index + 1..].trim_start();
+        let rest = source.get(index + 1..).unwrap_or_default().trim_start();
         if !starts_with_ref_factory_call(rest) {
             continue;
         }
@@ -58,19 +58,24 @@ fn starts_with_ref_factory_call(source: &str) -> bool {
 fn identifier_before_assignment(source: &str, equals_index: usize) -> Option<&str> {
     let bytes = source.as_bytes();
     let mut end = equals_index;
-    while end > 0 && bytes[end - 1].is_ascii_whitespace() {
+    while end > 0 && bytes.get(end - 1).is_some_and(u8::is_ascii_whitespace) {
         end -= 1;
     }
     let mut start = end;
-    while start > 0 && is_ascii_identifier_continue(bytes[start - 1]) {
+    while start > 0
+        && bytes
+            .get(start - 1)
+            .copied()
+            .is_some_and(is_ascii_identifier_continue)
+    {
         start -= 1;
     }
-    (start < end).then(|| &source[start..end])
+    source.get(start..end).filter(|name| !name.is_empty())
 }
 
 fn identifier_may_be_ref_operand(source: &str, name: &str) -> bool {
     let mut search_start = 0;
-    while let Some(relative) = source[search_start..].find(name) {
+    while let Some(relative) = source.get(search_start..).and_then(|rest| rest.find(name)) {
         let start = search_start + relative;
         let end = start + name.len();
         search_start = end;
@@ -101,23 +106,31 @@ fn has_identifier_boundaries(bytes: &[u8], start: usize, end: usize) -> bool {
 }
 
 fn occurrence_is_ref_initializer(source: &str, start: usize, end: usize) -> bool {
-    let before = source[..start].trim_end();
-    let after = source[end..].trim_start();
+    let before = source.get(..start).unwrap_or_default().trim_end();
+    let after = source.get(end..).unwrap_or_default().trim_start();
     after.starts_with('=')
         && (before.ends_with("const") || before.ends_with("let") || before.ends_with("var"))
 }
 
 fn next_non_ws_is_value(source: &str, end: usize) -> bool {
-    source[end..].trim_start().starts_with(".value")
+    source
+        .get(end..)
+        .unwrap_or_default()
+        .trim_start()
+        .starts_with(".value")
 }
 
 fn next_non_ws_is_object_key(source: &str, end: usize) -> bool {
-    source[end..].trim_start().starts_with(':')
+    source
+        .get(end..)
+        .unwrap_or_default()
+        .trim_start()
+        .starts_with(':')
 }
 
 fn occurrence_is_obviously_passed_ref(source: &str, start: usize, end: usize) -> bool {
-    let before = source[..start].trim_end();
-    let after = source[end..].trim_start();
+    let before = source.get(..start).unwrap_or_default().trim_end();
+    let after = source.get(end..).unwrap_or_default().trim_start();
     if before.ends_with('(') && !paren_starts_plain_call(before) {
         return false;
     }
@@ -134,7 +147,7 @@ fn paren_starts_plain_call(before: &str) -> bool {
     else {
         return !is_control_keyword(without_paren);
     };
-    let callee = without_paren[start + 1..].trim();
+    let callee = without_paren.get(start + 1..).unwrap_or_default().trim();
     !callee.is_empty() && !is_control_keyword(callee)
 }
 

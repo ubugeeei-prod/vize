@@ -9,7 +9,8 @@ mod differential_battery {
 
     #[test]
     fn facade_projections_agree_over_the_committed_battery() {
-        assert_eq!(run_battery(), PINNED_BATTERY_CENSUS);
+        let census = run_battery().unwrap_or_else(|divergence| panic!("{divergence}"));
+        assert_eq!(census, PINNED_BATTERY_CENSUS);
     }
 
     /// The JSX roots the P2-16 projection refuses are named, so the refused

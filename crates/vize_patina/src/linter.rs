@@ -25,4 +25,5 @@ mod severity;
 pub use config::{LintResult, Linter};
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

@@ -2,7 +2,7 @@
 //! extraction and ecosystem hint detection.
 
 pub(super) fn find_tag_end(bytes: &[u8], start: usize) -> Option<usize> {
-    memchr::memchr(b'>', &bytes[start..]).map(|offset| start + offset)
+    memchr::memchr(b'>', bytes.get(start..)?).map(|offset| start + offset)
 }
 
 /// Find the `>` that ends the start tag beginning at `lt_idx` (the `<`),
@@ -16,13 +16,13 @@ pub(super) fn find_start_tag_end(bytes: &[u8], lt_idx: usize) -> Option<usize> {
     while pos < bytes.len() {
         // Jump to the next byte that can change scan state: a quote opens an
         // attribute value to skip, a `>` closes the tag.
-        let offset = memchr::memchr3(b'"', b'\'', b'>', &bytes[pos..])?;
+        let offset = memchr::memchr3(b'"', b'\'', b'>', bytes.get(pos..)?)?;
         let idx = pos + offset;
-        match bytes[idx] {
+        match *bytes.get(idx)? {
             b'>' => return Some(idx),
             quote => {
                 // Skip the quoted attribute value, including any `>`/`<` inside.
-                let end = memchr::memchr(quote, &bytes[idx + 1..])?;
+                let end = memchr::memchr(quote, bytes.get(idx + 1..)?)?;
                 pos = idx + 1 + end + 1;
             }
         }
@@ -35,7 +35,7 @@ pub(super) fn find_closing_tag(bytes: &[u8], tag_name: &[u8], from: usize) -> Op
     let mut pos = from;
 
     while pos < bytes.len() {
-        let next_lt = pos + memchr::memmem::find(&bytes[pos..], b"</")?;
+        let next_lt = pos + memchr::memmem::find(bytes.get(pos..)?, b"</")?;
 
         if closing_tag_name_at(bytes, next_lt)
             .is_some_and(|(name, _)| name.eq_ignore_ascii_case(tag_name))
@@ -84,7 +84,7 @@ fn read_tag_name(bytes: &[u8], name_start: usize) -> Option<(&[u8], usize)> {
         return None;
     }
 
-    Some((&bytes[name_start..name_end], name_end))
+    Some((bytes.get(name_start..name_end)?, name_end))
 }
 
 fn is_tag_name_byte(byte: u8) -> bool {

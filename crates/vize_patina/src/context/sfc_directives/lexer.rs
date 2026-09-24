@@ -67,7 +67,7 @@ impl DirectiveLexer {
         let mut markers = CommentMarkers::default();
         let mut has_code_token = false;
         let mut index = 0;
-        while index < bytes.len() {
+        while let Some(&current) = bytes.get(index) {
             let context = self.stack.last().copied().unwrap_or(ScriptContext::Code);
             if matches!(
                 context,
@@ -76,7 +76,6 @@ impl DirectiveLexer {
                 record_markers(bytes, index, &mut markers);
             }
 
-            let current = bytes[index];
             let next = bytes.get(index + 1).copied();
             let had_code_token = has_code_token;
             let in_code = matches!(
@@ -141,7 +140,7 @@ impl DirectiveLexer {
                     }
                     (byte, _) if is_identifier_start(byte) => {
                         let end = identifier_end(bytes, index);
-                        let identifier = &bytes[index..end];
+                        let identifier = bytes.get(index..end).unwrap_or_default();
                         let after_dot = self.after_dot;
                         self.delimiters.observe_identifier(identifier, after_dot);
                         self.can_start_expression =
@@ -340,10 +339,11 @@ impl DirectiveLexer {
 }
 
 pub(super) fn record_markers(bytes: &[u8], index: usize, markers: &mut CommentMarkers) {
-    if markers.eslint.is_none() && bytes[index..].starts_with(b"eslint-") {
+    let rest = bytes.get(index..).unwrap_or_default();
+    if markers.eslint.is_none() && rest.starts_with(b"eslint-") {
         markers.eslint = Some(index);
     }
-    if markers.vize.is_none() && bytes[index..].starts_with(b"@vize:") {
+    if markers.vize.is_none() && rest.starts_with(b"@vize:") {
         markers.vize = Some(index);
     }
 }

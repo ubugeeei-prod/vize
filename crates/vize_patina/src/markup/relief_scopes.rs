@@ -109,7 +109,7 @@ impl<'a> ReliefChain<'a> {
 
     /// The branch elements, in authored order.
     pub(super) fn walk_branches(&self, visitor: &mut impl FnMut(&'a ElementNode<'a>)) {
-        for child in &self.children[self.start..self.end] {
+        for child in self.children.get(self.start..self.end).unwrap_or_default() {
             if let TemplateChildNode::Element(element) = child
                 && branch_of(element).is_some()
             {
@@ -121,7 +121,7 @@ impl<'a> ReliefChain<'a> {
     /// Whitespace the chain consumed as gaps but whitespace condensing kept;
     /// the lowering re-emits it after the scope.
     pub(super) fn walk_kept_gaps(&self, visitor: &mut impl FnMut(MarkupText<'a>)) {
-        for child in &self.children[self.start..self.end] {
+        for child in self.children.get(self.start..self.end).unwrap_or_default() {
             if let TemplateChildNode::Text(text) = child {
                 visitor(MarkupText::from_relief(text));
             }

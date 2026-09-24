@@ -20,10 +20,9 @@
 //! }
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use memchr::memmem;
 use vize_s0::FxHashMap;
+use vize_s0::cstr;
 
 use super::{MuseaLintResult, MuseaRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
@@ -59,7 +58,7 @@ impl PreferDesignTokensConfig {
     /// Add a token to the configuration
     pub fn add_token(&mut self, value: &str, path: &str, tier: &str) {
         let normalized = normalize_value(value);
-        let var_name: String = format!("--{}", path.replace('.', "-")).into();
+        let var_name: String = cstr!("--{}", path.replace('.', "-"));
         let info = TokenInfo {
             path: path.to_compact_string(),
             var_name,
@@ -167,24 +166,23 @@ impl PreferDesignTokens {
                         continue;
                     };
 
+                    let (path, var) = (&token.path, &token.var_name);
                     let message = if token.tier == "primitive" {
-                        format!(
-                            "Hardcoded value '{}' matches primitive token '{}' — use var({})",
-                            value_part, token.path, token.var_name
+                        cstr!(
+                            "Hardcoded value '{value_part}' matches primitive token '{path}' — use var({var})"
                         )
                     } else {
-                        format!(
-                            "Hardcoded value '{}' matches token '{}' — use var({})",
-                            value_part, token.path, token.var_name
+                        cstr!(
+                            "Hardcoded value '{value_part}' matches token '{path}' — use var({var})"
                         )
                     };
 
                     let fix = Fix::new(
-                        format!("Replace with var({})", token.var_name),
+                        cstr!("Replace with var({})", token.var_name),
                         TextEdit::replace(
                             line_start as u32,
                             line_end as u32,
-                            line.replace(value_part, &format!("var({})", token.var_name)),
+                            line.replace(value_part, &cstr!("var({})", token.var_name)),
                         ),
                     );
 
@@ -195,7 +193,7 @@ impl PreferDesignTokens {
                             line_start as u32,
                             line_end as u32,
                         )
-                        .with_help(format!(
+                        .with_help(cstr!(
                             "Use `var({})` for consistent theming and maintainability",
                             token.var_name
                         ))
@@ -212,24 +210,23 @@ impl PreferDesignTokens {
                             continue;
                         };
 
+                        let (path, var) = (&token.path, &token.var_name);
                         let message = if token.tier == "primitive" {
-                            format!(
-                                "Hardcoded value '{}' matches primitive token '{}' — use var({})",
-                                part, token.path, token.var_name
+                            cstr!(
+                                "Hardcoded value '{part}' matches primitive token '{path}' — use var({var})"
                             )
                         } else {
-                            format!(
-                                "Hardcoded value '{}' matches token '{}' — use var({})",
-                                part, token.path, token.var_name
+                            cstr!(
+                                "Hardcoded value '{part}' matches token '{path}' — use var({var})"
                             )
                         };
 
                         let fix = Fix::new(
-                            format!("Replace with var({})", token.var_name),
+                            cstr!("Replace with var({})", token.var_name),
                             TextEdit::replace(
                                 line_start as u32,
                                 line_end as u32,
-                                line.replace(part, &format!("var({})", token.var_name)),
+                                line.replace(part, &cstr!("var({})", token.var_name)),
                             ),
                         );
 
@@ -240,7 +237,7 @@ impl PreferDesignTokens {
                                 line_start as u32,
                                 line_end as u32,
                             )
-                            .with_help(format!(
+                            .with_help(cstr!(
                                 "Use `var({})` for consistent theming and maintainability",
                                 token.var_name
                             ))
@@ -271,12 +268,12 @@ fn normalize_value(value: &str) -> String {
             .chars()
             .flat_map(|c| std::iter::repeat_n(c, 2))
             .collect();
-        return format!("#{}", expanded).into();
+        return cstr!("#{}", expanded);
     }
 
     // Normalize leading zero: .5rem -> 0.5rem
     if v.starts_with('.') {
-        return format!("0{}", v).into();
+        return cstr!("0{}", v);
     }
 
     // Remove spaces in rgb/hsl functions

@@ -20,7 +20,7 @@ pub(super) fn string_prefix_len(source: &str) -> Option<usize> {
 
 fn opens_string(source: &str) -> bool {
     let hashes = hash_prefix(source);
-    hashes < 256 && source[hashes..].starts_with('"')
+    hashes < 256 && source.get(hashes..).unwrap_or_default().starts_with('"')
 }
 
 pub(super) fn hash_prefix(source: &str) -> usize {
@@ -58,7 +58,7 @@ pub(super) fn decode_unicode_escape(cur: &mut Cursor<'_>) -> Option<char> {
     if cur.peek() != '}' {
         return None;
     }
-    let body = &cur.source[start..cur.i];
+    let body = cur.source.get(start..cur.i).unwrap_or_default();
     cur.bump();
     if !valid_unicode_body(body) {
         return None;

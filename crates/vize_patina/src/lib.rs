@@ -87,13 +87,13 @@
 
 #![cfg_attr(
     test,
-    allow(
-        clippy::default_constructed_unit_structs,
+    expect(
         clippy::disallowed_macros,
         clippy::disallowed_methods,
         clippy::disallowed_types,
         clippy::items_after_test_module,
-        clippy::useless_asref
+        clippy::useless_asref,
+        reason = "unit tests build fixtures with std strings and format!"
     )
 )]
 

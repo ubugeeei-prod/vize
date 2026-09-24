@@ -22,7 +22,7 @@ pub(super) fn extract_inline_scripts(source: &str) -> Vec<(&str, usize)> {
             break;
         };
 
-        let content = &source[content_start..close_start];
+        let content = source.get(content_start..close_start).unwrap_or_default();
         if !content.trim().is_empty() {
             scripts.push((content, content_start));
         }
@@ -50,7 +50,7 @@ fn find_script_open(source: &str, from: usize) -> Option<usize> {
 
 fn find_tag_end(source: &str, from: usize) -> Option<usize> {
     let mut quote = None;
-    for (relative, byte) in source.as_bytes()[from..].iter().copied().enumerate() {
+    for (relative, byte) in source.as_bytes().get(from..)?.iter().copied().enumerate() {
         match (quote, byte) {
             (Some(current), value) if value == current => quote = None,
             (None, b'"' | b'\'') => quote = Some(byte),
@@ -68,13 +68,16 @@ fn find_ascii_case_insensitive(source: &str, needle: &str, from: usize) -> Optio
         return None;
     }
 
-    haystack[from..]
+    haystack
+        .get(from..)
+        .unwrap_or_default()
         .windows(needle.len())
         .position(|window| window.eq_ignore_ascii_case(needle))
         .map(|index| from + index)
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod standalone_html_tests {
     use super::extract_inline_scripts;
 

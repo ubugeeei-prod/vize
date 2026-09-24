@@ -7,6 +7,7 @@
 //! wrapper element and keep `v-for` on the repeated element instead.
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
 
 use crate::context::LintContext;

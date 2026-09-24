@@ -91,11 +91,17 @@ fn walk_chain<'a>(
     let inside = |span: Span| span.start >= if_op.span.start && span.end <= if_op.span.end;
     let texts_end = index
         + 1
-        + ops[index + 1..]
+        + ops
+            .get(index + 1..)
+            .unwrap_or_default()
             .iter()
             .take_while(|op| matches!(op, Op::Text(text) if inside(text.span)))
             .count();
-    let mut texts = ops[index + 1..texts_end].iter().peekable();
+    let mut texts = ops
+        .get(index + 1..texts_end)
+        .unwrap_or_default()
+        .iter()
+        .peekable();
     let siblings = doc
         .surface
         .and_then(|tree| siblings_at(tree, if_op.span.start))

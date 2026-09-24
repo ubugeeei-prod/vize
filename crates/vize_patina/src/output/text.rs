@@ -1,26 +1,26 @@
 //! Rich terminal output using oxc_diagnostics.
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::diagnostic::{HelpRenderTarget, LintDiagnostic, Severity, render_help};
 use crate::linter::LintResult;
 use crate::output::rule_docs_path;
 use oxc_diagnostics::{GraphicalReportHandler, GraphicalTheme, NamedSource, OxcDiagnostic};
 use oxc_span::Span;
-#[allow(clippy::disallowed_types)] // Required by oxc_diagnostics API
+#[expect(
+    clippy::disallowed_types,
+    reason = "required by the oxc_diagnostics API"
+)]
 use std::sync::Arc;
 use vize_s0::FxHashMap;
 use vize_s0::String;
 use vize_s0::ToCompactString;
+use vize_s0::cstr;
 
 /// Format lint results as rich terminal output
-#[allow(clippy::disallowed_types)] // Arc required by oxc_diagnostics API
 pub fn format_text(results: &[LintResult], sources: &[(String, String)]) -> String {
     format_graphical(results, sources, HelpRenderTarget::PlainText)
 }
 
 /// Format lint results as a full ANSI report.
-#[allow(clippy::disallowed_types)] // Arc required by oxc_diagnostics API
 pub fn format_ansi(results: &[LintResult], sources: &[(String, String)]) -> String {
     let mut output = format_graphical(results, sources, HelpRenderTarget::Ansi);
     let (errors, warnings) = result_counts(results);
@@ -33,7 +33,7 @@ pub fn format_ansi(results: &[LintResult], sources: &[(String, String)]) -> Stri
     output
 }
 
-#[allow(clippy::disallowed_types)] // Arc required by oxc_diagnostics API
+#[expect(clippy::disallowed_types, reason = "oxc_diagnostics requires Arc")]
 fn format_graphical(
     results: &[LintResult],
     sources: &[(String, String)],
@@ -78,7 +78,7 @@ fn format_graphical(
 }
 
 fn to_oxc_diagnostic(diagnostic: &LintDiagnostic, help_target: HelpRenderTarget) -> OxcDiagnostic {
-    let formatted_msg = format!("[vize:{}] {}", diagnostic.rule_name, diagnostic.message);
+    let formatted_msg = cstr!("[vize:{}] {}", diagnostic.rule_name, diagnostic.message);
 
     let mut diag = match diagnostic.severity {
         Severity::Error => OxcDiagnostic::error(formatted_msg),
@@ -91,8 +91,8 @@ fn to_oxc_diagnostic(diagnostic: &LintDiagnostic, help_target: HelpRenderTarget)
     let help = diagnostic
         .help
         .as_ref()
-        .map(|help| format!("{}\n\nReference: {}", help, docs_path))
-        .unwrap_or_else(|| format!("Reference: {}", docs_path));
+        .map(|help| cstr!("{}\n\nReference: {}", help, docs_path))
+        .unwrap_or_else(|| cstr!("Reference: {}", docs_path));
     diag = diag.with_help(render_help(&help, help_target));
 
     for label in &diagnostic.labels {
@@ -114,7 +114,7 @@ pub fn format_summary(error_count: usize, warning_count: usize, file_count: usiz
     let mut parts = Vec::new();
 
     if error_count > 0 {
-        parts.push(format!(
+        parts.push(cstr!(
             "{} error{}",
             error_count,
             if error_count == 1 { "" } else { "s" }
@@ -122,7 +122,7 @@ pub fn format_summary(error_count: usize, warning_count: usize, file_count: usiz
     }
 
     if warning_count > 0 {
-        parts.push(format!(
+        parts.push(cstr!(
             "{} warning{}",
             warning_count,
             if warning_count == 1 { "" } else { "s" }
@@ -130,14 +130,13 @@ pub fn format_summary(error_count: usize, warning_count: usize, file_count: usiz
     }
 
     if parts.is_empty() {
-        format!("No problems found in {} file(s)", file_count).into()
+        cstr!("No problems found in {} file(s)", file_count)
     } else {
-        format!(
+        cstr!(
             "{} in {} file{}",
             parts.join(", "),
             file_count,
             if file_count == 1 { "" } else { "s" }
         )
-        .into()
     }
 }

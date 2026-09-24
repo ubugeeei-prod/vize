@@ -35,12 +35,11 @@
 //! </style>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::RootNode;
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-src-attribute",
@@ -66,7 +65,7 @@ impl Rule for NoSrcAttribute {
         let block_types = ["template", "script", "style"];
 
         for block_type in block_types {
-            let pattern = format!("<{}", block_type);
+            let pattern = cstr!("<{}", block_type);
             let mut pos = 0;
 
             while let Some(block_start) = source.get(pos..).and_then(|rest| rest.find(&*pattern)) {

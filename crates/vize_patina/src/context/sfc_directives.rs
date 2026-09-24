@@ -152,7 +152,7 @@ impl BlockDirectiveState {
             let line = raw_line
                 .strip_suffix('\n')
                 .map_or(raw_line, |line| line.strip_suffix('\r').unwrap_or(line));
-            let markers = scan_line(line, &source[offset..]);
+            let markers = scan_line(line, source.get(offset..).unwrap_or_default());
             self.scan_eslint_directive(line, line_number, markers.eslint);
             self.scan_vize_directive(line, line_number, markers.vize);
             offset += raw_line.len();
@@ -177,7 +177,7 @@ impl BlockDirectiveState {
         let Some(index) = index else {
             return;
         };
-        let Some(directive) = parse_eslint_disable_comment(&line[index..]) else {
+        let Some(directive) = line.get(index..).and_then(parse_eslint_disable_comment) else {
             return;
         };
         match directive.kind {
@@ -196,9 +196,12 @@ impl BlockDirectiveState {
         let Some(index) = index else {
             return;
         };
-        let content = line[index..]
+        let Some(from_marker) = line.get(index..) else {
+            return;
+        };
+        let content = from_marker
             .split_once("*/")
-            .map_or(&line[index..], |(content, _)| content);
+            .map_or(from_marker, |(content, _)| content);
         let Some(directive) = parse_vize_directive(content, line_number, 0) else {
             return;
         };

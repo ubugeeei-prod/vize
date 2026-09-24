@@ -43,7 +43,8 @@ pub(super) fn fixture_calls(source: &str) -> std::vec::Vec<FixtureCall> {
                 let index = usize::from(ident == "run_over_template");
                 let template = arg_ranges(source, open)
                     .and_then(|args| args.get(index).copied())
-                    .and_then(|(from, to)| decode_template_arg(&source[from..to]));
+                    .and_then(|(from, to)| source.get(from..to))
+                    .and_then(decode_template_arg);
                 out.push(FixtureCall {
                     line: cur.line_at(start),
                     template,

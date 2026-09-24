@@ -6,23 +6,23 @@ use std::{fs, hint::black_box, time::Instant};
 use vize_patina::Linter;
 use vize_s0::profiler::global_profiler;
 
-fn main() {
-    let directory = std::env::args().nth(1).expect("fixture directory");
-    let iterations: usize = std::env::args()
-        .nth(2)
-        .unwrap_or("20".into())
-        .parse()
-        .unwrap();
-    let mut paths: Vec<_> = fs::read_dir(directory)
-        .unwrap()
-        .map(|entry| entry.unwrap().path())
-        .filter(|path| path.extension().is_some_and(|extension| extension == "vue"))
-        .collect();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let directory = std::env::args()
+        .nth(1)
+        .ok_or("usage: profile_sfc <fixture directory> [iterations]")?;
+    let iterations: usize = std::env::args().nth(2).unwrap_or("20".into()).parse()?;
+    let mut paths = Vec::new();
+    for entry in fs::read_dir(directory)? {
+        let path = entry?.path();
+        if path.extension().is_some_and(|extension| extension == "vue") {
+            paths.push(path);
+        }
+    }
     paths.sort();
-    let inputs: Vec<_> = paths
+    let inputs = paths
         .iter()
-        .map(|path| fs::read_to_string(path).unwrap())
-        .collect();
+        .map(fs::read_to_string)
+        .collect::<Result<Vec<_>, _>>()?;
     let linter = Linter::new();
     if std::env::var_os("VIZE_LINT_PROFILE").is_some() {
         global_profiler().enable();
@@ -49,4 +49,5 @@ fn main() {
             entry.count
         );
     }
+    Ok(())
 }

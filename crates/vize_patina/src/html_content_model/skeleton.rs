@@ -114,7 +114,7 @@ impl Element {
     /// The fact-table id of this tag in `ns`.
     #[inline]
     pub fn id(&self, ns: Ns) -> Option<ElemId> {
-        self.ids[ns as usize]
+        self.ids.get(ns as usize).copied().flatten()
     }
 }
 
@@ -239,14 +239,21 @@ impl Skeleton {
         Children {
             skeleton: self,
             next: index + 1,
-            end: self.nodes[index as usize].end,
+            end: self.nodes.get(index as usize).map_or(0, |node| node.end),
         }
     }
 
     /// The node at `index`.
     #[inline]
     pub fn node(&self, index: u32) -> &Node {
-        &self.nodes[index as usize]
+        // Indices come from this skeleton; a stale one reads as childless
+        // dynamic text, which no check can prove anything about.
+        static MISSING: Node = Node {
+            kind: NodeKind::DynamicText,
+            span: Span::new(0, 0),
+            end: 0,
+        };
+        self.nodes.get(index as usize).unwrap_or(&MISSING)
     }
 
     /// Open a node; its children are the nodes pushed until [`Self::close`].
@@ -262,7 +269,10 @@ impl Skeleton {
 
     /// Close the node opened at `index`.
     pub fn close(&mut self, index: u32) {
-        self.nodes[index as usize].end = self.nodes.len() as u32;
+        let end = self.nodes.len() as u32;
+        if let Some(node) = self.nodes.get_mut(index as usize) {
+            node.end = end;
+        }
     }
 
     /// Push a childless node.
@@ -289,7 +299,9 @@ impl Iterator for Children<'_> {
             return None;
         }
         let current = self.next;
-        self.next = self.skeleton.node(current).end;
+        // A node's subtree ends past the node itself; `max` keeps a
+        // malformed skeleton from looping.
+        self.next = self.skeleton.node(current).end.max(current + 1);
         Some(current)
     }
 }

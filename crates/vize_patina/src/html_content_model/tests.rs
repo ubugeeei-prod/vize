@@ -3,6 +3,7 @@
 //! cannot decide it.
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod checker_tests {
     use crate::html_content_model::{Context, NodeKind, authored_skeleton, check, facts};
     use vize_s0::Allocator;
@@ -43,6 +44,12 @@ mod checker_tests {
     #[test]
     fn fact_table_loads_with_every_row() {
         assert_eq!(facts().universe().count(), 146);
+        let mut defects = Vec::new();
+        crate::html_content_model::facts::Facts::parse_reporting(
+            crate::html_content_model::facts::WHATWG_TSV,
+            &mut defects,
+        );
+        assert!(defects.is_empty(), "whatwg.tsv defects: {defects:?}");
     }
 
     #[test]

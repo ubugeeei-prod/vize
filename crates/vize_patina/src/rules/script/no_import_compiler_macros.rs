@@ -26,10 +26,9 @@
 //! import { ref, computed } from 'vue'
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use oxc_ast::ast::{ImportDeclarationSpecifier, Program, Statement};
 use oxc_span::GetSpan;
+use vize_s0::cstr;
 
 use vize_croquis::COMPILER_MACRO_NAMES;
 
@@ -81,7 +80,7 @@ impl ScriptRule for NoImportCompilerMacros {
                 result.add_diagnostic(
                     LintDiagnostic::error(
                         META.name,
-                        format!("Do not import '{}' - compiler macros are automatically available in <script setup>", name),
+                        cstr!("Do not import '{}' - compiler macros are automatically available in <script setup>", name),
                         offset as u32 + span.start,
                         offset as u32 + span.end,
                     ).with_help("Remove the macro from the import statement. Compiler macros are auto-imported."),

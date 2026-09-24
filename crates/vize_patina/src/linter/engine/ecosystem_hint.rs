@@ -19,7 +19,10 @@ pub(super) fn source_may_contain_ecosystem_template_rule(
 fn template_may_contain_ecosystem_element(bytes: &[u8], sfc_source: Option<&str>) -> bool {
     let imports_void_vue = sfc_source.is_some_and(|source| source.contains("@void/vue"));
     let mut cursor = 0;
-    while let Some(relative) = memchr::memchr(b'<', &bytes[cursor..]) {
+    while let Some(relative) = bytes
+        .get(cursor..)
+        .and_then(|rest| memchr::memchr(b'<', rest))
+    {
         let tag_start = cursor + relative;
         let Some((tag_name, name_end)) = tag_name_at(bytes, tag_start) else {
             cursor = tag_start + 1;

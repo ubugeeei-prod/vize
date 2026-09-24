@@ -41,6 +41,7 @@ use oxc_ast::ast::{Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "petite-vue/valid-v-scope",
@@ -103,8 +104,7 @@ impl Rule for ValidVScope {
 fn is_object_literal(expr: &str) -> bool {
     // Wrap as the initializer of a declaration so the object literal parses as
     // an expression (a bare leading `{` would otherwise be a block statement).
-    #[allow(clippy::disallowed_macros)]
-    let wrapped = format!("const __vize_scope = {expr}");
+    let wrapped = cstr!("const __vize_scope = {expr}");
 
     let allocator = Allocator::default();
     let source_type = SourceType::default().with_typescript(true);

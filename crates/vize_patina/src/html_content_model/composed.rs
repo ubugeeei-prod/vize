@@ -111,7 +111,10 @@ impl Composer<'_> {
         let Some(&(file, node)) = path.last() else {
             return;
         };
-        let Some(name) = component_usage_name(self.skeletons[file as usize].node(node)) else {
+        let Some(parent) = self.skeletons.get(file as usize) else {
+            return;
+        };
+        let Some(name) = component_usage_name(parent.node(node)) else {
             return;
         };
         let Some(child) = (self.resolve)(file, name) else {
@@ -121,8 +124,12 @@ impl Composer<'_> {
         if path.len() > MAX_DEPTH || path.iter().any(|(visited, _)| *visited == child) {
             return;
         }
-        let skeleton = &self.skeletons[child as usize];
-        let parent = &self.skeletons[file as usize];
+        let (Some(skeleton), Some(standalone)) = (
+            self.skeletons.get(child as usize),
+            self.standalone.get(child as usize),
+        ) else {
+            return;
+        };
         let pruned: Vec<u32> = (skeleton.props.guards.iter())
             .filter(|(_, prop)| {
                 parent.passes(node, prop) == Some(false) && (self.absent_falsy)(child, prop)
@@ -140,12 +147,11 @@ impl Composer<'_> {
                 nested.push((node, chain.clone()));
             },
         );
-        let standalone = &self.standalone[child as usize];
         for (index, verdict) in report.verdicts.iter().enumerate() {
             let Verdict::Proven { class, evidence } = *verdict else {
                 continue;
             };
-            if standalone.verdicts[index] == *verdict {
+            if standalone.verdicts.get(index) == Some(verdict) {
                 continue;
             }
             let key = (path.to_vec(), index as u32);

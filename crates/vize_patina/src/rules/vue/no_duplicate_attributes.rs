@@ -16,8 +16,6 @@
 //! <div :class="foo"></div>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -25,6 +23,7 @@ use vize_relief::{ElementNode, PropNode};
 use vize_s0::FxHashSet;
 use vize_s0::String;
 use vize_s0::ToCompactString;
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-duplicate-attributes",
@@ -104,7 +103,7 @@ impl Rule for NoDuplicateAttributes {
                                 ctx.error_with_help(
                                     ctx.t_fmt(
                                         "vue/no-duplicate-attributes.message",
-                                        &[("attr", &format!("v-bind:{}", arg_name))],
+                                        &[("attr", &cstr!("v-bind:{}", arg_name))],
                                     ),
                                     &dir.loc,
                                     ctx.t("vue/no-duplicate-attributes.help"),
@@ -119,7 +118,7 @@ impl Rule for NoDuplicateAttributes {
                                 ctx.error_with_help(
                                     ctx.t_fmt(
                                         "vue/no-duplicate-attributes.message",
-                                        &[("attr", &format!("v-bind:{}", arg_name))],
+                                        &[("attr", &cstr!("v-bind:{}", arg_name))],
                                     ),
                                     &dir.loc,
                                     ctx.t("vue/no-duplicate-attributes.help"),
@@ -137,15 +136,15 @@ impl Rule for NoDuplicateAttributes {
                             let modifiers: Vec<&str> =
                                 dir.modifiers.iter().map(|m| m.content).collect();
                             let event_key = if modifiers.is_empty() {
-                                format!("on:{}", event_name)
+                                cstr!("on:{}", event_name)
                             } else {
-                                format!("on:{}.{}", event_name, modifiers.join("."))
+                                cstr!("on:{}.{}", event_name, modifiers.join("."))
                             };
                             if seen_directives.contains(event_key.as_str()) {
                                 let display_name = if modifiers.is_empty() {
-                                    format!("v-on:{}", event_name)
+                                    cstr!("v-on:{}", event_name)
                                 } else {
-                                    format!("v-on:{}.{}", event_name, modifiers.join("."))
+                                    cstr!("v-on:{}.{}", event_name, modifiers.join("."))
                                 };
                                 ctx.error_with_help(
                                     ctx.t_fmt(
@@ -156,7 +155,7 @@ impl Rule for NoDuplicateAttributes {
                                     ctx.t("vue/no-duplicate-attributes.help"),
                                 );
                             } else {
-                                seen_directives.insert(event_key.into());
+                                seen_directives.insert(event_key);
                             }
                         }
                     }
@@ -166,9 +165,9 @@ impl Rule for NoDuplicateAttributes {
                             let Some(arg_name) = get_static_expression_content(arg) else {
                                 continue;
                             };
-                            format!("model:{arg_name}")
+                            cstr!("model:{arg_name}")
                         } else {
-                            "model:modelValue".to_owned()
+                            "model:modelValue".into()
                         };
                         if seen_directives.contains(model_key.as_str()) {
                             ctx.error_with_help(
@@ -180,7 +179,7 @@ impl Rule for NoDuplicateAttributes {
                                 ctx.t("vue/no-duplicate-attributes.help"),
                             );
                         } else {
-                            seen_directives.insert(model_key.into());
+                            seen_directives.insert(model_key);
                         }
                     }
                 }

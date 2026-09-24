@@ -19,14 +19,13 @@
 //! <div :class="foo"></div>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode};
 use vize_s0::String;
 use vize_s0::ToCompactString;
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-bind-style",
@@ -102,7 +101,7 @@ impl Rule for VBindStyle {
                         })
                         .unwrap_or_default();
 
-                    let new_text = format!(":{}=\"{}\"", arg_content, exp_content);
+                    let new_text = cstr!(":{}=\"{}\"", arg_content, exp_content);
                     let fix = Fix::new(
                         "Use shorthand syntax",
                         TextEdit::replace(
@@ -145,7 +144,7 @@ impl Rule for VBindStyle {
                         })
                         .unwrap_or_default();
 
-                    let new_text = format!("v-bind:{}=\"{}\"", arg_content, exp_content);
+                    let new_text = cstr!("v-bind:{}=\"{}\"", arg_content, exp_content);
                     let fix = Fix::new(
                         "Use longform syntax",
                         TextEdit::replace(

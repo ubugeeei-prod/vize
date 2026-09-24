@@ -87,7 +87,7 @@ impl Frame {
     /// The fact-table id of this element in `ns`.
     #[inline]
     pub fn id(&self, ns: Ns) -> Option<ElemId> {
-        self.ids[ns as usize]
+        self.ids.get(ns as usize).copied().flatten()
     }
 
     /// Whether this frame is certainly the HTML element `tag`.
@@ -125,7 +125,9 @@ impl Frame {
         }
         let mut len = 0;
         let mut push = |dispatch, ns| {
-            out[len] = Some((dispatch, ns));
+            if let Some(slot) = out.get_mut(len) {
+                *slot = Some((dispatch, ns));
+            }
             len += 1;
         };
         for ns in self.ns.iter() {

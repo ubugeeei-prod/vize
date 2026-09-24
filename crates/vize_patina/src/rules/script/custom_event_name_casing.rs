@@ -341,4 +341,5 @@ fn is_define_emits_call(expression: &Expression<'_>) -> bool {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

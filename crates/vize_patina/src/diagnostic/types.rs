@@ -4,14 +4,13 @@
 //! `Fix`, and `LintSummary` -- the primary data structures used to report
 //! and represent lint findings.
 
-#![allow(clippy::disallowed_macros)]
-
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::Span;
 use serde::Serialize;
 use vize_s0::CompactString;
 use vize_s0::String;
 use vize_s0::ToCompactString;
+use vize_s0::cstr;
 
 use super::formatting::{HelpRenderTarget, render_help};
 
@@ -250,14 +249,14 @@ impl LintDiagnostic {
     /// Get the formatted message with `[vize:RULE]` prefix.
     #[inline]
     pub fn formatted_message(&self) -> String {
-        format!("[vize:{}] {}", self.rule_name, self.message).to_compact_string()
+        cstr!("[vize:{}] {}", self.rule_name, self.message).to_compact_string()
     }
 
     /// Convert to OxcDiagnostic for rich rendering.
     #[inline]
     pub fn into_oxc_diagnostic(self) -> OxcDiagnostic {
         // Format message with [vize:RULE] prefix
-        let formatted_msg = format!("[vize:{}] {}", self.rule_name, self.message);
+        let formatted_msg = cstr!("[vize:{}] {}", self.rule_name, self.message);
 
         let mut diag = match self.severity {
             Severity::Error => OxcDiagnostic::error(formatted_msg),

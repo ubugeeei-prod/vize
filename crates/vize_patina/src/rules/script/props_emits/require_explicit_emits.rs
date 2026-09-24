@@ -250,4 +250,5 @@ fn is_emit_callee(callee: &Expression<'_>, binding: Option<&str>) -> bool {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

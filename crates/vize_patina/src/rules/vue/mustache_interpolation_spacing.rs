@@ -145,4 +145,5 @@ fn trailing_whitespace(inner: &str) -> u32 {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

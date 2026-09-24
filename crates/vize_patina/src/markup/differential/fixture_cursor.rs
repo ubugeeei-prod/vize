@@ -35,7 +35,9 @@ impl<'a> Cursor<'a> {
     }
 
     pub(super) fn line_at(&self, index: usize) -> usize {
-        self.source[..index]
+        self.source
+            .get(..index)
+            .unwrap_or_default()
             .bytes()
             .filter(|byte| *byte == b'\n')
             .count()
@@ -43,7 +45,7 @@ impl<'a> Cursor<'a> {
     }
 
     pub(super) fn rest(&self) -> &'a str {
-        &self.source[self.i..]
+        self.source.get(self.i..).unwrap_or_default()
     }
 
     pub(super) fn skip_ws_and_comments(&mut self) {
@@ -91,7 +93,7 @@ impl<'a> Cursor<'a> {
         let Some(prefix) = string_prefix_len(self.rest()) else {
             return false;
         };
-        let hashes = hash_prefix(&self.rest()[prefix..]);
+        let hashes = hash_prefix(self.rest().get(prefix..).unwrap_or_default());
         self.i += prefix + hashes + 1;
         if hashes == 0 {
             self.skip_cooked_body();
@@ -122,7 +124,9 @@ impl<'a> Cursor<'a> {
 
     fn skip_raw_body(&mut self, hashes: usize) {
         while !self.eof() {
-            if self.peek() == '"' && hash_prefix(&self.source[self.i + 1..]) >= hashes {
+            if self.peek() == '"'
+                && hash_prefix(self.source.get(self.i + 1..).unwrap_or_default()) >= hashes
+            {
                 self.i += 1 + hashes;
                 return;
             }
@@ -140,7 +144,12 @@ impl<'a> Cursor<'a> {
         if self.peek() != '\'' {
             return false;
         }
-        let next = self.source[self.i + 1..].chars().next();
+        let next = self
+            .source
+            .get(self.i + 1..)
+            .unwrap_or_default()
+            .chars()
+            .next();
         if next.is_some_and(is_ident_start) || self.rest().starts_with("'r#") {
             self.bump();
             if self.rest().starts_with("r#") {
@@ -200,7 +209,7 @@ impl<'a> Cursor<'a> {
         while !self.eof() && is_ident_continue(self.peek()) {
             self.bump();
         }
-        &self.source[start..self.i]
+        self.source.get(start..self.i).unwrap_or_default()
     }
 
     pub(super) fn call_paren(&self) -> Option<usize> {
@@ -219,7 +228,7 @@ impl<'a> Cursor<'a> {
         if prefix > 0 && !self.rest().starts_with('r') {
             return None;
         }
-        let hashes = hash_prefix(&self.rest()[prefix..]);
+        let hashes = hash_prefix(self.rest().get(prefix..).unwrap_or_default());
         self.i += prefix + hashes + 1;
         let value = if hashes == 0 {
             self.decode_cooked()?
@@ -235,8 +244,10 @@ impl<'a> Cursor<'a> {
     fn decode_raw(&mut self, hashes: usize) -> Option<String> {
         let start = self.i;
         while !self.eof() {
-            if self.peek() == '"' && hash_prefix(&self.source[self.i + 1..]) >= hashes {
-                let body = normalize_newlines(&self.source[start..self.i]);
+            if self.peek() == '"'
+                && hash_prefix(self.source.get(self.i + 1..).unwrap_or_default()) >= hashes
+            {
+                let body = normalize_newlines(self.source.get(start..self.i).unwrap_or_default());
                 self.i += 1 + hashes;
                 return Some(body);
             }

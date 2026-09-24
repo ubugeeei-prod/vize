@@ -29,12 +29,14 @@ pub fn evaluate_element(chain: &mut Chain, subject: &Subject<'_>) -> (ParserVerd
             NsSet::one(subject.element.compiler_ns),
         );
     };
-    let last = chain.frames.len() - 1;
+    let last = chain.frames.len().saturating_sub(1);
     let mut diverged = None;
     let (mut all_diverge, mut all_stable) = (true, true);
     let mut ns = NsSet::EMPTY;
     for (dispatch, parent_ns) in top.dispatches() {
-        chain.frames[last].ns = NsSet::one(parent_ns);
+        if let Some(frame) = chain.frames.get_mut(last) {
+            frame.ns = NsSet::one(parent_ns);
+        }
         let name = subject.element.id(Ns::Html).map(|id| facts().name(id).1);
         let outcome = match dispatch {
             Dispatch::Html => html_start_tag(chain, subject, true),
@@ -63,7 +65,9 @@ pub fn evaluate_element(chain: &mut Chain, subject: &Subject<'_>) -> (ParserVerd
             }
         }
     }
-    chain.frames[last].ns = top.ns;
+    if let Some(frame) = chain.frames.get_mut(last) {
+        frame.ns = top.ns;
+    }
     match (all_diverge, all_stable, diverged) {
         (true, _, Some((class, frame))) => {
             (ParserVerdict::Diverges(class, frame), NsSet::one(Ns::Html))

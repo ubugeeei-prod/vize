@@ -249,7 +249,8 @@ pub(super) fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32
     while clamped > 0 && !source.is_char_boundary(clamped) {
         clamped -= 1;
     }
-    source[..clamped].encode_utf16().count() as u32
+    let prefix = source.get(..clamped).unwrap_or_default();
+    prefix.encode_utf16().count() as u32
 }
 
 #[cfg(test)]

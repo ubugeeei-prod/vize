@@ -95,7 +95,11 @@ impl<'ctx, 'a> MarkupContext<'ctx, 'a> {
     #[inline]
     pub fn ancestor_elements(&self) -> impl DoubleEndedIterator<Item = MarkupElement<'a>> + '_ {
         let ancestor_len = self.element_stack.len().saturating_sub(1);
-        self.element_stack[..ancestor_len].iter().copied()
+        self.element_stack
+            .get(..ancestor_len)
+            .unwrap_or_default()
+            .iter()
+            .copied()
     }
 
     /// Check whether any ancestor of the current element matches `predicate`.

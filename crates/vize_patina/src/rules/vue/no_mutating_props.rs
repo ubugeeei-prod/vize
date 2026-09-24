@@ -16,8 +16,6 @@
 //! checked with real oxc syntax rather than scanning source text.
 //!
 
-#![allow(clippy::disallowed_macros)]
-
 mod handlers;
 mod mutation_targets;
 mod options;
@@ -39,6 +37,7 @@ use vize_relief::{DirectiveNode, ElementNode, ForNode, PropNode, RootNode, Templ
 use vize_s0::FxHashSet;
 use vize_s0::String;
 use vize_s0::ToCompactString;
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-mutating-props",
@@ -86,7 +85,7 @@ impl NoMutatingProps {
         ctx.report(
             crate::diagnostic::LintDiagnostic::error(
                 ctx.current_rule,
-                format!("Unexpected mutation of prop '{}' via v-model", content),
+                cstr!("Unexpected mutation of prop '{}' via v-model", content),
                 span.start,
                 span.end,
             )
@@ -132,7 +131,7 @@ impl NoMutatingProps {
             ctx.report(
                 crate::diagnostic::LintDiagnostic::error(
                     ctx.current_rule,
-                    format!(
+                    cstr!(
                         "Unexpected mutation of prop '{}' in an inline handler",
                         mutation.target
                     ),
@@ -279,7 +278,7 @@ impl Rule for NoMutatingProps {
             ctx.report_in_sfc(
                 crate::diagnostic::LintDiagnostic::error(
                     ctx.current_rule,
-                    format!(
+                    cstr!(
                         "Unexpected mutation of prop '{}' in <script setup>",
                         mutation.target
                     ),

@@ -307,7 +307,7 @@ fn collect_for(
     );
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "explicit per-block state")]
 fn collect_expression(
     virtual_ts: &TypeAwareDocument,
     expression: &ExpressionNode<'_>,
@@ -389,36 +389,42 @@ fn retarget_slot_spread_call_queries(
     first_query: usize,
 ) {
     if let Some(queries) = sinks.template_queries.as_deref_mut() {
-        let recent = &mut queries[first_query..];
-        let Some(expression_index) = recent
+        let Some(recent) = queries.get_mut(first_query..) else {
+            return;
+        };
+        let Some((expression_index, expression)) = recent
             .iter()
-            .position(|query| query.kind == TemplateQueryKind::Expression)
+            .enumerate()
+            .find(|(_, query)| query.kind == TemplateQueryKind::Expression)
         else {
             return;
         };
-        let expression_start = recent[expression_index].source_start;
-        let expression_end = recent[expression_index].source_end;
-        let Some(callee_index) = recent.iter().position(|query| {
+        let expression_start = expression.source_start;
+        let expression_end = expression.source_end;
+        let expression_offset = expression.generated_offset;
+        let Some((callee_index, callee)) = recent.iter().enumerate().find(|(_, query)| {
             query.kind == TemplateQueryKind::CallCallee
                 && query.source_start == expression_start
                 && query.source_end < expression_end
         }) else {
             return;
         };
-        let callee_len = (recent[callee_index].source_end - expression_start) as usize;
+        let callee_len = (callee.source_end - expression_start) as usize;
         let Some(callee_text) = expression_source.get(..callee_len) else {
             return;
         };
-        let Some(callee_offset) = slot_spread_callee_offset(
-            &virtual_ts.content,
-            recent[expression_index].generated_offset,
-            callee_text,
-        ) else {
+        let Some(callee_offset) =
+            slot_spread_callee_offset(&virtual_ts.content, expression_offset, callee_text)
+        else {
             return;
         };
-        recent[callee_index].generated_offset = callee_offset;
-        recent[expression_index].generated_offset = callee_offset;
-        recent[expression_index].kind = TemplateQueryKind::CallReturn;
+        if let Some(callee) = recent.get_mut(callee_index) {
+            callee.generated_offset = callee_offset;
+        }
+        if let Some(expression) = recent.get_mut(expression_index) {
+            expression.generated_offset = callee_offset;
+            expression.kind = TemplateQueryKind::CallReturn;
+        }
     }
 }
 
@@ -455,7 +461,7 @@ fn retarget_v_for_source_queries(
     first_query: usize,
 ) {
     if let Some(queries) = sinks.template_queries.as_deref_mut() {
-        for query in &mut queries[first_query..] {
+        for query in queries.iter_mut().skip(first_query) {
             if query.kind == TemplateQueryKind::Expression
                 && let Some(offset) =
                     v_for_source_binding_offset(&virtual_ts.content, query.generated_offset)
@@ -467,7 +473,7 @@ fn retarget_v_for_source_queries(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "explicit per-block state")]
 fn collect_expression_query_sets(
     virtual_ts: &TypeAwareDocument,
     expression: &ExpressionNode<'_>,
@@ -591,20 +597,5 @@ fn expression_binding_generated_offset(generated: &str, expression_offset: u32) 
 }
 
 #[cfg(test)]
-mod tests {
-    use super::expression_binding_generated_offset;
-
-    #[test]
-    fn finds_expression_binding_offset_on_generated_line() {
-        let generated = "  const __expr_42 = actions[method];\n";
-        let expression_offset = generated.find("method").unwrap() as u32;
-
-        let binding_offset = expression_binding_generated_offset(generated, expression_offset)
-            .expect("binding offset");
-
-        assert_eq!(
-            &generated[binding_offset as usize..binding_offset as usize + 1],
-            "2"
-        );
-    }
-}
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+mod tests;

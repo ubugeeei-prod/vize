@@ -279,7 +279,10 @@ fn sfc_parse_options(filename: &str) -> SfcParseOptions {
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "snapshot fixture uses insta's format!"
+)]
 mod tests {
     use super::{VueI18nNoMissingKey, translation_literals};
     use crate::linter::Linter;

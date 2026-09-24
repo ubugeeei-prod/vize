@@ -30,12 +30,11 @@
 //! <button @click="onClick">Click</button>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode};
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/warn-custom-directive",
@@ -71,7 +70,7 @@ impl Rule for WarnCustomDirective {
         // Check if this is a custom directive (not built-in)
         if !BUILTIN_DIRECTIVES.contains(&name) {
             ctx.warn_with_help(
-                format!(
+                cstr!(
                     "Custom directive 'v-{}' detected. Ensure it is properly registered.",
                     name
                 ),

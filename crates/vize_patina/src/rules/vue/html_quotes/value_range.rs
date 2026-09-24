@@ -81,6 +81,7 @@ pub(super) fn value_range(source: &str, loc: &SourceLocation) -> Option<ValueRan
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use super::{ValueRange, value_range};
     use vize_relief::SourceLocation;

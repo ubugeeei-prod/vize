@@ -26,8 +26,6 @@
 //! </template>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 mod dynamic_is;
 mod script_setup_refs;
 #[cfg(test)]
@@ -42,6 +40,7 @@ use vize_croquis::naming::{is_pascal_case, to_pascal_case};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
 use vize_relief::BindingType;
 use vize_relief::RootNode;
+use vize_s0::cstr;
 use vize_s0::{CompactString, String, ToCompactString};
 
 static META: RuleMeta = RuleMeta {
@@ -216,7 +215,7 @@ impl Rule for NoUnusedComponents {
             ctx.report(
                 crate::diagnostic::LintDiagnostic::warn(
                     ctx.current_rule,
-                    format!(
+                    cstr!(
                         "Component '{}' is registered but never used in template",
                         name
                     ),

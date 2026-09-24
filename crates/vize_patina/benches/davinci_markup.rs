@@ -8,6 +8,12 @@
 //! window — the exact `allocs` budget makes any reintroduced per-rule root
 //! vector (or child spill) fail closed.
 
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    reason = "the bench asserts its fixture's shape by panicking"
+)]
+
 use criterion::{Criterion, criterion_group};
 use davinci_harness::stage::bench_stage_with_metrics;
 use vize_patina::ir::TemplateSyntax;

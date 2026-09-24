@@ -35,9 +35,8 @@
 //! - Callback functions passed as arguments (inferred from context)
 //! - Arrow functions without block body (e.g., `x => x + 1`)
 
-#![allow(clippy::disallowed_macros)]
-
 use memchr::memmem;
+use vize_s0::cstr;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
@@ -116,11 +115,10 @@ impl ScriptRule for RequireFunctionReturnType {
                         let message = if func_name.is_empty() {
                             "Function is missing a return type annotation".to_compact_string()
                         } else {
-                            format!(
+                            cstr!(
                                 "Function '{}' is missing a return type annotation",
                                 func_name
                             )
-                            .into()
                         };
                         result.add_diagnostic(
                             LintDiagnostic::warn(

@@ -22,13 +22,12 @@
 //! <template v-slot:header><div /></template>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, PropNode};
 use vize_s0::ToCompactString;
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-useless-template-attributes",
@@ -112,7 +111,7 @@ impl Rule for NoUselessTemplateAttributes {
                         if let Some(raw) = &dir.raw_name {
                             raw.to_compact_string()
                         } else {
-                            format!("v-{}", dir.name).into()
+                            cstr!("v-{}", dir.name)
                         }
                     }
                 };

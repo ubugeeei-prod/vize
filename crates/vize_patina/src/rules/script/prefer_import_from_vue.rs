@@ -21,10 +21,9 @@
 //! import { ref, h } from 'vue'
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use oxc_ast::ast::{ImportDeclaration, Program, Statement};
 use oxc_span::GetSpan;
+use vize_s0::cstr;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
@@ -95,7 +94,7 @@ fn check_import(
     result.add_diagnostic(
         LintDiagnostic::warn(
             META.name,
-            format!("Import from '{}' should be replaced with 'vue'", specifier),
+            cstr!("Import from '{}' should be replaced with 'vue'", specifier),
             pattern_start as u32,
             pattern_end as u32,
         )

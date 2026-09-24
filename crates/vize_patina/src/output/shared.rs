@@ -228,7 +228,8 @@ impl SourceLineIndex {
             .partition_point(|&(byte_offset, _)| byte_offset <= offset);
         adjustment_index
             .checked_sub(1)
-            .map(|index| self.multibyte_adjustments[index].1)
+            .and_then(|index| self.multibyte_adjustments.get(index))
+            .map(|&(_, extra)| extra)
             .unwrap_or(0)
     }
 }

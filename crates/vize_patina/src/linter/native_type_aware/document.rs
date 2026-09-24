@@ -80,7 +80,10 @@ fn keep_any_out_of_boolean_keys(document: &mut TypeAwareDocument) {
     let mut text = document.content.clone();
     let mut found = Vec::new();
     let mut search = 0usize;
-    while let Some(relative) = text[search..].find(BOOLEAN_KEY_ALIAS) {
+    while let Some(relative) = text
+        .get(search..)
+        .and_then(|rest| rest.find(BOOLEAN_KEY_ALIAS))
+    {
         let at = search + relative;
         found.push(at);
         search = at + BOOLEAN_KEY_ALIAS.len();
@@ -97,6 +100,7 @@ fn keep_any_out_of_boolean_keys(document: &mut TypeAwareDocument) {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use super::{BOOLEAN_KEY_PATCHED, project_type_aware};
     use crate::linter::native_type_aware::markers::marker_insert_offset;

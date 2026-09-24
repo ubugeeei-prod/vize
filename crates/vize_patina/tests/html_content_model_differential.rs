@@ -13,10 +13,11 @@
 //! Regenerate after an intended change:
 //! `VIZE_HTML_CONTENT_MODEL_WRITE=1 cargo test -p vize_patina --test html_content_model_differential`
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "the differential harness formats reports with std strings"
 )]
 
 use std::collections::BTreeSet;

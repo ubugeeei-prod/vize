@@ -21,12 +21,11 @@
 //! <AudioPlayer @audio:play="play" @audio:pause="pause" @audio:reload="reload" />
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode};
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/scoped-event-names",
@@ -70,7 +69,7 @@ impl ScopedEventNames {
                 return Some(suffix);
             }
             // Check kebab-case pattern (e.g., "play-audio")
-            if lower_name.ends_with(&format!("-{}", lower_suffix)) {
+            if lower_name.ends_with(cstr!("-{}", lower_suffix).as_str()) {
                 return Some(suffix);
             }
         }

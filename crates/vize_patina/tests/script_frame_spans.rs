@@ -8,6 +8,12 @@
 //! template offset" happened to fall. The oracle here is independent of the
 //! linter: the expected range is the call's own text, found in the source.
 
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 use vize_patina::{Linter, OutputFormat, format_results};
 use vize_s0::String;
 

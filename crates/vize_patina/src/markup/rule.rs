@@ -24,61 +24,52 @@ pub trait MarkupRule {
     fn name(&self) -> &'static str;
 
     /// Called once before traversal begins.
-    #[allow(unused_variables)]
-    fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {}
+    fn enter_document(&self, _ctx: &mut MarkupContext<'_, '_>, _document: &MarkupDocument) {}
 
     /// Called on entering each element / component / fragment / template / slot.
-    #[allow(unused_variables)]
-    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {}
+    fn enter_element<'a>(&self, _ctx: &mut MarkupContext<'_, 'a>, _element: &MarkupElement<'a>) {}
 
     /// Called on exiting each element.
-    #[allow(unused_variables)]
-    fn exit_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {}
+    fn exit_element<'a>(&self, _ctx: &mut MarkupContext<'_, 'a>, _element: &MarkupElement<'a>) {}
 
     /// Called for every binding on an element (attribute / bind / event / model
     /// / custom directive), in source order.
-    #[allow(unused_variables)]
     fn enter_binding<'a>(
         &self,
-        ctx: &mut MarkupContext<'_, 'a>,
-        element: &MarkupElement<'a>,
-        binding: &MarkupBinding<'a>,
+        _ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        _binding: &MarkupBinding<'a>,
     ) {
     }
 
     /// Called for every directive-like binding on an element (Vue `v-*` or a
     /// directive-like JSX attribute). A strict subset of [`Self::enter_binding`]
     /// for rules that only care about directives.
-    #[allow(unused_variables)]
     fn enter_directive<'a>(
         &self,
-        ctx: &mut MarkupContext<'_, 'a>,
-        element: &MarkupElement<'a>,
-        directive: &MarkupDirective<'a>,
+        _ctx: &mut MarkupContext<'_, 'a>,
+        _element: &MarkupElement<'a>,
+        _directive: &MarkupDirective<'a>,
     ) {
     }
 
     /// Called on entering a conditional scope (a `v-if` chain, a lowered JSX
     /// conditional, an S2 `ui.if`).
-    #[allow(unused_variables)]
     fn enter_conditional<'a>(
         &self,
-        ctx: &mut MarkupContext<'_, 'a>,
-        conditional: &MarkupConditional<'a>,
+        _ctx: &mut MarkupContext<'_, 'a>,
+        _conditional: &MarkupConditional<'a>,
     ) {
     }
 
     /// Called on entering a list scope (a `v-for`, a lowered JSX `.map()`, an
     /// S2 `ui.for`).
-    #[allow(unused_variables)]
-    fn enter_list<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, list: &MarkupList<'a>) {}
+    fn enter_list<'a>(&self, _ctx: &mut MarkupContext<'_, 'a>, _list: &MarkupList<'a>) {}
 
     /// Called for each text node.
-    #[allow(unused_variables)]
-    fn enter_text<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, text: &MarkupText<'a>) {}
+    fn enter_text<'a>(&self, _ctx: &mut MarkupContext<'_, 'a>, _text: &MarkupText<'a>) {}
 
     /// Called for each interpolation / expression node (`{{ … }}` or a JSX
     /// `{expr}` child). The range addresses the original source.
-    #[allow(unused_variables)]
-    fn enter_interpolation(&self, ctx: &mut MarkupContext<'_, '_>, range: ByteRange) {}
+    fn enter_interpolation(&self, _ctx: &mut MarkupContext<'_, '_>, _range: ByteRange) {}
 }

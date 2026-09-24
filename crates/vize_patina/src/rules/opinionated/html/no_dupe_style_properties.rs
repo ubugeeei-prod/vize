@@ -126,6 +126,7 @@ impl Rule for NoDupeStyleProperties {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use super::NoDupeStyleProperties;
     use crate::linter::Linter;

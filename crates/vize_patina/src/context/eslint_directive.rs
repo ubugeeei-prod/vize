@@ -28,7 +28,8 @@ pub(super) fn parse_eslint_disable_comment(line: &str) -> Option<EslintDisableDi
 
     for (marker, kind) in MARKERS {
         if let Some(index) = line.find(marker) {
-            let rules = parse_eslint_rule_list(&line[index + marker.len()..]);
+            let rules =
+                parse_eslint_rule_list(line.get(index + marker.len()..).unwrap_or_default());
             return Some(EslintDisableDirective { kind, rules });
         }
     }

@@ -23,14 +23,13 @@
 //! </template>
 //! ```
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::ir::{ByteRange, TemplateSyntax};
 use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::RootNode;
+use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/heading-levels",
@@ -88,8 +87,8 @@ impl HeadingLevels {
                 let message = ctx.t_fmt(
                     "a11y/heading-levels.message",
                     &[
-                        ("from", &format!("h{prev_level}")),
-                        ("to", &format!("h{}", heading.level)),
+                        ("from", &cstr!("h{prev_level}")),
+                        ("to", &cstr!("h{}", heading.level)),
                     ],
                 );
                 let help = ctx.t("a11y/heading-levels.help");
