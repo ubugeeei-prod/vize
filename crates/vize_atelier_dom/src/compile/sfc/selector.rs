@@ -56,6 +56,12 @@ fn source_contains_parser_recovery(source: &str) -> bool {
         let name = source.get(name_start..name_end).unwrap_or_default();
         let namespace = tag_namespace(name, tags.last().copied());
         let tag_end = scan_tag_end(bytes, name_end);
+        // The direct S2 path does not run the shipped parser, which reports
+        // repeated static attributes as recoverable SFC warnings. Parse only
+        // these tags through the shared path so the warning is retained.
+        if tag_has_duplicate_attribute(bytes, name_end, tag_end) {
+            return true;
+        }
         let self_closing = tag_closes_self_closing(bytes, name_end, tag_end);
         let html_void_tag = namespace == SourceNamespace::Html
             && (is_html_void_tag_name(name)
@@ -120,6 +126,22 @@ mod tests {
     fn stray_end_tag_requires_parser_diagnostics() {
         assert!(!s2_sfc_fast_path_supported_source("<div></div></div>"));
         assert!(s2_sfc_fast_path_supported_source("<div></div>"));
+    }
+
+    #[test]
+    fn duplicate_attributes_require_parser_warnings() {
+        for source in [
+            r#"<h4 :class="premium" class="" class="shop_title">Shop</h4>"#,
+            r#"<div CLASS="first" class="second" />"#,
+        ] {
+            assert!(!s2_sfc_fast_path_supported_source(source), "{source}");
+        }
+        for source in [
+            r#"<div class="first" title="class='second'">Shop</div>"#,
+            r#"<div :class="first" class="second">Shop</div>"#,
+        ] {
+            assert!(s2_sfc_fast_path_supported_source(source), "{source}");
+        }
     }
 }
 
@@ -329,6 +351,81 @@ fn scan_tag_end(bytes: &[u8], start: usize) -> usize {
     }
 
     bytes.len()
+}
+
+/// A cheap warning gate for the SFC direct path. A duplicate (or a tag with
+/// too many attributes for this fixed-size probe) gets the shipped parser;
+/// it can still use S2 for codegen after collecting diagnostics.
+fn tag_has_duplicate_attribute(bytes: &[u8], start: usize, end: usize) -> bool {
+    let mut names: [&[u8]; 16] = [&[]; 16];
+    let mut count = 0;
+    let mut index = start;
+    while index < end {
+        while bytes
+            .get(index)
+            .is_some_and(|byte| byte.is_ascii_whitespace() || *byte == b'/')
+        {
+            index += 1;
+        }
+        if index >= end || bytes.get(index) == Some(&b'>') {
+            break;
+        }
+
+        let name_start = index;
+        while bytes
+            .get(index)
+            .is_some_and(|byte| !byte.is_ascii_whitespace() && !matches!(byte, b'=' | b'/' | b'>'))
+        {
+            index += 1;
+        }
+        if index == name_start {
+            index += 1;
+            continue;
+        }
+
+        let name = &bytes[name_start..index];
+        if names[..count]
+            .iter()
+            .any(|seen| seen.eq_ignore_ascii_case(name))
+        {
+            return true;
+        }
+        if count == names.len() {
+            return true;
+        }
+        names[count] = name;
+        count += 1;
+
+        while bytes.get(index).is_some_and(u8::is_ascii_whitespace) {
+            index += 1;
+        }
+        if bytes.get(index) != Some(&b'=') {
+            continue;
+        }
+        index += 1;
+        while bytes.get(index).is_some_and(u8::is_ascii_whitespace) {
+            index += 1;
+        }
+        let quote = bytes
+            .get(index)
+            .copied()
+            .filter(|byte| matches!(byte, b'\'' | b'"'));
+        if let Some(quote) = quote {
+            index += 1;
+            while bytes.get(index).is_some_and(|byte| *byte != quote) {
+                index += 1;
+            }
+            index += usize::from(bytes.get(index) == Some(&quote));
+        } else {
+            while bytes
+                .get(index)
+                .is_some_and(|byte| !byte.is_ascii_whitespace() && *byte != b'>')
+            {
+                index += 1;
+            }
+        }
+    }
+    false
 }
 
 fn tag_closes_self_closing(bytes: &[u8], start: usize, end: usize) -> bool {
