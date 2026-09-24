@@ -97,6 +97,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/s3/native/validate/contro
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/s3/native/validate/ident.rs	135	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/s3/native/validate/ident.rs	135	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/s3/native/validate/model.rs	6	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/s3/native/validate/once.rs	5	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/s3/native/validate/operands.rs	4	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/s3/native/validate/operands.rs	4	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/s3/native/validate/order.rs	3	s0	S0	stage	vize_carton	compat	1

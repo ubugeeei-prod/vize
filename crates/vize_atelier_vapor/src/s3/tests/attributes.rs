@@ -96,6 +96,38 @@ fn simple_once_element_uses_native_one_shot_operations() {
 }
 
 #[test]
+fn once_plain_descendants_are_mount_only() {
+    for source in [
+        r#"<div v-once><span :title="tip">{{ value }}</span></div>"#,
+        r#"<main><div v-once><span><b :title="tip">{{ value }}</b></span></div><i>{{ live }}</i></main>"#,
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compiled = crate::compile_vapor(
+                &allocator,
+                source,
+                crate::VaporCompilerOptions {
+                    prefix_identifiers,
+                    ..Default::default()
+                },
+            );
+            assert!(compiled.error_messages.is_empty(), "{source}");
+            assert_eq!(
+                compiled.code.matches("_renderEffect(() =>").count(),
+                usize::from(source.contains("{{ live }}")),
+                "{source}: {}",
+                compiled.code
+            );
+        }
+    }
+}
+
+#[test]
 fn static_and_bound_styles_merge_in_authored_order() {
     for (source, effect) in [
         (
@@ -208,7 +240,19 @@ fn unsupported_attribute_shapes_select_exact_legacy_reasons() {
         (r#"<input :type="kind" v-model="value">"#, Binding),
         (r#"<div v-focus="value"></div>"#, Operation),
         (r#"<div v-once @click="save">{{ value }}</div>"#, Operation),
-        (r#"<div v-once><span>{{ value }}</span></div>"#, Operation),
+        (
+            r#"<div v-once><span @click="save">{{ value }}</span></div>"#,
+            Operation,
+        ),
+        (
+            r#"<div v-once><span v-if="open">{{ value }}</span></div>"#,
+            Operation,
+        ),
+        (r#"<div v-once><Foo :value="value" /></div>"#, Operation),
+        (
+            r#"<div v-once><span v-once>{{ value }}</span></div>"#,
+            Operation,
+        ),
         (r#"<div v-if="open" v-once>{{ value }}</div>"#, Operation),
         (
             r#"<div v-once v-show="visible">{{ value }}</div>"#,

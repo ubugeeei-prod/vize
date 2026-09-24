@@ -1,6 +1,8 @@
-//! A small `v-once` surface: an element with direct text and bound props.
-//! More complex descendants retain the existing lane until their one-time
-//! control-flow and component contracts are checked independently.
+//! A small `v-once` surface: a plain element/text subtree with bound props.
+//! Control flow, components and other directives retain the existing lane
+//! until their one-time contracts are checked independently.
+
+use vize_carton::ensure_sufficient_stack;
 
 use super::super::{BindingKind, Content, Node};
 use super::Result;
@@ -15,19 +17,7 @@ pub(super) fn check(nodes: &[Node<'_>], parents: &[Option<usize>]) -> Result<()>
         {
             continue;
         }
-        if !matches!(node.content, Content::Element { tag, .. } if tag != "template")
-            || node
-                .bindings
-                .iter()
-                .any(|binding| !matches!(binding.kind, BindingKind::Once | BindingKind::Prop))
-            || node.children.iter().any(|child| {
-                !nodes
-                    .get(*child)
-                    .is_some_and(|child| matches!(child.content, Content::Text { .. }))
-            })
-        {
-            return Err(LegacyReason::Operation.into());
-        }
+        check_subtree(nodes, index, true)?;
         let mut ancestor = parents.get(index).copied().flatten();
         for _ in 0..nodes.len() {
             let Some(parent) = ancestor else { break };
@@ -44,4 +34,24 @@ pub(super) fn check(nodes: &[Node<'_>], parents: &[Option<usize>]) -> Result<()>
         }
     }
     Ok(())
+}
+
+fn check_subtree(nodes: &[Node<'_>], index: usize, root: bool) -> Result<()> {
+    ensure_sufficient_stack(|| {
+        let node = nodes.get(index).ok_or(LegacyReason::Operation)?;
+        match node.content {
+            Content::Text { .. } if !root && node.bindings.is_empty() => return Ok(()),
+            Content::Element { tag, .. } if tag != "template" => {}
+            _ => return Err(LegacyReason::Operation.into()),
+        }
+        if node.bindings.iter().any(|binding| {
+            binding.kind != BindingKind::Prop && !(root && binding.kind == BindingKind::Once)
+        }) {
+            return Err(LegacyReason::Operation.into());
+        }
+        for &child in &node.children {
+            check_subtree(nodes, child, false)?;
+        }
+        Ok(())
+    })
 }

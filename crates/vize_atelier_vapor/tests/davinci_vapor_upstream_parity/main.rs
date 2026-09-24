@@ -338,6 +338,33 @@ fn s3_once_element_freezes_its_bindings_without_freezing_a_sibling() {
 }
 
 #[test]
+fn s3_once_element_freezes_nested_element_bindings() {
+    let source = r#"<main data-id="root"><div v-once data-id="frozen"><span data-id="nested" :title="tip">{{ msg }}</span></div><i data-id="live">{{ live }}</i></main>"#;
+    let view = |live: &str| {
+        json!({
+            "tree": [{"tag": "main", "attributes": {"data-id": "root"}, "children": [
+                {"tag": "div", "attributes": {"data-id": "frozen"}, "children": [
+                    {"tag": "span", "attributes": {"data-id": "nested", "title": "first"}, "children": ["A"]},
+                ]},
+                {"tag": "i", "attributes": {"data-id": "live"}, "children": [live]},
+            ]}],
+            "events": [],
+            "identities": [["root", 0], ["frozen", 1], ["nested", 2], ["live", 3]],
+        })
+    };
+    assert_native_upstream_trace(
+        source,
+        json!({"tip": "first", "msg": "A", "live": "one"}),
+        json!([{"patch": {"tip": "second", "msg": "B", "live": "two"}}]),
+        vec![
+            view("one"),
+            view("two"),
+            json!({"tree": [], "events": [], "identities": []}),
+        ],
+    );
+}
+
+#[test]
 fn s3_cloak_matches_official_vapor_across_branch_recreation() {
     let source = r#"<main data-id="root"><div v-if="open" v-cloak data-id="cloak" :title="tip">{{ label }}</div><p data-id="tail">tail</p></main>"#;
     let cloak = |title: &str, label: &str| json!({"tag": "div", "attributes": {"data-id": "cloak", "title": title}, "children": [label]});
