@@ -228,6 +228,7 @@ fn branch_roots_have_legacy_hoist(
                         &element.children.ops,
                         facts,
                         wrappers,
+                        allow_component_props_hoist,
                     ) {
                         return true;
                     }
@@ -293,6 +294,7 @@ fn slot_branch_root_descendants_have_legacy_hoist(
     ops: &[Op<'_>],
     facts: &S2Facts,
     wrappers: &SideTable<WrapperKeys>,
+    allow_component_props_hoist: bool,
 ) -> bool {
     for op in ops {
         let _id = walk.mint();
@@ -307,6 +309,7 @@ fn slot_branch_root_descendants_have_legacy_hoist(
                         wrappers,
                         false,
                         true,
+                        allow_component_props_hoist,
                     )
                 }) {
                     return true;
@@ -322,6 +325,7 @@ fn slot_branch_root_descendants_have_legacy_hoist(
                         wrappers,
                         false,
                         true,
+                        allow_component_props_hoist,
                     )
                 }) {
                     return true;
