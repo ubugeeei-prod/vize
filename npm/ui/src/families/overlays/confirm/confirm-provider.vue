@@ -215,7 +215,7 @@ defineExpose(exposed);
       :key="request.id"
       :open="queue.active.value?.id === request.id"
       @update:open="(value: boolean) => onOpenChange(value, request.id)"
-      @exit-complete="completeRetirement(request.id)"
+      @exit-complete="() => completeRetirement(request.id)"
     >
       <DialogPortal :to :disabled="portalDisabled">
         <DialogOverlay />
