@@ -9,7 +9,7 @@
 use std::fs;
 use std::path::Path;
 
-use super::{VirtualProject, unique_case_dir};
+use super::{VirtualProject, assert_reanchored_entries, unique_case_dir};
 use crate::batch::project_virtual_root;
 
 fn generated_paths(case_dir: &Path) -> serde_json::Map<String, serde_json::Value> {
@@ -54,9 +54,12 @@ fn a_root_base_url_synthesizes_the_wildcard_alias() {
     // Mirror candidate, real-tree fallback, `.vue.ts` mirror candidate — the
     // same triple every user alias gets, so bare specifiers resolve generated
     // SFC modules and out-of-mirror sources alike.
-    assert_eq!(
-        generated_paths(&case_dir)["*"],
-        serde_json::json!(["./*", "../../../../*", "./*.vue.ts"])
+    assert_reanchored_entries(
+        &case_dir,
+        &generated_paths(&case_dir)["*"],
+        "./*",
+        "*",
+        Some("./*.vue.ts"),
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -78,16 +81,22 @@ fn a_nested_base_url_anchors_both_wildcard_and_paths_targets() {
     );
 
     let paths = generated_paths(&case_dir);
-    assert_eq!(
-        paths["*"],
-        serde_json::json!(["./src/*", "../../../../src/*", "./src/*.vue.ts"])
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["*"],
+        "./src/*",
+        "src/*",
+        Some("./src/*.vue.ts"),
     );
     // TypeScript resolves a relative `paths` target against `baseUrl`, so
     // `lib/*` means `src/lib/*` here — anchoring it to the tsconfig directory
     // would silently point the alias one level too high.
-    assert_eq!(
-        paths["@lib/*"],
-        serde_json::json!(["./src/lib/*", "../../../../src/lib/*", "./src/lib/*.vue.ts"])
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["@lib/*"],
+        "./src/lib/*",
+        "src/lib/*",
+        Some("./src/lib/*.vue.ts"),
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -108,9 +117,12 @@ fn a_user_declared_wildcard_is_not_overwritten() {
 }"#,
     );
 
-    assert_eq!(
-        generated_paths(&case_dir)["*"],
-        serde_json::json!(["./vendor/*", "../../../../vendor/*", "./vendor/*.vue.ts"])
+    assert_reanchored_entries(
+        &case_dir,
+        &generated_paths(&case_dir)["*"],
+        "./vendor/*",
+        "vendor/*",
+        Some("./vendor/*.vue.ts"),
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -178,17 +190,19 @@ fn an_inherited_base_url_anchors_paths_declared_by_the_extending_config() {
     project.materialize().unwrap();
 
     let paths = generated_paths(&case_dir);
-    assert_eq!(
-        paths["#shared/*"],
-        serde_json::json!([
-            "./config/shared/*",
-            "../../../../config/shared/*",
-            "./config/shared/*.vue.ts"
-        ])
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["#shared/*"],
+        "./config/shared/*",
+        "config/shared/*",
+        Some("./config/shared/*.vue.ts"),
     );
-    assert_eq!(
-        paths["*"],
-        serde_json::json!(["./config/*", "../../../../config/*", "./config/*.vue.ts"])
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["*"],
+        "./config/*",
+        "config/*",
+        Some("./config/*.vue.ts"),
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -233,17 +247,19 @@ fn a_child_base_url_reanchors_paths_declared_by_the_extended_config() {
     project.materialize().unwrap();
 
     let paths = generated_paths(&case_dir);
-    assert_eq!(
-        paths["#shared/*"],
-        serde_json::json!([
-            "./src/shared/*",
-            "../../../../src/shared/*",
-            "./src/shared/*.vue.ts"
-        ])
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["#shared/*"],
+        "./src/shared/*",
+        "src/shared/*",
+        Some("./src/shared/*.vue.ts"),
     );
-    assert_eq!(
-        paths["*"],
-        serde_json::json!(["./src/*", "../../../../src/*", "./src/*.vue.ts"])
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["*"],
+        "./src/*",
+        "src/*",
+        Some("./src/*.vue.ts"),
     );
 
     let _ = fs::remove_dir_all(&case_dir);

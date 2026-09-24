@@ -106,9 +106,12 @@ expectQuestion(question)
     let tsconfig_path = virtual_root.join("tsconfig.json");
     let value: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
-    assert_eq!(
-        value["compilerOptions"]["paths"]["~/*"],
-        serde_json::json!(["./*", "../../../../*", "./*.vue.ts"])
+    super::assert_reanchored_entries(
+        &case_dir,
+        &value["compilerOptions"]["paths"]["~/*"],
+        "./*",
+        "*",
+        Some("./*.vue.ts"),
     );
 
     let _ = fs::remove_dir_all(&case_dir);

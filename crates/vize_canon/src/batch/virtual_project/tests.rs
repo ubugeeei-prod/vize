@@ -1,4 +1,4 @@
-use super::tsconfig_paths::{parse_jsonc_value, strip_json_comments};
+use super::tsconfig_paths::{self, parse_jsonc_value, strip_json_comments};
 use super::{AUTO_IMPORT_STUBS_FILE, SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject};
 use crate::{batch::Diagnostic, batch::SfcBlockType, virtual_ts::VirtualTsOptions};
 use std::{fs, path::Path, path::PathBuf};
@@ -28,6 +28,41 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .join("vize-tests")
         .join("tests")
         .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+}
+
+fn assert_reanchored_entries(
+    case_dir: &Path,
+    entries: &serde_json::Value,
+    mirror_target: &str,
+    source_target: &str,
+    vue_mirror_target: Option<&str>,
+) {
+    let entries = entries.as_array().expect("path targets should be an array");
+    assert_eq!(
+        entries.len(),
+        if vue_mirror_target.is_some() { 3 } else { 2 }
+    );
+    assert_eq!(entries[0], mirror_target);
+
+    let fallback = entries[1]
+        .as_str()
+        .expect("source fallback should be a path");
+    // The cache can be on a different drive on Windows. In that case the
+    // fallback must be absolute; otherwise it is relative to the mirror.
+    let resolved = tsconfig_paths::normalize_path_lexically(
+        &crate::batch::project_virtual_root(case_dir).join(fallback),
+    );
+    let project = VirtualProject::new(case_dir).expect("fixture project should open");
+    let expected =
+        tsconfig_paths::normalize_path_lexically(&project.project_root().join(source_target));
+    assert_eq!(
+        resolved, expected,
+        "source fallback must reach the original project"
+    );
+
+    if let Some(vue_mirror_target) = vue_mirror_target {
+        assert_eq!(entries[2], vue_mirror_target);
+    }
 }
 fn assert_ts_parses(source: &str) {
     let allocator = oxc_allocator::Allocator::default();
@@ -873,9 +908,12 @@ fn materialized_tsconfig_preserves_original_path_option_bases() {
     }
     // Custom type roots are re-anchored like `paths`: mirror copy first, real
     // source tree as fallback, so `types: [...]` entries keep resolving.
-    assert_eq!(
-        compiler_options["typeRoots"],
-        serde_json::json!(["./types", "../../../../types"])
+    assert_reanchored_entries(
+        &case_dir,
+        &compiler_options["typeRoots"],
+        "./types",
+        "types",
+        None,
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -918,13 +956,19 @@ fn materialized_tsconfig_reanchors_paths_into_virtual_mirror() {
 
     // Mirror candidate first, then the real-tree fallback, then a trailing
     // `.vue.ts` mirror candidate for extensionless SFC aliases (#3300).
-    assert_eq!(
-        paths["@/*"],
-        serde_json::json!(["./src/*", "../../../../src/*", "./src/*.vue.ts"])
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["@/*"],
+        "./src/*",
+        "src/*",
+        Some("./src/*.vue.ts"),
     );
-    assert_eq!(
-        paths["#shared"],
-        serde_json::json!(["./shared/index.ts", "../../../../shared/index.ts"])
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["#shared"],
+        "./shared/index.ts",
+        "shared/index.ts",
+        None,
     );
 
     let _ = fs::remove_dir_all(&case_dir);
@@ -971,14 +1015,20 @@ fn materialized_tsconfig_reanchors_extended_paths_from_declaring_config_dir() {
         serde_json::from_str(&fs::read_to_string(tsconfig_path).unwrap()).unwrap();
     let paths = value["compilerOptions"]["paths"].as_object().unwrap();
 
-    let app = ["./app/*", "../../../../app/*", "./app/*.vue.ts"];
-    let imports = [
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["~/*"],
+        "./app/*",
+        "app/*",
+        Some("./app/*.vue.ts"),
+    );
+    assert_reanchored_entries(
+        &case_dir,
+        &paths["#imports"],
         "./.nuxt/imports",
-        "../../../../.nuxt/imports",
-        "./.nuxt/imports.vue.ts",
-    ];
-    assert_eq!(paths["~/*"], serde_json::json!(app));
-    assert_eq!(paths["#imports"], serde_json::json!(imports));
+        ".nuxt/imports",
+        Some("./.nuxt/imports.vue.ts"),
+    );
 
     let _ = fs::remove_dir_all(&case_dir);
 }

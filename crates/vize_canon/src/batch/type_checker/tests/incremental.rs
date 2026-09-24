@@ -66,6 +66,16 @@ const total: number = 1
         "unexpected TS2322 message: {}",
         type_error.message
     );
+    let materialized_entries =
+        walkdir::WalkDir::new(crate::batch::project_virtual_root(&project_root))
+            .into_iter()
+            .map(|entry| entry.expect("materialized project should be readable"))
+            .filter(|entry| entry.file_type().is_file() || entry.file_type().is_symlink())
+            .count();
+    assert!(
+        materialized_entries >= 10,
+        "cold session should materialize project inputs"
+    );
     assert_eq!(
         checker.incremental_metrics(),
         crate::batch::IncrementalCheckMetrics {
@@ -73,8 +83,8 @@ const total: number = 1
             session_starts: 1,
             last_session_started: true,
             last_requested_files: 1,
-            last_materialized_entries_considered: 10,
-            last_tree_entries_scanned: 10,
+            last_materialized_entries_considered: materialized_entries,
+            last_tree_entries_scanned: materialized_entries,
             last_full_rebuild: true,
             ..Default::default()
         },
