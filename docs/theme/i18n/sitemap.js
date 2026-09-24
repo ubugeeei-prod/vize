@@ -82,6 +82,8 @@
         "/guide/wasm",
         "/guide/cli",
         "/guide/lib-pull",
+        "/guide/ui",
+        "/guide/composables",
         "/guide/content-mapper",
       ],
     },

@@ -3,6 +3,7 @@
 mod fixture;
 mod lifecycle;
 mod sources;
+mod v2;
 
 use fixture::{Project, RATING_TS_V1, RATING_VUE_V1, composable_v1, ui_v1};
 
