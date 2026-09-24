@@ -25,6 +25,7 @@ const rendererGate = [
   await readFile(path.resolve("scripts/renderer-fixtures-commands.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-data.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-dialog.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-drawer.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-feedback.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-icon.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-layout.ts"), "utf8"),
@@ -40,6 +41,7 @@ const rendererGate = [
   await readFile(path.resolve("scripts/renderer-fixtures-spinner.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-status-light.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-text.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-toast.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-toggle-group.ts"), "utf8"),
 ].join("\n");
 

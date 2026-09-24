@@ -209,6 +209,11 @@
       "import": "./dist/tour.mjs",
       "default": "./dist/tour.mjs"
     },
+    "./toast": {
+      "types": "./dist/toast.d.mts",
+      "import": "./dist/toast.mjs",
+      "default": "./dist/toast.mjs"
+    },
     "./input": {
       "types": "./dist/input.d.mts",
       "import": "./dist/input.mjs",
@@ -358,6 +363,16 @@
       "types": "./dist/alert-dialog.d.mts",
       "import": "./dist/alert-dialog.mjs",
       "default": "./dist/alert-dialog.mjs"
+    },
+    "./confirm": {
+      "types": "./dist/confirm.d.mts",
+      "import": "./dist/confirm.mjs",
+      "default": "./dist/confirm.mjs"
+    },
+    "./drawer": {
+      "types": "./dist/drawer.d.mts",
+      "import": "./dist/drawer.mjs",
+      "default": "./dist/drawer.mjs"
     },
     "./dismissable-layer": {
       "types": "./dist/dismissable-layer.d.mts",

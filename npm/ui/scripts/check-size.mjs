@@ -5,7 +5,7 @@ import { gzipSync } from "node:zlib";
 const distributionDirectory = new URL("../dist/", import.meta.url);
 const staticImportPattern = /\b(?:import|export)\s+(?:[^"']*?\s+from\s+)?["'](\.\.?\/[^"']+)["']/g;
 const budgets = new Map([
-  ["index.mjs", 250_900],
+  ["index.mjs", 267_200],
   ["alert.mjs", 1_050],
   ["announcer.mjs", 4_100],
   ["aspect-ratio.mjs", 1_500],
@@ -39,6 +39,7 @@ const budgets = new Map([
   ["toggle-group.mjs", 5_100],
   ["popover.mjs", 28_750],
   ["tooltip.mjs", 18_100],
+  ["toast.mjs", 11_500],
   ["input.mjs", 3_900],
   ["radio-group.mjs", 4_600],
   ["carousel.mjs", 11_400],
@@ -70,12 +71,14 @@ const budgets = new Map([
   ["checkbox.mjs", 1_900],
   ["collection.mjs", 5_700],
   ["composite-navigation.mjs", 5_355],
-  ["catalog.mjs", 19_300],
+  ["catalog.mjs", 20_000],
   ["command.mjs", 2_200],
   ["context.mjs", 700],
   ["controllable-state.mjs", 600],
   ["dialog.mjs", 21_500],
   ["alert-dialog.mjs", 22_200],
+  ["confirm.mjs", 24_250],
+  ["drawer.mjs", 29_100],
   ["dismissable-layer.mjs", 4_250],
   ["drag-and-drop.mjs", 12_650],
   ["error-summary.mjs", 4_500],

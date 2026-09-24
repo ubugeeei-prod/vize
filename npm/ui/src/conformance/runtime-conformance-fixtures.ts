@@ -9,6 +9,9 @@ import { useDeterministicId } from "../families/foundations/id/deterministic-id.
 import LinkAnchor from "../families/navigation/link/link-anchor.vue";
 import { skipLinkRuntimeFixture } from "../families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
+import { confirmRuntimeFixture } from "../families/overlays/confirm/runtime-conformance-confirm-fixtures.ts";
+import { drawerRuntimeFixtures } from "../families/overlays/drawer/runtime-conformance-drawer-fixtures.ts";
+import { toastRuntimeFixtures } from "../families/feedback/toast/runtime-conformance-toast-fixtures.ts";
 import { calloutRuntimeFixture } from "../families/feedback/callout/runtime-conformance-callout-fixtures.ts";
 import { tableRuntimeFixtures } from "../families/data/table/runtime-conformance-table-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
@@ -78,6 +81,9 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...stepperRuntimeFixtures,
   emptyStateRuntimeFixture,
   ...collapsibleRuntimeFixtures,
+  confirmRuntimeFixture,
+  ...drawerRuntimeFixtures,
+  ...toastRuntimeFixtures,
   ...layoutRuntimeFixtures,
   ...typographyRuntimeFixtures,
   interactionHooksRuntimeFixture,
