@@ -78,6 +78,36 @@
       "import": "./dist/color-mode.mjs",
       "default": "./dist/color-mode.mjs"
     },
+    "./computed-async": {
+      "types": "./dist/computed-async.d.mts",
+      "import": "./dist/computed-async.mjs",
+      "default": "./dist/computed-async.mjs"
+    },
+    "./computed-with-control": {
+      "types": "./dist/computed-with-control.d.mts",
+      "import": "./dist/computed-with-control.mjs",
+      "default": "./dist/computed-with-control.mjs"
+    },
+    "./create-event-hook": {
+      "types": "./dist/create-event-hook.d.mts",
+      "import": "./dist/create-event-hook.mjs",
+      "default": "./dist/create-event-hook.mjs"
+    },
+    "./create-global-state": {
+      "types": "./dist/create-global-state.d.mts",
+      "import": "./dist/create-global-state.mjs",
+      "default": "./dist/create-global-state.mjs"
+    },
+    "./create-injection-state": {
+      "types": "./dist/create-injection-state.d.mts",
+      "import": "./dist/create-injection-state.mjs",
+      "default": "./dist/create-injection-state.mjs"
+    },
+    "./create-shared-composable": {
+      "types": "./dist/create-shared-composable.d.mts",
+      "import": "./dist/create-shared-composable.mjs",
+      "default": "./dist/create-shared-composable.mjs"
+    },
     "./device-motion": {
       "types": "./dist/device-motion.d.mts",
       "import": "./dist/device-motion.mjs",
@@ -258,6 +288,26 @@
       "import": "./dist/preferred-languages.mjs",
       "default": "./dist/preferred-languages.mjs"
     },
+    "./reactify": {
+      "types": "./dist/reactify.d.mts",
+      "import": "./dist/reactify.mjs",
+      "default": "./dist/reactify.mjs"
+    },
+    "./ref-auto-reset": {
+      "types": "./dist/ref-auto-reset.d.mts",
+      "import": "./dist/ref-auto-reset.mjs",
+      "default": "./dist/ref-auto-reset.mjs"
+    },
+    "./ref-debounced": {
+      "types": "./dist/ref-debounced.d.mts",
+      "import": "./dist/ref-debounced.mjs",
+      "default": "./dist/ref-debounced.mjs"
+    },
+    "./ref-default": {
+      "types": "./dist/ref-default.d.mts",
+      "import": "./dist/ref-default.mjs",
+      "default": "./dist/ref-default.mjs"
+    },
     "./resize-observer": {
       "types": "./dist/resize-observer.d.mts",
       "import": "./dist/resize-observer.mjs",
@@ -298,6 +348,11 @@
       "import": "./dist/swipe.mjs",
       "default": "./dist/swipe.mjs"
     },
+    "./sync-ref": {
+      "types": "./dist/sync-ref.d.mts",
+      "import": "./dist/sync-ref.mjs",
+      "default": "./dist/sync-ref.mjs"
+    },
     "./temporal": {
       "types": "./dist/temporal.d.mts",
       "import": "./dist/temporal.mjs",
@@ -317,6 +372,11 @@
       "types": "./dist/timeout-scheduler.d.mts",
       "import": "./dist/timeout-scheduler.mjs",
       "default": "./dist/timeout-scheduler.mjs"
+    },
+    "./to-reactive": {
+      "types": "./dist/to-reactive.d.mts",
+      "import": "./dist/to-reactive.mjs",
+      "default": "./dist/to-reactive.mjs"
     },
     "./transition": {
       "types": "./dist/transition.d.mts",
@@ -423,6 +483,11 @@
       "import": "./dist/use-history.mjs",
       "default": "./dist/use-history.mjs"
     },
+    "./use-id-generator": {
+      "types": "./dist/use-id-generator.d.mts",
+      "import": "./dist/use-id-generator.mjs",
+      "default": "./dist/use-id-generator.mjs"
+    },
     "./use-image": {
       "types": "./dist/use-image.d.mts",
       "import": "./dist/use-image.mjs",
@@ -442,6 +507,11 @@
       "types": "./dist/use-media-controls.d.mts",
       "import": "./dist/use-media-controls.mjs",
       "default": "./dist/use-media-controls.mjs"
+    },
+    "./use-mounted": {
+      "types": "./dist/use-mounted.d.mts",
+      "import": "./dist/use-mounted.mjs",
+      "default": "./dist/use-mounted.mjs"
     },
     "./use-notification": {
       "types": "./dist/use-notification.d.mts",
@@ -503,6 +573,11 @@
       "import": "./dist/use-style-tag.mjs",
       "default": "./dist/use-style-tag.mjs"
     },
+    "./use-supported": {
+      "types": "./dist/use-supported.d.mts",
+      "import": "./dist/use-supported.mjs",
+      "default": "./dist/use-supported.mjs"
+    },
     "./use-throttled": {
       "types": "./dist/use-throttled.d.mts",
       "import": "./dist/use-throttled.mjs",
@@ -537,6 +612,11 @@
       "types": "./dist/use-user-media.d.mts",
       "import": "./dist/use-user-media.mjs",
       "default": "./dist/use-user-media.mjs"
+    },
+    "./use-v-model": {
+      "types": "./dist/use-v-model.d.mts",
+      "import": "./dist/use-v-model.mjs",
+      "default": "./dist/use-v-model.mjs"
     },
     "./use-vibrate": {
       "types": "./dist/use-vibrate.d.mts",
