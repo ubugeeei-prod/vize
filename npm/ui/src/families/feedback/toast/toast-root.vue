@@ -79,7 +79,9 @@ function hasRunningMotion(target: HTMLElement): boolean {
   const view = target.ownerDocument.defaultView;
   if (!view) return false;
   const style = view.getComputedStyle(target);
-  const animated = style.animationName !== "" && style.animationName !== "none";
+  const animated =
+    style.animationName.split(",").some((name) => name.trim() !== "" && name.trim() !== "none") &&
+    style.animationDuration.split(",").some((duration) => Number.parseFloat(duration) > 0);
   const transitioned = style.transitionDuration
     .split(",")
     .some((value) => Number.parseFloat(value) > 0);

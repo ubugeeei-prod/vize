@@ -20,6 +20,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
   document.body.replaceChildren();
 });
 
@@ -123,6 +124,57 @@ test("visible toasts auto-dismiss after their duration and leave the DOM without
   assert.equal(items().length, 0);
   assert.equal(store.toasts.value.length, 0);
 
+  handle.unmount();
+});
+
+test("an exiting toast stays mounted until its animation completes", async () => {
+  const { handle, store, items } = mountToaster();
+  store.toast("Animated");
+  await settle();
+  const item = items()[0];
+  assert.ok(item);
+  item.style.animationName = "toast-out";
+  item.style.animationDuration = "200ms";
+
+  store.dismiss("toast-1");
+  await settle();
+  assert.equal(item.getAttribute("data-presence"), "exiting");
+  assert.equal(items()[0], item);
+
+  item.dispatchEvent(new Event("animationend", { bubbles: true }));
+  await settle();
+  assert.equal(items().length, 0);
+  handle.unmount();
+});
+
+test("a zero-duration animation cannot strand a dismissed toast", async () => {
+  const { handle, store, items } = mountToaster();
+  store.toast("Instant");
+  await settle();
+  const item = items()[0];
+  assert.ok(item);
+  item.style.animationName = "toast-out";
+  item.style.animationDuration = "0s";
+
+  store.dismiss("toast-1");
+  await settle();
+  assert.equal(items().length, 0);
+  handle.unmount();
+});
+
+test("reduced motion removes a dismissed toast without waiting for animation", async () => {
+  vi.stubGlobal("matchMedia", () => ({ matches: true }));
+  const { handle, store, items } = mountToaster();
+  store.toast("Accessible");
+  await settle();
+  const item = items()[0];
+  assert.ok(item);
+  item.style.animationName = "toast-out";
+  item.style.animationDuration = "200ms";
+
+  store.dismiss("toast-1");
+  await settle();
+  assert.equal(items().length, 0);
   handle.unmount();
 });
 
