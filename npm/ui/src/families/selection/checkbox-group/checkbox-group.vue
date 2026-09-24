@@ -262,7 +262,8 @@ function toggleIndex(index: number, selected: boolean): boolean {
   const next = new Set(selectedIndexes.value);
   if (selected) next.add(index);
   else next.delete(index);
-  return commitIndexes(next, optionAt(index)?.value ?? null, selected);
+  const entry = optionAt(index);
+  return commitIndexes(next, entry === undefined ? null : entry.value, selected);
 }
 
 function toggleAll(selected: boolean): boolean {

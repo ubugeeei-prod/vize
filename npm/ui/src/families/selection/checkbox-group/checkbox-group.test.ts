@@ -98,6 +98,23 @@ test("toggling items updates values in option order and emits changes", async ()
   handle.unmount();
 });
 
+test("change distinguishes an undefined option from the select-all sentinel", () => {
+  const handle = mountInteraction(CheckboxGroup, {
+    props: { options: [undefined, "x"], ariaLabel: "Optional values" },
+    record: ["change"],
+    slots: { default: () => [] },
+  });
+
+  assert.equal(
+    handle.exposes<CheckboxGroupExpose<string | undefined>>().setSelected(undefined, true),
+    true,
+  );
+  assert.deepEqual(handle.recorded(), [
+    { event: "change", payload: [[undefined], undefined, true] },
+  ]);
+  handle.unmount();
+});
+
 test("select-all is tri-state and toggles every enabled option", async () => {
   const handle = mountInteraction(CheckboxGroup, {
     props: {
