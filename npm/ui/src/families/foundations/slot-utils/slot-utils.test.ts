@@ -49,6 +49,18 @@ test("keeps an explicit undefined when no earlier value exists and passes single
   assert.deepEqual(mergeProps(), {});
 });
 
+test("chains Vue handler arrays with single handlers in source order", () => {
+  const calls: string[] = [];
+  const merged = mergeProps(
+    { onClick: () => calls.push("first") },
+    { onClick: [() => calls.push("second"), () => calls.push("third")] },
+    { onClick: () => calls.push("fourth") },
+  );
+  assert.equal(typeof merged.onClick, "function");
+  (merged.onClick as (event: MouseEvent) => void)(new MouseEvent("click"));
+  assert.deepEqual(calls, ["first", "second", "third", "fourth"]);
+});
+
 test("recognizes handler keys", () => {
   assert.equal(isHandlerKey("onClick"), true);
   assert.equal(isHandlerKey("onUpdate:modelValue"), true);

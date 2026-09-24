@@ -110,6 +110,21 @@
       "import": "./dist/slot-utils.mjs",
       "default": "./dist/slot-utils.mjs"
     },
+    "./input-mask": {
+      "types": "./dist/input-mask.d.mts",
+      "import": "./dist/input-mask.mjs",
+      "default": "./dist/input-mask.mjs"
+    },
+    "./number-field": {
+      "types": "./dist/number-field.d.mts",
+      "import": "./dist/number-field.mjs",
+      "default": "./dist/number-field.mjs"
+    },
+    "./range-slider": {
+      "types": "./dist/range-slider.d.mts",
+      "import": "./dist/range-slider.mjs",
+      "default": "./dist/range-slider.mjs"
+    },
     "./tabs": {
       "types": "./dist/tabs.d.mts",
       "import": "./dist/tabs.mjs",
@@ -164,6 +179,11 @@
       "types": "./dist/collapsible.d.mts",
       "import": "./dist/collapsible.mjs",
       "default": "./dist/collapsible.mjs"
+    },
+    "./accordion": {
+      "types": "./dist/accordion.d.mts",
+      "import": "./dist/accordion.mjs",
+      "default": "./dist/accordion.mjs"
     },
     "./button": {
       "types": "./dist/button.d.mts",
@@ -239,6 +259,11 @@
       "types": "./dist/tour.d.mts",
       "import": "./dist/tour.mjs",
       "default": "./dist/tour.mjs"
+    },
+    "./hover-card": {
+      "types": "./dist/hover-card.d.mts",
+      "import": "./dist/hover-card.mjs",
+      "default": "./dist/hover-card.mjs"
     },
     "./input": {
       "types": "./dist/input.d.mts",
@@ -329,6 +354,16 @@
       "types": "./dist/listbox.d.mts",
       "import": "./dist/listbox.mjs",
       "default": "./dist/listbox.mjs"
+    },
+    "./combobox": {
+      "types": "./dist/combobox.d.mts",
+      "import": "./dist/combobox.mjs",
+      "default": "./dist/combobox.mjs"
+    },
+    "./select": {
+      "types": "./dist/select.d.mts",
+      "import": "./dist/select.mjs",
+      "default": "./dist/select.mjs"
     },
     "./pagination": {
       "types": "./dist/pagination.d.mts",
@@ -643,7 +678,10 @@
     "./style.css": "./dist/style.css",
     "./theme.css": "./dist/theme.css",
     "./base.css": "./dist/theme.css",
+    "./component-alert.css": "./dist/component-alert.css",
+    "./component-badge.css": "./dist/component-badge.css",
     "./component-button.css": "./dist/component-button.css",
+    "./component-card.css": "./dist/component-card.css",
     "./component-checkbox.css": "./dist/component-checkbox.css",
     "./component-dialog.css": "./dist/component-dialog.css",
     "./component-input.css": "./dist/component-input.css",
@@ -651,6 +689,7 @@
     "./component-scroll-area.css": "./dist/component-scroll-area.css",
     "./component-switch.css": "./dist/component-switch.css",
     "./component-textarea.css": "./dist/component-textarea.css",
+    "./component-tooltip.css": "./dist/component-tooltip.css",
     "./motion.css": "./dist/motion.css",
     "./theme-preset-headless.css": "./dist/theme-preset-headless.css",
     "./theme-preset-atelier.css": "./dist/theme-preset-atelier.css",

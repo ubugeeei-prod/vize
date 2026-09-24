@@ -9,6 +9,8 @@ import { useDeterministicId } from "../families/foundations/id/deterministic-id.
 import LinkAnchor from "../families/navigation/link/link-anchor.vue";
 import { skipLinkRuntimeFixture } from "../families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
+import { accordionRuntimeFixtures } from "../families/disclosure/accordion/runtime-conformance-accordion-fixtures.ts";
+import { hoverCardRuntimeFixtures } from "../families/overlays/hover-card/runtime-conformance-hover-card-fixtures.ts";
 import { calloutRuntimeFixture } from "../families/feedback/callout/runtime-conformance-callout-fixtures.ts";
 import { calendarRuntimeFixtures } from "../families/date-time/calendar/runtime-conformance-calendar-fixtures.ts";
 import { rangeCalendarRuntimeFixture } from "../families/date-time/range-calendar/runtime-conformance-range-calendar-fixtures.ts";
@@ -33,6 +35,7 @@ import { printButtonRuntimeFixture } from "../families/actions/print-button/runt
 import { shareButtonRuntimeFixture } from "../families/actions/share-button/runtime-conformance-share-button-fixtures.ts";
 import { toolbarRuntimeFixtures } from "../families/actions/toolbar/runtime-conformance-toolbar-fixtures.ts";
 import { fieldRuntimeFixtures } from "../families/form/field/runtime-conformance-field-fixtures.ts";
+import { formInputRuntimeFixtures } from "../families/form/runtime-conformance-form-input-fixtures.ts";
 import { interactionHooksRuntimeFixture } from "../families/interaction/interaction-hooks/runtime-conformance-interaction-hooks-fixtures.ts";
 import { progressBarRuntimeFixture } from "../families/feedback/progress-bar/runtime-conformance-progress-bar-fixtures.ts";
 import { progressRuntimeFixture } from "../families/feedback/progress/runtime-conformance-progress-fixtures.ts";
@@ -86,6 +89,8 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...stepperRuntimeFixtures,
   emptyStateRuntimeFixture,
   ...collapsibleRuntimeFixtures,
+  ...accordionRuntimeFixtures,
+  ...hoverCardRuntimeFixtures,
   ...layoutRuntimeFixtures,
   ...typographyRuntimeFixtures,
   interactionHooksRuntimeFixture,
@@ -121,6 +126,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   shareButtonRuntimeFixture,
   ...toolbarRuntimeFixtures,
   ...selectionRuntimeFixtures,
+  ...formInputRuntimeFixtures,
   {
     name: "deterministic-id-provider",
     sourceFile: "families/foundations/id/deterministic-id-provider.vue",

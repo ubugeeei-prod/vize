@@ -71,9 +71,14 @@ export function mergeProps(...sources: readonly object[]): Record<string, unknow
         classes.push(value);
       } else if (key === "style") {
         styles.push(value);
-      } else if (isHandlerKey(key) && typeof value === "function") {
+      } else if (
+        isHandlerKey(key) &&
+        (typeof value === "function" ||
+          (Array.isArray(value) && value.every((handler) => typeof handler === "function")))
+      ) {
         const list = handlers.get(key) ?? [];
-        list.push(value);
+        if (Array.isArray(value)) list.push(...value);
+        else list.push(value);
         handlers.set(key, list);
       } else if (value !== undefined || !Object.hasOwn(merged, key)) {
         merged[key] = value;

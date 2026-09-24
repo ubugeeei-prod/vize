@@ -58,9 +58,11 @@ by passing ordinary Vue fallthrough attributes.
 
 ## CSS Custom Properties
 
-Card defines no CSS custom properties and ships no stylesheet. Consumers own
-shape, border, shadow, spacing, color, elevation, and responsive treatment
-through ordinary CSS.
+The Card component entry remains headless and emits no stylesheet. The separate
+`@vizejs/ui/component-card.css` export supplies optional spacing, border, and
+surface treatment through low-specificity `--vize-ui-card-*` properties. The
+theme scope selects Paper, Signal, or Atelier details; application CSS can
+override any of them without changing Card markup.
 
 ## Parts
 

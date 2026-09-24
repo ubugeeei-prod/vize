@@ -167,6 +167,7 @@ export const overlayFamilyCatalog = [
     entryFile: "src/families/overlays/tooltip/tooltip.ts",
     sourceFiles: [
       "src/families/overlays/tooltip/tooltip-content.vue",
+      "src/families/overlays/tooltip/tooltip-visual.css",
       "src/families/overlays/tooltip/tooltip-context.ts",
       "src/families/overlays/tooltip/tooltip-root.vue",
       "src/families/overlays/tooltip/tooltip-trigger.vue",

@@ -67,8 +67,20 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/foundations/theme/theme-preset-high-contrast.css",
   },
   {
+    fileName: "component-alert.css",
+    source: "src/families/feedback/alert/alert-visual.css",
+  },
+  {
+    fileName: "component-badge.css",
+    source: "src/families/feedback/badge/badge-visual.css",
+  },
+  {
     fileName: "component-button.css",
     source: "src/families/actions/button/button-visual.css",
+  },
+  {
+    fileName: "component-card.css",
+    source: "src/families/layout/card/card-visual.css",
   },
   {
     fileName: "component-checkbox.css",
@@ -97,6 +109,10 @@ const cssAssetEntrypoints = Object.freeze([
   {
     fileName: "component-textarea.css",
     source: "src/families/form/textarea/textarea-visual.css",
+  },
+  {
+    fileName: "component-tooltip.css",
+    source: "src/families/overlays/tooltip/tooltip-visual.css",
   },
   {
     fileName: "motion.css",
@@ -157,6 +173,9 @@ export default defineConfig({
   pack: {
     entry: {
       index: "src/index.ts",
+      "input-mask": "src/families/form/input-mask/input-mask.ts",
+      "number-field": "src/families/form/number-field/number-field.ts",
+      "range-slider": "src/families/form/range-slider/range-slider.ts",
       theme: "src/families/foundations/theme/theme.ts",
       "theme-scope": "src/families/foundations/theme/theme-scope.ts",
       alert: "src/families/feedback/alert/alert.ts",
@@ -181,6 +200,7 @@ export default defineConfig({
       grid: "src/families/layout/grid/grid.ts",
       "empty-state": "src/families/feedback/empty-state/empty-state.ts",
       collapsible: "src/families/disclosure/collapsible/collapsible.ts",
+      accordion: "src/families/disclosure/accordion/accordion.ts",
       button: "src/families/actions/button/button.ts",
       "button-group": "src/families/actions/button-group/button-group.ts",
       "copy-button": "src/families/actions/copy-button/copy-button.ts",
@@ -195,6 +215,7 @@ export default defineConfig({
       "toggle-group": "src/families/selection/toggle-group/toggle-group.ts",
       popover: "src/families/overlays/popover/popover.ts",
       tooltip: "src/families/overlays/tooltip/tooltip.ts",
+      "hover-card": "src/families/overlays/hover-card/hover-card.ts",
       input: "src/families/form/input/input.ts",
       "radio-group": "src/families/selection/radio-group/radio-group.ts",
       rating: "src/families/form/rating/rating.ts",
@@ -220,6 +241,8 @@ export default defineConfig({
       kbd: "src/families/typography/kbd/kbd.ts",
       list: "src/families/layout/list/list.ts",
       listbox: "src/families/selection/listbox/listbox.ts",
+      combobox: "src/families/selection/combobox/combobox.ts",
+      select: "src/families/selection/select/select.ts",
       pagination: "src/families/navigation/pagination/pagination.ts",
       text: "src/families/typography/text/text.ts",
       textarea: "src/families/form/textarea/textarea.ts",

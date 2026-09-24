@@ -59,6 +59,7 @@ export const layoutFamilyCatalog = [
     entryFile: `${cardFamilyRoot}card.ts`,
     sourceFiles: [
       `${cardFamilyRoot}card.vue`,
+      `${cardFamilyRoot}card-visual.css`,
       `${cardFamilyRoot}card.ts`,
       `${cardFamilyRoot}card-types.ts`,
     ],
@@ -69,7 +70,7 @@ export const layoutFamilyCatalog = [
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Card",
-      retainedSignature: "data-vize-ui[\\s\\S]{0,32}card",
+      retainedSignature: "data-vize-ui[^-a-z]{0,8}card",
       maximumJavaScriptGzipBytes: 625,
       maximumCssGzipBytes: 0,
     },

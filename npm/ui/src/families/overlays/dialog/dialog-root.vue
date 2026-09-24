@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, shallowRef } from "vue";
+import { computed, nextTick, onUnmounted, shallowRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../foundations/controllable-state/controllable-state.ts";
@@ -76,6 +76,78 @@ const slotState = computed<DialogSlotState>(() => ({
 const triggerElement = shallowRef<HTMLButtonElement | null>(null);
 const overlayElement = shallowRef<HTMLElement | null>(null);
 const contentElement = shallowRef<HTMLDivElement | null>(null);
+const exiting = shallowRef(false);
+let exitTimeout: ReturnType<typeof setTimeout> | undefined;
+let exitVersion = 0;
+
+function clearExit(): void {
+  exitVersion += 1;
+  if (exitTimeout !== undefined) clearTimeout(exitTimeout);
+  exitTimeout = undefined;
+  exiting.value = false;
+}
+
+function exitDuration(element: HTMLElement): number {
+  const style = element.ownerDocument.defaultView?.getComputedStyle(element);
+  if (!style || style.animationName === "none") return 0;
+  const duration = Number.parseFloat(style.animationDuration);
+  const delay = Number.parseFloat(style.animationDelay);
+  const milliseconds = style.animationDuration.trim().endsWith("ms") ? duration : duration * 1000;
+  const delayMilliseconds = style.animationDelay.trim().endsWith("ms") ? delay : delay * 1000;
+  return Number.isFinite(milliseconds) ? Math.max(0, milliseconds + (delayMilliseconds || 0)) : 0;
+}
+
+function completeExit(event: AnimationEvent): void {
+  if (!exiting.value || event.target !== event.currentTarget) return;
+  if (event.animationName !== "vize-ui-dialog-sheet-out") return;
+  clearExit();
+}
+
+watch(
+  isOpen,
+  (open) => {
+    if (open) {
+      clearExit();
+      return;
+    }
+    const element = contentElement.value;
+    const style = element?.ownerDocument.defaultView?.getComputedStyle(element);
+    const reducedMotion = element?.ownerDocument.defaultView?.matchMedia?.(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (
+      !element ||
+      style?.getPropertyValue("--vize-ui-dialog-exit-enabled").trim() !== "1" ||
+      reducedMotion
+    ) {
+      clearExit();
+      return;
+    }
+    exiting.value = true;
+    const version = ++exitVersion;
+    // A sync watcher runs before Vue queues the close render. The second tick
+    // reads the computed exit animation after its data attributes reach the DOM.
+    void nextTick(() =>
+      nextTick(() => {
+        if (!exiting.value || version !== exitVersion) return;
+        const duration = exitDuration(element);
+        if (duration === 0) {
+          clearExit();
+          return;
+        }
+        exitTimeout = setTimeout(
+          () => {
+            if (version === exitVersion) clearExit();
+          },
+          Math.min(duration + 80, 5000),
+        );
+      }),
+    );
+  },
+  { flush: "sync" },
+);
+
+onUnmounted(clearExit);
 
 function setOpen(value: boolean, nativeEvent: Event | null = null): boolean {
   const previous = isOpen.value;
@@ -93,11 +165,13 @@ const context = dialogContext.provide({
   titleId,
   descriptionId,
   open: isOpen,
+  exiting,
   modal: modalState,
   state,
   triggerElement,
   overlayElement,
   contentElement,
+  completeExit,
   setOpen,
   openDialog: (nativeEvent = null) => setOpen(true, nativeEvent),
   close: (nativeEvent = null) => setOpen(false, nativeEvent),

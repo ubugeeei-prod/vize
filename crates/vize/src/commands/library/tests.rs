@@ -14,7 +14,7 @@ const STATE_TS: &str = "src/components/vize/foundations/state/state.ts";
 const ID_TS: &str = "src/components/vize/foundations/id/id.ts";
 
 fn lockfile(project: &Project) -> Lockfile {
-    Lockfile::read(&project.path("vize-lib.lock.json")).unwrap()
+    Lockfile::read(&project.root, &project.path("vize-lib.lock.json")).unwrap()
 }
 
 #[test]
@@ -144,6 +144,103 @@ fn pull_uses_dir_flag_then_config_then_registry_default() {
         escape.message().contains("inside the project root"),
         "{escape}"
     );
+}
+
+#[cfg(unix)]
+#[test]
+fn pull_rejects_symlinked_target_directory_without_writing_outside_project() {
+    use std::os::unix::fs::symlink;
+
+    let project = Project::new();
+    ui_v1(&project.registry("ui"));
+    let outside = project.registries.join("outside");
+    std::fs::create_dir_all(&outside).unwrap();
+    std::fs::create_dir_all(project.path("src")).unwrap();
+    symlink(&outside, project.path("src/components")).unwrap();
+
+    let error = project.run_with(&["ui"], &["pull", "id"]).unwrap_err();
+
+    assert!(error.message().contains("symbolic link"), "{error}");
+    assert!(!outside.join("vize/foundations/id/id.ts").exists());
+    assert!(!project.path("vize-lib.lock.json").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn pull_rejects_symlinked_target_file_even_with_overwrite() {
+    use std::os::unix::fs::symlink;
+
+    let project = Project::new();
+    ui_v1(&project.registry("ui"));
+    let outside = project.registries.join("outside.ts");
+    std::fs::write(&outside, "keep me").unwrap();
+    std::fs::create_dir_all(project.path("src/components/vize/foundations/id")).unwrap();
+    symlink(&outside, project.path(ID_TS)).unwrap();
+
+    let error = project
+        .run_with(&["ui"], &["pull", "id", "--overwrite"])
+        .unwrap_err();
+
+    assert!(error.message().contains("symbolic link"), "{error}");
+    assert_eq!(std::fs::read_to_string(outside).unwrap(), "keep me");
+    assert!(!project.path("vize-lib.lock.json").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn remove_rejects_symlinked_pulled_file_without_deleting_target() {
+    use std::os::unix::fs::symlink;
+
+    let project = Project::new();
+    ui_v1(&project.registry("ui"));
+    project.run_with(&["ui"], &["pull", "id"]).unwrap();
+    let outside = project.registries.join("outside.ts");
+    std::fs::write(&outside, fixture::ID_V1).unwrap();
+    std::fs::remove_file(project.path(ID_TS)).unwrap();
+    symlink(&outside, project.path(ID_TS)).unwrap();
+
+    let error = project.run_with(&["ui"], &["remove", "id"]).unwrap_err();
+
+    assert!(error.message().contains("symbolic link"), "{error}");
+    assert_eq!(std::fs::read_to_string(outside).unwrap(), fixture::ID_V1);
+    assert!(project.path("vize-lib.lock.json").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn pull_rejects_symlinked_lockfile_before_writing_item() {
+    use std::os::unix::fs::symlink;
+
+    let project = Project::new();
+    ui_v1(&project.registry("ui"));
+    let outside = project.registries.join("outside.lock.json");
+    std::fs::write(&outside, "keep me").unwrap();
+    symlink(&outside, project.path("vize-lib.lock.json")).unwrap();
+
+    let error = project.run_with(&["ui"], &["pull", "id"]).unwrap_err();
+
+    assert!(error.message().contains("symbolic link"), "{error}");
+    assert_eq!(std::fs::read_to_string(outside).unwrap(), "keep me");
+    assert!(!project.path(ID_TS).exists());
+}
+
+#[test]
+fn pull_rejects_lockfile_configured_outside_project() {
+    let project = Project::new();
+    ui_v1(&project.registry("ui"));
+    project.write(
+        "vize.config.json",
+        r#"{ "lib": { "lockfile": "../outside.lock.json" } }"#,
+    );
+
+    let error = project.run_with(&["ui"], &["pull", "id"]).unwrap_err();
+
+    assert!(
+        error.message().contains("inside the project root"),
+        "{error}"
+    );
+    assert!(!project.path(ID_TS).exists());
+    assert!(!project.registries.join("outside.lock.json").exists());
 }
 
 #[test]

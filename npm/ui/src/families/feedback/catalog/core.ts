@@ -12,6 +12,7 @@ export const feedbackCoreCatalog = [
     entryFile: "src/families/feedback/alert/alert.ts",
     sourceFiles: [
       "src/families/feedback/alert/alert.vue",
+      "src/families/feedback/alert/alert-visual.css",
       "src/families/feedback/alert/alert.ts",
       "src/families/feedback/alert/alert-types.ts",
     ],
@@ -39,6 +40,7 @@ export const feedbackCoreCatalog = [
     entryFile: "src/families/feedback/badge/badge.ts",
     sourceFiles: [
       "src/families/feedback/badge/badge.vue",
+      "src/families/feedback/badge/badge-visual.css",
       "src/families/feedback/badge/badge.ts",
       "src/families/feedback/badge/badge-types.ts",
     ],

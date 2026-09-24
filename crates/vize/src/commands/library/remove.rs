@@ -4,7 +4,7 @@ use serde::Serialize;
 use vize_s0::{String, cstr};
 
 use super::error::{LibError, LibResult};
-use super::fs_ops::{file_sha256, join_relative, remove_file_and_prune};
+use super::fs_ops::{ensure_project_path, file_sha256, join_relative, remove_file_and_prune};
 use super::lockfile::LockedItem;
 use super::output::{json, line};
 use super::plan::join_dir;
@@ -87,9 +87,12 @@ pub fn remove(context: &mut LibContext, args: &RemoveArgs) -> LibResult<String> 
             continue;
         };
         let base = join_dir(&context.root, &item.dir)?;
+        ensure_project_path(&context.root, &base)?;
         let mut files = Vec::new();
         for (path, locked) in &item.files {
-            let action = match file_sha256(&join_relative(&base, path)?)? {
+            let target = join_relative(&base, path)?;
+            ensure_project_path(&context.root, &target)?;
+            let action = match file_sha256(&target)? {
                 None => "missing",
                 Some(local) if local == *locked => "delete",
                 Some(_) => {
@@ -121,9 +124,12 @@ pub fn remove(context: &mut LibContext, args: &RemoveArgs) -> LibResult<String> 
                 continue;
             };
             let base = join_dir(&context.root, &item.dir)?;
+            ensure_project_path(&context.root, &base)?;
             for file in &removed.files {
                 if file.action == "delete" || (file.action == "modified" && args.force) {
-                    remove_file_and_prune(&join_relative(&base, &file.path)?, &base)?;
+                    let target = join_relative(&base, &file.path)?;
+                    ensure_project_path(&context.root, &target)?;
+                    remove_file_and_prune(&target, &base)?;
                 }
             }
             // The kind directory itself goes once its last item is removed.
@@ -134,7 +140,7 @@ pub fn remove(context: &mut LibContext, args: &RemoveArgs) -> LibResult<String> 
         for (kind, name) in &removing {
             lockfile.remove(kind, name);
         }
-        lockfile.write(&context.lock_path)?;
+        lockfile.write(&context.root, &context.lock_path)?;
     }
     if context.json {
         return json(&serde_json::json!({ "dryRun": args.dry_run, "items": report }));
