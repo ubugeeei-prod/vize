@@ -177,7 +177,6 @@ pub(super) fn s2_emit_options<'a>(
         hoisted_scope_id,
         scope_id: options.scope_id.as_deref(),
         is_ts: options.is_ts,
-        strict_slot_params: false,
         comments: options.comments,
         experimental_in_tag_comments: options.experimental_in_tag_comments,
         custom_element_patterns: custom_elements.patterns(),
@@ -231,25 +230,32 @@ pub(super) fn try_emit_s2(
             source,
             options.dialect,
             &emit_options,
-            pre_s2_walks
+            pre_s2_walks,
+            false,
         )
     )
     .ok()
 }
 
-/// Emit one ordinary DOM module through S2.
+/// Emit one DOM module through S2, with the SFC-only slot check when requested.
 pub(super) fn emit_s2(
     allocator: &Allocator,
     source: &str,
     dialect: vize_s0::config::VueVersion,
     options: &DomEmitOptions<'_>,
     pre_s2_walks: Option<WalkCounts>,
+    strict_slot_params: bool,
 ) -> Result<CodegenResultWithSections, EmitError> {
     let caps = LegacyCaps::for_version(dialect);
     let profiler = global_profiler();
     let emit = if profiler.is_enabled() {
-        let observed =
-            vize_s1_to_s2::emit_dom_source_observed_with_options(allocator, source, caps, options)?;
+        let observed = if strict_slot_params {
+            vize_s1_to_s2::emit_dom_source_sfc_observed_with_options(
+                allocator, source, caps, options,
+            )?
+        } else {
+            vize_s1_to_s2::emit_dom_source_observed_with_options(allocator, source, caps, options)?
+        };
         let budget = observed.budget;
         // P2-12b observes the compiler path that actually produced this DOM
         // module. The regular entry point keeps the observer uninstantiated,
@@ -281,7 +287,11 @@ pub(super) fn emit_s2(
         );
         observed.emit
     } else {
-        vize_s1_to_s2::emit_dom_source_with_options(allocator, source, caps, options)?
+        if strict_slot_params {
+            vize_s1_to_s2::emit_dom_source_sfc_with_options(allocator, source, caps, options)?
+        } else {
+            vize_s1_to_s2::emit_dom_source_with_options(allocator, source, caps, options)?
+        }
     };
     Ok(CodegenResultWithSections {
         result: CodegenResult {

@@ -125,7 +125,8 @@ use crate::pass::walk::PageWalk;
 
 pub use self::budget::{
     DomEmitBudget, ObservedDomEmit, emit_dom_source_observed,
-    emit_dom_source_observed_with_options, emit_dom_source_with_caps_observed,
+    emit_dom_source_observed_with_options, emit_dom_source_sfc_observed_with_options,
+    emit_dom_source_with_caps_observed,
 };
 #[cfg(any(test, feature = "davinci-differential"))]
 pub use self::budget::{
@@ -139,8 +140,8 @@ pub use self::entity::{
     decode_html_attribute_entities, decode_html_entities, decode_ssr_static_text,
 };
 pub use self::entry::{
-    DomEmit, DomEmitSections, emit_dom_source, emit_dom_source_with_caps,
-    emit_dom_source_with_options,
+    DomEmit, DomEmitSections, emit_dom_source, emit_dom_source_sfc_with_options,
+    emit_dom_source_with_caps, emit_dom_source_with_options,
 };
 pub use self::error::{EmitError, UnsupportedReason, UnsupportedRefusal};
 pub use self::options::ReactiveRead;

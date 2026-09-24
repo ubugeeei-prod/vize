@@ -65,6 +65,27 @@ pub fn emit_dom_source_observed_with_options<'a>(
     caps: LegacyCaps,
     options: &DomEmitOptions<'_>,
 ) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_slot_policy(allocator, source, caps, options, false)
+}
+
+/// SFC-only variant that refuses malformed slot parameters before assembly.
+#[doc(hidden)]
+pub fn emit_dom_source_sfc_observed_with_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+) -> Result<ObservedDomEmit, EmitError> {
+    emit_dom_source_observed_with_slot_policy(allocator, source, caps, options, true)
+}
+
+fn emit_dom_source_observed_with_slot_policy(
+    allocator: &Allocator,
+    source: &str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+    strict_slot_params: bool,
+) -> Result<ObservedDomEmit, EmitError> {
     let mut transform = BudgetObserver::new();
     let observed = emit_dom_source_with_options_and_observer(
         allocator,
@@ -72,6 +93,7 @@ pub fn emit_dom_source_observed_with_options<'a>(
         caps,
         options,
         &mut transform,
+        strict_slot_params,
     )?;
     Ok(ObservedDomEmit {
         emit: observed.emit,
@@ -106,8 +128,14 @@ pub fn emit_dom_source_patch_facts_observed_with_options<'a>(
     options: &DomEmitOptions<'_>,
 ) -> Result<ObservedPatchFactsEmit, EmitError> {
     let mut observer = vize_davinci::pass::NoObserver;
-    let observed =
-        emit_dom_source_with_options_and_observer(allocator, source, caps, options, &mut observer)?;
+    let observed = emit_dom_source_with_options_and_observer(
+        allocator,
+        source,
+        caps,
+        options,
+        &mut observer,
+        false,
+    )?;
     Ok(ObservedPatchFactsEmit {
         emit: observed.emit,
         materialized_entries: observed.patch_fact_entries,
@@ -120,6 +148,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
     caps: LegacyCaps,
     options: &DomEmitOptions<'_>,
     observer: &mut O,
+    strict_slot_params: bool,
 ) -> Result<DomEmitObservation, EmitError> {
     ensure_sufficient_stack(|| {
         let (tree, errors) = parse_with_options(
@@ -143,6 +172,6 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             profile = profile.without_static_analysis();
         }
         let facts = run_dom_transform_with_profile(&mut lowered, observer, profile);
-        emit_dom_observed(&lowered, &facts, options)
+        emit_dom_observed(&lowered, &facts, options, strict_slot_params)
     })
 }

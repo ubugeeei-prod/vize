@@ -341,30 +341,36 @@ fn malformed_slot_params_keep_production_diagnostics() {
     let source = r#"<template><Widget><template #actions="v-slot:actions"><button>Run</button></template></Widget></template>"#;
     let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
     for shape in [Shape::DomInline, Shape::DomModule] {
-        let profiler = global_profiler();
-        profiler.clear();
-        profiler.enable();
-        let selected = compile(&descriptor, "InvalidSlotParams.vue", shape);
-        let counters = profiler.counter_summary();
-        profiler.disable();
-        profiler.clear();
-        assert_eq!(
-            classify(shape, &counters),
-            Ok(Lane::Legacy("emit_refused".to_owned())),
-            "{shape:?}"
-        );
-
-        let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
-            compile(&descriptor, "InvalidSlotParams.vue", shape)
-        });
-        match (selected, legacy) {
-            (Ok(selected), legacy) => assert_eq!(divergence(&selected, &legacy), None),
-            (Err(selected), Err(legacy)) => {
-                assert_eq!(selected.code, legacy.code);
-                assert_eq!(selected.message, legacy.message);
+        for profiled in [false, true] {
+            let profiler = global_profiler();
+            profiler.clear();
+            if profiled {
+                profiler.enable();
             }
-            (selected, legacy) => {
-                panic!("{shape:?} compile result differs: {selected:?} {legacy:?}")
+            let selected = compile(&descriptor, "InvalidSlotParams.vue", shape);
+            let counters = profiler.counter_summary();
+            profiler.disable();
+            profiler.clear();
+            if profiled {
+                assert_eq!(
+                    classify(shape, &counters),
+                    Ok(Lane::Legacy("emit_refused".to_owned())),
+                    "{shape:?}"
+                );
+            }
+
+            let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+                compile(&descriptor, "InvalidSlotParams.vue", shape)
+            });
+            match (selected, legacy) {
+                (Ok(selected), legacy) => assert_eq!(divergence(&selected, &legacy), None),
+                (Err(selected), Err(legacy)) => {
+                    assert_eq!(selected.code, legacy.code);
+                    assert_eq!(selected.message, legacy.message);
+                }
+                (selected, legacy) => {
+                    panic!("{shape:?} compile result differs: {selected:?} {legacy:?}")
+                }
             }
         }
     }

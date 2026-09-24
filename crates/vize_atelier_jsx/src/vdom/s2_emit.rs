@@ -82,7 +82,6 @@ pub(super) fn try_emit_s2_vdom<'a>(
             hoisted_scope_id: None,
             scope_id,
             is_ts,
-            strict_slot_params: false,
             comments: false,
             experimental_in_tag_comments: false,
             custom_element_patterns: &[],

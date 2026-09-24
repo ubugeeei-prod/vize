@@ -76,6 +76,26 @@ pub fn emit_dom_source_with_options<'a>(
     options: &DomEmitOptions<'_>,
 ) -> Result<DomEmit, EmitError> {
     let mut observer = NoObserver;
-    emit_dom_source_with_options_and_observer(allocator, source, caps, options, &mut observer)
+    emit_dom_source_with_options_and_observer(
+        allocator,
+        source,
+        caps,
+        options,
+        &mut observer,
+        false,
+    )
+    .map(|observed| observed.emit)
+}
+
+/// SFC-only variant that refuses malformed slot parameters before assembly.
+#[doc(hidden)]
+pub fn emit_dom_source_sfc_with_options<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    caps: LegacyCaps,
+    options: &DomEmitOptions<'_>,
+) -> Result<DomEmit, EmitError> {
+    let mut observer = NoObserver;
+    emit_dom_source_with_options_and_observer(allocator, source, caps, options, &mut observer, true)
         .map(|observed| observed.emit)
 }

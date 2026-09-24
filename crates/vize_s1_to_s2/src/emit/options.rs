@@ -233,9 +233,6 @@ pub struct DomEmitOptions<'a> {
     /// so each one is type-erased (`emit::prefix::typescript`) before the
     /// identifier pass reads it.
     pub is_ts: bool,
-    /// SFC assembly must return the compatibility parser's diagnostics for
-    /// malformed slot parameters instead of emitting a broken render module.
-    pub strict_slot_params: bool,
     /// Preserve ordinary template comments as `_createCommentVNode(...)`.
     pub comments: bool,
     /// Preserve Vue's experimental `//` comments inside opening tag attrs.
@@ -263,7 +260,6 @@ impl PartialEq for DomEmitOptions<'_> {
             && self.hoisted_scope_id == other.hoisted_scope_id
             && self.scope_id == other.scope_id
             && self.is_ts == other.is_ts
-            && self.strict_slot_params == other.strict_slot_params
             && self.comments == other.comments
             && self.experimental_in_tag_comments == other.experimental_in_tag_comments
             && self.custom_element_patterns == other.custom_element_patterns
@@ -303,7 +299,6 @@ impl DomEmitOptions<'static> {
         hoisted_scope_id: None,
         scope_id: None,
         is_ts: false,
-        strict_slot_params: false,
         comments: false,
         experimental_in_tag_comments: false,
         custom_element_patterns: &[],
