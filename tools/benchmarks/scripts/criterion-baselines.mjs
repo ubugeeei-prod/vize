@@ -68,7 +68,7 @@ export function compareVaporNativePairs(base, head) {
       fixtures.add(match[1]);
     }
     if (fixtures.size === 0) throw new Error(`No Vapor native/retained pairs in ${side} export`);
-    return [...fixtures].sort();
+    return [...fixtures].sort((left, right) => left.localeCompare(right));
   };
   const baseFixtures = fixtureNames(base, "base");
   const headFixtures = fixtureNames(head, "head");
