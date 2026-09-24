@@ -219,7 +219,10 @@ export function loadHook(
       blockIndex < fallbackCompiled.styles.length
     ) {
       const block = fallbackCompiled.styles[blockIndex];
-      let styleContent = block.content;
+      // Virtual style blocks retain source whitespace; apply the plugin-vue
+      // trim option before handing their contents to Vite's CSS pipeline.
+      let styleContent =
+        state.mergedOptions.style?.trim === false ? block.content : block.content.trim();
 
       // Keep delegated plain CSS scoped while preserving PostCSS-only syntax
       // such as `@apply` for the downstream CSS pipeline.
