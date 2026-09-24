@@ -75,10 +75,30 @@
       "import": "./dist/calendar.mjs",
       "default": "./dist/calendar.mjs"
     },
+    "./date-field": {
+      "types": "./dist/date-field.d.mts",
+      "import": "./dist/date-field.mjs",
+      "default": "./dist/date-field.mjs"
+    },
+    "./date-picker": {
+      "types": "./dist/date-picker.d.mts",
+      "import": "./dist/date-picker.mjs",
+      "default": "./dist/date-picker.mjs"
+    },
+    "./date-range-picker": {
+      "types": "./dist/date-range-picker.d.mts",
+      "import": "./dist/date-range-picker.mjs",
+      "default": "./dist/date-range-picker.mjs"
+    },
     "./range-calendar": {
       "types": "./dist/range-calendar.d.mts",
       "import": "./dist/range-calendar.mjs",
       "default": "./dist/range-calendar.mjs"
+    },
+    "./time-field": {
+      "types": "./dist/time-field.d.mts",
+      "import": "./dist/time-field.mjs",
+      "default": "./dist/time-field.mjs"
     },
     "./callout": {
       "types": "./dist/callout.d.mts",

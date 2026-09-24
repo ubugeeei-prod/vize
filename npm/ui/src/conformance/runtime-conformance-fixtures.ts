@@ -11,7 +11,11 @@ import { skipLinkRuntimeFixture } from "../families/navigation/skip-link/runtime
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { calloutRuntimeFixture } from "../families/feedback/callout/runtime-conformance-callout-fixtures.ts";
 import { calendarRuntimeFixtures } from "../families/date-time/calendar/runtime-conformance-calendar-fixtures.ts";
+import { dateFieldRuntimeFixture } from "../families/date-time/date-field/runtime-conformance-date-field-fixtures.ts";
+import { datePickerRuntimeFixtures } from "../families/date-time/date-picker/runtime-conformance-date-picker-fixtures.ts";
+import { dateRangePickerRuntimeFixtures } from "../families/date-time/date-range-picker/runtime-conformance-date-range-picker-fixtures.ts";
 import { rangeCalendarRuntimeFixture } from "../families/date-time/range-calendar/runtime-conformance-range-calendar-fixtures.ts";
+import { timeFieldRuntimeFixture } from "../families/date-time/time-field/runtime-conformance-time-field-fixtures.ts";
 import { tableRuntimeFixtures } from "../families/data/table/runtime-conformance-table-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { meterRuntimeFixture } from "../families/feedback/meter/runtime-conformance-meter-fixtures.ts";
@@ -75,7 +79,11 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   blockUIRuntimeFixture,
   ...calendarRuntimeFixtures,
   calloutRuntimeFixture,
+  dateFieldRuntimeFixture,
+  ...datePickerRuntimeFixtures,
+  ...dateRangePickerRuntimeFixtures,
   rangeCalendarRuntimeFixture,
+  timeFieldRuntimeFixture,
   ...tableRuntimeFixtures,
   ...breadcrumbRuntimeFixtures,
   ...tabsRuntimeFixtures,

@@ -74,6 +74,36 @@ const innerOpen = ref(true);
 `,
   },
   {
+    filename: "DatePickerConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import { ref } from "vue";
+import type { PlainDate } from "./families/date-time/calendar/calendar.ts";
+import {
+  DatePickerCalendar,
+  DatePickerContent,
+  DatePickerField,
+  DatePickerRoot,
+  DatePickerTrigger,
+} from "./families/date-time/date-picker/date-picker.ts";
+import { TimeField } from "./families/date-time/time-field/time-field.ts";
+
+const date = ref<PlainDate | null>({ year: 2026, month: 9, day: 25 });
+</script>
+
+<template>
+  <DatePickerRoot v-model="date" :today="{ year: 2026, month: 9, day: 25 }" locale="en-US">
+    <DatePickerField aria-label="Departure">
+      <DatePickerTrigger aria-label="Choose date">Pick</DatePickerTrigger>
+    </DatePickerField>
+    <DatePickerContent portal-disabled aria-label="Calendar">
+      <DatePickerCalendar :number-of-months="2" />
+    </DatePickerContent>
+  </DatePickerRoot>
+  <TimeField aria-label="Departure time" :hour-cycle="24" granularity="second" />
+</template>
+`,
+  },
+  {
     filename: "PopoverConsumer.vue",
     source: String.raw`<script setup lang="ts">
 import {
