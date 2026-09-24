@@ -1,11 +1,8 @@
 //! Directive disable ranges and suppression pragma handling.
 
-use vize_s0::{CompactString, String, directive::DirectiveSeverity};
+use vize_s0::{CompactString, directive::DirectiveSeverity};
 
-use super::{
-    DisabledRange, LintContext,
-    eslint_directive::{EslintDisableKind, parse_eslint_disable_comment},
-};
+use super::{DisabledRange, LintContext, eslint_directive::parse_eslint_disable_comment};
 
 impl LintContext<'_> {
     /// Check if a rule is disabled at a specific line.
@@ -37,7 +34,7 @@ impl LintContext<'_> {
             }
         }
 
-        false
+        self.inline_suppressions.is_disabled_at(rule_name, line)
     }
 
     /// Returns true if `rule_name` is disabled at the line containing
@@ -74,52 +71,30 @@ impl LintContext<'_> {
         }
     }
 
-    fn disable_rule_names<'r, I>(&mut self, rules: I, start_line: u32, end_line: Option<u32>)
-    where
-        I: IntoIterator<Item = &'r str>,
-    {
-        for rule in rules {
-            let range = DisabledRange {
-                start_line,
-                end_line,
-            };
-            self.disabled_rules
-                .entry(CompactString::from(rule))
-                .or_default()
-                .push(range);
-        }
+    /// Register an actual template comment. The visitor supplies AST comment
+    /// nodes, so text and attribute values cannot introduce lint directives.
+    pub(crate) fn register_lint_comment(&mut self, content: &str, offset: u32) {
+        let Some(directive) = parse_eslint_disable_comment(content) else {
+            return;
+        };
+        let marker_offset = content
+            .find("eslint-")
+            .into_iter()
+            .chain(content.find("oxlint-"))
+            .min()
+            .unwrap_or(0);
+        let preceding_lines = content
+            .as_bytes()
+            .get(..marker_offset)
+            .unwrap_or_default()
+            .iter()
+            .filter(|&&byte| byte == b'\n')
+            .count() as u32;
+        let line = self.offset_to_line(offset) + preceding_lines;
+        self.inline_suppressions.record(directive, line);
     }
 
-    fn enable_all_rules(&mut self, line: u32) {
-        for range in &mut self.disabled_all {
-            if range.end_line.is_none() {
-                range.end_line = Some(line);
-            }
-        }
-        for ranges in self.disabled_rules.values_mut() {
-            for range in ranges {
-                if range.end_line.is_none() {
-                    range.end_line = Some(line);
-                }
-            }
-        }
-    }
-
-    fn enable_rule_names<'r, I>(&mut self, rules: I, line: u32)
-    where
-        I: IntoIterator<Item = &'r str>,
-    {
-        for rule in rules {
-            if let Some(ranges) = self.disabled_rules.get_mut(rule) {
-                for range in ranges {
-                    if range.end_line.is_none() {
-                        range.end_line = Some(line);
-                    }
-                }
-            }
-        }
-    }
-
+    /// JSX still uses the source scanner until its own comment AST is wired in.
     pub(super) fn prescan_eslint_disable_comments(&mut self) {
         if !self.source.contains("eslint-") && !self.source.contains("oxlint-") {
             return;
@@ -129,40 +104,8 @@ impl LintContext<'_> {
                 continue;
             }
             if let Some(directive) = parse_eslint_disable_comment(line) {
-                match directive.kind {
-                    EslintDisableKind::DisableNextLine => {
-                        self.apply_eslint_disable(
-                            line_number + 1,
-                            Some(line_number + 1),
-                            directive.rules,
-                        );
-                    }
-                    EslintDisableKind::DisableLine => {
-                        self.apply_eslint_disable(line_number, Some(line_number), directive.rules);
-                    }
-                    EslintDisableKind::Disable => {
-                        self.apply_eslint_disable(line_number, None, directive.rules);
-                    }
-                    EslintDisableKind::Enable => {
-                        if directive.rules.is_empty() {
-                            self.enable_all_rules(line_number);
-                        } else {
-                            self.enable_rule_names(
-                                directive.rules.iter().map(String::as_str),
-                                line_number,
-                            );
-                        }
-                    }
-                }
+                self.inline_suppressions.record(directive, line_number);
             }
-        }
-    }
-
-    fn apply_eslint_disable(&mut self, start_line: u32, end_line: Option<u32>, rules: Vec<String>) {
-        if rules.is_empty() {
-            self.disable_all(start_line, end_line);
-        } else {
-            self.disable_rule_names(rules.iter().map(String::as_str), start_line, end_line);
         }
     }
 

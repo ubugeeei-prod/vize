@@ -27,6 +27,7 @@ use vize_s0::{
     i18n::{Locale, t, t_fmt},
 };
 
+use eslint_directive::InlineSuppressionState;
 use sfc_directives::SfcDirectiveState;
 
 /// Lint context provides utilities for rules during execution.
@@ -59,6 +60,8 @@ pub struct LintContext<'a> {
     disabled_all: Vec<DisabledRange>,
     /// Disabled ranges per rule name.
     disabled_rules: FxHashMap<CompactString, Vec<DisabledRange>>,
+    /// ESLint/Oxlint comments, ordered so named enables can override disable-all.
+    inline_suppressions: InlineSuppressionState,
     /// Line offsets for fast line number lookup.
     line_offsets: Vec<u32>,
     /// Optional set of enabled rule names (if None, all rules are enabled).
@@ -123,6 +126,7 @@ impl<'a> LintContext<'a> {
             warning_count: 0,
             disabled_all: Vec::new(),
             disabled_rules: FxHashMap::default(),
+            inline_suppressions: InlineSuppressionState::default(),
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             config_disabled_rules: FxHashSet::default(),
@@ -138,7 +142,9 @@ impl<'a> LintContext<'a> {
             sfc_directives: None,
             sfc_directives_scanned: false,
         };
-        ctx.prescan_eslint_disable_comments();
+        if filename.ends_with(".jsx") || filename.ends_with(".tsx") {
+            ctx.prescan_eslint_disable_comments();
+        }
         ctx
     }
 
@@ -164,6 +170,7 @@ impl<'a> LintContext<'a> {
             warning_count: 0,
             disabled_all: Vec::new(),
             disabled_rules: FxHashMap::default(),
+            inline_suppressions: InlineSuppressionState::default(),
             line_offsets: Self::compute_line_offsets(source),
             enabled_rules: None,
             config_disabled_rules: FxHashSet::default(),
@@ -179,7 +186,9 @@ impl<'a> LintContext<'a> {
             sfc_directives: None,
             sfc_directives_scanned: false,
         };
-        ctx.prescan_eslint_disable_comments();
+        if filename.ends_with(".jsx") || filename.ends_with(".tsx") {
+            ctx.prescan_eslint_disable_comments();
+        }
         ctx
     }
 

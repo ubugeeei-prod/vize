@@ -7,10 +7,10 @@ use vize_atelier_sfc::SfcDescriptor;
 use vize_s0::directive::{
     DirectiveKind, DirectiveSeverity, parse_level_severity, parse_vize_directive,
 };
-use vize_s0::{CompactString, FxHashMap, FxHashSet, String};
+use vize_s0::{FxHashMap, FxHashSet};
 
 use super::DisabledRange;
-use super::eslint_directive::{EslintDisableKind, parse_eslint_disable_comment};
+use super::eslint_directive::{InlineSuppressionState, parse_eslint_disable_comment};
 use lexer::{DirectiveLexer, StyleDirectiveLexer};
 
 #[derive(Clone, Copy)]
@@ -29,8 +29,7 @@ pub(super) struct SfcDirectiveState {
 struct BlockDirectiveState {
     start: u32,
     end: u32,
-    disabled_all: Vec<DisabledRange>,
-    disabled_rules: FxHashMap<CompactString, Vec<DisabledRange>>,
+    inline_suppressions: InlineSuppressionState,
     ignored_regions: Vec<DisabledRange>,
     expected_error_lines: FxHashSet<u32>,
     severity_overrides: FxHashMap<u32, DirectiveSeverity>,
@@ -160,17 +159,10 @@ impl BlockDirectiveState {
     }
 
     fn is_disabled_at(&self, rule_name: &str, line: u32) -> bool {
-        self.disabled_all
+        self.ignored_regions
             .iter()
             .any(|range| range_contains(range, line))
-            || self
-                .ignored_regions
-                .iter()
-                .any(|range| range_contains(range, line))
-            || self
-                .disabled_rules
-                .get(rule_name)
-                .is_some_and(|ranges| ranges.iter().any(|range| range_contains(range, line)))
+            || self.inline_suppressions.is_disabled_at(rule_name, line)
     }
 
     fn scan_eslint_directive(&mut self, line: &str, line_number: u32, index: Option<usize>) {
@@ -180,16 +172,7 @@ impl BlockDirectiveState {
         let Some(directive) = line.get(index..).and_then(parse_eslint_disable_comment) else {
             return;
         };
-        match directive.kind {
-            EslintDisableKind::DisableNextLine => {
-                self.disable_rules(directive.rules, line_number + 1, Some(line_number + 1))
-            }
-            EslintDisableKind::DisableLine => {
-                self.disable_rules(directive.rules, line_number, Some(line_number));
-            }
-            EslintDisableKind::Disable => self.disable_rules(directive.rules, line_number, None),
-            EslintDisableKind::Enable => self.enable_rules(directive.rules, line_number),
-        }
+        self.inline_suppressions.record(directive, line_number);
     }
 
     fn scan_vize_directive(&mut self, line: &str, line_number: u32, index: Option<usize>) {
@@ -222,40 +205,6 @@ impl BlockDirectiveState {
             _ => {}
         }
     }
-
-    fn disable_rules(&mut self, rules: Vec<String>, start_line: u32, end_line: Option<u32>) {
-        if rules.is_empty() {
-            self.disabled_all.push(DisabledRange {
-                start_line,
-                end_line,
-            });
-            return;
-        }
-        for rule in rules {
-            self.disabled_rules
-                .entry(CompactString::new(rule.as_str()))
-                .or_default()
-                .push(DisabledRange {
-                    start_line,
-                    end_line,
-                });
-        }
-    }
-
-    fn enable_rules(&mut self, rules: Vec<String>, line: u32) {
-        if rules.is_empty() {
-            close_ranges(&mut self.disabled_all, line);
-            for ranges in self.disabled_rules.values_mut() {
-                close_ranges(ranges, line);
-            }
-            return;
-        }
-        for rule in rules {
-            if let Some(ranges) = self.disabled_rules.get_mut(rule.as_str()) {
-                close_ranges(ranges, line);
-            }
-        }
-    }
 }
 
 fn has_directive_marker(source: &str) -> bool {
@@ -264,14 +213,6 @@ fn has_directive_marker(source: &str) -> bool {
 
 fn range_contains(range: &DisabledRange, line: u32) -> bool {
     line >= range.start_line && range.end_line.is_none_or(|end| line <= end)
-}
-
-fn close_ranges(ranges: &mut [DisabledRange], line: u32) {
-    for range in ranges {
-        if range.end_line.is_none() {
-            range.end_line = Some(line);
-        }
-    }
 }
 
 fn close_last_range(ranges: &mut [DisabledRange], line: u32) {

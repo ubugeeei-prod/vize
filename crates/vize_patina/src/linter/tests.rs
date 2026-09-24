@@ -39,6 +39,7 @@ mod no_unused_components;
 mod nuxt;
 mod nuxt_config_order;
 mod nuxt_prefer_nuxt_link;
+mod plugin_suppressions;
 mod prop_style_policy;
 mod recovered_parse_analysis;
 mod script;

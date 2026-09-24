@@ -55,3 +55,15 @@ fn lint_cli_honors_plugin_rule_ids_in_eslint_and_oxlint_comments() {
         0
     );
 }
+
+#[test]
+fn lint_cli_restores_named_rule_after_disable_all() {
+    let source = r#"<script setup lang="ts">
+const props = defineProps<{ items: string[] }>()
+// oxlint-disable
+Object.assign(props.items, [])
+// oxlint-enable vize/vue/no-mutating-props
+Object.assign(props.items, [])
+</script>"#;
+    assert_eq!(mutation_count(source), 1);
+}

@@ -149,6 +149,8 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     ) {
         match node {
             TemplateChildNode::Comment(comment) => {
+                self.ctx
+                    .register_lint_comment(comment.content, comment.loc.span.start);
                 if let Some(kind) = comment.directive {
                     let line = self.ctx.offset_to_line(comment.loc.span.start);
                     match kind {

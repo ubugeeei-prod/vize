@@ -15,6 +15,47 @@ pub(super) struct EslintDisableDirective {
     pub(super) rules: Vec<String>,
 }
 
+#[derive(Default)]
+pub(super) struct InlineSuppressionState {
+    events: Vec<InlineSuppressionEvent>,
+}
+
+struct InlineSuppressionEvent {
+    start_line: u32,
+    end_line: Option<u32>,
+    enabled: bool,
+    rules: Vec<String>,
+}
+
+impl InlineSuppressionState {
+    pub(super) fn record(&mut self, directive: EslintDisableDirective, line: u32) {
+        let (start_line, end_line, enabled) = match directive.kind {
+            EslintDisableKind::DisableNextLine => (line + 1, Some(line + 1), false),
+            EslintDisableKind::DisableLine => (line, Some(line), false),
+            EslintDisableKind::Disable => (line, None, false),
+            EslintDisableKind::Enable => (line, None, true),
+        };
+        self.events.push(InlineSuppressionEvent {
+            start_line,
+            end_line,
+            enabled,
+            rules: directive.rules,
+        });
+    }
+
+    pub(super) fn is_disabled_at(&self, rule_name: &str, line: u32) -> bool {
+        self.events
+            .iter()
+            .rev()
+            .find(|event| {
+                line >= event.start_line
+                    && event.end_line.is_none_or(|end| line <= end)
+                    && (event.rules.is_empty() || event.rules.iter().any(|rule| rule == rule_name))
+            })
+            .is_some_and(|event| !event.enabled)
+    }
+}
+
 pub(super) fn parse_eslint_disable_comment(line: &str) -> Option<EslintDisableDirective> {
     const MARKERS: [(&str, EslintDisableKind); 8] = [
         (
