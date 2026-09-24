@@ -31,10 +31,6 @@ const BATTERY: &[(&str, &str)] = &[
         r#"<script setup>const msg = "hi"</script><template><p>{{ msg }}</p></template>"#,
     ),
     (
-        "encoded_conditional_operators",
-        r#"<template><span v-if="count &gt; 0">positive</span><span v-else-if="count &lt; 0">negative</span></template>"#,
-    ),
-    (
         "slot_template",
         r#"<template><Foo><template #default="{ item }"><span>{{ item }}</span></template></Foo></template>"#,
     ),

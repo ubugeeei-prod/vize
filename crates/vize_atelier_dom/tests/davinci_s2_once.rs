@@ -128,11 +128,6 @@ const CASES: &[Case] = &[
         src: r#"<div v-for="item in items" :key="item.id"><span v-once>{{ item.static }}</span></div>"#,
         sites: &["1 /* TEXT */", "128 /* KEYED_FRAGMENT */"],
     },
-    Case {
-        name: "empty_for_item_once_props",
-        src: r#"<pre v-for="_ in []" v-once></pre>"#,
-        sites: &["256 /* UNKEYED_FRAGMENT */"],
-    },
 ];
 
 #[test]

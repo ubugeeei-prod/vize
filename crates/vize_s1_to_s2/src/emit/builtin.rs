@@ -35,7 +35,7 @@ pub(super) fn forces_block(component: &ComponentOp<'_>) -> bool {
     matches!(
         component.name,
         "Teleport" | "teleport" | "Suspense" | "suspense" | "KeepAlive" | "keep-alive"
-    ) || matches!(component.name, "component" | "Component")
+    ) || is_dynamic_component(component)
 }
 
 pub(super) fn is_dynamic_component(component: &ComponentOp<'_>) -> bool {

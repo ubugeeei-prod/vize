@@ -100,12 +100,11 @@ fn emit_condition(
     branch_span: Span,
 ) -> Result<(), EmitError> {
     if cx.prefixing() {
-        return cx.push_prefixed_decoded_expr(condition, Site::Expression);
+        return cx.push_prefixed_expr(condition, Site::Expression);
     }
     match condition {
         ExprRef::Js(js) => {
             let source = super::js::js_expr_source(js);
-            let decoded = super::decode_html_attribute_entities(source.as_str());
             if let Some((leading, trailing)) =
                 authored_condition_padding(cx.source, branch_span, source.as_str(), js.span)
                     .or_else(|| {
@@ -117,25 +116,15 @@ fn emit_condition(
                     .or_else(|| authored_condition_quote_padding(cx.source, js.source, js.span))
             {
                 cx.buf.push(leading);
-                cx.buf.push(decoded.as_str());
+                cx.buf.push(source.as_str());
                 cx.buf.push(trailing);
             } else {
-                cx.buf.push(decoded.as_str());
+                cx.buf.push(source.as_str());
             }
             Ok(())
         }
         _ => {
-            let raw = super::js::parse_rejected_raw_js(condition, false).or_else(|| {
-                let ExprRef::Opaque(opaque) = condition else {
-                    return None;
-                };
-                let decoded = super::decode_html_attribute_entities(opaque.source);
-                (decoded.as_str() != opaque.source
-                    && super::js_comment::source_is_js(decoded.as_str(), opaque.span.start))
-                .then(|| super::js::RawJs::Borrowed(opaque.source))
-            });
-            if let Some(raw) = raw {
-                let decoded = super::decode_html_attribute_entities(raw.as_str());
+            if let Some(raw) = super::js::parse_rejected_raw_js(condition, false) {
                 if let Some((leading, trailing)) = authored_condition_padding(
                     cx.source,
                     branch_span,
@@ -143,10 +132,10 @@ fn emit_condition(
                     condition.span(),
                 ) {
                     cx.buf.push(leading);
-                    cx.buf.push(decoded.as_str());
+                    cx.buf.push(raw.as_str());
                     cx.buf.push(trailing);
                 } else {
-                    cx.buf.push(decoded.as_str());
+                    cx.buf.push(raw.as_str());
                 }
                 Ok(())
             } else {
