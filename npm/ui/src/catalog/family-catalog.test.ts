@@ -44,6 +44,7 @@ const rendererGate = [
   await readFile(path.resolve("scripts/renderer-fixtures-structure.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-text.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-toggle-group.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-wayfinding.ts"), "utf8"),
 ].join("\n");
 
 test("publishes a versioned stable source-owned family catalog", () => {

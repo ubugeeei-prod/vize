@@ -16,6 +16,7 @@ import { qrCodeRendererFixtures } from "./renderer-fixtures-qr-code.ts";
 import { selectionRendererFixtures } from "./renderer-fixtures-selection.ts";
 import { tourRendererFixtures } from "./renderer-fixtures-tour.ts";
 import { structureRendererFixtures } from "./renderer-fixtures-structure.ts";
+import { wayfindingRendererFixtures } from "./renderer-fixtures-wayfinding.ts";
 
 export const groupedRendererFixtures = [
   ...colorPickerRendererFixtures,
@@ -36,4 +37,5 @@ export const groupedRendererFixtures = [
   ...selectionRendererFixtures,
   ...tourRendererFixtures,
   ...structureRendererFixtures,
+  ...wayfindingRendererFixtures,
 ] as const;

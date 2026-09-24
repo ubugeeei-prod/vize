@@ -46,6 +46,9 @@ import { sliderRuntimeFixture } from "../families/form/slider/runtime-conformanc
 import { spinnerRuntimeFixture } from "../families/feedback/spinner/runtime-conformance-spinner-fixtures.ts";
 import { statusLightRuntimeFixture } from "../families/feedback/status-light/runtime-conformance-status-light-fixtures.ts";
 import { stepperRuntimeFixtures } from "../families/navigation/stepper/runtime-conformance-stepper-fixtures.ts";
+import { navigationMenuRuntimeFixtures } from "../families/navigation/navigation-menu/runtime-conformance-navigation-menu-fixtures.ts";
+import { timelineRuntimeFixtures } from "../families/data/timeline/runtime-conformance-timeline-fixtures.ts";
+import { tocRuntimeFixtures } from "../families/navigation/toc/runtime-conformance-toc-fixtures.ts";
 import { tabsRuntimeFixtures } from "../families/navigation/tabs/runtime-conformance-tabs-fixtures.ts";
 import TextInput from "../families/form/input/text-input.vue";
 import SearchField from "../families/form/search-field/search-field.vue";
@@ -86,6 +89,9 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...splitterRuntimeFixtures,
   ...breadcrumbRuntimeFixtures,
   ...tabsRuntimeFixtures,
+  ...navigationMenuRuntimeFixtures,
+  ...timelineRuntimeFixtures,
+  ...tocRuntimeFixtures,
   ...stepperRuntimeFixtures,
   emptyStateRuntimeFixture,
   ...collapsibleRuntimeFixtures,
