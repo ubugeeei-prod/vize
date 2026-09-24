@@ -1,4 +1,13 @@
-import { computed, readonly, ref, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -91,7 +100,9 @@ export interface VisualViewportControls {
  * VirtualKeyboard API rectangle when `overlaysContent` is enabled. Pin
  * toolbars above the keyboard with `bottom: calc(var(--kb, 0px))` bound to it.
  *
- * Server rendering reports zeros (scale 1) and attaches nothing; listeners
+ * Server rendering reports zeros (scale 1) and attaches nothing; inside a
+ * component the host attaches after mount, so hydration renders the same
+ * zeros first. Listeners
  * (`resize`, `scroll`, `geometrychange`) are passive and removed with the
  * owning reactive scope.
  *
@@ -118,8 +129,22 @@ export function useVisualViewport(options: UseVisualViewportOptions = {}): Visua
   const keyboardHeight = ref(0);
   const isSupported = ref(false);
 
+  // Inside a component the host is attached after mount (a post-flush
+  // job), so a hydrating client first renders the same zeroed geometry as
+  // the server. Outside components it attaches immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const stopWatch = watch(
-    () => (options.host === undefined ? browserViewportHost() : toValue(options.host)),
+    () =>
+      !hydrated.value
+        ? undefined
+        : options.host === undefined
+          ? browserViewportHost()
+          : toValue(options.host),
     (host, _previous, onCleanup) => {
       const viewport = host?.visualViewport ?? undefined;
       const keyboard =

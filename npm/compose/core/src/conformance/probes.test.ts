@@ -8,6 +8,7 @@ import { probesGroupC } from "./probes-c.ts";
 import { probesGroupD } from "./probes-d.ts";
 import { probesGroupE } from "./probes-e.ts";
 import { probesGroupF } from "./probes-f.ts";
+import { probesGroupG } from "./probes-g.ts";
 import { composableProbes } from "./probes.ts";
 
 void test("every catalog entry has exactly one conformance probe", () => {
@@ -20,6 +21,7 @@ void test("every catalog entry has exactly one conformance probe", () => {
     probesGroupD,
     probesGroupE,
     probesGroupF,
+    probesGroupG,
   ];
   const total = groups.reduce((sum, group) => sum + Object.keys(group).length, 0);
   assert.equal(total, entries.length, "a subpath is probed by more than one group");
