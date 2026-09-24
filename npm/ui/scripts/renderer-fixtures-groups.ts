@@ -14,6 +14,7 @@ import { disclosureRendererFixtures } from "./renderer-fixtures-disclosure.ts";
 import { drawerRendererFixtures } from "./renderer-fixtures-drawer.ts";
 import { feedbackRendererFixtures } from "./renderer-fixtures-feedback.ts";
 import { fileUploadRendererFixtures } from "./renderer-fixtures-file-upload.ts";
+import { mobileRendererFixtures } from "./renderer-fixtures-mobile.ts";
 import { formCompositeRendererFixtures } from "./renderer-fixtures-form-composites.ts";
 import { formStructureRendererFixtures } from "./renderer-fixtures-form-structure.ts";
 import { formInputRendererFixtures } from "./renderer-fixtures-form-inputs.ts";
@@ -54,6 +55,7 @@ export const groupedRendererFixtures = [
   ...drawerRendererFixtures,
   ...feedbackRendererFixtures,
   ...fileUploadRendererFixtures,
+  ...mobileRendererFixtures,
   ...formCompositeRendererFixtures,
   ...formStructureRendererFixtures,
   ...formInputRendererFixtures,

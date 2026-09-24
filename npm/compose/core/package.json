@@ -878,6 +878,11 @@
       "import": "./dist/use-view-transition.mjs",
       "default": "./dist/use-view-transition.mjs"
     },
+    "./use-visual-viewport": {
+      "types": "./dist/use-visual-viewport.d.mts",
+      "import": "./dist/use-visual-viewport.mjs",
+      "default": "./dist/use-visual-viewport.mjs"
+    },
     "./use-wake-lock": {
       "types": "./dist/use-wake-lock.d.mts",
       "import": "./dist/use-wake-lock.mjs",

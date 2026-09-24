@@ -34,6 +34,7 @@ const rendererGate = [
   await readFile(path.resolve("scripts/renderer-fixtures-drawer.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-feedback.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-form-inputs.ts"), "utf8"),
+  await readFile(path.resolve("scripts/renderer-fixtures-mobile.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-form-composites.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-form-structure.ts"), "utf8"),
   await readFile(path.resolve("scripts/renderer-fixtures-icon.ts"), "utf8"),

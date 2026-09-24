@@ -35,6 +35,11 @@
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
+    "./action-sheet": {
+      "types": "./dist/action-sheet.d.mts",
+      "import": "./dist/action-sheet.mjs",
+      "default": "./dist/action-sheet.mjs"
+    },
     "./alert": {
       "types": "./dist/alert.d.mts",
       "import": "./dist/alert.mjs",
@@ -85,6 +90,11 @@
       "import": "./dist/block-ui.mjs",
       "default": "./dist/block-ui.mjs"
     },
+    "./bottom-navigation": {
+      "types": "./dist/bottom-navigation.d.mts",
+      "import": "./dist/bottom-navigation.mjs",
+      "default": "./dist/bottom-navigation.mjs"
+    },
     "./calendar": {
       "types": "./dist/calendar.d.mts",
       "import": "./dist/calendar.mjs",
@@ -125,10 +135,30 @@
       "import": "./dist/phone-field.mjs",
       "default": "./dist/phone-field.mjs"
     },
+    "./pager": {
+      "types": "./dist/pager.d.mts",
+      "import": "./dist/pager.mjs",
+      "default": "./dist/pager.mjs"
+    },
+    "./pull-to-refresh": {
+      "types": "./dist/pull-to-refresh.d.mts",
+      "import": "./dist/pull-to-refresh.mjs",
+      "default": "./dist/pull-to-refresh.mjs"
+    },
     "./range-calendar": {
       "types": "./dist/range-calendar.d.mts",
       "import": "./dist/range-calendar.mjs",
       "default": "./dist/range-calendar.mjs"
+    },
+    "./safe-area": {
+      "types": "./dist/safe-area.d.mts",
+      "import": "./dist/safe-area.mjs",
+      "default": "./dist/safe-area.mjs"
+    },
+    "./swipe-actions": {
+      "types": "./dist/swipe-actions.d.mts",
+      "import": "./dist/swipe-actions.mjs",
+      "default": "./dist/swipe-actions.mjs"
     },
     "./time-field": {
       "types": "./dist/time-field.d.mts",

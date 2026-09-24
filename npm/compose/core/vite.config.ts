@@ -193,6 +193,7 @@ export default defineConfig({
       "watch-source": "src/watch-source.ts",
       "watch-throttled": "src/watch-throttled.ts",
       whenever: "src/whenever.ts",
+      "use-visual-viewport": "src/use-visual-viewport.ts",
       "window-size": "src/window-size.ts",
     },
     format: "esm",

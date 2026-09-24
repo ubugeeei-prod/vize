@@ -182,3 +182,4 @@ export * from "./watch-source.ts";
 export * from "./watch-throttled.ts";
 export * from "./whenever.ts";
 export * from "./window-size.ts";
+export * from "./use-visual-viewport.ts";

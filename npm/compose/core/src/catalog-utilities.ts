@@ -2923,6 +2923,18 @@ export const utilities = [
     dependencies: ["tryOnScopeDispose", "useReducedMotion"],
   },
   {
+    name: "useVisualViewport",
+    entry: "./use-visual-viewport",
+    category: "dom",
+    stability: "experimental",
+    targets: browserTargets,
+    ssr: "deterministic-fallback",
+    hydration: "stable",
+    cleanupOwners: ["reactive-scope"],
+    runtimeGlobals: ["window"],
+    dependencies: ["tryOnScopeDispose"],
+  },
+  {
     name: "useWakeLock",
     entry: "./use-wake-lock",
     category: "system",

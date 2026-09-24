@@ -54,6 +54,7 @@ import { shareButtonRuntimeFixture } from "../families/actions/share-button/runt
 import { toolbarRuntimeFixtures } from "../families/actions/toolbar/runtime-conformance-toolbar-fixtures.ts";
 import { fieldRuntimeFixtures } from "../families/form/field/runtime-conformance-field-fixtures.ts";
 import { formInputRuntimeFixtures } from "../families/form/runtime-conformance-form-input-fixtures.ts";
+import { mobileRuntimeFixtures } from "../families/layout/runtime-conformance-mobile-fixtures.ts";
 import { formCompositeRuntimeFixtures } from "../families/form/runtime-conformance-form-composite-fixtures.ts";
 import { formStructureRuntimeFixtures } from "../families/form/runtime-conformance-form-structure-fixtures.ts";
 import { interactionHooksRuntimeFixture } from "../families/interaction/interaction-hooks/runtime-conformance-interaction-hooks-fixtures.ts";
@@ -173,6 +174,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...toolbarRuntimeFixtures,
   ...selectionRuntimeFixtures,
   ...formInputRuntimeFixtures,
+  ...mobileRuntimeFixtures,
   ...formCompositeRuntimeFixtures,
   ...formStructureRuntimeFixtures,
   {

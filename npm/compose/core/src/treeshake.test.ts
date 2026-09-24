@@ -96,6 +96,7 @@ const sentinels = {
   "pointer-swipe": ["function usePointerSwipe("],
   "text-selection": ["function useTextSelection("],
   "window-size": ["function useWindowSize("],
+  "use-visual-viewport": ["function useVisualViewport(", "geometrychange"],
   battery: ["function useBattery(", "chargingtimechange"],
   "device-motion": ["function useDeviceMotion("],
   "device-orientation": ["function useDeviceOrientation("],
@@ -642,6 +643,12 @@ const utilities: readonly UtilityCase[] = [
   },
   { binding: "useTextSelection", entry: "index", module: "text-selection", shared: ["scope"] },
   { binding: "useWindowSize", entry: "index", module: "window-size", shared: ["scope"] },
+  {
+    binding: "useVisualViewport",
+    entry: "index",
+    module: "use-visual-viewport",
+    shared: ["scope"],
+  },
   { binding: "useBattery", entry: "index", module: "battery", shared: ["scope"] },
   {
     binding: "useDeviceMotion",

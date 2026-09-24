@@ -177,6 +177,7 @@ export const rootEntry = {
     "./use-v-model",
     "./use-vibrate",
     "./use-view-transition",
+    "./use-visual-viewport",
     "./use-wake-lock",
     "./use-web-authn",
     "./use-web-locks",
@@ -1445,6 +1446,13 @@ export const entries = [
     gzipBudgetBytes: 2.5 * 1024,
     runtimeExports: ["useViewTransition"],
     utilities: ["useViewTransition"],
+  },
+  {
+    subpath: "./use-visual-viewport",
+    source: "src/use-visual-viewport.ts",
+    gzipBudgetBytes: 2 * 1024,
+    runtimeExports: ["useVisualViewport"],
+    utilities: ["useVisualViewport"],
   },
   {
     subpath: "./use-wake-lock",

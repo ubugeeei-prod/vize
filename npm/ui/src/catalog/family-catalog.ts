@@ -19,6 +19,7 @@ import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
 import { formInputFamilyCatalog } from "./family-catalog-form-inputs.ts";
+import { mobileFamilyCatalog } from "./family-catalog-mobile.ts";
 import { helperFamilyCatalog } from "./family-catalog-helpers.ts";
 import { formStructureFamilyCatalog } from "./family-catalog-form-structure.ts";
 import { hoverCardFamilyCatalog } from "./family-catalog-hover-card.ts";
@@ -93,6 +94,7 @@ const allFamilyCatalogEntries = [
   ...focusFamilyCatalog,
   ...formInputFamilyCatalog,
   ...formStructureFamilyCatalog,
+  ...mobileFamilyCatalog,
   ...hoverCardFamilyCatalog,
   ...formCompositeFamilyCatalog,
   ...i18nFamilyCatalog,
