@@ -36,6 +36,8 @@ describe("vite-plugin vapor options", () => {
       scopeId: "data-v-c0cc6f12",
       experimentalInTagComments: false,
       experimentalPatternedTemplate: false,
+      experimentalSelfComponent: false,
+      experimentalStrictSlotChildren: false,
       experimentalServerScript: false,
     });
   });
@@ -47,6 +49,8 @@ describe("vite-plugin vapor options", () => {
       customRenderer: false,
       experimentalInTagComments: false,
       experimentalPatternedTemplate: false,
+      experimentalSelfComponent: false,
+      experimentalStrictSlotChildren: false,
       experimentalServerScript: false,
       includeHashes: true,
       includeMacroArtifacts: true,
