@@ -131,8 +131,7 @@ export const dataViewFamilyCatalog = [
     bundleBudget: {
       exportName: "Kanban",
       retainedSignature: "data-vize-ui[\"'`:=\\s]{1,4}kanban[\"'`]",
-      // The Card family's loose signature matches `kanban-card` markup.
-      allowedRetainedFamilies: ["card", "context", "drag-and-drop"],
+      allowedRetainedFamilies: ["context", "drag-and-drop"],
       maximumJavaScriptGzipBytes: 9_700,
       maximumCssGzipBytes: 0,
     },
