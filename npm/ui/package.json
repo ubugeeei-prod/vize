@@ -100,6 +100,11 @@
       "import": "./dist/tabs.mjs",
       "default": "./dist/tabs.mjs"
     },
+    "./tree": {
+      "types": "./dist/tree.d.mts",
+      "import": "./dist/tree.mjs",
+      "default": "./dist/tree.mjs"
+    },
     "./stepper": {
       "types": "./dist/stepper.d.mts",
       "import": "./dist/stepper.mjs",
@@ -249,6 +254,11 @@
       "types": "./dist/separator.d.mts",
       "import": "./dist/separator.mjs",
       "default": "./dist/separator.mjs"
+    },
+    "./splitter": {
+      "types": "./dist/splitter.d.mts",
+      "import": "./dist/splitter.mjs",
+      "default": "./dist/splitter.mjs"
     },
     "./spacer": {
       "types": "./dist/spacer.d.mts",
