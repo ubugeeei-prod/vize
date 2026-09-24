@@ -7,6 +7,7 @@ const staticImportPattern = /\b(?:import|export)\s+(?:[^"']*?\s+from\s+)?["'](\.
 const budgets = new Map([
   ["index.mjs", 620_800],
   ["action-sheet.mjs", 999_999],
+  ["action-sheet.mjs", 31_500],
   ["alert.mjs", 1_050],
   ["angle-picker.mjs", 6_300],
   ["announcer.mjs", 4_100],
