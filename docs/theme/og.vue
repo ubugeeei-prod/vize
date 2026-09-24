@@ -10,7 +10,7 @@ const props = defineProps<{
   <div class="og">
     <div class="left">
       <div class="header">
-        <img class="header-logo" height="28" src="/logo.svg" width="28" />
+        <img alt="" class="header-logo" height="28" src="/logo.svg" width="28" />
         <span class="site-name"> VIZE </span>
       </div>
       <div class="title-area">
@@ -24,7 +24,7 @@ const props = defineProps<{
       <span class="url"> vizejs.dev </span>
     </div>
     <div class="right">
-      <img class="logo" src="/logo.svg" />
+      <img alt="" class="logo" src="/logo.svg" />
       <span class="tagline"> High-Performance Vue.js Toolchain in Rust </span>
     </div>
   </div>
@@ -32,9 +32,18 @@ const props = defineProps<{
 
 <style scoped>
 .og {
+  --og-paper: #e6e2d6;
+  --og-ink: #121212;
+  --og-muted-ink: #5a5750;
+  --og-label-size: 14px;
+  --og-title-size: 96px;
+  --og-description-size: 21px;
+  --og-caption-size: 10px;
+  --og-content-layer: 1;
+
   width: 1200px;
   height: 630px;
-  background: #e6e2d6;
+  background: var(--og-paper);
   position: relative;
   overflow: hidden;
   font-family:
@@ -43,7 +52,7 @@ const props = defineProps<{
     Arial,
     system-ui,
     sans-serif;
-  color: #121212;
+  color: var(--og-ink);
   display: flex;
 }
 
@@ -52,9 +61,10 @@ const props = defineProps<{
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 56px 0 56px 72px;
+  padding-block: 56px;
+  padding-inline: 72px 0;
   position: relative;
-  z-index: 1;
+  z-index: var(--og-content-layer);
 }
 
 .right {
@@ -78,7 +88,7 @@ const props = defineProps<{
 }
 
 .site-name {
-  font-size: 14px;
+  font-size: var(--og-label-size);
   font-weight: 600;
   letter-spacing: 0.2em;
   font-family:
@@ -89,7 +99,7 @@ const props = defineProps<{
     Menlo,
     Consolas,
     monospace;
-  color: #5a5750;
+  color: var(--og-muted-ink);
 }
 
 .title-area {
@@ -100,22 +110,23 @@ const props = defineProps<{
 }
 
 .title {
-  font-size: 96px;
+  font-size: var(--og-title-size);
   font-weight: 700;
   letter-spacing: -0.06em;
   line-height: 1.15;
   margin: 0;
-  padding-bottom: 4px;
+  padding-block-end: 4px;
   max-width: 680px;
 }
 
 .desc {
-  font-size: 21px;
+  font-size: var(--og-description-size);
   font-weight: 500;
-  color: #5a5750;
+  color: var(--og-muted-ink);
   line-height: 1.35;
   letter-spacing: -0.02em;
-  margin: 32px 0 0;
+  margin-block: 32px 0;
+  margin-inline: 0;
   max-width: 480px;
   overflow: hidden;
   display: -webkit-box;
@@ -124,9 +135,9 @@ const props = defineProps<{
 }
 
 .url {
-  font-size: 14px;
+  font-size: var(--og-label-size);
   font-weight: 500;
-  color: #5a5750;
+  color: var(--og-muted-ink);
   font-family:
     JetBrains Mono,
     ui-monospace,
@@ -143,15 +154,16 @@ const props = defineProps<{
   height: 340px;
   opacity: 0.85;
   position: absolute;
-  right: -16px;
-  top: 50%;
+  inset-inline-end: -16px;
+  inset-block-start: 50%;
   transform: translateY(-50%);
 }
 
 .tagline {
   position: absolute;
-  right: 40px;
-  bottom: 56px;
+  /* This element writes vertically: block-start is right, inline-end is bottom. */
+  inset-block-start: 40px;
+  inset-inline-end: 56px;
   font-family:
     JetBrains Mono,
     ui-monospace,
@@ -160,11 +172,11 @@ const props = defineProps<{
     Menlo,
     Consolas,
     monospace;
-  font-size: 10px;
+  font-size: var(--og-caption-size);
   font-weight: 400;
   letter-spacing: 0.02em;
   line-height: 1.6;
-  color: #5a5750;
+  color: var(--og-muted-ink);
   writing-mode: vertical-rl;
   text-orientation: mixed;
   max-height: 240px;
