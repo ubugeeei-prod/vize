@@ -28,8 +28,11 @@ pub(super) fn add_leading_zero_to_fractional_numbers(source: &str) -> String {
             b'.' if bytes.get(index + 1).is_some_and(u8::is_ascii_digit)
                 && is_number_start(bytes, index) =>
             {
+                let Some(segment) = source.get(copied_through..index) else {
+                    return source.to_compact_string();
+                };
                 let output = output.get_or_insert_with(|| String::with_capacity(source.len() + 4));
-                output.push_str(&source[copied_through..index]);
+                output.push_str(segment);
                 output.push('0');
                 copied_through = index;
                 index += 1;
@@ -41,7 +44,10 @@ pub(super) fn add_leading_zero_to_fractional_numbers(source: &str) -> String {
     let Some(mut output) = output else {
         return source.to_compact_string();
     };
-    output.push_str(&source[copied_through..]);
+    let Some(remainder) = source.get(copied_through..) else {
+        return source.to_compact_string();
+    };
+    output.push_str(remainder);
     output
 }
 
@@ -151,6 +157,14 @@ mod tests {
         assert_eq!(
             add_leading_zero_to_fractional_numbers(".5em").as_str(),
             "0.5em"
+        );
+    }
+
+    #[test]
+    fn fractional_number_after_unicode_text_is_rewritten() {
+        assert_eq!(
+            add_leading_zero_to_fractional_numbers(".foo { --élément: .5; }").as_str(),
+            ".foo { --élément: 0.5; }"
         );
     }
 }
