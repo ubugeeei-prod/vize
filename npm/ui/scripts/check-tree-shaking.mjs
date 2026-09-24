@@ -199,11 +199,32 @@ const cssOnlyEntries = [
     maximumCssGzipBytes: 900,
   },
   {
+    name: "component-alert.css",
+    packageEntry: "@vizejs/ui/component-alert.css",
+    retainedSignature: /data-vize-ui=alert/,
+    rejectedSignature: /data-vize-ui=badge/,
+    maximumCssGzipBytes: 1_000,
+  },
+  {
+    name: "component-badge.css",
+    packageEntry: "@vizejs/ui/component-badge.css",
+    retainedSignature: /data-vize-ui=badge/,
+    rejectedSignature: /data-vize-ui=alert/,
+    maximumCssGzipBytes: 1_200,
+  },
+  {
     name: "component-button.css",
     packageEntry: "@vizejs/ui/component-button.css",
     retainedSignature: /data-vize-ui=button/,
     rejectedSignature: /data-vize-ui=dialog-content/,
     maximumCssGzipBytes: 1_100,
+  },
+  {
+    name: "component-card.css",
+    packageEntry: "@vizejs/ui/component-card.css",
+    retainedSignature: /data-vize-ui=card/,
+    rejectedSignature: /data-vize-ui=badge/,
+    maximumCssGzipBytes: 1_000,
   },
   {
     name: "component-checkbox.css",
@@ -253,6 +274,13 @@ const cssOnlyEntries = [
     retainedSignature: /data-vize-ui=textarea/,
     rejectedSignature: /data-vize-ui=input/,
     maximumCssGzipBytes: 1_000,
+  },
+  {
+    name: "component-tooltip.css",
+    packageEntry: "@vizejs/ui/component-tooltip.css",
+    retainedSignature: /data-vize-ui=tooltip-content/,
+    rejectedSignature: /data-vize-ui=card/,
+    maximumCssGzipBytes: 1_400,
   },
   {
     name: "motion.css",
