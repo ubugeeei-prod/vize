@@ -180,26 +180,34 @@ await nextTick()
     ).toBe(false);
   });
 
-  it("should report no-get-current-instance for opinionated preset", () => {
+  it("should report no-get-current-instance only for Vapor SFCs in opinionated preset", () => {
     const wasm = getWasm();
     expect(wasm).not.toBeNull();
     if (!wasm) {
       return;
     }
 
-    const sfc = `
+    const nonVaporSfc = `
 <script setup lang="ts">
 import { getCurrentInstance } from "vue"
 
 const instance = getCurrentInstance()
 </script>
 `;
+    const vaporSfc = nonVaporSfc.replace(
+      '<script setup lang="ts">',
+      '<script setup lang="ts" vapor>',
+    );
 
-    const generalRecommended = wasm.lintSfc(sfc, {
+    const generalRecommended = wasm.lintSfc(nonVaporSfc, {
       filename: "GetCurrentInstance.vue",
       preset: "general-recommended",
     });
-    const opinionated = wasm.lintSfc(sfc, {
+    const nonVaporOpinionated = wasm.lintSfc(nonVaporSfc, {
+      filename: "GetCurrentInstance.vue",
+      preset: "opinionated",
+    });
+    const vaporOpinionated = wasm.lintSfc(vaporSfc, {
       filename: "GetCurrentInstance.vue",
       preset: "opinionated",
     });
@@ -210,7 +218,12 @@ const instance = getCurrentInstance()
       ),
     ).toBe(false);
     expect(
-      opinionated.diagnostics.some(
+      nonVaporOpinionated.diagnostics.some(
+        (diagnostic) => diagnostic.rule === "script/no-get-current-instance",
+      ),
+    ).toBe(false);
+    expect(
+      vaporOpinionated.diagnostics.some(
         (diagnostic) => diagnostic.rule === "script/no-get-current-instance",
       ),
     ).toBe(true);
