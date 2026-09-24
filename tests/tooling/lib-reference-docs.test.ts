@@ -90,3 +90,15 @@ void test("component pages document the SFC contract extracted from source", () 
   assert.match(composable, /function useToggle\(/);
   assert.match(composable, /\| `useToggle` \| state \|/);
 });
+
+void test("type-only composable pages show usable imports and type contracts", () => {
+  const scheduler = rendered.get("guide/composables/timeout-scheduler.md") ?? "";
+  assert.match(scheduler, /import type \{ TimeoutScheduler \} from/);
+  assert.match(scheduler, /Single-shot timer host/);
+  assert.doesNotMatch(scheduler, /Provides \.|import \{  \}/);
+
+  const watchSource = rendered.get("guide/composables/watch-source.md") ?? "";
+  assert.match(watchSource, /import type \{ WatchSourceInput, WatchSources,/);
+  assert.match(watchSource, /### `WatchHelperCallback`/);
+  assert.doesNotMatch(watchSource, /Provides \.|import \{  \}/);
+});
