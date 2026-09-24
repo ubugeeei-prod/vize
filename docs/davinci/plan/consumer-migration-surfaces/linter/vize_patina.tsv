@@ -401,7 +401,7 @@ linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/html_button_ha
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs	25	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs	25	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	1
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs	29	old_ast	old AST/parser	old	vize_relief	legacy	3
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs	30	old_ast	old AST/parser	old	vize_relief	legacy	3
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs	32	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs	32	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs	40	s0	S0	stage	vize_s0	preferred	1

@@ -115,6 +115,66 @@ fn allows_object_3tuple_key_used_as_key() {
 }
 
 #[test]
+fn allows_object_2tuple_property_key() {
+    let linter = create_linter();
+    for template in [
+        r#"<li v-for="(value, key) in object" :key="key">{{ value }}</li>"#,
+        r#"<template v-for="(value, key) in object"><li :key="key">{{ value }}</li></template>"#,
+        r#"<li v-for="(count, type) in bindingsSummary" :key="type">{{ count }}</li>"#,
+        r#"<li v-for="(group, source) in bindingsBySource" :key="source">{{ group }}</li>"#,
+        r#"<li v-for="(deps, file) in dependencyGraph" :key="file">{{ deps }}</li>"#,
+    ] {
+        let result = linter.lint_template(template, "App.vue");
+        assert_eq!(result.error_count, 0, "{template}");
+        assert_eq!(result.warning_count, 0, "{template}");
+    }
+}
+
+#[test]
+fn reports_array_index_even_when_named_key() {
+    let linter = create_linter();
+    for template in [
+        r#"<li v-for="(item, key) in [1, 2]" :key="key">{{ item }}</li>"#,
+        r#"<li v-for="(item, key) in Array.from(items)" :key="key">{{ item }}</li>"#,
+    ] {
+        let result = linter.lint_template(template, "App.vue");
+        assert_eq!(result.error_count, 0, "{template}");
+        assert_eq!(result.warning_count, 1, "{template}");
+    }
+}
+
+#[test]
+fn reports_short_positional_index_alias() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<span v-for="(token, ti) in line.tokens" :key="ti">{{ token.text }}</span>"#,
+        "App.vue",
+    );
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn reports_unconventionally_named_array_index() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<li v-for="(item, row) in list" :key="row">{{ item }}</li>"#,
+        "App.vue",
+    );
+    assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn allows_object_literal_key_even_when_named_index() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<li v-for="(value, index) in { a: 1 }" :key="index">{{ value }}</li>"#,
+        "App.vue",
+    );
+    assert_eq!(result.error_count, 0);
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
 fn allows_no_index_alias() {
     let linter = create_linter();
     let result = linter.lint_template(
