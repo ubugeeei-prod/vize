@@ -10,6 +10,53 @@ use super::{
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
 #[test]
+fn scoped_vue_whitespace_strategy_reaches_sfc_client_ssr_and_vapor() {
+    use vize_atelier_core::{WhitespaceStrategy, parser::with_whitespace_strategy};
+
+    let descriptor = parse_sfc(
+        "<template><p>foo  \n  bar <em></em></p></template>",
+        Default::default(),
+    )
+    .unwrap();
+    for ssr in [false, true] {
+        let mut options = SfcCompileOptions::default();
+        options.template.ssr = ssr;
+        let default = compile_sfc(&descriptor, options.clone()).unwrap();
+        let preserved = with_whitespace_strategy(WhitespaceStrategy::Preserve, || {
+            compile_sfc(&descriptor, options.clone()).unwrap()
+        });
+        assert_eq!(
+            default.code,
+            compile_sfc(&descriptor, options).unwrap().code
+        );
+        assert_ne!(default.code, preserved.code, "ssr={ssr}");
+        assert!(
+            preserved.code.contains("foo  \\n  bar ") || preserved.code.contains("foo  \n  bar "),
+            "ssr={ssr}: {}",
+            preserved.code
+        );
+        assert!(
+            default.code.contains("foo bar "),
+            "ssr={ssr}: {}",
+            default.code
+        );
+    }
+    let mut vapor_options = SfcCompileOptions::default();
+    vapor_options.vapor = true;
+    let vapor_default = compile_sfc(&descriptor, vapor_options.clone()).unwrap();
+    let vapor_preserved = with_whitespace_strategy(WhitespaceStrategy::Preserve, || {
+        compile_sfc(&descriptor, vapor_options).unwrap()
+    });
+    assert_ne!(vapor_default.code, vapor_preserved.code);
+    assert!(
+        vapor_preserved.code.contains("foo  \\n  bar ")
+            || vapor_preserved.code.contains("foo  \n  bar "),
+        "{}",
+        vapor_preserved.code
+    );
+}
+
+#[test]
 fn test_compile_sfc_ts_ref_condition_and_handler_keep_value_access() {
     use vize_carton::ToCompactString;
 

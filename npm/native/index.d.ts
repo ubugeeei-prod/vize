@@ -61,6 +61,7 @@ export interface AutogenOutputNapi {
 }
 
 export interface BatchCompileOptionsNapi {
+  whitespace?: string;
   mode?: string;
   ssr?: boolean;
   vapor?: boolean;
@@ -233,6 +234,8 @@ export interface CompileResult {
 
 /** Compiler options for bindings */
 export interface CompilerOptions {
+  /** Vue template whitespace strategy: "condense" (default) or "preserve". */
+  whitespace?: string;
   /** Output mode: "module" or "function" */
   mode?: string;
   /** Whether to prefix identifiers */
@@ -1074,6 +1077,7 @@ export interface SfcBlockAttributeNapi {
 }
 
 export interface SfcCompileOptionsNapi {
+  whitespace?: string;
   filename?: string;
   mode?: string;
   sourceMap?: boolean;

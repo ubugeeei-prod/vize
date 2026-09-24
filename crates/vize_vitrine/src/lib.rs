@@ -45,6 +45,7 @@ mod parse_errors;
 mod template_syntax;
 pub mod typecheck;
 pub mod types;
+mod whitespace;
 
 pub use typecheck::{
     RelatedLocation, TypeCheckOptions, TypeCheckResult, TypeDiagnostic, TypeSeverity,

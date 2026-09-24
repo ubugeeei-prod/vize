@@ -64,6 +64,7 @@ pub struct SfcParseOptionsNapi {
 #[napi(object)]
 #[derive(Default)]
 pub struct SfcCompileOptionsNapi {
+    pub whitespace: Option<String>,
     pub filename: Option<String>,
     pub mode: Option<String>,
     pub source_map: Option<bool>,
@@ -147,6 +148,7 @@ pub struct SfcCompileResultNapi {
 #[napi(object)]
 #[derive(Default)]
 pub struct BatchCompileOptionsNapi {
+    pub whitespace: Option<String>,
     pub mode: Option<String>,
     pub ssr: Option<bool>,
     pub vapor: Option<bool>,

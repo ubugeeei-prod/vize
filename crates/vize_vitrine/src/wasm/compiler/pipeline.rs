@@ -24,6 +24,18 @@ pub(in crate::wasm) fn compile_internal(
     vapor: bool,
     binding_metadata: Option<BindingMetadata>,
 ) -> Result<CompileResult, String> {
+    let whitespace = crate::whitespace::resolve_whitespace(opts.whitespace.as_deref())?;
+    vize_atelier_core::parser::with_whitespace_strategy(whitespace, || {
+        compile_internal_scoped(template, opts, vapor, binding_metadata)
+    })
+}
+
+fn compile_internal_scoped(
+    template: &str,
+    opts: &CompilerOptions,
+    vapor: bool,
+    binding_metadata: Option<BindingMetadata>,
+) -> Result<CompileResult, String> {
     let allocator = Allocator::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())?;
     let (

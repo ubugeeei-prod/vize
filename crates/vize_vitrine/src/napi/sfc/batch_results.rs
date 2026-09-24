@@ -18,6 +18,7 @@ use super::{
     },
 };
 use crate::template_syntax::resolve_template_syntax;
+use crate::whitespace::resolve_whitespace;
 
 #[napi(js_name = "compileSfcBatchWithResults")]
 pub fn compile_sfc_batch_with_results(
@@ -51,6 +52,8 @@ fn compile_sfc_batch_with_results_inner(
     );
     let experimentals = ExperimentalTemplateOptions::from_batch(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+        .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
+    let whitespace = resolve_whitespace(opts.whitespace.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
     let script_output = if standalone {
@@ -178,19 +181,22 @@ fn compile_sfc_batch_with_results_inner(
                 scope_id: Some(scope_id.clone()),
             };
 
-            let compile_result = sfc_compile_for_adapter(
-                &descriptor,
-                compile_opts,
-                template_syntax,
-                custom_elements.clone(),
-                // A requested map is the compiler's structured SFC module map.
-                vize_atelier_core::CodegenOptions {
-                    source_map: include_source_map,
-                    ..Default::default()
-                },
-                script_output,
-                experimentals.sfc_options(),
-            );
+            let compile_result =
+                vize_atelier_core::parser::with_whitespace_strategy(whitespace, || {
+                    sfc_compile_for_adapter(
+                        &descriptor,
+                        compile_opts,
+                        template_syntax,
+                        custom_elements.clone(),
+                        // A requested map is the compiler's structured SFC module map.
+                        vize_atelier_core::CodegenOptions {
+                            source_map: include_source_map,
+                            ..Default::default()
+                        },
+                        script_output,
+                        experimentals.sfc_options(),
+                    )
+                });
 
             match compile_result {
                 Ok(result) => {

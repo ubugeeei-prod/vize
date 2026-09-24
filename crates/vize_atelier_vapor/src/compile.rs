@@ -151,7 +151,12 @@ fn compile_vapor_inner_with_stack<'a>(
             // authored and binding metadata only steers the shared generator.
             prefixed_binding_metadata: options.binding_metadata.is_some()
                 && options.prefix_identifiers,
-            retained_lane: options.davinci_retained_lane,
+            // S3 lowering currently implements only Vue's default condense
+            // mode; preserve must use the parser-backed retained lane.
+            retained_lane: options.davinci_retained_lane
+                || vize_atelier_core::parser::current_whitespace_strategy(
+                    vize_atelier_core::WhitespaceStrategy::Condense,
+                ) == vize_atelier_core::WhitespaceStrategy::Preserve,
             inline: options.inline,
         },
     );

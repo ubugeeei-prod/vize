@@ -57,6 +57,7 @@ function resolvePrecompileBatchOptions(state: VizePluginState): CompileBatchOpti
     runtimeModuleName: state.mergedOptions.runtimeModuleName,
     runtimeGlobalName: state.mergedOptions.runtimeGlobalName,
     vueVersion: state.mergedOptions.vueVersion,
+    whitespace: requestOptions.whitespace,
     styleTrim: requestOptions.styleTrim,
     templateCacheHandlers: requestOptions.templateCacheHandlers,
     templateComments: requestOptions.templateComments,

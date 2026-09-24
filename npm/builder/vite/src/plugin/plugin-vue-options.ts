@@ -6,6 +6,7 @@ export const PLUGIN_VUE_COMPAT_VERSION = "6.0.7";
 const DEFAULT_CUSTOM_ELEMENT_PATTERN = /\.ce\.vue$/;
 
 export interface PluginVueCompileOptions {
+  whitespace?: "condense" | "preserve";
   styleTrim?: boolean;
   templateCacheHandlers?: boolean;
   templateComments?: boolean;
@@ -18,12 +19,16 @@ function booleanCompilerOption(value: unknown): boolean | undefined {
 }
 
 export function resolvePluginVueCompileOptions(
-  options: Pick<VizeOptions, "style" | "template">,
+  options: Pick<VizeOptions, "style" | "template" | "whitespace">,
 ): PluginVueCompileOptions {
   const compilerOptions = options.template?.compilerOptions;
   const resolved: PluginVueCompileOptions = {
     styleTrim: options.style?.trim ?? true,
   };
+  const whitespace = compilerOptions?.whitespace ?? options.whitespace;
+  if (whitespace !== undefined) {
+    resolved.whitespace = whitespace;
+  }
   const templateCacheHandlers = booleanCompilerOption(compilerOptions?.cacheHandlers);
   const templateComments = booleanCompilerOption(compilerOptions?.comments);
   const templateHoistStatic = booleanCompilerOption(compilerOptions?.hoistStatic);

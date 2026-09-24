@@ -10,6 +10,7 @@ module vize.Config
 
 typealias CompilerMode = "module" | "function"
 typealias TemplateSyntax = "standard" | "strict" | "quirks"
+typealias Whitespace = "condense" | "preserve"
 typealias JsxMode = "vdom" | "vapor"
 typealias JsxCompat = "native" | "babel"
 typealias ScriptExt = "ts" | "js"
@@ -42,6 +43,7 @@ class CompilerConfig {
   customElements: Listing<String>? = null
   ssr: Boolean? = null
   templateSyntax: TemplateSyntax? = null
+  whitespace: Whitespace? = null
   sourceMap: Boolean? = null
   prefixIdentifiers: Boolean? = null
   hoistStatic: Boolean? = null

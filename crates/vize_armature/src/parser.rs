@@ -20,8 +20,10 @@ mod expression;
 mod legacy_tests;
 mod pending_text;
 mod whitespace;
+mod whitespace_context;
 
 pub use entry::*;
+pub use whitespace_context::{current_whitespace_strategy, with_whitespace_strategy};
 
 #[cfg(test)]
 mod tests;
@@ -35,7 +37,7 @@ use vize_s0::{Allocator, String, Vec, interner::Interner};
 
 use element::{note_html_tree_element_close, note_html_tree_element_open};
 pub(in crate::parser) use pending_text::{PendingText, TextSlot};
-use whitespace::condense_whitespace;
+use whitespace::{condense_whitespace, preserve_whitespace};
 
 pub struct Parser<'a> {
     allocator: &'a Allocator,
@@ -172,11 +174,15 @@ impl<'a> Parser<'a> {
         // Handle any unclosed elements
         self.handle_unclosed_elements();
 
-        // Condense whitespace if needed
-        if let Some(ref mut root) = self.root
-            && self.options.whitespace == WhitespaceStrategy::Condense
-        {
-            condense_whitespace(allocator, &mut root.children, self.options.is_pre_tag);
+        if let Some(ref mut root) = self.root {
+            match current_whitespace_strategy(self.options.whitespace) {
+                WhitespaceStrategy::Condense => {
+                    condense_whitespace(allocator, &mut root.children, self.options.is_pre_tag);
+                }
+                WhitespaceStrategy::Preserve => {
+                    preserve_whitespace(&mut root.children, self.options.is_pre_tag);
+                }
+            }
         }
 
         self.into_result()

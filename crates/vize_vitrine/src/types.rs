@@ -18,6 +18,9 @@ use napi_derive::napi;
 #[cfg_attr(feature = "napi", napi(object))]
 #[serde(rename_all = "camelCase")]
 pub struct CompilerOptions {
+    /// Vue template whitespace strategy: "condense" (default) or "preserve".
+    #[serde(default)]
+    pub whitespace: Option<String>,
     /// Output mode: "module" or "function"
     #[serde(default)]
     pub mode: Option<String>,

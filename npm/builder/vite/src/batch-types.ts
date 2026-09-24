@@ -41,6 +41,7 @@ export interface BatchFileResult {
 }
 
 export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
+  whitespace?: "condense" | "preserve";
   mode?: "module" | "function";
   ssr?: boolean;
   vapor?: boolean;

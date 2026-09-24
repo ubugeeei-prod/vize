@@ -109,6 +109,12 @@ compilerConfigDef: JsonSchema = new JsonSchema {
       description = "Template syntax compatibility mode"
       default = "standard"
     }
+    ["whitespace"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "condense"; "preserve" }
+      description = "Vue template whitespace strategy"
+      default = "condense"
+    }
     ["sourceMap"] = new JsonSchema {
       type = "boolean"
       description = "Enable source map generation"

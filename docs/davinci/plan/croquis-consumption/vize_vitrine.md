@@ -48,7 +48,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | product             | resolved | grep |
 | ------------------- | -------: | ---: |
 | `Analyzer`          |        1 |    2 |
-| `BindingMetadata`   |        0 |    6 |
+| `BindingMetadata`   |        0 |    7 |
 | `Croquis`           |        3 |    7 |
 | `ReactivityTracker` |        1 |    2 |
 | `Scope`             |        0 |    2 |

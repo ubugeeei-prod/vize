@@ -109,6 +109,10 @@ export interface CompilerConfig {
    */
   templateSyntax?: "standard" | "strict" | "quirks";
   /**
+   * Vue template whitespace strategy
+   */
+  whitespace?: "condense" | "preserve";
+  /**
    * Enable source map generation
    */
   sourceMap?: boolean;

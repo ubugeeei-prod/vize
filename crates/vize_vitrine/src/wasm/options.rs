@@ -28,6 +28,7 @@ macro_rules! define_compiler_option_inventory {
 
 define_compiler_option_inventory! {
     Mode => ("mode", r#""module" | "function""#),
+    Whitespace => ("whitespace", r#""condense" | "preserve""#),
     PrefixIdentifiers => ("prefixIdentifiers", "boolean"),
     HoistStatic => ("hoistStatic", "boolean"),
     CacheHandlers => ("cacheHandlers", "boolean"),
@@ -116,6 +117,7 @@ pub(crate) fn parse_compiler_options(options: &JsValue) -> ParsedCompilerOptions
     ParsedCompilerOptions {
         options: CompilerOptions {
             mode: get_string(CompilerOption::Mode),
+            whitespace: get_string(CompilerOption::Whitespace),
             prefix_identifiers: get_bool(CompilerOption::PrefixIdentifiers),
             hoist_static: get_bool(CompilerOption::HoistStatic),
             cache_handlers: get_bool(CompilerOption::CacheHandlers),

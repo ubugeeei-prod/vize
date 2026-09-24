@@ -174,6 +174,7 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         customRenderer: options.customRenderer ?? compilerConfig.customRenderer ?? false,
         customElements: options.customElements ?? compilerConfig.customElements,
         templateSyntax,
+        whitespace: options.whitespace ?? compilerConfig.whitespace,
         compatibility,
         vueVersion,
         mode,

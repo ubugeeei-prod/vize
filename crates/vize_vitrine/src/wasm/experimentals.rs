@@ -10,8 +10,12 @@ pub(super) fn experimental_flags(opts: &CompilerOptions) -> (bool, bool, bool) {
     )
 }
 
-pub(super) fn compiler_parser_options(opts: &CompilerOptions) -> ParserOptions {
+pub(super) fn compiler_parser_options(
+    opts: &CompilerOptions,
+    whitespace: vize_atelier_core::WhitespaceStrategy,
+) -> ParserOptions {
     ParserOptions {
+        whitespace,
         custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()

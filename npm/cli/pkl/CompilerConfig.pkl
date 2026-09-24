@@ -3,6 +3,7 @@ module vize.CompilerConfig
 
 typealias VueVersion = "3"|"2.7"|"2"|"1"|"0.11"|"0.10"
 typealias TemplateSyntax = "standard" | "strict" | "quirks"
+typealias Whitespace = "condense" | "preserve"
 typealias JsxMode = "vdom" | "vapor"
 typealias JsxCompat = "native" | "babel"
 
@@ -50,6 +51,9 @@ class CompilerConfig {
 
   /// Template syntax compatibility mode.
   templateSyntax: TemplateSyntax = "standard"
+
+  /// Vue template whitespace strategy.
+  whitespace: Whitespace = "condense"
 
   /// Enable source map generation.
   sourceMap: Boolean = false

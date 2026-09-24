@@ -12,6 +12,7 @@ use super::{
     },
 };
 use crate::template_syntax::resolve_template_syntax;
+use crate::whitespace::resolve_whitespace;
 
 #[napi(js_name = "compileSfc")]
 pub fn compile_sfc(
@@ -65,6 +66,8 @@ pub fn compile_sfc(
     let source_map = opts.source_map.unwrap_or(false);
     let experimentals = ExperimentalTemplateOptions::from_compile(&opts);
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
+        .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
+    let whitespace = resolve_whitespace(opts.whitespace.as_deref())
         .map_err(|message| napi::Error::new(Status::InvalidArg, message))?;
     let standalone = opts.mode.as_deref() == Some("function");
     let custom_elements = vize_atelier_core::options::CustomElementMatcher::from_patterns(
@@ -129,23 +132,25 @@ pub fn compile_sfc(
         scope_id: external_scope_id,
     };
 
-    let compile_result = sfc_compile_for_adapter(
-        &descriptor,
-        compile_opts,
-        template_syntax,
-        custom_elements,
-        // A requested map is the compiler's structured SFC module map.
-        vize_atelier_core::CodegenOptions {
-            source_map,
-            ..Default::default()
-        },
-        if standalone {
-            SfcScriptOutputMode::InlineTemplate
-        } else {
-            SfcScriptOutputMode::SeparateTemplate
-        },
-        experimentals.sfc_options(),
-    );
+    let compile_result = vize_atelier_core::parser::with_whitespace_strategy(whitespace, || {
+        sfc_compile_for_adapter(
+            &descriptor,
+            compile_opts,
+            template_syntax,
+            custom_elements,
+            // A requested map is the compiler's structured SFC module map.
+            vize_atelier_core::CodegenOptions {
+                source_map,
+                ..Default::default()
+            },
+            if standalone {
+                SfcScriptOutputMode::InlineTemplate
+            } else {
+                SfcScriptOutputMode::SeparateTemplate
+            },
+            experimentals.sfc_options(),
+        )
+    });
 
     match compile_result {
         Ok(result) => {
@@ -200,5 +205,39 @@ pub fn compile_sfc(
             macro_artifacts: vec![],
             module_shape: None,
         }),
+    }
+}
+
+#[cfg(test)]
+mod whitespace_tests {
+    use super::*;
+
+    #[test]
+    fn sfc_whitespace_preserve_changes_client_and_ssr_output() {
+        let source = "<template><p>foo  \n  bar <i /></p></template>";
+        for ssr in [false, true] {
+            let compile_with = |whitespace: Option<&str>| {
+                compile_sfc(
+                    source.to_string(),
+                    Some(SfcCompileOptionsNapi {
+                        ssr: Some(ssr),
+                        whitespace: whitespace.map(str::to_string),
+                        ..Default::default()
+                    }),
+                )
+                .expect("compile should return a result")
+            };
+            let default = compile_with(None);
+            let preserved = compile_with(Some("preserve"));
+            assert!(default.errors.is_empty(), "{:?}", default.errors);
+            assert!(preserved.errors.is_empty(), "{:?}", preserved.errors);
+            assert_ne!(default.code, preserved.code, "ssr={ssr}");
+            assert!(
+                preserved.code.contains("foo  \\n  bar ")
+                    || preserved.code.contains("foo  \n  bar "),
+                "{}",
+                preserved.code
+            );
+        }
     }
 }

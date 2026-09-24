@@ -91,6 +91,12 @@
           "type": "string",
           "enum": ["standard", "strict", "quirks"]
         },
+        "whitespace": {
+          "description": "Vue template whitespace strategy",
+          "default": "condense",
+          "type": "string",
+          "enum": ["condense", "preserve"]
+        },
         "sourceMap": {
           "description": "Enable source map generation",
           "type": "boolean"

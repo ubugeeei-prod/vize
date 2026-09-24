@@ -35,6 +35,8 @@ pub(super) enum DomLegacyReason {
     SelfComponent,
     /// A custom renderer target.
     CustomRenderer,
+    /// The requested whitespace strategy is not implemented by S2 lowering.
+    Whitespace,
     /// A Vue 2 / 2.7 dialect.
     Dialect,
     /// Quirks template syntax.
@@ -61,6 +63,7 @@ impl DomLegacyReason {
             Self::PatternedTemplate => "davinci.s2_dom.legacy.patterned_template",
             Self::SelfComponent => "davinci.s2_dom.legacy.self_component",
             Self::CustomRenderer => "davinci.s2_dom.legacy.custom_renderer",
+            Self::Whitespace => "davinci.s2_dom.legacy.whitespace",
             Self::Dialect => "davinci.s2_dom.legacy.dialect",
             Self::TemplateSyntax => "davinci.s2_dom.legacy.template_syntax",
             Self::Croquis => "davinci.s2_dom.legacy.croquis",

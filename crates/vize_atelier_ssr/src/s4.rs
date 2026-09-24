@@ -268,7 +268,10 @@ fn drops_directive(record: &vize_s2::provenance::ProvenanceRecord) -> bool {
 /// Options under which S1 and S2 see the same template the SSR parser sees.
 fn bridge_supported(request: &SsrS4Request<'_>) -> bool {
     let options = request.options;
-    !options.comments
+    vize_atelier_core::parser::current_whitespace_strategy(
+        vize_atelier_core::WhitespaceStrategy::Condense,
+    ) == vize_atelier_core::WhitespaceStrategy::Condense
+        && !options.comments
         && !options.custom_renderer
         && !options.experimental_patterned_template
         && request.template_syntax == TemplateSyntaxMode::Standard

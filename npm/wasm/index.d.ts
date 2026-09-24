@@ -54,6 +54,8 @@ export interface SourceMap {
 
 /** Compiler options for template compilation */
 export interface CompilerOptions {
+  /** Vue template whitespace strategy. */
+  whitespace?: "condense" | "preserve";
   /** Output mode: "module" or "function" */
   mode?: "module" | "function";
   /** Whether to prefix identifiers */

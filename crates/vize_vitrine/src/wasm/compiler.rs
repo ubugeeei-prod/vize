@@ -72,11 +72,14 @@ impl Compiler {
         let allocator = Allocator::new();
         let template_syntax = resolve_template_syntax(parsed.options.template_syntax.as_deref())
             .map_err(|message| JsValue::from_str(&message))?;
+        let whitespace =
+            crate::whitespace::resolve_whitespace(parsed.options.whitespace.as_deref())
+                .map_err(|message| JsValue::from_str(&message))?;
 
         let (root, errors) = parse_with_options_custom_elements_and_template_syntax(
             &allocator,
             template,
-            compiler_parser_options(&parsed.options),
+            compiler_parser_options(&parsed.options, whitespace),
             CustomElementMatcher::from_patterns(crate::types::custom_element_patterns(
                 parsed.options.custom_elements.as_deref(),
             )),

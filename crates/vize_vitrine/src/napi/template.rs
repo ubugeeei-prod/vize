@@ -21,7 +21,10 @@ use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use vize_s0::Allocator;
 
-use crate::{CompileResult, CompilerOptions, template_syntax::resolve_template_syntax};
+use crate::{
+    CompileResult, CompilerOptions, template_syntax::resolve_template_syntax,
+    whitespace::resolve_whitespace,
+};
 use vize_atelier_core::{
     codegen::generate_with_experimental_options,
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
@@ -42,6 +45,8 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
     let allocator = Allocator::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
+    let whitespace = resolve_whitespace(opts.whitespace.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
     // Parse
     let custom_element_patterns =
@@ -49,6 +54,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
     let custom_elements =
         vize_atelier_core::options::CustomElementMatcher::from_patterns(custom_element_patterns);
     let parser_opts = ParserOptions {
+        whitespace,
         custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
@@ -156,6 +162,8 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
     let allocator = Allocator::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
+    let whitespace = resolve_whitespace(opts.whitespace.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
     // Use actual Vapor compiler
     let vapor_opts = VaporCompilerOptions {
@@ -172,16 +180,18 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
         source_map: opts.source_map.unwrap_or(false),
         source_map_filename: opts.filename.clone().map(Into::into),
     };
-    let result = compile_vapor_with_custom_elements_template_syntax_and_experimental_options(
-        &allocator,
-        &template,
-        vapor_opts,
-        template_syntax,
-        vize_atelier_core::options::CustomElementMatcher::from_patterns(
-            crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
-        ),
-        vapor_experimental_opts,
-    );
+    let result = vize_atelier_core::parser::with_whitespace_strategy(whitespace, || {
+        compile_vapor_with_custom_elements_template_syntax_and_experimental_options(
+            &allocator,
+            &template,
+            vapor_opts,
+            template_syntax,
+            vize_atelier_core::options::CustomElementMatcher::from_patterns(
+                crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
+            ),
+            vapor_experimental_opts,
+        )
+    });
 
     if !result.error_messages.is_empty() {
         return Err(Error::new(
@@ -232,11 +242,14 @@ pub fn parse_template(
     let opts = options.unwrap_or_default();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
+    let whitespace = resolve_whitespace(opts.whitespace.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
     let (root, errors) = parse_with_options_custom_elements_and_template_syntax(
         &allocator,
         &template,
         ParserOptions {
+            whitespace,
             custom_renderer: opts.custom_renderer.unwrap_or(false),
             experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
             ..Default::default()
@@ -327,5 +340,43 @@ mod tests {
 
         assert_eq!(map["file"].as_str(), Some("src/Napi.vue"));
         assert_eq!(map["sources"][0].as_str(), Some("src/Napi.vue"));
+    }
+
+    #[test]
+    fn compile_whitespace_preserve_keeps_mixed_text_and_rejects_invalid_value() {
+        let template = "<p>foo  \n  bar <i /></p>".to_string();
+        let preserve = compile(
+            template.clone(),
+            Some(CompilerOptions {
+                mode: Some("module".to_string()),
+                whitespace: Some("preserve".to_string()),
+                ..Default::default()
+            }),
+        )
+        .expect("preserve should compile");
+        let condense = compile(
+            template.clone(),
+            Some(CompilerOptions {
+                mode: Some("module".to_string()),
+                ..Default::default()
+            }),
+        )
+        .expect("default should compile");
+        assert!(
+            preserve.code.contains("foo  \\n  bar "),
+            "{}",
+            preserve.code
+        );
+        assert!(condense.code.contains("foo bar "), "{}", condense.code);
+        assert!(
+            compile(
+                template,
+                Some(CompilerOptions {
+                    whitespace: Some("invalid".to_string()),
+                    ..Default::default()
+                }),
+            )
+            .is_err()
+        );
     }
 }

@@ -6,7 +6,7 @@
 use vize_atelier_core::codegen::{CodegenResult, CodegenResultWithSections, CodegenSections};
 use vize_atelier_core::options::{
     BindingMetadata, BindingType, CodegenMode, CodegenOptions, CustomElementMatcher, ParserOptions,
-    TemplateSyntaxMode, TransformOptions,
+    TemplateSyntaxMode, TransformOptions, WhitespaceStrategy,
 };
 use vize_atelier_core::walk_probe::WalkCounts;
 use vize_s0::profiler::global_profiler;
@@ -122,6 +122,13 @@ pub(super) fn s2_emit_refusal(
         _ if options.experimental_patterned_template => DomLegacyReason::PatternedTemplate,
         _ if experimental_self_component => DomLegacyReason::SelfComponent,
         _ if options.custom_renderer => DomLegacyReason::CustomRenderer,
+        // S2 lowering currently implements only the default condense mode.
+        _ if vize_atelier_core::parser::current_whitespace_strategy(
+            WhitespaceStrategy::Condense,
+        ) != WhitespaceStrategy::Condense =>
+        {
+            DomLegacyReason::Whitespace
+        }
         _ if options.dialect != vize_s0::config::VueVersion::V3 => DomLegacyReason::Dialect,
         _ if template_syntax != TemplateSyntaxMode::Standard => DomLegacyReason::TemplateSyntax,
         _ if has_croquis => DomLegacyReason::Croquis,

@@ -33,6 +33,21 @@ assert.equal(
   "Request compile options should preserve configured template syntax",
 );
 
+assert.equal(
+  getCompileOptionsForRequest(
+    {
+      isProduction: false,
+      mergedOptions: {
+        whitespace: "condense",
+        template: { compilerOptions: { whitespace: "preserve" } },
+      },
+    },
+    false,
+  ).whitespace,
+  "preserve",
+  "The plugin-vue template option should override the Vize compiler default",
+);
+
 assert.deepEqual(
   getCompileOptionsForRequest(
     {

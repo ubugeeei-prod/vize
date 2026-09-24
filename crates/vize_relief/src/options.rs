@@ -1,5 +1,6 @@
 //! Compiler options.
 
+use serde::{Deserialize, Serialize};
 use vize_s0::String;
 use vize_s0::config::VueVersion;
 
@@ -117,7 +118,8 @@ impl Default for ParserOptions {
 }
 
 /// Whitespace handling strategy
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum WhitespaceStrategy {
     /// Condense whitespace (default)
     #[default]

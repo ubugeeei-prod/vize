@@ -47,6 +47,7 @@ export function buildCompileFileOptions(
     sourceMap: options.sourceMap,
     ssr: options.ssr,
     vapor: options.vapor,
+    ...(options.whitespace === undefined ? {} : { whitespace: options.whitespace }),
     customRenderer: options.customRenderer ?? false,
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
     experimentalInTagComments: options.experimentalInTagComments ?? false,
@@ -84,6 +85,7 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
   return {
     ssr: options.ssr,
     vapor: options.vapor,
+    ...(options.whitespace === undefined ? {} : { whitespace: options.whitespace }),
     customRenderer: options.customRenderer ?? false,
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
     experimentalInTagComments: options.experimentalInTagComments ?? false,

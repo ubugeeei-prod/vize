@@ -19,6 +19,7 @@ export interface VitePluginVueScriptOptions {
 }
 
 export interface VitePluginVueTemplateCompilerOptions {
+  whitespace?: "condense" | "preserve";
   comments?: boolean;
   hoistStatic?: boolean;
   cacheHandlers?: boolean;

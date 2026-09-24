@@ -158,6 +158,32 @@ pub(super) fn condense_whitespace<'a>(
     }
 }
 
+/// Vue's `preserve` mode keeps mixed text verbatim, but still drops leading
+/// and trailing whitespace-only children and normalizes whitespace-only nodes
+/// between meaningful siblings to one space. `<pre>` remains raw in both modes.
+pub(super) fn preserve_whitespace<'a>(
+    children: &mut Vec<'a, TemplateChildNode<'a>>,
+    is_pre_tag: fn(&str) -> bool,
+) {
+    while children.first().is_some_and(is_whitespace_text) {
+        children.remove(0);
+    }
+    while children.last().is_some_and(is_whitespace_text) {
+        children.pop();
+    }
+    for child in children.iter_mut() {
+        match child {
+            TemplateChildNode::Text(text) if text.content.chars().all(is_vue_whitespace) => {
+                text.content = " ";
+            }
+            TemplateChildNode::Element(element) if !is_pre_tag(element.tag) => {
+                ensure_sufficient_stack(|| preserve_whitespace(&mut element.children, is_pre_tag));
+            }
+            _ => {}
+        }
+    }
+}
+
 #[inline]
 fn is_whitespace_text(child: &TemplateChildNode<'_>) -> bool {
     matches!(child, TemplateChildNode::Text(text) if text.content.chars().all(is_vue_whitespace))

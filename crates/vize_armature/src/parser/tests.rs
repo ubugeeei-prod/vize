@@ -8,7 +8,7 @@ use super::{
 use vize_relief::{
     ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
-    options::{ParserOptions, TemplateSyntaxMode},
+    options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
 use vize_s0::{Allocator, String, ToCompactString};
 
@@ -594,6 +594,36 @@ fn test_parse_whitespace_condense() {
         // Whitespace-only text nodes between elements with no newline are condensed to space
         assert!(el.children.len() <= 3);
     }
+}
+
+#[test]
+fn test_parse_whitespace_preserve_matches_vue_mixed_and_between_element_text() {
+    let allocator = Allocator::new();
+    let source = "  <div> foo  \n  bar <span></span> \n <b></b>  baz </div>  ";
+    let (root, errors) = parse_with_options(
+        &allocator,
+        source,
+        ParserOptions {
+            whitespace: WhitespaceStrategy::Preserve,
+            ..ParserOptions::default()
+        },
+    );
+    assert!(errors.is_empty(), "{errors:?}");
+    assert_eq!(
+        root.children.len(),
+        1,
+        "Vue drops outer whitespace-only nodes"
+    );
+    let TemplateChildNode::Element(element) = &root.children[0] else {
+        panic!("expected div");
+    };
+    let text = |index| match &element.children[index] {
+        TemplateChildNode::Text(text) => text.content,
+        _ => panic!("expected text at {index}"),
+    };
+    assert_eq!(text(0), " foo  \n  bar ");
+    assert_eq!(text(2), " ", "Vue normalizes whitespace-only siblings");
+    assert_eq!(text(4), "  baz ");
 }
 
 #[test]
