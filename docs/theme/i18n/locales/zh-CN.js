@@ -18,6 +18,7 @@
       "/guide/troubleshooting": "故障排除",
       "/guide/cli": "CLI",
       "/guide/lib-pull": "源码分发",
+      "/guide/auto-imports": "自动导入",
       "/guide/ui": "UI 参考",
       "/guide/composables": "组合式函数参考",
       "/guide/content-mapper": "Content Mapper",

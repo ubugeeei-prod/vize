@@ -915,6 +915,11 @@
       "import": "./dist/theme.mjs",
       "default": "./dist/theme.mjs"
     },
+    "./resolver": {
+      "types": "./dist/resolver.d.mts",
+      "import": "./dist/resolver.mjs",
+      "default": "./dist/resolver.mjs"
+    },
     "./theme-scope": {
       "types": "./dist/theme-scope.d.mts",
       "import": "./dist/theme-scope.mjs",
@@ -1066,6 +1071,7 @@
     "check:examples": "vp exec node scripts/generate-gallery.ts --check",
     "check:size": "node scripts/check-size.mjs",
     "docs:reference": "vp exec node scripts/generate-reference-docs.ts",
+    "generate:resolver": "vp exec node scripts/generate-resolver-manifest.ts",
     "check:tree-shaking": "node scripts/check-tree-shaking.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },

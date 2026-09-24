@@ -30,6 +30,7 @@ const sentinels = {
   "capability-is-available": ["isCapabilityAvailable"],
   "capability-is-unavailable": ["isCapabilityUnavailable"],
   catalog: ["COMPOSABLE_CATALOG", "vize lib pull composable:<entry>"],
+  resolver: ["function VizeComposableResolver(", "VIZE_COMPOSE_RESOLVER_LOCKFILE"],
   "document-visibility": ["useDocumentVisibility", "readVisibilityState"],
   "disposal-scope": ["createDisposalScope", "VIZE_COMPOSE_DISPOSAL_FAILED"],
   "event-listener": ["useEventListener", "isListening"],

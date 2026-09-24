@@ -1,3 +1,4 @@
+import type { VizeNuxtComposablesOptions, VizeNuxtUiOptions } from "./libraries";
 import type { MuseaOptions } from "@vizejs/vite-plugin-musea";
 import type {
   VizeNuxtCompilerCompatibilityOptions,
@@ -203,6 +204,23 @@ export interface VizeNuxtOptions {
    * Real Nuxt composables are available via Nuxt's own plugin pipeline.
    */
   nuxtMusea?: NuxtMuseaOptions;
+
+  /**
+   * Auto-register every `@vizejs/ui` component (and auto-import its `use*`
+   * helpers) from the library catalog, as direct family subpath imports.
+   * Requires `@vizejs/ui` in the project. Opt-in.
+   *
+   * @default false
+   */
+  ui?: boolean | VizeNuxtUiOptions;
+
+  /**
+   * Auto-import every `@vizejs/composable` export from the library catalog,
+   * as direct entry subpath imports. Requires `@vizejs/composable`. Opt-in.
+   *
+   * @default false
+   */
+  composables?: boolean | VizeNuxtComposablesOptions;
 }
 
 export interface ResolvedVizeNuxtUnoCssOptions {

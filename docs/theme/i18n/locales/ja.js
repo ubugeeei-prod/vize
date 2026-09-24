@@ -18,6 +18,7 @@
       "/guide/troubleshooting": "トラブルシューティング",
       "/guide/cli": "CLI",
       "/guide/lib-pull": "ソース配布",
+      "/guide/auto-imports": "自動インポート",
       "/guide/ui": "UI リファレンス",
       "/guide/composables": "コンポーザブル リファレンス",
       "/guide/content-mapper": "Content Mapper",

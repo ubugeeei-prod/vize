@@ -195,7 +195,7 @@ export const rootEntry = {
     "./whenever",
     "./window-size",
   ],
-  isolatedEntries: ["./temporal"],
+  isolatedEntries: ["./resolver", "./temporal"],
 } as const satisfies ComposableRootEntryMetadata;
 
 /** Independently importable entries in package export-map order. */
@@ -632,6 +632,20 @@ export const entries = [
     gzipBudgetBytes: 2.75 * 1024,
     runtimeExports: ["useResizeObserver", "useElementSize"],
     utilities: ["useResizeObserver", "useElementSize"],
+  },
+  {
+    subpath: "./resolver",
+    source: "src/resolver.ts",
+    gzipBudgetBytes: 15 * 1024,
+    runtimeExports: [
+      "VIZE_COMPOSABLE_PACKAGE",
+      "VizeComposableResolver",
+      "createVizeComposableDeclarations",
+      "listVizeComposableImports",
+      "readComposableLockfile",
+      "vizeComposableImports",
+    ],
+    utilities: [],
   },
   {
     subpath: "./retry-async",

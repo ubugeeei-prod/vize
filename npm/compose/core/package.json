@@ -328,6 +328,11 @@
       "import": "./dist/resize-observer.mjs",
       "default": "./dist/resize-observer.mjs"
     },
+    "./resolver": {
+      "types": "./dist/resolver.d.mts",
+      "import": "./dist/resolver.mjs",
+      "default": "./dist/resolver.mjs"
+    },
     "./retry-async": {
       "types": "./dist/retry-async.d.mts",
       "import": "./dist/retry-async.mjs",

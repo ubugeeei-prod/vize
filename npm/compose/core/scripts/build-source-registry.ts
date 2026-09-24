@@ -21,7 +21,10 @@ import { COMPOSABLE_CATALOG, type ComposableEntryMetadata } from "../src/catalog
 export const COMPOSABLE_LIB_DEFAULT_TARGET_DIRECTORY = "src/composables/vize";
 
 /** Entries that describe the package instead of shipping runtime behavior. */
-export const COMPOSABLE_LIB_EXCLUDED_SUBPATHS: ReadonlySet<string> = new Set(["./catalog"]);
+export const COMPOSABLE_LIB_EXCLUDED_SUBPATHS: ReadonlySet<string> = new Set([
+  "./catalog",
+  "./resolver",
+]);
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 

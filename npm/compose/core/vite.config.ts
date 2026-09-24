@@ -68,6 +68,7 @@ export default defineConfig({
       "ref-debounced": "src/ref-debounced.ts",
       "ref-default": "src/ref-default.ts",
       "resize-observer": "src/resize-observer.ts",
+      resolver: "src/resolver.ts",
       "retry-async": "src/retry-async.ts",
       "retry-delay": "src/retry-delay.ts",
       scope: "src/scope.ts",

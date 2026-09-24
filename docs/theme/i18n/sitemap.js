@@ -82,6 +82,7 @@
         "/guide/wasm",
         "/guide/cli",
         "/guide/lib-pull",
+        "/guide/auto-imports",
         "/guide/ui",
         "/guide/composables",
         "/guide/content-mapper",

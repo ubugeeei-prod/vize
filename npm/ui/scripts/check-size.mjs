@@ -192,6 +192,7 @@ const budgets = new Map([
   ["spatial-navigation.mjs", 3_725],
   ["theme.mjs", 6_600],
   ["theme-scope.mjs", 2_600],
+  ["resolver.mjs", 9_000],
   ["transition.mjs", 3_000],
   ["typeahead.mjs", 2_000],
   ["virtualizer.mjs", 9_500],

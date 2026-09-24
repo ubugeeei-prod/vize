@@ -205,6 +205,7 @@ export default defineConfig({
       "swipe-actions": "src/families/interaction/swipe-actions/swipe-actions.ts",
       theme: "src/families/foundations/theme/theme.ts",
       "theme-scope": "src/families/foundations/theme/theme-scope.ts",
+      resolver: "src/resolver/resolver.ts",
       alert: "src/families/feedback/alert/alert.ts",
       announcer: "src/families/accessibility/announcer/announcer.ts",
       "aspect-ratio": "src/families/layout/aspect-ratio/aspect-ratio.ts",

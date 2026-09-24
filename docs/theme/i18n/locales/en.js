@@ -19,6 +19,7 @@
       "/guide/troubleshooting": "Troubleshooting",
       "/guide/cli": "CLI",
       "/guide/lib-pull": "Source Distribution",
+      "/guide/auto-imports": "Auto-imports",
       "/guide/ui": "UI Reference",
       "/guide/composables": "Composables Reference",
       "/guide/content-mapper": "Content Mapper",

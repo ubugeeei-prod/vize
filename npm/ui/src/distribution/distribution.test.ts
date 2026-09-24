@@ -17,6 +17,7 @@ const publicEntries = [
   ".",
   "./catalog",
   "./theme-scope",
+  "./resolver",
   ...uiFamilyCatalog.map((entry) => entry.packageSubpath),
 ] as const;
 
