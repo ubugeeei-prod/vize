@@ -6,7 +6,6 @@ import {
   QrCodeEncodeError,
   addErrorCorrectionAndInterleave,
   createDataCodewords,
-  createQrCodeSegments,
   encodeQrCode,
   formatInformationBits,
   gf256Multiply,
@@ -17,6 +16,7 @@ import {
   reedSolomonRemainder,
   versionInformationBits,
 } from "./qr-code-encoder.ts";
+import { createQrCodeSegments } from "./qr-code-segments.ts";
 import {
   alignmentPatternPositions,
   dataCodewordCount,
@@ -219,7 +219,7 @@ test("matches a multi-block reference symbol with version information", () => {
 });
 
 test("reproduces the ISO/IEC 18004 worked example codewords for 01234567 at 1-M", () => {
-  const segments = createQrCodeSegments("01234567", "auto");
+  const segments = createQrCodeSegments("01234567");
   const data = createDataCodewords(segments, 1, "M");
   assert.equal(toHex(data), "10 20 0C 56 61 80 EC 11 EC 11 EC 11 EC 11 EC 11");
   const generator = reedSolomonGenerator(10);
@@ -231,7 +231,7 @@ test("reproduces the ISO/IEC 18004 worked example codewords for 01234567 at 1-M"
 });
 
 test("encodes alphanumeric pairs from the standard AC-42 example", () => {
-  const [segment] = createQrCodeSegments("AC-42", "auto");
+  const [segment] = createQrCodeSegments("AC-42");
   assert.equal(segment?.mode, "alphanumeric");
   assert.equal(segment?.count, 5);
   assert.equal(segment?.bits.join(""), "00111001110" + "11100111001" + "000010");

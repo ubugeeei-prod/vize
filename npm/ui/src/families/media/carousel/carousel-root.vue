@@ -25,6 +25,7 @@ import type {
   CarouselChangeReason,
   CarouselDirection,
   CarouselFocusBehavior,
+  CarouselMessages,
   CarouselOrientation,
   CarouselRootExpose,
   CarouselSlotState,
@@ -47,6 +48,7 @@ const {
   respectReducedMotion = true,
   ariaLabel = undefined,
   ariaLabelledby = undefined,
+  messages = undefined,
 } = defineProps<{
   /**
    * Consumer-owned carousel base id. `null` and `undefined` select a deterministic fallback.
@@ -160,6 +162,14 @@ const {
    * @default undefined
    */
   readonly ariaLabelledby?: string;
+
+  /**
+   * Localized role descriptions and slide/indicator names. Omitted entries use
+   * the English WAI-ARIA example wording.
+   *
+   * @default undefined
+   */
+  readonly messages?: CarouselMessages;
 }>();
 
 const emit = defineEmits<{
@@ -390,8 +400,12 @@ function updateMap<Value>(
   return next;
 }
 
+const messagesState = computed<CarouselMessages>(() => messages ?? {});
+const roleDescription = computed(() => messagesState.value.carousel ?? "carousel");
+
 carouselContext.provide({
   autoplay: autoplayState,
+  messages: messagesState,
   canScrollNext,
   canScrollPrev,
   dir: dirState,
@@ -476,7 +490,7 @@ defineExpose(exposed);
   <section
     :id="baseId"
     ref="element"
-    aria-roledescription="carousel"
+    :aria-roledescription="roleDescription"
     :aria-label="ariaLabel"
     :aria-labelledby="ariaLabelledby"
     :dir="dirState"

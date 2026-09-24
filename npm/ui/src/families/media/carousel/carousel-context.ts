@@ -6,6 +6,7 @@ import type {
   CarouselAutoplayState,
   CarouselChangeReason,
   CarouselDirection,
+  CarouselMessages,
   CarouselOrientation,
   CarouselSlotState,
 } from "./carousel-types.ts";
@@ -33,6 +34,7 @@ export interface CarouselContextValue {
   readonly playing: ComputedRef<boolean>;
   readonly reducedMotion: ComputedRef<boolean>;
   readonly slotState: ComputedRef<CarouselSlotState>;
+  readonly messages: ComputedRef<CarouselMessages>;
   readonly slideElements: Readonly<ShallowRef<ReadonlyMap<number, HTMLElement>>>;
   readonly isInView: (index: number) => boolean | null;
   readonly setInView: (index: number, inView: boolean) => void;

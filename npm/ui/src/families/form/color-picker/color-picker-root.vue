@@ -17,13 +17,15 @@ import {
   toCssColor,
   toHsla,
 } from "./color-picker-color.ts";
-import type { ColorFormat, ColorValue } from "./color-picker-color.ts";
+import { formatColorChannelValue, getColorChannelLabel } from "./color-picker-color.ts";
+import type { ColorChannel, ColorFormat, ColorValue } from "./color-picker-color.ts";
 import { colorPickerContext } from "./color-picker-context.ts";
 import type { ColorPickerContextValue } from "./color-picker-context.ts";
 import type {
   ColorPickerChangeDetail,
   ColorPickerChangeSource,
   ColorPickerDirection,
+  ColorPickerMessages,
   ColorPickerRootExpose,
   ColorPickerSlotState,
   ColorPickerState,
@@ -40,6 +42,7 @@ const {
   name = undefined,
   form = undefined,
   dir = "ltr",
+  messages = undefined,
 } = defineProps<{
   /**
    * Consumer-owned base id. `null` and `undefined` select a deterministic fallback.
@@ -111,6 +114,14 @@ const {
    * @default "ltr"
    */
   readonly dir?: ColorPickerDirection;
+
+  /**
+   * Localized accessible strings (channel names, value text, area name).
+   * Omitted entries use English defaults.
+   *
+   * @default undefined
+   */
+  readonly messages?: ColorPickerMessages;
 }>();
 
 const emit = defineEmits<{
@@ -249,7 +260,18 @@ watch(
   { flush: "post", immediate: true },
 );
 
+function channelLabel(channel: ColorChannel): string {
+  return messages?.channelLabel?.(channel) ?? getColorChannelLabel(channel);
+}
+
 colorPickerContext.provide({
+  areaLabel: (x, y) =>
+    messages?.areaLabel?.(channelLabel(x), channelLabel(y)) ??
+    `${channelLabel(x)} and ${channelLabel(y)}`,
+  channelLabel,
+  channelValueText: (channel, channelValue) =>
+    messages?.channelValueText?.(channel, channelValue, channelLabel(channel)) ??
+    formatColorChannelValue(channel, channelValue, channelLabel(channel)),
   color,
   commit,
   dir: dirState,

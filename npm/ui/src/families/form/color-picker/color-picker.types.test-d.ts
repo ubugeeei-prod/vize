@@ -31,6 +31,7 @@ import {
   type ColorSpace,
   type ColorSpaceChannel,
   type ColorValue,
+  type ColorPickerMessages,
 } from "./color-picker.ts";
 
 type Equal<Left, Right> =
@@ -214,3 +215,16 @@ void red;
 void rootProps;
 void sliderProps;
 void swatchProps;
+
+type _MessagesAreOptionalFunctions = Expect<
+  Equal<
+    ColorPickerMessages,
+    {
+      readonly channelLabel?: (channel: ColorChannel) => string;
+      readonly channelValueText?: (channel: ColorChannel, value: number, label: string) => string;
+      readonly areaLabel?: (xLabel: string, yLabel: string) => string;
+    }
+  >
+>;
+// @ts-expect-error messages must return strings.
+const _badMessages: ColorPickerMessages = { channelLabel: () => 1 };

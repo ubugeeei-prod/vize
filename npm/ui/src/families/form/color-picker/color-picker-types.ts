@@ -249,3 +249,21 @@ export interface ColorPickerEyeDropperExpose extends ColorPickerEyeDropperSlotSt
   /** Open the system picker. Resolves with the picked color, or `null` when cancelled or unsupported. */
   readonly open: () => Promise<ColorValue | null>;
 }
+
+/**
+ * Localizable accessible strings for ColorPicker parts. Every entry is optional;
+ * omitted entries fall back to the English defaults.
+ */
+export interface ColorPickerMessages {
+  /** Channel name, e.g. `"Hue"`. Used by channel sliders and the 2D area. */
+  readonly channelLabel?: (channel: ColorChannel) => string;
+
+  /**
+   * `aria-valuetext` for one channel. `label` is the (possibly localized) channel
+   * name. Defaults to e.g. `"Hue 210°"`, `"Saturation 40%"`, `"Red 128"`.
+   */
+  readonly channelValueText?: (channel: ColorChannel, value: number, label: string) => string;
+
+  /** 2D area name from its two channel names. Defaults to `"<x> and <y>"`. */
+  readonly areaLabel?: (xLabel: string, yLabel: string) => string;
+}

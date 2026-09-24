@@ -163,7 +163,8 @@ export function formatFileSize(bytes: number, options: FormatFileSizeOptions = {
   const number = new Intl.NumberFormat(locale, {
     maximumFractionDigits: fractionDigits,
   }).format(value);
-  return `${number} ${IEC_SUFFIXES[exponent] ?? "B"}`;
+  // A no-break space keeps the value and unit together, matching Intl unit formatting.
+  return `${number}\u00a0${IEC_SUFFIXES[exponent] ?? "B"}`;
 }
 
 const DEFAULT_MESSAGES: {

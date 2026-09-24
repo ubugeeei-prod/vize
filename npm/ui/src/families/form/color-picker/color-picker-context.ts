@@ -1,7 +1,7 @@
 import type { ComputedRef } from "vue";
 
 import { createContext } from "../../foundations/context/context.ts";
-import type { ColorFormat, ColorValue } from "./color-picker-color.ts";
+import type { ColorChannel, ColorFormat, ColorValue } from "./color-picker-color.ts";
 import type {
   ColorPickerChangeSource,
   ColorPickerDirection,
@@ -21,6 +21,12 @@ export interface ColorPickerContextValue {
   /** Whether edits are currently accepted (not disabled and not read-only). */
   readonly editable: ComputedRef<boolean>;
   readonly getPartId: (part: string) => string;
+  /** Localized channel name. */
+  readonly channelLabel: (channel: ColorChannel) => string;
+  /** Localized `aria-valuetext` for one channel value. */
+  readonly channelValueText: (channel: ColorChannel, value: number) => string;
+  /** Localized 2D area name. */
+  readonly areaLabel: (x: ColorChannel, y: ColorChannel) => string;
   /** Request a color and report whether the serialized value changed. */
   readonly setColor: (
     color: ColorValue,

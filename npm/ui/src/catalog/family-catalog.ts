@@ -16,12 +16,20 @@ import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 import { ratingFamilyCatalog } from "./family-catalog-rating.ts";
+import { audioPlayerFamilyCatalog } from "./family-catalog-audio-player.ts";
+import { avatarGroupFamilyCatalog } from "./family-catalog-avatar-group.ts";
 import { colorPickerFamilyCatalog } from "./family-catalog-color-picker.ts";
 import { fileUploadFamilyCatalog } from "./family-catalog-file-upload.ts";
+import { imageCropperFamilyCatalog } from "./family-catalog-image-cropper.ts";
 import { infiniteScrollFamilyCatalog } from "./family-catalog-infinite-scroll.ts";
+import { lightboxFamilyCatalog } from "./family-catalog-lightbox.ts";
+import { marqueeFamilyCatalog } from "./family-catalog-marquee.ts";
 import { mediaFamilyCatalog } from "./family-catalog-media.ts";
+import { mediaPlayerFamilyCatalog } from "./family-catalog-media-player.ts";
 import { qrCodeFamilyCatalog } from "./family-catalog-qr-code.ts";
+import { signaturePadFamilyCatalog } from "./family-catalog-signature-pad.ts";
 import { tourFamilyCatalog } from "./family-catalog-tour.ts";
+import { videoPlayerFamilyCatalog } from "./family-catalog-video-player.ts";
 import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import { sliderFamilyCatalog } from "./family-catalog-slider.ts";
 import { structureFamilyCatalog } from "./family-catalog-structure.ts";
@@ -55,12 +63,20 @@ const allFamilyCatalogEntries = [
   ...navigationFamilyCatalog,
   ...overlayFamilyCatalog,
   ...ratingFamilyCatalog,
+  ...audioPlayerFamilyCatalog,
+  ...avatarGroupFamilyCatalog,
   ...colorPickerFamilyCatalog,
   ...fileUploadFamilyCatalog,
+  ...imageCropperFamilyCatalog,
   ...infiniteScrollFamilyCatalog,
+  ...lightboxFamilyCatalog,
+  ...marqueeFamilyCatalog,
   ...mediaFamilyCatalog,
+  ...mediaPlayerFamilyCatalog,
   ...qrCodeFamilyCatalog,
+  ...signaturePadFamilyCatalog,
   ...tourFamilyCatalog,
+  ...videoPlayerFamilyCatalog,
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
   ...structureFamilyCatalog,

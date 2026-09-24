@@ -554,6 +554,41 @@ test("eye dropper disables or hides itself without platform support", async () =
   handle.unmount();
 });
 
+test("messages localize channel names, value text, and the area name", () => {
+  const names: Readonly<Record<string, string>> = {
+    hue: "色相",
+    saturation: "彩度",
+    brightness: "明度",
+  };
+  const handle = mountPicker(
+    {
+      defaultValue: "#3366cc",
+      messages: {
+        channelLabel: (channel: string) => names[channel] ?? channel,
+        channelValueText: (_channel: string, value: number, label: string) =>
+          `${label}: ${Math.round(value)}`,
+        areaLabel: (x: string, y: string) => `${x}と${y}`,
+      },
+    },
+    {
+      default: () => [h(ColorPickerArea), h(ColorPickerChannelSlider, { channel: "hue" })],
+    },
+  );
+  const thumbs = [...handle.root().querySelectorAll('[role="slider"]')];
+  assert.equal(thumbs[0]?.getAttribute("aria-label"), "彩度と明度");
+  assert.equal(thumbs[0]?.getAttribute("aria-valuetext"), "彩度: 75, 明度: 80");
+  assert.equal(thumbs[1]?.getAttribute("aria-label"), "色相");
+  assert.equal(thumbs[1]?.getAttribute("aria-valuetext"), "色相: 220");
+  handle.unmount();
+
+  const defaults = mountPicker({ defaultValue: "#3366cc" }, { default: () => h(ColorPickerArea) });
+  assert.equal(
+    defaults.root().querySelector('[role="slider"]')?.getAttribute("aria-label"),
+    "Saturation and Brightness",
+  );
+  defaults.unmount();
+});
+
 test("compound parts require a matching root provider", () => {
   for (const part of [ColorPickerArea, ColorPickerField, ColorPickerSwatchGroup]) {
     assert.throws(() => mountInteraction(part), /VIZE_UI_CONTEXT_MISSING: ColorPicker/);

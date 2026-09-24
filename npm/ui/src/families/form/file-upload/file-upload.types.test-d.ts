@@ -29,6 +29,7 @@ import {
   type FileUploadItemSlotState,
   type FileUploadMessages,
   type FileUploadPasteScope,
+  type FileUploadRejectDragEffect,
   type FileUploadPreviewState,
   type FileUploadRejection,
   type FileUploadRejectionCode,
@@ -76,6 +77,7 @@ type _PreviewStateIsClosed = Expect<
   Equal<FileUploadPreviewState, "pending" | "ready" | "unsupported">
 >;
 type _PasteScopeIsClosed = Expect<Equal<FileUploadPasteScope, "document" | "none" | "self">>;
+type _RejectDragEffectIsClosed = Expect<Equal<FileUploadRejectDragEffect, "copy" | "none">>;
 type _SizeStandardIsClosed = Expect<Equal<FileUploadSizeStandard, "iec" | "si">>;
 type _AcceptMatchIsClosed = Expect<Equal<FileUploadAcceptMatch, "accept" | "reject" | "unknown">>;
 type _RootFilesAreReadonly = Expect<Equal<typeof root.files, readonly File[]>>;
@@ -171,3 +173,7 @@ void [
   invalidValidator,
   invalidCode,
 ];
+
+// @ts-expect-error reject drag effects are a closed union
+const invalidEffect: FileUploadRejectDragEffect = "move";
+void invalidEffect;

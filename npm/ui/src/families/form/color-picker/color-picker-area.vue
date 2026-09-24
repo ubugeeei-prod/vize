@@ -2,8 +2,6 @@
 import { computed, shallowRef, useTemplateRef } from "vue";
 
 import {
-  formatColorChannelValue,
-  getColorChannelLabel,
   getColorChannelRange,
   getColorChannelValue,
   resolveColorChannelSpace,
@@ -106,13 +104,11 @@ const yPercent = computed(() => 100 - valueToPercent(yRange.value, yValue.value)
 const dragging = computed(() => activePointer.value !== null);
 
 const label = computed(() =>
-  ariaLabelledby === undefined
-    ? (ariaLabel ?? `${getColorChannelLabel(xChannel)} and ${getColorChannelLabel(yChannel)}`)
-    : ariaLabel,
+  ariaLabelledby === undefined ? (ariaLabel ?? context.areaLabel(xChannel, yChannel)) : ariaLabel,
 );
 const valueText = computed(
   () =>
-    `${formatColorChannelValue(xChannel, xValue.value)}, ${formatColorChannelValue(yChannel, yValue.value)}`,
+    `${context.channelValueText(xChannel, xValue.value)}, ${context.channelValueText(yChannel, yValue.value)}`,
 );
 const areaStyle = computed(() => {
   const style: Record<string, string> = {

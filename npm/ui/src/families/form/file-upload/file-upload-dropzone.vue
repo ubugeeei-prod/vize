@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { computed, onScopeDispose, onWatcherCleanup, shallowRef, useTemplateRef, watch } from "vue";
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  onScopeDispose,
+  shallowRef,
+  useTemplateRef,
+  watch,
+} from "vue";
 import type { ComputedRef } from "vue";
 
 import { deriveDeterministicId } from "../../foundations/id/deterministic-id.ts";
@@ -10,12 +18,14 @@ import type {
   FileUploadDropzoneSlotState,
   FileUploadDropzoneState,
   FileUploadPasteScope,
+  FileUploadRejectDragEffect,
 } from "./file-upload-types.ts";
 
 const {
   id = undefined,
   openOnClick = true,
   paste = "self",
+  rejectDragEffect = "none",
   ariaLabel = undefined,
   ariaLabelledby = undefined,
   ariaDescribedby = undefined,
@@ -37,10 +47,21 @@ const {
 
   /**
    * Where clipboard files are accepted: the focused dropzone, the whole document, or nowhere.
+   * `document` listens while mounted and enabled, and ignores pastes into editable controls
+   * (inputs, textareas, contenteditable) outside the dropzone so text pasting keeps working.
    *
    * @default "self"
    */
   readonly paste?: FileUploadPasteScope;
+
+  /**
+   * `dropEffect` announced during `dragover` while the drag preview is rejected. `none` shows
+   * the not-allowed cursor and makes the browser refuse the drop; `copy` lets the drop happen
+   * so it produces typed rejections.
+   *
+   * @default "none"
+   */
+  readonly rejectDragEffect?: FileUploadRejectDragEffect;
 
   /**
    * Accessible name when no visible label or `aria-labelledby` supplies one.
@@ -111,7 +132,8 @@ function onDragenter(event: DragEvent): void {
 function onDragover(event: DragEvent): void {
   if (disabled.value || !transferHasFiles(event.dataTransfer)) return;
   event.preventDefault();
-  if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+  if (event.dataTransfer)
+    event.dataTransfer.dropEffect = rejecting.value ? rejectDragEffect : "copy";
 }
 
 function onDragleave(event: DragEvent): void {
@@ -166,16 +188,45 @@ function onPaste(event: ClipboardEvent): void {
   if (paste === "self") handlePaste(event);
 }
 
-watch(
-  () => paste,
-  (scope) => {
-    if (scope !== "document" || typeof document === "undefined") return;
-    const target = document;
-    target.addEventListener("paste", handlePaste);
-    onWatcherCleanup(() => target.removeEventListener("paste", handlePaste));
-  },
-  { immediate: true },
-);
+function isEditable(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  return target.tagName === "INPUT" || target.tagName === "TEXTAREA";
+}
+
+function onDocumentPaste(event: ClipboardEvent): void {
+  const inside = event.target instanceof Node && element.value?.contains(event.target) === true;
+  if (!inside && isEditable(event.target)) return;
+  handlePaste(event);
+}
+
+let documentPasteTarget: Document | null = null;
+
+function bindDocumentPaste(): void {
+  const wanted = paste === "document" && !disabled.value;
+  if (wanted && documentPasteTarget === null) {
+    documentPasteTarget = element.value?.ownerDocument ?? document;
+    documentPasteTarget.addEventListener("paste", onDocumentPaste);
+  } else if (!wanted && documentPasteTarget !== null) {
+    documentPasteTarget.removeEventListener("paste", onDocumentPaste);
+    documentPasteTarget = null;
+  }
+}
+
+// Document listeners attach on the client only, after mount.
+let mounted = false;
+onMounted(() => {
+  mounted = true;
+  bindDocumentPaste();
+});
+watch([() => paste, disabled], () => {
+  if (mounted) bindDocumentPaste();
+});
+onBeforeUnmount(() => {
+  mounted = false;
+  documentPasteTarget?.removeEventListener("paste", onDocumentPaste);
+  documentPasteTarget = null;
+});
 
 // Listener map keeps one binding for both roles: `button` when clickable, `group` when only a
 // drop and paste target.

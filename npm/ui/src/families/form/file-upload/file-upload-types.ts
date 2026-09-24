@@ -18,6 +18,9 @@ export type FileUploadSizeStandard = "iec" | "si";
 /** Where a dropzone listens for clipboard files. */
 export type FileUploadPasteScope = "document" | "none" | "self";
 
+/** `dropEffect` announced while a drag preview is rejected. `none` refuses the drop. */
+export type FileUploadRejectDragEffect = "copy" | "none";
+
 /** State token exposed by the FileUpload root and list parts. */
 export type FileUploadState = "disabled" | "empty" | "filled";
 

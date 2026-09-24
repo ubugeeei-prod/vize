@@ -18,11 +18,22 @@ import {
 import type { Placement } from "../positioner/positioner.ts";
 import { tourContext } from "./tour-context.ts";
 import type { TourContextValue } from "./tour-context.ts";
-import { enabledTourSteps, findTourStep, resolveTourTarget } from "./tour-state.ts";
+import {
+  enabledTourSteps,
+  findTourStep,
+  resolveTourMessages,
+  resolveTourTarget,
+  runTourHooks,
+} from "./tour-state.ts";
 import type {
+  TourAfterLeave,
+  TourBeforeEnter,
+  TourBeforeEnterContext,
   TourDirection,
   TourDismissReason,
+  TourMessages,
   TourMissingTargetBehavior,
+  TourNavigationDirection,
   TourRootExpose,
   TourSlotState,
   TourState,
@@ -48,6 +59,9 @@ const {
   markTarget = true,
   keyboardNavigation = true,
   dir = "ltr",
+  beforeEnter = undefined,
+  afterLeave = undefined,
+  messages = undefined,
 } = defineProps<{
   /**
    * Ordered step definitions. The step type, including consumer-owned fields, is inferred and
@@ -134,6 +148,30 @@ const {
    * @default "ltr"
    */
   readonly dir?: TourDirection;
+
+  /**
+   * Hook run before any step becomes current, before the step's own `beforeEnter`. Receives the
+   * inferred step type. Resolving `false` cancels; rejecting emits `navigation-error`. While it is
+   * pending the root publishes `data-pending` and TourPrev/TourNext are disabled; a newer request
+   * aborts the pending one through `signal`.
+   *
+   * @default undefined
+   */
+  readonly beforeEnter?: TourBeforeEnter<TStep>;
+
+  /**
+   * Hook run after a step stops being current, including when the tour closes.
+   *
+   * @default undefined
+   */
+  readonly afterLeave?: TourAfterLeave<TStep>;
+
+  /**
+   * Overrides for default strings rendered by Tour parts.
+   *
+   * @default undefined
+   */
+  readonly messages?: Partial<TourMessages>;
 }>();
 
 const emit = defineEmits<{
@@ -154,6 +192,12 @@ const emit = defineEmits<{
 
   /** Fired when an open tour closes without completing. */
   dismiss: [reason: TourDismissReason, nativeEvent: Event | null];
+
+  /** Fired when a `beforeEnter` hook resolves `false`; the current step is kept. */
+  "navigation-cancel": [value: StepValue, from: StepValue | null];
+
+  /** Fired when a `beforeEnter` hook throws or rejects; the current step is kept. */
+  "navigation-error": [error: unknown, value: StepValue, from: StepValue | null];
 }>();
 
 defineSlots<{
@@ -197,6 +241,8 @@ const last = computed(() => index.value >= 0 && index.value === total.value - 1)
 const placementState = computed<Placement>(() => currentStep.value?.placement ?? placement);
 const dirState = computed<TourDirection>(() => dir);
 const keyboardNavigationState = computed(() => keyboardNavigation);
+const messagesState = computed<TourMessages>(() => resolveTourMessages(messages));
+const pending = shallowRef(false);
 const targetElement = shallowRef<Element | null>(null);
 const resolution = shallowRef<{ readonly value: string; readonly found: boolean } | null>(null);
 const targetState = computed<TourTargetState>(() => {
@@ -213,12 +259,14 @@ const slotState = computed<TourSlotState<TStep>>(() => ({
   open: isOpen.value,
   state: state.value,
   step: currentStep.value,
+  pending: pending.value,
   targetState: targetState.value,
   total: total.value,
   value: currentStep.value?.value ?? null,
 }));
 let mounted = false;
 let direction: 1 | -1 = 1;
+let navigation: AbortController | null = null;
 
 function readCurrentStep(): TStep | null {
   return currentStep.value;
@@ -244,8 +292,17 @@ function resolve(candidate: TStep): Element | null {
   return resolveTourTarget(candidate.target, typeof document === "undefined" ? null : document);
 }
 
+function hooksFor(candidate: TStep): readonly TourBeforeEnter<TStep>[] {
+  const hooks: TourBeforeEnter<TStep>[] = [];
+  if (beforeEnter !== undefined) hooks.push(beforeEnter);
+  if (candidate.beforeEnter !== undefined) hooks.push(candidate.beforeEnter);
+  return hooks;
+}
+
 function canEnter(candidate: TStep): boolean {
   if (candidate.target === undefined || policyOf(candidate) !== "skip") return true;
+  // A hook may render the target, so the missing-target check waits until it settles.
+  if (hooksFor(candidate).length > 0) return true;
   if (typeof document === "undefined") return true;
   return resolve(candidate) !== null;
 }
@@ -265,12 +322,84 @@ function commitOpen(value: boolean, nativeEvent: Event | null): boolean {
   return false;
 }
 
+function leave(left: TStep | null, entered: TStep | null): void {
+  if (left === null || left === entered || afterLeave === undefined) return;
+  afterLeave({ step: left, to: entered });
+}
+
 function commitStep(value: StepValue, nativeEvent: Event | null): boolean {
-  const previous = currentStep.value?.value ?? null;
+  const left = readCurrentStep();
+  const previous = left?.value ?? null;
   if (previous === value) return false;
   stepState.set(value);
   emit("update:step", value);
   emit("step-change", value, previous, nativeEvent);
+  if (readOpen()) leave(left, readCurrentStep());
+  return true;
+}
+
+function abortNavigation(): void {
+  navigation?.abort();
+  navigation = null;
+  pending.value = false;
+}
+
+function evaluateHooks(
+  hooks: readonly TourBeforeEnter<TStep>[],
+  context: TourBeforeEnterContext<TStep>,
+): boolean | Promise<boolean> | { readonly error: unknown } {
+  try {
+    return runTourHooks(hooks, context);
+  } catch (error) {
+    return { error };
+  }
+}
+
+/**
+ * Enter `candidate`, running `beforeEnter` hooks first. Synchronous hooks settle in the same
+ * call; asynchronous ones leave the request pending until they resolve, and the latest request
+ * wins. Reports whether the request was accepted (committed or pending).
+ */
+function requestStep(candidate: TStep, opening: boolean, nativeEvent: Event | null): boolean {
+  abortNavigation();
+  const from = opening && !readOpen() ? null : readCurrentStep();
+  const commit = (): boolean => {
+    const stepChanged = commitStep(candidate.value, nativeEvent);
+    const openChanged = opening ? commitOpen(true, nativeEvent) : false;
+    // Hooks may have rendered the target after the step value was already current.
+    if (!stepChanged && !openChanged) syncTarget();
+    return stepChanged || openChanged || opening;
+  };
+  const hooks = hooksFor(candidate);
+  if (hooks.length === 0) return commit();
+  const controller = new AbortController();
+  const navigationDirection: TourNavigationDirection = direction === 1 ? "forward" : "backward";
+  const fromValue = from?.value ?? null;
+  const settle = (outcome: "cancel" | "enter" | { readonly error: unknown }): boolean => {
+    if (controller.signal.aborted) return false;
+    if (navigation === controller) {
+      navigation = null;
+      pending.value = false;
+    }
+    if (outcome === "enter") return commit();
+    if (outcome === "cancel") emit("navigation-cancel", candidate.value, fromValue);
+    else emit("navigation-error", outcome.error, candidate.value, fromValue);
+    return false;
+  };
+  const result = evaluateHooks(hooks, {
+    direction: navigationDirection,
+    from,
+    signal: controller.signal,
+    step: candidate,
+  });
+  if (typeof result === "boolean") return settle(result ? "enter" : "cancel");
+  if (!(result instanceof Promise)) return settle(result);
+  navigation = controller;
+  pending.value = true;
+  result.then(
+    (entered) => settle(entered ? "enter" : "cancel"),
+    (error: unknown) => settle({ error }),
+  );
   return true;
 }
 
@@ -278,9 +407,7 @@ function openFrom(start: number, nativeEvent: Event | null): boolean {
   const candidate = findTourStep(enabledSteps.value, start, 1, canEnter);
   if (candidate === null) return false;
   direction = 1;
-  commitStep(candidate.value, nativeEvent);
-  commitOpen(true, nativeEvent);
-  return true;
+  return requestStep(candidate, true, nativeEvent);
 }
 
 function start(nativeEvent: Event | null = null): boolean {
@@ -288,21 +415,32 @@ function start(nativeEvent: Event | null = null): boolean {
 }
 
 function setOpen(value: boolean, nativeEvent: Event | null = null): boolean {
-  if (!value) return commitOpen(false, nativeEvent);
+  if (!value) {
+    if (!isOpen.value) return commitOpen(false, nativeEvent);
+    close(nativeEvent);
+    return true;
+  }
   if (isOpen.value) return false;
   return openFrom(Math.max(index.value, 0), nativeEvent);
 }
 
+function close(nativeEvent: Event | null): void {
+  abortNavigation();
+  const left = readCurrentStep();
+  commitOpen(false, nativeEvent);
+  leave(left, null);
+}
+
 function complete(nativeEvent: Event | null = null): boolean {
   if (!isOpen.value) return false;
-  commitOpen(false, nativeEvent);
+  close(nativeEvent);
   emit("complete", nativeEvent);
   return true;
 }
 
 function dismiss(reason: TourDismissReason = "close", nativeEvent: Event | null = null): boolean {
   if (!isOpen.value) return false;
-  commitOpen(false, nativeEvent);
+  close(nativeEvent);
   emit("dismiss", reason, nativeEvent);
   return true;
 }
@@ -312,21 +450,23 @@ function next(nativeEvent: Event | null = null): boolean {
   direction = 1;
   const candidate = findTourStep(enabledSteps.value, index.value + 1, 1, canEnter);
   if (candidate === null) return complete(nativeEvent);
-  return commitStep(candidate.value, nativeEvent);
+  return requestStep(candidate, false, nativeEvent);
 }
 
 function previous(nativeEvent: Event | null = null): boolean {
   if (!isOpen.value) return false;
   direction = -1;
   const candidate = findTourStep(enabledSteps.value, index.value - 1, -1, canEnter);
-  return candidate === null ? false : commitStep(candidate.value, nativeEvent);
+  return candidate === null ? false : requestStep(candidate, false, nativeEvent);
 }
 
 function goTo(value: StepValue, nativeEvent: Event | null = null): boolean {
   const target = indexOf(value);
-  if (target < 0) return false;
+  const candidate = enabledSteps.value[target];
+  if (candidate === undefined) return false;
   direction = target >= index.value ? 1 : -1;
-  return commitStep(value, nativeEvent);
+  if (candidate === readCurrentStep()) return false;
+  return requestStep(candidate, false, nativeEvent);
 }
 
 function setTarget(element: Element | null): void {
@@ -355,7 +495,7 @@ function skipMissing(current: TStep): boolean {
   const candidate =
     forward ??
     (direction === -1 ? findTourStep(enabledSteps.value, position + 1, 1, canEnter) : null);
-  if (candidate !== null) return commitStep(candidate.value, null);
+  if (candidate !== null) return requestStep(candidate, false, null);
   return complete(null);
 }
 
@@ -400,6 +540,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   mounted = false;
+  abortNavigation();
   setTarget(null);
 });
 
@@ -414,8 +555,10 @@ tourContext.provide({
   indexOf,
   keyboardNavigation: keyboardNavigationState,
   last,
+  messages: messagesState,
   next,
   open: isOpen,
+  pending: shallowReadonly(pending),
   placement: placementState,
   previous,
   slotState,
@@ -437,6 +580,7 @@ type TourRootSetupExpose = Omit<
   readonly index: ComputedRef<number>;
   readonly last: ComputedRef<boolean>;
   readonly open: ComputedRef<boolean>;
+  readonly pending: Readonly<ShallowRef<boolean>>;
   readonly state: ComputedRef<TourState>;
   readonly step: ComputedRef<TStep | null>;
   readonly target: Readonly<ShallowRef<Element | null>>;
@@ -455,6 +599,7 @@ const exposed = {
   last,
   next,
   open: isOpen,
+  pending: shallowReadonly(pending),
   previous,
   refresh: syncTarget,
   setOpen,
@@ -478,6 +623,7 @@ defineExpose(exposed);
     :data-state="state"
     :data-step="currentStep?.value"
     :data-target="targetState"
+    :data-pending="pending ? 'true' : undefined"
   >
     <slot v-bind="slotState" />
   </div>

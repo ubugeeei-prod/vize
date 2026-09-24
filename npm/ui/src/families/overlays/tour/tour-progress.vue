@@ -5,7 +5,7 @@ import { tourContext } from "./tour-context.ts";
 import type { TourProgressSlotState } from "./tour-types.ts";
 
 defineSlots<{
-  /** Progress text. Defaults to `current / total`. */
+  /** Progress text. Defaults to TourRoot `messages.progress(current, total)` (`current / total`). */
   default(props: TourProgressSlotState): unknown;
 }>();
 
@@ -18,6 +18,7 @@ const fraction = computed(() =>
     ? 0
     : (context.index.value + 1) / context.total.value,
 );
+const text = computed(() => context.messages.value.progress(current.value, total.value));
 const slotState = computed<TourProgressSlotState>(() => ({
   current: current.value,
   fraction: fraction.value,
@@ -34,7 +35,7 @@ const slotState = computed<TourProgressSlotState>(() => ({
     :data-current="current"
     :data-total="total"
   >
-    <slot v-bind="slotState">{{ current }} / {{ total }}</slot>
+    <slot v-bind="slotState">{{ text }}</slot>
   </span>
 </template>
 

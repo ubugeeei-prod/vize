@@ -29,6 +29,7 @@ export type {
   CarouselFocusBehavior,
   CarouselIndicatorGroupExpose,
   CarouselIndicatorSlotState,
+  CarouselMessages,
   CarouselOrientation,
   CarouselPauseReason,
   CarouselRootExpose,

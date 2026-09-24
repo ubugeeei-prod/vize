@@ -42,6 +42,7 @@ overflow: auto; scroll-snap-type: x mandatory }` and
 | C21 | SSR                      | isolated requests                      | markup is byte-identical, reflects `defaultValue` and autoplay, and never renders `inert`                                                          | `renders byte-identical carousel markup across isolated SSR requests`                   |
 | C22 | SSR / hydration          | hydrate                                | server markup hydrates without warnings or node replacement                                                                                        | `hydrates carousel markup without warnings or node replacement`                         |
 | C23 | types                    | compile                                | states, reasons, slot state, and exposes are closed and read-only                                                                                  | `carousel.types.test-d.ts`                                                              |
+| C24 | `messages`               | render                                 | role descriptions and slide/indicator names come from the typed `messages` prop; omitted entries keep the English WAI-ARIA wording                 | `messages localize role descriptions and slide and indicator names`                     |
 
 Timers and listeners are client-only: they start in `onMounted` and stop on
 unmount, so server rendering never schedules rotation.
