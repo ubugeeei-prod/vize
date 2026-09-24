@@ -38,7 +38,7 @@ export function hoistVueRuntimePackages(nodeModulesDir: string): void {
     }
 
     fs.mkdirSync(path.dirname(link), { recursive: true });
-    fs.symlinkSync(target, link, "dir");
+    fs.symlinkSync(target, link, process.platform === "win32" ? "junction" : "dir");
   }
 }
 

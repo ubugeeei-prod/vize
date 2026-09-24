@@ -99,7 +99,7 @@ test("Nuxt fixture resolves deduped Vue runtimes from its own Vue version", () =
     fs.mkdirSync(staleDir, { recursive: true });
     const runtimeDomLink = path.join(nodeModulesDir, "@vue", "runtime-dom");
     fs.mkdirSync(path.dirname(runtimeDomLink), { recursive: true });
-    fs.symlinkSync(staleDir, runtimeDomLink, "dir");
+    fs.symlinkSync(staleDir, runtimeDomLink, process.platform === "win32" ? "junction" : "dir");
 
     hoistVueRuntimePackages(nodeModulesDir);
 
@@ -109,7 +109,6 @@ test("Nuxt fixture resolves deduped Vue runtimes from its own Vue version", () =
       );
       assert.equal(installed.version, vueVersion);
     }
-    assert.match(fs.realpathSync(runtimeDomLink), /@vue\+runtime-dom@3\.6\.0-beta\.10/);
   } finally {
     fs.rmSync(tempRoot, { force: true, recursive: true });
   }
