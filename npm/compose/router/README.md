@@ -3,6 +3,9 @@
 > Experimental: the route table, SSR handoff shape, and generated metadata contract may change
 > during the Vize alpha line.
 
+This package is currently workspace-only and has not been published to npm. The example below
+requires the Vize repository workspace.
+
 `@vizejs/router` provides the first typed route-table kernel for Vize applications. It is
 intentionally SSR-safe: matching and serialization do not touch browser globals, timers, or reactive
 scope state.

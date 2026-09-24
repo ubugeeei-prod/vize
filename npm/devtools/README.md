@@ -2,7 +2,10 @@
 
 Typed, SSR-safe trace foundations for Vize devtools.
 
-This package currently ships the first trace protocol slice for render/update events, reactive
+This experimental package is currently workspace-only and has not been published to npm. The
+example below requires the Vize repository workspace.
+
+The workspace implements the first trace protocol slice for render/update events, reactive
 edges, provide/inject ownership, and Suspense branch state. It is request-local by default: create a
 recorder per server render or client app instance, then serialize the snapshot into a devtools panel
 or generator artifact.

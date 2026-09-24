@@ -2,6 +2,9 @@
 
 Typed SSR data resource foundations for Vize applications.
 
+> This experimental package is currently workspace-only and has not been published to npm. The
+> example below requires the Vize repository workspace.
+
 ```vue
 <script setup lang="ts">
 import { createDataClient, defineDataResource } from "@vizejs/data";

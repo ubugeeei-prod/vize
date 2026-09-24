@@ -3,6 +3,9 @@
 > Experimental: the reducer, persistence, and generated metadata contract may change during the
 > Vize alpha line.
 
+This package is currently workspace-only and has not been published to npm. The example below
+requires the Vize repository workspace.
+
 `@vizejs/state` provides typed reducer-store foundations for Vize applications. It is SSR-safe:
 stores keep state per instance, snapshots are serializable, and persistence hydration validates the
 model key, `.vue` source, version, expiry, and optional migration.
