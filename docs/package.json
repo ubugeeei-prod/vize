@@ -5,8 +5,9 @@
   "scripts": {
     "generate:i18n": "node ./scripts/i18n/generate.mjs --accept-machine-translation",
     "generate:rules": "node ./scripts/generate-patina-rules-page.mjs",
-    "dev": "vp build && vp preview",
-    "build": "node ./scripts/ensure-browser.mjs && vp build",
+    "generate:reference": "node ../npm/ui/scripts/generate-reference-docs.ts",
+    "dev": "pnpm generate:reference && vp build && vp preview",
+    "build": "node ./scripts/ensure-browser.mjs && pnpm generate:reference && vp build",
     "preview": "vp preview"
   },
   "devDependencies": {
