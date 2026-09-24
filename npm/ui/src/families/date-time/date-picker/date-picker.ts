@@ -1,4 +1,7 @@
 /** Accessible, unstyled date picker: a segmented DateField plus a popover Calendar. */
+// Date-model helpers lead every date-time entry (and the root entry) so the shared
+// model chunks load first in both root and subpath bundles.
+export { formatIsoDate, parseIsoDate } from "../calendar/plain-date.ts";
 export { default as DatePicker, default as DatePickerRoot } from "./date-picker-root.vue";
 export { default as DatePickerCalendar } from "./date-picker-calendar.vue";
 export { default as DatePickerContent } from "./date-picker-content.vue";

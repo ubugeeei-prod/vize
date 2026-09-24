@@ -210,6 +210,11 @@
       "import": "./dist/year-picker.mjs",
       "default": "./dist/year-picker.mjs"
     },
+    "./scheduler": {
+      "types": "./dist/scheduler.d.mts",
+      "import": "./dist/scheduler.mjs",
+      "default": "./dist/scheduler.mjs"
+    },
     "./callout": {
       "types": "./dist/callout.d.mts",
       "import": "./dist/callout.mjs",

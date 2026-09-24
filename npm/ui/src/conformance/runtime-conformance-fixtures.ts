@@ -31,6 +31,7 @@ import { calendarRuntimeFixtures } from "../families/date-time/calendar/runtime-
 import { dateTimeFieldRuntimeFixture } from "../families/date-time/datetime-field/runtime-conformance-datetime-field-fixtures.ts";
 import { durationFieldRuntimeFixture } from "../families/date-time/duration-field/runtime-conformance-duration-field-fixtures.ts";
 import { monthPickerRuntimeFixture } from "../families/date-time/month-picker/runtime-conformance-month-picker-fixtures.ts";
+import { schedulerRuntimeFixtures } from "../families/date-time/scheduler/runtime-conformance-scheduler-fixtures.ts";
 import { timePickerRuntimeFixture } from "../families/date-time/time-picker/runtime-conformance-time-picker-fixtures.ts";
 import { weekPickerRuntimeFixture } from "../families/date-time/week-picker/runtime-conformance-week-picker-fixtures.ts";
 import { yearPickerRuntimeFixture } from "../families/date-time/year-picker/runtime-conformance-year-picker-fixtures.ts";
@@ -120,6 +121,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   dateTimeFieldRuntimeFixture,
   durationFieldRuntimeFixture,
   monthPickerRuntimeFixture,
+  ...schedulerRuntimeFixtures,
   timePickerRuntimeFixture,
   weekPickerRuntimeFixture,
   yearPickerRuntimeFixture,

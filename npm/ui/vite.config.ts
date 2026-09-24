@@ -216,6 +216,7 @@ export default defineConfig({
       banner: "src/families/feedback/banner/banner.ts",
       "block-ui": "src/families/feedback/block-ui/block-ui.ts",
       callout: "src/families/feedback/callout/callout.ts",
+      scheduler: "src/families/date-time/scheduler/scheduler.ts",
       "datetime-field": "src/families/date-time/datetime-field/datetime-field.ts",
       "duration-field": "src/families/date-time/duration-field/duration-field.ts",
       "month-picker": "src/families/date-time/month-picker/month-picker.ts",
