@@ -69,9 +69,17 @@ pub(super) fn emit_dom_observed<'f>(
         return Err(EmitError::Diagnostics);
     }
     // `static_cache = inline || !hoists.is_empty()`, with `hoists` empty
-    // when `hoist_static` disables the transform's static hoist pass.
+    // when `hoist_static` disables the transform's static hoist pass. The
+    // shipped hoist pass also excludes component props under a hoisted scope
+    // id, so those props cannot enable child vnode caching in scoped SFCs.
     let static_cache = options.inline
-        || (options.hoist_static && static_cache::enabled(&lowered.root, facts, &lowered.wrappers));
+        || (options.hoist_static
+            && static_cache::enabled(
+                &lowered.root,
+                facts,
+                &lowered.wrappers,
+                options.hoisted_scope_id.is_none(),
+            ));
     let mut cx = EmitCx {
         buf: Buf::new(options.inline),
         source: lowered.source,
