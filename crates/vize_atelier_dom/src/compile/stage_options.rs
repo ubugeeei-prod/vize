@@ -46,6 +46,7 @@ pub(super) fn transform_options(options: &DomCompilerOptions) -> TransformOption
         scope_id: options.scope_id.clone(),
         ssr: options.ssr,
         is_ts: options.is_ts,
+        strict_slot_params: false,
         inline: options.inline,
         custom_renderer: options.custom_renderer,
         experimental_patterned_template: options.experimental_patterned_template,

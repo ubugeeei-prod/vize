@@ -111,6 +111,7 @@ pub(super) fn emit_dom_observed<'f>(
         prefix_identifiers: options.prefix_identifiers,
         hoist_static: options.hoist_static,
         is_ts: options.is_ts,
+        strict_slot_params: options.strict_slot_params,
         cache_handlers: options.cache_handlers,
         hoisted_scope_id: options.hoisted_scope_id,
         scope_id: options.scope_id,

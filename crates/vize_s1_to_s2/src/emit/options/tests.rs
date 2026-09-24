@@ -16,6 +16,7 @@ fn default_options_project_the_shipped_codegen_defaults() {
             hoisted_scope_id: None,
             scope_id: None,
             is_ts: false,
+            strict_slot_params: false,
             comments: false,
             experimental_in_tag_comments: false,
             custom_element_patterns: &[],

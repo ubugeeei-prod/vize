@@ -77,7 +77,9 @@ pub(super) fn emit_slot_params(
     match params {
         SlotParams::Absent => cx.buf.push("()"),
         SlotParams::Scoped { text, .. } => {
-            if !crate::emit::prefix::slot_params_syntax_valid(text.as_str(), cx.is_ts) {
+            if cx.strict_slot_params
+                && !crate::emit::prefix::slot_params_syntax_valid(text.as_str(), cx.is_ts)
+            {
                 return Err(EmitError::unsupported(Reason::PrefixExpressionRejected));
             }
             cx.buf.push("(");

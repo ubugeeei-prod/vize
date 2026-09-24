@@ -56,11 +56,11 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
             hoisted_scope_id.as_deref(),
             codegen_experimental_options.component_name.as_deref(),
         );
-        if let Some(s2_options) = s2_options
-            && let Ok(result) = profile!(
-                "atelier.dom.template.s2_codegen_sfc_fast",
+        if let Some(mut s2_options) = s2_options
+            && let Ok(result) = profile!("atelier.dom.template.s2_codegen_sfc_fast", {
+                s2_options.strict_slot_params = true;
                 stage_options::emit_s2(allocator, source, options.dialect, &s2_options, None)
-            )
+            })
         {
             selection::record(Ok(()));
             return (Vec::new(), result);

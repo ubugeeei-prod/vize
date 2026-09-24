@@ -295,7 +295,9 @@ fn emit_entry_name(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) {
 fn emit_params(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) -> Result<(), EmitError> {
     match &content.params {
         Some(expr) if !expr.source().is_empty() => {
-            if !crate::emit::prefix::slot_params_syntax_valid(expr.source(), cx.is_ts) {
+            if cx.strict_slot_params
+                && !crate::emit::prefix::slot_params_syntax_valid(expr.source(), cx.is_ts)
+            {
                 return Err(EmitError::unsupported(Reason::PrefixExpressionRejected));
             }
             cx.buf.push("(");

@@ -220,6 +220,8 @@ struct EmitCx<'facts> {
     hoist_static: bool,
     /// The shipped lane's `is_ts`: expressions are type-erased first.
     is_ts: bool,
+    /// The SFC module selector refuses malformed slot params before assembly.
+    strict_slot_params: bool,
     /// The shipped lane's `cache_handlers`.
     cache_handlers: bool,
     /// Scoped-style attr that only module-level static VNode hoists bake into
