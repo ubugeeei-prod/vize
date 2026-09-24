@@ -27,6 +27,7 @@ use clap::{Args, Subcommand, ValueEnum};
 use vize_s0::String;
 
 use self::error::{LibError, LibResult};
+use self::fs_ops::ensure_project_path;
 use self::lockfile::{DEFAULT_LOCKFILE, Lockfile};
 use self::resolve::{RegistryKind, Resolver};
 
@@ -175,6 +176,7 @@ impl LibContext {
             .map_err(|error| LibError::io("open project root", &args.root, &error))?;
         let config = crate::config::load_lib_config_with_source(Some(&root)).config;
         let lock_path = root.join(config.lockfile.as_deref().unwrap_or(DEFAULT_LOCKFILE));
+        ensure_project_path(&root, &lock_path)?;
         let registry_paths: Vec<PathBuf> = args
             .registry
             .iter()
@@ -194,7 +196,7 @@ impl LibContext {
     }
 
     pub fn lockfile(&self) -> LibResult<Lockfile> {
-        Lockfile::read(&self.lock_path)
+        Lockfile::read(&self.root, &self.lock_path)
     }
 }
 

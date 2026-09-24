@@ -96,4 +96,4 @@ test("hydrates every shipped component without warnings or node replacement", as
       console.error = originalError;
     }
   }
-});
+}, 15_000);

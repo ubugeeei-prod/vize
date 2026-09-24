@@ -12,7 +12,9 @@ use serde::Serialize;
 use vize_s0::{String, cstr};
 
 use super::error::{LibError, LibResult};
-use super::fs_ops::{file_sha256, join_relative, remove_file_and_prune, write_file};
+use super::fs_ops::{
+    ensure_project_path, file_sha256, join_relative, remove_file_and_prune, write_file,
+};
 use super::lockfile::{LockedItem, Lockfile};
 use super::registry::{LoadedRegistry, NpmDependency, RegistryItem};
 
@@ -113,6 +115,7 @@ pub fn plan_item(
     let mut locked_files = BTreeMap::new();
     for file in &item.files {
         let target = join_relative(&base, &file.path)?;
+        ensure_project_path(root, &target)?;
         let local = file_sha256(&target)?;
         let base_sha = existing.and_then(|locked| locked.files.get(&file.path));
         let action = match local.as_deref() {
@@ -141,6 +144,7 @@ pub fn plan_item(
             continue;
         }
         let target = join_relative(&base, path)?;
+        ensure_project_path(root, &target)?;
         let action = match file_sha256(&target)? {
             None => continue,
             Some(local) if local == *base_sha => FileAction::Delete,
@@ -219,9 +223,18 @@ pub fn apply(
             "refusing to overwrite locally modified files (re-run with {force_flag}):\n{summary}"
         )));
     }
+    // Validate the complete plan before writing any file. Recheck each target
+    // at use time in case the filesystem changed after planning.
+    ensure_project_path(root, lock_path)?;
+    for plan in plans {
+        for file in &plan.files {
+            ensure_project_path(root, &file.target)?;
+        }
+    }
     for plan in plans {
         let base = join_dir(root, &plan.dir)?;
         for file in &plan.files {
+            ensure_project_path(root, &file.target)?;
             match (file.action, &file.contents) {
                 (FileAction::Create | FileAction::Update | FileAction::Conflict, Some(bytes)) => {
                     write_file(&file.target, bytes)?;
@@ -234,5 +247,5 @@ pub fn apply(
         }
         lockfile.upsert(plan.lock.clone());
     }
-    lockfile.write(lock_path)
+    lockfile.write(root, lock_path)
 }
