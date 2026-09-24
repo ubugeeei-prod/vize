@@ -14,6 +14,7 @@
 //! (`vize_atelier_core::expr_parse_probe`) is sampled around one fused
 //! compile per fixture - the `davinci.expr.parses` baseline recorded in
 //! `docs/davinci/plan/expr-reparse-baseline.md`.
+#![expect(clippy::expect_used, reason = "benchmarks abort on fixture errors")]
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::{LADDER, template_block};

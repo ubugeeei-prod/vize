@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use super::{
     DomCompilerOptions, compile_template_with_options,
     compile_template_with_template_syntax_codegen_and_experimental_options,

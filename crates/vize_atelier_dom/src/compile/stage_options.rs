@@ -203,7 +203,7 @@ pub(super) fn s2_binding_table(metadata: Option<&BindingMetadata>) -> Option<Bin
     })
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn try_emit_s2(
     allocator: &Allocator,
     source: &str,

@@ -34,6 +34,7 @@ pub fn generate_text_children(dir: &DirectiveNode<'_>) -> Option<String> {
 }
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::{generate_text_children, generate_text_content, is_v_text};
     use vize_atelier_core::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};

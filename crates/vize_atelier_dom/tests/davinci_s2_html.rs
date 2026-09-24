@@ -1,12 +1,21 @@
 //! P2-11 `v-html` witness: `vue.html` lowers through S2 and emits the
 //! shipped `innerHTML` DOM-prop shape, including patch-flag composition.
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+#[expect(
+    dead_code,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
+)]
 mod support;
 
 use vize_s0::Allocator;

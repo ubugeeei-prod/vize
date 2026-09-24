@@ -18,6 +18,7 @@
 //!
 //! The probe is process-global and monotone, so this file holds a single
 //! `#[test]` in its own binary - the `davinci_expr_reparse_floor.rs` shape.
+#![expect(clippy::panic, reason = "tests assert by panicking")]
 
 use davinci_harness::fixtures::{LADDER, template_block};
 use std::fmt::Write as _;

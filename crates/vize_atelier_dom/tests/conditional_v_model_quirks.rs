@@ -1,5 +1,3 @@
-#![allow(clippy::disallowed_types)]
-
 use vize_atelier_core::{ErrorCode, TemplateSyntaxMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
 use vize_s0::{Allocator, String};

@@ -1,12 +1,17 @@
 //! P2-11 Vue 2 pipe-filter witness: `_resolveFilter` assets and
 //! `_filter_*` calls, compared byte-for-byte with the shipped DOM lane.
 
-#![allow(
+#[expect(
+    dead_code,
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
 )]
-
 mod support;
 
 use vize_s0::config::VueVersion;

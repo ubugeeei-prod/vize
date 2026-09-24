@@ -4,12 +4,17 @@
 //! plus custom runtime module / global names, compared byte-for-byte with
 //! the shipped lane over a family-spanning battery.
 
-#![allow(
+#[expect(
+    dead_code,
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
 )]
-
 mod support;
 
 use vize_atelier_core::options::{CodegenMode, CodegenOptions};

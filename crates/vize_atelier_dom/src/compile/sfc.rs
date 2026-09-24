@@ -16,7 +16,7 @@ use vize_s0::{Allocator, String, profile};
 mod p_end;
 mod selector;
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -93,7 +93,7 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     (errors, result)
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub(super) fn compile_template_inner_for_sfc<'a>(
     allocator: &'a Allocator,
     source: &'a str,

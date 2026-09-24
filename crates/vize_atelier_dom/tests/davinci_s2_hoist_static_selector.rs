@@ -1,9 +1,9 @@
 //! S2 production selector coverage for disabled static hoists.
 
-#![allow(
-    clippy::disallowed_macros,
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};

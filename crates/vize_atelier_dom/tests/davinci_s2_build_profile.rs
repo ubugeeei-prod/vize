@@ -1,6 +1,13 @@
 //! P2-12b build-path walk witness for profiled source-map-free DOM compiles.
-
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use std::path::Path;
 

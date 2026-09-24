@@ -63,3 +63,6 @@ required-features = ["davinci-differential"]
 [[test]]
 name = "v_pre_freezes_its_subtree"
 required-features = ["davinci-differential"]
+
+[lints]
+workspace = true

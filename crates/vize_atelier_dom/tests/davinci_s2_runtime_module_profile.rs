@@ -1,12 +1,7 @@
 //! P2-11 witness: custom runtime module names stay on the profiled S2 DOM
 //! production selector. Direct emitter tests cover the spelling; this keeps
 //! the production routing from silently falling back to compatibility codegen.
-
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
+#![expect(clippy::panic, reason = "tests assert by panicking")]
 
 use vize_atelier_core::options::{CodegenMode, CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_dom::{

@@ -8,12 +8,21 @@
 //! a combination only an inlined render function reaches. Compared
 //! byte-for-byte with the shipped lane, in both directions.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods
+#![expect(
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+#[expect(
+    dead_code,
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
+)]
 mod support;
 
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};

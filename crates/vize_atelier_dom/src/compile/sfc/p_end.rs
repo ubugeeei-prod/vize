@@ -9,10 +9,10 @@ pub(super) fn source_has_invalid_p_end_tag(source: &str) -> bool {
     let mut open_p = 0i32;
     while let Some(start) = find_byte(bytes, index, b'<') {
         let name_start = start + 1;
-        if name_start >= bytes.len() {
+        let Some(&first) = bytes.get(name_start) else {
             break;
-        }
-        let closing = bytes[name_start] == b'/';
+        };
+        let closing = first == b'/';
         let raw_start = if closing { name_start + 1 } else { name_start };
         if !closing && matches!(bytes.get(raw_start), Some(b'!' | b'?')) {
             index = name_start + 1;
@@ -23,7 +23,7 @@ pub(super) fn source_has_invalid_p_end_tag(source: &str) -> bool {
             index = raw_start + 1;
             continue;
         }
-        let name = &source[raw_start..name_end];
+        let name = source.get(raw_start..name_end).unwrap_or_default();
         if closing {
             if name.eq_ignore_ascii_case("p") {
                 if open_p == 0 {
@@ -76,7 +76,8 @@ fn closes_open_p(name: &str) -> bool {
 }
 
 fn find_byte(bytes: &[u8], start: usize, needle: u8) -> Option<usize> {
-    bytes[start..]
+    bytes
+        .get(start..)?
         .iter()
         .position(|byte| *byte == needle)
         .map(|offset| start + offset)
@@ -84,7 +85,7 @@ fn find_byte(bytes: &[u8], start: usize, needle: u8) -> Option<usize> {
 
 fn scan_name(bytes: &[u8], start: usize) -> usize {
     let mut index = start;
-    while index < bytes.len() && bytes[index].is_ascii_alphanumeric() {
+    while bytes.get(index).is_some_and(u8::is_ascii_alphanumeric) {
         index += 1;
     }
     index

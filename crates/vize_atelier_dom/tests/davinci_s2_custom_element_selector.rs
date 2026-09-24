@@ -1,10 +1,10 @@
 //! P2-11 witness: declarative custom-element matchers and opaque static
 //! predicate matchers are covered by the S2 DOM production selector.
 
-#![allow(
-    clippy::disallowed_macros,
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
 use vize_atelier_core::codegen::CodegenResultWithSections;

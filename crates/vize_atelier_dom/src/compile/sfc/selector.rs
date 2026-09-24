@@ -12,15 +12,17 @@ fn source_contains_parser_recovery(source: &str) -> bool {
 
     while let Some(tag_start) = find_byte(bytes, index, b'<') {
         let name_start = tag_start + 1;
-        if name_start >= bytes.len() {
+        let Some(&first) = bytes.get(name_start) else {
             break;
-        }
+        };
 
-        if bytes[name_start] == b'/' {
+        if first == b'/' {
             let closing_name_start = name_start + 1;
             let closing_name_end = scan_tag_name(bytes, closing_name_start);
             if closing_name_end > closing_name_start {
-                let closing_name = &source[closing_name_start..closing_name_end];
+                let closing_name = source
+                    .get(closing_name_start..closing_name_end)
+                    .unwrap_or_default();
                 // The shipped HTML parser reports `</img>` (and other void
                 // end tags) as fatal. S2 cannot emit before that diagnostic.
                 if is_html_void_tag_name(closing_name)
@@ -35,7 +37,7 @@ fn source_contains_parser_recovery(source: &str) -> bool {
             }
         }
 
-        if matches!(bytes[name_start], b'!' | b'?') {
+        if matches!(first, b'!' | b'?') {
             index = scan_special_tag_end(bytes, name_start);
             continue;
         }
@@ -46,7 +48,7 @@ fn source_contains_parser_recovery(source: &str) -> bool {
             continue;
         }
 
-        let name = &source[name_start..name_end];
+        let name = source.get(name_start..name_end).unwrap_or_default();
         let namespace = tag_namespace(name, tags.last().copied());
         let tag_end = scan_tag_end(bytes, name_end);
         let self_closing = tag_closes_self_closing(bytes, name_end, tag_end);
@@ -111,7 +113,8 @@ mod tests {
 }
 
 fn find_byte(bytes: &[u8], start: usize, needle: u8) -> Option<usize> {
-    bytes[start..]
+    bytes
+        .get(start..)?
         .iter()
         .position(|byte| *byte == needle)
         .map(|offset| start + offset)
@@ -183,7 +186,7 @@ fn is_mathml_html_integration_point(tag: &str) -> bool {
 
 fn scan_tag_name(bytes: &[u8], start: usize) -> usize {
     let mut end = start;
-    while end < bytes.len() && is_tag_name_byte(bytes[end]) {
+    while bytes.get(end).copied().is_some_and(is_tag_name_byte) {
         end += 1;
     }
     end
@@ -283,8 +286,8 @@ fn scan_special_tag_end(bytes: &[u8], start: usize) -> usize {
 
 fn scan_comment_end(bytes: &[u8], start: usize) -> usize {
     let mut index = start;
-    while index + 2 < bytes.len() {
-        if &bytes[index..index + 3] == b"-->" {
+    while let Some(window) = bytes.get(index..index + 3) {
+        if window == b"-->" {
             return index + 3;
         }
         index += 1;
@@ -296,9 +299,7 @@ fn scan_tag_end(bytes: &[u8], start: usize) -> usize {
     let mut index = start;
     let mut quote = None;
 
-    while index < bytes.len() {
-        let byte = bytes[index];
-
+    while let Some(&byte) = bytes.get(index) {
         if let Some(quote_byte) = quote {
             if byte == quote_byte {
                 quote = None;
@@ -324,9 +325,9 @@ fn tag_closes_self_closing(bytes: &[u8], start: usize, end: usize) -> bool {
     let mut quote = None;
     let mut last_non_whitespace = None;
 
-    while index < end {
-        let byte = bytes[index];
-
+    while index < end
+        && let Some(&byte) = bytes.get(index)
+    {
         if let Some(quote_byte) = quote {
             if byte == quote_byte {
                 quote = None;

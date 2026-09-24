@@ -1,4 +1,5 @@
 //! Prefix identifier coverage for dynamic DOM keys.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use super::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode};

@@ -2,12 +2,21 @@
 //! and stripped before event-key calculation / handler wrapping, compared
 //! **byte-for-byte** against the shipped DOM lane.
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+#[expect(
+    dead_code,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
+)]
 mod support;
 
 const BATTERY: &[(&str, &str)] = &[

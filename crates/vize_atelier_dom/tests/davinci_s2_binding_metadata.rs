@@ -8,12 +8,21 @@
 //! six-argument render signature — all compared byte-for-byte with the
 //! shipped lane.
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+#[expect(
+    dead_code,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
+)]
 mod support;
 
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode, CodegenOptions};

@@ -77,7 +77,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::disallowed_macros)]
+    #[expect(clippy::disallowed_macros, reason = "insta uses format!")]
     fn test_generate_html_warning() {
         let warning = generate_html_warning();
         insta::assert_snapshot!(warning);

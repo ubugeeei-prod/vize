@@ -3,12 +3,17 @@
 //! SVG / MathML render output must stay byte-for-byte aligned with the shipped
 //! lane because Vue's runtime infers namespaces from contiguous vnode trees.
 
-#![allow(
+#[expect(
+    dead_code,
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
 )]
-
 mod support;
 
 const BATTERY: &[(&str, &str)] = &[

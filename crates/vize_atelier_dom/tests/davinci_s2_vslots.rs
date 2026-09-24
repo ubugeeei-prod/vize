@@ -2,12 +2,17 @@
 //! argument, `...expr` after authored slots, and the spread on a
 //! `createSlots` base, compared **byte-for-byte**.
 
-#![allow(
+#[expect(
+    dead_code,
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
 )]
-
 mod support;
 
 const BATTERY: &[(&str, &str)] = &[

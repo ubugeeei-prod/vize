@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_s0::{Allocator, FxHashMap, String};

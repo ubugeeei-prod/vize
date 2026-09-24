@@ -1,10 +1,11 @@
 //! DOM compiler snapshot tests.
 //!
 //! These tests compare the DOM compiler output against expected snapshots.
-#![allow(
+#![expect(clippy::panic, reason = "tests assert by panicking")]
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
 use vize_atelier_dom::compile_template;

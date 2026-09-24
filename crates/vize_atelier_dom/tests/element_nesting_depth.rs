@@ -19,7 +19,11 @@
 //! smaller and a default-sized stack would hide the bug.
 //!
 //! Test-only: `std::string::String` builds the sources and expected output.
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::expect_used,
+    reason = "tests assert by panicking; fixtures use std strings"
+)]
 
 use vize_atelier_core::{ErrorCode, errors::CompilerError};
 use vize_atelier_dom::{DomCompilerOptions, compile_template, compile_template_with_options};

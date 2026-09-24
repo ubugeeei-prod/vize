@@ -7,10 +7,14 @@
 //! behavior: exactly one diagnostic per invalid expression, carrying the
 //! expression's source span, and no diagnostics (or output changes) for
 //! valid expressions.
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "tests assert by panicking; insta and fixtures use format!; fixtures use std strings"
 )]
 
 use vize_atelier_core::{CompilerError, ErrorCode};

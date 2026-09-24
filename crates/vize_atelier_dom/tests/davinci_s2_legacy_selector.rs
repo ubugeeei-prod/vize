@@ -1,12 +1,6 @@
 //! P2-11 witness: legacy dialect compiles stay on compatibility after the DOM
 //! lane flag deletion, while stale flag values no longer select the old lane.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
-
 use std::ffi::OsString;
 use vize_atelier_core::options::{CodegenOptions, TemplateSyntaxMode};
 use vize_atelier_dom::{

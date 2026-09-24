@@ -1,11 +1,5 @@
 //! Shared P2-11 slot-outlet battery.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods
-)]
-
 pub const OUTLET_BATTERY: &[(&str, &str)] = &[
     ("bare", "<slot></slot>"),
     ("self_close", "<slot/>"),

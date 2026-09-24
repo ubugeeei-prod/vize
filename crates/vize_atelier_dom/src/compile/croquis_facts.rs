@@ -68,10 +68,11 @@ pub(super) fn projectable(croquis: &Croquis, metadata: Option<&BindingMetadata>)
         return false;
     }
     let mut facts = CroquisFacts::new(croquis);
-    let bindings = facts
-        .prepare::<DomCroquisProjection>()
-        .get::<Bindings>()
-        .expect("declared demand");
+    // `Bindings` is a declared demand of the projection, so it is always
+    // present; without it the lane cannot prove its bindings and stays legacy.
+    let Ok(bindings) = facts.prepare::<DomCroquisProjection>().get::<Bindings>() else {
+        return false;
+    };
     bindings
         .typed()
         .all(|(name, kind)| kind != BindingType::SetupConst || metadata.bindings.contains_key(name))

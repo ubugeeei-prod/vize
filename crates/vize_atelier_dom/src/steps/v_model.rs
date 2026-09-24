@@ -52,20 +52,7 @@ pub fn get_model_helper(tag: &str, input_type: Option<&str>) -> RuntimeHelper {
 pub fn get_model_event(tag: &str, modifiers: &VModelModifiers) -> &'static str {
     match tag {
         "select" => "change",
-        "textarea" => {
-            if modifiers.lazy {
-                "change"
-            } else {
-                "input"
-            }
-        }
-        "input" => {
-            if modifiers.lazy {
-                "change"
-            } else {
-                "input"
-            }
-        }
+        "textarea" | "input" if modifiers.lazy => "change",
         _ => "input",
     }
 }
@@ -129,6 +116,7 @@ pub fn generate_model_props(
 }
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::{VModelModifiers, generate_model_props, get_model_event, get_model_prop};
 

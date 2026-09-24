@@ -1,10 +1,12 @@
 //! P2-11 witness: source-map requests can use S2 DOM output while retaining
 //! the shipped source-map contract.
 
-#![allow(
-    clippy::disallowed_macros,
+#![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    reason = "tests assert by panicking; fixtures use std strings"
 )]
 
 use vize_atelier_core::{

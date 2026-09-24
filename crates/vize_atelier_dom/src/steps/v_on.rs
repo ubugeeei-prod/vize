@@ -218,6 +218,7 @@ pub fn generate_key_guard(keys: &[String]) -> String {
 }
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::{EventModifiers, generate_key_guard, generate_modifier_guard, resolve_key_alias};
     use vize_s0::String;
@@ -271,16 +272,20 @@ mod tests {
 
     #[test]
     fn test_generate_modifier_guard_self() {
-        let mut mods = EventModifiers::default();
-        mods.self_only = true;
+        let mods = EventModifiers {
+            self_only: true,
+            ..Default::default()
+        };
         let guard = generate_modifier_guard(&mods);
         insta::assert_snapshot!(guard.as_str());
     }
 
     #[test]
     fn test_generate_modifier_guard_exact() {
-        let mut mods = EventModifiers::default();
-        mods.exact = true;
+        let mods = EventModifiers {
+            exact: true,
+            ..Default::default()
+        };
         let guard = generate_modifier_guard(&mods);
         insta::assert_snapshot!(guard.as_str());
     }

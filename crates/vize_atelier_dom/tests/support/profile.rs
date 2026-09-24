@@ -1,7 +1,5 @@
 //! Shared profile-counter pins for P2-12b S2 DOM tests.
 
-#![allow(clippy::disallowed_types)]
-
 use davinci_harness::fixtures::LADDER;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

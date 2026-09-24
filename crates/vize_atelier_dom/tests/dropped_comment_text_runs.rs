@@ -17,8 +17,15 @@
 //! lane. Only the two whitespace rows are a rendering difference rather
 //! than a spelling one — `"a " + " b"` puts two spaces between the words
 //! where Vue puts one.
-
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::string_slice,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use vize_atelier_dom::compile_template;
 use vize_s0::Allocator;

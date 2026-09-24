@@ -14,7 +14,11 @@
 //! Vue 3.6's per-child static caching (`_cache[n] || (_cache[n] = …)`),
 //! which neither vize lane emits.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_legacy_with_options,

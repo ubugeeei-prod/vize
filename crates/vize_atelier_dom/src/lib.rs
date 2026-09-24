@@ -7,12 +7,6 @@
 //! - v-show transform
 //! - Style and class binding handling
 
-#![allow(clippy::collapsible_match)]
-#![cfg_attr(
-    test,
-    allow(clippy::disallowed_macros, clippy::field_reassign_with_default)
-)]
-
 mod compile;
 #[cfg(test)]
 mod experimental_tests;
@@ -23,6 +17,7 @@ mod prefix_identifier_tests;
 pub mod steps;
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests;
 
 pub use compile::custom_elements::{
@@ -51,7 +46,7 @@ pub use compile::{
     compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_and_codegen_options,
     compile_template_with_template_syntax_codegen_and_experimental_options,
 };
-#[allow(deprecated)]
+#[expect(deprecated, reason = "kept exported until removal")]
 pub use compile::{
     compile_template_with_vue_parser_quirks,
     compile_template_with_vue_parser_quirks_and_hoisted_scope_id,

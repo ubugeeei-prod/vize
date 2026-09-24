@@ -1,12 +1,6 @@
 //! P2-11 witness: profiling must not make unsupported DOM option shapes look
 //! like S2 production-selector coverage.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
-
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_s0::Allocator;
 use vize_s0::profiler::{CounterSummary, global_profiler};

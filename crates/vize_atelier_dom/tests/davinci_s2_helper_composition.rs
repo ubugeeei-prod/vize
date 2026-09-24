@@ -4,12 +4,17 @@
 //! component slots combine text helpers, conditional comment helpers,
 //! and slot wrappers in one helper preamble.
 
-#![allow(
+#[expect(
+    dead_code,
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
 )]
-
 mod support;
 
 const BATTERY: &[(&str, &str)] = &[

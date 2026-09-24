@@ -1,10 +1,10 @@
 //! P2-11 witness: parser-recovered SFC self-closing HTML sections still emit
 //! through S2 once the compatibility parser has recorded its diagnostic.
 
-#![allow(
-    clippy::disallowed_macros,
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};

@@ -1,12 +1,21 @@
 //! P2-11 corpus regression: nested children of a `v-for` item keep the shipped
 //! props object layout instead of inheriting the item-root compact form.
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+#[expect(
+    dead_code,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
+)]
 mod support;
 
 const BATTERY: &[(&str, &str)] = &[

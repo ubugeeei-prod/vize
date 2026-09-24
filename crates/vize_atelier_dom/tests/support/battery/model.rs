@@ -1,11 +1,5 @@
 //! Shared P2-11 `v-model` battery.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods
-)]
-
 pub const MODEL_BATTERY: &[(&str, &str)] = &[
     ("input", r#"<input v-model="msg">"#),
     ("textarea", r#"<textarea v-model="msg"></textarea>"#),

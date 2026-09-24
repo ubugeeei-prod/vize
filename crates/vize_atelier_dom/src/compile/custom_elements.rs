@@ -114,7 +114,7 @@ pub fn compile_template_with_custom_elements_and_template_syntax_and_hoisted_sco
 /// Compile with declarative custom-element patterns, an SFC hoisted scope ID,
 /// and opt-in experimental codegen context.
 #[doc(hidden)]
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub fn compile_template_with_custom_elements_template_syntax_hoisted_scope_id_codegen_and_experimental_options<
     'a,
 >(
@@ -173,7 +173,7 @@ pub fn compile_sfc_template_with_custom_elements_and_template_syntax_and_hoisted
 /// Compile an SFC template block with section metadata, custom-element
 /// patterns, and opt-in experimental codegen context.
 #[doc(hidden)]
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
 pub fn compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options<
     'a,
 >(

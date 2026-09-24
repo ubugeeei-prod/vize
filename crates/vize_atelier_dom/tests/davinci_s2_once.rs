@@ -1,12 +1,21 @@
 //! P2-11 `v-once` witness: native element cache wrappers from S2,
 //! compared **byte-for-byte** against the shipped DOM lane.
 
-#![allow(
+#![expect(
     clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 
+#[expect(
+    dead_code,
+    clippy::disallowed_types,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
+)]
 mod support;
 
 use vize_s0::Allocator;

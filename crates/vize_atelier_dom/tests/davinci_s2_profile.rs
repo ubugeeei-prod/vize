@@ -1,12 +1,17 @@
 //! P2-12b witness: profile counters describe the S2 emitter used by the
 //! profiled source-map-free DOM output.
+#![expect(clippy::panic, reason = "tests assert by panicking")]
 
-#![allow(
+#[expect(
+    dead_code,
     clippy::disallowed_macros,
+    clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    reason = "shared test support; each binary uses a subset"
 )]
-
 mod support;
 
 use davinci_harness::fixtures::{LADDER, template_block};

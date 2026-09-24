@@ -21,7 +21,10 @@
 //! 3.6.0-beta.10's own output, cross-checked against this crate's legacy
 //! parse/transform lane.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_legacy_with_options,

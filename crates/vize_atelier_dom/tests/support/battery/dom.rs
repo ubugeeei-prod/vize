@@ -4,12 +4,6 @@
 //! object-spread v-bind, static-name components, object v-on, and
 //! implicit text / native / component default slots.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods
-)]
-
 pub const DOM_BATTERY: &[(&str, &str)] = &[
     ("empty_div", "<div></div>"),
     ("div_with_text", "<div>hello</div>"),

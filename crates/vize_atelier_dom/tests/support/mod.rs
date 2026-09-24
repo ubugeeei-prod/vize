@@ -1,12 +1,5 @@
 //! Shared S2 vs shipped DOM-lane differential harness.
 
-#![allow(
-    dead_code,
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods
-)]
-
 pub mod battery;
 pub mod bindings;
 pub mod profile;
@@ -24,7 +17,6 @@ use vize_s1_to_s2::{
 };
 
 #[derive(Clone, Copy)]
-#[allow(dead_code)]
 pub enum ExpectedRefusal {
     Diagnostics,
     Unsupported(UnsupportedReason),
@@ -225,7 +217,6 @@ fn assert_s2_matches_shipped_with_dialect_inner(
     );
 }
 
-#[allow(dead_code)]
 pub fn assert_s2_refuses(battery: &[(&str, &str, ExpectedRefusal)]) {
     let allocator = Allocator::new();
     for (name, src, expected) in battery {

@@ -1,5 +1,16 @@
 //! Static literal bind patch-flag witnesses split from the broad S2 corpus.
 
+#[expect(
+    dead_code,
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
+)]
 mod support;
 
 use vize_s0::Allocator;

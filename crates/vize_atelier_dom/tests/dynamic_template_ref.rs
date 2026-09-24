@@ -1,4 +1,4 @@
-#![allow(clippy::disallowed_macros)] // `insta::assert_snapshot!` expands to `format!`.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use vize_atelier_dom::compile_template;
 use vize_s0::Allocator;

@@ -1,12 +1,17 @@
 //! P2-11 colon / vnode-hook events and merged duplicate handlers,
 //! compared **byte-for-byte** including helper usage and patch flags.
 
-#![allow(
+#[expect(
+    dead_code,
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
 )]
-
 mod support;
 
 const BATTERY: &[(&str, &str)] = &[
