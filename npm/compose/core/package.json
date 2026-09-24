@@ -418,10 +418,20 @@
       "import": "./dist/use-broadcast-channel.mjs",
       "default": "./dist/use-broadcast-channel.mjs"
     },
+    "./use-builtin-ai": {
+      "types": "./dist/use-builtin-ai.d.mts",
+      "import": "./dist/use-builtin-ai.mjs",
+      "default": "./dist/use-builtin-ai.mjs"
+    },
     "./use-clipboard": {
       "types": "./dist/use-clipboard.d.mts",
       "import": "./dist/use-clipboard.mjs",
       "default": "./dist/use-clipboard.mjs"
+    },
+    "./use-compression-stream": {
+      "types": "./dist/use-compression-stream.d.mts",
+      "import": "./dist/use-compression-stream.mjs",
+      "default": "./dist/use-compression-stream.mjs"
     },
     "./use-confirm-dialog": {
       "types": "./dist/use-confirm-dialog.d.mts",
@@ -588,6 +598,11 @@
       "import": "./dist/use-mounted.mjs",
       "default": "./dist/use-mounted.mjs"
     },
+    "./use-navigation-api": {
+      "types": "./dist/use-navigation-api.d.mts",
+      "import": "./dist/use-navigation-api.mjs",
+      "default": "./dist/use-navigation-api.mjs"
+    },
     "./use-notification": {
       "types": "./dist/use-notification.d.mts",
       "import": "./dist/use-notification.mjs",
@@ -613,6 +628,11 @@
       "import": "./dist/use-offset-pagination.mjs",
       "default": "./dist/use-offset-pagination.mjs"
     },
+    "./use-performance-observer": {
+      "types": "./dist/use-performance-observer.d.mts",
+      "import": "./dist/use-performance-observer.mjs",
+      "default": "./dist/use-performance-observer.mjs"
+    },
     "./use-permission": {
       "types": "./dist/use-permission.d.mts",
       "import": "./dist/use-permission.mjs",
@@ -627,6 +647,11 @@
       "types": "./dist/use-previous.d.mts",
       "import": "./dist/use-previous.mjs",
       "default": "./dist/use-previous.mjs"
+    },
+    "./use-push-subscription": {
+      "types": "./dist/use-push-subscription.d.mts",
+      "import": "./dist/use-push-subscription.mjs",
+      "default": "./dist/use-push-subscription.mjs"
     },
     "./use-queue": {
       "types": "./dist/use-queue.d.mts",
@@ -643,6 +668,16 @@
       "import": "./dist/use-relative-time-format.mjs",
       "default": "./dist/use-relative-time-format.mjs"
     },
+    "./use-request-idle-callback": {
+      "types": "./dist/use-request-idle-callback.d.mts",
+      "import": "./dist/use-request-idle-callback.mjs",
+      "default": "./dist/use-request-idle-callback.mjs"
+    },
+    "./use-scheduler-post-task": {
+      "types": "./dist/use-scheduler-post-task.d.mts",
+      "import": "./dist/use-scheduler-post-task.mjs",
+      "default": "./dist/use-scheduler-post-task.mjs"
+    },
     "./use-script-tag": {
       "types": "./dist/use-script-tag.d.mts",
       "import": "./dist/use-script-tag.mjs",
@@ -657,6 +692,11 @@
       "types": "./dist/use-selection.d.mts",
       "import": "./dist/use-selection.mjs",
       "default": "./dist/use-selection.mjs"
+    },
+    "./use-service-worker": {
+      "types": "./dist/use-service-worker.d.mts",
+      "import": "./dist/use-service-worker.mjs",
+      "default": "./dist/use-service-worker.mjs"
     },
     "./use-set": {
       "types": "./dist/use-set.d.mts",
@@ -702,6 +742,11 @@
       "types": "./dist/use-storage.d.mts",
       "import": "./dist/use-storage.mjs",
       "default": "./dist/use-storage.mjs"
+    },
+    "./use-storage-estimate": {
+      "types": "./dist/use-storage-estimate.d.mts",
+      "import": "./dist/use-storage-estimate.mjs",
+      "default": "./dist/use-storage-estimate.mjs"
     },
     "./use-style-tag": {
       "types": "./dist/use-style-tag.d.mts",
@@ -758,10 +803,25 @@
       "import": "./dist/use-vibrate.mjs",
       "default": "./dist/use-vibrate.mjs"
     },
+    "./use-view-transition": {
+      "types": "./dist/use-view-transition.d.mts",
+      "import": "./dist/use-view-transition.mjs",
+      "default": "./dist/use-view-transition.mjs"
+    },
     "./use-wake-lock": {
       "types": "./dist/use-wake-lock.d.mts",
       "import": "./dist/use-wake-lock.mjs",
       "default": "./dist/use-wake-lock.mjs"
+    },
+    "./use-web-locks": {
+      "types": "./dist/use-web-locks.d.mts",
+      "import": "./dist/use-web-locks.mjs",
+      "default": "./dist/use-web-locks.mjs"
+    },
+    "./use-web-vitals": {
+      "types": "./dist/use-web-vitals.d.mts",
+      "import": "./dist/use-web-vitals.mjs",
+      "default": "./dist/use-web-vitals.mjs"
     },
     "./use-websocket": {
       "types": "./dist/use-websocket.d.mts",
