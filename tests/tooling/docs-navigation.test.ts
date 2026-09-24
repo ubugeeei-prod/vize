@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { SCRIPT_BASENAMES } from "../../docs/theme/background.ts";
+import { renderReferenceDocs } from "../../npm/ui/scripts/generate-reference-docs.ts";
 import { repoRoot } from "./_helpers/moonbit.ts";
 
 type LocaleStrings = {
@@ -46,7 +47,18 @@ function configuredLocales(): Array<{ code: string; name: string }> {
   ].map(({ groups }) => ({ code: groups!.code, name: groups!.name }));
 }
 
+/** Pages written at docs build time by `generate-reference-docs.ts` (not committed). */
+const generatedPages = new Set(renderReferenceDocs().keys());
+
 function hasContentPage(locale: string, navPath: string): boolean {
+  const generatedPrefix = locale === "en" ? "" : `${locale}/`;
+  const generated = navPath.slice(1);
+  if (
+    generatedPages.has(`${generatedPrefix}${generated}.md`) ||
+    generatedPages.has(`${generatedPrefix}${generated}/index.md`)
+  ) {
+    return true;
+  }
   const localeDir = locale === "en" ? contentDir : path.join(contentDir, locale);
   if (navPath === "/") {
     return fs.existsSync(path.join(localeDir, "index.md"));

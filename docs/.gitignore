@@ -1,3 +1,8 @@
 dist
 node_modules
 .cache
+# Reference pages generated at build time by npm/ui/scripts/generate-reference-docs.ts
+content/guide/ui/
+content/guide/composables/
+content/*/guide/ui/
+content/*/guide/composables/
