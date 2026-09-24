@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml } from "@iarna/toml";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const doctorRoot = path.join(repoRoot, "crates", "vize_doctor");
 const scannedExtensions = new Set([".md", ".rs", ".toml"]);
 

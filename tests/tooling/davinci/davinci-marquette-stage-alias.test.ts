@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const marquetteRoot = path.join(repoRoot, "crates", "vize_marquette");
 const scannedExtensions = new Set([".md", ".rs", ".toml"]);
 

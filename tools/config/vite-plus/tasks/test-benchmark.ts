@@ -38,6 +38,12 @@ const localTestCommand = runTasks(
   "test:scripts",
   "test:zed-extension:unit",
 );
+const toolingTestFiles = [
+  "tests/tooling/*.test.ts",
+  "tests/tooling/*.test.mjs",
+  "tests/tooling/davinci/*.test.ts",
+  "tests/tooling/davinci/*.test.mjs",
+].join(" ");
 
 const jsPackageTestCommand = runInPackages("test", testedPackages, {
   concurrencyLimit: 1,
@@ -104,7 +110,7 @@ export const testAndBenchmarkTasks = defineTasks({
   // dev profile (~1m20s). Building once in the CI profile saves both legs.
   "test:js": noCacheTask(`${runTask("build:native:test")} && ${jsPackageTestCommand}`),
   "test:scripts": noCacheTask(
-    `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 tests/tooling/*.test.ts tests/tooling/*.test.mjs`,
+    `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 ${toolingTestFiles}`,
   ),
   "test:vscode-extension:vsix": noCacheTask(
     runInVscodeExtension(packageVscodeExtension, assertVscodePackage),

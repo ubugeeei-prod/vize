@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const lspClientModule = path.join(repoRoot, "crates", "vize_canon", "src", "lsp_client.rs");
 const lspClientRoot = path.join(repoRoot, "crates", "vize_canon", "src", "lsp_client");
 const require = createRequire(import.meta.url);

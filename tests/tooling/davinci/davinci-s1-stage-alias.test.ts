@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml } from "@iarna/toml";
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
 function readRepoFile(...parts: string[]): string {
   return fs.readFileSync(path.join(repoRoot, ...parts), "utf8");
