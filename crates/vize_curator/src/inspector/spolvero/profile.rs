@@ -58,6 +58,7 @@ pub fn ladder_profile(
         budget: ProfileExportBudget::default(),
     });
     profiler.disable();
-    serde_json::from_str(export.to_json().as_str())
-        .expect("the profile exporter emits valid JSON by construction")
+    // The exporter emits valid JSON by construction; `null` is the
+    // unreachable fallback rather than an abort.
+    serde_json::from_str(export.to_json().as_str()).unwrap_or_default()
 }

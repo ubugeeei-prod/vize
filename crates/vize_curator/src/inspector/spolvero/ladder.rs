@@ -115,12 +115,11 @@ impl PassWindows {
     /// The pass's step, and its walk's when the pass ends one.
     fn close(&self, event: &PassEvent<'_>, now: u64) -> (LadderStep, Option<LadderStep>) {
         let stage = event.pipeline.stage;
-        let lead = event.pipeline.passes[event.group.start].name;
+        let lead = event.pipeline.passes.get(event.group.start);
         (
             step(stage, event.desc().name, self.pass.get(), now),
-            event
-                .is_group_exit()
-                .then(|| step(stage, lead, self.walk.get(), now)),
+            lead.filter(|_| event.is_group_exit())
+                .map(|lead| step(stage, lead.name, self.walk.get(), now)),
         )
     }
 }

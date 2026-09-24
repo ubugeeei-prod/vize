@@ -8,12 +8,6 @@
 //! - rendered is monotone along the render tree: a parent never renders
 //!   less than any child it renders.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
-
 use std::path::{Path, PathBuf};
 
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileOptions, FileId, TemplateScores};

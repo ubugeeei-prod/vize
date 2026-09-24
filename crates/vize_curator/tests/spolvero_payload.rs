@@ -3,6 +3,8 @@
 //! (`docs/davinci/plan/spolvero-feed.schema.json`) through the shared strict
 //! validator (TS-15), and its content is pinned exactly.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;

@@ -96,7 +96,10 @@ fn the_template_section_shows_own_rendered_and_where_it_comes_from() {
         .nth(1)
         .and_then(|rest| rest.split("### Top Hotspots").next())
         .expect("the template section is rendered");
-    #[allow(clippy::disallowed_macros)]
+    #[expect(
+        clippy::disallowed_macros,
+        reason = "insta snapshots expand to format!"
+    )]
     {
         insta::assert_snapshot!(section);
     }

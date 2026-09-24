@@ -114,8 +114,9 @@ pub fn spolvero_value_with_remarks(
         pages,
         remarks,
     };
-    serde_json::from_str(feed.to_json().as_str())
-        .expect("SpolveroFeed::to_json emits valid JSON by the feed escaping law")
+    // `SpolveroFeed::to_json` emits valid JSON by the feed escaping law;
+    // `null` is the unreachable fallback rather than an abort.
+    serde_json::from_str(feed.to_json().as_str()).unwrap_or_default()
 }
 
 /// The inspector payload's feed: S1 pages for every parseable `.vue` file

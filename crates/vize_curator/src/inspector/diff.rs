@@ -37,19 +37,32 @@ pub fn build_line_diff(left: &str, right: &str) -> Vec<InspectorDiffLine> {
     let rows = left_lines.len() + 1;
     let cols = right_lines.len() + 1;
     let mut table = vec![vec![0usize; cols]; rows];
+    // LCS score table; out-of-range cells read as 0 (the empty suffix).
+    let cell = |table: &[Vec<usize>], row: usize, col: usize| {
+        table
+            .get(row)
+            .and_then(|cells| cells.get(col))
+            .copied()
+            .unwrap_or(0)
+    };
 
-    for left_index in (0..left_lines.len()).rev() {
-        for right_index in (0..right_lines.len()).rev() {
-            let same_score =
-                diff_line_match_weight(&left_lines[left_index], &right_lines[right_index]);
+    for (left_index, left_line) in left_lines.iter().enumerate().rev() {
+        for (right_index, right_line) in right_lines.iter().enumerate().rev() {
+            let same_score = diff_line_match_weight(left_line, right_line);
             let take_same = if same_score > 0 {
-                table[left_index + 1][right_index + 1] + same_score
+                cell(&table, left_index + 1, right_index + 1) + same_score
             } else {
                 0
             };
-            table[left_index][right_index] = take_same
-                .max(table[left_index + 1][right_index])
-                .max(table[left_index][right_index + 1]);
+            let best = take_same
+                .max(cell(&table, left_index + 1, right_index))
+                .max(cell(&table, left_index, right_index + 1));
+            if let Some(slot) = table
+                .get_mut(left_index)
+                .and_then(|cells| cells.get_mut(right_index))
+            {
+                *slot = best;
+            }
         }
     }
 
@@ -57,31 +70,32 @@ pub fn build_line_diff(left: &str, right: &str) -> Vec<InspectorDiffLine> {
     let mut left_index = 0;
     let mut right_index = 0;
 
-    while left_index < left_lines.len() && right_index < right_lines.len() {
-        let same_score = diff_line_match_weight(&left_lines[left_index], &right_lines[right_index]);
+    while let (Some(left_line), Some(right_line)) =
+        (left_lines.get(left_index), right_lines.get(right_index))
+    {
+        let same_score = diff_line_match_weight(left_line, right_line);
         let take_same = if same_score > 0 {
-            table[left_index + 1][right_index + 1] + same_score
+            cell(&table, left_index + 1, right_index + 1) + same_score
         } else {
             0
         };
-        if same_score > 0
-            && take_same >= table[left_index + 1][right_index]
-            && take_same >= table[left_index][right_index + 1]
-        {
+        let skip_left = cell(&table, left_index + 1, right_index);
+        let skip_right = cell(&table, left_index, right_index + 1);
+        if same_score > 0 && take_same >= skip_left && take_same >= skip_right {
             diff.push(InspectorDiffLine {
                 kind: "same",
                 left_line: Some(left_index + 1),
                 right_line: Some(right_index + 1),
-                text: left_lines[left_index].clone(),
+                text: left_line.clone(),
             });
             left_index += 1;
             right_index += 1;
-        } else if table[left_index + 1][right_index] >= table[left_index][right_index + 1] {
+        } else if skip_left >= skip_right {
             diff.push(InspectorDiffLine {
                 kind: "remove",
                 left_line: Some(left_index + 1),
                 right_line: None,
-                text: left_lines[left_index].clone(),
+                text: left_line.clone(),
             });
             left_index += 1;
         } else {
@@ -89,30 +103,28 @@ pub fn build_line_diff(left: &str, right: &str) -> Vec<InspectorDiffLine> {
                 kind: "add",
                 left_line: None,
                 right_line: Some(right_index + 1),
-                text: right_lines[right_index].clone(),
+                text: right_line.clone(),
             });
             right_index += 1;
         }
     }
 
-    while left_index < left_lines.len() {
+    for (index, line) in left_lines.iter().enumerate().skip(left_index) {
         diff.push(InspectorDiffLine {
             kind: "remove",
-            left_line: Some(left_index + 1),
+            left_line: Some(index + 1),
             right_line: None,
-            text: left_lines[left_index].clone(),
+            text: line.clone(),
         });
-        left_index += 1;
     }
 
-    while right_index < right_lines.len() {
+    for (index, line) in right_lines.iter().enumerate().skip(right_index) {
         diff.push(InspectorDiffLine {
             kind: "add",
             left_line: None,
-            right_line: Some(right_index + 1),
-            text: right_lines[right_index].clone(),
+            right_line: Some(index + 1),
+            text: line.clone(),
         });
-        right_index += 1;
     }
 
     diff

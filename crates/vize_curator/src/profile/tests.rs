@@ -7,7 +7,10 @@ use vize_s0::profiler::{
 };
 
 #[test]
-#[allow(clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshots expand to format!"
+)]
 fn profile_report_snapshot() {
     let phases = [
         ProfilePhase {

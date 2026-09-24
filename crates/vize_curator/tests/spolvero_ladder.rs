@@ -5,6 +5,12 @@
 //! page is pinned by exact equality, and the S2/S3 spans index the S1 page
 //! (the provenance property the playground's source highlighting relies on).
 
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;

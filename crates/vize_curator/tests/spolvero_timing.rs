@@ -4,6 +4,8 @@
 //! group window, and that the timings export as a P0-11 profile document
 //! that validates against the committed schema through the TS-15 validator.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::cell::Cell;
 use std::path::Path;
 
