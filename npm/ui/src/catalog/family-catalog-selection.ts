@@ -81,9 +81,12 @@ export const selectionFamilyCatalog = [
         "context",
         "controllable-state",
         "typeahead",
+        // The live-region status text renders through VisuallyHidden.
+        "visually-hidden",
       ],
-      maximumJavaScriptGzipBytes: 13_000,
-      maximumCssGzipBytes: 0,
+      maximumJavaScriptGzipBytes: 13_600,
+      // VisuallyHidden pulls the shared packaged stylesheet (see its entry).
+      maximumCssGzipBytes: 7_600,
     },
     aliases: [
       "combobox",

@@ -3,7 +3,6 @@ import { computed, nextTick, onMounted, onUnmounted, shallowRef, watch } from "v
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../foundations/controllable-state/controllable-state.ts";
-import VisuallyHidden from "../../accessibility/visually-hidden/visually-hidden.vue";
 import {
   deriveDeterministicId,
   useDeterministicId,
@@ -24,6 +23,10 @@ import {
   toggleInList,
 } from "../select/select-model.ts";
 import type { SelectModelValue } from "../select/select-model.ts";
+// Imported after the shared select modules so the root bundle orders the
+// select chunk before visually-hidden exactly as the combobox subpath does
+// (byte-equality tree-shaking gate).
+import VisuallyHidden from "../../accessibility/visually-hidden/visually-hidden.vue";
 import { comboboxContext } from "./combobox-context.ts";
 import type { ComboboxContextValue } from "./combobox-context.ts";
 import {

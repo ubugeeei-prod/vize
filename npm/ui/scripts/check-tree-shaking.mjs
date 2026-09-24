@@ -123,9 +123,16 @@ for (const { canonicalName: family, bundleBudget } of treeShakingEntries) {
     ["theme", /--vize-ui-color-canvas/],
     ["visually-hidden", /clip-path:inset\(50%\)/],
   ]);
-  const styledSignature = styledFamilySignatures.get(family);
-  if (styledSignature) {
-    assert.match(rootOutput.css, styledSignature);
+  // A family that composes an allowed styled family (for example Combobox's
+  // VisuallyHidden live region) legitimately retains that family's stylesheet.
+  const styledSignatures = [family, ...allowedRetainedFamilies].flatMap((retainedFamily) => {
+    const signature = styledFamilySignatures.get(retainedFamily);
+    return signature === undefined ? [] : [signature];
+  });
+  if (styledSignatures.length > 0) {
+    for (const styledSignature of styledSignatures) {
+      assert.match(rootOutput.css, styledSignature);
+    }
   } else {
     assert.equal(rootOutput.css, "", `${exportName} retained another component's stylesheet`);
   }
