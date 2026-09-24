@@ -358,6 +358,14 @@ watch([isOpen, query], ([nextOpen]) => {
     if (status.value === "loading") status.value = "idle";
     return;
   }
+  // The previous query is obsolete immediately, even while the next request
+  // is waiting for the debounce timer. Its response must never replace the
+  // current query's suggestions.
+  controller?.abort();
+  controller = null;
+  loaded.value = undefined;
+  loadError.value = undefined;
+  status.value = "loading";
   if (timer !== null) clearTimeout(timer);
   timer = null;
   if (debounce <= 0) {

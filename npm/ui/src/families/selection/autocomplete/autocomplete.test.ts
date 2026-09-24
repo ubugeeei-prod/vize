@@ -158,6 +158,25 @@ test("free-text Enter submits the text and fromText records search-style history
   handle.unmount();
 });
 
+test("free-text submission does not reuse a previously chosen suggestion", async () => {
+  const handle = mountAutocomplete({ items: places });
+  const field = input(handle);
+  field.focus();
+  await type(field, "kyot");
+  keydown(field, "Enter");
+  await settle();
+
+  await type(field, "ramen near me");
+  assert.equal(field.getAttribute("aria-activedescendant"), null);
+  keydown(field, "Enter");
+  await settle();
+  assert.deepEqual(handle.wrapper.emitted("submit"), [
+    ["Kyoto Tower", places[1]],
+    ["ramen near me", null],
+  ]);
+  handle.unmount();
+});
+
 test("slot clearHistory empties the history", async () => {
   const handle = mountAutocomplete({ defaultHistory: [places[0]], items: places });
   const field = input(handle);

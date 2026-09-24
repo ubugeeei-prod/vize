@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { test } from "vite-plus/test";
+import { test, vi } from "vite-plus/test";
 import { h } from "vue";
 
 import { mountInteraction } from "../../../testing/mount.ts";
@@ -314,6 +314,50 @@ test("loadItems loads per query, publishes loading, and aborts superseded reques
   await typeInto(textarea, "@al ");
   assert.equal(handle.root().getAttribute("data-state"), "closed");
   handle.unmount();
+});
+
+test("debounced query changes abort pending loads before stale results can render", async () => {
+  vi.useFakeTimers();
+  try {
+    const requests: {
+      query: string;
+      signal: AbortSignal;
+      resolve: (items: readonly Person[]) => void;
+    }[] = [];
+    const handle = mountMention({
+      debounce: 50,
+      items: undefined,
+      loadItems: (query: string, _trigger: MentionTrigger, context: MentionLoadContext) =>
+        new Promise<readonly Person[]>((resolve) => {
+          requests.push({ query, resolve, signal: context.signal });
+        }),
+    });
+    const textarea = field(handle);
+    await typeInto(textarea, "@a");
+    vi.advanceTimersByTime(50);
+    await settle();
+    assert.equal(requests[0]?.query, "a");
+
+    await typeInto(textarea, "@al");
+    assert.equal(requests[0]?.signal.aborted, true);
+    requests[0]?.resolve(people);
+    await settle();
+    assert.deepEqual(options(handle), [], "obsolete results stay hidden while debouncing");
+
+    vi.advanceTimersByTime(50);
+    await settle();
+    assert.equal(requests[1]?.query, "al");
+    requests[1]?.resolve(people.slice(1, 2));
+    await settle();
+    assert.deepEqual(options(handle), ["Alan Turing"]);
+
+    await typeInto(textarea, "@alx");
+    assert.deepEqual(options(handle), [], "the prior query's results clear before the debounce");
+    assert.equal(handle.root().getAttribute("data-loading"), "true");
+    handle.unmount();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 
 test("controlled text, filter injection, disabled state, and exposed methods", async () => {

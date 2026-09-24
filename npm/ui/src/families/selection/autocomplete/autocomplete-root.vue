@@ -69,7 +69,6 @@ const recent = computed(() => historyState.value.value);
 const historyCount = computed(() => recent.value.length);
 const hasHistory = computed(() => historyCount.value > 0);
 let lastQuery = "";
-let lastSelection: T | null = null;
 
 function currentHistory(): readonly T[] {
   return historyState.value.value;
@@ -88,7 +87,6 @@ function clearHistory(): void {
 }
 
 function onModelValue(value: T | null): void {
-  lastSelection = value;
   if (value !== null) {
     remember(value);
     emit("submit", itemText?.(value) ?? lastQuery, value);
@@ -110,7 +108,7 @@ function onKeydownCapture(event: KeyboardEvent): void {
   const text = event.target.value.trim();
   if (text.length === 0) return;
   if (fromText !== undefined) remember(fromText(text));
-  emit("submit", text, lastSelection);
+  emit("submit", text, null);
 }
 
 onMounted(() => {
