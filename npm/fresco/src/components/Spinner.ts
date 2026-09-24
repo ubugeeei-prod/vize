@@ -2,7 +2,7 @@
  * Spinner Component - Loading indicator
  */
 
-import { defineComponent, h, ref, onMounted, onUnmounted, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, ref, onMounted, onUnmounted, type PropType } from "vue";
 import { Text } from "./Text.js";
 
 /**

@@ -2,7 +2,7 @@
  * Stream composables matching Ink's stdin/stdout/stderr helpers.
  */
 
-import { inject, type InjectionKey } from "@vue/runtime-core";
+import { inject, type InjectionKey } from "vue";
 
 const BRACKETED_PASTE_ENABLE = "\x1B[?2004h";
 const BRACKETED_PASTE_DISABLE = "\x1B[?2004l";

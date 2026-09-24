@@ -2,7 +2,7 @@
  * Code Component - Code block display
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 
 export interface CodeProps {
   /** Code content */

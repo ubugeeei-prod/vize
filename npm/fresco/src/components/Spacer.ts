@@ -2,7 +2,7 @@
  * Spacer Component - flexible empty space along the parent main axis.
  */
 
-import { defineComponent, h } from "@vue/runtime-core";
+import { defineComponent, h } from "vue";
 
 export const Spacer = defineComponent({
   name: "Spacer",

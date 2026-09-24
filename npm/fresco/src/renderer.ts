@@ -7,7 +7,7 @@ import {
   type RendererOptions,
   type RendererNode,
   type RendererElement,
-} from "@vue/runtime-core";
+} from "vue";
 import type { FrescoRenderNode, FrescoRenderNodeKind } from "./protocol.js";
 import { frescoNodeToRenderNode } from "./renderPayload.js";
 

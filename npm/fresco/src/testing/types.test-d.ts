@@ -1,6 +1,6 @@
 /** Compile-only assertions for the Fresco testing harness entrypoint. */
 
-import { h } from "@vue/runtime-core";
+import { h } from "vue";
 
 import { TextInput } from "../components/index.js";
 import {

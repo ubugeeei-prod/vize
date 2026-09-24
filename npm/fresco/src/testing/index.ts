@@ -6,7 +6,7 @@
  * Vitest, and `node:test` suites.
  */
 
-import { nextTick, type Component, type VNodeChild } from "@vue/runtime-core";
+import { nextTick, type Component, type VNodeChild } from "vue";
 import {
   lastCompositionEvent,
   lastFocusEvent,

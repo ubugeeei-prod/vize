@@ -2,7 +2,7 @@
  * Menu Component - Command menu/palette
  */
 
-import { defineComponent, h, type PropType, type VNode } from "@vue/runtime-core";
+import { defineComponent, h, type PropType, type VNode } from "vue";
 
 export interface MenuItem {
   key: string;

@@ -2,7 +2,7 @@
  * TextInput Component - Text input with builtin cursor management and IME support
  */
 
-import { computed, defineComponent, h, ref, watch, type PropType } from "@vue/runtime-core";
+import { computed, defineComponent, h, ref, watch, type PropType } from "vue";
 import { useInput } from "../composables/useInput.js";
 import type { FrescoDimension, FrescoRenderStyle } from "../protocol.js";
 import {

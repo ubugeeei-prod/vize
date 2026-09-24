@@ -2,7 +2,7 @@
  * ProgressBar Component - Progress indicator
  */
 
-import { defineComponent, h, computed, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, computed, type PropType } from "vue";
 import { Box } from "./Box.js";
 import { Text } from "./Text.js";
 

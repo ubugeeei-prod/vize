@@ -2,7 +2,7 @@
  * useAnimation - Ink-compatible shared animation state.
  */
 
-import { computed, onMounted, onUnmounted, reactive, watch } from "@vue/runtime-core";
+import { computed, onMounted, onUnmounted, reactive, watch } from "vue";
 
 export interface UseAnimationOptions {
   /** Time between ticks in milliseconds */

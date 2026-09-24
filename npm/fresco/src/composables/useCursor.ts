@@ -2,7 +2,7 @@
  * useCursor - terminal cursor positioning.
  */
 
-import { inject, onUnmounted, type InjectionKey } from "@vue/runtime-core";
+import { inject, onUnmounted, type InjectionKey } from "vue";
 
 export interface CursorPosition {
   x: number;

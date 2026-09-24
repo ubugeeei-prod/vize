@@ -2,7 +2,7 @@
  * Tree Component - Tree view for hierarchical data
  */
 
-import { defineComponent, h, type PropType, type VNode } from "@vue/runtime-core";
+import { defineComponent, h, type PropType, type VNode } from "vue";
 
 export interface TreeNode {
   key: string;

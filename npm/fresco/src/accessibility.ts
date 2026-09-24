@@ -2,7 +2,7 @@
  * Ink-compatible screen reader helpers.
  */
 
-import type { InjectionKey, Ref } from "@vue/runtime-core";
+import type { InjectionKey, Ref } from "vue";
 import type { FrescoNode, NativeRenderNode } from "./renderer.js";
 import { normalizeFrescoStyle } from "./renderPayload.js";
 

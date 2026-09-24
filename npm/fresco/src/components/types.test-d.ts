@@ -6,7 +6,7 @@
  * case stops typechecking or a `@ts-expect-error` negative starts passing.
  */
 
-import { h } from "@vue/runtime-core";
+import { h } from "vue";
 
 import { Box, type BoxProps } from "./Box.js";
 import { Text, type TextProps, type TextWrap } from "./Text.js";

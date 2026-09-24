@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { defineComponent, h, nextTick, ref, type Ref } from "@vue/runtime-core";
+import { defineComponent, h, nextTick, ref, type Ref } from "vue";
 
 import { mountFresco } from "../testing/mount.js";
 import { createFocusManager, useFocus, type FocusManager } from "./useFocus.js";

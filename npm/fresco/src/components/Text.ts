@@ -2,7 +2,7 @@
  * Text Component - Text display
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 import { useIsScreenReaderEnabled } from "../composables/useIsScreenReaderEnabled.js";
 import type { FrescoAppearance } from "../protocol.js";
 import { stringifyChildren } from "../utils/text.js";

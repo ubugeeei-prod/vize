@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { h } from "@vue/runtime-core";
+import { h } from "vue";
 
 import { firstChild, mountComponent, toTreeSnapshot } from "../testing/mount.js";
 import { Box } from "./Box.js";

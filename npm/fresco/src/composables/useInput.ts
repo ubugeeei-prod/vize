@@ -2,7 +2,7 @@
  * useInput - Input handling composable
  */
 
-import { isRef, onUnmounted, ref, watch, type Ref } from "@vue/runtime-core";
+import { isRef, onUnmounted, ref, watch, type Ref } from "vue";
 import { lastCompositionEvent, lastKeyEvent, lastPasteEvent, type KeyEvent } from "../app.js";
 import { hasActivePasteHandlers } from "./usePaste.js";
 import { useStreamsContext } from "./useStreams.js";

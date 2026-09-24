@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { defineComponent, h, nextTick, ref } from "@vue/runtime-core";
+import { defineComponent, h, nextTick, ref } from "vue";
 
 import { Static, TextInput } from "../components/index.js";
 import { useWindowSize } from "../composables/index.js";

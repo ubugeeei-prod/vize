@@ -2,7 +2,7 @@
  * Select Component - Dropdown/menu selection
  */
 
-import { defineComponent, h, ref, type PropType, watch } from "@vue/runtime-core";
+import { defineComponent, h, ref, type PropType, watch } from "vue";
 
 export interface SelectOption {
   label: string;

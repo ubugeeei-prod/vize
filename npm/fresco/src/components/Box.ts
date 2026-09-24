@@ -2,7 +2,7 @@
  * Box Component - Container with flexbox layout
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 import type { AriaRole, AriaState } from "../accessibility.js";
 import { useIsScreenReaderEnabled } from "../composables/useIsScreenReaderEnabled.js";
 import type {

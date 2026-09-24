@@ -2,7 +2,7 @@
  * Divider Component - Horizontal or vertical divider line
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 
 export interface DividerProps {
   /** Divider direction */

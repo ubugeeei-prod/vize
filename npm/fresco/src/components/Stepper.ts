@@ -2,7 +2,7 @@
  * Stepper Component - Step indicator for wizards
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 
 export interface Step {
   key: string;

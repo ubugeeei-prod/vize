@@ -12,7 +12,7 @@ import {
   type Component,
   type Ref,
   type VNode,
-} from "@vue/runtime-core";
+} from "vue";
 import type { InputEventNapi, ModifiersNapi, TerminalInfoNapi } from "@vizejs/fresco-native";
 import {
   SCREEN_READER_KEY,

@@ -2,7 +2,7 @@
  * useApp - App context composable
  */
 
-import { ref, provide, inject, type InjectionKey, type Ref } from "@vue/runtime-core";
+import { ref, provide, inject, type InjectionKey, type Ref } from "vue";
 
 export const APP_KEY: InjectionKey<UseAppReturn> = Symbol("fresco-app");
 

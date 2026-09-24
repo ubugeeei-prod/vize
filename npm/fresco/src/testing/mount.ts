@@ -19,7 +19,7 @@ import {
   type Component,
   type Ref,
   type VNodeChild,
-} from "@vue/runtime-core";
+} from "vue";
 import { SCREEN_READER_KEY } from "../accessibility.js";
 import { lastKeyEvent, type KeyEvent } from "../app.js";
 import { APP_KEY, createAppContext, type UseAppReturn } from "../composables/useApp.js";

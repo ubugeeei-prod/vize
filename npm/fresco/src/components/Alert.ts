@@ -2,7 +2,7 @@
  * Alert Component - Alert/notification box
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 
 export type AlertType = "info" | "success" | "warning" | "error";
 

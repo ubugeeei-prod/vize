@@ -2,7 +2,7 @@
  * useWindowSize - terminal dimensions.
  */
 
-import { reactive } from "@vue/runtime-core";
+import { reactive } from "vue";
 import { useApp } from "./useApp.js";
 
 export interface WindowSize {

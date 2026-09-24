@@ -2,7 +2,7 @@
  * Confirm Component - Confirmation dialog
  */
 
-import { defineComponent, h, ref } from "@vue/runtime-core";
+import { defineComponent, h, ref } from "vue";
 
 export interface ConfirmProps {
   /** Confirmation message */

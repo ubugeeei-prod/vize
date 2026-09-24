@@ -2,7 +2,7 @@
  * Checkbox Component - Toggle checkbox
  */
 
-import { defineComponent, h } from "@vue/runtime-core";
+import { defineComponent, h } from "vue";
 
 export interface CheckboxProps {
   /** Whether the checkbox is checked */

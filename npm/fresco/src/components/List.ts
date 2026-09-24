@@ -2,7 +2,7 @@
  * List Component - Scrollable list of items
  */
 
-import { defineComponent, h, ref, computed, type PropType, type VNode } from "@vue/runtime-core";
+import { defineComponent, h, ref, computed, type PropType, type VNode } from "vue";
 
 export interface ListItem {
   key: string;

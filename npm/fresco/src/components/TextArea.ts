@@ -2,7 +2,7 @@
  * TextArea Component - Multiline text input
  */
 
-import { defineComponent, h, type PropType, computed } from "@vue/runtime-core";
+import { defineComponent, h, type PropType, computed } from "vue";
 
 export interface TextAreaProps {
   /** Text value */

@@ -2,7 +2,7 @@
  * KeyHint Component - Display keyboard shortcut hints
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 
 export interface KeyBinding {
   keys: string[];

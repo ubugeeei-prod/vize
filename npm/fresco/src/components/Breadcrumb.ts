@@ -2,7 +2,7 @@
  * Breadcrumb Component - Navigation breadcrumb
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 
 export interface BreadcrumbItem {
   key: string;

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { h, nextTick, ref } from "@vue/runtime-core";
+import { h, nextTick, ref } from "vue";
 
 import { renderToString } from "./app.js";
 import { treeToRenderNodes } from "./renderer.js";

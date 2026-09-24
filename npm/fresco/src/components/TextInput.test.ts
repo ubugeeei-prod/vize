@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { h, nextTick, ref } from "@vue/runtime-core";
+import { h, nextTick, ref } from "vue";
 
 import { dispatchKey, firstChild, mountFresco, typeChars } from "../testing/mount.js";
 import { PasswordInput, TextInput } from "./TextInput.js";

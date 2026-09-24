@@ -2,7 +2,7 @@
  * Card Component - Container card with optional header and footer
  */
 
-import { defineComponent, h, type PropType, type VNode } from "@vue/runtime-core";
+import { defineComponent, h, type PropType, type VNode } from "vue";
 
 export interface CardProps {
   /** Card title */

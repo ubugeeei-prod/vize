@@ -2,7 +2,7 @@
  * Link Component - Clickable/styled link
  */
 
-import { defineComponent, h } from "@vue/runtime-core";
+import { defineComponent, h } from "vue";
 
 export interface LinkProps {
   /** Link text */

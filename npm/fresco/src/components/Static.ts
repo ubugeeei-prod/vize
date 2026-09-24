@@ -5,7 +5,7 @@
  * promoted into a persistent output region above the live frame.
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 import type { FrescoStyle } from "../protocol.js";
 
 export interface StaticProps<T = unknown> {

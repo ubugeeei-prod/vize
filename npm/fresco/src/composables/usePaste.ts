@@ -2,7 +2,7 @@
  * usePaste - bracketed paste handling.
  */
 
-import { isRef, onUnmounted, ref, watch, type Ref } from "@vue/runtime-core";
+import { isRef, onUnmounted, ref, watch, type Ref } from "vue";
 import { lastPasteEvent } from "../app.js";
 import { useStreamsContext } from "./useStreams.js";
 

@@ -2,15 +2,7 @@
  * Timer Component - Countdown/stopwatch timer
  */
 
-import {
-  defineComponent,
-  h,
-  ref,
-  onMounted,
-  onUnmounted,
-  type PropType,
-  computed,
-} from "@vue/runtime-core";
+import { defineComponent, h, ref, onMounted, onUnmounted, type PropType, computed } from "vue";
 
 export type TimerMode = "countdown" | "stopwatch";
 

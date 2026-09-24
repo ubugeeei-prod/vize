@@ -12,7 +12,7 @@ import {
   watch,
   type InjectionKey,
   type Ref,
-} from "@vue/runtime-core";
+} from "vue";
 
 export const FOCUS_KEY: InjectionKey<FocusManager> = Symbol("fresco-focus");
 

@@ -2,7 +2,7 @@
  * Newline Component - inserts one or more newline characters inside Text.
  */
 
-import { defineComponent, h } from "@vue/runtime-core";
+import { defineComponent, h } from "vue";
 
 export interface NewlineProps {
   /** Number of newlines to insert */

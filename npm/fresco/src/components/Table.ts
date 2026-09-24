@@ -2,7 +2,7 @@
  * Table Component - Display tabular data
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 
 export interface TableColumn {
   /** Column key (maps to data property) */

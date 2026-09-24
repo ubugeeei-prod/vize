@@ -2,7 +2,7 @@
  * useBoxMetrics - best-effort layout metrics for a rendered Fresco node.
  */
 
-import { onMounted, onUnmounted, reactive, type Ref } from "@vue/runtime-core";
+import { onMounted, onUnmounted, reactive, type Ref } from "vue";
 import { getLastRenderLayout, updateLastRenderLayouts, type DOMElement } from "../layoutMetrics.js";
 
 export interface BoxMetrics {

@@ -1022,9 +1022,9 @@ importers:
       '@types/node':
         specifier: catalog:typescript
         version: 25.9.2
-      '@vue/runtime-core':
+      vue:
         specifier: catalog:vue-stable
-        version: 3.5.35
+        version: 3.5.35(typescript@6.0.3)
       tsx:
         specifier: catalog:typescript
         version: 4.23.12

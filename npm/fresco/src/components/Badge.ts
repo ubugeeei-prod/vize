@@ -2,7 +2,7 @@
  * Badge Component - Status badge/tag
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 
 export type BadgeVariant = "default" | "success" | "warning" | "error" | "info";
 

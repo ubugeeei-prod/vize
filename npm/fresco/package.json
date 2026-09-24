@@ -62,13 +62,13 @@
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",
-    "@vue/runtime-core": "catalog:vue-stable",
     "tsx": "catalog:typescript",
     "typescript": "catalog:typescript",
-    "vite-plus": "catalog:vite-stack"
+    "vite-plus": "catalog:vite-stack",
+    "vue": "catalog:vue-stable"
   },
   "peerDependencies": {
-    "@vue/runtime-core": "^3.4.0"
+    "vue": "^3.4.0"
   },
   "engines": {
     "node": ">=22"

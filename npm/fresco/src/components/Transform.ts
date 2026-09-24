@@ -2,7 +2,7 @@
  * Transform Component - transforms stringified child output before rendering.
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 import { useIsScreenReaderEnabled } from "../composables/useIsScreenReaderEnabled.js";
 import { stringifyChildren } from "../utils/text.js";
 

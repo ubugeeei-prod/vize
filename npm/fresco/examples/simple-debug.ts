@@ -2,25 +2,23 @@
  * Simple debug example
  */
 
-import { h, defineComponent } from "@vue/runtime-core";
+import { h, defineComponent } from "vue";
 import { createApp } from "../src/index.js";
 
-const App = defineComponent({
-  setup() {
-    return () =>
-      h(
-        "box",
-        {
-          style: { flexDirection: "column", padding: 1 },
-          border: "single",
-        },
-        [
-          h("text", { bold: true, fg: "green" }, "Hello Fresco!"),
-          h("text", {}, "Simple test"),
-          h("text", { dim: true }, "Press Ctrl+C to exit"),
-        ],
-      );
-  },
+const App = defineComponent(() => {
+  return () =>
+    h(
+      "box",
+      {
+        style: { flexDirection: "column", padding: 1 },
+        border: "single",
+      },
+      [
+        h("text", { bold: true, fg: "green" }, "Hello Fresco!"),
+        h("text", {}, "Simple test"),
+        h("text", { dim: true }, "Press Ctrl+C to exit"),
+      ],
+    );
 });
 
 const app = createApp(App, {

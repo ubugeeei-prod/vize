@@ -2,7 +2,7 @@
  * Stack Component - Horizontal/Vertical stack layout helper
  */
 
-import { defineComponent, h, type PropType } from "@vue/runtime-core";
+import { defineComponent, h, type PropType } from "vue";
 
 export interface StackProps {
   /** Stack direction */

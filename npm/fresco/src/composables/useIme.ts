@@ -2,7 +2,7 @@
  * useIme - IME (Input Method Editor) composable
  */
 
-import { ref, computed, type Ref } from "@vue/runtime-core";
+import { ref, computed, type Ref } from "vue";
 
 export interface UseImeOptions {
   /** Initial IME mode */
