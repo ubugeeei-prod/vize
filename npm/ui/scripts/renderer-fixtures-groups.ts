@@ -3,6 +3,7 @@ import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
 import { dataRendererFixtures } from "./renderer-fixtures-data.ts";
 import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
 import { disclosureRendererFixtures } from "./renderer-fixtures-disclosure.ts";
+import { drawerRendererFixtures } from "./renderer-fixtures-drawer.ts";
 import { feedbackRendererFixtures } from "./renderer-fixtures-feedback.ts";
 import { fileUploadRendererFixtures } from "./renderer-fixtures-file-upload.ts";
 import { iconRendererFixtures } from "./renderer-fixtures-icon.ts";
@@ -14,6 +15,7 @@ import { overlayRendererFixtures } from "./renderer-fixtures-overlays.ts";
 import { primitiveRendererFixtures } from "./renderer-fixtures-primitives.ts";
 import { qrCodeRendererFixtures } from "./renderer-fixtures-qr-code.ts";
 import { selectionRendererFixtures } from "./renderer-fixtures-selection.ts";
+import { toastRendererFixtures } from "./renderer-fixtures-toast.ts";
 import { tourRendererFixtures } from "./renderer-fixtures-tour.ts";
 import { structureRendererFixtures } from "./renderer-fixtures-structure.ts";
 import { wayfindingRendererFixtures } from "./renderer-fixtures-wayfinding.ts";
@@ -24,6 +26,7 @@ export const groupedRendererFixtures = [
   ...dataRendererFixtures,
   ...dialogRendererFixtures,
   ...disclosureRendererFixtures,
+  ...drawerRendererFixtures,
   ...feedbackRendererFixtures,
   ...fileUploadRendererFixtures,
   ...iconRendererFixtures,
@@ -35,6 +38,7 @@ export const groupedRendererFixtures = [
   ...primitiveRendererFixtures,
   ...qrCodeRendererFixtures,
   ...selectionRendererFixtures,
+  ...toastRendererFixtures,
   ...tourRendererFixtures,
   ...structureRendererFixtures,
   ...wayfindingRendererFixtures,

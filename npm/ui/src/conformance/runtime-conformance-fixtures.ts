@@ -11,6 +11,9 @@ import { skipLinkRuntimeFixture } from "../families/navigation/skip-link/runtime
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
 import { accordionRuntimeFixtures } from "../families/disclosure/accordion/runtime-conformance-accordion-fixtures.ts";
 import { hoverCardRuntimeFixtures } from "../families/overlays/hover-card/runtime-conformance-hover-card-fixtures.ts";
+import { confirmRuntimeFixture } from "../families/overlays/confirm/runtime-conformance-confirm-fixtures.ts";
+import { drawerRuntimeFixtures } from "../families/overlays/drawer/runtime-conformance-drawer-fixtures.ts";
+import { toastRuntimeFixtures } from "../families/feedback/toast/runtime-conformance-toast-fixtures.ts";
 import { calloutRuntimeFixture } from "../families/feedback/callout/runtime-conformance-callout-fixtures.ts";
 import { calendarRuntimeFixtures } from "../families/date-time/calendar/runtime-conformance-calendar-fixtures.ts";
 import { rangeCalendarRuntimeFixture } from "../families/date-time/range-calendar/runtime-conformance-range-calendar-fixtures.ts";
@@ -97,6 +100,9 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...collapsibleRuntimeFixtures,
   ...accordionRuntimeFixtures,
   ...hoverCardRuntimeFixtures,
+  confirmRuntimeFixture,
+  ...drawerRuntimeFixtures,
+  ...toastRuntimeFixtures,
   ...layoutRuntimeFixtures,
   ...menusRuntimeFixtures,
   ...typographyRuntimeFixtures,

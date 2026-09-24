@@ -4,6 +4,7 @@ import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { dataFamilyCatalog } from "./family-catalog-data.ts";
 import { dateTimeFamilyCatalog } from "./family-catalog-date-time.ts";
+import { confirmFamilyCatalog, drawerFamilyCatalog } from "./family-catalog-drawer.ts";
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
@@ -25,6 +26,7 @@ import { tourFamilyCatalog } from "./family-catalog-tour.ts";
 import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import { sliderFamilyCatalog } from "./family-catalog-slider.ts";
 import { structureFamilyCatalog } from "./family-catalog-structure.ts";
+import { toastFamilyCatalog } from "./family-catalog-toast.ts";
 import { typographyFamilyCatalog } from "./family-catalog-typography.ts";
 import { wayfindingFamilyCatalog } from "./family-catalog-wayfinding.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
@@ -42,8 +44,10 @@ const allFamilyCatalogEntries = [
   ...actionFamilyCatalog,
   ...accessibilityFamilyCatalog,
   ...basicFamilyCatalog,
+  ...confirmFamilyCatalog,
   ...dataFamilyCatalog,
   ...dateTimeFamilyCatalog,
+  ...drawerFamilyCatalog,
   ...feedbackFamilyCatalog,
   ...foundationFamilyCatalog,
   ...focusFamilyCatalog,
@@ -65,6 +69,7 @@ const allFamilyCatalogEntries = [
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
   ...structureFamilyCatalog,
+  ...toastFamilyCatalog,
   ...typographyFamilyCatalog,
   ...wayfindingFamilyCatalog,
 ] as const satisfies readonly UiFamilyCatalogEntry[];

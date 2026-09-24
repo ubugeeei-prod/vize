@@ -318,3 +318,24 @@ test("preventable dismissal events can retain an open dialog", async () => {
   assert.ok(document.body.querySelector('[data-vize-ui="dialog-content"]'));
   handle.unmount();
 });
+
+test("null ARIA id props omit the default title and description wiring", async () => {
+  const handle = mountInteraction(DialogRoot, {
+    props: { id: "bare", defaultOpen: true },
+    slots: {
+      default: () =>
+        h(DialogPortal, { disabled: true }, () =>
+          h(DialogContent, { ariaLabelledby: null, ariaDescribedby: null, lockScroll: false }, () =>
+            h("p", "Untitled"),
+          ),
+        ),
+    },
+  });
+  await settleDialog();
+  const content = dialogContent();
+
+  assert.equal(content.getAttribute("aria-labelledby"), null);
+  assert.equal(content.getAttribute("aria-describedby"), null);
+
+  handle.unmount();
+});

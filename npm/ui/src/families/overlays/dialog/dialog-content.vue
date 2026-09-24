@@ -99,10 +99,13 @@ const afterGuard = useTemplateRef<HTMLSpanElement>("afterGuard");
 const ownerDocument = shallowRef<Document | null>(null);
 const present = computed(() => context.open.value || forceMount);
 const guarded = computed(() => context.open.value && context.modal.value && trapFocus);
-const ariaLabelledbyValue = computed(() =>
-  ariaLabel ? undefined : (ariaLabelledby ?? context.titleId.value),
+const ariaLabelledbyValue = computed(() => {
+  if (ariaLabel || ariaLabelledby === null) return undefined;
+  return ariaLabelledby ?? context.titleId.value;
+});
+const ariaDescribedbyValue = computed(() =>
+  ariaDescribedby === null ? undefined : (ariaDescribedby ?? context.descriptionId.value),
 );
-const ariaDescribedbyValue = computed(() => ariaDescribedby ?? context.descriptionId.value);
 const slotState = computed<DialogSlotState>(() => ({
   modal: context.modal.value,
   open: context.open.value,
