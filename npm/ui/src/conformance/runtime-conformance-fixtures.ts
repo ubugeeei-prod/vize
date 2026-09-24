@@ -42,6 +42,7 @@ import { timeFieldRuntimeFixture } from "../families/date-time/time-field/runtim
 import { tableRuntimeFixtures } from "../families/data/table/runtime-conformance-table-fixtures.ts";
 import { dataViewRuntimeFixtures } from "../families/data/runtime-conformance-data-view-fixtures.ts";
 import { chartRuntimeFixtures } from "../families/charts/chart/runtime-conformance-chart-fixtures.ts";
+import { richTextRuntimeFixtures } from "../families/editor/rich-text/runtime-conformance-rich-text-fixtures.ts";
 import { treeRuntimeFixtures } from "../families/data/tree/runtime-conformance-tree-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
 import { menusRuntimeFixtures } from "../families/menus/runtime-conformance-menus-fixtures.ts";
@@ -129,6 +130,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   timeFieldRuntimeFixture,
   ...tableRuntimeFixtures,
   ...dataViewRuntimeFixtures,
+  ...richTextRuntimeFixtures,
   ...treeRuntimeFixtures,
   ...chartRuntimeFixtures,
   ...splitterRuntimeFixtures,

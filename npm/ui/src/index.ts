@@ -223,3 +223,4 @@ export * from "./families/interaction/pull-to-refresh/pull-to-refresh.ts";
 export * from "./families/interaction/swipe-actions/swipe-actions.ts";
 export * from "./families/navigation/pager/pager.ts";
 export * from "./families/accessibility/landmark/landmark.ts";
+export * from "./families/editor/rich-text/rich-text.ts";

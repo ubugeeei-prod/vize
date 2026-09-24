@@ -258,6 +258,7 @@ export default defineConfig({
       "data-grid": "src/families/data/data-grid/data-grid.ts",
       "grid-list": "src/families/data/grid-list/grid-list.ts",
       kanban: "src/families/data/kanban/kanban.ts",
+      "rich-text": "src/families/editor/rich-text/rich-text.ts",
       table: "src/families/data/table/table.ts",
       link: "src/families/navigation/link/link.ts",
       "skip-link": "src/families/navigation/skip-link/skip-link.ts",
