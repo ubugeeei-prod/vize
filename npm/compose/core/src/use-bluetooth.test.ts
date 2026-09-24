@@ -190,6 +190,23 @@ void test("reads, writes, and subscribes to characteristics", async () => {
   assert.equal(characteristic.listeners, 0);
 });
 
+void test("removes characteristic listeners when the device disconnects", async () => {
+  const host = new FakeBluetooth();
+  const ble = useBluetooth({ host });
+  await ble.requestDevice();
+  await ble.connect();
+  const characteristic = host.device.gatt.characteristic;
+  const seen: number[] = [];
+  await ble.notify("svc", "chr", (value) => seen.push(value.getUint8(0)));
+  assert.equal(characteristic.listeners, 1);
+
+  host.device.gatt.disconnect();
+  await flush();
+  characteristic.emit(72);
+  assert.equal(characteristic.listeners, 0);
+  assert.deepEqual(seen, []);
+});
+
 void test("records failures without throwing", async () => {
   const host = new FakeBluetooth();
   const ble = useBluetooth({ host });

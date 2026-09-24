@@ -19,6 +19,7 @@ class FakePort extends EventTarget implements SerialPortLike {
   opened: SerialOpenOptions[] = [];
   closed = 0;
   failOpen: unknown = undefined;
+  failCancel: unknown = undefined;
 
   open(options: SerialOpenOptions): Promise<void> {
     if (this.failOpen !== undefined) return Promise.reject(this.failOpen);
@@ -26,6 +27,9 @@ class FakePort extends EventTarget implements SerialPortLike {
     this.readable = new ReadableStream<Uint8Array>({
       start: (controller) => {
         this.controller = controller;
+      },
+      cancel: () => {
+        if (this.failCancel !== undefined) return Promise.reject(this.failCancel);
       },
     });
     this.writable = new WritableStream<Uint8Array>({
@@ -95,6 +99,18 @@ void test("requests a port and tracks granted ports", async () => {
   host.dispatchEvent(new Event("connect"));
   await flush();
   assert.equal(serial.ports.value.length, 1);
+});
+
+void test("closes a port even when reader cancellation fails", async () => {
+  const serial = useSerial({ host: new FakeSerial() });
+  const port = new FakePort();
+  const failure = new Error("cancel failed");
+  port.failCancel = failure;
+  await serial.open(port, { baudRate: 9600 });
+  await serial.close();
+  assert.equal(port.closed, 1);
+  assert.equal(serial.error.value, failure);
+  assert.equal(serial.connected.value, false);
 });
 
 void test("reads decoded text chunks and writes text or bytes", async () => {

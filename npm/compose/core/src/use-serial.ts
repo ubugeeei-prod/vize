@@ -261,13 +261,23 @@ export function useSerial<const Decoding extends SerialDecoding = "bytes">(
     if (!current || !target) return;
     target.removeEventListener("disconnect", onPortDisconnect);
     current.active = false;
+    let failure: unknown;
     try {
       await current.reader?.cancel();
+    } catch (cause) {
+      failure = cause;
+    }
+    try {
       await current.done;
+    } catch (cause) {
+      failure ??= cause;
+    }
+    try {
       await target.close();
     } catch (cause) {
-      error.value = cause;
+      failure ??= cause;
     }
+    if (failure !== undefined) error.value = failure;
   }
 
   const open = async (target: SerialPortLike, openOptions: SerialOpenOptions): Promise<boolean> => {

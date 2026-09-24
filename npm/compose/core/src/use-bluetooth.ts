@@ -217,7 +217,7 @@ export function useBluetooth(options: UseBluetoothOptions = {}): BluetoothContro
 
   const onDisconnected = (): void => {
     connected.value = false;
-    notifications.clear();
+    for (const stop of notifications) void stop();
   };
 
   const disconnect = (): void => {

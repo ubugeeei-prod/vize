@@ -133,6 +133,32 @@ void test("parses server JSON into binary options", () => {
   assert.equal(request.userVerification, "required");
 });
 
+void test("decodes PRF extension inputs for registration and authentication", () => {
+  const creation = parseCreationOptionsFromJSON({
+    ...creationJSON,
+    extensions: { prf: { eval: { first: "AQI", second: "Aw" } } },
+  });
+  const creationPrf = creation.extensions?.prf as {
+    eval: { first: Uint8Array; second: Uint8Array };
+  };
+  assert.deepEqual([...creationPrf.eval.first], [1, 2]);
+  assert.deepEqual([...creationPrf.eval.second], [3]);
+
+  const request = parseRequestOptionsFromJSON({
+    challenge: "AQ",
+    extensions: {
+      prf: {
+        evalByCredential: { AQI: { first: "BAU", second: "Bg" } },
+      },
+    },
+  });
+  const requestPrf = request.extensions?.prf as {
+    evalByCredential: Record<string, { first: Uint8Array; second: Uint8Array }>;
+  };
+  assert.deepEqual([...requestPrf.evalByCredential.AQI!.first], [4, 5]);
+  assert.deepEqual([...requestPrf.evalByCredential.AQI!.second], [6]);
+});
+
 void test("serializes credentials into JSON-safe objects", () => {
   assert.deepEqual(serializeRegistrationCredential(registration), {
     id: "AQI",
@@ -155,6 +181,20 @@ void test("serializes credentials into JSON-safe objects", () => {
     clientExtensionResults: {},
     response: { clientDataJSON: "Aw", authenticatorData: "Bw", signature: "CAk" },
   });
+});
+
+void test("serializes nested binary extension outputs as base64url", () => {
+  const withPrf: AuthenticationCredentialLike = {
+    ...assertion,
+    getClientExtensionResults: () => ({
+      prf: { results: { first: bytes(1, 2), second: new Uint8Array([3, 4]) } },
+    }),
+  };
+  const json = serializeAuthenticationCredential(withPrf);
+  assert.deepEqual(json.clientExtensionResults, {
+    prf: { results: { first: "AQI", second: "AwQ" } },
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(json)), json);
 });
 
 void test("create parses JSON options and resolves the credential", async () => {

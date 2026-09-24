@@ -92,7 +92,7 @@ export interface PublicKeyCredentialCreationOptionsJSON {
   readonly attestation?: WebAuthnAttestation;
   /** Authenticator hints. */
   readonly hints?: readonly WebAuthnHint[];
-  /** Client extension inputs, passed through unchanged. */
+  /** Client extension inputs; PRF values are decoded from base64url. */
   readonly extensions?: Readonly<Record<string, unknown>>;
 }
 
@@ -110,7 +110,7 @@ export interface PublicKeyCredentialRequestOptionsJSON {
   readonly userVerification?: WebAuthnUserVerification;
   /** Authenticator hints. */
   readonly hints?: readonly WebAuthnHint[];
-  /** Client extension inputs, passed through unchanged. */
+  /** Client extension inputs; PRF values are decoded from base64url. */
   readonly extensions?: Readonly<Record<string, unknown>>;
 }
 
@@ -440,6 +440,54 @@ function parseDescriptors(
   }));
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parsePrfValues(value: unknown): unknown {
+  if (!isRecord(value)) return value;
+  return {
+    ...value,
+    ...(typeof value.first === "string" ? { first: decodeBase64Url(value.first) } : {}),
+    ...(typeof value.second === "string" ? { second: decodeBase64Url(value.second) } : {}),
+  };
+}
+
+function parseExtensions(extensions: Readonly<Record<string, unknown>>): Record<string, unknown> {
+  const prf = extensions.prf;
+  if (!isRecord(prf)) return { ...extensions };
+  const byCredential = prf.evalByCredential;
+  return {
+    ...extensions,
+    prf: {
+      ...prf,
+      ...(prf.eval === undefined ? {} : { eval: parsePrfValues(prf.eval) }),
+      ...(isRecord(byCredential)
+        ? {
+            evalByCredential: Object.fromEntries(
+              Object.entries(byCredential).map(([id, values]) => [id, parsePrfValues(values)]),
+            ),
+          }
+        : {}),
+    },
+  };
+}
+
+function serializeExtensionValue(value: unknown): unknown {
+  if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) return encodeBase64Url(value);
+  if (Array.isArray(value)) return value.map(serializeExtensionValue);
+  if (isRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, serializeExtensionValue(entry)]),
+    );
+  }
+  return value;
+}
+
+function serializeExtensions(results: object): object {
+  return serializeExtensionValue(results) as object;
+}
+
 /**
  * Convert server creation-options JSON into binary options for `create`.
  *
@@ -460,7 +508,7 @@ export function parseCreationOptionsFromJSON(
     ...(excludeCredentials ? { excludeCredentials: parseDescriptors(excludeCredentials) } : {}),
     ...(authenticatorSelection ? { authenticatorSelection: { ...authenticatorSelection } } : {}),
     ...(hints ? { hints: [...hints] } : {}),
-    ...(extensions ? { extensions: { ...extensions } } : {}),
+    ...(extensions ? { extensions: parseExtensions(extensions) } : {}),
   };
 }
 
@@ -480,7 +528,7 @@ export function parseRequestOptionsFromJSON(
     challenge: decodeBase64Url(json.challenge),
     ...(allowCredentials ? { allowCredentials: parseDescriptors(allowCredentials) } : {}),
     ...(hints ? { hints: [...hints] } : {}),
-    ...(extensions ? { extensions: { ...extensions } } : {}),
+    ...(extensions ? { extensions: parseExtensions(extensions) } : {}),
   };
 }
 
@@ -505,7 +553,7 @@ export function serializeRegistrationCredential(
     ...(isAttachment(credential.authenticatorAttachment)
       ? { authenticatorAttachment: credential.authenticatorAttachment }
       : {}),
-    clientExtensionResults: credential.getClientExtensionResults(),
+    clientExtensionResults: serializeExtensions(credential.getClientExtensionResults()),
     response: {
       clientDataJSON: encodeBase64Url(response.clientDataJSON),
       attestationObject: encodeBase64Url(response.attestationObject),
@@ -534,7 +582,7 @@ export function serializeAuthenticationCredential(
     ...(isAttachment(credential.authenticatorAttachment)
       ? { authenticatorAttachment: credential.authenticatorAttachment }
       : {}),
-    clientExtensionResults: credential.getClientExtensionResults(),
+    clientExtensionResults: serializeExtensions(credential.getClientExtensionResults()),
     response: {
       clientDataJSON: encodeBase64Url(response.clientDataJSON),
       authenticatorData: encodeBase64Url(response.authenticatorData),

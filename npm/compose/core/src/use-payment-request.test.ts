@@ -44,9 +44,11 @@ class FakePaymentRequest extends EventTarget {
   shippingAddress: unknown = null;
   shippingOption: string | null = null;
   aborted = false;
+  ignoreAbort = false;
   readonly details: PaymentDetails;
   readonly options: PaymentRequestOptionsInit | undefined;
   private reject: ((reason: unknown) => void) | undefined;
+  private resolve: ((response: PaymentResponseLike) => void) | undefined;
 
   constructor(
     methods: PaymentMethod[],
@@ -67,14 +69,19 @@ class FakePaymentRequest extends EventTarget {
   show(): Promise<PaymentResponseLike> {
     if (outcome === "resolve") return Promise.resolve(new FakeResponse());
     if (outcome instanceof Error) return Promise.reject(outcome);
-    return new Promise((_resolve, reject) => {
+    return new Promise((resolve, reject) => {
+      this.resolve = resolve;
       this.reject = reject;
     });
   }
 
+  accept(response: PaymentResponseLike = new FakeResponse()): void {
+    this.resolve?.(response);
+  }
+
   abort(): Promise<void> {
     this.aborted = true;
-    this.reject?.(new DOMException("aborted", "AbortError"));
+    if (!this.ignoreAbort) this.reject?.(new DOMException("aborted", "AbortError"));
     return Promise.resolve();
   }
 }
@@ -145,6 +152,88 @@ void test("showing again aborts the previous sheet", async () => {
   assert.equal(second.status, "completed");
   assert.equal(instances[0]?.aborted, true);
   assert.equal(payment.state.value, "awaiting-complete");
+});
+
+void test("show starts in the caller's activation and back-to-back calls keep one sheet", async () => {
+  reset();
+  outcome = "hang";
+  const payment = usePaymentRequest({
+    methods,
+    details: { total },
+    PaymentRequest: FakePaymentRequest,
+  });
+  const first = payment.show();
+  assert.equal(instances.length, 1, "the host show call must run before the first await");
+  assert.equal(payment.state.value, "interactive");
+  outcome = "resolve";
+  const second = payment.show();
+  assert.equal((await first).status, "aborted");
+  assert.equal((await second).status, "completed");
+  assert.equal(instances[0]?.aborted, true);
+  assert.equal(instances.length, 2);
+  assert.equal(payment.state.value, "awaiting-complete");
+});
+
+void test("late results do not replace a newer response and completion is required", async () => {
+  reset();
+  outcome = "hang";
+  const payment = usePaymentRequest({
+    methods,
+    details: { total },
+    PaymentRequest: FakePaymentRequest,
+  });
+  const first = payment.show();
+  const stale = instances[0];
+  assert.ok(stale);
+  stale.ignoreAbort = true;
+  outcome = "resolve";
+  const second = await payment.show();
+  assert.equal(second.status, "completed");
+  const currentResponse = payment.response.value;
+  stale.accept();
+  assert.equal((await first).status, "aborted");
+  assert.equal(payment.response.value, currentResponse);
+  assert.equal(payment.state.value, "awaiting-complete");
+
+  const blocked = await payment.show();
+  assert.equal(blocked.status, "failed");
+  assert.match(String(blocked.error), /PAYMENT_RESPONSE_INCOMPLETE/u);
+  assert.equal(instances.length, 2, "no new sheet opens before completing the response");
+  assert.equal(await payment.complete("success"), true);
+  assert.equal((await payment.show()).status, "completed");
+});
+
+void test("keeps the response active until asynchronous completion settles", async () => {
+  reset();
+  let finish: (() => void) | undefined;
+  class SlowResponse extends FakeResponse {
+    override complete(result?: PaymentCompletion): Promise<void> {
+      this.completed.push(result ?? "unknown");
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    }
+  }
+  const payment = usePaymentRequest({
+    methods,
+    details: { total },
+    PaymentRequest: FakePaymentRequest,
+  });
+  outcome = "hang";
+  const showing = payment.show();
+  const request = instances[0];
+  assert.ok(request);
+  request.accept(new SlowResponse());
+  assert.equal((await showing).status, "completed");
+
+  const completing = payment.complete("success");
+  assert.equal(payment.state.value, "awaiting-complete");
+  assert.equal(await payment.complete("fail"), false, "completion runs once");
+  assert.equal((await payment.show()).status, "failed", "no new sheet during completion");
+  assert.equal(instances.length, 1);
+  finish?.();
+  assert.equal(await completing, true);
+  assert.equal(payment.state.value, "idle");
 });
 
 void test("shipping hooks call updateWith synchronously", async () => {

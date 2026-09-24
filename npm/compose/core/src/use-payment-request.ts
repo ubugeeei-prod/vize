@@ -293,6 +293,8 @@ export function usePaymentRequest(options: UsePaymentRequestOptions): PaymentReq
   const response = shallowRef<PaymentResponseLike | undefined>(undefined);
   const error = shallowRef<unknown>(undefined);
   let active: PaymentRequestLike | undefined;
+  let generation = 0;
+  let completing = false;
 
   const resolveHost = (): PaymentRequestHost | undefined =>
     options.PaymentRequest === undefined
@@ -337,6 +339,11 @@ export function usePaymentRequest(options: UsePaymentRequestOptions): PaymentReq
     if (!current) return false;
     try {
       await current.abort();
+      if (active === current) {
+        active = undefined;
+        state.value = "idle";
+        generation += 1;
+      }
       return true;
     } catch {
       return false;
@@ -346,7 +353,29 @@ export function usePaymentRequest(options: UsePaymentRequestOptions): PaymentReq
   const show = async (): Promise<PaymentShowResult> => {
     const Host = resolveHost();
     if (!Host) return { status: "unsupported", error: undefined };
-    await abort();
+    if (state.value === "awaiting-complete") {
+      return {
+        status: "failed",
+        error: new Error("[VIZE_COMPOSE_PAYMENT_RESPONSE_INCOMPLETE] call complete() first"),
+      };
+    }
+    const currentGeneration = ++generation;
+    const previous = active;
+    if (previous) {
+      try {
+        await previous.abort();
+      } catch (cause) {
+        if (active === previous) {
+          error.value = cause;
+          return { status: "failed", error: cause };
+        }
+      }
+      if (active === previous) {
+        active = undefined;
+        state.value = "idle";
+      }
+      if (currentGeneration !== generation) return { status: "aborted", error: undefined };
+    }
     response.value = undefined;
     let request: PaymentRequestLike;
     try {
@@ -361,16 +390,20 @@ export function usePaymentRequest(options: UsePaymentRequestOptions): PaymentReq
     state.value = "interactive";
     try {
       const result = await request.show();
-      if (active === request) active = undefined;
+      if (active !== request || currentGeneration !== generation) {
+        return { status: "aborted", error: undefined };
+      }
+      active = undefined;
       response.value = result;
       state.value = "awaiting-complete";
       error.value = undefined;
       return { status: "completed", response: result };
     } catch (cause) {
-      if (active === request) {
-        active = undefined;
-        state.value = "idle";
+      if (active !== request || currentGeneration !== generation) {
+        return { status: "aborted", error: cause };
       }
+      active = undefined;
+      state.value = "idle";
       const name = errorName(cause);
       if (name === "AbortError") return { status: "aborted", error: cause };
       if (name === "NotSupportedError") return { status: "unsupported", error: cause };
@@ -381,14 +414,17 @@ export function usePaymentRequest(options: UsePaymentRequestOptions): PaymentReq
 
   const complete = async (result: PaymentCompletion = "unknown"): Promise<boolean> => {
     const current = response.value;
-    if (!current || state.value !== "awaiting-complete") return false;
-    state.value = "idle";
+    if (!current || state.value !== "awaiting-complete" || completing) return false;
+    completing = true;
     try {
       await current.complete(result);
       return true;
     } catch (cause) {
       error.value = cause;
       return false;
+    } finally {
+      completing = false;
+      state.value = "idle";
     }
   };
 
