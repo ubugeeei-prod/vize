@@ -8,6 +8,10 @@ import type {
 import type { EditableSegmentType } from "../date-field/field-segments.ts";
 import type { HourCycle, PlainTime, TimeGranularity } from "./plain-time.ts";
 import { useTimeField } from "./time-field-runtime.ts";
+import {
+  fieldValidationInputStyle,
+  useFieldValidationInput,
+} from "../date-field/field-segment-runtime.ts";
 import type { TimeFieldSlotState } from "./time-field-types.ts";
 
 const props = defineProps<{
@@ -37,8 +41,10 @@ const props = defineProps<{
   readonly disabled?: boolean | undefined;
   /** Keep segments focusable while blocking edits. @default false */
   readonly readOnly?: boolean | undefined;
-  /** Mark the field as required for assistive technology. @default false */
+  /** Require a complete value; participates in native form validation. @default false */
   readonly required?: boolean | undefined;
+  /** Custom validity message reported while the value is out of range or unavailable. @default "Invalid value" */
+  readonly invalidMessage?: string | undefined;
   /** Placeholder text for empty segments. @default { hour: "––", minute: "––", second: "––", dayPeriod: "––" } */
   readonly placeholders?: FieldSegmentPlaceholders | undefined;
   /** Text announced for empty segments. @default "Empty" */
@@ -70,6 +76,7 @@ defineSlots<{
 }>();
 
 const root = useTemplateRef<HTMLDivElement>("root");
+const input = useTemplateRef<HTMLInputElement>("input");
 const { field, id, direction, invalid, isoValue, slotState, segmentId, exposed } = useTimeField(
   props,
   emit,
@@ -95,6 +102,13 @@ function onSegmentFocus(segment: FieldSegmentState): void {
 function onSegmentBlur(): void {
   field.onSegmentBlur();
 }
+
+const validation = useFieldValidationInput({
+  input,
+  invalid: () => invalid.value,
+  message: () => props.invalidMessage ?? "Invalid value",
+  focus: () => field.focusSegment(),
+});
 
 defineExpose(exposed);
 </script>
@@ -159,12 +173,20 @@ defineExpose(exposed);
       }}</span>
     </template>
     <input
-      v-if="props.name"
-      type="hidden"
+      v-if="props.name || slotState.required"
+      ref="input"
+      type="text"
       :name="props.name"
       :value="isoValue"
+      :required="slotState.required"
       :disabled="slotState.disabled"
+      tabindex="-1"
+      aria-hidden="true"
+      :aria-labelledby="id"
+      autocomplete="off"
       data-vize-ui="time-field-input"
+      :style="fieldValidationInputStyle"
+      @invalid="validation.onInvalid"
     />
     <slot v-bind="slotState" />
   </div>

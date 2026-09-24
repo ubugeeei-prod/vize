@@ -8,7 +8,7 @@ export type { CalendarWeekdayFormat, CalendarWeekdayLabel, DateTimeNow };
 export type CalendarDirection = "ltr" | "rtl";
 
 /** Selection model owned by the calendar root. */
-export type CalendarSelectionMode = "single" | "range";
+export type CalendarSelectionMode = "single" | "multiple" | "range" | "week";
 
 /** Navigation unit accepted by previous/next controls. */
 export type CalendarNavigationUnit = "month" | "year";
@@ -169,6 +169,18 @@ export interface CalendarWeekdaySlotState extends CalendarWeekdayLabel {
   readonly column: number;
 }
 
+/** State exposed to CalendarGrid week-number slots. */
+export interface CalendarWeekNumberSlotState {
+  /** ISO week-numbering year of the row. */
+  readonly year: number;
+
+  /** ISO 8601 week number of the row. */
+  readonly week: number;
+
+  /** Days in the row. */
+  readonly days: readonly CalendarDayState[];
+}
+
 /** Common public instance surface of calendar roots. */
 export interface CalendarRootExposeBase extends CalendarSlotState {
   /** Rendered root element. */
@@ -194,6 +206,18 @@ export interface CalendarRootExpose extends CalendarRootExposeBase {
 
   /** Request a new value; returns whether it differs. */
   readonly setValue: (value: PlainDate | null) => boolean;
+}
+
+/** Public instance exposed by CalendarMultipleRoot. */
+export interface CalendarMultipleRootExpose extends CalendarRootExposeBase {
+  /** Selected dates, sorted and unique. */
+  readonly value: readonly PlainDate[];
+
+  /** Replace the selection; returns whether it differs. */
+  readonly setValue: (value: readonly PlainDate[]) => boolean;
+
+  /** Toggle one date; returns whether the selection changed. */
+  readonly toggle: (date: PlainDate) => boolean;
 }
 
 /** Shared props of CalendarRoot and RangeCalendarRoot, documented for adapters. */

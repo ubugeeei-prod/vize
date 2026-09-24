@@ -1,6 +1,10 @@
 /** Accessible, unstyled calendar compound primitive with a timezone-free date model. */
 export { default as Calendar, default as CalendarRoot } from "./calendar-root.vue";
 export { default as CalendarGrid } from "./calendar-grid.vue";
+export {
+  default as CalendarMultipleRoot,
+  default as MultipleCalendar,
+} from "./calendar-multiple-root.vue";
 export { default as CalendarHeading } from "./calendar-heading.vue";
 export { default as CalendarMonthSelect } from "./calendar-month-select.vue";
 export { default as CalendarNext } from "./calendar-next.vue";
@@ -13,12 +17,14 @@ export {
   type CalendarLocaleOptions,
 } from "./calendar-locale.ts";
 export { useToday, type TodayOptions } from "./calendar-today.ts";
+export { normalizeDateList } from "./calendar-selection.ts";
 export type {
   CalendarDayState,
   CalendarDayStateToken,
   CalendarDirection,
   CalendarHeadingSlotState,
   CalendarMonthState,
+  CalendarMultipleRootExpose,
   CalendarNavigationSlotState,
   CalendarNavigationUnit,
   CalendarRootExpose,
@@ -30,6 +36,7 @@ export type {
   CalendarWeekdayFormat,
   CalendarWeekdayLabel,
   CalendarWeekdaySlotState,
+  CalendarWeekNumberSlotState,
   DateTimeNow,
 } from "./calendar-types.ts";
 export {
@@ -48,6 +55,7 @@ export {
   endOfMonth,
   endOfWeek,
   formatIsoDate,
+  formatIsoWeek,
   fromEpochDay,
   fromEpochMilliseconds,
   fromLocalDate,
@@ -55,6 +63,7 @@ export {
   isDateInRange,
   isDateWithin,
   isLeapYear,
+  isoWeekOf,
   isSameDay,
   isSameMonth,
   isSameRange,
@@ -63,9 +72,11 @@ export {
   normalizeDateRange,
   normalizePlainDate,
   parseIsoDate,
+  parseIsoWeek,
   shiftYearMonth,
   startOfMonth,
   startOfWeek,
+  startOfIsoWeek,
   toEpochDay,
   toLocalDate,
   toUtcDate,
@@ -73,6 +84,7 @@ export {
   type DateMatcher,
   type DateOrder,
   type DateRange,
+  type IsoWeek,
   type PlainDate,
   type PlainYearMonth,
   type Weekday,

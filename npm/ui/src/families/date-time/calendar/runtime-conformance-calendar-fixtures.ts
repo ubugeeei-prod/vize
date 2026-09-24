@@ -4,6 +4,7 @@ import { h } from "vue";
 
 import CalendarGrid from "./calendar-grid.vue";
 import CalendarHeading from "./calendar-heading.vue";
+import CalendarMultipleRoot from "./calendar-multiple-root.vue";
 import CalendarMonthSelect from "./calendar-month-select.vue";
 import CalendarNext from "./calendar-next.vue";
 import CalendarPrev from "./calendar-prev.vue";
@@ -116,4 +117,25 @@ export const calendarRuntimeFixtures: readonly RuntimeFixture[] = [
     /<option[^>]*value="2026"[^>]*selected/,
     '[data-vize-ui="calendar-year-select"]',
   ),
+  {
+    name: "calendar-multiple-root",
+    sourceFile: "families/date-time/calendar/calendar-multiple-root.vue",
+    render: () =>
+      h(CalendarMultipleRoot, {
+        id: "runtime-multiple",
+        today,
+        locale: "en-US",
+        defaultValue: [createPlainDate(2026, 9, 3), createPlainDate(2026, 9, 7)],
+      }),
+    assertServerMarkup(html) {
+      assert.match(html, /data-mode="multiple"/);
+      assert.match(html, /data-count="2"/);
+    },
+    assertHydratedDom(host) {
+      assert.equal(
+        host.querySelectorAll('[data-selected="true"][data-vize-ui="calendar-day"]').length,
+        2,
+      );
+    },
+  },
 ];

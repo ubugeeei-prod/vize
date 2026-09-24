@@ -14,6 +14,7 @@ import {
   resolveSegmentNames,
   resolveTimeSegmentLayout,
 } from "../date-field/field-segments.ts";
+import { hourPadding } from "../date-field/field-segment-runtime.ts";
 import type {
   EditableSegmentType,
   FieldSegmentValues,
@@ -63,19 +64,6 @@ type TimeFieldSetupExpose = {
       ? Readonly<ShallowRef<HTMLDivElement | null>>
       : ComputedRef<TimeFieldExpose[Key]>;
 };
-
-function hourPadding(locale: string, cycle: SegmentHourCycle): number {
-  try {
-    const parts = new Intl.DateTimeFormat(locale, {
-      timeStyle: "short",
-      hourCycle: cycle,
-      timeZone: "UTC",
-    }).formatToParts(Date.UTC(2001, 0, 1, 9, 5));
-    return parts.find((part) => part.type === "hour")?.value.length === 2 ? 2 : 1;
-  } catch {
-    return cycle === "h23" ? 2 : 1;
-  }
-}
 
 /** Time-specific adapter over the shared segmented spinbutton engine. */
 export function useTimeField(

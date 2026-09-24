@@ -7,16 +7,31 @@ import type {
   CalendarDayState,
   CalendarMonthState,
   CalendarWeekdaySlotState,
+  CalendarWeekNumberSlotState,
 } from "./calendar-types.ts";
+import { isoWeekOf } from "./plain-date.ts";
 
-const { monthIndex = 0 } = defineProps<{
+const {
+  monthIndex = 0,
+  showWeekNumbers = false,
+  weekNumberLabel = "Wk",
+  weekNumberHeader = "Week",
+} = defineProps<{
   /** Zero-based index of the visible month this grid renders. @default 0 */
   readonly monthIndex?: number;
+  /** Render a leading row header with the ISO 8601 week number of each row. @default false */
+  readonly showWeekNumbers?: boolean;
+  /** Visible week-number column header. @default "Wk" */
+  readonly weekNumberLabel?: string;
+  /** Full week-number column header used as `abbr`. @default "Week" */
+  readonly weekNumberHeader?: string;
 }>();
 
 defineSlots<{
   /** Weekday column header content. Receives the weekday, its labels, and column index. */
   weekday(props: CalendarWeekdaySlotState): unknown;
+  /** Week-number row header content. Receives the ISO week and the row's days. */
+  weekNumber(props: CalendarWeekNumberSlotState): unknown;
   /** Day button content. Receives the complete day state; defaults to the localized day number. */
   day(props: CalendarDayState): unknown;
 }>();
@@ -55,6 +70,15 @@ function onGridPointerLeave(): void {
   context.onDayHover(null);
 }
 
+const rows = computed<readonly CalendarWeekNumberSlotState[]>(() =>
+  (month.value?.weeks ?? []).flatMap((days) => {
+    const middle = days[3];
+    if (!middle) return [];
+    const iso = isoWeekOf(middle.date);
+    return [{ year: iso.year, week: iso.week, days }];
+  }),
+);
+
 function selectedAttribute(day: CalendarDayState): "true" | "false" | undefined {
   if (day.outsideMonth) return undefined;
   return day.selected || (day.inRange && !day.preview) ? "true" : "false";
@@ -68,7 +92,7 @@ function selectedAttribute(day: CalendarDayState): "true" | "false" | undefined 
     :aria-label="month?.label"
     :aria-readonly="context.slotState.value.readOnly ? 'true' : undefined"
     :aria-disabled="context.slotState.value.disabled ? 'true' : undefined"
-    :aria-multiselectable="context.slotState.value.mode === 'range' ? 'true' : undefined"
+    :aria-multiselectable="context.slotState.value.mode === 'single' ? undefined : 'true'"
     data-vize-ui="calendar-grid"
     part="grid"
     :data-month-index="monthIndex"
@@ -77,6 +101,15 @@ function selectedAttribute(day: CalendarDayState): "true" | "false" | undefined 
   >
     <thead data-vize-ui="calendar-grid-head" part="grid-head">
       <tr data-vize-ui="calendar-weekdays" part="weekdays">
+        <th
+          v-if="showWeekNumbers"
+          scope="col"
+          :abbr="weekNumberHeader"
+          data-vize-ui="calendar-week-number-header"
+          part="week-number-header"
+        >
+          {{ weekNumberLabel }}
+        </th>
         <th
           v-for="(weekday, column) in context.slotState.value.weekdays"
           :key="weekday.weekday"
@@ -92,14 +125,23 @@ function selectedAttribute(day: CalendarDayState): "true" | "false" | undefined 
     </thead>
     <tbody data-vize-ui="calendar-grid-body" part="grid-body" @pointerleave="onGridPointerLeave">
       <tr
-        v-for="(week, row) in month?.weeks ?? []"
-        :key="week[0]?.iso ?? row"
+        v-for="(week, row) in rows"
+        :key="week.days[0]?.iso ?? row"
         data-vize-ui="calendar-week"
         part="week"
         :data-week="row"
       >
+        <th
+          v-if="showWeekNumbers"
+          scope="row"
+          data-vize-ui="calendar-week-number"
+          part="week-number"
+          :data-week-number="week.week"
+        >
+          <slot name="weekNumber" v-bind="week">{{ week.week }}</slot>
+        </th>
         <td
-          v-for="day in week"
+          v-for="day in week.days"
           :key="day.iso"
           :aria-selected="selectedAttribute(day)"
           :aria-disabled="day.disabled || day.unavailable || day.outsideMonth ? 'true' : undefined"

@@ -68,7 +68,10 @@ test("renders locale clocks: 12-hour with a day period or 24-hour without", () =
   assert.equal(segment(root, "dayPeriod").textContent, "PM");
   assert.equal(segment(root, "dayPeriod").getAttribute("inputmode"), "text");
   assert.equal(segment(root, "dayPeriod").getAttribute("aria-valuetext"), "PM");
-  assert.equal(root.querySelector<HTMLInputElement>("input[type='hidden']")?.value, "21:05");
+  assert.equal(
+    root.querySelector<HTMLInputElement>("input[data-vize-ui$='-field-input']")?.value,
+    "21:05",
+  );
   english.unmount();
 
   const german = mountInteraction(TimeField, {

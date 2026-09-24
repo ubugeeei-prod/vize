@@ -170,6 +170,36 @@
       "import": "./dist/time-field.mjs",
       "default": "./dist/time-field.mjs"
     },
+    "./datetime-field": {
+      "types": "./dist/datetime-field.d.mts",
+      "import": "./dist/datetime-field.mjs",
+      "default": "./dist/datetime-field.mjs"
+    },
+    "./duration-field": {
+      "types": "./dist/duration-field.d.mts",
+      "import": "./dist/duration-field.mjs",
+      "default": "./dist/duration-field.mjs"
+    },
+    "./month-picker": {
+      "types": "./dist/month-picker.d.mts",
+      "import": "./dist/month-picker.mjs",
+      "default": "./dist/month-picker.mjs"
+    },
+    "./time-picker": {
+      "types": "./dist/time-picker.d.mts",
+      "import": "./dist/time-picker.mjs",
+      "default": "./dist/time-picker.mjs"
+    },
+    "./week-picker": {
+      "types": "./dist/week-picker.d.mts",
+      "import": "./dist/week-picker.mjs",
+      "default": "./dist/week-picker.mjs"
+    },
+    "./year-picker": {
+      "types": "./dist/year-picker.d.mts",
+      "import": "./dist/year-picker.mjs",
+      "default": "./dist/year-picker.mjs"
+    },
     "./callout": {
       "types": "./dist/callout.d.mts",
       "import": "./dist/callout.mjs",

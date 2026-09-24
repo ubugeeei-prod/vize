@@ -1,3 +1,7 @@
+// plain-time leads: its dependency-free chunk is hoisted to the top of the
+// time-field, datetime-field, and time-picker subpath bundles, so it must also
+// precede every other module in the root bundle for the byte-equality gate.
+export * from "./families/date-time/time-field/plain-time.ts";
 // field-wiring stays first: it reaches the shared deterministic-id module
 // without any SFC, keeping module order identical between the root bundle and
 // the id/error-summary subpath bundles for the byte-equality packaging gate.
@@ -26,6 +30,12 @@ export * from "./families/date-time/date-picker/date-picker.ts";
 export * from "./families/date-time/date-range-picker/date-range-picker.ts";
 export * from "./families/date-time/range-calendar/range-calendar.ts";
 export * from "./families/date-time/time-field/time-field.ts";
+export * from "./families/date-time/datetime-field/datetime-field.ts";
+export * from "./families/date-time/duration-field/duration-field.ts";
+export * from "./families/date-time/month-picker/month-picker.ts";
+export * from "./families/date-time/time-picker/time-picker.ts";
+export * from "./families/date-time/week-picker/week-picker.ts";
+export * from "./families/date-time/year-picker/year-picker.ts";
 export * from "./families/typography/blockquote/blockquote.ts";
 export * from "./families/navigation/breadcrumb/breadcrumb.ts";
 export * from "./families/navigation/tabs/tabs.ts";

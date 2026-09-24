@@ -3,7 +3,7 @@
 Normative state x input -> outcome table for the Calendar compound
 (`@vizejs/ui/calendar`): `calendar-root.vue`, `calendar-grid.vue`,
 `calendar-heading.vue`, `calendar-prev.vue`, `calendar-next.vue`,
-`calendar-month-select.vue`, and `calendar-year-select.vue`, plus the
+`calendar-month-select.vue`, `calendar-year-select.vue`, and `calendar-multiple-root.vue`, plus the
 timezone-free date model in `plain-date.ts`. Every row is proven by the named
 mounted-DOM, SSR, or unit test; a row without a passing test is a contract
 violation.
@@ -29,6 +29,20 @@ violation.
 | D1  | date model            | arithmetic                             | epoch-day math matches UTC across eras and leap rules; month/year arithmetic clamps days                                                                                                                                  | `epoch-day arithmetic matches UTC Date math across eras and leap rules`, `month, year, and week arithmetic clamps to real calendar days`                                                                                                          |
 | D2  | date model            | adapters                               | Temporal-like records are copied; ISO strings round-trip; `Date` adapters never shift days; instants resolve per IANA zone                                                                                                | `validation rejects impossible dates and copies Temporal-like records`, `ISO strings round-trip including extended years`, `Date adapters read local or UTC fields and never shift days`, `instants resolve to calendar dates per IANA time zone` |
 | D3  | date model            | ranges / locale data                   | ranges are ordered; week start and formatters are deterministic                                                                                                                                                           | `ranges are ordered, normalized, and compared by day`, `week start follows CLDR regions, the fw extension, and explicit overrides`, `formatters render UTC-anchored labels with calendar and numbering overrides`                                 |
+
+## Multiple selection (`calendar-multiple-root.vue`)
+
+| #   | State        | Input                         | Outcome                                                                                                                                | Proven by                                                                                                                                        |
+| --- | ------------ | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M1  | uncontrolled | day activation                | toggles the date; the value stays sorted and unique; grids are `aria-multiselectable`; `name` submits one input per date               | `multiple mode toggles dates, keeps them sorted, and submits one input per date`                                                                 |
+| M2  | any          | activation / `maxSelections`  | emits `update:modelValue`, `change`, then `toggle(date, selected)`; unavailable dates and additions beyond `maxSelections` are ignored | `multiple mode emits update, change, and toggle and honors maxSelections`                                                                        |
+| M3  | controlled   | keyboard / expose / prop      | Enter toggles the focused date; `toggle` and `setValue` are exposed; an external value outside the view scrolls it into view           | `controlled multiple selection, keyboard toggling, and the exposed API`                                                                          |
+| M4  | SSR          | isolated requests / hydration | byte-identical markup and silent hydration                                                                                             | `renders byte-identical multiple-date calendar markup across isolated SSR requests`, `hydrates multiple-date calendar markup without mismatches` |
+
+`CalendarGrid` also accepts `showWeekNumbers` (with `weekNumberLabel`,
+`weekNumberHeader`, and a `weekNumber` slot) to render a leading
+`<th scope="row">` holding each row's ISO 8601 week number; see
+`week-picker.behavior.md` row W1.
 
 ## SSR determinism
 

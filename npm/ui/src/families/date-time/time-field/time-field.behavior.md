@@ -2,7 +2,7 @@
 
 Normative state x input -> outcome table for `time-field.vue`
 (`@vizejs/ui/time-field`). TimeField shares the DateField segment engine, so
-DateField rows F2–F8 and F10–F12 apply to hour, minute, second, and day-period
+DateField rows F2–F8, F10–F12, and F15 (native `required` validation) apply to hour, minute, second, and day-period
 segments. Every row below is proven by the named test.
 
 | #   | State              | Input                 | Outcome                                                                                                                                             | Proven by                                                                                                                                |

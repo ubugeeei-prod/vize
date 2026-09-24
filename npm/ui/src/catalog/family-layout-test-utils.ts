@@ -115,11 +115,13 @@ export const uiFamilyRoots = new Map<string, string>([
   ["date-field", "src/families/date-time/date-field/"],
   ["date-picker", "src/families/date-time/date-picker/"],
   ["date-range-picker", "src/families/date-time/date-range-picker/"],
+  ["datetime-field", "src/families/date-time/datetime-field/"],
   ["dialog", "src/families/overlays/dialog/"],
   ["dismissable-layer", "src/families/overlays/dismissable-layer/"],
   ["drag-and-drop", "src/families/interaction/drag-and-drop/"],
   ["dropdown-menu", "src/families/menus/dropdown-menu/"],
   ["editable", "src/families/form/editable/"],
+  ["duration-field", "src/families/date-time/duration-field/"],
   ["emoji-picker", "src/families/selection/emoji-picker/"],
   ["empty-state", "src/families/feedback/empty-state/"],
   ["error-summary", "src/families/form/error-summary/"],
@@ -165,6 +167,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["media-player", "src/families/media/media-player/"],
   ["mention", "src/families/form/mention/"],
   ["meter", "src/families/feedback/meter/"],
+  ["month-picker", "src/families/date-time/month-picker/"],
   ["motion", "src/families/overlays/motion/"],
   ["move", "src/families/interaction/move/"],
   ["native-select", "src/families/selection/native-select/"],
@@ -228,6 +231,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["toc", "src/families/navigation/toc/"],
   ["toast", "src/families/feedback/toast/"],
   ["time-field", "src/families/date-time/time-field/"],
+  ["time-picker", "src/families/date-time/time-picker/"],
   ["toggle", "src/families/selection/toggle/"],
   ["toggle-group", "src/families/selection/toggle-group/"],
   ["toolbar", "src/families/actions/toolbar/"],
@@ -240,6 +244,8 @@ export const uiFamilyRoots = new Map<string, string>([
   ["virtualizer", "src/families/interaction/virtualizer/"],
   ["visually-hidden", "src/families/accessibility/visually-hidden/"],
   ["webcam-capture", "src/families/media/webcam-capture/"],
+  ["week-picker", "src/families/date-time/week-picker/"],
+  ["year-picker", "src/families/date-time/year-picker/"],
 ]);
 
 export function assertFamilyPaths(
