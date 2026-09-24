@@ -13,7 +13,7 @@ function addItem(): void {
 
 <template>
   <div>
-    <IconButton v-bind="{ ariaLabel: 'Add item' }" variant="solid" tone="accent" @press="addItem">
+    <IconButton ariaLabel="Add item" variant="solid" tone="accent" @press="addItem">
       <svg
         viewBox="0 0 24 24"
         width="1em"
@@ -25,7 +25,7 @@ function addItem(): void {
         <path d="M12 5v14M5 12h14" />
       </svg>
     </IconButton>
-    <IconButton v-bind="{ ariaLabel: 'Delete item' }" tone="danger" disabled>
+    <IconButton ariaLabel="Delete item" tone="danger" disabled>
       <svg
         viewBox="0 0 24 24"
         width="1em"
