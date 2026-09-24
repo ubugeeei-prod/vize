@@ -56,7 +56,9 @@ fn is_number_start(bytes: &[u8], dot: usize) -> bool {
 }
 
 fn is_number_boundary(byte: u8) -> bool {
-    !byte.is_ascii_alphanumeric() && !matches!(byte, b'_' | b'-' | b'.' | b'\\' | b'#')
+    byte.is_ascii()
+        && !byte.is_ascii_alphanumeric()
+        && !matches!(byte, b'_' | b'-' | b'.' | b'\\' | b'#')
 }
 
 fn skip_string(bytes: &[u8], mut index: usize, quote: u8) -> usize {
@@ -125,8 +127,8 @@ mod tests {
 
     #[test]
     fn does_not_change_identifiers_or_existing_numbers() {
-        let css = r#".foo\.5 { --data: .5; width: 0.5px; content: '.5'; }"#;
-        let expected = r#".foo\.5 { --data: 0.5; width: 0.5px; content: '.5'; }"#;
+        let css = r#".foo\.5 { --data: .5; --élément.5: x; width: 0.5px; content: '.5'; }"#;
+        let expected = r#".foo\.5 { --data: 0.5; --élément.5: x; width: 0.5px; content: '.5'; }"#;
         assert_eq!(
             add_leading_zero_to_fractional_numbers(css).as_str(),
             expected
