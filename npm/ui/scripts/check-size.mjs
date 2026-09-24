@@ -183,6 +183,7 @@ const budgets = new Map([
   ["transition.mjs", 3_000],
   ["typeahead.mjs", 2_000],
   ["virtualizer.mjs", 9_500],
+  ["chart.mjs", 32_000],
   ["chart-shape.mjs", 8_250],
   ["chart-scale.mjs", 9_500],
   ["navigation-menu.mjs", 13_000],

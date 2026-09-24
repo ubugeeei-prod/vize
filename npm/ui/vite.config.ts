@@ -365,6 +365,7 @@ export default defineConfig({
       transition: "src/families/overlays/transition/transition.ts",
       typeahead: "src/families/interaction/typeahead/typeahead.ts",
       virtualizer: "src/families/interaction/virtualizer/virtualizer.ts",
+      chart: "src/families/charts/chart/chart.ts",
       "chart-shape": "src/families/charts/chart-shape/chart-shape.ts",
       "chart-scale": "src/families/charts/chart-scale/chart-scale.ts",
       "navigation-menu": "src/families/navigation/navigation-menu/navigation-menu.ts",
