@@ -25,6 +25,7 @@ export const dialogFamilyCatalog = [
       `${dialogFamilyRoot}dialog-trigger.vue`,
       `${dialogFamilyRoot}dialog.ts`,
       `${dialogFamilyRoot}dialog-types.ts`,
+      `${dialogFamilyRoot}dialog-visual.css`,
     ],
     behaviorContract: `${dialogFamilyRoot}dialog.behavior.md`,
     tests: [`${dialogFamilyRoot}dialog.test.ts`, `${dialogFamilyRoot}dialog-ssr.test.ts`],

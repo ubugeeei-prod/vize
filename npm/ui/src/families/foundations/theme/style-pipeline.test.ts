@@ -12,6 +12,11 @@ const publicCssAssets = [
   "style.css",
   "theme.css",
   ...themePresets.map((name) => `theme-preset-${name}.css`),
+  "component-button.css",
+  "component-dialog.css",
+  "component-progress-bar.css",
+  "component-scroll-area.css",
+  "motion.css",
 ].sort();
 
 test("the package build declares an explicit browser floor for stylesheet lowering", () => {

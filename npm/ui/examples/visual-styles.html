@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en" data-vize-theme="paper">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vize UI opt-in styles</title>
+    <!-- Run `vp pack` in npm/ui before opening this file. -->
+    <link rel="stylesheet" href="../dist/theme.css" />
+    <link rel="stylesheet" href="../dist/theme-preset-paper.css" />
+    <link rel="stylesheet" href="../dist/theme-preset-signal.css" />
+    <link rel="stylesheet" href="../dist/theme-preset-atelier.css" />
+    <link rel="stylesheet" href="../dist/component-button.css" />
+    <link rel="stylesheet" href="../dist/component-dialog.css" />
+    <style>
+      body {
+        margin: 0;
+        background: var(--vize-ui-color-canvas);
+        color: var(--vize-ui-color-text);
+        font-family: var(--vize-ui-type-family-sans);
+      }
+
+      main {
+        box-sizing: border-box;
+        max-inline-size: 58rem;
+        min-block-size: 100vh;
+        margin-inline: auto;
+        padding: clamp(1.5rem, 5vw, 4rem);
+      }
+
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: end;
+        gap: 2rem;
+        margin-block-end: 3.5rem;
+        border-block-end: 1px solid var(--vize-ui-color-border);
+        padding-block-end: 1rem;
+      }
+
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
+        font-weight: 500;
+        letter-spacing: -0.065em;
+        line-height: 1;
+      }
+
+      h2 {
+        margin-block-end: 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .eyebrow {
+        margin-block-end: 0.8rem;
+        color: var(--vize-ui-color-text-muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .lead {
+        max-inline-size: 39rem;
+        margin-block: 1.5rem 3rem;
+        color: var(--vize-ui-color-text-muted);
+        line-height: 1.7;
+      }
+
+      .switcher,
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
+      .switcher button {
+        border: 0;
+        border-block-end: 1px solid transparent;
+        padding: 0.4rem 0;
+        background: none;
+        color: var(--vize-ui-color-text-muted);
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .switcher button[aria-pressed="true"] {
+        border-color: var(--vize-ui-color-accent);
+        color: var(--vize-ui-color-text);
+      }
+
+      section {
+        margin-block: 2.5rem;
+        border-block-start: 1px solid var(--vize-ui-color-border);
+        padding-block-start: 1rem;
+      }
+
+      small {
+        display: block;
+        margin-block-start: 0.75rem;
+        color: var(--vize-ui-color-text-muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <p class="eyebrow">Vize UI · optional styles</p>
+          <h1>Component styles.</h1>
+        </div>
+        <nav class="switcher" aria-label="Choose a style">
+          <button type="button" data-theme="paper" aria-pressed="true">Paper</button>
+          <button type="button" data-theme="signal" aria-pressed="false">Signal</button>
+          <button type="button" data-theme="atelier" aria-pressed="false">Atelier</button>
+        </nav>
+      </header>
+      <p class="lead">
+        A restrained set of component surfaces. The markup stays headless; each stylesheet is an
+        explicit choice.
+      </p>
+      <section aria-labelledby="actions-heading">
+        <h2 id="actions-heading">Actions</h2>
+        <div class="button-row">
+          <button type="button" data-vize-ui="button" data-state="idle" id="open-dialog">
+            Open dialog
+          </button>
+          <button
+            type="button"
+            data-vize-ui="button"
+            data-state="loading"
+            aria-busy="true"
+            aria-disabled="true"
+          >
+            Saving…
+          </button>
+          <button type="button" data-vize-ui="button" data-state="disabled" disabled>
+            Unavailable
+          </button>
+        </div>
+        <small>Hover, press, and keyboard focus use short, purposeful feedback.</small>
+      </section>
+    </main>
+    <div data-vize-ui="dialog-overlay" data-state="open" hidden></div>
+    <div
+      data-vize-ui="dialog-content"
+      data-state="open"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dialog-title"
+      aria-describedby="dialog-description"
+      tabindex="-1"
+      hidden
+    >
+      <h2 data-vize-ui="dialog-title" id="dialog-title">Review changes</h2>
+      <p data-vize-ui="dialog-description" id="dialog-description">
+        The dialog stays quiet and focused. Dismissal remains immediate.
+      </p>
+      <button type="button" data-vize-ui="dialog-close" aria-label="Close dialog">×</button>
+      <button type="button" data-vize-ui="button" data-state="idle" id="save">Save changes</button>
+    </div>
+    <script>
+      const themeButtons = document.querySelectorAll("[data-theme]");
+      const overlay = document.querySelector('[data-vize-ui="dialog-overlay"]');
+      const dialog = document.querySelector('[data-vize-ui="dialog-content"]');
+      const opener = document.querySelector("#open-dialog");
+
+      for (const button of themeButtons) {
+        button.addEventListener("click", () => {
+          document.documentElement.dataset.vizeTheme = button.dataset.theme;
+          for (const choice of themeButtons) {
+            choice.setAttribute("aria-pressed", String(choice === button));
+          }
+        });
+      }
+
+      function closeDialog() {
+        overlay.hidden = true;
+        dialog.hidden = true;
+        opener.focus();
+      }
+
+      opener.addEventListener("click", () => {
+        overlay.hidden = false;
+        dialog.hidden = false;
+        dialog.focus();
+      });
+      dialog.querySelector('[data-vize-ui="dialog-close"]').addEventListener("click", closeDialog);
+      dialog.querySelector("#save").addEventListener("click", closeDialog);
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !dialog.hidden) closeDialog();
+      });
+    </script>
+  </body>
+</html>

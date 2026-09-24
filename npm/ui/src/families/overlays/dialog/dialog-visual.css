@@ -1,0 +1,159 @@
+/* Optional dialog surface. Exit is immediate because Dialog does not retain closed DOM. */
+@layer vize.preset {
+  :where([data-vize-theme~="atelier"]) {
+    --vize-ui-dialog-radius: var(--vize-ui-radius-lg);
+    --vize-ui-dialog-shadow: var(--vize-ui-elevation-floating);
+    --vize-ui-dialog-padding: var(--vize-ui-space-xl);
+  }
+
+  :where([data-vize-theme~="paper"]) {
+    --vize-ui-dialog-radius: 0.1875rem;
+    --vize-ui-dialog-shadow: 0 8px 0 -6px var(--vize-ui-color-border);
+    --vize-ui-dialog-padding: var(--vize-ui-space-2xl);
+    --vize-ui-dialog-title-font: Georgia, serif;
+  }
+
+  :where([data-vize-theme~="signal"]) {
+    --vize-ui-dialog-radius: 0.125rem;
+    --vize-ui-dialog-shadow: var(--vize-ui-elevation-overlay);
+    --vize-ui-dialog-padding: var(--vize-ui-space-lg);
+    --vize-ui-dialog-title-font: var(--vize-ui-type-family-mono);
+  }
+
+  :where([data-vize-ui="dialog-overlay"]) {
+    position: fixed;
+    inset: 0;
+    z-index: var(--vize-ui-z-overlay);
+    background-color: color-mix(in oklab, var(--vize-ui-color-text) 38%, transparent);
+  }
+
+  :where([data-vize-ui="dialog-overlay"][data-state="open"]) {
+    animation: vize-ui-dialog-veil-in var(--vize-ui-motion-duration-base, 200ms)
+      var(--vize-ui-motion-ease-decelerate, ease-out) both;
+  }
+
+  :where([data-vize-ui="dialog-content"]) {
+    position: fixed;
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
+    z-index: calc(var(--vize-ui-z-overlay) + 1);
+    box-sizing: border-box;
+    inline-size: min(36rem, calc(100vw - 2rem));
+    max-block-size: calc(100dvh - 2rem);
+    overflow: auto;
+    padding: var(--vize-ui-dialog-padding, var(--vize-ui-space-xl));
+    border: var(--vize-ui-border-width-thin) solid var(--vize-ui-color-border);
+    border-radius: var(--vize-ui-dialog-radius, var(--vize-ui-radius-md));
+    background-color: var(--vize-ui-color-surface);
+    color: var(--vize-ui-color-text);
+    box-shadow: var(--vize-ui-dialog-shadow, var(--vize-ui-elevation-overlay));
+    font-family: var(--vize-ui-type-family-sans);
+    line-height: var(--vize-ui-type-leading-normal);
+    translate: -50% -50%;
+  }
+
+  :where([data-vize-ui="dialog-content"][data-state="open"]) {
+    animation: vize-ui-dialog-sheet-in var(--vize-ui-motion-duration-base, 200ms)
+      var(--vize-ui-motion-ease-decelerate, ease-out) both;
+  }
+
+  :where([data-vize-ui="dialog-content"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+
+  :where([data-vize-ui="dialog-title"]) {
+    margin: 0;
+    padding-inline-end: var(--vize-ui-space-2xl);
+    font-family: var(--vize-ui-dialog-title-font, var(--vize-ui-type-family-sans));
+    font-size: var(--vize-ui-type-size-lg);
+    font-weight: var(--vize-ui-type-weight-bold);
+    line-height: var(--vize-ui-type-leading-tight);
+  }
+
+  :where([data-vize-ui="dialog-description"]) {
+    margin-block: var(--vize-ui-space-sm) var(--vize-ui-space-lg);
+    color: var(--vize-ui-color-text-muted);
+    font-size: var(--vize-ui-type-size-sm);
+  }
+
+  :where([data-vize-ui="dialog-close"]) {
+    appearance: none;
+    display: inline-grid;
+    place-items: center;
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+    padding: 0;
+    border: var(--vize-ui-border-width-thin) solid transparent;
+    border-radius: var(--vize-ui-dialog-radius, var(--vize-ui-radius-md));
+    background-color: transparent;
+    color: var(--vize-ui-color-text-muted);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      color var(--vize-ui-motion-duration-fast, 120ms) ease-out,
+      background-color var(--vize-ui-motion-duration-fast, 120ms) ease-out;
+  }
+
+  :where([data-vize-ui="dialog-content"] [data-vize-ui="dialog-close"]) {
+    position: absolute;
+    inset-block-start: var(--vize-ui-space-sm);
+    inset-inline-end: var(--vize-ui-space-sm);
+  }
+
+  :where([data-vize-ui="dialog-close"]:hover) {
+    background-color: var(--vize-ui-color-canvas);
+    color: var(--vize-ui-color-text);
+  }
+
+  :where([data-vize-ui="dialog-close"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+
+  @keyframes vize-ui-dialog-veil-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes vize-ui-dialog-sheet-in {
+    from {
+      opacity: 0;
+      translate: -50% calc(-50% + 6px);
+    }
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="dialog-overlay"], [data-vize-ui="dialog-content"]) {
+      animation: none;
+    }
+
+    :where([data-vize-ui="dialog-close"]) {
+      transition-duration: 0ms;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="dialog-overlay"]) {
+      background-color: CanvasText;
+      opacity: 0.25;
+      animation: none;
+    }
+
+    :where([data-vize-ui="dialog-content"]) {
+      background-color: Canvas;
+      border-color: CanvasText;
+      color: CanvasText;
+      box-shadow: none;
+      animation: none;
+    }
+
+    :where([data-vize-ui="dialog-close"]) {
+      color: ButtonText;
+    }
+  }
+}
