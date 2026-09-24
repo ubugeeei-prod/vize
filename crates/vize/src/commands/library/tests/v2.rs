@@ -95,6 +95,16 @@ fn init_rejects_symlinked_config_outside_project() {
 }
 
 #[test]
+fn init_preserves_unparseable_json_config() {
+    let project = Project::new();
+    let invalid = "{ invalid json\n";
+    project.write("vize.config.json", invalid);
+
+    assert!(project.run(&["init"]).is_err());
+    assert_eq!(project.read("vize.config.json"), invalid);
+}
+
+#[test]
 fn add_is_a_shadcn_compatible_alias_of_pull() {
     let project = Project::new();
     ui_v1(&project.registry("ui"));

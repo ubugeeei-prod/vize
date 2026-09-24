@@ -76,10 +76,24 @@ fn insert_lib_section(source: &str, lib: &str) -> Option<String> {
 
 pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
     let root = &context.root;
+    // The shared loader may skip a config it cannot evaluate (for example,
+    // a TypeScript file when Node is unavailable). `init` still must preserve
+    // that file and offer a manual snippet instead of creating a JSON config.
+    let discovered_config = context.config_path.clone().or_else(|| {
+        [
+            "vize.config.pkl",
+            "vize.config.ts",
+            "vize.config.js",
+            "vize.config.mjs",
+            "vize.config.json",
+        ]
+        .into_iter()
+        .map(|name| root.join(name))
+        .find(|path| fs::symlink_metadata(path).is_ok())
+    });
     // The config is another write destination: an existing symlink must not
     // bypass the project boundary when the lib section is added or replaced.
-    let config_destination = context
-        .config_path
+    let config_destination = discovered_config
         .as_deref()
         .map_or_else(|| root.join("vize.config.json"), Path::to_path_buf);
     ensure_project_path(root, &config_destination)?;
@@ -116,7 +130,7 @@ pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
     }
 
     let (config_path, action, new_text): (PathBuf, ConfigAction, Option<String>) =
-        match &context.config_path {
+        match &discovered_config {
             None => (
                 root.join("vize.config.json"),
                 ConfigAction::Create,
