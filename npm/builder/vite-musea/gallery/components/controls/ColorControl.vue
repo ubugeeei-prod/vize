@@ -1,22 +1,38 @@
 <script setup lang="ts">
+import { useId } from "vue";
+
 const model = defineModel<string>({ default: "#000000" });
 
-defineProps<{
+const props = defineProps<{
   label: string;
   description?: string;
   required?: boolean;
 }>();
+
+const inputId = useId();
 </script>
 
 <template>
   <div class="control">
-    <label class="control-label">
+    <label class="control-label" :for="inputId">
       {{ label }}
       <span v-if="required" class="control-required">*</span>
     </label>
     <div class="control-color-row">
-      <input v-model="model" type="color" class="control-color" />
-      <input v-model="model" type="text" class="control-color-text" placeholder="#000000" />
+      <input
+        v-model="model"
+        type="color"
+        class="control-color"
+        :aria-label="`${props.label} picker`"
+      />
+      <input
+        :id="inputId"
+        v-model="model"
+        type="text"
+        class="control-color-text"
+        placeholder="#000000"
+        :required="required"
+      />
     </div>
     <span v-if="description" class="control-desc">{{ description }}</span>
   </div>

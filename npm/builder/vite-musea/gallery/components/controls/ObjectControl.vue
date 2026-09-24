@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref, watch } from "vue";
+import { defineAsyncComponent, ref, useId, watch } from "vue";
 
 const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
 
@@ -16,6 +16,7 @@ const emit = defineEmits<{
 
 const jsonString = ref(JSON.stringify(props.modelValue ?? {}, null, 2));
 const parseError = ref(false);
+const labelId = useId();
 
 watch(
   () => props.modelValue,
@@ -42,12 +43,17 @@ function onEditorUpdate(value: string) {
 
 <template>
   <div class="control">
-    <label class="control-label">
+    <span :id="labelId" class="control-label">
       {{ label }}
       <span v-if="required" class="control-required">*</span>
       <span v-if="parseError" class="control-error-badge">Invalid JSON</span>
-    </label>
-    <div class="control-editor" :class="{ 'has-error': parseError }">
+    </span>
+    <div
+      class="control-editor"
+      :class="{ 'has-error': parseError }"
+      role="group"
+      :aria-labelledby="labelId"
+    >
       <MonacoEditor
         :model-value="jsonString"
         language="json"

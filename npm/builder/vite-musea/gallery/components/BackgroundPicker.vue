@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useAddons, BG_PRESETS } from "../composables/useAddons";
+import { useAddons, BG_PRESETS, type BackgroundPreset } from "../composables/useAddons";
 
 const { background, setBackground, setCustomBackground } = useAddons();
 const customColor = ref("#ffffff");
@@ -9,6 +9,10 @@ function onCustomColorInput(event: Event) {
   const value = (event.target as HTMLInputElement).value;
   customColor.value = value;
   setCustomBackground(value);
+}
+
+function togglePreset(preset: BackgroundPreset) {
+  setBackground(background.value?.name === preset.name ? null : preset);
 }
 </script>
 
@@ -22,7 +26,7 @@ function onCustomColorInput(event: Event) {
         class="bg-preset-btn"
         :class="{ active: background?.name === preset.name }"
         :title="preset.name"
-        @click="setBackground(background?.name === preset.name ? null : preset)"
+        @click="() => togglePreset(preset)"
       >
         <span
           class="bg-preset-swatch"

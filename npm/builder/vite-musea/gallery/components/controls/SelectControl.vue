@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useId } from "vue";
+
 const model = defineModel<unknown>();
 
 defineProps<{
@@ -7,18 +9,26 @@ defineProps<{
   required?: boolean;
   options: Array<{ label: string; value: unknown }>;
 }>();
+
+const inputId = useId();
+
+function onChange(event: Event) {
+  model.value = JSON.parse((event.target as HTMLSelectElement).value);
+}
 </script>
 
 <template>
   <div class="control">
-    <label class="control-label">
+    <label class="control-label" :for="inputId">
       {{ label }}
       <span v-if="required" class="control-required">*</span>
     </label>
     <select
+      :id="inputId"
       class="control-select"
       :value="JSON.stringify(model)"
-      @change="model = JSON.parse(($event.target as HTMLSelectElement).value)"
+      :required="required"
+      @change="onChange"
     >
       <option v-for="opt in options" :key="String(opt.value)" :value="JSON.stringify(opt.value)">
         {{ opt.label }}

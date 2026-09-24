@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useId } from "vue";
+
 const model = defineModel<number>({ default: 0 });
 
 defineProps<{
@@ -9,22 +11,26 @@ defineProps<{
   max?: number;
   step?: number;
 }>();
+
+const inputId = useId();
 </script>
 
 <template>
   <div class="control">
-    <label class="control-label">
+    <label class="control-label" :for="inputId">
       {{ label }}
       <span v-if="required" class="control-required">*</span>
       <span class="control-value">{{ model }}</span>
     </label>
     <input
+      :id="inputId"
       v-model.number="model"
       type="range"
       class="control-range"
       :min="min ?? 0"
       :max="max ?? 100"
       :step="step ?? 1"
+      :required="required"
     />
     <span v-if="description" class="control-desc">{{ description }}</span>
   </div>
@@ -51,7 +57,7 @@ defineProps<{
 }
 
 .control-value {
-  margin-left: auto;
+  margin-inline-start: auto;
   font-family: var(--musea-font-mono);
   font-size: 0.6875rem;
   color: var(--musea-text-muted);

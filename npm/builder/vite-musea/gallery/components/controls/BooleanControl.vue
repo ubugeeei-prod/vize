@@ -38,7 +38,18 @@ defineProps<{
 }
 
 .control-checkbox {
-  display: none;
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+
+  &:focus-visible + .control-toggle {
+    outline: 2px solid var(--musea-accent);
+    outline-offset: 2px;
+  }
 }
 
 .control-toggle {
@@ -56,7 +67,7 @@ defineProps<{
   content: "";
   position: absolute;
   top: 2px;
-  left: 2px;
+  inset-inline-start: 2px;
   width: 12px;
   height: 12px;
   background: var(--musea-text-muted);
@@ -70,7 +81,7 @@ defineProps<{
 }
 
 .control-toggle.active::after {
-  left: 16px;
+  inset-inline-start: 16px;
   background: white;
 }
 
@@ -81,6 +92,6 @@ defineProps<{
 .control-desc {
   font-size: 0.6875rem;
   color: var(--musea-text-muted);
-  margin-left: 2.5rem;
+  margin-inline-start: 2.5rem;
 }
 </style>

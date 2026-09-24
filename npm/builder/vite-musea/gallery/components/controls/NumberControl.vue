@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useId } from "vue";
+
 const model = defineModel<number>({ default: 0 });
 
 defineProps<{
@@ -6,15 +8,23 @@ defineProps<{
   description?: string;
   required?: boolean;
 }>();
+
+const inputId = useId();
 </script>
 
 <template>
   <div class="control">
-    <label class="control-label">
+    <label class="control-label" :for="inputId">
       {{ label }}
       <span v-if="required" class="control-required">*</span>
     </label>
-    <input v-model.number="model" type="number" class="control-input" />
+    <input
+      :id="inputId"
+      v-model.number="model"
+      type="number"
+      class="control-input"
+      :required="required"
+    />
     <span v-if="description" class="control-desc">{{ description }}</span>
   </div>
 </template>
