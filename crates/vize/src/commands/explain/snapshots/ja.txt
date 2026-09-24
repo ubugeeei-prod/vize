@@ -3246,6 +3246,7 @@ nextTick() の結果を await するか、チェーンするか、コールバ�
   await nextTick()
   nextTick().then(() => focusInput())
   nextTick(() => focusInput())
+  const tick = () => nextTick()
   this.$nextTick(() => focusInput())
 === ssr/no-browser-globals-in-ssr
 ssr/no-browser-globals-in-ssr · lint ルール

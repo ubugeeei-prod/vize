@@ -3353,6 +3353,7 @@ script/valid-next-tick · lint 规则
   await nextTick()
   nextTick().then(() => focusInput())
   nextTick(() => focusInput())
+  const tick = () => nextTick()
   this.$nextTick(() => focusInput())
 === ssr/no-browser-globals-in-ssr
 ssr/no-browser-globals-in-ssr · lint 规则
