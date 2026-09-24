@@ -42,7 +42,11 @@
           "type": "string",
           "pattern": "^[a-z0-9][a-z0-9-]*$"
         },
-        "kind": { "enum": ["ui", "composable"] },
+        "kind": {
+          "description": "Source key: ui, composable, or a third-party @namespace from lib.registries.",
+          "type": "string",
+          "pattern": "^(ui|composable|@[a-z0-9][a-z0-9._-]*)$"
+        },
         "package": {
           "description": "npm package that published the pulled version.",
           "type": "string",
