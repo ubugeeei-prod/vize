@@ -71,6 +71,7 @@ impl ScriptOffsetMapper {
     }
 }
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{ScriptOffsetMapper, to_sfc_utf16_range};

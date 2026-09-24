@@ -15,9 +15,7 @@ use std::{fs, process::ExitCode};
 
 /// Members that have not joined the contract yet. Remove a line in the same
 /// PR that adds `[lints] workspace = true` to that member.
-const PENDING: &[&str] = &[
-    "crates/vize_vitrine",
-];
+const PENDING: &[&str] = &[];
 
 fn main() -> ExitCode {
     let check = std::env::args().skip(1).any(|arg| arg == "--check");

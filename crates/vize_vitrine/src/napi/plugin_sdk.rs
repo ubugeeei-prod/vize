@@ -20,10 +20,17 @@
 //! P5-13 adds cross-process disk reuse. GA (all four hook families and the
 //! `@vizejs/plugin-sdk` package) is P6-7.
 
-#![allow(
+#![expect(
     clippy::disallowed_types,
+    reason = "N-API values cross the boundary as std `String`s"
+)]
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "N-API values cross the boundary as std `String`s"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "N-API values cross the boundary as std `String`s"
 )]
 
 mod batch;
@@ -183,9 +190,8 @@ pub fn lint_with_plugins(
                 .map_err(host_error)?;
         }
         let key = content_key(&source, &filename, &spec, &cache_inputs);
-        let hit = use_cache
-            .then(|| cache().lock().ok()?.get(&key, cache_dir))
-            .flatten();
+        let cache_key = key.as_deref().filter(|_| use_cache);
+        let hit = cache_key.and_then(|key| cache().lock().ok()?.get(key, cache_dir));
         let (found, nodes, bytes, js_ns, cached) = match hit {
             Some(found) => (found, 0, 0, 0.0, true),
             None => {
@@ -196,8 +202,10 @@ pub fn lint_with_plugins(
                 let reports = run.call(built.json)?;
                 let js_ns = called.elapsed().as_nanos() as f64;
                 let found = diagnostics(&document, &plugin.name, &reports).map_err(host_error)?;
-                if use_cache && let Ok(mut map) = cache().lock() {
-                    map.put(&key, found.clone(), cache_dir);
+                if let Some(key) = cache_key
+                    && let Ok(mut map) = cache().lock()
+                {
+                    map.put(key, found.clone(), cache_dir);
                 }
                 (found, built.nodes, bytes, js_ns, false)
             }
@@ -205,7 +213,7 @@ pub fn lint_with_plugins(
         costs.push(PluginCostNapi {
             name: plugin.name.clone(),
             version: plugin.version.clone(),
-            content_key: key,
+            content_key: key.unwrap_or_default(),
             nodes,
             batch_bytes: bytes,
             reports: found.len() as u32,

@@ -6,10 +6,17 @@
 //! code-returning paths. The stats path can aggregate repeated SFC bodies inside
 //! Rust and avoid sending generated JavaScript over the JS/native boundary, while
 //! the code path preserves per-file output for Vite/plugin callers.
-#![allow(
+#![expect(
     clippy::disallowed_types,
+    reason = "N-API values cross the boundary as std `String`s"
+)]
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "N-API values cross the boundary as std `String`s"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "N-API values cross the boundary as std `String`s"
 )]
 
 mod batch;

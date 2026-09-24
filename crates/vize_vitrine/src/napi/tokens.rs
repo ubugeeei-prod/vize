@@ -1,5 +1,8 @@
 //! NAPI bindings for Musea design token helpers.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "N-API values cross the boundary as std `String`s"
+)]
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;

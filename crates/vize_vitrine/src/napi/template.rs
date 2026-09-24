@@ -4,10 +4,17 @@
 //! for direct template-to-render-function compilation.
 //!
 //! FFI boundary code: uses std types for JavaScript interop.
-#![allow(
+#![expect(
     clippy::disallowed_types,
+    reason = "N-API values cross the boundary as std `String`s"
+)]
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "N-API values cross the boundary as std `String`s"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "N-API values cross the boundary as std `String`s"
 )]
 
 use napi::bindgen_prelude::{Error, Result, Status};

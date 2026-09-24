@@ -116,8 +116,7 @@ fn compile_sfc_batch_inner(
             .unwrap_or("");
         if should_cache_batch_compile(&source, component_name) {
             let key = batch_compile_key(&path, &source, component_name, option_bits);
-            if let Some(index) = grouped.get(&key).copied() {
-                let job = &mut jobs[index];
+            if let Some(job) = grouped.get(&key).and_then(|&index| jobs.get_mut(index)) {
                 job.repeats += 1;
                 job.input_bytes += source.len();
                 continue;

@@ -69,7 +69,6 @@ const fn severity_name(severity: Severity) -> &'static str {
 
 /// Get available lint rules
 #[wasm_bindgen(js_name = "getLintRules")]
-#[allow(clippy::disallowed_macros)]
 pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
     use vize_s0::FxHashSet;
     let template_rule_registries = [

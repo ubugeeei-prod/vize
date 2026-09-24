@@ -3,7 +3,10 @@
 //! The actual classification model lives in `vize_atelier_sfc`; vitrine only
 //! converts that Rust shape into the JavaScript-facing N-API object.
 
-#![allow(clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "N-API values cross the boundary as std `String`s"
+)]
 
 mod precompile;
 mod request;

@@ -1,4 +1,11 @@
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "template syntax options are std `String`s decoded from N-API and wasm-bindgen"
+)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "template syntax options are std `String`s decoded from N-API and wasm-bindgen"
+)]
 
 use vize_atelier_core::TemplateSyntaxMode;
 

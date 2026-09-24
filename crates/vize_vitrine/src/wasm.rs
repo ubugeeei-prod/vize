@@ -8,10 +8,17 @@
 //! - `sfc_types`: WASM-serializable SFC descriptor/result types and conversions
 //! - `compiler`: the `Compiler` class, free-function aliases, and compile pipeline
 //! - `analyze`, `cross_file`, `format`, `inspector`, `lint`, `musea`: feature bindings
-#![allow(
+#![expect(
     clippy::disallowed_types,
+    reason = "wasm-bindgen values cross the boundary as std `String`s"
+)]
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "wasm-bindgen values cross the boundary as std `String`s"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "wasm-bindgen values cross the boundary as std `String`s"
 )]
 
 mod analyze;

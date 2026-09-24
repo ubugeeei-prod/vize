@@ -1,9 +1,8 @@
 //! Why the JS plugin host refused a plugin or a document (P4-16 spike).
 
-#![allow(
+#![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "N-API values cross the boundary as std `String`s"
 )]
 
 use core::fmt;

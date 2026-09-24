@@ -11,6 +11,10 @@ use napi::{
     bindgen_prelude::{Error, FromNapiValue, Result, Unknown, check_status, sys},
 };
 
+#[expect(
+    clippy::disallowed_types,
+    reason = "N-API decodes property names as std `String`s"
+)]
 pub(super) fn enumerable_keys(value: Unknown<'_>) -> Result<Vec<(String, sys::napi_value)>> {
     let env = value.value().env;
     let mut keys = std::ptr::null_mut();

@@ -1,4 +1,7 @@
-#![allow(clippy::disallowed_macros)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "N-API plugin requests format std `String`s"
+)]
 
 use napi_derive::napi;
 use vize_atelier_sfc::vite_plugin::VitePluginRequest;

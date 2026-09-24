@@ -6,6 +6,7 @@
 //! nested `folio.croquis`, byte-identically. No test pinned that before
 //! this one, which is why the P2-18 acceptance demands it: the ladder work
 //! must not move those bytes.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use super::analyze::analyze_sfc_json;
 

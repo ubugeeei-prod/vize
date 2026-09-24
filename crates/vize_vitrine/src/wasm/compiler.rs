@@ -13,7 +13,7 @@ pub use free_fns::*;
 use vize_s0::Allocator;
 use wasm_bindgen::prelude::*;
 
-use crate::{CompilerOptions, template_syntax::resolve_template_syntax};
+use crate::template_syntax::resolve_template_syntax;
 use vize_atelier_core::options::CustomElementMatcher;
 use vize_atelier_core::parser::parse_with_options_custom_elements_and_template_syntax;
 use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;

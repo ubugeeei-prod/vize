@@ -1,6 +1,9 @@
 //! N-API bindings for compiler inspector helpers.
 
-#![allow(clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "N-API values cross the boundary as std `String`s"
+)]
 
 use napi::{Error, Result, Status};
 use napi_derive::napi;

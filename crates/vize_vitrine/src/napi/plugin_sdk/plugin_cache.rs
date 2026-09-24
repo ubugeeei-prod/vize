@@ -4,10 +4,17 @@
 //! file-absolute spans, so a shift above the template must invalidate them.
 //! The plugin's other batch inputs are the exactly declared P5-1b manifest.
 
-#![allow(
+#![expect(
     clippy::disallowed_types,
+    reason = "N-API values cross the boundary as std `String`s"
+)]
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "N-API values cross the boundary as std `String`s"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "N-API values cross the boundary as std `String`s"
 )]
 
 use std::collections::HashMap;
@@ -53,23 +60,27 @@ pub fn validate_cache_inputs(
             detail: format!("input name `{name}` is empty"),
         });
     }
-    if let Some(pair) = names.windows(2).find(|pair| pair[0] == pair[1]) {
+    if let Some([name, _]) = names
+        .windows(2)
+        .find(|pair| matches!(pair, [left, right] if left == right))
+    {
         return Err(HostError::InvalidCacheInputs {
             plugin: plugin.to_owned(),
-            detail: format!("input name `{}` is duplicated", pair[0]),
+            detail: format!("input name `{name}` is duplicated"),
         });
     }
     Ok(())
 }
 
 /// The S0 content key with every non-content batch input declared and folded.
+/// `None` means the result cannot be keyed and must not be cached.
 #[must_use]
 pub fn content_key(
     source: &str,
     filename: &str,
     spec: &PluginSpec<'_>,
     inputs: &[PluginCacheInput<'_>],
-) -> String {
+) -> Option<String> {
     content_key_for_build(
         source,
         filename,
@@ -87,10 +98,10 @@ pub fn content_key_for_build(
     spec: &PluginSpec<'_>,
     inputs: &[PluginCacheInput<'_>],
     build_id: &str,
-) -> String {
+) -> Option<String> {
     let identity = serde_json::json!([spec.name, filename]).to_string();
-    let visits = serde_json::to_string(&spec.visit).expect("plugin visit names serialize");
-    let demands = serde_json::to_string(spec.demands).expect("plugin demand names serialize");
+    let visits = serde_json::to_string(&spec.visit).ok()?;
+    let demands = serde_json::to_string(spec.demands).ok()?;
     let mut inputs = inputs.to_vec();
     inputs.sort_unstable_by(|left, right| left.name.cmp(right.name));
     let inputs = serde_json::to_string(
@@ -99,7 +110,7 @@ pub fn content_key_for_build(
             .map(|input| (input.name, input.value))
             .collect::<Vec<_>>(),
     )
-    .expect("plugin input names and values serialize");
+    .ok()?;
     let toolchain = format!(
         "{}:{BATCH_SCHEMA}:{CACHE_SCHEMA}:{build_id}",
         env!("CARGO_PKG_VERSION"),
@@ -120,8 +131,8 @@ pub fn content_key_for_build(
         .with(AmbientInput::PluginInputs, &inputs);
     source_block_key("plugin-document", &[], source)
         .with_manifest(CachedArtifact::PluginResult, &manifest)
-        .expect("the plugin result manifest declares every input")
-        .to_string()
+        .ok()
+        .map(|key| key.to_string())
 }
 
 #[derive(Default)]
@@ -142,15 +153,14 @@ impl PluginCache {
     pub fn get(&mut self, key: &str, dir: Option<&Path>) -> Option<Vec<PluginDiagnostic>> {
         if let Some(found) = self.entries.get(key) {
             let found = found.clone();
-            if let Some(dir) = dir {
-                if !path(dir, key).is_file() {
-                    self.write(key, &found, dir);
-                }
+            if let Some(dir) = dir
+                && !path(dir, key).is_some_and(|at| at.is_file())
+            {
+                self.write(key, &found, dir);
             }
             return Some(found);
         }
-        let dir = dir?;
-        let at = path(dir, key);
+        let at = path(dir?, key)?;
         let bytes = fs::read(&at).ok()?;
         let Ok(file) = serde_json::from_slice::<CacheFile>(&bytes) else {
             let _ = fs::remove_file(at);
@@ -186,7 +196,9 @@ impl PluginCache {
             return;
         };
         static NEXT: AtomicU64 = AtomicU64::new(0);
-        let at = path(dir, key);
+        let Some(at) = path(dir, key) else {
+            return;
+        };
         let temporary = at.with_extension(format!(
             "{}.{}.tmp",
             std::process::id(),
@@ -209,14 +221,12 @@ impl PluginCache {
     }
 }
 
-fn path(dir: &Path, key: &str) -> PathBuf {
+fn path(dir: &Path, key: &str) -> Option<PathBuf> {
     // `key` comes from ArtifactKey's own display implementation. Only its
-    // digest enters the filename, never a plugin- or user-supplied path.
-    let digest = key
-        .rsplit_once(':')
-        .expect("an artifact key has a digest")
-        .1;
-    dir.join(format!("plugin-result-v{CACHE_SCHEMA}-{digest}.json"))
+    // digest enters the filename, never a plugin- or user-supplied path; a key
+    // without one has no disk entry.
+    let (_, digest) = key.rsplit_once(':')?;
+    Some(dir.join(format!("plugin-result-v{CACHE_SCHEMA}-{digest}.json")))
 }
 
 pub fn cache() -> &'static Mutex<PluginCache> {

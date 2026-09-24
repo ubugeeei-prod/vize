@@ -24,5 +24,9 @@ pub(crate) fn utf8_byte_to_utf16_offset(content: &str, byte_offset: u32) -> u32 
     if byte_offset >= content.len() {
         return content.encode_utf16().count() as u32;
     }
-    content[..byte_offset].encode_utf16().count() as u32
+    content
+        .get(..content.floor_char_boundary(byte_offset))
+        .unwrap_or_default()
+        .encode_utf16()
+        .count() as u32
 }

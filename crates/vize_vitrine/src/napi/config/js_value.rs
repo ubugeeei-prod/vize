@@ -65,15 +65,13 @@ fn normalize_config_entries(raw_entries: Unknown<'_>) -> Result<Unknown<'_>> {
     let env = raw_entries.value().env;
     let global_config = create_object(env)?;
     let entries = create_array(env, 0)?;
-    let mut entry_count = 0;
 
     for index in 0..array_len(raw_entries)? {
         let entry = normalize_entry(get_element(raw_entries, index)?)?;
         if is_global_config_entry(entry)? {
             deep_merge(global_config, strip_entry_metadata(entry)?)?;
         }
-        set_element(entries, entry_count, entry)?;
-        entry_count += 1;
+        set_element(entries, index, entry)?;
     }
 
     set_named_property(global_config, "entries", entries)?;

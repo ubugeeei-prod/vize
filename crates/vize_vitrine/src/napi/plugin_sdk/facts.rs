@@ -16,10 +16,9 @@
 //! production groups (the `fact::ids` rule), and P6-7 replaces it with the
 //! production groups' α pages (P4-2).
 
-#![allow(
+#![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "N-API values cross the boundary as std `String`s"
 )]
 
 use serde::Serialize;

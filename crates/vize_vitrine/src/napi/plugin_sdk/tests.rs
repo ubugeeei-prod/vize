@@ -1,10 +1,7 @@
 //! The JS plugin host's pure half, pinned by exact equality (P4-16).
-
-#![allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
-)]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
 use vize_davinci::fact::{Demand, FactManager, FactProducer};
 
@@ -33,7 +30,7 @@ fn spec<'p>(visit: Option<&'p [String]>, demands: &'p [String]) -> PluginSpec<'p
 }
 
 fn content_key(source: &str, filename: &str, spec: &PluginSpec<'_>) -> String {
-    super::plugin_cache::content_key(source, filename, spec, &[])
+    super::plugin_cache::content_key(source, filename, spec, &[]).unwrap()
 }
 
 #[test]
@@ -265,18 +262,18 @@ fn plugin_inputs_and_same_version_builds_invalidate_the_key_independently() {
         name: "threshold",
         value: "two",
     }];
-    let first = content_key_for_build(TODOS, "Todos.vue", &base, &one, "revision-a");
+    let first = content_key_for_build(TODOS, "Todos.vue", &base, &one, "revision-a").unwrap();
     assert_eq!(
         first,
-        content_key_for_build(TODOS, "Todos.vue", &base, &one, "revision-a")
+        content_key_for_build(TODOS, "Todos.vue", &base, &one, "revision-a").unwrap()
     );
     assert_ne!(
         first,
-        content_key_for_build(TODOS, "Todos.vue", &base, &two, "revision-a")
+        content_key_for_build(TODOS, "Todos.vue", &base, &two, "revision-a").unwrap()
     );
     assert_ne!(
         first,
-        content_key_for_build(TODOS, "Todos.vue", &base, &one, "revision-b")
+        content_key_for_build(TODOS, "Todos.vue", &base, &one, "revision-b").unwrap()
     );
     let reordered = [
         PluginCacheInput {
@@ -287,8 +284,8 @@ fn plugin_inputs_and_same_version_builds_invalidate_the_key_independently() {
     ];
     let opposite = [one[0], reordered[0]];
     assert_eq!(
-        content_key_for_build(TODOS, "Todos.vue", &base, &reordered, "revision-a"),
-        content_key_for_build(TODOS, "Todos.vue", &base, &opposite, "revision-a")
+        content_key_for_build(TODOS, "Todos.vue", &base, &reordered, "revision-a").unwrap(),
+        content_key_for_build(TODOS, "Todos.vue", &base, &opposite, "revision-a").unwrap()
     );
     assert_eq!(
         validate_cache_inputs("team", false, &[]),

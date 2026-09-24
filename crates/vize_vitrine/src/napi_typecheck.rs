@@ -1,12 +1,12 @@
 //! NAPI bindings for type checking.
 //!
 //! FFI boundary code: uses std types for JavaScript interop.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "N-API type-check bindings exchange std `String`s"
 )]
-
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 

@@ -21,15 +21,15 @@ pub(crate) fn insert_complexity_json(output: &mut serde_json::Value, result: &Cr
 }
 
 pub(crate) fn complexity_report_json(report: &ComplexityReport) -> serde_json::Value {
-    serde_json::to_value(report).expect("complexity report should serialize")
+    serde_json::to_value(report).unwrap_or(serde_json::Value::Null)
 }
 
 pub(crate) fn complexity_hotspots_json(hotspots: &[ComplexityHotspot]) -> serde_json::Value {
-    serde_json::to_value(hotspots).expect("complexity hotspots should serialize")
+    serde_json::to_value(hotspots).unwrap_or(serde_json::Value::Null)
 }
 
 pub(crate) fn template_complexity_json(components: &[ComponentComplexity]) -> serde_json::Value {
-    serde_json::to_value(components).expect("template complexity should serialize")
+    serde_json::to_value(components).unwrap_or(serde_json::Value::Null)
 }
 
 #[cfg(test)]

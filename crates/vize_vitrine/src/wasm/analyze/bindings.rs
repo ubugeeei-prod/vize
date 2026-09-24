@@ -23,7 +23,9 @@ pub(super) fn bindings_json(
 ) -> (Vec<serde_json::Value>, bool) {
     let mut facts = CroquisFacts::new(summary);
     let view = facts.prepare::<AnalyzePayload>();
-    let binding_facts = view.get::<Bindings>().expect("declared demand");
+    let Ok(binding_facts) = view.get::<Bindings>() else {
+        return (Vec::new(), false);
+    };
     let bindings = binding_facts
         .typed()
         .map(|(name, binding_type)| {

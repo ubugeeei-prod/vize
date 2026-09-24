@@ -8,10 +8,13 @@
 //! the lowering arena, which both crossing shapes the spike measures need
 //! (a serialized batch and a proxy handle).
 
-#![allow(
+#![expect(
     clippy::disallowed_types,
+    reason = "N-API values cross the boundary as std `String`s"
+)]
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    reason = "N-API values cross the boundary as std `String`s"
 )]
 
 use serde::Serialize;
@@ -94,7 +97,9 @@ impl PluginDocument {
             return Ok(document);
         };
         let (start, end) = (template.loc.start, template.loc.end);
-        let content = &source[start..end];
+        let Some(content) = source.get(start..end) else {
+            return Ok(document);
+        };
         let root = SourceRoot::new(source).map_err(|_| HostError::Split("too large".into()))?;
         let block = root
             .block(content, start as u32)
@@ -119,10 +124,11 @@ impl PluginDocument {
     #[must_use]
     pub fn position(&self, offset: u32) -> (u32, u32) {
         let offset = (offset as usize).min(self.source.len());
-        let before = &self.source[..offset];
-        let line_start = before.rfind('\n').map_or(0, |at| at + 1);
+        let offset = self.source.floor_char_boundary(offset);
+        let before = self.source.get(..offset).unwrap_or_default();
+        let current_line = before.rsplit_once('\n').map_or(before, |(_, line)| line);
         let line = before.bytes().filter(|byte| *byte == b'\n').count() + 1;
-        let column = before[line_start..].encode_utf16().count() + 1;
+        let column = current_line.encode_utf16().count() + 1;
         (line as u32, column as u32)
     }
 }
@@ -133,10 +139,17 @@ struct Walk {
 }
 
 impl Walk {
-    fn push(&mut self, parent: Option<u32>, kind: &'static str, span: Span) -> usize {
-        let id = self.nodes.len() as u32;
-        self.nodes.push(PluginNode {
-            id,
+    /// Append a node filled in by `fill`; returns its index.
+    fn push(
+        &mut self,
+        parent: Option<u32>,
+        kind: &'static str,
+        span: Span,
+        fill: impl FnOnce(&mut PluginNode),
+    ) -> usize {
+        let at = self.nodes.len();
+        let mut node = PluginNode {
+            id: at as u32,
             parent,
             kind,
             start: span.start,
@@ -145,8 +158,10 @@ impl Walk {
             value: None,
             attrs: Vec::new(),
             alias: None,
-        });
-        self.nodes.len() - 1
+        };
+        fill(&mut node);
+        self.nodes.push(node);
+        at
     }
 
     fn region(&mut self, region: &Region<'_>, parent: Option<u32>) {
@@ -158,52 +173,59 @@ impl Walk {
     fn op(&mut self, op: &Op<'_>, parent: Option<u32>) {
         match op {
             Op::Element(element) => {
-                let at = self.push(parent, op.mnemonic(), element.span);
-                self.nodes[at].name = Some(element.tag.to_owned());
-                self.nodes[at].attrs = attrs(&element.attributes);
+                let at = self.push(parent, op.mnemonic(), element.span, |node| {
+                    node.name = Some(element.tag.to_owned());
+                    node.attrs = attrs(&element.attributes);
+                });
                 self.bindings(&element.bindings, at as u32);
                 self.region(&element.children, Some(at as u32));
             }
             Op::Component(component) => {
-                let at = self.push(parent, op.mnemonic(), component.span);
-                self.nodes[at].name = Some(component.name.to_owned());
-                self.nodes[at].attrs = attrs(&component.attributes);
+                let at = self.push(parent, op.mnemonic(), component.span, |node| {
+                    node.name = Some(component.name.to_owned());
+                    node.attrs = attrs(&component.attributes);
+                });
                 self.bindings(&component.bindings, at as u32);
                 self.region(&component.children, Some(at as u32));
             }
             Op::Text(text) => {
-                let at = self.push(parent, op.mnemonic(), text.span);
-                self.nodes[at].value = Some(text.content.to_owned());
+                self.push(parent, op.mnemonic(), text.span, |node| {
+                    node.value = Some(text.content.to_owned());
+                });
             }
             Op::Interpolation(interpolation) => {
-                let at = self.push(parent, op.mnemonic(), interpolation.span);
-                self.nodes[at].value = Some(interpolation.expression.source().to_owned());
+                self.push(parent, op.mnemonic(), interpolation.span, |node| {
+                    node.value = Some(interpolation.expression.source().to_owned());
+                });
             }
             Op::Comment(comment) => {
-                let at = self.push(parent, op.mnemonic(), comment.span);
-                self.nodes[at].value = Some(comment.content.to_owned());
+                self.push(parent, op.mnemonic(), comment.span, |node| {
+                    node.value = Some(comment.content.to_owned());
+                });
             }
             Op::If(if_op) => {
-                let at = self.push(parent, op.mnemonic(), if_op.span) as u32;
+                let at = self.push(parent, op.mnemonic(), if_op.span, |_| {}) as u32;
                 for branch in if_op.branches.iter() {
                     self.region(&branch.region, Some(at));
                 }
             }
             Op::For(for_op) => {
-                let at = self.push(parent, op.mnemonic(), for_op.span);
                 let binding = &for_op.binding;
-                self.nodes[at].value = Some(binding.source.source().to_owned());
-                self.nodes[at].alias = Some(ForAlias {
-                    value: binding.value.source().to_owned(),
-                    key: binding.key.as_ref().map(expr_text),
-                    index: binding.index.as_ref().map(expr_text),
+                let at = self.push(parent, op.mnemonic(), for_op.span, |node| {
+                    node.value = Some(binding.source.source().to_owned());
+                    node.alias = Some(ForAlias {
+                        value: binding.value.source().to_owned(),
+                        key: binding.key.as_ref().map(expr_text),
+                        index: binding.index.as_ref().map(expr_text),
+                    });
                 });
                 self.region(&for_op.region, Some(at as u32));
             }
             Op::Slot(slot) => {
-                let at = self.push(parent, op.mnemonic(), slot.span);
-                self.nodes[at].name = static_name(Some(&slot.name));
-                self.nodes[at].attrs = attrs(&slot.attributes);
+                let at = self.push(parent, op.mnemonic(), slot.span, |node| {
+                    node.name = static_name(Some(&slot.name));
+                    node.attrs = attrs(&slot.attributes);
+                });
                 self.bindings(&slot.bindings, at as u32);
                 self.region(&slot.fallback, Some(at as u32));
             }
@@ -213,9 +235,10 @@ impl Walk {
     fn bindings(&mut self, bindings: &[BindingOp<'_>], owner: u32) {
         for binding in bindings {
             let (span, name, value) = binding_parts(binding);
-            let at = self.push(Some(owner), binding.mnemonic(), span);
-            self.nodes[at].name = name;
-            self.nodes[at].value = value;
+            self.push(Some(owner), binding.mnemonic(), span, |node| {
+                node.name = name;
+                node.value = value;
+            });
         }
     }
 }

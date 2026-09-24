@@ -71,7 +71,7 @@ pub(super) fn build_ast_json(root: &RootNode<'_>) -> serde_json::Value {
         "type": "ROOT",
         "children": children,
         "helpers": root.helpers.iter().map(|helper| helper.name()).collect::<Vec<_>>(),
-        "components": root.components.iter().map(|component| component).collect::<Vec<_>>(),
-        "directives": root.directives.iter().map(|directive| directive).collect::<Vec<_>>(),
+        "components": root.components.iter().collect::<Vec<_>>(),
+        "directives": root.directives.iter().collect::<Vec<_>>(),
     })
 }

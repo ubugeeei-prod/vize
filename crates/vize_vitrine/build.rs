@@ -1,5 +1,12 @@
 // Build scripts cannot depend on the runtime's CompactString types or macros.
-#![allow(clippy::disallowed_types, clippy::disallowed_macros)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "build scripts cannot depend on vize_carton"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "build scripts cannot depend on vize_carton"
+)]
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -7,15 +14,20 @@ use std::process::Command;
 
 use sha2::{Digest, Sha256};
 
-fn main() {
+/// A build failure: returning it from `main` fails the build with the message.
+type BuildResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+
+fn main() -> BuildResult {
     #[cfg(all(feature = "napi", not(target_arch = "wasm32")))]
     napi_build::setup();
 
-    let crate_dir = PathBuf::from(std::env::var_os("CARGO_MANIFEST_DIR").expect("crate dir"));
+    let crate_dir = PathBuf::from(
+        std::env::var_os("CARGO_MANIFEST_DIR").ok_or("CARGO_MANIFEST_DIR is not set")?,
+    );
     let root = crate_dir
         .parent()
         .and_then(Path::parent)
-        .expect("workspace root");
+        .ok_or("vize_vitrine is not inside the workspace")?;
     let mut hasher = Sha256::new();
     // The source closure that builds the S2 plugin document and its facts.
     // Watching the files also refreshes this ID for dirty local builds whose
@@ -38,7 +50,7 @@ fn main() {
         "crates/vize_armature/src",
     ] {
         let path = root.join(relative);
-        hash_source(root, &path, &mut hasher);
+        hash_source(root, &path, &mut hasher)?;
     }
     let revision = Command::new("git")
         .args(["rev-parse", "HEAD"])
@@ -69,26 +81,27 @@ fn main() {
         .map(|byte| format!("{byte:02x}"))
         .collect();
     println!("cargo:rustc-env=VIZE_PLUGIN_HOST_BUILD_ID={revision}:{digest}");
+    Ok(())
 }
 
-fn hash_source(root: &Path, path: &Path, hasher: &mut Sha256) {
+fn hash_source(root: &Path, path: &Path, hasher: &mut Sha256) -> BuildResult {
     if path.is_dir() {
-        let mut entries: Vec<_> = fs::read_dir(path)
-            .expect("plugin source directory")
-            .map(|entry| entry.expect("plugin source entry").path())
-            .collect();
+        let mut entries = fs::read_dir(path)?
+            .map(|entry| entry.map(|entry| entry.path()))
+            .collect::<Result<Vec<_>, _>>()?;
         entries.sort();
         for entry in entries {
-            hash_source(root, &entry, hasher);
+            hash_source(root, &entry, hasher)?;
         }
-        return;
+        return Ok(());
     }
     println!("cargo:rerun-if-changed={}", path.display());
-    let relative = path.strip_prefix(root).expect("workspace-relative source");
+    let relative = path.strip_prefix(root)?;
     let relative = relative.to_string_lossy().replace('\\', "/");
-    let bytes = fs::read(path).expect("plugin source file");
+    let bytes = fs::read(path)?;
     for field in [relative.as_bytes(), bytes.as_slice()] {
         hasher.update((field.len() as u64).to_le_bytes());
         hasher.update(field);
     }
+    Ok(())
 }

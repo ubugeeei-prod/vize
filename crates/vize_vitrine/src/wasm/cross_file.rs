@@ -1,12 +1,11 @@
 //! CrossFileAnalyzer WASM bindings.
 //!
 //! FFI boundary code: uses std types for JavaScript interop.
-#![allow(
+#![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "wasm-bindgen values cross the boundary as std `String`s"
 )]
-
 use super::{to_js_value, utf8_byte_to_utf16_offset};
 use vize_croquis_cf::CrossFileDiagnosticKind::{
     ArrayMutationNotTriggering, AsyncBoundaryCrossing, AsyncWithoutSuspense, BrowserApiInSsr,

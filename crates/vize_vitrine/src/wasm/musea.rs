@@ -1,11 +1,8 @@
 //! Musea (Art file) WASM bindings.
 //!
 //! FFI boundary code: uses std types for JavaScript interop.
-#![allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
-)]
+#![expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+#![expect(clippy::disallowed_methods, reason = "serde_json keys are std String")]
 
 use super::to_js_value;
 use vize_s0::cstr;

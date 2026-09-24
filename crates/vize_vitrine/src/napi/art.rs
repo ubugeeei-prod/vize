@@ -4,12 +4,12 @@
 //! catalog generation, palette/props controls, and variant autogeneration.
 //!
 //! FFI boundary code: uses std types for JavaScript interop.
-#![allow(
+#![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    clippy::disallowed_macros
+    clippy::disallowed_macros,
+    reason = "N-API values cross the boundary as std `String`s"
 )]
-
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};

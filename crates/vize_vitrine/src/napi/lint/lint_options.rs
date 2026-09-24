@@ -161,6 +161,10 @@ pub(super) fn configure_type_aware_lint(
         .with_corsa_path(corsa_path.map(PathBuf::from))
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "one argument per optional JS lint setting"
+)]
 pub(super) fn configure_patina_rule_options(
     mut linter: vize_patina::Linter,
     component_name_in_template_casing: Option<&str>,

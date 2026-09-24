@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::super::super::analyze_sfc_json_with_options;
 
 fn analyze(source: &str) -> serde_json::Value {

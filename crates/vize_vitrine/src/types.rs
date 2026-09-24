@@ -3,7 +3,10 @@
 //! These types are FFI boundary types used by both NAPI and WASM builds,
 //! so they use `std::string::String` for JavaScript interop compatibility.
 
-#![allow(clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "binding option types are serde structs shared by N-API and wasm-bindgen"
+)]
 
 use serde::{Deserialize, Serialize};
 

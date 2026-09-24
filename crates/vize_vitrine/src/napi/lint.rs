@@ -4,11 +4,9 @@
 //! with native multithreading and .gitignore awareness.
 //!
 //! FFI boundary code: uses std types for JavaScript interop.
-#![allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
-)]
+#![expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
+#![expect(clippy::disallowed_methods, reason = "serde_json keys are std String")]
+#![expect(clippy::disallowed_macros, reason = "serde_json keys are std String")]
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
