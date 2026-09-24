@@ -1,5 +1,6 @@
 import { audioPlayerRendererFixtures } from "./renderer-fixtures-audio-player.ts";
 import { avatarGroupRendererFixtures } from "./renderer-fixtures-avatar-group.ts";
+import { chartRendererFixtures } from "./renderer-fixtures-charts.ts";
 import { colorPickerRendererFixtures } from "./renderer-fixtures-color-picker.ts";
 import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
 import { overlay3aRendererFixtures } from "./renderer-fixtures-overlay-3a.ts";
@@ -34,13 +35,12 @@ import { structureRendererFixtures } from "./renderer-fixtures-structure.ts";
 import { toastRendererFixtures } from "./renderer-fixtures-toast.ts";
 import { tourRendererFixtures } from "./renderer-fixtures-tour.ts";
 import { videoPlayerRendererFixtures } from "./renderer-fixtures-video-player.ts";
-import { structureRendererFixtures } from "./renderer-fixtures-structure.ts";
-import { chartRendererFixtures } from "./renderer-fixtures-charts.ts";
 import { wayfindingRendererFixtures } from "./renderer-fixtures-wayfinding.ts";
 
 export const groupedRendererFixtures = [
   ...audioPlayerRendererFixtures,
   ...avatarGroupRendererFixtures,
+  ...chartRendererFixtures,
   ...colorPickerRendererFixtures,
   ...commandRendererFixtures,
   ...overlay3aRendererFixtures,
@@ -75,7 +75,5 @@ export const groupedRendererFixtures = [
   ...toastRendererFixtures,
   ...tourRendererFixtures,
   ...videoPlayerRendererFixtures,
-  ...structureRendererFixtures,
-  ...chartRendererFixtures,
   ...wayfindingRendererFixtures,
 ] as const;
