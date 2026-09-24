@@ -65,6 +65,11 @@
       "import": "./dist/audio-player.mjs",
       "default": "./dist/audio-player.mjs"
     },
+    "./audio-visualizer": {
+      "types": "./dist/audio-visualizer.d.mts",
+      "import": "./dist/audio-visualizer.mjs",
+      "default": "./dist/audio-visualizer.mjs"
+    },
     "./avatar": {
       "types": "./dist/avatar.d.mts",
       "import": "./dist/avatar.mjs",
@@ -580,6 +585,11 @@
       "import": "./dist/pagination.mjs",
       "default": "./dist/pagination.mjs"
     },
+    "./pan-zoom": {
+      "types": "./dist/pan-zoom.d.mts",
+      "import": "./dist/pan-zoom.mjs",
+      "default": "./dist/pan-zoom.mjs"
+    },
     "./tags-input": {
       "types": "./dist/tags-input.d.mts",
       "import": "./dist/tags-input.mjs",
@@ -725,6 +735,11 @@
       "import": "./dist/image.mjs",
       "default": "./dist/image.mjs"
     },
+    "./image-compare": {
+      "types": "./dist/image-compare.d.mts",
+      "import": "./dist/image-compare.mjs",
+      "default": "./dist/image-compare.mjs"
+    },
     "./image-cropper": {
       "types": "./dist/image-cropper.d.mts",
       "import": "./dist/image-cropper.mjs",
@@ -769,6 +784,11 @@
       "types": "./dist/history.d.mts",
       "import": "./dist/history.mjs",
       "default": "./dist/history.mjs"
+    },
+    "./hotspot": {
+      "types": "./dist/hotspot.d.mts",
+      "import": "./dist/hotspot.mjs",
+      "default": "./dist/hotspot.mjs"
     },
     "./hover": {
       "types": "./dist/hover.d.mts",
@@ -950,6 +970,11 @@
       "import": "./dist/scroll-spy.mjs",
       "default": "./dist/scroll-spy.mjs"
     },
+    "./scrubber-preview": {
+      "types": "./dist/scrubber-preview.d.mts",
+      "import": "./dist/scrubber-preview.mjs",
+      "default": "./dist/scrubber-preview.mjs"
+    },
     "./toc": {
       "types": "./dist/toc.d.mts",
       "import": "./dist/toc.mjs",
@@ -969,6 +994,11 @@
       "types": "./dist/visually-hidden.d.mts",
       "import": "./dist/visually-hidden.mjs",
       "default": "./dist/visually-hidden.mjs"
+    },
+    "./webcam-capture": {
+      "types": "./dist/webcam-capture.d.mts",
+      "import": "./dist/webcam-capture.mjs",
+      "default": "./dist/webcam-capture.mjs"
     },
     "./style.css": "./dist/style.css",
     "./theme.css": "./dist/theme.css",
