@@ -247,10 +247,9 @@ fn template_references_setup_binding(template_code: &str, name: &str) -> bool {
 /// different binding (for example, `$setup.ItemTab` is not a read of `Item`).
 fn contains_member_access(template_code: &str, access: &str) -> bool {
     template_code.match_indices(access).any(|(start, _)| {
-        !template_code[start + access.len()..]
-            .chars()
-            .next()
-            .is_some_and(is_identifier_part)
+        template_code
+            .get(start + access.len()..)
+            .is_some_and(|suffix| !suffix.chars().next().is_some_and(is_identifier_part))
     })
 }
 
@@ -265,6 +264,7 @@ mod tests {
             "_ctx.ItemTab",
             "$setup.Item_",
             "_ctx.Item2",
+            "const π = 1; $setup.Item済",
         ] {
             assert!(
                 !template_references_setup_binding(access, "Item"),
@@ -278,6 +278,7 @@ mod tests {
             "_ctx.Item",
             "_ctx.Item.label",
             "$setup[\"Item\"]",
+            "const π = 1; $setup.Item",
         ] {
             assert!(
                 template_references_setup_binding(access, "Item"),
