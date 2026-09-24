@@ -119,6 +119,10 @@ pub struct CatalogOutput {
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshot macros expand through `std::format!`; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""
+)]
 mod tests {
     use super::{CatalogEntry, DocOptions, generate_catalog, generate_component_doc};
     use crate::{ArtParseOptions, parse_art};

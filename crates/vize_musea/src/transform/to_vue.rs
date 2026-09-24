@@ -3,8 +3,6 @@
 //! This module generates Vue components that can be used to render
 //! Art variants in the Musea gallery.
 
-#![allow(clippy::disallowed_macros)]
-
 use crate::types::ArtDescriptor;
 use vize_s0::{String, append, cstr};
 
@@ -312,6 +310,7 @@ fn escape_template_literal(s: &str) -> String {
 }
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta snapshots use format!")]
 mod tests {
     use super::{escape_template_literal, to_pascal_case, transform_to_vue};
     use crate::parse::parse_art;

@@ -29,3 +29,6 @@ harness = false
 [[bench]]
 name = "davinci_art"
 harness = false
+
+[lints]
+workspace = true

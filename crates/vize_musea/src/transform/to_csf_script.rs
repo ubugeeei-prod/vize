@@ -74,15 +74,19 @@ fn strip_ranges(content: &str, ranges: &[(usize, usize)]) -> String {
     let mut cursor = 0;
 
     for &(start, end) in ranges {
-        if start < cursor || start > content.len() || end > content.len() || start > end {
+        if start < cursor {
             continue;
         }
-        output.push_str(&content[cursor..start]);
-        preserve_newlines(&mut output, &content[start..end]);
+        let (Some(kept), Some(removed)) = (content.get(cursor..start), content.get(start..end))
+        else {
+            continue;
+        };
+        output.push_str(kept);
+        preserve_newlines(&mut output, removed);
         cursor = end;
     }
 
-    output.push_str(&content[cursor..]);
+    output.push_str(content.get(cursor..).unwrap_or_default());
     output.trim().into()
 }
 

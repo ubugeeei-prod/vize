@@ -1,7 +1,5 @@
 //! Catalog and index generation for Art collections.
 
-#![allow(clippy::disallowed_macros)]
-
 use super::{CatalogOutput, DocOptions};
 use crate::types::{ArtDescriptor, ArtStatus};
 use serde::{Deserialize, Serialize};
@@ -347,10 +345,9 @@ fn slugify(s: &str) -> String {
 }
 
 #[cfg(test)]
-#[allow(
-    clippy::disallowed_methods,
-    clippy::disallowed_types,
-    clippy::disallowed_macros
+#[expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures build std Strings with format!"
 )]
 mod tests {
     use super::{

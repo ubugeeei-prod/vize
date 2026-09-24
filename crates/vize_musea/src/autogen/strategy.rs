@@ -3,8 +3,6 @@
 //! Instead of cartesian product (which explodes combinatorially),
 //! we use intelligent strategies that produce meaningful variants.
 
-#![allow(clippy::disallowed_macros)]
-
 use super::types::{AutogenConfig, GeneratedVariant, PropDefinition};
 use serde_json::{Map, Value, json};
 use vize_s0::{FxHashSet, String, ToCompactString, cstr};
@@ -135,7 +133,10 @@ pub fn generate_variants(
 }
 
 /// Build a props map with all default values.
-#[allow(clippy::disallowed_types)]
+#[expect(
+    clippy::disallowed_types,
+    reason = "serde_json maps are keyed by std String"
+)]
 fn build_default_props(props: &[PropDefinition]) -> Map<std::string::String, Value> {
     let mut map = Map::new();
     for prop in props {
@@ -276,7 +277,6 @@ fn to_pascal_case(s: &str) -> String {
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_methods, clippy::disallowed_macros)]
 mod tests {
     use super::super::types::{AutogenConfig, PropDefinition};
     use super::{generate_variants, parse_union_type, to_pascal_case};

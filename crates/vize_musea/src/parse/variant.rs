@@ -115,6 +115,10 @@ fn end_in(frame: SourceBlock<'_>, slice: &str) -> u32 {
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshot macros expand through `std::format!`; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""
+)]
 mod tests {
     use super::parse_variants;
     use crate::types::{ArtParseError, ArtVariant};

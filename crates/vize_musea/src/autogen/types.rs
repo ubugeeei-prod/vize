@@ -1,6 +1,9 @@
 //! Types for variant auto-generation.
 
-#![allow(clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "serde_json maps are keyed by std String"
+)]
 
 use serde::{Deserialize, Serialize};
 use vize_s0::String;
@@ -72,7 +75,10 @@ pub struct PropDefinition {
 /// A generated variant definition.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-#[allow(clippy::disallowed_types)]
+#[expect(
+    clippy::disallowed_types,
+    reason = "serde_json maps are keyed by std String"
+)]
 pub struct GeneratedVariant {
     /// Variant name (e.g., "Default", "Primary", "Disabled").
     pub name: String,

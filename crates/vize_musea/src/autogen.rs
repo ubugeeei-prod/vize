@@ -4,7 +4,10 @@
 //! Uses intelligent strategies instead of cartesian product to produce
 //! meaningful, manageable variant sets.
 
-#![allow(clippy::disallowed_macros)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "`format!` builds std String output here"
+)]
 
 pub mod strategy;
 pub mod types;
@@ -104,7 +107,10 @@ fn escape_double_quoted(value: &str) -> String {
 }
 
 /// Render props as Vue template attributes.
-#[allow(clippy::disallowed_types)]
+#[expect(
+    clippy::disallowed_types,
+    reason = "serde_json maps are keyed by std String"
+)]
 fn render_props(props: &serde_json::Map<std::string::String, serde_json::Value>) -> String {
     let mut lines = Vec::new();
 
@@ -133,10 +139,9 @@ fn render_props(props: &serde_json::Map<std::string::String, serde_json::Value>)
 }
 
 #[cfg(test)]
-#[allow(
+#[expect(
     clippy::disallowed_methods,
-    clippy::disallowed_types,
-    clippy::disallowed_macros
+    reason = "test fixtures build std String values"
 )]
 mod tests {
     use super::{

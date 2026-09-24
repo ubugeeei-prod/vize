@@ -1,6 +1,9 @@
 //! Markdown generation for individual Art components.
 
-#![allow(clippy::disallowed_macros)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "`format!` builds std String output here"
+)]
 
 use super::{DocOptions, DocOutput};
 use crate::types::{ArtDescriptor, ArtStatus, ArtVariant};

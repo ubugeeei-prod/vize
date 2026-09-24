@@ -1,11 +1,9 @@
 //! Palette code generation from Art descriptors.
 
-#![allow(clippy::disallowed_macros)]
-
 use super::inference::infer_control_from_values;
 use super::{Palette, PaletteOptions, PaletteOutput, PropControl};
 use crate::types::ArtDescriptor;
-use vize_s0::{FxHashMap, String, ToCompactString, append, cstr};
+use vize_s0::{FxHashMap, String, ToCompactString, cstr};
 
 /// Generate palette configuration from an Art descriptor.
 ///
@@ -31,11 +29,10 @@ pub fn generate_palette(art: &ArtDescriptor<'_>, options: &PaletteOptions) -> Pa
     palette.all_values = all_values.clone();
 
     // Generate controls for each prop
-    let mut prop_names: Vec<_> = all_values.keys().collect();
-    prop_names.sort(); // Stable ordering
+    let mut props: Vec<_> = all_values.iter().collect();
+    props.sort_by_key(|(prop_name, _)| *prop_name); // Stable ordering
 
-    for prop_name in prop_names {
-        let values = &all_values[prop_name];
+    for (prop_name, values) in props {
         let (control_kind, select_options, range_config) =
             infer_control_from_values(values, options);
 
@@ -159,34 +156,11 @@ fn to_pascal_case(s: &str) -> String {
     result
 }
 
-/// Generate Vue component props definition.
-#[allow(dead_code)]
-pub fn generate_vue_props(palette: &Palette) -> String {
-    let mut vue = String::with_capacity(512);
-
-    vue.push_str("const props = defineProps<{\n");
-
-    for control in &palette.controls {
-        vue.push_str("  ");
-        vue.push_str(&control.name);
-
-        if !control.required {
-            vue.push('?');
-        }
-
-        vue.push_str(": ");
-        vue.push_str(&control_to_ts_type(control));
-        vue.push('\n');
-    }
-
-    vue.push_str("}>()\n");
-
-    vue
-}
-
-/// Generate Storybook argTypes definition.
-#[allow(dead_code)]
+/// Generate Storybook argTypes definition. Only the tests exercise it today.
+#[cfg(test)]
 pub fn generate_storybook_argtypes(palette: &Palette) -> String {
+    use vize_s0::append;
+
     use super::ControlKind;
 
     let mut sb = String::with_capacity(1024);
@@ -274,7 +248,10 @@ pub fn generate_storybook_argtypes(palette: &Palette) -> String {
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_methods, clippy::disallowed_macros)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures build std Strings with format!"
+)]
 mod tests {
     use super::super::PaletteOptions;
     use super::{

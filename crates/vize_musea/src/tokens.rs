@@ -4,6 +4,10 @@ mod markdown;
 mod parse;
 mod resolve;
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshot macros expand through `std::format!`; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""
+)]
 mod tests;
 mod types;
 

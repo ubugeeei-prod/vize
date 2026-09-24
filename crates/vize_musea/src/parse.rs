@@ -221,7 +221,7 @@ pub(crate) fn line_of(source: &str, offset: u32) -> u32 {
 
 fn prefix(source: &str, offset: u32) -> &[u8] {
     let bytes = source.as_bytes();
-    &bytes[..(offset as usize).min(bytes.len())]
+    bytes.get(..offset as usize).unwrap_or(bytes)
 }
 
 #[cfg(test)]

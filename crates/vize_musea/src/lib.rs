@@ -98,14 +98,21 @@ pub use types::{
 // Re-export vize_s0::Allocator for convenience
 pub use vize_s0::Allocator;
 
-/// Start the Musea component gallery server.
+/// Former entry point for a Rust-side component gallery server.
 ///
-/// This function starts a development server that serves the component gallery UI.
-pub fn serve() {
-    todo!("Component gallery server for Vue SFC - implement with Vite plugin")
-}
+/// The gallery UI and dev server live in `@vizejs/vite-plugin-musea`; this
+/// crate only parses and generates Art files, so the function does nothing.
+/// It used to abort with `todo!`.
+#[deprecated(
+    note = "the Musea gallery server lives in `@vizejs/vite-plugin-musea`; this function does nothing"
+)]
+pub fn serve() {}
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshot macros expand through `std::format!`; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""
+)]
 mod tests {
     use super::{
         Allocator, ArtDescriptorOwned, ArtParseOptions, parse_art, transform_to_csf,

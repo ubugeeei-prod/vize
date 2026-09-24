@@ -106,6 +106,11 @@ fn parse_status(open: &OpenTag<'_>) -> Option<ArtStatus> {
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_macros,
+    clippy::string_slice,
+    reason = "tests assert by panicking, and insta snapshot macros expand through `std::format!`; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""
+)]
 mod tests {
     use super::{art_element, parse_metadata, parse_status};
     use crate::types::ArtStatus;
@@ -123,7 +128,7 @@ mod tests {
     /// attribute text, the contents between the tags and their offset —
     /// now read off the S1 tree's tokens.
     #[derive(Debug)]
-    #[allow(dead_code, reason = "read through the Debug snapshot")]
+    #[expect(dead_code, reason = "read through the Debug snapshot")]
     struct BlockInfo<'a> {
         attrs_str: &'a str,
         content: &'a str,

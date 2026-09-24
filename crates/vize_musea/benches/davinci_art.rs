@@ -10,6 +10,11 @@
 //! allocation gate; wall time stays report-only until the reference runner
 //! records it.
 
+#![expect(
+    clippy::expect_used,
+    reason = "a benchmark harness asserts its fixtures parse"
+)]
+
 use criterion::{Criterion, criterion_group};
 use davinci_harness::stage::bench_stage_with_metrics;
 use vize_musea::{Allocator, ArtParseOptions, parse_art};

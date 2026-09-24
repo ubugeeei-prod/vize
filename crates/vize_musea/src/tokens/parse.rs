@@ -5,7 +5,10 @@ use vize_s0::{FxHashMap, String, ToCompactString};
 
 use super::types::{DesignToken, TokenCategory, TokenError, TokenResult};
 
-#[allow(clippy::disallowed_types)]
+#[expect(
+    clippy::disallowed_types,
+    reason = "serde_json maps are keyed by std String"
+)]
 type JsonObject = Map<std::string::String, Value>;
 
 pub fn parse_tokens_from_path(path: impl AsRef<Path>) -> TokenResult<Vec<TokenCategory>> {

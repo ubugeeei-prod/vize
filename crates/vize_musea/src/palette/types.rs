@@ -310,7 +310,6 @@ pub struct PaletteOutput {
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_methods)]
 mod tests {
     use super::{ControlKind, Palette, PropControl, SelectOption};
 

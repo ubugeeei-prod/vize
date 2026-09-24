@@ -24,7 +24,10 @@ pub(super) fn parse_args_json<'a>(
         std::borrow::Cow::Borrowed(s)
     };
 
-    #[allow(clippy::disallowed_types)]
+    #[expect(
+        clippy::disallowed_types,
+        reason = "serde_json maps are keyed by std String"
+    )]
     let map: FxHashMap<std::string::String, serde_json::Value> = serde_json::from_str(&json_str)?;
 
     Ok(map

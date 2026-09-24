@@ -3,8 +3,6 @@
 //! This module generates Storybook-compatible Component Story Format (CSF) files
 //! from Art descriptors.
 
-#![allow(clippy::disallowed_macros)]
-
 use super::to_csf_script::{ScriptSetupCsf, extract_script_setup_for_csf};
 use crate::types::{ArtDescriptor, ArtVariant, CsfOutput};
 use vize_s0::{String, ToCompactString, append, cstr};
@@ -295,4 +293,8 @@ fn escape_template(s: &str) -> String {
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::disallowed_macros,
+    reason = "insta snapshot macros expand through `std::format!`; see CONTRIBUTING.md, \"Snapshot assertions in test targets\""
+)]
 mod tests;

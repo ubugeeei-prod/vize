@@ -191,8 +191,10 @@ fn resolve_value(
 
 fn reference_name(value: &Value) -> Option<&str> {
     let value = value.as_str()?;
-    (value.len() > 2 && value.starts_with('{') && value.ends_with('}'))
-        .then(|| &value[1..value.len() - 1])
+    value
+        .strip_prefix('{')?
+        .strip_suffix('}')
+        .filter(|name| !name.is_empty())
 }
 
 fn category_key(name: &str) -> String {

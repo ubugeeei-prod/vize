@@ -51,11 +51,11 @@ fn is_color_value(s: &str) -> bool {
     {
         let s_bytes = s.as_bytes();
         let starts_with_ci = |prefix: &[u8]| {
-            s_bytes.len() >= prefix.len()
-                && s_bytes[..prefix.len()]
-                    .iter()
+            s_bytes.get(..prefix.len()).is_some_and(|head| {
+                head.iter()
                     .zip(prefix)
                     .all(|(a, b)| a.to_ascii_lowercase() == *b)
+            })
         };
         if starts_with_ci(b"rgb(")
             || starts_with_ci(b"rgba(")
@@ -89,10 +89,10 @@ fn is_date_value(s: &str) -> bool {
     // ISO date format: YYYY-MM-DD
     if s.len() == 10 {
         let parts: Vec<&str> = s.split('-').collect();
-        if parts.len() == 3 {
-            return parts[0].len() == 4
-                && parts[1].len() == 2
-                && parts[2].len() == 2
+        if let [year, month, day] = parts.as_slice() {
+            return year.len() == 4
+                && month.len() == 2
+                && day.len() == 2
                 && parts.iter().all(|p| p.chars().all(|c| c.is_ascii_digit()));
         }
     }
@@ -100,8 +100,8 @@ fn is_date_value(s: &str) -> bool {
     // ISO datetime: YYYY-MM-DDTHH:MM:SS
     if s.len() >= 19 && s.contains('T') {
         let parts: Vec<&str> = s.split('T').collect();
-        if parts.len() == 2 {
-            return is_date_value(parts[0]);
+        if let [date, _] = parts.as_slice() {
+            return is_date_value(date);
         }
     }
 
@@ -153,7 +153,10 @@ pub fn infer_control_from_values(
 }
 
 /// Collect unique string values.
-#[allow(clippy::disallowed_types)]
+#[expect(
+    clippy::disallowed_types,
+    reason = "serde_json maps are keyed by std String"
+)]
 fn collect_unique_strings(values: &[serde_json::Value]) -> Vec<String> {
     let mut seen: FxHashSet<std::string::String> = FxHashSet::default();
     let mut result = Vec::new();
@@ -188,7 +191,10 @@ fn infer_number_range(values: &[serde_json::Value]) -> Option<RangeConfig> {
     // Infer step from differences
     let mut diffs: Vec<f64> = numbers
         .windows(2)
-        .map(|w| (w[1] - w[0]).abs())
+        .filter_map(|w| match w {
+            [a, b] => Some((b - a).abs()),
+            _ => None,
+        })
         .filter(|d| *d > f64::EPSILON)
         .collect();
     diffs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
