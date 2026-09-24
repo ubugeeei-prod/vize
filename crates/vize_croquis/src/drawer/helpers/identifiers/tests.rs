@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::{
     IdentifierRef, extract_identifier_refs_oxc, extract_identifiers_oxc, strip_js_comments,
 };

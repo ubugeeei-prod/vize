@@ -120,18 +120,14 @@ impl<'c> CroquisFacts<'c> {
 
     /// Compute `C`'s demand and return `C`'s view.
     ///
-    /// # Panics
-    ///
-    /// When `C` demands a group [`CROQUIS_FACTS`] does not register — a
-    /// static mistake in `C`'s const demand, never a data-dependent one.
+    /// When `C` demands a group [`CROQUIS_FACTS`] does not register (a static
+    /// mistake in `C`'s const demand, never a data-dependent one), nothing is
+    /// computed for it and [`FactView::get`] reports the group as not computed.
     pub fn prepare<C: FactConsumer>(&mut self) -> FactView<'_> {
-        match self.manager.prepare::<C>(self.croquis) {
-            Ok(view) => view,
-            Err(error) => panic!(
-                "{} demands an unregistered Croquis fact group: {error:?}",
-                C::NAME
-            ),
-        }
+        // `prepare` returns exactly `view::<C>()` on success; on failure the
+        // view still answers, with an error for every group it lacks.
+        let _ = self.manager.prepare::<C>(self.croquis);
+        self.manager.view::<C>()
     }
 }
 

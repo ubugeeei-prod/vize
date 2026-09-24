@@ -81,7 +81,7 @@ fn missing_member_operator(parsed: &ParserReturn<'_>, source: &str) -> Option<Ra
     let before = source.get(..end)?.strip_suffix('.')?;
     let start = before.strip_suffix('?').map_or(before.len(), str::len);
     // A spread token or an absent receiver is not a missing member name.
-    let receiver = source[..start].trim_end();
+    let receiver = source.get(..start).unwrap_or_default().trim_end();
     if receiver.is_empty() || receiver.ends_with('.') {
         return None;
     }
@@ -127,7 +127,9 @@ mod tests {
             assert_eq!(bindings, ["slots", "useSlots", "雪"], "{expression}");
             let import = &result.import_statements[0];
             assert_eq!(
-                &source[import.start as usize..import.end as usize],
+                source
+                    .get(import.start as usize..import.end as usize)
+                    .unwrap_or_default(),
                 "import { useSlots } from 'vue';"
             );
         }

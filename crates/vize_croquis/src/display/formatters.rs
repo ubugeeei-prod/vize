@@ -35,8 +35,7 @@ impl SummaryBuilder {
         for call in tracker.all_calls() {
             self.summary.macros.push(MacroDisplay {
                 name: call.name.to_compact_string(),
-                #[allow(clippy::disallowed_macros)]
-                kind: format!("{:?}", call.kind).into(),
+                kind: vize_carton::cstr!("{:?}", call.kind),
                 start: call.start,
                 end: call.end,
             });
@@ -83,8 +82,7 @@ impl SummaryBuilder {
         for block in tracker.blocks() {
             self.summary.optimization.blocks.push(BlockDisplay {
                 id: block.id,
-                #[allow(clippy::disallowed_macros)]
-                block_type: format!("{:?}", block.block_type).into(),
+                block_type: vize_carton::cstr!("{:?}", block.block_type),
                 parent_id: block.parent_id,
                 dynamic_children: block.dynamic_children_count,
             });
@@ -134,8 +132,7 @@ impl SummaryBuilder {
         for hoist in tracker.hoists() {
             self.summary.hoists.push(HoistDisplay {
                 id: hoist.id.as_u32(),
-                #[allow(clippy::disallowed_macros)]
-                level: format!("{:?}", hoist.level).into(),
+                level: vize_carton::cstr!("{:?}", hoist.level),
                 content: hoist.content.to_compact_string(),
             });
         }

@@ -34,18 +34,18 @@ pub fn extract_and_transform_v_bind_with_scope<'a>(
             let start = actual_pos + 7;
 
             let Some(after_open) = css.get(start..) else {
-                result.extend_from_slice(&css_bytes[pos..]);
+                result.extend_from_slice(css_bytes.get(pos..).unwrap_or_default());
                 break;
             };
 
             if let Some(end) = find_matching_paren(after_open) {
                 // Copy everything before v-bind(
-                result.extend_from_slice(&css_bytes[pos..actual_pos]);
+                result.extend_from_slice(css_bytes.get(pos..actual_pos).unwrap_or_default());
 
                 // Extract expression
                 let Some(expr_str) = after_open.get(..end).map(str::trim) else {
                     pos = start + end + 1;
-                    result.extend_from_slice(&css_bytes[actual_pos..pos]);
+                    result.extend_from_slice(css_bytes.get(actual_pos..pos).unwrap_or_default());
                     continue;
                 };
                 let expr_str = trim_outer_quotes(expr_str);
@@ -62,11 +62,11 @@ pub fn extract_and_transform_v_bind_with_scope<'a>(
 
                 pos = start + end + 1;
             } else {
-                result.extend_from_slice(&css_bytes[pos..]);
+                result.extend_from_slice(css_bytes.get(pos..).unwrap_or_default());
                 break;
             }
         } else {
-            result.extend_from_slice(&css_bytes[pos..]);
+            result.extend_from_slice(css_bytes.get(pos..).unwrap_or_default());
             break;
         }
     }
@@ -89,10 +89,10 @@ pub fn v_bind_expression_ranges(css: &str) -> Vec<std::ops::Range<usize>> {
     let mut pos = 0;
     while let Some(open) = find_next_v_bind(css, pos) {
         let start = open + 7;
-        let Some(end) = find_matching_paren(&css[start..]) else {
+        let Some(end) = find_matching_paren(css.get(start..).unwrap_or_default()) else {
             break;
         };
-        let raw = &css[start..start + end];
+        let raw = css.get(start..start + end).unwrap_or_default();
         let trimmed = raw.trim();
         let expression = trim_outer_quotes(trimmed);
         let quote = usize::from(expression.len() != trimmed.len());
@@ -109,7 +109,7 @@ pub(crate) fn trim_outer_quotes(expr: &str) -> &str {
         && matches!(bytes.first(), Some(b'"' | b'\''))
         && bytes.first() == bytes.last()
     {
-        &expr[1..expr.len() - 1]
+        expr.get(1..expr.len() - 1).unwrap_or_default()
     } else {
         expr
     }
@@ -197,12 +197,11 @@ fn hash_sum_fold_pair(input: u64, first: &str, second: &str) -> u64 {
 }
 
 fn write_hash_sum_hex(out: &mut String, value: u64) {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
     let mut started = false;
     for shift in (0..64).step_by(4).rev() {
-        let digit = ((value >> shift) & 0xF) as usize;
+        let digit = ((value >> shift) & 0xF) as u8;
         if digit != 0 || started {
-            out.push(HEX[digit] as char);
+            out.push(hex_digit(digit) as char);
             started = true;
         }
     }
@@ -244,13 +243,17 @@ fn write_v_bind_hash(out: &mut ArenaVec<u8>, expr: &str) {
 
 /// Write u32 as 8-digit hex
 fn write_hex_u32(out: &mut ArenaVec<u8>, val: u32) {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
-    out.push(HEX[((val >> 28) & 0xF) as usize]);
-    out.push(HEX[((val >> 24) & 0xF) as usize]);
-    out.push(HEX[((val >> 20) & 0xF) as usize]);
-    out.push(HEX[((val >> 16) & 0xF) as usize]);
-    out.push(HEX[((val >> 12) & 0xF) as usize]);
-    out.push(HEX[((val >> 8) & 0xF) as usize]);
-    out.push(HEX[((val >> 4) & 0xF) as usize]);
-    out.push(HEX[(val & 0xF) as usize]);
+    for shift in [28, 24, 20, 16, 12, 8, 4, 0] {
+        out.push(hex_digit(((val >> shift) & 0xF) as u8));
+    }
+}
+
+/// Lowercase hex digit for a nibble (`0..16`).
+#[inline]
+const fn hex_digit(nibble: u8) -> u8 {
+    if nibble < 10 {
+        b'0' + nibble
+    } else {
+        b'a' + (nibble - 10)
+    }
 }

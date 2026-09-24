@@ -45,11 +45,11 @@ impl FactConsumer for RaceReader {
 #[must_use]
 pub fn race_risks(croquis: &Croquis) -> Vec<RaceConditionRisk> {
     let mut facts = super::CroquisFacts::new(croquis);
-    let table = facts
+    facts
         .prepare::<RaceReader>()
         .get::<RaceConditions>()
-        .expect("race-conditions demand");
-    table.iter().map(|(_, risk)| risk.clone()).collect()
+        .map(|table| table.iter().map(|(_, risk)| risk.clone()).collect())
+        .unwrap_or_default()
 }
 
 #[cfg(test)]

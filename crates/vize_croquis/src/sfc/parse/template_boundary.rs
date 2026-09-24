@@ -2,16 +2,20 @@
 
 mod fast_path;
 mod interpolation;
+mod tags;
 
 #[cfg(test)]
 mod tests;
 
+use self::tags::{
+    find_opening_tag_end, find_raw_text_element_end, is_opening_tag_named, raw_text_tag_name,
+};
 use self::{fast_path::find_flat_template_end, interpolation::skip_template_interpolation};
 use super::block::{
     BlockEndSearch, BlockParseResult, TAG_TEMPLATE, advance_line, build_malformed_error,
-    find_closing_tag_end, is_whitespace_fast, starts_with_bytes,
+    find_closing_tag_end,
 };
-use memchr::{memchr, memchr2, memchr3, memmem};
+use memchr::{memchr2, memmem};
 use std::borrow::Cow;
 
 /// Failed JS-aware interpolation scans tolerated per template block before the
@@ -28,78 +32,6 @@ const MAX_FAILED_INTERPOLATION_SCANS: usize = 8;
 /// scanner; only bodies that fail to close within the window degrade to the
 /// structural handling an unclosed interpolation already gets (#3275).
 const BOUNDED_INTERPOLATION_SCAN_WINDOW: usize = 4096;
-
-#[inline]
-fn is_opening_tag_named(bytes: &[u8], pos: usize, len: usize, expected_name: &[u8]) -> bool {
-    let name_start = pos + 1;
-    let name_end = name_start + expected_name.len();
-    name_end < len
-        && starts_with_bytes(&bytes[name_start..], expected_name)
-        && (is_whitespace_fast(bytes[name_end])
-            || bytes[name_end] == b'/'
-            || bytes[name_end] == b'>')
-}
-
-#[inline]
-fn raw_text_tag_name(bytes: &[u8], pos: usize, len: usize) -> Option<&'static [u8]> {
-    match bytes[pos + 1].to_ascii_lowercase() {
-        b's' if is_opening_tag_named(bytes, pos, len, b"script") => Some(b"script"),
-        b's' if is_opening_tag_named(bytes, pos, len, b"style") => Some(b"style"),
-        b't' if is_opening_tag_named(bytes, pos, len, b"textarea") => Some(b"textarea"),
-        b't' if is_opening_tag_named(bytes, pos, len, b"title") => Some(b"title"),
-        _ => None,
-    }
-}
-
-fn find_raw_text_element_end(
-    bytes: &[u8],
-    mut pos: usize,
-    len: usize,
-    tag_name: &[u8],
-) -> Option<usize> {
-    while pos < len {
-        let lt_offset = memchr(b'<', &bytes[pos..])?;
-        pos += lt_offset;
-        if let Some(end_tag_pos) = find_closing_tag_end(bytes, pos, len, tag_name) {
-            return Some(end_tag_pos);
-        }
-        pos += 1;
-    }
-    None
-}
-
-/// Find the end of an HTML opening tag without treating `>` inside a quoted
-/// attribute as the tag boundary. The returned position is immediately after
-/// `>` and the boolean records whether the tag is self-closing.
-#[inline]
-fn find_opening_tag_end(bytes: &[u8], pos: usize, len: usize) -> Option<(usize, bool)> {
-    debug_assert_eq!(bytes[pos], b'<');
-    let mut cursor = pos + 2;
-
-    while cursor < len {
-        let candidate = memchr3(b'>', b'"', b'\'', &bytes[cursor..])?;
-        cursor += candidate;
-
-        match bytes[cursor] {
-            b'>' => {
-                let mut before_end = cursor;
-                while before_end > pos + 1 && is_whitespace_fast(bytes[before_end - 1]) {
-                    before_end -= 1;
-                }
-                let self_closing = before_end > pos + 1 && bytes[before_end - 1] == b'/';
-                return Some((cursor + 1, self_closing));
-            }
-            quote @ (b'"' | b'\'') => {
-                cursor += 1;
-                let closing_quote = memchr(quote, &bytes[cursor..])?;
-                cursor += closing_quote + 1;
-            }
-            _ => unreachable!("memchr3 returned an unexpected byte"),
-        }
-    }
-
-    None
-}
 
 /// Find the structural end of a root `<template>` block.
 ///
@@ -133,7 +65,7 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
 
     if let Some((content_end, end_pos)) = find_flat_template_end(bytes, content_start, len) {
         advance_line(
-            &bytes[content_start..content_end],
+            bytes.get(content_start..content_end).unwrap_or_default(),
             content_start,
             &mut line,
             &mut last_newline,
@@ -143,7 +75,7 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
         } else {
             content_end - last_newline
         };
-        let content = Cow::Borrowed(&source[content_start..content_end]);
+        let content = Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
         return Ok(Some((
             tag_name,
             attrs,
@@ -157,25 +89,31 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
     }
 
     while pos < len {
-        let Some(candidate_offset) = memchr2(b'<', b'{', &bytes[pos..]) else {
-            advance_line(&bytes[pos..], pos, &mut line, &mut last_newline);
+        let Some(candidate_offset) = memchr2(b'<', b'{', bytes.get(pos..).unwrap_or_default())
+        else {
+            advance_line(
+                bytes.get(pos..).unwrap_or_default(),
+                pos,
+                &mut line,
+                &mut last_newline,
+            );
             break;
         };
 
         advance_line(
-            &bytes[pos..pos + candidate_offset],
+            bytes.get(pos..pos + candidate_offset).unwrap_or_default(),
             pos,
             &mut line,
             &mut last_newline,
         );
         pos += candidate_offset;
 
-        if bytes[pos] == b'{' {
-            if pos + 1 < len && bytes[pos + 1] == b'{' {
+        if bytes.get(pos) == Some(&b'{') {
+            if pos + 1 < len && bytes.get(pos + 1) == Some(&b'{') {
                 let close_ahead = if interpolation_close_exhausted {
                     None
                 } else {
-                    let close_ahead = memmem::find(&bytes[pos + 2..], b"}}");
+                    let close_ahead = memmem::find(bytes.get(pos + 2..).unwrap_or_default(), b"}}");
                     interpolation_close_exhausted = close_ahead.is_none();
                     close_ahead
                 };
@@ -209,7 +147,7 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
                     // the root closing tag remains visible to that later stage.
                     pos += 2;
                 } else if let Some(interpolation_end) = skip_template_interpolation(
-                    &bytes[..scan_limit],
+                    bytes.get(..scan_limit).unwrap_or_default(),
                     pos,
                     scan_limit,
                     &mut line,
@@ -226,32 +164,50 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
             continue;
         }
 
-        if bytes[pos..].starts_with(b"<!--") {
+        if bytes.get(pos..).unwrap_or_default().starts_with(b"<!--") {
             let comment_body_start = pos + 4;
-            if let Some(comment_end_offset) = memmem::find(&bytes[comment_body_start..], b"-->") {
+            if let Some(comment_end_offset) =
+                memmem::find(bytes.get(comment_body_start..).unwrap_or_default(), b"-->")
+            {
                 let comment_end = comment_body_start + comment_end_offset + 3;
-                advance_line(&bytes[pos..comment_end], pos, &mut line, &mut last_newline);
+                advance_line(
+                    bytes.get(pos..comment_end).unwrap_or_default(),
+                    pos,
+                    &mut line,
+                    &mut last_newline,
+                );
                 pos = comment_end;
                 continue;
             }
             break;
         }
 
-        if bytes[pos..].starts_with(b"<![CDATA[") {
+        if bytes
+            .get(pos..)
+            .unwrap_or_default()
+            .starts_with(b"<![CDATA[")
+        {
             let cdata_body_start = pos + 9;
-            if let Some(cdata_end_offset) = memmem::find(&bytes[cdata_body_start..], b"]]>") {
+            if let Some(cdata_end_offset) =
+                memmem::find(bytes.get(cdata_body_start..).unwrap_or_default(), b"]]>")
+            {
                 let cdata_end = cdata_body_start + cdata_end_offset + 3;
-                advance_line(&bytes[pos..cdata_end], pos, &mut line, &mut last_newline);
+                advance_line(
+                    bytes.get(pos..cdata_end).unwrap_or_default(),
+                    pos,
+                    &mut line,
+                    &mut last_newline,
+                );
                 pos = cdata_end;
                 continue;
             }
             break;
         }
 
-        if pos + 1 < len && matches!(bytes[pos + 1], b'!' | b'?') {
+        if pos + 1 < len && matches!(bytes.get(pos + 1), Some(b'!' | b'?')) {
             if let Some((declaration_end, _)) = find_opening_tag_end(bytes, pos, len) {
                 advance_line(
-                    &bytes[pos..declaration_end],
+                    bytes.get(pos..declaration_end).unwrap_or_default(),
                     pos,
                     &mut line,
                     &mut last_newline,
@@ -271,7 +227,8 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
                 } else {
                     content_end - last_newline
                 };
-                let content = Cow::Borrowed(&source[content_start..content_end]);
+                let content =
+                    Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
                 return Ok(Some((
                     tag_name,
                     attrs,
@@ -283,12 +240,17 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
                     col,
                 )));
             }
-            advance_line(&bytes[pos..end_tag_pos], pos, &mut line, &mut last_newline);
+            advance_line(
+                bytes.get(pos..end_tag_pos).unwrap_or_default(),
+                pos,
+                &mut line,
+                &mut last_newline,
+            );
             pos = end_tag_pos;
             continue;
         }
 
-        if pos + 1 < len && bytes[pos + 1].is_ascii_alphabetic() {
+        if pos + 1 < len && bytes.get(pos + 1).is_some_and(u8::is_ascii_alphabetic) {
             let nested_template = is_opening_tag_named(bytes, pos, len, TAG_TEMPLATE);
             let raw_text_tag = raw_text_tag_name(bytes, pos, len);
             if let Some((tag_end, self_closing)) = find_opening_tag_end(bytes, pos, len) {
@@ -302,7 +264,12 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
                 } else {
                     tag_end
                 };
-                advance_line(&bytes[pos..scan_end], pos, &mut line, &mut last_newline);
+                advance_line(
+                    bytes.get(pos..scan_end).unwrap_or_default(),
+                    pos,
+                    &mut line,
+                    &mut last_newline,
+                );
                 if nested_template && !self_closing {
                     depth += 1;
                 }

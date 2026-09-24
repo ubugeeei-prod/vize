@@ -441,31 +441,31 @@ impl MacroTracker {
     /// Get defineProps call (cached lookup)
     #[inline]
     pub fn define_props(&self) -> Option<&MacroCall> {
-        self.define_props_idx.map(|idx| &self.calls[idx])
+        self.define_props_idx.and_then(|idx| self.calls.get(idx))
     }
 
     /// Get defineEmits call (cached lookup)
     #[inline]
     pub fn define_emits(&self) -> Option<&MacroCall> {
-        self.define_emits_idx.map(|idx| &self.calls[idx])
+        self.define_emits_idx.and_then(|idx| self.calls.get(idx))
     }
 
     /// Get defineExpose call (cached lookup)
     #[inline]
     pub fn define_expose(&self) -> Option<&MacroCall> {
-        self.define_expose_idx.map(|idx| &self.calls[idx])
+        self.define_expose_idx.and_then(|idx| self.calls.get(idx))
     }
 
     /// Get defineSlots call (cached lookup)
     #[inline]
     pub fn define_slots(&self) -> Option<&MacroCall> {
-        self.define_slots_idx.map(|idx| &self.calls[idx])
+        self.define_slots_idx.and_then(|idx| self.calls.get(idx))
     }
 
     /// Get defineArt call (cached lookup)
     #[inline]
     pub fn define_art_call(&self) -> Option<&MacroCall> {
-        self.define_art_idx.map(|idx| &self.calls[idx])
+        self.define_art_idx.and_then(|idx| self.calls.get(idx))
     }
 
     /// Set defineArt metadata.

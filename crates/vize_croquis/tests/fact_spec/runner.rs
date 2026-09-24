@@ -1,4 +1,6 @@
 //! One artifact through production and both specs.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::panic, reason = "tests assert by panicking")]
 
 use std::fs;
 use std::path::{Path, PathBuf};

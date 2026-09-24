@@ -37,7 +37,7 @@ impl TypeResolver {
 
         let (resolved_name, resolved_content) = if content.starts_with('{') {
             let body = if content.ends_with('}') {
-                &content[1..content.len() - 1]
+                content.get(1..content.len() - 1).unwrap_or_default()
             } else {
                 content
             };
@@ -47,7 +47,7 @@ impl TypeResolver {
             if let Some(body) = self.definitions.resolve(lookup) {
                 let body = body.trim();
                 let body = if body.starts_with('{') && body.ends_with('}') {
-                    &body[1..body.len() - 1]
+                    body.get(1..body.len() - 1).unwrap_or_default()
                 } else {
                     body
                 };
@@ -92,8 +92,8 @@ impl TypeResolver {
         }
 
         let colon_pos = trimmed.find(':')?;
-        let name_part = &trimmed[..colon_pos];
-        let type_part = &trimmed[colon_pos + 1..];
+        let name_part = trimmed.get(..colon_pos).unwrap_or_default();
+        let type_part = trimmed.get(colon_pos + 1..).unwrap_or_default();
         let optional = name_part.ends_with('?');
         let name = name_part.trim().trim_end_matches('?').trim();
 
@@ -123,7 +123,7 @@ fn push_unique_properties(
 
 fn strip_generic_params(type_name: &str) -> &str {
     match type_name.find('<') {
-        Some(pos) => type_name[..pos].trim(),
+        Some(pos) => type_name.get(..pos).unwrap_or_default().trim(),
         None => type_name.trim(),
     }
 }
@@ -131,11 +131,11 @@ fn strip_generic_params(type_name: &str) -> &str {
 fn parse_pick_type(source: &str) -> Option<(&str, Vec<CompactString>)> {
     let inner = source.strip_prefix("Pick<")?.strip_suffix('>')?;
     let args = split_top_level_comma(inner);
-    if args.len() != 2 {
+    let [base, keys] = args.as_slice() else {
         return None;
-    }
-    let keys = extract_string_literal_union(args[1]);
-    (!keys.is_empty()).then_some((args[0].trim(), keys))
+    };
+    let keys = extract_string_literal_union(keys);
+    (!keys.is_empty()).then_some((base.trim(), keys))
 }
 
 fn split_top_level_comma(source: &str) -> Vec<&str> {
@@ -160,13 +160,13 @@ fn split_top_level_comma(source: &str) -> Vec<&str> {
             '<' | '{' | '(' | '[' => depth += 1,
             '>' | '}' | ')' | ']' => depth -= 1,
             ',' if depth == 0 => {
-                args.push(source[start..index].trim());
+                args.push(source.get(start..index).unwrap_or_default().trim());
                 start = index + ch.len_utf8();
             }
             _ => {}
         }
     }
-    args.push(source[start..].trim());
+    args.push(source.get(start..).unwrap_or_default().trim());
     args
 }
 
@@ -189,7 +189,11 @@ fn extract_string_literal_union(source: &str) -> Vec<CompactString> {
                 continue;
             }
             if inner == quote {
-                names.push(CompactString::new(&source[start + quote.len_utf8()..end]));
+                names.push(CompactString::new(
+                    source
+                        .get(start + quote.len_utf8()..end)
+                        .unwrap_or_default(),
+                ));
                 break;
             }
         }

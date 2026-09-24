@@ -27,16 +27,16 @@ pub(super) fn find_block_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult
     let mut last_newline = initial_last_newline;
 
     while pos < len {
-        if let Some(lt_offset) = memchr(b'<', &bytes[pos..]) {
+        if let Some(lt_offset) = memchr(b'<', bytes.get(pos..).unwrap_or_default()) {
             advance_line(
-                &bytes[pos..pos + lt_offset],
+                bytes.get(pos..pos + lt_offset).unwrap_or_default(),
                 pos,
                 &mut line,
                 &mut last_newline,
             );
             pos += lt_offset;
 
-            if bytes[pos] == b'<'
+            if bytes.get(pos) == Some(&b'<')
                 && let Some(end_tag_pos) = find_closing_tag_end(bytes, pos, len, tag_name)
             {
                 let content_end = pos;
@@ -48,7 +48,8 @@ pub(super) fn find_block_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult
                     line,
                     last_newline,
                 );
-                let content = Cow::Borrowed(&source[content_start..content_end]);
+                let content =
+                    Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
                 return Ok(Some((
                     tag_name,
                     attrs,

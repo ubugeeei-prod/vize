@@ -11,19 +11,16 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
     let len = bytes.len();
     let mut i = 0;
     let mut changed = false;
-    #[allow(clippy::disallowed_types)]
+    #[expect(clippy::disallowed_types, reason = "Cow<str> owns a std String")]
     let mut out = std::string::String::new();
 
-    while i < len {
-        let c = bytes[i];
-
+    while let Some(&c) = bytes.get(i) {
         if c == b'\'' || c == b'"' || c == b'`' {
             let literal_start = i;
             let quote = c;
             i += 1;
 
-            while i < len {
-                let current = bytes[i];
+            while let Some(&current) = bytes.get(i) {
                 i += 1;
 
                 if current == b'\\' {
@@ -37,26 +34,27 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
             }
 
             if changed {
-                out.push_str(&expr[literal_start..i]);
+                out.push_str(expr.get(literal_start..i).unwrap_or_default());
             }
             continue;
         }
 
-        if c == b'/' && i + 1 < len && !is_escaped(bytes, i) {
-            let next = bytes[i + 1];
-
+        if c == b'/'
+            && let Some(&next) = bytes.get(i + 1)
+            && !is_escaped(bytes, i)
+        {
             if next == b'/' {
                 if !changed {
                     out.reserve(expr.len());
-                    out.push_str(&expr[..i]);
+                    out.push_str(expr.get(..i).unwrap_or_default());
                     changed = true;
                 }
 
                 i += 2;
-                while i < len && bytes[i] != b'\n' {
+                while i < len && bytes.get(i) != Some(&b'\n') {
                     i += 1;
                 }
-                if i < len && bytes[i] == b'\n' {
+                if i < len && bytes.get(i) == Some(&b'\n') {
                     out.push('\n');
                     i += 1;
                 }
@@ -66,13 +64,15 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
             if next == b'*' {
                 if !changed {
                     out.reserve(expr.len());
-                    out.push_str(&expr[..i]);
+                    out.push_str(expr.get(..i).unwrap_or_default());
                     changed = true;
                 }
 
                 i += 2;
-                while i + 1 < len && !(bytes[i] == b'*' && bytes[i + 1] == b'/') {
-                    if bytes[i] == b'\n' {
+                while i + 1 < len
+                    && !(bytes.get(i) == Some(&b'*') && bytes.get(i + 1) == Some(&b'/'))
+                {
+                    if bytes.get(i) == Some(&b'\n') {
                         out.push('\n');
                     }
                     i += 1;
@@ -88,7 +88,9 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
         }
 
         if changed {
-            let ch = expr[i..].chars().next().expect("valid UTF-8 boundary");
+            let Some(ch) = expr.get(i..).and_then(|rest| rest.chars().next()) else {
+                break;
+            };
             out.push(ch);
             i += ch.len_utf8();
         } else {
@@ -105,7 +107,7 @@ pub fn strip_js_comments(expr: &str) -> Cow<'_, str> {
 
 fn is_escaped(bytes: &[u8], index: usize) -> bool {
     let mut cursor = index;
-    while cursor > 0 && bytes[cursor - 1] == b'\\' {
+    while cursor > 0 && bytes.get(cursor - 1) == Some(&b'\\') {
         cursor -= 1;
     }
     (index - cursor) % 2 == 1

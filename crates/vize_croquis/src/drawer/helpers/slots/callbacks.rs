@@ -29,10 +29,10 @@ pub fn classify_event_handler(source: &str) -> EventHandlerExpression {
     } else {
         parsed
     };
-    if parsed.panicked || !parsed.diagnostics.is_empty() || parsed.program.body.len() != 1 {
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
         return EventHandlerExpression::Inline;
     }
-    let Statement::ExpressionStatement(statement) = &parsed.program.body[0] else {
+    let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice() else {
         return EventHandlerExpression::Inline;
     };
     let parameters = match statement.expression.get_inner_expression() {

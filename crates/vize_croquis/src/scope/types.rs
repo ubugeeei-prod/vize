@@ -61,7 +61,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::disallowed_macros)]
+    #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
     fn test_scope_kind_display() {
         assert_snapshot!(
             "scope_kind_display",
@@ -122,7 +122,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::disallowed_macros)]
+    #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
     fn test_block_kind_display() {
         assert_snapshot!(
             "block_kind_display",

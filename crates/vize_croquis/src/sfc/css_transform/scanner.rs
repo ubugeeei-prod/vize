@@ -75,9 +75,7 @@ pub(super) fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
     let mut in_block_comment = false;
     let mut in_line_comment = false;
 
-    while pos < bytes.len() {
-        let byte = bytes[pos];
-
+    while let Some(&byte) = bytes.get(pos) {
         if in_block_comment {
             if byte == b'*' && bytes.get(pos + 1) == Some(&b'/') {
                 in_block_comment = false;
@@ -129,7 +127,7 @@ pub(super) fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
                 in_line_comment = true;
                 pos += 2;
             }
-            b'v' if bytes[pos..].starts_with(b"v-bind(")
+            b'v' if bytes.get(pos..).unwrap_or_default().starts_with(b"v-bind(")
                 && has_v_bind_left_boundary(bytes, pos) =>
             {
                 return Some(pos);
@@ -142,7 +140,9 @@ pub(super) fn find_next_v_bind(css: &str, start: usize) -> Option<usize> {
 }
 
 fn has_v_bind_left_boundary(bytes: &[u8], pos: usize) -> bool {
-    pos == 0 || !is_css_identifier_byte(bytes[pos - 1])
+    !pos.checked_sub(1)
+        .and_then(|prev| bytes.get(prev))
+        .is_some_and(|&byte| is_css_identifier_byte(byte))
 }
 
 fn is_css_identifier_byte(byte: u8) -> bool {

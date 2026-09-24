@@ -154,11 +154,12 @@ impl Drawer {
     /// Extract the value from a static string literal.
     fn extract_string_value(expr: &str) -> CompactString {
         let trimmed = expr.trim();
-        if (trimmed.starts_with('\'') && trimmed.ends_with('\''))
-            || (trimmed.starts_with('"') && trimmed.ends_with('"'))
-            || (trimmed.starts_with('`') && trimmed.ends_with('`'))
-        {
-            CompactString::new(&trimmed[1..trimmed.len() - 1])
+        if let Some(inner) = ['\'', '"', '`'].into_iter().find_map(|quote| {
+            trimmed
+                .strip_prefix(quote)
+                .and_then(|rest| rest.strip_suffix(quote))
+        }) {
+            CompactString::new(inner)
         } else {
             CompactString::new(trimmed)
         }
@@ -196,7 +197,9 @@ impl Drawer {
             self.ident_cache
                 .insert(CompactString::new(content), computed);
         }
-        let idents = &self.ident_cache[content];
+        let Some(idents) = self.ident_cache.get(content) else {
+            return;
+        };
         let report_undefined = self.options.detect_undefined && self.script_drawn;
         // TS-34 input relation for the `UndefinedRefs` spec (debug builds,
         // armed per thread by `facts::spec::trace::record`).
@@ -248,7 +251,10 @@ fn find_identifier_offset(content: &str, ident: &str, start: usize) -> Option<us
     let mut search_start = start.min(content.len());
 
     while search_start <= content.len() {
-        let found = content[search_start..].find(ident)?;
+        let found = content
+            .get(search_start..)
+            .unwrap_or_default()
+            .find(ident)?;
         let offset = search_start + found;
         if is_identifier_match(bytes, offset, ident_bytes.len()) {
             return Some(offset);
@@ -260,24 +266,23 @@ fn find_identifier_offset(content: &str, ident: &str, start: usize) -> Option<us
 }
 
 fn is_identifier_match(bytes: &[u8], offset: usize, len: usize) -> bool {
-    let before_is_ident = offset > 0 && is_ident_byte(bytes[offset - 1]);
-    let after = offset + len;
-    let after_is_ident = after < bytes.len() && is_ident_byte(bytes[after]);
+    let before_is_ident = offset
+        .checked_sub(1)
+        .and_then(|prev| bytes.get(prev))
+        .is_some_and(|&byte| is_ident_byte(byte));
+    let after_is_ident = bytes
+        .get(offset + len)
+        .is_some_and(|&byte| is_ident_byte(byte));
     if before_is_ident || after_is_ident {
         return false;
     }
 
-    let mut idx = offset;
-    while idx > 0 {
-        idx -= 1;
-        match bytes[idx] {
-            b' ' | b'\t' | b'\n' | b'\r' => continue,
-            b'.' => return false,
-            _ => break,
-        }
-    }
-
-    true
+    let before = bytes.get(..offset).unwrap_or_default();
+    before
+        .iter()
+        .rev()
+        .find(|byte| !matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))
+        != Some(&b'.')
 }
 
 fn is_ident_byte(byte: u8) -> bool {

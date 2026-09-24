@@ -138,7 +138,7 @@ impl ProvideInjectTracker {
     }
 
     /// Add an inject() call
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments, reason = "distinct analysis inputs")]
     pub fn add_inject(
         &mut self,
         key: ProvideKey,
@@ -163,7 +163,7 @@ impl ProvideInjectTracker {
     }
 
     /// Add a composable function call
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments, reason = "distinct analysis inputs")]
     pub fn add_composable(
         &mut self,
         name: CompactString,

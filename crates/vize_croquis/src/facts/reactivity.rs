@@ -125,8 +125,10 @@ impl FactConsumer for ReactivityReader {
 fn with_table<T>(croquis: &Croquis, read: impl FnOnce(&FactTable<Reactivity>) -> T) -> T {
     let mut facts = super::CroquisFacts::new(croquis);
     let view = facts.prepare::<ReactivityReader>();
-    let table = view.get::<Reactivity>().expect("reactivity demand");
-    read(table)
+    match view.get::<Reactivity>() {
+        Ok(table) => read(table),
+        Err(_) => read(&FactTable::default()),
+    }
 }
 
 /// Sources in registration order, including a name registered twice.

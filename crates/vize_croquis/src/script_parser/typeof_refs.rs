@@ -138,5 +138,4 @@ pub(crate) fn collect_from_declaration(decl: &oxc_ast::ast::Declaration<'_>) -> 
 
 // `TSType` is re-exported here so the `Visit` impl above type-checks against
 // the AST crate version used by the workspace.
-#[allow(dead_code)]
 fn _ts_type_witness(_: &TSType<'_>) {}

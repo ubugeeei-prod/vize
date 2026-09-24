@@ -86,11 +86,13 @@ impl FactConsumer for ProvideInjectReader {
 
 fn with_table<T>(croquis: &Croquis, read: impl FnOnce(&FactTable<ProvideInject>) -> T) -> T {
     let mut facts = super::CroquisFacts::new(croquis);
-    let table = facts
+    match facts
         .prepare::<ProvideInjectReader>()
         .get::<ProvideInject>()
-        .expect("provide-inject demand");
-    read(table)
+    {
+        Ok(table) => read(table),
+        Err(_) => read(&FactTable::default()),
+    }
 }
 
 /// `provide()` calls in tracker order.

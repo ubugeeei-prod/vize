@@ -147,8 +147,9 @@ impl EffectGraph {
                         .iter()
                         .position(|(name, _)| *name == edge.to)
                         .unwrap_or(0);
-                    let mut chain: Vec<EffectNodeId> = stack[cycle_start..]
+                    let mut chain: Vec<EffectNodeId> = stack
                         .iter()
+                        .skip(cycle_start)
                         .map(|(name, _)| name.clone())
                         .collect();
                     chain.push(edge.to.clone());

@@ -25,8 +25,10 @@ pub fn detect_provide_inject_call(
         super::reactivity::detect_setup_context_violation(result, call);
 
         // provide(key, value)
-        if call.arguments.len() >= 2 {
-            let key = extract_provide_key(&call.arguments[0], source);
+        if call.arguments.len() >= 2
+            && let Some(key_argument) = call.arguments.first()
+        {
+            let key = extract_provide_key(key_argument, source);
             let value = call
                 .arguments
                 .get(1)

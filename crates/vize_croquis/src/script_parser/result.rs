@@ -237,8 +237,8 @@ impl ScriptParseResult {
         // up front (O(imports × bindings)), test each referenced name's
         // declaration span against the import ranges on demand — `refs` is
         // tiny, so this is O(refs × imports).
-        for idx in 0..self.type_export_typeof_refs.len() {
-            let touches_setup_value = self.type_export_typeof_refs[idx].iter().any(|name| {
+        for (idx, typeof_refs) in self.type_export_typeof_refs.iter().enumerate() {
+            let touches_setup_value = typeof_refs.iter().any(|name| {
                 let key = name.as_str();
                 self.bindings.bindings.contains_key(key)
                     && !self.module_value_bindings.contains(key)
@@ -264,17 +264,21 @@ impl ScriptParseResult {
         let mut changed = true;
         while changed {
             changed = false;
-            for idx in 0..self.type_exports.len() {
-                if !self.type_exports[idx].hoisted {
+            for (type_export, type_refs) in self
+                .type_exports
+                .iter_mut()
+                .zip(&self.type_export_type_refs)
+            {
+                if !type_export.hoisted {
                     continue;
                 }
 
-                let refs_non_hoisted_type = self.type_export_type_refs[idx]
+                let refs_non_hoisted_type = type_refs
                     .iter()
                     .any(|name| non_hoisted_type_names.contains(name));
                 if refs_non_hoisted_type {
-                    non_hoisted_type_names.insert(self.type_exports[idx].name.clone());
-                    self.type_exports[idx].hoisted = false;
+                    non_hoisted_type_names.insert(type_export.name.clone());
+                    type_export.hoisted = false;
                     changed = true;
                 }
             }

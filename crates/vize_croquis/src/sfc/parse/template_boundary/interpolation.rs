@@ -19,7 +19,7 @@ pub(super) fn skip_template_interpolation(
     line: &mut usize,
     last_newline: &mut usize,
 ) -> Option<usize> {
-    debug_assert!(bytes[pos..].starts_with(b"{{"));
+    debug_assert!(bytes.get(pos..).unwrap_or_default().starts_with(b"{{"));
     let original_line = *line;
     let original_last_newline = *last_newline;
     let body_start = pos + 2;
@@ -30,17 +30,22 @@ pub(super) fn skip_template_interpolation(
     // cannot close. Returning before the JS recovery loop keeps a run of
     // unclosed `{{` linear instead of re-walking the rest of the source per
     // occurrence through the string/regex machinery (#3275).
-    let close_offset = memmem::find(&bytes[body_start..], b"}}")?;
+    let close_offset = memmem::find(bytes.get(body_start..).unwrap_or_default(), b"}}")?;
 
     // Most interpolations are identifiers or simple expressions. Accept the
     // first delimiter immediately when no token before it can hide `}}`; this
     // keeps the common path on SIMD searches instead of the JS recovery loop.
     {
         let close_start = body_start + close_offset;
-        let body = &bytes[body_start..close_start];
+        let body = bytes.get(body_start..close_start).unwrap_or_default();
         if memchr3(b'\'', b'"', b'`', body).is_none() && memchr2(b'/', b'{', body).is_none() {
             let interpolation_end = close_start + 2;
-            advance_line(&bytes[pos..interpolation_end], pos, line, last_newline);
+            advance_line(
+                bytes.get(pos..interpolation_end).unwrap_or_default(),
+                pos,
+                line,
+                last_newline,
+            );
             return Some(interpolation_end);
         }
     }
@@ -49,9 +54,9 @@ pub(super) fn skip_template_interpolation(
     let mut prev_significant_char = b'{';
     pos = body_start;
 
-    while pos < len {
-        let b = bytes[pos];
-
+    while pos < len
+        && let Some(&b) = bytes.get(pos)
+    {
         if b == b'\n' {
             *line += 1;
             *last_newline = pos;
@@ -65,9 +70,9 @@ pub(super) fn skip_template_interpolation(
             continue;
         }
 
-        if b == b'/' && pos + 1 < len && bytes[pos + 1] == b'/' {
+        if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'/') {
             pos += 2;
-            if let Some(newline_offset) = memchr(b'\n', &bytes[pos..]) {
+            if let Some(newline_offset) = memchr(b'\n', bytes.get(pos..).unwrap_or_default()) {
                 pos += newline_offset;
             } else {
                 pos = len;
@@ -75,10 +80,15 @@ pub(super) fn skip_template_interpolation(
             continue;
         }
 
-        if b == b'/' && pos + 1 < len && bytes[pos + 1] == b'*' {
+        if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'*') {
             pos += 2;
-            if let Some(end_offset) = memmem::find(&bytes[pos..], b"*/") {
-                advance_line(&bytes[pos..pos + end_offset], pos, line, last_newline);
+            if let Some(end_offset) = memmem::find(bytes.get(pos..).unwrap_or_default(), b"*/") {
+                advance_line(
+                    bytes.get(pos..pos + end_offset).unwrap_or_default(),
+                    pos,
+                    line,
+                    last_newline,
+                );
                 pos += end_offset + 2;
             } else {
                 pos = len;
@@ -100,20 +110,24 @@ pub(super) fn skip_template_interpolation(
             let line_before_string = *line;
             let last_newline_before_string = *last_newline;
             let string_end = skip_script_string_literal(bytes, pos, len, b, line, last_newline);
-            let string_closed = string_end > string_start && bytes[string_end - 1] == b;
+            let string_closed = string_end > string_start && bytes.get(string_end - 1) == Some(&b);
 
             // Recover a malformed JS string at the interpolation delimiter. A
             // valid string may contain `}}`, so only use this path when the
             // quote scanner did not find its real closing delimiter.
             if !string_closed
-                && let Some(close_offset) =
-                    memmem::find(&bytes[string_start + 1..string_end], b"}}")
+                && let Some(close_offset) = memmem::find(
+                    bytes.get(string_start + 1..string_end).unwrap_or_default(),
+                    b"}}",
+                )
             {
                 let interpolation_end = string_start + 1 + close_offset + 2;
                 *line = line_before_string;
                 *last_newline = last_newline_before_string;
                 advance_line(
-                    &bytes[string_start..interpolation_end],
+                    bytes
+                        .get(string_start..interpolation_end)
+                        .unwrap_or_default(),
                     string_start,
                     line,
                     last_newline,
@@ -132,7 +146,7 @@ pub(super) fn skip_template_interpolation(
                 prev_significant_char = b;
                 pos += 1;
             }
-            b'}' if brace_depth == 0 && pos + 1 < len && bytes[pos + 1] == b'}' => {
+            b'}' if brace_depth == 0 && pos + 1 < len && bytes.get(pos + 1) == Some(&b'}') => {
                 return Some(pos + 2);
             }
             b'}' => {
@@ -141,7 +155,7 @@ pub(super) fn skip_template_interpolation(
                 pos += 1;
             }
             b'\\' => {
-                if pos + 1 < len && bytes[pos + 1] == b'\n' {
+                if pos + 1 < len && bytes.get(pos + 1) == Some(&b'\n') {
                     *line += 1;
                     *last_newline = pos + 1;
                 }

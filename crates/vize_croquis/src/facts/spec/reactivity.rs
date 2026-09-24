@@ -73,7 +73,9 @@ pub fn kind_table_agrees() -> Result<(), CompactString> {
             7 => ReactiveKind::ToRef,
             _ => ReactiveKind::ToRefs,
         };
-        let (effects, verdict) = kind_input(kind).expect("every tag is a kind");
+        let Some((effects, verdict)) = kind_input(kind) else {
+            return Err(cstr!("kind {kind:?} has no spec input"));
+        };
         let input = SourceKind::binding_input(
             source_kind(kind),
             BindingId::new(tag.into()),

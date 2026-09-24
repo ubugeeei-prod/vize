@@ -63,7 +63,9 @@ impl ScopeChain {
             }
             visited.push(id);
 
-            let scope = &mut self.scopes[id.as_u32() as usize];
+            let Some(scope) = self.scopes.get_mut(id.as_u32() as usize) else {
+                continue;
+            };
             if let Some(binding) = scope.get_binding_mut(name) {
                 binding.mark_used();
                 return;
@@ -98,7 +100,9 @@ impl ScopeChain {
             }
             visited.push(id);
 
-            let scope = &mut self.scopes[id.as_u32() as usize];
+            let Some(scope) = self.scopes.get_mut(id.as_u32() as usize) else {
+                continue;
+            };
             if let Some(binding) = scope.get_binding_mut(name) {
                 binding.mark_mutated();
                 return;

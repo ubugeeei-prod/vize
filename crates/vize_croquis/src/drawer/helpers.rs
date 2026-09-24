@@ -78,14 +78,12 @@ pub fn build_branch_guard(
 /// Fast identifier validation using bytes
 #[inline]
 pub fn is_valid_identifier_fast(bytes: &[u8]) -> bool {
-    if bytes.is_empty() {
+    let Some((&first, rest)) = bytes.split_first() else {
         return false;
-    }
-    let first = bytes[0];
+    };
     if !first.is_ascii_alphabetic() && first != b'_' && first != b'$' {
         return false;
     }
-    bytes[1..]
-        .iter()
+    rest.iter()
         .all(|&b| b.is_ascii_alphanumeric() || b == b'_' || b == b'$')
 }

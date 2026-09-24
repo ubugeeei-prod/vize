@@ -80,8 +80,18 @@ fn parse_first_v_for_candidate<T>(
 
     for (keyword_start, ch) in expr.char_indices() {
         let keyword_len = match ch {
-            'i' if expr[keyword_start..].starts_with("in") => 2,
-            'o' if expr[keyword_start..].starts_with("of") => 2,
+            'i' if expr
+                .get(keyword_start..)
+                .is_some_and(|rest| rest.starts_with("in")) =>
+            {
+                2
+            }
+            'o' if expr
+                .get(keyword_start..)
+                .is_some_and(|rest| rest.starts_with("of")) =>
+            {
+                2
+            }
             _ => {
                 previous_char = Some(ch);
                 continue;
@@ -94,17 +104,18 @@ fn parse_first_v_for_candidate<T>(
         }
 
         let keyword_end = keyword_start + keyword_len;
-        if !expr[keyword_end..]
-            .chars()
-            .next()
-            .is_some_and(char::is_whitespace)
-        {
+        let (Some(before), Some(after)) = (expr.get(..keyword_start), expr.get(keyword_end..))
+        else {
+            previous_char = Some(ch);
+            continue;
+        };
+        if !after.chars().next().is_some_and(char::is_whitespace) {
             previous_char = Some(ch);
             continue;
         }
 
-        let alias_part = expr[..keyword_start].trim();
-        let source_part = expr[keyword_end..].trim();
+        let alias_part = before.trim();
+        let source_part = after.trim();
         if !alias_part.is_empty()
             && !source_part.is_empty()
             && let Some(parsed) = parse(alias_part, source_part)
@@ -184,11 +195,10 @@ fn simple_tuple_part(part: Option<&str>) -> Option<Option<CompactString>> {
 
 fn simple_tuple_inner(alias: &str) -> Option<&str> {
     let alias = alias.trim();
-    if alias.starts_with('(') && alias.ends_with(')') {
-        Some(alias[1..alias.len() - 1].trim())
-    } else {
-        None
-    }
+    alias
+        .strip_prefix('(')
+        .and_then(|rest| rest.strip_suffix(')'))
+        .map(str::trim)
 }
 
 mod oxc;

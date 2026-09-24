@@ -31,8 +31,7 @@ pub fn extract_v_scope_bindings(expr: &str) -> SmallVec<[VScopeBinding; 4]> {
     // an expression (a bare leading `{` would be a block statement). The prefix
     // length is fixed, so subtracting it recovers offsets within `trimmed`.
     const PREFIX: &str = "const __vize_scope = ";
-    #[allow(clippy::disallowed_macros)]
-    let wrapped = format!("{PREFIX}{trimmed}");
+    let wrapped = vize_carton::cstr!("{PREFIX}{trimmed}");
     // Offset of `trimmed` within `wrapped`, plus the original expression's own
     // leading whitespace that `trim` removed (callers pass absolute offsets
     // relative to the raw expression source).

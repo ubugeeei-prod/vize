@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::super::{ScriptParseResult, parse_script, parse_script_setup};
 use crate::reactivity::ReactiveKind;
 

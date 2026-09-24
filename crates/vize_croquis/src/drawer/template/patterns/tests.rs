@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use crate::{Croquis, Drawer, DrawerOptions, ScopeData, ScopeKind};
 use vize_armature::parse;
 use vize_carton::Allocator;

@@ -68,9 +68,6 @@ struct TsConfigCompilerOptions {
     base_url: Option<String>,
     /// Path mappings
     paths: Option<FxHashMap<String, Vec<String>>>,
-    /// Root directory (reserved for future use)
-    #[allow(dead_code)]
-    root_dir: Option<String>,
 }
 
 /// tsconfig.json structure (partial)
@@ -193,8 +190,7 @@ impl ImportResolver {
         from_file: &Path,
     ) -> Result<ResolvedModule, ImportResolveError> {
         // Create cache key
-        #[allow(clippy::disallowed_macros)]
-        let cache_key = format!("{}:{specifier}", from_file.display());
+        let cache_key = vize_carton::cstr!("{}:{specifier}", from_file.display());
 
         // Check cache first
         if let Some(cached) = self.cache.get(cache_key.as_str()) {
@@ -208,7 +204,7 @@ impl ImportResolver {
         let result = self.resolve_uncached(specifier, from_file);
 
         // Cache the result
-        self.cache.insert(cache_key.into(), result.clone());
+        self.cache.insert(cache_key, result.clone());
         self.cache_stats.set_entries(self.cache.len() as u64);
 
         result
@@ -224,9 +220,7 @@ impl ImportResolver {
         if specifier.starts_with("node:") || !specifier.contains('/') && !specifier.starts_with('.')
         {
             return Err(ImportResolveError::NotFound({
-                #[allow(clippy::disallowed_macros)]
-                let s = format!("Node module resolution not supported: {specifier}");
-                s.into()
+                vize_carton::cstr!("Node module resolution not supported: {specifier}")
             }));
         }
 
@@ -271,14 +265,15 @@ impl ImportResolver {
     ) -> Result<Option<ResolvedModule>, ImportResolveError> {
         for (pattern, replacements) in &self.path_mappings {
             // Handle wildcard patterns (e.g., "@/*" -> ["src/*"])
-            if pattern.ends_with("/*") {
-                let prefix = &pattern[..pattern.len() - 2];
+            if let Some(prefix) = pattern.strip_suffix("/*") {
                 if let Some(suffix) = specifier.strip_prefix(prefix) {
                     for replacement in replacements {
-                        let replacement_prefix = &replacement[..replacement.len() - 1];
+                        let mut replacement_prefix = replacement.chars();
+                        replacement_prefix.next_back();
+                        let replacement_prefix = replacement_prefix.as_str();
                         let base = self.base_url.as_ref().unwrap_or(&self.project_root);
-                        #[allow(clippy::disallowed_macros)]
-                        let target = base.join(format!("{replacement_prefix}{suffix}"));
+                        let target =
+                            base.join(vize_carton::cstr!("{replacement_prefix}{suffix}").as_str());
                         if let Ok(resolved) = self.try_resolve_file(&target) {
                             return Ok(Some(resolved));
                         }
@@ -318,7 +313,7 @@ impl ImportResolver {
 
         // Try with extensions
         for ext in &self.extensions {
-            let with_ext = path.with_extension(&ext[1..]); // Remove leading dot
+            let with_ext = path.with_extension(ext.get(1..).unwrap_or_default()); // Remove leading dot
             if with_ext.exists() && with_ext.is_file() {
                 return self.create_resolved_module(&with_ext);
             }
@@ -327,8 +322,7 @@ impl ImportResolver {
         // Try as directory with index file
         if path.exists() && path.is_dir() {
             for ext in &self.extensions {
-                #[allow(clippy::disallowed_macros)]
-                let index = path.join(format!("index{}", ext));
+                let index = path.join(vize_carton::cstr!("index{ext}").as_str());
                 if index.exists() && index.is_file() {
                     return self.create_resolved_module(&index);
                 }
@@ -338,8 +332,8 @@ impl ImportResolver {
         // Try path.ts if no extension
         if path.extension().is_none() {
             for ext in &self.extensions {
-                #[allow(clippy::disallowed_macros)]
-                let with_ext = PathBuf::from(format!("{}{}", path.display(), ext));
+                let with_ext =
+                    PathBuf::from(vize_carton::cstr!("{}{ext}", path.display()).as_str());
                 if with_ext.exists() && with_ext.is_file() {
                     return self.create_resolved_module(&with_ext);
                 }

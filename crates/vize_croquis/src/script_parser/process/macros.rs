@@ -93,11 +93,13 @@ pub(in crate::script_parser) fn process_variable_declarator(
 
                 // Check for inject() call - track with local_name for indirect destructure detection
                 // Also handles inject aliases (e.g., const a = inject; const state = a('key'))
-                if is_inject_call(call, result) && !call.arguments.is_empty() {
+                if is_inject_call(call, result)
+                    && let Some(key_argument) = call.arguments.first()
+                {
                     // Detect setup context violation for inject
                     detect_setup_context_violation(result, call);
 
-                    if let Some(key) = extract_provide_key(&call.arguments[0], source) {
+                    if let Some(key) = extract_provide_key(key_argument, source) {
                         let default_value = call
                             .arguments
                             .get(1)
@@ -430,16 +432,14 @@ pub(in crate::script_parser) fn process_variable_declarator(
 
                             // Extract default value if present (assignment pattern), including
                             // renamed destructures such as `{ source: local = fallback }`.
-                            let default_value =
-                                if let BindingPattern::AssignmentPattern(assign) = &prop.value {
-                                    Some(CompactString::new(
-                                        &source[assign.right.span().start as usize
-                                            ..assign.right.span().end as usize],
-                                    ))
-                                } else {
-                                    None
-                                };
-
+                            let default_value = match &prop.value {
+                                BindingPattern::AssignmentPattern(assign) => {
+                                    let span = assign.right.span();
+                                    source.get(span.start as usize..span.end as usize)
+                                }
+                                _ => None,
+                            }
+                            .map(CompactString::new);
                             destructure.insert(key, CompactString::new(&local_name), default_value);
                         }
 

@@ -9,11 +9,8 @@ fn last_quote_opens_value(prefix: &[u8], quote: u8) -> bool {
     let Some(quote_pos) = memchr::memrchr(quote, prefix) else {
         return false;
     };
-    let mut before_quote = quote_pos;
-    while before_quote > 0 && is_whitespace_fast(prefix[before_quote - 1]) {
-        before_quote -= 1;
-    }
-    before_quote > 0 && prefix[before_quote - 1] == b'='
+    let before = prefix.get(..quote_pos).unwrap_or_default();
+    before.iter().rev().find(|&&b| !is_whitespace_fast(b)) == Some(&b'=')
 }
 
 fn template_close_has_ambiguous_context(
@@ -22,7 +19,7 @@ fn template_close_has_ambiguous_context(
     close_start: usize,
     len: usize,
 ) -> bool {
-    let prefix = &bytes[content_start..close_start];
+    let prefix = bytes.get(content_start..close_start).unwrap_or_default();
     if last_quote_opens_value(prefix, b'"') || last_quote_opens_value(prefix, b'\'') {
         return true;
     }
@@ -57,14 +54,17 @@ pub(super) fn find_flat_template_end(
 ) -> Option<(usize, usize)> {
     let mut pos = content_start;
     while pos < len {
-        let lt_offset = memchr(b'<', &bytes[pos..])?;
+        let lt_offset = memchr(b'<', bytes.get(pos..).unwrap_or_default())?;
         pos += lt_offset;
 
-        if bytes[pos..].starts_with(b"<!--")
-            || bytes[pos..].starts_with(b"<![CDATA[")
-            || (pos + 1 < len && matches!(bytes[pos + 1], b'!' | b'?'))
+        if bytes.get(pos..).unwrap_or_default().starts_with(b"<!--")
+            || bytes
+                .get(pos..)
+                .unwrap_or_default()
+                .starts_with(b"<![CDATA[")
+            || (pos + 1 < len && matches!(bytes.get(pos + 1), Some(b'!' | b'?')))
             || (pos + 1 < len
-                && bytes[pos + 1].is_ascii_alphabetic()
+                && bytes.get(pos + 1).is_some_and(u8::is_ascii_alphabetic)
                 && raw_text_tag_name(bytes, pos, len).is_some())
         {
             return None;

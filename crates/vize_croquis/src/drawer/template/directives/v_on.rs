@@ -29,7 +29,7 @@ impl Drawer {
                 }
             };
 
-            if dir.arg.is_none() {
+            let Some(event_arg) = dir.arg.as_ref() else {
                 if self.options.collect_template_expressions {
                     let loc = exp.loc();
                     let scope_id = self.croquis.scopes.current_id();
@@ -53,7 +53,7 @@ impl Drawer {
                 }
 
                 return;
-            }
+            };
 
             // Every named listener runs in a handler scope. Whether its body
             // contains parentheses, semicolons or nested callbacks cannot change
@@ -67,7 +67,7 @@ impl Drawer {
                 EventHandlerExpression::Callback { params, .. } => params,
                 _ => Default::default(),
             };
-            let event_name = match dir.arg.as_ref().expect("named event") {
+            let event_name = match event_arg {
                 ExpressionNode::Simple(argument) => CompactString::new(argument.content),
                 ExpressionNode::Compound(argument) => {
                     CompactString::new(argument.loc.span.slice(&self.template_source))

@@ -232,14 +232,14 @@ impl TypeResolver {
         // Resolve if type reference
         let resolved = if content.starts_with('{') {
             if content.ends_with('}') {
-                &content[1..content.len() - 1]
+                content.get(1..content.len() - 1).unwrap_or_default()
             } else {
                 content
             }
         } else if let Some(body) = self.definitions.resolve(content) {
             let body = body.trim();
             if body.starts_with('{') && body.ends_with('}') {
-                &body[1..body.len() - 1]
+                body.get(1..body.len() - 1).unwrap_or_default()
             } else {
                 body
             }
@@ -265,7 +265,7 @@ impl TypeResolver {
                 for prop in trimmed.split(',') {
                     let prop = prop.trim();
                     if let Some(colon_pos) = prop.find(':') {
-                        let name = prop[..colon_pos].trim();
+                        let name = prop.get(..colon_pos).unwrap_or_default().trim();
                         if !name.is_empty() && is_valid_identifier(name) {
                             emits.push(CompactString::new(name));
                         }
@@ -286,7 +286,7 @@ fn interface_extends_key(name: &str) -> CompactString {
 fn extract_event_from_call_signature(signature: &str) -> Option<CompactString> {
     // Find the first string literal after the colon
     let colon_pos = signature.find(':')?;
-    let after_colon = &signature[colon_pos + 1..];
+    let after_colon = signature.get(colon_pos + 1..).unwrap_or_default();
 
     // Find quoted string
     let quote_char = if after_colon.contains('\'') {
@@ -298,10 +298,10 @@ fn extract_event_from_call_signature(signature: &str) -> Option<CompactString> {
     };
 
     let start = after_colon.find(quote_char)? + 1;
-    let rest = &after_colon[start..];
+    let rest = after_colon.get(start..).unwrap_or_default();
     let end = rest.find(quote_char)?;
 
-    Some(CompactString::new(&rest[..end]))
+    Some(CompactString::new(rest.get(..end).unwrap_or_default()))
 }
 
 /// Check if a string is a valid JavaScript identifier

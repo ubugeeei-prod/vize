@@ -13,6 +13,7 @@
 //! Options-API component and its script takes the plain-script path here,
 //! which is the same treatment the standard Vue 3 pipeline gives it
 //! without dialect hints.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::LADDER;

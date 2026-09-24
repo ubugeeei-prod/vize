@@ -289,16 +289,9 @@ pub enum ViolationSeverity {
 
 /// Scope for tracking reactive bindings.
 #[derive(Debug, Clone)]
-#[allow(dead_code)]
 pub(crate) struct ReactiveScope {
     /// Scope depth (0 = module level, 1 = setup, etc.)
     pub depth: u32,
     /// Bindings created in this scope.
     pub bindings: FxHashSet<ReactiveBindingId>,
-    /// Whether this is a setup scope (where reactive APIs should be called).
-    pub is_setup_scope: bool,
-    /// Whether this is inside an async function.
-    pub is_async: bool,
-    /// Parent scope (if any).
-    pub parent_scope: Option<u32>,
 }

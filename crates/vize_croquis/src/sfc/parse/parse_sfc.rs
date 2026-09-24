@@ -72,8 +72,9 @@ fn split_sfc<'a>(
 
     while pos < len {
         // Skip whitespace using byte comparison
-        while pos < len {
-            let c = bytes[pos];
+        while pos < len
+            && let Some(&c) = bytes.get(pos)
+        {
             if c == b' ' || c == b'\t' || c == b'\r' {
                 pos += 1;
                 column += 1;
@@ -91,10 +92,14 @@ fn split_sfc<'a>(
         }
 
         // Use memchr to find next '<' quickly
-        if bytes[pos] != b'<' {
-            if let Some(next_lt) = memchr(b'<', &bytes[pos..]) {
+        if bytes.get(pos) != Some(&b'<') {
+            if let Some(next_lt) = memchr(b'<', bytes.get(pos..).unwrap_or_default()) {
                 // Update line/column for skipped content
-                advance_line_column(&bytes[pos..pos + next_lt], &mut line, &mut column);
+                advance_line_column(
+                    bytes.get(pos..pos + next_lt).unwrap_or_default(),
+                    &mut line,
+                    &mut column,
+                );
                 pos += next_lt;
             } else {
                 break;
@@ -106,15 +111,19 @@ fn split_sfc<'a>(
         }
 
         // Skip HTML comments <!-- ... --> before block parsing.
-        if bytes[pos..].starts_with(b"<!--") {
-            let comment_body = &bytes[pos + 4..];
+        if bytes.get(pos..).unwrap_or_default().starts_with(b"<!--") {
+            let comment_body = bytes.get(pos + 4..).unwrap_or_default();
             let end = comment_end_finder
                 .find(comment_body)
                 .map(|off| pos + 4 + off + 3) // position after '-->'
                 .unwrap_or(len); // unclosed comment: skip to EOF
 
             // Update line/column for the skipped comment
-            advance_line_column(&bytes[pos..end], &mut line, &mut column);
+            advance_line_column(
+                bytes.get(pos..end).unwrap_or_default(),
+                &mut line,
+                &mut column,
+            );
             pos = end;
             continue;
         }
@@ -136,7 +145,7 @@ fn split_sfc<'a>(
                 let mut content_start_line = line;
                 let mut content_start_column = column;
                 advance_line_column(
-                    &bytes[pos..content_start],
+                    bytes.get(pos..content_start).unwrap_or_default(),
                     &mut content_start_line,
                     &mut content_start_column,
                 );
@@ -254,7 +263,11 @@ fn split_sfc<'a>(
                 pos = end_pos;
                 line = content_end_line;
                 column = content_end_column;
-                advance_line_column(&bytes[content_end..end_pos], &mut line, &mut column);
+                advance_line_column(
+                    bytes.get(content_end..end_pos).unwrap_or_default(),
+                    &mut line,
+                    &mut column,
+                );
             }
             Ok(None) => {
                 pos += 1;
@@ -263,7 +276,11 @@ fn split_sfc<'a>(
             Err((code, message)) => {
                 let mut end_line = line;
                 let mut end_column = column;
-                advance_line_column(&bytes[pos..len], &mut end_line, &mut end_column);
+                advance_line_column(
+                    bytes.get(pos..len).unwrap_or_default(),
+                    &mut end_line,
+                    &mut end_column,
+                );
                 return Err(SfcError {
                     message,
                     code: Some(code.into()),

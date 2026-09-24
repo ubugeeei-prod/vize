@@ -39,6 +39,7 @@ pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjec
 pub use result::{ScriptParseResult, ScriptParserOptions};
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
 
 #[cfg(test)]

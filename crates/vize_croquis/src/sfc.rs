@@ -6,10 +6,11 @@
 
 #![cfg_attr(
     test,
-    allow(
+    expect(
         clippy::disallowed_macros,
         clippy::disallowed_methods,
-        clippy::disallowed_types
+        clippy::disallowed_types,
+        reason = "test modules format fixtures with std strings"
     )
 )]
 

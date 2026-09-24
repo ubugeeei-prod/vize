@@ -63,3 +63,6 @@ harness = false
 [[test]]
 name = "davinci_differential"
 required-features = ["davinci-differential"]
+
+[lints]
+workspace = true

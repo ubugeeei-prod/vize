@@ -42,9 +42,6 @@ impl ReactivityTracker {
             scopes: vec![ReactiveScope {
                 depth: 0,
                 bindings: FxHashSet::default(),
-                is_setup_scope: false,
-                is_async: false,
-                parent_scope: None,
             }],
             current_scope: 0,
             violations: Vec::new(),
@@ -77,14 +74,14 @@ impl ReactivityTracker {
     }
 
     /// Push a new scope.
-    pub fn push_scope(&mut self, is_setup_scope: bool, is_async: bool) {
+    ///
+    /// The setup/async flags are accepted for callers but not recorded: no
+    /// analysis reads them.
+    pub fn push_scope(&mut self, _is_setup_scope: bool, _is_async: bool) {
         let new_depth = self.current_scope + 1;
         self.scopes.push(ReactiveScope {
             depth: new_depth,
             bindings: FxHashSet::default(),
-            is_setup_scope,
-            is_async,
-            parent_scope: Some(self.current_scope),
         });
         self.current_scope = new_depth;
     }

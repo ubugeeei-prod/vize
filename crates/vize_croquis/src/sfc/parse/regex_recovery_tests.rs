@@ -1,4 +1,5 @@
 //! Speculative regex scanning must not corrupt the enclosing block's location.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use super::parse_sfc;
 use crate::sfc::types::SfcParseOptions;

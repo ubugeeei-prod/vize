@@ -51,22 +51,22 @@ impl CallGraph {
         }
 
         // Update vue_api_calls in_setup_context
-        for i in 0..self.vue_api_calls.len() {
+        for call in &mut self.vue_api_calls {
             // Top-level is always in setup context for script setup
-            let containing = self.vue_api_calls[i].containing_function;
+            let containing = call.containing_function;
             let in_setup = self
                 .setup_context_functions
                 .contains(&containing.unwrap_or(FunctionId::new(u32::MAX)));
-            self.vue_api_calls[i].in_setup_context = containing.is_none() || in_setup;
+            call.in_setup_context = containing.is_none() || in_setup;
         }
 
         // Update composable_calls in_setup_context
-        for i in 0..self.composable_calls.len() {
-            let containing = self.composable_calls[i].containing_function;
+        for call in &mut self.composable_calls {
+            let containing = call.containing_function;
             let in_setup = self
                 .setup_context_functions
                 .contains(&containing.unwrap_or(FunctionId::new(u32::MAX)));
-            self.composable_calls[i].in_setup_context = containing.is_none() || in_setup;
+            call.in_setup_context = containing.is_none() || in_setup;
         }
     }
 

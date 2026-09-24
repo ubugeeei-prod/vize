@@ -28,7 +28,9 @@ pub fn process_call_expression(
 
     // Extract type arguments if present
     let type_args = call.type_arguments.as_ref().map(|tp| {
-        let type_source = &source[tp.span.start as usize..tp.span.end as usize];
+        let type_source = source
+            .get(tp.span.start as usize..tp.span.end as usize)
+            .unwrap_or_default();
         CompactString::new(type_source)
     });
 
@@ -37,7 +39,9 @@ pub fn process_call_expression(
         let args_start = call.arguments.first().map(|a| a.span().start);
         let args_end = call.arguments.last().map(|a| a.span().end);
         if let (Some(start), Some(end)) = (args_start, args_end) {
-            Some(CompactString::new(&source[start as usize..end as usize]))
+            Some(CompactString::new(
+                source.get(start as usize..end as usize).unwrap_or_default(),
+            ))
         } else {
             None
         }

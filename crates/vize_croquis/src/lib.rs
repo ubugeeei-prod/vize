@@ -31,7 +31,14 @@
 //! vize_atelier_core (Transform)
 //! ```
 
-#![cfg_attr(test, allow(clippy::disallowed_macros, clippy::disallowed_types))]
+#![cfg_attr(
+    test,
+    expect(
+        clippy::disallowed_macros,
+        clippy::disallowed_types,
+        reason = "test modules format fixtures with std strings"
+    )
+)]
 
 // Core modules
 mod scope;

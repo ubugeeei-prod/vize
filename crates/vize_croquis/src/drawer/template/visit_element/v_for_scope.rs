@@ -25,7 +25,7 @@ pub(super) fn v_for_alias_declaration_offsets(
     let Some((alias_start, alias_end)) = v_for_alias_range(content) else {
         return SmallVec::new();
     };
-    let alias_text = &content[alias_start..alias_end];
+    let alias_text = content.get(alias_start..alias_end).unwrap_or_default();
     let alias_base = base_offset + alias_start as u32;
 
     let mut offsets = SmallVec::new();
@@ -68,7 +68,7 @@ fn v_for_alias_range(expr: &str) -> Option<(usize, usize)> {
     let leading = expr.len() - expr.trim_start().len();
     let trimmed = expr.trim();
     let separator = find_v_for_separator(trimmed)?;
-    let alias = &trimmed[..separator];
+    let alias = trimmed.get(..separator)?;
     let alias_leading = alias.len() - alias.trim_start().len();
     let alias_end = alias.trim_end().len();
     Some((leading + alias_leading, leading + alias_end))
@@ -78,10 +78,10 @@ fn find_v_for_separator(expr: &str) -> Option<usize> {
     let bytes = expr.as_bytes();
     let mut index = 0;
     while index + 4 <= bytes.len() {
-        if bytes[index] == b' '
-            && ((bytes[index + 1] == b'i' && bytes[index + 2] == b'n')
-                || (bytes[index + 1] == b'o' && bytes[index + 2] == b'f'))
-            && bytes[index + 3] == b' '
+        if bytes.get(index) == Some(&b' ')
+            && ((bytes.get(index + 1) == Some(&b'i') && bytes.get(index + 2) == Some(&b'n'))
+                || (bytes.get(index + 1) == Some(&b'o') && bytes.get(index + 2) == Some(&b'f')))
+            && bytes.get(index + 3) == Some(&b' ')
         {
             return Some(index);
         }
@@ -110,9 +110,9 @@ pub(super) fn find_identifier_token(text: &str, name: &str) -> Option<usize> {
 /// instead of declaring this one. A rest element (`[first, ...rest]`) is a
 /// declaration and stays eligible.
 fn is_declaration_token(text: &str, at: usize, len: usize) -> bool {
-    let leading = &text[..at];
+    let leading = text.get(..at).unwrap_or_default();
     let before = leading.chars().next_back();
-    let after = text[at + len..].chars().next();
+    let after = text.get(at + len..).unwrap_or_default().chars().next();
     if before.is_some_and(is_identifier_part) || after.is_some_and(is_identifier_part) {
         return false;
     }

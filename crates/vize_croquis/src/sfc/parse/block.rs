@@ -1,5 +1,6 @@
 mod compat;
 mod end;
+mod literals;
 mod regex;
 
 use memchr::{memchr, memchr_iter, memmem};
@@ -8,6 +9,7 @@ use vize_carton::{FxHashMap, String, cstr};
 
 use compat::{can_start_string_literal, is_void_block};
 use end::find_block_end;
+pub(super) use literals::{can_start_regex_literal, skip_script_string_literal};
 pub(super) use regex::skip_regex_literal;
 
 // Tag name bytes for fast comparison
@@ -59,7 +61,9 @@ pub(super) fn tag_name_eq(name: &[u8], expected: &[u8]) -> bool {
 /// Fast byte slice prefix check
 #[inline(always)]
 pub(super) fn starts_with_bytes(haystack: &[u8], needle: &[u8]) -> bool {
-    haystack.len() >= needle.len() && haystack[..needle.len()].eq_ignore_ascii_case(needle)
+    haystack
+        .get(..needle.len())
+        .is_some_and(|prefix| prefix.eq_ignore_ascii_case(needle))
 }
 
 /// Fast tag name character check
@@ -110,166 +114,6 @@ fn content_end_column(
     }
 }
 
-pub(super) fn can_start_regex_literal(prev_significant_char: u8) -> bool {
-    matches!(
-        prev_significant_char,
-        b'=' | b'('
-            | b'['
-            | b','
-            | b':'
-            | b'{'
-            | b';'
-            | b'\n'
-            | b'?'
-            | b'&'
-            | b'|'
-            | b'+'
-            | b'-'
-            | b'*'
-            | b'!'
-            | b'>'
-            | b'<'
-            | b'%'
-            | b'^'
-    )
-}
-
-pub(super) fn skip_script_string_literal(
-    bytes: &[u8],
-    mut pos: usize,
-    len: usize,
-    quote: u8,
-    line: &mut usize,
-    last_newline: &mut usize,
-) -> usize {
-    debug_assert_eq!(bytes[pos], quote);
-    pos += 1;
-
-    while pos < len {
-        let c = bytes[pos];
-
-        if c == b'\n' {
-            *line += 1;
-            *last_newline = pos;
-        }
-
-        if c == b'\\' && pos + 1 < len {
-            if bytes[pos + 1] == b'\n' {
-                *line += 1;
-                *last_newline = pos + 1;
-            }
-            pos += 2;
-            continue;
-        }
-
-        if quote == b'`' && c == b'$' && pos + 1 < len && bytes[pos + 1] == b'{' {
-            pos = skip_template_expression(bytes, pos + 2, len, line, last_newline);
-            continue;
-        }
-
-        if c == quote {
-            return pos + 1;
-        }
-
-        if quote != b'`' && c == b'\n' {
-            return pos + 1;
-        }
-
-        pos += 1;
-    }
-
-    len
-}
-
-fn skip_template_expression(
-    bytes: &[u8],
-    mut pos: usize,
-    len: usize,
-    line: &mut usize,
-    last_newline: &mut usize,
-) -> usize {
-    let mut brace_depth = 1;
-    let mut prev_significant_char: u8 = b'{';
-
-    while pos < len && brace_depth > 0 {
-        let b = bytes[pos];
-
-        if b == b'\n' {
-            *line += 1;
-            *last_newline = pos;
-            prev_significant_char = b'\n';
-            pos += 1;
-            continue;
-        }
-
-        if b == b' ' || b == b'\t' || b == b'\r' {
-            pos += 1;
-            continue;
-        }
-
-        if b == b'/' && pos + 1 < len && bytes[pos + 1] == b'/' {
-            pos += 2;
-            if let Some(newline_offset) = memchr(b'\n', &bytes[pos..]) {
-                pos += newline_offset;
-            } else {
-                pos = len;
-            }
-            continue;
-        }
-
-        if b == b'/' && pos + 1 < len && bytes[pos + 1] == b'*' {
-            pos += 2;
-            if let Some(end_offset) = memmem::find(&bytes[pos..], b"*/") {
-                advance_line(&bytes[pos..pos + end_offset], pos, line, last_newline);
-                pos += end_offset + 2;
-            } else {
-                advance_line(&bytes[pos..], pos, line, last_newline);
-                pos = len;
-            }
-            continue;
-        }
-
-        if b == b'/'
-            && can_start_regex_literal(prev_significant_char)
-            && let Some(next_pos) = skip_regex_literal(bytes, pos, len, line, last_newline)
-        {
-            prev_significant_char = b'/';
-            pos = next_pos;
-            continue;
-        }
-
-        if (b == b'\'' || b == b'"' || b == b'`')
-            && can_start_string_literal(prev_significant_char, b)
-        {
-            pos = skip_script_string_literal(bytes, pos, len, b, line, last_newline);
-            prev_significant_char = b;
-            continue;
-        }
-
-        match b {
-            b'{' => {
-                brace_depth += 1;
-                prev_significant_char = b;
-                pos += 1;
-            }
-            b'}' => {
-                brace_depth -= 1;
-                prev_significant_char = b;
-                pos += 1;
-            }
-            b'\\' => {
-                pos = (pos + 2).min(len);
-            }
-            _ => {
-                prev_significant_char = b;
-                pos += 1;
-            }
-        }
-    }
-
-    pos
-}
-
 /// Find the end of a closing tag `</tag_name` followed by optional whitespace and `>`.
 /// Returns the position immediately after `>`, or `None` if no valid closing tag at `pos`.
 #[inline]
@@ -283,16 +127,21 @@ pub(super) fn find_closing_tag_end(
     if pos + 2 + tag_name.len() >= len {
         return None;
     }
-    if bytes[pos] != b'<' || bytes[pos + 1] != b'/' {
+    if bytes.get(pos..pos + 2) != Some(b"</") {
         return None;
     }
     let name_start = pos + 2;
-    if !bytes[name_start..name_start + tag_name.len()].eq_ignore_ascii_case(tag_name) {
+    if !bytes
+        .get(name_start..name_start + tag_name.len())
+        .is_some_and(|name| name.eq_ignore_ascii_case(tag_name))
+    {
         return None;
     }
     let mut check_pos = name_start + tag_name.len();
-    while check_pos < len {
-        match bytes[check_pos] {
+    while check_pos < len
+        && let Some(&byte) = bytes.get(check_pos)
+    {
+        match byte {
             b'>' => return Some(check_pos + 1),
             b' ' | b'\t' | b'\n' | b'\r' => check_pos += 1,
             _ => return None,
@@ -328,7 +177,7 @@ pub(super) fn parse_block_fast<'a>(
 
     // Parse tag name - find end of tag name
     let tag_start = pos;
-    while pos < len && is_tag_name_char_fast(bytes[pos]) {
+    while bytes.get(pos).is_some_and(|&b| is_tag_name_char_fast(b)) {
         pos += 1;
     }
 
@@ -336,25 +185,24 @@ pub(super) fn parse_block_fast<'a>(
         return Ok(None);
     }
 
-    let tag_name = &source.as_bytes()[tag_start..pos];
+    let tag_name = source.as_bytes().get(tag_start..pos).unwrap_or_default();
 
     // Parse attributes with zero-copy
     let mut attrs: BlockAttrs<'a> = FxHashMap::default();
 
-    while pos < len && bytes[pos] != b'>' {
+    while bytes.get(pos).is_some_and(|&b| b != b'>') {
         // Skip whitespace
-        while pos < len && is_whitespace_fast(bytes[pos]) {
+        while bytes.get(pos).is_some_and(|&b| is_whitespace_fast(b)) {
             pos += 1;
         }
 
-        if pos >= len || bytes[pos] == b'>' || bytes[pos] == b'/' {
+        if bytes.get(pos).is_none_or(|&b| b == b'>' || b == b'/') {
             break;
         }
 
         // Parse attribute name
         let attr_start = pos;
-        while pos < len {
-            let c = bytes[pos];
+        while let Some(&c) = bytes.get(pos) {
             if c == b'='
                 || c == b' '
                 || c == b'>'
@@ -374,38 +222,38 @@ pub(super) fn parse_block_fast<'a>(
         }
 
         // Zero-copy: borrow from source
-        let attr_name: Cow<'a, str> = Cow::Borrowed(&source[attr_start..pos]);
+        let attr_name: Cow<'a, str> =
+            Cow::Borrowed(source.get(attr_start..pos).unwrap_or_default());
 
         // Skip whitespace
-        while pos < len && (bytes[pos] == b' ' || bytes[pos] == b'\t') {
+        while matches!(bytes.get(pos), Some(b' ' | b'\t')) {
             pos += 1;
         }
 
-        let attr_value: Cow<'a, str> = if pos < len && bytes[pos] == b'=' {
+        let attr_value: Cow<'a, str> = if bytes.get(pos) == Some(&b'=') {
             pos += 1;
 
             // Skip whitespace
-            while pos < len && (bytes[pos] == b' ' || bytes[pos] == b'\t') {
+            while matches!(bytes.get(pos), Some(b' ' | b'\t')) {
                 pos += 1;
             }
 
-            if pos < len && (bytes[pos] == b'"' || bytes[pos] == b'\'') {
-                let quote_char = bytes[pos];
+            if let Some(&quote_char) = bytes.get(pos).filter(|&&b| b == b'"' || b == b'\'') {
                 pos += 1;
                 let value_start = pos;
 
                 // Use memchr for fast quote finding
-                if let Some(quote_pos) = memchr(quote_char, &bytes[pos..]) {
+                if let Some(quote_pos) = memchr(quote_char, bytes.get(pos..).unwrap_or_default()) {
                     pos += quote_pos;
-                    let value = Cow::Borrowed(&source[value_start..pos]);
+                    let value = Cow::Borrowed(source.get(value_start..pos).unwrap_or_default());
                     pos += 1; // Skip closing quote
                     value
                 } else {
                     // No closing quote found
-                    while pos < len && bytes[pos] != quote_char {
+                    while bytes.get(pos).is_some_and(|&b| b != quote_char) {
                         pos += 1;
                     }
-                    let value = Cow::Borrowed(&source[value_start..pos]);
+                    let value = Cow::Borrowed(source.get(value_start..pos).unwrap_or_default());
                     if pos < len {
                         pos += 1;
                     }
@@ -414,14 +262,13 @@ pub(super) fn parse_block_fast<'a>(
             } else {
                 // Unquoted value
                 let value_start = pos;
-                while pos < len {
-                    let c = bytes[pos];
+                while let Some(&c) = bytes.get(pos) {
                     if c == b' ' || c == b'>' || c == b'/' || c == b'\t' || c == b'\n' {
                         break;
                     }
                     pos += 1;
                 }
-                Cow::Borrowed(&source[value_start..pos])
+                Cow::Borrowed(source.get(value_start..pos).unwrap_or_default())
             }
         } else {
             // Boolean attribute
@@ -434,22 +281,25 @@ pub(super) fn parse_block_fast<'a>(
     }
 
     // Handle self-closing tag.
-    let is_self_closing = pos < len && bytes[pos] == b'/';
+    let is_self_closing = bytes.get(pos) == Some(&b'/');
 
     if is_self_closing {
         pos += 1;
-        while pos < len && is_whitespace_fast(bytes[pos]) {
+        while bytes.get(pos).is_some_and(|&b| is_whitespace_fast(b)) {
             pos += 1;
         }
-        if pos >= len || bytes[pos] != b'>' {
+        if bytes.get(pos) != Some(&b'>') {
             return Err(build_malformed_error(
                 tag_name,
                 "the self-closing tag is incomplete",
             ));
         }
         pos += 1;
-        let (content_line, content_column) =
-            position_after(&bytes[start..pos], start_line, start_column);
+        let (content_line, content_column) = position_after(
+            bytes.get(start..pos).unwrap_or_default(),
+            start_line,
+            start_column,
+        );
         return Ok(Some((
             tag_name,
             attrs,
@@ -463,7 +313,7 @@ pub(super) fn parse_block_fast<'a>(
     }
 
     // Skip '>'
-    if pos < len && bytes[pos] == b'>' {
+    if bytes.get(pos) == Some(&b'>') {
         pos += 1;
     } else {
         return Err(build_malformed_error(
@@ -473,8 +323,11 @@ pub(super) fn parse_block_fast<'a>(
     }
 
     let content_start = pos;
-    let (content_start_line, content_start_column) =
-        position_after(&bytes[start..content_start], start_line, start_column);
+    let (content_start_line, content_start_column) = position_after(
+        bytes.get(start..content_start).unwrap_or_default(),
+        start_line,
+        start_column,
+    );
 
     if is_void_block(tag_name) {
         return Ok(Some((
@@ -544,9 +397,7 @@ pub(super) fn parse_block_fast<'a>(
     // Track the previous non-whitespace character to determine string context
     let mut prev_significant_char: u8 = b'\n'; // Start as if at beginning of line
 
-    while pos < len {
-        let b = bytes[pos];
-
+    while let Some(&b) = bytes.get(pos) {
         if b == b'\n' {
             line += 1;
             last_newline = pos;
@@ -564,10 +415,10 @@ pub(super) fn parse_block_fast<'a>(
         // For script blocks, skip over comments and string literals
         if is_script {
             // Check for single-line comment
-            if b == b'/' && pos + 1 < len && bytes[pos + 1] == b'/' {
+            if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'/') {
                 // Skip to end of line
                 pos += 2;
-                if let Some(newline_offset) = memchr(b'\n', &bytes[pos..]) {
+                if let Some(newline_offset) = memchr(b'\n', bytes.get(pos..).unwrap_or_default()) {
                     pos += newline_offset;
                 } else {
                     pos = len;
@@ -576,18 +427,24 @@ pub(super) fn parse_block_fast<'a>(
             }
 
             // Check for multi-line comment
-            if b == b'/' && pos + 1 < len && bytes[pos + 1] == b'*' {
+            if b == b'/' && pos + 1 < len && bytes.get(pos + 1) == Some(&b'*') {
                 pos += 2;
-                if let Some(end_offset) = memmem::find(&bytes[pos..], b"*/") {
+                if let Some(end_offset) = memmem::find(bytes.get(pos..).unwrap_or_default(), b"*/")
+                {
                     advance_line(
-                        &bytes[pos..pos + end_offset],
+                        bytes.get(pos..pos + end_offset).unwrap_or_default(),
                         pos,
                         &mut line,
                         &mut last_newline,
                     );
                     pos += end_offset + 2;
                 } else {
-                    advance_line(&bytes[pos..], pos, &mut line, &mut last_newline);
+                    advance_line(
+                        bytes.get(pos..).unwrap_or_default(),
+                        pos,
+                        &mut line,
+                        &mut last_newline,
+                    );
                     pos = len;
                 }
                 continue;
@@ -632,7 +489,7 @@ pub(super) fn parse_block_fast<'a>(
                 line,
                 last_newline,
             );
-            let content = Cow::Borrowed(&source[content_start..content_end]);
+            let content = Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
             return Ok(Some((
                 tag_name,
                 attrs,

@@ -21,13 +21,15 @@ impl FactConsumer for ComponentUsageReader {
 fn with_uses<T>(croquis: &Croquis, read: impl FnOnce(&[GroupedComponentUse]) -> T) -> T {
     let mut facts = CroquisFacts::new(croquis);
     let view = facts.prepare::<ComponentUsageReader>();
-    let table = view
+    let uses: Vec<GroupedComponentUse> = view
         .get::<ComponentUsages>()
-        .expect("component usage demand");
-    let uses: Vec<GroupedComponentUse> = table
-        .iter()
-        .flat_map(|(_, uses)| uses.iter().cloned())
-        .collect();
+        .map(|table| {
+            table
+                .iter()
+                .flat_map(|(_, uses)| uses.iter().cloned())
+                .collect()
+        })
+        .unwrap_or_default();
     read(&uses)
 }
 

@@ -65,9 +65,14 @@ fn first_occurrence(content: &str, name: &str) -> u32 {
     let mut substring = None;
     for (at, _) in content.match_indices(name) {
         substring.get_or_insert(at);
-        let before = at.checked_sub(1).map(|index| bytes[index]);
+        let before = at
+            .checked_sub(1)
+            .and_then(|index| bytes.get(index))
+            .copied();
         let after = bytes.get(at + name.len()).copied();
-        let member = bytes[..at]
+        let member = bytes
+            .get(..at)
+            .unwrap_or_default()
             .iter()
             .rev()
             .find(|byte| !matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))

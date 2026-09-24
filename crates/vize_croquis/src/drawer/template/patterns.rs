@@ -226,7 +226,7 @@ impl Drawer {
             let previous = self.croquis.undefined_refs.len();
             self.check_expression_refs(&expression, vars);
             if let Some(raw) = self.template_source.get(start as usize..end as usize) {
-                for reference in &mut self.croquis.undefined_refs[previous..] {
+                for reference in self.croquis.undefined_refs.iter_mut().skip(previous) {
                     reference.offset =
                         start + attribute_source_offset(raw, reference.offset - start);
                 }

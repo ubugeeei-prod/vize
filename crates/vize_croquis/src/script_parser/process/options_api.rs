@@ -1016,6 +1016,7 @@ fn descriptor_object_expression<'a>(
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod descriptor_tests {
     use super::collect_options_descriptor;
     use oxc_allocator::Allocator;
@@ -1074,7 +1075,6 @@ export default {
         // Array-form prop member span covers the full string literal incl. quotes.
         let prop = &descriptor.members[0];
         assert_eq!(&source[prop.start as usize..prop.end as usize], "'foo'");
-
         // Every top-level option key is recorded (props + name), verbatim.
         let keys: Vec<&str> = descriptor
             .option_keys

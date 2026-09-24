@@ -111,7 +111,7 @@ impl CallGraph {
     }
 
     /// Add a composable call.
-    #[allow(clippy::too_many_arguments)]
+    #[expect(clippy::too_many_arguments, reason = "distinct analysis inputs")]
     pub fn add_composable_call(
         &mut self,
         name: CompactString,

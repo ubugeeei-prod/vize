@@ -33,20 +33,23 @@ pub(super) fn parse_v_for_with_oxc(
     let inner = tuple_alias_inner(alias.trim_start_matches("const ").trim());
 
     let total_len = prefix.len() + inner.len() + suffix.len();
-    if total_len > buffer.len() {
-        #[allow(clippy::disallowed_macros)]
+    let Some(pattern_bytes) = buffer.get_mut(..total_len) else {
+        #[expect(clippy::disallowed_macros, reason = "rare oversized alias fallback")]
         let pattern_str = format!("let [{inner}] = x");
         return profile!(
             "croquis.helpers.v_for.parse_pattern",
             parse_v_for_pattern(&pattern_str, source)
         );
+    };
+
+    for (slot, &byte) in pattern_bytes
+        .iter_mut()
+        .zip(prefix.iter().chain(inner.as_bytes()).chain(suffix))
+    {
+        *slot = byte;
     }
 
-    buffer[..prefix.len()].copy_from_slice(prefix);
-    buffer[prefix.len()..prefix.len() + inner.len()].copy_from_slice(inner.as_bytes());
-    buffer[prefix.len() + inner.len()..total_len].copy_from_slice(suffix);
-
-    match std::str::from_utf8(&buffer[..total_len]) {
+    match std::str::from_utf8(pattern_bytes) {
         Ok(pattern_str) => profile!(
             "croquis.helpers.v_for.parse_pattern",
             parse_v_for_pattern(pattern_str, source)
@@ -109,7 +112,11 @@ pub(super) fn parse_v_for_scope_aliases(
 
 fn binding_pattern_source(pattern: &BindingPattern<'_>, source: &str) -> CompactString {
     let span = pattern.span();
-    CompactString::new(&source[span.start as usize..span.end as usize])
+    CompactString::new(
+        source
+            .get(span.start as usize..span.end as usize)
+            .unwrap_or_default(),
+    )
 }
 
 fn binding_identifier_name(pattern: &BindingPattern<'_>) -> Option<CompactString> {
@@ -122,8 +129,11 @@ fn binding_identifier_name(pattern: &BindingPattern<'_>) -> Option<CompactString
 
 fn tuple_alias_inner(alias: &str) -> &str {
     let alias = alias.trim();
-    if alias.starts_with('(') && alias.ends_with(')') {
-        alias[1..alias.len() - 1].trim()
+    if let Some(inner) = alias
+        .strip_prefix('(')
+        .and_then(|rest| rest.strip_suffix(')'))
+    {
+        inner.trim()
     } else {
         alias
     }

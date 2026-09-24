@@ -11,7 +11,7 @@ pub(in crate::sfc::parse) fn skip_regex_literal(
     // allocating a lexer token stream. This byte scanner only activates in
     // syntactic positions where `/` can start a regex and tracks character
     // classes/escapes well enough to continue the zero-copy SFC block scan.
-    debug_assert_eq!(bytes[pos], b'/');
+    debug_assert_eq!(bytes.get(pos), Some(&b'/'));
     pos += 1;
     let mut in_character_class = false;
     // On failure callers resume at the original slash. A speculative newline
@@ -19,9 +19,9 @@ pub(in crate::sfc::parse) fn skip_regex_literal(
     let mut scanned_line = *line;
     let mut scanned_last_newline = *last_newline;
 
-    while pos < len {
-        let c = bytes[pos];
-
+    while pos < len
+        && let Some(&c) = bytes.get(pos)
+    {
         if c == b'\n' {
             // An unescaped newline terminates JavaScript regex literals. Stop
             // treating this as regex so normal malformed-block handling wins.
@@ -29,7 +29,7 @@ pub(in crate::sfc::parse) fn skip_regex_literal(
         }
 
         if c == b'\\' {
-            if pos + 1 < len && bytes[pos + 1] == b'\n' {
+            if pos + 1 < len && bytes.get(pos + 1) == Some(&b'\n') {
                 scanned_line += 1;
                 scanned_last_newline = pos + 1;
             }
@@ -52,7 +52,11 @@ pub(in crate::sfc::parse) fn skip_regex_literal(
             }
             b'/' => {
                 pos += 1;
-                while pos < len && (bytes[pos].is_ascii_alphanumeric() || bytes[pos] == b'_') {
+                while pos < len
+                    && bytes
+                        .get(pos)
+                        .is_some_and(|&b| b.is_ascii_alphanumeric() || b == b'_')
+                {
                     pos += 1;
                 }
                 *line = scanned_line;

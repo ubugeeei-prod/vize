@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::parse_script_setup;
 
 #[test]

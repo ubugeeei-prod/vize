@@ -1,6 +1,6 @@
 //! Declaration output regressions exercised through Croquis' public API.
-
-#![allow(clippy::disallowed_macros)]
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
