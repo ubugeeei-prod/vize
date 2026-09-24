@@ -78,24 +78,19 @@ test("Criterion baseline comparison fails closed and uses exported medians", () 
 });
 
 test("Vapor A/B measures the same complete native/retained fixture on both revisions", () => {
-  const base = parseCritcmpExport(
-    baselineExport("base", {
-      "vapor_native_pair/control_flow/s3": 18_000,
-      "vapor_native_pair/control_flow/legacy": 16_000,
-    }),
-    "base",
-  );
-  const head = parseCritcmpExport(
-    baselineExport("head", {
-      "vapor_native_pair/control_flow/s3": 14_000,
-      "vapor_native_pair/control_flow/legacy": 16_000,
-    }),
-    "head",
-  );
+  const base = vaporPairExport("base", {
+    "vapor_native_pair/control_flow/s3": 18_000,
+    "vapor_native_pair/control_flow/legacy": 16_000,
+  });
+  const head = vaporPairExport("head", {
+    "vapor_native_pair/control_flow/s3": 14_000,
+    "vapor_native_pair/control_flow/legacy": 16_000,
+  });
   const results = compareVaporNativePairs(base, head);
-  assert.equal(results.length, 1);
-  assert.equal(results[0]?.baseRatio, 1.125);
-  assert.equal(results[0]?.headRatio, 0.875);
+  assert.equal(results.length, 7);
+  const controlFlow = results.find(({ fixture }) => fixture === "control_flow");
+  assert.equal(controlFlow?.baseRatio, 1.125);
+  assert.equal(controlFlow?.headRatio, 0.875);
   const selection = resolveSuiteSelection({
     selected: ["vize_atelier_vapor"],
     reason: "Vapor-only dispatch.",
@@ -113,19 +108,25 @@ test("Vapor A/B measures the same complete native/retained fixture on both revis
   );
   assert.match(summary, /report-only/);
 
-  const missingLegacy = parseCritcmpExport(
-    baselineExport("head", { "vapor_native_pair/control_flow/s3": 14_000 }),
-    "head",
-  );
+  const missingLegacy = vaporPairExport("head", {}, ["vapor_native_pair/control_flow/legacy"]);
   assert.throws(() => compareVaporNativePairs(base, missingLegacy), /Missing Vapor pair benchmark/);
-  const changedCorpus = parseCritcmpExport(
-    baselineExport("head", {
-      "vapor_native_pair/other/s3": 14_000,
-      "vapor_native_pair/other/legacy": 16_000,
-    }),
-    "head",
+  const missingFixture = ["vapor_native_pair/text_runs/s3", "vapor_native_pair/text_runs/legacy"];
+  assert.throws(
+    () =>
+      compareVaporNativePairs(
+        vaporPairExport("base", {}, missingFixture),
+        vaporPairExport("head", {}, missingFixture),
+      ),
+    /differs from the pinned corpus/,
   );
-  assert.throws(() => compareVaporNativePairs(base, changedCorpus), /fixture sets differ/);
+  const changedCorpus = vaporPairExport("head", {
+    "vapor_native_pair/other/s3": 14_000,
+    "vapor_native_pair/other/legacy": 16_000,
+  });
+  assert.throws(
+    () => compareVaporNativePairs(base, changedCorpus),
+    /differs from the pinned corpus/,
+  );
 });
 
 test("Vapor Criterion driver filters to paired compile cases", () => {
@@ -237,4 +238,37 @@ function baselineExport(name: string, medians: Record<string, number>): string {
       ]),
     ),
   });
+}
+
+function vaporPairExport(
+  name: string,
+  overrides: Record<string, number> = {},
+  omitted: string[] = [],
+) {
+  const fixtures = [
+    "components",
+    "control_flow",
+    "events",
+    "expressions",
+    "spreads",
+    "templates",
+    "text_runs",
+  ];
+  const medians = Object.fromEntries(
+    fixtures.flatMap((fixture) => [
+      [`vapor_native_pair/${fixture}/s3`, 10_000] as const,
+      [`vapor_native_pair/${fixture}/legacy`, 10_000] as const,
+    ]),
+  );
+  return parseCritcmpExport(
+    baselineExport(
+      name,
+      Object.fromEntries(
+        Object.entries({ ...medians, ...overrides }).filter(
+          ([benchmark]) => !omitted.includes(benchmark),
+        ),
+      ),
+    ),
+    name,
+  );
 }

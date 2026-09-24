@@ -59,6 +59,17 @@ export function compareBaselineExports(base, head, thresholdPercent) {
  */
 export function compareVaporNativePairs(base, head) {
   const prefix = "vapor_native_pair/";
+  // These are the seven checked-in `native_pair` inputs in the Vapor bench.
+  // Changing the corpus requires an explicit comparison-contract update.
+  const expectedFixtures = [
+    "components",
+    "control_flow",
+    "events",
+    "expressions",
+    "spreads",
+    "templates",
+    "text_runs",
+  ];
   const fixtureNames = (exported, side) => {
     const fixtures = new Set();
     for (const name of Object.keys(exported.benchmarks)) {
@@ -67,8 +78,13 @@ export function compareVaporNativePairs(base, head) {
       if (!match) throw new Error(`Unexpected Vapor pair benchmark in ${side}: ${name}`);
       fixtures.add(match[1]);
     }
-    if (fixtures.size === 0) throw new Error(`No Vapor native/retained pairs in ${side} export`);
-    return [...fixtures].sort((left, right) => left.localeCompare(right));
+    const names = [...fixtures].sort((left, right) => left.localeCompare(right));
+    if (names.join("\0") !== expectedFixtures.join("\0")) {
+      throw new Error(
+        `Vapor native/retained fixture set in ${side} differs from the pinned corpus`,
+      );
+    }
+    return names;
   };
   const baseFixtures = fixtureNames(base, "base");
   const headFixtures = fixtureNames(head, "head");

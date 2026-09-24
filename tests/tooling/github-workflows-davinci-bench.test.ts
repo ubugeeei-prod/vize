@@ -1,4 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { delimiter, join } from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
@@ -69,7 +73,7 @@ test("check workflow uploads Davinci allocation bench reports", () => {
   );
 });
 
-test("Vapor Criterion comparison stays manual and checks both exact revisions", () => {
+test("Vapor Criterion dispatch validates revisions and selects only its suite", (t) => {
   const workflow = parse(readRepoFile(".github", "workflows", "criterion-bench.yml")) as {
     on?: Record<string, { inputs?: Record<string, unknown> }>;
     jobs?: Record<string, WorkflowJob>;
@@ -77,9 +81,100 @@ test("Vapor Criterion comparison stays manual and checks both exact revisions", 
   assert.deepEqual(Object.keys(workflow.on ?? {}), ["workflow_dispatch"]);
   assert.ok(workflow.on?.workflow_dispatch?.inputs?.vapor_only);
   const steps = workflow.jobs?.["criterion-ab"]?.steps ?? [];
-  const validation = steps.find((step) => step.name === "Validate exact benchmark commits");
-  assert.match(validation?.run ?? "", /DISPATCH_SHA/);
-  assert.match(validation?.run ?? "", /merge-base --is-ancestor/);
-  const impact = steps.find((step) => step.name === "Select affected Criterion suites");
-  assert.match(impact?.run ?? "", /vize_atelier_vapor/);
+  const validation = steps.find((step) => step.name === "Validate exact benchmark commits")?.run;
+  const impact = steps.find((step) => step.name === "Select affected Criterion suites")?.run;
+  assert.ok(validation);
+  assert.ok(impact);
+
+  const root = mkdtempSync(join(tmpdir(), "vize-vapor-bench-workflow-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const source = join(root, "source");
+  const base = join(root, "base");
+  const head = join(root, "head");
+  mkdirSync(source);
+  git(source, ["init", "-q", "--initial-branch=main"]);
+  const commit = (message: string) => {
+    git(source, ["add", "."]);
+    git(source, [
+      "-c",
+      "user.name=Vize",
+      "-c",
+      "user.email=vize@example.com",
+      "commit",
+      "-qm",
+      message,
+    ]);
+    return git(source, ["rev-parse", "HEAD"]);
+  };
+  writeFileSync(join(source, "fixture"), "base");
+  const baseSha = commit("base");
+  writeFileSync(join(source, "fixture"), "head");
+  const headSha = commit("head");
+  writeFileSync(join(source, "fixture"), "later");
+  const laterSha = commit("later");
+  git(source, ["checkout", "-q", "--orphan", "unrelated"]);
+  git(source, ["rm", "-q", "-rf", "."]);
+  writeFileSync(join(source, "unrelated"), "other history");
+  const unrelatedSha = commit("unrelated");
+  git(root, ["clone", "-q", source, base]);
+  git(root, ["clone", "-q", source, head]);
+  git(base, ["checkout", "-q", baseSha]);
+  git(head, ["checkout", "-q", headSha]);
+
+  const validate = (baseValue: string, headValue: string, dispatchValue: string) =>
+    spawnSync("bash", ["-e", "-o", "pipefail", "-c", validation], {
+      cwd: root,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        BASE_SHA: baseValue,
+        HEAD_SHA: headValue,
+        DISPATCH_SHA: dispatchValue,
+      },
+    });
+  assert.equal(validate(baseSha, headSha, headSha).status, 0);
+  assert.notEqual(validate(baseSha, headSha, baseSha).status, 0);
+  assert.notEqual(validate(baseSha, laterSha, laterSha).status, 0);
+  git(base, ["checkout", "-q", unrelatedSha]);
+  assert.notEqual(validate(unrelatedSha, headSha, headSha).status, 0);
+
+  const output = join(root, "github-output");
+  const selection = join(root, "criterion-impact.json");
+  const env = {
+    ...process.env,
+    GITHUB_WORKSPACE: root,
+    GITHUB_OUTPUT: output,
+    PR_BASE_SHA: baseSha,
+    PR_HEAD_SHA: headSha,
+    VAPOR_ONLY: "true",
+  };
+  const vapor = spawnSync("bash", ["-e", "-o", "pipefail", "-c", impact], {
+    cwd: root,
+    encoding: "utf8",
+    env,
+  });
+  assert.equal(vapor.status, 0, vapor.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(selection, "utf8")).selected, ["vize_atelier_vapor"]);
+  assert.match(readFileSync(output, "utf8"), /has_suites=true/);
+
+  const bin = join(root, "bin");
+  mkdirSync(bin);
+  writeFileSync(
+    join(bin, "node"),
+    '#!/bin/sh\nprintf \'%s\\n\' \'{"selected":["vize_glyph"],"reason":"from impact script"}\' > "$GITHUB_WORKSPACE/criterion-impact.json"\nprintf \'%s\\n\' \'has_suites=true\' >> "$GITHUB_OUTPUT"\n',
+    { mode: 0o755 },
+  );
+  const affected = spawnSync("bash", ["-e", "-o", "pipefail", "-c", impact], {
+    cwd: root,
+    encoding: "utf8",
+    env: { ...env, VAPOR_ONLY: "false", PATH: `${bin}${delimiter}${process.env.PATH ?? ""}` },
+  });
+  assert.equal(affected.status, 0, affected.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(selection, "utf8")).selected, ["vize_glyph"]);
 });
+
+function git(cwd: string, args: string[]): string {
+  const result = spawnSync("git", args, { cwd, encoding: "utf8" });
+  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+  return result.stdout.trim();
+}
