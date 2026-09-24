@@ -1,0 +1,162 @@
+/* Optional Tooltip appearance. Position remains owned by Positioner. */
+@layer vize.preset {
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-tooltip-radius: var(--vize-ui-radius-sm);
+    --vize-ui-tooltip-shadow: var(--vize-ui-elevation-overlay);
+    --vize-ui-tooltip-family: var(--vize-ui-type-family-sans);
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-tooltip-radius: 0;
+    --vize-ui-tooltip-shadow: none;
+    --vize-ui-tooltip-family: var(--vize-ui-type-family-sans);
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-tooltip-radius: 0;
+    --vize-ui-tooltip-shadow: var(--vize-ui-elevation-overlay);
+    --vize-ui-tooltip-family: var(--vize-ui-type-family-mono);
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-tooltip-radius: var(--vize-ui-radius-md);
+    --vize-ui-tooltip-shadow: var(--vize-ui-elevation-overlay);
+    --vize-ui-tooltip-family: var(--vize-ui-type-family-sans);
+  }
+
+  :where([data-vize-ui="tooltip-root"]) {
+    display: inline-block;
+    max-inline-size: 100%;
+    vertical-align: baseline;
+  }
+
+  :where([data-vize-ui="tooltip-trigger"]) {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    min-inline-size: 0;
+    padding: 0;
+    border: 0;
+    border-block-end: 1px dotted currentColor;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+    text-align: inherit;
+    cursor: help;
+    transition: border-color var(--vize-ui-motion-duration-fast, 120ms) ease-out;
+  }
+
+  :where([data-vize-ui="tooltip-trigger"]:hover) {
+    border-block-end-style: solid;
+    border-block-end-color: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-ui="tooltip-trigger"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+
+  :where([data-vize-ui="tooltip-trigger"][data-disabled="true"]) {
+    border-block-end-color: transparent;
+    cursor: default;
+    opacity: var(--vize-ui-opacity-disabled);
+  }
+
+  :where([data-vize-ui="tooltip-content"]) {
+    --vize-ui-tooltip-enter-x: 0;
+    --vize-ui-tooltip-enter-y: 4px;
+
+    box-sizing: border-box;
+    max-inline-size: min(20rem, calc(100vw - 2rem));
+    padding-block: var(--vize-ui-space-sm);
+    padding-inline: var(--vize-ui-space-md);
+    border: var(--vize-ui-border-width-thin) solid var(--vize-ui-color-border);
+    border-radius: var(--vize-ui-tooltip-radius, var(--vize-ui-radius-sm));
+    background: var(--vize-ui-color-surface);
+    box-shadow: var(--vize-ui-tooltip-shadow, var(--vize-ui-elevation-overlay));
+    color: var(--vize-ui-color-text);
+    font-family: var(--vize-ui-tooltip-family, var(--vize-ui-type-family-sans));
+    font-size: var(--vize-ui-type-size-xs);
+    line-height: var(--vize-ui-type-leading-normal);
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+
+  :where([data-vize-ui="tooltip-content"][hidden]) {
+    display: none;
+  }
+
+  /* Wait for the measured floating host so the first frame is never at 0,0. */
+  :where([data-vize-ui="positioner"][data-vize-positioner-ready="true"])
+    :where([data-vize-ui="tooltip-content"][data-state="open"]) {
+    animation: vize-ui-tooltip-enter var(--vize-ui-motion-duration-fast, 120ms)
+      var(--vize-ui-motion-ease-decelerate, ease-out) both;
+  }
+
+  :where(
+      [data-vize-ui="positioner"][data-vize-positioner-ready="false"],
+      [data-vize-ui="positioner"][data-vize-hidden="true"]
+    )
+    :where([data-vize-ui="tooltip-content"]) {
+    visibility: hidden;
+  }
+
+  :where([data-vize-ui="positioner"][data-vize-placement^="bottom"])
+    :where([data-vize-ui="tooltip-content"]) {
+    --vize-ui-tooltip-enter-y: -4px;
+  }
+
+  :where([data-vize-ui="positioner"][data-vize-placement^="left"])
+    :where([data-vize-ui="tooltip-content"]) {
+    --vize-ui-tooltip-enter-x: 4px;
+    --vize-ui-tooltip-enter-y: 0;
+  }
+
+  :where([data-vize-ui="positioner"][data-vize-placement^="right"])
+    :where([data-vize-ui="tooltip-content"]) {
+    --vize-ui-tooltip-enter-x: -4px;
+    --vize-ui-tooltip-enter-y: 0;
+  }
+
+  @keyframes vize-ui-tooltip-enter {
+    from {
+      opacity: 0;
+      translate: var(--vize-ui-tooltip-enter-x) var(--vize-ui-tooltip-enter-y);
+    }
+
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="tooltip-trigger"]) {
+      transition: none;
+    }
+
+    :where([data-vize-ui="tooltip-content"]) {
+      animation: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="tooltip-trigger"]) {
+      border-block-end-color: ButtonText;
+      opacity: 1;
+      transition: none;
+    }
+
+    :where([data-vize-ui="tooltip-content"]) {
+      border-color: ButtonBorder;
+      background: Canvas;
+      box-shadow: none;
+      color: CanvasText;
+      animation: none;
+    }
+  }
+}

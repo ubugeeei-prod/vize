@@ -15,6 +15,10 @@
     <link rel="stylesheet" href="../dist/component-checkbox.css" />
     <link rel="stylesheet" href="../dist/component-switch.css" />
     <link rel="stylesheet" href="../dist/component-dialog.css" />
+    <link rel="stylesheet" href="../dist/component-card.css" />
+    <link rel="stylesheet" href="../dist/component-badge.css" />
+    <link rel="stylesheet" href="../dist/component-alert.css" />
+    <link rel="stylesheet" href="../dist/component-tooltip.css" />
     <style>
       body {
         margin: 0;
@@ -133,7 +137,7 @@
         margin-block-start: 1.5rem;
       }
 
-      .choice-row label {
+      .choice-row :is(label, .choice-label) {
         display: inline-flex;
         align-items: center;
         gap: 0.65rem;
@@ -141,8 +145,51 @@
         cursor: pointer;
       }
 
+      .surface-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+        gap: 1.5rem;
+      }
+
+      .surface-grid h3 {
+        margin-block: 0 0.5rem;
+        font-size: var(--vize-ui-type-size-lg);
+      }
+
+      .surface-grid p {
+        margin-block-end: 1.25rem;
+        color: var(--vize-ui-color-text-muted);
+        font-size: var(--vize-ui-type-size-sm);
+        line-height: var(--vize-ui-type-leading-normal);
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .surface-notes {
+        display: grid;
+        gap: 1.25rem;
+      }
+
+      .tooltip-sample {
+        position: relative;
+        inline-size: fit-content;
+      }
+
+      .tooltip-sample [data-vize-ui="positioner"] {
+        position: absolute;
+        z-index: var(--vize-ui-z-dropdown);
+        inset-block-start: calc(100% + 0.5rem);
+        inset-inline-start: 0;
+      }
+
       @media (max-width: 40rem) {
-        .form-grid {
+        .form-grid,
+        .surface-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -171,10 +218,10 @@
         A restrained set of component surfaces. The markup stays headless; each stylesheet is an
         explicit choice.
       </p>
-      <section aria-labelledby="actions-heading">
-        <h2 id="actions-heading">Actions</h2>
+      <section aria-label="Actions">
+        <h2>Actions</h2>
         <div class="button-row">
-          <button type="button" data-vize-ui="button" data-state="idle" id="open-dialog">
+          <button type="button" data-vize-ui="button" data-state="idle" data-action="open-dialog">
             Open dialog
           </button>
           <button
@@ -192,32 +239,20 @@
         </div>
         <small>Hover, press, and keyboard focus use short, purposeful feedback.</small>
       </section>
-      <section aria-labelledby="form-heading">
-        <h2 id="form-heading">Form controls</h2>
+      <section aria-label="Form controls">
+        <h2>Form controls</h2>
         <div class="form-grid">
-          <label class="form-field" for="project-name">
+          <label class="form-field">
             <span>Project name</span>
-            <input
-              id="project-name"
-              data-vize-ui="input"
-              data-state="editable"
-              placeholder="A concise name"
-            />
+            <input data-vize-ui="input" data-state="editable" placeholder="A concise name" />
           </label>
-          <label class="form-field" for="project-key">
+          <label class="form-field">
             <span>Project key</span>
-            <input
-              id="project-key"
-              data-vize-ui="input"
-              data-state="disabled"
-              value="Assigned on save"
-              disabled
-            />
+            <input data-vize-ui="input" data-state="disabled" value="Assigned on save" disabled />
           </label>
-          <label class="form-field form-field-wide" for="release-note">
+          <label class="form-field form-field-wide">
             <span>Release note</span>
             <textarea
-              id="release-note"
               data-vize-ui="textarea"
               data-state="editable"
               placeholder="What changed?"
@@ -230,7 +265,7 @@
             <input type="checkbox" data-vize-ui="checkbox" data-state="checked" checked />
             Include changelog
           </label>
-          <label>
+          <div class="choice-label">
             <button
               type="button"
               role="switch"
@@ -241,9 +276,60 @@
               aria-label="Live preview"
             ></button>
             Live preview
-          </label>
+          </div>
         </div>
         <small>Keyboard focus stays clear; checking and switching give brief state feedback.</small>
+      </section>
+      <section aria-labelledby="surfaces-heading">
+        <h2 id="surfaces-heading">Surfaces and status</h2>
+        <div class="surface-grid">
+          <article
+            data-vize-ui="card"
+            data-variant="card"
+            data-density="comfortable"
+            data-tone="neutral"
+          >
+            <h3>Editorial review</h3>
+            <p>A quiet place for details that matter.</p>
+            <div class="badge-row">
+              <span data-vize-ui="badge" data-variant="label" data-tone="accent">In review</span>
+              <span data-vize-ui="badge" data-variant="count" data-tone="neutral">12</span>
+              <span data-vize-ui="badge" data-variant="status" data-tone="success">Ready</span>
+            </div>
+          </article>
+          <div class="surface-notes">
+            <div data-vize-ui="alert" data-state="open" data-variant="info" role="status">
+              A new preview is ready to inspect.
+            </div>
+            <div class="tooltip-sample" data-vize-ui="tooltip-root" data-state="closed">
+              <button
+                id="tooltip-demo-trigger"
+                type="button"
+                data-vize-ui="tooltip-trigger"
+                data-state="closed"
+              >
+                Inspect a note
+              </button>
+              <div
+                data-vize-ui="positioner"
+                data-vize-placement="bottom"
+                data-vize-positioner-ready="true"
+                hidden
+              >
+                <div
+                  id="tooltip-demo-content"
+                  data-vize-ui="tooltip-content"
+                  data-state="closed"
+                  role="tooltip"
+                  hidden
+                >
+                  Revisions are grouped by component.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <small>Card stays still. Status changes and the measured tooltip use brief motion.</small>
       </section>
     </main>
     <div data-vize-ui="dialog-overlay" data-state="open" hidden></div>
@@ -252,25 +338,30 @@
       data-state="open"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="dialog-title"
-      aria-describedby="dialog-description"
+      aria-label="Review changes"
       tabindex="-1"
       hidden
     >
-      <h2 data-vize-ui="dialog-title" id="dialog-title">Review changes</h2>
-      <p data-vize-ui="dialog-description" id="dialog-description">
+      <h2 data-vize-ui="dialog-title">Review changes</h2>
+      <p data-vize-ui="dialog-description">
         The dialog stays quiet and focused. Dismissal remains immediate.
       </p>
       <button type="button" data-vize-ui="dialog-close" aria-label="Close dialog">×</button>
-      <button type="button" data-vize-ui="button" data-state="idle" id="save">Save changes</button>
+      <button type="button" data-vize-ui="button" data-state="idle" data-action="save-dialog">
+        Save changes
+      </button>
     </div>
     <script>
       const themeButtons = document.querySelectorAll("[data-theme]");
       const overlay = document.querySelector('[data-vize-ui="dialog-overlay"]');
       const dialog = document.querySelector('[data-vize-ui="dialog-content"]');
-      const opener = document.querySelector("#open-dialog");
+      const opener = document.querySelector('[data-action="open-dialog"]');
       const checkbox = document.querySelector('[data-vize-ui="checkbox"]');
       const switchControl = document.querySelector('[data-vize-ui="switch"]');
+      const tooltipTrigger = document.querySelector("#tooltip-demo-trigger");
+      const tooltipContent = document.querySelector("#tooltip-demo-content");
+      const tooltipPositioner = tooltipContent.parentElement;
+      const tooltipRoot = tooltipTrigger.closest('[data-vize-ui="tooltip-root"]');
 
       for (const button of themeButtons) {
         button.addEventListener("click", () => {
@@ -291,6 +382,21 @@
         switchControl.dataset.state = checked ? "checked" : "unchecked";
       });
 
+      function showTooltip(open) {
+        tooltipRoot.dataset.state = open ? "open" : "closed";
+        tooltipTrigger.dataset.state = open ? "open" : "closed";
+        if (open) tooltipTrigger.setAttribute("aria-describedby", tooltipContent.id);
+        else tooltipTrigger.removeAttribute("aria-describedby");
+        tooltipContent.dataset.state = open ? "open" : "closed";
+        tooltipContent.hidden = !open;
+        tooltipPositioner.hidden = !open;
+      }
+
+      tooltipTrigger.addEventListener("mouseenter", () => showTooltip(true));
+      tooltipTrigger.addEventListener("mouseleave", () => showTooltip(false));
+      tooltipTrigger.addEventListener("focus", () => showTooltip(true));
+      tooltipTrigger.addEventListener("blur", () => showTooltip(false));
+
       function closeDialog() {
         overlay.hidden = true;
         dialog.hidden = true;
@@ -303,9 +409,10 @@
         dialog.focus();
       });
       dialog.querySelector('[data-vize-ui="dialog-close"]').addEventListener("click", closeDialog);
-      dialog.querySelector("#save").addEventListener("click", closeDialog);
+      dialog.querySelector('[data-action="save-dialog"]').addEventListener("click", closeDialog);
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && !dialog.hidden) closeDialog();
+        if (event.key === "Escape") showTooltip(false);
       });
     </script>
   </body>
