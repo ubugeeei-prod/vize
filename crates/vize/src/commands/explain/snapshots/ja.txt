@@ -3701,6 +3701,7 @@ v-forのインデックス変数をそのまま :key に使うことを禁止す
 正しい例:
   <li v-for="(item, index) in list" :key="item.id">{{ item }}</li>
   <li v-for="item in list" :key="item.id">{{ item }}</li>
+  <li v-for="(value, key) in object" :key="key">{{ value }}</li>
 
 ヒント:
   :key には項目の安定したid（例: :key="item.id"）をバインドしてください。リストの並べ替えやフィルタリングでインデックスは変化するため、Vueが誤った要素の状態を再利用してしまいます。
