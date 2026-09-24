@@ -118,7 +118,12 @@ impl<'a> Visit<'a> for Finder<'_, '_, 'a> {
                 && named.imported.name() == "createRouter"
             {
                 let span = specifier.span();
-                let text = &self.script.program.source_text[span.start as usize..span.end as usize];
+                let text = self
+                    .script
+                    .program
+                    .source_text
+                    .get(span.start as usize..span.end as usize)
+                    .unwrap_or_default();
                 self.accounted += text.matches("createRouter").count();
             }
         }
@@ -127,7 +132,12 @@ impl<'a> Visit<'a> for Finder<'_, '_, 'a> {
     fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
         if self.is_create_router(&it.callee) {
             let callee = it.callee.span();
-            let text = &self.script.program.source_text[callee.start as usize..callee.end as usize];
+            let text = self
+                .script
+                .program
+                .source_text
+                .get(callee.start as usize..callee.end as usize)
+                .unwrap_or_default();
             self.accounted += text.matches("createRouter").count();
             let tree = extract::router(self.project, self.module, self.script, it);
             self.trees.push(tree);

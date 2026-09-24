@@ -154,7 +154,12 @@ impl Extractor<'_, '_> {
         }
         self.depth += 1;
         let mut found = false;
-        for block in self.project.module(target).scripts() {
+        for block in self
+            .project
+            .module(target)
+            .into_iter()
+            .flat_map(|module| module.scripts())
+        {
             let outcome = with_script(block, |script| match script.export(name) {
                 Some(Export::Local(symbol)) => {
                     match script.const_of(symbol) {
@@ -301,7 +306,10 @@ impl Extractor<'_, '_> {
         };
         if let Some(target) =
             specifier.and_then(|specifier| self.project.resolve(module, specifier))
-            && self.project.module(target).kind() == ModuleKind::Sfc
+            && self
+                .project
+                .module(target)
+                .is_some_and(|module| module.kind() == ModuleKind::Sfc)
         {
             into.push(target);
         }

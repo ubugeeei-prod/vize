@@ -22,7 +22,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `PassedProp`                           | type  | `croquis::template` |     8 |    17 |
 | `ScopeData`                            | type  | `scope`             |     8 |     8 |
 | `ScopeId`                              | type  | `scope`             |    14 |    20 |
-| `ScopeKind`                            | type  | `scope`             |     7 |     9 |
+| `ScopeKind`                            | type  | `scope`             |     6 |     8 |
 | `SlotUsage`                            | type  | `croquis::template` |     2 |     2 |
 | `build_effect_graph_from_script`       | type  | `effect_graph`      |     1 |     2 |
 | `build_effect_graph_from_script_setup` | type  | `effect_graph`      |     1 |     1 |
@@ -32,7 +32,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.macros`                       | field | `croquis`           |    14 |    25 |
 | `Croquis.re_export_forwards`           | field | `croquis`           |     1 |     1 |
 | `Croquis.reactivity`                   | field | `croquis`           |     2 |     2 |
-| `Croquis.scopes`                       | field | `croquis`           |    12 |    17 |
+| `Croquis.scopes`                       | field | `croquis`           |    11 |    16 |
 | `Croquis.setup_context`                | field | `croquis`           |     1 |     1 |
 | `Croquis.template_expressions`         | field | `croquis`           |     1 |     3 |
 | `Croquis.template_info`                | field | `croquis`           |     5 |    14 |
@@ -50,14 +50,14 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `FactConsumer`               |     1 |     4 |
 | `FactGroup`                  |     1 |     1 |
 | `InjectEntry`                |     4 |     8 |
-| `InjectPattern`              |     4 |    21 |
+| `InjectPattern`              |     4 |    17 |
 | `MacroKind`                  |     1 |     1 |
 | `PropDefinition`             |     3 |     3 |
 | `ProvideEntry`               |     2 |     7 |
 | `ProvideKey`                 |     7 |    34 |
 | `RaceConditionRisk`          |     2 |     4 |
 | `RaceConditionRiskKind`      |     2 |     3 |
-| `ReactiveKind`               |     7 |    37 |
+| `ReactiveKind`               |     5 |    33 |
 | `ReactivityLossKind`         |     2 |    18 |
 | `SetupContextViolation`      |     1 |     1 |
 | `SetupContextViolationKind`  |     2 |    11 |
@@ -76,7 +76,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `reactivity_is_reactive`     |     1 |     5 |
 | `reactivity_lookup`          |     2 |     2 |
 | `reactivity_losses`          |     2 |     2 |
-| `reactivity_sources`         |     3 |     5 |
+| `reactivity_sources`         |     2 |     2 |
 | `to_pascal_case`             |     1 |     2 |
 | `used_component_contains`    |     1 |     1 |
 | `used_component_name_list`   |     4 |     6 |
@@ -98,7 +98,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `PassedProp`                           |       17 |   25 |
 | `ProvideInjectTracker`                 |        0 |    1 |
 | `ScopeId`                              |       20 |   31 |
-| `ScopeKind`                            |        9 |   10 |
+| `ScopeKind`                            |        8 |    9 |
 | `SlotUsage`                            |        2 |    7 |
 | `Span`                                 |        0 |   36 |
 | `Symbol`                               |        0 |   27 |
@@ -106,7 +106,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `build_effect_graph_from_script`       |        2 |    3 |
 | `build_effect_graph_from_script_setup` |        1 |    2 |
 | `build_effect_graph_from_sfc_scripts`  |        1 |    2 |
-| `Croquis.bindings`                     |        0 |    7 |
+| `Croquis.bindings`                     |        0 |    6 |
 | `Croquis.macros`                       |       25 |   27 |
 | `Croquis.provide_inject`               |        0 |    8 |
 | `Croquis.race_conditions`              |        0 |    3 |

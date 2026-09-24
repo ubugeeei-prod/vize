@@ -2,6 +2,8 @@
 //! recursive component, a child shared by two parents, and an aliased
 //! import. Each SFC is analyzed from its source (script setup + template),
 //! so component edges come from the analyzer's own import resolution.
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 use std::path::Path;
 

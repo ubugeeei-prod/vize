@@ -119,7 +119,11 @@ fn rebinds_router_link(module: &ProjectModule) -> bool {
                 })
                 .map(|import| {
                     let span = import.span;
-                    script.program.source_text[span.start as usize..span.end as usize]
+                    script
+                        .program
+                        .source_text
+                        .get(span.start as usize..span.end as usize)
+                        .unwrap_or_default()
                         .matches("RouterLink")
                         .count()
                 })

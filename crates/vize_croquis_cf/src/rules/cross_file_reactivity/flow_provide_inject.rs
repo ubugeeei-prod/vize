@@ -2,7 +2,7 @@ use super::engine::CrossFileReactivityAnalyzer;
 use super::provide_helpers::{provide_key_display, provide_key_identity};
 use super::types::{
     CrossFileReactivityIssue, CrossFileReactivityIssueKind, ProvideDefinition, ReactiveValueId,
-    ReactivityFlow, ReactivityFlowKind, ReactivityLossReason,
+    ReactivityFlow,
 };
 use crate::diagnostics::DiagnosticSeverity;
 use crate::graph::DependencyEdge;
@@ -96,26 +96,9 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                         offset: inject.start,
                     };
 
-                    let (preserved, loss_reason) = match &inject.pattern {
-                        InjectPattern::Simple => (true, None),
-                        InjectPattern::ObjectDestructure(_props) => {
-                            (false, Some(ReactivityLossReason::InjectDestructure))
-                        }
-                        InjectPattern::ArrayDestructure(_) => (
-                            false,
-                            Some(ReactivityLossReason::Destructured { props: vec![] }),
-                        ),
-                        InjectPattern::IndirectDestructure { .. } => {
-                            (false, Some(ReactivityLossReason::InjectDestructure))
-                        }
-                    };
-
                     self.flows.push(ReactivityFlow {
                         source: source_id,
                         target: target_id,
-                        flow_kind: ReactivityFlowKind::ProvideInject,
-                        preserved,
-                        loss_reason,
                     });
                 }
             }
@@ -139,9 +122,8 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
         }];
         let mut cursor = 0;
 
-        while cursor < frames.len() {
+        while let Some(current) = frames.get(cursor).map(|frame| frame.current) {
             let frame_index = cursor;
-            let current = frames[frame_index].current;
             cursor += 1;
 
             if current != consumer_file_id
@@ -191,7 +173,9 @@ struct AncestorFrame {
 /// path that the original `(FileId, Vec<FileId>)` queue accumulated.
 fn frame_contains(frames: &[AncestorFrame], mut index: usize, needle: FileId) -> bool {
     loop {
-        let frame = frames[index];
+        let Some(&frame) = frames.get(index) else {
+            return false;
+        };
         if frame.current == needle {
             return true;
         }

@@ -167,8 +167,8 @@ fn has_error_captured(analysis: &vize_croquis::Croquis) -> bool {
     let mut facts = CroquisFacts::new(analysis);
     let view = facts.prepare::<ErrorBoundaryRule>();
     // Check for onErrorCaptured in bindings or scope
-    let bindings = view.get::<Bindings>().expect("declared demand");
-    bindings.contains_binding("onErrorCaptured")
+    view.get::<Bindings>()
+        .is_ok_and(|bindings| bindings.contains_binding("onErrorCaptured"))
         || analysis.scopes.is_defined("onErrorCaptured")
         || analysis
             .template_expressions

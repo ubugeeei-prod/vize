@@ -106,7 +106,10 @@ impl RouterTree {
                 if index == record {
                     return true;
                 }
-                at = self.records[index as usize].parent;
+                at = self
+                    .records
+                    .get(index as usize)
+                    .and_then(|parent| parent.parent);
             }
             false
         })

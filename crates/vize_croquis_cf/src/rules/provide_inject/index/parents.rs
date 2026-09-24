@@ -92,7 +92,7 @@ fn runtime_usages(
 }
 
 fn nearest_containing_usage(usages: &[RuntimeUsage], child_index: usize) -> Option<&RuntimeUsage> {
-    let child_start = usages[child_index].start;
+    let child_start = usages.get(child_index)?.start;
     usages
         .iter()
         .enumerate()

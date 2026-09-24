@@ -1,6 +1,5 @@
 use super::name_helpers::{component_names_match, prop_names_match};
 use super::path_helpers::import_targets_path;
-use super::types::ReactivityLossReason;
 use crate::registry::ModuleEntry;
 use vize_carton::CompactString;
 use vize_croquis::reactivity::ReactivityLossKind;
@@ -8,7 +7,6 @@ use vize_croquis::reactivity::ReactivityLossKind;
 #[derive(Debug, Clone)]
 pub(super) struct PropLoss {
     pub(super) offset: u32,
-    pub(super) reason: ReactivityLossReason,
 }
 
 pub(super) fn reactive_source_from_expression(
@@ -37,7 +35,7 @@ fn expression_root_identifier(expression: &str) -> Option<&str> {
         }
     }
 
-    Some(&expression[..end])
+    expression.get(..end)
 }
 
 pub(super) fn prop_reactivity_loss(
@@ -50,21 +48,13 @@ pub(super) fn prop_reactivity_loss(
             ReactivityLossKind::ReactiveDestructure {
                 destructured_props, ..
             } if prop_list_contains(destructured_props, prop_name) => {
-                return Some(PropLoss {
-                    offset: loss.start,
-                    reason: ReactivityLossReason::Destructured {
-                        props: destructured_props.clone(),
-                    },
-                });
+                return Some(PropLoss { offset: loss.start });
             }
             ReactivityLossKind::ReactivePropertyExtract {
                 prop_name: extracted,
                 ..
             } if prop_names_match(extracted.as_str(), prop_name) => {
-                return Some(PropLoss {
-                    offset: loss.start,
-                    reason: ReactivityLossReason::DirectExtraction,
-                });
+                return Some(PropLoss { offset: loss.start });
             }
             ReactivityLossKind::FunctionArgumentExtract {
                 source_name,
@@ -73,10 +63,7 @@ pub(super) fn prop_reactivity_loss(
             } if reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
                 || reactivity_loss_source_matches_prop(argument_name.as_str(), prop_name) =>
             {
-                return Some(PropLoss {
-                    offset: loss.start,
-                    reason: ReactivityLossReason::DirectExtraction,
-                });
+                return Some(PropLoss { offset: loss.start });
             }
             ReactivityLossKind::GetterCallExtract {
                 source_name,
@@ -85,10 +72,7 @@ pub(super) fn prop_reactivity_loss(
             } if reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
                 || prop_names_match(getter_name.as_str(), prop_name) =>
             {
-                return Some(PropLoss {
-                    offset: loss.start,
-                    reason: ReactivityLossReason::DirectExtraction,
-                });
+                return Some(PropLoss { offset: loss.start });
             }
             ReactivityLossKind::PlainValueAlias {
                 source_name,
@@ -98,12 +82,7 @@ pub(super) fn prop_reactivity_loss(
                 && (reactivity_loss_source_matches_prop(source_name.as_str(), prop_name)
                     || reactivity_loss_source_matches_prop(target_name.as_str(), prop_name)) =>
             {
-                return Some(PropLoss {
-                    offset: loss.start,
-                    reason: ReactivityLossReason::NonReactiveIntermediate {
-                        intermediate: target_name.clone(),
-                    },
-                });
+                return Some(PropLoss { offset: loss.start });
             }
             ReactivityLossKind::PlainValueAlias {
                 source_name,
@@ -113,12 +92,7 @@ pub(super) fn prop_reactivity_loss(
                 || reactivity_loss_source_matches_prop(alias_name.as_str(), prop_name)
                 || prop_names_match(target_name.as_str(), prop_name) =>
             {
-                return Some(PropLoss {
-                    offset: loss.start,
-                    reason: ReactivityLossReason::NonReactiveIntermediate {
-                        intermediate: target_name.clone(),
-                    },
-                });
+                return Some(PropLoss { offset: loss.start });
             }
             _ => {}
         }

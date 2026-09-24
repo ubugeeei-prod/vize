@@ -5,12 +5,10 @@
 //! Each fixture directory is one project; `expected.txt` in it is the exact
 //! rendering of its facts and diagnostics. Regenerate after an intended
 //! change with `UPDATE_DAVINCI_ROUTES=1 cargo test -p vize_croquis_cf --test davinci_routes`.
-
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_methods,
-    clippy::disallowed_types
-)]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 
 #[path = "davinci_routes/render.rs"]
 mod render;

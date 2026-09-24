@@ -1,3 +1,4 @@
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::{CrossFileAnalyzer, CrossFileOptions};
 use crate::diagnostics::CrossFileDiagnosticKind;
 use std::path::Path;

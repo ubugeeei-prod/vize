@@ -96,7 +96,10 @@ impl ProjectModule {
     /// The module's script bodies, in source order.
     pub fn scripts(&self) -> impl Iterator<Item = ScriptBlock<'_>> {
         self.scripts.iter().map(|range| ScriptBlock {
-            text: &self.source[range.start as usize..range.end as usize],
+            text: self
+                .source
+                .get(range.start as usize..range.end as usize)
+                .unwrap_or_default(),
             offset: range.start,
             source_type: range.source_type,
             setup: range.setup,
@@ -107,7 +110,10 @@ impl ProjectModule {
     #[must_use]
     pub fn template(&self) -> Option<TemplateBlock<'_>> {
         self.template.map(|(start, end)| TemplateBlock {
-            text: &self.source[start as usize..end as usize],
+            text: self
+                .source
+                .get(start as usize..end as usize)
+                .unwrap_or_default(),
             offset: start,
         })
     }
@@ -183,10 +189,10 @@ impl ProjectSources {
             .map(|(index, module)| (ModuleId(index as u32), module))
     }
 
-    /// The module `id`.
+    /// The module `id`, or `None` for an id from another project.
     #[must_use]
-    pub fn module(&self, id: ModuleId) -> &ProjectModule {
-        &self.modules[id.index()]
+    pub fn module(&self, id: ModuleId) -> Option<&ProjectModule> {
+        self.modules.get(id.index())
     }
 
     /// How many modules the project holds.
@@ -210,7 +216,7 @@ impl ProjectSources {
         if !(specifier.starts_with("./") || specifier.starts_with("../")) {
             return None;
         }
-        let base = Path::new(self.module(from).key.as_str()).parent()?;
+        let base = Path::new(self.module(from)?.key.as_str()).parent()?;
         let joined = normalize(&base.join(specifier));
         if let Some(id) = self.by_key.get(&joined) {
             return Some(*id);

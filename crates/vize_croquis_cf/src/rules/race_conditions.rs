@@ -71,15 +71,6 @@ struct PendingInjectedMutation {
     risk: RaceConditionRisk,
 }
 
-/// Analyze async race-condition risks across registered files.
-#[allow(dead_code)]
-pub fn analyze_race_conditions(
-    registry: &ModuleRegistry,
-    graph: &DependencyGraph,
-) -> (Vec<RaceConditionIssue>, Vec<CrossFileDiagnostic>) {
-    analyze_race_conditions_with_index(registry, graph, None)
-}
-
 pub(crate) fn analyze_race_conditions_with_index(
     registry: &ModuleRegistry,
     graph: &DependencyGraph,

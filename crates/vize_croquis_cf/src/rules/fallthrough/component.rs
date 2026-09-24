@@ -83,10 +83,12 @@ pub fn collect_fallthrough_component_facts(
         let Some(&index) = indexes.get(&usage.child_file_id) else {
             continue;
         };
-        let fact = &mut facts[index];
+        let (Some(fact), Some(parents)) = (facts.get_mut(index), parent_sets.get_mut(index)) else {
+            continue;
+        };
         fact.usage_count += 1;
         fact.spread_usage_count += usize::from(usage.has_spread_attrs);
-        parent_sets[index].insert(usage.parent_file_id);
+        parents.insert(usage.parent_file_id);
 
         for attr in &usage.attrs {
             fact.usage_attr_count += 1;

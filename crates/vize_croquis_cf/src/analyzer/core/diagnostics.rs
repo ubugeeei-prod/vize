@@ -13,8 +13,8 @@ pub(super) fn dedupe_diagnostics(diagnostics: &mut Vec<CrossFileDiagnostic>) {
             diagnostic.primary_offset,
         );
 
-        if let Some(index) = seen.get(&key).copied() {
-            merge_duplicate_diagnostic(&mut deduped[index], diagnostic);
+        if let Some(existing) = seen.get(&key).and_then(|&index| deduped.get_mut(index)) {
+            merge_duplicate_diagnostic(existing, diagnostic);
         } else {
             seen.insert(key, deduped.len());
             deduped.push(diagnostic);

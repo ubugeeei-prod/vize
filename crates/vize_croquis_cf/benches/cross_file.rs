@@ -2,11 +2,17 @@
 //!
 //! Run with: cargo bench -p vize_croquis_cf --bench cross_file
 
-#![allow(
-    deprecated,
+#![expect(
     clippy::disallowed_macros,
+    reason = "`root_path` is still sent for servers that predate `root_uri`"
+)]
+#![expect(
     clippy::disallowed_methods,
-    clippy::disallowed_types
+    reason = "`root_path` is still sent for servers that predate `root_uri`"
+)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "`root_path` is still sent for servers that predate `root_uri`"
 )]
 
 use criterion::{BatchSize, Criterion, criterion_group, criterion_main};

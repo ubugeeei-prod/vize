@@ -149,9 +149,8 @@ impl ProvideInjectIndex {
         }];
         let mut cursor = 0;
 
-        while cursor < frames.len() {
+        while let Some(current) = frames.get(cursor).map(|frame| frame.current) {
             let frame_index = cursor;
-            let current = frames[frame_index].current;
             cursor += 1;
 
             // A provider shadows farther ancestors on the same render branch.
@@ -223,8 +222,7 @@ fn matching_provider<'a>(
 
 fn path_from_frame(frames: &[AncestorFrame], mut index: usize) -> Vec<FileId> {
     let mut path = Vec::new();
-    loop {
-        let frame = frames[index];
+    while let Some(&frame) = frames.get(index) {
         path.push(frame.current);
         let Some(parent) = frame.parent else {
             break;
@@ -236,7 +234,9 @@ fn path_from_frame(frames: &[AncestorFrame], mut index: usize) -> Vec<FileId> {
 
 fn frame_contains(frames: &[AncestorFrame], mut index: usize, needle: FileId) -> bool {
     loop {
-        let frame = frames[index];
+        let Some(&frame) = frames.get(index) else {
+            return false;
+        };
         if frame.current == needle {
             return true;
         }

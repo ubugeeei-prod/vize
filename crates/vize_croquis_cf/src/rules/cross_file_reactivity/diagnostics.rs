@@ -1,11 +1,9 @@
 //! Diagnostics generation and reporting for cross-file reactivity analysis.
 
 use super::engine::CrossFileReactivityAnalyzer;
-use super::types::{CrossFileReactivityIssueKind, ReactivityFlowKind};
-use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
+use super::types::CrossFileReactivityIssueKind;
+use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind};
 use vize_carton::CompactString;
-use vize_carton::String;
-use vize_carton::append;
 use vize_carton::cstr;
 
 impl<'a> CrossFileReactivityAnalyzer<'a> {
@@ -181,80 +179,5 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
         }
 
         diagnostics
-    }
-
-    /// Generate a markdown report of cross-file reactivity flows.
-    pub fn to_markdown(&self) -> String {
-        let mut md = String::default();
-
-        md.push_str("# Cross-File Reactivity Report\n\n");
-
-        // Summary
-        md.push_str("## Summary\n\n");
-        append!(
-            md,
-            "- **Tracked Reactive Values**: {}\n",
-            self.reactive_values.len()
-        );
-        append!(md, "- **Cross-File Flows**: {}\n", self.flows.len());
-        append!(md, "- **Issues Detected**: {}\n\n", self.issues.len());
-
-        // Flows
-        if !self.flows.is_empty() {
-            md.push_str("## Reactivity Flows\n\n");
-            md.push_str("```\n");
-
-            for flow in &self.flows {
-                let status = if flow.preserved {
-                    "\u{2713}"
-                } else {
-                    "\u{2717}"
-                };
-                let flow_type = match flow.flow_kind {
-                    ReactivityFlowKind::ComposableExport => "composable",
-                    ReactivityFlowKind::ProvideInject => "provide/inject",
-                    ReactivityFlowKind::PropsFlow => "props",
-                    ReactivityFlowKind::StoreFlow => "store",
-                    ReactivityFlowKind::ModuleImport => "import",
-                };
-
-                append!(
-                    md,
-                    "{status} [{flow_type}] {} \u{2192} {}\n",
-                    flow.source.name,
-                    flow.target.name
-                );
-
-                if let Some(ref reason) = flow.loss_reason {
-                    append!(md, "   \u{2514}\u{2500} Loss: {:?}\n", reason);
-                }
-            }
-
-            md.push_str("```\n\n");
-        }
-
-        // Issues
-        if !self.issues.is_empty() {
-            md.push_str("## Issues\n\n");
-
-            for issue in &self.issues {
-                let icon = match issue.severity {
-                    DiagnosticSeverity::Error => "\u{274c}",
-                    DiagnosticSeverity::Warning => "\u{26a0}\u{fe0f}",
-                    DiagnosticSeverity::Info => "\u{2139}\u{fe0f}",
-                    DiagnosticSeverity::Hint => "\u{1f4a1}",
-                };
-
-                append!(md, "### {icon} {:?}\n\n", issue.kind);
-                append!(md, "- **File**: {:?}\n", issue.file_id);
-                append!(md, "- **Offset**: {}\n", issue.offset);
-                if let Some(related) = issue.related_file {
-                    append!(md, "- **Related File**: {:?}\n", related);
-                }
-                md.push('\n');
-            }
-        }
-
-        md
     }
 }

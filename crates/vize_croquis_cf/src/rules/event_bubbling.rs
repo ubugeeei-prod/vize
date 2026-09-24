@@ -155,7 +155,7 @@ fn trace_event_propagation(
     bubbles
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn trace_event_propagation_paths(
     source: FileId,
     current: FileId,

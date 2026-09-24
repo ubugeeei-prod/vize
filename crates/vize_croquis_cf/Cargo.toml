@@ -40,3 +40,6 @@ serde_json.workspace = true
 [[bench]]
 name = "cross_file"
 harness = false
+
+[lints]
+workspace = true

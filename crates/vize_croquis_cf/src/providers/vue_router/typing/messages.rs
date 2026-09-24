@@ -127,7 +127,7 @@ pub(super) fn inherit_help(missing: &[&str]) -> CompactString {
     cstr!(
         "Vue Router fills {} only from the current route and throws `Missing required param \"{}\"` when it has none",
         quoted(missing),
-        missing[0]
+        missing.first().copied().unwrap_or_default()
     )
 }
 
@@ -159,7 +159,9 @@ fn location(
     module: crate::providers::ModuleId,
     offset: u32,
 ) -> CompactString {
-    let module = project.module(module);
+    let Some(module) = project.module(module) else {
+        return CompactString::default();
+    };
     let (line, column) = LineIndex::new(module.source()).line_col(offset as usize);
     cstr!("{}:{}:{}", module.path(), line + 1, column + 1)
 }
@@ -180,17 +182,22 @@ fn edit_distance(a: &str, b: &str) -> usize {
     let b: Vec<char> = b.chars().collect();
     let mut row: Vec<usize> = (0..=b.len()).collect();
     for (i, left) in a.chars().enumerate() {
-        let mut diagonal = row[0];
-        row[0] = i + 1;
-        for (j, right) in b.iter().enumerate() {
-            let above = row[j + 1];
-            row[j + 1] = if left == *right {
+        // `row` holds the previous line; its first cell is always `i`.
+        let mut diagonal = i;
+        let mut previous = i + 1;
+        if let Some(first) = row.first_mut() {
+            *first = previous;
+        }
+        for (cell, right) in row.iter_mut().skip(1).zip(&b) {
+            let above = *cell;
+            *cell = if left == *right {
                 diagonal
             } else {
-                1 + diagonal.min(above).min(row[j])
+                1 + diagonal.min(above).min(previous)
             };
+            previous = *cell;
             diagonal = above;
         }
     }
-    row[b.len()]
+    row.last().copied().unwrap_or_default()
 }

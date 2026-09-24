@@ -119,7 +119,10 @@ fn relative_imports_resolve_with_extensions_and_index_files() {
         "a path is added once"
     );
     assert_eq!(project.add("README.md", ""), None, "only scripts and SFCs");
-    assert_eq!(project.module(router).path(), "src/router/index.ts");
+    assert_eq!(
+        project.module(router).unwrap().path(),
+        "src/router/index.ts"
+    );
     assert_eq!(project.resolve(router, "./admin"), Some(admin));
     assert_eq!(project.resolve(router, "./admin.ts"), Some(admin));
     assert_eq!(project.resolve(router, "../views/Home.vue"), Some(view));
@@ -130,6 +133,6 @@ fn relative_imports_resolve_with_extensions_and_index_files() {
         "aliases are not guessed"
     );
     assert_eq!(project.resolve(router, "vue-router"), None);
-    let template = project.module(view).template().unwrap();
+    let template = project.module(view).unwrap().template().unwrap();
     assert_eq!((template.text, template.offset), ("<p/>", 10));
 }

@@ -138,9 +138,9 @@ pub const fn check_providers(
     providers: &[ProviderDesc],
     registered: Demand,
 ) -> Result<(), ProviderError> {
+    let mut rest = providers;
     let mut i = 0;
-    while i < providers.len() {
-        let provider = providers[i];
+    while let [provider, tail @ ..] = rest {
         if provider.inputs.is_empty() {
             return Err(ProviderError::NoInputs {
                 provider: provider.name,
@@ -158,18 +158,23 @@ pub const fn check_providers(
                 group: first(unproduced),
             });
         }
+        let mut earlier = providers;
         let mut j = 0;
-        while j < i {
-            let shared = providers[j].outputs.intersect(provider.outputs);
+        while j < i
+            && let [owner, more @ ..] = earlier
+        {
+            let shared = owner.outputs.intersect(provider.outputs);
             if !shared.is_empty() {
                 return Err(ProviderError::SecondWriter {
                     group: first(shared),
-                    owner: providers[j].name,
+                    owner: owner.name,
                     writer: provider.name,
                 });
             }
+            earlier = more;
             j += 1;
         }
+        rest = tail;
         i += 1;
     }
     Ok(())
@@ -183,10 +188,10 @@ const fn first(set: Demand) -> AnalysisId {
 #[must_use]
 pub const fn produced<A: ?Sized>(producers: &[ProducerEntry<A>]) -> Demand {
     let mut set = Demand::NONE;
-    let mut i = 0;
-    while i < producers.len() {
-        set = set.with(producers[i].desc.id);
-        i += 1;
+    let mut rest = producers;
+    while let [producer, tail @ ..] = rest {
+        set = set.with(producer.desc.id);
+        rest = tail;
     }
     set
 }
@@ -194,9 +199,9 @@ pub const fn produced<A: ?Sized>(producers: &[ProducerEntry<A>]) -> Demand {
 /// Every provider over artifacts of type `A`, checked for single writers
 /// against the fact registry that runs their producers.
 ///
-/// Build it as a `const` item: [`ProviderRegistry::new`] panics on a
-/// violation, which is a compile error in `const` evaluation. A second
-/// writer to the route tree does not compile:
+/// Build it in a `const` item that unwraps [`ProviderRegistry::new`] with a
+/// `panic!` on `Err`: in `const` evaluation that is a compile error, never a
+/// runtime abort. A second writer to the route tree does not compile:
 ///
 /// ```compile_fail,E0080
 /// use vize_croquis_cf::providers::{
@@ -212,7 +217,10 @@ pub const fn produced<A: ?Sized>(producers: &[ProducerEntry<A>]) -> Demand {
 ///     const OUTPUTS: Demand = Demand::NONE.with(RouteTree::ID);
 /// }
 /// const REGISTRY: ProviderRegistry<ProjectSources> =
-///     ProviderRegistry::new(&[VueRouterProvider::DESC, FileRoutes::DESC], &PROJECT_FACTS);
+///     match ProviderRegistry::new(&[VueRouterProvider::DESC, FileRoutes::DESC], &PROJECT_FACTS) {
+///         Ok(registry) => registry,
+///         Err(_) => panic!("single writer"),
+///     };
 /// ```
 ///
 /// Its twin, the same registry without the second writer, builds — which
@@ -224,7 +232,10 @@ pub const fn produced<A: ?Sized>(producers: &[ProducerEntry<A>]) -> Demand {
 /// };
 ///
 /// const REGISTRY: ProviderRegistry<ProjectSources> =
-///     ProviderRegistry::new(&[VueRouterProvider::DESC], &PROJECT_FACTS);
+///     match ProviderRegistry::new(&[VueRouterProvider::DESC], &PROJECT_FACTS) {
+///         Ok(registry) => registry,
+///         Err(_) => panic!("single writer"),
+///     };
 /// assert_eq!(REGISTRY.providers().len(), 1);
 /// ```
 pub struct ProviderRegistry<A: ?Sized + 'static> {
@@ -235,27 +246,19 @@ pub struct ProviderRegistry<A: ?Sized + 'static> {
 impl<A: ?Sized + 'static> ProviderRegistry<A> {
     /// A registry of `providers` whose groups `facts` produces.
     ///
-    /// # Panics
+    /// Unwrap it in a `const` item so a rejected set is a compile error.
     ///
-    /// On any [`ProviderError`] — a compile error in a `const` item.
-    #[must_use]
-    pub const fn new(providers: &'static [ProviderDesc], facts: &'static FactRegistry<A>) -> Self {
+    /// # Errors
+    ///
+    /// The first [`ProviderError`] of [`check_providers`].
+    pub const fn new(
+        providers: &'static [ProviderDesc],
+        facts: &'static FactRegistry<A>,
+    ) -> Result<Self, ProviderError> {
         match check_providers(providers, produced(facts.producers())) {
-            Ok(()) => {}
-            Err(ProviderError::NoInputs { .. }) => {
-                panic!("provider registry: a provider declares no ambient inputs")
-            }
-            Err(ProviderError::NoOutputs { .. }) => {
-                panic!("provider registry: a provider declares no output groups")
-            }
-            Err(ProviderError::UnproducedOutput { .. }) => {
-                panic!("provider registry: a provider claims a group no producer computes")
-            }
-            Err(ProviderError::SecondWriter { .. }) => {
-                panic!("provider registry: two providers write the same fact group (single writer)")
-            }
+            Ok(()) => Ok(Self { providers, facts }),
+            Err(error) => Err(error),
         }
-        Self { providers, facts }
     }
 
     /// The registered providers, in registration order.
@@ -309,13 +312,16 @@ pub const PROJECT_FACTS: FactRegistry<ProjectSources> = FactRegistry::new(&[
 ]);
 
 /// Every in-tree provider, single-writer checked against [`PROJECT_FACTS`].
-pub const PROVIDERS: ProviderRegistry<ProjectSources> = ProviderRegistry::new(
+pub const PROVIDERS: ProviderRegistry<ProjectSources> = match ProviderRegistry::new(
     &[
         #[cfg(feature = "provider-vue-router")]
         <vue_router::VueRouterProvider as Provider>::DESC,
     ],
     &PROJECT_FACTS,
-);
+) {
+    Ok(registry) => registry,
+    Err(_) => panic!("provider registry: the in-tree providers violate single writer"),
+};
 
 #[cfg(test)]
 mod tests;

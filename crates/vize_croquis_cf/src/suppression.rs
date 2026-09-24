@@ -192,19 +192,7 @@ fn offset_to_line(source: &str, offset: u32) -> u32 {
         .count() as u32
 }
 
-/// Convert line number to byte offset (start of line).
-#[allow(dead_code)]
-fn line_to_offset(source: &str, line: u32) -> u32 {
-    let mut offset = 0u32;
-    for (i, l) in source.lines().enumerate() {
-        if i as u32 == line {
-            return offset;
-        }
-        offset += l.len() as u32 + 1; // +1 for newline
-    }
-    offset
-}
-
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 #[cfg(test)]
 mod tests {
     use super::{SuppressionMap, offset_to_line};

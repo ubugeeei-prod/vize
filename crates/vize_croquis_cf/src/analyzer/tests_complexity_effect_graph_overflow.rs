@@ -71,7 +71,7 @@ const right = computed(() => left.value)
         let analysis = analyzer.get_analysis(file_id).unwrap();
 
         assert_eq!(
-            vize_croquis::facts::reactivity_count(&analysis),
+            vize_croquis::facts::reactivity_count(analysis),
             2,
             "path={path}"
         );

@@ -2,8 +2,7 @@ use super::index::{ProvideInjectIndex, ResolvedProvider, ResolvedProviderBranch}
 use super::keys::{provide_key_display, provide_key_identity};
 use super::types::{ProvideInjectBranch, ProvideInjectMatch};
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
-use crate::graph::DependencyGraph;
-use crate::registry::{FileId, ModuleRegistry};
+use crate::registry::FileId;
 use vize_carton::{CompactString, FxHashSet, cstr};
 use vize_croquis::provide::InjectPattern;
 
@@ -12,16 +11,6 @@ use self::diagnostics::{
     provider_relateds, type_mismatch_diagnostic, unmatched_inject_diagnostic,
     with_provider_relateds,
 };
-
-#[allow(dead_code)]
-pub fn analyze_provide_inject(
-    registry: &ModuleRegistry,
-    graph: &DependencyGraph,
-) -> (Vec<ProvideInjectMatch>, Vec<CrossFileDiagnostic>) {
-    let index = ProvideInjectIndex::new(registry, graph);
-    let (matches, _, diagnostics) = analyze_provide_inject_with_index(&index);
-    (matches, diagnostics)
-}
 
 pub(crate) fn analyze_provide_inject_with_index(
     index: &ProvideInjectIndex,
@@ -168,10 +157,13 @@ pub(crate) fn analyze_provide_inject_with_index(
 
             let mismatch_providers =
                 mismatched_providers(&provider_branches, inject.expected_type.as_ref());
-            if !mismatch_providers.is_empty() {
+            if !mismatch_providers.is_empty()
+                && let Some(injected_type) = inject.expected_type.as_ref()
+            {
                 diagnostics.push(type_mismatch_diagnostic(
                     consumer_id,
                     inject,
+                    injected_type,
                     &key_str,
                     &mismatch_providers,
                 ));

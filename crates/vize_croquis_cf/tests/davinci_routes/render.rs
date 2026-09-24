@@ -1,5 +1,7 @@
 //! The exact text a fixture's `expected.txt` holds: the provider's facts,
 //! then every diagnostic with its parts and witness links.
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
 use std::fmt::Write;
 
@@ -12,7 +14,7 @@ use vize_davinci::diagnostic::{PartKind, Severity};
 use vize_davinci::fact::{FactGroup, FactView};
 
 fn at(project: &ProjectSources, module: ModuleId, span: Span) -> String {
-    let source = project.module(module);
+    let source = project.module(module).expect("module of this project");
     let index = LineIndex::new(source.source());
     let (line, column) = index.line_col(span.start as usize);
     let (end_line, end_column) = index.line_col(span.end as usize);
@@ -50,7 +52,7 @@ pub fn fixture(
             let components: Vec<_> = record
                 .components
                 .iter()
-                .map(|id| project.module(*id).path())
+                .filter_map(|id| project.module(*id).map(|module| module.path()))
                 .collect();
             writeln!(
                 out,

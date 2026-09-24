@@ -71,6 +71,7 @@ pub(super) fn unmatched_inject_diagnostic(
 pub(super) fn type_mismatch_diagnostic(
     consumer_id: FileId,
     inject: &InjectEntry,
+    injected_type: &CompactString,
     key: &CompactString,
     providers: &[&ResolvedProvider],
 ) -> CrossFileDiagnostic {
@@ -83,10 +84,7 @@ pub(super) fn type_mismatch_diagnostic(
             .collect::<Vec<_>>()
             .join(" | "),
     );
-    let injected_type = inject
-        .expected_type
-        .clone()
-        .expect("mismatched type requires inject type");
+    let injected_type = injected_type.clone();
     let message = if providers.len() == 1 {
         cstr!(
             "inject('{}') expects a different type than its nearest provide()",

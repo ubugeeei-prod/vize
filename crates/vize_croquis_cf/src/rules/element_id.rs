@@ -92,7 +92,9 @@ pub fn analyze_element_ids(
                 .map(|location| (location.file_id, location.start))
                 .collect();
 
-            let primary = locations[0];
+            let Some(&primary) = locations.first() else {
+                continue;
+            };
             let kind = primary.kind;
 
             issues.push(UniqueIdIssue {

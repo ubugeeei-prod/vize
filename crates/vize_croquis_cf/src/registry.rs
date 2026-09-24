@@ -322,7 +322,7 @@ fn source_renders_slot(source: &str) -> bool {
     let bytes = source.as_bytes();
     let mut offset = 0;
 
-    while let Some(index) = source[offset..].find("<slot") {
+    while let Some(index) = source.get(offset..).and_then(|rest| rest.find("<slot")) {
         let end = offset + index + "<slot".len();
         if bytes
             .get(end)

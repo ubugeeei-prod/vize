@@ -1,3 +1,4 @@
+#![expect(clippy::unreachable, reason = "tests assert by panicking")]
 use super::*;
 use vize_carton::{CompactString, cstr};
 

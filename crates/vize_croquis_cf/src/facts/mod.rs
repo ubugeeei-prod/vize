@@ -61,13 +61,12 @@ impl<'a> ProjectFacts<'a> {
         }
     }
 
+    /// Compute `C`'s demand and return `C`'s view. A demand on an
+    /// unregistered group computes nothing for it; `FactView::get` then
+    /// reports that group as not computed.
     pub fn prepare<C: FactConsumer>(&mut self) -> vize_davinci::fact::FactView<'_> {
-        match self.manager.prepare::<C>(self.registry) {
-            Ok(view) => view,
-            Err(error) => panic!(
-                "{} demands an unregistered project fact group: {error:?}",
-                C::NAME
-            ),
-        }
+        // `prepare` returns exactly `view::<C>()` on success.
+        let _ = self.manager.prepare::<C>(self.registry);
+        self.manager.view::<C>()
     }
 }

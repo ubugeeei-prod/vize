@@ -1,26 +1,11 @@
 use super::index::ProvideInjectIndex;
 use super::keys::provide_key_identity;
-use super::types::{
-    InjectInfo, ProvideInfo, ProvideInjectBranch, ProvideInjectMatch, ProvideInjectTree,
-    ProvideNode,
-};
-use crate::graph::DependencyGraph;
+use super::types::{InjectInfo, ProvideInfo, ProvideInjectBranch, ProvideInjectTree, ProvideNode};
 use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
 
 type BranchesByInject<'a> = FxHashMap<(FileId, CompactString, u32), Vec<&'a ProvideInjectBranch>>;
-
-#[allow(dead_code)]
-pub fn build_provide_inject_tree(
-    registry: &ModuleRegistry,
-    graph: &DependencyGraph,
-    _matches: &[ProvideInjectMatch],
-) -> ProvideInjectTree {
-    let index = ProvideInjectIndex::new(registry, graph);
-    let (_, branches, _) = super::analysis::analyze_provide_inject_with_index(&index);
-    build_provide_inject_tree_with_index(registry, &index, &branches)
-}
 
 pub(crate) fn build_provide_inject_tree_with_index(
     registry: &ModuleRegistry,
@@ -58,8 +43,9 @@ pub(crate) fn build_provide_inject_tree_with_index(
             included_nodes.insert(*file_id);
         }
         for pair in branch.path.windows(2) {
-            let parent = pair[0];
-            let child = pair[1];
+            let &[parent, child] = pair else {
+                continue;
+            };
             child_map.entry(parent).or_default().push(child);
             nodes_with_parent.insert(child);
         }
@@ -105,7 +91,7 @@ pub(crate) fn build_provide_inject_tree_with_index(
     ProvideInjectTree { roots }
 }
 
-#[allow(unused, clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 fn build_node(
     file_id: FileId,
     registry: &ModuleRegistry,

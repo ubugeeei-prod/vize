@@ -171,7 +171,7 @@ impl<'a> LineCursor<'a> {
         }
         let bytes = self.source.as_bytes();
         while self.offset < target {
-            if bytes[self.offset] == b'\n' {
+            if bytes.get(self.offset) == Some(&b'\n') {
                 self.line = self.line.saturating_add(1);
                 self.line_start = self.offset + 1;
             }

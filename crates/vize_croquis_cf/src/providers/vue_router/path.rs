@@ -38,15 +38,21 @@ pub fn parse_route_params(path: &str) -> Vec<RouteParam> {
     let bytes = path.as_bytes();
     let mut params: Vec<RouteParam> = Vec::new();
     let mut cursor = 0usize;
-    while let Some(relative) = path[cursor..].find(':') {
+    while let Some(relative) = path.get(cursor..).and_then(|rest| rest.find(':')) {
         let colon = cursor + relative;
-        if colon > 0 && bytes[colon - 1] == b'\\' {
+        if colon
+            .checked_sub(1)
+            .and_then(|prev| bytes.get(prev))
+            .is_some_and(|&byte| byte == b'\\')
+        {
             cursor = colon + 1;
             continue;
         }
         let name_start = colon + 1;
         let name_end = name_start
-            + bytes[name_start..]
+            + bytes
+                .get(name_start..)
+                .unwrap_or_default()
                 .iter()
                 .take_while(|byte| byte.is_ascii_alphanumeric() || **byte == b'_')
                 .count();
@@ -59,7 +65,7 @@ pub fn parse_route_params(path: &str) -> Vec<RouteParam> {
         if matches!(modifier, Some(b'?' | b'+' | b'*')) {
             modifier_at += 1;
         }
-        let name = &path[name_start..name_end];
+        let name = path.get(name_start..name_end).unwrap_or_default();
         if !params.iter().any(|param| param.name == name) {
             params.push(RouteParam {
                 name: CompactString::new(name),
@@ -78,8 +84,8 @@ fn skip_custom_regexp(bytes: &[u8], at: usize) -> usize {
     }
     let mut depth = 1usize;
     let mut pos = at + 1;
-    while pos < bytes.len() {
-        match bytes[pos] {
+    while let Some(&byte) = bytes.get(pos) {
+        match byte {
             b'\\' => pos += 2,
             b'(' => {
                 depth += 1;

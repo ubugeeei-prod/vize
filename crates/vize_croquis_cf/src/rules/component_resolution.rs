@@ -55,10 +55,9 @@ pub fn analyze_component_resolution(
         let file_id = entry.id;
         let analysis = &entry.analysis;
         let mut facts = CroquisFacts::new(analysis);
-        let bindings = facts
-            .prepare::<ComponentResolutionRule>()
-            .get::<Bindings>()
-            .expect("declared demand");
+        let Ok(bindings) = facts.prepare::<ComponentResolutionRule>().get::<Bindings>() else {
+            continue;
+        };
 
         // Get all imported identifiers from this file
         let imported_identifiers: FxHashSet<&str> = analysis

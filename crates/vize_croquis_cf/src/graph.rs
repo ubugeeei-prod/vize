@@ -280,7 +280,7 @@ impl DependencyGraph {
                 } else if rec_stack.contains(dep_id) {
                     // Found a cycle - extract the cycle from path
                     if let Some(start) = path.iter().position(|p| p == dep_id) {
-                        let cycle: Vec<_> = path[start..].to_vec();
+                        let cycle: Vec<_> = path.get(start..).unwrap_or_default().to_vec();
                         cycles.push(cycle);
                     }
                 }

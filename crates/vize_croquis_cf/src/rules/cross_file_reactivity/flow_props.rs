@@ -5,7 +5,6 @@ use super::prop_helpers::{
 };
 use super::types::{
     CrossFileReactivityIssue, CrossFileReactivityIssueKind, ReactiveValueId, ReactivityFlow,
-    ReactivityFlowKind,
 };
 use crate::diagnostics::DiagnosticSeverity;
 use crate::graph::DependencyEdge;
@@ -84,9 +83,6 @@ impl<'a> CrossFileReactivityAnalyzer<'a> {
                         self.flows.push(ReactivityFlow {
                             source: source_id,
                             target: target_id,
-                            flow_kind: ReactivityFlowKind::PropsFlow,
-                            preserved: prop_loss.is_none(),
-                            loss_reason: prop_loss.map(|loss| loss.reason),
                         });
                     }
                 }

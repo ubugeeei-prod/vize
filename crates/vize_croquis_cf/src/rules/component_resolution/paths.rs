@@ -3,7 +3,7 @@ use crate::registry::ModuleRegistry;
 use std::path::Path;
 
 /// Try to resolve an import specifier to a file in the registry.
-#[allow(clippy::disallowed_macros)]
+#[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 pub(super) fn resolve_import(
     specifier: &str,
     registry: &ModuleRegistry,
