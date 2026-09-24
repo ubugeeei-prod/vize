@@ -229,6 +229,25 @@ void test("creation failures land in error and status", async () => {
   assert.equal(translator.error.value, undefined);
 });
 
+void test("synchronous host creation failures keep the promise contract", async () => {
+  const failure = new Error("create threw before returning a promise");
+  const translator = useTranslator({
+    sourceLanguage: "en",
+    targetLanguage: "ja",
+    host: {
+      availability: () => Promise.resolve("available" as const),
+      create: () => {
+        throw failure;
+      },
+    },
+  });
+
+  assert.equal(await translator.create(), false);
+  assert.equal(translator.status.value, "error");
+  assert.equal(translator.error.value, failure);
+  await assert.rejects(translator.translate("hi"), (cause) => cause === failure);
+});
+
 void test("scope disposal destroys the session and aborts creation", async () => {
   FakeTranslator.reset();
   const scope = effectScope();

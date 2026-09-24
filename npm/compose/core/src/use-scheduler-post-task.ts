@@ -285,11 +285,18 @@ export function useSchedulerPostTask(
     let result: Promise<Result>;
     if (scheduler) {
       const explicitPriority = task.fixed || !TaskController ? { priority: taskPriority } : {};
-      result = scheduler.postTask(callback, {
-        signal: controller.signal,
-        ...explicitPriority,
-        ...(delay === undefined ? {} : { delay }),
-      });
+      try {
+        result = scheduler.postTask(callback, {
+          signal: controller.signal,
+          ...explicitPriority,
+          ...(delay === undefined ? {} : { delay }),
+        });
+      } catch (cause) {
+        signal?.removeEventListener("abort", forwardAbort);
+        tasks.delete(task);
+        pending.value = tasks.size;
+        return Promise.reject(cause);
+      }
     } else {
       result = new Promise<Result>((resolve, reject) => {
         const taskSignal = controller.signal;

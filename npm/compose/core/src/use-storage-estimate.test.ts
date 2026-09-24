@@ -109,6 +109,27 @@ void test("re-estimates when a reactive host changes", async () => {
   assert.equal(estimate.supported.value, false);
 });
 
+void test("an estimate from a removed host cannot restore stale state", async () => {
+  let resolveFirst: (estimate: StorageEstimateLike) => void = () => {};
+  const first: StorageManagerLike = {
+    estimate: () =>
+      new Promise((resolve) => {
+        resolveFirst = resolve;
+      }),
+  };
+  const host = shallowRef<StorageManagerLike | null>(first);
+  const estimate = useStorageEstimate({ storage: host });
+  host.value = null;
+  await nextTick();
+  resolveFirst({ usage: 90, quota: 100 });
+  await flushPromises();
+
+  assert.equal(estimate.supported.value, false);
+  assert.equal(estimate.usage.value, null);
+  assert.equal(estimate.quota.value, null);
+  assert.equal(estimate.percentUsed.value, null);
+});
+
 void test("exposes estimate failures and validates the interval", async () => {
   const storage = new FakeStorage();
   const failure = new Error("denied");

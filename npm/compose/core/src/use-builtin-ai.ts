@@ -412,7 +412,16 @@ function useAiSession<Instance extends { destroy(): void }, CreateOptions>(
         phase.value = "downloading";
       });
     };
-    creating = factory.create({ ...createOptions(), monitor, signal: abort.signal }).then(
+    let requested: Promise<Instance>;
+    try {
+      requested = factory.create({ ...createOptions(), monitor, signal: abort.signal });
+    } catch (cause) {
+      controller = undefined;
+      phase.value = "error";
+      error.value = cause;
+      return Promise.reject(cause);
+    }
+    creating = requested.then(
       (created) => {
         if (current !== generation) {
           created.destroy();

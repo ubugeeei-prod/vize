@@ -227,6 +227,23 @@ void test("rejects invalid arguments and unavailable hosts", async () => {
   );
 });
 
+void test("synchronous scheduler failures settle and remove pending tasks", async () => {
+  const failure = new Error("scheduler rejected before returning a promise");
+  const tasks = useSchedulerPostTask({
+    scheduler: {
+      postTask: () => {
+        throw failure;
+      },
+    },
+  });
+
+  await assert.rejects(
+    tasks.postTask(() => 1),
+    (cause) => cause === failure,
+  );
+  assert.equal(tasks.pending.value, 0);
+});
+
 void test("aborts pending tasks with the scope", async () => {
   const { scheduler, queue } = createScheduler();
   const scope = effectScope();

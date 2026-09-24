@@ -210,6 +210,13 @@ export function useStorageEstimate(
   watch(
     resolveStorage,
     (storage, _previous, onCleanup) => {
+      // A previous host may still have an estimate in flight. Its result must
+      // not populate the next host's state, even when the next host is absent.
+      generation += 1;
+      usage.value = null;
+      quota.value = null;
+      usageDetails.value = null;
+      error.value = undefined;
       if (!storage?.estimate) return;
       if (immediate) void refresh();
       const scheduler = options.scheduler ?? browserScheduler();
