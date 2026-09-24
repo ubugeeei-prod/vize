@@ -85,7 +85,9 @@ test("static typecheck keeps catalogued public contracts on the Canon lane", asy
       `${file} must be included in the resolved tsconfig.typecheck.json program`,
     );
   }
-  // Building the whole-package TypeScript program grows with the catalog.
+  // `ts.createProgram` resolves the whole package source graph (every family
+  // plus Vue types) in one call; it already takes 1-5 s alone and grows with
+  // each family, so the 5 s default is too tight under a parallel test run.
 }, 60_000);
 
 function parseTypecheckConfig() {

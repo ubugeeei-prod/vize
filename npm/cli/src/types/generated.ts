@@ -676,6 +676,23 @@ export interface LibConfig {
    * Lockfile path (default: vize-lib.lock.json)
    */
   lockfile?: string;
+  /**
+   * Third-party registries by @namespace, pulled as @namespace/<item>
+   */
+  registries?: {
+    [k: string]:
+      | string
+      | {
+          /**
+           * Path to a registry, npm:<package>[@range], or an https:// URL of a registry.json
+           */
+          source: string;
+          /**
+           * Destination directory for this namespace's items
+           */
+          dir?: string;
+        };
+  };
 }
 /**
  * Scoped Vize config entry for monorepos and workspaces

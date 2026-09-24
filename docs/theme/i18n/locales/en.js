@@ -19,6 +19,8 @@
       "/guide/troubleshooting": "Troubleshooting",
       "/guide/cli": "CLI",
       "/guide/lib-pull": "Source Distribution",
+      "/guide/ui": "UI Reference",
+      "/guide/composables": "Composables Reference",
       "/guide/content-mapper": "Content Mapper",
       "/guide/vite-plugin": "Vite Plugin",
       "/guide/unplugin": "Bundler Integrations",

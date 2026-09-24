@@ -95,6 +95,14 @@ test("scoped style semantics survive the down-compile", async () => {
   );
 });
 
+test("async combobox announcements retain structural clipping in the packaged stylesheet", async () => {
+  const stylesheet = await readFile(path.resolve("dist/style.css"), "utf8");
+  assert.match(
+    stylesheet,
+    /\[data-vize-ui=combobox-status\]\[data-v-[0-9a-f]{8}\]\{[^}]*clip-path:inset\(50%\)[^}]*overflow:hidden/,
+  );
+});
+
 test("styles never arrive through runtime CSS-in-JS", async () => {
   const distFiles = await readdir(path.resolve("dist"));
   const stylesheets = distFiles.filter((file) => file.endsWith(".css")).sort();

@@ -159,7 +159,16 @@ pub fn remove(context: &mut LibContext, args: &RemoveArgs) -> LibResult<String> 
         };
         line(
             &mut out,
-            format_args!("{verb} {}:{}{orphan}", removed.kind, removed.name),
+            format_args!(
+                "{verb} {}{}{}{orphan}",
+                removed.kind,
+                if removed.kind.starts_with('@') {
+                    "/"
+                } else {
+                    ":"
+                },
+                removed.name
+            ),
         );
         for file in removed.files.iter().filter(|file| file.action != "delete") {
             line(&mut out, format_args!("  {} {}", file.action, file.path));

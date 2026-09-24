@@ -5,6 +5,16 @@
 /// imports between pulled items resolve without rewrites.
 module vize.LibConfig
 
+/// Third-party registry location: a path (relative to the config file) to a
+/// `registry.json`, its directory, or a package directory; `npm:<package>[@range]`;
+/// or an `https://` URL of a `registry.json`.
+class LibRegistry {
+  source: String
+
+  /// Destination directory for this namespace's items.
+  dir: String? = null
+}
+
 class LibConfig {
   /// Destination for every registry kind unless a kind-specific directory is set.
   dir: String? = null
@@ -17,4 +27,7 @@ class LibConfig {
 
   /// Lockfile path. Default: `vize-lib.lock.json`.
   lockfile: String? = null
+
+  /// Third-party registries by `@namespace`, pulled as `@namespace/<item>`.
+  registries: Mapping<String, String|LibRegistry> = new Mapping {}
 }
