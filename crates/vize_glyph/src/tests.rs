@@ -85,6 +85,51 @@ const Card=(props:{title:string;items:string[]})=><section class="card"><h2>{pro
 }
 
 #[test]
+fn test_format_sfc_template_quotes_and_style_numbers_match_standalone_formatting() {
+    let source = r#"<script setup>
+const label = "sample";
+</script>
+
+<template>
+  <div :class="{ 'is-active': active }" @click="() => emit('change', 'x')">sample</div>
+</template>
+
+<style scoped>
+.sample {
+  opacity: 0.5;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>
+"#;
+    let options = FormatOptions {
+        single_quote: false,
+        print_width: 120,
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+    let formatted = format_sfc(source, &options).unwrap().code;
+
+    assert!(
+        formatted.contains("const label = \"sample\";"),
+        "{formatted}"
+    );
+    assert!(
+        formatted.contains(":class=\"{ 'is-active': active }\""),
+        "{formatted}",
+    );
+    assert!(
+        formatted.contains("@click=\"() => emit('change', 'x')\""),
+        "{formatted}",
+    );
+    assert!(formatted.contains("opacity: 0.5;"), "{formatted}");
+    assert!(
+        formatted.contains("opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)"),
+        "{formatted}",
+    );
+    assert_eq!(format_sfc(&formatted, &options).unwrap().code, formatted);
+}
+
+#[test]
 fn test_format_sfc_jsx_script_block() {
     let source = r#"<script lang="jsx">
 export default function App(){return <><button onClick={()=>emit('save')}>Save</button></>}

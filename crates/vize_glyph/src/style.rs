@@ -4,6 +4,7 @@
 //! in Vue SFC `<style>` blocks using lightningcss for parsing and printing.
 
 mod comment_scan;
+mod number;
 mod stabilization;
 
 use crate::error::FormatError;
@@ -95,7 +96,9 @@ fn format_chunk_once(trimmed: &str, options: &FormatOptions) -> Result<String, F
         .to_css(printer_options)
         .map_err(|e| FormatError::StyleFormatError(e.to_compact_string()))?;
 
-    let mut code: String = result.code.into();
+    // lightningcss omits leading zeroes even with minify disabled; Oxfmt keeps
+    // them in standalone CSS, so align the style block's printed number tokens.
+    let mut code = number::add_leading_zero_to_fractional_numbers(&result.code);
 
     // lightningcss uses 2-space indent by default; re-indent if needed
     if options.use_tabs || indent_width != 2 {
@@ -168,6 +171,20 @@ mod tests {
         let result = format_style_content(source, &options).unwrap();
 
         insta::assert_snapshot!(result.as_str());
+    }
+
+    #[test]
+    fn test_style_numbers_match_standalone_css_leading_zeroes() {
+        let source =
+            ".sample { opacity: 0.5; transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1); }";
+        let options = FormatOptions::default();
+        let result = format_style_content(source, &options).unwrap();
+        assert!(result.contains("opacity: 0.5;"), "{result}");
+        assert!(
+            result.contains("opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)"),
+            "{result}",
+        );
+        assert_eq!(format_style_content(&result, &options).unwrap(), result);
     }
 
     #[test]

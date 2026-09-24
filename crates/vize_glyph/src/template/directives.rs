@@ -57,7 +57,7 @@ pub(crate) fn normalize_attribute(
 }
 
 /// Determine if an attribute's value should be formatted as a JS expression.
-fn should_format_expression(name: &str) -> bool {
+pub(crate) fn should_format_expression(name: &str) -> bool {
     name.starts_with(':')
         || name.starts_with('@')
         || name.starts_with("v-if")
@@ -87,7 +87,7 @@ fn format_directive_value(name: &str, value: &str, options: &FormatOptions) -> (
     let expression = decoded.as_deref().unwrap_or(trimmed);
 
     // Try to format as JS expression via oxc_formatter
-    match script::format_js_expression(expression, options) {
+    match script::format_js_expression_in_attribute(expression, options) {
         Some(formatted) => {
             let indent_multiline_value = formatted.contains('\n');
             (formatted, indent_multiline_value)

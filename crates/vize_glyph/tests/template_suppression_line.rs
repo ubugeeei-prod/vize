@@ -35,7 +35,7 @@ fn eslint_disable_next_line_keeps_text_and_element_together() {
         concat!(
             "<div class=\"mt20\">\n",
             "  <!--eslint-disable-next-line-->\n",
-            "  custom space: <input @keyup.custom='keys(\"custom keycode space\")' />\n",
+            "  custom space: <input @keyup.custom=\"keys('custom keycode space')\" />\n",
             "</div>",
         ),
     );

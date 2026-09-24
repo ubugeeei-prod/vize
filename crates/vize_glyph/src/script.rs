@@ -8,7 +8,7 @@ mod block_identity;
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_formatter::{format_program, parse_for_format};
+use oxc_formatter::{QuoteStyle, format_program, parse_for_format};
 use oxc_span::SourceType;
 use vize_s0::{Allocator, String, ToCompactString};
 
@@ -151,6 +151,23 @@ thread_local! {
 /// Format a JS expression (for use in template directive values and interpolations).
 /// Returns None if the expression cannot be parsed/formatted.
 pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<String> {
+    format_js_expression_with_quote_style(expr, options, None)
+}
+
+/// HTML attributes use double quotes independently of the script quote option.
+/// Single-quoted JavaScript strings keep their delimiters out of the attribute.
+pub(crate) fn format_js_expression_in_attribute(
+    expr: &str,
+    options: &FormatOptions,
+) -> Option<String> {
+    format_js_expression_with_quote_style(expr, options, Some(QuoteStyle::Single))
+}
+
+fn format_js_expression_with_quote_style(
+    expr: &str,
+    options: &FormatOptions,
+    quote_style: Option<QuoteStyle>,
+) -> Option<String> {
     let trimmed = expr.trim();
     if trimmed.is_empty() {
         return Some(String::default());
@@ -177,7 +194,10 @@ pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<Strin
             return None;
         }
 
-        let oxc_options = options.to_oxc_format_options();
+        let mut oxc_options = options.to_oxc_format_options();
+        if let Some(quote_style) = quote_style {
+            oxc_options.quote_style = quote_style;
+        }
         let formatted = format_program(oxc_allocator, &parsed.program, oxc_options, None)
             .print()
             .ok()?

@@ -108,13 +108,13 @@ rec.years.includes(y) && selectedYear === y
     assert_eq!(
         first.as_str(),
         r#"<span
-  :class='[
+  :class="[
     rec.years.includes(y) && selectedYear === y
-      ? "bg-accent border border-accent text-accent-ink"
+      ? 'bg-accent border border-accent text-accent-ink'
       : rec.years.includes(y)
-        ? "bg-ink border border-ink text-paper"
-        : "border border-ink text-ink",
-  ]'
+        ? 'bg-ink border border-ink text-paper'
+        : 'border border-ink text-ink',
+  ]"
   :title="y"
 ></span>"#
     );
@@ -130,7 +130,7 @@ fn sfc_multiline_directive_attribute_keeps_template_indent() {
 
     assert_eq!(
         first.code.as_str(),
-        "<template>\n  <button\n    type=\"button\"\n    :class='sort === \"name-asc\" || sort === \"name-desc\"\n      ? \"bg-ink text-paper border-ink\"\n      : \"border-rule text-ink-2 hover:text-ink hover:border-ink\"'\n    @click=\"toggleNameSort\"\n  >\n    Name\n  </button>\n</template>\n"
+        "<template>\n  <button\n    type=\"button\"\n    :class=\"sort === 'name-asc' || sort === 'name-desc'\n      ? 'bg-ink text-paper border-ink'\n      : 'border-rule text-ink-2 hover:text-ink hover:border-ink'\"\n    @click=\"toggleNameSort\"\n  >\n    Name\n  </button>\n</template>\n"
     );
     assert_eq!(first.code, second.code);
 }
@@ -151,7 +151,7 @@ fn sfc_multiline_directive_statement_continuation_is_anchored_like_a_ternary() {
 
     assert_eq!(
         first.code.as_str(),
-        "<template>\n  <button\n    :class='sort === \"name-asc\" || sort === \"name-desc\"\n      ? \"bg-ink text-paper border-ink\"\n      : \"border-rule text-ink-2 hover:text-ink hover:border-ink\"'\n    @click=\"toggleNameSort(sort);\n      applySort()\"\n  >\n    Name\n  </button>\n</template>\n"
+        "<template>\n  <button\n    :class=\"sort === 'name-asc' || sort === 'name-desc'\n      ? 'bg-ink text-paper border-ink'\n      : 'border-rule text-ink-2 hover:text-ink hover:border-ink'\"\n    @click=\"toggleNameSort(sort);\n      applySort()\"\n  >\n    Name\n  </button>\n</template>\n"
     );
     assert_eq!(first.code, second.code, "fmt; fmt must be a no-op");
     assert_eq!(second.code, third.code, "fmt must stay at its fixed point");

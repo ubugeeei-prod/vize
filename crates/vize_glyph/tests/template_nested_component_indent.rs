@@ -33,7 +33,7 @@ fn nested_component_with_attrs_keeps_child_indent_stable() {
         first.as_str(),
         r#"<template>
   <div>
-    <Link :to='{ name: "signup" }'>
+    <Link :to="{ name: 'signup' }">
       {{ t("general.signUp._") }}
     </Link>
   </div>
@@ -41,7 +41,7 @@ fn nested_component_with_attrs_keeps_child_indent_stable() {
     <span>
       {{ t("general.password.reset.description") }}
     </span>
-    <Link :to='{ name: "password-reset" }'>
+    <Link :to="{ name: 'password-reset' }">
       {{ t("general.password.reset._") }}
     </Link>
   </div>

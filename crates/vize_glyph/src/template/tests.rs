@@ -136,11 +136,43 @@ fn directive_expression_double_quote_formatting_keeps_valid_attribute_quotes() {
     let result = format_template_content(source, &options).unwrap();
     assert_eq!(
         result.as_str(),
-        r#"<MfCheckbox @blur='form.validateField("agreeToPolicy")' />"#
+        r#"<MfCheckbox @blur="form.validateField('agreeToPolicy')" />"#
     );
 
     let formatted_again = format_template_content(&result, &options).unwrap();
     assert_eq!(formatted_again, result);
+}
+
+#[test]
+fn directive_attributes_keep_double_quotes_with_double_quote_script_option() {
+    let source =
+        r#"<div :class="{ 'is-active': active }" @click="() => emit('change', 'x')">sample</div>"#;
+    let options = FormatOptions {
+        single_quote: false,
+        sort_attributes: false,
+        print_width: 120,
+        ..FormatOptions::default()
+    };
+
+    let formatted = format_template_content(source, &options).unwrap();
+    assert_eq!(formatted.as_str(), source);
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted
+    );
+}
+
+#[test]
+fn directive_attribute_escapes_unavoidable_inner_double_quotes() {
+    let source = r#"<div :title="prefix + &quot;a'b&quot;"></div>"#;
+    let options = FormatOptions::default();
+    let formatted = format_template_content(source, &options).unwrap();
+    assert!(formatted.contains(":title=\""), "{formatted}");
+    assert!(formatted.contains("&quot;a'b&quot;"), "{formatted}");
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted,
+    );
 }
 
 #[test]

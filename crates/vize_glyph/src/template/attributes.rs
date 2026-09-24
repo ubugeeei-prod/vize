@@ -4,6 +4,7 @@ use crate::{
 };
 use vize_s0::String;
 
+use super::directives::should_format_expression;
 use super::helpers::template_literal_state_after_line_from;
 
 /// Parsed attribute with structured information for sorting and rendering.
@@ -195,7 +196,18 @@ pub(crate) fn render_attribute(attr: &ParsedAttribute) -> String {
             let mut rendered = String::with_capacity(attr.name.len() + value.len() + 3);
             rendered.push_str(&attr.name);
             rendered.push('=');
-            write_attr_value(value, |segment| rendered.push_str(segment));
+            if should_format_expression(&attr.name) {
+                rendered.push('"');
+                for (index, segment) in value.split('"').enumerate() {
+                    if index != 0 {
+                        rendered.push_str("&quot;");
+                    }
+                    rendered.push_str(segment);
+                }
+                rendered.push('"');
+            } else {
+                write_attr_value(value, |segment| rendered.push_str(segment));
+            }
             rendered
         }
         None => attr.name.clone(),

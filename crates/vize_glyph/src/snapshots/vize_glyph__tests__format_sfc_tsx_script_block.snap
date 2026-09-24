@@ -14,5 +14,5 @@ const Card = (props: { title: string; items: string[] }) => (
 </script>
 
 <template>
-  <Card title="Docs" :items='["a"]' />
+  <Card title="Docs" :items="['a']" />
 </template>
