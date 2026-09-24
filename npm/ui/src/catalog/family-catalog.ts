@@ -21,6 +21,7 @@ import { tourFamilyCatalog } from "./family-catalog-tour.ts";
 import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import { sliderFamilyCatalog } from "./family-catalog-slider.ts";
 import { typographyFamilyCatalog } from "./family-catalog-typography.ts";
+import { wayfindingFamilyCatalog } from "./family-catalog-wayfinding.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
 
 export {
@@ -55,6 +56,7 @@ const allFamilyCatalogEntries = [
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
   ...typographyFamilyCatalog,
+  ...wayfindingFamilyCatalog,
 ] as const satisfies readonly UiFamilyCatalogEntry[];
 
 // Lane modules group families thematically, so canonical order is restored
