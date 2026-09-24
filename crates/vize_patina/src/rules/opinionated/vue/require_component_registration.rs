@@ -39,6 +39,7 @@
 //! </script>
 //! ```
 
+use self::async_setup::async_component_names;
 use self::self_name::{define_options_name, file_stem};
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -224,6 +225,11 @@ impl Rule for RequireComponentRegistration {
         // Collect all custom components used in template
         let mut used_components: Vec<(String, u32, u32)> = Vec::new();
         collect_components(root, &mut used_components);
+        let async_components = ctx
+            .sfc_descriptor()
+            .and_then(|descriptor| descriptor.script_setup.as_ref())
+            .map(async_component_names)
+            .unwrap_or_default();
 
         // For now, we warn on all custom components that aren't built-in or framework globals
         for (tag, start, end) in used_components {
@@ -239,7 +245,10 @@ impl Rule for RequireComponentRegistration {
                 if ctx.analysis().is_some_and(|analysis| {
                     self.is_template_visible_imported_component(ctx, analysis, &tag)
                         || self.is_options_api_registered_component(analysis, &tag)
-                }) {
+                }) || async_components
+                    .iter()
+                    .any(|name| component_name_matches(&tag, name))
+                {
                     continue;
                 }
 
@@ -309,6 +318,7 @@ fn component_name_matches(used: &str, registered: &str) -> bool {
         || to_pascal_case(used).as_str() == registered
 }
 
+mod async_setup;
 mod self_name;
 
 #[cfg(test)]
