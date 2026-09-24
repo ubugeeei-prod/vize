@@ -35,13 +35,16 @@
 //! so a guest that links WASI is refused at instantiation.
 
 #![no_std]
-// The workspace's `vize_carton` string policy cannot apply here: the SDK
-// depends on no vize crate (P6-2's pinned dependency set), and the WIT
-// bindings speak `alloc::string::String`.
-#![allow(
-    clippy::disallowed_types,
-    clippy::disallowed_methods,
-    clippy::disallowed_macros
+// The WIT bindings speak `alloc::string::String`; the SDK depends on no vize
+// crate (P6-2's pinned dependency set), so `vize_carton::String` is not an
+// option. Only the test build links `std`, where clippy resolves the type to
+// the disallowed `std::string::String`.
+#![cfg_attr(
+    test,
+    expect(
+        clippy::disallowed_types,
+        reason = "the WIT bindings speak `alloc::string::String`"
+    )
 )]
 
 extern crate alloc;
@@ -54,7 +57,10 @@ pub mod pages;
 mod runtime;
 
 /// The generated bindings of the `input-dialect` world.
-#[allow(missing_docs, clippy::all, clippy::pedantic)]
+#[expect(
+    missing_docs,
+    reason = "wit-bindgen generates this module without docs"
+)]
 pub mod bindings {
     wit_bindgen::generate!({
         path: "wit",

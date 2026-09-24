@@ -55,9 +55,10 @@ pub unsafe extern "C" fn cabi_realloc(
 /// # Safety
 ///
 /// `a` and `b` are valid for `len` bytes (the C contract).
-// Deliberate: no C library links into the guest, so this is its only
-// `memcmp`, not a clash with one.
-#[allow(suspicious_runtime_symbol_definitions)]
+#[expect(
+    suspicious_runtime_symbol_definitions,
+    reason = "no C library links into the guest, so this is its only `memcmp`, not a clash with one"
+)]
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn memcmp(a: *const u8, b: *const u8, len: usize) -> i32 {
     for index in 0..len {
@@ -80,7 +81,10 @@ pub unsafe extern "C" fn memcmp(a: *const u8, b: *const u8, len: usize) -> i32 {
 /// # Safety
 ///
 /// As [`memcmp`].
-#[allow(suspicious_runtime_symbol_definitions)]
+#[expect(
+    suspicious_runtime_symbol_definitions,
+    reason = "no C library links into the guest, so this is its only `bcmp`"
+)]
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn bcmp(a: *const u8, b: *const u8, len: usize) -> i32 {
     // SAFETY: forwarded under the same contract.

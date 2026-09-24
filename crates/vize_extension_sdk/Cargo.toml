@@ -27,3 +27,6 @@ runtime = ["dep:dlmalloc"]
 [dependencies]
 dlmalloc = { workspace = true, optional = true }
 wit-bindgen = { workspace = true }
+
+[lints]
+workspace = true
