@@ -145,5 +145,7 @@ impl TypeDefinitionService {
     }
 }
 
-#[cfg(all(test, feature = "native"))]
+#[cfg(test)]
+#[cfg(feature = "native")]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

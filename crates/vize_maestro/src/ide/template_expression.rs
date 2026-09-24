@@ -273,5 +273,6 @@ fn is_vue_expression_attribute(attr_name: &str) -> bool {
         || attr_name.starts_with("v-")
 }
 
-#[cfg(all(test, feature = "native"))]
+#[cfg(test)]
+#[cfg(feature = "native")]
 mod member_access_tests;

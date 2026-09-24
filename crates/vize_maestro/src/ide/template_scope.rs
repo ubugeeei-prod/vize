@@ -15,6 +15,7 @@ pub(crate) use patterned_navigation::needs_patterned_navigation;
 pub(crate) use patterned_navigation::needs_structural_pattern_navigation;
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Hover, Location, Position, Range};

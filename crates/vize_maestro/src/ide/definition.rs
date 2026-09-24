@@ -4,12 +4,14 @@ pub mod bindings;
 pub(crate) mod component_event;
 pub(crate) mod component_import;
 mod component_model;
-#[cfg(all(test, feature = "native"))]
+#[cfg(test)]
+#[cfg(feature = "native")]
 mod corsa_tests;
 mod facts;
 pub(crate) mod helpers;
 mod html;
-#[cfg(all(test, feature = "native"))]
+#[cfg(test)]
+#[cfg(feature = "native")]
 mod html_tests;
 pub(crate) mod import_resolver;
 mod inline_art;

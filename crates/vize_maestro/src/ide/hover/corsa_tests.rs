@@ -10,6 +10,7 @@ use crate::{
     server::ServerState,
 };
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod art_variants;
 mod component_props;
 mod template_bindings;

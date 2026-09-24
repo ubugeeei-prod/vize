@@ -375,7 +375,7 @@ const message = ref('hello')
 
         // Cursor inside the sibling `<p>` interpolation, outside the v-scope subtree.
         let p_start = source.find("<p>").unwrap();
-        let offset = source[p_start..].find("{{ count").unwrap() + p_start + "{{ co".len();
+        let offset = source.split_at(p_start).1.find("{{ count").unwrap() + p_start + "{{ co".len();
         let ctx = IdeContext::new(&state, &uri, offset).unwrap();
         let hover = HoverService::hover(&ctx);
 

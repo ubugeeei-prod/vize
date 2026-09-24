@@ -2,7 +2,11 @@
 //! - Correctness/authoring: diagnostics, type info, hover, completion, navigation, rename, linked editing
 //! - Structure: document/workspace symbols, selection ranges, semantic tokens, inlay hints
 //! - Ecosystem: router/i18n awareness, file rename, auto-import, code lens, document links
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "IDE services build lsp_types values, which own std String, and share Corsa bridges through std Arc"
+)]
 pub mod auto_import;
 pub mod auto_insert;
 pub mod call_hierarchy;

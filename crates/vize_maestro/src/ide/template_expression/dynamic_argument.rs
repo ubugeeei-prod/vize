@@ -46,6 +46,7 @@ pub(super) fn contains_cursor(content: &str, open: usize, cursor: usize) -> bool
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use super::super::is_in_vue_template_expression;
 
