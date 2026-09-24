@@ -1,0 +1,97 @@
+/* Optional writing-surface treatment; the Textarea component stays headless. */
+@layer vize.preset {
+  /* A nested theme starts from the base treatment, not its parent's variant. */
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-textarea-radius: initial;
+    --vize-ui-textarea-border-width: initial;
+    --vize-ui-textarea-padding-scale: initial;
+    --vize-ui-textarea-font-family: initial;
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-textarea-radius: var(--vize-ui-radius-md);
+    --vize-ui-textarea-padding-scale: 1.333333;
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-textarea-radius: 0.1875rem;
+    --vize-ui-textarea-border-width: var(--vize-ui-border-width-thick);
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-textarea-radius: 0.125rem;
+    --vize-ui-textarea-font-family: var(--vize-ui-type-family-mono);
+  }
+
+  :where([data-vize-ui="textarea"]) {
+    box-sizing: border-box;
+    min-block-size: calc(3 * var(--vize-ui-size-control-md));
+    /* Resolve the spacing token on the control so nested density scopes work. */
+    padding: calc(var(--vize-ui-space-md) * var(--vize-ui-textarea-padding-scale, 1));
+    border: var(--vize-ui-textarea-border-width, var(--vize-ui-border-width-thin)) solid
+      var(--vize-ui-color-border);
+    border-radius: var(--vize-ui-textarea-radius, var(--vize-ui-radius-sm));
+    background-color: var(--vize-ui-color-surface);
+    color: var(--vize-ui-color-text);
+    font-family: var(--vize-ui-textarea-font-family, var(--vize-ui-type-family-sans));
+    font-size: var(--vize-ui-type-size-sm);
+    line-height: var(--vize-ui-type-leading-normal);
+    resize: vertical;
+    transition-property: border-color, background-color;
+    transition-duration: var(--vize-ui-motion-duration-fast, 120ms);
+    transition-timing-function: var(--vize-ui-motion-ease-standard, ease-out);
+  }
+
+  :where([data-vize-ui="textarea"]::placeholder) {
+    color: var(--vize-ui-color-text-muted);
+    opacity: 1;
+  }
+
+  :where([data-vize-ui="textarea"]:focus) {
+    border-color: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-ui="textarea"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+
+  :where([data-vize-ui="textarea"][aria-invalid]:not([aria-invalid="false"])) {
+    border-color: var(--vize-ui-color-danger);
+  }
+
+  :where([data-vize-ui="textarea"][data-state="readonly"]) {
+    background-color: var(--vize-ui-color-canvas);
+  }
+
+  :where([data-vize-ui="textarea"]:disabled) {
+    opacity: var(--vize-ui-opacity-disabled);
+    cursor: not-allowed;
+    resize: none;
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="textarea"]) {
+      transition-duration: 0ms;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="textarea"]) {
+      border-color: ButtonBorder;
+      background-color: Field;
+      color: FieldText;
+    }
+
+    :where([data-vize-ui="textarea"]:focus-visible) {
+      outline-color: Highlight;
+    }
+
+    :where([data-vize-ui="textarea"]:disabled) {
+      color: GrayText;
+      opacity: 1;
+    }
+  }
+}

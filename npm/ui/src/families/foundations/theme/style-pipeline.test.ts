@@ -13,9 +13,13 @@ const publicCssAssets = [
   "theme.css",
   ...themePresets.map((name) => `theme-preset-${name}.css`),
   "component-button.css",
+  "component-checkbox.css",
   "component-dialog.css",
+  "component-input.css",
   "component-progress-bar.css",
   "component-scroll-area.css",
+  "component-switch.css",
+  "component-textarea.css",
   "motion.css",
 ].sort();
 
