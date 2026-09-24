@@ -209,8 +209,13 @@ async function probeHotUpdateStyleOnly(): Promise<void> {
   await loadResolvedVueModule(plugin, file);
 
   const sent: Array<{ data?: { css?: string; type?: string }; event?: string }> = [];
+  const styleId = `${file}?vue=&type=style&index=0&lang=css.css`;
+  const styleModule = { url: styleId };
   const server = {
-    moduleGraph: { getModulesByFile: () => undefined, invalidateModule() {} },
+    moduleGraph: {
+      getModulesByFile: (id: string) => (id === styleId ? new Set([styleModule]) : undefined),
+      invalidateModule() {},
+    },
     ws: { send: (payload: never) => sent.push(payload) },
   };
 
@@ -223,11 +228,9 @@ async function probeHotUpdateStyleOnly(): Promise<void> {
     timestamp: Date.now(),
   } as never);
 
-  assert.deepEqual(affected, [], "a style-only edit must not invalidate the component module");
-  assert.equal(sent.length, 1);
-  assert.equal(sent[0].event, "vize:update");
-  assert.equal(sent[0].data?.type, "style-only");
-  assert.match(sent[0].data?.css ?? "", /color:\s*blue/);
+  assert.deepEqual(affected, [styleModule], "a style-only edit must update the Vite CSS module");
+  assert.deepEqual(sent, [], "Vite handles the CSS update without a custom HMR event");
+  assert.match(await loadVueModule(plugin, styleId), /color:\s*blue/);
 }
 
 export function probeHookImplemented(name: string): void {
