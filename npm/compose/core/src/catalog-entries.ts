@@ -246,7 +246,7 @@ export const entries = [
   {
     subpath: "./create-event-hook",
     source: "src/create-event-hook.ts",
-    gzipBudgetBytes: 1.25 * 1024,
+    gzipBudgetBytes: 1.75 * 1024,
     runtimeExports: ["createEventHook"],
     utilities: ["createEventHook"],
   },
@@ -734,7 +734,7 @@ export const entries = [
   {
     subpath: "./use-confirm-dialog",
     source: "src/use-confirm-dialog.ts",
-    gzipBudgetBytes: 1.75 * 1024,
+    gzipBudgetBytes: 2.25 * 1024,
     runtimeExports: ["useConfirmDialog"],
     utilities: ["useConfirmDialog"],
   },

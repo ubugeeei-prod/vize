@@ -134,7 +134,9 @@ void hook.trigger("a", 1);
 void hook.trigger("a");
 // @ts-expect-error listeners receive the payload types.
 hook.on((id: number) => id);
-const emptyHook = createEventHook();
+const emptyHook = createEventHook({ serverListeners: "register" });
+// @ts-expect-error the server policy is a closed union.
+createEventHook({ serverListeners: "always" });
 void emptyHook.trigger();
 
 useIdGenerator({ prefix: "x" })("hint") satisfies string;

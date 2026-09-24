@@ -219,7 +219,7 @@ export const utilities = [
     ssr: "safe",
     hydration: "not-applicable",
     cleanupOwners: ["returned-value", "reactive-scope"],
-    runtimeGlobals: [],
+    runtimeGlobals: ["console", "process", "window"],
     dependencies: ["tryOnScopeDispose"],
   },
   {

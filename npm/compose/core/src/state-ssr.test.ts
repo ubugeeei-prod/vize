@@ -130,6 +130,40 @@ void test("global state and event hooks are inert data during render", async () 
   assert.equal(html, "<output>global|1</output>");
 });
 
+void test("module-level event hooks skip server setup listeners instead of piling up", async () => {
+  const shared = createEventHook<[string]>();
+  const opted = createEventHook<[string]>({ serverListeners: "register" });
+  const warnings: unknown[] = [];
+  const originalWarn = console.warn;
+  console.warn = (...args: unknown[]) => {
+    warnings.push(args[0]);
+  };
+  try {
+    for (let request = 0; request < 3; request += 1) {
+      await renderToString(
+        createSSRApp(
+          defineComponent({
+            setup() {
+              const skipped = shared.on(() => undefined);
+              skipped.off();
+              opted.on(() => undefined);
+              return () => h("i");
+            },
+          }),
+        ),
+      );
+    }
+  } finally {
+    console.warn = originalWarn;
+  }
+  assert.equal(shared.size(), 0, "no listener accumulates across requests");
+  assert.equal(opted.size(), 3, "opted-in hooks register and leave cleanup to the caller");
+  assert.equal(warnings.length, 1, "the development warning fires once per hook");
+  assert.match(String(warnings[0]), /VIZE_COMPOSE_EVENT_HOOK_SERVER_LISTENER/);
+  shared.on(() => undefined);
+  assert.equal(shared.size(), 1, "registrations outside server setup are unaffected");
+});
+
 void test("mount-gated state renders the client's pre-mount fallback", async () => {
   const html = await renderTwice(() =>
     defineComponent({
