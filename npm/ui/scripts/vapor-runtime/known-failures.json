@@ -5,6 +5,7 @@
     "autocomplete-root": "unclassified: setup function: TypeError: Cannot read properties of undefined (reading 'query')",
     "avatar-group": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "calendar-grid": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "calendar-multiple-root": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "calendar-root": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "cascader-column": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "cascader-content": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -81,6 +82,7 @@
     "menubar-menu": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "menubar-root": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "menubar-trigger": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "month-picker": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "notification-center-item": "unclassified: [Vue warn]: Invalid prop: type check failed for prop \"setSize\". Expected Number with value NaN, got Undefined  ",
     "popconfirm-cancel": "vapor-codegen: provide/inject context lost after an earlier render failure",
     "popconfirm-confirm": "vapor-codegen: provide/inject context lost after an earlier render failure",
@@ -117,7 +119,9 @@
     "tour-prev": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "tour-progress": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "tour-step": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
-    "tour-title": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime"
+    "tour-title": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "week-picker": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "year-picker": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime"
   },
   "hydrate": {
     "accordion-content": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -145,6 +149,7 @@
     "calendar-grid": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "calendar-heading": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "calendar-month-select": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "calendar-multiple-root": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "calendar-next": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "calendar-prev": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "calendar-root": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -226,6 +231,7 @@
     "date-range-picker-content": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "date-range-picker-field": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "date-range-picker-root": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "datetime-field": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "dialog-close": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "dialog-content": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "dialog-description": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -239,6 +245,7 @@
     "drawer-root": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "dropdown-menu-root": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "dropdown-menu-trigger": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
+    "duration-field": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "editable": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "editable-input": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "editable-preview": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -365,6 +372,7 @@
     "menubar-root": "unclassified: setup function: TypeError: Cannot read properties of null (reading 'nodeType')",
     "menubar-trigger": "unclassified: setup function: TypeError: Cannot read properties of null (reading 'nodeType')",
     "meter": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
+    "month-picker": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "native-select": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "navigation-menu": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "navigation-menu-content": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -515,6 +523,7 @@
     "tags-input-item-delete": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "tags-input-item-text": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "time-field": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
+    "time-picker": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "timeline": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "timeline-connector": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "timeline-content": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -571,6 +580,8 @@
     "webcam-capture-status-message": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "webcam-capture-stop-button": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "webcam-capture-switch-camera": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
-    "webcam-capture-video": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime"
+    "webcam-capture-video": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "week-picker": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "year-picker": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime"
   }
 }
