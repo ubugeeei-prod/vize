@@ -50,8 +50,14 @@ impl super::EmitCx<'_> {
             for_item,
             self.is_ts,
             &|name| {
-                self.reads_constant_binding_name(name)
-                    && self.reads_lattice_static_patch_binding_name(name)
+                // The shipped patch gate looks up raw handler names in SFC
+                // binding metadata even when a slot/loop parameter shadows
+                // the script binding. Module-mode reads otherwise carry a
+                // `$setup.` prefix and must stay dynamic.
+                self.reads_lattice_static_patch_binding_name(name)
+                    && (self.reads_constant_binding_name(name)
+                        || self.scope.is_slot_param(name)
+                        || self.scope.binds_in_pattern(name))
             },
             &|on| super::on::caches_handler(self, on),
             self.caches_handlers(),

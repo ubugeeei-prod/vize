@@ -146,6 +146,27 @@ fn conditional_v_for_branch_does_not_hoist_item_props() {
 }
 
 #[test]
+fn scoped_handler_shadowing_setup_const_keeps_legacy_patch_flags() {
+    let _guard = PROFILER_TEST_LOCK.lock().unwrap();
+    let source = r#"<script setup lang="ts">function start() {}</script><template><Timer><template #controls="{ start }"><button @click="start">START</button></template></Timer></template>"#;
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    for shape in [Shape::DomInline, Shape::DomModule] {
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
+        let selected = compile(&descriptor, "ShadowedHandler.vue", shape).unwrap();
+        let counters = profiler.counter_summary();
+        profiler.disable();
+        profiler.clear();
+        assert_eq!(classify(shape, &counters), Ok(Lane::Accepted), "{shape:?}");
+        let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+            compile(&descriptor, "ShadowedHandler.vue", shape)
+        });
+        assert_eq!(divergence(&selected, &legacy), None, "{shape:?}");
+    }
+}
+
+#[test]
 fn production_compiles_report_and_hold_their_davinci_reach() {
     let _guard = PROFILER_TEST_LOCK.lock().unwrap();
     std::thread::Builder::new()
