@@ -244,6 +244,28 @@ test("virtualized lists render a window and navigate across the whole collection
   handle.unmount();
 });
 
+test("virtualized arrow navigation crosses windows and loops at absolute edges", async () => {
+  const handle = mountVirtualSelect({ loop: true });
+  const button = handle.getByRole("combobox", { name: "Rows" });
+  keydown(button, "End");
+  await settle();
+  assert.equal(activeIndex(handle), "999");
+  keydown(button, "ArrowDown");
+  await settle();
+  assert.equal(activeIndex(handle), "0");
+  keydown(button, "ArrowUp");
+  await settle();
+  assert.equal(activeIndex(handle), "999");
+  keydown(button, "Home");
+  await settle();
+  for (let index = 0; index < 12; index++) {
+    keydown(button, "ArrowDown");
+    await settle();
+  }
+  assert.equal(activeIndex(handle), "12");
+  handle.unmount();
+});
+
 test("virtualized lists open on a selected option outside the initial window", async () => {
   const handle = mountVirtualSelect({ defaultValue: rows[500] });
   const button = handle.getByRole("combobox", { name: "Rows" });

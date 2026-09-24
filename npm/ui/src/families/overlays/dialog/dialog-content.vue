@@ -97,7 +97,7 @@ const element = useTemplateRef<HTMLDivElement>("element");
 const beforeGuard = useTemplateRef<HTMLSpanElement>("beforeGuard");
 const afterGuard = useTemplateRef<HTMLSpanElement>("afterGuard");
 const ownerDocument = shallowRef<Document | null>(null);
-const present = computed(() => context.open.value || forceMount);
+const present = computed(() => context.open.value || context.exiting.value || forceMount);
 const guarded = computed(() => context.open.value && context.modal.value && trapFocus);
 const ariaLabelledbyValue = computed(() => {
   if (ariaLabel || ariaLabelledby === null) return undefined;
@@ -239,7 +239,9 @@ defineExpose(exposed);
     ref="host"
     data-vize-ui="dialog-content-host"
     part="content-host"
-    :hidden="present && context.open.value ? undefined : true"
+    :hidden="context.open.value || context.exiting.value ? undefined : true"
+    :inert="context.open.value ? undefined : true"
+    :aria-hidden="context.open.value ? undefined : 'true'"
     :data-state="context.state.value"
   >
     <span
@@ -263,8 +265,10 @@ defineExpose(exposed);
       data-vize-ui="dialog-content"
       part="content"
       :data-state="context.state.value"
+      :data-exiting="context.exiting.value ? 'true' : undefined"
       :data-modal="context.modal.value ? 'true' : 'false'"
       :data-top-layer="dismissableLayer.isTopLayer.value ? 'true' : 'false'"
+      @animationend="context.completeExit"
     >
       <slot v-bind="slotState" />
     </div>

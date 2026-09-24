@@ -40,7 +40,7 @@ export interface ComboboxContextValue<T> {
   onFocus(event: FocusEvent): void;
   onBlur(event: FocusEvent): void;
   setOpen(open: boolean, event: Event | null): boolean;
-  remove(value: T): boolean;
+  remove(value: T, event?: Event | null): boolean;
   textOf(value: T): string;
   isValueDisabled(value: T): boolean;
   create(event: Event | null): boolean;
@@ -57,7 +57,7 @@ export const comboboxContext = createContext<ComboboxContextValue<unknown>>("Com
 export interface ComboboxChipContextValue {
   readonly text: ComputedRef<string>;
   readonly disabled: ComputedRef<boolean>;
-  remove(): boolean;
+  remove(event?: Event | null): boolean;
 }
 
 export const comboboxChipContext = createContext<ComboboxChipContextValue>("ComboboxChip");

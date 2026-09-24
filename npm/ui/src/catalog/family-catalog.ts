@@ -8,6 +8,7 @@ import { confirmFamilyCatalog, drawerFamilyCatalog } from "./family-catalog-draw
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
+import { formInputFamilyCatalog } from "./family-catalog-form-inputs.ts";
 import { hoverCardFamilyCatalog } from "./family-catalog-hover-card.ts";
 import { i18nFamilyCatalog } from "./family-catalog-i18n.ts";
 import { interactionGestureFamilyCatalog } from "../families/interaction/catalog/gestures.ts";
@@ -52,6 +53,7 @@ const allFamilyCatalogEntries = [
   ...feedbackFamilyCatalog,
   ...foundationFamilyCatalog,
   ...focusFamilyCatalog,
+  ...formInputFamilyCatalog,
   ...hoverCardFamilyCatalog,
   ...i18nFamilyCatalog,
   ...interactionGestureFamilyCatalog,

@@ -203,5 +203,11 @@ export function defaultSelectText<T>(value: T, by: SelectBy<T> | undefined): str
       if (typeof candidate === "string") return candidate;
     }
   }
-  return serializeSelectValue(value, by);
+  try {
+    return serializeSelectValue(value, by);
+  } catch {
+    // Text rendering does not require a form serializer. Named controls still
+    // surface serialization errors when constructing their form mirror.
+    return "";
+  }
 }

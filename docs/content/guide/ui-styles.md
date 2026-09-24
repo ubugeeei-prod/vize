@@ -75,9 +75,11 @@ script. The old `theme.css`, `theme-preset-*.css`, and `style.css` imports
 continue to work; avoid importing `style.css` alongside `base.css` because it
 already contains the base and every legacy preset.
 
-Button has short hover, press, and focus feedback. Dialog animates its arrival
-without delaying focus or dismissal. It closes immediately because the
-headless Dialog currently removes closed content; an exit animation would
-require a presence-aware lifecycle. Both visual files disable motion for
-`prefers-reduced-motion` and retain clear boundaries in forced-colors mode.
+Button has short hover, press, and focus feedback. With `dialog.css`, Dialog
+animates its arrival and a 200ms exit. Closing releases focus containment,
+outside inert, and scroll lock immediately; the exiting sheet stays inert and
+hidden from assistive technology until its animation ends. Headless Dialog
+still unmounts immediately, as does styled Dialog when
+`prefers-reduced-motion: reduce` matches. Both visual files retain clear
+boundaries in forced-colors mode.
 Application CSS outside Vize's cascade layers can override any rule.

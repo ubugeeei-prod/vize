@@ -50,6 +50,33 @@ test("renders select-only combobox semantics with placeholder and closed popup",
   handle.unmount();
 });
 
+test("unnamed select renders cyclic and non-serializable option values", async () => {
+  const cyclic: { label: string; self?: unknown } = { label: "Cycle" };
+  cyclic.self = cyclic;
+  const handle = mountInteraction(SelectRoot, {
+    props: { defaultOpen: true, defaultValue: cyclic },
+    slots: {
+      default: () => [
+        h(SelectTrigger, { ariaLabel: "Value" }, () => h(SelectValue)),
+        h(SelectContent, { portalDisabled: true }, () =>
+          h(SelectItem, { value: cyclic }, () => "Cycle"),
+        ),
+      ],
+    },
+  });
+  await settle();
+  assert.equal(handle.getByRole("combobox", { name: "Value" }).textContent, "Cycle");
+  handle.unmount();
+
+  const symbol = mountInteraction(SelectRoot, {
+    props: { defaultValue: Symbol("option") },
+    slots: { default: () => h(SelectTrigger, { ariaLabel: "Symbol" }, () => h(SelectValue)) },
+  });
+  await settle();
+  assert.equal(symbol.getByRole("combobox", { name: "Symbol" }).textContent, "");
+  symbol.unmount();
+});
+
 test("click opens the listbox, highlights the selected option, and click selects", async () => {
   const handle = mountFruitSelect({ defaultValue: fruits[1] });
   const button = trigger(handle);

@@ -50,6 +50,19 @@ test("renders APG combobox semantics on a native text input", async () => {
   handle.unmount();
 });
 
+test("unnamed combobox accepts a cyclic selected value", async () => {
+  const cyclic: { label: string; self?: unknown } = { label: "Cycle" };
+  cyclic.self = cyclic;
+  const handle = mountCombobox({
+    by: undefined,
+    defaultValue: cyclic,
+    itemText: (value: typeof cyclic) => value.label,
+  });
+  await settle();
+  assert.equal(comboboxInput(handle).value, "Cycle");
+  handle.unmount();
+});
+
 test("typing opens, filters accent-insensitively, highlights the first match, and Enter selects", async () => {
   const handle = mountCombobox();
   const input = comboboxInput(handle);
@@ -191,6 +204,40 @@ test("clicking the create option creates the typed value", async () => {
   handle.unmount();
 });
 
+test("inline completion creates the typed query rather than the suggestion", async () => {
+  const handle = mountCombobox({
+    autocomplete: "inline",
+    createOption: (text: string) => ({ id: 7, name: text }),
+  });
+  const input = comboboxInput(handle);
+  await type(input, "Ky");
+  assert.equal(input.value, "Kyoto");
+  const create = handle.root().querySelector("[data-vize-ui='combobox-create-item']");
+  if (!(create instanceof HTMLElement)) assert.fail("create option must render");
+  await handle.click(create);
+  assert.equal(handle.wrapper.emitted("create")?.[0]?.[1], "Ky");
+  handle.unmount();
+});
+
+test("readonly combobox never offers or creates a custom option", async () => {
+  const handle = mountCombobox({
+    createOption: (text: string) => ({ id: 7, name: text }),
+    defaultOpen: true,
+    readonly: true,
+  });
+  (handle.wrapper.vm as unknown as { setInputValue(value: string): void }).setInputValue("Oslo");
+  await settle();
+  assert.equal(
+    handle.root().querySelector("[data-vize-ui='combobox-create-item']")?.hasAttribute("hidden"),
+    true,
+  );
+  keydown(comboboxInput(handle), "Enter");
+  await settle();
+  assert.equal(handle.wrapper.emitted("create"), undefined);
+  assert.equal(handle.wrapper.emitted("update:modelValue"), undefined);
+  handle.unmount();
+});
+
 test("multiple mode renders chips, keeps the popup open, and deletes with Backspace", async () => {
   const handle = mountCombobox({ defaultValue: [cities[0]], multiple: true });
   const input = comboboxInput(handle);
@@ -217,12 +264,26 @@ test("multiple mode renders chips, keeps the popup open, and deletes with Backsp
 
   const remove = handle.getByRole("button", { name: "Remove Berlin" });
   assert.equal(remove.tabIndex, -1);
+  const changesBeforeClick = handle.wrapper.emitted("change")?.length ?? 0;
   await handle.click(remove);
   assert.equal(handle.root().querySelectorAll("[data-vize-ui='combobox-chip']").length, 0);
+  const clickChange = handle.wrapper.emitted("change")?.[changesBeforeClick];
+  assert.deepEqual(clickChange?.[0], []);
+  assert.ok(clickChange?.[2] instanceof MouseEvent);
   assert.deepEqual(
     handle.wrapper.emitted("update:modelValue")?.map(([value]) => value),
     [[cities[0], cities[3]], [cities[0]], []],
   );
+  handle.unmount();
+});
+
+test("Escape leaves a closed multiple selection untouched", async () => {
+  const handle = mountCombobox({ defaultValue: [cities[0]], multiple: true });
+  const input = comboboxInput(handle);
+  const escape = keydown(input, "Escape");
+  await settle();
+  assert.equal(escape.defaultPrevented, false);
+  assert.equal(handle.wrapper.emitted("update:modelValue"), undefined);
   handle.unmount();
 });
 

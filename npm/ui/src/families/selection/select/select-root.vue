@@ -123,7 +123,7 @@ const collection = useSelectCollection<T>({
   typeaheadTimeout: () => typeaheadTimeout,
 });
 
-const textCache = shallowRef<ReadonlyMap<string, string>>(new Map());
+const textCache = shallowRef<ReadonlyMap<T, string>>(new Map());
 
 function serialize(value: T): string {
   return formValue?.(value) ?? serializeSelectValue(value, by);
@@ -140,11 +140,15 @@ function registeredText(value: T): string | undefined {
 
 function textFor(value: T): string {
   return (
-    itemText?.(value) ??
-    registeredText(value) ??
-    textCache.value.get(serialize(value)) ??
-    defaultSelectText(value, by)
+    itemText?.(value) ?? registeredText(value) ?? cachedText(value) ?? defaultSelectText(value, by)
   );
+}
+
+function cachedText(value: T): string | undefined {
+  for (const [candidate, text] of textCache.value) {
+    if (equals.value(candidate, value)) return text;
+  }
+  return undefined;
 }
 
 const selectedText = computed(() => selected.value.map(textFor));
@@ -156,8 +160,8 @@ const activeDescendant = computed(() => {
 // one; otherwise only the selection is mirrored, keeping large lists cheap.
 const nativeOptions = computed<readonly NativeOption[]>(() => {
   const source = name !== undefined && items !== undefined ? items : selected.value;
-  return source.map((value) => ({
-    key: serialize(value),
+  return source.map((value, index) => ({
+    key: name === undefined ? String(index) : serialize(value),
     selected: includesSelectValue(selected.value, value, equals.value),
   }));
 });
@@ -330,10 +334,9 @@ function onTriggerKeydown(event: KeyboardEvent): void {
 
 function rememberText(value: T, text: string): void {
   if (text.length === 0) return;
-  const key = serialize(value);
-  if (textCache.value.get(key) === text) return;
+  if (cachedText(value) === text) return;
   const next = new Map(textCache.value);
-  next.set(key, text);
+  next.set(value, text);
   textCache.value = next;
 }
 

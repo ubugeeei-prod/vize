@@ -10,11 +10,13 @@ export interface DialogContextValue {
   readonly titleId: ComputedRef<string>;
   readonly descriptionId: ComputedRef<string>;
   readonly open: ComputedRef<boolean>;
+  readonly exiting: Readonly<ShallowRef<boolean>>;
   readonly modal: ComputedRef<boolean>;
   readonly state: ComputedRef<DialogState>;
   readonly triggerElement: ShallowRef<HTMLButtonElement | null>;
   readonly overlayElement: ShallowRef<HTMLElement | null>;
   readonly contentElement: ShallowRef<HTMLDivElement | null>;
+  readonly completeExit: (event: AnimationEvent) => void;
   readonly setOpen: (value: boolean, event?: Event | null) => boolean;
   readonly openDialog: (event?: Event | null) => boolean;
   readonly close: (event?: Event | null) => boolean;

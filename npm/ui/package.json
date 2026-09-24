@@ -115,6 +115,21 @@
       "import": "./dist/breadcrumb.mjs",
       "default": "./dist/breadcrumb.mjs"
     },
+    "./input-mask": {
+      "types": "./dist/input-mask.d.mts",
+      "import": "./dist/input-mask.mjs",
+      "default": "./dist/input-mask.mjs"
+    },
+    "./number-field": {
+      "types": "./dist/number-field.d.mts",
+      "import": "./dist/number-field.mjs",
+      "default": "./dist/number-field.mjs"
+    },
+    "./range-slider": {
+      "types": "./dist/range-slider.d.mts",
+      "import": "./dist/range-slider.mjs",
+      "default": "./dist/range-slider.mjs"
+    },
     "./tabs": {
       "types": "./dist/tabs.d.mts",
       "import": "./dist/tabs.mjs",
