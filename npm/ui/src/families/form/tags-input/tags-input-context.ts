@@ -15,6 +15,7 @@ import type {
  */
 export interface TagsInputContextValue {
   readonly inputId: ComputedRef<string>;
+  readonly form: ComputedRef<string | undefined>;
   readonly tags: ComputedRef<readonly unknown[]>;
   readonly inputValue: ShallowRef<string>;
   readonly disabled: ComputedRef<boolean>;

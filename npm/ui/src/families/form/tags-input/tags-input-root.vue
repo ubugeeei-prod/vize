@@ -503,8 +503,9 @@ function onRootPointerdown(event: PointerEvent): void {
 watch(
   element,
   (root, _previous, onCleanup) => {
-    const owner = root?.closest("form");
-    if (owner === undefined || owner === null) return;
+    const owner =
+      form === undefined ? root?.closest("form") : root?.ownerDocument.getElementById(form);
+    if (!(owner instanceof HTMLFormElement)) return;
     const onReset = () => {
       inputValue.value = "";
       editingIndex.value = null;
@@ -524,6 +525,7 @@ watch(tags, (next) => {
 tagsInputContext.provide({
   activeIndex,
   addOnBlur: addOnBlurState,
+  form: computed(() => form),
   ariaDescribedby: computed(() => ariaDescribedby),
   ariaErrormessage: computed(() => ariaErrormessage),
   ariaInvalid: ariaInvalidValue,

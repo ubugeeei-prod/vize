@@ -470,6 +470,41 @@ test("submits one form entry per tag, validates required, and restores on form r
   handle.unmount();
 });
 
+test("associates required input and reset with an external form", async () => {
+  const Probe = defineComponent({
+    setup: () => () =>
+      h("div", [
+        h("form", { id: "external-profile" }),
+        h(
+          TagsInputRoot,
+          {
+            ariaLabel: "Topics",
+            defaultValue: ["vue"],
+            form: "external-profile",
+            name: "topics",
+            required: true,
+          },
+          { default: renderTags },
+        ),
+      ]),
+  });
+  const handle = mountInteraction(Probe);
+  const form = handle.root().querySelector("form") as HTMLFormElement;
+  const field = input(handle as Handle);
+
+  assert.equal(field.form, form);
+  assert.deepEqual(new FormData(form).getAll("topics"), ["vue"]);
+  await type(field, "vite");
+  await key(field, "Enter");
+  assert.deepEqual(new FormData(form).getAll("topics"), ["vue", "vite"]);
+
+  form.reset();
+  await nextTick();
+  await nextTick();
+  assert.deepEqual(new FormData(form).getAll("topics"), ["vue"]);
+  handle.unmount();
+});
+
 test("controlled tags wait for the parent to accept updates", async () => {
   const handle = mountTags({ modelValue: ["a"] });
   const field = input(handle);

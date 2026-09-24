@@ -92,6 +92,7 @@ defineExpose(exposed);
     :placeholder
     :autocomplete
     :disabled="context.disabled.value"
+    :form="context.form.value"
     :readonly="context.readonly.value"
     :required="nativeRequired"
     :aria-required="context.required.value ? 'true' : undefined"
