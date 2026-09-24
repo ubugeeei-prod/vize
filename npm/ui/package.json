@@ -259,6 +259,7 @@
       "types": "./dist/hover-card.d.mts",
       "import": "./dist/hover-card.mjs",
       "default": "./dist/hover-card.mjs"
+    },
     "./toast": {
       "types": "./dist/toast.d.mts",
       "import": "./dist/toast.mjs",
