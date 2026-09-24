@@ -322,6 +322,11 @@
       "import": "./dist/transition.mjs",
       "default": "./dist/transition.mjs"
     },
+    "./until": {
+      "types": "./dist/until.d.mts",
+      "import": "./dist/until.mjs",
+      "default": "./dist/until.mjs"
+    },
     "./use-broadcast-channel": {
       "types": "./dist/use-broadcast-channel.d.mts",
       "import": "./dist/use-broadcast-channel.mjs",
@@ -337,6 +342,11 @@
       "import": "./dist/use-cookie.mjs",
       "default": "./dist/use-cookie.mjs"
     },
+    "./use-countdown": {
+      "types": "./dist/use-countdown.d.mts",
+      "import": "./dist/use-countdown.mjs",
+      "default": "./dist/use-countdown.mjs"
+    },
     "./use-counter": {
       "types": "./dist/use-counter.d.mts",
       "import": "./dist/use-counter.mjs",
@@ -346,6 +356,11 @@
       "types": "./dist/use-css-var.d.mts",
       "import": "./dist/use-css-var.mjs",
       "default": "./dist/use-css-var.mjs"
+    },
+    "./use-date-format": {
+      "types": "./dist/use-date-format.d.mts",
+      "import": "./dist/use-date-format.mjs",
+      "default": "./dist/use-date-format.mjs"
     },
     "./use-debounced": {
       "types": "./dist/use-debounced.d.mts",
@@ -417,6 +432,11 @@
       "import": "./dist/use-indexed-db.mjs",
       "default": "./dist/use-indexed-db.mjs"
     },
+    "./use-interval": {
+      "types": "./dist/use-interval.d.mts",
+      "import": "./dist/use-interval.mjs",
+      "default": "./dist/use-interval.mjs"
+    },
     "./use-media-controls": {
       "types": "./dist/use-media-controls.d.mts",
       "import": "./dist/use-media-controls.mjs",
@@ -426,6 +446,11 @@
       "types": "./dist/use-notification.d.mts",
       "import": "./dist/use-notification.mjs",
       "default": "./dist/use-notification.mjs"
+    },
+    "./use-now": {
+      "types": "./dist/use-now.d.mts",
+      "import": "./dist/use-now.mjs",
+      "default": "./dist/use-now.mjs"
     },
     "./use-object-url": {
       "types": "./dist/use-object-url.d.mts",
@@ -441,6 +466,11 @@
       "types": "./dist/use-previous.d.mts",
       "import": "./dist/use-previous.mjs",
       "default": "./dist/use-previous.mjs"
+    },
+    "./use-raf-fn": {
+      "types": "./dist/use-raf-fn.d.mts",
+      "import": "./dist/use-raf-fn.mjs",
+      "default": "./dist/use-raf-fn.mjs"
     },
     "./use-script-tag": {
       "types": "./dist/use-script-tag.d.mts",
@@ -476,6 +506,16 @@
       "types": "./dist/use-throttled.d.mts",
       "import": "./dist/use-throttled.mjs",
       "default": "./dist/use-throttled.mjs"
+    },
+    "./use-time-ago": {
+      "types": "./dist/use-time-ago.d.mts",
+      "import": "./dist/use-time-ago.mjs",
+      "default": "./dist/use-time-ago.mjs"
+    },
+    "./use-timeout": {
+      "types": "./dist/use-timeout.d.mts",
+      "import": "./dist/use-timeout.mjs",
+      "default": "./dist/use-timeout.mjs"
     },
     "./use-toggle": {
       "types": "./dist/use-toggle.d.mts",
@@ -521,6 +561,41 @@
       "types": "./dist/virtual-list.d.mts",
       "import": "./dist/virtual-list.mjs",
       "default": "./dist/virtual-list.mjs"
+    },
+    "./watch-debounced": {
+      "types": "./dist/watch-debounced.d.mts",
+      "import": "./dist/watch-debounced.mjs",
+      "default": "./dist/watch-debounced.mjs"
+    },
+    "./watch-ignorable": {
+      "types": "./dist/watch-ignorable.d.mts",
+      "import": "./dist/watch-ignorable.mjs",
+      "default": "./dist/watch-ignorable.mjs"
+    },
+    "./watch-once": {
+      "types": "./dist/watch-once.d.mts",
+      "import": "./dist/watch-once.mjs",
+      "default": "./dist/watch-once.mjs"
+    },
+    "./watch-pausable": {
+      "types": "./dist/watch-pausable.d.mts",
+      "import": "./dist/watch-pausable.mjs",
+      "default": "./dist/watch-pausable.mjs"
+    },
+    "./watch-source": {
+      "types": "./dist/watch-source.d.mts",
+      "import": "./dist/watch-source.mjs",
+      "default": "./dist/watch-source.mjs"
+    },
+    "./watch-throttled": {
+      "types": "./dist/watch-throttled.d.mts",
+      "import": "./dist/watch-throttled.mjs",
+      "default": "./dist/watch-throttled.mjs"
+    },
+    "./whenever": {
+      "types": "./dist/whenever.d.mts",
+      "import": "./dist/whenever.mjs",
+      "default": "./dist/whenever.mjs"
     },
     "./window-size": {
       "types": "./dist/window-size.d.mts",

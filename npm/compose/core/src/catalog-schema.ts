@@ -15,6 +15,7 @@ export type ComposableCategory =
   | "media"
   | "networking"
   | "performance"
+  | "reactivity"
   | "sensors"
   | "state"
   | "storage"
