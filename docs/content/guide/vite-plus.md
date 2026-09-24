@@ -35,6 +35,8 @@ export default defineConfig({
       preset: "essential",
       rules: { "vue/no-v-html": "error" },
       typecheck: true,
+      locale: "ja",
+      helpLevel: "short",
     },
     rules: { "no-debugger": "error" },
     ignorePatterns: ["dist/**"],
@@ -51,10 +53,10 @@ export default defineConfig({
 | --- | --- |
 | `compiler` | Vize compiler and plugin options; `false` keeps the existing Vue compiler |
 | `typecheck` | Native typechecker options; `false` disables native checks |
-| `lint.vize` | Native lint rules and optional `typecheck`; `false` disables native lint |
+| `lint.vize` | Native lint rules, optional `typecheck`, `locale`, and `helpLevel`; `false` disables native lint |
 | Other `lint` fields | The installed Vite+ / Oxlint configuration |
 | `fmt.vize` | Native Vue formatter options; `false` returns Vue formatting to Oxfmt |
-| Other `fmt` fields | The installed Vite+ / Oxfmt configuration |
+| Other `fmt` fields | The installed Vite+ / Oxfmt configuration; `ignorePatterns` also excludes native Vue formatting |
 | `pack.vize` | Native declaration and map options |
 | Other `pack` fields | The installed Vite+ / tsdown configuration |
 | `vize` | Shared native config, including scopes, globals, and language-server settings |
@@ -134,6 +136,11 @@ Vize formats `**/*.vue`, which is excluded from Oxfmt by default. Other files st
 with Oxfmt. Set `lint.vize: false` or `fmt.vize: false` to return the corresponding
 responsibility to Vite+. The integration option `conflicts: false` disables
 automatic overlap handling.
+
+`fmt.ignorePatterns` applies to both formatters, so generated or vendored Vue files
+stay untouched. `lint.vize.locale` (`en`, `ja`, or `zh`) and `helpLevel` (`full`,
+`short`, or `none`) control native diagnostics without passing unsupported flags
+to Oxlint.
 
 The compiler replaces an existing `vite:vue` plugin, including nested and async
 plugin lists, to avoid compiling a Vue file twice. Move that plugin's options to

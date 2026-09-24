@@ -65,7 +65,12 @@ export async function runTools(
     if (options.fmt !== false) {
       const files = await glob(patterns.length ? patterns : ["**/*.vue"], {
         expandDirectories: true,
-        ignore: ["**/node_modules/**", "**/.git/**", "**/.vize/**"],
+        ignore: [
+          "**/node_modules/**",
+          "**/.git/**",
+          "**/.vize/**",
+          ...(metadata.fmtIgnorePatterns ?? []),
+        ],
       });
       const vue = files.filter((file) => file.endsWith(".vue"));
       // An empty pattern list would make native fmt format every file again.
@@ -145,7 +150,21 @@ export async function runNative(
   const file = path.resolve(`.vize-vp-${randomUUID()}.json`);
   try {
     await writeFile(file, JSON.stringify(config), { flag: "wx", mode: 0o600 });
-    return await spawn(process.execPath, [native, command, "--config", file, ...argv]);
+    const lintOptions =
+      command === "lint"
+        ? [
+            ...(metadata.lintLocale ? ["--locale", metadata.lintLocale] : []),
+            ...(metadata.lintHelpLevel ? ["--help-level", metadata.lintHelpLevel] : []),
+          ]
+        : [];
+    return await spawn(process.execPath, [
+      native,
+      command,
+      "--config",
+      file,
+      ...lintOptions,
+      ...argv,
+    ]);
   } finally {
     await rm(file, { force: true });
   }

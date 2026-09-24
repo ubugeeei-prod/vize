@@ -188,3 +188,22 @@ void test("either lint typecheck spelling enables one native checker, and false 
   assert.deepEqual(result.plugins, []);
   assert.equal(result.fmt?.ignorePatterns, undefined);
 });
+
+void test("native lint presentation and shared format ignores reach only their owning tasks", async () => {
+  const source = {
+    lint: {
+      vize: { preset: "happy-path" as const, locale: "ja" as const, helpLevel: "short" as const },
+    },
+    fmt: { vize: { singleQuote: false }, ignorePatterns: ["generated/**"] },
+  };
+  const result = await defineConfig(source, { plugin: false, tasks: false })(env);
+  const metadata = (result as ConfigWithVizeTasks)[taskConfigKey]!;
+  assert.equal(metadata.lintLocale, "ja");
+  assert.equal(metadata.lintHelpLevel, "short");
+  assert.deepEqual(metadata.fmtIgnorePatterns, ["generated/**"]);
+  assert.deepEqual(result.fmt?.ignorePatterns?.slice(0, 1), ["generated/**"]);
+  assert.ok(!("locale" in (result.lint ?? {})));
+  assert.ok(!("helpLevel" in (result.lint ?? {})));
+  assert.deepEqual((await resolveConfigExport(metadata.config!)).linter, { preset: "happy-path" });
+  assert.deepEqual(source.fmt.ignorePatterns, ["generated/**"]);
+});

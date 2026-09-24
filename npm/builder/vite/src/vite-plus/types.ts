@@ -15,6 +15,10 @@ export type VizeCompilerOptions = Omit<CompilerConfig, "compatibility"> &
 export interface VizeLintOptions extends LinterConfig {
   /** Also run the native typechecker before linting. @default false */
   typecheck?: boolean;
+  /** Language of native lint diagnostics. @default "en" */
+  locale?: "en" | "ja" | "zh";
+  /** Detail shown with native lint diagnostics. @default "full" */
+  helpLevel?: "full" | "short" | "none";
 }
 export interface VizePackOptions {
   /** Emit Vue and TypeScript declarations after the bundle succeeds. @default true */
@@ -81,6 +85,9 @@ export interface VizeTaskConfig {
   config?: UserConfigExport;
   options: VizePlusOptions;
   lintTypecheck?: boolean;
+  lintLocale?: VizeLintOptions["locale"];
+  lintHelpLevel?: VizeLintOptions["helpLevel"];
+  fmtIgnorePatterns?: string[];
 }
 export type VizePlusConfigFactory = (env: ConfigEnv) => Promise<UserConfig>;
 export const sourceConfigKey = Symbol.for("@vizejs/vite-plugin/vite-plus/source");

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -78,6 +78,61 @@ void test("formatting owns only selected Vue files and never expands an empty li
     calls.length = 0;
     await runTools("fmt", ["App.vue"], { config: {}, options: {} }, "vp", "native", execute);
     assert.deepEqual(calls[0].slice(4), ["--write", "App.vue"]);
+  });
+});
+
+void test("fmt.ignorePatterns excludes Vue files from check and write, even for explicit paths", async () => {
+  await project(async () => {
+    const calls: string[][] = [];
+    const execute = async (_: string, args: string[]) => {
+      calls.push(args);
+      return 0;
+    };
+    const metadata: VizeTaskConfig = {
+      config: {},
+      options: {},
+      fmtIgnorePatterns: ["generated/**"],
+    };
+    mkdirSync("generated");
+    writeFileSync("generated/Generated.vue", "<template><div /></template>\n");
+    for (const task of ["fmt:check", "fmt"] as const) {
+      calls.length = 0;
+      await runTools(task, [], metadata, "vp", "native", execute);
+      assert.deepEqual(calls[0].slice(4), [
+        task === "fmt:check" ? "--check" : "--write",
+        "App.vue",
+      ]);
+      assert.ok(!calls.some((args) => args.includes("generated/Generated.vue")));
+      calls.length = 0;
+      await runTools(task, ["generated/Generated.vue"], metadata, "vp", "native", execute);
+      assert.deepEqual(calls, [
+        ["vp", "fmt", task === "fmt:check" ? "--check" : "--write", "generated/Generated.vue"],
+      ]);
+    }
+  });
+});
+
+void test("lint locale and help level are passed only to the native linter", async () => {
+  await project(async () => {
+    const calls: string[][] = [];
+    await runTools(
+      "lint",
+      ["App.vue"],
+      {
+        config: { linter: { preset: "happy-path" } },
+        options: {},
+        lintLocale: "ja",
+        lintHelpLevel: "short",
+      },
+      "vp",
+      "native",
+      async (_, args) => {
+        calls.push(args);
+        return 0;
+      },
+    );
+    assert.deepEqual(calls[0].slice(4), ["--locale", "ja", "--help-level", "short", "App.vue"]);
+    assert.deepEqual(calls[1], ["vp", "lint", "App.vue"]);
   });
 });
 

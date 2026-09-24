@@ -4,6 +4,7 @@ import type { VizeCompilerOptions } from "./types.ts";
 import type { UserConfigExport } from "../types.ts";
 import type {
   VizePlusOptions,
+  VizeLintOptions,
   VizeSharedConfig,
   VizeTaskConfig,
   VueConfig,
@@ -78,7 +79,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
       {
         ...(compiler === false ? {} : { compiler: nativeCompiler(compiler) }),
         ...(typeof typecheck === "object" ? { typeChecker: typecheck } : {}),
-        ...(typeof lintConfig === "object" ? { linter: withoutTypecheck(lintConfig) } : {}),
+        ...(typeof lintConfig === "object" ? { linter: withoutTaskLintOptions(lintConfig) } : {}),
         ...(typeof nativeFmt === "object" ? { formatter: nativeFmt } : {}),
       },
       env,
@@ -89,13 +90,18 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
     config,
     options,
     lintTypecheck: typeof lintConfig === "object" && lintConfig.typecheck === true,
+    lintLocale: typeof lintConfig === "object" ? lintConfig.locale : undefined,
+    lintHelpLevel: typeof lintConfig === "object" ? lintConfig.helpLevel : undefined,
+    fmtIgnorePatterns: oxfmt.ignorePatterns,
   };
   const vp: UserConfig = { ...rest, lint: lint ? oxlint : undefined, fmt: fmt ? oxfmt : undefined };
   return { vp, metadata, compiler };
 }
 
-function withoutTypecheck<T extends { typecheck?: boolean }>(config: T): Omit<T, "typecheck"> {
-  const { typecheck: _typecheck, ...native } = config;
+function withoutTaskLintOptions<T extends VizeLintOptions>(
+  config: T,
+): Omit<T, "typecheck" | "locale" | "helpLevel"> {
+  const { typecheck: _typecheck, locale: _locale, helpLevel: _helpLevel, ...native } = config;
   return native;
 }
 
