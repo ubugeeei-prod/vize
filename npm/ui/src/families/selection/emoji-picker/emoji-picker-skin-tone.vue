@@ -38,6 +38,8 @@ interface ToneOption {
   readonly tone: EmojiSkinTone;
   readonly label: string;
   readonly checked: boolean;
+  /** Radio role and selection handler bound onto the option button. */
+  readonly radio: { readonly role: "radio"; readonly onClick: () => void };
 }
 
 const context = emojiPickerContext.use();
@@ -47,6 +49,7 @@ const options = computed<readonly ToneOption[]>(() =>
   tones.map((tone) => ({
     checked: context.skinTone.value === tone,
     label: labels[tone] ?? `Tone ${tone}`,
+    radio: { onClick: () => context.setSkinTone(tone), role: "radio" as const },
     tone,
   })),
 );
@@ -70,13 +73,6 @@ function onKeydown(event: KeyboardEvent): void {
   context.setSkinTone(tone);
   focusTone(tone);
 }
-
-function radioProps(tone: EmojiSkinTone) {
-  return {
-    role: "radio" as const,
-    onClick: () => context.setSkinTone(tone),
-  };
-}
 </script>
 
 <template>
@@ -91,7 +87,7 @@ function radioProps(tone: EmojiSkinTone) {
     <button
       v-for="option in options as readonly ToneOption[]"
       :key="option.tone"
-      v-bind="radioProps(option.tone)"
+      v-bind="option.radio"
       type="button"
       :tabindex="option.checked ? 0 : -1"
       :aria-checked="option.checked ? 'true' : 'false'"

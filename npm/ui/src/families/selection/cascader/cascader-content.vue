@@ -142,11 +142,6 @@ const positionerProps = computed(() => ({
   size,
   strategy,
 }));
-const surfaceProps = computed(() => ({
-  onMousedown: keepTriggerFocus,
-  onPointerdown: keepTriggerFocus,
-}));
-
 const layer = useDismissableLayer({
   root: element,
   branches: () => (context.triggerElement.value === null ? [] : [context.triggerElement.value]),
@@ -158,6 +153,11 @@ const layer = useDismissableLayer({
     context.setOpen(false, event.originalEvent);
   },
 });
+const contentBindings = computed(() => ({
+  ...layer.layerProps,
+  onMousedown: keepTriggerFocus,
+  onPointerdown: keepTriggerFocus,
+}));
 
 watch(
   element,
@@ -210,7 +210,7 @@ defineExpose({ element });
             <div
               :id="context.contentId.value"
               ref="element"
-              v-bind="{ ...layer.layerProps, ...surfaceProps }"
+              v-bind="contentBindings"
               :aria-label="ariaLabel"
               data-vize-ui="cascader-content"
               part="content"

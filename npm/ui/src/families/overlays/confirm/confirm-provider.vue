@@ -119,6 +119,22 @@ function slotPropsFor(request: ConfirmRequest): ConfirmSlotProps {
   };
 }
 
+interface ConfirmActionButton {
+  readonly value: string;
+  readonly label: string;
+  readonly destructive: boolean;
+  readonly onClick: () => void;
+}
+
+function actionsOf(request: ConfirmRequest): readonly ConfirmActionButton[] {
+  return request.actions.map((action) => ({
+    destructive: action.destructive === true,
+    label: action.label,
+    onClick: () => onActionClick(action.value),
+    value: action.value,
+  }));
+}
+
 function onActionClick(value: string): void {
   chosen = value;
 }
@@ -180,11 +196,11 @@ defineExpose(exposed);
                 {{ request.cancelLabel }}
               </DialogClose>
               <DialogClose
-                v-for="action in request.actions"
+                v-for="action in actionsOf(request)"
                 :key="action.value"
                 :data-confirm-action="action.value"
                 :data-destructive="action.destructive ? 'true' : undefined"
-                @click="() => onActionClick(action.value)"
+                @click="action.onClick"
               >
                 {{ action.label }}
               </DialogClose>

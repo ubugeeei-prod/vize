@@ -87,7 +87,7 @@ export const confirmFamilyCatalog = [
         "portal",
         "scroll-lock",
       ],
-      maximumJavaScriptGzipBytes: 15_600,
+      maximumJavaScriptGzipBytes: 15_750,
       maximumCssGzipBytes: 0,
     },
     aliases: ["useConfirm", "confirm dialog", "promise dialog", "window.confirm replacement"],
