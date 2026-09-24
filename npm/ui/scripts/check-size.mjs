@@ -63,6 +63,7 @@ const budgets = new Map([
   ["data-grid.mjs", 23_300],
   ["grid-list.mjs", 29_100],
   ["kanban.mjs", 18_500],
+  ["rich-text.mjs", 36_300],
   ["table.mjs", 2_000],
   ["link.mjs", 3_150],
   ["skip-link.mjs", 3_400],

@@ -390,6 +390,11 @@
       "import": "./dist/kanban.mjs",
       "default": "./dist/kanban.mjs"
     },
+    "./rich-text": {
+      "types": "./dist/rich-text.d.mts",
+      "import": "./dist/rich-text.mjs",
+      "default": "./dist/rich-text.mjs"
+    },
     "./table": {
       "types": "./dist/table.d.mts",
       "import": "./dist/table.mjs",

@@ -7,6 +7,7 @@ import { commandPaletteRendererFixtures } from "./renderer-fixtures-command-pale
 import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
 import { dataRendererFixtures } from "./renderer-fixtures-data.ts";
 import { dataViewRendererFixtures } from "./renderer-fixtures-data-views.ts";
+import { editorRendererFixtures } from "./renderer-fixtures-editor.ts";
 import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
 import { disclosureRendererFixtures } from "./renderer-fixtures-disclosure.ts";
 import { drawerRendererFixtures } from "./renderer-fixtures-drawer.ts";
@@ -54,6 +55,7 @@ export const groupedRendererFixtures = [
   ...commandRendererFixtures,
   ...dataRendererFixtures,
   ...dataViewRendererFixtures,
+  ...editorRendererFixtures,
   ...dialogRendererFixtures,
   ...disclosureRendererFixtures,
   ...drawerRendererFixtures,

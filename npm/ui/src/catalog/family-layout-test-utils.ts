@@ -199,6 +199,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["rating", "src/families/form/rating/"],
   ["resizable", "src/families/layout/resizable/"],
   ["safe-area", "src/families/layout/safe-area/"],
+  ["rich-text", "src/families/editor/rich-text/"],
   ["scroll-area", "src/families/layout/scroll-area/"],
   ["scroll-lock", "src/families/accessibility/scroll-lock/"],
   ["scroll-spy", "src/families/interaction/scroll-spy/"],
