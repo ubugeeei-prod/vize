@@ -193,6 +193,23 @@ fn finish(
     force: bool,
     force_flag: &str,
 ) -> LibResult<String> {
+    // Each request is planned against the original lockfile. When one pull
+    // requests multiple sources, they must not claim the same new path.
+    let mut planned_targets = std::collections::BTreeMap::new();
+    for plan in plans {
+        for file in &plan.files {
+            if let Some((kind, name)) =
+                planned_targets.insert(&file.target, (&plan.kind, &plan.name))
+            {
+                return Err(LibError::new(cstr!(
+                    "{}:{} and {kind}:{name} both target {}",
+                    plan.kind,
+                    plan.name,
+                    file.target.display()
+                )));
+            }
+        }
+    }
     let conflicts = conflict_summary(plans);
     let applied = !dry_run && (force || conflicts.is_none());
     let mut out = String::default();

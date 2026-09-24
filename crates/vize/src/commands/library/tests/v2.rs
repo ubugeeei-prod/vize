@@ -77,6 +77,23 @@ fn init_appends_to_existing_json_config_and_defers_on_ts_config() {
     assert_eq!(ts.read("vize.config.ts"), "export default {};\n");
 }
 
+#[cfg(unix)]
+#[test]
+fn init_rejects_symlinked_config_outside_project() {
+    use std::os::unix::fs::symlink;
+
+    let project = Project::new();
+    let outside = tempfile::tempdir().unwrap();
+    let target = outside.path().join("vize.config.json");
+    let original = "{ \"formatter\": { \"semi\": false } }\n";
+    fs::write(&target, original).unwrap();
+    symlink(&target, project.path("vize.config.json")).unwrap();
+
+    let error = project.run(&["init", "--force"]).unwrap_err();
+    assert!(error.message().contains("symbolic link"), "{error}");
+    assert_eq!(fs::read_to_string(target).unwrap(), original);
+}
+
 #[test]
 fn add_is_a_shadcn_compatible_alias_of_pull() {
     let project = Project::new();
@@ -248,6 +265,32 @@ fn namespaced_items_cannot_overwrite_files_owned_by_other_items() {
         "{error}"
     );
     assert_eq!(project.read(ID_TS), super::fixture::ID_V1);
+
+    // A fresh lockfile cannot expose collisions between two sources planned
+    // in the same invocation; reject the entire plan before any write.
+    let fresh = Project::new();
+    ui_v1(&fresh.registry("ui"));
+    write_registry_as(
+        &fresh.path("registries/evil"),
+        "@evil/ui",
+        "ui",
+        "1.0.0",
+        &[Item::new(
+            "id",
+            &[("foundations/id/id.ts", "export const hijacked = true;\n")],
+            &[],
+        )],
+    );
+    fresh.write(
+        "vize.config.json",
+        r#"{ "lib": { "registries": { "@evil": { "source": "./registries/evil", "dir": "src/components/vize" } } } }"#,
+    );
+    let error = fresh
+        .run_with(&["ui"], &["pull", "ui:id", "@evil/id", "--overwrite"])
+        .unwrap_err();
+    assert!(error.message().contains("both target"), "{error}");
+    assert!(!fresh.path(ID_TS).exists());
+    assert!(!fresh.path("vize-lib.lock.json").exists());
 }
 
 #[cfg(unix)]
@@ -280,7 +323,7 @@ fn pulls_from_npm_and_https_namespaces_with_verified_hashes() {
         &project,
         "fake-curl.sh",
         &vize_s0::cstr!(
-            "for a; do last=\"$a\"; done\nwhile [ \"$1\" != --output ]; do shift; done\ncp \"{}/${{last#https://acme.test/r/}}\" \"$2\"\n",
+            "case \" $* \" in *\" --proto-redir =https \"*) ;; *) exit 97 ;; esac\nfor a; do last=\"$a\"; done\nwhile [ \"$1\" != --output ]; do shift; done\ncp \"{}/${{last#https://acme.test/r/}}\" \"$2\"\n",
             served.display()
         ),
     );

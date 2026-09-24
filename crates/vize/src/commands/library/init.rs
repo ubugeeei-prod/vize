@@ -7,7 +7,7 @@ use serde::Serialize;
 use vize_s0::{String, cstr};
 
 use super::error::{LibError, LibResult};
-use super::fs_ops::{project_relative_dir, write_file};
+use super::fs_ops::{ensure_project_path, project_relative_dir, write_file};
 use super::output::{declared_npm_packages, json, line};
 use super::{InitArgs, LibContext};
 
@@ -76,6 +76,13 @@ fn insert_lib_section(source: &str, lib: &str) -> Option<String> {
 
 pub fn init(context: &LibContext, args: &InitArgs) -> LibResult<String> {
     let root = &context.root;
+    // The config is another write destination: an existing symlink must not
+    // bypass the project boundary when the lib section is added or replaced.
+    let config_destination = context
+        .config_path
+        .as_deref()
+        .map_or_else(|| root.join("vize.config.json"), Path::to_path_buf);
+    ensure_project_path(root, &config_destination)?;
     let (source_dir, framework) = detect_source_dir(root);
     let ui_dir = match &args.ui_dir {
         Some(dir) => project_relative_dir(root, Path::new(dir.as_str()))?,

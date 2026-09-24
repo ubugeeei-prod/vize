@@ -138,6 +138,8 @@ pub fn download(curl: &OsStr, url: &str, target: &Path) -> LibResult<()> {
             "--location",
             "--proto",
             "=https",
+            "--proto-redir",
+            "=https",
         ])
         .arg("--output")
         .arg(target)
