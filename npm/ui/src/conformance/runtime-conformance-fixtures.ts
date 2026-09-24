@@ -14,6 +14,7 @@ import { calendarRuntimeFixtures } from "../families/date-time/calendar/runtime-
 import { rangeCalendarRuntimeFixture } from "../families/date-time/range-calendar/runtime-conformance-range-calendar-fixtures.ts";
 import { tableRuntimeFixtures } from "../families/data/table/runtime-conformance-table-fixtures.ts";
 import { layoutRuntimeFixtures } from "./runtime-conformance-layout-fixtures.ts";
+import { menusRuntimeFixtures } from "../families/menus/runtime-conformance-menus-fixtures.ts";
 import { meterRuntimeFixture } from "../families/feedback/meter/runtime-conformance-meter-fixtures.ts";
 import { selectionRuntimeFixtures } from "../families/selection/runtime-conformance-selection-fixtures.ts";
 import { paginationRuntimeFixtures } from "../families/navigation/pagination/runtime-conformance-pagination-fixtures.ts";
@@ -83,6 +84,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   emptyStateRuntimeFixture,
   ...collapsibleRuntimeFixtures,
   ...layoutRuntimeFixtures,
+  ...menusRuntimeFixtures,
   ...typographyRuntimeFixtures,
   interactionHooksRuntimeFixture,
   {
