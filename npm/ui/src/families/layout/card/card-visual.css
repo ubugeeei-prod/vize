@@ -1,0 +1,105 @@
+/* Optional Card appearance. The component itself remains headless. */
+@layer vize.preset {
+  /* Values live on the theme boundary, so nested palettes replace outer ones. */
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-card-radius: var(--vize-ui-radius-md);
+    --vize-ui-card-shadow: none;
+    --vize-ui-card-rule-width: var(--vize-ui-border-width-thin);
+    --vize-ui-card-rule-mix: 0%;
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-card-radius: var(--vize-ui-radius-sm);
+    --vize-ui-card-shadow: none;
+    --vize-ui-card-rule-width: var(--vize-ui-border-width-thin);
+    --vize-ui-card-rule-mix: 0%;
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-card-radius: var(--vize-ui-radius-sm);
+    --vize-ui-card-shadow: none;
+    --vize-ui-card-rule-width: var(--vize-ui-border-width-thick);
+    --vize-ui-card-rule-mix: 100%;
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-card-radius: var(--vize-ui-radius-md);
+    --vize-ui-card-shadow: var(--vize-ui-elevation-raised);
+    --vize-ui-card-rule-width: var(--vize-ui-border-width-thin);
+    --vize-ui-card-rule-mix: 0%;
+  }
+
+  :where([data-vize-ui="card"]) {
+    --vize-ui-card-accent: var(--vize-ui-color-neutral);
+    --vize-ui-card-border: var(--vize-ui-color-border);
+    --vize-ui-card-padding: var(--vize-ui-space-xl);
+
+    box-sizing: border-box;
+    min-inline-size: 0;
+    padding: var(--vize-ui-card-padding);
+    border: var(--vize-ui-border-width-thin) solid var(--vize-ui-card-border);
+    border-block-end-width: var(--vize-ui-card-rule-width, var(--vize-ui-border-width-thin));
+    border-block-end-color: color-mix(
+      in oklab,
+      var(--vize-ui-card-accent) var(--vize-ui-card-rule-mix, 0%),
+      var(--vize-ui-card-border)
+    );
+    border-radius: var(--vize-ui-card-radius, var(--vize-ui-radius-md));
+    background: var(--vize-ui-color-surface);
+    color: var(--vize-ui-color-text);
+  }
+
+  :where([data-vize-ui="card"][data-density="compact"]) {
+    --vize-ui-card-padding: var(--vize-ui-space-md);
+  }
+
+  :where([data-vize-ui="card"][data-density="spacious"]) {
+    --vize-ui-card-padding: var(--vize-ui-space-2xl);
+  }
+
+  :where([data-vize-ui="card"][data-variant="panel"]) {
+    border-inline-start: var(--vize-ui-border-width-thick) solid var(--vize-ui-card-accent);
+  }
+
+  :where([data-vize-ui="card"][data-variant="card"]) {
+    box-shadow: var(--vize-ui-card-shadow, none);
+  }
+
+  :where([data-vize-ui="card"][data-variant="surface"]) {
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  :where([data-vize-ui="card"][data-tone="accent"]) {
+    --vize-ui-card-accent: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-ui="card"][data-tone="info"]) {
+    --vize-ui-card-accent: var(--vize-ui-color-info);
+  }
+
+  :where([data-vize-ui="card"][data-tone="success"]) {
+    --vize-ui-card-accent: var(--vize-ui-color-success);
+  }
+
+  :where([data-vize-ui="card"][data-tone="warning"]) {
+    --vize-ui-card-accent: var(--vize-ui-color-warning);
+  }
+
+  :where([data-vize-ui="card"][data-tone="danger"]) {
+    --vize-ui-card-accent: var(--vize-ui-color-danger);
+  }
+}
+
+@layer vize.policy {
+  @media (forced-colors: active) {
+    :where([data-vize-ui="card"]) {
+      border-color: ButtonBorder;
+      box-shadow: none;
+    }
+
+    :where([data-vize-ui="card"][data-variant="panel"]) {
+      border-inline-start-color: Highlight;
+    }
+  }
+}

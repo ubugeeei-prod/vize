@@ -1,0 +1,98 @@
+/* Optional Alert appearance. The live-region markup and visibility stay native. */
+@layer vize.preset {
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-alert-radius: var(--vize-ui-radius-sm);
+    --vize-ui-alert-fill-strength: 6%;
+    --vize-ui-alert-padding-block: var(--vize-ui-space-md);
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-alert-radius: 0;
+    --vize-ui-alert-fill-strength: 0%;
+    --vize-ui-alert-padding-block: var(--vize-ui-space-md);
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-alert-radius: 0;
+    --vize-ui-alert-fill-strength: 0%;
+    --vize-ui-alert-padding-block: var(--vize-ui-space-sm);
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-alert-radius: var(--vize-ui-radius-md);
+    --vize-ui-alert-fill-strength: 6%;
+    --vize-ui-alert-padding-block: var(--vize-ui-space-md);
+  }
+
+  :where([data-vize-ui="alert"]) {
+    --vize-ui-alert-ink: var(--vize-ui-color-info);
+
+    box-sizing: border-box;
+    min-inline-size: 0;
+    padding-block: var(--vize-ui-alert-padding-block, var(--vize-ui-space-md));
+    padding-inline: var(--vize-ui-space-lg);
+    border: var(--vize-ui-border-width-thin) solid var(--vize-ui-color-border);
+    border-inline-start: 3px solid var(--vize-ui-alert-ink);
+    border-radius: var(--vize-ui-alert-radius, var(--vize-ui-radius-sm));
+    background: color-mix(
+      in oklab,
+      var(--vize-ui-alert-ink) var(--vize-ui-alert-fill-strength, 6%),
+      var(--vize-ui-color-surface)
+    );
+    color: var(--vize-ui-color-text);
+    font-family: var(--vize-ui-type-family-sans);
+    font-size: var(--vize-ui-type-size-sm);
+    line-height: var(--vize-ui-type-leading-normal);
+  }
+
+  :where([data-vize-ui="alert"][hidden]) {
+    display: none;
+  }
+
+  :where([data-vize-ui="alert"][data-state="open"]) {
+    animation: vize-ui-alert-enter var(--vize-ui-motion-duration-fast, 120ms)
+      var(--vize-ui-motion-ease-decelerate, ease-out) both;
+  }
+
+  :where([data-vize-ui="alert"][data-variant="success"]) {
+    --vize-ui-alert-ink: var(--vize-ui-color-success);
+  }
+
+  :where([data-vize-ui="alert"][data-variant="warning"]) {
+    --vize-ui-alert-ink: var(--vize-ui-color-warning);
+  }
+
+  :where([data-vize-ui="alert"][data-variant="danger"]) {
+    --vize-ui-alert-ink: var(--vize-ui-color-danger);
+  }
+
+  @keyframes vize-ui-alert-enter {
+    from {
+      opacity: 0;
+      translate: 0 3px;
+    }
+
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="alert"]) {
+      animation: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="alert"]) {
+      border-color: ButtonBorder;
+      border-inline-start-color: Highlight;
+      background: Canvas;
+      color: CanvasText;
+      animation: none;
+    }
+  }
+}
