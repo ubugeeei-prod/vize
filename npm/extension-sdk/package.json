@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/extension-sdk",
-  "version": "0.426.2",
+  "version": "0.426.3",
   "private": true,
   "description": "Types and handshake constants for Vize extension-contract guests and hosts",
   "license": "MIT",
