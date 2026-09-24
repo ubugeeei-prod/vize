@@ -350,6 +350,7 @@ linter	Linter	source	crates/vize_patina/src/rules/a11y/role_has_required_aria_pr
 linter	Linter	source	crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs	14	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/css.rs	42	s0	S0	stage	vize_s0	preferred	3
 linter	Linter	source	crates/vize_patina/src/rules/css/prefer_logical_properties.rs	9	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/css/prefer_nested_selectors.rs	8	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs	15	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs	12	old_ast	old AST/parser	old	vize_relief	legacy	1
