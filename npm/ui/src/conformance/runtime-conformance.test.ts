@@ -55,16 +55,19 @@ test("declares an SSR and hydration fixture for every source SFC", async () => {
   assert.deepEqual(fixtureFiles, sourceFiles);
 });
 
-test("renders stable, accessible markup across isolated SSR requests", async () => {
-  for (const fixture of runtimeFixtures) {
+// One test per source SFC: the sweep grows with every family, so a single
+// looping test would eventually exceed the per-test timeout. Per-fixture tests
+// keep each budget constant and name the failing component directly.
+for (const fixture of runtimeFixtures) {
+  test(`${fixture.sourceFile} renders stable, accessible markup across isolated SSR requests`, async () => {
     const [left, right] = await Promise.all([renderFixture(fixture), renderFixture(fixture)]);
     assert.equal(left, right, `${fixture.name} emitted request-dependent SSR markup`);
     fixture.assertServerMarkup(left);
-  }
-});
+  });
+}
 
-test("hydrates every shipped component without warnings or node replacement", async () => {
-  for (const fixture of runtimeFixtures) {
+for (const fixture of runtimeFixtures) {
+  test(`${fixture.sourceFile} hydrates without warnings or node replacement`, async () => {
     const serverHtml = await renderFixture(fixture);
     const host = document.createElement("div");
     host.innerHTML = serverHtml;
@@ -95,5 +98,5 @@ test("hydrates every shipped component without warnings or node replacement", as
       console.warn = originalWarn;
       console.error = originalError;
     }
-  }
-});
+  });
+}
