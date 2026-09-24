@@ -7,6 +7,7 @@ mod component;
 mod control;
 mod ident;
 mod model;
+mod once;
 mod operands;
 mod order;
 mod slots;
@@ -98,7 +99,12 @@ pub(super) fn admit<'a>(
                 binding.position = op.span.start;
                 // `v-cloak` is a one-shot DOM operation in a static region.
                 // In a dynamic branch it inherits that region's effect scope.
-                if op.effect.is_none() && binding.kind != super::BindingKind::Cloak {
+                if op.effect.is_none()
+                    && !matches!(
+                        binding.kind,
+                        super::BindingKind::Cloak | super::BindingKind::Once
+                    )
+                {
                     return Err(AdmissionFailure::Invalid(
                         "binding lacks its dynamic partition",
                     ));
@@ -162,6 +168,7 @@ pub(super) fn admit<'a>(
     attach::bindings(&mut nodes, &slots, &parents, bindings, alloc)?;
     slots::check(&nodes, &parents)?;
     model::check(&nodes)?;
+    once::check(&nodes, &parents)?;
     spread::check(&nodes)?;
     tree::check_nesting(&nodes, &parents, alloc)?;
     // The root fragment may hold several nodes, text included.

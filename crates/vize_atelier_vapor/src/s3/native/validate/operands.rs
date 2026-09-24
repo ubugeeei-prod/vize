@@ -106,6 +106,28 @@ pub(super) fn binding<'a>(
             },
         ));
     }
+    if (kind, binding.value.kind, binding.value.text)
+        == (OpKind::Directive, ValueKind::Literal, "vue.once")
+    {
+        let target = binding.target.ok_or(LegacyReason::Structure)?;
+        if values.len() != 1 || binding.name.is_some() || binding.region.is_some() {
+            return Err(LegacyReason::Binding.into());
+        }
+        let span = (binding.value.span.start, binding.value.span.end);
+        return Ok((
+            target,
+            Binding {
+                kind: BindingKind::Once,
+                name: "",
+                value: Expr::plain(""),
+                modifiers: Vec::new_in(&retained.allocator()),
+                merge: None,
+                model_element: None,
+                position: 0,
+                spans: [span, span],
+            },
+        ));
+    }
     // Generic ops carry several families (SetProp is also model/sync, a
     // Directive op also once/memo/cloak/custom). Select the family first.
     let family = match (kind, binding.value.kind, binding.value.text) {

@@ -57,6 +57,7 @@ impl<'a> Emitter<'a, '_> {
         let value_span = Some(self.trimmed(value_raw));
         let name_span = self.token(name_raw, |raw| argument_offset(raw, binding.name));
         match binding.kind {
+            BindingKind::Once => {}
             BindingKind::Cloak => {
                 let dir = DirectiveNode::new(self.allocator, "cloak", SourceLocation::STUB);
                 block

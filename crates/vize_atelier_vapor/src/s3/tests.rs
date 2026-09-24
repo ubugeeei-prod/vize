@@ -189,7 +189,7 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<div v-for=\"x in (xs as any)\"></div>",
         "<div>{{ one as number }}</div>",
         "<div v-pre>{{ literal }}</div>",
-        "<div v-once></div>",
+        "<div v-once @click=\"save\"></div>",
         "<input v-model=\"items[i]\" />",
         "<input v-model.foo=\"text\" />",
         "<MyComp v-model:[field]=\"checked\" />",

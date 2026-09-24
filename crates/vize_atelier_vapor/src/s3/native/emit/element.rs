@@ -77,6 +77,14 @@ impl<'a> Emitter<'a, '_> {
             let Some((tag, tag_span, attributes)) = open else {
                 return self.invariant_broken();
             };
+            let once = self.artifact.nodes.get(index).is_some_and(|node| {
+                node.bindings
+                    .iter()
+                    .any(|binding| binding.kind == BindingKind::Once)
+            });
+            if once {
+                self.non_reactive_depth += 1;
+            }
             template.push_char('<');
             // S3 keeps element and attribute spans; the tokens inside them
             // are located by the HTML syntax of that authored text (P3-9).
@@ -106,6 +114,9 @@ impl<'a> Emitter<'a, '_> {
                 template.push_str("</");
                 template.push_str(tag);
                 template.push_char('>');
+            }
+            if once {
+                self.non_reactive_depth -= 1;
             }
         });
     }

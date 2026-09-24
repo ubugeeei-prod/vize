@@ -79,6 +79,7 @@ pub(super) fn emit<'a>(
         dynamic,
         ir: &mut ir,
         next_id: 0,
+        non_reactive_depth: 0,
         scope_id,
         source: spans.then_some(source),
         template_spans: TemplateSpans::default(),
@@ -109,6 +110,7 @@ struct Emitter<'a, 'b> {
     dynamic: Vec<'a, bool>,
     ir: &'b mut RootIRNode<'a>,
     next_id: usize,
+    non_reactive_depth: usize,
     scope_id: Option<&'b str>,
     /// The authored source, only for map-requesting compiles.
     source: Option<&'a str>,
@@ -248,6 +250,10 @@ impl<'a> Emitter<'a, '_> {
     }
 
     fn effect(&mut self, op: OperationNode<'a>, block: &mut BlockIRNode<'a>) {
+        if self.non_reactive_depth > 0 {
+            block.operation.push(op);
+            return;
+        }
         let mut operations = Vec::new_in(&self.allocator);
         operations.push(op);
         block.effect.push(IREffect { operations });

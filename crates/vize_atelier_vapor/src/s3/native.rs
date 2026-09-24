@@ -151,6 +151,8 @@ struct Binding<'a> {
 enum BindingKind {
     Prop,
     Event,
+    /// `v-once` evaluates this element's bindings and text at mount only.
+    Once,
     /// `v-cloak` removes the authored cloak marker once when the node mounts.
     Cloak,
     Show,

@@ -54,6 +54,48 @@ fn expression_and_content_directive_shapes_are_admitted() {
 }
 
 #[test]
+fn simple_once_element_uses_native_one_shot_operations() {
+    for (source, effects) in [
+        (r#"<div v-once :title="tip">{{ msg }}</div>"#, 0),
+        (
+            r#"<main><div v-once :title="tip">{{ msg }}</div><span>{{ live }}</span></main>"#,
+            1,
+        ),
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                let allocator = Allocator::new();
+                crate::compile_vapor(
+                    &allocator,
+                    source,
+                    crate::VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+                .code
+            };
+            let native = compile(false);
+            if effects == 0 {
+                assert_eq!(native, compile(true), "{source}");
+            }
+            assert_eq!(
+                native.matches("_renderEffect(() =>").count(),
+                effects,
+                "{native}"
+            );
+        }
+    }
+}
+
+#[test]
 fn static_and_bound_styles_merge_in_authored_order() {
     for (source, effect) in [
         (
@@ -165,7 +207,13 @@ fn unsupported_attribute_shapes_select_exact_legacy_reasons() {
         (r#"<div :class="a" :class="b"></div>"#, Binding),
         (r#"<input :type="kind" v-model="value">"#, Binding),
         (r#"<div v-focus="value"></div>"#, Operation),
-        (r#"<div v-once>{{ value }}</div>"#, Operation),
+        (r#"<div v-once @click="save">{{ value }}</div>"#, Operation),
+        (r#"<div v-once><span>{{ value }}</span></div>"#, Operation),
+        (r#"<div v-if="open" v-once>{{ value }}</div>"#, Operation),
+        (
+            r#"<div v-once v-show="visible">{{ value }}</div>"#,
+            Operation,
+        ),
         (
             r#"<button @click="a++; b++">x</button>"#,
             ExpressionOrEncoding,

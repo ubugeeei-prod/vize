@@ -68,6 +68,14 @@ the commands that re-derive it, and the local measurements taken so far.
   same pinned `@vue/runtime-vapor`; exact snapshots cover branch recreation,
   live and sibling identity, model input/external patch, and style precedence.
   Zero-legacy-walk assertions ensure the Vize side actually exercises S3.
+- A bounded `v-once` element projects the S3 directive into mount-only shared
+  IR operations. TS-33 compares the frozen prop/text and still-live sibling
+  against official compiler-vapor through the same published runtime, including
+  node identity. A nested retained-lane `v-once` currently updates despite the
+  directive; the native route follows the official behavior. Unsupported
+  descendant, directive and controlled-region shapes continue to select
+  `legacy.operation`; official Vapor freezes a `v-if v-once` branch's condition,
+  which needs a separate S3 control-flow contract.
 - References beginning with `$event` remain in the legacy lane. Their handler
   semantics follow Vue: a reference names a component/setup binding; only an
   inline statement receives the implicit event parameter. The Chromium contract

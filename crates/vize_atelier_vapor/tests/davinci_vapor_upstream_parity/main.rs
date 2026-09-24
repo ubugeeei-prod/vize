@@ -313,6 +313,31 @@ fn assert_native_upstream_trace(source: &str, context: Value, steps: Value, expe
 }
 
 #[test]
+fn s3_once_element_freezes_its_bindings_without_freezing_a_sibling() {
+    let source = r#"<main data-id="root"><div v-once data-id="frozen" :title="tip">{{ msg }}</div><span data-id="live">{{ live }}</span></main>"#;
+    let view = |live: &str| {
+        json!({
+            "tree": [{"tag": "main", "attributes": {"data-id": "root"}, "children": [
+                {"tag": "div", "attributes": {"data-id": "frozen", "title": "first"}, "children": ["A"]},
+                {"tag": "span", "attributes": {"data-id": "live"}, "children": [live]},
+            ]}],
+            "events": [],
+            "identities": [["root", 0], ["frozen", 1], ["live", 2]],
+        })
+    };
+    assert_native_upstream_trace(
+        source,
+        json!({"tip": "first", "msg": "A", "live": "one"}),
+        json!([{"patch": {"tip": "second", "msg": "B", "live": "two"}}]),
+        vec![
+            view("one"),
+            view("two"),
+            json!({"tree": [], "events": [], "identities": []}),
+        ],
+    );
+}
+
+#[test]
 fn s3_cloak_matches_official_vapor_across_branch_recreation() {
     let source = r#"<main data-id="root"><div v-if="open" v-cloak data-id="cloak" :title="tip">{{ label }}</div><p data-id="tail">tail</p></main>"#;
     let cloak = |title: &str, label: &str| json!({"tag": "div", "attributes": {"data-id": "cloak", "title": title}, "children": [label]});
