@@ -75,6 +75,16 @@
       "import": "./dist/calendar.mjs",
       "default": "./dist/calendar.mjs"
     },
+    "./forwarding": {
+      "types": "./dist/forwarding.d.mts",
+      "import": "./dist/forwarding.mjs",
+      "default": "./dist/forwarding.mjs"
+    },
+    "./polymorphic": {
+      "types": "./dist/polymorphic.d.mts",
+      "import": "./dist/polymorphic.mjs",
+      "default": "./dist/polymorphic.mjs"
+    },
     "./range-calendar": {
       "types": "./dist/range-calendar.d.mts",
       "import": "./dist/range-calendar.mjs",
@@ -109,6 +119,11 @@
       "types": "./dist/range-slider.d.mts",
       "import": "./dist/range-slider.mjs",
       "default": "./dist/range-slider.mjs"
+    },
+    "./slot-utils": {
+      "types": "./dist/slot-utils.d.mts",
+      "import": "./dist/slot-utils.mjs",
+      "default": "./dist/slot-utils.mjs"
     },
     "./tabs": {
       "types": "./dist/tabs.d.mts",
@@ -639,6 +654,11 @@
       "types": "./dist/typeahead.d.mts",
       "import": "./dist/typeahead.mjs",
       "default": "./dist/typeahead.mjs"
+    },
+    "./variants": {
+      "types": "./dist/variants.d.mts",
+      "import": "./dist/variants.mjs",
+      "default": "./dist/variants.mjs"
     },
     "./virtualizer": {
       "types": "./dist/virtualizer.d.mts",
