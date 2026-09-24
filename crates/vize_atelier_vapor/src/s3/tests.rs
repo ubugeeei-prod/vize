@@ -192,7 +192,7 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<div v-once></div>",
         "<input v-model=\"items[i]\" />",
         "<input v-model.foo=\"text\" />",
-        "<MyComp v-model=\"checked\" />",
+        "<MyComp v-model:[field]=\"checked\" />",
         "<div :[key]=\"value\"></div>",
         "<div ref=\"node\"></div>",
         "<div :style=\"s\" style></div>",

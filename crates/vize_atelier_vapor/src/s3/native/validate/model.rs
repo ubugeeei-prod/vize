@@ -1,6 +1,7 @@
-//! `v-model` on a native input: one reference read and written in place, the
-//! element kind S2 recorded, and `lazy`/`number`/`trim` modifiers. The shared
-//! generator picks the text, checkbox or radio helper from the static `type`.
+//! `v-model` on a native input/textarea or an ordinary component. S2 carries
+//! the same reference for reads and writes, an optional static argument, and
+//! the owner kind. The shared generator realizes either the DOM directive or
+//! the component's prop, update listener, and modifiers prop.
 
 use vize_carton::{Allocator, Vec};
 use vize_s3::{
@@ -9,7 +10,7 @@ use vize_s3::{
 };
 
 use super::super::{Binding, BindingKind, Content, Expr, Node};
-use super::{Result, ident::reference, operands::one};
+use super::{Result, component::component_prop, ident::reference, operands::one};
 use crate::s3::{AdmissionFailure, LegacyReason};
 
 pub(super) fn model<'a>(
@@ -20,6 +21,7 @@ pub(super) fn model<'a>(
     let target = kind.target.ok_or(LegacyReason::Structure)?;
     let read = one(values, Role::ModelRead)?.value;
     let write = one(values, Role::ModelWrite)?.value;
+    let name = one(values, Role::Name)?.value;
     let mut element = None;
     let mut modifiers = Vec::new_in(&alloc);
     for value in values {
@@ -28,20 +30,35 @@ pub(super) fn model<'a>(
         }
         match (value.role, value.name, value.value.kind) {
             (Role::BindingKind | Role::ModelRead | Role::ModelWrite, None, _) => {}
-            (Role::Name, None, ValueKind::Absent) => {}
+            (Role::Name, None, ValueKind::Absent | ValueKind::Literal) => {}
             (Role::ModelAttribute, Some("element-kind"), ValueKind::Literal) => {
-                element = Some(value.value.text);
+                if element.replace(value.value.text).is_some() {
+                    return Err(LegacyReason::Binding.into());
+                }
             }
             (
                 Role::ModelAttribute,
                 Some(name @ ("lazy" | "number" | "trim")),
                 ValueKind::Absent,
-            ) if !modifiers.contains(&name) => {
+            ) if element != Some("component") && !modifiers.contains(&name) => {
+                modifiers.push(name);
+            }
+            (Role::ModelAttribute, Some(name), ValueKind::Absent)
+                if element == Some("component")
+                    && component_prop(name)
+                    && !modifiers.contains(&name) =>
+            {
                 modifiers.push(name);
             }
             _ => return Err(LegacyReason::Binding.into()),
         }
     }
+    let name = match (element, name.kind) {
+        (Some("component"), ValueKind::Absent) => "modelValue",
+        (Some("component"), ValueKind::Literal) if component_prop(name.text) => name.text,
+        (Some("input" | "textarea"), ValueKind::Absent) => "",
+        _ => return Err(LegacyReason::Binding.into()),
+    };
     // A plain reference is read and assigned as authored; `$event`, reserved
     // context roots and computed targets stay legacy.
     let text = read.text.trim();
@@ -51,7 +68,7 @@ pub(super) fn model<'a>(
         || !reference(text)
         || text.starts_with('_')
         || text.starts_with('$')
-        || !matches!(element, Some("input" | "textarea"))
+        || !matches!(element, Some("input" | "textarea" | "component"))
     {
         return Err(LegacyReason::Binding.into());
     }
@@ -59,7 +76,7 @@ pub(super) fn model<'a>(
         target,
         Binding {
             kind: BindingKind::Model,
-            name: "",
+            name,
             value: Expr::plain(text),
             modifiers,
             merge: None,
@@ -73,7 +90,8 @@ pub(super) fn model<'a>(
     ))
 }
 
-/// A model binds to an `<input>` with static `type`, or an empty `<textarea>`.
+/// A native model binds to an `<input>` with static `type`, or an empty
+/// `<textarea>`. Component models become props before this check.
 /// Textarea contents are RCDATA, so child text needs its own parser contract.
 pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
     for node in nodes {

@@ -190,6 +190,85 @@ export function render(_ctx) {{
     }
 }
 
+#[test]
+fn s3_component_models_match_official_vapor_updates() {
+    for (model, prop) in [("v-model", "modelValue"), ("v-model:title.trim", "title")] {
+        let source = format!(
+            r#"<main data-id="root"><MyComp {model}="value" /><span data-id="mirror">{{{{ value }}}}</span></main>"#
+        );
+        let event = format!("update:{prop}");
+        let child = format!(
+            r#"<button data-id="child" @click="send('{event}', {prop} + '!')">{{{{ {prop} }}}}</button>"#
+        );
+        let allocator = Allocator::new();
+        let before = WalkCounts::snapshot();
+        let compiled = compile_vapor(
+            &allocator,
+            &source,
+            VaporCompilerOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+        assert!(
+            compiled.error_messages.is_empty(),
+            "{source}: {:?}",
+            compiled.error_messages
+        );
+        assert_eq!(
+            WalkCounts::snapshot().since(before).total_walks(),
+            0,
+            "{source}: parent must exercise native S3"
+        );
+        let child_code = compile_vapor(
+            &allocator,
+            &child,
+            VaporCompilerOptions {
+                prefix_identifiers: true,
+                ..Default::default()
+            },
+        );
+        assert!(
+            child_code.error_messages.is_empty(),
+            "{child}: {:?}",
+            child_code.error_messages
+        );
+        let context = json!({"value": "A"});
+        let steps = json!([{"click": "child"}, {"patch": {"value": "P"}}]);
+        let vize = trace(
+            "davinci-mounted-trace.mjs",
+            json!({
+                "backend": "vapor",
+                "code": compiled.code,
+                "context": context,
+                "steps": steps,
+                "identities": true,
+                "components": {"MyComp": {"code": child_code.code, "props": [prop], "emits": [event]}},
+            }),
+        );
+        let upstream = trace(
+            "davinci-upstream-vapor-trace.mjs",
+            json!({
+                "source": source,
+                "context": context,
+                "steps": steps,
+                "components": {"MyComp": {"source": child, "props": [prop], "emits": [event]}},
+            }),
+        );
+        assert_eq!(vize, upstream, "{model}: mounted component model parity");
+        assert_eq!(vize.len(), 4);
+        for (snapshot, expected) in vize.iter().take(3).zip(["A", "A!", "P"]) {
+            let children = snapshot["tree"][0]["children"].as_array().unwrap();
+            assert_eq!(children[0]["children"][0], expected, "{model}: child prop");
+            assert_eq!(
+                children[1]["children"][0], expected,
+                "{model}: parent assignment"
+            );
+        }
+        assert_eq!(vize[3]["tree"], json!([]), "{model}: unmount");
+    }
+}
+
 fn assert_native_upstream_trace(source: &str, context: Value, steps: Value, expected: Vec<Value>) {
     let allocator = Allocator::new();
     let before = WalkCounts::snapshot();

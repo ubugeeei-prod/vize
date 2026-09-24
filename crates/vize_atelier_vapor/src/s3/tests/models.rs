@@ -71,6 +71,41 @@ fn empty_textarea_models_match_the_retained_lane() {
     }
 }
 
+/// An ordinary component model reads its reference and emits an assignment
+/// callback. Named arguments and modifiers must retain the legacy prop shape.
+#[test]
+fn component_models_match_the_retained_lane() {
+    for source in [
+        r#"<MyComp v-model="value" />"#,
+        r#"<MyComp v-model:title="form.title" />"#,
+        r#"<MyComp v-model.trim.number="value" />"#,
+        r#"<MyComp v-model:title.capitalize="title" />"#,
+        r#"<div><MyComp id="child" v-model="value">{{ label }}</MyComp></div>"#,
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compile = |retained| {
+                compile_vapor(
+                    &allocator,
+                    source,
+                    VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane: retained,
+                        ..Default::default()
+                    },
+                )
+                .code
+            };
+            assert_eq!(compile(false), compile(true), "{source}");
+        }
+    }
+}
+
 #[test]
 fn textarea_contents_and_other_shapes_stay_legacy() {
     for source in [
@@ -96,6 +131,7 @@ fn model_element_kind_must_match_its_target() {
     for (source, stale_kind) in [
         (r#"<input v-model="value">"#, "textarea"),
         (r#"<textarea v-model="value"></textarea>"#, "input"),
+        (r#"<MyComp v-model="value" />"#, "input"),
     ] {
         let allocator = Allocator::new();
         let mut s3 = lowered_source(&allocator, source);
@@ -117,6 +153,23 @@ fn model_element_kind_must_match_its_target() {
 }
 
 #[test]
+fn component_model_prop_collisions_keep_the_legacy_route() {
+    for source in [
+        r#"<MyComp :modelValue="other" v-model="value" />"#,
+        r#"<MyComp v-model="value" @update:modelValue="save" />"#,
+        r#"<MyComp v-model.trim="value" :modelModifiers="mods" />"#,
+        r#"<MyComp v-model:title="title" :title="other" />"#,
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Legacy(_)),
+            "{source}: {status:?}"
+        );
+    }
+}
+
+#[test]
 fn unsupported_models_select_exact_legacy_reasons() {
     for source in [
         r#"<input v-model="items[i]">"#,
@@ -125,8 +178,9 @@ fn unsupported_models_select_exact_legacy_reasons() {
         r#"<input v-model.foo="x">"#,
         r#"<input :type="kind" v-model="x">"#,
         r#"<input v-model="a" v-model="b">"#,
-        r#"<MyComp v-model="x" />"#,
-        r#"<MyComp v-model:title="x" />"#,
+        r#"<MyComp v-model="items[i]" />"#,
+        r#"<MyComp v-model:[field]="x" />"#,
+        r#"<MyComp v-model="_ctx.x" />"#,
     ] {
         let allocator = Allocator::new();
         let status = lower_source_for_vapor(&allocator, source, options());

@@ -291,8 +291,13 @@ export async function childComponent(backend, vue, name, { code, props = [], emi
   const context = (instanceProps, emit, slots) =>
     new Proxy(instanceProps, {
       get: (target, key) =>
-        key === "$emit" ? emit : key === "$slots" ? slots : Reflect.get(target, key),
-      has: (target, key) => key === "$emit" || key === "$slots" || Reflect.has(target, key),
+        key === "$emit" || key === "send"
+          ? emit
+          : key === "$slots"
+            ? slots
+            : Reflect.get(target, key),
+      has: (target, key) =>
+        key === "$emit" || key === "send" || key === "$slots" || Reflect.has(target, key),
     });
   if (backend === "vapor") {
     return vue.defineVaporComponent({
