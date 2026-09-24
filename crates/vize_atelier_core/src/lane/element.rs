@@ -2,6 +2,7 @@
 
 use vize_s0::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
 
+use crate::codegen::{escape_js_string, is_valid_js_identifier};
 use crate::errors::ErrorCode;
 use crate::steps::expression::process_inline_handler;
 use crate::steps::v_model::{
@@ -314,7 +315,13 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                     .iter()
                     .map(|m| {
                         let mut item = String::with_capacity(m.content.len() + 6);
-                        item.push_str(m.content);
+                        if is_valid_js_identifier(m.content) {
+                            item.push_str(m.content);
+                        } else {
+                            item.push('"');
+                            item.push_str(&escape_js_string(m.content));
+                            item.push('"');
+                        }
                         item.push_str(": true");
                         item
                     })

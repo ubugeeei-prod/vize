@@ -133,22 +133,25 @@ fn derived_model_keys_concatenate_the_complete_argument_ast() {
 
 #[test]
 fn dynamic_model_custom_modifier_names_emit_valid_literal_keys() {
-    let output = compile("field", true, ".trim.foo-bar");
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, &output, SourceType::mjs()).parse();
-    assert!(
-        parsed.diagnostics.is_empty(),
-        "{:?}\n{output}",
-        parsed.diagnostics
-    );
-    let mut visitor = Keys {
-        source: &output,
-        keys: Vec::new(),
-        modifiers: Vec::new(),
-    };
-    visitor.visit_program(&parsed.program);
-    assert_eq!(
-        visitor.modifiers,
-        [(String::new("trim"), true), (String::new("foo-bar"), true)]
-    );
+    for prefix_identifiers in [false, true] {
+        let output = compile("field", prefix_identifiers, ".trim.foo-bar");
+        let allocator = Allocator::default();
+        let parsed = Parser::new(&allocator, &output, SourceType::mjs()).parse();
+        assert!(
+            parsed.diagnostics.is_empty(),
+            "prefix_identifiers={prefix_identifiers}: {:?}\n{output}",
+            parsed.diagnostics
+        );
+        let mut visitor = Keys {
+            source: &output,
+            keys: Vec::new(),
+            modifiers: Vec::new(),
+        };
+        visitor.visit_program(&parsed.program);
+        assert_eq!(
+            visitor.modifiers,
+            [(String::new("trim"), true), (String::new("foo-bar"), true)],
+            "prefix_identifiers={prefix_identifiers}: {output}"
+        );
+    }
 }

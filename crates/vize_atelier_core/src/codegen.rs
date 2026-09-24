@@ -53,3 +53,4 @@ pub use entry::{
 };
 #[cfg(feature = "legacy")]
 pub(crate) use helpers::to_valid_asset_identifier;
+pub(crate) use helpers::{escape_js_string, is_valid_js_identifier};
