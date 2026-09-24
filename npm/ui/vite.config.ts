@@ -204,6 +204,7 @@ export default defineConfig({
       listbox: "src/families/selection/listbox/listbox.ts",
       pagination: "src/families/navigation/pagination/pagination.ts",
       text: "src/families/typography/text/text.ts",
+      "tags-input": "src/families/form/tags-input/tags-input.ts",
       textarea: "src/families/form/textarea/textarea.ts",
       switch: "src/families/selection/switch/switch.ts",
       checkbox: "src/families/selection/checkbox/checkbox.ts",

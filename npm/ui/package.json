@@ -310,6 +310,11 @@
       "import": "./dist/pagination.mjs",
       "default": "./dist/pagination.mjs"
     },
+    "./tags-input": {
+      "types": "./dist/tags-input.d.mts",
+      "import": "./dist/tags-input.mjs",
+      "default": "./dist/tags-input.mjs"
+    },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
       "import": "./dist/textarea.mjs",

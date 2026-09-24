@@ -157,6 +157,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["switch", "src/families/selection/switch/"],
   ["table", "src/families/data/table/"],
   ["tabs", "src/families/navigation/tabs/"],
+  ["tags-input", "src/families/form/tags-input/"],
   ["text", "src/families/typography/text/"],
   ["toggle", "src/families/selection/toggle/"],
   ["toggle-group", "src/families/selection/toggle-group/"],

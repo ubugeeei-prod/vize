@@ -81,6 +81,7 @@ export * from "./families/layout/list/list.ts";
 export * from "./families/selection/listbox/listbox.ts";
 export * from "./families/navigation/pagination/pagination.ts";
 export * from "./families/typography/text/text.ts";
+export * from "./families/form/tags-input/tags-input.ts";
 export * from "./families/form/textarea/textarea.ts";
 export * from "./families/selection/switch/switch.ts";
 export * from "./families/foundations/command/command.ts";
