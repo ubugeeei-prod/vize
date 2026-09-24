@@ -2,6 +2,7 @@ import { accordionFamilyCatalog } from "./family-catalog-accordion.ts";
 import { actionFamilyCatalog } from "./family-catalog-actions.ts";
 import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
+import { chartFamilyCatalog } from "./family-catalog-charts.ts";
 import { dataFamilyCatalog } from "./family-catalog-data.ts";
 import { dateTimeFamilyCatalog } from "./family-catalog-date-time.ts";
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
@@ -41,6 +42,7 @@ const allFamilyCatalogEntries = [
   ...actionFamilyCatalog,
   ...accessibilityFamilyCatalog,
   ...basicFamilyCatalog,
+  ...chartFamilyCatalog,
   ...dataFamilyCatalog,
   ...dateTimeFamilyCatalog,
   ...feedbackFamilyCatalog,

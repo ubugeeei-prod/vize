@@ -297,6 +297,8 @@ export default defineConfig({
       transition: "src/families/overlays/transition/transition.ts",
       typeahead: "src/families/interaction/typeahead/typeahead.ts",
       virtualizer: "src/families/interaction/virtualizer/virtualizer.ts",
+      "chart-shape": "src/families/charts/chart-shape/chart-shape.ts",
+      "chart-scale": "src/families/charts/chart-scale/chart-scale.ts",
       primitive: "src/families/foundations/primitive/primitive.ts",
       "visually-hidden": "src/families/accessibility/visually-hidden/visually-hidden.ts",
       media: "src/media/media.ts",

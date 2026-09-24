@@ -35,6 +35,13 @@ description: "`@vizejs/ui` 的所有系列：props、事件、插槽、暴露成
 | [Share Button](../../../guide/ui/share-button.md) | stable | Accessible, unstyled Web Share button primitive. |
 | [Toolbar](../../../guide/ui/toolbar.md) | stable | Accessible, unstyled WAI-ARIA toolbar with native actions and roving focus. |
 
+## charts
+
+| Family | Maturity | Summary |
+| --- | --- | --- |
+| [Chart Scale](../../../guide/ui/chart-scale.md) | stable | Headless, dependency-free, d3-compatible scales with Intl tick formatting. |
+| [Chart Shape](../../../guide/ui/chart-shape.md) | stable | Headless, dependency-free, d3-compatible SVG path generators and chart layouts. |
+
 ## data
 
 | Family | Maturity | Summary |

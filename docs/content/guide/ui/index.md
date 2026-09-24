@@ -35,6 +35,13 @@ Every `@vizejs/ui` family: props, events, slots, exposed members, and the normat
 | [Share Button](./share-button.md) | stable | Accessible, unstyled Web Share button primitive. |
 | [Toolbar](./toolbar.md) | stable | Accessible, unstyled WAI-ARIA toolbar with native actions and roving focus. |
 
+## charts
+
+| Family | Maturity | Summary |
+| --- | --- | --- |
+| [Chart Scale](./chart-scale.md) | stable | Headless, dependency-free, d3-compatible scales with Intl tick formatting. |
+| [Chart Shape](./chart-shape.md) | stable | Headless, dependency-free, d3-compatible SVG path generators and chart layouts. |
+
 ## data
 
 | Family | Maturity | Summary |
