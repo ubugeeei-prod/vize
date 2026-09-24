@@ -78,25 +78,13 @@ function zLevel(input: string | number): number {
       :style="{ background: String(value) }"
     />
     <div v-else class="preview-compact">
-      <SpacingPreview v-if="preview.kind === 'spacing'" :value="value" />
-      <TypographyPreview
-        v-else-if="preview.kind === 'fontSize'"
-        :value="value"
-        token-type="fontSize"
-      />
-      <TypographyPreview
-        v-else-if="preview.kind === 'fontWeight'"
-        :value="value"
-        token-type="fontWeight"
-      />
-      <TypographyPreview
-        v-else-if="preview.kind === 'lineHeight'"
-        :value="value"
-        token-type="lineHeight"
-      />
+      <SpacingPreview v-if="preview.kind === 'spacing'" :value />
+      <TypographyPreview v-else-if="preview.kind === 'fontSize'" :value token-type="fontSize" />
+      <TypographyPreview v-else-if="preview.kind === 'fontWeight'" :value token-type="fontWeight" />
+      <TypographyPreview v-else-if="preview.kind === 'lineHeight'" :value token-type="lineHeight" />
       <TypographyPreview
         v-else-if="preview.kind === 'letterSpacing'"
-        :value="value"
+        :value
         token-type="letterSpacing"
       />
       <div
@@ -191,6 +179,8 @@ function zLevel(input: string | number): number {
 }
 
 .zindex-preview {
+  --musea-z-preview-back: 1;
+  --musea-z-preview-front: 5;
   position: relative;
   width: 68px;
   height: 48px;
@@ -206,21 +196,21 @@ function zLevel(input: string | number): number {
 }
 
 .zindex-layer--back {
-  left: 4px;
-  top: 16px;
-  z-index: 1;
+  inset-inline-start: 4px;
+  inset-block-start: 16px;
+  z-index: var(--musea-z-preview-back);
 }
 
 .zindex-layer--front {
-  left: 28px;
-  top: 6px;
-  z-index: 5;
+  inset-inline-start: 28px;
+  inset-block-start: 6px;
+  z-index: var(--musea-z-preview-front);
   background: var(--musea-bg-tertiary);
 }
 
 .zindex-layer--token {
-  left: calc(10px + var(--musea-z-preview-level) * 4px);
-  top: calc(18px - var(--musea-z-preview-level) * 3px);
+  inset-inline-start: calc(10px + var(--musea-z-preview-level) * 4px);
+  inset-block-start: calc(18px - var(--musea-z-preview-level) * 3px);
   display: flex;
   align-items: center;
   justify-content: center;

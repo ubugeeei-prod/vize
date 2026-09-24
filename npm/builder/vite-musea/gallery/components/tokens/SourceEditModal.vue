@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref, watch } from "vue";
+import { defineAsyncComponent, ref, useId, watch } from "vue";
 import { fetchArtSource, updateArtSource } from "../../api";
 
 const MonacoEditor = defineAsyncComponent(() => import("../MonacoEditor.vue"));
+const titleId = useId();
 
 const props = defineProps<{
   isOpen: boolean;
@@ -57,14 +58,25 @@ async function handleSave() {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
-        <div class="modal-panel">
+      <div v-if="isOpen" class="modal-overlay">
+        <button
+          type="button"
+          class="modal-backdrop"
+          aria-label="Close source editor"
+          @click="() => emit('close')"
+        />
+        <div class="modal-panel" role="dialog" aria-modal="true" :aria-labelledby="titleId">
           <div class="modal-header">
             <div>
-              <h2 class="modal-title">Edit Source</h2>
+              <h2 :id="titleId" class="modal-title">Edit Source</h2>
               <p class="modal-subtitle">{{ artTitle }}</p>
             </div>
-            <button type="button" class="modal-close" @click="emit('close')">
+            <button
+              type="button"
+              class="modal-close"
+              aria-label="Close source editor"
+              @click="() => emit('close')"
+            >
               <svg
                 width="18"
                 height="18"
@@ -81,7 +93,8 @@ async function handleSave() {
 
           <div class="modal-body">
             <div v-if="loading" class="editor-loading">Loading source...</div>
-            <MonacoEditor
+            <component
+              :is="MonacoEditor"
               v-else
               v-model="source"
               language="html"
@@ -94,7 +107,7 @@ async function handleSave() {
           <div class="modal-footer">
             <span class="save-hint">Cmd+S / Ctrl+S to save</span>
             <div class="modal-footer-actions">
-              <button type="button" class="btn btn--secondary" @click="emit('close')">
+              <button type="button" class="btn btn--secondary" @click="() => emit('close')">
                 Cancel
               </button>
               <button
@@ -122,11 +135,20 @@ async function handleSave() {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--musea-modal-layer, 1000);
   padding: 2rem;
 }
 
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
 .modal-panel {
+  position: relative;
   background: var(--musea-bg);
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-lg, 12px);
@@ -193,7 +215,7 @@ async function handleSave() {
 }
 
 .editor-error {
-  color: #ef4444;
+  color: var(--musea-error);
   font-size: 0.75rem;
   margin-top: 0.5rem;
 }
@@ -254,23 +276,29 @@ async function handleSave() {
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.2s ease;
-}
 
-.modal-enter-active .modal-panel,
-.modal-leave-active .modal-panel {
-  transition: transform 0.2s ease;
+  .modal-panel {
+    transition: transform 0.2s ease;
+  }
 }
 
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
+
+  .modal-panel {
+    transform: scale(0.95);
+  }
 }
 
-.modal-enter-from .modal-panel {
-  transform: scale(0.95);
-}
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter-active,
+  .modal-leave-active {
+    transition: none;
 
-.modal-leave-to .modal-panel {
-  transform: scale(0.95);
+    .modal-panel {
+      transition: none;
+    }
+  }
 }
 </style>

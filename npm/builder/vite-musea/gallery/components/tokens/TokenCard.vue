@@ -32,7 +32,7 @@ const tierLabel = computed(() => {
 
 <template>
   <div class="token-card" :class="{ 'token-card--semantic': token.$tier === 'semantic' }">
-    <TokenPreview :token-path="tokenPath" :token="token" :token-map="tokenMap" />
+    <TokenPreview :token-path :token :token-map />
 
     <!-- Info -->
     <div class="token-body">
@@ -64,7 +64,7 @@ const tierLabel = computed(() => {
             ? 'Primitive token used directly — consider using a semantic token'
             : 'View component usage'
         "
-        @click.stop="emit('showUsage')"
+        @click.stop="() => emit('showUsage')"
       >
         <svg
           v-if="token.$tier === 'primitive'"
@@ -98,7 +98,7 @@ const tierLabel = computed(() => {
       <span v-else class="footer-spacer" />
 
       <div class="token-actions">
-        <button type="button" class="action-btn" title="Edit" @click.stop="emit('edit')">
+        <button type="button" class="action-btn" title="Edit" @click.stop="() => emit('edit')">
           <svg
             width="14"
             height="14"
@@ -115,7 +115,7 @@ const tierLabel = computed(() => {
           type="button"
           class="action-btn action-btn--danger"
           title="Delete"
-          @click.stop="emit('delete')"
+          @click.stop="() => emit('delete')"
         >
           <svg
             width="14"
@@ -145,14 +145,23 @@ const tierLabel = computed(() => {
   flex-direction: column;
   transition: border-color var(--musea-transition);
   overflow: hidden;
+  --token-primitive-ink: #60a5fa;
+  --token-primitive-wash: rgba(59, 130, 246, 0.15);
+  --token-semantic-ink: #c084fc;
+  --token-semantic-wash: rgba(168, 85, 247, 0.15);
+  --token-warning-wash: rgba(245, 158, 11, 0.4);
+  --token-warning-ink: #f59e0b;
+  --token-danger-ink: #ef4444;
+  --token-danger-wash: rgba(239, 68, 68, 0.15);
+
+  &:hover .token-actions,
+  &:focus-within .token-actions {
+    opacity: 1;
+  }
 }
 
 .token-card:hover {
   border-color: var(--musea-text-muted);
-}
-
-.token-card:hover .token-actions {
-  opacity: 1;
 }
 
 /* Body / info */
@@ -190,13 +199,13 @@ const tierLabel = computed(() => {
 }
 
 .tier-badge--primitive {
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background: var(--token-primitive-wash);
+  color: var(--token-primitive-ink);
 }
 
 .tier-badge--semantic {
-  background: rgba(168, 85, 247, 0.15);
-  color: #c084fc;
+  background: var(--token-semantic-wash);
+  color: var(--token-semantic-ink);
 }
 
 .token-value {
@@ -219,7 +228,7 @@ const tierLabel = computed(() => {
 }
 
 .ref-arrow {
-  color: #c084fc;
+  color: var(--token-semantic-ink);
 }
 
 .ref-resolved {
@@ -269,8 +278,8 @@ const tierLabel = computed(() => {
 }
 
 .usage-badge--warn {
-  border-color: rgba(245, 158, 11, 0.4);
-  color: #f59e0b;
+  border-color: var(--token-warning-wash);
+  color: var(--token-warning-ink);
 }
 
 .usage-badge:hover {
@@ -279,8 +288,8 @@ const tierLabel = computed(() => {
 }
 
 .usage-badge--warn:hover {
-  border-color: #f59e0b;
-  color: #f59e0b;
+  border-color: var(--token-warning-ink);
+  color: var(--token-warning-ink);
 }
 
 .token-actions {
@@ -288,7 +297,7 @@ const tierLabel = computed(() => {
   gap: 0.125rem;
   opacity: 0;
   transition: opacity var(--musea-transition);
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .action-btn {
@@ -313,7 +322,7 @@ const tierLabel = computed(() => {
 }
 
 .action-btn--danger:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background: var(--token-danger-wash);
+  color: var(--token-danger-ink);
 }
 </style>

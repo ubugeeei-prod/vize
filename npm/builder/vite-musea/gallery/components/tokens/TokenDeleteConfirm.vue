@@ -1,35 +1,32 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import type { DesignToken } from "../../api";
+import { useId } from "vue";
 
-const props = defineProps<{
+defineProps<{
   isOpen: boolean;
   tokenPath: string;
-  token?: DesignToken;
   dependents?: string[];
 }>();
+
+const titleId = useId();
 
 const emit = defineEmits<{
   close: [];
   confirm: [];
 }>();
-
-const confirming = ref(false);
-
-watch(
-  () => props.isOpen,
-  (open) => {
-    if (open) confirming.value = false;
-  },
-);
 </script>
 
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
-        <div class="modal-content">
-          <h3 class="modal-title">Delete Token</h3>
+      <div v-if="isOpen" class="modal-overlay">
+        <button
+          type="button"
+          class="modal-backdrop"
+          aria-label="Cancel token deletion"
+          @click="() => emit('close')"
+        />
+        <div class="modal-content" role="alertdialog" aria-modal="true" :aria-labelledby="titleId">
+          <h3 :id="titleId" class="modal-title">Delete Token</h3>
 
           <p class="delete-message">
             Are you sure you want to delete <code class="token-path">{{ tokenPath }}</code
@@ -65,8 +62,12 @@ watch(
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn--secondary" @click="emit('close')">Cancel</button>
-            <button type="button" class="btn btn--danger" @click="emit('confirm')">Delete</button>
+            <button type="button" class="btn btn--secondary" @click="() => emit('close')">
+              Cancel
+            </button>
+            <button type="button" class="btn btn--danger" @click="() => emit('confirm')">
+              Delete
+            </button>
           </div>
         </div>
       </div>
@@ -78,15 +79,24 @@ watch(
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--musea-modal-layer, 1000);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--musea-overlay) 84%, #000 16%);
+  background: color-mix(in srgb, var(--musea-overlay) 84%, var(--musea-bg-primary) 16%);
   backdrop-filter: blur(8px);
 }
 
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
 .modal-content {
+  position: relative;
   background: var(--musea-bg-secondary);
   border: 1px solid color-mix(in srgb, var(--musea-border) 78%, var(--musea-text) 22%);
   border-radius: var(--musea-radius-lg, 12px);
@@ -95,7 +105,7 @@ watch(
   padding: 1.5rem;
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--musea-bg-primary) 35%, transparent),
-    0 24px 64px rgba(0, 0, 0, 0.24);
+    0 24px 64px color-mix(in srgb, var(--musea-text) 24%, transparent);
 }
 
 .modal-title {
@@ -127,12 +137,12 @@ watch(
   border-radius: var(--musea-radius-md);
   margin-bottom: 1rem;
   color: var(--musea-text-secondary);
-}
 
-.dependents-warning svg {
-  flex-shrink: 0;
-  margin-top: 0.125rem;
-  color: var(--musea-warning);
+  svg {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+    color: var(--musea-warning);
+  }
 }
 
 .warning-text {
@@ -149,10 +159,10 @@ watch(
 .dependent-item {
   font-size: 0.75rem;
   margin-bottom: 0.125rem;
-}
 
-.dependent-item code {
-  font-family: var(--musea-font-mono);
+  code {
+    font-family: var(--musea-font-mono);
+  }
 }
 
 .warning-note {
@@ -186,35 +196,41 @@ watch(
 }
 
 .btn--danger {
-  background: #ef4444;
-  color: #fff;
+  background: var(--musea-error);
+  color: var(--musea-accent-contrast);
 }
 
 .btn--danger:hover {
-  background: #dc2626;
+  background: color-mix(in srgb, var(--musea-error) 82%, var(--musea-text) 18%);
 }
 
 /* Transition */
 .modal-enter-active,
 .modal-leave-active {
   transition: opacity 0.2s ease;
-}
 
-.modal-enter-active .modal-content,
-.modal-leave-active .modal-content {
-  transition: transform 0.2s ease;
+  .modal-content {
+    transition: transform 0.2s ease;
+  }
 }
 
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
+
+  .modal-content {
+    transform: scale(0.95);
+  }
 }
 
-.modal-enter-from .modal-content {
-  transform: scale(0.95);
-}
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter-active,
+  .modal-leave-active {
+    transition: none;
 
-.modal-leave-to .modal-content {
-  transform: scale(0.95);
+    .modal-content {
+      transition: none;
+    }
+  }
 }
 </style>

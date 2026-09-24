@@ -45,7 +45,6 @@ const editTokenData = ref<DesignToken | undefined>();
 
 const showDeleteConfirm = ref(false);
 const deletePath = ref("");
-const deleteTokenData = ref<DesignToken | undefined>();
 const deleteDependents = ref<string[]>([]);
 
 const existingPaths = computed(() => Object.keys(tokenMap.value));
@@ -60,6 +59,26 @@ onMounted(() => {
   load();
   loadUsage();
 });
+
+function selectTab(tab: (typeof tabs)[number]["key"]) {
+  activeTab.value = tab;
+}
+
+function closeFormModal() {
+  showFormModal.value = false;
+}
+
+function closeDeleteConfirm() {
+  showDeleteConfirm.value = false;
+}
+
+function closeUsageModal() {
+  showUsageModal.value = false;
+}
+
+function closeSourceEditor() {
+  showSourceEditor.value = false;
+}
 
 function openCreateModal() {
   formMode.value = "create";
@@ -77,7 +96,6 @@ function openEditModal(path: string, token: DesignToken) {
 
 function openDeleteConfirm(path: string, token: DesignToken) {
   deletePath.value = path;
-  deleteTokenData.value = token;
   // Find dependents from tokenMap
   const deps: string[] = [];
   for (const [p, t] of Object.entries(tokenMap.value)) {
@@ -167,7 +185,7 @@ async function handleSourceSaved() {
             type="button"
             class="tab-btn"
             :class="{ 'tab-btn--active': activeTab === tab.key }"
-            @click="activeTab = tab.key"
+            @click="() => selectTab(tab.key)"
           >
             {{ tab.label }}
             <span v-if="tab.key === 'all' && meta.tokenCount" class="tab-count">{{
@@ -182,7 +200,13 @@ async function handleSourceSaved() {
           </button>
         </div>
 
-        <input v-model="filter" type="text" class="tokens-filter" placeholder="Filter tokens..." />
+        <input
+          v-model="filter"
+          type="text"
+          class="tokens-filter"
+          aria-label="Filter design tokens"
+          placeholder="Filter tokens..."
+        />
       </div>
     </div>
 
@@ -237,8 +261,8 @@ async function handleSourceSaved() {
         v-for="cat in filteredCategories"
         :key="cat.name"
         :category="cat"
-        :usage-map="usageMap"
-        :token-map="tokenMap"
+        :usage-map
+        :token-map
         @edit="openEditModal"
         @delete="openDeleteConfirm"
         @show-usage="openUsageModal"
@@ -248,20 +272,19 @@ async function handleSourceSaved() {
     <TokenFormModal
       :is-open="showFormModal"
       :mode="formMode"
-      :edit-path="editPath"
+      :edit-path
       :edit-token="editTokenData"
-      :primitive-token-paths="primitiveTokenPaths"
-      :existing-paths="existingPaths"
-      @close="showFormModal = false"
+      :primitive-token-paths
+      :existing-paths
+      @close="closeFormModal"
       @submit="handleFormSubmit"
     />
 
     <TokenDeleteConfirm
       :is-open="showDeleteConfirm"
       :token-path="deletePath"
-      :token="deleteTokenData"
       :dependents="deleteDependents"
-      @close="showDeleteConfirm = false"
+      @close="closeDeleteConfirm"
       @confirm="handleDeleteConfirm"
     />
 
@@ -270,7 +293,7 @@ async function handleSourceSaved() {
       :token-path="usageTokenPath"
       :token="usageTokenData"
       :usages="usageEntries"
-      @close="showUsageModal = false"
+      @close="closeUsageModal"
       @edit-source="openSourceEditor"
     />
 
@@ -279,7 +302,7 @@ async function handleSourceSaved() {
       :art-path="sourceEditorArtPath"
       :art-title="sourceEditorArtTitle"
       :token-paths="existingPaths"
-      @close="showSourceEditor = false"
+      @close="closeSourceEditor"
       @saved="handleSourceSaved"
     />
   </div>
@@ -373,6 +396,11 @@ async function handleSourceSaved() {
   background: var(--musea-border);
   color: var(--musea-text);
   font-weight: 600;
+
+  .tab-count {
+    background: var(--musea-text-muted);
+    color: var(--musea-bg-secondary);
+  }
 }
 
 .tab-count {
@@ -381,11 +409,6 @@ async function handleSourceSaved() {
   padding: 0 0.375rem;
   border-radius: 9999px;
   color: var(--musea-text-muted);
-}
-
-.tab-btn--active .tab-count {
-  background: var(--musea-text-muted);
-  color: var(--musea-bg-secondary);
 }
 
 .tokens-filter {

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { TokenCategory, DesignToken, TokenUsageMap } from "../../api";
 import TokenCard from "./TokenCard.vue";
 
@@ -22,7 +23,10 @@ const emit = defineEmits<{
   showUsage: [tokenPath: string];
 }>();
 
-const headingLevel = Math.min(props.level ?? 2, 6);
+const headingLevel = computed(() => Math.min(props.level ?? 2, 6));
+const tokenEntries = computed(() =>
+  Object.entries(props.category.tokens).map(([name, token]) => ({ name, token })),
+);
 
 function getCategoryPath(): string {
   const catKey = props.category.name.toLowerCase().replace(/\s+/g, "-");
@@ -43,26 +47,30 @@ function getUsageCount(name: string): number {
 
 <template>
   <div class="token-category" :class="{ 'token-subcategory': level && level > 2 }">
-    <component
-      :is="'h' + headingLevel"
-      class="category-title"
-      :class="'category-title--h' + headingLevel"
-    >
+    <h2 v-if="headingLevel === 2" class="category-title category-title--h2">{{ category.name }}</h2>
+    <h3 v-else-if="headingLevel === 3" class="category-title category-title--h3">
       {{ category.name }}
-    </component>
+    </h3>
+    <h4 v-else-if="headingLevel === 4" class="category-title category-title--h4">
+      {{ category.name }}
+    </h4>
+    <h5 v-else-if="headingLevel === 5" class="category-title category-title--h5">
+      {{ category.name }}
+    </h5>
+    <h6 v-else class="category-title category-title--h6">{{ category.name }}</h6>
 
-    <div v-if="Object.keys(category.tokens).length > 0" class="tokens-grid">
+    <div v-if="tokenEntries.length > 0" class="tokens-grid">
       <TokenCard
-        v-for="(token, name) in category.tokens"
-        :key="name"
-        :name="String(name)"
-        :token="token"
-        :token-path="getTokenPath(String(name))"
-        :token-map="tokenMap"
-        :usage-count="getUsageCount(String(name))"
-        @edit="emit('edit', getTokenPath(String(name)), token)"
-        @delete="emit('delete', getTokenPath(String(name)), token)"
-        @show-usage="emit('showUsage', getTokenPath(String(name)))"
+        v-for="entry in tokenEntries"
+        :key="getTokenPath(entry.name)"
+        :name="entry.name"
+        :token="entry.token"
+        :token-path="getTokenPath(entry.name)"
+        :token-map
+        :usage-count="getUsageCount(entry.name)"
+        @edit="() => emit('edit', getTokenPath(entry.name), entry.token)"
+        @delete="() => emit('delete', getTokenPath(entry.name), entry.token)"
+        @show-usage="() => emit('showUsage', getTokenPath(entry.name))"
       />
     </div>
 
@@ -73,8 +81,8 @@ function getUsageCount(name: string): number {
         :category="sub"
         :level="(level ?? 2) + 1"
         :parent-path="getCategoryPath()"
-        :usage-map="usageMap"
-        :token-map="tokenMap"
+        :usage-map
+        :token-map
         @edit="(path, token) => emit('edit', path, token)"
         @delete="(path, token) => emit('delete', path, token)"
         @show-usage="(tokenPath) => emit('showUsage', tokenPath)"
@@ -83,14 +91,6 @@ function getUsageCount(name: string): number {
   </div>
 </template>
 
-<script lang="ts">
-// Recursive component self-reference
-import { defineComponent } from "vue";
-export default defineComponent({
-  name: "TokenCategorySection",
-});
-</script>
-
 <style scoped>
 .token-category {
   margin-bottom: 2.5rem;
@@ -98,7 +98,7 @@ export default defineComponent({
 
 .token-subcategory {
   margin-top: 1.5rem;
-  margin-left: 1rem;
+  margin-inline-start: 1rem;
   margin-bottom: 0;
 }
 
