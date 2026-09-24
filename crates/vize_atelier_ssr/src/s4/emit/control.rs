@@ -25,7 +25,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         disable_nested_fragments: bool,
         inherit_attrs: bool,
     ) -> Result<()> {
-        let fact = self.segments[self.pos].fact;
+        let fact = self.segment(self.pos)?.fact;
         self.pos += 1;
         let mut conditions = std::vec::Vec::with_capacity(if_op.branches.len());
         for (index, branch) in if_op.branches.iter().enumerate() {

@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use super::{LegacyReason, SsrS4Request, SsrS4Selection, select_ssr_lane};
 use crate::compile::{SsrLane, compile_ssr_on_lane};
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};

@@ -16,7 +16,11 @@
 //! (`davinci_ssr_corpus/production.rs`) drives the SFC adapter entry point
 //! unchanged and reports the production reach.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use std::collections::BTreeMap;
 use std::fs;

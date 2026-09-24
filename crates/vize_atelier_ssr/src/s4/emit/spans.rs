@@ -64,11 +64,17 @@ pub(super) fn argument_start(source: &str, span: Span, name: &str) -> Option<u32
 pub(super) fn directive_value(source: &str, span: Span) -> Option<Span> {
     let raw = source.get(span.start as usize..span.end as usize)?;
     let equals = raw.find('=')?;
-    let after = &raw[equals + 1..];
+    let after = raw.get(equals + 1..).unwrap_or_default();
     let value = after.trim_start();
     let start = raw.len() - value.len();
     let (open, inner) = match value.as_bytes().first() {
-        Some(&quote @ (b'"' | b'\'')) => (1, value[1..].strip_suffix(quote as char)?),
+        Some(&quote @ (b'"' | b'\'')) => (
+            1,
+            value
+                .get(1..)
+                .unwrap_or_default()
+                .strip_suffix(quote as char)?,
+        ),
         _ => (0, value),
     };
     let start = span.start + (start + open) as u32;

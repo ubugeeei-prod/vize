@@ -116,7 +116,7 @@ pub(super) fn compound_parts<'t>(
         || parts.last().is_none_or(|part| part.span.end != span.end)
         || parts
             .windows(2)
-            .any(|pair| pair[0].span.end != pair[1].span.start)
+            .any(|pair| matches!(pair, [left, right] if left.span.end != right.span.start))
         || rebuild_source(parts) != opaque.source;
     if stale {
         return Err(AdmissionFailure::Invalid("compound text parts are stale"));

@@ -69,14 +69,13 @@ fn quote_padded<'f>(file: &'f str, source: &'f str, span: vize_s0::Span) -> &'f 
     if file.get(start..end) != Some(source) {
         return source;
     }
-    let before = &file[..start];
-    let after = &file[end..];
+    let before = file.get(..start).unwrap_or_default();
+    let after = file.get(end..).unwrap_or_default();
     let open = before.trim_end_matches(|c: char| c.is_ascii_whitespace());
     let close = after.trim_start_matches(|c: char| c.is_ascii_whitespace());
+    let padded = file.get(open.len()..file.len() - close.len());
     match (open.chars().last(), close.chars().next()) {
-        (Some(quote @ ('"' | '\'')), Some(closing)) if quote == closing => {
-            &file[open.len()..file.len() - close.len()]
-        }
+        (Some(quote @ ('"' | '\'')), Some(closing)) if quote == closing => padded.unwrap_or(source),
         _ => source,
     }
 }
@@ -114,7 +113,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             Some(last) => self.child_end(*last)?,
             None => start,
         };
-        let forwards = self.segments[start..end]
+        let forwards = self
+            .segments
+            .get(start..end)
+            .unwrap_or_default()
             .iter()
             .any(|segment| segment.kind == Kind::SlotOutlet);
         let mut slots = ComponentSlots {
@@ -180,7 +182,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     fn nested_carrier(&self, start: usize, end: usize) -> Result<bool> {
         let mut pos = start;
         while pos < end {
-            let segment = self.segments[pos];
+            let segment = self.segment(pos)?;
             match (segment.kind, segment.source) {
                 (Kind::Component, _) => pos = self.child_end(pos)?,
                 (_, Source::Element(element)) if slot_content(&element.bindings).is_some() => {
@@ -258,8 +260,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         } else {
             let quoted = quoted_js_string(&spec.name);
             self.ctx.push("\"");
-            self.ctx
-                .push_optionally_mapped(&quoted[1..quoted.len() - 1], spec.anchor.0);
+            self.ctx.push_optionally_mapped(
+                quoted.get(1..quoted.len() - 1).unwrap_or_default(),
+                spec.anchor.0,
+            );
             self.ctx.push("\"");
         }
         self.ctx.push(": ");
@@ -333,7 +337,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     fn slot_children(&mut self, ranges: &Ranges) -> Result<()> {
         for &(start, end) in ranges {
             self.pos = start;
-            let segment = self.segments[start];
+            let segment = self.segment(start)?;
             self.child(segment, PLAIN, false)?;
             if self.pos != end {
                 return Err(AdmissionFailure::Invalid(

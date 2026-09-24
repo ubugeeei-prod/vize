@@ -39,7 +39,6 @@ pub(crate) enum TemplatePart {
 
 /// SSR codegen context
 pub struct SsrCodegenContext<'a> {
-    #[allow(dead_code)]
     pub(crate) allocator: &'a Allocator,
     pub(crate) options: &'a SsrCompilerOptions,
     /// Current component name for opt-in experimental self references.
@@ -57,11 +56,7 @@ pub struct SsrCodegenContext<'a> {
     pub(crate) core_helpers: FxHashSet<RuntimeHelper>,
     /// Current template literal parts being accumulated
     pub(crate) current_template_parts: SmallVec<[TemplatePart; 8]>,
-    /// Whether we have an open _push call
-    #[allow(dead_code)]
-    pub(crate) has_open_push: bool,
     /// Whether currently within a slot scope
-    #[allow(dead_code)]
     pub(crate) with_slot_scope_id: bool,
     /// Template-local identifiers from v-for and scoped slots.
     pub(crate) scoped_params: std::vec::Vec<FxHashSet<String>>,
@@ -114,7 +109,6 @@ impl<'a> SsrCodegenContext<'a> {
             ssr_helpers: FxHashSet::default(),
             core_helpers: FxHashSet::default(),
             current_template_parts: SmallVec::new(),
-            has_open_push: false,
             with_slot_scope_id: false,
             scoped_params: std::vec::Vec::new(),
             select_v_model_stack: std::vec::Vec::new(),

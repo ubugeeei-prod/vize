@@ -5,6 +5,7 @@
 //! byte-identical. Admitted fixtures must also be *emitted from the string
 //! plan*, so an accidental legacy fallback cannot make the battery vacuous;
 //! refused fixtures pin that the selector keeps them on the legacy lane.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 mod component_fixtures;
 mod control_fixtures;

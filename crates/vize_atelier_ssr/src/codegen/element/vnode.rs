@@ -364,7 +364,7 @@ impl<'a> SsrCodegenContext<'a> {
         let mut out = String::default();
         if name.starts_with('"') {
             // Unquote when it is a valid identifier for readability/parity.
-            let inner = &name[1..name.len() - 1];
+            let inner = name.get(1..name.len() - 1).unwrap_or_default();
             if is_valid_js_identifier(inner) {
                 out.push_str(inner);
             } else {
@@ -534,9 +534,7 @@ impl<'a> SsrCodegenContext<'a> {
             return "null".to_compact_string();
         }
 
-        if children.len() == 1
-            && let TemplateChildNode::Text(text) = &children[0]
-        {
+        if let [TemplateChildNode::Text(text)] = children {
             return quoted_js_string(text.content);
         }
 
@@ -792,11 +790,7 @@ fn has_vnode_array_child_ref(children: &[&TemplateChildNode]) -> bool {
 fn single_template_for_child<'node, 'a>(
     for_node: &'node ForNode<'a>,
 ) -> Option<&'node ElementNode<'a>> {
-    if for_node.children.len() != 1 {
-        return None;
-    }
-
-    let TemplateChildNode::Element(el) = &for_node.children[0] else {
+    let [TemplateChildNode::Element(el)] = for_node.children.as_slice() else {
         return None;
     };
 
@@ -806,11 +800,7 @@ fn single_template_for_child<'node, 'a>(
 fn single_plain_element_child<'node, 'a>(
     template_el: &'node ElementNode<'a>,
 ) -> Option<&'node ElementNode<'a>> {
-    if template_el.children.len() != 1 {
-        return None;
-    }
-
-    let TemplateChildNode::Element(child_el) = &template_el.children[0] else {
+    let [TemplateChildNode::Element(child_el)] = template_el.children.as_slice() else {
         return None;
     };
 
@@ -821,11 +811,7 @@ fn single_for_child_key_expression(
     ctx: &mut SsrCodegenContext<'_>,
     for_node: &ForNode,
 ) -> Option<String> {
-    if for_node.children.len() != 1 {
-        return None;
-    }
-
-    let TemplateChildNode::Element(el) = &for_node.children[0] else {
+    let [TemplateChildNode::Element(el)] = for_node.children.as_slice() else {
         return None;
     };
 

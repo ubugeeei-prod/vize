@@ -55,7 +55,6 @@ pub struct SsrStringSegment<'r, 'a> {
 /// the emitter slices that own those shapes; until then the emitter refuses
 /// them by segment kind without reading the operand.
 #[derive(Debug, Clone, Copy)]
-#[allow(dead_code)]
 pub enum SsrSegmentSource<'r, 'a> {
     Element(&'r s2::ElementOp<'a>),
     Component(&'r s2::ComponentOp<'a>),

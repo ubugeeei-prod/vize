@@ -10,8 +10,12 @@
 //!
 //! The harness loads Vue from the `vue-stable` catalog (3.5) and asserts the
 //! version, so a catalog bump fails loudly instead of silently re-pinning.
-
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(clippy::panic, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 #[path = "vue_ssr_render/fixtures.rs"]
 mod fixtures;

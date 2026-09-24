@@ -10,6 +10,7 @@
 //! `compile_ssr` case pins the end-to-end number, and the expression
 //! re-parse counter is sampled around one fused compile per fixture for the
 //! `davinci.expr.parses` baseline.
+#![expect(clippy::expect_used, reason = "benchmarks abort on fixture errors")]
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::{LADDER, template_block};

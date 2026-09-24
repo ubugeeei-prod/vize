@@ -34,7 +34,10 @@ pub(super) fn attribute_entry(attr: &AttributeNode, value: &str, spans: bool) ->
         match &attr.value {
             Some(authored) if value.len() >= 2 => {
                 spanned.push_str("\"");
-                spanned.push_mapped(&value[1..value.len() - 1], authored.loc.span.start);
+                spanned.push_mapped(
+                    value.get(1..value.len() - 1).unwrap_or_default(),
+                    authored.loc.span.start,
+                );
                 spanned.push_str("\"");
             }
             _ => spanned.push_str(value),
@@ -102,10 +105,10 @@ pub(crate) fn component_props_object_spanned(entries: &[VNodePropEntry]) -> Emit
                 let mut key = String::default();
                 push_js_object_key(&mut key, &entry.key);
                 let quote = usize::from(key.starts_with('"'));
-                out.push_str(&key[..quote]);
+                out.push_str(key.get(..quote).unwrap_or_default());
                 match spans.key {
-                    Some(start) => out.push_mapped(&key[quote..], start),
-                    None => out.push_str(&key[quote..]),
+                    Some(start) => out.push_mapped(key.get(quote..).unwrap_or_default(), start),
+                    None => out.push_str(key.get(quote..).unwrap_or_default()),
                 }
                 out.push_str(": ");
                 out.push_spanned(&spans.value);

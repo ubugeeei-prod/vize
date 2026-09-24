@@ -24,7 +24,10 @@ impl<'a> SsrCodegenContext<'a> {
         } else {
             let quoted = quoted_js_string(name);
             self.push("\"");
-            self.push_optionally_mapped(&quoted[1..quoted.len() - 1], name_start);
+            self.push_optionally_mapped(
+                quoted.get(1..quoted.len() - 1).unwrap_or_default(),
+                name_start,
+            );
             self.push("\"");
         }
         self.push(": ");

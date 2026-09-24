@@ -2,7 +2,9 @@
 //! ranges, and the legacy child-list shape of a region.
 
 use super::{Emitter, Result, text};
-use crate::s4::string_plan::{SsrSegmentSource as Source, SsrStringSegmentKind as Kind};
+use crate::s4::string_plan::{
+    SsrSegmentSource as Source, SsrStringSegment, SsrStringSegmentKind as Kind,
+};
 use crate::s4::{AdmissionFailure, LegacyReason};
 
 /// Segments that open a nested region (their close pairs by depth).
@@ -50,7 +52,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             candidates: std::vec::Vec::new(),
         };
         for start in self.direct_children(from)? {
-            let segment = &self.segments[start];
+            let segment = self.segment(start)?;
             match segment.kind {
                 Kind::Text => shape.legacy_children += 1,
                 Kind::DynamicText => {
@@ -58,7 +60,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                         return Err(LegacyReason::Operation.into());
                     };
                     shape.legacy_children +=
-                        text::legacy_child_count(self.facts.texts, segment, interpolation)?;
+                        text::legacy_child_count(self.facts.texts, &segment, interpolation)?;
                     shape.non_text = true;
                 }
                 Kind::OpenElement | Kind::If | Kind::Component | Kind::SlotOutlet => {
@@ -78,6 +80,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
         }
         Ok(shape)
+    }
+
+    /// The plan segment at `at`; cursors always stay inside the plan.
+    pub(super) fn segment(&self, at: usize) -> Result<SsrStringSegment<'r, 'a>> {
+        (self.segments.get(at).copied()).ok_or(AdmissionFailure::Invalid(
+            "string plan segment is out of range",
+        ))
     }
 
     /// Positions of the direct children of the region starting at `from`.
@@ -105,7 +114,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             return Ok(start + 1);
         }
         let mut depth = 0usize;
-        for (offset, segment) in self.segments[start..].iter().enumerate() {
+        for (offset, segment) in self
+            .segments
+            .get(start..)
+            .unwrap_or_default()
+            .iter()
+            .enumerate()
+        {
             if is_open(segment.kind) {
                 depth += 1;
             } else if is_close(segment.kind) {

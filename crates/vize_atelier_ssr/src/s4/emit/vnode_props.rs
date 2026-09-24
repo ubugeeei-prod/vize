@@ -103,7 +103,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// `_renderSlot(_ctx.$slots, name, props[, () => [fallback]])`.
     pub(super) fn vnode_outlet(&mut self, slot: &'r s2::SlotOp<'a>) -> Result<String> {
-        let open = self.segments[self.pos];
+        let open = self.segment(self.pos)?;
         plan_source(&open, SsrStringPayloadKind::SlotName)?;
         self.pos += 1;
         let attached = self.take_attached(slot.attributes.len() + slot.bindings.len())?;

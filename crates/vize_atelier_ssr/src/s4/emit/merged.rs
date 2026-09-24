@@ -94,7 +94,9 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         let children = self.direct_children(self.pos)?;
         let mut content = None;
         if tag == "textarea" {
-            let first = children.first().map(|&at| self.segments[at]);
+            let first = children
+                .first()
+                .and_then(|&at| self.segments.get(at).copied());
             // Legacy reads the first child only: a merged text-led run has
             // no single legacy child to mirror.
             if let Some(segment) = first
@@ -303,7 +305,7 @@ fn static_entry(
     let spanned = match start {
         Some(start) if value.len() >= 2 => {
             let mut spanned = EmitDocument::plain("\"");
-            spanned.push_mapped(&value[1..value.len() - 1], start);
+            spanned.push_mapped(value.get(1..value.len() - 1).unwrap_or_default(), start);
             spanned.push_str("\"");
             spanned
         }

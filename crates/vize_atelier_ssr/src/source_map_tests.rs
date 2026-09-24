@@ -4,8 +4,12 @@
 //! as `generated text -> authored text [name]` so each anchor can be reviewed
 //! without decoding VLQ by hand. The decoder is local on purpose: it must not
 //! share code with the encoder it checks.
-
-#![allow(clippy::disallowed_types, clippy::disallowed_macros)]
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_macros,
+    reason = "fixtures use std strings; insta and fixtures use format!"
+)]
 
 use crate::{
     SsrCompilerExperimentalOptions, SsrCompilerOptions, compile_ssr,

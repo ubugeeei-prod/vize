@@ -37,8 +37,8 @@ insta = { workspace = true }
 serde_json = { workspace = true }
 vize_atelier_sfc = { workspace = true }
 
-[lints.clippy]
-all = "warn"
+[lints]
+workspace = true
 
 [[bench]]
 name = "davinci"

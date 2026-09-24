@@ -2,6 +2,12 @@
 //! that root sits behind nodes the server renders nothing for: a
 //! `<template v-if>`, a `<Transition>` / `<KeepAlive>`, or a patterned-template
 //! scope. Each expectation is what `@vue/compiler-ssr` emits for the template.
+#![expect(
+    clippy::disallowed_types,
+    clippy::string_slice,
+    clippy::expect_used,
+    reason = "tests assert by panicking; fixtures use std strings"
+)]
 
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr, compile_ssr_with_options};
 use vize_s0::Allocator;

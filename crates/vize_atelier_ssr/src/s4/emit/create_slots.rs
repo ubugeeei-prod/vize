@@ -41,7 +41,7 @@ pub(super) struct Entry {
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `is_dynamic_slot_source` for the content child at `start`.
     pub(super) fn dynamic_slot_source(&self, start: usize) -> Result<Option<Dynamic>> {
-        let segment = self.segments[start];
+        let segment = self.segment(start)?;
         match segment.kind {
             Kind::If => {
                 for branch in self.branch_starts(start)? {
@@ -124,7 +124,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         &self,
         at: usize,
     ) -> Result<(&'r s2::IfOp<'a>, std::vec::Vec<usize>)> {
-        let Source::If(if_op) = self.segments[at].source else {
+        let Source::If(if_op) = self.segment(at)?.source else {
             return Err(AdmissionFailure::Invalid(
                 "createSlots conditional is not a v-if",
             ));
@@ -144,7 +144,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         &mut self,
         at: usize,
     ) -> Result<(String, String, vize_s1_to_s2::TransformScopeMark)> {
-        let Source::For(for_op) = self.segments[at].source else {
+        let Source::For(for_op) = self.segment(at)?.source else {
             return Err(AdmissionFailure::Invalid("createSlots loop is not a v-for"));
         };
         let binding = &for_op.binding;
@@ -254,7 +254,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             ))?;
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderList);
         let (source, aliases, mark) = self.enter_loop(at)?;
-        let span = match self.segments[at].source {
+        let span = match self.segment(at)?.source {
             Source::For(for_op) => expression_span(&for_op.binding.source),
             _ => None,
         };

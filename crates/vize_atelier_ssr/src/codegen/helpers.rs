@@ -354,11 +354,7 @@ pub(crate) fn rendered_child_count(children: &[TemplateChildNode]) -> usize {
 }
 
 fn has_keyed_template_v_for_child(for_node: &ForNode) -> bool {
-    if for_node.children.len() != 1 {
-        return false;
-    }
-
-    let TemplateChildNode::Element(el) = &for_node.children[0] else {
+    let [TemplateChildNode::Element(el)] = for_node.children.as_slice() else {
         return false;
     };
 
@@ -368,13 +364,9 @@ fn has_keyed_template_v_for_child(for_node: &ForNode) -> bool {
 }
 
 fn has_single_plain_element_child(el: &vize_atelier_core::ElementNode) -> bool {
-    if el.children.len() != 1 {
-        return false;
-    }
-
     matches!(
-        &el.children[0],
-        TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Element
+        el.children.as_slice(),
+        [TemplateChildNode::Element(child_el)] if child_el.tag_type == ElementType::Element
     )
 }
 

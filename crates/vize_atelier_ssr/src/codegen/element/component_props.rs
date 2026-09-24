@@ -126,8 +126,9 @@ impl SsrCodegenContext<'_> {
         // with. Render whichever variant it is rather than only unwrapping
         // `Entries`: leaving `Spread` to fall through used to drop the segment
         // and silently strip every `v-bind="obj"` prop from the component.
-        if segments.len() == 1 {
-            let segment = segments.pop().expect("segments has exactly one element");
+        if segments.len() == 1
+            && let Some(segment) = segments.pop()
+        {
             return self.component_segment_expression(segment);
         }
 

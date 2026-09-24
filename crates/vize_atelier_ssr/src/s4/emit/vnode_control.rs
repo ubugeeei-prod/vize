@@ -33,7 +33,7 @@ fn alias_source<'a>(expr: &ExprRef<'a>) -> Result<&'a str> {
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `(cond) ? a : (cond) ? b : _createCommentVNode("")`.
     pub(super) fn vnode_if(&mut self, if_op: &'r s2::IfOp<'a>) -> Result<String> {
-        let fact = self.segments[self.pos].fact;
+        let fact = self.segment(self.pos)?.fact;
         let from_template = self
             .facts
             .wrappers
@@ -109,7 +109,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `(_openBlock(true), _createBlock(_Fragment, null, _renderList(...),
     /// 128 | 256))`.
     pub(super) fn vnode_for(&mut self, for_op: &'r s2::ForOp<'a>) -> Result<String> {
-        let fact = self.segments[self.pos].fact;
+        let fact = self.segment(self.pos)?.fact;
         self.pos += 1;
         for helper in [
             RuntimeHelper::RenderList,

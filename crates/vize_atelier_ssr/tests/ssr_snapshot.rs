@@ -2,8 +2,8 @@
 //!
 //! These tests compare the SSR compiler output against expected snapshots.
 //! The snapshots are based on Vue's official compiler-ssr test cases.
-
-#![allow(clippy::disallowed_macros)]
+#![expect(clippy::panic, reason = "tests assert by panicking")]
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use vize_atelier_ssr::compile_ssr;
 use vize_s0::{Allocator, String};

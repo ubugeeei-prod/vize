@@ -46,7 +46,7 @@ pub(super) struct Bind<'r, 'a> {
 pub(super) fn admit(attached: &Attached<'_, '_>, owner_fact: u32, tag: &str) -> Result<()> {
     if attached
         .windows(2)
-        .any(|pair| pair[0].span.start > pair[1].span.start)
+        .any(|pair| matches!(pair, [left, right] if left.span.start > right.span.start))
     {
         return Err(AdmissionFailure::Invalid(
             "string plan attached segments are not in authored order",

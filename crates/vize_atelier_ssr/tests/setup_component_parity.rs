@@ -1,3 +1,8 @@
+#![expect(
+    clippy::disallowed_types,
+    clippy::string_slice,
+    reason = "tests assert by panicking; fixtures use std strings"
+)]
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
 use vize_s0::{Allocator, FxHashMap};

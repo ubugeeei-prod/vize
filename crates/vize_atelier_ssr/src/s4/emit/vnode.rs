@@ -51,7 +51,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
     /// `vnode_child_expression` for the child at the cursor; a merged S2 text
     /// run yields one expression per legacy child.
     fn vnode_child(&mut self, out: &mut std::vec::Vec<String>) -> Result<()> {
-        let segment = self.segments[self.pos];
+        let segment = self.segment(self.pos)?;
         match (segment.kind, segment.source) {
             (Kind::Text, Source::Text(_)) => {
                 self.pos += 1;
@@ -152,7 +152,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         element: &'r s2::ElementOp<'a>,
         key: Option<&str>,
     ) -> Result<String> {
-        let open = self.segments[self.pos];
+        let open = self.segment(self.pos)?;
         let tag = plan_source(&open, SsrStringPayloadKind::TagName)?;
         self.pos += 1;
         let attached = self.take_attached(element.attributes.len() + element.bindings.len())?;
@@ -161,8 +161,13 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let props = self.vnode_element_props(attached, key)?;
         let children = match self.direct_children(self.pos)?.as_slice() {
             [] => "null".to_compact_string(),
-            [only] if self.segments[*only].kind == Kind::Text => {
-                let segment = self.segments[*only];
+            [only]
+                if self
+                    .segments
+                    .get(*only)
+                    .is_some_and(|s| s.kind == Kind::Text) =>
+            {
+                let segment = self.segment(*only)?;
                 self.pos += 1;
                 let content = plan_source(&segment, SsrStringPayloadKind::Text)?;
                 let decoded = decode_ssr_static_text(content);
@@ -181,7 +186,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
 
     /// `_createVNode(callee, props, slots)`.
     fn vnode_component(&mut self, component: &'r s2::ComponentOp<'a>) -> Result<String> {
-        let open = self.segments[self.pos];
+        let open = self.segment(self.pos)?;
         let name = plan_source(&open, SsrStringPayloadKind::ComponentName)?;
         self.pos += 1;
         let attached = self.take_attached(component.attributes.len() + component.bindings.len())?;

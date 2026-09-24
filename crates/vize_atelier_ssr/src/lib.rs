@@ -2,8 +2,6 @@
 //!
 //! The SSR atelier specializes in server-rendered HTML strings, not VNode trees.
 
-#![allow(clippy::collapsible_match)]
-#![cfg_attr(test, allow(clippy::disallowed_macros))]
 pub mod codegen;
 mod compile;
 #[cfg(feature = "davinci-differential")]
@@ -19,7 +17,7 @@ mod stage_options;
 pub mod steps;
 
 pub use codegen::{SsrCodegenContext, SsrCodegenResult};
-#[allow(deprecated)]
+#[expect(deprecated, reason = "kept exported until removal")]
 pub use compile::compile_ssr_with_vue_parser_quirks;
 pub use compile::{
     compile_s2_to_ssr, compile_ssr, compile_ssr_with_custom_elements_and_template_syntax,
@@ -40,6 +38,7 @@ pub use vize_atelier_core::{
 };
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::{
         SsrCompilerOptions, compile_ssr, compile_ssr_with_options, compile_ssr_with_template_syntax,
@@ -269,7 +268,7 @@ mod tests {
             .code
             .find("_ssrRenderList(_ctx.items")
             .expect("expected ssr render list");
-        let list_body = &result.code[list_start..];
+        let list_body = result.code.get(list_start..).unwrap();
         assert!(
             list_body.contains("_push(`<!--[-->`)"),
             "keyed template v-for iteration must render a Fragment boundary:\n{}",
@@ -318,7 +317,7 @@ mod tests {
             .code
             .find("_ssrRenderList(_ctx.items")
             .expect("expected ssr render list");
-        let list_body = &result.code[list_start..];
+        let list_body = result.code.get(list_start..).unwrap();
         assert!(
             !list_body.contains("_push(`<!--[-->`)"),
             "single element template v-for iterations must not render an extra Fragment boundary:\n{}",
@@ -353,7 +352,7 @@ mod tests {
             .code
             .find("_ssrRenderList([_ctx.value]")
             .expect("expected ssr render list");
-        let list_body = &result.code[list_start..];
+        let list_body = result.code.get(list_start..).unwrap();
         assert!(
             list_body.contains("_push(`<!--[-->`)"),
             "keyed template v-for fallback iteration must render a Fragment boundary:\n{}",

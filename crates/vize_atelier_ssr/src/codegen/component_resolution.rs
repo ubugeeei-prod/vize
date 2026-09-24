@@ -46,7 +46,7 @@ impl SsrCodegenContext<'_> {
         let name = self.component_resolution_name(component);
         let mut quoted = String::default();
         push_quoted_js_string(&mut quoted, name.as_str());
-        let inner = &quoted[1..quoted.len() - 1];
+        let inner = quoted.get(1..quoted.len() - 1).unwrap_or_default();
         let mut out = EmitDocument::plain("_resolveComponent(\"");
         match tag_start.filter(|_| self.spans_enabled() && inner == component) {
             Some(start) => out.push_mapped(inner, start),

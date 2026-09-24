@@ -31,21 +31,20 @@ pub(crate) fn strip_scope_prefixes_for_scoped_params(
         let mut stripped = false;
         for prefix in SCOPED_PARAM_PREFIXES {
             let prefix_bytes = prefix.as_bytes();
-            if index + prefix_bytes.len() > bytes.len()
-                || &bytes[index..index + prefix_bytes.len()] != prefix_bytes
-            {
+            if bytes.get(index..index + prefix_bytes.len()) != Some(prefix_bytes) {
                 continue;
             }
 
             let start = index + prefix_bytes.len();
             let mut end = start;
-            while end < bytes.len()
-                && (bytes[end].is_ascii_alphanumeric() || bytes[end] == b'_' || bytes[end] == b'$')
+            while bytes
+                .get(end)
+                .is_some_and(|&b| b.is_ascii_alphanumeric() || b == b'_' || b == b'$')
             {
                 end += 1;
             }
 
-            let ident = &content[start..end];
+            let ident = content.get(start..end).unwrap_or_default();
             if !ident.is_empty() && is_scoped_param(scoped_params, ident) {
                 result.push_str(ident);
                 index = end;
@@ -60,10 +59,9 @@ pub(crate) fn strip_scope_prefixes_for_scoped_params(
 
         // Copy a scalar, not a byte. A multibyte character such as `、`
         // would otherwise become one Latin-1 scalar per UTF-8 byte.
-        let character = content[index..]
-            .chars()
-            .next()
-            .expect("valid UTF-8 boundary");
+        let Some(character) = content.get(index..).and_then(|rest| rest.chars().next()) else {
+            break;
+        };
         result.push(character);
         index += character.len_utf8();
     }

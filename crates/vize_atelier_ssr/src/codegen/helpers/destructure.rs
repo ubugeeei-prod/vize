@@ -47,7 +47,7 @@ pub(crate) fn extract_destructure_params(value: &str, params: &mut FxHashSet<Str
 
     while let Some(value) = pending.pop() {
         if value.starts_with('(') && value.ends_with(')') {
-            pending.push(value[1..value.len() - 1].trim());
+            pending.push(value.get(1..value.len() - 1).unwrap_or_default().trim());
             continue;
         }
         if value.contains(',') && !value.starts_with('{') && !value.starts_with('[') {
@@ -59,7 +59,7 @@ pub(crate) fn extract_destructure_params(value: &str, params: &mut FxHashSet<Str
             continue;
         }
         if value.starts_with('{') && value.ends_with('}') {
-            for part in split_top_level(&value[1..value.len() - 1])
+            for part in split_top_level(value.get(1..value.len() - 1).unwrap_or_default())
                 .into_iter()
                 .rev()
             {
@@ -69,17 +69,17 @@ pub(crate) fn extract_destructure_params(value: &str, params: &mut FxHashSet<Str
                     continue;
                 }
                 if let Some(eq_pos) = part.find('=') {
-                    pending.push(part[..eq_pos].trim());
+                    pending.push(part.get(..eq_pos).unwrap_or_default().trim());
                     continue;
                 }
                 if let Some(colon_pos) = part.find(':') {
-                    pending.push(part[colon_pos + 1..].trim());
+                    pending.push(part.get(colon_pos + 1..).unwrap_or_default().trim());
                     continue;
                 }
                 pending.push(part);
             }
         } else if value.starts_with('[') && value.ends_with(']') {
-            for part in split_top_level(&value[1..value.len() - 1])
+            for part in split_top_level(value.get(1..value.len() - 1).unwrap_or_default())
                 .into_iter()
                 .rev()
             {
@@ -106,14 +106,14 @@ fn split_top_level(value: &str) -> std::vec::Vec<&str> {
             b'{' | b'[' | b'(' => depth += 1,
             b'}' | b']' | b')' => depth -= 1,
             b',' if depth == 0 => {
-                parts.push(&value[start..index]);
+                parts.push(value.get(start..index).unwrap_or_default());
                 start = index + 1;
             }
             _ => {}
         }
     }
 
-    parts.push(&value[start..]);
+    parts.push(value.get(start..).unwrap_or_default());
     parts
 }
 

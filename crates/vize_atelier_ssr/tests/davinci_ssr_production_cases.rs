@@ -1,6 +1,12 @@
 //! Production SSR compiles that diverged from the legacy walker on the
 //! hydrated corpus: destructured shorthand, a non-ASCII string in an
 //! interpolation, and a double-escaped parenthesis in static text.
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::expect_used,
+    reason = "tests assert by panicking; fixtures use std strings"
+)]
 
 use vize_atelier_core::CodegenOptions;
 use vize_atelier_core::options::{CustomElementMatcher, TemplateSyntaxMode};
