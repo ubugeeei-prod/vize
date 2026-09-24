@@ -89,6 +89,19 @@ fn validate_item(path: &Path, item: &RegistryItem, names: &[&str]) -> LibResult<
         }
         seen.push(&file.path);
     }
+    for example in &item.examples {
+        validate_relative_path(&example.path)?;
+        if example.title.is_empty() || !is_sha256(&example.sha256) {
+            return Err(fail(
+                path,
+                cstr!("{at}: example {} needs a title and a sha256", example.path),
+            ));
+        }
+        if seen.contains(&example.path.as_str()) {
+            return Err(fail(path, cstr!("{at}: duplicate file {}", example.path)));
+        }
+        seen.push(&example.path);
+    }
     if !seen.contains(&item.entry.as_str()) {
         return Err(fail(
             path,
@@ -166,18 +179,19 @@ pub fn validate_manifest(path: &Path, manifest: &RegistryManifest) -> LibResult<
     let mut owners: Vec<(&str, &str)> = Vec::new();
     for item in &manifest.items {
         validate_item(path, item, &names)?;
-        for file in &item.files {
-            if let Some((_, owner)) = owners.iter().find(|(seen, _)| *seen == file.path.as_str()) {
+        let published = item
+            .files
+            .iter()
+            .map(|file| file.path.as_str())
+            .chain(item.examples.iter().map(|example| example.path.as_str()));
+        for file in published {
+            if let Some((_, owner)) = owners.iter().find(|(seen, _)| *seen == file) {
                 return Err(fail(
                     path,
-                    cstr!(
-                        "{} is published by both {owner} and {}",
-                        file.path,
-                        item.name
-                    ),
+                    cstr!("{file} is published by both {owner} and {}", item.name),
                 ));
             }
-            owners.push((&file.path, &item.name));
+            owners.push((file, &item.name));
         }
     }
     // registryDependencies must be a transitive closure (the schema contract).

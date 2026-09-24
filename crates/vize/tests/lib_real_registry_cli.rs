@@ -133,6 +133,7 @@ fn pulls_real_items_that_compile_and_resolve_on_their_own() {
             "pull",
             "switch",
             "use-storage",
+            "--with-examples",
         ],
     );
     assert_ok(&pulled);
@@ -178,6 +179,12 @@ fn pulls_real_items_that_compile_and_resolve_on_their_own() {
         }
     }
     assert!(!vue_files.is_empty());
+    assert!(
+        vue_files
+            .iter()
+            .any(|file| file.ends_with("examples/switch-basic.vue")),
+        "--with-examples copies the usage demo: {vue_files:?}"
+    );
 
     for vue_file in &vue_files {
         assert_ok(&vize(

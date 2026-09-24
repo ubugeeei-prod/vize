@@ -80,6 +80,19 @@
         "size": { "type": "integer", "minimum": 0 }
       }
     },
+    "example": {
+      "description": "Unstyled usage demo shipped with an item; pulled only with `vize lib pull --with-examples`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "title", "description", "sha256", "size"],
+      "properties": {
+        "path": { "$ref": "#/$defs/relativePath" },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "size": { "type": "integer", "minimum": 0 }
+      }
+    },
     "npmDependency": {
       "type": "object",
       "additionalProperties": false,
@@ -145,6 +158,11 @@
         "contentHash": {
           "description": "SHA-256 over path + NUL + sha256 + LF for every file in path order.",
           "$ref": "#/$defs/sha256"
+        },
+        "examples": {
+          "description": "Usage demos sorted by path. Not part of files or contentHash; optional for third-party registries.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/example" }
         }
       }
     }

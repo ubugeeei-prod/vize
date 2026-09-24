@@ -1,5 +1,6 @@
 //! End-to-end `vize lib` tests over fixture registries (no network).
 
+mod examples;
 mod fixture;
 mod lifecycle;
 mod sources;

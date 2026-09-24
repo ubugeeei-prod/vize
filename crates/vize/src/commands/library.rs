@@ -149,6 +149,9 @@ pub struct PullArgs {
     /// Overwrite files that differ from the registry and were not pulled pristine
     #[arg(long, short = 'o')]
     pub overwrite: bool,
+    /// Also copy the requested items' unstyled usage examples (`examples/*.vue`)
+    #[arg(long)]
+    pub with_examples: bool,
     /// Accepted for shadcn compatibility; `vize lib` never prompts
     #[arg(long, short = 'y')]
     pub yes: bool,

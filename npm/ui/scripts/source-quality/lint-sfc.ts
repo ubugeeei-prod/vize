@@ -118,6 +118,7 @@ async function collectVueFiles(directory: string): Promise<string[]> {
   const files: string[] = [];
   for (const entry of entries) {
     const filename = path.join(directory, entry.name);
+    if (entry.isDirectory() && entry.name === "examples") continue;
     if (entry.isDirectory()) {
       files.push(...(await collectVueFiles(filename)));
     } else if (entry.isFile() && entry.name.endsWith(".vue")) {

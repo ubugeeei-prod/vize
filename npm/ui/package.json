@@ -1033,6 +1033,7 @@
     "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
     "build:registry": "vp exec node scripts/build-source-registry.ts",
+    "check:examples": "vp exec node scripts/generate-gallery.ts --check",
     "check:size": "node scripts/check-size.mjs",
     "docs:reference": "vp exec node scripts/generate-reference-docs.ts",
     "check:tree-shaking": "node scripts/check-tree-shaking.mjs",

@@ -70,6 +70,10 @@
           "description": "true when requested by name; false when pulled only as a registry dependency (removed with its last dependent).",
           "type": "boolean"
         },
+        "examples": {
+          "description": "true when the item's usage examples were pulled too (`--with-examples`); their files are listed in `files`. Omitted when false.",
+          "type": "boolean"
+        },
         "registryDependencies": {
           "description": "Registry dependency closure at pull time.",
           "type": "array",

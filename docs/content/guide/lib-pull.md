@@ -41,19 +41,19 @@ already serves, so every version stays immutable and reproducible.
 
 ## Commands
 
-| Command                                  | What it does                                                                   |
-| ---------------------------------------- | ------------------------------------------------------------------------------ |
-| `vize lib init [--dry-run]`              | Detect the project layout and write the `lib` config section.                  |
-| `vize lib list [--kind ui\|composable]`  | List pullable items.                                                           |
-| `vize lib search <words>`                | Match names, titles, descriptions, and aliases.                                |
-| `vize lib info <name>`                   | Show files, registry dependencies, npm peers, and the package version.         |
-| `vize lib pull <item>... [--dir <dir>]`  | Copy items and their registry dependencies; `--dry-run`, `--overwrite`.        |
-| `vize lib add <item>...`                 | shadcn-compatible alias of `pull` (`-p/--path`, `-o/--overwrite`, `-y/--yes`). |
-| `vize lib status`                        | Compare pulled files with the lockfile and the installed registry.             |
-| `vize lib diff <name> [--to <version>]`  | Unified diff from your local copy to a registry version.                       |
-| `vize lib update [<name>...] [--to <v>]` | Apply upstream changes without clobbering local edits; `--dry-run`, `--force`. |
-| `vize lib remove <name>...`              | Delete items and dependencies nothing else needs; `--dry-run`, `--force`.      |
-| `vize lib outdated`                      | Compare locked versions with the installed and latest registries.              |
+| Command                                  | What it does                                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `vize lib init [--dry-run]`              | Detect the project layout and write the `lib` config section.                              |
+| `vize lib list [--kind ui\|composable]`  | List pullable items.                                                                       |
+| `vize lib search <words>`                | Match names, titles, descriptions, and aliases.                                            |
+| `vize lib info <name>`                   | Show files, registry dependencies, npm peers, and the package version.                     |
+| `vize lib pull <item>... [--dir <dir>]`  | Copy items and their registry dependencies; `--dry-run`, `--overwrite`, `--with-examples`. |
+| `vize lib add <item>...`                 | shadcn-compatible alias of `pull` (`-p/--path`, `-o/--overwrite`, `-y/--yes`).             |
+| `vize lib status`                        | Compare pulled files with the lockfile and the installed registry.                         |
+| `vize lib diff <name> [--to <version>]`  | Unified diff from your local copy to a registry version.                                   |
+| `vize lib update [<name>...] [--to <v>]` | Apply upstream changes without clobbering local edits; `--dry-run`, `--force`.             |
+| `vize lib remove <name>...`              | Delete items and dependencies nothing else needs; `--dry-run`, `--force`.                  |
+| `vize lib outdated`                      | Compare locked versions with the installed and latest registries.                          |
 
 Every command accepts `--json` for machine-readable output and `--root <dir>` to run against another
 project.
@@ -154,6 +154,24 @@ fields, malformed digests, unknown roles or dependencies, and an incomplete depe
 rejected), and every downloaded byte is verified against its SHA-256 before it is written. A
 namespace's items land in its `dir` (else the registry's `defaultTargetDirectory`), are locked under
 the `@namespace` key, and can never overwrite a file that another pulled item owns.
+
+## Usage examples and the Musea gallery
+
+Most UI families ship unstyled usage demos next to their sources
+(`families/<area>/<family>/examples/<family>-*.vue`). They are published in the registry but pulled
+only on request:
+
+```bash
+vize lib pull switch --with-examples
+```
+
+The examples land beside the pulled sources (`…/switch/examples/switch-basic.vue`), import the family
+through relative paths, and are tracked in `vize-lib.lock.json` like any other file, so `status`,
+`diff`, and `update` cover them; `update` keeps pulling them once requested.
+
+The same examples feed a [Musea](./musea.md) gallery with one story per family and one variant per
+example. In a checkout, run `pnpm gallery:ui` in `examples/vite-musea`: it regenerates the stories
+(`npm/ui/scripts/generate-gallery.ts`) and starts the gallery.
 
 ## Versioning and safe updates
 

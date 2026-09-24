@@ -10,7 +10,7 @@ use super::fs_ops::join_relative;
 use super::fs_ops::project_relative_dir;
 use super::lockfile::Lockfile;
 use super::output::{declared_npm_packages, json, line, npm_hint, render_plan};
-use super::plan::{ItemPlan, apply, conflict_summary, join_dir, plan_item};
+use super::plan::{ItemPlan, PlanFlags, apply, conflict_summary, join_dir, plan_item};
 use super::query::{ItemSpec, resolve_spec};
 use super::registry::NpmDependency;
 use super::resolve::Source;
@@ -98,6 +98,7 @@ fn plan_request(
     request: &Request,
     dir_flag: Option<&Path>,
     direct_names: &[String],
+    examples_for: &[String],
 ) -> LibResult<Vec<ItemPlan>> {
     let default_dir = context
         .resolver
@@ -138,7 +139,11 @@ fn plan_request(
             registry,
             item,
             existing,
-            direct,
+            PlanFlags {
+                direct,
+                with_examples: examples_for.contains(name)
+                    || existing.is_some_and(|locked| locked.examples),
+            },
         )?);
     }
     reject_foreign_owners(&root, lockfile, &plans)?;
@@ -286,6 +291,7 @@ pub fn pull(context: &mut LibContext, args: &PullArgs) -> LibResult<String> {
             request,
             args.dir.as_deref(),
             &names,
+            if args.with_examples { &names } else { &[] },
         )?);
     }
     finish(
@@ -341,7 +347,14 @@ pub fn update(context: &mut LibContext, args: &UpdateArgs) -> LibResult<String> 
             .filter(|item| item.direct && item.kind == request.kind.as_str())
             .map(|item| item.name.clone())
             .collect();
-        plans.extend(plan_request(context, &lockfile, request, None, &direct)?);
+        plans.extend(plan_request(
+            context,
+            &lockfile,
+            request,
+            None,
+            &direct,
+            &[],
+        )?);
     }
     finish(
         context,

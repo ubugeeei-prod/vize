@@ -14,6 +14,7 @@ npm/*/dist/
 npm/*/*/dist/
 # Source registries emitted into the @vizejs/ui and @vizejs/composable tarballs
 npm/ui/registry/
+npm/ui/gallery/stories/
 npm/compose/core/registry/
 npm/ui/.lib-pull-e2e-*/
 editors/*/dist/
@@ -91,3 +92,4 @@ tests/fuzz/target/
 *.snap.actual
 *.pending-snap
 .lake/
+examples/vite-musea/dist-ui-gallery/

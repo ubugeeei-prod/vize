@@ -95,6 +95,13 @@ test("hashes every published file and item content", () => {
     }
     assert.equal(item.contentHash, computeContentHash(item.files));
   }
+  for (const item of manifest.items) {
+    for (const example of item.examples) {
+      assert.ok(!seen.has(example.path), `${example.path} is not also a source file`);
+      seen.add(example.path);
+      assert.equal(example.sha256, sha256Hex(readFileSync(path.join(sourceRoot, example.path))));
+    }
+  }
   assert.equal(bundle.files.size, seen.size);
 });
 
