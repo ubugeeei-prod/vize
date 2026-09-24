@@ -274,6 +274,16 @@ const sentinels = {
   "use-web-locks": ["function useWebLocks("],
   "use-web-vitals--use-web-vitals": ["function useWebVitals("],
   "use-web-vitals--rate-metric": ["function rateMetric("],
+  "i18n--define-messages": ["function defineMessages("],
+  "i18n--define-locale": ["function defineLocale("],
+  "i18n--define-i18n": ["function defineI18n("],
+  "i18n--use-i18n": ["function useI18n("],
+  "icu-message--parse-message": ["function parseMessage("],
+  "icu-message--create-message-formatter": ["function createMessageFormatter("],
+  "icu-message--format-message": ["function formatMessage("],
+  "use-route-query--one-of": ["function oneOf("],
+  "use-route-query--use-route-query": ["function useRouteQuery("],
+  "use-route-query--use-route-params": ["function useRouteParams("],
 } as const;
 
 type ModuleName = keyof typeof sentinels;
@@ -1375,6 +1385,57 @@ const utilities: readonly UtilityCase[] = [
     entry: "index",
     module: "use-web-vitals--rate-metric",
     shared: ["scope", "use-performance-observer"],
+  },
+  {
+    binding: "defineMessages",
+    entry: "index",
+    module: "i18n--define-messages",
+    shared: ["i18n--define-locale"],
+  },
+  {
+    binding: "defineLocale",
+    entry: "index",
+    module: "i18n--define-locale",
+    shared: ["i18n--define-messages"],
+  },
+  {
+    binding: "defineI18n",
+    entry: "index",
+    module: "i18n--define-i18n",
+    shared: [
+      "i18n--define-locale",
+      "i18n--define-messages",
+      "icu-message--create-message-formatter",
+      "icu-message--parse-message",
+      "locale",
+    ],
+  },
+  { binding: "useI18n", entry: "index", module: "i18n--use-i18n", shared: [] },
+  { binding: "parseMessage", entry: "index", module: "icu-message--parse-message", shared: [] },
+  {
+    binding: "createMessageFormatter",
+    entry: "index",
+    module: "icu-message--create-message-formatter",
+    shared: ["icu-message--parse-message"],
+  },
+  {
+    binding: "formatMessage",
+    entry: "index",
+    module: "icu-message--format-message",
+    shared: ["icu-message--create-message-formatter", "icu-message--parse-message"],
+  },
+  { binding: "oneOf", entry: "index", module: "use-route-query--one-of", shared: [] },
+  {
+    binding: "useRouteQuery",
+    entry: "index",
+    module: "use-route-query--use-route-query",
+    shared: ["use-route-query--one-of"],
+  },
+  {
+    binding: "useRouteParams",
+    entry: "index",
+    module: "use-route-query--use-route-params",
+    shared: [],
   },
 ];
 

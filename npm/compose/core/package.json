@@ -183,6 +183,16 @@
       "import": "./dist/geolocation.mjs",
       "default": "./dist/geolocation.mjs"
     },
+    "./i18n": {
+      "types": "./dist/i18n.d.mts",
+      "import": "./dist/i18n.mjs",
+      "default": "./dist/i18n.mjs"
+    },
+    "./icu-message": {
+      "types": "./dist/icu-message.d.mts",
+      "import": "./dist/icu-message.mjs",
+      "default": "./dist/icu-message.mjs"
+    },
     "./idle": {
       "types": "./dist/idle.d.mts",
       "import": "./dist/idle.mjs",
@@ -702,6 +712,11 @@
       "types": "./dist/use-request-idle-callback.d.mts",
       "import": "./dist/use-request-idle-callback.mjs",
       "default": "./dist/use-request-idle-callback.mjs"
+    },
+    "./use-route-query": {
+      "types": "./dist/use-route-query.d.mts",
+      "import": "./dist/use-route-query.mjs",
+      "default": "./dist/use-route-query.mjs"
     },
     "./use-scheduler-post-task": {
       "types": "./dist/use-scheduler-post-task.d.mts",
