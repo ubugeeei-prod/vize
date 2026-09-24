@@ -85,7 +85,8 @@ test("static typecheck keeps catalogued public contracts on the Canon lane", asy
       `${file} must be included in the resolved tsconfig.typecheck.json program`,
     );
   }
-});
+  // Building the whole-package TypeScript program grows with the catalog.
+}, 60_000);
 
 function parseTypecheckConfig() {
   const configPath = path.resolve("tsconfig.typecheck.json");
