@@ -41,7 +41,10 @@ const BATTERY: &[(&str, &str)] = &[
     ("dotted_not_self", "<div><Foo.Bar /></div>"),
     ("builtin_untouched", "<Transition><Foo /></Transition>"),
     ("dynamic_untouched", r#"<component :is="Foo" />"#),
-    ("bare_component_slots", "<div><component><template #actions></template></component></div>"),
+    (
+        "bare_component_slots",
+        "<div><component><template #actions></template></component></div>",
+    ),
 ];
 
 fn shipped(name: &str, mode: CodegenMode) -> DomCompilerOptions {
