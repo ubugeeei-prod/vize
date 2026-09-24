@@ -67,6 +67,50 @@ pub fn join_relative(base: &Path, path: &str) -> LibResult<PathBuf> {
         .fold(base.to_path_buf(), |joined, segment| joined.join(segment)))
 }
 
+/// Keep a destination inside the canonical project root without following
+/// existing symlinks in any of its path components. A lexical `..` check is
+/// insufficient: a directory below the project may itself point elsewhere.
+pub fn ensure_project_path(root: &Path, path: &Path) -> LibResult<()> {
+    let relative = path.strip_prefix(root).map_err(|_| {
+        LibError::new(cstr!(
+            "destination {} is outside the project root {}",
+            path.display(),
+            root.display()
+        ))
+    })?;
+    let mut current = root.to_path_buf();
+    let components: Vec<_> = relative.components().collect();
+    for (index, component) in components.iter().enumerate() {
+        let Component::Normal(segment) = component else {
+            return Err(LibError::new(cstr!(
+                "destination {} must stay inside the project root",
+                path.display()
+            )));
+        };
+        current.push(segment);
+        match fs::symlink_metadata(&current) {
+            Ok(metadata) if metadata.file_type().is_symlink() => {
+                return Err(LibError::new(cstr!(
+                    "destination {} contains a symbolic link at {}",
+                    path.display(),
+                    current.display()
+                )));
+            }
+            Ok(metadata) if index + 1 < components.len() && !metadata.is_dir() => {
+                return Err(LibError::new(cstr!(
+                    "destination {} has a non-directory parent {}",
+                    path.display(),
+                    current.display()
+                )));
+            }
+            Ok(_) => {}
+            Err(error) if error.kind() == ErrorKind::NotFound => {}
+            Err(error) => return Err(LibError::io("inspect", &current, &error)),
+        }
+    }
+    Ok(())
+}
+
 /// Normalize a user-supplied directory to a project-relative POSIX path.
 ///
 /// Absolute paths must live inside `root`; relative paths may not climb out of it.
@@ -98,7 +142,9 @@ pub fn project_relative_dir(root: &Path, dir: &Path) -> LibResult<String> {
     if segments.is_empty() {
         return Ok(String::from("."));
     }
-    Ok(segments.join("/").into())
+    let normalized = segments.join("/");
+    ensure_project_path(root, &root.join(&normalized))?;
+    Ok(normalized.into())
 }
 
 /// Write `contents` to `path`, creating parent directories; existing files are
@@ -151,7 +197,9 @@ pub fn remove_file_and_prune(path: &Path, stop: &Path) -> LibResult<()> {
 
 #[cfg(test)]
 mod tests {
-    use super::{content_hash, project_relative_dir, sha256_hex, validate_relative_path};
+    use super::{
+        content_hash, ensure_project_path, project_relative_dir, sha256_hex, validate_relative_path,
+    };
     use std::path::Path;
 
     #[test]
@@ -197,5 +245,26 @@ mod tests {
         );
         assert!(project_relative_dir(root, Path::new("../elsewhere")).is_err());
         assert!(project_relative_dir(root, Path::new("/elsewhere")).is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rejects_symlinked_directories_and_files() {
+        use std::os::unix::fs::symlink;
+
+        let temporary = tempfile::tempdir().unwrap();
+        let root = temporary.path().join("app");
+        let outside = temporary.path().join("outside");
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::create_dir_all(&outside).unwrap();
+        symlink(&outside, root.join("linked")).unwrap();
+        assert!(ensure_project_path(&root, &root.join("linked/file.ts")).is_err());
+        assert!(project_relative_dir(&root, Path::new("linked")).is_err());
+
+        std::fs::write(outside.join("file.ts"), "unchanged").unwrap();
+        symlink(outside.join("file.ts"), root.join("file.ts")).unwrap();
+        assert!(ensure_project_path(&root, &root.join("file.ts")).is_err());
+        assert!(ensure_project_path(&root, &root.join("../outside/file.ts")).is_err());
+        assert!(ensure_project_path(&root, &root.join("new/child.ts")).is_ok());
     }
 }
