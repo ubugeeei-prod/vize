@@ -247,6 +247,11 @@
       "import": "./dist/use-broadcast-channel.mjs",
       "default": "./dist/use-broadcast-channel.mjs"
     },
+    "./use-clipboard": {
+      "types": "./dist/use-clipboard.d.mts",
+      "import": "./dist/use-clipboard.mjs",
+      "default": "./dist/use-clipboard.mjs"
+    },
     "./use-cookie": {
       "types": "./dist/use-cookie.d.mts",
       "import": "./dist/use-cookie.mjs",
@@ -257,40 +262,135 @@
       "import": "./dist/use-counter.mjs",
       "default": "./dist/use-counter.mjs"
     },
+    "./use-css-var": {
+      "types": "./dist/use-css-var.d.mts",
+      "import": "./dist/use-css-var.mjs",
+      "default": "./dist/use-css-var.mjs"
+    },
     "./use-debounced": {
       "types": "./dist/use-debounced.d.mts",
       "import": "./dist/use-debounced.mjs",
       "default": "./dist/use-debounced.mjs"
+    },
+    "./use-display-media": {
+      "types": "./dist/use-display-media.d.mts",
+      "import": "./dist/use-display-media.mjs",
+      "default": "./dist/use-display-media.mjs"
+    },
+    "./use-document-title": {
+      "types": "./dist/use-document-title.d.mts",
+      "import": "./dist/use-document-title.mjs",
+      "default": "./dist/use-document-title.mjs"
+    },
+    "./use-drop-zone": {
+      "types": "./dist/use-drop-zone.d.mts",
+      "import": "./dist/use-drop-zone.mjs",
+      "default": "./dist/use-drop-zone.mjs"
     },
     "./use-event-source": {
       "types": "./dist/use-event-source.d.mts",
       "import": "./dist/use-event-source.mjs",
       "default": "./dist/use-event-source.mjs"
     },
+    "./use-eye-dropper": {
+      "types": "./dist/use-eye-dropper.d.mts",
+      "import": "./dist/use-eye-dropper.mjs",
+      "default": "./dist/use-eye-dropper.mjs"
+    },
+    "./use-favicon": {
+      "types": "./dist/use-favicon.d.mts",
+      "import": "./dist/use-favicon.mjs",
+      "default": "./dist/use-favicon.mjs"
+    },
     "./use-fetch": {
       "types": "./dist/use-fetch.d.mts",
       "import": "./dist/use-fetch.mjs",
       "default": "./dist/use-fetch.mjs"
+    },
+    "./use-file-dialog": {
+      "types": "./dist/use-file-dialog.d.mts",
+      "import": "./dist/use-file-dialog.mjs",
+      "default": "./dist/use-file-dialog.mjs"
+    },
+    "./use-file-system-access": {
+      "types": "./dist/use-file-system-access.d.mts",
+      "import": "./dist/use-file-system-access.mjs",
+      "default": "./dist/use-file-system-access.mjs"
+    },
+    "./use-fullscreen": {
+      "types": "./dist/use-fullscreen.d.mts",
+      "import": "./dist/use-fullscreen.mjs",
+      "default": "./dist/use-fullscreen.mjs"
     },
     "./use-history": {
       "types": "./dist/use-history.d.mts",
       "import": "./dist/use-history.mjs",
       "default": "./dist/use-history.mjs"
     },
+    "./use-image": {
+      "types": "./dist/use-image.d.mts",
+      "import": "./dist/use-image.mjs",
+      "default": "./dist/use-image.mjs"
+    },
     "./use-indexed-db": {
       "types": "./dist/use-indexed-db.d.mts",
       "import": "./dist/use-indexed-db.mjs",
       "default": "./dist/use-indexed-db.mjs"
+    },
+    "./use-media-controls": {
+      "types": "./dist/use-media-controls.d.mts",
+      "import": "./dist/use-media-controls.mjs",
+      "default": "./dist/use-media-controls.mjs"
+    },
+    "./use-notification": {
+      "types": "./dist/use-notification.d.mts",
+      "import": "./dist/use-notification.mjs",
+      "default": "./dist/use-notification.mjs"
+    },
+    "./use-object-url": {
+      "types": "./dist/use-object-url.d.mts",
+      "import": "./dist/use-object-url.mjs",
+      "default": "./dist/use-object-url.mjs"
+    },
+    "./use-permission": {
+      "types": "./dist/use-permission.d.mts",
+      "import": "./dist/use-permission.mjs",
+      "default": "./dist/use-permission.mjs"
     },
     "./use-previous": {
       "types": "./dist/use-previous.d.mts",
       "import": "./dist/use-previous.mjs",
       "default": "./dist/use-previous.mjs"
     },
+    "./use-script-tag": {
+      "types": "./dist/use-script-tag.d.mts",
+      "import": "./dist/use-script-tag.mjs",
+      "default": "./dist/use-script-tag.mjs"
+    },
+    "./use-share": {
+      "types": "./dist/use-share.d.mts",
+      "import": "./dist/use-share.mjs",
+      "default": "./dist/use-share.mjs"
+    },
+    "./use-speech-recognition": {
+      "types": "./dist/use-speech-recognition.d.mts",
+      "import": "./dist/use-speech-recognition.mjs",
+      "default": "./dist/use-speech-recognition.mjs"
+    },
+    "./use-speech-synthesis": {
+      "types": "./dist/use-speech-synthesis.d.mts",
+      "import": "./dist/use-speech-synthesis.mjs",
+      "default": "./dist/use-speech-synthesis.mjs"
+    },
     "./use-storage": {
       "types": "./dist/use-storage.d.mts",
       "import": "./dist/use-storage.mjs",
       "default": "./dist/use-storage.mjs"
+    },
+    "./use-style-tag": {
+      "types": "./dist/use-style-tag.d.mts",
+      "import": "./dist/use-style-tag.mjs",
+      "default": "./dist/use-style-tag.mjs"
     },
     "./use-throttled": {
       "types": "./dist/use-throttled.d.mts",
@@ -311,6 +411,21 @@
       "types": "./dist/use-url-search-params.d.mts",
       "import": "./dist/use-url-search-params.mjs",
       "default": "./dist/use-url-search-params.mjs"
+    },
+    "./use-user-media": {
+      "types": "./dist/use-user-media.d.mts",
+      "import": "./dist/use-user-media.mjs",
+      "default": "./dist/use-user-media.mjs"
+    },
+    "./use-vibrate": {
+      "types": "./dist/use-vibrate.d.mts",
+      "import": "./dist/use-vibrate.mjs",
+      "default": "./dist/use-vibrate.mjs"
+    },
+    "./use-wake-lock": {
+      "types": "./dist/use-wake-lock.d.mts",
+      "import": "./dist/use-wake-lock.mjs",
+      "default": "./dist/use-wake-lock.mjs"
     },
     "./use-websocket": {
       "types": "./dist/use-websocket.d.mts",
