@@ -12,6 +12,7 @@ Normative behavior for the `@vizejs/ui/collapsible` disclosure primitive.
 | Preventable trigger  | trigger `click` handler calls `preventDefault()`                             | open state remains unchanged and no root state event is emitted                                                                                        | `collapsible.test.ts`            |
 | SSR                  | isolated server requests render the same tree                                | generated root, trigger, and content ids are stable; closed content renders with `hidden`; hydration keeps ids and markup                              | `collapsible-ssr.test.ts`        |
 | DOM/SSR/Vapor        | authored SFCs compile                                                        | root, trigger, and content compile in every renderer lane without handwritten render functions                                                         | `scripts/check-renderers.ts`     |
+| Composition          | a composed family provides the exported `collapsibleContext`                 | Collapsible trigger and content parts read that provider's ids and state, as Accordion items do                                                        | `../accordion/accordion.test.ts` |
 | Root/subpath         | consumer imports Collapsible                                                 | root and subpath bundles are byte-equivalent, CSS-free, and retain only Collapsible plus shared state/context/id helpers                               | `scripts/check-tree-shaking.mjs` |
 
 ## Public Root Props

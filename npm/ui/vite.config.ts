@@ -157,6 +157,9 @@ export default defineConfig({
   pack: {
     entry: {
       index: "src/index.ts",
+      "input-mask": "src/families/form/input-mask/input-mask.ts",
+      "number-field": "src/families/form/number-field/number-field.ts",
+      "range-slider": "src/families/form/range-slider/range-slider.ts",
       theme: "src/families/foundations/theme/theme.ts",
       "theme-scope": "src/families/foundations/theme/theme-scope.ts",
       alert: "src/families/feedback/alert/alert.ts",
@@ -181,6 +184,7 @@ export default defineConfig({
       grid: "src/families/layout/grid/grid.ts",
       "empty-state": "src/families/feedback/empty-state/empty-state.ts",
       collapsible: "src/families/disclosure/collapsible/collapsible.ts",
+      accordion: "src/families/disclosure/accordion/accordion.ts",
       button: "src/families/actions/button/button.ts",
       "button-group": "src/families/actions/button-group/button-group.ts",
       "copy-button": "src/families/actions/copy-button/copy-button.ts",
@@ -195,6 +199,7 @@ export default defineConfig({
       "toggle-group": "src/families/selection/toggle-group/toggle-group.ts",
       popover: "src/families/overlays/popover/popover.ts",
       tooltip: "src/families/overlays/tooltip/tooltip.ts",
+      "hover-card": "src/families/overlays/hover-card/hover-card.ts",
       input: "src/families/form/input/input.ts",
       "radio-group": "src/families/selection/radio-group/radio-group.ts",
       rating: "src/families/form/rating/rating.ts",

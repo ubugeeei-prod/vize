@@ -5,7 +5,7 @@ import { gzipSync } from "node:zlib";
 const distributionDirectory = new URL("../dist/", import.meta.url);
 const staticImportPattern = /\b(?:import|export)\s+(?:[^"']*?\s+from\s+)?["'](\.\.?\/[^"']+)["']/g;
 const budgets = new Map([
-  ["index.mjs", 303_000],
+  ["index.mjs", 327_000],
   ["alert.mjs", 1_050],
   ["announcer.mjs", 4_100],
   ["aspect-ratio.mjs", 1_500],
@@ -18,6 +18,9 @@ const budgets = new Map([
   ["callout.mjs", 3_950],
   ["blockquote.mjs", 900],
   ["breadcrumb.mjs", 1_725],
+  ["input-mask.mjs", 6_100],
+  ["number-field.mjs", 13_600],
+  ["range-slider.mjs", 9_800],
   ["tabs.mjs", 15_850],
   ["tree.mjs", 44_250],
   ["stepper.mjs", 17_600],
@@ -28,6 +31,7 @@ const budgets = new Map([
   ["grid.mjs", 1_650],
   ["empty-state.mjs", 900],
   ["collapsible.mjs", 4_300],
+  ["accordion.mjs", 13_250],
   ["button.mjs", 1_600],
   ["button-group.mjs", 3_700],
   ["copy-button.mjs", 2_250],
@@ -42,6 +46,7 @@ const budgets = new Map([
   ["toggle-group.mjs", 5_100],
   ["popover.mjs", 28_750],
   ["tooltip.mjs", 18_100],
+  ["hover-card.mjs", 20_750],
   ["input.mjs", 3_900],
   ["radio-group.mjs", 4_600],
   ["carousel.mjs", 11_400],
@@ -76,7 +81,7 @@ const budgets = new Map([
   ["checkbox.mjs", 1_900],
   ["collection.mjs", 5_700],
   ["composite-navigation.mjs", 5_355],
-  ["catalog.mjs", 21_000],
+  ["catalog.mjs", 22_300],
   ["command.mjs", 2_200],
   ["context.mjs", 700],
   ["controllable-state.mjs", 600],

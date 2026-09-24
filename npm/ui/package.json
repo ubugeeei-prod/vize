@@ -95,6 +95,21 @@
       "import": "./dist/breadcrumb.mjs",
       "default": "./dist/breadcrumb.mjs"
     },
+    "./input-mask": {
+      "types": "./dist/input-mask.d.mts",
+      "import": "./dist/input-mask.mjs",
+      "default": "./dist/input-mask.mjs"
+    },
+    "./number-field": {
+      "types": "./dist/number-field.d.mts",
+      "import": "./dist/number-field.mjs",
+      "default": "./dist/number-field.mjs"
+    },
+    "./range-slider": {
+      "types": "./dist/range-slider.d.mts",
+      "import": "./dist/range-slider.mjs",
+      "default": "./dist/range-slider.mjs"
+    },
     "./tabs": {
       "types": "./dist/tabs.d.mts",
       "import": "./dist/tabs.mjs",
@@ -149,6 +164,11 @@
       "types": "./dist/collapsible.d.mts",
       "import": "./dist/collapsible.mjs",
       "default": "./dist/collapsible.mjs"
+    },
+    "./accordion": {
+      "types": "./dist/accordion.d.mts",
+      "import": "./dist/accordion.mjs",
+      "default": "./dist/accordion.mjs"
     },
     "./button": {
       "types": "./dist/button.d.mts",
@@ -224,6 +244,11 @@
       "types": "./dist/tour.d.mts",
       "import": "./dist/tour.mjs",
       "default": "./dist/tour.mjs"
+    },
+    "./hover-card": {
+      "types": "./dist/hover-card.d.mts",
+      "import": "./dist/hover-card.mjs",
+      "default": "./dist/hover-card.mjs"
     },
     "./input": {
       "types": "./dist/input.d.mts",
