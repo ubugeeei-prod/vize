@@ -1,3 +1,4 @@
+use oxc_syntax::identifier::is_identifier_part;
 use vize_carton::{FxHashSet, String};
 
 use crate::script::ScriptCompileContext;
@@ -224,7 +225,7 @@ fn template_references_setup_binding(template_code: &str, name: &str) -> bool {
     let mut setup_access = String::with_capacity(name.len() + 8);
     setup_access.push_str("$setup.");
     setup_access.push_str(name);
-    if template_code.contains(setup_access.as_str()) {
+    if contains_member_access(template_code, &setup_access) {
         return true;
     }
 
@@ -239,5 +240,49 @@ fn template_references_setup_binding(template_code: &str, name: &str) -> bool {
     let mut ctx_access = String::with_capacity(name.len() + 5);
     ctx_access.push_str("_ctx.");
     ctx_access.push_str(name);
-    template_code.contains(ctx_access.as_str())
+    contains_member_access(template_code, &ctx_access)
+}
+
+/// A generated member read must end at the binding name, not at a prefix of a
+/// different binding (for example, `$setup.ItemTab` is not a read of `Item`).
+fn contains_member_access(template_code: &str, access: &str) -> bool {
+    template_code.match_indices(access).any(|(start, _)| {
+        !template_code[start + access.len()..]
+            .chars()
+            .next()
+            .is_some_and(is_identifier_part)
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::template_references_setup_binding;
+
+    #[test]
+    fn generated_member_reads_match_complete_binding_names() {
+        for access in [
+            "$setup.ItemTab",
+            "_ctx.ItemTab",
+            "$setup.Item_",
+            "_ctx.Item2",
+        ] {
+            assert!(
+                !template_references_setup_binding(access, "Item"),
+                "{access}"
+            );
+        }
+        for access in [
+            "$setup.Item",
+            "$setup.Item.label",
+            "$setup.Item[0]",
+            "_ctx.Item",
+            "_ctx.Item.label",
+            "$setup[\"Item\"]",
+        ] {
+            assert!(
+                template_references_setup_binding(access, "Item"),
+                "{access}"
+            );
+        }
+    }
 }

@@ -63,6 +63,7 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compi
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/preamble.rs	1	s0	S0	stage	vize_carton	compat	3
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/props.rs	1	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/render.rs	1	s0	S0	stage	vize_carton	compat	2
+compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/render.rs	1	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/setup_emit.rs	7	s0	S0	stage	vize_carton	compat	3
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/trace.rs	8	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/trace.rs	8	raw_oxc	raw OXC	raw	oxc_allocator	raw	1

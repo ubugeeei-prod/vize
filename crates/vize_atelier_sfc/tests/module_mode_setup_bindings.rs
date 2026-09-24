@@ -173,3 +173,40 @@ const props = defineProps<Props>()
 
     insta::assert_snapshot!(result.code.as_str());
 }
+
+#[test]
+fn module_mode_does_not_keep_type_import_for_prefixed_component_name() {
+    let source = r#"<script setup lang="ts">
+import { Item } from './types'
+import ItemTab from './ItemTab.vue'
+const { item = {} as Item } = defineProps<{ item?: Item }>()
+</script>
+<template><ItemTab :label="item.label ?? 'none'" /></template>"#;
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
+    let result = compile_sfc_for_adapter(
+        &descriptor,
+        SfcCompileOptions::default(),
+        TemplateSyntaxMode::Standard,
+        CustomElementMatcher::default(),
+        CodegenOptions::default(),
+        SfcScriptOutputMode::SeparateTemplate,
+    )
+    .expect("compile module-mode SFC");
+
+    assert!(!result.code.contains("import { Item }"), "{}", result.code);
+    assert!(result.code.contains("import ItemTab"), "{}", result.code);
+    let returned = result
+        .code
+        .split("const __returned__ = {")
+        .nth(1)
+        .unwrap_or_else(|| panic!("setup return missing:\n{}", result.code));
+    let returned = returned.split('}').next().expect("setup object");
+    assert!(
+        returned.split(',').any(|name| name.trim() == "ItemTab"),
+        "{returned}"
+    );
+    assert!(
+        !returned.split(',').any(|name| name.trim() == "Item"),
+        "{returned}"
+    );
+}
