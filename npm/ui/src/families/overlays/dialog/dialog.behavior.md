@@ -12,6 +12,7 @@
 | SSR         | Server output is deterministic, renders in place through `Portal`, and activates document controllers only after mount.                                             |
 | Composition | `dialogContext` is exported so composed families (Drawer) provide the Dialog contract and reuse trigger, title, description, and close parts.                       |
 | Styling     | JavaScript remains headless. Optional `@vizejs/ui/component-dialog.css` styles the published `data-vize-ui`, `part`, and `data-state` hooks.                        |
+| Exit        | `exit-complete` fires once after an open dialog closes, including when CSS motion is absent or reduced. Reopening cancels the pending exit.                         |
 
 | Component                | State x input                           | Outcome                                                                                                             |
 | ------------------------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -24,12 +25,13 @@
 | `dialog-description.vue` | no explicit id                          | Uses the root deterministic description id for `aria-describedby`.                                                  |
 | `dialog-close.vue`       | enabled click                           | Emits `click`, then closes the root when the event was not canceled.                                                |
 
-| Event                  | Dispatch timing and payload                                                                   |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| `open-auto-focus`      | Before automatic entry focus; payload is a preventable focus-scope event.                     |
-| `close-auto-focus`     | Before automatic focus restoration; payload is a preventable focus-scope event.               |
-| `escape-key-down`      | Before Escape dismissal; payload is the preventable dismissable-layer Escape event.           |
-| `pointer-down-outside` | Before pointer dismissal; payload is the preventable outside pointer event.                   |
-| `focus-outside`        | Before focus dismissal; payload is the preventable outside focus event.                       |
-| `interact-outside`     | Before pointer or focus dismissal; payload is the preventable outside interaction event.      |
-| `dismiss`              | After an unprevented dismissal request; payload records the reason, target, and native event. |
+| Event                  | Dispatch timing and payload                                                                                       |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `open-auto-focus`      | Before automatic entry focus; payload is a preventable focus-scope event.                                         |
+| `close-auto-focus`     | Before automatic focus restoration; payload is a preventable focus-scope event.                                   |
+| `escape-key-down`      | Before Escape dismissal; payload is the preventable dismissable-layer Escape event.                               |
+| `pointer-down-outside` | Before pointer dismissal; payload is the preventable outside pointer event.                                       |
+| `focus-outside`        | Before focus dismissal; payload is the preventable outside focus event.                                           |
+| `interact-outside`     | Before pointer or focus dismissal; payload is the preventable outside interaction event.                          |
+| `dismiss`              | After an unprevented dismissal request; payload records the reason, target, and native event.                     |
+| `exit-complete`        | After an open dialog's visual exit finishes or is skipped; no payload. Initial closed state does not dispatch it. |

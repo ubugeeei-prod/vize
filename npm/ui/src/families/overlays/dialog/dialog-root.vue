@@ -50,6 +50,8 @@ const emit = defineEmits<{
   "update:open": [value: boolean];
   /** Fired after any distinct open-state request. */
   "open-change": [value: boolean, previous: boolean, nativeEvent: Event | null];
+  /** Fired once when an open dialog has fully closed, including without exit motion. */
+  "exit-complete": [];
 }>();
 
 defineSlots<{
@@ -79,12 +81,20 @@ const contentElement = shallowRef<HTMLDivElement | null>(null);
 const exiting = shallowRef(false);
 let exitTimeout: ReturnType<typeof setTimeout> | undefined;
 let exitVersion = 0;
+let exitPending = false;
 
 function clearExit(): void {
   exitVersion += 1;
   if (exitTimeout !== undefined) clearTimeout(exitTimeout);
   exitTimeout = undefined;
   exiting.value = false;
+  exitPending = false;
+}
+
+function finishExit(): void {
+  if (!exitPending) return;
+  clearExit();
+  emit("exit-complete");
 }
 
 function exitDuration(element: HTMLElement): number {
@@ -100,16 +110,18 @@ function exitDuration(element: HTMLElement): number {
 function completeExit(event: AnimationEvent): void {
   if (!exiting.value || event.target !== event.currentTarget) return;
   if (event.animationName !== "vize-ui-dialog-sheet-out") return;
-  clearExit();
+  finishExit();
 }
 
 watch(
   isOpen,
-  (open) => {
+  (open, previous) => {
     if (open) {
       clearExit();
       return;
     }
+    if (!previous) return;
+    exitPending = true;
     const element = contentElement.value;
     const style = element?.ownerDocument.defaultView?.getComputedStyle(element);
     const reducedMotion = element?.ownerDocument.defaultView?.matchMedia?.(
@@ -120,7 +132,10 @@ watch(
       style?.getPropertyValue("--vize-ui-dialog-exit-enabled").trim() !== "1" ||
       reducedMotion
     ) {
-      clearExit();
+      const version = ++exitVersion;
+      void nextTick(() => {
+        if (version === exitVersion) finishExit();
+      });
       return;
     }
     exiting.value = true;
@@ -132,12 +147,12 @@ watch(
         if (!exiting.value || version !== exitVersion) return;
         const duration = exitDuration(element);
         if (duration === 0) {
-          clearExit();
+          finishExit();
           return;
         }
         exitTimeout = setTimeout(
           () => {
-            if (version === exitVersion) clearExit();
+            if (version === exitVersion) finishExit();
           },
           Math.min(duration + 80, 5000),
         );

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onScopeDispose } from "vue";
+import { computed, nextTick, onScopeDispose, shallowRef, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../foundations/controllable-state/controllable-state.ts";
@@ -16,6 +16,7 @@ import {
 } from "../alert-dialog/alert-dialog.ts";
 import { confirmContext, createConfirmQueue } from "./confirm-runtime.ts";
 import type {
+  ConfirmApi,
   ConfirmProviderExpose,
   ConfirmRequest,
   ConfirmSlotProps,
@@ -90,6 +91,7 @@ const queue = createConfirmQueue({
   cancelLabel: () => cancelLabel,
   confirmLabel: () => confirmLabel,
 });
+const host = useTemplateRef<HTMLDivElement>("host");
 const dialogId = useDeterministicId({ id: () => id, hint: "confirm" });
 // The queue controls open state through the shared controllable-state contract DialogRoot also
 // uses; importing it here keeps Confirm's module order identical in root and subpath bundles.
@@ -99,39 +101,85 @@ const openState = useControllableState({
 });
 const open = openState.value;
 const state = computed<ConfirmState>(() => (open.value ? "pending" : "idle"));
+const retiring = shallowRef<readonly ConfirmRequest[]>([]);
+const presentedRequests = computed<readonly ConfirmRequest[]>(() => {
+  const active = queue.active.value;
+  return active === null ? retiring.value : [...retiring.value, active];
+});
 let chosen: string | null = null;
+let restoreTarget: HTMLElement | null = null;
+let disposed = false;
 
-function settle(value: string | null): void {
+watch(
+  queue.active,
+  (active, previous) => {
+    if (active !== null && previous === null && restoreTarget === null) {
+      const focused = typeof document === "undefined" ? null : document.activeElement;
+      if (
+        typeof HTMLElement !== "undefined" &&
+        focused instanceof HTMLElement &&
+        focused !== document.body
+      ) {
+        restoreTarget = focused;
+      }
+    }
+    if (active !== null || previous === null) return;
+    void nextTick(() =>
+      nextTick(() => {
+        if (disposed || queue.active.value !== null) return;
+        const target = restoreTarget?.isConnected ? restoreTarget : host.value;
+        target?.focus();
+        restoreTarget = null;
+      }),
+    );
+  },
+  { flush: "sync" },
+);
+
+function settle(value: string | null, requestId?: string): void {
   const request = queue.active.value;
-  if (request === null) return;
-  if (queue.settleActive(value)) emit("settle", request, value);
+  if (request === null || (requestId !== undefined && request.id !== requestId)) return;
+  if (!queue.settleActive(value)) return;
+  retiring.value = [...retiring.value, request];
+  emit("settle", request, value);
 }
 
-const activeRequests = computed<readonly ConfirmRequest[]>(() =>
-  queue.active.value === null ? [] : [queue.active.value],
-);
+function cancelAll(): void {
+  const request = queue.active.value;
+  queue.cancelAll();
+  if (request !== null) retiring.value = [...retiring.value, request];
+}
+
+function completeRetirement(requestId: string): void {
+  retiring.value = retiring.value.filter((request) => request.id !== requestId);
+}
 
 function slotPropsFor(request: ConfirmRequest): ConfirmSlotProps {
   return {
-    cancel: () => settle(null),
+    cancel: () => settle(null, request.id),
     request,
-    resolve: (value: string) => settle(value),
+    resolve: (value: string) => settle(value, request.id),
   };
 }
 
-function onActionClick(value: string): void {
+function onActionClick(value: string, requestId: string): void {
+  if (queue.active.value?.id !== requestId) return;
   chosen = value;
 }
 
-function onOpenChange(value: boolean): void {
-  if (value) return;
+function onOpenChange(value: boolean, requestId: string): void {
+  if (value || queue.active.value?.id !== requestId) return;
   const pendingChoice = chosen;
   chosen = null;
-  settle(pendingChoice);
+  settle(pendingChoice, requestId);
 }
 
-confirmContext.provide(queue.api);
-onScopeDispose(queue.dispose);
+const api: ConfirmApi = { ...queue.api, cancelAll };
+confirmContext.provide(api);
+onScopeDispose(() => {
+  disposed = true;
+  queue.dispose();
+});
 
 type ConfirmProviderSetupExpose = Omit<ConfirmProviderExpose, "active" | "pending" | "state"> & {
   readonly active: ComputedRef<ConfirmRequest | null>;
@@ -141,7 +189,7 @@ type ConfirmProviderSetupExpose = Omit<ConfirmProviderExpose, "active" | "pendin
 
 const exposed = {
   active: queue.active,
-  cancelAll: queue.cancelAll,
+  cancelAll,
   choose: queue.api.choose,
   confirm: queue.api.confirm,
   pending: queue.pending,
@@ -153,19 +201,27 @@ defineExpose(exposed);
 
 <template>
   <div
+    ref="host"
     data-vize-ui="confirm-provider"
     part="root"
+    tabindex="-1"
     :data-state="state"
     :data-pending="queue.pending.value > 0 ? String(queue.pending.value) : undefined"
   >
     <slot />
-    <DialogRoot :id="dialogId" :open @update:open="onOpenChange">
+    <DialogRoot
+      v-for="request in presentedRequests as readonly ConfirmRequest[]"
+      :id="queue.active.value?.id === request.id ? dialogId : `${dialogId}-${request.id}`"
+      :key="request.id"
+      :open="queue.active.value?.id === request.id"
+      @update:open="(value: boolean) => onOpenChange(value, request.id)"
+      @exit-complete="completeRetirement(request.id)"
+    >
       <DialogPortal :to :disabled="portalDisabled">
         <DialogOverlay />
         <AlertDialogContent
-          v-for="request in activeRequests as readonly ConfirmRequest[]"
-          :key="request.id"
           :lock-scroll
+          :restore-focus="false"
           :aria-describedby="request.description === null ? null : undefined"
           :data-confirm-kind="request.kind"
           :data-destructive="request.destructive ? 'true' : undefined"
@@ -184,7 +240,7 @@ defineExpose(exposed);
                 :key="action.value"
                 :data-confirm-action="action.value"
                 :data-destructive="action.destructive ? 'true' : undefined"
-                @click="() => onActionClick(action.value)"
+                @click="() => onActionClick(action.value, request.id)"
               >
                 {{ action.label }}
               </DialogClose>

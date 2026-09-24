@@ -49,6 +49,17 @@ function button(root: HTMLElement, action: string): HTMLButtonElement {
   return found;
 }
 
+function activeButton(root: HTMLElement, action: string): HTMLButtonElement {
+  const found = [
+    ...root.querySelectorAll<HTMLButtonElement>(`[data-confirm-action="${action}"]`),
+  ].find(
+    (candidate) =>
+      !candidate.closest('[data-vize-ui="dialog-content-host"]')?.hasAttribute("inert"),
+  );
+  assert.ok(found, `missing active ${action} action`);
+  return found;
+}
+
 test("confirm() opens a labelled alertdialog and resolves true from the accepting action", async () => {
   const { api, handle } = mountConfirm();
   const root = handle.root();
@@ -141,6 +152,175 @@ test("requests queue in FIFO order and cancelAll settles every pending request",
   await settle();
   assert.equal(dialog(root), null);
   handle.unmount();
+});
+
+test("styled exits keep settled requests inert while the next request opens immediately", async () => {
+  const style = document.createElement("style");
+  style.textContent = `
+    [data-vize-ui="dialog-content"] { --vize-ui-dialog-exit-enabled: 1; }
+    [data-vize-ui="dialog-content"][data-exiting="true"] {
+      animation-name: vize-ui-dialog-sheet-out;
+      animation-duration: 200ms;
+    }
+  `;
+  document.head.append(style);
+  const { api, handle } = mountConfirm();
+  try {
+    const root = handle.root();
+    const opener = root.querySelector<HTMLButtonElement>(".opener");
+    assert.ok(opener);
+    opener.focus();
+    const first = api.confirm({ title: "First?" });
+    const second = api.confirm({ title: "Second?" });
+    await settle();
+    const firstContent = dialog(root);
+    assert.ok(firstContent);
+
+    await handle.click(button(root, "confirm"));
+    assert.equal(await first, true);
+    await settle();
+    const firstHost = firstContent.closest<HTMLElement>('[data-vize-ui="dialog-content-host"]');
+    assert.ok(firstHost);
+    assert.equal(firstContent.getAttribute("data-exiting"), "true");
+    assert.equal(firstHost.hasAttribute("inert"), true);
+    assert.equal(firstHost.getAttribute("aria-hidden"), "true");
+    const contents = [...root.querySelectorAll<HTMLElement>('[role="alertdialog"]')];
+    assert.equal(contents.length, 2);
+    const secondContent = contents.find((content) => content !== firstContent);
+    assert.ok(secondContent);
+    assert.match(secondContent.textContent ?? "", /Second\?/);
+    assert.notEqual(firstContent.id, secondContent.id);
+    assert.equal(
+      secondContent.closest('[data-vize-ui="dialog-content-host"]')?.hasAttribute("inert"),
+      false,
+    );
+    assert.ok(document.activeElement === activeButton(root, "cancel"));
+
+    const end = new Event("animationend", { bubbles: true });
+    Object.defineProperty(end, "animationName", { value: "vize-ui-dialog-sheet-out" });
+    firstContent.dispatchEvent(end);
+    await settle();
+    assert.equal(firstContent.isConnected, false);
+    assert.equal(secondContent.isConnected, true);
+
+    await handle.click(activeButton(root, "cancel"));
+    assert.equal(await second, false);
+    await settle();
+    assert.equal(
+      secondContent.closest('[data-vize-ui="dialog-content-host"]')?.hasAttribute("inert"),
+      true,
+    );
+    assert.equal(document.documentElement.getAttribute("data-vize-scroll-locked"), null);
+    assert.ok(document.activeElement === opener, `active=${document.activeElement?.outerHTML}`);
+  } finally {
+    handle.unmount();
+    style.remove();
+  }
+});
+
+test("zero-duration and reduced-motion exits remove settled requests immediately", async () => {
+  const style = document.createElement("style");
+  style.textContent = `
+    [data-vize-ui="dialog-content"] { --vize-ui-dialog-exit-enabled: 1; }
+    [data-vize-ui="dialog-content"][data-exiting="true"] {
+      animation-name: vize-ui-dialog-sheet-out;
+      animation-duration: 0s;
+    }
+  `;
+  document.head.append(style);
+  const { api, handle } = mountConfirm();
+  try {
+    const root = handle.root();
+    const first = api.confirm({ title: "Instant?" });
+    await settle();
+    await handle.click(button(root, "confirm"));
+    assert.equal(await first, true);
+    await settle();
+    await settle();
+    assert.equal(root.querySelector('[role="alertdialog"]'), null);
+
+    style.textContent = style.textContent.replace(
+      "animation-duration: 0s",
+      "animation-duration: 200ms",
+    );
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query === "(prefers-reduced-motion: reduce)",
+      media: query,
+      onchange: null,
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent: () => false,
+    })) as typeof window.matchMedia;
+    try {
+      const second = api.confirm({ title: "Reduced?" });
+      await settle();
+      await handle.click(button(root, "cancel"));
+      assert.equal(await second, false);
+      await settle();
+      assert.equal(root.querySelector('[role="alertdialog"]'), null);
+    } finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  } finally {
+    handle.unmount();
+    style.remove();
+  }
+});
+
+test("reopening during a styled exit cannot steal focus or settle the new request", async () => {
+  const style = document.createElement("style");
+  style.textContent = `
+    [data-vize-ui="dialog-content"] { --vize-ui-dialog-exit-enabled: 1; }
+    [data-vize-ui="dialog-content"][data-exiting="true"] {
+      animation-name: vize-ui-dialog-sheet-out;
+      animation-duration: 200ms;
+    }
+  `;
+  document.head.append(style);
+  const { api, handle } = mountConfirm();
+  try {
+    const root = handle.root();
+    const opener = root.querySelector<HTMLButtonElement>(".opener");
+    assert.ok(opener);
+    opener.focus();
+    const first = api.confirm({ title: "First?" });
+    await settle();
+    const firstContent = dialog(root);
+    assert.ok(firstContent);
+    await handle.click(button(root, "confirm"));
+    assert.equal(await first, true);
+
+    const second = api.confirm({ title: "Second?" });
+    await settle();
+    assert.equal(api.pending.value, 1);
+    assert.equal(
+      firstContent.closest('[data-vize-ui="dialog-content-host"]')?.hasAttribute("inert"),
+      true,
+    );
+    assert.ok(document.activeElement === activeButton(root, "cancel"));
+
+    const oldEnd = new Event("animationend", { bubbles: true });
+    Object.defineProperty(oldEnd, "animationName", { value: "vize-ui-dialog-sheet-out" });
+    firstContent.dispatchEvent(oldEnd);
+    await settle();
+    assert.equal(firstContent.isConnected, false);
+    assert.match(
+      activeButton(root, "confirm").closest('[role="alertdialog"]')?.textContent ?? "",
+      /Second\?/,
+    );
+    assert.ok(document.activeElement === activeButton(root, "cancel"));
+
+    await handle.click(activeButton(root, "cancel"));
+    assert.equal(await second, false);
+    await settle();
+    assert.ok(document.activeElement === opener);
+  } finally {
+    handle.unmount();
+    style.remove();
+  }
 });
 
 test("choose() resolves the typed action value or null", async () => {

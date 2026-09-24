@@ -5,7 +5,7 @@ import { gzipSync } from "node:zlib";
 const distributionDirectory = new URL("../dist/", import.meta.url);
 const staticImportPattern = /\b(?:import|export)\s+(?:[^"']*?\s+from\s+)?["'](\.\.?\/[^"']+)["']/g;
 const budgets = new Map([
-  ["index.mjs", 415_000],
+  ["index.mjs", 417_000],
   ["alert.mjs", 1_050],
   ["announcer.mjs", 4_100],
   ["aspect-ratio.mjs", 1_500],
@@ -103,7 +103,7 @@ const budgets = new Map([
   // Dialog-based entries include DialogRoot's opt-in exit lifecycle.
   ["dialog.mjs", 22_800],
   ["alert-dialog.mjs", 23_400],
-  ["confirm.mjs", 25_650],
+  ["confirm.mjs", 26_050],
   ["drawer.mjs", 30_400],
   ["dismissable-layer.mjs", 4_250],
   ["drag-and-drop.mjs", 12_650],

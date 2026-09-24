@@ -89,6 +89,7 @@ test("opens uncontrolled content from the trigger and wires modal ARIA", async (
   assert.equal(handle.root().getAttribute("data-state"), "closed");
   assert.equal(document.body.querySelector('[data-vize-ui="dialog-content"]'), null);
   assert.equal(document.activeElement, trigger);
+  assert.equal(handle.wrapper.emitted("exit-complete")?.length, 1);
   handle.unmount();
 });
 
@@ -152,6 +153,7 @@ test("keeps force-mounted closed layers hidden without document side effects", a
   assert.equal(overlay.hasAttribute("inert"), true);
   assert.equal(contentHost.hasAttribute("hidden"), true);
   assert.equal(content.getAttribute("data-state"), "closed");
+  assert.equal(handle.wrapper.emitted("exit-complete"), undefined);
   assert.equal(document.documentElement.getAttribute("data-vize-scroll-locked"), null);
   assert.equal(handle.root().querySelectorAll('[data-vize-ui="dialog-focus-guard"]').length, 0);
   const root = handle.exposes<DialogRootExpose>();
@@ -292,6 +294,7 @@ test("styled exit keeps only an inert visual layer after modal behavior ends", a
   content.dispatchEvent(end);
   await settleDialog();
   assert.equal(content.isConnected, false);
+  assert.equal(handle.wrapper.emitted("exit-complete")?.length, 1);
   handle.unmount();
   outside.remove();
   style.remove();
@@ -359,6 +362,7 @@ test("reopening during exit restores modal behavior and ignores the old animatio
   content.dispatchEvent(oldEnd);
   await settleDialog();
   assert.equal(content.isConnected, true);
+  assert.equal(handle.wrapper.emitted("exit-complete"), undefined);
   handle.unmount();
   style.remove();
 });
