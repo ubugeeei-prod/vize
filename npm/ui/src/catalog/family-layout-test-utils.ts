@@ -72,6 +72,7 @@ export const rehomedFlatFamilies: readonly RehomedFlatFamily[] = [
 export const uiFamilyRoots = new Map<string, string>([
   ["alert", "src/families/feedback/alert/"],
   ["alert-dialog", "src/families/overlays/alert-dialog/"],
+  ["accordion", "src/families/disclosure/accordion/"],
   ["announcer", "src/families/accessibility/announcer/"],
   ["aspect-ratio", "src/families/layout/aspect-ratio/"],
   ["avatar", "src/families/layout/avatar/"],
@@ -105,6 +106,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["grid", "src/families/layout/grid/"],
   ["heading", "src/families/typography/heading/"],
   ["hover", "src/families/interaction/hover/"],
+  ["hover-card", "src/families/overlays/hover-card/"],
   ["icon", "src/families/layout/icon/"],
   ["icon-button", "src/families/layout/icon/"],
   ["image", "src/families/media/image/"],

@@ -135,6 +135,11 @@
       "import": "./dist/collapsible.mjs",
       "default": "./dist/collapsible.mjs"
     },
+    "./accordion": {
+      "types": "./dist/accordion.d.mts",
+      "import": "./dist/accordion.mjs",
+      "default": "./dist/accordion.mjs"
+    },
     "./button": {
       "types": "./dist/button.d.mts",
       "import": "./dist/button.mjs",
@@ -209,6 +214,11 @@
       "types": "./dist/tour.d.mts",
       "import": "./dist/tour.mjs",
       "default": "./dist/tour.mjs"
+    },
+    "./hover-card": {
+      "types": "./dist/hover-card.d.mts",
+      "import": "./dist/hover-card.mjs",
+      "default": "./dist/hover-card.mjs"
     },
     "./input": {
       "types": "./dist/input.d.mts",
