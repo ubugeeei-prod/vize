@@ -1,7 +1,7 @@
 //! File discovery and path normalization for the lint command.
 
 use glob::{MatchOptions, Pattern};
-use ignore::WalkBuilder;
+use ignore::{DirEntry, WalkBuilder};
 use std::path::{Path, PathBuf};
 use vize_s0::{FxHashSet, String};
 
@@ -102,9 +102,15 @@ fn collect_lint_files_from_dir(
     seen: &mut FxHashSet<PathBuf>,
 ) -> bool {
     let mut matched = false;
+    let explicitly_selected = matcher.map(|matcher| matcher.explicit_directories());
     for entry in WalkBuilder::new(dir)
         .standard_filters(true)
         .hidden(matcher.is_none())
+        .filter_entry(move |entry| {
+            entry.depth() == 0
+                || !entry.file_type().is_some_and(|kind| kind.is_dir())
+                || !is_default_excluded_dir(entry, explicitly_selected)
+        })
         .build()
     {
         let Ok(entry) = entry else {
@@ -116,6 +122,21 @@ fn collect_lint_files_from_dir(
         }
     }
     matched
+}
+
+/// Generated and dependency trees are never part of a broad lint discovery.
+/// A literal input path or a glob that names one of them can still select it.
+fn is_default_excluded_dir(
+    entry: &DirEntry,
+    explicitly_selected: Option<ExplicitDirectories>,
+) -> bool {
+    let name = entry.file_name().to_str();
+    match name {
+        Some(".git") => !explicitly_selected.is_some_and(|dirs| dirs.git),
+        Some(".vize") => !explicitly_selected.is_some_and(|dirs| dirs.vize),
+        Some("node_modules") => !explicitly_selected.is_some_and(|dirs| dirs.node_modules),
+        _ => false,
+    }
 }
 
 fn add_lint_file(
@@ -184,17 +205,35 @@ struct LintInputGlob {
     pattern: Pattern,
     cwd: PathBuf,
     absolute: bool,
+    explicit_directories: ExplicitDirectories,
+}
+
+#[derive(Clone, Copy)]
+struct ExplicitDirectories {
+    git: bool,
+    vize: bool,
+    node_modules: bool,
 }
 
 impl LintInputGlob {
     fn new(pattern: &str) -> Option<Self> {
         let normalized = normalize_lint_glob_pattern(pattern);
         let absolute = Path::new(normalized.as_str()).is_absolute();
+        let explicit_directories = ExplicitDirectories {
+            git: normalized.split('/').any(|part| part == ".git"),
+            vize: normalized.split('/').any(|part| part == ".vize"),
+            node_modules: normalized.split('/').any(|part| part == "node_modules"),
+        };
         Pattern::new(normalized.as_str()).ok().map(|pattern| Self {
             pattern,
             cwd: std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
             absolute,
+            explicit_directories,
         })
+    }
+
+    fn explicit_directories(&self) -> ExplicitDirectories {
+        self.explicit_directories
     }
 
     fn matches(&self, path: &Path) -> bool {

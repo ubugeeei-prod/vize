@@ -109,6 +109,63 @@ fn recursive_globs_include_dot_directories() {
 }
 
 #[test]
+fn broad_discovery_skips_git_dependency_and_generated_trees_without_gitignore() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let source = root.join("src/App.vue");
+    let dot_source = root.join("docs/.vitepress/Download.vue");
+    let git_cache = root.join(".git/worktrees/linked/vize/canon/projects/cache.vue");
+    let dependency = root.join("node_modules/vue/index.ts");
+    let nested_dependency = root.join("packages/app/node_modules/vue/index.ts");
+    let generated = root.join(".vize/canon/projects/cache.vue");
+    for file in [
+        &source,
+        &dot_source,
+        &git_cache,
+        &dependency,
+        &nested_dependency,
+        &generated,
+    ] {
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, "").unwrap();
+    }
+
+    let files = collect_lint_file_collection(
+        &[
+            root.join("**/*.vue").display().to_string().into(),
+            root.join("**/*.ts").display().to_string().into(),
+        ],
+        None,
+    )
+    .files;
+
+    assert_eq!(files, vec![dot_source, source]);
+}
+
+#[test]
+fn explicit_inputs_can_select_files_under_normally_excluded_directories() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    for excluded in [".git", ".vize", "node_modules"] {
+        let file = root.join(excluded).join("probe.vue");
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(&file, "").unwrap();
+
+        for pattern in [
+            file.display().to_string(),
+            file.parent().unwrap().display().to_string(),
+            root.join(format!("**/{excluded}/*.vue"))
+                .display()
+                .to_string(),
+        ] {
+            let collection = collect_lint_file_collection(&[pattern.into()], None);
+            assert_eq!(collection.files, vec![file.clone()], "{excluded}");
+            assert!(collection.unmatched_patterns.is_empty(), "{excluded}");
+        }
+    }
+}
+
+#[test]
 fn collection_reports_each_pattern_with_no_lintable_matches() {
     let dir = tempfile::tempdir().unwrap();
     let src = dir.path().join("src");
