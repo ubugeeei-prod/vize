@@ -196,16 +196,6 @@ const positionerProps = computed(() => ({
 const labelledby = computed(() =>
   ariaLabel === undefined ? (ariaLabelledby ?? context.listboxLabelledby.value) : ariaLabelledby,
 );
-const listboxProps = computed<{
-  readonly role: "listbox";
-  readonly onPointerdown: (event: PointerEvent) => void;
-  readonly onMousedown: (event: MouseEvent) => void;
-}>(() => ({
-  role: "listbox",
-  onMousedown: keepTriggerFocus,
-  onPointerdown: keepTriggerFocus,
-}));
-
 const layer = useDismissableLayer({
   root: element,
   branches: () => context.dismissBranches.value,
@@ -220,6 +210,12 @@ const layer = useDismissableLayer({
     context.setOpen(false, event.originalEvent);
   },
 });
+const contentBindings = computed(() => ({
+  ...layer.layerProps,
+  role: "listbox" as const,
+  onMousedown: keepTriggerFocus,
+  onPointerdown: keepTriggerFocus,
+}));
 
 watch(
   element,
@@ -278,7 +274,7 @@ defineExpose(exposed);
             <div
               :id="context.listboxId.value"
               ref="element"
-              v-bind="{ ...layer.layerProps, ...listboxProps }"
+              v-bind="contentBindings"
               tabindex="-1"
               :aria-label="ariaLabel"
               :aria-labelledby="labelledby"

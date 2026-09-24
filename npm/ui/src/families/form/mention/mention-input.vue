@@ -65,7 +65,7 @@ const {
 const context = mentionContext.use();
 const textarea = useTemplateRef<HTMLTextAreaElement>("textarea");
 const input = useTemplateRef<HTMLInputElement>("input");
-const handlers = computed(() => ({
+const fieldProps = computed(() => ({
   onBlur: (event: FocusEvent) => context.onFieldBlur(event),
   onClick: (event: MouseEvent) => context.onFieldCaret(event),
   onFocus: (event: FocusEvent) => context.onFieldCaret(event),
@@ -74,8 +74,6 @@ const handlers = computed(() => ({
   onKeyup: (event: KeyboardEvent) => {
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") context.onFieldCaret(event);
   },
-}));
-const ariaProps = computed(() => ({
   "aria-activedescendant": context.activeDescendant.value,
   "aria-autocomplete": "list" as const,
   "aria-controls": context.open.value ? context.listboxId.value : undefined,
@@ -104,7 +102,7 @@ defineExpose({ element, focus: (options?: FocusOptions) => element()?.focus(opti
     v-if="as === 'input'"
     :id="context.fieldId.value"
     ref="input"
-    v-bind="{ ...handlers, ...ariaProps }"
+    v-bind="fieldProps"
     type="text"
     role="combobox"
     autocomplete="off"
@@ -121,7 +119,7 @@ defineExpose({ element, focus: (options?: FocusOptions) => element()?.focus(opti
     v-else
     :id="context.fieldId.value"
     ref="textarea"
-    v-bind="{ ...handlers, ...ariaProps }"
+    v-bind="fieldProps"
     aria-haspopup="listbox"
     :name
     :rows

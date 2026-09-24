@@ -372,9 +372,13 @@ function tryAddText(
   return tryAddTag(tag, trimmed, source, currentTags);
 }
 
+function readTags(): readonly T[] {
+  return tags.value;
+}
+
 function commitSegments(segments: readonly string[], source: TagsInputAddSource): string[] {
   const rejected: string[] = [];
-  let currentTags = tags.value;
+  let currentTags = readTags();
   for (const segment of segments) {
     const next = tryAddText(segment, source, currentTags);
     if (next === null) rejected.push(segment);

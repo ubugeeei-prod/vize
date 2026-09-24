@@ -103,6 +103,10 @@ function completeExit(event: AnimationEvent): void {
   clearExit();
 }
 
+function readContentElement(): HTMLDivElement | null {
+  return contentElement.value;
+}
+
 watch(
   isOpen,
   (open) => {
@@ -110,7 +114,7 @@ watch(
       clearExit();
       return;
     }
-    const element = contentElement.value;
+    const element = readContentElement();
     const style = element?.ownerDocument.defaultView?.getComputedStyle(element);
     const reducedMotion = element?.ownerDocument.defaultView?.matchMedia?.(
       "(prefers-reduced-motion: reduce)",
@@ -127,8 +131,8 @@ watch(
     const version = ++exitVersion;
     // A sync watcher runs before Vue queues the close render. The second tick
     // reads the computed exit animation after its data attributes reach the DOM.
-    void nextTick(() =>
-      nextTick(() => {
+    void nextTick(() => {
+      void nextTick(() => {
         if (!exiting.value || version !== exitVersion) return;
         const duration = exitDuration(element);
         if (duration === 0) {
@@ -141,8 +145,8 @@ watch(
           },
           Math.min(duration + 80, 5000),
         );
-      }),
-    );
+      });
+    });
   },
   { flush: "sync" },
 );

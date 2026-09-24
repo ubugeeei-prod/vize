@@ -142,12 +142,6 @@ const positionerProps = computed(() => ({
   size,
   strategy,
 }));
-const listboxProps = computed(() => ({
-  role: "listbox" as const,
-  onMousedown: keepFieldFocus,
-  onPointerdown: keepFieldFocus,
-}));
-
 const layer = useDismissableLayer({
   root: element,
   branches: () => (context.fieldElement.value === null ? [] : [context.fieldElement.value]),
@@ -159,6 +153,12 @@ const layer = useDismissableLayer({
     context.setOpen(false, event.originalEvent);
   },
 });
+const contentBindings = computed(() => ({
+  ...layer.layerProps,
+  role: "listbox" as const,
+  onMousedown: keepFieldFocus,
+  onPointerdown: keepFieldFocus,
+}));
 
 watch(
   element,
@@ -211,7 +211,7 @@ defineExpose({ element });
             <div
               :id="context.listboxId.value"
               ref="element"
-              v-bind="{ ...layer.layerProps, ...listboxProps }"
+              v-bind="contentBindings"
               tabindex="-1"
               :aria-label="ariaLabel"
               :aria-busy="context.status.value === 'loading' ? 'true' : undefined"
