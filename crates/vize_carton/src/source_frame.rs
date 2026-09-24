@@ -157,11 +157,15 @@ impl<'a> SourceBlock<'a> {
     pub fn zero_width_at(self, offset: u32) -> &'a str {
         let start = self.start as usize;
         let end = start + self.source.len();
-        let mut at = (offset as usize).clamp(start, end) - start;
-        while at > 0 && !self.source.is_char_boundary(at) {
-            at -= 1;
-        }
-        &self.source[at..at]
+        let at = (offset as usize).clamp(start, end) - start;
+        // Snap down onto a char boundary; 0 always is one.
+        let at = (0..=at)
+            .rev()
+            .find(|at| self.source.is_char_boundary(*at))
+            .unwrap_or(0);
+        // Keep the fallback a slice of `source` too: callers locate holes by
+        // pointer.
+        (self.source.get(at..at)).unwrap_or_else(|| self.source.split_at(0).0)
     }
 }
 
@@ -179,6 +183,7 @@ const _: () = {
     assert!(!core::mem::needs_drop::<SourceBlock<'static>>());
 };
 
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[cfg(test)]
 mod tests {
     use super::{SourceFrameError, SourceRoot};

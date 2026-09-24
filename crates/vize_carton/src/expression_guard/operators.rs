@@ -15,13 +15,13 @@ pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
     let mut template_interpolation_depths = Vec::new();
     let mut i = 0usize;
 
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b' ' | b'\t' | b'\r' | b'\n' => {
                 i += 1;
             }
             b'"' | b'\'' => {
-                i = scan::skip_quoted(bytes, i + 1, bytes[i]);
+                i = scan::skip_quoted(bytes, i + 1, byte);
                 can_start_operand = false;
                 prefix_operator_run = 0;
             }
@@ -57,13 +57,14 @@ pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
             b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' => {
                 let start = i;
                 i = scan::skip_identifier(bytes, i + 1);
-                if can_start_operand && is_prefix_keyword(&bytes[start..i]) {
+                if can_start_operand && is_prefix_keyword(bytes.get(start..i).unwrap_or_default()) {
                     if increment_prefix_operator_run(&mut prefix_operator_run) {
                         return true;
                     }
                     can_start_operand = true;
                 } else {
-                    can_start_operand = scan::keyword_allows_regex_after(&bytes[start..i]);
+                    can_start_operand =
+                        scan::keyword_allows_regex_after(bytes.get(start..i).unwrap_or_default());
                     prefix_operator_run = 0;
                 }
             }
@@ -72,7 +73,7 @@ pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
                 can_start_operand = false;
                 prefix_operator_run = 0;
             }
-            b'+' | b'-' if bytes.get(i + 1) == Some(&bytes[i]) => {
+            b'+' | b'-' if bytes.get(i + 1) == Some(&byte) => {
                 if can_start_operand {
                     if increment_prefix_operator_run(&mut prefix_operator_run)
                         || increment_prefix_operator_run(&mut prefix_operator_run)
@@ -98,8 +99,8 @@ pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
                 i += 1;
             }
             b'(' | b'[' | b'{' | b'<' | b'@' => {
-                if matches!(bytes[i], b'(' | b'[' | b'{') {
-                    delimiters.push(match bytes[i] {
+                if matches!(byte, b'(' | b'[' | b'{') {
+                    delimiters.push(match byte {
                         b'(' => b')',
                         b'[' => b']',
                         _ => b'}',
@@ -124,7 +125,7 @@ pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
                 prefix_operator_run = 0;
             }
             b')' | b']' | b'}' | b'.' | b'>' | b'\\' => {
-                if matches!(bytes[i], b')' | b']' | b'}') {
+                if matches!(byte, b')' | b']' | b'}') {
                     delimiters.pop();
                 }
                 can_start_operand = false;

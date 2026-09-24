@@ -78,9 +78,7 @@ pub fn acquire() -> PooledAllocator {
         "pooled arena handed out without a reset"
     );
     let _ = CHECKED_OUT.try_with(|count| count.set(count.get() + 1));
-    PooledAllocator {
-        allocator: Some(allocator),
-    }
+    PooledAllocator { allocator }
 }
 
 /// Number of arenas this worker has checked out and not yet returned.
@@ -116,18 +114,16 @@ pub fn clear() {
 /// is reset (invalidating every arena-backed value, running every parked
 /// destructor) and returned to the pool.
 pub struct PooledAllocator {
-    /// `Some` for the guard's whole life; `None` only while `Drop` moves the
-    /// arena back into the pool.
-    allocator: Option<Allocator>,
+    /// The borrowed arena. `Drop` swaps in an empty (unreserved, so
+    /// allocation-free) arena to move this one back into the pool.
+    allocator: Allocator,
 }
 
 impl PooledAllocator {
     /// The pooled arena.
     #[inline]
     pub fn allocator(&self) -> &Allocator {
-        self.allocator
-            .as_ref()
-            .expect("a pooled arena is only taken out of its guard on drop")
+        &self.allocator
     }
 }
 
@@ -142,9 +138,7 @@ impl Deref for PooledAllocator {
 
 impl Drop for PooledAllocator {
     fn drop(&mut self) {
-        let Some(mut allocator) = self.allocator.take() else {
-            return;
-        };
+        let mut allocator = core::mem::take(&mut self.allocator);
         // Reset here, not on the next acquire: the memory is recycled as soon
         // as the compile that borrowed it ends, and the arena's generation
         // advances so any stamp taken during that compile reads as stale.

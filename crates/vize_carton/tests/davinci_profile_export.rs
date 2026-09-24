@@ -17,7 +17,7 @@
 //! profiler; per-span allocation counters are thread-local, so the pure
 //! validator tests below can run concurrently without corrupting it.
 
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use std::alloc::System;
 use std::fs;

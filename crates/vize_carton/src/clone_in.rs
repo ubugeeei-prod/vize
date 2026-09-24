@@ -153,7 +153,7 @@ mod tests {
         let allocator = Allocator::default();
         let allocator = &allocator;
         let boxed = Box::new_in(42, &allocator);
-        let cloned = boxed.clone_in(&allocator);
+        let cloned = boxed.clone_in(allocator);
         assert_eq!(*cloned, 42);
     }
 
@@ -166,7 +166,7 @@ mod tests {
         vec.push(2);
         vec.push(3);
 
-        let cloned = vec.clone_in(&allocator);
+        let cloned = vec.clone_in(allocator);
         assert_eq!(cloned.len(), 3);
         assert_eq!(cloned[0], 1);
         assert_eq!(cloned[1], 2);

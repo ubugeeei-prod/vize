@@ -29,10 +29,8 @@ pub use formatter::{
 };
 pub use global_types::{GlobalTypeDeclaration, GlobalTypesConfig, RawGlobalTypesConfig};
 pub use language_server::{LanguageServerConfig, LanguageServerUnstableFlags, LspConfig};
-#[allow(unused_imports)]
 pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
-#[allow(unused_imports)]
 pub use linter_rule_options::{
     ComponentNameInTemplateCasingOptions, ConfigLintRuleOptions, CustomEventNameCasing,
     CustomEventNameCasingOptions, HtmlSelfClosingHtmlOptions, HtmlSelfClosingOptions,

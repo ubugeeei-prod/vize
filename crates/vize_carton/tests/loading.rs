@@ -1,4 +1,8 @@
-#![allow(clippy::disallowed_macros)]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 use vize_carton::config::{
     VueVersion, load_config, load_config_entry_ignores_with_source,

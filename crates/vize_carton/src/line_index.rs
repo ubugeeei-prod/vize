@@ -57,15 +57,17 @@ impl<'a> LineIndex<'a> {
         let offset = offset.min(self.source.len());
 
         // Greatest line start <= offset.
+        // `line_starts` begins with 0, so a predecessor always exists.
         let line = match self.line_starts.binary_search(&offset) {
             Ok(line) => line,
-            Err(next) => next - 1,
+            Err(next) => next.saturating_sub(1),
         };
-        let line_start = self.line_starts[line];
+        let line_start = self.line_starts.get(line).copied().unwrap_or(0);
 
         // Sum UTF-16 code units of every character on this line whose byte
         // start is before `offset`.
-        let col = utf16::prefix_len(&self.source[line_start..], offset - line_start);
+        let line_text = self.source.get(line_start..).unwrap_or_default();
+        let col = utf16::prefix_len(line_text, offset.saturating_sub(line_start));
         (line as u32, col as u32)
     }
 
@@ -84,7 +86,7 @@ impl<'a> LineIndex<'a> {
             .get(line + 1)
             .map(|next| next.saturating_sub(1))
             .unwrap_or(self.source.len());
-        utf16_offset(&self.source[start..end], column).map(|offset| start + offset)
+        utf16_offset(self.source.get(start..end)?, column).map(|offset| start + offset)
     }
 }
 
@@ -98,14 +100,13 @@ pub fn offset_to_line_col(source: &str, offset: usize) -> (u32, u32) {
     let offset = offset.min(source.len());
     let mut line = 0;
     let mut start = 0;
-    for at in memchr::memchr_iter(b'\n', &source.as_bytes()[..offset]) {
+    let head = source.as_bytes().get(..offset).unwrap_or_default();
+    for at in memchr::memchr_iter(b'\n', head) {
         line += 1;
         start = at + 1;
     }
-    (
-        line,
-        utf16::prefix_len(&source[start..], offset - start) as u32,
-    )
+    let tail = source.get(start..).unwrap_or_default();
+    (line, utf16::prefix_len(tail, offset - start) as u32)
 }
 
 /// Convert a byte offset to an LSP [`Position`] (single-shot convenience).

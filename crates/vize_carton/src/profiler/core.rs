@@ -14,7 +14,7 @@ use super::allocation::{
 use super::attribution::{AttributedSpanKey, SpanAttribution};
 use super::metrics::{CounterMetrics, Metrics, SpanAllocationDelta};
 
-const PROFILER_SHARDS: usize = 32;
+pub(super) const PROFILER_SHARDS: usize = 32;
 
 thread_local! {
     static PROFILE_STACK: RefCell<std::vec::Vec<ProfileFrame>> = const { RefCell::new(std::vec::Vec::new()) };
@@ -327,7 +327,7 @@ impl Profiler {
         &self,
         shard: usize,
     ) -> RwLockReadGuard<'_, FxHashMap<&'static str, Metrics>> {
-        self.metrics[shard]
+        super::shard::lock(&self.metrics, shard)
             .read()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
@@ -337,7 +337,7 @@ impl Profiler {
         &self,
         shard: usize,
     ) -> RwLockWriteGuard<'_, FxHashMap<&'static str, Metrics>> {
-        self.metrics[shard]
+        super::shard::lock(&self.metrics, shard)
             .write()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
@@ -347,7 +347,7 @@ impl Profiler {
         &self,
         shard: usize,
     ) -> RwLockWriteGuard<'_, FxHashMap<AttributedSpanKey, Metrics>> {
-        self.attributed[shard]
+        super::shard::lock(&self.attributed, shard)
             .write()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
@@ -357,7 +357,7 @@ impl Profiler {
         &self,
         shard: usize,
     ) -> RwLockWriteGuard<'_, FxHashMap<&'static str, CounterMetrics>> {
-        self.counters[shard]
+        super::shard::lock(&self.counters, shard)
             .write()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
     }

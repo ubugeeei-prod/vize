@@ -61,8 +61,8 @@ pub fn parse_vize_directive(content: &str, line: u32, offset: u32) -> Option<Viz
     let trimmed = content.trim();
     let rest = trimmed.strip_prefix("@vize:")?;
 
-    let (keyword, payload) = match rest.find(|c: char| c.is_whitespace()) {
-        Some(pos) => (&rest[..pos], rest[pos..].trim()),
+    let (keyword, payload) = match rest.split_once(char::is_whitespace) {
+        Some((keyword, payload)) => (keyword, payload.trim()),
         None => (rest, ""),
     };
 

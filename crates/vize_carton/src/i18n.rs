@@ -34,6 +34,11 @@ use rustc_hash::FxHashMap;
 use std::borrow::Cow;
 use std::str::FromStr;
 
+mod load;
+use load::load_json;
+#[cfg(test)]
+use load::unescape_json_string;
+
 /// Supported locales
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[repr(u8)]
@@ -206,10 +211,11 @@ impl Translator {
     /// Returns the key itself if not found in any locale.
     #[inline]
     pub fn get(&self, locale: Locale, key: &str) -> Cow<'static, str> {
-        let idx = locale.index();
-
         // Try requested locale first
-        if let Some(msg) = self.messages[idx].get(key) {
+        if let Some(msg) = self
+            .locale_messages(locale)
+            .and_then(|messages| messages.get(key))
+        {
             return Cow::Borrowed(*msg);
         }
 
@@ -237,9 +243,8 @@ impl Translator {
 
         let mut result = template.into_owned();
         for (name, value) in vars {
-            #[allow(clippy::disallowed_macros)]
-            let placeholder = format!("{{{}}}", name);
-            result = result.replace(&placeholder, value);
+            let placeholder = crate::cstr!("{{{}}}", name);
+            result = result.replace(placeholder.as_str(), value);
         }
         result
     }
@@ -247,12 +252,20 @@ impl Translator {
     /// Check if a key exists for a locale (without fallback)
     #[inline]
     pub fn has_key(&self, locale: Locale, key: &str) -> bool {
-        self.messages[locale.index()].contains_key(key)
+        self.locale_messages(locale)
+            .is_some_and(|messages| messages.contains_key(key))
     }
 
     /// Get all keys for a locale
     pub fn keys(&self, locale: Locale) -> impl Iterator<Item = &'static str> + '_ {
-        self.messages[locale.index()].keys().copied()
+        self.locale_messages(locale)
+            .into_iter()
+            .flat_map(|messages| messages.keys().copied())
+    }
+
+    /// The message table of `locale` (one per locale, by its index).
+    fn locale_messages(&self, locale: Locale) -> Option<&FxHashMap<&'static str, &'static str>> {
+        self.messages.get(locale.index())
     }
 }
 
@@ -285,135 +298,6 @@ static GLOBAL_TRANSLATOR: Lazy<Translator> = Lazy::new(|| {
     crate::i18n_supplemental::register(&mut messages);
     Translator { messages }
 });
-
-/// Parse JSON and load into message map
-fn load_json(map: &mut FxHashMap<&'static str, &'static str>, json: &'static str) {
-    // Fast JSON parsing for flat key-value objects
-    // Format: { "key": "value", "key2": "value2", ... }
-    let json = json.trim();
-    if json.len() < 2 || !json.starts_with('{') || !json.ends_with('}') {
-        return;
-    }
-
-    let content = &json[1..json.len() - 1];
-    let mut idx = 0;
-
-    while idx < content.len() {
-        // Skip whitespace
-        while idx < content.len() && content.as_bytes()[idx].is_ascii_whitespace() {
-            idx += 1;
-        }
-
-        if idx >= content.len() {
-            break;
-        }
-
-        // Expect opening quote for key
-        if content.as_bytes()[idx] != b'"' {
-            idx += 1;
-            continue;
-        }
-        idx += 1;
-
-        // Parse key
-        let key_start = idx;
-        while idx < content.len() && content.as_bytes()[idx] != b'"' {
-            if content.as_bytes()[idx] == b'\\' {
-                idx += 2;
-            } else {
-                idx += 1;
-            }
-        }
-        let key_end = idx;
-        idx += 1; // Skip closing quote
-
-        // Skip to colon
-        while idx < content.len() && content.as_bytes()[idx] != b':' {
-            idx += 1;
-        }
-        idx += 1; // Skip colon
-
-        // Skip whitespace
-        while idx < content.len() && content.as_bytes()[idx].is_ascii_whitespace() {
-            idx += 1;
-        }
-
-        // Expect opening quote for value
-        if idx >= content.len() || content.as_bytes()[idx] != b'"' {
-            continue;
-        }
-        idx += 1;
-
-        // Parse value (handle escaped quotes)
-        let value_start = idx;
-        while idx < content.len() {
-            if content.as_bytes()[idx] == b'\\' {
-                idx += 2;
-            } else if content.as_bytes()[idx] == b'"' {
-                break;
-            } else {
-                idx += 1;
-            }
-        }
-        let value_end = idx;
-        idx += 1; // Skip closing quote
-
-        // Skip to comma or end
-        while idx < content.len() && content.as_bytes()[idx] != b',' {
-            idx += 1;
-        }
-        idx += 1; // Skip comma
-
-        // Extract key and value
-        let key = &content[key_start..key_end];
-        let value = &content[value_start..value_end];
-
-        // Unescape and leak to get 'static lifetime
-        // This is safe because we only load once at startup
-        let key: &'static str = Box::leak(key.to_string().into_boxed_str());
-        let value: &'static str = Box::leak(unescape_json_string(value).into_boxed_str());
-
-        map.insert(key, value);
-    }
-}
-
-/// Unescape JSON string escape sequences
-#[inline]
-fn unescape_json_string(s: &str) -> String {
-    let mut result = String::with_capacity(s.len());
-    let mut chars = s.chars();
-
-    while let Some(c) = chars.next() {
-        if c == '\\' {
-            match chars.next() {
-                Some('n') => result.push('\n'),
-                Some('r') => result.push('\r'),
-                Some('t') => result.push('\t'),
-                Some('"') => result.push('"'),
-                Some('\\') => result.push('\\'),
-                Some('/') => result.push('/'),
-                Some('u') => {
-                    // Unicode escape: \uXXXX
-                    let hex: String = chars.by_ref().take(4).collect();
-                    if let Ok(cp) = u32::from_str_radix(&hex, 16)
-                        && let Some(c) = char::from_u32(cp)
-                    {
-                        result.push(c);
-                    }
-                }
-                Some(other) => {
-                    result.push('\\');
-                    result.push(other);
-                }
-                None => result.push('\\'),
-            }
-        } else {
-            result.push(c);
-        }
-    }
-
-    result
-}
 
 /// Convenience function to get the global translator
 #[inline]

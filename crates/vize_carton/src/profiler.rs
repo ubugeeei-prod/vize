@@ -11,6 +11,7 @@ mod counters;
 mod export;
 mod metrics;
 mod report;
+mod shard;
 mod snapshot;
 
 pub use allocation::{

@@ -50,17 +50,15 @@ pub fn is_builtin_directive(name: &str) -> bool {
 /// Check if a key is an event handler (starts with "on" + uppercase letter)
 #[inline]
 pub fn is_on(key: &str) -> bool {
-    let bytes = key.as_bytes();
-    bytes.len() > 2 && bytes[0] == b'o' && bytes[1] == b'n' && (bytes[2] > 122 || bytes[2] < 97)
-    // uppercase letter
+    // "on" followed by anything but a lowercase ASCII letter.
+    matches!(key.as_bytes(), [b'o', b'n', third, ..] if !third.is_ascii_lowercase())
 }
 
 /// Check if a key is a native event handler (starts with "on" + lowercase letter)
 #[inline]
 pub fn is_native_on(key: &str) -> bool {
-    let bytes = key.as_bytes();
-    bytes.len() > 2 && bytes[0] == b'o' && bytes[1] == b'n' && bytes[2] > 96 && bytes[2] < 123
-    // lowercase letter
+    // "on" followed by a lowercase ASCII letter.
+    matches!(key.as_bytes(), [b'o', b'n', third, ..] if third.is_ascii_lowercase())
 }
 
 /// Check if a key is a model listener (starts with "onUpdate:")
@@ -78,11 +76,9 @@ pub fn camelize(s: &str) -> String {
 
     while let Some(c) = chars.next() {
         if c == '-' {
-            match chars.peek() {
-                Some(next) if next.is_ascii_alphanumeric() || *next == '_' => {
-                    result.push(chars.next().unwrap().to_ascii_uppercase());
-                }
-                _ => result.push(c),
+            match chars.next_if(|next| next.is_ascii_alphanumeric() || *next == '_') {
+                Some(next) => result.push(next.to_ascii_uppercase()),
+                None => result.push(c),
             }
         } else {
             result.push(c);
@@ -192,8 +188,9 @@ pub fn gen_props_access_exp(name: &str) -> String {
 
 #[inline]
 fn push_hex_digit(out: &mut String, value: u8) {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
-    out.push(HEX[value as usize] as char);
+    if let Some(digit) = char::from_digit(u32::from(value & 0xF), 16) {
+        out.push(digit);
+    }
 }
 
 fn push_json_string_literal(out: &mut String, value: &str) {

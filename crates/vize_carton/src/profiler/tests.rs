@@ -86,7 +86,6 @@ fn profiler_tracks_counters() {
 }
 
 #[test]
-#[allow(clippy::disallowed_macros)]
 fn profiler_recovers_from_poisoned_metrics_lock() {
     let profiler = Arc::new(Profiler::enabled());
     let cloned = Arc::clone(&profiler);

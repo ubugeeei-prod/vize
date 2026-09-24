@@ -10,8 +10,8 @@
 use oxc_syntax::identifier::is_identifier_start;
 
 pub fn skip_quoted(bytes: &[u8], mut i: usize, quote: u8) -> usize {
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'\\' => {
                 // `\` + CRLF is a single LineContinuation sequence; every other
                 // escape is two bytes. (`\` + LS/PS also continues the line: the
@@ -40,8 +40,8 @@ pub fn skip_quoted(bytes: &[u8], mut i: usize, quote: u8) -> usize {
 /// backtick or an opening `${`. The caller scans interpolation bodies so deeply
 /// nested input is guarded without recursive Rust calls.
 pub(super) fn skip_template_text(bytes: &[u8], mut i: usize) -> (usize, bool) {
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'\\' => i = i.saturating_add(2),
             b'`' => return (i + 1, false),
             b'$' if bytes.get(i + 1) == Some(&b'{') => return (i + 2, true),
@@ -62,7 +62,7 @@ pub(super) fn speculative_type_angle_open_kind(
     open: usize,
 ) -> Option<SpeculativeTypeAngleOpen> {
     // The `<` is ASCII, so `open + 1` is a valid char boundary.
-    let after = &content[open + 1..];
+    let after = content.get(open + 1..).unwrap_or_default();
     let marker = skip_type_angle_trivia(after);
     // `{`/`[` start structural types (#2944); `!` starts a JSDoc non-nullable
     // type (#3213); `(` starts a parenthesized type (#3277/#3279/#3281); and an
@@ -161,7 +161,9 @@ fn skip_type_angle_trivia(s: &str) -> usize {
             // A multi-byte lead is a char boundary; decode it to test for
             // ECMAScript Unicode whitespace (NBSP, LS/PS, the Zs category, ...).
             Some(_) => {
-                let c = s[i..].chars().next().unwrap();
+                let Some(c) = s.get(i..).and_then(|rest| rest.chars().next()) else {
+                    return i;
+                };
                 if is_ecmascript_whitespace(c) {
                     i += c.len_utf8();
                 } else {
@@ -205,10 +207,7 @@ pub fn is_expression_trailing_trivia(content: &str) -> bool {
                 }
             }
             Some(_) => {
-                if !content.is_char_boundary(i) {
-                    return false;
-                }
-                let Some(c) = content[i..].chars().next() else {
+                let Some(c) = content.get(i..).and_then(|rest| rest.chars().next()) else {
                     return false;
                 };
                 if is_ecmascript_whitespace(c) {
@@ -223,11 +222,11 @@ pub fn is_expression_trailing_trivia(content: &str) -> bool {
 }
 
 pub fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
-    while i < bytes.len() {
+    while let Some(&byte) = bytes.get(i) {
         // Line comments end at any ECMAScript line terminator: LF, CR, LS
         // (U+2028), or PS (U+2029). Stopping only at LF let a bare CR hide
         // parsed code from the guard (#3185).
-        match bytes[i] {
+        match byte {
             b'\n' | b'\r' => break,
             0xe2 if bytes.get(i + 1) == Some(&0x80)
                 && matches!(bytes.get(i + 2), Some(&0xa8) | Some(&0xa9)) =>
@@ -240,24 +239,13 @@ pub fn skip_line_comment(bytes: &[u8], mut i: usize) -> usize {
     i
 }
 
-fn skip_closed_block_comment(bytes: &[u8], mut i: usize) -> Option<usize> {
-    while i + 1 < bytes.len() {
-        if bytes[i] == b'*' && bytes[i + 1] == b'/' {
-            return Some(i + 2);
-        }
-        i += 1;
-    }
-    None
+fn skip_closed_block_comment(bytes: &[u8], i: usize) -> Option<usize> {
+    let at = bytes.get(i..)?.windows(2).position(|pair| pair == b"*/")?;
+    Some(i + at + 2)
 }
 
-pub(super) fn skip_block_comment(bytes: &[u8], mut i: usize) -> usize {
-    while i + 1 < bytes.len() {
-        if bytes[i] == b'*' && bytes[i + 1] == b'/' {
-            return i + 2;
-        }
-        i += 1;
-    }
-    bytes.len()
+pub(super) fn skip_block_comment(bytes: &[u8], i: usize) -> usize {
+    skip_closed_block_comment(bytes, i).unwrap_or(bytes.len())
 }
 
 /// Skip a regex literal, returning where it ends.
@@ -271,8 +259,8 @@ pub(super) fn skip_block_comment(bytes: &[u8], mut i: usize) -> usize {
 /// more (#3875). The caller scans them instead, which can only over-count.
 pub fn skip_regex(bytes: &[u8], mut i: usize) -> Option<usize> {
     let mut in_character_class = false;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             // A regex literal cannot span a line terminator, and `\` before one
             // is not a valid escape: the lexer ends the regex at the terminator.
             // Blindly skipping two bytes would swallow the terminator (LF/CR) or
@@ -310,22 +298,24 @@ pub fn skip_regex(bytes: &[u8], mut i: usize) -> Option<usize> {
     None
 }
 
-pub fn skip_identifier(bytes: &[u8], mut i: usize) -> usize {
-    while i < bytes.len()
-        && matches!(bytes[i], b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'$')
-    {
-        i += 1;
-    }
-    i
+pub fn skip_identifier(bytes: &[u8], i: usize) -> usize {
+    i + bytes.get(i..).map_or(0, |rest| {
+        rest.iter()
+            .take_while(
+                |byte| matches!(byte, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'$'),
+            )
+            .count()
+    })
 }
 
-pub fn skip_number(bytes: &[u8], mut i: usize) -> usize {
-    while i < bytes.len()
-        && matches!(bytes[i], b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'.')
-    {
-        i += 1;
-    }
-    i
+pub fn skip_number(bytes: &[u8], i: usize) -> usize {
+    i + bytes.get(i..).map_or(0, |rest| {
+        rest.iter()
+            .take_while(
+                |byte| matches!(byte, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b'.'),
+            )
+            .count()
+    })
 }
 
 pub fn keyword_allows_regex_after(identifier: &[u8]) -> bool {

@@ -1,4 +1,4 @@
-#![allow(clippy::disallowed_macros)]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
 use vize_carton::config::load_config_with_features_and_source;
 

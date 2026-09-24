@@ -1,3 +1,7 @@
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 use super::{
     load_compiler_vue_version, load_config_and_linter_plan_with_lint_features_and_source,
     load_config_and_linter_with_source, load_config_entry_files_with_source,

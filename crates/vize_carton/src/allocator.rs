@@ -131,15 +131,13 @@ impl Allocator {
     pub fn alloc_owned<T: Any + Send>(&self, value: T) -> &T {
         let ptr: *const T = {
             let mut parked = self.parked.borrow_mut();
-            parked.push(std::boxed::Box::new(value));
             // Borrow the value *after* the box is in place: taking the pointer
             // before the push and then moving the box would invalidate it
             // (moving a `Box` retags its pointee), which Miri rejects.
-            parked
-                .last()
-                .expect("the value was just pushed")
-                .downcast_ref::<T>()
-                .expect("the value was just pushed as a `T`")
+            let slot = parked.push_mut(std::boxed::Box::new(value));
+            // The box was just built from a `T`, so its data pointer is that
+            // `T`; dropping the vtable half of the fat pointer keeps it.
+            core::ptr::from_ref::<dyn Any + Send>(&**slot).cast::<T>()
         };
         // SAFETY: `ptr` points into a heap box owned by `self.parked`, so the
         // value stays at that address for as long as the box lives. Growing

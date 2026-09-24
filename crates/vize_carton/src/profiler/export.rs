@@ -224,9 +224,9 @@ pub struct ProfileExport {
 impl ProfileExport {
     /// Serialize to pretty-printed JSON with a trailing newline.
     pub fn to_json(&self) -> String {
-        // Derived `Serialize` on plain structs with string keys cannot fail.
-        let mut text =
-            serde_json::to_string_pretty(self).expect("profile export serialization is infallible");
+        // Derived `Serialize` on plain structs with string keys cannot fail;
+        // should it, the export is empty rather than a crash.
+        let mut text = serde_json::to_string_pretty(self).unwrap_or_default();
         text.push('\n');
         text.into()
     }

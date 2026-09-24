@@ -10,6 +10,9 @@
 
 use serde::{Deserialize, Serialize};
 
+mod scan;
+use scan::{skip_while, slice};
+
 /// The Vue template dialect a document is written in.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -84,11 +87,11 @@ pub fn detect_petite_vue_document(content: &str) -> bool {
     let mut pos = 0;
 
     while pos < bytes.len() {
-        let Some(relative) = content[pos..].find('<') else {
+        let Some(relative) = content.get(pos..).and_then(|tail| tail.find('<')) else {
             return false;
         };
         let start = pos + relative;
-        let rest = &content[start..];
+        let rest = slice(content, start, content.len());
 
         if let Some(comment) = rest.strip_prefix("<!--") {
             // Skip HTML comments entirely.
@@ -121,7 +124,7 @@ pub fn detect_petite_vue_document(content: &str) -> bool {
         // Inline script: scan the body up to the closing tag.
         let body_start = attrs_end;
         let body_end = find_script_close(content, body_start).unwrap_or(content.len());
-        if inline_script_uses_petite_vue(&content[body_start..body_end]) {
+        if inline_script_uses_petite_vue(slice(content, body_start, body_end)) {
             return true;
         }
         pos = body_end;
@@ -134,7 +137,10 @@ pub fn detect_petite_vue_document(content: &str) -> bool {
 /// followed by whitespace, `>`, or `/`).
 fn starts_with_script_tag(rest: &str) -> bool {
     let bytes = rest.as_bytes();
-    if bytes.len() < 7 || !bytes[1..7].eq_ignore_ascii_case(b"script") {
+    if !bytes
+        .get(1..7)
+        .is_some_and(|name| name.eq_ignore_ascii_case(b"script"))
+    {
         return false;
     }
     matches!(
@@ -152,8 +158,8 @@ fn parse_start_tag_attributes(content: &str, mut pos: usize) -> Option<(usize, O
     let bytes = content.as_bytes();
     let mut src = None;
 
-    while pos < bytes.len() {
-        match bytes[pos] {
+    while let Some(&byte) = bytes.get(pos) {
+        match byte {
             b'>' => return Some((pos + 1, src)),
             b'/' | b' ' | b'\t' | b'\n' | b'\r' => {
                 pos += 1;
@@ -161,43 +167,32 @@ fn parse_start_tag_attributes(content: &str, mut pos: usize) -> Option<(usize, O
             _ => {
                 // Attribute name.
                 let name_start = pos;
-                while pos < bytes.len()
-                    && !matches!(
-                        bytes[pos],
-                        b'=' | b'>' | b'/' | b' ' | b'\t' | b'\n' | b'\r'
-                    )
-                {
-                    pos += 1;
-                }
-                let name = &content[name_start..pos];
+                pos = skip_while(bytes, pos, |byte| {
+                    !matches!(byte, b'=' | b'>' | b'/' | b' ' | b'\t' | b'\n' | b'\r')
+                });
+                let name = slice(content, name_start, pos);
 
-                while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-                    pos += 1;
-                }
+                pos = skip_while(bytes, pos, u8::is_ascii_whitespace);
                 if bytes.get(pos) != Some(&b'=') {
                     // Boolean attribute (e.g. `defer`, `init`).
                     continue;
                 }
                 pos += 1;
-                while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-                    pos += 1;
-                }
+                pos = skip_while(bytes, pos, u8::is_ascii_whitespace);
 
                 let value = match bytes.get(pos) {
                     Some(&quote @ (b'"' | b'\'')) => {
                         let value_start = pos + 1;
-                        let relative_end = content[value_start..].find(quote as char)?;
-                        pos = value_start + relative_end + 1;
-                        &content[value_start..value_start + relative_end]
+                        let (value, _) = content.get(value_start..)?.split_once(quote as char)?;
+                        pos = value_start + value.len() + 1;
+                        value
                     }
                     _ => {
                         let value_start = pos;
-                        while pos < bytes.len()
-                            && !matches!(bytes[pos], b'>' | b' ' | b'\t' | b'\n' | b'\r')
-                        {
-                            pos += 1;
-                        }
-                        &content[value_start..pos]
+                        pos = skip_while(bytes, pos, |byte| {
+                            !matches!(byte, b'>' | b' ' | b'\t' | b'\n' | b'\r')
+                        });
+                        slice(content, value_start, pos)
                     }
                 };
                 if name.eq_ignore_ascii_case("src") {
@@ -215,10 +210,15 @@ fn find_script_close(content: &str, from: usize) -> Option<usize> {
     let bytes = content.as_bytes();
     let mut pos = from;
     while pos < bytes.len() {
-        let relative = content[pos..].find('<')?;
+        let relative = content.get(pos..)?.find('<')?;
         let start = pos + relative;
-        let rest = &bytes[start..];
-        if rest.len() >= 9 && rest[1] == b'/' && rest[2..8].eq_ignore_ascii_case(b"script") {
+        let rest = bytes.get(start..).unwrap_or_default();
+        if rest.len() >= 9
+            && rest.get(1) == Some(&b'/')
+            && rest
+                .get(2..8)
+                .is_some_and(|name| name.eq_ignore_ascii_case(b"script"))
+        {
             return Some(start);
         }
         pos = start + 1;
@@ -236,16 +236,16 @@ fn inline_script_uses_petite_vue(script: &str) -> bool {
     let bytes = script.as_bytes();
     let mut pos = 0;
 
-    while pos < bytes.len() {
-        match bytes[pos] {
+    while let Some(&byte) = bytes.get(pos) {
+        match byte {
             b'/' if bytes.get(pos + 1) == Some(&b'/') => {
-                pos = match script[pos..].find('\n') {
+                pos = match slice(script, pos, script.len()).find('\n') {
                     Some(end) => pos + end + 1,
                     None => bytes.len(),
                 };
             }
             b'/' if bytes.get(pos + 1) == Some(&b'*') => {
-                pos = match script[pos + 2..].find("*/") {
+                pos = match slice(script, pos + 2, script.len()).find("*/") {
                     Some(end) => pos + 2 + end + 2,
                     None => bytes.len(),
                 };
@@ -255,10 +255,8 @@ fn inline_script_uses_petite_vue(script: &str) -> bool {
             }
             byte if is_ident_start(byte) => {
                 let word_start = pos;
-                while pos < bytes.len() && is_ident_char(bytes[pos]) {
-                    pos += 1;
-                }
-                match &script[word_start..pos] {
+                pos = skip_while(bytes, pos, |byte| is_ident_char(*byte));
+                match slice(script, word_start, pos) {
                     "import" | "from" if import_specifier_is_petite_vue(script, pos) => {
                         return true;
                     }
@@ -277,52 +275,47 @@ fn inline_script_uses_petite_vue(script: &str) -> bool {
 /// module specifier (`from "spec"`, `import "spec"`, or `import("spec")`).
 fn import_specifier_is_petite_vue(script: &str, mut pos: usize) -> bool {
     let bytes = script.as_bytes();
-    while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-        pos += 1;
-    }
+    pos = skip_while(bytes, pos, u8::is_ascii_whitespace);
     // Dynamic import: import("spec")
     if bytes.get(pos) == Some(&b'(') {
         pos += 1;
-        while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-            pos += 1;
-        }
+        pos = skip_while(bytes, pos, u8::is_ascii_whitespace);
     }
     let Some(&quote @ (b'"' | b'\'')) = bytes.get(pos) else {
         return false;
     };
     let value_start = pos + 1;
-    let Some(relative_end) = script[value_start..].find(quote as char) else {
+    let Some((value, _)) = script
+        .get(value_start..)
+        .and_then(|tail| tail.split_once(quote as char))
+    else {
         return false;
     };
-    is_petite_vue_module(&script[value_start..value_start + relative_end])
+    is_petite_vue_module(value)
 }
 
 /// Check for `.createApp` (allowing whitespace) after a `PetiteVue` token.
 fn followed_by_create_app(script: &str, mut pos: usize) -> bool {
     let bytes = script.as_bytes();
-    while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-        pos += 1;
-    }
+    pos = skip_while(bytes, pos, u8::is_ascii_whitespace);
     if bytes.get(pos) != Some(&b'.') {
         return false;
     }
     pos += 1;
-    while pos < bytes.len() && bytes[pos].is_ascii_whitespace() {
-        pos += 1;
-    }
+    pos = skip_while(bytes, pos, u8::is_ascii_whitespace);
     let word_start = pos;
-    while pos < bytes.len() && is_ident_char(bytes[pos]) {
-        pos += 1;
-    }
-    &script[word_start..pos] == "createApp"
+    pos = skip_while(bytes, pos, |byte| is_ident_char(*byte));
+    slice(script, word_start, pos) == "createApp"
 }
 
 /// Skip a JS string literal starting at `pos`; returns the offset past it.
 fn skip_string_literal(bytes: &[u8], pos: usize) -> usize {
-    let quote = bytes[pos];
+    let Some(&quote) = bytes.get(pos) else {
+        return bytes.len();
+    };
     let mut pos = pos + 1;
-    while pos < bytes.len() {
-        match bytes[pos] {
+    while let Some(&byte) = bytes.get(pos) {
+        match byte {
             b'\\' => pos += 2,
             byte if byte == quote => return pos + 1,
             _ => pos += 1,

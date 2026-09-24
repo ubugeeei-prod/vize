@@ -26,7 +26,6 @@ pub use html_self_closing::{
 };
 pub use hyphenation::HyphenationStyle;
 pub use no_mutating_props::NoMutatingPropsOptions;
-#[allow(unused_imports)]
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
 
 /// Per-rule configuration keyed by rule name.

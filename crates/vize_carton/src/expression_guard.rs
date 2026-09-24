@@ -84,8 +84,7 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
     let mut track_type_angles = false;
     let mut i = 0;
 
-    while i < bytes.len() {
-        let b = bytes[i];
+    while let Some(&b) = bytes.get(i) {
         match b {
             b' ' | b'\t' | b'\r' | b'\n' => {
                 i += 1;
@@ -147,7 +146,8 @@ fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnalysis {
             b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' => {
                 let start = i;
                 i = skip_identifier(bytes, i + 1);
-                can_start_regex = keyword_allows_regex_after(&bytes[start..i]);
+                can_start_regex =
+                    keyword_allows_regex_after(bytes.get(start..i).unwrap_or_default());
                 continue;
             }
             b'0'..=b'9' => {

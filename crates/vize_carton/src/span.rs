@@ -69,7 +69,9 @@ impl Span {
     pub fn slice<'a>(&self, source: &'a str) -> &'a str {
         let end = (self.end as usize).min(source.len());
         let start = (self.start as usize).min(end);
-        &source[floor_char_boundary(source, start)..floor_char_boundary(source, end)]
+        source
+            .get(floor_char_boundary(source, start)..floor_char_boundary(source, end))
+            .unwrap_or_default()
     }
 
     /// Rebase this span from file-absolute offsets to block-relative offsets

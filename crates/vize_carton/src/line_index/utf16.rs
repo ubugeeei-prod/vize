@@ -15,11 +15,12 @@ pub fn utf16_len(text: &str) -> usize {
 /// character counts that whole character, without slicing at an invalid boundary.
 #[inline]
 pub(super) fn prefix_len(text: &str, bytes: usize) -> usize {
-    let mut end = bytes.min(text.len());
-    while !text.is_char_boundary(end) {
-        end += 1;
-    }
-    utf16_len(&text[..end])
+    let end = bytes.min(text.len());
+    // Round a mid-character offset up to the end of that character.
+    let end = (end..=text.len())
+        .find(|at| text.is_char_boundary(*at))
+        .unwrap_or(text.len());
+    utf16_len(text.get(..end).unwrap_or(text))
 }
 
 /// Reject positions between surrogate halves and beyond the text.

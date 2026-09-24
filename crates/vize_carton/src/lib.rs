@@ -1,5 +1,8 @@
-// vize_carton defines and bridges std types, so it needs to use them directly.
-#![allow(clippy::disallowed_types, clippy::disallowed_methods)]
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "vize_carton defines and bridges the std types the rest of the workspace avoids"
+)]
 
 //! Carton - The artist's toolbox for Vize.
 //!

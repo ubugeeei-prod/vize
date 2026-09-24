@@ -98,7 +98,9 @@ impl Metrics {
         self.self_alloc_bytes = self
             .self_alloc_bytes
             .saturating_add(allocations.bytes.saturating_sub(allocations.child_bytes));
-        self.histogram[duration_bucket(duration)] += 1;
+        if let Some(bucket) = self.histogram.get_mut(duration_bucket(duration)) {
+            *bucket += 1;
+        }
 
         if duration >= Duration::from_millis(1) {
             self.samples_over_1ms += 1;

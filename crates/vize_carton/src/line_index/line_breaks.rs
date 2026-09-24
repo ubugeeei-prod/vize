@@ -20,7 +20,7 @@ impl LineBreaks {
         // SIMD searches skip ordinary text without decoding each UTF-8 scalar.
         // LS/PS share the E2 80 prefix; no other E2 sequence is a line break.
         std::iter::once(0).chain(memchr::memchr3_iter(b'\r', b'\n', 0xe2, bytes).filter_map(
-            move |at| match bytes[at] {
+            move |at| match bytes.get(at)? {
                 b'\r' if bytes.get(at + 1) == Some(&b'\n') => None,
                 b'\r' | b'\n' => Some(at + 1),
                 _ if matches!(self, Self::TypeScript)
@@ -37,7 +37,7 @@ impl LineBreaks {
     /// Convert line/UTF-16 positions without treating CRLF twice.
     pub fn position_to_offset(self, source: &str, line: u32, character: u32) -> Option<usize> {
         let start = self.line_starts(source).nth(line as usize)?;
-        let text = source[start..].split(|ch| self.is_break(ch)).next()?;
+        let text = source.get(start..)?.split(|ch| self.is_break(ch)).next()?;
         super::utf16_offset(text, character).map(|offset| start + offset)
     }
 
@@ -50,7 +50,8 @@ impl LineBreaks {
             .take_while(|(_, start)| *start <= offset)
             .last()
             .unwrap_or((0, 0));
-        let column = super::utf16::prefix_len(&source[start..], offset - start);
+        let tail = source.get(start..).unwrap_or_default();
+        let column = super::utf16::prefix_len(tail, offset - start);
         (line as u32, column as u32)
     }
 }
