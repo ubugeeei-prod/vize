@@ -44,12 +44,10 @@ function captureWarnings(run: () => Promise<void>): Promise<readonly string[]> {
 }
 
 /**
- * Families still land in parallel, so coverage is reported rather than
- * enforced here; `pnpm check:examples` enforces it (every component family
- * must ship `examples/<family>-basic.vue`). Flip this to `true` once new
- * family PRs include examples as a matter of course.
+ * Every family that exports components must ship
+ * `examples/<family>-basic.vue` (also enforced by `pnpm check:examples`).
  */
-const REQUIRE_EXAMPLE_FOR_EVERY_FAMILY = false;
+const REQUIRE_EXAMPLE_FOR_EVERY_FAMILY = true;
 
 test("every family that exports components ships at least one example", () => {
   const missing = familiesWithComponents()
