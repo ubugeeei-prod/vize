@@ -35,6 +35,21 @@ export interface VizePackOptions {
 type WithPack<T> = T extends (infer Item)[]
   ? WithPack<Item>[]
   : T & { vize?: VizePackOptions | false };
+/**
+ * Vite and Vite+ both accept a named plugin (including nested async options),
+ * but their full Plugin hook types can come from different Vite installations.
+ * Comparing those two recursive hook types makes TypeScript 5.9/6 crash.
+ */
+export type CompatiblePluginOption =
+  | { name: string }
+  | false
+  | null
+  | undefined
+  | CompatiblePluginOption[]
+  | Promise<CompatiblePluginOption>;
+type WithCompatiblePlugins<T> = Omit<T, "plugins"> & {
+  plugins?: CompatiblePluginOption[];
+};
 export type VizeSharedConfig = NativeConfig & {
   /** Alias of lint.vize; lint.vize takes precedence when both are provided. */
   lint?: VizeLintOptions | boolean;
@@ -53,9 +68,10 @@ type WithVize<T> = T extends (...args: infer Args) => infer Result
   ? (...args: Args) => WithVize<Result>
   : T extends Promise<infer Result>
     ? Promise<WithVize<Result>>
-    : Omit<T, "lint" | "fmt" | "pack"> & VueIntegrationConfig;
+    : Omit<WithCompatiblePlugins<T>, "lint" | "fmt" | "pack"> & VueIntegrationConfig;
 export type VueConfig = WithVize<VitePlusConfig>;
-export type VueConfigObject = Omit<UserConfig, "lint" | "fmt" | "pack"> & VueIntegrationConfig;
+export type VueConfigObject = Omit<WithCompatiblePlugins<UserConfig>, "lint" | "fmt" | "pack"> &
+  VueIntegrationConfig;
 export type VizeTask =
   | "editor:setup"
   | "check"

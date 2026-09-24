@@ -1,0 +1,44 @@
+name: Vite+ Type Compatibility
+
+on:
+  push:
+    branches: [main, davinci]
+    paths:
+      - "npm/builder/vite/src/vite-plus.ts"
+      - "npm/builder/vite/src/vite-plus/**"
+      - "npm/builder/vite/type-tests/plugin-vue/**"
+      - "npm/builder/vite/package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/vite-plus-type-compat.yml"
+  pull_request:
+    branches: [main, davinci]
+    paths:
+      - "npm/builder/vite/src/vite-plus.ts"
+      - "npm/builder/vite/src/vite-plus/**"
+      - "npm/builder/vite/type-tests/plugin-vue/**"
+      - "npm/builder/vite/package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/vite-plus-type-compat.yml"
+
+concurrency:
+  group: vite-plus-type-compat-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  real-vite-plugin-types:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Install Vite plugin dependencies
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/builder/vite...' --ignore-scripts
+      - name: Type-check plugin-vue against real Vite 8
+        run: vp run --filter './npm/builder/vite' test:types:real-vite

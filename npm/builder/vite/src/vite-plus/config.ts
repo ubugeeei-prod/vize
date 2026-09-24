@@ -94,7 +94,14 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
     lintHelpLevel: typeof lintConfig === "object" ? lintConfig.helpLevel : undefined,
     fmtIgnorePatterns: oxfmt.ignorePatterns,
   };
-  const vp: UserConfig = { ...rest, lint: lint ? oxlint : undefined, fmt: fmt ? oxfmt : undefined };
+  const vp: UserConfig = {
+    ...rest,
+    // Both Vite and Vite+ accept named plugins, but their hook types may be
+    // instantiated from different Vite packages in a consumer's dependency tree.
+    plugins: rest.plugins as UserConfig["plugins"],
+    lint: lint ? oxlint : undefined,
+    fmt: fmt ? oxfmt : undefined,
+  };
   return { vp, metadata, compiler };
 }
 
