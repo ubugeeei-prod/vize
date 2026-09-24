@@ -169,6 +169,9 @@ pub(super) fn bind_value_is_legacy_static_prop(bind: &BindOp<'_>, is_ts: bool) -
     let Some(js) = value.js() else {
         return false;
     };
+    if !is_ts && super::super::on_typed::uses_ts_only_syntax(js.ast) {
+        return false;
+    }
     bind_value_is_static_patchless(bind, is_ts)
         || js.source.trim() == "undefined"
         || legacy_static_style_prop(bind, &value)

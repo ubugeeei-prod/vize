@@ -155,14 +155,6 @@ fn emit_handler(
         emit_raw_handler(cx, on, js);
         return;
     }
-    if super::super::on_typed::legacy_raw_non_null_call(js.ast) {
-        emit_raw_handler_expr(cx, on, js);
-        return;
-    }
-    if super::super::on_typed::legacy_raw_non_null_assignment(js.ast) {
-        emit_raw_handler_expr(cx, on, js);
-        return;
-    }
     if is_raw_handler_expression(js.ast, is_plain_element)
         && !super::super::on_typed::uses_ts_only_syntax(js.ast)
     {

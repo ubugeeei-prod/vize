@@ -35,9 +35,16 @@ impl<'a> Visit<'a> for TypedLocalDeclaration {
 /// reads. A typed parameter is erased first, then the normal local/global
 /// dependency walk decides whether the callback is constant.
 pub(super) fn shipped_component_hoist_constant(js: &JsExpr<'_>, is_ts: bool) -> bool {
+    // The shipped JS lane cannot classify TypeScript-only syntax as a
+    // constant. With `is_ts`, its transform may erase those types first.
+    if !is_ts
+        && (super::super::on_typed::uses_ts_only_syntax(js.ast)
+            || has_typed_local_declaration(js.ast))
+    {
+        return false;
+    }
     let Some(view) = ts_view(js, is_ts) else {
-        // The shipped hoist check still sees typed declarations only when
-        // the expression's TypeScript strip did not rewrite those bytes.
+        // A typed declaration that survives the TS strip remains dynamic.
         if is_ts && has_typed_local_declaration(js.ast) {
             return false;
         }

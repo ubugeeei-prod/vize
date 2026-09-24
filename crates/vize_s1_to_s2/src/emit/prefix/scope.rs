@@ -166,7 +166,7 @@ impl<'b> PrefixScope<'b> {
     }
 
     /// Whether expressions are type-erased first (`is_ts`).
-    pub(super) fn is_ts(&self) -> bool {
+    pub(in crate::emit) fn is_ts(&self) -> bool {
         self.is_ts
     }
 

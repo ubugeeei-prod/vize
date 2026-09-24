@@ -29,7 +29,11 @@ fn assembled(source: &str) -> String {
 
 fn shipped(source: &str) -> String {
     let allocator = Allocator::new();
-    let (_, errors, old) = vize_atelier_dom::compile_template(&allocator, source);
+    let (_, errors, old) = vize_atelier_dom::compile_template_legacy_with_options(
+        &allocator,
+        source,
+        vize_atelier_dom::DomCompilerOptions::default(),
+    );
     let blocking: Vec<_> = errors
         .iter()
         .filter(|error| !error.is_compatibility_notice())
@@ -123,14 +127,14 @@ fn duplicate_lexical_handler_declarations_stay_unsupported() {
 }
 
 #[test]
-fn ts_non_null_call_handlers_keep_legacy_raw_shape() {
+fn ts_non_null_call_handlers_keep_legacy_wrapped_shape() {
     assert_shipped_parity(r#"<button @click="payload!.click()"></button>"#);
     assert_shipped_parity(r#"<div @keyup.d="documentation!.$el.click()"></div>"#);
     assert_shipped_parity(r#"<div @contextmenu.prevent="options!.tippy?.show()"></div>"#);
 }
 
 #[test]
-fn ts_non_null_assignment_handlers_keep_legacy_raw_shape() {
+fn ts_non_null_assignment_handlers_keep_legacy_wrapped_shape() {
     assert_shipped_parity(
         r#"<button @click="draft.params.poll!.expiresIn = expiresInOption.seconds"></button>"#,
     );

@@ -164,6 +164,24 @@ fn branch_roots_have_legacy_hoist(
         match op {
             Op::Element(element) => {
                 walk.skip(element.bindings.len());
+                // A conditional named-slot template keeps its carrier in S2.
+                // Its lone rendered child is the branch root; the shipped
+                // hoist walk only visits that root's descendants, not its
+                // props or VNode. Counting those props enables `_cache` even
+                // when the legacy transform emitted no hoist at all.
+                if super::slots::is_slot_template(element)
+                    && slot_template_lone_branch_root(&element.children.ops)
+                {
+                    if slot_branch_root_descendants_have_legacy_hoist(
+                        walk,
+                        &element.children.ops,
+                        facts,
+                        wrappers,
+                    ) {
+                        return true;
+                    }
+                    continue;
+                }
                 if fragment_branch
                     && id
                         .and_then(|id| facts.static_facts.get(id))
@@ -172,6 +190,62 @@ fn branch_roots_have_legacy_hoist(
                     skip_region(walk, &element.children.ops);
                     return true;
                 }
+                if ensure_sufficient_stack(|| {
+                    region_has_legacy_hoist(
+                        walk,
+                        &element.children.ops,
+                        facts,
+                        wrappers,
+                        false,
+                        true,
+                    )
+                }) {
+                    return true;
+                }
+            }
+            Op::Component(component) => {
+                walk.skip(component.bindings.len());
+                if ensure_sufficient_stack(|| {
+                    region_has_legacy_hoist(
+                        walk,
+                        &component.children.ops,
+                        facts,
+                        wrappers,
+                        false,
+                        true,
+                    )
+                }) {
+                    return true;
+                }
+            }
+            _ => skip_op_after_mint(walk, op),
+        }
+    }
+    false
+}
+
+fn slot_template_lone_branch_root(ops: &[Op<'_>]) -> bool {
+    let mut rendered = ops
+        .iter()
+        .filter(|op| !super::slots::is_whitespace_text(op));
+    match (rendered.next(), rendered.next()) {
+        (Some(Op::Component(_)), None) => true,
+        (Some(Op::Element(element)), None) => element.tag != "template",
+        _ => false,
+    }
+}
+
+fn slot_branch_root_descendants_have_legacy_hoist(
+    walk: &mut PageWalk,
+    ops: &[Op<'_>],
+    facts: &S2Facts,
+    wrappers: &SideTable<WrapperKeys>,
+) -> bool {
+    for op in ops {
+        let _id = walk.mint();
+        match op {
+            Op::Element(element) => {
+                walk.skip(element.bindings.len());
                 if ensure_sufficient_stack(|| {
                     region_has_legacy_hoist(
                         walk,

@@ -22,6 +22,15 @@ pub(super) fn bind_skips_normalize(
     if raw_name != "style" {
         return false;
     }
+    // The retained AST accepts TS assertions even when the shipped JS lane
+    // does not strip them. In that lane `as StyleValue` stays dynamic.
+    if !scope.is_ts()
+        && value
+            .js()
+            .is_some_and(|js| super::on_typed::uses_ts_only_syntax(js.ast))
+    {
+        return false;
+    }
     let static_value = static_bind_value(value) || legacy_static_style_object(value);
     // The identifier arm is the shipped `is_constant_simple_expression`
     // proper, and it never looks at a static `style` attribute beside the

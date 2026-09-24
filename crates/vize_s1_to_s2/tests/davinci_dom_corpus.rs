@@ -75,6 +75,22 @@ const BATTERY: &[(&str, &str)] = &[
         "template_branch_component_root_static_props",
         r#"<template><Foo><template v-if="ok"><i18n-t keypath="a.b">{{ v }}</i18n-t></template><i18n-t v-else keypath="a.c">{{ v }}</i18n-t></Foo></template>"#,
     ),
+    (
+        "conditional_slot_component_props_do_not_enable_static_cache",
+        r#"<template><div><Foo><template v-if="ok" #append><Button :to="{ name: 'settings' }">{{ t('go') }}</Button></template></Foo><div id="anchor" /></div></template>"#,
+    ),
+    (
+        "typed_local_callback_does_not_hoist_component_props",
+        r#"<template><div><Form :transform="(data) => { const name: string = data.name; return name }"><input name="name" /></Form></div></template>"#,
+    ),
+    (
+        "unstripped_ts_style_assertion_stays_dynamic",
+        r#"<template><div><section :style="{ color: 'red' } as StyleValue" /><span /></div></template>"#,
+    ),
+    (
+        "non_null_event_call_keeps_inline_handler_wrapper",
+        r#"<template><div @contextmenu.prevent="options!.tippy?.show()" /></template>"#,
+    ),
 ];
 
 #[test]
