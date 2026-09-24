@@ -17,7 +17,7 @@ compiler	Compiler	source	crates/vize_atelier_dom/src/compile/selection.rs	12	s0	
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/sfc.rs	14	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/source_map.rs	13	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options.rs	12	s0	S0	stage	vize_s0	preferred	6
-compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options.rs	12	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	3
+compiler	Compiler	source	crates/vize_atelier_dom/src/compile/stage_options.rs	12	s1_to_s2	S1->S2	stage	vize_s1_to_s2	preferred	5
 compiler	Compiler	test/dev	crates/vize_atelier_dom/src/compile/stage_options/tests.rs	4	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_dom/src/experimental_tests.rs	7	s0	S0	stage	vize_s0	preferred	1
 compiler	Compiler	source	crates/vize_atelier_dom/src/namespace.rs	12	s0	S0	stage	vize_s0	preferred	4
