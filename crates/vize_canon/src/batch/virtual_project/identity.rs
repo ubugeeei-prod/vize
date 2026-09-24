@@ -4,9 +4,8 @@
 //! manager stores, fixture symlinks, and CI caches can make distinct project
 //! roots share one physical `node_modules` tree. Every mutable Canon artifact
 //! therefore lives below a namespace derived only from the canonical project
-//! root, and outside `node_modules` and the working tree when Git storage is
-//! available so a typecheck cannot change project detection performed by later
-//! commands.
+//! root, and outside `node_modules` and the working tree so a typecheck cannot
+//! change project detection or be picked up by source globbing.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -64,7 +63,43 @@ fn project_virtual_root_for_key(project_root: &Path, project_key: &vize_carton::
 }
 
 fn project_canon_storage_root(project_root: &Path) -> PathBuf {
-    git_storage_root(project_root).unwrap_or_else(|| project_root.join(".vize"))
+    let cache = dirs::cache_dir().unwrap_or_else(std::env::temp_dir);
+    let temporary = std::env::temp_dir();
+    external_cache_root(project_root, &cache, &temporary)
+}
+
+fn external_cache_root(project_root: &Path, cache: &Path, temporary: &Path) -> PathBuf {
+    let cache = vize_carton::path::canonicalize_non_verbatim(cache);
+    let temporary = vize_carton::path::canonicalize_non_verbatim(temporary);
+    let base = if !cache.starts_with(project_root) {
+        cache
+    } else if !temporary.starts_with(project_root) {
+        temporary
+    } else {
+        // Both cache locations can be redirected into the checked tree through
+        // XDG_CACHE_HOME/TMPDIR. Keep the generated project in a sibling then.
+        project_root
+            .parent()
+            .unwrap_or(project_root)
+            .join(".vize-canon-cache")
+    };
+    base.join("vize")
+}
+
+/// Previous project-keyed cache locations, for `vize clean` migration only.
+/// Neither location is written by new checks.
+pub fn legacy_project_virtual_roots(project_root: &Path) -> Vec<PathBuf> {
+    let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
+    let project_key = project_key(&project_root);
+    let mut roots = vec![
+        project_root
+            .join(".vize/canon/projects")
+            .join(project_key.as_str()),
+    ];
+    if let Some(git_root) = git_storage_root(&project_root) {
+        roots.push(git_root.join("canon/projects").join(project_key.as_str()));
+    }
+    roots
 }
 
 fn git_storage_root(project_root: &Path) -> Option<PathBuf> {
@@ -143,8 +178,8 @@ fn update_path_digest(digest: &mut Sha256, path: &Path) {
 #[cfg(test)]
 mod tests {
     use super::{
-        project_key, project_virtual_lock_paths, project_virtual_root,
-        project_virtual_root_with_identity,
+        external_cache_root, legacy_project_virtual_roots, project_key, project_virtual_lock_paths,
+        project_virtual_root, project_virtual_root_with_identity,
     };
     use std::path::Path;
 
@@ -163,25 +198,22 @@ mod tests {
     }
 
     #[test]
-    fn batch_namespace_stays_outside_node_modules() {
+    fn batch_namespace_stays_outside_the_checked_tree_and_node_modules() {
         let root = project_virtual_root(Path::new("/workspace/project"));
         assert!(
             root.components()
                 .all(|component| component.as_os_str() != "node_modules")
         );
-        assert!(root.starts_with(Path::new("/workspace/project/.vize/canon")));
+        assert!(!root.starts_with(Path::new("/workspace/project")));
     }
 
     #[test]
-    fn git_checkout_namespace_stays_outside_the_working_tree() {
+    fn git_checkout_namespace_stays_outside_the_working_tree_and_git_dir() {
         let project = tempfile::tempdir().unwrap();
         std::fs::create_dir(project.path().join(".git")).unwrap();
 
         let root = project_virtual_root(project.path());
-        let expected =
-            vize_carton::path::canonicalize_non_verbatim(project.path()).join(".git/vize/canon");
-
-        assert!(root.starts_with(expected));
+        assert!(!root.starts_with(project.path()));
         assert!(
             root.components()
                 .all(|component| component.as_os_str() != "node_modules")
@@ -189,7 +221,7 @@ mod tests {
     }
 
     #[test]
-    fn git_worktree_namespace_uses_the_resolved_gitdir() {
+    fn git_worktree_namespace_stays_outside_both_the_tree_and_gitdir() {
         let holder = tempfile::tempdir().unwrap();
         let project = holder.path().join("worktree");
         let gitdir = holder.path().join("git/worktrees/worktree");
@@ -198,9 +230,30 @@ mod tests {
         std::fs::write(project.join(".git"), "gitdir: ../git/worktrees/worktree\n").unwrap();
 
         let root = project_virtual_root(&project);
-        let expected = vize_carton::path::canonicalize_non_verbatim(&gitdir).join("vize/canon");
+        assert!(!root.starts_with(&project));
+        assert!(!root.starts_with(&gitdir));
+        assert_eq!(legacy_project_virtual_roots(&project).len(), 2);
+    }
 
-        assert!(root.starts_with(expected));
+    #[test]
+    fn redirected_cache_and_temp_paths_stay_outside_checked_tree() {
+        let holder = tempfile::tempdir().unwrap();
+        let project = holder.path().join("project");
+        let cache = project.join(".cache");
+        let temporary = project.join(".tmp");
+        let external_temp = holder.path().join("external-tmp");
+        std::fs::create_dir_all(&cache).unwrap();
+        std::fs::create_dir_all(&temporary).unwrap();
+        std::fs::create_dir_all(&external_temp).unwrap();
+        let project = vize_carton::path::canonicalize_non_verbatim(&project);
+        assert_eq!(
+            external_cache_root(&project, &cache, &external_temp),
+            vize_carton::path::canonicalize_non_verbatim(&external_temp).join("vize"),
+        );
+        assert_eq!(
+            external_cache_root(&project, &cache, &temporary),
+            project.parent().unwrap().join(".vize-canon-cache/vize"),
+        );
     }
 
     #[test]

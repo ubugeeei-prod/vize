@@ -20,7 +20,7 @@
 //! │                                                                 │
 //! │  Project                    Virtual Project                     │
 //! │  ┌──────────────┐          ┌──────────────────────────┐        │
-//! │  │ src/         │          │ .vize/canon/projects/key │        │
+//! │  │ src/         │          │ cache/vize/canon/project │        │
 //! │  │ ├─ App.vue   │ ──────▶  │ ├─ src/                  │        │
 //! │  │ ├─ utils.ts  │          │ │  ├─ App.vue.ts         │        │
 //! │  │ └─ ...       │          │ │  ├─ utils.ts           │        │
@@ -150,7 +150,8 @@ pub use batch::{
     IncrementalCheckMetrics, PackageManager, TypeCheckResult as BatchTypeCheckResult,
     TypeChecker as BatchTypeCheckerTrait, VirtualFile, VirtualProject,
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
-    project_virtual_lock_paths, project_virtual_root, snapshot_tsconfig_compiler_options,
+    legacy_project_virtual_roots, project_virtual_lock_paths, project_virtual_root,
+    snapshot_tsconfig_compiler_options,
 };
 
 #[cfg(feature = "native")]

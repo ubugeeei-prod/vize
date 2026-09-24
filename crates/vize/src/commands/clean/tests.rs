@@ -20,6 +20,7 @@ fn scoped_vize_artifact_dirs_can_target_each_root() {
 #[test]
 fn managed_artifact_paths_are_lifecycle_owned_entries() {
     let root = Path::new("/project");
+    let legacy = vize_canon::legacy_project_virtual_roots(root);
     assert_eq!(
         project_vize_artifact_paths(root),
         vec![
@@ -30,6 +31,9 @@ fn managed_artifact_paths_are_lifecycle_owned_entries() {
             vize_canon::project_virtual_root(root),
             vize_canon::project_virtual_lock_paths(root)[0].clone(),
             vize_canon::project_virtual_lock_paths(root)[1].clone(),
+            legacy[0].clone(),
+            legacy[0].with_extension("lock"),
+            legacy[0].with_extension("materialize.lock"),
         ]
     );
     assert_eq!(
@@ -58,8 +62,11 @@ fn clean_removes_managed_project_and_node_modules_vize_artifacts() {
     let root = dir.path();
     let project_artifact = root.join(".vize/patina/session-1-0");
     let node_modules_artifact = vize_canon::project_virtual_root(root);
+    let legacy_artifact = &vize_canon::legacy_project_virtual_roots(root)[0];
     std::fs::create_dir_all(&project_artifact).unwrap();
     std::fs::create_dir_all(&node_modules_artifact).unwrap();
+    std::fs::create_dir_all(legacy_artifact).unwrap();
+    std::fs::write(legacy_artifact.join("old.vue.ts"), "old").unwrap();
     for lock_path in vize_canon::project_virtual_lock_paths(root) {
         std::fs::write(lock_path, "").unwrap();
     }
@@ -76,8 +83,40 @@ fn clean_removes_managed_project_and_node_modules_vize_artifacts() {
         quiet: true,
     });
     assert!(!root.join(".vize").exists());
+    assert!(!node_modules_artifact.exists());
     assert!(!root.join("node_modules/.vize").exists());
     assert!(root.join("node_modules/keep.txt").exists());
+}
+
+#[test]
+fn clean_removes_only_this_worktrees_legacy_git_cache() {
+    let dir = tempfile::tempdir().unwrap();
+    let project = dir.path().join("linked");
+    let gitdir = dir.path().join("main/.git/worktrees/linked");
+    std::fs::create_dir_all(&project).unwrap();
+    std::fs::create_dir_all(&gitdir).unwrap();
+    std::fs::write(
+        project.join(".git"),
+        "gitdir: ../main/.git/worktrees/linked\n",
+    )
+    .unwrap();
+    let legacy = vize_canon::legacy_project_virtual_roots(&project);
+    let old_git_cache = &legacy[1];
+    let foreign = old_git_cache.parent().unwrap().join("foreign-key");
+    std::fs::create_dir_all(old_git_cache).unwrap();
+    std::fs::create_dir_all(&foreign).unwrap();
+    std::fs::write(old_git_cache.join("old.vue.ts"), "old").unwrap();
+    std::fs::write(foreign.join("keep.vue.ts"), "keep").unwrap();
+
+    run(CleanArgs {
+        root: project.clone(),
+        scope: CleanScope::Project,
+        force: false,
+        dry_run: false,
+        quiet: true,
+    });
+    assert!(!old_git_cache.exists());
+    assert!(foreign.join("keep.vue.ts").exists());
 }
 
 #[test]

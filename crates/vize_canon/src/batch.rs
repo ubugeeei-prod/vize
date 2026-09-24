@@ -2,7 +2,7 @@
 //!
 //! This module provides batch type checking via `corsa-bind`.
 //! It transforms Vue SFC files into pure TypeScript, materializes a virtual
-//! project in a project-keyed namespace under `.vize/canon/`, and
+//! project in a project-keyed namespace under the user cache, and
 //! requests diagnostics from
 //! Corsa's LSP instead of parsing CLI text output.
 
@@ -53,8 +53,8 @@ pub use virtual_project::{
     external_mirror_original_path, generate_jsx_document_virtual_ts,
     generate_vue_content_mapper_transform, generate_vue_content_mapper_transform_with_options,
     generate_vue_document_virtual_ts, generate_vue_document_virtual_ts_with_options,
-    is_vue_runtime_support_specifier, project_virtual_lock_paths, project_virtual_root,
-    scan_package_route_reachability, snapshot_tsconfig_compiler_options,
+    is_vue_runtime_support_specifier, legacy_project_virtual_roots, project_virtual_lock_paths,
+    project_virtual_root, scan_package_route_reachability, snapshot_tsconfig_compiler_options,
 };
 pub use virtual_specifier_message::{AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers};
 

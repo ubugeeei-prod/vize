@@ -31,9 +31,9 @@ pub struct CleanArgs {
 
 #[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CleanScope {
-    /// Remove both .vize and node_modules/.vize
+    /// Remove project artifacts, Canon's user cache, and node_modules/.vize
     All,
-    /// Remove .vize under the project root
+    /// Remove .vize under the project root and Canon's user cache
     Project,
     /// Remove node_modules/.vize under the project root
     NodeModules,
@@ -198,6 +198,11 @@ fn node_modules_vize_artifact_paths(root: &Path) -> Vec<PathBuf> {
 fn current_canon_artifact_paths(root: &Path) -> Vec<PathBuf> {
     let mut paths = vec![vize_canon::project_virtual_root(root)];
     paths.extend(vize_canon::project_virtual_lock_paths(root));
+    for legacy in vize_canon::legacy_project_virtual_roots(root) {
+        paths.push(legacy.clone());
+        paths.push(legacy.with_extension("lock"));
+        paths.push(legacy.with_extension("materialize.lock"));
+    }
     paths
 }
 
@@ -219,8 +224,12 @@ fn remove_path(path: &Path) -> Result<bool, std::io::Error> {
 
 fn remove_empty_artifact_roots(root: &Path, scope: CleanScope) {
     if matches!(scope, CleanScope::All | CleanScope::Project) {
-        let virtual_root = vize_canon::project_virtual_root(root);
-        if let Some(projects_dir) = virtual_root.parent() {
+        for virtual_root in std::iter::once(vize_canon::project_virtual_root(root))
+            .chain(vize_canon::legacy_project_virtual_roots(root))
+        {
+            let Some(projects_dir) = virtual_root.parent() else {
+                continue;
+            };
             let _ = fs::remove_dir(projects_dir);
             if let Some(canon_dir) = projects_dir.parent() {
                 let _ = fs::remove_dir(canon_dir);

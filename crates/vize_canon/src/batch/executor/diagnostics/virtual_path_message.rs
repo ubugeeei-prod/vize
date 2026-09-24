@@ -3,7 +3,7 @@
 //! [`module_specifier`](super::module_specifier) undoes the import rewriter's
 //! `./Panel.vue` -> `./Panel.vue.ts` spelling change. This module undoes the
 //! other half of the mirroring: the *root*. Every registered source is
-//! materialized under `.vize/canon/projects/<hash>/`, and a checker
+//! materialized under the user's cache at `vize/canon/projects/<hash>/`, and a checker
 //! message that interpolates an absolute path quotes it from there.
 //!
 //! `vue-tsc` names the authored path, so the difference is a divergence the
@@ -35,7 +35,7 @@ use vize_carton::{String, ToCompactString};
 /// multi-line explanation appends below it (`TS6307`'s "The file is in the
 /// program because:" chain). Only the first ever passes through
 /// [`DiagnosticMapper`](super::DiagnosticMapper), so without this the other two
-/// print `.vize/canon/projects/<hash>/…` paths the author never
+/// print `vize/canon/projects/<hash>/…` paths the author never
 /// wrote (#3227).
 pub(in crate::batch::executor) fn restore_authored_paths_in_messages(
     mut diagnostics: Vec<Diagnostic>,

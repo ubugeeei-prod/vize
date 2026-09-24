@@ -69,14 +69,12 @@ fn distinct_projects_sharing_node_modules_have_distinct_virtual_roots() {
     assert!(!first.virtual_root().starts_with(&canonical_storage));
     assert!(!second.virtual_root().starts_with(&canonical_storage));
     assert!(
-        first
-            .virtual_root()
-            .starts_with(first_root.join(".vize/canon"))
+        !first.virtual_root().starts_with(&first_root),
+        "materialized sources must stay outside the first checked tree"
     );
     assert!(
-        second
-            .virtual_root()
-            .starts_with(second_root.join(".vize/canon"))
+        !second.virtual_root().starts_with(&second_root),
+        "materialized sources must stay outside the second checked tree"
     );
     assert_ne!(
         first.virtual_root(),

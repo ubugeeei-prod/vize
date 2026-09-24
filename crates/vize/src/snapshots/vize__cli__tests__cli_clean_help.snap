@@ -18,8 +18,8 @@ Options:
           Which Vize artifact roots to remove
 
           Possible values:
-          - all:          Remove both .vize and node_modules/.vize
-          - project:      Remove .vize under the project root
+          - all:          Remove project artifacts, Canon's user cache, and node_modules/.vize
+          - project:      Remove .vize under the project root and Canon's user cache
           - node-modules: Remove node_modules/.vize under the project root
 
           [default: all]

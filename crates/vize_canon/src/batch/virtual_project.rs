@@ -1,9 +1,9 @@
 //! Virtual project management for Corsa-backed type checking.
 //!
 //! This module materializes a mirrored TypeScript project in
-//! a project-keyed namespace under Git storage when available, falling back to
-//! `.vize/canon/`, so Corsa can type-check Vue SFCs together with
-//! regular TypeScript sources, ambient declarations, and emitted `.d.ts` files.
+//! a project-keyed namespace in the OS user cache, outside the checked tree,
+//! so Corsa can type-check Vue SFCs together with regular TypeScript sources,
+//! ambient declarations, and emitted `.d.ts` files.
 //!
 //! The implementation is split across submodules:
 //!
@@ -55,7 +55,9 @@ mod esm_declaration_spelling;
 mod external_mirror;
 pub use external_mirror::external_mirror_original_path;
 mod identity;
-pub use identity::{project_virtual_lock_paths, project_virtual_root};
+pub use identity::{
+    legacy_project_virtual_roots, project_virtual_lock_paths, project_virtual_root,
+};
 mod javascript_sfc;
 mod jsx_build;
 mod jsx_codegen;
@@ -158,9 +160,8 @@ pub struct VirtualProject {
     /// Project root directory.
     project_root: PathBuf,
 
-    /// Project-keyed materialized root. Batch projects use Git storage when
-    /// available, falling back to `.vize/canon/projects`, so typechecking does
-    /// not create or mutate the project's `node_modules`; editor projects are
+    /// Project-keyed materialized root. Batch projects use the user cache,
+    /// outside the checked tree and `node_modules`; editor projects are
     /// re-scoped to a session-private namespace.
     virtual_root: PathBuf,
 
