@@ -21,7 +21,7 @@ defineSlots<{
 
 const context = dialogContext.use();
 const element = useTemplateRef<HTMLDivElement>("element");
-const present = computed(() => context.open.value || forceMount);
+const present = computed(() => context.open.value || context.exiting.value || forceMount);
 const slotState = computed<DialogSlotState>(() => ({
   modal: context.modal.value,
   open: context.open.value,
@@ -69,8 +69,10 @@ defineExpose(exposed);
       aria-hidden="true"
       data-vize-ui="dialog-overlay"
       part="overlay"
-      :hidden="context.open.value ? undefined : true"
+      :hidden="context.open.value || context.exiting.value ? undefined : true"
       :data-state="context.state.value"
+      :data-exiting="context.exiting.value ? 'true' : undefined"
+      :style="context.open.value ? undefined : { pointerEvents: 'none' }"
     >
       <slot v-bind="slotState" />
     </div>

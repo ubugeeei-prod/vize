@@ -1,4 +1,4 @@
-/* Optional dialog surface. Exit is immediate because Dialog does not retain closed DOM. */
+/* Optional dialog surface with a brief, non-interactive exit. */
 @layer vize.preset {
   :where([data-vize-theme], :host([data-vize-theme])) {
     --vize-ui-dialog-radius: initial;
@@ -40,6 +40,7 @@
   }
 
   :where([data-vize-ui="dialog-content"]) {
+    --vize-ui-dialog-exit-enabled: 1;
     position: fixed;
     inset-block-start: 50%;
     inset-inline-start: 50%;
@@ -62,6 +63,16 @@
   :where([data-vize-ui="dialog-content"][data-state="open"]) {
     animation: vize-ui-dialog-sheet-in var(--vize-ui-motion-duration-base, 200ms)
       var(--vize-ui-motion-ease-decelerate, ease-out) both;
+  }
+
+  :where([data-vize-ui="dialog-overlay"][data-exiting="true"]) {
+    animation: vize-ui-dialog-veil-out var(--vize-ui-motion-duration-base, 200ms)
+      var(--vize-ui-motion-ease-accelerate, ease-in) both;
+  }
+
+  :where([data-vize-ui="dialog-content"][data-exiting="true"]) {
+    animation: vize-ui-dialog-sheet-out var(--vize-ui-motion-duration-base, 200ms)
+      var(--vize-ui-motion-ease-accelerate, ease-in) both;
   }
 
   :where([data-vize-ui="dialog-content"]:focus-visible) {
@@ -127,6 +138,19 @@
 
   @keyframes vize-ui-dialog-sheet-in {
     from {
+      opacity: 0;
+      translate: -50% calc(-50% + 6px);
+    }
+  }
+
+  @keyframes vize-ui-dialog-veil-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes vize-ui-dialog-sheet-out {
+    to {
       opacity: 0;
       translate: -50% calc(-50% + 6px);
     }

@@ -153,6 +153,15 @@ test("keeps force-mounted closed layers hidden without document side effects", a
   assert.equal(content.getAttribute("data-state"), "closed");
   assert.equal(document.documentElement.getAttribute("data-vize-scroll-locked"), null);
   assert.equal(handle.root().querySelectorAll('[data-vize-ui="dialog-focus-guard"]').length, 0);
+  const root = handle.exposes<DialogRootExpose>();
+  root.openDialog();
+  await settleDialog();
+  assert.equal(contentHost.hasAttribute("hidden"), false);
+  root.close();
+  await settleDialog();
+  assert.equal(contentHost.hasAttribute("hidden"), true);
+  assert.equal(content.isConnected, true);
+  assert.equal(document.documentElement.getAttribute("data-vize-scroll-locked"), null);
   handle.unmount();
 });
 
@@ -227,6 +236,162 @@ test("modal content traps focus, inerts outside content, and unlocks on backdrop
   assert.equal(document.activeElement, trigger);
   handle.unmount();
   outside.remove();
+});
+
+test("styled exit keeps only an inert visual layer after modal behavior ends", async () => {
+  const style = document.createElement("style");
+  style.textContent = `
+    [data-vize-ui="dialog-content"] { --vize-ui-dialog-exit-enabled: 1; }
+    [data-vize-ui="dialog-content"][data-exiting="true"] {
+      animation-name: vize-ui-dialog-sheet-out;
+      animation-duration: 200ms;
+    }
+  `;
+  document.head.append(style);
+  const outside = document.createElement("button");
+  outside.textContent = "Outside";
+  document.body.append(outside);
+  const handle = mountDialogFixture();
+  const trigger = handle.getByRole("button", { name: "Open settings" });
+  trigger.focus();
+  await handle.click(trigger);
+  await settleDialog();
+
+  const content = dialogContent();
+  const close = content.querySelector('[data-vize-ui="dialog-close"]');
+  assert.ok(close instanceof HTMLElement);
+  await handle.click(close);
+  await settleDialog();
+
+  const host = content.closest('[data-vize-ui="dialog-content-host"]');
+  const overlay = document.body.querySelector('[data-vize-ui="dialog-overlay"]');
+  assert.ok(host instanceof HTMLElement);
+  assert.ok(overlay instanceof HTMLElement);
+  assert.equal(content.isConnected, true);
+  assert.equal(content.getAttribute("data-exiting"), "true");
+  assert.equal(host.hasAttribute("hidden"), false);
+  assert.equal(host.hasAttribute("inert"), true);
+  assert.equal(host.getAttribute("aria-hidden"), "true");
+  assert.equal(overlay.hasAttribute("hidden"), false);
+  assert.equal(overlay.style.pointerEvents, "none");
+  assert.equal(outside.hasAttribute("inert"), false);
+  assert.equal(document.documentElement.getAttribute("data-vize-scroll-locked"), null);
+  assert.equal(document.body.querySelectorAll('[data-vize-ui="dialog-focus-guard"]').length, 0);
+  assert.equal(document.activeElement, trigger);
+
+  const childAnimation = new Event("animationend", { bubbles: true });
+  Object.defineProperty(childAnimation, "animationName", { value: "vize-ui-dialog-sheet-out" });
+  close.dispatchEvent(childAnimation);
+  await settleDialog();
+  assert.equal(content.isConnected, true);
+
+  const end = new Event("animationend", { bubbles: true });
+  Object.defineProperty(end, "animationName", { value: "vize-ui-dialog-sheet-out" });
+  content.dispatchEvent(end);
+  await settleDialog();
+  assert.equal(content.isConnected, false);
+  handle.unmount();
+  outside.remove();
+  style.remove();
+});
+
+test("styled exit unmounts after its duration when animationend is absent", async () => {
+  const style = document.createElement("style");
+  style.textContent = `
+    [data-vize-ui="dialog-content"] { --vize-ui-dialog-exit-enabled: 1; }
+    [data-vize-ui="dialog-content"][data-exiting="true"] {
+      animation-name: vize-ui-dialog-sheet-out;
+      animation-duration: 1ms;
+    }
+  `;
+  document.head.append(style);
+  const handle = mountDialogFixture();
+  const trigger = handle.getByRole("button", { name: "Open settings" });
+  await handle.click(trigger);
+  await settleDialog();
+  const content = dialogContent();
+  const close = content.querySelector('[data-vize-ui="dialog-close"]');
+  assert.ok(close instanceof HTMLElement);
+  await handle.click(close);
+  await settleDialog();
+  assert.equal(content.isConnected, true);
+  await new Promise((resolve) => setTimeout(resolve, 110));
+  await settleDialog();
+  assert.equal(content.isConnected, false);
+  handle.unmount();
+  style.remove();
+});
+
+test("reopening during exit restores modal behavior and ignores the old animation", async () => {
+  const style = document.createElement("style");
+  style.textContent = `
+    [data-vize-ui="dialog-content"] { --vize-ui-dialog-exit-enabled: 1; }
+    [data-vize-ui="dialog-content"][data-exiting="true"] {
+      animation-name: vize-ui-dialog-sheet-out;
+      animation-duration: 200ms;
+    }
+  `;
+  document.head.append(style);
+  const handle = mountDialogFixture();
+  const root = handle.exposes<DialogRootExpose>();
+  const trigger = handle.getByRole("button", { name: "Open settings" });
+  await handle.click(trigger);
+  await settleDialog();
+  const content = dialogContent();
+
+  root.close();
+  await settleDialog();
+  assert.equal(content.getAttribute("data-exiting"), "true");
+  root.openDialog();
+  await settleDialog();
+  assert.equal(content.isConnected, true);
+  assert.equal(content.getAttribute("data-exiting"), null);
+  assert.equal(
+    content.closest('[data-vize-ui="dialog-content-host"]')?.hasAttribute("inert"),
+    false,
+  );
+  assert.equal(document.documentElement.getAttribute("data-vize-scroll-locked"), "");
+
+  const oldEnd = new Event("animationend", { bubbles: true });
+  Object.defineProperty(oldEnd, "animationName", { value: "vize-ui-dialog-sheet-out" });
+  content.dispatchEvent(oldEnd);
+  await settleDialog();
+  assert.equal(content.isConnected, true);
+  handle.unmount();
+  style.remove();
+});
+
+test("reduced motion closes a styled dialog without a lingering exit layer", async () => {
+  const style = document.createElement("style");
+  style.textContent = '[data-vize-ui="dialog-content"] { --vize-ui-dialog-exit-enabled: 1; }';
+  document.head.append(style);
+  const originalMatchMedia = window.matchMedia;
+  window.matchMedia = ((query: string) => ({
+    matches: query === "(prefers-reduced-motion: reduce)",
+    media: query,
+    onchange: null,
+    addListener() {},
+    removeListener() {},
+    addEventListener() {},
+    removeEventListener() {},
+    dispatchEvent: () => false,
+  })) as typeof window.matchMedia;
+  try {
+    const handle = mountDialogFixture();
+    const trigger = handle.getByRole("button", { name: "Open settings" });
+    await handle.click(trigger);
+    await settleDialog();
+    const content = dialogContent();
+    const close = content.querySelector('[data-vize-ui="dialog-close"]');
+    assert.ok(close instanceof HTMLElement);
+    await handle.click(close);
+    await settleDialog();
+    assert.equal(content.isConnected, false);
+    handle.unmount();
+  } finally {
+    window.matchMedia = originalMatchMedia;
+    style.remove();
+  }
 });
 
 test("routes Escape dismissal only to the top nested dialog", async () => {
