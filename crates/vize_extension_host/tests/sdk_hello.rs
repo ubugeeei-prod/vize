@@ -8,6 +8,8 @@
 //! the workspace — builds the component for `wasm32-wasip2`, and exchanges a
 //! block in both hosting modes with exact pages.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::path::{Path, PathBuf};
 use std::process::Command;
 

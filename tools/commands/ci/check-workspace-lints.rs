@@ -28,7 +28,6 @@ const PENDING: &[&str] = &[
     "crates/vize_curator",
     "crates/vize_dialect_moonbit",
     "crates/vize_doctor",
-    "crates/vize_extension_host",
     "crates/vize_extension_sdk",
     "crates/vize_fresco",
     "crates/vize_glyph",

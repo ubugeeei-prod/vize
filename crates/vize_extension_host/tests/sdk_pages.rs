@@ -6,6 +6,8 @@
 //! the S2 writer's pages are canonical disegno pages the host accepts; and
 //! the SDK's capability offer negotiates exactly as the in-tree one.
 
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+
 use davinci_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
 use vize_davinci::folio::Folio;
 use vize_extension_host::accept::full_text;

@@ -7,6 +7,13 @@
 //! over the TS-19 battery (well-formed and malformed) and every prefix and
 //! suffix truncation of it, plus the pinned grammar and its exact refusals.
 
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 use davinci_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
 use vize_davinci::folio::{Folio, FolioError};
 use vize_extension_host::accept::full_text;

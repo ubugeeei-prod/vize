@@ -156,9 +156,11 @@ fn write_features<W: Write>(w: &mut W, bits: u8) -> FmtResult {
         u8::MAX => w.write_str("all"),
         0 => w.write_str("none"),
         _ => {
-            let names: Vec<&str> = (0..8)
-                .filter(|bit| bits & (1 << bit) != 0)
-                .map(|bit| FEATURES[bit])
+            let names: Vec<&str> = FEATURES
+                .iter()
+                .enumerate()
+                .filter(|(bit, _)| bits & (1 << bit) != 0)
+                .map(|(_, name)| *name)
                 .collect();
             w.write_str(&names.join(","))
         }

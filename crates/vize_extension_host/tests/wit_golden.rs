@@ -15,6 +15,8 @@
 //! - the guest imports no host function, a block it does not know traps it, and a
 //!   file that is not a component is refused at load.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::path::{Path, PathBuf};

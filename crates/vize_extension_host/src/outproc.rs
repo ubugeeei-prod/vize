@@ -96,7 +96,13 @@ impl OutOfProcessGuest {
             .spawn()
             .map_err(|error| transport(&error))?;
         let stdin = child.stdin.take();
-        let stdout = BufReader::new(child.stdout.take().expect("stdout is piped"));
+        let Some(stdout) = child.stdout.take() else {
+            let _ = child.kill();
+            return Err(transport(&std::io::Error::other(
+                "guest stdout is not piped",
+            )));
+        };
+        let stdout = BufReader::new(stdout);
         let mut guest = Self {
             child,
             stdin,

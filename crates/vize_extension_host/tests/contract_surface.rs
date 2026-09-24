@@ -9,6 +9,12 @@
 //! a version the policy accepts and committing its surface
 //! (`VIZE_CONTRACT_SURFACE_BLESS=1` writes it for review).
 
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 

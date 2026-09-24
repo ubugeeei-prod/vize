@@ -136,7 +136,7 @@ impl Cursor<'_> {
     }
 
     fn node(&mut self, depth: usize) -> Result<PageNode, FolioError> {
-        let line = &self.lines[self.at];
+        let line = self.lines.get(self.at).ok_or_else(|| Self::eof("node"))?;
         let (no, text) = (line.no, line.text);
         match text {
             "element" => {
@@ -190,7 +190,12 @@ impl Cursor<'_> {
     fn element(&mut self, depth: usize) -> Result<PageElement, FolioError> {
         let lt_name = self.token(depth, "lt-name")?;
         let mut attrs = Vec::new();
-        while self.peek(depth) == Some("attr") && self.lines[self.at].text == "attr" {
+        while self.peek(depth) == Some("attr")
+            && self
+                .lines
+                .get(self.at)
+                .is_some_and(|line| line.text == "attr")
+        {
             self.at += 1;
             attrs.push(self.attribute(depth + 1)?);
         }

@@ -3,6 +3,8 @@
 //! the projection rows convert one to one into the P4-5a
 //! `ProjectionMapping`, and every refusal carries its exact message.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use support::expression::{BLESS_ENV, batch, committed, facts, golden_dir, projection, text};

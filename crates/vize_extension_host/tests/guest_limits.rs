@@ -5,6 +5,8 @@
 //! `<!-- hoard -->` allocates until memory runs out. Under tight limits each
 //! is stopped with its exact error, and a real golden block still passes.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::path::{Path, PathBuf};

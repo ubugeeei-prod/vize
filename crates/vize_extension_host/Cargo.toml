@@ -71,3 +71,6 @@ required-features = ["extension-host"]
 [[test]]
 name = "volt_target"
 required-features = ["extension-host"]
+
+[lints]
+workspace = true

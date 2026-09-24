@@ -7,6 +7,8 @@
 //! projection payloads against the committed goldens, their acceptance, and
 //! the exact trap on a batch the guest does not know.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::path::{Path, PathBuf};

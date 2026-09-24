@@ -121,7 +121,13 @@ struct Build<'a> {
 
 impl<'a> Build<'a> {
     fn token(&self, token: &PageToken) -> Token<'a> {
-        let slice = |from: u32, to: u32| &self.source[from as usize..to as usize];
+        // `materialize` checked that the page tiles `source`, so every range
+        // is in bounds on a character boundary; an empty slice is unreachable.
+        let slice = |from: u32, to: u32| {
+            self.source
+                .get(from as usize..to as usize)
+                .unwrap_or_default()
+        };
         Token {
             leading: slice(token.start, token.text),
             text: slice(token.text, token.end),

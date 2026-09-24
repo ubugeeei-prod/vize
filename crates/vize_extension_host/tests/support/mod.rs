@@ -1,7 +1,15 @@
 //! Shared test support: the golden cases, their committed files, and the
 //! guest builder.
 
-#![allow(dead_code)]
+#![expect(
+    dead_code,
+    reason = "each integration test uses a different subset of the shared support"
+)]
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
 
 pub mod expression;
 pub mod output;

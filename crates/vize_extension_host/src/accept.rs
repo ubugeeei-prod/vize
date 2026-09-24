@@ -153,7 +153,8 @@ pub(crate) fn read_page<T: Folio>(
 #[must_use]
 pub fn full_text<T: Folio>(page: &T) -> String {
     let mut out = String::default();
-    page.print(&mut out, FolioMode::Full)
-        .expect("printing into a String cannot fail");
+    // Writing into a `String` never fails, and `print` only propagates the
+    // writer's errors, so the result carries no information here.
+    let _ = page.print(&mut out, FolioMode::Full);
     out
 }

@@ -1,6 +1,12 @@
 //! Every refusal the host can issue, with its exact message: capability
 //! negotiation, `lang` routing, and acceptance of a guest's answer.
 
+#![expect(
+    clippy::expect_used,
+    clippy::unreachable,
+    reason = "tests assert by panicking"
+)]
+
 use vize_extension_host::vue::VueDialect;
 use vize_extension_host::{
     Capability, ContractError, Diagnostic, GuestError, InputDialectGuest, LoweredBlock, Session,

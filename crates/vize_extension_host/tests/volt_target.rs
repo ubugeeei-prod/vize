@@ -3,6 +3,13 @@
 //! Builds `examples/volt-target` and drives it through the output-target
 //! host in both hosting modes. The recorded command is this test.
 
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 mod support;
 
 use std::path::{Path, PathBuf};

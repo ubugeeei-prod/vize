@@ -6,6 +6,8 @@
 //! required pages, a byte-equal emit document against the committed golden,
 //! and the exact trap on a request the guest does not know.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::path::{Path, PathBuf};

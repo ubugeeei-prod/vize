@@ -8,6 +8,13 @@
 //! out-of-process wire's JSON round-trips every value. The committed
 //! goldens that the TS-48 echo guest replays are pinned to this output.
 
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 mod support;
 
 use davinci_test_support::surface_fixture::{MALFORMED, WELL_FORMED};

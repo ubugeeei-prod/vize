@@ -98,11 +98,13 @@ pub fn negotiate_for(
         });
     }
     for (index, pair) in offer.features.windows(2).enumerate() {
-        if pair[0].as_bytes() >= pair[1].as_bytes() {
+        if let [previous, feature] = pair
+            && previous.as_bytes() >= feature.as_bytes()
+        {
             return Err(HandshakeError::UnsortedFeatures {
                 index: index + 1,
-                feature: pair[1].clone(),
-                previous: pair[0].clone(),
+                feature: feature.clone(),
+                previous: previous.clone(),
             });
         }
     }

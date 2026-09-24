@@ -86,11 +86,14 @@ pub fn lower_block(block: &SourceBlock, caps: LegacyCaps) -> Result<LoweredBlock
     let mut root_text = String::with_capacity(base + block.source.len());
     root_text.extend(core::iter::repeat_n(' ', base));
     root_text.push_str(&block.source);
-    let root = SourceRoot::new(&root_text).expect("the root fits u32 offsets");
-    let source = &root_text[base..];
+    let trap = |what: &str| GuestError::Trap(cstr!("block {}: {what}", block.base));
+    let root = SourceRoot::new(&root_text).map_err(|_| trap("root exceeds u32 offsets"))?;
+    let source = root_text
+        .get(base..)
+        .ok_or_else(|| trap("padding is not a prefix of the root"))?;
     let frame = root
         .block(source, block.base)
-        .expect("the block is the root's own slice");
+        .map_err(|_| trap("block is not a slice of its root"))?;
     let allocator = Allocator::new();
     let (tree, errors) = vize_s1::parse(&allocator, source);
     let lowered = lower_source_block_with_caps(&allocator, &tree, &errors, frame, caps);
