@@ -121,11 +121,11 @@ impl LintContext<'_> {
     }
 
     pub(super) fn prescan_eslint_disable_comments(&mut self) {
-        if !self.source.contains("eslint-") {
+        if !self.source.contains("eslint-") && !self.source.contains("oxlint-") {
             return;
         }
         for (line_number, line) in (1u32..).zip(self.source.lines()) {
-            if !line.contains("eslint-") {
+            if !line.contains("eslint-") && !line.contains("oxlint-") {
                 continue;
             }
             if let Some(directive) = parse_eslint_disable_comment(line) {

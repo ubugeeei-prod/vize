@@ -1,4 +1,5 @@
 use super::Linter;
+use crate::LintPreset;
 
 #[test]
 fn test_vize_todo_emits_warning() {
@@ -190,6 +191,83 @@ fn test_eslint_disable_enable_region_suppresses_only_region() {
         1,
         "eslint-enable should restore the mapped Vue rule after the disabled region"
     );
+}
+
+#[test]
+fn test_plugin_prefixed_and_oxlint_comments_suppress_only_the_named_script_rule() {
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = |comment: &str| {
+        format!(
+            "<script setup lang=\"ts\">\nconst props = defineProps<{{ items: string[] }}>()\n{comment}\nObject.assign(props.items, [])\n</script>"
+        )
+    };
+    let mutation_count = |comment: &str| {
+        linter
+            .lint_sfc(&source(comment), "App.vue")
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/no-mutating-props")
+            .count()
+    };
+
+    assert_eq!(mutation_count("// unrelated comment"), 1);
+    assert_eq!(
+        mutation_count("// eslint-disable-next-line vize/vue/no-mutating-props"),
+        0
+    );
+    assert_eq!(
+        mutation_count("// oxlint-disable-next-line vize/vue/no-mutating-props"),
+        0
+    );
+    assert_eq!(
+        mutation_count("// oxlint-disable-next-line vue/no-mutating-props"),
+        0
+    );
+    assert_eq!(
+        mutation_count("// oxlint-disable-next-line vize/vue/no-unused-vars"),
+        1,
+        "a different prefixed rule must not suppress no-mutating-props"
+    );
+}
+
+#[test]
+fn test_plugin_prefixed_region_enable_restores_script_rule() {
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let source = r#"<script setup lang="ts">
+const props = defineProps<{ items: string[] }>()
+// oxlint-disable vize/vue/no-mutating-props
+Object.assign(props.items, [])
+// oxlint-enable vize/vue/no-mutating-props
+Object.assign(props.items, [])
+</script>"#;
+    assert_eq!(
+        linter
+            .lint_sfc(source, "App.vue")
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "vue/no-mutating-props")
+            .count(),
+        1
+    );
+}
+
+#[test]
+fn test_plugin_prefixed_comments_suppress_template_rule() {
+    let linter = Linter::new();
+    for marker in ["eslint", "oxlint"] {
+        let source = format!(
+            "<!-- {marker}-disable-next-line vize/vue/require-v-for-key -->\n<ul><li v-for=\"item in items\">{{{{ item }}}}</li></ul>"
+        );
+        let result = linter.lint_template(&source, "App.vue");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != "vue/require-v-for-key"),
+            "{marker}: {:?}",
+            result.diagnostics
+        );
+    }
 }
 
 #[test]

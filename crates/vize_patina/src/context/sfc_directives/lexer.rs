@@ -340,7 +340,7 @@ impl DirectiveLexer {
 
 pub(super) fn record_markers(bytes: &[u8], index: usize, markers: &mut CommentMarkers) {
     let rest = bytes.get(index..).unwrap_or_default();
-    if markers.eslint.is_none() && rest.starts_with(b"eslint-") {
+    if markers.eslint.is_none() && (rest.starts_with(b"eslint-") || rest.starts_with(b"oxlint-")) {
         markers.eslint = Some(index);
     }
     if markers.vize.is_none() && rest.starts_with(b"@vize:") {

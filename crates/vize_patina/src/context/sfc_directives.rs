@@ -259,7 +259,7 @@ impl BlockDirectiveState {
 }
 
 fn has_directive_marker(source: &str) -> bool {
-    source.contains("eslint-") || source.contains("@vize:")
+    source.contains("eslint-") || source.contains("oxlint-") || source.contains("@vize:")
 }
 
 fn range_contains(range: &DisabledRange, line: u32) -> bool {
