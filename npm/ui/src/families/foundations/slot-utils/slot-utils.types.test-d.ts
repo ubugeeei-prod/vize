@@ -22,6 +22,10 @@ const merged = mergeProps(
 type _ClassBecomesString = Expect<Equal<typeof merged.class, string>>;
 type _StyleBecomesStyleValue = Expect<Equal<typeof merged.style, StyleValue>>;
 type _HandlersAreUnioned = Expect<Equal<typeof merged.onClick, typeof onClickA | typeof onClickB>>;
+const mergedHandlerArray = mergeProps({ onClick: [onClickA, onClickB] });
+type _HandlerArraysBecomeCallable = Expect<
+  Equal<typeof mergedHandlerArray.onClick, typeof onClickA | typeof onClickB>
+>;
 type _OptionalLaterValuesKeepEarlierTypes = Expect<Equal<typeof merged.id, string>>;
 type _OtherKeysArePreserved = Expect<Equal<typeof merged.disabled, true>>;
 type _LabelSurvives = Expect<Equal<(typeof merged)["aria-label"], "first">>;

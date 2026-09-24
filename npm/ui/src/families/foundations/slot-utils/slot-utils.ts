@@ -6,8 +6,10 @@ export type HandlerKey = `on${Capitalize<string>}`;
 
 type Simplify<Value> = { [Key in keyof Value]: Value[Key] } & {};
 
+type HandlerValue<Value> = Value extends readonly (infer Handler)[] ? Handler : Value;
+
 type MergeValue<Key, Left, Right> = Key extends HandlerKey
-  ? Left | Right
+  ? HandlerValue<Left | Right>
   : undefined extends Right
     ? Left | Exclude<Right, undefined>
     : Right;
@@ -20,9 +22,13 @@ type MergeTwo<Left, Right> = Simplify<{
       : Key extends keyof Right
         ? Key extends keyof Left
           ? MergeValue<Key, Left[Key], Right[Key]>
-          : Right[Key]
+          : Key extends HandlerKey
+            ? HandlerValue<Right[Key]>
+            : Right[Key]
         : Key extends keyof Left
-          ? Left[Key]
+          ? Key extends HandlerKey
+            ? HandlerValue<Left[Key]>
+            : Left[Key]
           : never;
 }>;
 
