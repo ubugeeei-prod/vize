@@ -7,6 +7,8 @@
 //! content two more columns right. The drift was unbounded, not a one-off
 //! reformat: pass 2 differed from pass 1 and pass 3 from pass 2. (#3379)
 
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+
 use vize_glyph::{FormatOptions, format_sfc};
 
 /// Format `source` three times: pass 1 must equal `expected`, and passes 2 and

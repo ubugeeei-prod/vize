@@ -77,7 +77,9 @@ fn is_order_sensitive_attribute(attr: &ParsedAttribute) -> bool {
 
 fn has_duplicate_static_names(attrs: &[ParsedAttribute]) -> bool {
     attrs.iter().enumerate().any(|(index, attr)| {
-        attrs[..index]
+        attrs
+            .get(..index)
+            .unwrap_or_default()
             .iter()
             .any(|previous| previous.name.eq_ignore_ascii_case(&attr.name))
     })

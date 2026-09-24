@@ -38,3 +38,6 @@ insta.workspace = true
 [[bench]]
 name = "formatter"
 harness = false
+
+[lints]
+workspace = true

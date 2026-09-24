@@ -1,3 +1,4 @@
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
 use std::borrow::Cow;
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};

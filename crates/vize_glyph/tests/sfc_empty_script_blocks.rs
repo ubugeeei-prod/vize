@@ -1,3 +1,8 @@
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
 use vize_glyph::{FormatOptions, FormatResult, format_script, format_sfc};
 
 fn check_options() -> FormatOptions {

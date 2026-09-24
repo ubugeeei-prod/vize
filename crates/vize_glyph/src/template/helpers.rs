@@ -16,22 +16,22 @@ pub(crate) fn parse_closing_tag(source: &[u8], start: usize) -> Option<(String, 
     let mut pos = start + 2; // skip '</'
 
     let tag_start = pos;
-    while pos < len && is_tag_name_char(source[pos]) {
+    while pos < len && source.get(pos).copied().is_some_and(is_tag_name_char) {
         pos += 1;
     }
     if pos == tag_start {
         return None;
     }
 
-    let tag_name = std::str::from_utf8(&source[tag_start..pos])
+    let tag_name = std::str::from_utf8(source.get(tag_start..pos).unwrap_or_default())
         .unwrap_or("")
         .to_compact_string();
 
     // Skip whitespace and find '>'
-    while pos < len && source[pos] != b'>' {
+    while source.get(pos).is_some_and(|&byte| byte != b'>') {
         pos += 1;
     }
-    if pos < len && source[pos] == b'>' {
+    if source.get(pos) == Some(&b'>') {
         pos += 1;
     }
 
@@ -42,6 +42,22 @@ pub(crate) fn parse_closing_tag(source: &[u8], start: usize) -> Option<(String, 
 #[inline(always)]
 pub(crate) fn is_tag_name_char(b: u8) -> bool {
     matches!(b, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'-' | b'_' | b':' | b'.')
+}
+
+/// The byte at `index`, or NUL past the end: NUL matches none of the
+/// delimiters or character classes the template scanners test for.
+#[inline]
+pub(crate) fn byte_at(bytes: &[u8], index: usize) -> u8 {
+    bytes.get(index).copied().unwrap_or(0)
+}
+
+/// `bytes[range]`, or empty when the range is out of bounds.
+#[inline]
+pub(crate) fn sub_slice<R: std::slice::SliceIndex<[u8], Output = [u8]>>(
+    bytes: &[u8],
+    range: R,
+) -> &[u8] {
+    bytes.get(range).unwrap_or_default()
 }
 
 /// Check if a byte is whitespace.
@@ -87,7 +103,7 @@ pub(crate) fn template_literal_state_after_line_from(
 fn is_escaped(line: &[u8], pos: usize) -> bool {
     let mut backslashes = 0;
     let mut cursor = pos;
-    while cursor > 0 && line[cursor - 1] == b'\\' {
+    while cursor > 0 && line.get(cursor - 1) == Some(&b'\\') {
         backslashes += 1;
         cursor -= 1;
     }

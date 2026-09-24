@@ -1,3 +1,7 @@
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures use format! and std strings"
+)]
 use vize_glyph::{FormatOptions, format_sfc, format_template};
 
 #[test]

@@ -1,3 +1,10 @@
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::disallowed_types,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking and build fixtures with std strings"
+)]
 use vize_glyph::{EndOfLine, FormatOptions, format_template};
 
 fn format(source: &str) -> String {

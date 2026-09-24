@@ -38,7 +38,8 @@ impl TemplateFormatter<'_> {
             if join.is_some() {
                 self.open_chunk(output, depth, join);
                 let indent_len = self.indent.len() * depth;
-                output.extend_from_slice(&rewrapped.as_bytes()[indent_len.min(rewrapped.len())..]);
+                let dedented = rewrapped.as_bytes().get(indent_len..).unwrap_or_default();
+                output.extend_from_slice(dedented);
             } else {
                 output.extend_from_slice(rewrapped.as_bytes());
             }
@@ -58,18 +59,18 @@ impl TemplateFormatter<'_> {
         let mut has_multiline_interp = false;
         let mut i = 0;
         while i + 1 < bytes.len() {
-            if bytes[i] == b'{' && bytes[i + 1] == b'{' {
+            if bytes.get(i..i + 2) == Some(b"{{".as_slice()) {
                 let mut j = i + 2;
                 let mut depth_in = 1;
                 let mut saw_newline = false;
                 while j + 1 < bytes.len() {
-                    if bytes[j] == b'\n' {
+                    if bytes.get(j) == Some(&b'\n') {
                         saw_newline = true;
                     }
-                    if bytes[j] == b'{' && bytes[j + 1] == b'{' {
+                    if bytes.get(j..j + 2) == Some(b"{{".as_slice()) {
                         depth_in += 1;
                         j += 2;
-                    } else if bytes[j] == b'}' && bytes[j + 1] == b'}' {
+                    } else if bytes.get(j..j + 2) == Some(b"}}".as_slice()) {
                         depth_in -= 1;
                         if depth_in == 0 {
                             has_multiline_interp = saw_newline;
@@ -98,26 +99,26 @@ impl TemplateFormatter<'_> {
         let mut cursor = 0;
         loop {
             let mut next = cursor;
-            while next + 1 < bytes.len() && !(bytes[next] == b'{' && bytes[next + 1] == b'{') {
+            while next + 1 < bytes.len() && !(bytes.get(next..next + 2) == Some(b"{{".as_slice())) {
                 next += 1;
             }
-            if next + 1 >= bytes.len() || !(bytes[next] == b'{' && bytes[next + 1] == b'{') {
-                out.push_str(&text[cursor..]);
+            if next + 1 >= bytes.len() || !(bytes.get(next..next + 2) == Some(b"{{".as_slice())) {
+                out.push_str(text.get(cursor..).unwrap_or_default());
                 out.push_str(self.newline_str());
                 break;
             }
             // Text belongs to the rendered DOM. Keep its bytes immediately
             // adjacent to the mustache; only whitespace *inside* `{{ }}` is
             // syntax and may be expanded for layout.
-            out.push_str(&text[cursor..next]);
+            out.push_str(text.get(cursor..next).unwrap_or_default());
 
             let mut k = next + 2;
             let mut interpolation_depth = 1;
             while k + 1 < bytes.len() {
-                if bytes[k] == b'{' && bytes[k + 1] == b'{' {
+                if bytes.get(k..k + 2) == Some(b"{{".as_slice()) {
                     interpolation_depth += 1;
                     k += 2;
-                } else if bytes[k] == b'}' && bytes[k + 1] == b'}' {
+                } else if bytes.get(k..k + 2) == Some(b"}}".as_slice()) {
                     interpolation_depth -= 1;
                     if interpolation_depth == 0 {
                         break;
@@ -130,9 +131,9 @@ impl TemplateFormatter<'_> {
             if interpolation_depth != 0 {
                 return None;
             }
-            let expr = &text[next + 2..k];
+            let expr = text.get(next + 2..k).unwrap_or_default();
             if !expr.contains('\n') {
-                out.push_str(&text[next..k + 2]);
+                out.push_str(text.get(next..k + 2).unwrap_or_default());
                 cursor = k + 2;
                 continue;
             }

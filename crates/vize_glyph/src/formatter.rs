@@ -197,7 +197,7 @@ fn document_prologue<'a>(source: &'a str, blocks: &[(usize, Block<'_>)]) -> Opti
         })
         .min()
         .unwrap_or(source.len());
-    let prologue = source[..first_tag_start].trim();
+    let prologue = source.get(..first_tag_start).unwrap_or_default().trim();
     (!prologue.is_empty()).then_some(prologue)
 }
 

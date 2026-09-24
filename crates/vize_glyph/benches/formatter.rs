@@ -1,5 +1,7 @@
 //! Benchmarks for vize_glyph formatter
 
+#![expect(clippy::unwrap_used, reason = "the bench unwraps known-good fixtures")]
+
 use std::hint::black_box;
 
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};

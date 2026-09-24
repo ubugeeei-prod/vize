@@ -42,9 +42,9 @@ impl InterpolationScan {
 
     /// Consume one token at `cursor`, returning the next cursor position.
     pub(super) fn step(&mut self, bytes: &[u8], cursor: usize) -> usize {
-        let byte = bytes[cursor];
+        let byte = bytes.get(cursor).copied().unwrap_or_default();
         if self.in_block_comment {
-            if bytes[cursor..].starts_with(b"*/") {
+            if bytes.get(cursor..).unwrap_or_default().starts_with(b"*/") {
                 self.in_block_comment = false;
                 return cursor + 2;
             }
@@ -93,7 +93,9 @@ impl InterpolationScan {
                 }
                 cursor + 1
             }
-            b'}' if self.frames.is_empty() && bytes[cursor..].starts_with(b"}}") => {
+            b'}' if self.frames.is_empty()
+                && bytes.get(cursor..).unwrap_or_default().starts_with(b"}}") =>
+            {
                 self.active = false;
                 cursor + 2
             }

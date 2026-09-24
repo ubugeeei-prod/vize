@@ -4,9 +4,7 @@ pub(super) fn has_nested_comment(source: &str) -> bool {
     let mut in_string: Option<u8> = None;
     let mut i = 0usize;
 
-    while i < bytes.len() {
-        let c = bytes[i];
-
+    while let Some(&c) = bytes.get(i) {
         if let Some(quote) = in_string {
             if let Some(next) = consume_css_escape(bytes, i) {
                 i = next;
@@ -42,7 +40,7 @@ pub(super) fn has_nested_comment(source: &str) -> bool {
                 depth = depth.saturating_sub(1);
                 i += 1;
             }
-            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'*' => {
+            b'/' if bytes.get(i + 1) == Some(&b'*') => {
                 if depth > 0 {
                     return true;
                 }
@@ -75,9 +73,7 @@ pub(super) fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
     let mut last_split = 0usize;
     let mut i = 0usize;
 
-    while i < bytes.len() {
-        let c = bytes[i];
-
+    while let Some(&c) = bytes.get(i) {
         if let Some(quote) = in_string {
             if let Some(next) = consume_css_escape(bytes, i) {
                 i = next;
@@ -113,18 +109,18 @@ pub(super) fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
                 depth = depth.saturating_sub(1);
                 i += 1;
             }
-            b'/' if i + 1 < bytes.len() && bytes[i + 1] == b'*' => {
+            b'/' if bytes.get(i + 1) == Some(&b'*') => {
                 let comment_end = find_comment_end(bytes, i + 2);
                 if depth == 0 {
                     if i > last_split {
                         segments.push(CssSegment {
                             kind: SegmentKind::Code,
-                            content: &source[last_split..i],
+                            content: source.get(last_split..i).unwrap_or_default(),
                         });
                     }
                     segments.push(CssSegment {
                         kind: SegmentKind::Comment,
-                        content: &source[i..comment_end],
+                        content: source.get(i..comment_end).unwrap_or_default(),
                     });
                     last_split = comment_end;
                 }
@@ -137,7 +133,7 @@ pub(super) fn split_top_level_comments(source: &str) -> Vec<CssSegment<'_>> {
     if last_split < bytes.len() {
         segments.push(CssSegment {
             kind: SegmentKind::Code,
-            content: &source[last_split..],
+            content: source.get(last_split..).unwrap_or_default(),
         });
     }
 
@@ -154,15 +150,15 @@ fn consume_css_escape(bytes: &[u8], from: usize) -> Option<usize> {
         return Some(i);
     }
 
-    if bytes[i].is_ascii_hexdigit() {
+    if bytes.get(i).is_some_and(u8::is_ascii_hexdigit) {
         let mut digit_count = 0u8;
-        while i < bytes.len() && digit_count < 6 && bytes[i].is_ascii_hexdigit() {
+        while digit_count < 6 && bytes.get(i).is_some_and(u8::is_ascii_hexdigit) {
             i += 1;
             digit_count += 1;
         }
 
-        if i < bytes.len() && is_css_whitespace(bytes[i]) {
-            if bytes[i] == b'\r' && i + 1 < bytes.len() && bytes[i + 1] == b'\n' {
+        if i < bytes.len() && bytes.get(i).copied().is_some_and(is_css_whitespace) {
+            if bytes.get(i) == Some(&b'\r') && bytes.get(i + 1) == Some(&b'\n') {
                 i += 2;
             } else {
                 i += 1;
@@ -172,7 +168,7 @@ fn consume_css_escape(bytes: &[u8], from: usize) -> Option<usize> {
         return Some(i);
     }
 
-    if bytes[i] == b'\r' && i + 1 < bytes.len() && bytes[i + 1] == b'\n' {
+    if bytes.get(i) == Some(&b'\r') && bytes.get(i + 1) == Some(&b'\n') {
         return Some(i + 2);
     }
 
@@ -180,7 +176,7 @@ fn consume_css_escape(bytes: &[u8], from: usize) -> Option<usize> {
 }
 
 fn consume_unquoted_url(bytes: &[u8], from: usize) -> Option<usize> {
-    if from > 0 && is_css_ident_byte(bytes[from - 1]) {
+    if from > 0 && bytes.get(from - 1).copied().is_some_and(is_css_ident_byte) {
         return None;
     }
     if !starts_with_ascii_case_insensitive(bytes, from, b"url") {
@@ -188,14 +184,14 @@ fn consume_unquoted_url(bytes: &[u8], from: usize) -> Option<usize> {
     }
 
     let mut i = from + 3;
-    while i < bytes.len() && is_css_whitespace(bytes[i]) {
+    while i < bytes.len() && bytes.get(i).copied().is_some_and(is_css_whitespace) {
         i += 1;
     }
     if bytes.get(i) != Some(&b'(') {
         return None;
     }
     i += 1;
-    while i < bytes.len() && is_css_whitespace(bytes[i]) {
+    while i < bytes.len() && bytes.get(i).copied().is_some_and(is_css_whitespace) {
         i += 1;
     }
     if matches!(bytes.get(i), Some(b'"' | b'\'')) {
@@ -207,7 +203,7 @@ fn consume_unquoted_url(bytes: &[u8], from: usize) -> Option<usize> {
             i = next;
             continue;
         }
-        if bytes[i] == b')' {
+        if bytes.get(i) == Some(&b')') {
             return Some(i + 1);
         }
         i += 1;
@@ -233,7 +229,7 @@ fn is_css_whitespace(byte: u8) -> bool {
 fn find_comment_end(bytes: &[u8], from: usize) -> usize {
     let mut j = from;
     while j + 1 < bytes.len() {
-        if bytes[j] == b'*' && bytes[j + 1] == b'/' {
+        if bytes.get(j..j + 2) == Some(b"*/".as_slice()) {
             return j + 2;
         }
         j += 1;
@@ -255,13 +251,13 @@ mod tests {
         let import_url = "@import url(https://example.test/a/*/reset.css);\n/* top-level */";
         let unescaped = ".unescaped { color: red; /* nested */ }";
 
-        assert_eq!(has_nested_comment(escaped_simple), false);
-        assert_eq!(has_nested_comment(escaped_hex), false);
-        assert_eq!(has_nested_comment(escaped_hex_newline), false);
-        assert_eq!(has_nested_comment(escaped_close), true);
-        assert_eq!(has_nested_comment(declaration_url), false);
-        assert_eq!(has_nested_comment(import_url), false);
-        assert_eq!(has_nested_comment(unescaped), true);
+        assert!(!has_nested_comment(escaped_simple));
+        assert!(!has_nested_comment(escaped_hex));
+        assert!(!has_nested_comment(escaped_hex_newline));
+        assert!(has_nested_comment(escaped_close));
+        assert!(!has_nested_comment(declaration_url));
+        assert!(!has_nested_comment(import_url));
+        assert!(has_nested_comment(unescaped));
 
         assert_eq!(top_level_comment_count(escaped_hex), 1);
         assert_eq!(top_level_comment_count(escaped_hex_newline), 1);

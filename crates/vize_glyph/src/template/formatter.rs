@@ -15,7 +15,8 @@ use super::{
     },
     directives::normalize_attribute,
     helpers::{
-        find_bytes, is_tag_name_char, is_void_element_str, is_whitespace, parse_closing_tag,
+        byte_at, find_bytes, is_tag_name_char, is_void_element_str, is_whitespace,
+        parse_closing_tag, sub_slice,
     },
 };
 
@@ -24,6 +25,7 @@ mod suppression;
 mod text;
 mod whitespace_significant;
 
+use interpolation::parse_interpolation_range;
 use suppression::{LineJoiner, TextRun};
 use whitespace_significant::is_whitespace_significant_element;
 
@@ -55,7 +57,7 @@ impl<'a> TemplateFormatter<'a> {
 
         while pos < len {
             // Skip whitespace at line start (except newlines)
-            while pos < len && is_whitespace(source[pos]) && source[pos] != b'\n' {
+            while pos < len && matches!(byte_at(source, pos), b' ' | b'\t' | b'\r') {
                 pos += 1;
             }
 
@@ -64,20 +66,21 @@ impl<'a> TemplateFormatter<'a> {
             }
 
             // Handle newlines
-            if source[pos] == b'\n' {
+            if byte_at(source, pos) == b'\n' {
                 pos += 1;
                 continue;
             }
 
             if pos + 1 < len
-                && source[pos] == b'{'
-                && source[pos + 1] == b'{'
+                && byte_at(source, pos) == b'{'
+                && byte_at(source, pos + 1) == b'{'
                 && let Some((expr_start, expr_end, end_pos)) =
                     parse_interpolation_range(source, pos)
-                && source[pos..end_pos].contains(&b'\n')
+                && sub_slice(source, pos..end_pos).contains(&b'\n')
             {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
-                let expr = std::str::from_utf8(&source[expr_start..expr_end]).unwrap_or("");
+                let expr =
+                    std::str::from_utf8(sub_slice(source, expr_start..expr_end)).unwrap_or("");
                 self.open_chunk(&mut output, depth, joiner.open(pos));
                 self.write_multiline_interpolation(&mut output, expr, depth);
                 joiner.finish(end_pos);
@@ -86,21 +89,21 @@ impl<'a> TemplateFormatter<'a> {
             }
 
             // HTML comment <!-- ... -->
-            if pos + 3 < len && &source[pos..pos + 4] == b"<!--" {
+            if pos + 3 < len && sub_slice(source, pos..pos + 4) == b"<!--" {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let comment_start = pos;
                 let join = joiner.open(comment_start);
-                if let Some(end_offset) = find_bytes(&source[pos..], b"-->") {
+                if let Some(end_offset) = find_bytes(sub_slice(source, pos..), b"-->") {
                     let comment_end = pos + end_offset + 3;
                     self.open_chunk(&mut output, depth, join);
-                    output.extend_from_slice(&source[comment_start..comment_end]);
+                    output.extend_from_slice(sub_slice(source, comment_start..comment_end));
                     output.extend_from_slice(self.newline);
                     joiner.finish(comment_end);
                     pos = comment_end;
                 } else {
                     // Unclosed comment - write remainder
                     self.open_chunk(&mut output, depth, join);
-                    output.extend_from_slice(&source[comment_start..]);
+                    output.extend_from_slice(sub_slice(source, comment_start..));
                     output.extend_from_slice(self.newline);
                     joiner.finish(len);
                     pos = len;
@@ -109,9 +112,9 @@ impl<'a> TemplateFormatter<'a> {
             }
 
             // Tag start
-            if source[pos] == b'<' {
+            if byte_at(source, pos) == b'<' {
                 if pos + 1 < len
-                    && source[pos + 1] == b'/'
+                    && byte_at(source, pos + 1) == b'/'
                     && let Some((tag_name, end_pos)) = parse_closing_tag(source, pos)
                 {
                     self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
@@ -243,15 +246,15 @@ impl<'a> TemplateFormatter<'a> {
             // Accumulate text content until newline or tag
             let content_start = pos;
             while pos < len {
-                let Some(offset) = memchr3(b'\n', b'<', b'{', &source[pos..]) else {
+                let Some(offset) = memchr3(b'\n', b'<', b'{', sub_slice(source, pos..)) else {
                     pos = len;
                     break;
                 };
                 pos += offset;
 
-                match source[pos] {
+                match byte_at(source, pos) {
                     b'\n' | b'<' => break,
-                    b'{' if pos + 1 < len && source[pos + 1] == b'{' => {
+                    b'{' if pos + 1 < len && byte_at(source, pos + 1) == b'{' => {
                         if let Some((_, _, end_pos)) = parse_interpolation_range(source, pos) {
                             pos = end_pos;
                         } else {
@@ -265,7 +268,8 @@ impl<'a> TemplateFormatter<'a> {
             if pos > content_start {
                 // Trim trailing whitespace from content
                 let mut content_end = pos;
-                while content_end > content_start && is_whitespace(source[content_end - 1]) {
+                while content_end > content_start && is_whitespace(byte_at(source, content_end - 1))
+                {
                     content_end -= 1;
                 }
 
@@ -275,7 +279,7 @@ impl<'a> TemplateFormatter<'a> {
             }
 
             // Handle newline
-            if pos < len && source[pos] == b'\n' {
+            if pos < len && byte_at(source, pos) == b'\n' {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 pos += 1;
             }
@@ -323,14 +327,14 @@ impl<'a> TemplateFormatter<'a> {
 
         // Parse tag name
         let tag_start = pos;
-        while pos < len && is_tag_name_char(source[pos]) {
+        while pos < len && is_tag_name_char(byte_at(source, pos)) {
             pos += 1;
         }
         if pos == tag_start {
             return None;
         }
 
-        let tag_name = std::str::from_utf8(&source[tag_start..pos])
+        let tag_name = std::str::from_utf8(sub_slice(source, tag_start..pos))
             .unwrap_or("")
             .to_compact_string();
 
@@ -339,9 +343,9 @@ impl<'a> TemplateFormatter<'a> {
         let mut is_self_closing = false;
         let mut attr_index: usize = 0;
 
-        while pos < len && source[pos] != b'>' {
+        while pos < len && byte_at(source, pos) != b'>' {
             // Skip whitespace
-            while pos < len && is_whitespace(source[pos]) {
+            while pos < len && is_whitespace(byte_at(source, pos)) {
                 pos += 1;
             }
             if pos >= len {
@@ -349,12 +353,12 @@ impl<'a> TemplateFormatter<'a> {
             }
 
             // Check for self-closing or end
-            if source[pos] == b'/' {
+            if byte_at(source, pos) == b'/' {
                 is_self_closing = true;
                 pos += 1;
                 continue;
             }
-            if source[pos] == b'>' {
+            if byte_at(source, pos) == b'>' {
                 break;
             }
 
@@ -368,7 +372,7 @@ impl<'a> TemplateFormatter<'a> {
         }
 
         // Skip '>'
-        if pos < len && source[pos] == b'>' {
+        if pos < len && byte_at(source, pos) == b'>' {
             pos += 1;
         }
 
@@ -385,11 +389,11 @@ impl<'a> TemplateFormatter<'a> {
         let len = source.len();
         let mut pos = start;
 
-        while pos < len && is_whitespace(source[pos]) {
+        while pos < len && is_whitespace(byte_at(source, pos)) {
             pos += 1;
         }
 
-        if pos + 1 >= len || source[pos] != b'<' || source[pos + 1] != b'/' {
+        if pos + 1 >= len || byte_at(source, pos) != b'<' || byte_at(source, pos + 1) != b'/' {
             return None;
         }
 
@@ -414,7 +418,7 @@ impl<'a> TemplateFormatter<'a> {
         // Parse attribute name (may include :, @, #, ., v-, etc.)
         let name_start = pos;
         while pos < len {
-            let b = source[pos];
+            let b = byte_at(source, pos);
             if is_whitespace(b) || b == b'>' || b == b'/' || b == b'=' {
                 break;
             }
@@ -426,34 +430,34 @@ impl<'a> TemplateFormatter<'a> {
             return (None, pos + 1);
         }
 
-        let raw_name = std::str::from_utf8(&source[name_start..pos])
+        let raw_name = std::str::from_utf8(sub_slice(source, name_start..pos))
             .unwrap_or("")
             .to_compact_string();
 
         // Skip whitespace before '='
         let mut val_pos = pos;
-        while val_pos < len && (source[val_pos] == b' ' || source[val_pos] == b'\t') {
+        while val_pos < len && matches!(byte_at(source, val_pos), b' ' | b'\t') {
             val_pos += 1;
         }
 
         // Check for '=' and value
-        let value = if val_pos < len && source[val_pos] == b'=' {
+        let value = if val_pos < len && byte_at(source, val_pos) == b'=' {
             val_pos += 1; // skip '='
 
             // Skip whitespace after '='
-            while val_pos < len && (source[val_pos] == b' ' || source[val_pos] == b'\t') {
+            while val_pos < len && matches!(byte_at(source, val_pos), b' ' | b'\t') {
                 val_pos += 1;
             }
 
-            if val_pos < len && (source[val_pos] == b'"' || source[val_pos] == b'\'') {
+            if val_pos < len && matches!(byte_at(source, val_pos), b'"' | b'\'') {
                 // Quoted value
-                let quote = source[val_pos];
+                let quote = byte_at(source, val_pos);
                 val_pos += 1;
                 let value_start = val_pos;
-                while val_pos < len && source[val_pos] != quote {
+                while val_pos < len && byte_at(source, val_pos) != quote {
                     val_pos += 1;
                 }
-                let value = std::str::from_utf8(&source[value_start..val_pos])
+                let value = std::str::from_utf8(sub_slice(source, value_start..val_pos))
                     .unwrap_or("")
                     .to_compact_string();
                 if val_pos < len {
@@ -465,13 +469,13 @@ impl<'a> TemplateFormatter<'a> {
                 // Unquoted value
                 let value_start = val_pos;
                 while val_pos < len
-                    && !is_whitespace(source[val_pos])
-                    && source[val_pos] != b'>'
-                    && source[val_pos] != b'/'
+                    && !is_whitespace(byte_at(source, val_pos))
+                    && byte_at(source, val_pos) != b'>'
+                    && byte_at(source, val_pos) != b'/'
                 {
                     val_pos += 1;
                 }
-                let value = std::str::from_utf8(&source[value_start..val_pos])
+                let value = std::str::from_utf8(sub_slice(source, value_start..val_pos))
                     .unwrap_or("")
                     .to_compact_string();
                 pos = val_pos;
@@ -512,21 +516,21 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
 
     let mut result = String::with_capacity(len + 16);
     // Everything before the first `{` is ordinary text; copy it in one shot.
-    result.push_str(&text[..first_brace]);
+    result.push_str(text.get(..first_brace).unwrap_or_default());
     let mut pos = first_brace;
 
     while pos < len {
-        if pos + 1 < len && bytes[pos] == b'{' && bytes[pos + 1] == b'{' {
+        if pos + 1 < len && byte_at(bytes, pos) == b'{' && byte_at(bytes, pos + 1) == b'{' {
             // Find closing }}
             let expr_start = pos + 2;
             let mut depth = 1;
             let mut expr_end = expr_start;
 
             while expr_end + 1 < len {
-                if bytes[expr_end] == b'{' && bytes[expr_end + 1] == b'{' {
+                if byte_at(bytes, expr_end) == b'{' && byte_at(bytes, expr_end + 1) == b'{' {
                     depth += 1;
                     expr_end += 2;
-                } else if bytes[expr_end] == b'}' && bytes[expr_end + 1] == b'}' {
+                } else if byte_at(bytes, expr_end) == b'}' && byte_at(bytes, expr_end + 1) == b'}' {
                     depth -= 1;
                     if depth == 0 {
                         break;
@@ -538,7 +542,7 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
             }
 
             if depth == 0 {
-                let expr = &text[expr_start..expr_end];
+                let expr = text.get(expr_start..expr_end).unwrap_or_default();
                 let formatted_expr = format_interpolation_expression(expr, options);
                 result.push_str("{{ ");
                 result.push_str(&formatted_expr);
@@ -554,9 +558,9 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
             // `{` in a single push instead of char-by-char. A lone `{` (one
             // not starting a `{{`) is emitted and stepped over individually,
             // exactly as before.
-            let rest = &bytes[pos + 1..];
+            let rest = sub_slice(bytes, pos + 1..);
             let next = memchr::memchr(b'{', rest).map_or(len, |off| pos + 1 + off);
-            result.push_str(&text[pos..next]);
+            result.push_str(text.get(pos..next).unwrap_or_default());
             pos = next;
         }
     }
@@ -566,32 +570,4 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
 
 fn format_interpolation_expression(expr: &str, options: &FormatOptions) -> String {
     script::format_js_expression(expr, options).unwrap_or_else(|| expr.trim().to_compact_string())
-}
-
-fn parse_interpolation_range(source: &[u8], start: usize) -> Option<(usize, usize, usize)> {
-    let len = source.len();
-    if start + 1 >= len || source[start] != b'{' || source[start + 1] != b'{' {
-        return None;
-    }
-
-    let expr_start = start + 2;
-    let mut depth = 1;
-    let mut pos = expr_start;
-
-    while pos + 1 < len {
-        if source[pos] == b'{' && source[pos + 1] == b'{' {
-            depth += 1;
-            pos += 2;
-        } else if source[pos] == b'}' && source[pos + 1] == b'}' {
-            depth -= 1;
-            if depth == 0 {
-                return Some((expr_start, pos, pos + 2));
-            }
-            pos += 2;
-        } else {
-            pos += 1;
-        }
-    }
-
-    None
 }

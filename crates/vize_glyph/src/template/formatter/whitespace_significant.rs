@@ -29,15 +29,17 @@ impl TemplateFormatter<'_> {
         output.push(b'>');
         let Some(close_start) = find_matching_close_tag(source, end_pos, tag_name) else {
             // Unclosed — copy the rest and stop.
-            output.extend_from_slice(&source[end_pos..]);
+            output.extend_from_slice(source.get(end_pos..).unwrap_or_default());
             return len;
         };
-        output.extend_from_slice(&source[end_pos..close_start]);
+        output.extend_from_slice(source.get(end_pos..close_start).unwrap_or_default());
         // If the closing tag is incomplete (no `>`, e.g. an unterminated LSP
         // buffer like `<pre>body</pre\n`), preserve the remaining source
         // verbatim instead of fabricating a `>` and dropping the tail.
-        let Some(close_offset) = memchr::memchr(b'>', &source[close_start..]) else {
-            output.extend_from_slice(&source[close_start..]);
+        let Some(close_offset) =
+            memchr::memchr(b'>', source.get(close_start..).unwrap_or_default())
+        else {
+            output.extend_from_slice(source.get(close_start..).unwrap_or_default());
             return len;
         };
         output.extend_from_slice(b"</");
@@ -81,28 +83,29 @@ fn find_matching_close_tag(source: &[u8], start: usize, tag_name: &str) -> Optio
     let mut pos = start;
     let mut depth: i32 = 1;
     while pos < len {
-        let offset = memchr::memchr(b'<', &source[pos..])?;
+        let offset = memchr::memchr(b'<', source.get(pos..).unwrap_or_default())?;
         pos += offset;
         if pos + 1 >= len {
             return None;
         }
         // Skip comments and CDATA to avoid false matches inside them.
-        if pos + 3 < len && &source[pos..pos + 4] == b"<!--" {
-            if let Some(end) = find_bytes(&source[pos..], b"-->") {
+        if pos + 3 < len && source.get(pos..pos + 4).unwrap_or_default() == b"<!--" {
+            if let Some(end) = find_bytes(source.get(pos..).unwrap_or_default(), b"-->") {
                 pos += end + 3;
                 continue;
             }
             return None;
         }
 
-        let is_closing = source[pos + 1] == b'/';
+        let is_closing = source.get(pos + 1) == Some(&b'/');
         let name_start = if is_closing { pos + 2 } else { pos + 1 };
         if name_start >= len {
             return None;
         }
-        let name_bytes = &source[name_start..];
-        if name_bytes.len() >= tag_bytes.len()
-            && name_bytes[..tag_bytes.len()].eq_ignore_ascii_case(tag_bytes)
+        let name_bytes = source.get(name_start..).unwrap_or_default();
+        if name_bytes
+            .get(..tag_bytes.len())
+            .is_some_and(|head| head.eq_ignore_ascii_case(tag_bytes))
         {
             let after = name_bytes.get(tag_bytes.len()).copied().unwrap_or(0);
             let after_is_terminator = matches!(after, b'>' | b'/' | b' ' | b'\t' | b'\n' | b'\r');
@@ -116,9 +119,9 @@ fn find_matching_close_tag(source: &[u8], start: usize, tag_name: &str) -> Optio
                     // Treat self-closing forms (`<tag … />`) as not opening
                     // a new nesting level. Peek to the next `>` and check
                     // for a preceding `/`.
-                    if let Some(gt) = memchr::memchr(b'>', &source[pos..]) {
+                    if let Some(gt) = memchr::memchr(b'>', source.get(pos..).unwrap_or_default()) {
                         let close_at = pos + gt;
-                        if close_at > 0 && source[close_at - 1] != b'/' {
+                        if close_at > 0 && source.get(close_at - 1) != Some(&b'/') {
                             depth += 1;
                         }
                         pos = close_at + 1;

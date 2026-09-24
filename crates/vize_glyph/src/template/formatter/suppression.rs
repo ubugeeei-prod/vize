@@ -71,7 +71,7 @@ impl<'s> LineJoiner<'s> {
         let previous = self.current;
         self.current = self.locked_index(start);
         if let Some(end) = self.previous_end.filter(|end| *end <= start) {
-            let gap = &self.source[end..start];
+            let gap = self.source.get(end..start).unwrap_or_default();
             if gap.is_empty() {
                 return Some(false);
             }
@@ -84,7 +84,14 @@ impl<'s> LineJoiner<'s> {
         if self.current.is_none() || self.current != previous {
             return None;
         }
-        Some(start > 0 && is_whitespace(self.source[start - 1]))
+        Some(
+            start > 0
+                && self
+                    .source
+                    .get(start - 1)
+                    .copied()
+                    .is_some_and(is_whitespace),
+        )
     }
 
     /// Record the source end of the chunk just emitted.
@@ -177,7 +184,8 @@ impl TextRun {
         } else {
             self.bytes.push(b' ');
         }
-        self.bytes.extend_from_slice(&source[start..end]);
+        self.bytes
+            .extend_from_slice(source.get(start..end).unwrap_or_default());
         self.end = end;
     }
 
@@ -202,9 +210,9 @@ fn locked_line_ranges(source: &[u8]) -> Vec<(usize, usize)> {
     let mut line_start = 0;
     let mut pragma_above = false;
     loop {
-        let line_end = memchr::memchr(b'\n', &source[line_start..])
+        let line_end = memchr::memchr(b'\n', source.get(line_start..).unwrap_or_default())
             .map_or(source.len(), |offset| line_start + offset);
-        let line = &source[line_start..line_end];
+        let line = source.get(line_start..line_end).unwrap_or_default();
         // A blank line ends nothing and covers nothing: ESLint would apply the
         // suppression to it and suppress no code at all.
         if let Some((start, end)) = content_span(line)

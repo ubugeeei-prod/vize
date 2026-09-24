@@ -3,6 +3,8 @@
 //! line it covers silently disables the user's suppression and a finding that
 //! was suppressed in the source reappears after `vize fmt`. (#3343)
 
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+
 use vize_glyph::{FormatOptions, format_template};
 
 /// Assert `source` formats to `expected`, and that a second pass is a no-op.

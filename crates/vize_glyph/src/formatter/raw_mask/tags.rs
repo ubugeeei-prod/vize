@@ -30,11 +30,13 @@ pub(super) fn tag_name_at(bytes: &[u8], start: usize) -> Option<&[u8]> {
     if !bytes.get(start)?.is_ascii_alphabetic() {
         return None;
     }
-    let end = bytes[start..]
+    let end = bytes
+        .get(start..)
+        .unwrap_or_default()
         .iter()
         .position(|byte| !is_tag_name_byte(*byte))
         .map_or(bytes.len(), |offset| start + offset);
-    Some(&bytes[start..end])
+    bytes.get(start..end)
 }
 
 fn is_tag_name_byte(byte: u8) -> bool {
@@ -54,7 +56,9 @@ fn is_tag_name_byte(byte: u8) -> bool {
 /// attribute then opens a continuation line of the tag.
 pub(in crate::formatter) fn starts_v_pre_attribute(bytes: &[u8], cursor: usize) -> bool {
     const NAME: &[u8] = b"v-pre";
-    if !bytes[cursor..]
+    if !bytes
+        .get(cursor..)
+        .unwrap_or_default()
         .get(..NAME.len())
         .is_some_and(|head| head.eq_ignore_ascii_case(NAME))
     {
@@ -63,7 +67,7 @@ pub(in crate::formatter) fn starts_v_pre_attribute(bytes: &[u8], cursor: usize) 
     let terminated = bytes
         .get(cursor + NAME.len())
         .is_none_or(|byte| matches!(byte, b' ' | b'\t' | b'\r' | b'=' | b'/' | b'>'));
-    let separated = cursor == 0 || matches!(bytes[cursor - 1], b' ' | b'\t' | b'\n');
+    let separated = cursor == 0 || matches!(bytes.get(cursor - 1), Some(b' ' | b'\t' | b'\n'));
     terminated && separated
 }
 

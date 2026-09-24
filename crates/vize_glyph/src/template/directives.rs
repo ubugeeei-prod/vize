@@ -4,13 +4,12 @@
 //! `v-slot:` -> `#`) and JS expression formatting in directive values.
 
 use crate::{options::FormatOptions, script};
-use vize_s0::{String, ToCompactString};
+use vize_s0::{String, ToCompactString, cstr};
 
 use super::attributes::attribute_priority;
 use super::helpers::template_literal_state_after_line_from;
 
 /// Normalize directive shorthands and assign sort priority.
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn normalize_attribute(
     name: &str,
     value: Option<String>,
@@ -19,11 +18,11 @@ pub(crate) fn normalize_attribute(
     // Normalize directive shorthands (only if enabled)
     let normalized_name: String = if options.normalize_directive_shorthands {
         if let Some(rest) = name.strip_prefix("v-bind:") {
-            format!(":{rest}").into()
+            cstr!(":{rest}")
         } else if let Some(rest) = name.strip_prefix("v-on:") {
-            format!("@{rest}").into()
+            cstr!("@{rest}")
         } else if let Some(rest) = name.strip_prefix("v-slot:") {
-            format!("#{rest}").into()
+            cstr!("#{rest}")
         } else {
             name.to_compact_string()
         }
@@ -117,7 +116,10 @@ fn reanchor_continuation_lines(value: &str, options: &FormatOptions) -> (String,
     let Some(first_break) = value.find('\n') else {
         return (value.to_compact_string(), false);
     };
-    let (first_line, rest) = (&value[..first_break], &value[first_break + 1..]);
+    let (first_line, rest) = (
+        value.get(..first_break).unwrap_or_default(),
+        value.get(first_break + 1..).unwrap_or_default(),
+    );
     if first_line.trim().is_empty() {
         return (value.to_compact_string(), false);
     }
@@ -189,7 +191,8 @@ fn common_continuation_indent(first_line: &str, rest: &str) -> usize {
 }
 
 fn dedent(line: &str, columns: usize) -> &str {
-    &line[blank_prefix_len(line).min(columns)..]
+    line.get(blank_prefix_len(line).min(columns)..)
+        .unwrap_or_default()
 }
 
 fn blank_prefix_len(line: &str) -> usize {
@@ -234,12 +237,11 @@ fn decode_expression_attribute_entities(value: &str) -> Option<String> {
             rest = tail;
             changed = true;
         } else {
-            let ch = rest
-                .chars()
-                .next()
-                .expect("non-empty string must have a next char");
+            let Some(ch) = rest.chars().next() else {
+                break;
+            };
             decoded.push(ch);
-            rest = &rest[ch.len_utf8()..];
+            rest = rest.get(ch.len_utf8()..).unwrap_or_default();
         }
     }
 
@@ -247,14 +249,21 @@ fn decode_expression_attribute_entities(value: &str) -> Option<String> {
 }
 
 /// Format `v-for` expression: normalize spacing in `(item, index) in items`.
-#[allow(clippy::disallowed_macros)]
 pub(crate) fn format_v_for_expression(expr: &str) -> String {
     // Split on " in " or " of " (respecting nested parens/brackets)
     let (iterator_part, keyword, collection_part) =
         if let Some(idx) = find_v_for_keyword(expr, " in ") {
-            (&expr[..idx], " in ", &expr[idx + 4..])
+            (
+                expr.get(..idx).unwrap_or_default(),
+                " in ",
+                expr.get(idx + 4..).unwrap_or_default(),
+            )
         } else if let Some(idx) = find_v_for_keyword(expr, " of ") {
-            (&expr[..idx], " of ", &expr[idx + 4..])
+            (
+                expr.get(..idx).unwrap_or_default(),
+                " of ",
+                expr.get(idx + 4..).unwrap_or_default(),
+            )
         } else {
             return expr.to_compact_string();
         };
@@ -264,14 +273,16 @@ pub(crate) fn format_v_for_expression(expr: &str) -> String {
 
     // Normalize parenthesized destructuring: "(item,index)" -> "(item, index)"
     let normalized_iter: String = if iter_trimmed.starts_with('(') && iter_trimmed.ends_with(')') {
-        let inner = &iter_trimmed[1..iter_trimmed.len() - 1];
+        let inner = iter_trimmed
+            .get(1..iter_trimmed.len() - 1)
+            .unwrap_or_default();
         let parts: Vec<&str> = inner.split(',').map(|s| s.trim()).collect();
-        format!("({})", parts.join(", ")).into()
+        cstr!("({})", parts.join(", "))
     } else {
         iter_trimmed.to_compact_string()
     };
 
-    format!("{normalized_iter}{keyword}{collection_trimmed}").into()
+    cstr!("{normalized_iter}{keyword}{collection_trimmed}")
 }
 
 /// Find `keyword` in a v-for expression while respecting nested parens/brackets.
@@ -280,15 +291,15 @@ fn find_v_for_keyword(expr: &str, keyword: &str) -> Option<usize> {
     let kw_bytes = keyword.as_bytes();
     let mut depth = 0i32;
 
-    for i in 0..bytes.len() {
-        match bytes[i] {
+    for (i, &byte) in bytes.iter().enumerate() {
+        match byte {
             b'(' | b'[' | b'{' => depth += 1,
             b')' | b']' | b'}' => depth -= 1,
             _ => {}
         }
         if depth == 0
             && i + kw_bytes.len() <= bytes.len()
-            && &bytes[i..i + kw_bytes.len()] == kw_bytes
+            && bytes.get(i..i + kw_bytes.len()).unwrap_or_default() == kw_bytes
         {
             return Some(i);
         }

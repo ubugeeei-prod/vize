@@ -53,19 +53,22 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
         // `'…'` / `"…"` cannot span a newline in JS, so an unbalanced quote
         // must not swallow the following lines as string content.
         interpolation.string = None;
-        if !depth_stack.is_empty()
+        if (!depth_stack.is_empty()
             || open_quote.is_some_and(OpenQuote::marks_line_raw)
             || in_comment
-            || interpolation.line_starts_in_quasi()
+            || interpolation.line_starts_in_quasi())
+            && let Some(raw) = mask.get_mut(i)
         {
-            mask[i] = true;
+            *raw = true;
         }
 
         let bytes = line;
         let mut cursor = 0;
-        while cursor < bytes.len() {
+        while let Some(tail) = bytes.get(cursor..)
+            && let Some(&byte) = tail.first()
+        {
             if in_comment {
-                if bytes[cursor..].starts_with(b"-->") {
+                if tail.starts_with(b"-->") {
                     in_comment = false;
                     cursor += 3;
                 } else {
@@ -74,26 +77,22 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
                 continue;
             }
             if let Some(mut quote) = open_quote {
-                if quote.directive
-                    && !quote.raw
-                    && bytes[cursor] == b'`'
-                    && !is_escaped(bytes, cursor)
-                {
+                if quote.directive && !quote.raw && byte == b'`' && !is_escaped(bytes, cursor) {
                     quote.in_template_literal = !quote.in_template_literal;
                     open_quote = Some(quote);
                     cursor += 1;
                     continue;
                 }
-                if bytes[cursor] == quote.quote && !quote.in_template_literal {
+                if byte == quote.quote && !quote.in_template_literal {
                     open_quote = None;
                 }
                 cursor += 1;
                 continue;
             }
             if in_tag {
-                match bytes[cursor] {
-                    b'"' | b'\'' => {
-                        open_quote = Some(OpenQuote::new(bytes, cursor));
+                match byte {
+                    quote @ (b'"' | b'\'') => {
+                        open_quote = Some(OpenQuote::new(bytes, cursor, quote));
                     }
                     b'>' => {
                         in_tag = false;
@@ -101,7 +100,8 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
                         // template formatter takes its self-closing branch
                         // before the whitespace-significant one, so the mask
                         // must not open a region the formatter never opened.
-                        let self_closing = cursor > 0 && bytes[cursor - 1] == b'/';
+                        let self_closing =
+                            cursor.checked_sub(1).and_then(|prev| bytes.get(prev)) == Some(&b'/');
                         if let Some(tag) = pending_raw_tag.take() {
                             if !self_closing {
                                 depth_stack.push(RawRegion {
@@ -133,17 +133,17 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
                 cursor = interpolation.step(bytes, cursor);
                 continue;
             }
-            if bytes[cursor..].starts_with(b"{{") {
-                interpolation.active = contains(&bytes[cursor + 2..], b"}}")
+            if tail.starts_with(b"{{") {
+                interpolation.active = contains(tail.get(2..).unwrap_or_default(), b"}}")
                     || last_close_line.is_some_and(|last| last > i);
                 cursor += 2;
                 continue;
             }
-            if bytes[cursor] != b'<' {
+            if byte != b'<' {
                 cursor += 1;
                 continue;
             }
-            if bytes[cursor..].starts_with(b"<!--") {
+            if tail.starts_with(b"<!--") {
                 in_comment = true;
                 cursor += 4;
                 continue;
@@ -152,7 +152,7 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
             let mut matched = false;
             for tag in WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS {
                 let tag_bytes = tag.as_bytes();
-                if starts_native_close_tag(&bytes[cursor..], tag_bytes) {
+                if starts_native_close_tag(tail, tag_bytes) {
                     if let Some(idx) = depth_stack
                         .iter()
                         .rposition(|region| !region.v_pre && region.tag == tag_bytes)
@@ -163,7 +163,7 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
                     matched = true;
                     break;
                 }
-                if starts_native_open_tag(&bytes[cursor..], tag_bytes) {
+                if starts_native_open_tag(tail, tag_bytes) {
                     pending_raw_tag = Some(tag);
                     in_tag = true;
                     cursor += 1 + tag_bytes.len();
@@ -176,7 +176,7 @@ pub(super) fn compute_raw_line_mask<'a>(lines: &[&'a [u8]]) -> Vec<bool> {
             }
             // A `v-pre` region is named by the element that carries the
             // directive, so it ends at that element's own `</tag>`.
-            if bytes[cursor..].starts_with(b"</")
+            if tail.starts_with(b"</")
                 && let Some(name) = tag_name_at(bytes, cursor + 2)
                 && let Some(idx) = depth_stack
                     .iter()
@@ -238,8 +238,12 @@ fn starts_native_close_tag(tail: &[u8], tag: &[u8]) -> bool {
 /// an opening tag that runs past the line end is treated as not self-closing —
 /// the `/>` form is written on one line in every formatter output.
 fn self_closes_on_this_line(bytes: &[u8], cursor: usize) -> bool {
-    memchr::memchr(b'>', &bytes[cursor..])
-        .is_some_and(|offset| offset > 0 && bytes[cursor + offset - 1] == b'/')
+    let tail = bytes.get(cursor..).unwrap_or_default();
+    memchr::memchr(b'>', tail).is_some_and(|offset| {
+        offset
+            .checked_sub(1)
+            .is_some_and(|before| tail.get(before) == Some(&b'/'))
+    })
 }
 
 fn literal_attr_quote(line: &[u8], quote_pos: usize) -> bool {
@@ -257,10 +261,10 @@ struct OpenQuote {
 }
 
 impl OpenQuote {
-    fn new(line: &[u8], quote_pos: usize) -> Self {
+    fn new(line: &[u8], quote_pos: usize, quote: u8) -> Self {
         let attr_name = attr_name_before_quote(line, quote_pos);
         Self {
-            quote: line[quote_pos],
+            quote,
             raw: literal_attr_quote(line, quote_pos),
             directive: attr_name.is_some_and(directive_expr_attr),
             in_template_literal: false,
@@ -284,7 +288,7 @@ fn value_starts_on_following_line(line: &[u8], quote_pos: usize) -> bool {
 fn is_escaped(line: &[u8], pos: usize) -> bool {
     let mut backslashes = 0;
     let mut cursor = pos;
-    while cursor > 0 && line[cursor - 1] == b'\\' {
+    while cursor > 0 && line.get(cursor - 1) == Some(&b'\\') {
         backslashes += 1;
         cursor -= 1;
     }
@@ -293,26 +297,26 @@ fn is_escaped(line: &[u8], pos: usize) -> bool {
 
 fn attr_name_before_quote(line: &[u8], quote_pos: usize) -> Option<&[u8]> {
     let mut pos = quote_pos;
-    while pos > 0 && matches!(line[pos - 1], b' ' | b'\t') {
+    while pos > 0 && matches!(line.get(pos - 1), Some(b' ' | b'\t')) {
         pos -= 1;
     }
-    if pos == 0 || line[pos - 1] != b'=' {
+    if pos == 0 || line.get(pos - 1) != Some(&b'=') {
         return None;
     }
     pos -= 1;
-    while pos > 0 && matches!(line[pos - 1], b' ' | b'\t') {
+    while pos > 0 && matches!(line.get(pos - 1), Some(b' ' | b'\t')) {
         pos -= 1;
     }
     let end = pos;
     while pos > 0
         && !matches!(
-            line[pos - 1],
-            b' ' | b'\t' | b'\r' | b'\n' | b'<' | b'>' | b'/'
+            line.get(pos - 1),
+            None | Some(b' ' | b'\t' | b'\r' | b'\n' | b'<' | b'>' | b'/')
         )
     {
         pos -= 1;
     }
-    (pos < end).then_some(&line[pos..end])
+    line.get(pos..end).filter(|name| !name.is_empty())
 }
 
 fn directive_expr_attr(name: &[u8]) -> bool {

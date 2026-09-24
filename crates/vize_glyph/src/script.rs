@@ -191,11 +191,10 @@ pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<Strin
         let inner = formatted.strip_prefix("void ").unwrap_or(formatted);
 
         // Strip outer parens if the formatter kept them
-        let inner = if inner.starts_with('(') && inner.ends_with(')') {
-            &inner[1..inner.len() - 1]
-        } else {
-            inner
-        };
+        let inner = inner
+            .strip_prefix('(')
+            .and_then(|rest| rest.strip_suffix(')'))
+            .unwrap_or(inner);
 
         Some(inner.trim().to_compact_string())
     })

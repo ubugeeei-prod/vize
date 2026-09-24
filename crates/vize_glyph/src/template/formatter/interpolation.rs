@@ -6,6 +6,7 @@
 //! idempotent. (#3247)
 
 use super::TemplateFormatter;
+use crate::template::helpers::byte_at;
 use vize_s0::String;
 
 impl TemplateFormatter<'_> {
@@ -55,15 +56,12 @@ fn template_literal_quasi_line_starts(expr: &str) -> Vec<bool> {
     }
 
     let bytes = expr.as_bytes();
-    let len = bytes.len();
     let mut starts = vec![false];
     let mut stack: Vec<Frame> = Vec::new();
     let mut in_str: Option<u8> = None;
     let mut i = 0;
 
-    while i < len {
-        let b = bytes[i];
-
+    while let Some(&b) = bytes.get(i) {
         if b == b'\n' {
             starts.push(in_str.is_none() && matches!(stack.last(), Some(Frame::Template)));
             i += 1;
@@ -89,7 +87,7 @@ fn template_literal_quasi_line_starts(expr: &str) -> Vec<bool> {
                     stack.pop();
                     i += 1;
                 }
-                b'$' if i + 1 < len && bytes[i + 1] == b'{' => {
+                b'$' if bytes.get(i + 1) == Some(&b'{') => {
                     stack.push(Frame::Interp(0));
                     i += 2;
                 }
@@ -126,4 +124,35 @@ fn template_literal_quasi_line_starts(expr: &str) -> Vec<bool> {
     }
 
     starts
+}
+
+pub(super) fn parse_interpolation_range(
+    source: &[u8],
+    start: usize,
+) -> Option<(usize, usize, usize)> {
+    let len = source.len();
+    if start + 1 >= len || byte_at(source, start) != b'{' || byte_at(source, start + 1) != b'{' {
+        return None;
+    }
+
+    let expr_start = start + 2;
+    let mut depth = 1;
+    let mut pos = expr_start;
+
+    while pos + 1 < len {
+        if byte_at(source, pos) == b'{' && byte_at(source, pos + 1) == b'{' {
+            depth += 1;
+            pos += 2;
+        } else if byte_at(source, pos) == b'}' && byte_at(source, pos + 1) == b'}' {
+            depth -= 1;
+            if depth == 0 {
+                return Some((expr_start, pos, pos + 2));
+            }
+            pos += 2;
+        } else {
+            pos += 1;
+        }
+    }
+
+    None
 }

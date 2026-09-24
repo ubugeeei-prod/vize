@@ -1,3 +1,4 @@
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 use vize_glyph::{AttributeSortOrder, FormatOptions, format_sfc, format_template};
 
 fn assert_template_fixed_point(source: &str, expected: &str, options: &FormatOptions) {

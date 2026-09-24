@@ -1,3 +1,8 @@
+#![expect(
+    clippy::disallowed_types,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking and build fixtures with std strings"
+)]
 use vize_glyph::{FormatOptions, format_sfc};
 
 fn assert_fixed_point(source: &str, options: &FormatOptions) -> String {
@@ -54,9 +59,11 @@ fn explicit_html_still_uses_the_native_template_formatter() {
 
 #[test]
 fn opaque_templates_honor_crlf_and_tab_outer_indentation() {
-    let mut options = FormatOptions::default();
-    options.use_tabs = true;
-    options.end_of_line = vize_glyph::EndOfLine::Crlf;
+    let options = FormatOptions {
+        use_tabs: true,
+        end_of_line: vize_glyph::EndOfLine::Crlf,
+        ..FormatOptions::default()
+    };
     let source = "<template lang=\"pug\">\r\n  main\r\n    span text\r\n\r\n</template>\r\n";
     let output = assert_fixed_point(source, &options);
     assert!(output.contains("<template lang=\"pug\">\r\n\tmain\r\n\t  span text\r\n</template>"));

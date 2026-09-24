@@ -60,8 +60,7 @@ fn contains_float_max_sentinel(source: &[u8]) -> bool {
     let mut declaration_start = 0usize;
     let mut custom_property_value = false;
 
-    while index < source.len() {
-        let byte = source[index];
+    while let Some(&byte) = source.get(index) {
         if let Some(quote) = string_quote {
             if byte == b'\\' && index + 1 < source.len() {
                 index += 2;
@@ -115,7 +114,13 @@ fn contains_float_max_sentinel(source: &[u8]) -> bool {
 fn is_numeric_token_start(source: &[u8], start: usize) -> bool {
     match start.checked_sub(1).and_then(|index| source.get(index)) {
         None => true,
-        Some(b'+' | b'-') => start <= 1 || is_numeric_token_boundary(source[start - 2]),
+        Some(b'+' | b'-') => {
+            start <= 1
+                || source
+                    .get(start - 2)
+                    .copied()
+                    .is_some_and(is_numeric_token_boundary)
+        }
         Some(previous) => is_numeric_token_boundary(*previous),
     }
 }
@@ -131,7 +136,12 @@ fn is_number_continuation(source: &[u8], end: usize) -> bool {
 }
 
 fn url_function_body_start(source: &[u8], start: usize) -> Option<usize> {
-    if start > 0 && !is_css_identifier_boundary(source[start - 1]) {
+    if start > 0
+        && source
+            .get(start - 1)
+            .copied()
+            .is_some_and(|b| !is_css_identifier_boundary(b))
+    {
         return None;
     }
     if !source
@@ -160,7 +170,8 @@ fn is_css_identifier_boundary(byte: u8) -> bool {
 }
 
 fn comment_end(source: &[u8], from: usize) -> usize {
-    memmem::find(&source[from..], b"*/").map_or(source.len(), |offset| from + offset + 2)
+    memmem::find(source.get(from..).unwrap_or_default(), b"*/")
+        .map_or(source.len(), |offset| from + offset + 2)
 }
 
 fn function_end(source: &[u8], from: usize) -> usize {
@@ -168,8 +179,7 @@ fn function_end(source: &[u8], from: usize) -> usize {
     let mut depth = 1usize;
     let mut string_quote: Option<u8> = None;
 
-    while index < source.len() {
-        let byte = source[index];
+    while let Some(&byte) = source.get(index) {
         if let Some(quote) = string_quote {
             if byte == b'\\' && index + 1 < source.len() {
                 index += 2;
@@ -210,7 +220,11 @@ fn function_end(source: &[u8], from: usize) -> usize {
 
 fn declaration_is_custom_property(source: &[u8], boundary: usize, colon: usize) -> bool {
     let mut property_start = boundary;
-    while property_start < colon && source[property_start].is_ascii_whitespace() {
+    while property_start < colon
+        && source
+            .get(property_start)
+            .is_some_and(u8::is_ascii_whitespace)
+    {
         property_start += 1;
     }
     source

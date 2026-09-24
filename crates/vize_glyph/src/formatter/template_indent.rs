@@ -23,11 +23,11 @@ fn needs_raw_line_mask(source: &[u8]) -> bool {
     let mut in_tag = false;
     while cursor < source.len() {
         if !in_tag {
-            let Some(offset) = memchr(b'<', &source[cursor..]) else {
+            let Some(offset) = memchr(b'<', source.get(cursor..).unwrap_or_default()) else {
                 break;
             };
             cursor += offset;
-            let tail = &source[cursor..];
+            let tail = source.get(cursor..).unwrap_or_default();
             if tail.starts_with(b"<!--") || starts_raw_tag(tail) {
                 return true;
             }
@@ -38,28 +38,28 @@ fn needs_raw_line_mask(source: &[u8]) -> bool {
             continue;
         }
 
-        let structural = memchr3(b'\'', b'"', b'>', &source[cursor..]);
-        let maybe_v_pre = memchr2(b'v', b'V', &source[cursor..]);
+        let structural = memchr3(b'\'', b'"', b'>', source.get(cursor..).unwrap_or_default());
+        let maybe_v_pre = memchr2(b'v', b'V', source.get(cursor..).unwrap_or_default());
         let Some(offset) = earliest(structural, maybe_v_pre) else {
             break;
         };
         cursor += offset;
 
-        if matches!(source[cursor], b'v' | b'V') {
+        if matches!(source.get(cursor), Some(b'v' | b'V')) {
             if starts_v_pre_attribute_at(source, cursor) {
                 return true;
             }
             cursor += 1;
             continue;
         }
-        if source[cursor] == b'>' {
+        if source.get(cursor) == Some(&b'>') {
             in_tag = false;
             cursor += 1;
             continue;
         }
 
-        let quote = source[cursor];
-        let tail = &source[cursor + 1..];
+        let quote = source.get(cursor).copied().unwrap_or_default();
+        let tail = source.get(cursor + 1..).unwrap_or_default();
         let close = memchr(quote, tail);
         let newline = memchr(b'\n', tail);
         if newline.is_some_and(|line| close.is_none_or(|end| line < end)) {
@@ -131,11 +131,10 @@ pub(super) fn write_rebased_opaque_template(
     let Some(first) = raw_lines.iter().position(|line| !is_blank(line)) else {
         return;
     };
-    let last = raw_lines
-        .iter()
-        .rposition(|line| !is_blank(line))
-        .expect("a first non-blank line has a last non-blank line");
-    let lines = &raw_lines[first..=last];
+    let Some(last) = raw_lines.iter().rposition(|line| !is_blank(line)) else {
+        return;
+    };
+    let lines = raw_lines.get(first..=last).unwrap_or_default();
     let common = common_whitespace_prefix(lines);
 
     for raw_line in lines {
@@ -145,7 +144,7 @@ pub(super) fn write_rebased_opaque_template(
             continue;
         }
         output.extend_from_slice(indent);
-        output.extend_from_slice(&line[common..]);
+        output.extend_from_slice(line.get(common..).unwrap_or_default());
         output.extend_from_slice(newline);
     }
 }
@@ -161,9 +160,11 @@ fn common_whitespace_prefix(lines: &[&[u8]]) -> usize {
     let mut common = leading_whitespace(first);
     for line in non_blank {
         let limit = common.min(leading_whitespace(line));
-        common = first[..limit]
+        common = first
+            .get(..limit)
+            .unwrap_or_default()
             .iter()
-            .zip(&line[..limit])
+            .zip(line.get(..limit).unwrap_or_default())
             .take_while(|(left, right)| left == right)
             .count();
         if common == 0 {

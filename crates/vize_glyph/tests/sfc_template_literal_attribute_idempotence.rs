@@ -9,6 +9,8 @@
 //! read back a differently-indented literal and made a different wrap decision:
 //! `fmt(fmt(x)) != fmt(x)`. (#3379)
 
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+
 use vize_glyph::{FormatOptions, format_sfc};
 
 /// Format `source` three times: pass 1 must equal `expected`, and passes 2 and
