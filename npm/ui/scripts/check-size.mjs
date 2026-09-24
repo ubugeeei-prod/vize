@@ -59,6 +59,7 @@ const budgets = new Map([
   ["qr-code.mjs", 9_400],
   ["tour.mjs", 26_000],
   ["rating.mjs", 6_450],
+  ["tags-input.mjs", 9_500],
   ["textarea.mjs", 4_000],
   ["search-field.mjs", 4_400],
   ["slider.mjs", 5_500],

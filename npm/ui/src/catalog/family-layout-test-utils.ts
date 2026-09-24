@@ -170,6 +170,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["switch", "src/families/selection/switch/"],
   ["table", "src/families/data/table/"],
   ["tabs", "src/families/navigation/tabs/"],
+  ["tags-input", "src/families/form/tags-input/"],
   ["text", "src/families/typography/text/"],
   ["timeline", "src/families/data/timeline/"],
   ["toc", "src/families/navigation/toc/"],
