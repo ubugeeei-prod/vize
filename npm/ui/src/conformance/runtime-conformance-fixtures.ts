@@ -30,6 +30,7 @@ import { printButtonRuntimeFixture } from "../families/actions/print-button/runt
 import { shareButtonRuntimeFixture } from "../families/actions/share-button/runtime-conformance-share-button-fixtures.ts";
 import { toolbarRuntimeFixtures } from "../families/actions/toolbar/runtime-conformance-toolbar-fixtures.ts";
 import { fieldRuntimeFixtures } from "../families/form/field/runtime-conformance-field-fixtures.ts";
+import { formInputRuntimeFixtures } from "../families/form/runtime-conformance-form-input-fixtures.ts";
 import { interactionHooksRuntimeFixture } from "../families/interaction/interaction-hooks/runtime-conformance-interaction-hooks-fixtures.ts";
 import { progressBarRuntimeFixture } from "../families/feedback/progress-bar/runtime-conformance-progress-bar-fixtures.ts";
 import { progressRuntimeFixture } from "../families/feedback/progress/runtime-conformance-progress-fixtures.ts";
@@ -113,6 +114,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   shareButtonRuntimeFixture,
   ...toolbarRuntimeFixtures,
   ...selectionRuntimeFixtures,
+  ...formInputRuntimeFixtures,
   {
     name: "deterministic-id-provider",
     sourceFile: "families/foundations/id/deterministic-id-provider.vue",

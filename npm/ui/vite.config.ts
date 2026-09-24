@@ -121,6 +121,9 @@ export default defineConfig({
   pack: {
     entry: {
       index: "src/index.ts",
+      "input-mask": "src/families/form/input-mask/input-mask.ts",
+      "number-field": "src/families/form/number-field/number-field.ts",
+      "range-slider": "src/families/form/range-slider/range-slider.ts",
       theme: "src/families/foundations/theme/theme.ts",
       "theme-scope": "src/families/foundations/theme/theme-scope.ts",
       alert: "src/families/feedback/alert/alert.ts",
