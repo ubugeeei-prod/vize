@@ -1,4 +1,4 @@
-import { getCurrentInstance, getCurrentScope, onMounted, onScopeDispose } from "vue";
+import { hasInjectionContext, getCurrentScope, onMounted, onScopeDispose } from "vue";
 
 import { createFocusScope } from "./focus-scope.ts";
 import type { FocusScopeController, FocusScopeOptions } from "./focus-scope-types.ts";
@@ -11,7 +11,7 @@ export function useFocusScope(options: FocusScopeOptions): FocusScopeController 
     throw new Error(`${setupDiagnostic}: use inside component setup or an active effect scope`);
   }
   const controller = createFocusScope(options);
-  if (getCurrentInstance()) onMounted(controller.activate);
+  if (hasInjectionContext()) onMounted(controller.activate);
   else controller.activate();
   onScopeDispose(controller.dispose);
   return controller;

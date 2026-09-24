@@ -1059,8 +1059,9 @@
     "test": "vp test run",
     "check:catalog": "vp test run src/catalog/family-catalog.test.ts",
     "check:static": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
+    "check:vapor-runtime": "vp exec node scripts/check-vapor-runtime.ts",
     "check:story-testbed": "vp exec node scripts/story-testbed.ts check --format json",
-    "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed",
+    "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed && pnpm check:vapor-runtime",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
     "build:registry": "vp exec node scripts/build-source-registry.ts",
     "check:examples": "vp exec node scripts/generate-gallery.ts --check",
@@ -1081,7 +1082,8 @@
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-stable",
-    "vue-tsc": "catalog:typescript"
+    "vue-tsc": "catalog:typescript",
+    "vue-vapor-runtime": "npm:vue@3.6.0-rc.6"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

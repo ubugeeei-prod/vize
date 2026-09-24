@@ -1240,6 +1240,9 @@ importers:
       vue-tsc:
         specifier: catalog:typescript
         version: 3.3.11(typescript@6.0.3)
+      vue-vapor-runtime:
+        specifier: npm:vue@3.6.0-rc.6
+        version: vue@3.6.0-rc.6(typescript@6.0.3)
 
   npm/wasm: {}
 

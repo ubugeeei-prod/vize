@@ -42,7 +42,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SfcCustomBlock`                          |     2 |     2 |
 | `SfcDescriptor`                           |    16 |    38 |
 | `SfcError`                                |    21 |    60 |
-| `SfcParseOptions`                         |    13 |   107 |
+| `SfcParseOptions`                         |    13 |   108 |
 | `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     7 |
 | `SfcTemplateBlock`                        |     6 |     7 |
@@ -69,7 +69,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | product             | resolved | grep |
 | ------------------- | -------: | ---: |
 | `BindingMetadata`   |       31 |   49 |
-| `Croquis`           |       17 |   43 |
+| `Croquis`           |       17 |   44 |
 | `Drawer`            |        7 |    9 |
 | `DrawerOptions`     |        5 |    6 |
 | `ReactivityTracker` |        0 |    1 |

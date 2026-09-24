@@ -1,5 +1,5 @@
 import {
-  getCurrentInstance,
+  hasInjectionContext,
   getCurrentScope,
   onMounted,
   onScopeDispose,
@@ -119,7 +119,7 @@ export function useScrollLock(options: ScrollLockOptions): ScrollLockController 
     throw new Error(`${setupDiagnostic}: use inside component setup or an active effect scope`);
   }
   const controller = createScrollLock(options);
-  if (getCurrentInstance()) onMounted(controller.activate);
+  if (hasInjectionContext()) onMounted(controller.activate);
   else controller.activate();
   onScopeDispose(controller.dispose);
   return controller;

@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, toValue } from "vue";
+import { computed, hasInjectionContext, toValue } from "vue";
 
 import {
   deriveDeterministicId,
@@ -29,7 +29,7 @@ function readBoolean(value: BooleanOption, name: string, fallback: boolean): boo
  * without `aria-errormessage` support.
  */
 export function useFieldWiring(options: FieldWiringOptions = {}): FieldWiringController {
-  if (getCurrentInstance() === null) {
+  if (!hasInjectionContext()) {
     throw new Error(`${setupDiagnostic}: useFieldWiring() must run during component setup`);
   }
   for (const name of ["invalid", "hasDescription", "hasErrorMessage"] as const) {

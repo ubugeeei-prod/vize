@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, inject, provide, toValue, useId as useVueId } from "vue";
+import { computed, hasInjectionContext, inject, provide, toValue, useId as useVueId } from "vue";
 import type { ComputedRef, InjectionKey, MaybeRefOrGetter } from "vue";
 
 declare const deterministicIdBrand: unique symbol;
@@ -139,7 +139,7 @@ export function createDeterministicIdScope(
 export function useDeterministicId(
   options: DeterministicIdOptions = {},
 ): ComputedRef<DeterministicId> {
-  if (getCurrentInstance() === null) {
+  if (!hasInjectionContext()) {
     throw new Error("VIZE_UI_ID_SETUP: useDeterministicId() must run during component setup");
   }
 

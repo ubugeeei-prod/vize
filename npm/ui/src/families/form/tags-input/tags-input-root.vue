@@ -531,7 +531,9 @@ watch(
   (root, _previous, onCleanup) => {
     const owner =
       form === undefined ? root?.closest("form") : root?.ownerDocument.getElementById(form);
-    if (!(owner instanceof HTMLFormElement)) return;
+    // `owner` is absent during server rendering, where DOM constructors such
+    // as `HTMLFormElement` do not exist: check it before `instanceof`.
+    if (owner == null || !(owner instanceof HTMLFormElement)) return;
     const onReset = () => {
       inputValue.value = "";
       editingIndex.value = null;
