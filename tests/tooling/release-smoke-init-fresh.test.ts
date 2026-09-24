@@ -12,7 +12,10 @@ import {
   runManager,
 } from "../../tools/support/compat/npm/smoke-release-init-project.mjs";
 import { PACKAGE_MANAGERS } from "../../tools/support/compat/npm/smoke-release-init-managers.mjs";
-import { packedRedirects } from "../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
+import {
+  packedFileSpec,
+  packedRedirects,
+} from "../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
 import { withPoisonedVizePath } from "../../tools/support/compat/npm/smoke-release-path-poison.mjs";
 import {
   FRESH_INIT_MATRIX,
@@ -27,6 +30,15 @@ import {
 } from "./support/release-smoke-init-contract.ts";
 
 const RUNTIME_PACKAGE_MANAGER_ACTION = "./.github/actions/setup-runtime-package-managers";
+
+test("packed tarball specs use lockfile-stable Windows path separators", () => {
+  const tarball = "C:\\Users\\runneradmin\\packs\\vize-0.426.2.tgz";
+  assert.equal(
+    packedFileSpec(tarball, path.win32),
+    "file:C:/Users/runneradmin/packs/vize-0.426.2.tgz",
+  );
+  assert.equal(packedFileSpec("/packs/vize.tgz", path.posix), "file:/packs/vize.tgz");
+});
 
 test("fresh-project redirects only tarballs installable on this host", () => {
   const context = {

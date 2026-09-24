@@ -56,6 +56,13 @@ function runInit(context, projectRoot, args) {
  * table; npm does not, because it rejects an override that collides with a
  * direct spec.
  */
+export function packedFileSpec(tarball, pathApi = path) {
+  // pnpm writes forward slashes into its lockfile on Windows. Keep the
+  // manifest and override specs in that same spelling so its frozen reinstall
+  // (also triggered by `pnpm run`) does not reject its own lockfile.
+  return `file:${tarball.split(pathApi.sep).join("/")}`;
+}
+
 export function packedRedirects(context, manager, shape) {
   const redirects = {};
   for (const [name, tarball] of context.packed) {
@@ -65,7 +72,7 @@ export function packedRedirects(context, manager, shape) {
     // execute here; their exact tarballs remain mandatory in the fresh tree.
     if (!context.compatiblePacked.has(name)) continue;
     if (manager.redirectPlannedDependencies || !shape.plannedDependencies.includes(name)) {
-      redirects[name] = `file:${tarball}`;
+      redirects[name] = packedFileSpec(tarball);
     }
   }
   return redirects;
@@ -81,7 +88,7 @@ function installPlannedDependencies(context, projectRoot, manager, shape) {
 
   const specs = shape.plannedDependencies.map((name) => {
     const tarball = context.packed.get(name);
-    return tarball === undefined ? name : `${name}@file:${tarball}`;
+    return tarball === undefined ? name : `${name}@${packedFileSpec(tarball)}`;
   });
   runManager(manager, [...manager.installArgs, ...specs, ...manager.installFlags], {
     cwd: projectRoot,
