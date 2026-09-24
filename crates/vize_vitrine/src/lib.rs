@@ -45,6 +45,7 @@ mod parse_errors;
 mod template_syntax;
 pub mod typecheck;
 pub mod types;
+#[cfg(any(feature = "napi", feature = "wasm"))]
 mod whitespace;
 
 pub use typecheck::{

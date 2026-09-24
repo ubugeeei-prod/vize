@@ -1,4 +1,12 @@
 //! Decode the Vue compiler's public whitespace option at FFI boundaries.
+#![expect(
+    clippy::disallowed_macros,
+    reason = "FFI option validation needs a formatted std String error"
+)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "N-API and wasm-bindgen errors use std String"
+)]
 
 use vize_atelier_core::WhitespaceStrategy;
 
