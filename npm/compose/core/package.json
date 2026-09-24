@@ -37,6 +37,11 @@
       "import": "./dist/abort-signal.mjs",
       "default": "./dist/abort-signal.mjs"
     },
+    "./active-element": {
+      "types": "./dist/active-element.d.mts",
+      "import": "./dist/active-element.mjs",
+      "default": "./dist/active-element.mjs"
+    },
     "./async-resource": {
       "types": "./dist/async-resource.d.mts",
       "import": "./dist/async-resource.mjs",
@@ -62,20 +67,80 @@
       "import": "./dist/document-visibility.mjs",
       "default": "./dist/document-visibility.mjs"
     },
+    "./element-bounding": {
+      "types": "./dist/element-bounding.d.mts",
+      "import": "./dist/element-bounding.mjs",
+      "default": "./dist/element-bounding.mjs"
+    },
+    "./element-target": {
+      "types": "./dist/element-target.d.mts",
+      "import": "./dist/element-target.mjs",
+      "default": "./dist/element-target.mjs"
+    },
     "./event-listener": {
       "types": "./dist/event-listener.d.mts",
       "import": "./dist/event-listener.mjs",
       "default": "./dist/event-listener.mjs"
+    },
+    "./focus": {
+      "types": "./dist/focus.d.mts",
+      "import": "./dist/focus.mjs",
+      "default": "./dist/focus.mjs"
+    },
+    "./intersection-observer": {
+      "types": "./dist/intersection-observer.d.mts",
+      "import": "./dist/intersection-observer.mjs",
+      "default": "./dist/intersection-observer.mjs"
     },
     "./locale": {
       "types": "./dist/locale.d.mts",
       "import": "./dist/locale.mjs",
       "default": "./dist/locale.mjs"
     },
+    "./magic-keys": {
+      "types": "./dist/magic-keys.d.mts",
+      "import": "./dist/magic-keys.mjs",
+      "default": "./dist/magic-keys.mjs"
+    },
     "./media-query": {
       "types": "./dist/media-query.d.mts",
       "import": "./dist/media-query.mjs",
       "default": "./dist/media-query.mjs"
+    },
+    "./mouse": {
+      "types": "./dist/mouse.d.mts",
+      "import": "./dist/mouse.mjs",
+      "default": "./dist/mouse.mjs"
+    },
+    "./mouse-in-element": {
+      "types": "./dist/mouse-in-element.d.mts",
+      "import": "./dist/mouse-in-element.mjs",
+      "default": "./dist/mouse-in-element.mjs"
+    },
+    "./mutation-observer": {
+      "types": "./dist/mutation-observer.d.mts",
+      "import": "./dist/mutation-observer.mjs",
+      "default": "./dist/mutation-observer.mjs"
+    },
+    "./pinch": {
+      "types": "./dist/pinch.d.mts",
+      "import": "./dist/pinch.mjs",
+      "default": "./dist/pinch.mjs"
+    },
+    "./pointer": {
+      "types": "./dist/pointer.d.mts",
+      "import": "./dist/pointer.mjs",
+      "default": "./dist/pointer.mjs"
+    },
+    "./pointer-lock": {
+      "types": "./dist/pointer-lock.d.mts",
+      "import": "./dist/pointer-lock.mjs",
+      "default": "./dist/pointer-lock.mjs"
+    },
+    "./resize-observer": {
+      "types": "./dist/resize-observer.d.mts",
+      "import": "./dist/resize-observer.mjs",
+      "default": "./dist/resize-observer.mjs"
     },
     "./retry-async": {
       "types": "./dist/retry-async.d.mts",
@@ -92,10 +157,25 @@
       "import": "./dist/scope.mjs",
       "default": "./dist/scope.mjs"
     },
+    "./scroll": {
+      "types": "./dist/scroll.d.mts",
+      "import": "./dist/scroll.mjs",
+      "default": "./dist/scroll.mjs"
+    },
+    "./swipe": {
+      "types": "./dist/swipe.d.mts",
+      "import": "./dist/swipe.mjs",
+      "default": "./dist/swipe.mjs"
+    },
     "./temporal": {
       "types": "./dist/temporal.d.mts",
       "import": "./dist/temporal.mjs",
       "default": "./dist/temporal.mjs"
+    },
+    "./text-selection": {
+      "types": "./dist/text-selection.d.mts",
+      "import": "./dist/text-selection.mjs",
+      "default": "./dist/text-selection.mjs"
     },
     "./timeout-scheduler": {
       "types": "./dist/timeout-scheduler.d.mts",
@@ -131,6 +211,11 @@
       "types": "./dist/use-toggle.d.mts",
       "import": "./dist/use-toggle.mjs",
       "default": "./dist/use-toggle.mjs"
+    },
+    "./window-size": {
+      "types": "./dist/window-size.d.mts",
+      "import": "./dist/window-size.mjs",
+      "default": "./dist/window-size.mjs"
     }
   },
   "publishConfig": {

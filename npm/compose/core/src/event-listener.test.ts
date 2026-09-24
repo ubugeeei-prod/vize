@@ -121,3 +121,21 @@ void test("stops when the supplied signal aborts", () => {
   assert.equal(controls.isListening.value, false);
   assert.equal(controls.start(), false);
 });
+
+void test("removes capturing listeners on runtimes that ignore boolean capture flags", () => {
+  const target = new EventTarget();
+  const scope = effectScope();
+  let calls = 0;
+  scope.run(() =>
+    useEventListener(target, "scroll", () => (calls += 1), {
+      capture: true,
+      passive: true,
+      flush: "sync",
+    }),
+  );
+
+  target.dispatchEvent(new Event("scroll"));
+  scope.stop();
+  target.dispatchEvent(new Event("scroll"));
+  assert.equal(calls, 1);
+});

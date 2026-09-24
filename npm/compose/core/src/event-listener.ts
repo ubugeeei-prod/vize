@@ -159,7 +159,7 @@ export function useEventListener(
         isListening.value = true;
 
         onCleanup(() => {
-          next.removeEventListener(event, invoke, capture);
+          next.removeEventListener(event, invoke, { capture });
           signal?.removeEventListener("abort", onAbort);
           isListening.value = false;
         });

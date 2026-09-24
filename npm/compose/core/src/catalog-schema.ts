@@ -7,8 +7,10 @@ export type ComposableStability = "experimental" | "stable" | "deprecated";
 export type ComposableCategory =
   | "async"
   | "capability"
+  | "dom"
   | "events"
   | "i18n"
+  | "input"
   | "lifecycle"
   | "media"
   | "networking"
