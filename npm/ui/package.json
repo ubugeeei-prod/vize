@@ -745,6 +745,16 @@
       "import": "./dist/virtualizer.mjs",
       "default": "./dist/virtualizer.mjs"
     },
+    "./chart-shape": {
+      "types": "./dist/chart-shape.d.mts",
+      "import": "./dist/chart-shape.mjs",
+      "default": "./dist/chart-shape.mjs"
+    },
+    "./chart-scale": {
+      "types": "./dist/chart-scale.d.mts",
+      "import": "./dist/chart-scale.mjs",
+      "default": "./dist/chart-scale.mjs"
+    },
     "./navigation-menu": {
       "types": "./dist/navigation-menu.d.mts",
       "import": "./dist/navigation-menu.mjs",
