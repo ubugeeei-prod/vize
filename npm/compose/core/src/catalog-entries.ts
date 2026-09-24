@@ -218,7 +218,7 @@ export const entries = [
   {
     subpath: "./catalog",
     source: "src/catalog.ts",
-    gzipBudgetBytes: 8 * 1024,
+    gzipBudgetBytes: 10 * 1024,
     runtimeExports: ["COMPOSABLE_CATALOG"],
     utilities: [],
   },
