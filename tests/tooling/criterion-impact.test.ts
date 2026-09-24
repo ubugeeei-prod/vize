@@ -109,6 +109,24 @@ test("Doctor reporter benchmarks are enrolled in scoped Criterion A/B runs", () 
   assert.deepEqual(result.selected, ["vize_doctor"]);
 });
 
+test("Vapor source changes select the paired Davinci compile benchmark", () => {
+  const suite = CRITERION_SUITES.find(
+    ({ package: packageName }) => packageName === "vize_atelier_vapor",
+  );
+  assert.deepEqual(suite, {
+    package: "vize_atelier_vapor",
+    benches: ["davinci"],
+    filter: "vapor_native_pair",
+    label: "Davinci Vapor native/retained pairs",
+  });
+  const result = selectCriterionSuites({
+    changedPaths: ["crates/vize_atelier_vapor/src/s3.rs"],
+    metadata: metadata(),
+    repoDir,
+  });
+  assert.deepEqual(result.selected, ["vize_atelier_vapor"]);
+});
+
 test("Doctor TUI benchmarks carry explicit reference-runner latency budgets", () => {
   const suite = CRITERION_SUITES.find(
     ({ package: packageName }) => packageName === "vize_benchmarks",

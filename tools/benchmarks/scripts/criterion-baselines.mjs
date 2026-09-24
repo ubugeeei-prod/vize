@@ -52,6 +52,54 @@ export function compareBaselineExports(base, head, thresholdPercent) {
 }
 
 /**
+ * Compare the native and explicitly retained Vapor routes on identical inputs.
+ * Ratios are report-only until a reference-runner budget has been measured and
+ * reviewed. Require the same complete fixture set on both revisions so a
+ * missing lane cannot silently improve the apparent result.
+ */
+export function compareVaporNativePairs(base, head) {
+  const prefix = "vapor_native_pair/";
+  const fixtureNames = (exported, side) => {
+    const fixtures = new Set();
+    for (const name of Object.keys(exported.benchmarks)) {
+      if (!name.startsWith(prefix)) continue;
+      const match = /^vapor_native_pair\/([^/]+)\/(s3|legacy)$/.exec(name);
+      if (!match) throw new Error(`Unexpected Vapor pair benchmark in ${side}: ${name}`);
+      fixtures.add(match[1]);
+    }
+    if (fixtures.size === 0) throw new Error(`No Vapor native/retained pairs in ${side} export`);
+    return [...fixtures].sort();
+  };
+  const baseFixtures = fixtureNames(base, "base");
+  const headFixtures = fixtureNames(head, "head");
+  if (baseFixtures.join("\0") !== headFixtures.join("\0")) {
+    throw new Error("Vapor native/retained fixture sets differ between base and head");
+  }
+  return headFixtures.map((fixture) => {
+    const median = (exported, side, lane) => {
+      const name = `${prefix}${fixture}/${lane}`;
+      if (!(name in exported.benchmarks)) {
+        throw new Error(`Missing Vapor pair benchmark in ${side}: ${name}`);
+      }
+      return medianPointEstimate(exported.benchmarks[name], `${side}/${name}`);
+    };
+    const baseNativeNs = median(base, "base", "s3");
+    const baseRetainedNs = median(base, "base", "legacy");
+    const headNativeNs = median(head, "head", "s3");
+    const headRetainedNs = median(head, "head", "legacy");
+    return {
+      fixture,
+      baseNativeNs,
+      baseRetainedNs,
+      headNativeNs,
+      headRetainedNs,
+      baseRatio: baseNativeNs / baseRetainedNs,
+      headRatio: headNativeNs / headRetainedNs,
+    };
+  });
+}
+
+/**
  * Evaluate exact Criterion benchmark medians against conservative hard limits.
  *
  * Criterion exports point estimates in nanoseconds. Missing, duplicate, or

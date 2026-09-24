@@ -37,6 +37,7 @@ import { pathToFileURL } from "node:url";
 
 import {
   compareBaselineExports,
+  compareVaporNativePairs,
   criterionEnvironment,
   critcmpArgs,
   critcmpExportArgs,
@@ -77,6 +78,12 @@ export const CRITERION_SUITES = [
   },
   { package: "vize_glyph", benches: ["formatter"], label: "Formatter" },
   { package: "vize_patina", benches: ["lint_bench", "markup_ir_bench"], label: "Lint" },
+  {
+    package: "vize_atelier_vapor",
+    benches: ["davinci"],
+    filter: "vapor_native_pair",
+    label: "Davinci Vapor native/retained pairs",
+  },
 ];
 
 function parseArgs(argv) {
@@ -136,14 +143,18 @@ function run(command, commandArgs, options = {}) {
  * metadata while compiling the head checkout; `baseline` is the criterion
  * baseline name (`base` or `head`).
  */
-export function cargoBenchArgs({ pkg, benches, baseline, targetDir }) {
+export function cargoBenchArgs({ pkg, benches, filter, baseline, targetDir }) {
   const args = ["bench", "-p", pkg];
   for (const bench of benches) {
     args.push("--bench", bench);
   }
   args.push("--target-dir", targetDir);
   // Everything after `--` is forwarded to the criterion harness.
-  args.push("--", "--save-baseline", baseline);
+  args.push("--");
+  if (filter) {
+    args.push(filter);
+  }
+  args.push("--save-baseline", baseline);
   return args;
 }
 
@@ -161,6 +172,7 @@ function benchSide({ side, checkoutDir, baseline, targetDir, suites }) {
     const args = cargoBenchArgs({
       pkg: suite.package,
       benches: suite.benches,
+      filter: suite.filter,
       baseline,
       targetDir,
     });
@@ -283,12 +295,16 @@ export function main(argv = process.argv.slice(2)) {
     headExport && absoluteBudgets.length > 0
       ? evaluateAbsoluteBudgets(headExport, absoluteBudgets)
       : [];
+  const vaporPairResults = suites.some((suite) => suite.package === "vize_atelier_vapor")
+    ? compareVaporNativePairs(baseExport, headExport)
+    : [];
   const summary = renderSummary({
     table,
     threshold,
     regressions,
     selection,
     absoluteBudgetResults,
+    vaporPairResults,
   });
 
   if (args.out) {

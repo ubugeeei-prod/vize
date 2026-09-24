@@ -11,6 +11,11 @@ on:
         description: Full head commit SHA
         required: true
         type: string
+      vapor_only:
+        description: Measure only the Davinci Vapor native/retained pairs
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}
@@ -62,6 +67,21 @@ jobs:
           ref: ${{ inputs.base_sha }}
           persist-credentials: false
 
+      - name: Validate exact benchmark commits
+        env:
+          BASE_SHA: ${{ inputs.base_sha }}
+          HEAD_SHA: ${{ inputs.head_sha }}
+          DISPATCH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$BASE_SHA" != "$HEAD_SHA" ]]
+          [[ "$HEAD_SHA" == "$DISPATCH_SHA" ]]
+          [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
+          [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
+          git -C head merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
+
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
 
       # The A/B driver is plain Node (no npm deps); pin the runtime so the
@@ -77,12 +97,18 @@ jobs:
         env:
           PR_BASE_SHA: ${{ inputs.base_sha }}
           PR_HEAD_SHA: ${{ inputs.head_sha }}
+          VAPOR_ONLY: ${{ inputs.vapor_only }}
         run: |
-          node head/tools/benchmarks/scripts/criterion-impact.mjs \
-            --repo-dir "$GITHUB_WORKSPACE/head" \
-            --base-sha "$PR_BASE_SHA" \
-            --head-sha "$PR_HEAD_SHA" \
-            --out "$GITHUB_WORKSPACE/criterion-impact.json"
+          if [[ "$VAPOR_ONLY" == "true" ]]; then
+            printf '%s\n' '{"selected":["vize_atelier_vapor"],"reason":"Explicit Davinci Vapor native/retained comparison."}' > "$GITHUB_WORKSPACE/criterion-impact.json"
+            echo 'has_suites=true' >> "$GITHUB_OUTPUT"
+          else
+            node head/tools/benchmarks/scripts/criterion-impact.mjs \
+              --repo-dir "$GITHUB_WORKSPACE/head" \
+              --base-sha "$PR_BASE_SHA" \
+              --head-sha "$PR_HEAD_SHA" \
+              --out "$GITHUB_WORKSPACE/criterion-impact.json"
+          fi
 
       - name: Setup Wild linker
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0

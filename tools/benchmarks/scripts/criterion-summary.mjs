@@ -10,6 +10,7 @@ export function renderSummary({
   regressions,
   selection,
   absoluteBudgetResults = [],
+  vaporPairResults = [],
 }) {
   const lines = [];
   lines.push("## Criterion A/B");
@@ -51,6 +52,28 @@ export function renderSummary({
         `| ${result.name} | ${formatDuration(result.medianNs)} | ${formatDuration(result.maxMedianNs)} | ${result.exceeded ? "FAIL" : "PASS"} |`,
       );
     }
+  }
+  if (vaporPairResults.length > 0) {
+    lines.push("");
+    lines.push("### Davinci Vapor native vs retained (report-only)");
+    lines.push("");
+    lines.push(
+      "Each ratio is S3 native median / explicitly retained median on the same source and options; below 1.000x is faster. Base and head use the same Blacksmith runner, with isolated Cargo build graphs. Criterion executes cases sequentially, so these are observations rather than a paired-interleaved throughput gate.",
+    );
+    lines.push("");
+    lines.push(
+      "| Fixture | Base native | Base retained | Base ratio | Head native | Head retained | Head ratio |",
+    );
+    lines.push("| --- | ---: | ---: | ---: | ---: | ---: | ---: |");
+    for (const result of vaporPairResults) {
+      lines.push(
+        `| ${result.fixture} | ${formatDuration(result.baseNativeNs)} | ${formatDuration(result.baseRetainedNs)} | ${result.baseRatio.toFixed(3)}x | ${formatDuration(result.headNativeNs)} | ${formatDuration(result.headRetainedNs)} | ${result.headRatio.toFixed(3)}x |`,
+      );
+    }
+    lines.push("");
+    lines.push(
+      "Some native and retained fixtures (for example object spreads) emit different programs; those ratios are diagnostic only, not a parity or promotion verdict.",
+    );
   }
   lines.push("");
   return `${lines.join("\n")}\n`;

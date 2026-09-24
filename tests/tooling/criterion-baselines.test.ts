@@ -4,10 +4,12 @@ import { test } from "node:test";
 import {
   criterionBenchRunOptions,
   criterionSideTargetDirs,
+  cargoBenchArgs,
   resolveSuiteSelection,
 } from "../../tools/benchmarks/scripts/criterion-ab.mjs";
 import {
   compareBaselineExports,
+  compareVaporNativePairs,
   criterionEnvironment,
   critcmpArgs,
   critcmpExportArgs,
@@ -72,6 +74,82 @@ test("Criterion baseline comparison fails closed and uses exported medians", () 
         10,
       ),
     /no shared benchmarks/,
+  );
+});
+
+test("Vapor A/B measures the same complete native/retained fixture on both revisions", () => {
+  const base = parseCritcmpExport(
+    baselineExport("base", {
+      "vapor_native_pair/control_flow/s3": 18_000,
+      "vapor_native_pair/control_flow/legacy": 16_000,
+    }),
+    "base",
+  );
+  const head = parseCritcmpExport(
+    baselineExport("head", {
+      "vapor_native_pair/control_flow/s3": 14_000,
+      "vapor_native_pair/control_flow/legacy": 16_000,
+    }),
+    "head",
+  );
+  const results = compareVaporNativePairs(base, head);
+  assert.equal(results.length, 1);
+  assert.equal(results[0]?.baseRatio, 1.125);
+  assert.equal(results[0]?.headRatio, 0.875);
+  const selection = resolveSuiteSelection({
+    selected: ["vize_atelier_vapor"],
+    reason: "Vapor-only dispatch.",
+  });
+  const summary = renderSummary({
+    table: "group  base  head\n-----  ----  ----\ncontrol_flow  1.00  0.88\n",
+    threshold: undefined,
+    regressions: [],
+    selection,
+    vaporPairResults: results,
+  });
+  assert.match(
+    summary,
+    /control_flow \| 18\.00 µs \| 16\.00 µs \| 1\.125x \| 14\.00 µs \| 16\.00 µs \| 0\.875x/,
+  );
+  assert.match(summary, /report-only/);
+
+  const missingLegacy = parseCritcmpExport(
+    baselineExport("head", { "vapor_native_pair/control_flow/s3": 14_000 }),
+    "head",
+  );
+  assert.throws(() => compareVaporNativePairs(base, missingLegacy), /Missing Vapor pair benchmark/);
+  const changedCorpus = parseCritcmpExport(
+    baselineExport("head", {
+      "vapor_native_pair/other/s3": 14_000,
+      "vapor_native_pair/other/legacy": 16_000,
+    }),
+    "head",
+  );
+  assert.throws(() => compareVaporNativePairs(base, changedCorpus), /fixture sets differ/);
+});
+
+test("Vapor Criterion driver filters to paired compile cases", () => {
+  assert.deepEqual(
+    cargoBenchArgs({
+      pkg: "vize_atelier_vapor",
+      benches: ["davinci"],
+      filter: "vapor_native_pair",
+      baseline: "head",
+      targetDir: "/work/target",
+    }),
+    [
+      "bench",
+      "-p",
+      "vize_atelier_vapor",
+      "--bench",
+      "davinci",
+      "--target-dir",
+      "/work/target",
+      "--",
+      "vapor_native_pair",
+      "--save-baseline",
+      "head",
+    ],
   );
 });
 

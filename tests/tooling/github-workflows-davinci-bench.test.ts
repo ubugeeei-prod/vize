@@ -68,3 +68,18 @@ test("check workflow uploads Davinci allocation bench reports", () => {
     /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a\s*# v7\.0\.1/,
   );
 });
+
+test("Vapor Criterion comparison stays manual and checks both exact revisions", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "criterion-bench.yml")) as {
+    on?: Record<string, { inputs?: Record<string, unknown> }>;
+    jobs?: Record<string, WorkflowJob>;
+  };
+  assert.deepEqual(Object.keys(workflow.on ?? {}), ["workflow_dispatch"]);
+  assert.ok(workflow.on?.workflow_dispatch?.inputs?.vapor_only);
+  const steps = workflow.jobs?.["criterion-ab"]?.steps ?? [];
+  const validation = steps.find((step) => step.name === "Validate exact benchmark commits");
+  assert.match(validation?.run ?? "", /DISPATCH_SHA/);
+  assert.match(validation?.run ?? "", /merge-base --is-ancestor/);
+  const impact = steps.find((step) => step.name === "Select affected Criterion suites");
+  assert.match(impact?.run ?? "", /vize_atelier_vapor/);
+});
