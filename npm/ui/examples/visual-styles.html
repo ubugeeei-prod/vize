@@ -133,7 +133,7 @@
         margin-block-start: 1.5rem;
       }
 
-      .choice-row label {
+      .choice-row :is(label, .choice-label) {
         display: inline-flex;
         align-items: center;
         gap: 0.65rem;
@@ -171,10 +171,10 @@
         A restrained set of component surfaces. The markup stays headless; each stylesheet is an
         explicit choice.
       </p>
-      <section aria-labelledby="actions-heading">
-        <h2 id="actions-heading">Actions</h2>
+      <section aria-label="Actions">
+        <h2>Actions</h2>
         <div class="button-row">
-          <button type="button" data-vize-ui="button" data-state="idle" id="open-dialog">
+          <button type="button" data-vize-ui="button" data-state="idle" data-action="open-dialog">
             Open dialog
           </button>
           <button
@@ -192,32 +192,20 @@
         </div>
         <small>Hover, press, and keyboard focus use short, purposeful feedback.</small>
       </section>
-      <section aria-labelledby="form-heading">
-        <h2 id="form-heading">Form controls</h2>
+      <section aria-label="Form controls">
+        <h2>Form controls</h2>
         <div class="form-grid">
-          <label class="form-field" for="project-name">
+          <label class="form-field">
             <span>Project name</span>
-            <input
-              id="project-name"
-              data-vize-ui="input"
-              data-state="editable"
-              placeholder="A concise name"
-            />
+            <input data-vize-ui="input" data-state="editable" placeholder="A concise name" />
           </label>
-          <label class="form-field" for="project-key">
+          <label class="form-field">
             <span>Project key</span>
-            <input
-              id="project-key"
-              data-vize-ui="input"
-              data-state="disabled"
-              value="Assigned on save"
-              disabled
-            />
+            <input data-vize-ui="input" data-state="disabled" value="Assigned on save" disabled />
           </label>
-          <label class="form-field form-field-wide" for="release-note">
+          <label class="form-field form-field-wide">
             <span>Release note</span>
             <textarea
-              id="release-note"
               data-vize-ui="textarea"
               data-state="editable"
               placeholder="What changed?"
@@ -230,7 +218,7 @@
             <input type="checkbox" data-vize-ui="checkbox" data-state="checked" checked />
             Include changelog
           </label>
-          <label>
+          <div class="choice-label">
             <button
               type="button"
               role="switch"
@@ -241,7 +229,7 @@
               aria-label="Live preview"
             ></button>
             Live preview
-          </label>
+          </div>
         </div>
         <small>Keyboard focus stays clear; checking and switching give brief state feedback.</small>
       </section>
@@ -252,23 +240,24 @@
       data-state="open"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="dialog-title"
-      aria-describedby="dialog-description"
+      aria-label="Review changes"
       tabindex="-1"
       hidden
     >
-      <h2 data-vize-ui="dialog-title" id="dialog-title">Review changes</h2>
-      <p data-vize-ui="dialog-description" id="dialog-description">
+      <h2 data-vize-ui="dialog-title">Review changes</h2>
+      <p data-vize-ui="dialog-description">
         The dialog stays quiet and focused. Dismissal remains immediate.
       </p>
       <button type="button" data-vize-ui="dialog-close" aria-label="Close dialog">×</button>
-      <button type="button" data-vize-ui="button" data-state="idle" id="save">Save changes</button>
+      <button type="button" data-vize-ui="button" data-state="idle" data-action="save-dialog">
+        Save changes
+      </button>
     </div>
     <script>
       const themeButtons = document.querySelectorAll("[data-theme]");
       const overlay = document.querySelector('[data-vize-ui="dialog-overlay"]');
       const dialog = document.querySelector('[data-vize-ui="dialog-content"]');
-      const opener = document.querySelector("#open-dialog");
+      const opener = document.querySelector('[data-action="open-dialog"]');
       const checkbox = document.querySelector('[data-vize-ui="checkbox"]');
       const switchControl = document.querySelector('[data-vize-ui="switch"]');
 
@@ -303,7 +292,7 @@
         dialog.focus();
       });
       dialog.querySelector('[data-vize-ui="dialog-close"]').addEventListener("click", closeDialog);
-      dialog.querySelector("#save").addEventListener("click", closeDialog);
+      dialog.querySelector('[data-action="save-dialog"]').addEventListener("click", closeDialog);
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && !dialog.hidden) closeDialog();
       });
