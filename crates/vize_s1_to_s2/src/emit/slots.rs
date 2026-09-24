@@ -184,7 +184,7 @@ pub(super) fn emit_slots(
         cx.buf.push(Buf::with_ctx_alias());
         cx.buf.push("(");
         let content = group_slot_content(&start_walk, children, component_bindings, group.carrier);
-        emit_slot_params(cx, &group.params, content);
+        emit_slot_params(cx, &group.params, content)?;
         cx.buf.push(" => [");
         cx.buf.indent();
         for (j, piece) in bucket.iter().enumerate() {

@@ -262,24 +262,64 @@ fn tree_construction_parse_errors_keep_production_dom_parity() {
             "<template><div><img src='x'></img></div></template><script setup>const label = 'inner'</script>",
             "VoidEndTag.vue",
         ),
+        (
+            "<template><div>closed</div></div></template><script setup>const label = 'closed'</script>",
+            "StrayEndTag.vue",
+        ),
     ] {
         let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
-        let shape = Shape::DomInline;
+        for shape in [Shape::DomInline, Shape::DomModule] {
+            let profiler = global_profiler();
+            profiler.clear();
+            profiler.enable();
+            let selected = compile(&descriptor, filename, shape);
+            let counters = profiler.counter_summary();
+            profiler.disable();
+            profiler.clear();
+            assert_eq!(
+                classify(shape, &counters),
+                Ok(Lane::Legacy("parse_error".to_owned())),
+                "{filename}: {shape:?}"
+            );
+
+            let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+                compile(&descriptor, filename, shape)
+            });
+            match (selected, legacy) {
+                (Ok(selected), legacy) => assert_eq!(divergence(&selected, &legacy), None),
+                (Err(selected), Err(legacy)) => {
+                    assert_eq!(selected.code, legacy.code);
+                    assert_eq!(selected.message, legacy.message);
+                }
+                (selected, legacy) => {
+                    panic!("{filename} {shape:?} compile result differs: {selected:?} {legacy:?}")
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn malformed_slot_params_keep_production_diagnostics() {
+    let _guard = PROFILER_TEST_LOCK.lock().unwrap();
+    let source = r#"<template><Widget><template #actions="v-slot:actions"><button>Run</button></template></Widget></template>"#;
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    for shape in [Shape::DomInline, Shape::DomModule] {
         let profiler = global_profiler();
         profiler.clear();
         profiler.enable();
-        let selected = compile(&descriptor, filename, shape);
+        let selected = compile(&descriptor, "InvalidSlotParams.vue", shape);
         let counters = profiler.counter_summary();
         profiler.disable();
         profiler.clear();
         assert_eq!(
             classify(shape, &counters),
-            Ok(Lane::Legacy("parse_error".to_owned())),
-            "{filename}"
+            Ok(Lane::Legacy("emit_refused".to_owned())),
+            "{shape:?}"
         );
 
         let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
-            compile(&descriptor, filename, shape)
+            compile(&descriptor, "InvalidSlotParams.vue", shape)
         });
         match (selected, legacy) {
             (Ok(selected), legacy) => assert_eq!(divergence(&selected, &legacy), None),
@@ -288,7 +328,7 @@ fn tree_construction_parse_errors_keep_production_dom_parity() {
                 assert_eq!(selected.message, legacy.message);
             }
             (selected, legacy) => {
-                panic!("{filename} compile result differs: {selected:?} {legacy:?}")
+                panic!("{shape:?} compile result differs: {selected:?} {legacy:?}")
             }
         }
     }

@@ -10,7 +10,7 @@ use crate::emit::js::{escape_js_string, expr_source};
 use crate::emit::prefix::Site;
 use crate::emit::slots::emit_template_pieces;
 use crate::emit::vfor;
-use crate::emit::{EmitCx, EmitError};
+use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
 
 pub(super) fn emit_if_entry(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>) -> Result<(), EmitError> {
     let _id = cx.walk.mint();
@@ -222,7 +222,7 @@ pub(super) fn emit_slot_object(
     cx.buf.push("fn: ");
     cx.buf.push(Buf::with_ctx_alias());
     cx.buf.push("(");
-    emit_params(cx, content);
+    emit_params(cx, content)?;
     cx.buf.push(" => [");
     let mut pieces = StdVec::new();
     cx.buf.indent();
@@ -292,9 +292,12 @@ fn emit_entry_name(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) {
     }
 }
 
-fn emit_params(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) {
+fn emit_params(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) -> Result<(), EmitError> {
     match &content.params {
         Some(expr) if !expr.source().is_empty() => {
+            if !crate::emit::prefix::slot_params_syntax_valid(expr.source(), cx.is_ts) {
+                return Err(EmitError::unsupported(Reason::PrefixExpressionRejected));
+            }
             cx.buf.push("(");
             let processed = crate::emit::prefix::prefix_slot_defaults(expr.source());
             if let Some((leading, trailing)) =
@@ -310,6 +313,7 @@ fn emit_params(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) {
         }
         _ => cx.buf.push("()"),
     }
+    Ok(())
 }
 
 fn fold_name(base: &str, modifiers: &[&str]) -> String {

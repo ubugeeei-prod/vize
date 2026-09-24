@@ -2,10 +2,10 @@ use vize_s0::Span;
 use vize_s2::op::{BindingOp, Region, SlotContentOp};
 
 use super::is_slot_template;
-use crate::emit::EmitCx;
 use crate::emit::create_slots_walk::{advance_after_op, slot_content};
 use crate::emit::js::{escape_js_string, is_valid_js_identifier};
 use crate::emit::prefix::Site;
+use crate::emit::{EmitCx, EmitError, UnsupportedReason as Reason};
 use crate::pass::walk::PageWalk;
 use crate::pass::{SlotCarrier, SlotName, SlotParams};
 
@@ -73,10 +73,13 @@ pub(super) fn emit_slot_params(
     cx: &mut EmitCx<'_>,
     params: &SlotParams,
     content: Option<&SlotContentOp<'_>>,
-) {
+) -> Result<(), EmitError> {
     match params {
         SlotParams::Absent => cx.buf.push("()"),
         SlotParams::Scoped { text, .. } => {
+            if !crate::emit::prefix::slot_params_syntax_valid(text.as_str(), cx.is_ts) {
+                return Err(EmitError::unsupported(Reason::PrefixExpressionRejected));
+            }
             cx.buf.push("(");
             let processed = crate::emit::prefix::prefix_slot_defaults(text.as_str());
             if let Some((leading, trailing)) = content
@@ -94,6 +97,7 @@ pub(super) fn emit_slot_params(
             cx.buf.push(")");
         }
     }
+    Ok(())
 }
 
 fn authored_expr_padding<'a>(

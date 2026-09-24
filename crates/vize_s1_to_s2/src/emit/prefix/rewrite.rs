@@ -242,6 +242,12 @@ fn parses_as_params(content: &str, source_type: SourceType) -> bool {
         .is_ok()
 }
 
+/// Slot props are a binding pattern, not an arbitrary expression. Refuse a
+/// malformed pattern so the compatibility parser can report its diagnostic.
+pub(in crate::emit) fn slot_params_syntax_valid(content: &str, is_ts: bool) -> bool {
+    parses_as_params(content, js_module()) || (is_ts && parses_as_params(content, ts_module()))
+}
+
 /// `parse_checks::parses_as_typescript`: the wrapped expression parse,
 /// then the whole-program parse, both as TypeScript.
 fn parses_as_typescript(content: &str) -> bool {

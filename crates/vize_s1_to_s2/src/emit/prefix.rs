@@ -32,6 +32,7 @@ mod targets;
 mod typescript;
 
 pub(super) use globals::{is_global_allowed, is_simple_identifier};
+pub(super) use rewrite::slot_params_syntax_valid;
 pub(super) use scope::{PrefixScope, ScopeMark};
 pub(super) use slot_defaults::prefix_slot_defaults;
 #[cfg(feature = "typescript")]

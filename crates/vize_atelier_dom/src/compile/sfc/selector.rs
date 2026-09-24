@@ -31,6 +31,11 @@ fn source_contains_parser_recovery(source: &str) -> bool {
                 {
                     return true;
                 }
+                // A stray root-level end tag is fatal in the shipped parser.
+                // The direct S2 path has no parser diagnostics to return.
+                if tags.is_empty() {
+                    return true;
+                }
                 pop_closed_tag(&mut tags, closing_name);
                 index = scan_tag_end(bytes, closing_name_end);
                 continue;
@@ -109,6 +114,12 @@ mod tests {
                 "{source} should keep the direct S2 SFC fast path"
             );
         }
+    }
+
+    #[test]
+    fn stray_end_tag_requires_parser_diagnostics() {
+        assert!(!s2_sfc_fast_path_supported_source("<div></div></div>"));
+        assert!(s2_sfc_fast_path_supported_source("<div></div>"));
     }
 }
 
