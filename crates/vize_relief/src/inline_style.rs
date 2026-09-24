@@ -27,7 +27,7 @@ pub fn parse_inline_style(source: &str) -> Vec<(String, String)> {
     let mut indices: FxHashMap<String, usize> = FxHashMap::default();
     let mut start = 0;
     for end in separators {
-        let declaration = &source[start..end];
+        let declaration = source.get(start..end).unwrap_or_default();
         start = end + 1;
         let Some((key, value)) = declaration.split_once(':') else {
             continue;
@@ -43,8 +43,11 @@ pub fn parse_inline_style(source: &str) -> Vec<(String, String)> {
         if key == "__proto__" {
             continue;
         }
-        if let Some(&index) = indices.get(&key) {
-            properties[index].1 = value;
+        if let Some(property) = indices
+            .get(&key)
+            .and_then(|&index| properties.get_mut(index))
+        {
+            property.1 = value;
         } else {
             indices.insert(key.clone(), properties.len());
             properties.push((key, value));
@@ -64,14 +67,14 @@ fn without_comments(source: &str) -> Cow<'_, str> {
     let mut output = String::with_capacity(source.len());
     let mut copied = 0;
     let mut comment = first;
-    while let Some(end) = source[comment + 2..].find("*/") {
-        output.push_str(&source[copied..comment]);
+    while let Some(end) = source.get(comment + 2..).and_then(|rest| rest.find("*/")) {
+        output.push_str(source.get(copied..comment).unwrap_or_default());
         copied = comment + 2 + end + 2;
-        let Some(next) = source[copied..].find("/*") else {
+        let Some(next) = source.get(copied..).and_then(|rest| rest.find("/*")) else {
             break;
         };
         comment = copied + next;
     }
-    output.push_str(&source[copied..]);
+    output.push_str(source.get(copied..).unwrap_or_default());
     Cow::Owned(output.into())
 }

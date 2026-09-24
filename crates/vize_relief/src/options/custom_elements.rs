@@ -97,14 +97,17 @@ fn tag_pattern_matches(pattern: &str, tag: &str) -> bool {
     {
         matched_any = true;
         if index == 0 && !starts_with_wildcard {
-            if !tag[position..].starts_with(part) {
+            if !tag
+                .get(position..)
+                .is_some_and(|rest| rest.starts_with(part))
+            {
                 return false;
             }
             position += part.len();
             continue;
         }
 
-        let Some(found) = tag[position..].find(part) else {
+        let Some(found) = tag.get(position..).and_then(|rest| rest.find(part)) else {
             return false;
         };
         position += found + part.len();
