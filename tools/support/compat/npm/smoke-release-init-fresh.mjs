@@ -66,11 +66,11 @@ export function packedFileSpec(tarball, pathApi = path) {
 export function packedRedirects(context, manager, shape) {
   const redirects = {};
   for (const [name, tarball] of context.packed) {
-    // pnpm 11 links a foreign-platform optional `file:` dependency to the
-    // tarball itself. A later `pnpm install` then reads it as a package
-    // directory and fails with ENOTDIR. Only the current host's packages can
-    // execute here; their exact tarballs remain mandatory in the fresh tree.
-    if (!context.compatiblePacked.has(name)) continue;
+    // Yarn resolves foreign-platform optional dependencies before filtering
+    // them. They need a packed source while this version is still unpublished.
+    // Other managers only need the current host's packages: pnpm 11 links a
+    // foreign-platform `file:` dependency to its tarball and later hits ENOTDIR.
+    if (manager.id !== "yarn" && !context.compatiblePacked.has(name)) continue;
     if (manager.redirectPlannedDependencies || !shape.plannedDependencies.includes(name)) {
       redirects[name] = packedFileSpec(tarball);
     }

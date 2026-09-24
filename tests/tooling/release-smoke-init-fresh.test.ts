@@ -40,7 +40,7 @@ test("packed tarball specs use lockfile-stable Windows path separators", () => {
   assert.equal(packedFileSpec("/packs/vize.tgz", path.posix), "file:/packs/vize.tgz");
 });
 
-test("fresh-project redirects only tarballs installable on this host", () => {
+test("fresh-project redirects respect platform resolution by package manager", () => {
   const context = {
     packed: new Map([
       ["vize", "/packs/vize.tgz"],
@@ -51,11 +51,16 @@ test("fresh-project redirects only tarballs installable on this host", () => {
     compatiblePacked: new Set(["vize", "@vizejs/native", "@vizejs/native-darwin-arm64"]),
   };
   const shape = PROJECT_SHAPES["vite-vue-ts"];
-  const redirects = packedRedirects(context, PACKAGE_MANAGERS.pnpm, shape);
-  assert.equal(redirects["@vizejs/native"], "file:/packs/native.tgz");
-  assert.equal(redirects["@vizejs/native-darwin-arm64"], "file:/packs/native-darwin-arm64.tgz");
-  assert.equal(redirects["@vizejs/native-linux-x64-gnu"], undefined);
-  assert.equal(redirects.vize, "file:/packs/vize.tgz");
+  for (const managerName of ["npm", "pnpm", "yarn", "bun", "vp"] as const) {
+    const redirects = packedRedirects(context, PACKAGE_MANAGERS[managerName], shape);
+    assert.equal(redirects["@vizejs/native"], "file:/packs/native.tgz");
+    assert.equal(redirects["@vizejs/native-darwin-arm64"], "file:/packs/native-darwin-arm64.tgz");
+    assert.equal(
+      redirects["@vizejs/native-linux-x64-gnu"],
+      managerName === "yarn" ? "file:/packs/native-linux-x64-gnu.tgz" : undefined,
+    );
+    assert.equal(redirects.vize, managerName === "npm" ? undefined : "file:/packs/vize.tgz");
+  }
 });
 
 test("the fresh-project matrix is data, so new cells need no driver change", () => {
