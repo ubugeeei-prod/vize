@@ -21,6 +21,10 @@ const FULL_SWEEP_PATHS = new Set([
 ]);
 const HOSTED_FALLBACK_SMOKE_SUITES = ["vize_glyph"];
 const RUST_BENCHMARK_SUBJECT_PATHS = new Set(["Cargo.lock", "Cargo.toml", "rust-toolchain.toml"]);
+const VAPOR_COMPARISON_PATHS = new Set([
+  "tools/benchmarks/scripts/vapor-compiler-compare.mjs",
+  "tools/benchmarks/scripts/vapor-compiler-fixtures.json",
+]);
 
 function parseArgs(argv) {
   const args = {};
@@ -201,8 +205,11 @@ export function selectCriterionSuites({ changedPaths, metadata, repoDir, hostedF
     .sort((left, right) => left.localeCompare(right));
   const changedIds = new Set(changedPackages);
   const graph = dependencyGraph(metadata);
-  const selected = inventory.filter((name) =>
-    dependsOnAny(packageByName.get(name).id, changedIds, graph),
+  const vaporComparisonChanged = normalizedPaths.some((path) => VAPOR_COMPARISON_PATHS.has(path));
+  const selected = inventory.filter(
+    (name) =>
+      (name === "vize_atelier_vapor" && vaporComparisonChanged) ||
+      dependsOnAny(packageByName.get(name).id, changedIds, graph),
   );
   const skipped = inventory.filter((name) => !selected.includes(name));
   const changedNames = packages
@@ -216,7 +223,7 @@ export function selectCriterionSuites({ changedPaths, metadata, repoDir, hostedF
     reason:
       selected.length === 0
         ? `No configured Criterion suite depends on changed package(s): ${changedNames.join(", ") || "none"}.`
-        : `Selected from reverse dependency impact of: ${changedNames.join(", ")}.`,
+        : `Selected from reverse dependency impact of: ${changedNames.join(", ") || "none"}${vaporComparisonChanged ? "; Vapor comparison tooling" : ""}.`,
   };
 }
 

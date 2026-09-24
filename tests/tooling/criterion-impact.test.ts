@@ -127,6 +127,15 @@ test("Vapor source changes select the paired Davinci compile benchmark", () => {
   assert.deepEqual(result.selected, ["vize_atelier_vapor"]);
 });
 
+test("Vapor comparison fixture changes select the paired suite", () => {
+  const result = selectCriterionSuites({
+    changedPaths: ["tools/benchmarks/scripts/vapor-compiler-fixtures.json"],
+    metadata: metadata(),
+    repoDir,
+  });
+  assert.deepEqual(result.selected, ["vize_atelier_vapor"]);
+});
+
 test("Doctor TUI benchmarks carry explicit reference-runner latency budgets", () => {
   const suite = CRITERION_SUITES.find(
     ({ package: packageName }) => packageName === "vize_benchmarks",

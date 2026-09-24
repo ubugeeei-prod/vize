@@ -109,6 +109,9 @@ jobs:
               --head-sha "$PR_HEAD_SHA" \
               --out "$GITHUB_WORKSPACE/criterion-impact.json"
           fi
+          if node -e 'const s = require(process.argv[1]); process.exit(s.selected.includes("vize_atelier_vapor") ? 0 : 1)' "$GITHUB_WORKSPACE/criterion-impact.json"; then
+            echo 'vapor_selected=true' >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup Wild linker
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -150,11 +153,30 @@ jobs:
             ${CRITERION_AB_THRESHOLD:+--threshold "$CRITERION_AB_THRESHOLD"} \
             --out "$GITHUB_WORKSPACE/criterion-ab-summary.md"
 
+      - name: Install pinned official compiler-vapor
+        if: steps.impact.outputs.vapor_selected == 'true'
+        working-directory: head
+        run: vp install --filter @vize/bench... --frozen-lockfile --prefer-offline
+
+      - name: Compare Vapor S3, retained and official compiler on exact head
+        if: steps.impact.outputs.vapor_selected == 'true'
+        env:
+          HEAD_SHA: ${{ inputs.head_sha }}
+        run: |
+          node head/tools/benchmarks/scripts/vapor-compiler-compare.mjs \
+            --head-sha "$HEAD_SHA" \
+            --criterion "$GITHUB_WORKSPACE/head/target/criterion-ab-head.json" \
+            --out "$GITHUB_WORKSPACE/vapor-compiler-comparison.json" \
+            --summary "$GITHUB_WORKSPACE/vapor-compiler-comparison.md"
+
       - name: Upload criterion A/B summary
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: criterion-ab
-          path: criterion-ab-summary.md
+          path: |
+            criterion-ab-summary.md
+            vapor-compiler-comparison.json
+            vapor-compiler-comparison.md
           if-no-files-found: warn
           retention-days: 14
 
