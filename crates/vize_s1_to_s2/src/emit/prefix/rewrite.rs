@@ -90,8 +90,8 @@ pub(super) fn rewrite_expression(
     if as_params {
         // The original text is re-checked as TypeScript: the official
         // compiler accepts params the stripping fallback could not lower.
-        let accepted = parses_as_params(js_content.as_str(), js_module())
-            || (scope.is_ts() && parses_as_params(content, ts_module()));
+        let accepted = parses_as_params_prefix(js_content.as_str(), js_module())
+            || (scope.is_ts() && parses_as_params_prefix(content, ts_module()));
         return RewriteResult {
             code: js_content,
             used_unref: false,
@@ -231,7 +231,9 @@ fn rewrite_reparsed(
 }
 
 /// `parse_checks::parse_as_params`: the synthesized `(content) => null` parse.
-fn parses_as_params(content: &str, source_type: SourceType) -> bool {
+/// The shipped rewrite check accepts a parsed prefix; keep that behavior for
+/// codegen compatibility while the S2 selector validates the whole pattern.
+fn parses_as_params_prefix(content: &str, source_type: SourceType) -> bool {
     let allocator = Allocator::new();
     let mut wrapped = String::with_capacity(content.len() + 12);
     wrapped.push('(');
@@ -240,6 +242,21 @@ fn parses_as_params(content: &str, source_type: SourceType) -> bool {
     Parser::new(allocator.as_oxc(), wrapped.as_str(), source_type)
         .parse_expression()
         .is_ok()
+}
+
+/// Validate the complete synthesized `(content) => null` arrow expression.
+fn parses_as_params(content: &str, source_type: SourceType) -> bool {
+    let allocator = Allocator::new();
+    let mut wrapped = String::with_capacity(content.len() + 12);
+    wrapped.push('(');
+    wrapped.push_str(content);
+    wrapped.push_str(") => null");
+    let Ok(Expression::ArrowFunctionExpression(arrow)) =
+        Parser::new(allocator.as_oxc(), wrapped.as_str(), source_type).parse_expression()
+    else {
+        return false;
+    };
+    arrow.span.start == 0 && arrow.span.end as usize == wrapped.len()
 }
 
 /// Slot props are a binding pattern, not an arbitrary expression. Refuse a
@@ -300,4 +317,16 @@ pub(super) fn with_whole_expression<T>(
         .parse_expression()
         .ok()?;
     (expr.span().end as usize == wrapped.len()).then(|| decide(expr.get_inner_expression()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{js_module, parses_as_params, slot_params_syntax_valid};
+
+    #[test]
+    fn slot_params_must_consume_the_complete_arrow_expression() {
+        assert!(slot_params_syntax_valid("{ item }", false));
+        assert!(!slot_params_syntax_valid("item) => null; (other", false));
+        assert!(!parses_as_params("item) => null; (other", js_module()));
+    }
 }
