@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, useId } from "vue";
 
 import type { DevtoolsSnapshot } from "../types.ts";
 
@@ -19,6 +19,10 @@ const provideNodes = computed(() => props.snapshot.provideTree.slice(0, 8));
 const suspenseNodes = computed(() => props.snapshot.suspenseTree.slice(0, 8));
 const graphNodes = computed(() => props.snapshot.reactiveGraph.nodes.slice(0, 10));
 const graphEdges = computed(() => props.snapshot.reactiveGraph.edges.slice(0, 16));
+const renderHeadingId = useId();
+const reactivityHeadingId = useId();
+const provideHeadingId = useId();
+const suspenseHeadingId = useId();
 const graphPoints = computed(() => {
   const total = Math.max(1, graphNodes.value.length);
   return Object.fromEntries(
@@ -41,19 +45,15 @@ function pointFor(id: string) {
 </script>
 
 <template>
-  <section data-vize-devtools-panel="trace">
+  <section aria-label="Vize Devtools trace" data-vize-devtools-panel="trace">
     <header>
       <h2>Vize Devtools</h2>
       <p>{{ snapshot.sessionId }} / {{ eventCount }} events</p>
     </header>
 
-    <p v-if="!snapshot.enabled || eventCount === 0" data-vize-devtools-empty>
-      {{ emptyLabel }}
-    </p>
-
-    <div v-else>
-      <section aria-labelledby="vize-devtools-render-heading">
-        <h3 id="vize-devtools-render-heading">Render updates</h3>
+    <div v-if="snapshot.enabled && eventCount > 0">
+      <section :aria-labelledby="renderHeadingId">
+        <h3 :id="renderHeadingId">Render updates</h3>
         <ol>
           <li v-for="node in renderNodes" :key="node.componentId">
             <strong>{{ node.componentName }}</strong>
@@ -64,9 +64,9 @@ function pointFor(id: string) {
         </ol>
       </section>
 
-      <section aria-labelledby="vize-devtools-reactivity-heading">
-        <h3 id="vize-devtools-reactivity-heading">Reactive graph</h3>
-        <svg viewBox="0 0 240 216" role="img" aria-labelledby="vize-devtools-reactivity-heading">
+      <section :aria-labelledby="reactivityHeadingId">
+        <h3 :id="reactivityHeadingId">Reactive graph</h3>
+        <svg viewBox="0 0 240 216" role="img" :aria-labelledby="reactivityHeadingId">
           <line
             v-for="edge in graphEdges"
             :key="`${edge.sourceId}:${edge.targetId}:${edge.operation}`"
@@ -100,8 +100,8 @@ function pointFor(id: string) {
         </svg>
       </section>
 
-      <section aria-labelledby="vize-devtools-provide-heading">
-        <h3 id="vize-devtools-provide-heading">Provide tree</h3>
+      <section :aria-labelledby="provideHeadingId">
+        <h3 :id="provideHeadingId">Provide tree</h3>
         <ol>
           <li v-for="provider in provideNodes" :key="provider.providerId">
             <strong>{{ provider.ownerComponentName }}</strong>
@@ -111,8 +111,8 @@ function pointFor(id: string) {
         </ol>
       </section>
 
-      <section aria-labelledby="vize-devtools-suspense-heading">
-        <h3 id="vize-devtools-suspense-heading">Suspense tree</h3>
+      <section :aria-labelledby="suspenseHeadingId">
+        <h3 :id="suspenseHeadingId">Suspense tree</h3>
         <ol>
           <li v-for="boundary in suspenseNodes" :key="boundary.boundaryId">
             <strong>{{ boundary.componentName }}</strong>
@@ -123,5 +123,7 @@ function pointFor(id: string) {
         </ol>
       </section>
     </div>
+
+    <p v-else data-vize-devtools-empty>{{ emptyLabel }}</p>
   </section>
 </template>

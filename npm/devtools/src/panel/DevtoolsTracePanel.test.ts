@@ -68,3 +68,28 @@ test("renders an SSR-safe empty state", async () => {
   assert.match(html, /data-vize-devtools-empty/);
   assert.match(html, /No trace events/);
 });
+
+test("keeps landmark IDs unique when two trace panels render together", async () => {
+  const recorder = createDevtoolsTraceRecorder({ sessionId: "shared" });
+  recorder.record({
+    kind: "render:end",
+    componentId: "app",
+    componentName: "App",
+    source: "src/App.vue",
+    durationMs: 1,
+  });
+  const snapshot = recorder.snapshot();
+  const html = await renderToString(
+    createSSRApp({
+      setup: () => () =>
+        h("div", [h(DevtoolsTracePanel, { snapshot }), h(DevtoolsTracePanel, { snapshot })]),
+    }),
+  );
+
+  const headingIds = [...html.matchAll(/<h3 id="([^"]+)">/g)].map((match) => match[1]);
+  assert.equal(headingIds.length, 8);
+  assert.equal(new Set(headingIds).size, headingIds.length);
+  for (const id of headingIds) {
+    assert.ok(html.includes(`aria-labelledby="${id}"`));
+  }
+});
