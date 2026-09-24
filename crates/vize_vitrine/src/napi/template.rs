@@ -42,10 +42,18 @@ use vize_atelier_vapor::{
 #[napi]
 pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<CompileResult> {
     let opts = options.unwrap_or_default();
+    let whitespace = resolve_whitespace(opts.whitespace.as_deref())
+        .map_err(|message| Error::new(Status::InvalidArg, message))?;
+    whitespace.apply(|| compile_scoped(template, opts, whitespace.strategy))
+}
+
+fn compile_scoped(
+    template: String,
+    opts: CompilerOptions,
+    whitespace: vize_atelier_core::WhitespaceStrategy,
+) -> Result<CompileResult> {
     let allocator = Allocator::new();
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
-        .map_err(|message| Error::new(Status::InvalidArg, message))?;
-    let whitespace = resolve_whitespace(opts.whitespace.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
     // Parse
@@ -54,21 +62,19 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
     let custom_elements =
         vize_atelier_core::options::CustomElementMatcher::from_patterns(custom_element_patterns);
     let parser_opts = ParserOptions {
-        whitespace: whitespace.strategy,
+        whitespace,
         is_pre_tag: |tag| tag == "pre",
         custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
     };
-    let (mut root, errors) = whitespace.apply(|| {
-        parse_with_options_custom_elements_and_template_syntax(
-            &allocator,
-            &template,
-            parser_opts,
-            custom_elements.clone(),
-            template_syntax,
-        )
-    });
+    let (mut root, errors) = parse_with_options_custom_elements_and_template_syntax(
+        &allocator,
+        &template,
+        parser_opts,
+        custom_elements.clone(),
+        template_syntax,
+    );
 
     let fatal: Vec<_> = errors.iter().filter(|e| !e.is_recoverable()).collect();
     if !fatal.is_empty() {

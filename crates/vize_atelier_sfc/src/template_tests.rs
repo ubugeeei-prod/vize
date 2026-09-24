@@ -114,6 +114,21 @@ fn scoped_vue2_line_breaks_keep_issue_6518_text_before_icon() {
         };
         assert!(legacy.code.contains(expected), "ssr={ssr}: {}", legacy.code);
     }
+
+    let mut vapor_options = SfcCompileOptions::default();
+    vapor_options.vapor = true;
+    let vapor_default = compile_sfc(&descriptor, vapor_options.clone()).unwrap();
+    let vapor_legacy = with_whitespace_mode(WhitespaceStrategy::Condense, true, || {
+        compile_sfc(&descriptor, vapor_options).unwrap()
+    });
+    assert_ne!(vapor_default.code, vapor_legacy.code);
+    assert!(
+        vapor_legacy
+            .code
+            .contains("_toDisplayString(_ctx.name) + \"\\n\""),
+        "{}",
+        vapor_legacy.code
+    );
 }
 
 #[test]

@@ -657,6 +657,12 @@ fn test_vue2_migration_line_break_after_interpolation() {
     };
     assert_eq!(text_after_interpolation(&default), " ");
     assert_eq!(text_after_interpolation(&legacy), "\n");
+    let (after, errors) = parse_with();
+    assert!(
+        errors.iter().all(CompilerError::is_recoverable),
+        "{errors:?}"
+    );
+    assert_eq!(text_after_interpolation(&after), " ");
 }
 
 #[test]
