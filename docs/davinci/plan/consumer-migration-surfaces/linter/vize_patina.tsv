@@ -658,10 +658,10 @@ linter	Linter	source	crates/vize_patina/src/rules/script/valid_define_options.rs
 linter	Linter	source	crates/vize_patina/src/rules/script/valid_define_props.rs	37	s0	S0	stage	vize_s0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/script/valid_define_props.rs	37	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/valid_define_props.rs	37	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/valid_next_tick.rs	43	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize_patina/src/rules/script/valid_next_tick.rs	43	raw_oxc	raw OXC	raw	oxc_ast	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/valid_next_tick.rs	43	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
-linter	Linter	source	crates/vize_patina/src/rules/script/valid_next_tick.rs	43	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/valid_next_tick.rs	44	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize_patina/src/rules/script/valid_next_tick.rs	44	raw_oxc	raw OXC	raw	oxc_ast	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/valid_next_tick.rs	44	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
+linter	Linter	source	crates/vize_patina/src/rules/script/valid_next_tick.rs	44	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/vue_router_prefer_named_push.rs	12	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/vue_router_prefer_named_push.rs	12	raw_oxc	raw OXC	raw	oxc_ast_visit	raw	1
 linter	Linter	source	crates/vize_patina/src/rules/script/vue_test_utils_no_html_snapshot.rs	12	raw_oxc	raw OXC	raw	oxc_ast	raw	1

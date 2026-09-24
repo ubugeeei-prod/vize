@@ -35,17 +35,19 @@
 //! await nextTick()
 //! nextTick().then(() => focusInput())
 //! nextTick(() => focusInput())
+//! const tick = () => nextTick()
 //! this.$nextTick(() => focusInput())
 //! ```
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
-    CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier, Program, Statement,
+    ArrowFunctionExpression, CallExpression, Expression, ImportDeclaration,
+    ImportDeclarationSpecifier, Program, Statement,
 };
 use oxc_ast_visit::{
     Visit,
-    walk::{walk_import_declaration, walk_statement},
+    walk::{walk_arrow_function_expression, walk_import_declaration, walk_statement},
 };
 use oxc_span::Span;
 use vize_s0::{CompactString, FxHashSet};
@@ -85,6 +87,7 @@ impl ScriptRule for ValidNextTick {
             offset,
             result,
             imported_aliases: FxHashSet::default(),
+            returned_arrow_statement: None,
         };
         visitor.visit_program(program);
     }
@@ -94,6 +97,7 @@ struct ValidNextTickVisitor<'result> {
     offset: usize,
     result: &'result mut ScriptLintResult,
     imported_aliases: FxHashSet<CompactString>,
+    returned_arrow_statement: Option<Span>,
 }
 
 impl<'a> Visit<'a> for ValidNextTickVisitor<'_> {
@@ -121,6 +125,8 @@ impl<'a> Visit<'a> for ValidNextTickVisitor<'_> {
         // `AwaitExpression`, a `.then(...)` member call, a declaration, ...), so
         // those forms are never reached here.
         if let Statement::ExpressionStatement(statement) = it
+            && (self.returned_arrow_statement != Some(statement.span)
+                || !returns_call(&statement.expression))
             && let Some(span) = bare_next_tick_call(&statement.expression, &self.imported_aliases)
         {
             let start = self.offset as u32 + span.start;
@@ -132,6 +138,32 @@ impl<'a> Visit<'a> for ValidNextTickVisitor<'_> {
             );
         }
         walk_statement(self, it);
+    }
+
+    fn visit_arrow_function_expression(&mut self, arrow: &ArrowFunctionExpression<'a>) {
+        // Oxc represents an expression-bodied arrow as a FunctionBody with an
+        // ExpressionStatement. Its value is returned, unlike a block body's
+        // ordinary expression statement.
+        let previous = self.returned_arrow_statement;
+        self.returned_arrow_statement = if arrow.expression {
+            match arrow.body.statements.first() {
+                Some(Statement::ExpressionStatement(statement)) => Some(statement.span),
+                _ => None,
+            }
+        } else {
+            None
+        };
+        walk_arrow_function_expression(self, arrow);
+        self.returned_arrow_statement = previous;
+    }
+}
+
+/// Parentheses preserve the arrow's returned value; `void` discards it.
+fn returns_call(expression: &Expression<'_>) -> bool {
+    match expression {
+        Expression::CallExpression(_) => true,
+        Expression::ParenthesizedExpression(paren) => returns_call(&paren.expression),
+        _ => false,
     }
 }
 
@@ -249,6 +281,51 @@ mod tests {
             0,
         );
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_arrow_expression_return() {
+        let result = create_linter().lint(
+            "import { nextTick as vueNextTick } from 'vue';\nexport const useTick = () => { const nextTick = () => vueNextTick(); return { nextTick }; };",
+            0,
+        );
+        assert_eq!(result.warning_count, 0, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_valid_parenthesized_arrow_expression_return() {
+        let result = create_linter().lint(
+            "import { nextTick } from 'vue'; const tick = () => (nextTick());",
+            0,
+        );
+        assert_eq!(result.warning_count, 0, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_arrow_block_bare_call() {
+        let result = create_linter().lint(
+            "import { nextTick } from 'vue'; const tick = () => { nextTick(); };",
+            0,
+        );
+        assert_eq!(result.warning_count, 1, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_invalid_arrow_expression_void_call() {
+        let result = create_linter().lint(
+            "import { nextTick } from 'vue'; const tick = () => void nextTick();",
+            0,
+        );
+        assert_eq!(result.warning_count, 1, "{:#?}", result.diagnostics);
+    }
+
+    #[test]
+    fn test_nested_arrow_restores_statement_context() {
+        let result = create_linter().lint(
+            "import { nextTick } from 'vue'; const tick = () => { const inner = () => nextTick(); nextTick(); return inner; };",
+            0,
+        );
+        assert_eq!(result.warning_count, 1, "{:#?}", result.diagnostics);
     }
 
     #[test]
