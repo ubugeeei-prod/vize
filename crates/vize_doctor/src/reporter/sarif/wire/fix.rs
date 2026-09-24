@@ -28,17 +28,18 @@ impl<'finding> SarifFix<'finding> {
             .into_iter()
             .map(|(path, edits)| SarifArtifactChange {
                 artifact_location: SarifArtifactLocation {
-                    uri: plan.artifact(path).uri().into(),
+                    uri: plan.artifact_uri(path).into(),
                 },
+                // Preflight renders a fix only when every edit has a region.
                 replacements: edits
                     .into_iter()
-                    .map(|edit| SarifReplacement {
-                        deleted_region: plan
-                            .region(&edit.location)
-                            .expect("fix sources are mandatory during SARIF preflight"),
-                        inserted_content: SarifArtifactContent {
-                            text: &edit.replacement,
-                        },
+                    .filter_map(|edit| {
+                        Some(SarifReplacement {
+                            deleted_region: plan.region(&edit.location)?,
+                            inserted_content: SarifArtifactContent {
+                                text: &edit.replacement,
+                            },
+                        })
                     })
                     .collect(),
             })

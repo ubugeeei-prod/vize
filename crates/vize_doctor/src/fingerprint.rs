@@ -74,18 +74,22 @@ impl FromStr for ContentFingerprint {
             });
         }
 
-        let hex = &value.as_bytes()[CONTENT_FINGERPRINT_PREFIX.len()..];
+        let hex = value
+            .as_bytes()
+            .get(CONTENT_FINGERPRINT_PREFIX.len()..)
+            .ok_or(ContentFingerprintParseError::InvalidLength {
+                actual: value.len(),
+            })?;
         let mut digest = [0; DIGEST_BYTES];
-        for (index, pair) in hex.as_chunks::<2>().0.iter().enumerate() {
-            let high =
-                decode_lower_hex(pair[0]).ok_or(ContentFingerprintParseError::InvalidHex {
-                    index: CONTENT_FINGERPRINT_PREFIX.len() + index * 2,
-                })?;
-            let low =
-                decode_lower_hex(pair[1]).ok_or(ContentFingerprintParseError::InvalidHex {
-                    index: CONTENT_FINGERPRINT_PREFIX.len() + index * 2 + 1,
-                })?;
-            digest[index] = high << 4 | low;
+        let pairs = hex.as_chunks::<2>().0.iter().zip(digest.iter_mut());
+        for (index, (&[high, low], slot)) in pairs.enumerate() {
+            let high = decode_lower_hex(high).ok_or(ContentFingerprintParseError::InvalidHex {
+                index: CONTENT_FINGERPRINT_PREFIX.len() + index * 2,
+            })?;
+            let low = decode_lower_hex(low).ok_or(ContentFingerprintParseError::InvalidHex {
+                index: CONTENT_FINGERPRINT_PREFIX.len() + index * 2 + 1,
+            })?;
+            *slot = high << 4 | low;
         }
         Ok(Self(digest))
     }
@@ -172,6 +176,7 @@ const fn decode_lower_hex(byte: u8) -> Option<u8> {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use super::{ContentFingerprint, ContentFingerprintParseError};
     use vize_s0::{String, ToCompactString, cstr};

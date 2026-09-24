@@ -118,9 +118,9 @@ impl<'source> IndexedSource<'source> {
         let line_index = self
             .line_starts
             .partition_point(|start| *start as usize <= offset)
-            - 1;
-        let line_start = self.line_starts[line_index] as usize;
-        let column = self.text[line_start..offset].chars().count() as u32 + 1;
+            .checked_sub(1)?;
+        let line_start = *self.line_starts.get(line_index)? as usize;
+        let column = self.text.get(line_start..offset)?.chars().count() as u32 + 1;
         Some((line_index as u32 + 1, column))
     }
 }

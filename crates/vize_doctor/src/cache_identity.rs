@@ -98,12 +98,12 @@ impl CapabilityCacheIdentity {
 
         let mut inputs = inputs.into_iter().collect::<Vec<_>>();
         inputs.sort_unstable_by(|left, right| left.id.cmp(&right.id));
-        if let Some(duplicate) = inputs
-            .windows(2)
-            .find(|window| window[0].id == window[1].id)
-        {
+        if let Some(duplicate) = inputs.windows(2).find_map(|window| match window {
+            [left, right] if left.id == right.id => Some(left),
+            _ => None,
+        }) {
             return Err(CapabilityCacheIdentityError::DuplicateInput {
-                input: duplicate[0].id.clone(),
+                input: duplicate.id.clone(),
             });
         }
 
@@ -221,20 +221,23 @@ impl<'de> Deserialize<'de> for CapabilityCacheIdentity {
             .collect::<Result<Vec<_>, _>>()
             .map_err(de::Error::custom)?;
         for pair in inputs.windows(2) {
-            match pair[0].id.cmp(&pair[1].id) {
+            let [left, right] = pair else {
+                continue;
+            };
+            match left.id.cmp(&right.id) {
                 Ordering::Less => {}
                 Ordering::Equal => {
                     return Err(de::Error::custom(
                         CapabilityCacheIdentityError::DuplicateInput {
-                            input: pair[0].id.clone(),
+                            input: left.id.clone(),
                         },
                     ));
                 }
                 Ordering::Greater => {
                     return Err(de::Error::custom(
                         CapabilityCacheIdentityError::NonCanonicalInputOrder {
-                            previous: pair[0].id.clone(),
-                            current: pair[1].id.clone(),
+                            previous: left.id.clone(),
+                            current: right.id.clone(),
                         },
                     ));
                 }
@@ -270,5 +273,5 @@ fn is_stable_input_id(value: &str) -> bool {
 
 fn is_windows_drive_path(value: &str) -> bool {
     let bytes = value.as_bytes();
-    bytes.len() >= 2 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':'
+    matches!(bytes, [drive, b':', ..] if drive.is_ascii_alphabetic())
 }

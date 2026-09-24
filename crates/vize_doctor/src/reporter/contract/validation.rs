@@ -71,7 +71,10 @@ fn validate_set<T: Ord>(
     if values.is_empty() {
         return Err(ReporterContractError::new(field, empty_reason));
     }
-    if !values.windows(2).all(|window| window[0] < window[1]) {
+    if !values
+        .windows(2)
+        .all(|window| matches!(window, [left, right] if left < right))
+    {
         return Err(ReporterContractError::new(
             field,
             "must be sorted and contain no duplicates",

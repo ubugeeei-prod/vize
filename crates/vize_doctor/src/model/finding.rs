@@ -103,7 +103,6 @@ pub struct DoctorFinding {
 
 impl DoctorFinding {
     /// Creates a finding with empty optional evidence and reason-required suppression.
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         code: impl Into<String>,
         category: DoctorCategory,

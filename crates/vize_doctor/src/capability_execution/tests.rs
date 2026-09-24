@@ -1,3 +1,8 @@
+#![expect(
+    clippy::unreachable,
+    clippy::panic_in_result_fn,
+    reason = "tests assert by panicking"
+)]
 use std::{
     cell::Cell,
     collections::BTreeMap,

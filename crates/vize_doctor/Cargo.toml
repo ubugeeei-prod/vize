@@ -30,3 +30,6 @@ vize_croquis.workspace = true
 [[bench]]
 name = "reporter"
 harness = false
+
+[lints]
+workspace = true

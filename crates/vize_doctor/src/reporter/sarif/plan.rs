@@ -109,20 +109,24 @@ impl<'report, 'source> SarifPlan<'report, 'source> {
         &self.rules
     }
 
-    pub(super) fn rule_index(&self, code: &str) -> usize {
+    /// The rule's index; preflight indexes every finding rule.
+    pub(super) fn rule_index(&self, code: &str) -> Option<usize> {
         self.rules
             .binary_search_by_key(&code, |finding| finding.code.as_str())
-            .expect("preflight indexed every finding rule")
+            .ok()
     }
 
-    pub(super) fn artifact(&self, path: &str) -> &ArtifactPlan<'source> {
-        self.artifacts
-            .get(path)
-            .expect("preflight indexed every finding artifact")
+    /// The artifact for `path`; preflight indexes every finding artifact.
+    pub(super) fn artifact(&self, path: &str) -> Option<&ArtifactPlan<'source>> {
+        self.artifacts.get(path)
+    }
+
+    pub(super) fn artifact_uri(&self, path: &str) -> &str {
+        self.artifact(path).map_or("", |artifact| artifact.uri())
     }
 
     pub(super) fn region(&self, location: &SourceLocation) -> Option<SarifRegion> {
-        let source = self.artifact(&location.path).source?;
+        let source = self.artifact(&location.path)?.source?;
         let (start_line, start_column) = source.position(location.start)?;
         let (end_line, end_column) = source.position(location.end)?;
         Some(SarifRegion {
@@ -160,8 +164,10 @@ impl<'report, 'source> SarifPlan<'report, 'source> {
     }
 
     fn validate_location(&self, location: &SourceLocation) -> Result<(), ReporterError> {
-        let artifact = self.artifact(&location.path);
-        let Some(source) = artifact.source else {
+        let Some(source) = self
+            .artifact(&location.path)
+            .and_then(|artifact| artifact.source)
+        else {
             return Ok(());
         };
         if source.position(location.start).is_none() {
@@ -230,8 +236,12 @@ fn encode_relative_uri(path: &str) -> String {
             encoded.push(byte as char);
         } else {
             encoded.push('%');
-            encoded.push(HEX[(byte >> 4) as usize] as char);
-            encoded.push(HEX[(byte & 0x0f) as usize] as char);
+            for nibble in [byte >> 4, byte & 0x0f] {
+                encoded.push(
+                    HEX.get(usize::from(nibble))
+                        .map_or('0', |&digit| char::from(digit)),
+                );
+            }
         }
     }
     encoded

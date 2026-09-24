@@ -146,7 +146,8 @@ impl Serialize for SarifResults<'_, '_, '_> {
 #[serde(rename_all = "camelCase")]
 struct SarifResult<'finding> {
     rule_id: &'finding str,
-    rule_index: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    rule_index: Option<usize>,
     level: &'static str,
     message: SarifMessage<'finding>,
     locations: [SarifLocation<'finding>; 1],
@@ -220,7 +221,7 @@ impl<'finding> SarifLocation<'finding> {
         Self {
             physical_location: SarifPhysicalLocation {
                 artifact_location: SarifArtifactLocation {
-                    uri: plan.artifact(&location.path).uri().into(),
+                    uri: plan.artifact_uri(&location.path).into(),
                 },
                 region: plan.region(location),
             },

@@ -1,4 +1,5 @@
 #![cfg(feature = "application-analysis")]
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
 use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,

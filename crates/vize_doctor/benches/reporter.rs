@@ -1,3 +1,4 @@
+#![expect(clippy::unwrap_used, reason = "benchmarks abort on fixture errors")]
 use std::{hint::black_box, io};
 
 use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};

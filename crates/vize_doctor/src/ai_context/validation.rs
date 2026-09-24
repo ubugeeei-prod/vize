@@ -262,7 +262,9 @@ fn unique_ids<'a>(
 }
 
 fn is_sorted_unique(values: &[String]) -> bool {
-    values.windows(2).all(|pair| pair[0] < pair[1])
+    values
+        .windows(2)
+        .all(|pair| matches!(pair, [left, right] if left < right))
 }
 
 pub(super) fn runtime_limit(limit: u64) -> usize {

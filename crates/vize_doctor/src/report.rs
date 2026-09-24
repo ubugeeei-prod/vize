@@ -84,9 +84,8 @@ impl DoctorSummary {
         let mut has_blocking_errors = false;
 
         for finding in findings {
-            let health = categories
-                .get_mut(&finding.category)
-                .expect("every doctor category has a score entry");
+            // Every category is pre-seeded above; `or_default` keeps that shape.
+            let health = categories.entry(finding.category).or_default();
             health.penalty = health
                 .penalty
                 .saturating_add(u32::from(finding.assessment.penalty.points));

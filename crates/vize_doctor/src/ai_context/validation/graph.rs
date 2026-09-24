@@ -130,7 +130,9 @@ fn validate_next_node<'a>(
         |index| match kind {
             AiEvidenceNodeKind::Evidence => cstr!("{}:evidence:{index}", finding.id),
             AiEvidenceNodeKind::RelatedLocation => cstr!("{}:related:{index}", finding.id),
-            AiEvidenceNodeKind::Finding => unreachable!("finding roots do not have an index"),
+            // Finding roots have no index; an indexed one can never match and
+            // fails the ordering check below.
+            AiEvidenceNodeKind::Finding => cstr!("{}:finding:{index}", finding.id),
         },
     );
     if node.id != expected_id || node.finding_id != finding.id || node.kind != kind {

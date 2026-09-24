@@ -210,7 +210,8 @@ fn identity_fingerprint(
         .inputs()
         .binary_search_by(|candidate| candidate.id().cmp(input))
         .ok()
-        .map(|index| identity.inputs()[index].fingerprint())
+        .and_then(|index| identity.inputs().get(index))
+        .map(|input| input.fingerprint())
 }
 
 fn fingerprint_findings(
