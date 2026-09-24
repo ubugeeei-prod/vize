@@ -5,7 +5,10 @@ import native from "../../../npm/native/index.js";
 
 const require = createRequire(import.meta.url);
 const vueRuntime = readFileSync(require.resolve("vue/dist/vue.global.prod.js"), "utf8");
-const source = "<p>\n  {{ name }}\n  <i />\n</p>";
+const source = `<p style="display: flex; letter-spacing: 0.25px">
+    {{ label }}
+    <i class="icon" />
+  </p>`;
 
 test("Vue 2 line-break migration keeps the text before a flex icon", async ({ page }) => {
   const defaultResult = native.compile(source, { mode: "module", whitespace: "condense" });
@@ -16,7 +19,7 @@ test("Vue 2 line-break migration keeps the text before a flex icon", async ({ pa
 
   await page.setContent(`
     <style>
-      p { display: flex; letter-spacing: 0.25px; margin: 0; font: 16px Arial, sans-serif; }
+      p { margin: 0; font: 12px Arial, sans-serif; }
       i { display: block; width: 10px; height: 10px; background: red; }
     </style>
     <div id="default"></div>
@@ -50,7 +53,7 @@ test("Vue 2 line-break migration keeps the text before a flex icon", async ({ pa
           `${code.replace("export function render", "function render")}\nreturn render;`,
         )(...helpers) as () => ReturnType<typeof Vue.h>;
         const container = document.getElementById(id)!;
-        Vue.createApp({ data: () => ({ name: "Label" }), render }).mount(container);
+        Vue.createApp({ data: () => ({ label: "Label" }), render }).mount(container);
         const paragraph = container.querySelector("p")!;
         const icon = paragraph.querySelector("i")!;
         return {
