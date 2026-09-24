@@ -2,7 +2,6 @@
 // test files) so the Davinci assertion lint, which only scans inline
 // `#[cfg(test)] mod` bodies under `src/`, keeps covering these tests.
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
 mod structural_transform_tests {
     use vize_s0::Allocator;
 

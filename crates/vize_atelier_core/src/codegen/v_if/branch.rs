@@ -54,14 +54,14 @@ pub(super) fn generate_if_branch_nodes(
     branch_index: usize,
 ) {
     // Single child optimization
-    if children.len() == 1 {
-        match &children[0] {
+    if let [only] = children {
+        match only {
             TemplateChildNode::Element(el) => {
                 // Check if it's a template element - treat as fragment
                 if el.tag_type == ElementType::Template {
                     // Template with single child -> unwrap to single element
-                    if el.children.len() == 1 {
-                        match &el.children[0] {
+                    if let [only_child] = el.children.as_slice() {
+                        match only_child {
                             TemplateChildNode::Element(inner) => {
                                 // Check if inner element is a component
                                 if inner.tag_type == ElementType::Component {
@@ -94,7 +94,7 @@ pub(super) fn generate_if_branch_nodes(
             }
             _ => {
                 // Other node types - wrap in fragment
-                if let TemplateChildNode::For(for_node) = &children[0] {
+                if let TemplateChildNode::For(for_node) = only {
                     generate_if_branch_for(ctx, for_node, branch, branch_index);
                 } else {
                     generate_if_branch_template_fragment(ctx, children, branch, branch_index);
@@ -365,16 +365,10 @@ fn generate_if_branch_element(
     // Generate children if any
     if !el.children.is_empty() {
         ctx.push(", ");
-        if el.children.len() == 1 {
-            if let TemplateChildNode::Text(text) = &el.children[0] {
-                ctx.push("\"");
-                ctx.push_text(text);
-                ctx.push("\"");
-            } else {
-                ctx.with_parent_namespace(child_namespace(el), |ctx| {
-                    generate_if_branch_children(ctx, &el.children);
-                });
-            }
+        if let [TemplateChildNode::Text(text)] = el.children.as_slice() {
+            ctx.push("\"");
+            ctx.push_text(text);
+            ctx.push("\"");
         } else {
             ctx.with_parent_namespace(child_namespace(el), |ctx| {
                 generate_if_branch_children(ctx, &el.children);

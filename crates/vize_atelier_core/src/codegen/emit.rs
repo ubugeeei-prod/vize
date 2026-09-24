@@ -68,11 +68,11 @@ pub(super) fn generate_with_sections_and_options(
     // Generate root node
     if root_children.is_empty() {
         ctx.push("null");
-    } else if root_children.len() == 1 {
+    } else if let [single] = root_children.as_slice() {
         // Single root child - wrap in block
         profile!(
             "atelier.codegen.root_node",
-            generate_root_node(&mut ctx, root_children[0])
+            generate_root_node(&mut ctx, single)
         );
     } else {
         // Multiple root children - wrap in fragment block

@@ -189,7 +189,7 @@ fn desugar_scoped_slot_attrs<'a>(allocator: &'a Allocator, el: &mut ElementNode<
         return;
     }
 
-    let PropNode::Attribute(scope_attr) = &el.props[scope_idx] else {
+    let Some(PropNode::Attribute(scope_attr)) = el.props.get(scope_idx) else {
         return;
     };
     let slot_props = scope_attr
@@ -205,7 +205,7 @@ fn desugar_scoped_slot_attrs<'a>(allocator: &'a Allocator, el: &mut ElementNode<
         .iter()
         .position(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name == "slot"));
     let slot_name = slot_name_idx.and_then(|idx| {
-        if let PropNode::Attribute(attr) = &el.props[idx] {
+        if let Some(PropNode::Attribute(attr)) = el.props.get(idx) {
             attr.value
                 .as_ref()
                 .map(|value| (value.content, value.loc.clone()))
@@ -301,5 +301,4 @@ pub(crate) fn desugar_v2_v_on_modifiers(dir: &mut DirectiveNode<'_>) {
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
 mod tests;

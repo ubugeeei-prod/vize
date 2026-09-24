@@ -11,7 +11,7 @@ use crate::{
     SourceLocation, TemplateChildNode,
 };
 
-use super::TransformContext;
+use super::{ParentNode, TransformContext};
 
 impl<'a> TransformContext<'a> {
     /// Create a new transform context
@@ -482,15 +482,14 @@ impl<'a> TransformContext<'a> {
 
     /// Remove a specific node
     pub fn remove_node_at(&mut self, index: usize) {
-        if let Some(parent) = &self.parent {
-            let children = parent.children_mut();
-            if index < children.len() {
-                children.remove(index);
-                if index < self.child_index {
-                    self.child_index -= 1;
-                }
-                self.node_removed = true;
+        if let Some(children) = self.parent.as_ref().and_then(ParentNode::children_mut)
+            && index < children.len()
+        {
+            children.remove(index);
+            if index < self.child_index {
+                self.child_index -= 1;
             }
+            self.node_removed = true;
         }
     }
 

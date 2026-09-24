@@ -14,8 +14,12 @@
 //! before the rebuilt compound text compares. Neither is silently skipped.
 
 #![cfg(feature = "legacy")]
-#![allow(clippy::disallowed_types, clippy::disallowed_macros)]
 
+#[expect(
+    dead_code,
+    unused_imports,
+    reason = "shared support; this binary uses a subset"
+)]
 mod s2_support;
 
 use s2_support::{

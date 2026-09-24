@@ -6,6 +6,7 @@
 //! P1-6/P1-7 witness law). The corpus-widened entry is
 //! `davinci_s2_transform_corpus.rs` (feature `davinci-differential`).
 
+#[expect(unused_imports, reason = "shared support; this binary uses a subset")]
 mod s2_support;
 
 use s2_support::{

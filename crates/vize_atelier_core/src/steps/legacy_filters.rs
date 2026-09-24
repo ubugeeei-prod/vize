@@ -50,7 +50,6 @@ fn is_valid_division_char(c: char) -> bool {
 /// one real filter was found.
 pub(crate) fn parse_filters(exp: &str) -> Option<FilterExpression> {
     let bytes = exp.as_bytes();
-    let len = bytes.len();
 
     let mut in_single = false;
     let mut in_double = false;
@@ -67,9 +66,7 @@ pub(crate) fn parse_filters(exp: &str) -> Option<FilterExpression> {
     let mut prev: u8 = 0;
 
     let mut i = 0usize;
-    while i < len {
-        let c = bytes[i];
-
+    while let Some(&c) = bytes.get(i) {
         if in_single {
             if c == b'\'' && prev != b'\\' {
                 in_single = false;
@@ -88,7 +85,7 @@ pub(crate) fn parse_filters(exp: &str) -> Option<FilterExpression> {
             }
         } else if c == b'|'
             && bytes.get(i + 1).copied() != Some(b'|')
-            && (i == 0 || bytes[i - 1] != b'|')
+            && i.checked_sub(1).and_then(|p| bytes.get(p)) != Some(&b'|')
             && curly == 0
             && square == 0
             && paren == 0
@@ -96,9 +93,10 @@ pub(crate) fn parse_filters(exp: &str) -> Option<FilterExpression> {
             // Top-level filter pipe.
             if expression.is_none() {
                 last_filter_index = i + 1;
-                expression = Some(String::new(exp[..i].trim()));
+                expression = Some(String::new(exp.get(..i).unwrap_or_default().trim()));
             } else {
-                filters.push(String::new(exp[last_filter_index..i].trim()));
+                let filter = exp.get(last_filter_index..i).unwrap_or_default();
+                filters.push(String::new(filter.trim()));
                 last_filter_index = i + 1;
             }
         } else {
@@ -117,16 +115,13 @@ pub(crate) fn parse_filters(exp: &str) -> Option<FilterExpression> {
             if c == b'/' {
                 // Look back past spaces for the previous non-space char to
                 // decide division vs. regex (mirrors `validDivisionCharRE`).
-                let mut j = i as isize - 1;
-                let mut p: Option<char> = None;
-                while j >= 0 {
-                    let pc = exp[j as usize..].chars().next().unwrap_or(' ');
-                    if pc != ' ' {
-                        p = Some(pc);
-                        break;
-                    }
-                    j -= 1;
-                }
+                let p = (0..i).rev().find_map(|j| {
+                    let pc = exp
+                        .get(j..)
+                        .and_then(|rest| rest.chars().next())
+                        .unwrap_or(' ');
+                    (pc != ' ').then_some(pc)
+                });
                 if p.is_none_or(|pc| !is_valid_division_char(pc)) {
                     in_regex = true;
                 }
@@ -140,7 +135,8 @@ pub(crate) fn parse_filters(exp: &str) -> Option<FilterExpression> {
     match &mut expression {
         None => return None,
         Some(_) if last_filter_index != 0 => {
-            filters.push(String::new(exp[last_filter_index..].trim()));
+            let filter = exp.get(last_filter_index..).unwrap_or_default();
+            filters.push(String::new(filter.trim()));
         }
         Some(_) => {}
     }
@@ -177,7 +173,7 @@ pub(crate) fn wrap_filter(exp: &str, filter: &str, filter_id: &str) -> Option<St
         Some(idx) => {
             // Call-style filter `f(args)`: `_filter_f(exp,args` with the
             // trailing `)` carried over from `args` (Vue 2 call syntax).
-            let args = &filter[idx + 1..];
+            let args = filter.get(idx + 1..).unwrap_or_default();
             let mut out = String::with_capacity(filter_id.len() + exp.len() + args.len() + 3);
             out.push_str(filter_id);
             out.push('(');
@@ -199,10 +195,7 @@ pub(crate) fn wrap_filter(exp: &str, filter: &str, filter_id: &str) -> Option<St
 /// e.g. `"f(b)"` -> `"f"`, `"capitalize"` -> `"capitalize"`. Returns `None`
 /// for an empty/invalid name so the caller can bail out unchanged.
 pub(crate) fn filter_name(filter: &str) -> Option<&str> {
-    let name = match filter.find('(') {
-        Some(idx) => &filter[..idx],
-        None => filter,
-    };
+    let name = filter.split_once('(').map_or(filter, |(name, _)| name);
     let name = name.trim();
     // Vue resolves whatever name appears; require a non-empty, identifier-like
     // token so we never emit `_filter_(` for malformed input. `-` is allowed

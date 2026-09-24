@@ -87,10 +87,10 @@ pub(super) fn is_for_item_segment_skip_prop(prop: &PropNode<'_>, skip_is_prop: b
 pub(super) fn unwrap_template_single_element<'a>(
     el: &'a ElementNode<'a>,
 ) -> Option<&'a ElementNode<'a>> {
-    if el.tag_type != ElementType::Template || el.children.len() != 1 {
+    if el.tag_type != ElementType::Template {
         return None;
     }
-    let TemplateChildNode::Element(child_el) = &el.children[0] else {
+    let [TemplateChildNode::Element(child_el)] = el.children.as_slice() else {
         return None;
     };
     (child_el.tag_type == ElementType::Element).then_some(child_el)

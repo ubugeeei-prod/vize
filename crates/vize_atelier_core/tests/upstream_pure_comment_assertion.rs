@@ -49,6 +49,11 @@
 //! gate again; this test keeps every row executable, so a pin bump that fixes
 //! the assertion upstream fails *here* — visibly, in a workspace test — instead
 //! of silently widening the fuzz skip forever.
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "fixtures use std strings"
+)]
 
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;

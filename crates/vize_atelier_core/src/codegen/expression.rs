@@ -19,15 +19,10 @@ use crate::{
 use super::{context::CodegenContext, helpers::escape_js_string};
 
 use comment_rewrite::convert_line_comments_to_block;
+pub use generate::generate_event_handler;
 use scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params};
 use vize_s0::String;
 use vize_s0::ToCompactString;
-
-#[allow(unused_imports)]
-pub use generate::{
-    generate_event_handler, generate_simple_expression_with_prefix, is_inline_handler,
-    is_simple_member_expression,
-};
 
 /// Generate expression node (simple or compound).
 pub fn generate_expression(ctx: &mut CodegenContext, expr: &ExpressionNode<'_>) {

@@ -31,6 +31,11 @@
 //! trimmed dynamic expression text. Forwarded outlet props stay
 //! `defer.slot-props` (the `ui.bind` installment); fallback bytes are
 //! P2-11's.
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
 
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;

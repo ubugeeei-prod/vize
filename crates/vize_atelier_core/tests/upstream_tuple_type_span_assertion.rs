@@ -38,6 +38,11 @@
 //! reachable `Outcome` variant — so that a future pin which re-materializes
 //! TS1257 over the inverted span fails here, in a workspace test, instead of
 //! only in the nightly fuzz job.
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "fixtures use std strings"
+)]
 
 use std::panic::{self, AssertUnwindSafe};
 

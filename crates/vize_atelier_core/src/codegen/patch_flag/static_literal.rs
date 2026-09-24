@@ -30,12 +30,12 @@ pub(super) fn is_string_literal(content: &str) -> bool {
 /// `'Hello, ' + name + '!'`.
 fn is_quoted_literal(content: &str, quote: u8) -> bool {
     let bytes = content.as_bytes();
-    if bytes.len() < 2 || bytes[0] != quote {
+    if bytes.len() < 2 || bytes.first() != Some(&quote) {
         return false;
     }
     let mut i = 1;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'\\' => {
                 i += 2;
                 if i > bytes.len() {
@@ -54,12 +54,12 @@ fn is_quoted_literal(content: &str, quote: u8) -> bool {
 /// backtick but is dynamic.
 pub(super) fn is_static_template_literal(content: &str) -> bool {
     let bytes = content.as_bytes();
-    if bytes.len() < 2 || bytes[0] != b'`' {
+    if bytes.len() < 2 || bytes.first() != Some(&b'`') {
         return false;
     }
     let mut i = 1;
-    while i < bytes.len() {
-        match bytes[i] {
+    while let Some(&byte) = bytes.get(i) {
+        match byte {
             b'\\' => {
                 i += 2;
                 if i > bytes.len() {
@@ -88,7 +88,11 @@ pub(super) fn is_numeric_literal(content: &str) -> bool {
             b'+' | b'-' if index == 0 => {}
             b'.' => {}
             b'e' | b'E' => {}
-            b'+' | b'-' if index > 0 && matches!(bytes[index - 1], b'e' | b'E') => {}
+            b'+' | b'-'
+                if index
+                    .checked_sub(1)
+                    .and_then(|prev| bytes.get(prev))
+                    .is_some_and(|b| matches!(b, b'e' | b'E')) => {}
             _ => return false,
         }
     }

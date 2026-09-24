@@ -73,7 +73,7 @@ pub(super) fn generate_if_branch_props(
 
         flush_segment(
             ctx,
-            &el.props[segment_start..index],
+            el.props.get(segment_start..index).unwrap_or_default(),
             branch,
             branch_index,
             key_pending,
@@ -98,7 +98,7 @@ pub(super) fn generate_if_branch_props(
 
     flush_segment(
         ctx,
-        &el.props[segment_start..],
+        el.props.get(segment_start..).unwrap_or_default(),
         branch,
         branch_index,
         key_pending,
@@ -112,7 +112,7 @@ pub(super) fn generate_if_branch_props(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent codegen inputs")]
 fn flush_segment(
     ctx: &mut CodegenContext,
     props: &[PropNode<'_>],
@@ -146,7 +146,7 @@ fn push_separator(ctx: &mut CodegenContext, first_arg: &mut bool) {
     *first_arg = false;
 }
 
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent codegen inputs")]
 fn generate_segment_object(
     ctx: &mut CodegenContext,
     props: &[PropNode<'_>],

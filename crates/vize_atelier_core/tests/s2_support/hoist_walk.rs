@@ -4,6 +4,12 @@
 //! facts' side), in lockstep. Split from `hoist.rs` under the source
 //! budget; the element/component verdict arms live in
 //! [`super::hoist_owner`].
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
 
 use vize_atelier_core::{ElementNode, ElementType, TemplateChildNode};
 use vize_davinci::side_table::SideTable;

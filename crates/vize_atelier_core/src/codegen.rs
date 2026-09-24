@@ -24,14 +24,14 @@ mod v_for;
 mod v_if;
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests;
 
 #[cfg(test)]
-#[allow(
+#[expect(
     clippy::disallowed_macros,
     clippy::disallowed_types,
-    clippy::disallowed_methods
+    reason = "insta and fixtures use format!; fixtures use std strings"
 )]
 mod span_tests;
 

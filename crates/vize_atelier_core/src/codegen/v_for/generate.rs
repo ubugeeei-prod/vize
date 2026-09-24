@@ -680,7 +680,7 @@ fn generate_for_item_props_merged(
 
         flush_for_item_props_segment(
             ctx,
-            &el.props[seg_start..index],
+            el.props.get(seg_start..index).unwrap_or_default(),
             key_exp,
             scope_id,
             extra_pending,
@@ -699,13 +699,13 @@ fn generate_for_item_props_merged(
                 generate_expression(ctx, exp);
             }
         } else {
-            super::super::props::generate_von_object_exp(ctx, &el.props[index..=index]);
+            super::super::props::generate_von_object_exp(ctx, std::slice::from_ref(prop));
         }
     }
 
     flush_for_item_props_segment(
         ctx,
-        &el.props[seg_start..],
+        el.props.get(seg_start..).unwrap_or_default(),
         key_exp,
         scope_id,
         extra_pending,

@@ -16,6 +16,9 @@
 //! #1533 fidelity scope) — `medium`'s only rewritten identifiers are
 //! handler values, so its test pins that gap exactly instead of dodging
 //! the fixture silently.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+#![expect(clippy::indexing_slicing, reason = "tests assert by panicking")]
 
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::{CodegenOptions, CodegenResult, ErrorCode, TransformOptions, generate};

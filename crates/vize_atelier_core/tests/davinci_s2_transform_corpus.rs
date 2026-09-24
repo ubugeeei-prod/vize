@@ -17,6 +17,7 @@
 //!     --test davinci_s2_transform_corpus -- --nocapture
 //! ```
 
+#[expect(unused_imports, reason = "shared support; this binary uses a subset")]
 mod s2_support;
 
 use std::fs;

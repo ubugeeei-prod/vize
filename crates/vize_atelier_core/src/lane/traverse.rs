@@ -2,8 +2,7 @@
 
 use crate::steps::v_slot::{get_slot_name, get_slot_prop_names, get_slot_props_string};
 use crate::{
-    ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
-    TemplateChildNode,
+    ElementNode, ElementType, ExpressionNode, ForNode, PropNode, RuntimeHelper, TemplateChildNode,
 };
 use vize_s0::{ensure_sufficient_stack, profile};
 
@@ -50,23 +49,26 @@ fn enter_v_slot_scope_if_needed<'a>(ctx: &mut TransformContext<'a>, el: &Element
 pub fn traverse_children<'a>(ctx: &mut TransformContext<'a>, parent: ParentNode<'a>) {
     let mut i = 0;
 
-    while i < parent.children_mut().len() {
+    while i < parent.children_mut().map_or(0, |children| children.len()) {
         ctx.grandparent = ctx.parent;
         ctx.parent = Some(parent);
         ctx.child_index = i;
         ctx.reset_node_removed();
 
+        if let Some(node) = parent
+            .children_mut()
+            .and_then(|children| children.get_mut(i))
         {
-            let children = parent.children_mut();
-            traverse_node(ctx, &mut children[i]);
+            traverse_node(ctx, node);
         }
 
         let node_removed = ctx.was_node_removed();
         ctx.reset_node_removed();
 
         if node_removed {
-            let children = parent.children_mut();
-            if i < children.len() {
+            if let Some(children) = parent.children_mut()
+                && i < children.len()
+            {
                 children.remove(i);
             }
         } else {
@@ -159,7 +161,7 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
                 TemplateChildNode::If(if_node) => {
                     // Traverse if branches that were just created
                     for i in 0..if_node.branches.len() {
-                        let branch_ptr = &mut if_node.branches[i] as *mut IfBranchNode<'a>;
+                        let branch_ptr = if_node.branches.as_mut_ptr().wrapping_add(i);
                         profile!(
                             "atelier.transform.traverse_v_if_branch",
                             traverse_children(ctx, ParentNode::IfBranch(branch_ptr))
@@ -263,7 +265,7 @@ fn traverse_node_guarded<'a>(ctx: &mut TransformContext<'a>, node: &mut Template
             TemplateChildNode::If(if_node) => {
                 // Traverse if branches
                 for i in 0..if_node.branches.len() {
-                    let branch_ptr = &mut if_node.branches[i] as *mut IfBranchNode<'a>;
+                    let branch_ptr = if_node.branches.as_mut_ptr().wrapping_add(i);
                     profile!(
                         "atelier.transform.traverse_v_if_branch",
                         traverse_children(ctx, ParentNode::IfBranch(branch_ptr))

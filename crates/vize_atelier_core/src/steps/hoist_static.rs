@@ -8,7 +8,7 @@ mod static_type;
 #[cfg(test)]
 mod tests;
 
-use branch_root::if_branch_root;
+use branch_root::wrapped_branch_root;
 use props::{
     create_props_expression, has_static_props, hoist_element_props, is_hoistable_static_prop,
 };
@@ -44,10 +44,9 @@ fn hoist_static_inner<'a>(
     }
 
     let allocator = ctx.allocator;
-    let mut i = 0;
 
-    while i < children.len() {
-        let static_type = get_static_type(&children[i]);
+    for child in children.iter_mut() {
+        let static_type = get_static_type(child);
 
         match static_type {
             StaticType::FullyStatic => {
@@ -55,13 +54,11 @@ fn hoist_static_inner<'a>(
                 // They must use createElementBlock for proper block tracking
                 // Only hoist their props instead
                 if is_root
-                    && let TemplateChildNode::Element(el) = &mut children[i]
+                    && let TemplateChildNode::Element(el) = &mut *child
                     && should_hoist_props(ctx, el)
                 {
                     hoist_element_props(ctx, el, allocator);
-                } else if hoist_static_vnodes
-                    && let TemplateChildNode::Element(el) = &mut children[i]
-                {
+                } else if hoist_static_vnodes && let TemplateChildNode::Element(el) = &mut *child {
                     // Scope ids are computed once per compile and repeat on
                     // every hoisted element, so they land in the arena as atoms.
                     let scope_id = ctx
@@ -71,7 +68,7 @@ fn hoist_static_inner<'a>(
                         .map(|id| allocator.alloc_str(id));
                     let vnode_call = create_vnode_call_from_element(allocator, el, scope_id);
                     let hoist_index = ctx.hoist(vnode_call);
-                    children[i] = TemplateChildNode::Hoisted(hoist_index);
+                    *child = TemplateChildNode::Hoisted(hoist_index);
                     ctx.helper(RuntimeHelper::CreateElementVNode);
                 }
             }
@@ -79,7 +76,7 @@ fn hoist_static_inner<'a>(
                 // Root elements with dynamic text still benefit from hoisted
                 // static props while preserving block tracking.
                 if is_root
-                    && let TemplateChildNode::Element(el) = &mut children[i]
+                    && let TemplateChildNode::Element(el) = &mut *child
                     && should_hoist_props(ctx, el)
                 {
                     hoist_element_props(ctx, el, allocator);
@@ -87,7 +84,7 @@ fn hoist_static_inner<'a>(
             }
             StaticType::NotStatic => {
                 // Cannot hoist, but check children recursively (not as root)
-                match &mut children[i] {
+                match &mut *child {
                     TemplateChildNode::Element(el) => {
                         if should_hoist_props(ctx, el)
                             && ((is_root
@@ -118,9 +115,18 @@ fn hoist_static_inner<'a>(
                             for child in branch.children.iter_mut() {
                                 if let TemplateChildNode::Element(el) = child {
                                     // Only hoist inside the branch root's children
-                                    let root = if_branch_root(el);
-                                    ensure_sufficient_stack(|| {
-                                        hoist_static_inner(ctx, &mut root.children, false, true);
+                                    ensure_sufficient_stack(|| match wrapped_branch_root(el) {
+                                        Some(inner) => {
+                                            hoist_static_inner(
+                                                ctx,
+                                                &mut inner.children,
+                                                false,
+                                                true,
+                                            );
+                                        }
+                                        None => {
+                                            hoist_static_inner(ctx, &mut el.children, false, true)
+                                        }
                                     });
                                 }
                             }
@@ -133,7 +139,6 @@ fn hoist_static_inner<'a>(
                 }
             }
         }
-        i += 1;
     }
 }
 
@@ -210,9 +215,7 @@ fn create_children_expression<'a>(
     }
 
     // For a single text child, use Single variant with Text
-    if children.len() == 1
-        && let TemplateChildNode::Text(text) = &children[0]
-    {
+    if let [TemplateChildNode::Text(text)] = children.as_slice() {
         let text_node = TextNode::new(text.content, text.loc.clone());
         return Some(VNodeChildren::Single(TemplateTextChildNode::Text(
             Box::new_in(text_node, &allocator),

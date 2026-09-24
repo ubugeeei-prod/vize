@@ -47,12 +47,6 @@ fn prefix_via_expr(
     rewrite_props_aliases(apply_rewrites(content, rewrites), ctx)
 }
 
-/// Prefix identifiers in expression with appropriate prefix based on binding metadata.
-/// This is a context-aware version that uses `$setup.` for setup bindings in function mode.
-pub(crate) fn prefix_identifiers_with_context(content: &str, ctx: &CodegenContext) -> String {
-    prefix_identifiers_in_scope(content, ctx, false)
-}
-
 pub(super) fn prefix_identifiers_in_scope(
     content: &str,
     ctx: &CodegenContext,
@@ -120,6 +114,10 @@ pub(super) fn prefix_node_in_scope(
     {
         let result = prefix_via_expr(js.ast, 0, js.raw, ctx, implicit_event);
         #[cfg(any(test, feature = "davinci-differential"))]
+        #[expect(
+            clippy::panic,
+            reason = "differential oracle: a divergence must abort the run"
+        )]
         {
             // Dual-run against the legacy wrapped parse in an uncounted
             // arena; divergence panics, never averages.

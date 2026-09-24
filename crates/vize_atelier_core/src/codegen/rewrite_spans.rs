@@ -70,39 +70,46 @@ pub fn rewritten_identifier_spans<'a>(
     let tokens = || PREFIXES.iter().chain(SUFFIXES.iter()).map(|t| t.as_bytes());
     // feasible[i * width + k]: authored[i..] aligns with emitted[i + k..].
     let mut feasible = vec![false; (original.len() + 1) * width];
+    let cell = |feasible: &[bool], index: usize| feasible.get(index).copied().unwrap_or(false);
+    let same = |i: usize, k: usize| {
+        original
+            .get(i)
+            .is_some_and(|b| output.get(i + k) == Some(b))
+    };
     for i in (0..=original.len()).rev() {
         for k in (0..=inserted).rev() {
-            let at = &output[i + k..];
-            let keeps =
-                i < original.len() && original[i] == output[i + k] && feasible[(i + 1) * width + k];
+            let at = output.get(i + k..).unwrap_or_default();
+            let keeps = same(i, k) && cell(&feasible, (i + 1) * width + k);
             let ends = i == original.len() && k == inserted;
             let inserts = || {
                 tokens().any(|t| {
                     k + t.len() <= inserted
                         && at.starts_with(t)
-                        && feasible[i * width + k + t.len()]
+                        && cell(&feasible, i * width + k + t.len())
                 })
             };
-            feasible[i * width + k] = keeps || ends || inserts();
+            let value = keeps || ends || inserts();
+            if let Some(slot) = feasible.get_mut(i * width + k) {
+                *slot = value;
+            }
         }
     }
-    if !feasible[0] {
+    if !cell(&feasible, 0) {
         return None;
     }
 
     let mut spans = Vec::new();
     let (mut i, mut k) = (0usize, 0usize);
     while i < original.len() || k < inserted {
-        if i < original.len() && original[i] == output[i + k] && feasible[(i + 1) * width + k] {
+        if same(i, k) && cell(&feasible, (i + 1) * width + k) {
             i += 1;
             continue;
         }
-        let at = &output[i + k..];
-        let token = tokens()
-            .find(|t| {
-                k + t.len() <= inserted && at.starts_with(t) && feasible[i * width + k + t.len()]
-            })
-            .expect("a feasible state keeps a byte or inserts a token");
+        let at = output.get(i + k..).unwrap_or_default();
+        // A feasible state always keeps a byte or inserts a token.
+        let token = tokens().find(|t| {
+            k + t.len() <= inserted && at.starts_with(t) && cell(&feasible, i * width + k + t.len())
+        })?;
         let is_prefix = PREFIXES.iter().any(|p| p.as_bytes() == token);
         let name = identifier_at(authored, i);
         if is_prefix && !name.is_empty() {
@@ -120,7 +127,7 @@ pub fn rewritten_identifier_spans<'a>(
 
 /// The identifier starting at `offset` in `text`, or `""`.
 fn identifier_at(text: &str, offset: usize) -> &str {
-    let rest = &text[offset..];
+    let rest = text.get(offset..).unwrap_or_default();
     let starts = rest
         .chars()
         .next()
@@ -131,7 +138,7 @@ fn identifier_at(text: &str, offset: usize) -> &str {
     let end = rest
         .find(|ch: char| !(ch.is_alphanumeric() || ch == '_' || ch == '$'))
         .unwrap_or(rest.len());
-    &rest[..end]
+    rest.get(..end).unwrap_or_default()
 }
 
 #[cfg(test)]

@@ -243,15 +243,16 @@ impl EmitDocument {
         // (input offset of an escape, total growth once it is applied)
         let mut growth: Vec<(usize, usize)> = Vec::new();
         let (mut start, mut index) = (0, 0);
-        while index < bytes.len() {
+        while let Some(rest) = bytes.get(index..).filter(|rest| !rest.is_empty()) {
             let Some((from, to)) = escapes
                 .iter()
-                .find(|(from, _)| bytes[index..].starts_with(from.as_bytes()))
+                .find(|(from, _)| rest.starts_with(from.as_bytes()))
             else {
                 index += 1;
                 continue;
             };
-            self.text.push_str(&other.text[start..index]);
+            self.text
+                .push_str(other.text.get(start..index).unwrap_or_default());
             self.text.push_str(to);
             if self.recording && !other.links.is_empty() {
                 let total = growth.last().map_or(0, |&(_, total)| total);
@@ -260,13 +261,17 @@ impl EmitDocument {
             index += from.len();
             start = index;
         }
-        self.text.push_str(&other.text[start..]);
+        self.text
+            .push_str(other.text.get(start..).unwrap_or_default());
         if !self.recording {
             return;
         }
         let out = |offset: u32| {
             let before = growth.partition_point(|&(at, _)| at < offset as usize);
-            let grown = before.checked_sub(1).map_or(0, |last| growth[last].1);
+            let grown = before
+                .checked_sub(1)
+                .and_then(|last| growth.get(last))
+                .map_or(0, |&(_, total)| total);
             (base + offset as usize + grown) as u32
         };
         self.links.extend(other.links.iter().map(|link| SpanLink {

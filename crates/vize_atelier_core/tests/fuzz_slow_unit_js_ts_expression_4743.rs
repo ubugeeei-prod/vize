@@ -1,3 +1,8 @@
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 use vize_atelier_core::steps::expression::{
     MAX_EXPRESSION_NESTING_DEPTH, expression_is_safe_to_parse, expression_nesting_depth,
 };

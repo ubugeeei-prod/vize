@@ -45,6 +45,7 @@
 //! component/outlet child contributes fixed level values, so their
 //! interiors cannot move any ancestor's fact — the boundary keeps
 //! corpus comparisons alive around tainted islands.
+#![expect(clippy::panic, reason = "tests assert by panicking")]
 
 use vize_atelier_core::TemplateChildNode;
 use vize_davinci::id::NodeId;

@@ -19,9 +19,6 @@ pub struct CodegenContext {
     pub(super) out: EmitDocument,
     /// Current indentation level
     pub(super) indent_level: u32,
-    /// Whether we're in SSR mode
-    #[allow(dead_code)]
-    pub(super) ssr: bool,
     /// Helper function alias map
     pub(super) helper_alias: fn(RuntimeHelper) -> &'static str,
     /// Custom JSX vnode factory. When present, all vnode creation helpers are
@@ -293,14 +290,12 @@ impl CodegenContext {
 
     /// Push string to buffer (alias for `push`, compatible with `appends!`/`append!` macros)
     #[inline]
-    #[allow(dead_code)]
     pub fn push_str(&mut self, code: &str) {
         self.out.push_str(code);
     }
 
     /// Push formatted line (format_args! + newline with indentation)
     #[inline]
-    #[allow(dead_code)]
     pub fn push_line_fmt(&mut self, args: std::fmt::Arguments<'_>) {
         use std::fmt::Write as _;
         let _ = self.write_fmt(args);

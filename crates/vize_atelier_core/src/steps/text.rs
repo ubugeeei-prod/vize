@@ -14,9 +14,9 @@ pub fn transform_text_children(
 ) {
     // Combine consecutive text and interpolation nodes
     let mut i = 0;
-    while i < children.len() {
+    while let Some(child) = children.get(i) {
         let has_text = matches!(
-            &children[i],
+            child,
             TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
         );
 
@@ -27,28 +27,22 @@ pub fn transform_text_children(
 
         // Find consecutive text/interpolation nodes
         let mut j = i + 1;
-        while j < children.len() {
-            if matches!(
-                &children[j],
-                TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-            ) {
-                j += 1;
-            } else {
-                break;
-            }
+        while matches!(
+            children.get(j),
+            Some(TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_))
+        ) {
+            j += 1;
         }
 
         // If only one node and it's simple text, skip
-        if j == i + 1
-            && let TemplateChildNode::Text(_) = &children[i]
-        {
+        if j == i + 1 && matches!(child, TemplateChildNode::Text(_)) {
             i += 1;
             continue;
         }
 
         // For interpolations, add helper
-        for k in i..j {
-            if let TemplateChildNode::Interpolation(_) = &children[k] {
+        for run_child in children.get(i..j).unwrap_or_default() {
+            if let TemplateChildNode::Interpolation(_) = run_child {
                 ctx.helper(RuntimeHelper::ToDisplayString);
             }
         }

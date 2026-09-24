@@ -25,7 +25,7 @@ use crate::{
 pub(crate) use options::{JsxTransformCompat, TransformLaneOptions};
 use traverse::traverse_children;
 
-#[allow(deprecated)]
+#[expect(deprecated, reason = "kept exported until removal")]
 pub use extensions::{
     transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
     transform_with_hoisted_scope_id, transform_with_jsx_compatibility,
@@ -148,8 +148,11 @@ impl<'a> ParentNode<'a> {
     /// parent, and nested calls only use descendants created from that slice.
     /// Keeping the invariant here avoids an allocation-heavy zipper structure in
     /// the hottest template transform path.
-    #[allow(clippy::mut_from_ref)]
-    pub fn children_mut(&self) -> &mut Vec<'a, TemplateChildNode<'a>> {
+    ///
+    /// Returns `None` for `ParentNode::If`: an `IfNode` is only a container of
+    /// branches, so callers traverse its `ParentNode::IfBranch` children.
+    #[expect(clippy::mut_from_ref, reason = "the parent pointer owns the children")]
+    pub fn children_mut(&self) -> Option<&mut Vec<'a, TemplateChildNode<'a>>> {
         // SAFETY: every pointer is produced from a live `RootNode`, `ElementNode`,
         // `IfBranchNode`, or `ForNode` borrowed by the transform driver. The
         // transform is single-threaded and never keeps two active mutable child
@@ -158,17 +161,11 @@ impl<'a> ParentNode<'a> {
         // children slice, so that variant is rejected before any pointer deref.
         unsafe {
             match self {
-                ParentNode::Root(r) => &mut (*(*r)).children,
-                ParentNode::Element(e) => &mut (*(*e)).children,
-                ParentNode::If(_) => {
-                    // Panic path by design: callers must traverse concrete
-                    // branches (`ParentNode::IfBranch`) because an `IfNode`
-                    // itself is only a branch container and has no direct child
-                    // vector to return.
-                    panic!("IfNode doesn't have direct children")
-                }
-                ParentNode::IfBranch(b) => &mut (*(*b)).children,
-                ParentNode::For(f) => &mut (*(*f)).children,
+                ParentNode::Root(r) => Some(&mut (*(*r)).children),
+                ParentNode::Element(e) => Some(&mut (*(*e)).children),
+                ParentNode::If(_) => None,
+                ParentNode::IfBranch(b) => Some(&mut (*(*b)).children),
+                ParentNode::For(f) => Some(&mut (*(*f)).children),
             }
         }
     }

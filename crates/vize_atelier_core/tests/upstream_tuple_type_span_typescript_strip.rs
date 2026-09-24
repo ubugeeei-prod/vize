@@ -15,6 +15,11 @@
 //! return `Unchanged` instead of panicking. Every row is still asserted so the
 //! exposure cannot be quietly reintroduced by a future pin. See
 //! `upstream_tuple_type_span_assertion.rs` for the full boundary matrix.
+#![expect(
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    reason = "fixtures use std strings"
+)]
 
 use std::panic::{self, AssertUnwindSafe};
 

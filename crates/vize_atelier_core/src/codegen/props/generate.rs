@@ -70,7 +70,7 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
             let flush_object =
                 |ctx: &mut CodegenContext, start: usize, end: usize, first: &mut bool| {
                     // Does this range hold any renderable non-spread prop?
-                    let segment = &props[start..end];
+                    let segment = props.get(start..end).unwrap_or_default();
                     let has_renderable = segment.iter().any(|p| match p {
                         PropNode::Attribute(attr) => !(ctx.skip_is_prop && attr.name == "is"),
                         PropNode::Directive(dir) => {
@@ -247,15 +247,17 @@ fn try_generate_static_attrs(
     // in the AST so linters can flag them. Dedupe here so the rendered
     // props object doesn't emit `{ id: "a", id: "b" }`. (#958)
     let mut seen: FxHashSet<String> = FxHashSet::default();
-    let mut unique_props: Vec<&PropNode<'_>> = Vec::with_capacity(props.len());
+    let mut unique_props = Vec::with_capacity(props.len());
     for prop in props {
-        if let PropNode::Attribute(attr) = prop {
-            if seen.contains(attr.name) {
-                continue;
-            }
-            seen.insert(attr.name.into());
+        // Every prop is an attribute (checked above).
+        let PropNode::Attribute(attr) = prop else {
+            continue;
+        };
+        if seen.contains(attr.name) {
+            continue;
         }
-        unique_props.push(prop);
+        seen.insert(attr.name.into());
+        unique_props.push(attr);
     }
 
     let multiline = unique_props.len() + usize::from(scope_id.is_some()) > 1;
@@ -267,15 +269,7 @@ fn try_generate_static_attrs(
     }
 
     let mut first = true;
-    for prop in unique_props {
-        let PropNode::Attribute(attr) = prop else {
-            // Panic path by invariant: the preflight `all(Attribute)` check above
-            // has already rejected directive props. Reaching this arm would mean
-            // `props` was mutated while iterating, which is impossible through the
-            // shared slice used by codegen.
-            unreachable!("checked above");
-        };
-
+    for attr in unique_props {
         if !first {
             ctx.push(",");
         }

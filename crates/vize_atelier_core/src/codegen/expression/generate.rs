@@ -8,50 +8,15 @@ use crate::{CompoundExpressionChild, ExpressionNode};
 use super::{
     super::context::CodegenContext,
     generate_simple_expression,
-    prefix_context::{
-        prefix_identifiers_in_scope, prefix_identifiers_with_context, prefix_node_in_scope,
-    },
+    prefix_context::{prefix_identifiers_in_scope, prefix_node_in_scope},
     scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params},
 };
 use vize_s0::String;
-
-/// Generate a simple expression with appropriate prefix.
-/// Used for ref attribute values that need `$setup.` prefix in function mode.
-#[allow(dead_code)]
-pub fn generate_simple_expression_with_prefix(ctx: &CodegenContext, content: &str) -> String {
-    prefix_identifiers_with_context(content, ctx)
-}
 
 /// Check if a string is a member-expression style handler reference.
 /// This includes forms like `_ctx.foo`, `$setup.bar`, and `_unref(store).save`.
 pub fn is_simple_member_expression(s: &str) -> bool {
     crate::steps::is_event_handler_reference_expression(s)
-}
-
-/// Check if an event handler expression is an inline handler.
-/// Inline handlers are expressions that are NOT simple identifiers or member expressions.
-#[allow(dead_code)]
-pub fn is_inline_handler(ctx: &CodegenContext, exp: &ExpressionNode<'_>) -> bool {
-    match exp {
-        ExpressionNode::Simple(simple) => {
-            if simple.is_static {
-                return false;
-            }
-
-            let content = simple.loc.span.slice(&ctx.source);
-
-            if crate::steps::expression::is_function_expression(content) {
-                return false;
-            }
-
-            if crate::steps::is_simple_identifier(content) || is_simple_member_expression(content) {
-                return false;
-            }
-
-            true
-        }
-        ExpressionNode::Compound(_) => true,
-    }
 }
 
 /// Generate event handler expression.
@@ -177,14 +142,18 @@ pub fn generate_event_handler(
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
-    use super::generate_simple_expression_with_prefix;
+    use super::prefix_identifiers_in_scope;
     use crate::codegen::context::CodegenContext;
     use crate::codegen::expression::{generate_event_handler, generate_simple_expression};
     use crate::options::{BindingMetadata, BindingType, CodegenOptions};
     use crate::{ExpressionNode, SimpleExpressionNode, SourceLocation};
-    use vize_s0::{Allocator, FxHashMap};
+    use vize_s0::{Allocator, FxHashMap, String};
+
+    fn generate_simple_expression_with_prefix(ctx: &CodegenContext, content: &str) -> String {
+        prefix_identifiers_in_scope(content, ctx, false)
+    }
 
     #[test]
     fn test_shorthand_property_expansion() {

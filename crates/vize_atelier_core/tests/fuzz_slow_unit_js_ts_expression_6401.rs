@@ -5,6 +5,7 @@
 //! but OXC retries the nested failed type-argument branches for 11 seconds in
 //! the fuzz job (23 seconds in a local debug build). The guard must reject it
 //! before any production expression parser or rewrite reaches OXC.
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use vize_atelier_core::steps::expression::{
     expression_has_balanced_delimiters, expression_is_safe_to_parse, expression_nesting_depth,

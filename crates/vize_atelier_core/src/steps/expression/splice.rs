@@ -70,12 +70,12 @@ pub(super) fn splice_insertions(
         if pos > original.len() {
             continue;
         }
-        result.push_str(&original[cursor..pos]);
+        result.push_str(original.get(cursor..pos).unwrap_or_default());
         result.push_str(prefix);
         result.push_str(suffix);
         cursor = pos;
     }
-    result.push_str(&original[cursor..]);
+    result.push_str(original.get(cursor..).unwrap_or_default());
     result
 }
 
@@ -100,11 +100,11 @@ pub(super) fn splice_replacements(
         if *start >= original.len() || *end > original.len() {
             continue;
         }
-        result.push_str(&original[cursor..*start]);
+        result.push_str(original.get(cursor..*start).unwrap_or_default());
         result.push_str(replacement);
         cursor = *end;
     }
-    result.push_str(&original[cursor..]);
+    result.push_str(original.get(cursor..).unwrap_or_default());
     result
 }
 

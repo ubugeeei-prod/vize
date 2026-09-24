@@ -202,13 +202,13 @@ fn resolve_positions(code: &str, source: &str, segments: &[Segment]) -> Vec<Reso
         let target =
             floor_char_boundary(code, (seg.generated_offset as usize).min(code_bytes.len()));
         while cursor < target {
-            if code_bytes[cursor] == b'\n' {
+            if code_bytes.get(cursor) == Some(&b'\n') {
                 gen_line += 1;
                 gen_line_start = cursor + 1;
             }
             cursor += 1;
         }
-        let generated_column = utf16_len(&code[gen_line_start..target]);
+        let generated_column = utf16_len(code.get(gen_line_start..target).unwrap_or_default());
 
         // Source side: binary search the line-start table.
         let (source_line, source_column) =
@@ -246,10 +246,10 @@ fn resolve_in_table(text: &str, line_starts: &[usize], offset: usize) -> (u32, u
     // The line is the index of the greatest line-start <= offset.
     let line = match line_starts.binary_search(&offset) {
         Ok(i) => i,
-        Err(i) => i - 1, // i >= 1 because line_starts[0] == 0 <= offset
+        Err(i) => i.saturating_sub(1), // i >= 1 because line_starts[0] == 0 <= offset
     };
-    let line_start = line_starts[line];
-    let column = utf16_len(&text[line_start..offset]);
+    let line_start = line_starts.get(line).copied().unwrap_or(0);
+    let column = utf16_len(text.get(line_start..offset).unwrap_or_default());
     (line as u32, column)
 }
 
@@ -355,7 +355,7 @@ fn encode_vlq(out: &mut String, value: i64) {
             // Set the continuation bit.
             digit |= 0b10_0000;
         }
-        out.push(BASE64_CHARS[digit] as char);
+        out.push(char::from(BASE64_CHARS.get(digit).copied().unwrap_or(b'A')));
         if vlq == 0 {
             break;
         }

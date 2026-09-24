@@ -12,10 +12,11 @@ impl<'ast> ExpressionScope<'ast> for IdentifierVisitor<'_, '_> {
         self.local_scopes.pop();
     }
     fn add_local(&mut self, name: &str) {
-        self.local_scopes
-            .last_mut()
-            .expect("expression binding owns a scope")
-            .insert(String::new(name));
+        // A binding outside any pushed scope has nowhere to live; the walker
+        // always pushes one first, so there is nothing to record otherwise.
+        if let Some(scope) = self.local_scopes.last_mut() {
+            scope.insert(String::new(name));
+        }
     }
 }
 

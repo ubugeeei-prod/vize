@@ -6,18 +6,18 @@ use crate::{ElementNode, ElementType, TemplateChildNode};
 /// wrapping one element renders that element directly, so it carries the
 /// branch key and must stay inline exactly like an element branch does;
 /// hoisting it would leave the branch a keyed fragment around a static vnode.
-pub(super) fn if_branch_root<'b, 'a>(el: &'b mut ElementNode<'a>) -> &'b mut ElementNode<'a> {
-    let wraps_single_element = el.tag_type == ElementType::Template
-        && el.children.len() == 1
-        && matches!(
-            &el.children[0],
-            TemplateChildNode::Element(inner) if inner.tag_type != ElementType::Template
-        );
-    if !wraps_single_element {
-        return el;
+///
+/// Returns that wrapped element, or `None` when `el` is itself the root.
+pub(super) fn wrapped_branch_root<'b, 'a>(
+    el: &'b mut ElementNode<'a>,
+) -> Option<&'b mut ElementNode<'a>> {
+    if el.tag_type != ElementType::Template {
+        return None;
     }
-    match &mut el.children[0] {
-        TemplateChildNode::Element(inner) => inner,
-        _ => unreachable!("checked above"),
+    match el.children.as_mut_slice() {
+        [TemplateChildNode::Element(inner)] if inner.tag_type != ElementType::Template => {
+            Some(inner)
+        }
+        _ => None,
     }
 }

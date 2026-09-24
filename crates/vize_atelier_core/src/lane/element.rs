@@ -5,8 +5,7 @@ use vize_s0::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag}
 use crate::errors::ErrorCode;
 use crate::steps::expression::process_inline_handler;
 use crate::steps::v_model::{
-    generate_model_assignment_handler, model_update_listener_name,
-    supports_plain_element_model_argument,
+    generate_model_assignment_handler, model_update_event, supports_plain_element_model_argument,
 };
 use crate::steps::v_slot::validate_v_slot_usage;
 use crate::{
@@ -203,7 +202,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
         value_exp: String,
         raw_value_exp: String,
         prop_name: String,
-        event_name: String,
+        update_event: String,
         handler: String,
         dir_loc: SourceLocation,
         modifiers_obj: Option<String>,
@@ -278,7 +277,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 });
 
             let named_model = is_component || dir.arg.is_some();
-            let event_name = model_update_listener_name(named_model.then_some(prop_name.as_str()));
+            let update_event = model_update_event(named_model.then_some(prop_name.as_str()));
 
             // Build handler expression
             let handler = if is_component {
@@ -346,7 +345,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 value_exp,
                 raw_value_exp,
                 prop_name,
-                event_name,
+                update_event,
                 handler,
                 dir_loc,
                 modifiers_obj,
@@ -381,7 +380,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
         let mut replacements = std::vec::Vec::with_capacity(static_vmodel.len());
         for data in static_vmodel.iter() {
             let prop_atom = ctx.interner.intern(&data.prop_name);
-            let event_atom = ctx.interner.intern(&data.event_name[2..]);
+            let event_atom = ctx.interner.intern(&data.update_event);
             let mut generated = std::vec::Vec::with_capacity(3);
             let value_prop = PropNode::Directive(Box::new_in(
                 DirectiveNode {
@@ -503,7 +502,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                     raw_name: None,
                     arg: Some(ExpressionNode::Simple(Box::new_in(
                         SimpleExpressionNode::new(
-                            ctx.interner.intern(&data.event_name[2..]),
+                            ctx.interner.intern(&data.update_event),
                             true,
                             data.dir_loc.clone(),
                         ),
@@ -539,5 +538,4 @@ pub fn transform_interpolation<'a>(
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
 mod tests;

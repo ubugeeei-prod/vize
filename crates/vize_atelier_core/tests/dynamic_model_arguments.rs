@@ -1,3 +1,4 @@
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Expression, ObjectProperty};
 use oxc_ast_visit::{Visit, walk};

@@ -46,8 +46,8 @@ fn generate_children_inner(
     }
 
     // Check if single text/interpolation child can be inlined (unless forced to array)
-    if !force_array && effective.len() == 1 {
-        match effective[0] {
+    if !force_array && let [single] = effective.as_slice() {
+        match *single {
             TemplateChildNode::Text(text) => {
                 ctx.push("\"");
                 // Anchor the inlined text literal back to its source position,
@@ -114,24 +114,22 @@ fn generate_children_inner(
     // Group consecutive text/interpolation nodes for merging into single createTextVNode calls
     let mut i = 0;
     let mut first_output = true;
-    while i < effective.len() {
+    while let Some(&node) = effective.get(i) {
         let is_text_like = matches!(
-            effective[i],
+            node,
             TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
         );
 
         if is_text_like {
             // Find the run of consecutive text/interpolation nodes
             let start = i;
-            while i < effective.len()
-                && matches!(
-                    effective[i],
-                    TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)
-                )
-            {
+            while matches!(
+                effective.get(i),
+                Some(TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_))
+            ) {
                 i += 1;
             }
-            let run = &effective[start..i];
+            let run = effective.get(start..i).unwrap_or_default();
 
             if !first_output {
                 ctx.push(",");
@@ -149,9 +147,8 @@ fn generate_children_inner(
             ctx.push(create_text);
 
             // Single space text: _createTextVNode() with no args (Vue convention)
-            let is_single_space = !has_interp
-                && run.len() == 1
-                && matches!(run[0], TemplateChildNode::Text(t) if t.content == " ");
+            let is_single_space =
+                !has_interp && matches!(run, [TemplateChildNode::Text(t)] if t.content == " ");
             if is_single_space {
                 ctx.push("()");
                 continue;
@@ -203,17 +200,17 @@ fn generate_children_inner(
             }
             ctx.newline();
             first_output = false;
-            if !force_array && can_cache_static && is_static_cacheable_element(effective[i]) {
-                if let TemplateChildNode::Element(el) = effective[i] {
+            if !force_array && can_cache_static && is_static_cacheable_element(node) {
+                if let TemplateChildNode::Element(el) = node {
                     generate_cached_static_element(ctx, el);
                 }
-            } else if ctx.in_cached_static && is_static_cacheable_element(effective[i]) {
+            } else if ctx.in_cached_static && is_static_cacheable_element(node) {
                 // Plain descendant inside an already-cached static subtree.
-                if let TemplateChildNode::Element(el) = effective[i] {
+                if let TemplateChildNode::Element(el) = node {
                     generate_cached_static_vnode(ctx, el, false);
                 }
             } else {
-                generate_node(ctx, effective[i]);
+                generate_node(ctx, node);
             }
             i += 1;
         }

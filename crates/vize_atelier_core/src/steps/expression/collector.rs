@@ -158,7 +158,7 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
                 // Scan forward from ident.span.end to skip past ')' characters
                 let mut pos = ident.span.end as usize;
                 let source_bytes = self.source.as_bytes();
-                while pos < source_bytes.len() && source_bytes[pos] == b')' {
+                while source_bytes.get(pos) == Some(&b')') {
                     pos += 1;
                 }
                 // Legacy parses `(content)`: a scan reaching the end of the
@@ -341,10 +341,10 @@ impl<'ast> ExpressionScope<'ast> for IdentifierCollector<'_, '_> {
         self.local_scopes.pop();
     }
     fn add_local(&mut self, name: &str) {
-        let scope = self
-            .local_scopes
-            .last_mut()
-            .expect("expression binding owns a scope");
-        scope.insert(String::new(name));
+        // The walker pushes a scope before any binding; without one there is
+        // nowhere to record the name.
+        if let Some(scope) = self.local_scopes.last_mut() {
+            scope.insert(String::new(name));
+        }
     }
 }

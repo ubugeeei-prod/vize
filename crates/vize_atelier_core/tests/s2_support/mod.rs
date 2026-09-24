@@ -60,8 +60,6 @@
 //! inside the compared domain panics (TS-25): investigate, never
 //! average.
 
-#![allow(dead_code, unused_imports)] // each test binary uses a subset of this module
-
 pub mod battery;
 mod checks;
 mod compare;
@@ -70,6 +68,7 @@ pub mod hoist_old;
 pub mod hoist_owner;
 pub mod hoist_walk;
 pub mod old_lane;
+#[expect(clippy::expect_used, reason = "tests assert by panicking")]
 pub mod s2_lane;
 pub mod slots;
 pub mod slots_old;

@@ -3,6 +3,7 @@
 //! Each test pins the full generated code, the full `names` array and every
 //! decoded segment, rendered as `generated token -> authored token` so a
 //! reviewer can check each anchor without decoding VLQ by hand.
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
 use super::tests::{DecodedSegment, compile_with_map, decode_mappings};
 

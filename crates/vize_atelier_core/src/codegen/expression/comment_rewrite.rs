@@ -30,15 +30,14 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
     let mut can_start_regex = true;
     let mut i = 0;
 
-    while i < bytes.len() {
-        let b = bytes[i];
+    while let Some(&b) = bytes.get(i) {
         match b {
             b'\'' | b'"' | b'`' => {
                 // `skip_quoted` is a cursor, not a slice bound: an unterminated
                 // literal whose last byte is `\` overshoots to len+1 (the
                 // nesting guard only ever compares it). Clamp before slicing.
                 let end = skip_quoted(bytes, i + 1, b).min(bytes.len());
-                result.push_str(&content[i..end]);
+                result.push_str(content.get(i..end).unwrap_or_default());
                 i = end;
                 can_start_regex = false;
             }
@@ -50,7 +49,10 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
                 // comment. The terminator itself is left for a later iteration,
                 // which copies it through unchanged.
                 let comment_end = skip_line_comment(bytes, comment_start);
-                let comment_text = content[comment_start..comment_end].trim_end();
+                let comment_text = content
+                    .get(comment_start..comment_end)
+                    .unwrap_or_default()
+                    .trim_end();
                 result.push_str("/* ");
                 // A line comment may legally contain `*/`, which would close the
                 // generated block comment early — exposing the rest as live code
@@ -66,12 +68,12 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
                     if end + 1 >= bytes.len() {
                         break bytes.len();
                     }
-                    if bytes[end] == b'*' && bytes[end + 1] == b'/' {
+                    if bytes.get(end..end + 2) == Some(b"*/") {
                         break end + 2;
                     }
                     end += 1;
                 };
-                result.push_str(&content[i..end]);
+                result.push_str(content.get(i..end).unwrap_or_default());
                 i = end;
             }
             b'/' if can_start_regex => {
@@ -79,7 +81,7 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
                 // through and scan the bytes as ordinary source, same as the
                 // nesting guard.
                 if let Some(end) = skip_regex(bytes, i + 1) {
-                    result.push_str(&content[i..end]);
+                    result.push_str(content.get(i..end).unwrap_or_default());
                     i = end;
                     can_start_regex = false;
                 } else {
@@ -89,13 +91,13 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
             }
             b'a'..=b'z' | b'A'..=b'Z' | b'_' | b'$' => {
                 let end = skip_identifier(bytes, i + 1);
-                result.push_str(&content[i..end]);
-                can_start_regex = keyword_allows_regex_after(&bytes[i..end]);
+                result.push_str(content.get(i..end).unwrap_or_default());
+                can_start_regex = keyword_allows_regex_after(bytes.get(i..end).unwrap_or_default());
                 i = end;
             }
             b'0'..=b'9' => {
                 let end = skip_number(bytes, i + 1);
-                result.push_str(&content[i..end]);
+                result.push_str(content.get(i..end).unwrap_or_default());
                 i = end;
                 can_start_regex = false;
             }
@@ -110,14 +112,19 @@ pub(crate) fn convert_line_comments_to_block(content: &str) -> String {
             // after an increment/decrement is always division, as the nesting
             // scanner also tracks.
             b'+' | b'-' if bytes.get(i + 1) == Some(&b) => {
-                result.push_str(&content[i..i + 2]);
+                result.push_str(content.get(i..i + 2).unwrap_or_default());
                 i += 2;
                 can_start_regex = false;
             }
             _ => {
                 // One whole character, not one byte: non-ASCII must not be
                 // split into mojibake.
-                let ch = content[i..].chars().next().unwrap_or('\u{FFFD}');
+                let ch = content
+                    .get(i..)
+                    .unwrap_or_default()
+                    .chars()
+                    .next()
+                    .unwrap_or('\u{FFFD}');
                 result.push(ch);
                 i += ch.len_utf8();
                 if !ch.is_ascii_whitespace() {

@@ -55,7 +55,7 @@ pub use vize_relief::{errors, options};
 // Re-export from vize_armature (parser, tokenizer)
 pub use vize_armature as parser;
 pub use vize_armature::tokenizer;
-#[allow(deprecated)]
+#[expect(deprecated, reason = "kept exported until removal")]
 pub use vize_armature::{
     Parser, parse, parse_with_options, parse_with_options_and_invalid_html_self_closing,
     parse_with_options_and_template_syntax,
@@ -66,7 +66,7 @@ pub use codegen::{
     generate_with_experimental_options, generate_with_sections,
     generate_with_sections_and_experimental_options,
 };
-#[allow(deprecated)]
+#[expect(deprecated, reason = "kept exported until removal")]
 pub use lane::{
     DirectiveTransform, DirectiveTransformResult, ExitFn, NodeTransform, ParentNode,
     StructuralDirectiveTransform, TransformContext, transform,

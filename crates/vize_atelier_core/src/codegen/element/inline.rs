@@ -434,8 +434,8 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                 .iter()
                 .filter(|c| !is_directive_comment(c))
                 .collect();
-            if filtered.len() == 1 {
-                generate_node(ctx, filtered[0]);
+            if let [single] = filtered.as_slice() {
+                generate_node(ctx, single);
             } else {
                 ctx.push("[");
                 for (i, child) in filtered.iter().enumerate() {

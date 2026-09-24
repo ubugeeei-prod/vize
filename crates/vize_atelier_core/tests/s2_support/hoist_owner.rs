@@ -4,6 +4,11 @@
 //! descend where the shipped driver descended (legacy ground truth),
 //! compare the fact-driven prediction against the mutation the
 //! hoist-armed run actually made, honour the counted taints.
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
 
 use vize_atelier_core::{ElementNode, ElementType, StaticType, TemplateChildNode, get_static_type};
 use vize_davinci::side_table::SideTable;

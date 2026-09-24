@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use vize_atelier_core::{
     BindingMetadata, BindingType, CodegenOptions, CodegenResult, TransformOptions, generate, parse,
     transform,

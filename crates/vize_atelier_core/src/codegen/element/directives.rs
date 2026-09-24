@@ -36,7 +36,10 @@ fn generate_vmodel_entry(
     };
 
     if has_modifiers {
-        let is_single_modifier = active_modifiers.len() == 1;
+        let single_modifier = match active_modifiers.as_slice() {
+            [modifier] => Some(*modifier),
+            _ => None,
+        };
 
         ctx.push("  [");
         ctx.newline();
@@ -59,9 +62,9 @@ fn generate_vmodel_entry(
         }
         ctx.newline();
 
-        if is_single_modifier {
+        if let Some(modifier) = single_modifier {
             ctx.push("    { ");
-            ctx.push(active_modifiers[0]);
+            ctx.push(modifier);
             ctx.push(": true }");
         } else {
             ctx.push("    {");

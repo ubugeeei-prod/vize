@@ -32,8 +32,8 @@ pub fn get_for_expression<'a>(el: &'a ElementNode<'a>) -> Option<&'a ExpressionN
 /// Remove v-for directive from element props
 pub fn remove_for_directive(el: &mut ElementNode<'_>) {
     let mut i = 0;
-    while i < el.props.len() {
-        if let PropNode::Directive(dir) = &el.props[i]
+    while let Some(prop) = el.props.get(i) {
+        if let PropNode::Directive(dir) = prop
             && dir.name == "for"
         {
             el.props.remove(i);
@@ -70,8 +70,8 @@ pub fn parse_for_expression_with_options<'a>(
     template_syntax_quirks: bool,
 ) -> Option<ForParseResult<'a>> {
     let (alias_end, source_start) = find_for_separator(content)?;
-    let alias_part = &content[..alias_end];
-    let source_part = &content[source_start..];
+    let alias_part = content.get(..alias_end).unwrap_or_default();
+    let source_part = content.get(source_start..).unwrap_or_default();
     let source_str = source_part.trim();
     let alias_str = alias_part.trim();
 
@@ -136,24 +136,23 @@ pub fn parse_for_expression_with_options<'a>(
 fn find_for_separator(content: &str) -> Option<(usize, usize)> {
     let chars: std::vec::Vec<_> = content.char_indices().collect();
 
-    for keyword_idx in 0..chars.len().saturating_sub(1) {
-        match (chars[keyword_idx].1, chars[keyword_idx + 1].1) {
-            ('i', 'n') | ('o', 'f') => {}
+    for (keyword_idx, pair) in chars.windows(2).enumerate() {
+        match pair {
+            [(_, 'i'), (_, 'n')] | [(_, 'o'), (_, 'f')] => {}
             _ => continue,
         };
 
-        let has_space_before = keyword_idx > 0 && chars[keyword_idx - 1].1.is_whitespace();
+        let is_space_at = |idx: usize| chars.get(idx).is_some_and(|(_, ch)| ch.is_whitespace());
+        let has_space_before = keyword_idx.checked_sub(1).is_some_and(is_space_at);
         let after_keyword_idx = keyword_idx + 2;
-        let has_space_after = chars
-            .get(after_keyword_idx)
-            .is_some_and(|(_, ch)| ch.is_whitespace());
+        let has_space_after = is_space_at(after_keyword_idx);
 
         if !has_space_before || !has_space_after {
             continue;
         }
 
         let mut alias_idx = keyword_idx;
-        while alias_idx > 0 && chars[alias_idx - 1].1.is_whitespace() {
+        while alias_idx.checked_sub(1).is_some_and(is_space_at) {
             alias_idx -= 1;
         }
         let alias_end = chars
@@ -162,7 +161,7 @@ fn find_for_separator(content: &str) -> Option<(usize, usize)> {
             .unwrap_or(content.len());
 
         let mut source_idx = after_keyword_idx;
-        while source_idx < chars.len() && chars[source_idx].1.is_whitespace() {
+        while is_space_at(source_idx) {
             source_idx += 1;
         }
         let source_start = chars.get(source_idx)?.0;
@@ -185,16 +184,16 @@ fn split_for_aliases(alias: &str, template_syntax_quirks: bool) -> Option<Vec<&s
         if trimmed.len() < 2 {
             return None;
         }
-        &trimmed[1..trimmed.len() - 1]
+        trimmed.get(1..trimmed.len() - 1).unwrap_or_default()
     } else if starts_with_paren || ends_with_paren {
         if !template_syntax_quirks {
             return None;
         }
 
         if starts_with_paren {
-            &trimmed[1..]
+            trimmed.get(1..).unwrap_or_default()
         } else {
-            &trimmed[..trimmed.len() - 1]
+            trimmed.get(..trimmed.len() - 1).unwrap_or_default()
         }
     } else {
         trimmed
@@ -240,14 +239,14 @@ fn split_top_level_aliases(input: &str) -> Vec<&str> {
             b'[' => bracket_depth += 1,
             b']' => bracket_depth = bracket_depth.saturating_sub(1),
             b',' if paren_depth == 0 && brace_depth == 0 && bracket_depth == 0 => {
-                aliases.push(input[start..idx].trim());
+                aliases.push(input.get(start..idx).unwrap_or_default().trim());
                 start = idx + 1;
             }
             _ => {}
         }
     }
 
-    aliases.push(input[start..].trim());
+    aliases.push(input.get(start..).unwrap_or_default().trim());
     aliases
 }
 

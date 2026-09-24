@@ -3,6 +3,11 @@
 //! split from [`super::s2_lane`] under the source budget. Binding ids
 //! are positional (owner line, then bindings in order), which is how
 //! the fault table resolves and the branch-key exclusion lands.
+#![expect(
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    reason = "tests assert by panicking"
+)]
 
 use vize_davinci::id::NodeId;
 use vize_s0::String;
@@ -40,7 +45,7 @@ pub fn opens_pattern_scope(bindings: &[FolioBinding], children: &[FolioOp]) -> b
 }
 
 /// One owner's surface from its attribute and binding lists.
-#[allow(clippy::too_many_arguments)]
+#[expect(clippy::too_many_arguments, reason = "independent surface inputs")]
 pub fn surface_of(
     attributes: &[FolioAttribute],
     bindings: &[FolioBinding],

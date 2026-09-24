@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use vize_atelier_core::steps::expression::{
     MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_is_safe_to_parse,
     expression_nesting_depth, prefix_identifiers_in_expression, strip_typescript_from_expression,

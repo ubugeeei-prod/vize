@@ -18,6 +18,14 @@
 //! The bytes live in `fixtures/js_ts_expression_slow_unit_3712.txt` so the
 //! workflow artifact does not have to be re-downloaded to re-verify the fix; the
 //! file name is libFuzzer's, and its SHA-1 is the `slow-unit-<sha>` suffix.
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    reason = "tests assert by panicking; insta and fixtures use format!; fixtures use std strings"
+)]
 
 use std::hint::black_box;
 use std::time::{Duration, Instant};

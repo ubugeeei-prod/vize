@@ -1014,8 +1014,10 @@ fn test_codegen_v1_triple_mustache_is_raw_unescaped() {
     use vize_s0::config::VueVersion;
 
     let allocator = Allocator::new();
-    let mut options = ParserOptions::default();
-    options.dialect = VueVersion::V1;
+    let options = ParserOptions {
+        dialect: VueVersion::V1,
+        ..Default::default()
+    };
     let (mut root, errors) = parse_with_options(&allocator, "<div>{{{ rawHtml }}}</div>", options);
     assert!(errors.is_empty(), "Parse errors: {errors:?}");
 
@@ -1168,14 +1170,12 @@ pub(super) fn compile_with_map(src: &str, filename: &str) -> super::CodegenResul
 /// Find the 0-indexed (line, column) of the first byte of `needle` in `code`,
 /// counting columns in UTF-16 code units to match the source-map convention.
 fn generated_position_of(code: &str, needle: &str) -> (u32, u32) {
-    let byte_idx = code.find(needle).expect("needle present in generated code");
-    let prefix = &code[..byte_idx];
+    let (prefix, _) = code
+        .split_once(needle)
+        .expect("needle present in generated code");
     let line = prefix.bytes().filter(|&b| b == b'\n').count() as u32;
-    let line_start = prefix.rfind('\n').map(|i| i + 1).unwrap_or(0);
-    let column = code[line_start..byte_idx]
-        .chars()
-        .map(|c| c.len_utf16() as u32)
-        .sum();
+    let last_line = prefix.rsplit('\n').next().unwrap_or(prefix);
+    let column = last_line.chars().map(|c| c.len_utf16() as u32).sum();
     (line, column)
 }
 

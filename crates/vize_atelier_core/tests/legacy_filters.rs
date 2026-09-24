@@ -13,7 +13,10 @@
 // Integration test: plain `std::string::String` / `{out}` formatting is fine
 // here (the crate's internal `vize_s0::String` rule does not apply to an
 // out-of-crate test harness).
-#![allow(clippy::disallowed_types, clippy::disallowed_macros)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "insta and fixtures use format!; fixtures use std strings"
+)]
 
 use vize_atelier_core::{CodegenOptions, TransformOptions, codegen, lane, parser};
 use vize_s0::config::VueVersion;

@@ -69,10 +69,11 @@ pub(crate) fn supports_plain_element_model_argument(
         || (allow_static && matches!(arg, Some(ExpressionNode::Simple(arg)) if arg.is_static))
 }
 
-pub(crate) fn model_update_listener_name(argument: Option<&str>) -> String {
+/// The `update:<argument>` event a v-model listens for (`modelValue` by default).
+pub(crate) fn model_update_event(argument: Option<&str>) -> String {
     let argument = argument.unwrap_or("modelValue");
-    let mut name = String::with_capacity(9 + argument.len());
-    name.push_str("onUpdate:");
+    let mut name = String::with_capacity(7 + argument.len());
+    name.push_str("update:");
     name.push_str(argument);
     name
 }

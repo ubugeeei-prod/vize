@@ -5,7 +5,7 @@
 
 use vize_s0::String;
 
-use super::surface::{PBind, PModel, PName, PSurface, SurfaceCounters};
+use super::surface::{PBind, PName, PSurface, SurfaceCounters};
 
 /// Whether any text of `surface` is entity-shaped under the S1
 /// no-decoding scope (the text projection's predicate, applied to the

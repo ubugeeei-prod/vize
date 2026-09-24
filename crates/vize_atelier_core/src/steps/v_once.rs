@@ -17,8 +17,8 @@ pub fn has_v_once(el: &ElementNode<'_>) -> bool {
 /// Remove v-once directive from element
 pub fn remove_v_once(el: &mut ElementNode<'_>) {
     let mut i = 0;
-    while i < el.props.len() {
-        if let PropNode::Directive(dir) = &el.props[i]
+    while let Some(prop) = el.props.get(i) {
+        if let PropNode::Directive(dir) = prop
             && dir.name == "once"
         {
             el.props.remove(i);

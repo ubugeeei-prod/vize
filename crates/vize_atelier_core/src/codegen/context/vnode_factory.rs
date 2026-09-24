@@ -39,7 +39,6 @@ impl CodegenContext {
         Self {
             out: EmitDocument::with_capacity(4096, options.source_map),
             indent_level: 0,
-            ssr: options.ssr,
             helper_alias: default_helper_alias,
             vnode_factory: vnode_factory.map(normalize_vnode_factory),
             runtime_global_name: options.runtime_global_name.to_compact_string(),

@@ -130,7 +130,10 @@ pub fn process_expression<'a>(
 
     // `mut` is only consumed by the legacy filter rewrite below; without the
     // `legacy` feature that block is cfg'd out and the binding is never mutated.
-    #[cfg_attr(not(feature = "legacy"), allow(unused_mut))]
+    #[cfg_attr(
+        not(feature = "legacy"),
+        expect(unused_mut, reason = "mutated only by legacy")
+    )]
     let mut normalized = normalize_expression(exp, allocator, ctx.source);
 
     // Vue 2 pipe filters (`{{ msg | capitalize }}`): split the top-level `|`

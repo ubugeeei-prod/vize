@@ -36,9 +36,7 @@ pub(super) fn generate_static_element_to_bytes(
 }
 
 fn generate_static_children_to_bytes(ctx: &CodegenContext, el: &ElementNode<'_>, out: &mut String) {
-    if el.children.len() == 1
-        && let TemplateChildNode::Text(text) = &el.children[0]
-    {
+    if let [TemplateChildNode::Text(text)] = el.children.as_slice() {
         out.push('"');
         out.push_str(escape_js_string(text.content).as_str());
         out.push('"');

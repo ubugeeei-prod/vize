@@ -105,12 +105,10 @@ pub fn escape_js_string(s: &str) -> String {
     let decoded = decode_html_entities(s);
     let mut result = String::with_capacity(decoded.len());
     fn push_hex4(out: &mut String, value: u32) {
-        const HEX: &[u8; 16] = b"0123456789abcdef";
         out.push_str("\\u");
-        out.push(HEX[((value >> 12) & 0xF) as usize] as char);
-        out.push(HEX[((value >> 8) & 0xF) as usize] as char);
-        out.push(HEX[((value >> 4) & 0xF) as usize] as char);
-        out.push(HEX[(value & 0xF) as usize] as char);
+        for shift in [12, 8, 4, 0] {
+            out.push(char::from_digit((value >> shift) & 0xF, 16).unwrap_or('0'));
+        }
     }
     for c in decoded.chars() {
         match c {
@@ -270,15 +268,16 @@ pub fn is_builtin_component(name: &str) -> Option<RuntimeHelper> {
 }
 
 #[cfg(test)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod escape_tests {
     use super::{decode_html_entities, escape_js_string};
 
     /// Reference implementation of the JS-string escape that always runs the
     /// full char-by-char pass (no fast path). `escape_js_string`'s fast path
     /// must reproduce this exactly for every input.
-    fn reference_escape(s: &str) -> String {
+    fn reference_escape(s: &str) -> vize_s0::String {
         let decoded = decode_html_entities(s);
-        let mut out = String::new();
+        let mut out = vize_s0::String::default();
         for c in decoded.chars() {
             match c {
                 '\\' => out.push_str("\\\\"),

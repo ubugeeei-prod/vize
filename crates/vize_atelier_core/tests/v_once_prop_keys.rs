@@ -1,3 +1,4 @@
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;

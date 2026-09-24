@@ -66,6 +66,10 @@ pub(super) fn rewrite_retained(
 /// uncounted arena: lane-only work must not disturb the production
 /// re-parse floor.
 #[cfg(any(test, feature = "davinci-differential"))]
+#[expect(
+    clippy::panic,
+    reason = "differential oracle: a divergence must abort the run"
+)]
 fn assert_rewrite_agrees(
     js: &JsExpression<'_>,
     ctx: &TransformContext<'_>,

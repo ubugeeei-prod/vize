@@ -115,10 +115,18 @@ impl WalkStage {
 static VISITS: [AtomicU64; WALK_STAGES.len()] = [const { AtomicU64::new(0) }; WALK_STAGES.len()];
 static WALKS: [AtomicU64; WALK_STAGES.len()] = [const { AtomicU64::new(0) }; WALK_STAGES.len()];
 
+/// `stage`'s counter in `table`; every discriminant is in range.
+#[inline]
+fn slot(table: &[AtomicU64; WALK_STAGES.len()], stage: WalkStage) -> Option<&AtomicU64> {
+    table.get(stage as usize)
+}
+
 /// Count one template node visited by `stage`'s node dispatcher.
 #[inline]
 pub fn record_visit(stage: WalkStage) {
-    VISITS[stage as usize].fetch_add(1, Ordering::Relaxed);
+    if let Some(counter) = slot(&VISITS, stage) {
+        counter.fetch_add(1, Ordering::Relaxed);
+    }
 }
 
 /// Count `nodes` template nodes visited by `stage`'s node dispatcher.
@@ -128,7 +136,9 @@ pub fn record_visit(stage: WalkStage) {
 /// counting at the list head is what makes the count branch-independent.
 #[inline]
 pub fn record_visits(stage: WalkStage, nodes: usize) {
-    VISITS[stage as usize].fetch_add(nodes as u64, Ordering::Relaxed);
+    if let Some(counter) = slot(&VISITS, stage) {
+        counter.fetch_add(nodes as u64, Ordering::Relaxed);
+    }
 }
 
 /// Iterate `children`, counting each as an [`SsrCodegen`](WalkStage::SsrCodegen)
@@ -161,21 +171,23 @@ pub fn vapor_children<T>(children: &[T]) -> core::slice::Iter<'_, T> {
 /// dispatcher for a child's own children continues the same walk.
 #[inline]
 pub fn record_walk(stage: WalkStage) {
-    WALKS[stage as usize].fetch_add(1, Ordering::Relaxed);
+    if let Some(counter) = slot(&WALKS, stage) {
+        counter.fetch_add(1, Ordering::Relaxed);
+    }
 }
 
 /// Node visits counted for `stage` since process start (monotone).
 #[inline]
 #[must_use]
 pub fn visit_count(stage: WalkStage) -> u64 {
-    VISITS[stage as usize].load(Ordering::Relaxed)
+    slot(&VISITS, stage).map_or(0, |counter| counter.load(Ordering::Relaxed))
 }
 
 /// Tree walks counted for `stage` since process start (monotone).
 #[inline]
 #[must_use]
 pub fn walk_count(stage: WalkStage) -> u64 {
-    WALKS[stage as usize].load(Ordering::Relaxed)
+    slot(&WALKS, stage).map_or(0, |counter| counter.load(Ordering::Relaxed))
 }
 
 /// Node visits summed over every stage since process start (monotone).
@@ -210,32 +222,34 @@ impl WalkCounts {
     pub fn snapshot() -> Self {
         let mut counts = Self::default();
         for stage in WALK_STAGES {
-            counts.visits[stage as usize] = visit_count(stage);
-            counts.walks[stage as usize] = walk_count(stage);
+            if let Some(visits) = counts.visits.get_mut(stage as usize) {
+                *visits = visit_count(stage);
+            }
+            if let Some(walks) = counts.walks.get_mut(stage as usize) {
+                *walks = walk_count(stage);
+            }
         }
         counts
     }
 
     /// The per-stage deltas from `earlier` to `self`.
     ///
-    /// # Panics
-    ///
-    /// Panics if any counter in `earlier` exceeds its counterpart in `self`,
-    /// which cannot happen for two ordered snapshots of monotone counters and
-    /// therefore means the snapshots were taken out of order.
+    /// Counters are monotone, so a counter in `earlier` never exceeds its
+    /// counterpart in `self` for two ordered snapshots; snapshots taken out of
+    /// order saturate at zero.
     #[must_use]
     pub fn since(self, earlier: Self) -> Self {
-        let mut delta = Self::default();
-        for stage in WALK_STAGES {
-            let index = stage as usize;
-            delta.visits[index] = self.visits[index]
-                .checked_sub(earlier.visits[index])
-                .expect("walk-probe snapshots are monotone and ordered");
-            delta.walks[index] = self.walks[index]
-                .checked_sub(earlier.walks[index])
-                .expect("walk-probe snapshots are monotone and ordered");
+        let delta = |now: [u64; WALK_STAGES.len()], before: [u64; WALK_STAGES.len()]| {
+            let mut out = now;
+            for (value, before) in out.iter_mut().zip(before) {
+                *value = value.saturating_sub(before);
+            }
+            out
+        };
+        Self {
+            visits: delta(self.visits, earlier.visits),
+            walks: delta(self.walks, earlier.walks),
         }
-        delta
     }
 
     /// Node visits summed over every stage.

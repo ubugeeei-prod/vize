@@ -102,8 +102,7 @@ fn strict_mode_divergent_identifier(name: &str) -> bool {
 
 /// Legacy-octal / non-decimal-looking numeric raw (`010`, `08`): sloppy-only.
 fn sloppy_only_numeric_raw(raw: &str) -> bool {
-    let bytes = raw.as_bytes();
-    bytes.len() > 1 && bytes[0] == b'0' && bytes[1].is_ascii_digit()
+    matches!(raw.as_bytes(), [b'0', second, ..] if second.is_ascii_digit())
 }
 
 /// `\<digit>` escapes (`\05`, `\8`) are sloppy-only in string literals.
@@ -111,9 +110,9 @@ fn sloppy_only_numeric_raw(raw: &str) -> bool {
 fn sloppy_only_string_raw(raw: &str) -> bool {
     let bytes = raw.as_bytes();
     let mut index = 0;
-    while index + 1 < bytes.len() {
-        if bytes[index] == b'\\' {
-            if bytes[index + 1].is_ascii_digit() {
+    while let Some(&[byte, next]) = bytes.get(index..index + 2) {
+        if byte == b'\\' {
+            if next.is_ascii_digit() {
                 return true;
             }
             index += 2;

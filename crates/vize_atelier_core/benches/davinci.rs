@@ -7,6 +7,7 @@
 //! setup and only the `transform` call enters the metrics, via
 //! `davinci_harness::stage`. The lane runs with `TransformOptions::default()`
 //! - the backend-flavored variants are priced in the dom/vapor/ssr benches.
+#![expect(clippy::expect_used, reason = "benchmarks abort on fixture errors")]
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::{LADDER, template_block};

@@ -41,7 +41,7 @@ pub(crate) fn extract_destructure_params(trimmed: &str, params: &mut Vec<String>
         }
 
         if trimmed.starts_with('{') && trimmed.ends_with('}') {
-            let inner = &trimmed[1..trimmed.len() - 1];
+            let inner = trimmed.get(1..trimmed.len() - 1).unwrap_or_default();
             for part in split_top_level(inner).into_iter().rev() {
                 let part = part.trim();
                 if let Some(rest) = part.strip_prefix("...") {
@@ -53,7 +53,8 @@ pub(crate) fn extract_destructure_params(trimmed: &str, params: &mut Vec<String>
                 }
 
                 if let Some(colon_pos) = find_top_level_char(part, ':') {
-                    let value = strip_default_value(part[colon_pos + 1..].trim());
+                    let value =
+                        strip_default_value(part.get(colon_pos + 1..).unwrap_or_default().trim());
                     if !value.is_empty() {
                         pending.push(value);
                     }
@@ -66,7 +67,7 @@ pub(crate) fn extract_destructure_params(trimmed: &str, params: &mut Vec<String>
                 }
             }
         } else if trimmed.starts_with('[') && trimmed.ends_with(']') {
-            let inner = &trimmed[1..trimmed.len() - 1];
+            let inner = trimmed.get(1..trimmed.len() - 1).unwrap_or_default();
             for part in split_top_level(inner).into_iter().rev() {
                 let part = part.trim();
                 if let Some(rest) = part.strip_prefix("...") {
@@ -110,20 +111,20 @@ pub(crate) fn split_top_level(s: &str) -> Vec<&str> {
             '{' | '[' | '(' => depth += 1,
             '}' | ']' | ')' => depth -= 1,
             ',' if depth == 0 => {
-                parts.push(&s[start..i]);
+                parts.push(s.get(start..i).unwrap_or_default());
                 start = i + ch.len_utf8();
             }
             _ => {}
         }
         prev = ch;
     }
-    parts.push(&s[start..]);
+    parts.push(s.get(start..).unwrap_or_default());
     parts
 }
 
 fn strip_default_value(pattern: &str) -> &str {
     if let Some(index) = find_top_level_char(pattern, '=') {
-        pattern[..index].trim()
+        pattern.get(..index).unwrap_or_default().trim()
     } else {
         pattern.trim()
     }

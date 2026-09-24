@@ -49,7 +49,7 @@ pub(crate) fn needs_typescript_stripping(content: &str) -> bool {
                     // Found colon after identifier inside parens before =>
                     // This is likely a type annotation
                     // Check it's not :: (TypeScript namespace separator)
-                    if i + 1 < bytes.len() && bytes[i + 1] != b':' {
+                    if bytes.get(i + 1).is_some_and(|&next| next != b':') {
                         return true;
                     }
                 }
@@ -79,8 +79,7 @@ pub(crate) fn needs_typescript_stripping(content: &str) -> bool {
         if b == b'!' {
             // Check if this is a non-null assertion (! after identifier/)/])
             // rather than logical NOT (! before expression)
-            if i > 0 {
-                let prev = bytes[i - 1];
+            if let Some(&prev) = i.checked_sub(1).and_then(|p| bytes.get(p)) {
                 // Non-null assertion if previous char is:
                 // - alphanumeric (foo!)
                 // - underscore or dollar (var_!)
@@ -114,11 +113,12 @@ fn contains_unquoted_word(content: &str, word: &str) -> bool {
             continue;
         }
 
+        let (head, tail) = content.split_at_checked(index).unwrap_or_default();
         match ch {
             '"' | '\'' | '`' => quote = Some(ch),
-            _ if content[index..].starts_with(word) => {
-                let before = content[..index].chars().next_back();
-                let after = content[index + word.len()..].chars().next();
+            _ if tail.starts_with(word) => {
+                let before = head.chars().next_back();
+                let after = tail.get(word.len()..).and_then(|rest| rest.chars().next());
                 let before_boundary = before.is_none_or(|ch| !is_ident_char(ch));
                 let after_boundary = after.is_none_or(|ch| !is_ident_char(ch));
                 if before_boundary && after_boundary {
@@ -150,7 +150,7 @@ fn contains_generic_call(content: &str) -> bool {
             '"' | '\'' | '`' => quote = Some(ch),
             '<' if previous_non_whitespace(content, index).is_some_and(is_ident_char) => {
                 if let Some(close) = find_matching_angle(content, index) {
-                    let after = content[close + 1..].trim_start();
+                    let after = content.get(close + 1..).unwrap_or_default().trim_start();
                     if after.starts_with('(') {
                         return true;
                     }
@@ -165,10 +165,8 @@ fn contains_generic_call(content: &str) -> bool {
 }
 
 fn previous_non_whitespace(content: &str, index: usize) -> Option<char> {
-    content[..index]
-        .chars()
-        .rev()
-        .find(|ch| !ch.is_whitespace())
+    let head = content.get(..index)?;
+    head.chars().rev().find(|ch| !ch.is_whitespace())
 }
 
 fn find_matching_angle(content: &str, open_index: usize) -> Option<usize> {
@@ -176,7 +174,7 @@ fn find_matching_angle(content: &str, open_index: usize) -> Option<usize> {
     let mut quote = None;
     let mut prev = '\0';
 
-    for (relative, ch) in content[open_index..].char_indices() {
+    for (relative, ch) in content.get(open_index..).unwrap_or_default().char_indices() {
         if let Some(open_quote) = quote {
             if ch == open_quote && prev != '\\' {
                 quote = None;
@@ -264,15 +262,13 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
     // The output can be: "const _expr_ = (...);\n" or "const _expr_ = ...;\n"
     // (codegen may remove unnecessary parentheses)
     let prefix = "const _expr_ = ";
-    if let Some(start) = js_code.find(prefix) {
-        let expr_start = start + prefix.len();
+    if let Some((_, rest)) = js_code.split_once(prefix) {
         // Find the semicolon at the end
-        if let Some(end) = js_code[expr_start..].rfind(';') {
-            let expr = &js_code[expr_start..expr_start + end];
+        if let Some((expr, _)) = rest.rsplit_once(';') {
             // Remove surrounding parentheses if present
             let expr = expr.trim();
-            if expr.starts_with('(') && expr.ends_with(')') && has_matching_outer_parens(expr) {
-                return String::new(&expr[1..expr.len() - 1]);
+            if has_matching_outer_parens(expr) {
+                return String::new(expr.get(1..expr.len() - 1).unwrap_or_default());
             }
             return String::new(expr);
         }
@@ -285,10 +281,9 @@ pub fn strip_typescript_from_expression(content: &str) -> String {
 /// Check if the outermost parens in a string are actually matching.
 /// e.g. "(foo)" => true, "(isOpen) => foo(x)" => false
 fn has_matching_outer_parens(s: &str) -> bool {
-    if !s.starts_with('(') || !s.ends_with(')') {
+    let Some(inner) = s.strip_prefix('(').and_then(|s| s.strip_suffix(')')) else {
         return false;
-    }
-    let inner = &s[1..s.len() - 1];
+    };
     let mut depth: i32 = 0;
     let mut in_string = false;
     let mut string_char = ' ';
@@ -321,7 +316,7 @@ fn has_matching_outer_parens(s: &str) -> bool {
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
+#[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::{needs_typescript_stripping, strip_typescript_from_expression};
 

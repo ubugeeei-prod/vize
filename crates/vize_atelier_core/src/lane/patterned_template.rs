@@ -80,7 +80,7 @@ fn rewrite_match_element<'a>(
     else {
         return;
     };
-    let PropNode::Directive(dir) = &el.props[match_idx] else {
+    let Some(PropNode::Directive(dir)) = el.props.get(match_idx) else {
         return;
     };
     let match_loc = dir.loc.clone();
@@ -114,7 +114,7 @@ fn rewrite_match_element<'a>(
         ) else {
             continue;
         };
-        let PropNode::Directive(dir) = &child.props[case_idx] else {
+        let Some(PropNode::Directive(dir)) = child.props.get(case_idx) else {
             continue;
         };
         let case_loc = dir.loc.clone();
@@ -173,8 +173,8 @@ fn parse_arm(
     dir: &DirectiveNode<'_>,
     source: &str,
 ) -> Option<MatchArm> {
-    let legacy_default =
-        dir.name == "case" && dir.modifiers.len() == 1 && dir.modifiers[0].content == "default";
+    let legacy_default = dir.name == "case"
+        && matches!(dir.modifiers.as_slice(), [modifier] if modifier.content == "default");
     if dir.arg.is_some() || (!dir.modifiers.is_empty() && !legacy_default) {
         report_pattern_error(
             ctx,

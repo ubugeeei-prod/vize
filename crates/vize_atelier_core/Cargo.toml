@@ -80,3 +80,6 @@ required-features = ["legacy"]
 [[bench]]
 name = "davinci"
 harness = false
+
+[lints]
+workspace = true

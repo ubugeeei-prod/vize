@@ -99,16 +99,15 @@ pub fn take_structural_directive<'a>(
     }
 
     let (directive_idx, directive_kind) = selected_if.or(selected_for)?;
-    let directive = match el.props.remove(directive_idx) {
-        PropNode::Directive(dir) => Box::unbox(dir),
-        PropNode::Attribute(_) => {
-            // Panic path by invariant: `directive_idx` is selected only while
-            // iterating over `PropNode::Directive`. Hitting this means the prop
-            // vector was mutated between selection and removal, which would be a
-            // transform bug rather than malformed user input.
-            unreachable!("structural directives are always directive props")
-        }
+    // `directive_idx` is selected only while iterating over directives, so the
+    // removed prop is always one; an attribute there leaves the element as is.
+    if !matches!(el.props.get(directive_idx), Some(PropNode::Directive(_))) {
+        return None;
+    }
+    let PropNode::Directive(directive) = el.props.remove(directive_idx) else {
+        return None;
     };
+    let directive = Box::unbox(directive);
 
     let exp = directive
         .exp
@@ -262,26 +261,19 @@ pub(crate) fn transform_v_if_with_directive<'a>(
         let child_index = ctx.child_index;
 
         // First, find the if node index
-        let found_if_idx = if let Some(parent) = &ctx.parent {
-            let children = parent.children_mut();
-            let mut found = None;
-
+        let siblings = ctx.parent.as_ref().and_then(|parent| parent.children_mut());
+        let found_if_idx = siblings.and_then(|children| {
             // Look backwards for v-if node
-            for j in (0..child_index).rev() {
-                match &children[j] {
-                    TemplateChildNode::If(_) => {
-                        found = Some(j);
-                        break;
-                    }
+            for (j, child) in children.iter().enumerate().take(child_index).rev() {
+                match child {
+                    TemplateChildNode::If(_) => return Some(j),
                     TemplateChildNode::Comment(_) => continue,
                     TemplateChildNode::Text(t) if t.content.trim().is_empty() => continue,
                     _ => break,
                 }
             }
-            found
-        } else {
             None
-        };
+        });
 
         if let Some(if_idx) = found_if_idx {
             // Take current element
@@ -305,9 +297,9 @@ pub(crate) fn transform_v_if_with_directive<'a>(
                 let quirks = ctx.template_syntax_quirks();
                 let src = ctx.source;
                 let new_key_str = extract_key_value_str(new_key, quirks, src);
-                if let Some(parent) = &ctx.parent {
-                    let children = parent.children_mut();
-                    if let TemplateChildNode::If(if_node) = &children[if_idx] {
+                if let Some(children) = ctx.parent.as_ref().and_then(|parent| parent.children_mut())
+                {
+                    if let Some(TemplateChildNode::If(if_node)) = children.get(if_idx) {
                         if_node.branches.iter().any(|existing_branch| {
                             if let Some(ref existing_key) = existing_branch.user_key {
                                 let existing_key_str =
@@ -349,13 +341,13 @@ pub(crate) fn transform_v_if_with_directive<'a>(
             let saved_grandparent = ctx.grandparent;
             let saved_child_index = ctx.child_index;
 
-            if let Some(parent) = &ctx.parent {
-                let children = parent.children_mut();
-                if let TemplateChildNode::If(if_node) = &mut children[if_idx] {
-                    if_node.branches.push(branch);
-                    // Traverse the newly added branch to process components in it
-                    let branch_idx = if_node.branches.len() - 1;
-                    let branch_ptr = &mut if_node.branches[branch_idx] as *mut IfBranchNode<'a>;
+            if let Some(children) = ctx.parent.as_ref().and_then(|parent| parent.children_mut())
+                && let Some(TemplateChildNode::If(if_node)) = children.get_mut(if_idx)
+            {
+                if_node.branches.push(branch);
+                // Traverse the newly added branch to process components in it
+                if let Some(branch) = if_node.branches.last_mut() {
+                    let branch_ptr = branch as *mut IfBranchNode<'a>;
                     traverse_children(ctx, ParentNode::IfBranch(branch_ptr));
                 }
             }
@@ -376,5 +368,4 @@ pub(crate) fn transform_v_if_with_directive<'a>(
 }
 
 #[cfg(test)]
-#[allow(clippy::disallowed_macros)]
 mod tests;

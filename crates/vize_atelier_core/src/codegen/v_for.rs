@@ -18,13 +18,9 @@ use super::{
 
 use generate::generate_for_item;
 use helpers::extract_for_params;
+pub(crate) use helpers::{extract_destructure_params, get_element_key, is_numeric_source};
 use vize_s0::String;
 use vize_s0::ToCompactString;
-
-#[allow(unused_imports)]
-pub(crate) use helpers::{
-    extract_destructure_params, get_element_key, is_numeric_source, is_valid_ident, split_top_level,
-};
 
 /// Generate for node
 pub fn generate_for(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {
@@ -125,21 +121,14 @@ fn generate_for_inner(
     ctx.add_slot_params(&callback_params);
 
     // Check if the single child has v-memo (v-for + v-memo optimization)
-    let child_memo_exp = if for_node.children.len() == 1 {
-        if let TemplateChildNode::Element(el) = &for_node.children[0] {
-            if has_v_memo(el) {
-                get_memo_exp(el)
-            } else {
-                None
-            }
-        } else {
-            None
+    let child_memo = match for_node.children.as_slice() {
+        [child @ TemplateChildNode::Element(el)] if has_v_memo(el) => {
+            get_memo_exp(el).map(|exp| (child, exp))
         }
-    } else {
-        None
+        _ => None,
     };
 
-    if let Some(memo_exp) = child_memo_exp {
+    if let Some((memo_child, memo_exp)) = child_memo {
         // v-for + v-memo: special optimized pattern
         // Register withMemo helper (needed by Vue runtime even though we don't call it directly)
         ctx.use_helper(RuntimeHelper::WithMemo);
@@ -164,7 +153,7 @@ fn generate_for_inner(
 
         // if (_cached && _cached.el && [_cached.key === key &&] _isMemoSame(_cached, _memo)) return _cached
         ctx.use_helper(RuntimeHelper::IsMemoSame);
-        let key_exp = if let TemplateChildNode::Element(el) = &for_node.children[0] {
+        let key_exp = if let TemplateChildNode::Element(el) = memo_child {
             get_element_key(el)
         } else {
             None
@@ -189,7 +178,7 @@ fn generate_for_inner(
 
         // Skip v-memo in generate_for_item since we handle it here
         ctx.skip_v_memo = true;
-        generate_for_item(ctx, &for_node.children[0], is_stable);
+        generate_for_item(ctx, memo_child, is_stable);
         ctx.skip_v_memo = false;
 
         ctx.in_v_for = prev_in_v_for;
@@ -232,8 +221,8 @@ fn generate_for_inner(
         ctx.in_v_for = true;
 
         // Generate child as block (not regular node)
-        if for_node.children.len() == 1 {
-            generate_for_item(ctx, &for_node.children[0], is_stable);
+        if let [only] = for_node.children.as_slice() {
+            generate_for_item(ctx, only, is_stable);
         } else {
             generate_children(ctx, &for_node.children);
         }

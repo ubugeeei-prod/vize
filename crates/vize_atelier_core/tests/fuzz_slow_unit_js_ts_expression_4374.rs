@@ -1,4 +1,5 @@
 //! Replay of the `js_ts_expression` slow-unit reproducers from #4374.
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
 use vize_atelier_core::steps::expression::{
     MAX_EXPRESSION_NESTING_DEPTH, expression_has_balanced_delimiters, expression_is_safe_to_parse,
@@ -18,10 +19,12 @@ fn decode_hex(hex: &str) -> Vec<u8> {
     let bytes = hex.as_bytes();
     assert_eq!(bytes.len() % 2, 0);
     bytes
-        .chunks_exact(2)
-        .map(|pair| {
-            let high = char::from(pair[0]).to_digit(16).unwrap();
-            let low = char::from(pair[1]).to_digit(16).unwrap();
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|&[high, low]| {
+            let high = char::from(high).to_digit(16).unwrap();
+            let low = char::from(low).to_digit(16).unwrap();
             ((high << 4) | low) as u8
         })
         .collect()

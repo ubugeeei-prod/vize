@@ -1,4 +1,4 @@
-#![allow(clippy::disallowed_macros)]
+#![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use super::{transform, transform_with_template_syntax_quirks};
 use crate::codegen::generate;
@@ -31,10 +31,7 @@ fn test_transform_pascal_case_dynamic_component() {
     transform(&allocator, &mut root, TransformOptions::default(), None);
 
     assert!(
-        !root
-            .components
-            .iter()
-            .any(|component| *component == "Component"),
+        !root.components.contains(&"Component"),
         "Dynamic component special tag should not be tracked as a resolved component"
     );
     assert!(
