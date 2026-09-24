@@ -221,9 +221,13 @@ impl LintInputGlob {
         let absolute = Path::new(normalized.as_str()).is_absolute();
         // A directory in the literal prefix is already the walk root. Its
         // name must not opt all nested directories with that name back in.
-        let dynamic_part = &normalized[normalized
-            .find(['*', '?', '[', '{'])
-            .unwrap_or(normalized.len())..];
+        let dynamic_part = normalized
+            .get(
+                normalized
+                    .find(['*', '?', '[', '{'])
+                    .unwrap_or(normalized.len())..,
+            )
+            .unwrap_or_default();
         let explicit_directories = ExplicitDirectories {
             git: dynamic_part.split('/').any(|part| part == ".git"),
             vize: dynamic_part.split('/').any(|part| part == ".vize"),
