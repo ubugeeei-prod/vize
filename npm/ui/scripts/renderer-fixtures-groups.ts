@@ -41,6 +41,7 @@ import { structureRendererFixtures } from "./renderer-fixtures-structure.ts";
 import { toastRendererFixtures } from "./renderer-fixtures-toast.ts";
 import { tourRendererFixtures } from "./renderer-fixtures-tour.ts";
 import { videoPlayerRendererFixtures } from "./renderer-fixtures-video-player.ts";
+import { layoutPatternRendererFixtures } from "./renderer-fixtures-layout-patterns.ts";
 import { wayfindingRendererFixtures } from "./renderer-fixtures-wayfinding.ts";
 import { webcamCaptureRendererFixtures } from "./renderer-fixtures-webcam-capture.ts";
 
@@ -88,6 +89,7 @@ export const groupedRendererFixtures = [
   ...toastRendererFixtures,
   ...tourRendererFixtures,
   ...videoPlayerRendererFixtures,
+  ...layoutPatternRendererFixtures,
   ...wayfindingRendererFixtures,
   ...webcamCaptureRendererFixtures,
 ] as const;

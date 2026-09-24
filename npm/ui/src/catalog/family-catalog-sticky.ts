@@ -25,7 +25,7 @@ export const stickyFamilyCatalog = [
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Sticky",
-      retainedSignature: "data-vize-ui[^-a-z]{0,8}sticky",
+      retainedSignature: "data-vize-ui[^-a-z]{0,8}sticky(?![-a-z])",
       allowedRetainedFamilies: ["measure"],
       maximumJavaScriptGzipBytes: 2_000,
       maximumCssGzipBytes: 0,

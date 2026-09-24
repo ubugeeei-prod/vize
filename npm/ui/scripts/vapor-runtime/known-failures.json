@@ -211,6 +211,8 @@
     "container": "unclassified: TypeError: Cannot read properties of undefined (reading 'nodes')",
     "context-menu-root": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "context-menu-trigger": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
+    "dashboard-grid": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "dashboard-grid-item": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "data-grid": "unclassified: setup function: Error: v-for fragment anchor node was not found. this is likely a Vue internal bug.",
     "data-grid-cell": "unclassified: setup function: Error: v-for fragment anchor node was not found. this is likely a Vue internal bug.",
     "data-grid-cell-editor": "unclassified: setup function: Error: v-for fragment anchor node was not found. this is likely a Vue internal bug.",
@@ -268,6 +270,7 @@
     "file-upload-item-size": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "file-upload-trigger": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "floating-action-button": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
+    "floating-window": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "form-wizard": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "form-wizard-back": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "form-wizard-next": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -331,6 +334,8 @@
     "marquee": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "marquee-content": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "marquee-pause-button": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "masonry": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
+    "master-detail": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "media-player": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "media-player-captions-button": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "media-player-loading-indicator": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -491,6 +496,8 @@
     "stepper-list": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "stepper-trigger": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "sticky": "unclassified: TypeError: Cannot read properties of undefined (reading 'nodes')",
+    "sticky-stack": "vue-runtime: hydration style check resolveCssVars cannot walk Vapor blocks for inline custom properties",
+    "sticky-stack-item": "vue-runtime: hydration style check resolveCssVars cannot walk Vapor blocks for inline custom properties",
     "swipe-actions": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "swipe-actions-action": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "swipe-actions-content": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
@@ -569,6 +576,8 @@
     "webcam-capture-status-message": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "webcam-capture-stop-button": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
     "webcam-capture-switch-camera": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
-    "webcam-capture-video": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime"
+    "webcam-capture-video": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "window-dock": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime",
+    "window-manager": "vapor-codegen: placeholder/anchor insertion model differs from the Vue 3.6 runtime"
   }
 }

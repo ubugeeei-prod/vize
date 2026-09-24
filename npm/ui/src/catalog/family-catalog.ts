@@ -28,6 +28,7 @@ import { i18nFamilyCatalog } from "./family-catalog-i18n.ts";
 import { interactionGestureFamilyCatalog } from "../families/interaction/catalog/gestures.ts";
 import { interactionSupportFamilyCatalog } from "../families/interaction/catalog/support.ts";
 import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
+import { layoutPatternFamilyCatalog } from "./family-catalog-layout-patterns.ts";
 import { menuFamilyCatalog } from "./family-catalog-menus.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
@@ -107,6 +108,7 @@ const allFamilyCatalogEntries = [
   ...interactionGestureFamilyCatalog,
   ...interactionSupportFamilyCatalog,
   ...layoutFamilyCatalog,
+  ...layoutPatternFamilyCatalog,
   ...menuFamilyCatalog,
   ...navigationFamilyCatalog,
   ...overlayFamilyCatalog,
