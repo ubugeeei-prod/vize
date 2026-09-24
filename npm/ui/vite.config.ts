@@ -71,8 +71,16 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/actions/button/button-visual.css",
   },
   {
+    fileName: "component-checkbox.css",
+    source: "src/families/selection/checkbox/checkbox-visual.css",
+  },
+  {
     fileName: "component-dialog.css",
     source: "src/families/overlays/dialog/dialog-visual.css",
+  },
+  {
+    fileName: "component-input.css",
+    source: "src/families/form/input/input-visual.css",
   },
   {
     fileName: "component-progress-bar.css",
@@ -81,6 +89,14 @@ const cssAssetEntrypoints = Object.freeze([
   {
     fileName: "component-scroll-area.css",
     source: "src/families/layout/scroll-area/scroll-area.css",
+  },
+  {
+    fileName: "component-switch.css",
+    source: "src/families/selection/switch/switch-visual.css",
+  },
+  {
+    fileName: "component-textarea.css",
+    source: "src/families/form/textarea/textarea-visual.css",
   },
   {
     fileName: "motion.css",
@@ -156,6 +172,7 @@ export default defineConfig({
       blockquote: "src/families/typography/blockquote/blockquote.ts",
       breadcrumb: "src/families/navigation/breadcrumb/breadcrumb.ts",
       tabs: "src/families/navigation/tabs/tabs.ts",
+      tree: "src/families/data/tree/tree.ts",
       stepper: "src/families/navigation/stepper/stepper.ts",
       card: "src/families/layout/card/card.ts",
       code: "src/families/typography/code/code.ts",
@@ -193,6 +210,7 @@ export default defineConfig({
       "search-field": "src/families/form/search-field/search-field.ts",
       slider: "src/families/form/slider/slider.ts",
       separator: "src/families/layout/separator/separator.ts",
+      splitter: "src/families/layout/splitter/splitter.ts",
       spacer: "src/families/layout/spacer/spacer.ts",
       stack: "src/families/layout/stack/stack.ts",
       "scroll-area": "src/families/layout/scroll-area/scroll-area.ts",

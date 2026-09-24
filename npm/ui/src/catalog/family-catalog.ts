@@ -23,6 +23,7 @@ import { qrCodeFamilyCatalog } from "./family-catalog-qr-code.ts";
 import { tourFamilyCatalog } from "./family-catalog-tour.ts";
 import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import { sliderFamilyCatalog } from "./family-catalog-slider.ts";
+import { structureFamilyCatalog } from "./family-catalog-structure.ts";
 import { typographyFamilyCatalog } from "./family-catalog-typography.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
 
@@ -60,6 +61,7 @@ const allFamilyCatalogEntries = [
   ...tourFamilyCatalog,
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
+  ...structureFamilyCatalog,
   ...typographyFamilyCatalog,
 ] as const satisfies readonly UiFamilyCatalogEntry[];
 

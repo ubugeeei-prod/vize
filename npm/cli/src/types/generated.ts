@@ -67,6 +67,7 @@ export interface VizeConfig {
   lsp?: LanguageServerConfig;
   musea?: MuseaConfig;
   globalTypes?: GlobalTypesConfig;
+  lib?: LibConfig;
   /**
    * Scoped config entries for monorepos and workspaces
    */
@@ -654,6 +655,27 @@ export interface GlobalTypeDeclaration {
    * Default value
    */
   defaultValue?: string;
+}
+/**
+ * vize lib source distribution options; paths are relative to the config file
+ */
+export interface LibConfig {
+  /**
+   * Destination for every registry kind unless a kind-specific directory is set
+   */
+  dir?: string;
+  /**
+   * Destination for @vizejs/ui items (default: src/components/vize)
+   */
+  uiDir?: string;
+  /**
+   * Destination for @vizejs/composable items (default: src/composables/vize)
+   */
+  composableDir?: string;
+  /**
+   * Lockfile path (default: vize-lib.lock.json)
+   */
+  lockfile?: string;
 }
 /**
  * Scoped Vize config entry for monorepos and workspaces
