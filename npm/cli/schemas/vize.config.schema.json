@@ -940,6 +940,36 @@
         "lockfile": {
           "description": "Lockfile path (default: vize-lib.lock.json)",
           "type": "string"
+        },
+        "registries": {
+          "description": "Third-party registries by @namespace, pulled as @namespace/<item>",
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "description": "Path to a registry, npm:<package>[@range], or an https:// URL of a registry.json",
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "description": "Path to a registry, npm:<package>[@range], or an https:// URL of a registry.json",
+                    "type": "string"
+                  },
+                  "dir": {
+                    "description": "Destination directory for this namespace's items",
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false,
+                "required": ["source"]
+              }
+            ]
+          },
+          "propertyNames": {
+            "pattern": "^@[a-z0-9][a-z0-9._-]*$"
+          }
         }
       },
       "additionalProperties": false

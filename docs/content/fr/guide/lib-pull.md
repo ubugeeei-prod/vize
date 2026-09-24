@@ -43,16 +43,19 @@ npm sert déjà, donc chaque version est immuable et reproductible.
 
 ## Commandes
 
-| Commande                                 | Rôle                                                                                 |
-| ---------------------------------------- | ------------------------------------------------------------------------------------ |
-| `vize lib list [--kind ui\|composable]`  | Liste les éléments disponibles.                                                      |
-| `vize lib search <words>`                | Recherche par nom, titre, description et alias.                                      |
-| `vize lib info <name>`                   | Affiche les fichiers, dépendances de registre, peers npm et la version du paquet.    |
-| `vize lib pull <item>... [--dir <dir>]`  | Copie des éléments et leurs dépendances de registre ; `--dry-run`, `--overwrite`.    |
-| `vize lib status`                        | Compare les fichiers copiés au lockfile et au registre installé.                     |
-| `vize lib diff <name> [--to <version>]`  | Diff unifié de votre copie locale vers une version du registre.                      |
+| Commande                                 | Rôle                                                                                    |
+| ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| `vize lib init [--dry-run]`              | Détecte la structure du projet et écrit la section de configuration `lib`.              |
+| `vize lib list [--kind ui\|composable]`  | Liste les éléments disponibles.                                                         |
+| `vize lib search <words>`                | Recherche par nom, titre, description et alias.                                         |
+| `vize lib info <name>`                   | Affiche les fichiers, dépendances de registre, peers npm et la version du paquet.       |
+| `vize lib pull <item>... [--dir <dir>]`  | Copie des éléments et leurs dépendances de registre ; `--dry-run`, `--overwrite`.       |
+| `vize lib add <item>...`                 | Alias de `pull` compatible avec shadcn (`-p/--path`, `-o/--overwrite`, `-y/--yes`).     |
+| `vize lib status`                        | Compare les fichiers copiés au lockfile et au registre installé.                        |
+| `vize lib diff <name> [--to <version>]`  | Diff unifié de votre copie locale vers une version du registre.                         |
 | `vize lib update [<name>...] [--to <v>]` | Applique les changements amont sans écraser vos modifications ; `--dry-run`, `--force`. |
-| `vize lib remove <name>...`              | Supprime des éléments et les dépendances devenues inutiles ; `--dry-run`, `--force`. |
+| `vize lib remove <name>...`              | Supprime des éléments et les dépendances devenues inutiles ; `--dry-run`, `--force`.    |
+| `vize lib outdated`                      | Compare les versions verrouillées aux registres installé et le plus récent.             |
 
 Toutes les commandes acceptent `--json` pour une sortie lisible par machine et `--root <dir>` pour cibler un autre projet.
 
@@ -92,6 +95,65 @@ contradictoire est refusé plutôt que de scinder le graphe de dépendances.
 Les sources copiées n'importent que des chemins relatifs et des paquets npm comme `vue`. `pull` signale toute
 dépendance npm que votre `package.json` ne déclare pas encore ; il n'installe jamais de paquet à votre place.
 
+## Premiers pas : `init`
+
+```bash
+vize lib init --dry-run   # affiche la structure détectée et la modification de configuration
+vize lib init             # l'écrit
+```
+
+`init` détecte le répertoire des sources (`src/`, ou `app/` pour les projets Nuxt 4) et TypeScript, puis écrit
+`lib.uiDir` / `lib.composableDir`. Il crée `vize.config.json` en l'absence de configuration, ajoute une section
+`lib` à un `vize.config.json` existant sans toucher au reste du fichier, et affiche un extrait pour
+`vize.config.ts` / `.pkl` au lieu de modifier du code. Une section `lib` existante est conservée sauf avec
+`--force`. Si `tsconfig.json` n'active pas `allowImportingTsExtensions`, `init` le signale : les sources copiées
+importent leurs voisins sous la forme `./x.ts`.
+
+## Vérifier les mises à jour : `outdated`
+
+`vize lib outdated` liste chaque élément copié dont le registre diffère du lockfile :
+
+| Colonne   | Signification                                                                         |
+| --------- | ------------------------------------------------------------------------------------- |
+| `current` | Version enregistrée dans `vize-lib.lock.json`.                                        |
+| `wanted`  | Version du registre qu'utiliserait `update` (paquet installé, sinon le plus récent).  |
+| `latest`  | Dernière version publiée sur npm (`npm view` ; ignorée avec `--offline`).             |
+| `state`   | `update-available`, `newer-release`, `removed-upstream`, `unknown` (ou `up-to-date`). |
+
+`update-available` signifie que le `contentHash` de l'élément a changé ; une nouvelle version qui ne touche pas
+ses fichiers le laisse `up-to-date`. `--json` inclut tous les éléments.
+
+## Registres tiers
+
+N'importe quel paquet ou site peut publier un registre au même format et l'exposer sous un espace de noms :
+
+```json
+{
+  "lib": {
+    "registries": {
+      "@acme": "npm:@acme/vue-kit",
+      "@design": { "source": "https://design.example.com/r/registry.json", "dir": "src/design" },
+      "@local": { "source": "./registry", "dir": "src/local" }
+    }
+  }
+}
+```
+
+```bash
+vize lib pull @acme/data-table @design/button@2.1.0
+vize lib list --kind @acme
+```
+
+- `npm:<package>[@range]` utilise le `registry/registry.json` du paquet installé, sinon `npm pack`.
+- `https://…/registry.json` est récupéré avec `curl`, et chaque fichier est téléchargé à la demande depuis `files/<path>` à côté (https uniquement).
+- Toute autre valeur est un chemin relatif au fichier de configuration : un `registry.json`, son répertoire ou un répertoire de paquet.
+
+Les registres tiers sont validés avec le même JSON Schema que les registres officiels (champs inconnus, empreintes
+malformées, rôles ou dépendances inconnus et fermeture de dépendances incomplète sont refusés), et chaque octet
+téléchargé est vérifié par SHA-256 avant d'être écrit. Les éléments d'un espace de noms vont dans son `dir` (sinon
+le `defaultTargetDirectory` du registre), sont verrouillés sous la clé `@namespace` et ne peuvent jamais écraser un
+fichier appartenant à un autre élément copié.
+
 ## Versionnement et mises à jour sûres
 
 `vize-lib.lock.json` (à committer) enregistre, pour chaque élément, le paquet et la version exacte d'origine, le
@@ -99,16 +161,16 @@ dépendance npm que votre `package.json` ne déclare pas encore ; il n'installe 
 fichier au moment de la copie. Ces empreintes servent de base de fusion à une comparaison à trois voies entre
 **votre fichier**, **le fichier tel que copié** et **le fichier du nouveau registre** :
 
-| Votre fichier vs copie | Registre vs copie | `update` / `pull`                                                |
-| ---------------------- | ----------------- | ---------------------------------------------------------------- |
-| inchangé               | inchangé          | rien (`unchanged`)                                               |
-| inchangé               | modifié           | le remplace (`update`)                                           |
-| modifié                | inchangé          | conserve votre modification (`keep-local`)                       |
-| modifié                | modifié           | refuse (`conflict`) sans `--force` / `--overwrite`               |
-| inchangé               | supprimé en amont | le supprime (`delete`)                                           |
-| modifié                | supprimé en amont | refuse (`conflict-delete`) sans `--force`                        |
-| absent                 | quelconque        | le restaure (`create`)                                           |
-| présent, hors lockfile | quelconque        | refuse (`conflict`) sans `--overwrite`                           |
+| Votre fichier vs copie | Registre vs copie | `update` / `pull`                                  |
+| ---------------------- | ----------------- | -------------------------------------------------- |
+| inchangé               | inchangé          | rien (`unchanged`)                                 |
+| inchangé               | modifié           | le remplace (`update`)                             |
+| modifié                | inchangé          | conserve votre modification (`keep-local`)         |
+| modifié                | modifié           | refuse (`conflict`) sans `--force` / `--overwrite` |
+| inchangé               | supprimé en amont | le supprime (`delete`)                             |
+| modifié                | supprimé en amont | refuse (`conflict-delete`) sans `--force`          |
+| absent                 | quelconque        | le restaure (`create`)                             |
+| présent, hors lockfile | quelconque        | refuse (`conflict`) sans `--overwrite`             |
 
 Rien n'est écrit tant qu'un conflit n'est pas résolu : une mise à jour refusée laisse fichiers et lockfile
 intacts. Utilisez `vize lib diff <name> --to <version>` pour examiner le changement amont, fusionnez-le à la main,

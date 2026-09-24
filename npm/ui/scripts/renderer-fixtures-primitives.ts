@@ -256,4 +256,27 @@ const loading = ref(true);
 `,
   },
   ...spinnerRendererFixtures,
+  {
+    filename: "TagsInputConsumer.vue",
+    source: String.raw`<script setup lang="ts">
+import {
+  TagsInputInput,
+  TagsInputItem,
+  TagsInputItemDelete,
+  TagsInputItemText,
+  TagsInputRoot,
+} from "./families/form/tags-input/tags-input.ts";
+</script>
+
+<template>
+  <TagsInputRoot v-slot="{ tags }" aria-label="Labels" :default-value="['bug', 'docs']" name="labels">
+    <TagsInputItem v-for="(tag, index) in tags" :key="tag" :value="tag" :index="index">
+      <TagsInputItemText />
+      <TagsInputItemDelete>x</TagsInputItemDelete>
+    </TagsInputItem>
+    <TagsInputInput placeholder="Add label" />
+  </TagsInputRoot>
+</template>
+`,
+  },
 ] as const;
