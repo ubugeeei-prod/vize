@@ -177,12 +177,16 @@ fn pulls_real_items_that_compile_and_resolve_on_their_own() {
             );
         }
     }
-    assert!(!vue_files.is_empty());
-    assert!(
-        vue_files
-            .iter()
-            .any(|file| file.ends_with("examples/switch-basic.vue")),
-        "--with-examples copies the usage demo: {vue_files:?}"
+    // The pulled `.vue` sources, including the usage demo `--with-examples`
+    // copies.
+    vue_files.sort();
+    assert_eq!(
+        vue_files,
+        [
+            "src/components/vize/families/foundations/id/deterministic-id-provider.vue",
+            "src/components/vize/families/selection/switch/examples/switch-basic.vue",
+            "src/components/vize/families/selection/switch/switch-control.vue",
+        ]
     );
 
     for vue_file in &vue_files {

@@ -3531,6 +3531,7 @@ invalid:
 valid:
   <MyComponent my-prop="value" />
   <MyComponent :my-prop="value" />
+  <IconButton ariaLabel="Close" :dataTestid="id" />
 
 help:
   Use kebab-case for attribute names
