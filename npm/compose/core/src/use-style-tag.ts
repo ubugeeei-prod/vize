@@ -1,4 +1,4 @@
-import { isRef, readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, isRef, onMounted, readonly, ref, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -183,7 +183,17 @@ export function useStyleTag(
     { flush: "sync" },
   );
 
-  if (options.immediate ?? true) load();
+  if (options.immediate ?? true) {
+    // Inside a component the tag is attached after mounting, so a hydrating
+    // client renders `loaded: false` exactly like the server did.
+    if (hasInjectionContext()) {
+      onMounted(() => {
+        load();
+      });
+    } else {
+      load();
+    }
+  }
   tryOnScopeDispose(unload);
 
   return { id, css: state, loaded: readonly(loaded), load, unload };

@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref, WatchHandle } from "vue";
 
 import { resolveElements } from "./element-target.ts";
@@ -115,12 +115,25 @@ export function useMutationObserver(
   options: UseMutationObserverOptions = {},
 ): MutationObserverControls {
   const isSupported = ref(false);
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
   const init = observerInit(options);
   let active: MutationObserver | undefined;
   let stopWatch: WatchHandle | undefined = watch(
     () =>
       [
-        options.host === undefined ? browserMutationObserverHost() : toValue(options.host),
+        !mounted.value
+          ? undefined
+          : options.host === undefined
+            ? browserMutationObserverHost()
+            : toValue(options.host),
         resolveElements(targets),
       ] as const,
     ([host, elements], _previous, onCleanup) => {

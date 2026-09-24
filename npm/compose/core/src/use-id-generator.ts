@@ -1,4 +1,4 @@
-import { getCurrentInstance, useId } from "vue";
+import { hasInjectionContext, useId } from "vue";
 
 /** Options for {@link useIdGenerator}. */
 export interface UseIdGeneratorOptions {
@@ -48,7 +48,9 @@ function sanitize(part: string): string {
  * @returns The id factory.
  */
 export function useIdGenerator(options: UseIdGeneratorOptions = {}): IdGenerator {
-  const seed = options.seed ?? (getCurrentInstance() === null ? "root" : useId());
+  // `hasInjectionContext()` (unlike `getCurrentInstance()`) also detects
+  // Vapor components, whose `useId()` is hydration-stable as well.
+  const seed = options.seed ?? (hasInjectionContext() ? useId() : "root");
   const base = `${sanitize(options.prefix ?? "vize")}-${sanitize(seed)}`;
   let counter = 0;
   return (hint = "id") => {

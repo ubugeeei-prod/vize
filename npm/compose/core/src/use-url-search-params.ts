@@ -1,4 +1,12 @@
-import { readonly, ref, shallowReactive, toValue, watch } from "vue";
+import {
+  hasInjectionContext,
+  onMounted,
+  readonly,
+  ref,
+  shallowReactive,
+  toValue,
+  watch,
+} from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -391,6 +399,8 @@ function browserHost(): UrlSearchParamsHost | undefined {
  *
  * Server rendering: no global is read. Pass `ssrUrl` (the request URL) so
  * the server renders the same values the client reads during hydration.
+ * Inside a component the browser URL is first read after mounting, so the
+ * hydrating client renders the `ssrUrl` state before switching to it.
  * Listeners are removed with the owning reactive scope or `stop()`.
  *
  * @example
@@ -441,16 +451,23 @@ export function useUrlSearchParams<const Schema extends SearchParamSchema>(
     if (host !== undefined) syncedSearch = encode(host);
   };
 
-  const stopHost = watch(
-    resolveHost,
-    (host, _previous, onCleanup) => {
-      refresh();
-      if (host === undefined) return;
-      host.addEventListener("popstate", refresh);
-      onCleanup(() => host.removeEventListener("popstate", refresh));
-    },
-    { immediate: true, flush: "sync" },
-  );
+  let stopHost = (): void => undefined;
+  const startHost = (): void => {
+    stopHost = watch(
+      resolveHost,
+      (host, _previous, onCleanup) => {
+        refresh();
+        if (host === undefined) return;
+        host.addEventListener("popstate", refresh);
+        onCleanup(() => host.removeEventListener("popstate", refresh));
+      },
+      { immediate: true, flush: "sync" },
+    );
+  };
+  // Inside a component the URL is read after mounting, so a hydrating client
+  // renders the `ssrUrl` values (and `supported: false`) exactly like the server.
+  if (hasInjectionContext()) onMounted(startHost);
+  else startHost();
 
   const stopWrite = watch(
     () => {

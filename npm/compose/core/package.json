@@ -952,6 +952,7 @@
     "build:registry": "vp exec node scripts/build-source-registry.ts",
     "check:size": "node scripts/check-size.mjs",
     "check:types": "vp exec tsc --noEmit -p tsconfig.json",
+    "check:conformance": "vp exec node scripts/check-conformance.ts",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
   "dependencies": {
@@ -959,9 +960,12 @@
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",
+    "@vizejs/native": "workspace:*",
+    "happy-dom": "catalog:testing",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack",
-    "vue": "catalog:vue-stable"
+    "vue": "catalog:vue-stable",
+    "vue-vapor-runtime": "npm:vue@3.6.0-beta.10"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

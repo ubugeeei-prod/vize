@@ -15,6 +15,7 @@ npm/*/*/dist/
 # Source registries emitted into the @vizejs/ui and @vizejs/composable tarballs
 npm/ui/registry/
 npm/compose/core/registry/
+npm/compose/core/.conformance/
 npm/ui/.lib-pull-e2e-*/
 editors/*/dist/
 npm/builder-vite/wasm/

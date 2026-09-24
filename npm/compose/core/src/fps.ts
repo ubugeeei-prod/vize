@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -66,9 +66,26 @@ export function useFps(options: UseFpsOptions = {}): FpsControls {
   const fps = ref(0);
   const isSupported = ref(false);
   const isActive = ref(options.immediate ?? true);
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
 
   const stop = watch(
-    [() => (options.host === undefined ? browserFrameHost() : toValue(options.host)), isActive],
+    [
+      () =>
+        !mounted.value
+          ? undefined
+          : options.host === undefined
+            ? browserFrameHost()
+            : toValue(options.host),
+      isActive,
+    ],
     ([host, active], _previous, onCleanup) => {
       isSupported.value = Boolean(host);
       if (!host || !active) return;

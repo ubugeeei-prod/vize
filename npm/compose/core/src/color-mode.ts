@@ -1,4 +1,4 @@
-import { computed, shallowRef, watch } from "vue";
+import { computed, hasInjectionContext, onMounted, shallowRef, watch } from "vue";
 import type { ComputedRef, MaybeRefOrGetter, WritableComputedRef } from "vue";
 
 import { resolveElement } from "./element-target.ts";
@@ -141,8 +141,19 @@ export function useColorMode<const Custom extends string = never>(
       return initial;
     }
   };
-  const storedValue = read();
-  const selectedRaw = shallowRef<string>(storedValue);
+  // Inside a component the stored mode is read once it has mounted, so a
+  // hydrating client first renders `initialValue` exactly like the server.
+  const deferRead = hasInjectionContext();
+  const storedValue = shallowRef<ColorModeValue<Custom>>(deferRead ? initial : read());
+  const selectedRaw = shallowRef<string>(storedValue.value);
+  if (deferRead) {
+    onMounted(() => {
+      const value = read();
+      storedValue.value = value;
+      // Keep a mode the user picked before mounting.
+      if (selectedRaw.value === initial) selectedRaw.value = value;
+    });
+  }
   const selected = computed<ColorModeValue<Custom>>(() =>
     isMode(selectedRaw.value) ? selectedRaw.value : initial,
   );
@@ -198,7 +209,7 @@ export function useColorMode<const Custom extends string = never>(
     },
   });
 
-  return { mode, system, state, stored: computed(() => storedValue) };
+  return { mode, system, state, stored: computed(() => storedValue.value) };
 }
 
 /** Options for {@link useDark}. */

@@ -1,4 +1,13 @@
-import { computed, readonly, shallowReadonly, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -203,6 +212,8 @@ function browserContainer(): ReadyContainer | undefined {
  *
  * Server rendering: nothing is read, `supported` is false and the
  * subscription is `null`.
+ * Inside a component the host is resolved after mounting, so hydration
+ * renders this server state first.
  *
  * @example
  * ```ts
@@ -224,10 +235,22 @@ export function usePushSubscription(
   const error = shallowRef<unknown>(undefined);
   let active = true;
 
-  const source = (): PushRegistrationLike | ReadyContainer | undefined =>
-    options.registration === undefined
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+
+  const source = (): PushRegistrationLike | ReadyContainer | undefined => {
+    if (!hydrated.value) return undefined;
+    return options.registration === undefined
       ? browserContainer()
       : (toValue(options.registration) ?? undefined);
+  };
 
   const resolveManager = async (): Promise<PushManagerLike | undefined> => {
     const current = source();

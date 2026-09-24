@@ -1,4 +1,12 @@
-import { computed, readonly, shallowRef, toValue, unref } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowRef,
+  toValue,
+  unref,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -277,6 +285,8 @@ function errorName(error: unknown): unknown {
  *
  * Server rendering: nothing is constructed, `supported` is false and
  * `state` is `"idle"`.
+ * Inside a component `supported` turns true only after mounting, so
+ * hydration renders this server state first.
  *
  * @example
  * ```ts
@@ -295,6 +305,16 @@ export function usePaymentRequest(options: UsePaymentRequestOptions): PaymentReq
   let active: PaymentRequestLike | undefined;
   let generation = 0;
   let completing = false;
+
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
 
   const resolveHost = (): PaymentRequestHost | undefined =>
     options.PaymentRequest === undefined
@@ -433,7 +453,7 @@ export function usePaymentRequest(options: UsePaymentRequestOptions): PaymentReq
   });
 
   return {
-    supported: computed(() => resolveHost() !== undefined),
+    supported: computed(() => hydrated.value && resolveHost() !== undefined),
     state: readonly(state),
     response: readonly(response),
     error: readonly(error),

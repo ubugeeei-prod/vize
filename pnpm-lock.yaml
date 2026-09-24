@@ -847,6 +847,12 @@ importers:
       '@types/node':
         specifier: catalog:typescript
         version: 25.9.2
+      '@vizejs/native':
+        specifier: workspace:*
+        version: link:../../native
+      happy-dom:
+        specifier: catalog:testing
+        version: 20.11.2
       typescript:
         specifier: catalog:typescript
         version: 6.0.3
@@ -856,6 +862,9 @@ importers:
       vue:
         specifier: catalog:vue-stable
         version: 3.5.35(typescript@6.0.3)
+      vue-vapor-runtime:
+        specifier: npm:vue@3.6.0-beta.10
+        version: vue@3.6.0-beta.10(typescript@6.0.3)
 
   npm/compose/data:
     devDependencies:

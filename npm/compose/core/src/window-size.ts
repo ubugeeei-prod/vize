@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -83,7 +83,7 @@ export interface WindowSizeControls {
  *
  * Server renders expose `initialWidth`/`initialHeight` (default `0`), so the
  * first client render matches; the real size is applied as soon as a window
- * resolves. Resize (and orientation) listeners are passive and removed with
+ * resolves (after mounting when called inside a component). Resize (and orientation) listeners are passive and removed with
  * the owning reactive scope.
  *
  * @param options Initial size, measurement kind, and capability.
@@ -102,39 +102,46 @@ export function useWindowSize(options: UseWindowSizeOptions = {}): WindowSizeCon
   const height = ref(initialHeight);
   const isSupported = ref(false);
 
-  const stopWatch = watch(
-    () => (options.host === undefined ? browserWindowSizeHost() : toValue(options.host)),
-    (host, _previous, onCleanup) => {
-      isSupported.value = Boolean(host);
-      if (!host) {
-        width.value = initialWidth;
-        height.value = initialHeight;
-        return;
-      }
-      const update = (): void => {
-        if (type === "outer") {
-          width.value = host.outerWidth;
-          height.value = host.outerHeight;
-        } else if (includeScrollbar) {
-          width.value = host.innerWidth;
-          height.value = host.innerHeight;
-        } else {
-          width.value = host.document.documentElement.clientWidth;
-          height.value = host.document.documentElement.clientHeight;
+  let stopWatch: { stop(): void } | undefined;
+  const start = (): void => {
+    stopWatch = watch(
+      () => (options.host === undefined ? browserWindowSizeHost() : toValue(options.host)),
+      (host, _previous, onCleanup) => {
+        isSupported.value = Boolean(host);
+        if (!host) {
+          width.value = initialWidth;
+          height.value = initialHeight;
+          return;
         }
-      };
-      update();
-      const listenerOptions: AddEventListenerOptions = { passive: true };
-      host.addEventListener("resize", update, listenerOptions);
-      if (listenOrientation) host.addEventListener("orientationchange", update, listenerOptions);
-      onCleanup(() => {
-        host.removeEventListener("resize", update);
-        if (listenOrientation) host.removeEventListener("orientationchange", update);
-      });
-    },
-    { immediate: true },
-  );
-  tryOnScopeDispose(() => stopWatch.stop());
+        const update = (): void => {
+          if (type === "outer") {
+            width.value = host.outerWidth;
+            height.value = host.outerHeight;
+          } else if (includeScrollbar) {
+            width.value = host.innerWidth;
+            height.value = host.innerHeight;
+          } else {
+            width.value = host.document.documentElement.clientWidth;
+            height.value = host.document.documentElement.clientHeight;
+          }
+        };
+        update();
+        const listenerOptions: AddEventListenerOptions = { passive: true };
+        host.addEventListener("resize", update, listenerOptions);
+        if (listenOrientation) host.addEventListener("orientationchange", update, listenerOptions);
+        onCleanup(() => {
+          host.removeEventListener("resize", update);
+          if (listenOrientation) host.removeEventListener("orientationchange", update);
+        });
+      },
+      { immediate: true },
+    );
+  };
+  // Inside a component the real size is read after mounting, so a hydrating
+  // client renders the initial size exactly like the server did.
+  if (hasInjectionContext()) onMounted(start);
+  else start();
+  tryOnScopeDispose(() => stopWatch?.stop());
 
   return { width: readonly(width), height: readonly(height), isSupported: readonly(isSupported) };
 }

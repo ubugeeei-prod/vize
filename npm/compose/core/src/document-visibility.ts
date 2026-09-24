@@ -1,4 +1,13 @@
-import { computed, readonly, ref, toValue, watchEffect } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  onMounted,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watchEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref } from "vue";
 
 /** Page visibility state exposed by {@link useDocumentVisibility}. */
@@ -86,11 +95,23 @@ export function useDocumentVisibility(
   const fallback = options.ssrState ?? "visible";
   const state = ref<PageVisibilityState>(fallback);
   const supported = ref(false);
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
 
   watchEffect(
     (onCleanup) => {
-      const host =
-        options.host === undefined ? browserDocumentVisibilityHost() : toValue(options.host);
+      const host = !mounted.value
+        ? undefined
+        : options.host === undefined
+          ? browserDocumentVisibilityHost()
+          : toValue(options.host);
       if (!host) {
         supported.value = false;
         state.value = fallback;

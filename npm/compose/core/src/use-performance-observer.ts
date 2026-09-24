@@ -1,4 +1,13 @@
-import { computed, readonly, shallowRef, toValue, unref, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowRef,
+  toValue,
+  unref,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -320,7 +329,9 @@ function isEntryOf<Type extends PerformanceEntryType>(
  * disconnected when the owning reactive scope stops; outside a scope the
  * caller owns `stop()`.
  *
- * Server rendering: no observer is created and `supported` is false.
+ * Server rendering: no observer is created and `supported` is false. Inside
+ * a component the observer connects after mounting, so hydration renders the
+ * server state first.
  *
  * @example
  * ```ts
@@ -354,10 +365,22 @@ export function usePerformanceObserver<const Type extends PerformanceEntryType>(
   const error = shallowRef<unknown>(undefined);
   let observer: PerformanceObserverLike | undefined;
 
-  const resolveHost = (): PerformanceObserverHost | undefined =>
-    options.PerformanceObserver === undefined
+  // Inside a component the host resolves only after mounting, so a hydrating
+  // client renders the server's inactive state first. Outside components it
+  // resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+
+  const resolveHost = (): PerformanceObserverHost | undefined => {
+    if (!hydrated.value) return undefined;
+    return options.PerformanceObserver === undefined
       ? browserPerformanceObserver()
       : (unref(options.PerformanceObserver) ?? undefined);
+  };
 
   const requestedTypes = (): readonly Type[] => {
     const value = toValue(entryTypes);

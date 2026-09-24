@@ -1,4 +1,4 @@
-import { shallowRef, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -42,9 +42,23 @@ export function useActiveElement(
 ): Readonly<ShallowRef<Element | null>> {
   const deep = options.deep ?? true;
   const active = shallowRef<Element | null>(null);
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
 
   const stop = watch(
-    () => (options.host === undefined ? browserActiveElementHost() : toValue(options.host)),
+    () =>
+      !mounted.value
+        ? undefined
+        : options.host === undefined
+          ? browserActiveElementHost()
+          : toValue(options.host),
     (host, _previous, onCleanup) => {
       if (!host) {
         active.value = null;

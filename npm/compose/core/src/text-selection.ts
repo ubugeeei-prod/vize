@@ -1,4 +1,4 @@
-import { computed, shallowRef, toValue, watch } from "vue";
+import { computed, hasInjectionContext, shallowRef, toValue, watch, watchPostEffect } from "vue";
 import type { ComputedRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -39,6 +39,9 @@ export interface TextSelectionControls {
  * invalidate the derived `text`, `ranges`, and `rects`. Server renders expose
  * an empty selection; the listener is removed with the owning scope.
  *
+ * Inside a component the host is read after mounting, so hydration renders
+ * the server fallback first and never mismatches.
+ *
  * @param options Document capability.
  * @default options {}
  * @returns Reactive selection, text, ranges, and rectangles.
@@ -46,9 +49,23 @@ export interface TextSelectionControls {
 export function useTextSelection(options: UseTextSelectionOptions = {}): TextSelectionControls {
   const selection = shallowRef<Selection | null>(null);
   const revision = shallowRef(0);
+  // Inside a component the host is attached by a post-flush job (after the
+  // component mounted), so a hydrating client first renders the same server
+  // fallback. Outside components it is attached synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
 
   const stop = watch(
-    () => (options.host === undefined ? browserSelectionHost() : toValue(options.host)),
+    () =>
+      hydrated.value
+        ? options.host === undefined
+          ? browserSelectionHost()
+          : toValue(options.host)
+        : undefined,
     (host, _previous, onCleanup) => {
       if (!host) {
         selection.value = null;

@@ -1,4 +1,4 @@
-import { computed, readonly, shallowRef, toValue } from "vue";
+import { computed, hasInjectionContext, readonly, shallowRef, toValue, watchPostEffect } from "vue";
 import type { ComputedRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { useReducedMotion } from "./media-query.ts";
@@ -140,8 +140,21 @@ export function useViewTransition(options: UseViewTransitionOptions = {}): ViewT
   const preference =
     respect && options.reducedMotion === undefined ? useReducedMotion() : undefined;
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveDocument = (): ViewTransitionDocumentHost | undefined =>
-    options.document === undefined ? browserDocument() : (toValue(options.document) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.document === undefined
+        ? browserDocument()
+        : (toValue(options.document) ?? undefined);
 
   const prefersReducedMotion = (): boolean => {
     if (!respect) return false;

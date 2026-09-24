@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import type { MediaQueryHost } from "./media-query.ts";
@@ -52,9 +52,23 @@ export function useDevicePixelRatio(
   const fallback = options.ssrPixelRatio ?? 1;
   const pixelRatio = ref(fallback);
   const isSupported = ref(false);
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
 
   const stop = watch(
-    () => (options.host === undefined ? browserPixelRatioHost() : toValue(options.host)),
+    () =>
+      !mounted.value
+        ? undefined
+        : options.host === undefined
+          ? browserPixelRatioHost()
+          : toValue(options.host),
     (host, _previous, onCleanup) => {
       isSupported.value = Boolean(host);
       if (!host) {

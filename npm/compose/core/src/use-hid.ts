@@ -1,4 +1,13 @@
-import { computed, readonly, shallowReadonly, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -189,6 +198,8 @@ function describe(device: HIDDeviceLike): HIDDeviceInfo {
  * outside a scope call `close()` per device.
  *
  * Server rendering: `supported` is false and `devices` is empty.
+ * Inside a component the host is resolved after mounting, so hydration
+ * renders this server state first.
  *
  * @example
  * ```ts
@@ -207,8 +218,20 @@ export function useHID(options: UseHIDOptions = {}): HIDControls {
   const reportListeners = new Map<HIDDeviceLike, (event: Event) => void>();
   const owned = new Set<HIDDeviceLike>();
 
-  const resolveHost = (): HIDHost | undefined =>
-    options.host === undefined ? browserHIDHost() : (toValue(options.host) ?? undefined);
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+
+  const resolveHost = (): HIDHost | undefined => {
+    if (!hydrated.value) return undefined;
+    return options.host === undefined ? browserHIDHost() : (toValue(options.host) ?? undefined);
+  };
 
   const attempt = async <Value>(
     action: () => Promise<Value>,

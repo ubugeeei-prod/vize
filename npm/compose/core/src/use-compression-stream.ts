@@ -1,4 +1,12 @@
-import { computed, readonly, ref, shallowRef, unref } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  unref,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRef, Ref, ShallowRef } from "vue";
 
 /** Formats supported by `CompressionStream` and `DecompressionStream`. */
@@ -279,6 +287,8 @@ export async function decompressText(
  *
  * Server rendering: `supported` is false and actions reject with the tagged
  * unsupported error unless constructors are injected.
+ * Inside a component `supported` turns true only after mounting, so
+ * hydration renders this server state first.
  *
  * @example
  * ```ts
@@ -302,6 +312,16 @@ export function useCompressionStream(
     name: "CompressionStream" | "DecompressionStream",
   ): CompressionStreamConstructor | undefined =>
     source === undefined ? browserConstructor(name) : (unref(source) ?? undefined);
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+
   const resolveCompression = (): CompressionStreamConstructor | undefined =>
     resolve(options.CompressionStream, "CompressionStream");
   const resolveDecompression = (): CompressionStreamConstructor | undefined =>
@@ -323,7 +343,10 @@ export function useCompressionStream(
 
   return {
     supported: computed(
-      () => resolveCompression() !== undefined && resolveDecompression() !== undefined,
+      () =>
+        hydrated.value &&
+        resolveCompression() !== undefined &&
+        resolveDecompression() !== undefined,
     ),
     pending: computed(() => inFlight.value > 0),
     error: readonly(error),

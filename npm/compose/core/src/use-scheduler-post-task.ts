@@ -1,4 +1,12 @@
-import { computed, readonly, shallowRef, toValue, unref } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowRef,
+  toValue,
+  unref,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -234,12 +242,23 @@ export function useSchedulerPostTask(
   const pending = shallowRef(0);
   const tasks = new Set<PendingTask>();
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveScheduler = (): SchedulerHost | undefined => {
+    if (!hydrated.value) return undefined;
     const candidate: unknown =
       options.scheduler === undefined ? browserGlobal("scheduler") : toValue(options.scheduler);
     return isScheduler(candidate) ? candidate : undefined;
   };
   const resolveTaskController = (): TaskControllerHost | undefined => {
+    if (!hydrated.value) return undefined;
     const candidate: unknown =
       options.TaskController === undefined
         ? browserGlobal("TaskController")

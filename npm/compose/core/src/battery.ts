@@ -1,4 +1,4 @@
-import { readonly, ref, shallowRef, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -77,9 +77,23 @@ export function useBattery(options: UseBatteryOptions = {}): BatteryControls {
   const dischargingTime = ref(Number.POSITIVE_INFINITY);
   const level = ref(1);
   const error = shallowRef<unknown>(undefined);
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
 
   const stop = watch(
-    () => (options.host === undefined ? browserBatteryHost() : toValue(options.host)),
+    () =>
+      !mounted.value
+        ? undefined
+        : options.host === undefined
+          ? browserBatteryHost()
+          : toValue(options.host),
     (host, _previous, onCleanup) => {
       const getBattery = host?.getBattery;
       isSupported.value = typeof getBattery === "function";

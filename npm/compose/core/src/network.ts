@@ -1,4 +1,12 @@
-import { readonly, ref, toValue, watch } from "vue";
+import {
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -91,8 +99,9 @@ export interface NetworkControls {
  * Listens for `online`/`offline` on the window and `change` on
  * `navigator.connection` where available. Unknown or future enum values
  * normalize to `null` so the public unions stay closed. Server renders
- * report `ssrOnline` with every quality metric `null`; listeners are
- * removed with the owning reactive scope.
+ * report `ssrOnline` with every quality metric `null`. Inside a component
+ * the connection is read after mounting, so hydration renders the server
+ * values first. Listeners are removed with the owning reactive scope.
  *
  * @param options Server fallback and window capability.
  * @default options {}
@@ -110,9 +119,23 @@ export function useNetwork(options: UseNetworkOptions = {}): NetworkControls {
   const rtt = ref<number | null>(null);
   const saveData = ref(false);
   const type = ref<NetworkConnectionType | null>(null);
+  // Inside a component the host is attached by a post-flush job (after the
+  // component mounted), so a hydrating client first renders the same server
+  // fallback. Outside components it is attached synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
 
   const stop = watch(
-    () => (options.host === undefined ? browserNetworkHost() : toValue(options.host)),
+    () =>
+      hydrated.value
+        ? options.host === undefined
+          ? browserNetworkHost()
+          : toValue(options.host)
+        : undefined,
     (host, _previous, onCleanup) => {
       if (!host) {
         isSupported.value = false;

@@ -1,4 +1,12 @@
-import { computed, readonly, ref, shallowRef, toValue } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 /** Contact property that can be requested from the picker. */
@@ -158,6 +166,8 @@ function pickContact<Property extends ContactProperty>(
  * cleanup.
  *
  * Server rendering: nothing is requested, `supported` and `pending` are false.
+ * Inside a component `supported` turns true only after mounting, so
+ * hydration renders this server state first.
  *
  * @example
  * ```ts
@@ -172,6 +182,16 @@ function pickContact<Property extends ContactProperty>(
 export function useContactPicker(options: UseContactPickerOptions = {}): ContactPickerControls {
   const pending = ref(false);
   const error = shallowRef<unknown>(undefined);
+
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
 
   const resolveHost = (): ContactsManagerLike | undefined =>
     options.contacts === undefined ? browserContacts() : (toValue(options.contacts) ?? undefined);
@@ -217,7 +237,7 @@ export function useContactPicker(options: UseContactPickerOptions = {}): Contact
   };
 
   return {
-    supported: computed(() => resolveHost() !== undefined),
+    supported: computed(() => hydrated.value && resolveHost() !== undefined),
     pending: readonly(pending),
     error: readonly(error),
     getProperties,

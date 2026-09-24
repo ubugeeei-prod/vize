@@ -1,4 +1,12 @@
-import { computed, readonly, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -418,6 +426,8 @@ function ignore(): void {
  * Server rendering: nothing is read or subscribed; `supported` is false,
  * `currentEntry` null, `entries` empty, and actions resolve to
  * `{ status: "unsupported" }`.
+ * Inside a component the host is resolved after mounting, so hydration
+ * renders this server state first.
  *
  * @example
  * ```ts
@@ -447,7 +457,18 @@ export function useNavigationApi<State = unknown>(
   const errorListeners = new Set<(error: unknown) => void>();
   const changeListeners = new Set<(change: NavigationEntryChange) => void>();
 
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+
   const resolveHost = (): NavigationHost | undefined => {
+    if (!hydrated.value) return undefined;
     if (options.navigation === undefined) return browserNavigation();
     return toValue(options.navigation) ?? undefined;
   };

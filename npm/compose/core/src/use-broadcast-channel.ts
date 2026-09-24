@@ -1,4 +1,12 @@
-import { readonly, ref, shallowRef, toValue, watch } from "vue";
+import {
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -124,6 +132,9 @@ function browserBroadcastChannelHost(): BroadcastChannelHost | undefined {
  * global `BroadcastChannel` is ignored), `supported` is `false`, and `post`
  * returns `false`.
  *
+ * Inside a component the host is read after mounting, so hydration renders
+ * the server fallback first and never mismatches.
+ *
  * @example
  * ```ts
  * type Sync = { readonly type: "logout" };
@@ -147,6 +158,15 @@ export function useBroadcastChannel<Message>(
   const closed = ref(true);
   let channel: BroadcastChannelLike | undefined;
   let stopped = false;
+  // Inside a component the host is attached by a post-flush job (after the
+  // component mounted), so a hydrating client first renders the same server
+  // fallback. Outside components it is attached synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
 
   const fail = (code: BroadcastChannelErrorCode, cause: unknown): void => {
     const failure: BroadcastChannelFailure = { code, name: toValue(name), cause };
@@ -174,7 +194,7 @@ export function useBroadcastChannel<Message>(
   const onMessageError = (event: Event): void => fail("message-error", event);
 
   const stopWatch = watch(
-    [() => toValue(name), resolveHost],
+    [() => toValue(name), () => (hydrated.value ? resolveHost() : undefined)],
     ([channelName, Host], _previous, onCleanup) => {
       supported.value = Host !== undefined;
       if (Host === undefined || stopped) return;

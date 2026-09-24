@@ -1,4 +1,14 @@
-import { computed, readonly, ref, shallowReadonly, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -215,8 +225,21 @@ export function useSerial<const Decoding extends SerialDecoding = "bytes">(
   }
   let session: ReadSession | undefined;
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveHost = (): SerialHost | undefined =>
-    options.host === undefined ? browserSerialHost() : (toValue(options.host) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.host === undefined
+        ? browserSerialHost()
+        : (toValue(options.host) ?? undefined);
 
   const deliver = (chunk: Uint8Array | string): void => {
     // `chunk` is a string exactly when `Decoding` is "text", matching SerialChunk.

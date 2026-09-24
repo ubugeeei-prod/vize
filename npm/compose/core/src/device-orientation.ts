@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -82,8 +82,21 @@ export function useDeviceOrientation(
   const beta = ref<number | null>(null);
   const gamma = ref<number | null>(null);
   const permission = ref<MotionPermissionState>("prompt");
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
   const host = (): DeviceOrientationHost | null | undefined =>
-    options.host === undefined ? browserOrientationHost() : toValue(options.host);
+    !mounted.value
+      ? undefined
+      : options.host === undefined
+        ? browserOrientationHost()
+        : toValue(options.host);
   const eventName = options.absolute ? "deviceorientationabsolute" : "deviceorientation";
 
   const onOrientation = (event: Event): void => {

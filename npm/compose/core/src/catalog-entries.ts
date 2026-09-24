@@ -460,7 +460,7 @@ export const entries = [
   {
     subpath: "./media-query",
     source: "src/media-query.ts",
-    gzipBudgetBytes: 1024,
+    gzipBudgetBytes: 1.25 * 1024,
     runtimeExports: ["useMediaQuery", "useReducedMotion"],
     utilities: ["useMediaQuery", "useReducedMotion"],
   },
@@ -926,7 +926,7 @@ export const entries = [
   {
     subpath: "./use-favicon",
     source: "src/use-favicon.ts",
-    gzipBudgetBytes: 1.5 * 1024,
+    gzipBudgetBytes: 1.75 * 1024,
     runtimeExports: ["useFavicon"],
     utilities: ["useFavicon"],
   },
@@ -1419,7 +1419,7 @@ export const entries = [
   {
     subpath: "./use-web-authn",
     source: "src/use-web-authn.ts",
-    gzipBudgetBytes: 3.75 * 1024,
+    gzipBudgetBytes: 4 * 1024,
     runtimeExports: [
       "useWebAuthn",
       "encodeBase64Url",

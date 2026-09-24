@@ -1,4 +1,12 @@
-import { computed, readonly, shallowRef, toValue, unref } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowRef,
+  toValue,
+  unref,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { useRafFn } from "./use-raf-fn.ts";
@@ -215,6 +223,8 @@ function normalize(barcode: DetectedBarcodeLike): DetectedBarcode {
  *
  * Server rendering: nothing is constructed or scheduled, `supported` is
  * false and `barcodes` is empty.
+ * Inside a component `supported` turns true only after mounting, so
+ * hydration renders this server state first.
  *
  * @example
  * ```ts
@@ -234,6 +244,16 @@ export function useBarcodeDetector(
   const error = shallowRef<unknown>(undefined);
   let cached: { host: BarcodeDetectorHost; key: string; detector: BarcodeDetectorLike } | undefined;
   let busy = false;
+
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
 
   const resolveHost = (): BarcodeDetectorHost | undefined =>
     options.BarcodeDetector === undefined
@@ -289,7 +309,7 @@ export function useBarcodeDetector(
   );
 
   return {
-    supported: computed(() => resolveHost() !== undefined),
+    supported: computed(() => hydrated.value && resolveHost() !== undefined),
     barcodes: readonly(barcodes),
     error: readonly(error),
     isActive: loop.isActive,

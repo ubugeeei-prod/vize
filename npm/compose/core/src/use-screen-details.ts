@@ -1,4 +1,13 @@
-import { computed, readonly, ref, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -279,8 +288,21 @@ export function useScreenDetails(options: UseScreenDetailsOptions = {}): ScreenD
   let unbind: (() => void) | undefined;
   let stopped = false;
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveHost = (): ScreenDetailsHost | undefined =>
-    options.host === undefined ? browserHost() : (toValue(options.host) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.host === undefined
+        ? browserHost()
+        : (toValue(options.host) ?? undefined);
 
   const bind = (details: ScreenDetailsLike): void => {
     unbind?.();

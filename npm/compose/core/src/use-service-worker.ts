@@ -1,4 +1,14 @@
-import { computed, readonly, ref, shallowReadonly, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -237,10 +247,21 @@ export function useServiceWorker(
   const watched = new Set<ServiceWorkerLike>();
   let active = true;
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveContainer = (): ServiceWorkerContainerLike | undefined =>
-    options.container === undefined
-      ? browserContainer()
-      : (toValue(options.container) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.container === undefined
+        ? browserContainer()
+        : (toValue(options.container) ?? undefined);
 
   const sync = (): void => {
     const current = registration.value;
@@ -358,7 +379,20 @@ export function useServiceWorker(
     }
   };
 
-  if ((options.immediate ?? true) && resolveContainer()) void register();
+  if (options.immediate ?? true) {
+    // Register once, as soon as a container resolves (after mount inside a
+    // component).
+    let registered = false;
+    watch(
+      () => resolveContainer() !== undefined,
+      (ready) => {
+        if (!ready || registered) return;
+        registered = true;
+        void register();
+      },
+      { immediate: true, flush: "sync" },
+    );
+  }
 
   tryOnScopeDispose(() => {
     active = false;

@@ -1,5 +1,7 @@
-import { computed, isRef, ref, toValue, watch } from "vue";
+import { computed, hasInjectionContext, isRef, ref, toValue, watch } from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref } from "vue";
+
+import { useMounted } from "./use-mounted.ts";
 
 import { tryOnScopeDispose } from "./scope.ts";
 
@@ -66,7 +68,10 @@ export interface DocumentTitleControls {
    */
   readonly title: Ref<string | null | undefined>;
 
-  /** Whether a document capability is attached. */
+  /**
+   * Whether a document capability is attached. Inside a component it stays
+   * `false` until mounted, so hydration matches the server render.
+   */
   readonly supported: ComputedRef<boolean>;
 }
 
@@ -129,9 +134,18 @@ export function useDocumentTitle(
     options.host === undefined ? browserTitleHost() : (toValue(options.host) ?? undefined);
   const initialHost = resolveHost();
   const originalTitle = initialHost?.title ?? "";
+  // Inside a component the current document title is adopted only after
+  // mounting, so a hydrating client first renders what the server did.
+  const mounted = hasInjectionContext() ? useMounted() : undefined;
+  const adoptTitle = title === undefined && mounted !== undefined;
   const state: Ref<string | null | undefined> = isRef(title)
     ? title
-    : ref(title === undefined ? initialHost?.title : toValue(title));
+    : ref(title === undefined && !adoptTitle ? initialHost?.title : toValue(title));
+  if (adoptTitle) {
+    watch(mounted, (isMounted) => {
+      if (isMounted && state.value === undefined) state.value = resolveHost()?.title;
+    });
+  }
   let lastWritten: string | undefined;
 
   if (typeof title === "function") {
@@ -175,5 +189,8 @@ export function useDocumentTitle(
     });
   }
 
-  return { title: state, supported: computed(() => resolveHost() !== undefined) };
+  return {
+    title: state,
+    supported: computed(() => (mounted?.value ?? true) && resolveHost() !== undefined),
+  };
 }

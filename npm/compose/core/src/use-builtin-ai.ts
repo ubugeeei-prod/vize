@@ -1,4 +1,14 @@
-import { computed, readonly, ref, shallowRef, toValue, unref, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  unref,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -382,6 +392,16 @@ function useAiSession<Instance extends { destroy(): void }, CreateOptions>(
   let controller: AbortController | undefined;
   let generation = 0;
 
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+
   const resolveFactory = (): AiFactory<Instance, CreateOptions> | undefined =>
     host === undefined ? browserFactory(name) : (unref(host) ?? undefined);
 
@@ -508,7 +528,7 @@ function useAiSession<Instance extends { destroy(): void }, CreateOptions>(
   });
   tryOnScopeDispose(destroy);
 
-  const supported = computed(() => resolveFactory() !== undefined);
+  const supported = computed(() => hydrated.value && resolveFactory() !== undefined);
   return {
     controls: {
       supported,
@@ -540,6 +560,8 @@ function useAiSession<Instance extends { destroy(): void }, CreateOptions>(
  *
  * Server rendering: nothing is created, `supported` is false and `status`
  * is `"unsupported"`.
+ * Inside a component `supported` turns true only after mounting, so
+ * hydration renders this server state first.
  *
  * @example
  * ```ts
@@ -576,6 +598,8 @@ export function useTranslator(options: UseTranslatorOptions): TranslatorControls
  *
  * Server rendering: nothing is created, `supported` is false and `status`
  * is `"unsupported"`.
+ * Inside a component `supported` turns true only after mounting, so
+ * hydration renders this server state first.
  *
  * @example
  * ```ts
@@ -613,6 +637,8 @@ export function useLanguageDetector(
  *
  * Server rendering: nothing is created, `supported` is false and `status`
  * is `"unsupported"`.
+ * Inside a component `supported` turns true only after mounting, so
+ * hydration renders this server state first.
  *
  * @example
  * ```ts

@@ -1,4 +1,13 @@
-import { computed, readonly, ref, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -182,7 +191,18 @@ export function useStorageEstimate(
       `[VIZE_COMPOSE_STORAGE_ESTIMATE_INVALID_INTERVAL] interval must be a non-negative finite number; received ${interval}.`,
     );
   }
-  const resolveStorage = resolver(options.storage);
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+  const resolveStorageNow = resolver(options.storage);
+  const resolveStorage = (): StorageManagerLike | undefined =>
+    hydrated.value ? resolveStorageNow() : undefined;
   const usage = ref<number | null>(null);
   const quota = ref<number | null>(null);
   const usageDetails = shallowRef<Readonly<Record<string, number>> | null>(null);
@@ -269,7 +289,18 @@ export function useStorageEstimate(
 export function usePersistentStorage(
   options: UsePersistentStorageOptions = {},
 ): PersistentStorageControls {
-  const resolveStorage = resolver(options.storage);
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+  const resolveStorageNow = resolver(options.storage);
+  const resolveStorage = (): StorageManagerLike | undefined =>
+    hydrated.value ? resolveStorageNow() : undefined;
   const persisted = ref(false);
   const error = shallowRef<unknown>(undefined);
   let active = true;
@@ -293,7 +324,19 @@ export function usePersistentStorage(
   const check = (): Promise<boolean> => call("persisted");
   const persist = (): Promise<boolean> => call("persist");
 
-  if (options.immediate ?? true) void check();
+  if (options.immediate ?? true) {
+    // Check once, as soon as storage resolves (after mount inside a component).
+    let checked = false;
+    watch(
+      () => resolveStorage() !== undefined,
+      (ready) => {
+        if (!ready || checked) return;
+        checked = true;
+        void check();
+      },
+      { immediate: true, flush: "sync" },
+    );
+  }
 
   tryOnScopeDispose(() => {
     active = false;

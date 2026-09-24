@@ -1,4 +1,13 @@
-import { computed, readonly, ref, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { MaybeRefOrGetter, Ref, WatchHandle } from "vue";
 
 import { resolveElement, resolveElements } from "./element-target.ts";
@@ -23,7 +32,7 @@ export interface UseResizeObserverOptions {
   /**
    * Reactive constructor capability for alternate runtimes and tests.
    *
-   * @default globalThis when it provides `ResizeObserver`
+   * @default window when it provides `ResizeObserver`
    */
   readonly host?: MaybeRefOrGetter<ResizeObserverHost | null | undefined>;
 
@@ -53,6 +62,9 @@ export interface ResizeObserverControls {
  * During server rendering no host resolves, `isSupported` stays `false`, and
  * the callback never runs.
  *
+ * Inside a component the host is read after mounting, so hydration renders
+ * the server fallback first and never mismatches.
+ *
  * @param targets Reactive element target or list of targets.
  * @param callback Native `ResizeObserver` callback.
  * @param options Box model, runtime capability, and watcher timing.
@@ -65,10 +77,23 @@ export function useResizeObserver(
   options: UseResizeObserverOptions = {},
 ): ResizeObserverControls {
   const isSupported = ref(false);
+  // Inside a component the host is attached by a post-flush job (after the
+  // component mounted), so a hydrating client first renders the same server
+  // fallback. Outside components it is attached synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   let stopWatch: WatchHandle | undefined = watch(
     () =>
       [
-        options.host === undefined ? browserResizeObserverHost() : toValue(options.host),
+        hydrated.value
+          ? options.host === undefined
+            ? browserResizeObserverHost()
+            : toValue(options.host)
+          : undefined,
         resolveElements(targets),
       ] as const,
     ([host, elements], _previous, onCleanup) => {
@@ -189,5 +214,7 @@ export function useElementSize(
 }
 
 function browserResizeObserverHost(): ResizeObserverHost | undefined {
-  return typeof ResizeObserver === "function" ? globalThis : undefined;
+  return typeof window !== "undefined" && typeof window.ResizeObserver === "function"
+    ? window
+    : undefined;
 }

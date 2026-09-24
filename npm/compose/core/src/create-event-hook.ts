@@ -1,4 +1,4 @@
-import { getCurrentInstance } from "vue";
+import { hasInjectionContext } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
 
@@ -90,7 +90,9 @@ export function createEventHook<Arguments extends readonly unknown[] = []>(
 ): EventHook<Arguments> {
   const listeners = new Set<EventHookListener<Arguments>>();
   // A hook created outside any component is shared by every server request.
-  const shared = getCurrentInstance() === null;
+  // `hasInjectionContext()` also detects Vapor components, where the public
+  // current-instance getter returns `null`.
+  const shared = !hasInjectionContext();
   let warned = false;
 
   const off = (listener: EventHookListener<Arguments>): void => {
@@ -102,7 +104,7 @@ export function createEventHook<Arguments extends readonly unknown[] = []>(
       shared &&
       (options.serverListeners ?? "ignore") === "ignore" &&
       typeof window === "undefined" &&
-      getCurrentInstance() !== null
+      hasInjectionContext()
     ) {
       if (!warned && isDevelopment()) {
         warned = true;

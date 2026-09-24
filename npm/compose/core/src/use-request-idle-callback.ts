@@ -1,4 +1,12 @@
-import { computed, readonly, shallowRef, toValue } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -154,7 +162,8 @@ function scheduleIdle(
  * caller owns `cancel()`.
  *
  * Server rendering: nothing is scheduled, `isPending` and `supported` are
- * false.
+ * false. Inside a component the first callback is scheduled after mounting,
+ * so hydration renders the server state first.
  *
  * @example
  * ```ts
@@ -192,12 +201,35 @@ export function useRequestIdleCallback(
     isPending.value = cancelPending !== undefined;
   };
 
-  if (options.immediate ?? true) start();
+  // Inside a component the first callback is scheduled (and support is
+  // reported) only after mounting, so a hydrating client renders the same
+  // idle state as the server. Outside components it starts synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (hydrated.value) {
+    if (options.immediate ?? true) start();
+  } else {
+    const stopReady = watch(
+      hydrated,
+      (ready) => {
+        if (!ready) return;
+        stopReady();
+        if (options.immediate ?? true) start();
+      },
+      { flush: "sync" },
+    );
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   tryOnScopeDispose(cancel);
 
   return {
-    supported: computed(() =>
-      options.host === undefined ? browserIdleHost() !== undefined : Boolean(toValue(options.host)),
+    supported: computed(
+      () =>
+        hydrated.value &&
+        (options.host === undefined
+          ? browserIdleHost() !== undefined
+          : Boolean(toValue(options.host))),
     ),
     isPending: readonly(isPending),
     start,

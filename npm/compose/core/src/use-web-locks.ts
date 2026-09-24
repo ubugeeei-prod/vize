@@ -1,4 +1,12 @@
-import { computed, readonly, ref, shallowRef, toValue } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -237,8 +245,21 @@ export function useWebLocks(options: UseWebLocksOptions = {}): WebLocksControls 
   const error = shallowRef<unknown>(undefined);
   const controllers = new Set<AbortController>();
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveLocks = (): LockManagerLike | undefined =>
-    options.locks === undefined ? browserLocks() : (toValue(options.locks) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.locks === undefined
+        ? browserLocks()
+        : (toValue(options.locks) ?? undefined);
 
   const run = async (
     name: string,

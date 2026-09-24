@@ -1,4 +1,4 @@
-import { readonly, ref, shallowRef, toValue, watch } from "vue";
+import { hasInjectionContext, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -58,7 +58,7 @@ export interface UseUrlHashOptions {
    * When the browser hash is first read. `"post-flush"` keeps the server
    * value through hydration and reads the real hash after mounting.
    *
-   * @default "sync"
+   * @default "post-flush" inside a component, "sync" otherwise
    */
   readonly initialRead?: "sync" | "post-flush";
 }
@@ -141,9 +141,10 @@ export function useUrlHash(options?: UseUrlHashOptions): UrlHashControls<string>
  * percent-decoded on read and minimally encoded on write.
  *
  * Server rendering: browsers never send the fragment, so without a host the
- * value is `ssrHash` (when given) or the default, and no global is read. Use
- * `initialRead: "post-flush"` when the markup depends on the hash to avoid a
- * hydration mismatch. Listeners are removed with the owning reactive scope.
+ * value is `ssrHash` (when given) or the default, and no global is read.
+ * Inside a component the browser hash is first read after mounting
+ * (`initialRead` defaults to `"post-flush"` there), so hydration never
+ * mismatches. Listeners are removed with the owning reactive scope.
  *
  * @example
  * ```ts
@@ -253,7 +254,7 @@ function createUrlHash<Value>(
     refresh();
   };
   let stopDeferred: (() => void) | undefined;
-  if ((options.initialRead ?? "sync") === "sync") {
+  if ((options.initialRead ?? (hasInjectionContext() ? "post-flush" : "sync")) === "sync") {
     start();
   } else {
     const trigger = ref(0);

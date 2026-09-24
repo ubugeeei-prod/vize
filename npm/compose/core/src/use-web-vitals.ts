@@ -1,4 +1,12 @@
-import { computed, readonly, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -190,8 +198,21 @@ export function useWebVitals(options: UseWebVitalsOptions = {}): WebVitalsContro
       : { buffered: true, PerformanceObserver: options.PerformanceObserver };
   let pageId: string | undefined;
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveDocument = (): WebVitalsDocumentHost | undefined =>
-    options.document === undefined ? browserDocument() : (toValue(options.document) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.document === undefined
+        ? browserDocument()
+        : (toValue(options.document) ?? undefined);
 
   const report = (name: WebVitalName): void => {
     const metric = metrics.value[name];
@@ -372,8 +393,9 @@ export function useWebVitals(options: UseWebVitalsOptions = {}): WebVitalsContro
   });
 
   return {
-    supported: computed(() =>
-      [lcp, cls, inp, fcp, ttfb].some((observer) => observer.supported.value),
+    supported: computed(
+      () =>
+        hydrated.value && [lcp, cls, inp, fcp, ttfb].some((observer) => observer.supported.value),
     ),
     metrics: readonly(metrics),
     onMetric: (listener) => {

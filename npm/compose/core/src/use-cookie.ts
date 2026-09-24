@@ -1,7 +1,8 @@
-import { hasInjectionContext, inject, provide, readonly, ref, shallowRef, watch } from "vue";
+import { computed, hasInjectionContext, inject, provide, shallowRef, watch } from "vue";
 import type { InjectionKey, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
+import { useMounted } from "./use-mounted.ts";
 
 /** `SameSite` attribute values. */
 export type CookieSameSite = "lax" | "strict" | "none";
@@ -274,7 +275,11 @@ export interface CookieControls<Value> {
   /** Writable cookie value; assignments write the cookie. */
   readonly state: Ref<Value>;
 
-  /** Whether an adapter is attached. */
+  /**
+   * Whether an adapter is attached. With the implicit `document.cookie`
+   * adapter inside a component it stays `false` until mounted, matching a
+   * server render without an adapter.
+   */
   readonly supported: Readonly<Ref<boolean>>;
 
   /** Most recent failure, cleared by the next success. */
@@ -389,7 +394,9 @@ export function useCookie<Value>(
     options.validate ?? ((candidate: unknown): candidate is Value => sameKind(fallback, candidate));
   const state = shallowRef<Value | undefined>(fallback);
   const error = shallowRef<CookieFailure | undefined>(undefined);
-  const supported = ref(adapter !== undefined);
+  const implicitBrowserAdapter = options.adapter === undefined && injected === undefined;
+  const mounted = implicitBrowserAdapter && hasInjectionContext() ? useMounted() : undefined;
+  const supported = computed(() => (mounted?.value ?? true) && adapter !== undefined);
   const attributes: CookieAttributes = {
     path: "/",
     ...(options.domain === undefined ? {} : { domain: options.domain }),
@@ -489,5 +496,5 @@ export function useCookie<Value>(
 
   tryOnScopeDispose(stopWrite);
 
-  return { state, supported: readonly(supported), error, refresh, remove };
+  return { state, supported, error, refresh, remove };
 }

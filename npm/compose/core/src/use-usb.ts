@@ -1,4 +1,13 @@
-import { computed, readonly, shallowReadonly, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -267,8 +276,21 @@ export function useUSB(options: UseUSBOptions = {}): USBControls {
   const error = shallowRef<unknown>(undefined);
   const owned = new Set<USBDeviceLike>();
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveHost = (): USBHost | undefined =>
-    options.host === undefined ? browserUSBHost() : (toValue(options.host) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.host === undefined
+        ? browserUSBHost()
+        : (toValue(options.host) ?? undefined);
 
   const snapshot = (): void => {
     devices.value = devices.value.map((entry) => describe(entry.device));
