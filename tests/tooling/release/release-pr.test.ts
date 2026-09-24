@@ -6,9 +6,9 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
-import { writeFakeCommand } from "./support/fake-command.ts";
-import { readRepoFile } from "./support/github-workflows.ts";
+import { repoRoot } from "../_helpers/moonbit.ts";
+import { writeFakeCommand } from "../support/fake-command.ts";
+import { readRepoFile } from "../support/github-workflows.ts";
 
 const script = path.join(repoRoot, "tools/commands/release/pr.rs");
 

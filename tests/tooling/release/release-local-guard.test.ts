@@ -5,8 +5,8 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
-import { writeFakeCommand } from "./support/fake-command.ts";
+import { repoRoot } from "../_helpers/moonbit.ts";
+import { writeFakeCommand } from "../support/fake-command.ts";
 
 const HEAD_SHA = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const OTHER_SHA = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";

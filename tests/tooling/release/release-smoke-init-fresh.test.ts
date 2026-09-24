@@ -10,24 +10,24 @@ import {
   managerEnv,
   projectEnv,
   runManager,
-} from "../../tools/support/compat/npm/smoke-release-init-project.mjs";
-import { PACKAGE_MANAGERS } from "../../tools/support/compat/npm/smoke-release-init-managers.mjs";
+} from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
+import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
 import {
   packedFileSpec,
   packedRedirects,
-} from "../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
-import { withPoisonedVizePath } from "../../tools/support/compat/npm/smoke-release-path-poison.mjs";
+} from "../../../tools/support/compat/npm/smoke-release-init-fresh.mjs";
+import { withPoisonedVizePath } from "../../../tools/support/compat/npm/smoke-release-path-poison.mjs";
 import {
   FRESH_INIT_MATRIX,
   PROJECT_SHAPES,
-} from "../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
-import { readRepoFile } from "./support/github-workflows.ts";
+} from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
+import { readRepoFile } from "../support/github-workflows.ts";
 import {
   COREPACK_MANAGER_SPECS,
   MANAGER_KEYS,
   SHAPE_KEYS,
   byCodeUnit,
-} from "./support/release-smoke-init-contract.ts";
+} from "../support/release-smoke-init-contract.ts";
 
 const RUNTIME_PACKAGE_MANAGER_ACTION = "./.github/actions/setup-runtime-package-managers";
 

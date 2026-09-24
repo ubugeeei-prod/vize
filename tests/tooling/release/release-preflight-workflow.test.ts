@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { hostedOrBlacksmith, readRepoFile } from "./support/github-workflows.ts";
+import { hostedOrBlacksmith, readRepoFile } from "../support/github-workflows.ts";
 
 type WorkflowStep = {
   env?: Record<string, string>;

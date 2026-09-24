@@ -4,15 +4,15 @@ import { test } from "node:test";
 import {
   assertRealProjectMatrixReleaseArtifacts,
   requiredRealProjectMatrixShardCount,
-} from "../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
+} from "../../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
 import {
   json,
   mutateDivergence,
   realProjectArtifacts,
   shardEntries,
   typecheckRegistry,
-} from "./_helpers/release-preflight-matrix-evidence-fixture.ts";
-import { successfulReleaseRun } from "./support/release-preflight.ts";
+} from "../_helpers/release-preflight-matrix-evidence-fixture.ts";
+import { successfulReleaseRun } from "../support/release-preflight.ts";
 
 test("release preflight requires same-corpus coverage, mutation oracle, and preparation linkage", async () => {
   for (const [label, mutate, message] of [

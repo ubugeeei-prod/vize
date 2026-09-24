@@ -4,14 +4,14 @@ import { test } from "node:test";
 import {
   assertRealProjectMatrixReleaseArtifacts,
   requireRealProjectMatrixRun,
-} from "../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
+} from "../../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
 import {
   mutateDivergence,
   realProjectArtifacts,
   shardEntries,
   typecheckRegistry,
-} from "./_helpers/release-preflight-matrix-evidence-fixture.ts";
-import { successfulReleaseRun } from "./support/release-preflight.ts";
+} from "../_helpers/release-preflight-matrix-evidence-fixture.ts";
+import { successfulReleaseRun } from "../support/release-preflight.ts";
 
 test("release preflight validates every real-project shard artifact", async () => {
   const run = successfulReleaseRun("Real Project Matrix", 500);

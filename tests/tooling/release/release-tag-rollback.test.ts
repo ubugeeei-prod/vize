@@ -6,8 +6,8 @@ import {
   assertRollbackContext,
   remoteTagState,
   rollbackUnpublishedTag,
-} from "../../tools/support/compat/github/release-tag-rollback.mjs";
-import { readRepoFile } from "./support/github-workflows.ts";
+} from "../../../tools/support/compat/github/release-tag-rollback.mjs";
+import { readRepoFile } from "../support/github-workflows.ts";
 
 const tag = "v0.348.0";
 const commitSha = "a".repeat(40);

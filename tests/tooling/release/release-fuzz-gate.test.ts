@@ -9,9 +9,9 @@ import { parse } from "yaml";
 import {
   createReleaseGateDispatchPlans,
   releaseGateRunQualifiers,
-} from "../../tools/support/compat/github/release-preflight-bootstrap.mjs";
-import { readRepoFile } from "./support/github-workflows.ts";
-import { releaseSha } from "./support/release-preflight.ts";
+} from "../../../tools/support/compat/github/release-preflight-bootstrap.mjs";
+import { readRepoFile } from "../support/github-workflows.ts";
+import { releaseSha } from "../support/release-preflight.ts";
 
 function fuzzPlan() {
   const plans = createReleaseGateDispatchPlans({

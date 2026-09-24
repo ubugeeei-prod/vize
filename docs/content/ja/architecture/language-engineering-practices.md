@@ -40,7 +40,7 @@ Vize は Vue ツールチェーンですが、コンパイラーと同じ障害�
 | セマンティック分析、lint、ファイル間分析            | ルールまたはアナライザー フィクスチャ、JSON またはエージェント出力スナップショット、および変更された診断に関するドキュメント。                    | `cargo test -p vize_patina`、`vp run --filter './tests' test:lint`、`node --test tests/tooling/snapshot-baselines.test.ts`                                 |
 | 仮想 TypeScript と型チェック                        | 最小限の SFC フィクスチャ、マッピングされた診断スナップショット、生成された仮想 TS レビュー、および公式の Vue または TypeScript パリティ ノート。 | `vp run --filter './tests' test:check:fixtures`、`cargo test -p vize_canon`、`vize check --show-virtual-ts <file>`                                         |
 | フォーマッタと LSP                                  | ゴールデン フォーマットの出力またはプロトコル スモーク カバレッジに加え、動作がユーザーに見える場合の集中的なエディタ統合チェック。               | `cargo test -p vize_glyph`、`cargo test -p vize_maestro`、`node --test tests/tooling/lsp-smoke.test.ts`                                                    |
-| ランタイム パッケージ、リリース、またはドキュメント | ガバナンス テスト、スモーク インストールまたはワークフロー カバレッジ、運用体制が変更されたときのリリース/準備ドキュメント。                      | `node --test tests/tooling/*.test.ts`、`rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks`、`vp run --workspace-root check:ci` |
+| ランタイム パッケージ、リリース、またはドキュメント | ガバナンス テスト、スモーク インストールまたはワークフロー カバレッジ、運用体制が変更されたときのリリース/準備ドキュメント。                      | `node --test tests/tooling/*.test.ts tests/tooling/release/*.test.ts`、`rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks`、`vp run --workspace-root check:ci` |
 
 ## 保証レーン
 

@@ -6,9 +6,9 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { preparePublishManifest } from "../../tools/support/compat/npm/prepare-publish-manifest.mjs";
+import { preparePublishManifest } from "../../../tools/support/compat/npm/prepare-publish-manifest.mjs";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const smokeCommand = path.join(root, "tools/commands/release/npm/smoke-release-install.rs");
 const smokeModule = path.join(root, "tools/support/compat/npm/smoke-release-install.mjs");
 

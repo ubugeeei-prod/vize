@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const toolPath = path.join(root, "tools", "commands", "ci", "github", "release-platforms.rs");
 
 function releasePlatformPlan(refName: string) {

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { readRepoFile } from "./support/github-workflows.ts";
+import { readRepoFile } from "../support/github-workflows.ts";
 
 type Workflow = {
   concurrency?: {

@@ -43,6 +43,7 @@ const toolingTestFiles = [
   "tests/tooling/*.test.mjs",
   "tests/tooling/davinci/*.test.ts",
   "tests/tooling/davinci/*.test.mjs",
+  "tests/tooling/release/*.test.ts",
 ].join(" ");
 
 const jsPackageTestCommand = runInPackages("test", testedPackages, {

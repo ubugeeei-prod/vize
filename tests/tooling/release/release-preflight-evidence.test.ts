@@ -9,14 +9,14 @@ import {
   requiredWorkflowJobNames,
   selectRequiredWorkflowRuns,
   summarizeRequiredWorkflowJobFailures,
-} from "../../tools/support/compat/github/release-preflight-evidence.mjs";
-import { requiredRealProjectMatrixShardCount } from "../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
-import { readRepoFile } from "./support/github-workflows.ts";
+} from "../../../tools/support/compat/github/release-preflight-evidence.mjs";
+import { requiredRealProjectMatrixShardCount } from "../../../tools/support/compat/github/release-preflight-matrix-evidence.mjs";
+import { readRepoFile } from "../support/github-workflows.ts";
 import {
   releaseSha,
   successfulReleaseJob,
   successfulReleaseRun,
-} from "./support/release-preflight.ts";
+} from "../support/release-preflight.ts";
 
 test("release evidence paths identify the declared workflow names", () => {
   for (const [workflowName, evidence] of requiredReleaseWorkflowEvidence) {

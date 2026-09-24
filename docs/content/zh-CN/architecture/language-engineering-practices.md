@@ -40,7 +40,7 @@ Vize 是一个 Vue 工具链，但它具有与编译器相同的故障模式：�
 | 语义分析、lint 和跨文件分析 | 规则或分析器装置、JSON 或代理输出快照以及更改诊断的文档。                                    | `cargo test -p vize_patina`、`vp run --filter './tests' test:lint`、`node --test tests/tooling/snapshot-baselines.test.ts`                                 |
 | 虚拟 TypeScript 和类型检查  | 最小的 SFC 夹具、映射的诊断快照、生成的虚拟 TS 审查以及官方 Vue 或 TypeScript 奇偶校验说明。 | `vp run --filter './tests' test:check:fixtures`、`cargo test -p vize_canon`、`vize check --show-virtual-ts <file>`                                         |
 | 格式化程序和 LSP            | 黄金格式输出或协议烟雾覆盖，加上用户可见行为时的集中编辑器集成检查。                         | `cargo test -p vize_glyph`、`cargo test -p vize_maestro`、`node --test tests/tooling/lsp-smoke.test.ts`                                                    |
-| 运行时打包、发布或文档      | 生产状况发生变化时进行治理测试、烟雾安装或工作流程覆盖以及发布/准备文档。                    | `node --test tests/tooling/*.test.ts`、`rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks`、`vp run --workspace-root check:ci` |
+| 运行时打包、发布或文档      | 生产状况发生变化时进行治理测试、烟雾安装或工作流程覆盖以及发布/准备文档。                    | `node --test tests/tooling/*.test.ts tests/tooling/release/*.test.ts`、`rust-script tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks`、`vp run --workspace-root check:ci` |
 
 ## 保障通道
 

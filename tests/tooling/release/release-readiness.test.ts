@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const checklistPath = path.join(root, "docs", "release", "v1-alpha-go-no-go.md");
 const productionReadinessPath = path.join(root, "docs", "release", "production-readiness.md");
 const supplyChainPath = path.join(root, "docs", "release", "supply-chain.md");

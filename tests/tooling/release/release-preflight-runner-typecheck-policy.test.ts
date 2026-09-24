@@ -5,8 +5,8 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
 
-import { repoRoot } from "./_helpers/moonbit.ts";
-import { createReleasePreflightVerifyOnlyFixture } from "./support/release-preflight-runner-fixture.ts";
+import { repoRoot } from "../_helpers/moonbit.ts";
+import { createReleasePreflightVerifyOnlyFixture } from "../support/release-preflight-runner-fixture.ts";
 
 test("verify-only mode accepts shards without optional typecheck divergence artifacts", () => {
   const tempDir = fs.mkdtempSync(path.join(tmpdir(), "vize-release-optional-typecheck-"));
