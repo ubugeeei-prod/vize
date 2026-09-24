@@ -265,6 +265,21 @@
       "import": "./dist/toolbar.mjs",
       "default": "./dist/toolbar.mjs"
     },
+    "./data-grid": {
+      "types": "./dist/data-grid.d.mts",
+      "import": "./dist/data-grid.mjs",
+      "default": "./dist/data-grid.mjs"
+    },
+    "./grid-list": {
+      "types": "./dist/grid-list.d.mts",
+      "import": "./dist/grid-list.mjs",
+      "default": "./dist/grid-list.mjs"
+    },
+    "./kanban": {
+      "types": "./dist/kanban.d.mts",
+      "import": "./dist/kanban.mjs",
+      "default": "./dist/kanban.mjs"
+    },
     "./table": {
       "types": "./dist/table.d.mts",
       "import": "./dist/table.mjs",

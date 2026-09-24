@@ -149,6 +149,11 @@ export * from "./families/interaction/interaction-hooks/interaction-hooks.ts";
 export * from "./families/accessibility/scroll-lock/scroll-lock.ts";
 export * from "./families/interaction/shortcut/shortcut.ts";
 export * from "./families/interaction/sortable/sortable.ts";
+// Data views compose interaction primitives, so they follow them to keep the
+// root entry's module order identical to each subpath consumer.
+export * from "./families/data/data-grid/data-grid.ts";
+export * from "./families/data/grid-list/grid-list.ts";
+export * from "./families/data/kanban/kanban.ts";
 export * from "./families/interaction/spatial-navigation/spatial-navigation.ts";
 export * from "./families/overlays/transition/transition.ts";
 export * from "./families/interaction/typeahead/typeahead.ts";

@@ -4,6 +4,7 @@ import { accessibilityFamilyCatalog } from "./family-catalog-accessibility.ts";
 import { basicFamilyCatalog } from "./family-catalog-basics.ts";
 import { chartFamilyCatalog } from "./family-catalog-charts.ts";
 import { dataFamilyCatalog } from "./family-catalog-data.ts";
+import { dataViewFamilyCatalog } from "./family-catalog-data-views.ts";
 import { dateTimeFamilyCatalog } from "./family-catalog-date-time.ts";
 import { confirmFamilyCatalog, drawerFamilyCatalog } from "./family-catalog-drawer.ts";
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
@@ -58,6 +59,7 @@ const allFamilyCatalogEntries = [
   ...chartFamilyCatalog,
   ...confirmFamilyCatalog,
   ...dataFamilyCatalog,
+  ...dataViewFamilyCatalog,
   ...dateTimeFamilyCatalog,
   ...drawerFamilyCatalog,
   ...feedbackFamilyCatalog,

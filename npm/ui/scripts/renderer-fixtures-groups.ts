@@ -1,6 +1,7 @@
 import { colorPickerRendererFixtures } from "./renderer-fixtures-color-picker.ts";
 import { commandRendererFixtures } from "./renderer-fixtures-commands.ts";
 import { dataRendererFixtures } from "./renderer-fixtures-data.ts";
+import { dataViewRendererFixtures } from "./renderer-fixtures-data-views.ts";
 import { dialogRendererFixtures } from "./renderer-fixtures-dialog.ts";
 import { disclosureRendererFixtures } from "./renderer-fixtures-disclosure.ts";
 import { drawerRendererFixtures } from "./renderer-fixtures-drawer.ts";
@@ -26,6 +27,7 @@ export const groupedRendererFixtures = [
   ...colorPickerRendererFixtures,
   ...commandRendererFixtures,
   ...dataRendererFixtures,
+  ...dataViewRendererFixtures,
   ...dialogRendererFixtures,
   ...disclosureRendererFixtures,
   ...drawerRendererFixtures,
