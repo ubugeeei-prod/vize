@@ -75,10 +75,30 @@
       "import": "./dist/calendar.mjs",
       "default": "./dist/calendar.mjs"
     },
+    "./date-field": {
+      "types": "./dist/date-field.d.mts",
+      "import": "./dist/date-field.mjs",
+      "default": "./dist/date-field.mjs"
+    },
+    "./date-picker": {
+      "types": "./dist/date-picker.d.mts",
+      "import": "./dist/date-picker.mjs",
+      "default": "./dist/date-picker.mjs"
+    },
+    "./date-range-picker": {
+      "types": "./dist/date-range-picker.d.mts",
+      "import": "./dist/date-range-picker.mjs",
+      "default": "./dist/date-range-picker.mjs"
+    },
     "./range-calendar": {
       "types": "./dist/range-calendar.d.mts",
       "import": "./dist/range-calendar.mjs",
       "default": "./dist/range-calendar.mjs"
+    },
+    "./time-field": {
+      "types": "./dist/time-field.d.mts",
+      "import": "./dist/time-field.mjs",
+      "default": "./dist/time-field.mjs"
     },
     "./callout": {
       "types": "./dist/callout.d.mts",
@@ -109,6 +129,26 @@
       "types": "./dist/range-slider.d.mts",
       "import": "./dist/range-slider.mjs",
       "default": "./dist/range-slider.mjs"
+    },
+    "./checkbox-group": {
+      "types": "./dist/checkbox-group.d.mts",
+      "import": "./dist/checkbox-group.mjs",
+      "default": "./dist/checkbox-group.mjs"
+    },
+    "./editable": {
+      "types": "./dist/editable.d.mts",
+      "import": "./dist/editable.mjs",
+      "default": "./dist/editable.mjs"
+    },
+    "./password-field": {
+      "types": "./dist/password-field.d.mts",
+      "import": "./dist/password-field.mjs",
+      "default": "./dist/password-field.mjs"
+    },
+    "./pin-input": {
+      "types": "./dist/pin-input.d.mts",
+      "import": "./dist/pin-input.mjs",
+      "default": "./dist/pin-input.mjs"
     },
     "./tabs": {
       "types": "./dist/tabs.d.mts",
@@ -154,6 +194,11 @@
       "types": "./dist/grid.d.mts",
       "import": "./dist/grid.mjs",
       "default": "./dist/grid.mjs"
+    },
+    "./dropdown-menu": {
+      "types": "./dist/dropdown-menu.d.mts",
+      "import": "./dist/dropdown-menu.mjs",
+      "default": "./dist/dropdown-menu.mjs"
     },
     "./empty-state": {
       "types": "./dist/empty-state.d.mts",
@@ -250,6 +295,11 @@
       "import": "./dist/hover-card.mjs",
       "default": "./dist/hover-card.mjs"
     },
+    "./toast": {
+      "types": "./dist/toast.d.mts",
+      "import": "./dist/toast.mjs",
+      "default": "./dist/toast.mjs"
+    },
     "./input": {
       "types": "./dist/input.d.mts",
       "import": "./dist/input.mjs",
@@ -310,6 +360,16 @@
       "import": "./dist/skeleton.mjs",
       "default": "./dist/skeleton.mjs"
     },
+    "./menu": {
+      "types": "./dist/menu.d.mts",
+      "import": "./dist/menu.mjs",
+      "default": "./dist/menu.mjs"
+    },
+    "./menubar": {
+      "types": "./dist/menubar.d.mts",
+      "import": "./dist/menubar.mjs",
+      "default": "./dist/menubar.mjs"
+    },
     "./meter": {
       "types": "./dist/meter.d.mts",
       "import": "./dist/meter.mjs",
@@ -354,6 +414,11 @@
       "types": "./dist/pagination.d.mts",
       "import": "./dist/pagination.mjs",
       "default": "./dist/pagination.mjs"
+    },
+    "./tags-input": {
+      "types": "./dist/tags-input.d.mts",
+      "import": "./dist/tags-input.mjs",
+      "default": "./dist/tags-input.mjs"
     },
     "./textarea": {
       "types": "./dist/textarea.d.mts",
@@ -400,6 +465,11 @@
       "import": "./dist/context.mjs",
       "default": "./dist/context.mjs"
     },
+    "./context-menu": {
+      "types": "./dist/context-menu.d.mts",
+      "import": "./dist/context-menu.mjs",
+      "default": "./dist/context-menu.mjs"
+    },
     "./controllable-state": {
       "types": "./dist/controllable-state.d.mts",
       "import": "./dist/controllable-state.mjs",
@@ -414,6 +484,16 @@
       "types": "./dist/alert-dialog.d.mts",
       "import": "./dist/alert-dialog.mjs",
       "default": "./dist/alert-dialog.mjs"
+    },
+    "./confirm": {
+      "types": "./dist/confirm.d.mts",
+      "import": "./dist/confirm.mjs",
+      "default": "./dist/confirm.mjs"
+    },
+    "./drawer": {
+      "types": "./dist/drawer.d.mts",
+      "import": "./dist/drawer.mjs",
+      "default": "./dist/drawer.mjs"
     },
     "./dismissable-layer": {
       "types": "./dist/dismissable-layer.d.mts",
@@ -644,6 +724,26 @@
       "types": "./dist/virtualizer.d.mts",
       "import": "./dist/virtualizer.mjs",
       "default": "./dist/virtualizer.mjs"
+    },
+    "./navigation-menu": {
+      "types": "./dist/navigation-menu.d.mts",
+      "import": "./dist/navigation-menu.mjs",
+      "default": "./dist/navigation-menu.mjs"
+    },
+    "./scroll-spy": {
+      "types": "./dist/scroll-spy.d.mts",
+      "import": "./dist/scroll-spy.mjs",
+      "default": "./dist/scroll-spy.mjs"
+    },
+    "./toc": {
+      "types": "./dist/toc.d.mts",
+      "import": "./dist/toc.mjs",
+      "default": "./dist/toc.mjs"
+    },
+    "./timeline": {
+      "types": "./dist/timeline.d.mts",
+      "import": "./dist/timeline.mjs",
+      "default": "./dist/timeline.mjs"
     },
     "./primitive": {
       "types": "./dist/primitive.d.mts",
