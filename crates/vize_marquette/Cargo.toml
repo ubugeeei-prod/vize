@@ -25,3 +25,6 @@ insta.workspace = true
 [[test]]
 name = "contract_compat"
 required-features = ["wit"]
+
+[lints]
+workspace = true

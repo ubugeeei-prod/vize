@@ -1,5 +1,7 @@
 //! End-to-end tests for the consolidated vize-marquette CLI.
 
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+
 use std::collections::BTreeSet;
 use std::process::Command;
 

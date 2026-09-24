@@ -132,7 +132,9 @@ pub(super) fn is_strict_timestamp(bytes: &[u8]) -> bool {
         }
     }
     let digits = |start: usize, end: usize| -> u32 {
-        bytes[start..end]
+        bytes
+            .get(start..end)
+            .unwrap_or_default()
             .iter()
             .fold(0, |value, byte| value * 10 + u32::from(byte - b'0'))
     };

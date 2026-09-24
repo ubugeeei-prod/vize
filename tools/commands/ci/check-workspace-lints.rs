@@ -18,7 +18,6 @@ use std::{fs, process::ExitCode};
 const PENDING: &[&str] = &[
     "crates/vize",
     "crates/vize_croquis_cf",
-    "crates/vize_marquette",
     "crates/vize_vitrine",
 ];
 

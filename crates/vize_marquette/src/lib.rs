@@ -46,6 +46,7 @@ mod adapter;
 mod canonical;
 mod compatibility;
 pub mod contracts;
+mod hex;
 mod model;
 mod test_run;
 mod validate;

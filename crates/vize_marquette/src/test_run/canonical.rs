@@ -45,13 +45,7 @@ pub fn canonical_test_run_json(
 pub fn test_run_fingerprint(evidence: &TestRunEvidence) -> Result<String, CanonicalTestRunError> {
     let bytes = canonical_test_run_json(evidence)?;
     let digest = Sha256::digest(bytes);
-    let mut output = String::with_capacity(64);
-    const HEX: &[u8; 16] = b"0123456789abcdef";
-    for byte in digest {
-        output.push(HEX[(byte >> 4) as usize] as char);
-        output.push(HEX[(byte & 0x0f) as usize] as char);
-    }
-    Ok(output)
+    Ok(crate::hex::lower_hex(&digest))
 }
 
 #[cfg(test)]

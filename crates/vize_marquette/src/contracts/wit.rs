@@ -54,7 +54,11 @@ pub fn surface_from_wit(
     let (package_id, _sources) = resolve
         .push_dir(dir)
         .map_err(|error| WitSurfaceError(cstr!("{error:#}")))?;
-    let package = &resolve.packages[package_id];
+    let Some(package) = resolve.packages.get(package_id) else {
+        return Err(WitSurfaceError(cstr!(
+            "wit-parser returned an unknown package id"
+        )));
+    };
     let Some(version) = &package.name.version else {
         return Err(WitSurfaceError(cstr!(
             "the WIT package {} has no version",
@@ -65,8 +69,8 @@ pub fn surface_from_wit(
     let interfaces = package
         .interfaces
         .iter()
-        .map(|(name, &id)| {
-            let interface = &resolve.interfaces[id];
+        .filter_map(|(name, &id)| {
+            let interface = resolve.interfaces.get(id)?;
             let types = interface
                 .types
                 .iter()
@@ -90,17 +94,17 @@ pub fn surface_from_wit(
                     (name.to_compact_string(), shape)
                 })
                 .collect();
-            (
+            Some((
                 name.to_compact_string(),
                 InterfaceSurface { types, functions },
-            )
+            ))
         })
         .collect();
     let worlds = package
         .worlds
         .iter()
-        .map(|(name, &id)| {
-            let world = &resolve.worlds[id];
+        .filter_map(|(name, &id)| {
+            let world = resolve.worlds.get(id)?;
             let items = |items: &wit_parser::IndexMap<_, WorldItem>| -> BTreeSet<String> {
                 items
                     .iter()
@@ -123,7 +127,7 @@ pub fn surface_from_wit(
                     .cloned()
                     .unwrap_or_default(),
             };
-            (name, surface)
+            Some((name, surface))
         })
         .collect();
     Ok(ContractSurface {
@@ -143,10 +147,14 @@ struct Render<'a>(&'a Resolve);
 
 impl Render<'_> {
     fn interface(&self, id: wit_parser::InterfaceId) -> String {
-        let interface = &self.0.interfaces[id];
-        match (&interface.name, interface.package) {
-            (Some(name), _) => name.to_compact_string(),
-            (None, _) => self.0.id_of(id).unwrap_or_default().to_compact_string(),
+        match self
+            .0
+            .interfaces
+            .get(id)
+            .and_then(|interface| interface.name.as_ref())
+        {
+            Some(name) => name.to_compact_string(),
+            None => self.0.id_of(id).unwrap_or_default().to_compact_string(),
         }
     }
 
@@ -161,7 +169,7 @@ impl Render<'_> {
                 })
                 .collect()
         };
-        Some(match &self.0.types[id].kind {
+        Some(match &self.0.types.get(id)?.kind {
             TypeDefKind::Type(_) => return None,
             TypeDefKind::Record(record) => TypeShape::Record(fields(&record.fields)),
             TypeDefKind::Variant(variant) => TypeShape::Variant(
@@ -214,12 +222,21 @@ impl Render<'_> {
     }
 
     fn id(&self, id: TypeId) -> String {
-        let def = &self.0.types[id];
+        let Some(def) = self.0.types.get(id) else {
+            return String::default();
+        };
         match (&def.name, &def.kind) {
             (_, TypeDefKind::Type(inner)) => self.ty(inner),
             (Some(name), _) => match def.owner {
                 TypeOwner::Interface(owner) => cstr!("{}.{name}", self.interface(owner)),
-                TypeOwner::World(world) => cstr!("{}.{name}", self.0.worlds[world].name),
+                TypeOwner::World(world) => {
+                    let world = self
+                        .0
+                        .worlds
+                        .get(world)
+                        .map_or("", |world| world.name.as_str());
+                    cstr!("{world}.{name}")
+                }
                 TypeOwner::None => name.to_compact_string(),
             },
             (None, kind) => self.kind(kind),

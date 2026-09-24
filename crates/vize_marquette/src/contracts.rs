@@ -129,7 +129,9 @@ pub struct WorldSurface {
 /// one trailing newline. Equal surfaces serialize to equal bytes.
 #[must_use]
 pub fn canonical_surface_json(surface: &ContractSurface) -> Vec<u8> {
-    let mut bytes = serde_json::to_vec_pretty(surface).expect("a surface always serializes");
+    // Strings, sets and string-keyed maps always serialize; an empty body is
+    // the unreachable fallback rather than an abort.
+    let mut bytes = serde_json::to_vec_pretty(surface).unwrap_or_default();
     bytes.push(b'\n');
     bytes
 }
@@ -137,12 +139,6 @@ pub fn canonical_surface_json(surface: &ContractSurface) -> Vec<u8> {
 /// The lowercase SHA-256 of [`canonical_surface_json`].
 #[must_use]
 pub fn surface_fingerprint(surface: &ContractSurface) -> String {
-    const HEX: &[u8; 16] = b"0123456789abcdef";
     let digest = Sha256::digest(canonical_surface_json(surface));
-    let mut output = String::with_capacity(64);
-    for byte in digest {
-        output.push(HEX[(byte >> 4) as usize] as char);
-        output.push(HEX[(byte & 0x0f) as usize] as char);
-    }
-    output
+    crate::hex::lower_hex(&digest)
 }

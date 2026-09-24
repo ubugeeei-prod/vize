@@ -140,7 +140,10 @@ fn validate_accepted(transition: &TestRunTransition, diagnostics: &mut Vec<Contr
             "accepted admission ids must be test-run: followed by 64 lowercase hexadecimal characters",
         ));
     }
-    if accepted.windows(2).any(|pair| pair[0] >= pair[1]) {
+    if accepted
+        .windows(2)
+        .any(|pair| matches!(pair, [left, right] if left >= right))
+    {
         diagnostics.push(ContractDiagnostic::error(
             "VIZE_MARQUETTE_154",
             "transition.accepted",
@@ -186,9 +189,11 @@ fn validate_decision(transition: &TestRunTransition, diagnostics: &mut Vec<Contr
             "diagnostic codes must be stable VIZE_MARQUETTE codes",
         ));
     }
-    let sorted = decision.diagnostics.windows(2).all(|pair| {
-        (&pair[0].path, &pair[0].code, &pair[0].message)
-            <= (&pair[1].path, &pair[1].code, &pair[1].message)
+    let sorted = decision.diagnostics.windows(2).all(|pair| match pair {
+        [left, right] => {
+            (&left.path, &left.code, &left.message) <= (&right.path, &right.code, &right.message)
+        }
+        _ => true,
     });
     if !sorted {
         diagnostics.push(ContractDiagnostic::error(

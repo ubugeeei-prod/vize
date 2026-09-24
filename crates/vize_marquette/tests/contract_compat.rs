@@ -2,6 +2,8 @@
 //! exactly — a deliberately breaking change is flagged (and its additive-
 //! sized version bump refused), a purely additive one is not.
 
+#![expect(clippy::panic, reason = "tests assert by panicking")]
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 

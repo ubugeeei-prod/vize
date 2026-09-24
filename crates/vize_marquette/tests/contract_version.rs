@@ -2,6 +2,8 @@
 //! package version and the protocol version must move for an additive or a
 //! breaking change, with every violation's exact message.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 use std::collections::BTreeMap;
 
 use vize_marquette::contracts::{InterfaceSurface, TypeShape};

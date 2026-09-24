@@ -175,6 +175,7 @@ pub fn admit_test_run(
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use crate::test_run::model_tests::example_evidence;
 
