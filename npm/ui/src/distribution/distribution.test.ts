@@ -43,7 +43,10 @@ test("every public entry exposes generated JavaScript and declarations", async (
   assert.equal(manifest.exports["./base.css"], manifest.exports["./theme.css"]);
 
   for (const name of [
+    "alert",
+    "badge",
     "button",
+    "card",
     "checkbox",
     "dialog",
     "input",
@@ -51,6 +54,7 @@ test("every public entry exposes generated JavaScript and declarations", async (
     "scroll-area",
     "switch",
     "textarea",
+    "tooltip",
   ]) {
     const entry = `./component-${name}.css`;
     const target = manifest.exports[entry];
@@ -85,13 +89,24 @@ test("every public entry exposes generated JavaScript and declarations", async (
 test("optional component styles stay separate from headless JavaScript", async () => {
   const aggregate = await readFile(path.resolve("dist/style.css"), "utf8");
 
-  for (const name of ["button", "checkbox", "dialog", "input", "switch", "textarea"]) {
+  for (const name of [
+    "alert",
+    "badge",
+    "button",
+    "card",
+    "checkbox",
+    "dialog",
+    "input",
+    "switch",
+    "textarea",
+    "tooltip",
+  ]) {
     const stylesheet = await readFile(path.resolve(`dist/component-${name}.css`), "utf8");
     const entry = await readFile(path.resolve(`dist/${name}.mjs`), "utf8");
 
     assert.match(stylesheet, /^@layer vize\.tokens,vize\.ui,vize\.preset,vize\.policy;/);
     assert.match(stylesheet, new RegExp(`data-vize-ui=${name}`));
-    assert.match(stylesheet, /prefers-reduced-motion:reduce/);
+    if (name !== "card") assert.match(stylesheet, /prefers-reduced-motion:reduce/);
     assert.match(stylesheet, /forced-colors:active/);
     assert.doesNotMatch(entry, new RegExp(`component-${name}\\.css`));
     assert.doesNotMatch(aggregate, new RegExp(`vize-ui-${name}-(?:radius|shadow)`));

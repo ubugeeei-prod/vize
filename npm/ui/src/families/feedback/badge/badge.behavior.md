@@ -54,8 +54,10 @@ dot, or labelled host pass ordinary Vue fallthrough attributes themselves.
 
 ## CSS Custom Properties
 
-Badge defines no CSS custom properties and ships no stylesheet. Consumers own
-shape, color, density, truncation, and icon spacing through ordinary CSS.
+The Badge component entry remains headless and emits no stylesheet. The separate
+`@vizejs/ui/component-badge.css` export supplies optional tone, count, and
+status visuals through low-specificity `--vize-ui-badge-*` properties. Text
+content keeps its native semantics; consumers own live-region policy.
 
 ## Parts
 

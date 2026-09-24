@@ -12,7 +12,10 @@ const publicCssAssets = [
   "style.css",
   "theme.css",
   ...themePresets.map((name) => `theme-preset-${name}.css`),
+  "component-alert.css",
+  "component-badge.css",
   "component-button.css",
+  "component-card.css",
   "component-checkbox.css",
   "component-dialog.css",
   "component-input.css",
@@ -20,6 +23,7 @@ const publicCssAssets = [
   "component-scroll-area.css",
   "component-switch.css",
   "component-textarea.css",
+  "component-tooltip.css",
   "motion.css",
 ].sort();
 

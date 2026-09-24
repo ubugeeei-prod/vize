@@ -82,6 +82,8 @@ const budgets = new Map([
   ["kbd.mjs", 875],
   ["list.mjs", 900],
   ["listbox.mjs", 16_000],
+  ["combobox.mjs", 49_500],
+  ["select.mjs", 45_500],
   ["pagination.mjs", 6_750],
   ["text.mjs", 950],
   ["switch.mjs", 3_750],

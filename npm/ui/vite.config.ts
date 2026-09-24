@@ -67,8 +67,20 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/foundations/theme/theme-preset-high-contrast.css",
   },
   {
+    fileName: "component-alert.css",
+    source: "src/families/feedback/alert/alert-visual.css",
+  },
+  {
+    fileName: "component-badge.css",
+    source: "src/families/feedback/badge/badge-visual.css",
+  },
+  {
     fileName: "component-button.css",
     source: "src/families/actions/button/button-visual.css",
+  },
+  {
+    fileName: "component-card.css",
+    source: "src/families/layout/card/card-visual.css",
   },
   {
     fileName: "component-checkbox.css",
@@ -97,6 +109,10 @@ const cssAssetEntrypoints = Object.freeze([
   {
     fileName: "component-textarea.css",
     source: "src/families/form/textarea/textarea-visual.css",
+  },
+  {
+    fileName: "component-tooltip.css",
+    source: "src/families/overlays/tooltip/tooltip-visual.css",
   },
   {
     fileName: "motion.css",
@@ -234,6 +250,8 @@ export default defineConfig({
       kbd: "src/families/typography/kbd/kbd.ts",
       list: "src/families/layout/list/list.ts",
       listbox: "src/families/selection/listbox/listbox.ts",
+      combobox: "src/families/selection/combobox/combobox.ts",
+      select: "src/families/selection/select/select.ts",
       pagination: "src/families/navigation/pagination/pagination.ts",
       text: "src/families/typography/text/text.ts",
       textarea: "src/families/form/textarea/textarea.ts",

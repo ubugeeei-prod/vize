@@ -47,7 +47,7 @@ defineSlots<{
 }>();
 
 const context = dialogContext.use();
-const present = computed(() => context.open.value || forceMount);
+const present = computed(() => context.open.value || context.exiting.value || forceMount);
 const slotState = computed<DialogSlotState>(() => ({
   modal: context.modal.value,
   open: context.open.value,
