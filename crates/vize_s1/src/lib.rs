@@ -70,6 +70,7 @@ pub mod surface;
 
 mod build;
 mod event;
+mod slice;
 
 pub use parse::{SurfaceError, SurfaceParseOptions, parse, parse_with_options};
 pub use render::{HoleCounts, check_fidelity, hole_counts, render};

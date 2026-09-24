@@ -40,11 +40,13 @@ impl<'a> Logical<'a> {
             let mut body_start = line_start + skip;
             let line_end = line_start + line.len();
             // pug strips one BOM off the start of the (dedented) text.
-            if line_start == 0 && source[body_start..line_end].starts_with('\u{feff}') {
+            if line_start == 0
+                && crate::slice::range(source, body_start, line_end).starts_with('\u{feff}')
+            {
                 body_start += '\u{feff}'.len_utf8();
             }
             let joined = line_end < source.len();
-            let body = &source[body_start..line_end];
+            let body = crate::slice::range(source, body_start, line_end);
             push_normalized(&mut text, &mut origin, body, body_start, joined);
             line_start = line_end + 1;
         }
@@ -98,13 +100,18 @@ fn push_normalized<'a>(
         if byte != b'\r' {
             continue;
         }
-        push(text, origin, &body[run..index], base + run);
+        push(
+            text,
+            origin,
+            crate::slice::range(body, run, index),
+            base + run,
+        );
         if index + 1 < bytes.len() || !joined {
             push(text, origin, "\n", base + index);
         }
         run = index + 1;
     }
-    push(text, origin, &body[run..], base + run);
+    push(text, origin, crate::slice::from(body, run), base + run);
 }
 
 /// `@vue/compiler-sfc`'s dedent width: the minimum count of leading

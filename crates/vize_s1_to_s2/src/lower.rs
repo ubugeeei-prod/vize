@@ -129,9 +129,8 @@ pub struct Lowered<'a> {
 ///
 /// Total over arbitrary input: malformed source arrives as typed S1
 /// holes and lowers structurally; whatever the op family cannot carry
-/// becomes a diagnostic plus a kept fragment. The only inherited
-/// precondition is [`vize_s1::parse`]'s own u32-addressability
-/// assertion, which every tree passed here has already satisfied.
+/// becomes a diagnostic plus a kept fragment. A source too large for
+/// `u32` offsets lowers to an empty root with one diagnostic.
 #[must_use]
 pub fn lower<'a>(
     allocator: &'a Allocator,

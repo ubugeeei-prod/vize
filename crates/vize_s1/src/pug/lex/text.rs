@@ -13,7 +13,7 @@ impl Lexer<'_, '_> {
     /// `text`: `/^(?:\| ?| )([^\n]+)/ || /^( )/ || /^\|( ?)/`.
     pub(super) fn text(&mut self) -> bool {
         let input = self.input();
-        let line = &input[..input.find('\n').unwrap_or(input.len())];
+        let line = input.split('\n').next().unwrap_or(input);
         let start = self.pos;
         let value = if let Some(rest) = line.strip_prefix('|') {
             self.push(Tk::Pipe, start, start + 1);
@@ -51,7 +51,7 @@ impl Lexer<'_, '_> {
         if !self.input().starts_with("//") {
             return false;
         }
-        let buffered = !self.input()[2..].starts_with('-');
+        let buffered = !crate::slice::from(self.input(), 2).starts_with('-');
         let marker_end = self.pos + if buffered { 2 } else { 3 };
         let end = self.line_end();
         self.push(Tk::Comment, self.pos, marker_end);
@@ -84,8 +84,8 @@ impl Lexer<'_, '_> {
             loop {
                 // `ptr` sits on the `\n` that precedes the candidate line.
                 let line_start = ptr + 1;
-                let rest = &self.src[line_start.min(self.end)..self.end];
-                let line = &rest[..rest.find('\n').unwrap_or(rest.len())];
+                let rest = crate::slice::range(self.src, line_start.min(self.end), self.end);
+                let line = rest.split('\n').next().unwrap_or(rest);
                 let line_indents = line.bytes().take_while(|&b| b == indent_char).count();
                 let blank = line.chars().all(is_js_whitespace);
                 if line_indents >= indents || blank {
@@ -129,7 +129,7 @@ impl Lexer<'_, '_> {
         let mut escapes: Vec<usize> = Vec::new_in(&self.allocator);
         let mut has_prefix = false;
         loop {
-            let value = &self.src[start..end];
+            let value = crate::slice::range(self.src, start, end);
             let none = usize::MAX;
             let at_end = if self.interpolated {
                 value.find(']')
@@ -182,7 +182,12 @@ impl Lexer<'_, '_> {
                     self.emit_text(kind, token_start, start + at, &escapes);
                 }
                 let body = start + at + 2;
-                match parse_until(self.allocator, &self.src[body..end], b'}', 0) {
+                match parse_until(
+                    self.allocator,
+                    crate::slice::range(self.src, body, end),
+                    b'}',
+                    0,
+                ) {
                     Ok(close) => {
                         self.push(Tk::CodeInterp, start + at, body + close + 1);
                         if body + close + 1 < end {
@@ -235,11 +240,11 @@ impl Lexer<'_, '_> {
 /// The leftmost `(\\)?([#!]){` — pug's string-interpolation pattern.
 fn find_code_interpolation(value: &str) -> Option<(usize, bool)> {
     let bytes = value.as_bytes();
-    (0..bytes.len()).find_map(|at| {
+    bytes.iter().enumerate().find_map(|(at, &byte)| {
         let opens = |from: usize| {
             matches!(bytes.get(from), Some(b'#' | b'!')) && bytes.get(from + 1) == Some(&b'{')
         };
-        if bytes[at] == b'\\' && opens(at + 1) {
+        if byte == b'\\' && opens(at + 1) {
             Some((at, true))
         } else if opens(at) {
             Some((at, false))

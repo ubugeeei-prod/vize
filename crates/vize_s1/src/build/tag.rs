@@ -14,7 +14,7 @@ impl<'a> Builder<'a, '_> {
         let lt = name_s.saturating_sub(1);
         self.flush_gap(lt);
         let lt_name = self.token_at(lt, name_e);
-        let tag = &self.src[name_s..name_e];
+        let tag = crate::slice::range(self.src, name_s, name_e);
         let mut attrs: Vec<'a, Attribute<'a>> = Vec::new_in(&self.allocator);
         let mut slash = None;
         let gt;
@@ -25,13 +25,19 @@ impl<'a> Builder<'a, '_> {
                     attrs.push(attr);
                 }
                 Some(EventKind::OpenTagEnd) => {
-                    let idx = self.events[self.i].start as usize;
+                    let idx = self
+                        .events
+                        .get(self.i)
+                        .map_or(self.cursor, |ev| ev.start as usize);
                     self.i += 1;
                     gt = self.open_gt(idx);
                     break;
                 }
                 Some(EventKind::SelfClosingTag) => {
-                    let idx = self.events[self.i].start as usize;
+                    let idx = self
+                        .events
+                        .get(self.i)
+                        .map_or(self.cursor, |ev| ev.start as usize);
                     self.i += 1;
                     let (found_slash, found_gt) = self.self_closing(idx);
                     slash = found_slash;
@@ -104,7 +110,7 @@ impl<'a> Builder<'a, '_> {
         self.i += 1;
         let lt_start = self.close_lt_start(s);
         let gt_pos = self.find_byte(b'>', e, self.src.len());
-        let name = &self.src[s..e];
+        let name = crate::slice::range(self.src, s, e);
         self.flush_gap(lt_start);
         let matched = self
             .stack
@@ -123,7 +129,9 @@ impl<'a> Builder<'a, '_> {
         };
         // Elements left open above the match get node-level holes.
         while self.stack.len() > depth + 1 {
-            let frame = self.stack.pop().expect("stack holds depth + 1 frames");
+            let Some(frame) = self.stack.pop() else {
+                break;
+            };
             let element = Element {
                 open: frame.open,
                 children: frame.children,
@@ -138,7 +146,10 @@ impl<'a> Builder<'a, '_> {
             Some(g) => self.token_at(g, g + 1),
             None => self.missing_to(self.src.len()),
         };
-        let frame = self.stack.pop().expect("matched frame exists");
+        // `matched` found the frame at `depth`, the top after the pops above.
+        let Some(frame) = self.stack.pop() else {
+            return;
+        };
         let element = Element {
             open: frame.open,
             children: frame.children,
@@ -151,14 +162,19 @@ impl<'a> Builder<'a, '_> {
     /// whitespace forms the tokenizer accepts (`</ div`, `</div `).
     fn close_lt_start(&self, s: usize) -> usize {
         let bytes = self.src.as_bytes();
+        let before = |p: usize| {
+            (p > self.cursor)
+                .then(|| bytes.get(p - 1).copied())
+                .flatten()
+        };
         let mut p = s;
-        while p > self.cursor && bytes[p - 1].is_ascii_whitespace() {
+        while before(p).is_some_and(|byte| byte.is_ascii_whitespace()) {
             p -= 1;
         }
-        if p > self.cursor && bytes[p - 1] == b'/' {
+        if before(p) == Some(b'/') {
             p -= 1;
         }
-        if p > self.cursor && bytes[p - 1] == b'<' {
+        if before(p) == Some(b'<') {
             p - 1
         } else {
             self.cursor
@@ -226,7 +242,9 @@ impl<'a> Builder<'a, '_> {
     fn implicitly_close_stack_element_at(&mut self, depth: usize) {
         let mut child = None;
         while self.stack.len() > depth {
-            let frame = self.stack.pop().expect("stack holds depth frames");
+            let Some(frame) = self.stack.pop() else {
+                break;
+            };
             let mut children = frame.children;
             if let Some(element) = child.take() {
                 children.push(SurfaceChild::Element(Box::new_in(element, &self.allocator)));

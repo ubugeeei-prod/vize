@@ -32,3 +32,6 @@ davinci_test_support.workspace = true
 [[test]]
 name = "davinci_surface_corpus"
 required-features = ["davinci-differential"]
+
+[lints]
+workspace = true

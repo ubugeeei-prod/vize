@@ -6,6 +6,13 @@
 //! deterministic EOF-recovery hammer), with the typed-hole census pinned
 //! exactly per fixture. Exact-equality oracles only (assurance §4).
 
+#![expect(
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::string_slice,
+    reason = "tests assert by panicking"
+)]
+
 use davinci_test_support::surface_fixture as common;
 use vize_relief::ErrorCode;
 use vize_s0::{Allocator, String};

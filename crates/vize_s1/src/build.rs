@@ -128,8 +128,8 @@ impl<'a> Builder<'a, '_> {
     /// Token whose `leading` is the verbatim gap `[cursor, start)`.
     fn token_at(&mut self, start: usize, end: usize) -> Token<'a> {
         debug_assert!(self.cursor <= start && start <= end && end <= self.src.len());
-        let leading = &self.src[self.cursor.min(start)..start];
-        let text = &self.src[start..end];
+        let leading = crate::slice::range(self.src, self.cursor.min(start), start);
+        let text = crate::slice::range(self.src, start, end);
         self.cursor = end;
         Token::present(leading, text)
     }
@@ -138,9 +138,12 @@ impl<'a> Builder<'a, '_> {
     /// as its leading (empty in the common case).
     fn missing_to(&mut self, leading_end: usize) -> Token<'a> {
         debug_assert!(self.cursor <= leading_end && leading_end <= self.src.len());
-        let leading = &self.src[self.cursor.min(leading_end)..leading_end];
+        let leading = crate::slice::range(self.src, self.cursor.min(leading_end), leading_end);
         self.cursor = self.cursor.max(leading_end);
-        Token::missing(leading, &self.src[self.cursor..self.cursor])
+        Token::missing(
+            leading,
+            crate::slice::range(self.src, self.cursor, self.cursor),
+        )
     }
 
     /// Children-level coverage: an uncovered gap before `target` becomes
@@ -148,7 +151,7 @@ impl<'a> Builder<'a, '_> {
     fn flush_gap(&mut self, target: usize) {
         debug_assert!(self.cursor <= target);
         if self.cursor < target {
-            let text = &self.src[self.cursor..target];
+            let text = crate::slice::range(self.src, self.cursor, target);
             self.cursor = target;
             self.push_child(SurfaceChild::Unexpected(Token::present("", text)));
         }
@@ -223,7 +226,7 @@ impl<'a> Builder<'a, '_> {
     fn raw_node(&mut self, ev: Event, kind: RawKind) {
         let e = ev.end as usize;
         self.i += 1;
-        let tail = &self.src[e.min(self.src.len())..];
+        let tail = crate::slice::from(self.src, e.min(self.src.len()));
         let closer = match kind {
             RawKind::Comment => {
                 if tail.starts_with("-->") {

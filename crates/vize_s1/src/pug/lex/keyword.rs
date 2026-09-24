@@ -17,7 +17,7 @@ fn starts_word(line: &[u8], word: &str) -> bool {
 
 /// `scanEndOfLine` after a match of `len` bytes: `:` or `[ \t]*` to EOL.
 fn ends_line(line: &[u8], len: usize) -> bool {
-    let rest = &line[len.min(line.len())..];
+    let rest = line.get(len.min(line.len())..).unwrap_or_default();
     rest.first() == Some(&b':') || rest.iter().all(|&b| b == b' ' || b == b'\t')
 }
 
@@ -30,7 +30,8 @@ fn word_spaces_rest(line: &[u8], word: &str) -> bool {
 }
 
 fn spaces_after(line: &[u8], from: usize) -> usize {
-    line[from.min(line.len())..]
+    line.get(from.min(line.len())..)
+        .unwrap_or_default()
         .iter()
         .take_while(|&&b| b == b' ')
         .count()
@@ -43,7 +44,7 @@ fn named_block(line: &[u8]) -> bool {
         let name = rest
             .windows(2)
             .position(|pair| pair == b"//")
-            .map_or(rest, |at| &rest[..at]);
+            .map_or(rest, |at| rest.get(..at).unwrap_or_default());
         name.iter().any(|&b| b != b' ' && b != b'\t')
     };
     let mut starts = [None, Some(0)];
@@ -51,11 +52,12 @@ fn named_block(line: &[u8]) -> bool {
         starts[0] = Some(5 + spaces_after(line, 5));
     }
     let mode = starts.iter().flatten().any(|&at| {
-        ["append", "prepend"]
-            .iter()
-            .any(|word| word_spaces_rest(&line[at..], word) && has_name(&line[at + word.len()..]))
+        ["append", "prepend"].iter().any(|word| {
+            word_spaces_rest(line.get(at..).unwrap_or_default(), word)
+                && has_name(line.get(at + word.len()..).unwrap_or_default())
+        })
     });
-    mode || (word_spaces_rest(line, "block") && has_name(&line[5..]))
+    mode || (word_spaces_rest(line, "block") && has_name(line.get(5..).unwrap_or_default()))
 }
 
 impl Lexer<'_, '_> {
@@ -63,7 +65,7 @@ impl Lexer<'_, '_> {
     /// rest-of-line `Keyword` token (plus pug's error where it throws).
     pub(super) fn keyword(&mut self) -> bool {
         let input = self.input().as_bytes();
-        let line = &input[..self.line_end() - self.pos];
+        let line = input.get(..self.line_end() - self.pos).unwrap_or_default();
         let malformed = |ok: bool| (!ok).then_some(PugErrorCode::MalformedKeyword);
         let (refusal, error) = if line.starts_with(b"yield") && ends_line(line, 5) {
             (PugRefusal::Yield, None)
@@ -135,7 +137,9 @@ impl Lexer<'_, '_> {
             .iter()
             .take_while(|&&b| is_word(b) || b == b'-' || b == b':')
             .count();
-        let len = input[..run]
+        let len = input
+            .get(..run)
+            .unwrap_or_default()
             .iter()
             .rposition(|&b| is_word(b))
             .map_or(1, |at| at + 1);
@@ -157,7 +161,11 @@ impl Lexer<'_, '_> {
 
     /// `scanEndOfLine(/^-/)` — unbuffered block code, refused with its body.
     pub(super) fn block_code(&mut self) -> bool {
-        let line = &self.input().as_bytes()[..self.line_end() - self.pos];
+        let line = self
+            .input()
+            .as_bytes()
+            .get(..self.line_end() - self.pos)
+            .unwrap_or_default();
         if line.first() != Some(&b'-') || !ends_line(line, 1) {
             return false;
         }
@@ -187,7 +195,9 @@ impl Lexer<'_, '_> {
         if line_len <= flag {
             return false;
         }
-        let blanks = input[flag..line_len]
+        let blanks = input
+            .get(flag..line_len)
+            .unwrap_or_default()
             .iter()
             .take_while(|&&b| b == b' ' || b == b'\t')
             .count();
@@ -195,7 +205,12 @@ impl Lexer<'_, '_> {
         let code_start = self.pos + flag + blanks.min(line_len - flag - 1);
         let mut code_end = self.pos + line_len;
         if self.interpolated {
-            match parse_until(self.allocator, &self.src[code_start..code_end], b']', 0) {
+            match parse_until(
+                self.allocator,
+                crate::slice::range(self.src, code_start, code_end),
+                b']',
+                0,
+            ) {
                 Ok(close) => code_end = code_start + close,
                 Err(_) => self.error(PugErrorCode::NoEndBracket, code_start),
             }
@@ -212,7 +227,9 @@ impl Lexer<'_, '_> {
         if input.first() != Some(&b'#') {
             return false;
         }
-        let len = input[1..]
+        let len = input
+            .get(1..)
+            .unwrap_or_default()
             .iter()
             .take_while(|&&b| is_word(b) || b == b'-')
             .count();
@@ -227,7 +244,11 @@ impl Lexer<'_, '_> {
 
     /// `scanEndOfLine(/^\./)`, then a pipeless block.
     pub(super) fn dot(&mut self) -> bool {
-        let line = &self.input().as_bytes()[..self.line_end() - self.pos];
+        let line = self
+            .input()
+            .as_bytes()
+            .get(..self.line_end() - self.pos)
+            .unwrap_or_default();
         if line.first() != Some(&b'.') || !ends_line(line, 1) {
             return false;
         }
@@ -250,11 +271,15 @@ impl Lexer<'_, '_> {
         if input.first() != Some(&b'.') {
             return false;
         }
-        let run = input[1..]
+        let run = input
+            .get(1..)
+            .unwrap_or_default()
             .iter()
             .take_while(|&&b| b.is_ascii_alphanumeric() || b == b'_' || b == b'-')
             .count();
-        let named = input[1..1 + run]
+        let named = input
+            .get(1..1 + run)
+            .unwrap_or_default()
             .iter()
             .any(|&b| b.is_ascii_alphabetic() || b == b'_');
         if named {
@@ -272,7 +297,7 @@ impl Lexer<'_, '_> {
             return false;
         }
         let after = self.pos + 11;
-        let rest = &self.src[after..self.end];
+        let rest = crate::slice::range(self.src, after, self.end);
         let end = match rest
             .starts_with('(')
             .then(|| parse_until(self.allocator, rest, b')', 1))
@@ -311,10 +336,12 @@ impl Lexer<'_, '_> {
 
 /// `^\+(\s*)(([-\w]+)|(#\{))`.
 fn is_call(input: &[u8]) -> bool {
-    let blanks = input[1..]
+    let blanks = input
+        .get(1..)
+        .unwrap_or_default()
         .iter()
         .take_while(|&&b| matches!(b, b' ' | b'\t' | b'\n' | b'\r' | 0x0b | 0x0c))
         .count();
-    let rest = &input[1 + blanks..];
+    let rest = input.get(1 + blanks..).unwrap_or_default();
     rest.first().is_some_and(|&b| is_word(b) || b == b'-') || rest.starts_with(b"#{")
 }

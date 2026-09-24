@@ -92,10 +92,10 @@ impl<'a> Builder<'a, '_> {
         let close = match self.peek() {
             Tk::InterpClose => self.take(),
             Tk::InterpCloseMissing => self.take_missing(),
-            _ => Token::missing(
-                &self.source[self.cursor..self.cursor],
-                &self.source[self.cursor..self.cursor],
-            ),
+            _ => {
+                let here = crate::slice::range(self.source, self.cursor, self.cursor);
+                Token::missing(here, here)
+            }
         };
         PugInterpolation { open, nodes, close }
     }

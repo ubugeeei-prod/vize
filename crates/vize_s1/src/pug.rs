@@ -64,10 +64,17 @@ pub fn parse_pug<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> (PugTree<'a>, Vec<'a, PugError>) {
-    assert!(
-        u32::try_from(source.len()).is_ok(),
-        "S1 sources are u32-addressed"
-    );
+    // S1 addresses sources with `u32` offsets. A larger source keeps byte
+    // fidelity as the end-of-file token's leading, with no nodes.
+    if u32::try_from(source.len()).is_err() {
+        let eof = crate::surface::Token::present(source, crate::slice::from(source, source.len()));
+        let tree = PugTree {
+            source,
+            nodes: Vec::new_in(&allocator),
+            eof,
+        };
+        return (tree, Vec::new_in(&allocator));
+    }
     let logical = logical::Logical::new(allocator, source);
     let mut tokens = Vec::new_in(&allocator);
     let mut lex_errors = Vec::new_in(&allocator);

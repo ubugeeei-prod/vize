@@ -165,7 +165,7 @@ impl PugAttr<'_> {
         let text = self.name.text;
         match text.chars().next() {
             Some(quote @ ('"' | '\'')) => {
-                let inner = &text[1..];
+                let inner = text.strip_prefix(quote).unwrap_or(text);
                 inner.strip_suffix(quote).unwrap_or(inner)
             }
             _ => text,

@@ -1,9 +1,19 @@
-#![allow(clippy::disallowed_types)] // Fixture files arrive through `std::fs` as std strings.
 //! TS-19 for the pug dialect (Davinci P4-12c): `render(parse_pug(src))
 //! == src` as bytes over the committed pug fixture matrix, a malformed
 //! battery with its typed holes and recovered error codes pinned exactly,
 //! every prefix and suffix truncation of all of it, and a deterministic
 //! generated corpus — exact-equality oracles only (assurance §4).
+
+#![expect(
+    clippy::expect_used,
+    clippy::string_slice,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_types,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
 
 use std::path::PathBuf;
 

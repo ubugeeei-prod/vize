@@ -165,9 +165,9 @@ pub(crate) fn parse_until(
     start: usize,
 ) -> Result<usize, ScanError> {
     let mut state = State::new(allocator);
-    for (index, ch) in src[start..].char_indices() {
+    for (index, ch) in crate::slice::from(src, start).char_indices() {
         let at = start + index;
-        if !state.is_nesting() && src.as_bytes()[at] == delimiter {
+        if !state.is_nesting() && src.as_bytes().get(at) == Some(&delimiter) {
             return Ok(at);
         }
         state.push(ch).map_err(|()| ScanError::Mismatched(at))?;
@@ -274,13 +274,14 @@ fn is_regexp(history: &[char]) -> bool {
     let mut word = [0u8; 11];
     let mut len = 0;
     for ch in recent.take_while(|ch| ch.is_ascii_alphanumeric() || *ch == '_') {
-        if len == word.len() {
+        let Some(slot) = word.get_mut(len) else {
             return false;
-        }
-        word[len] = ch as u8;
+        };
+        *slot = ch as u8;
         len += 1;
     }
-    KEYWORDS.iter().any(|keyword| {
-        keyword.len() == len && keyword.bytes().rev().eq(word[..len].iter().copied())
-    })
+    let latest = word.get(..len).unwrap_or_default();
+    KEYWORDS
+        .iter()
+        .any(|keyword| keyword.len() == len && keyword.bytes().rev().eq(latest.iter().copied()))
 }

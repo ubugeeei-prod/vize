@@ -3,7 +3,7 @@
 use vize_armature::tokenizer::QuoteType;
 
 use super::Builder;
-use crate::event::EventKind;
+use crate::event::{Event, EventKind};
 use crate::surface::{AttrValue, Attribute, Token};
 
 impl<'a> Builder<'a, '_> {
@@ -12,7 +12,14 @@ impl<'a> Builder<'a, '_> {
     /// piece to the `AttrNameEnd` offset — the authored spelling, sigils
     /// and modifiers included.
     pub(super) fn attribute(&mut self) -> Attribute<'a> {
-        let first = self.events[self.i];
+        // The caller saw an `AttrName` event at `i`; without one there is no
+        // name, so an empty attribute at the cursor stands in.
+        let first = self.events.get(self.i).copied().unwrap_or(Event {
+            kind: EventKind::AttrName,
+            aux: 0,
+            start: self.cursor as u32,
+            end: self.cursor as u32,
+        });
         let name_start = first.start as usize;
         let mut name_end = first.end as usize;
         self.i += 1;

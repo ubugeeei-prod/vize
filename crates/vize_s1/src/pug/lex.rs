@@ -165,7 +165,7 @@ impl<'a, 'o> Lexer<'a, 'o> {
     }
 
     fn input(&self) -> &'a str {
-        &self.src[self.pos..self.end]
+        crate::slice::range(self.src, self.pos, self.end)
     }
 
     fn line_end(&self) -> usize {
@@ -199,7 +199,7 @@ impl<'a, 'o> Lexer<'a, 'o> {
         if input.first() != Some(&b'\n') {
             return false;
         }
-        let run = input[1..]
+        let run = (input.get(1..).unwrap_or_default())
             .iter()
             .take_while(|&&b| b == b' ' || b == b'\t')
             .count();
@@ -250,9 +250,14 @@ impl<'a, 'o> Lexer<'a, 'o> {
         if input.first() != Some(&b'\n') {
             return None;
         }
-        let count = |byte: u8| input[1..].iter().take_while(|&&b| b == byte).count();
+        let count = |byte: u8| {
+            (input.get(1..).unwrap_or_default())
+                .iter()
+                .take_while(|&&b| b == byte)
+                .count()
+        };
         let tabs = |count_tabs: usize| {
-            let spaces = input[1 + count_tabs..]
+            let spaces = (input.get(1 + count_tabs..).unwrap_or_default())
                 .iter()
                 .take_while(|&&b| b == b' ')
                 .count();
@@ -301,7 +306,8 @@ impl<'a, 'o> Lexer<'a, 'o> {
         if indents < top {
             while self.top() > indents {
                 let below = self.indent_stack.len().checked_sub(2);
-                if below.map_or(0, |at| self.indent_stack[at]) < indents {
+                let below = below.and_then(|at| self.indent_stack.get(at)).copied();
+                if below.unwrap_or(0) < indents {
                     // pug throws; recover by keeping the line a sibling at
                     // the innermost level it does not outdent past.
                     self.error(PugErrorCode::InconsistentIndentation, self.pos);

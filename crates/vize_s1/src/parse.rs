@@ -8,7 +8,7 @@ use vize_s0::{Allocator, Vec};
 use crate::build::build;
 use crate::event::{Event, Recorder};
 use crate::render::check_fidelity;
-use crate::surface::SurfaceTree;
+use crate::surface::{SurfaceChild, SurfaceTree, Token};
 
 /// Parse-time switches S1 owns for the S2 consumers.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -53,12 +53,16 @@ pub fn parse_with_options<'a>(
     source: &'a str,
     options: SurfaceParseOptions,
 ) -> (SurfaceTree<'a>, Vec<'a, SurfaceError>) {
-    assert!(
-        u32::try_from(source.len()).is_ok(),
-        "S1 sources are u32-addressed"
-    );
     let mut events: Vec<'a, Event> = Vec::new_in(&allocator);
     let mut errors: Vec<'a, SurfaceError> = Vec::new_in(&allocator);
+    // S1 addresses sources with `u32` offsets. A larger source keeps byte
+    // fidelity as one typed `Unexpected` hole instead of mis-measured nodes.
+    if u32::try_from(source.len()).is_err() {
+        let mut children = Vec::new_in(&allocator);
+        let hole = Token::present(crate::slice::range(source, 0, 0), source);
+        children.push(SurfaceChild::Unexpected(hole));
+        return (SurfaceTree { source, children }, errors);
+    }
     {
         let recorder = Recorder {
             events: &mut events,

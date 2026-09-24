@@ -50,19 +50,19 @@ impl Lexer<'_, '_> {
     /// One attribute from `[at, end)`; returns where the next one starts.
     fn attribute(&mut self, mut at: usize, end: usize) -> usize {
         let bytes = self.src.as_bytes();
-        while at < end && is_ws(bytes[at]) {
+        while at < end && is_ws(byte_at(bytes, at)) {
             at += 1;
         }
         if at == end {
             return end;
         }
         let key_start = at;
-        let quote = matches!(bytes[at], b'\'' | b'"').then_some(bytes[at]);
+        let quote = matches!(byte_at(bytes, at), b'\'' | b'"').then_some(byte_at(bytes, at));
         if quote.is_some() {
             at += 1;
         }
         while at < end {
-            let byte = bytes[at];
+            let byte = byte_at(bytes, at);
             if let Some(quote) = quote {
                 if byte == quote {
                     at += 1;
@@ -71,16 +71,19 @@ impl Lexer<'_, '_> {
             } else if is_ws(byte) || matches!(byte, b'!' | b'=' | b',') {
                 break;
             }
-            at += self.src[at..].chars().next().map_or(1, char::len_utf8);
+            at += crate::slice::from(self.src, at)
+                .chars()
+                .next()
+                .map_or(1, char::len_utf8);
         }
         self.push(Tk::AttrName, key_start, at);
         let Some(mut rest) = self.attribute_value(at, end) else {
             return end;
         };
-        while rest < end && is_ws(bytes[rest]) {
+        while rest < end && is_ws(byte_at(bytes, rest)) {
             rest += 1;
         }
-        if rest < end && bytes[rest] == b',' {
+        if rest < end && byte_at(bytes, rest) == b',' {
             self.push(Tk::AttrComma, rest, rest + 1);
             rest += 1;
         }
@@ -92,45 +95,45 @@ impl Lexer<'_, '_> {
     fn attribute_value(&mut self, from: usize, end: usize) -> Option<usize> {
         let bytes = self.src.as_bytes();
         let mut at = from;
-        while at < end && is_ws(bytes[at]) {
+        while at < end && is_ws(byte_at(bytes, at)) {
             at += 1;
         }
         if at == end {
             return Some(from);
         }
         let op_start = at;
-        if bytes[at] == b'!' {
+        if byte_at(bytes, at) == b'!' {
             at += 1;
-            if at >= end || bytes[at] != b'=' {
+            if at >= end || byte_at(bytes, at) != b'=' {
                 return self.attribute_error(op_start, end);
             }
         }
-        if bytes[at] != b'=' {
-            if at == from && !is_ws(bytes[from]) && bytes[from] != b',' {
+        if byte_at(bytes, at) != b'=' {
+            if at == from && !is_ws(byte_at(bytes, from)) && byte_at(bytes, from) != b',' {
                 return self.attribute_error(from, end);
             }
             return Some(from);
         }
         at += 1;
         self.push(Tk::AttrOp, op_start, at);
-        while at < end && is_ws(bytes[at]) {
+        while at < end && is_ws(byte_at(bytes, at)) {
             at += 1;
         }
         let value_start = at;
         let mut state = State::new(self.allocator);
         while at < end {
-            let byte = bytes[at];
+            let byte = byte_at(bytes, at);
             if !(state.is_nesting() || state.is_string()) {
-                let value = &self.src[value_start..at];
+                let value = crate::slice::range(self.src, value_start, at);
                 if is_ws(byte) {
-                    let next = (at..end).find(|&x| !is_ws(bytes[x]));
+                    let next = (at..end).find(|&x| !is_ws(byte_at(bytes, x)));
                     let Some(next) = next else {
                         break;
                     };
-                    let ch = self.src[next..].chars().next();
+                    let ch = crate::slice::from(self.src, next).chars().next();
                     let ends = !is_punctuator(ch)
                         || matches!(ch, Some('\'' | '"' | ':'))
-                        || self.src[next..end].starts_with("...");
+                        || crate::slice::range(self.src, next, end).starts_with("...");
                     if ends && looks_complete(value) {
                         break;
                     }
@@ -139,7 +142,10 @@ impl Lexer<'_, '_> {
                     break;
                 }
             }
-            let ch = self.src[at..].chars().next().unwrap_or('\0');
+            let ch = crate::slice::from(self.src, at)
+                .chars()
+                .next()
+                .unwrap_or('\0');
             if state.push(ch).is_err() {
                 return self.attribute_error(at, end);
             }
@@ -168,4 +174,10 @@ pub(crate) fn looks_complete(value: &str) -> bool {
         .chars()
         .last()
         .is_some_and(|last| matches!(last, ')' | ']' | '}') || !is_punctuator(Some(last)))
+}
+
+/// The byte at `at`, or NUL past the end (no attribute rule matches NUL, so
+/// scans stop there).
+fn byte_at(bytes: &[u8], at: usize) -> u8 {
+    bytes.get(at).copied().unwrap_or(0)
 }

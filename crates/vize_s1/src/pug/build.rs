@@ -58,7 +58,10 @@ pub(crate) fn build<'a>(
             _ => builder.push_expr(&mut nodes),
         }
     }
-    let eof = Token::present(&source[builder.cursor..], &source[source.len()..]);
+    let eof = Token::present(
+        crate::slice::from(source, builder.cursor),
+        crate::slice::from(source, source.len()),
+    );
     PugTree { source, nodes, eof }
 }
 
@@ -111,13 +114,18 @@ impl<'a> Builder<'a, '_> {
     /// Consume the current token as a surface token.
     fn take(&mut self) -> Token<'a> {
         self.peek();
-        let tok = self.tokens[self.at];
+        let Some(&tok) = self.tokens.get(self.at) else {
+            return self.hole();
+        };
         self.at += 1;
         let (start, end) = self.logical.range(tok.start as usize, tok.end as usize);
         let start = (start as usize).max(self.cursor);
         let end = (end as usize).max(start);
         debug_assert!(start >= self.cursor, "pug tokens are in source order");
-        let token = Token::present(&self.source[self.cursor..start], &self.source[start..end]);
+        let token = Token::present(
+            crate::slice::range(self.source, self.cursor, start),
+            crate::slice::range(self.source, start, end),
+        );
         self.cursor = end;
         token
     }
@@ -125,12 +133,23 @@ impl<'a> Builder<'a, '_> {
     /// A zero-width `Missing` hole at the current token's position.
     fn take_missing(&mut self) -> Token<'a> {
         self.peek();
-        let tok = self.tokens[self.at];
+        let Some(&tok) = self.tokens.get(self.at) else {
+            return self.hole();
+        };
         self.at += 1;
         let at = (self.logical.at(tok.start as usize) as usize).max(self.cursor);
-        let token = Token::missing(&self.source[self.cursor..at], &self.source[at..at]);
+        let token = Token::missing(
+            crate::slice::range(self.source, self.cursor, at),
+            crate::slice::range(self.source, at, at),
+        );
         self.cursor = at;
         token
+    }
+
+    /// A zero-width `Missing` hole at the cursor, consuming nothing.
+    fn hole(&self) -> Token<'a> {
+        let here = crate::slice::range(self.source, self.cursor, self.cursor);
+        Token::missing(here, here)
     }
 
     /// The authored offset of the current token (for zero-width facts).
@@ -231,7 +250,10 @@ impl<'a> Builder<'a, '_> {
                 // pug: `INVALID_TOKEN` on an indent no construct owns.
                 self.error(PugErrorCode::InvalidToken);
                 let at = self.offset() as usize;
-                let token = Token::present(&self.source[self.cursor..at], &self.source[at..at]);
+                let token = Token::present(
+                    crate::slice::range(self.source, self.cursor, at),
+                    crate::slice::range(self.source, at, at),
+                );
                 self.cursor = at;
                 let block = self.block();
                 PugNode::Unexpected(self.boxed(PugUnexpected { token, block }))
@@ -239,7 +261,10 @@ impl<'a> Builder<'a, '_> {
             Tk::Newline | Tk::Outdent | Tk::Eos | Tk::InterpClose | Tk::InterpCloseMissing => {
                 self.error(PugErrorCode::InvalidToken);
                 let at = self.offset() as usize;
-                let token = Token::present(&self.source[self.cursor..at], &self.source[at..at]);
+                let token = Token::present(
+                    crate::slice::range(self.source, self.cursor, at),
+                    crate::slice::range(self.source, at, at),
+                );
                 self.cursor = at;
                 self.unexpected(token)
             }
@@ -261,10 +286,7 @@ impl<'a> Builder<'a, '_> {
         let code = if self.peek_is(Tk::Code) {
             self.take()
         } else {
-            Token::missing(
-                &self.source[self.cursor..self.cursor],
-                &self.source[self.cursor..self.cursor],
-            )
+            self.hole()
         };
         let block = if !inline && self.peek_is(Tk::Indent) {
             self.block()
