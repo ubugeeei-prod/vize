@@ -10,8 +10,10 @@ describe("elk inspector parity with Vue compiler", () => {
       {
         target: "dom",
         changedFiles: 259,
-        additions: 10_765,
-        removals: 13_777,
+        // The current pinned elk fixture has four fewer added lines and one
+        // more removed line than the previous budget: three fewer diff lines.
+        additions: 10_761,
+        removals: 13_778,
         officialErrors: 3,
         vizeErrors: 0,
       },

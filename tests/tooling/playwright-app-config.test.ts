@@ -1,12 +1,16 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { installPnpmDependencies } from "../_helpers/apps.ts";
-import { patchPnpmMinimumReleaseAgeExclude } from "../_helpers/pnpm-fixture-config.ts";
+import {
+  hoistVueRuntimePackages,
+  patchPnpmMinimumReleaseAgeExclude,
+} from "../_helpers/pnpm-fixture-config.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -59,6 +63,53 @@ test("fixture pnpm workspace patch adds one release-age exclude", () => {
     const source = fs.readFileSync(workspacePath, "utf8");
     assert.match(source, /minimumReleaseAgeExclude:\n  - '@rolldown\/binding-\*'\n  - 'rollup'/);
     assert.equal(source.match(/@rolldown\/binding-\*/g)?.length, 1);
+  } finally {
+    fs.rmSync(tempRoot, { force: true, recursive: true });
+  }
+});
+
+test("Nuxt fixture resolves deduped Vue runtimes from its own Vue version", () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-fixture-vue-runtime-"));
+  const nodeModulesDir = path.join(tempRoot, "node_modules");
+  const vueVersion = "3.6.0-beta.10";
+  const runtimeNames = ["reactivity", "runtime-core", "runtime-dom", "shared"];
+
+  try {
+    const vueDir = path.join(nodeModulesDir, "vue");
+    fs.mkdirSync(vueDir, { recursive: true });
+    fs.writeFileSync(path.join(vueDir, "package.json"), JSON.stringify({ version: vueVersion }));
+
+    for (const name of runtimeNames) {
+      const packageDir = path.join(
+        nodeModulesDir,
+        ".pnpm",
+        `@vue+${name}@${vueVersion}`,
+        "node_modules",
+        "@vue",
+        name,
+      );
+      fs.mkdirSync(packageDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(packageDir, "package.json"),
+        JSON.stringify({ version: vueVersion }),
+      );
+    }
+
+    const staleDir = path.join(nodeModulesDir, ".pnpm", "@vue+runtime-dom@3.5.35");
+    fs.mkdirSync(staleDir, { recursive: true });
+    const runtimeDomLink = path.join(nodeModulesDir, "@vue", "runtime-dom");
+    fs.mkdirSync(path.dirname(runtimeDomLink), { recursive: true });
+    fs.symlinkSync(staleDir, runtimeDomLink, "dir");
+
+    hoistVueRuntimePackages(nodeModulesDir);
+
+    for (const name of runtimeNames) {
+      const installed = JSON.parse(
+        fs.readFileSync(path.join(nodeModulesDir, "@vue", name, "package.json"), "utf8"),
+      );
+      assert.equal(installed.version, vueVersion);
+    }
+    assert.match(fs.realpathSync(runtimeDomLink), /@vue\+runtime-dom@3\.6\.0-beta\.10/);
   } finally {
     fs.rmSync(tempRoot, { force: true, recursive: true });
   }

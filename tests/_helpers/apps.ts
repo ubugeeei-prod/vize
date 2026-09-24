@@ -21,7 +21,10 @@ import {
   readDotenvValue,
   writeFrontendPhpconStaffRoute,
 } from "./app-fixture-runtime.ts";
-import { patchPnpmMinimumReleaseAgeExclude as patchPnpmAgeExclude } from "./pnpm-fixture-config.ts";
+import {
+  hoistVueRuntimePackages,
+  patchPnpmMinimumReleaseAgeExclude as patchPnpmAgeExclude,
+} from "./pnpm-fixture-config.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const TESTS_DIR = path.resolve(__dirname, "..");
@@ -1470,6 +1473,7 @@ function setupFrontendPhpconWorktree(opts?: { enableVize?: boolean; variant?: st
     env: FRONTEND_PHPCON_E2E_ENV,
     timeout: 300_000,
   });
+  hoistVueRuntimePackages(path.join(frontendDir, "node_modules"));
 
   if (enableVize) {
     createVizeSymlinks(path.join(frontendDir, "node_modules"));
@@ -1634,6 +1638,7 @@ function setupVuefesWorktree(opts?: { enableVize?: boolean; variant?: string }):
   installPnpmDependencies(vuefesDir, {
     timeout: 300_000,
   });
+  hoistVueRuntimePackages(path.join(vuefesDir, "node_modules"));
 
   if (enableVize) {
     createVizeSymlinks(path.join(vuefesDir, "node_modules"));
