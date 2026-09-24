@@ -25,7 +25,6 @@ import {
   fromPluginVisibleVirtualId,
   isPluginVisibleSsrVirtualId,
   toPluginVisibleVirtualId,
-  toVirtualId,
 } from "../virtual.ts";
 import { toNativeCssAliasRule } from "../utils/css.ts";
 
@@ -771,10 +770,11 @@ async function resolveAliasedVueImport(
 
   if (state.cache.has(realPath) || fs.existsSync(realPath)) {
     state.logger.log(`resolveId: resolved via Vite fallback ${id} to ${realPath}`);
+    // Vite scans raw .vue files for imports before our load hook compiles them.
     return preserveQueryAsPath
       ? `${realPath}${querySuffix}`
       : isDependencyScan
-        ? toVirtualId(realPath, isSsrRequest)
+        ? realPath
         : toPluginVisibleVirtualId(realPath, isSsrRequest, querySuffix);
   }
 
@@ -817,7 +817,7 @@ export async function resolveIdHook(
 
   if (pluginVisibleVirtualPath) {
     if (isDependencyScan) {
-      return toVirtualId(pluginVisibleVirtualPath, isSsrRequest);
+      return pluginVisibleVirtualPath;
     }
     return isSsrRequest
       ? toPluginVisibleVirtualId(pluginVisibleVirtualPath, true, request.querySuffix)
@@ -831,8 +831,11 @@ export async function resolveIdHook(
     if (request.isVizeVirtual) {
       if (isSsrRequest && !request.isVizeSsrVirtual && request.vizeVirtualPath) {
         return isDependencyScan
-          ? toVirtualId(request.vizeVirtualPath, true)
+          ? request.vizeVirtualPath
           : toPluginVisibleVirtualId(request.vizeVirtualPath, true, request.querySuffix);
+      }
+      if (isDependencyScan && request.vizeVirtualPath) {
+        return request.vizeVirtualPath;
       }
       return id;
     }
@@ -1237,13 +1240,14 @@ export async function resolveIdHook(
       `resolveId: id=${id}, resolved=${resolved}, hasCache=${hasCache}, fileExists=${fileExists}, importer=${importer ?? "none"}`,
     );
 
-    // Return virtual module ID: \0/path/to/Component.vue.ts
+    // Keep the source path during dependency scans: Vite's HTML scanner reads
+    // <script> blocks from .vue files, but externalizes \0 virtual IDs.
     if (hasCache || fileExists) {
       if (preserveQueryAsPath) {
         return `${resolved}${request.querySuffix}`;
       }
       return isDependencyScan
-        ? toVirtualId(resolved, isSsrRequest)
+        ? resolved
         : toPluginVisibleVirtualId(resolved, isSsrRequest, request.querySuffix);
     }
   }

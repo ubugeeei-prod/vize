@@ -1,7 +1,7 @@
 import { classifyVitePluginRequest, splitViteIdQuery } from "@vizejs/native";
 
 import type { VizePluginState } from "./state.ts";
-import { toPluginVisibleVirtualId, toVirtualId } from "../virtual.ts";
+import { toPluginVisibleVirtualId } from "../virtual.ts";
 
 type ViteResolveResult = { id: string; external?: boolean } | null;
 
@@ -68,6 +68,6 @@ export async function resolveRelativeVueSfcImport(
 
   const effectiveQuery = resolvedRequest.querySuffix || querySuffix;
   return isDependencyScan
-    ? toVirtualId(resolvedPath, isSsrRequest)
+    ? resolvedPath
     : toPluginVisibleVirtualId(resolvedPath, isSsrRequest, effectiveQuery);
 }

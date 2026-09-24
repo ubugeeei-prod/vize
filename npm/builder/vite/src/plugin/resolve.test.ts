@@ -1459,7 +1459,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 }
 
 {
-  const projectRoot = createTempProject("dependency-scan-virtual");
+  const projectRoot = createTempProject("dependency-scan-vue-path");
   const source = path.join(projectRoot, "app", "pages", "index.vue");
   const resolved = await resolveIdHook(
     nullResolveContext,
@@ -1471,8 +1471,27 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
   assert.equal(
     expectResolvedId(resolved),
-    toVirtualId(source),
-    "Dependency scans should use load-hook virtual IDs instead of plugin-visible file-like IDs",
+    source,
+    "Dependency scans must expose the real .vue path so Vite can inspect its script imports",
+  );
+}
+
+{
+  const projectRoot = createTempProject("dependency-scan-aliased-vue");
+  const source = path.join(projectRoot, "app", "components", "Counter.vue");
+  writeFixtureFile(source, '<script setup>import mitt from "mitt"</script>');
+  const resolved = await resolveIdHook(
+    { resolve: async (id) => (id === "@/Counter.vue" ? { id: source } : null) },
+    createState(projectRoot),
+    "@/Counter.vue",
+    path.join(projectRoot, "app", "main.ts"),
+    { scan: true },
+  );
+
+  assert.equal(
+    expectResolvedId(resolved),
+    source,
+    "Aliased SFC imports must retain a scannable real path",
   );
 }
 

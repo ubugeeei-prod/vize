@@ -87,6 +87,22 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     toPluginVisibleVirtualId(override),
     "Relative Vue imports from virtual modules should preserve upstream component override resolvers",
   );
+
+  const scanResolved = await resolveIdHook(
+    {
+      resolve: async (id, importer) =>
+        id === "./Icon.vue" && importer === source ? { id: override } : null,
+    },
+    createState(projectRoot),
+    "./Icon.vue",
+    source,
+    { scan: true },
+  );
+  assert.equal(
+    expectResolvedId(scanResolved),
+    override,
+    "Nested SFC imports should stay scannable after a resolver override",
+  );
 }
 
 console.log("vite-plugin-vize relative Vue resolve tests passed!");

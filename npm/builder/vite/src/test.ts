@@ -17,6 +17,7 @@ import "./plugin/compiled-module-cache.test.ts";
 import "./plugin/config-bridge.test.ts";
 import "./plugin/css-modules.test.ts";
 import "./plugin/dev-middleware.test.ts";
+import "./plugin/dep-scan.test.ts";
 import "./plugin/inspector-lint-plan.test.ts";
 import "./plugin/external-sfc-hmr.test.ts";
 import "./plugin/repeated-external-sfc-hmr.test.ts";
