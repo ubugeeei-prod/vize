@@ -225,7 +225,7 @@ test("plain script and reference Rust CLI gates use the fail-closed Corsa helper
   const files = [
     ["check_plain_script_named_exports_cli.rs", 2],
     ["check_plain_script_namespace_cli.rs", 3],
-    ["check_reference_types_cli.rs", 3],
+    ["check_reference_types_cli.rs", 4],
     ["check_sfc_import_suppressions_cli.rs", 1],
   ] as const;
 

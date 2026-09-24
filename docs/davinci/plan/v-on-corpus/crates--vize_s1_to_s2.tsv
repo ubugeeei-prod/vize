@@ -1,4 +1,5 @@
 file	spelling
+crates/vize_s1_to_s2/tests/davinci_dom_corpus.rs	@contextmenu.prevent
 crates/vize_s1_to_s2/tests/davinci_dom_corpus_bindings.rs	@keyup.enter
 crates/vize_s1_to_s2/tests/emit_create_slots/dynamic_entries.rs	@click.prevent
 crates/vize_s1_to_s2/tests/emit_dirs.rs	@click.stop

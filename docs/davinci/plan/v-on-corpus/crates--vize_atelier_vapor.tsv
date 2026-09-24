@@ -1,7 +1,4 @@
 file	spelling
-crates/vize_atelier_vapor/benches/davinci.rs	@click.stop
-crates/vize_atelier_vapor/benches/davinci.rs	@keydown.enter.stop
-crates/vize_atelier_vapor/benches/davinci.rs	@change.once
 crates/vize_atelier_vapor/src/s3/tests.rs	@change.once
 crates/vize_atelier_vapor/src/s3/tests.rs	@custom-event.capture
 crates/vize_atelier_vapor/src/s3/tests/attributes.rs	@keydown.enter
