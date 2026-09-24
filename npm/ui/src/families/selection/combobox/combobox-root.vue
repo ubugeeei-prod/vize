@@ -23,10 +23,6 @@ import {
   toggleInList,
 } from "../select/select-model.ts";
 import type { SelectModelValue } from "../select/select-model.ts";
-// Imported after the shared select modules so the root bundle orders the
-// select chunk before visually-hidden exactly as the combobox subpath does
-// (byte-equality tree-shaking gate).
-import VisuallyHidden from "../../accessibility/visually-hidden/visually-hidden.vue";
 import { comboboxContext } from "./combobox-context.ts";
 import type { ComboboxContextValue } from "./combobox-context.ts";
 import {
@@ -803,9 +799,14 @@ defineExpose(exposed);
     :data-loading="status === 'loading' ? 'true' : undefined"
   >
     <slot v-bind="slotState" />
-    <VisuallyHidden v-if="loadItems !== undefined" role="status" aria-live="polite">
+    <span
+      v-if="loadItems !== undefined"
+      role="status"
+      aria-live="polite"
+      data-vize-ui="combobox-status"
+    >
       {{ loadAnnouncement }}
-    </VisuallyHidden>
+    </span>
     <template v-if="name !== undefined">
       <input
         v-for="entry in formEntries as readonly FormEntry[]"
@@ -823,5 +824,15 @@ defineExpose(exposed);
 </template>
 
 <style scoped>
-/* Headless by design. Native CSS remains entirely consumer-owned. */
+@layer vize.ui {
+  /* Keep async announcements audible without painting them. */
+  [data-vize-ui="combobox-status"] {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
 </style>
