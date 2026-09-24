@@ -12,9 +12,12 @@ import { layoutFamilyCatalog } from "./family-catalog-layout.ts";
 import { navigationFamilyCatalog } from "./family-catalog-navigation.ts";
 import { overlayFamilyCatalog } from "./family-catalog-overlays.ts";
 import { ratingFamilyCatalog } from "./family-catalog-rating.ts";
+import { colorPickerFamilyCatalog } from "./family-catalog-color-picker.ts";
+import { fileUploadFamilyCatalog } from "./family-catalog-file-upload.ts";
 import { infiniteScrollFamilyCatalog } from "./family-catalog-infinite-scroll.ts";
 import { mediaFamilyCatalog } from "./family-catalog-media.ts";
 import { qrCodeFamilyCatalog } from "./family-catalog-qr-code.ts";
+import { tourFamilyCatalog } from "./family-catalog-tour.ts";
 import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import { sliderFamilyCatalog } from "./family-catalog-slider.ts";
 import { typographyFamilyCatalog } from "./family-catalog-typography.ts";
@@ -43,9 +46,12 @@ const allFamilyCatalogEntries = [
   ...navigationFamilyCatalog,
   ...overlayFamilyCatalog,
   ...ratingFamilyCatalog,
+  ...colorPickerFamilyCatalog,
+  ...fileUploadFamilyCatalog,
   ...infiniteScrollFamilyCatalog,
   ...mediaFamilyCatalog,
   ...qrCodeFamilyCatalog,
+  ...tourFamilyCatalog,
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
   ...typographyFamilyCatalog,

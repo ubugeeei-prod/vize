@@ -204,6 +204,11 @@
       "import": "./dist/tooltip.mjs",
       "default": "./dist/tooltip.mjs"
     },
+    "./tour": {
+      "types": "./dist/tour.d.mts",
+      "import": "./dist/tour.mjs",
+      "default": "./dist/tour.mjs"
+    },
     "./input": {
       "types": "./dist/input.d.mts",
       "import": "./dist/input.mjs",
@@ -324,6 +329,11 @@
       "import": "./dist/collection.mjs",
       "default": "./dist/collection.mjs"
     },
+    "./color-picker": {
+      "types": "./dist/color-picker.d.mts",
+      "import": "./dist/color-picker.mjs",
+      "default": "./dist/color-picker.mjs"
+    },
     "./composite-navigation": {
       "types": "./dist/composite-navigation.d.mts",
       "import": "./dist/composite-navigation.mjs",
@@ -383,6 +393,11 @@
       "types": "./dist/field-wiring.d.mts",
       "import": "./dist/field-wiring.mjs",
       "default": "./dist/field-wiring.mjs"
+    },
+    "./file-upload": {
+      "types": "./dist/file-upload.d.mts",
+      "import": "./dist/file-upload.mjs",
+      "default": "./dist/file-upload.mjs"
     },
     "./form": {
       "types": "./dist/form.d.mts",
