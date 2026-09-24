@@ -494,9 +494,17 @@ test("associates required input and reset with an external form", async () => {
 
   assert.equal(field.form, form);
   assert.deepEqual(new FormData(form).getAll("topics"), ["vue"]);
+  assert.equal(form.checkValidity(), true);
+  (
+    handle.root().querySelector("[data-vize-ui='tags-input-item-delete']") as HTMLButtonElement
+  ).click();
+  await nextTick();
+  assert.deepEqual(new FormData(form).getAll("topics"), []);
+  assert.equal(form.checkValidity(), false);
+
   await type(field, "vite");
   await key(field, "Enter");
-  assert.deepEqual(new FormData(form).getAll("topics"), ["vue", "vite"]);
+  assert.deepEqual(new FormData(form).getAll("topics"), ["vite"]);
 
   form.reset();
   await nextTick();
