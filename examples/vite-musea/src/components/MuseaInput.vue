@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import "../theme.css";
 defineProps<{
   modelValue?: string;
   placeholder?: string;
   type?: "text" | "email" | "password" | "search";
   disabled?: boolean;
   error?: string;
+  label: string;
 }>();
 
 const emit = defineEmits<{
   "update:modelValue": [value: string];
 }>();
 
-defineArt("./Input.vue", {
+defineArt("./MuseaInput.vue", {
   title: "Input",
   category: "Forms",
   tags: ["input", "form", "text"],
@@ -32,6 +34,7 @@ function onInput(event: Event) {
       :value="modelValue"
       :placeholder="placeholder"
       :disabled="disabled"
+      :aria-label="label"
       @input="onInput"
     />
     <span v-if="error" class="input-error">{{ error }}</span>
@@ -47,7 +50,7 @@ function onInput(event: Event) {
 
 .input {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #c8c4b8;
+  border: 1px solid var(--musea-line);
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -56,53 +59,53 @@ function onInput(event: Event) {
     border-color 0.15s ease,
     box-shadow 0.15s ease;
   width: 100%;
-  background: #e6e2d6;
-  color: #121212;
+  background: var(--musea-paper);
+  color: var(--musea-ink);
 }
 
 .input::placeholder {
-  color: #9a9890;
+  color: var(--musea-muted);
 }
 
 .input:focus {
-  border-color: #121212;
-  box-shadow: 0 0 0 3px rgba(18, 18, 18, 0.08);
+  border-color: var(--musea-ink);
+  box-shadow: 0 0 0 3px var(--musea-ink-ring);
 }
 
 .input--error {
-  border-color: #a04040;
+  border-color: var(--musea-error);
 }
 
 .input--error:focus {
-  box-shadow: 0 0 0 3px rgba(160, 64, 64, 0.12);
+  box-shadow: 0 0 0 3px var(--musea-error-ring);
 }
 
 .input--disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: #ddd9cd;
+  background: var(--musea-surface);
 }
 
 .input-error {
-  color: #a04040;
+  color: var(--musea-error);
   font-size: 0.75rem;
 }
 </style>
 
 <art>
   <variant name="Default" default>
-    <Self placeholder="Enter text..." />
+    <Self label="Text input" placeholder="Enter text..." />
   </variant>
   <variant name="With Value">
-    <Self model-value="Hello, Musea!" placeholder="Enter text..." />
+    <Self label="Text input" model-value="Hello, Musea!" placeholder="Enter text..." />
   </variant>
   <variant name="Search">
-    <Self type="search" placeholder="Search..." />
+    <Self label="Search" type="search" placeholder="Search..." />
   </variant>
   <variant name="With Error">
-    <Self model-value="bad@" error="Invalid email address" placeholder="Enter email..." />
+    <Self label="Email" model-value="bad@" error="Invalid email address" placeholder="Enter email..." />
   </variant>
   <variant name="Disabled">
-    <Self model-value="Read only" disabled placeholder="Disabled input" />
+    <Self label="Disabled input" model-value="Read only" disabled placeholder="Disabled input" />
   </variant>
 </art>

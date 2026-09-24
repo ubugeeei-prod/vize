@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import "../theme.css";
 defineProps<{
   variant?: "default" | "primary" | "secondary";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
 }>();
 
-defineArt("./Button.vue", {
+defineArt("./MuseaButton.vue", {
   title: "Button",
   category: "Components",
   tags: ["button", "action", "form"],
@@ -15,6 +16,7 @@ defineArt("./Button.vue", {
 
 <template>
   <button
+    type="button"
     class="btn"
     :class="[`btn--${variant ?? 'default'}`, `btn--${size ?? 'md'}`, { 'btn--disabled': disabled }]"
     :disabled="disabled"
@@ -25,12 +27,15 @@ defineArt("./Button.vue", {
 
 <style scoped>
 .btn {
-  border: 1px solid #c8c4b8;
+  border: 1px solid var(--musea-line);
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  transition: all 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .btn--sm {
@@ -49,35 +54,35 @@ defineArt("./Button.vue", {
 }
 
 .btn--default {
-  background: #e6e2d6;
-  color: #121212;
+  background: var(--musea-paper);
+  color: var(--musea-ink);
 }
 
 .btn--default:hover:not(:disabled) {
-  background: #ddd9cd;
-  border-color: #9a9890;
+  background: var(--musea-surface);
+  border-color: var(--musea-muted);
 }
 
 .btn--primary {
-  background: #121212;
-  border-color: #121212;
-  color: #e6e2d6;
+  background: var(--musea-ink);
+  border-color: var(--musea-ink);
+  color: var(--musea-paper);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: #2a2a2a;
-  border-color: #2a2a2a;
+  background: var(--musea-ink-hover);
+  border-color: var(--musea-ink-hover);
 }
 
 .btn--secondary {
-  background: #6b5090;
-  border-color: #6b5090;
-  color: #e6e2d6;
+  background: var(--musea-accent);
+  border-color: var(--musea-accent);
+  color: var(--musea-paper);
 }
 
 .btn--secondary:hover:not(:disabled) {
-  background: #5a4080;
-  border-color: #5a4080;
+  background: var(--musea-accent-hover);
+  border-color: var(--musea-accent-hover);
 }
 
 .btn--disabled {

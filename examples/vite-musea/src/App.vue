@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import Button from "./components/Button.vue";
-import Input from "./components/Input.vue";
-import Card from "./components/Card.vue";
-import Badge from "./components/Badge.vue";
-import Alert from "./components/Alert.vue";
-import Avatar from "./components/Avatar.vue";
+import "./theme.css";
+import MuseaButton from "./components/MuseaButton.vue";
+import MuseaInput from "./components/MuseaInput.vue";
+import MuseaCard from "./components/MuseaCard.vue";
+import MuseaBadge from "./components/MuseaBadge.vue";
+import MuseaAlert from "./components/MuseaAlert.vue";
+import MuseaAvatar from "./components/MuseaAvatar.vue";
 </script>
 
 <template>
@@ -12,74 +13,78 @@ import Avatar from "./components/Avatar.vue";
     <h1>Vite + Vue + Musea Example</h1>
     <p>Visit <a href="/__musea__">/__musea__</a> to see the component gallery.</p>
 
-    <section class="section">
+    <section class="section" aria-label="Buttons">
       <h2>Buttons</h2>
       <div class="demo">
-        <Button>Default</Button>
-        <Button variant="primary">Primary</Button>
-        <Button variant="secondary">Secondary</Button>
-        <Button disabled>Disabled</Button>
+        <MuseaButton>Default</MuseaButton>
+        <MuseaButton variant="primary">Primary</MuseaButton>
+        <MuseaButton variant="secondary">Secondary</MuseaButton>
+        <MuseaButton disabled>Disabled</MuseaButton>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" aria-label="Inputs">
       <h2>Inputs</h2>
       <div class="demo demo--column">
-        <Input placeholder="Text input..." />
-        <Input type="search" placeholder="Search..." />
-        <Input error="This field is required" placeholder="With error..." />
+        <MuseaInput label="Text input" placeholder="Text input..." />
+        <MuseaInput label="Search" type="search" placeholder="Search..." />
+        <MuseaInput
+          label="Required field"
+          error="This field is required"
+          placeholder="With error..."
+        />
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" aria-label="Badges">
       <h2>Badges</h2>
       <div class="demo">
-        <Badge>Default</Badge>
-        <Badge variant="success">Success</Badge>
-        <Badge variant="warning">Warning</Badge>
-        <Badge variant="error">Error</Badge>
-        <Badge variant="info">Info</Badge>
+        <MuseaBadge>Default</MuseaBadge>
+        <MuseaBadge variant="success">Success</MuseaBadge>
+        <MuseaBadge variant="warning">Warning</MuseaBadge>
+        <MuseaBadge variant="error">Error</MuseaBadge>
+        <MuseaBadge variant="info">Info</MuseaBadge>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" aria-label="Cards">
       <h2>Cards</h2>
       <div class="demo">
-        <Card title="Default Card" description="A simple card component.">
-          <Button variant="primary">Action</Button>
-        </Card>
-        <Card
+        <MuseaCard title="Default Card" description="A simple card component.">
+          <MuseaButton variant="primary">Action</MuseaButton>
+        </MuseaCard>
+        <MuseaCard
           title="Featured"
           description="A card with image header."
           image="#6b5090"
           variant="elevated"
         >
-          <Button variant="primary">View</Button>
-        </Card>
+          <MuseaButton variant="primary">View</MuseaButton>
+        </MuseaCard>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" aria-label="Alerts">
       <h2>Alerts</h2>
-      <div class="demo demo--column" style="max-width: 480px">
-        <Alert>This is a default informational alert.</Alert>
-        <Alert variant="success">Operation completed successfully.</Alert>
-        <Alert variant="warning">Please review before proceeding.</Alert>
-        <Alert variant="error">Something went wrong. Please try again.</Alert>
-        <Alert variant="success" closable>This alert can be dismissed.</Alert>
+      <div class="demo demo--column demo--alerts">
+        <MuseaAlert>This is a default informational alert.</MuseaAlert>
+        <MuseaAlert variant="success">Operation completed successfully.</MuseaAlert>
+        <MuseaAlert variant="warning">Please review before proceeding.</MuseaAlert>
+        <MuseaAlert variant="error">Something went wrong. Please try again.</MuseaAlert>
+        <MuseaAlert variant="success" closable>This alert can be dismissed.</MuseaAlert>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" aria-label="Avatars">
       <h2>Avatars</h2>
-      <div class="demo" style="align-items: center">
-        <Avatar name="Jane Doe" size="sm" />
-        <Avatar name="Jane Doe" />
-        <Avatar name="Jane Doe" size="lg" />
-        <div style="display: flex">
-          <Avatar name="Alice" style="border: 2px solid #e6e2d6" />
-          <Avatar name="Bob" style="margin-left: -8px; border: 2px solid #e6e2d6" />
-          <Avatar name="Charlie" style="margin-left: -8px; border: 2px solid #e6e2d6" />
+      <div class="demo demo--centered">
+        <MuseaAvatar name="Jane Doe" size="sm" />
+        <MuseaAvatar name="Jane Doe" />
+        <MuseaAvatar name="Jane Doe" size="lg" />
+        <div class="avatar-group">
+          <MuseaAvatar name="Alice" class="avatar-group__item" />
+          <MuseaAvatar name="Bob" class="avatar-group__item" />
+          <MuseaAvatar name="Charlie" class="avatar-group__item" />
         </div>
       </div>
     </section>
@@ -88,8 +93,8 @@ import Avatar from "./components/Avatar.vue";
 
 <style>
 body {
-  background: #e6e2d6;
-  color: #121212;
+  background: var(--musea-paper);
+  color: var(--musea-ink);
   margin: 0;
 }
 
@@ -101,28 +106,28 @@ body {
 }
 
 h1 {
-  color: #121212;
+  color: var(--musea-ink);
   font-weight: 700;
 }
 
 h2 {
-  color: #3a3a3a;
+  color: var(--musea-text-subtle);
   font-size: 1.125rem;
   font-weight: 600;
-  margin-bottom: 0.75rem;
+  margin-block-end: 0.75rem;
 }
 
 a {
-  color: #121212;
+  color: var(--musea-ink);
   font-weight: 500;
 }
 
 a:hover {
-  color: #6b5090;
+  color: var(--musea-accent);
 }
 
 .section {
-  margin-top: 2rem;
+  margin-block-start: 2rem;
 }
 
 .demo {
@@ -130,6 +135,26 @@ a:hover {
   gap: 1rem;
   flex-wrap: wrap;
   align-items: flex-start;
+}
+
+.demo--alerts {
+  max-width: 480px;
+}
+
+.demo--centered {
+  align-items: center;
+}
+
+.avatar-group {
+  display: flex;
+}
+
+.avatar-group__item {
+  border: 2px solid var(--musea-paper);
+
+  & + & {
+    margin-inline-start: -8px;
+  }
 }
 
 .demo--column {

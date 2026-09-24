@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import "../theme.css";
 defineProps<{
   title: string;
   description?: string;
@@ -6,7 +7,7 @@ defineProps<{
   variant?: "default" | "outlined" | "elevated";
 }>();
 
-defineArt("./Card.vue", {
+defineArt("./MuseaCard.vue", {
   title: "Card",
   category: "Layout",
   tags: ["card", "container", "layout"],
@@ -47,23 +48,23 @@ defineArt("./Card.vue", {
 }
 
 .card--default {
-  background: #ddd9cd;
-  border: 1px solid #c8c4b8;
+  background: var(--musea-surface);
+  border: 1px solid var(--musea-line);
 }
 
 .card--outlined {
   background: transparent;
-  border: 2px solid #c8c4b8;
+  border: 2px solid var(--musea-line);
 }
 
 .card--elevated {
-  background: #ddd9cd;
+  background: var(--musea-surface);
   border: none;
-  box-shadow: 0 4px 16px rgba(18, 18, 18, 0.06);
+  box-shadow: var(--musea-shadow-card);
 }
 
 .card--elevated:hover {
-  box-shadow: 0 8px 24px rgba(18, 18, 18, 0.1);
+  box-shadow: var(--musea-shadow-card-hover);
 }
 
 .card-image {
@@ -79,7 +80,7 @@ defineArt("./Card.vue", {
   justify-content: center;
   font-size: 2rem;
   font-weight: 700;
-  color: rgba(230, 226, 214, 0.8);
+  color: var(--musea-card-image-text);
 }
 
 .card-body {
@@ -89,13 +90,13 @@ defineArt("./Card.vue", {
 .card-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #121212;
+  color: var(--musea-ink);
   margin: 0 0 0.5rem;
 }
 
 .card-description {
   font-size: 0.875rem;
-  color: #6b6b6b;
+  color: var(--musea-body-muted);
   margin: 0 0 1rem;
   line-height: 1.5;
 }
@@ -116,7 +117,7 @@ defineArt("./Card.vue", {
     <Self
       title="Featured"
       description="A card with an image header for rich content display."
-      image="#6b5090"
+      image="var(--musea-accent)"
     >
       <button class="btn btn--primary">View</button>
       <button class="btn">Share</button>

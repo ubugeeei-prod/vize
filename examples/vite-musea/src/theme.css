@@ -1,0 +1,32 @@
+:root {
+  --musea-paper: #e6e2d6;
+  --musea-surface: #ddd9cd;
+  --musea-neutral-200: #d4d0c4;
+  --musea-line: #c8c4b8;
+  --musea-muted: #9a9890;
+  --musea-body-muted: #6b6b6b;
+  --musea-text-subtle: #3a3a3a;
+  --musea-ink-hover: #2a2a2a;
+  --musea-ink: #121212;
+  --musea-accent: #6b5090;
+  --musea-accent-hover: #5a4080;
+  --musea-success: #2d6a35;
+  --musea-warning: #8b7040;
+  --musea-error: #a04040;
+  --musea-info: #4a6b8a;
+  --musea-success-wash: rgb(45 106 53 / 8%);
+  --musea-success-line: rgb(45 106 53 / 20%);
+  --musea-success-badge: rgb(45 106 53 / 12%);
+  --musea-warning-wash: rgb(139 112 64 / 8%);
+  --musea-warning-line: rgb(139 112 64 / 20%);
+  --musea-warning-badge: rgb(139 112 64 / 12%);
+  --musea-error-wash: rgb(160 64 64 / 8%);
+  --musea-error-line: rgb(160 64 64 / 20%);
+  --musea-error-badge: rgb(160 64 64 / 10%);
+  --musea-error-ring: rgb(160 64 64 / 12%);
+  --musea-info-badge: rgb(74 107 138 / 12%);
+  --musea-ink-ring: rgb(18 18 18 / 8%);
+  --musea-card-image-text: rgb(230 226 214 / 80%);
+  --musea-shadow-card: 0 4px 16px rgb(18 18 18 / 6%);
+  --musea-shadow-card-hover: 0 8px 24px rgb(18 18 18 / 10%);
+}

@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import "../theme.css";
 defineProps<{
   variant?: "default" | "success" | "warning" | "error" | "info";
   size?: "sm" | "md" | "lg";
 }>();
 
-defineArt("./Badge.vue", {
+defineArt("./MuseaBadge.vue", {
   title: "Badge",
   category: "Components",
   tags: ["badge", "tag", "label"],
@@ -43,28 +44,28 @@ defineArt("./Badge.vue", {
 }
 
 .badge--default {
-  background: #d4d0c4;
-  color: #3a3a3a;
+  background: var(--musea-neutral-200);
+  color: var(--musea-text-subtle);
 }
 
 .badge--success {
-  background: rgba(45, 106, 53, 0.12);
-  color: #2d6a35;
+  background: var(--musea-success-badge);
+  color: var(--musea-success);
 }
 
 .badge--warning {
-  background: rgba(139, 112, 64, 0.12);
-  color: #8b7040;
+  background: var(--musea-warning-badge);
+  color: var(--musea-warning);
 }
 
 .badge--error {
-  background: rgba(160, 64, 64, 0.1);
-  color: #a04040;
+  background: var(--musea-error-badge);
+  color: var(--musea-error);
 }
 
 .badge--info {
-  background: rgba(74, 107, 138, 0.12);
-  color: #4a6b8a;
+  background: var(--musea-info-badge);
+  color: var(--musea-info);
 }
 </style>
 

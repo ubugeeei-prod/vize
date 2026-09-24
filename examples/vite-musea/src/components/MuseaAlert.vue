@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import "../theme.css";
+
 defineProps<{
   variant?: "default" | "success" | "warning" | "error";
   closable?: boolean;
@@ -8,7 +10,11 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-defineArt("./Alert.vue", {
+function closeAlert() {
+  emit("close");
+}
+
+defineArt("./MuseaAlert.vue", {
   title: "Alert",
   category: "Feedback",
   tags: ["alert", "message", "feedback"],
@@ -27,7 +33,15 @@ defineArt("./Alert.vue", {
     <span class="alert-content">
       <slot />
     </span>
-    <button v-if="closable" class="alert-close" @click="emit('close')">&times;</button>
+    <button
+      v-if="closable"
+      type="button"
+      class="alert-close"
+      aria-label="Dismiss alert"
+      @click="closeAlert"
+    >
+      &times;
+    </button>
   </div>
 </template>
 
@@ -45,27 +59,27 @@ defineArt("./Alert.vue", {
 }
 
 .alert--default {
-  background: #ddd9cd;
-  border-color: #c8c4b8;
-  color: #3a3a3a;
+  background: var(--musea-surface);
+  border-color: var(--musea-line);
+  color: var(--musea-text-subtle);
 }
 
 .alert--success {
-  background: rgba(45, 106, 53, 0.08);
-  border-color: rgba(45, 106, 53, 0.2);
-  color: #2d6a35;
+  background: var(--musea-success-wash);
+  border-color: var(--musea-success-line);
+  color: var(--musea-success);
 }
 
 .alert--warning {
-  background: rgba(139, 112, 64, 0.08);
-  border-color: rgba(139, 112, 64, 0.2);
-  color: #8b7040;
+  background: var(--musea-warning-wash);
+  border-color: var(--musea-warning-line);
+  color: var(--musea-warning);
 }
 
 .alert--error {
-  background: rgba(160, 64, 64, 0.08);
-  border-color: rgba(160, 64, 64, 0.2);
-  color: #a04040;
+  background: var(--musea-error-wash);
+  border-color: var(--musea-error-line);
+  color: var(--musea-error);
 }
 
 .alert-icon {

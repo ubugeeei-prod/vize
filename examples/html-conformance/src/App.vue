@@ -15,7 +15,7 @@ const rows = [{ name: "Vize", price: "Free" }];
       <SafeBadge label="phrasing is fine" />
     </p>
     <table>
-      <PriceRow v-for="row in rows" :key="row.name" :row="row" />
+      <PriceRow v-for="row in rows" :key="row.name" :row />
     </table>
     <a href="/docs"> Read the docs <LinkButton /> </a>
   </article>

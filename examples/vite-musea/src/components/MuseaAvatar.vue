@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import "../theme.css";
 import { computed } from "vue";
 
 const props = defineProps<{
@@ -7,7 +8,7 @@ const props = defineProps<{
   size?: "sm" | "md" | "lg";
 }>();
 
-defineArt("./Avatar.vue", {
+defineArt("./MuseaAvatar.vue", {
   title: "Avatar",
   category: "Components",
   tags: ["avatar", "user", "profile"],
@@ -23,11 +24,23 @@ const initials = computed(() => {
     .slice(0, 2)
     .toUpperCase();
 });
+
+function safeUrl(value?: string): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value, "https://example.invalid");
+    return url.protocol === "http:" || url.protocol === "https:" ? value : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+const safeSrc = computed(() => safeUrl(props.src));
 </script>
 
 <template>
   <span class="avatar" :class="`avatar--${size ?? 'md'}`">
-    <img v-if="src" :src="src" :alt="name ?? 'avatar'" class="avatar-img" />
+    <img v-if="safeSrc" :src="safeUrl(src)" :alt="name ?? 'avatar'" class="avatar-img" />
     <span v-else class="avatar-initials">{{ initials }}</span>
   </span>
 </template>
@@ -38,8 +51,8 @@ const initials = computed(() => {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #6b5090;
-  color: #e6e2d6;
+  background: var(--musea-accent);
+  color: var(--musea-paper);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 600;
   overflow: hidden;
@@ -91,9 +104,9 @@ const initials = computed(() => {
   </variant>
   <variant name="Group">
     <div style="display: flex; margin-left: 0">
-      <Self name="Alice" style="margin-left: 0; border: 2px solid #e6e2d6" />
-      <Self name="Bob" style="margin-left: -8px; border: 2px solid #e6e2d6" />
-      <Self name="Charlie" style="margin-left: -8px; border: 2px solid #e6e2d6" />
+      <Self name="Alice" style="margin-left: 0; border: 2px solid var(--musea-paper)" />
+      <Self name="Bob" style="margin-left: -8px; border: 2px solid var(--musea-paper)" />
+      <Self name="Charlie" style="margin-left: -8px; border: 2px solid var(--musea-paper)" />
     </div>
   </variant>
 </art>

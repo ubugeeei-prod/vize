@@ -206,11 +206,12 @@ vp dev
 
 ### File Structure
 
-| File                        | Description                                     |
-| --------------------------- | ----------------------------------------------- |
-| `src/components/Button.vue` | Button component with co-located Musea variants |
-| `src/tokens.json`           | Design tokens shown in the Musea gallery        |
-| `vite.config.ts`            | Vite + Musea configuration                      |
+| File                             | Description                                              |
+| -------------------------------- | -------------------------------------------------------- |
+| `src/components/MuseaButton.vue` | Button component with co-located Musea variants          |
+| `src/theme.css`                  | Shared color tokens used by the app and gallery variants |
+| `src/tokens.json`                | Design tokens shown in the Musea gallery                 |
+| `vite.config.ts`                 | Vite + Musea configuration                               |
 
 ### Writing Art Files
 
@@ -218,7 +219,7 @@ Use `defineArt(source, options)` in root `<script setup>` to declare the target 
 
 ```vue
 <script setup lang="ts">
-defineArt("./Button.vue", {
+defineArt("./MuseaButton.vue", {
   title: "Button",
   category: "Components",
   tags: ["button", "form"],
@@ -228,10 +229,10 @@ defineArt("./Button.vue", {
 
 <art>
   <variant name="Default" default>
-    <Button>Default Button</Button>
+    <Self>Default Button</Self>
   </variant>
   <variant name="Primary">
-    <Button variant="primary">Primary Button</Button>
+    <Self variant="primary">Primary Button</Self>
   </variant>
 </art>
 ```
