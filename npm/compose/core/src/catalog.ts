@@ -22,8 +22,9 @@ export type {
  * size gates. It intentionally contains data only: importing the module reads
  * no host globals, creates no subscriptions, and starts no work. Utilities
  * remain marked experimental while the package is pre-1.0. Source-copy
- * installation is reported as unavailable until a deterministic installer
- * with update provenance exists.
+ * installation goes through `vize lib pull`, which copies entries from the
+ * versioned `registry/registry.json` shipped in this package's tarball and
+ * records per-file provenance in `vize-lib.lock.json`.
  */
 export const COMPOSABLE_CATALOG = {
   schemaVersion: 1,
@@ -35,8 +36,8 @@ export const COMPOSABLE_CATALOG = {
     specifier: "@vizejs/composable",
   },
   sourceInstallation: {
-    status: "unavailable",
-    reason: "A provenance-preserving source-copy installer is not implemented.",
+    status: "available",
+    specifier: "vize lib pull composable:<entry>",
   },
   rootEntry,
   entries,

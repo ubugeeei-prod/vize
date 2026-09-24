@@ -29,7 +29,7 @@ const sentinels = {
   "capability-unavailable": ['status: "unavailable"'],
   "capability-is-available": ["isCapabilityAvailable"],
   "capability-is-unavailable": ["isCapabilityUnavailable"],
-  catalog: ["COMPOSABLE_CATALOG", "provenance-preserving source-copy installer"],
+  catalog: ["COMPOSABLE_CATALOG", "vize lib pull composable:<entry>"],
   "document-visibility": ["useDocumentVisibility", "readVisibilityState"],
   "disposal-scope": ["createDisposalScope", "VIZE_COMPOSE_DISPOSAL_FAILED"],
   "event-listener": ["useEventListener", "isListening"],
