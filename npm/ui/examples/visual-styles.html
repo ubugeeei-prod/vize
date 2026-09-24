@@ -280,8 +280,8 @@
         </div>
         <small>Keyboard focus stays clear; checking and switching give brief state feedback.</small>
       </section>
-      <section aria-labelledby="surfaces-heading">
-        <h2 id="surfaces-heading">Surfaces and status</h2>
+      <section aria-label="Surfaces and status">
+        <h2>Surfaces and status</h2>
         <div class="surface-grid">
           <article
             data-vize-ui="card"
@@ -302,12 +302,7 @@
               A new preview is ready to inspect.
             </div>
             <div class="tooltip-sample" data-vize-ui="tooltip-root" data-state="closed">
-              <button
-                id="tooltip-demo-trigger"
-                type="button"
-                data-vize-ui="tooltip-trigger"
-                data-state="closed"
-              >
+              <button type="button" data-vize-ui="tooltip-trigger" data-state="closed">
                 Inspect a note
               </button>
               <div
@@ -316,13 +311,7 @@
                 data-vize-positioner-ready="true"
                 hidden
               >
-                <div
-                  id="tooltip-demo-content"
-                  data-vize-ui="tooltip-content"
-                  data-state="closed"
-                  role="tooltip"
-                  hidden
-                >
+                <div data-vize-ui="tooltip-content" data-state="closed" role="tooltip" hidden>
                   Revisions are grouped by component.
                 </div>
               </div>
@@ -358,8 +347,9 @@
       const opener = document.querySelector('[data-action="open-dialog"]');
       const checkbox = document.querySelector('[data-vize-ui="checkbox"]');
       const switchControl = document.querySelector('[data-vize-ui="switch"]');
-      const tooltipTrigger = document.querySelector("#tooltip-demo-trigger");
-      const tooltipContent = document.querySelector("#tooltip-demo-content");
+      const tooltipTrigger = document.querySelector('[data-vize-ui="tooltip-trigger"]');
+      const tooltipContent = document.querySelector('[data-vize-ui="tooltip-content"]');
+      tooltipContent.id = `tooltip-content-${crypto.randomUUID()}`;
       const tooltipPositioner = tooltipContent.parentElement;
       const tooltipRoot = tooltipTrigger.closest('[data-vize-ui="tooltip-root"]');
 
