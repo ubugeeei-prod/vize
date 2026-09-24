@@ -42,6 +42,11 @@
       "import": "./dist/active-element.mjs",
       "default": "./dist/active-element.mjs"
     },
+    "./animate": {
+      "types": "./dist/animate.d.mts",
+      "import": "./dist/animate.mjs",
+      "default": "./dist/animate.mjs"
+    },
     "./async-resource": {
       "types": "./dist/async-resource.d.mts",
       "import": "./dist/async-resource.mjs",
@@ -52,6 +57,11 @@
       "import": "./dist/battery.mjs",
       "default": "./dist/battery.mjs"
     },
+    "./breakpoints": {
+      "types": "./dist/breakpoints.d.mts",
+      "import": "./dist/breakpoints.mjs",
+      "default": "./dist/breakpoints.mjs"
+    },
     "./capability": {
       "types": "./dist/capability.d.mts",
       "import": "./dist/capability.mjs",
@@ -61,6 +71,11 @@
       "types": "./dist/catalog.d.mts",
       "import": "./dist/catalog.mjs",
       "default": "./dist/catalog.mjs"
+    },
+    "./color-mode": {
+      "types": "./dist/color-mode.d.mts",
+      "import": "./dist/color-mode.mjs",
+      "default": "./dist/color-mode.mjs"
     },
     "./device-motion": {
       "types": "./dist/device-motion.d.mts",
@@ -87,10 +102,30 @@
       "import": "./dist/document-visibility.mjs",
       "default": "./dist/document-visibility.mjs"
     },
+    "./draggable": {
+      "types": "./dist/draggable.d.mts",
+      "import": "./dist/draggable.mjs",
+      "default": "./dist/draggable.mjs"
+    },
     "./element-bounding": {
       "types": "./dist/element-bounding.d.mts",
       "import": "./dist/element-bounding.mjs",
       "default": "./dist/element-bounding.mjs"
+    },
+    "./element-by-point": {
+      "types": "./dist/element-by-point.d.mts",
+      "import": "./dist/element-by-point.mjs",
+      "default": "./dist/element-by-point.mjs"
+    },
+    "./element-hover": {
+      "types": "./dist/element-hover.d.mts",
+      "import": "./dist/element-hover.mjs",
+      "default": "./dist/element-hover.mjs"
+    },
+    "./element-ref": {
+      "types": "./dist/element-ref.d.mts",
+      "import": "./dist/element-ref.mjs",
+      "default": "./dist/element-ref.mjs"
     },
     "./element-target": {
       "types": "./dist/element-target.d.mts",
@@ -121,6 +156,11 @@
       "types": "./dist/idle.d.mts",
       "import": "./dist/idle.mjs",
       "default": "./dist/idle.mjs"
+    },
+    "./infinite-scroll": {
+      "types": "./dist/infinite-scroll.d.mts",
+      "import": "./dist/infinite-scroll.mjs",
+      "default": "./dist/infinite-scroll.mjs"
     },
     "./intersection-observer": {
       "types": "./dist/intersection-observer.d.mts",
@@ -162,10 +202,35 @@
       "import": "./dist/network.mjs",
       "default": "./dist/network.mjs"
     },
+    "./on-click-outside": {
+      "types": "./dist/on-click-outside.d.mts",
+      "import": "./dist/on-click-outside.mjs",
+      "default": "./dist/on-click-outside.mjs"
+    },
+    "./on-key-stroke": {
+      "types": "./dist/on-key-stroke.d.mts",
+      "import": "./dist/on-key-stroke.mjs",
+      "default": "./dist/on-key-stroke.mjs"
+    },
+    "./on-long-press": {
+      "types": "./dist/on-long-press.d.mts",
+      "import": "./dist/on-long-press.mjs",
+      "default": "./dist/on-long-press.mjs"
+    },
+    "./on-start-typing": {
+      "types": "./dist/on-start-typing.d.mts",
+      "import": "./dist/on-start-typing.mjs",
+      "default": "./dist/on-start-typing.mjs"
+    },
     "./page-leave": {
       "types": "./dist/page-leave.d.mts",
       "import": "./dist/page-leave.mjs",
       "default": "./dist/page-leave.mjs"
+    },
+    "./parent-element": {
+      "types": "./dist/parent-element.d.mts",
+      "import": "./dist/parent-element.mjs",
+      "default": "./dist/parent-element.mjs"
     },
     "./pinch": {
       "types": "./dist/pinch.d.mts",
@@ -222,6 +287,11 @@
       "import": "./dist/scroll.mjs",
       "default": "./dist/scroll.mjs"
     },
+    "./scroll-lock": {
+      "types": "./dist/scroll-lock.d.mts",
+      "import": "./dist/scroll-lock.mjs",
+      "default": "./dist/scroll-lock.mjs"
+    },
     "./swipe": {
       "types": "./dist/swipe.d.mts",
       "import": "./dist/swipe.mjs",
@@ -237,10 +307,20 @@
       "import": "./dist/text-selection.mjs",
       "default": "./dist/text-selection.mjs"
     },
+    "./textarea-autosize": {
+      "types": "./dist/textarea-autosize.d.mts",
+      "import": "./dist/textarea-autosize.mjs",
+      "default": "./dist/textarea-autosize.mjs"
+    },
     "./timeout-scheduler": {
       "types": "./dist/timeout-scheduler.d.mts",
       "import": "./dist/timeout-scheduler.mjs",
       "default": "./dist/timeout-scheduler.mjs"
+    },
+    "./transition": {
+      "types": "./dist/transition.d.mts",
+      "import": "./dist/transition.mjs",
+      "default": "./dist/transition.mjs"
     },
     "./use-broadcast-channel": {
       "types": "./dist/use-broadcast-channel.d.mts",
@@ -436,6 +516,11 @@
       "types": "./dist/use-worker-fn.d.mts",
       "import": "./dist/use-worker-fn.mjs",
       "default": "./dist/use-worker-fn.mjs"
+    },
+    "./virtual-list": {
+      "types": "./dist/virtual-list.d.mts",
+      "import": "./dist/virtual-list.mjs",
+      "default": "./dist/virtual-list.mjs"
     },
     "./window-size": {
       "types": "./dist/window-size.d.mts",

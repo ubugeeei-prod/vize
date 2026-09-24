@@ -85,7 +85,24 @@ export class FakeElement extends EventTarget {
     setProperty: (name: string, value: string): void => {
       this.styles.set(name, value);
     },
+    getPropertyValue: (name: string): string => this.styles.get(name) ?? "",
+    removeProperty: (name: string): string => {
+      const previous = this.styles.get(name) ?? "";
+      this.styles.delete(name);
+      return previous;
+    },
+    get overflow(): string {
+      return owner(this).styles.get("overflow") ?? "";
+    },
   };
+  /** Upper-case tag name. */
+  tagName = "DIV";
+  /** Parent registered through {@link appendChild}. */
+  parentElement: FakeElement | null = null;
+  /** Attribute storage. */
+  readonly attributes = new Map<string, string>();
+  /** Class list stand-in. */
+  readonly classList = new FakeClassList();
   /** Pointer ids currently captured. */
   readonly captured = new Set<number>();
   /** Whether `requestPointerLock` should fail. */
@@ -98,6 +115,17 @@ export class FakeElement extends EventTarget {
   constructor(ownerDocument: FakeDocument) {
     super();
     this.ownerDocument = ownerDocument;
+    styleOwners.set(this.style, this);
+  }
+
+  /** Read an attribute. */
+  getAttribute(name: string): string | null {
+    return this.attributes.get(name) ?? null;
+  }
+
+  /** Write an attribute. */
+  setAttribute(name: string, value: string): void {
+    this.attributes.set(name, value);
   }
 
   /** Append a child element. */
@@ -182,6 +210,34 @@ export class FakeElement extends EventTarget {
 }
 
 const ancestors = new WeakMap<FakeElement, FakeElement[]>();
+const styleOwners = new WeakMap<object, FakeElement>();
+
+function owner(style: object): FakeElement {
+  const element = styleOwners.get(style);
+  if (!element) throw new Error("style stand-in without an owner");
+  return element;
+}
+
+/** `DOMTokenList` stand-in. */
+export class FakeClassList {
+  /** Current tokens. */
+  readonly tokens = new Set<string>();
+
+  /** Add a token. */
+  add(token: string): void {
+    this.tokens.add(token);
+  }
+
+  /** Remove a token. */
+  remove(token: string): void {
+    this.tokens.delete(token);
+  }
+
+  /** Whether a token is present. */
+  contains(token: string): boolean {
+    return this.tokens.has(token);
+  }
+}
 
 /**
  * Append `child` to `parent` and register the ancestry used by bubbling
@@ -189,6 +245,7 @@ const ancestors = new WeakMap<FakeElement, FakeElement[]>();
  */
 export function appendChild(parent: FakeElement, child: FakeElement): void {
   parent.append(child);
+  child.parentElement = parent;
   ancestors.set(child, [parent, ...(ancestors.get(parent) ?? [])]);
 }
 
