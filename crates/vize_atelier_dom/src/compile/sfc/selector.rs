@@ -383,17 +383,20 @@ fn tag_has_duplicate_attribute(bytes: &[u8], start: usize, end: usize) -> bool {
             continue;
         }
 
-        let name = &bytes[name_start..index];
-        if names[..count]
+        let Some(name) = bytes.get(name_start..index) else {
+            return true;
+        };
+        if names
             .iter()
+            .take(count)
             .any(|seen| seen.eq_ignore_ascii_case(name))
         {
             return true;
         }
-        if count == names.len() {
+        let Some(slot) = names.get_mut(count) else {
             return true;
-        }
-        names[count] = name;
+        };
+        *slot = name;
         count += 1;
 
         while bytes.get(index).is_some_and(u8::is_ascii_whitespace) {

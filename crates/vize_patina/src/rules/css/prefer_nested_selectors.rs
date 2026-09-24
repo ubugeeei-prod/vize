@@ -5,6 +5,7 @@
 use std::borrow::Cow;
 
 use lightningcss::stylesheet::StyleSheet;
+use vize_s0::String;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 

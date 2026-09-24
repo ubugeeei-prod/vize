@@ -84,9 +84,11 @@ fn op_has_legacy_hoist(
                 fact,
                 facts,
                 wrappers,
-                is_root,
-                hoist_static_vnodes,
-                allow_component_props_hoist,
+                ElementHoistContext {
+                    is_root,
+                    hoist_static_vnodes,
+                    allow_component_props_hoist,
+                },
             )
         }
         Op::Component(component) => {
@@ -126,29 +128,33 @@ fn op_has_legacy_hoist(
     }
 }
 
+struct ElementHoistContext {
+    is_root: bool,
+    hoist_static_vnodes: bool,
+    allow_component_props_hoist: bool,
+}
+
 fn element_has_legacy_hoist(
     walk: &mut PageWalk,
     element: &ElementOp<'_>,
     fact: StaticFacts,
     facts: &S2Facts,
     wrappers: &SideTable<WrapperKeys>,
-    is_root: bool,
-    hoist_static_vnodes: bool,
-    allow_component_props_hoist: bool,
+    context: ElementHoistContext,
 ) -> bool {
     match fact.level {
         StaticLevel::FullyStatic => {
-            if is_root && fact.props_hoistable {
+            if context.is_root && fact.props_hoistable {
                 return true;
             }
-            if hoist_static_vnodes {
+            if context.hoist_static_vnodes {
                 return true;
             }
             skip_region(walk, &element.children.ops);
             false
         }
         StaticLevel::HasDynamicText => {
-            if is_root && fact.props_hoistable {
+            if context.is_root && fact.props_hoistable {
                 return true;
             }
             skip_region(walk, &element.children.ops);
@@ -158,7 +164,8 @@ fn element_has_legacy_hoist(
             if fact.props_hoistable && (fact.foreign || fact.nested_static) {
                 return true;
             }
-            let child_hoist_static_vnodes = hoist_static_vnodes || !element.bindings.is_empty();
+            let child_hoist_static_vnodes =
+                context.hoist_static_vnodes || !element.bindings.is_empty();
             ensure_sufficient_stack(|| {
                 region_has_legacy_hoist(
                     walk,
@@ -167,7 +174,7 @@ fn element_has_legacy_hoist(
                     wrappers,
                     false,
                     child_hoist_static_vnodes,
-                    allow_component_props_hoist,
+                    context.allow_component_props_hoist,
                 )
             })
         }
