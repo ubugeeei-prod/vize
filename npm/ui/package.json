@@ -99,6 +99,11 @@
       "import": "./dist/card.mjs",
       "default": "./dist/card.mjs"
     },
+    "./carousel": {
+      "types": "./dist/carousel.d.mts",
+      "import": "./dist/carousel.mjs",
+      "default": "./dist/carousel.mjs"
+    },
     "./code": {
       "types": "./dist/code.d.mts",
       "import": "./dist/code.mjs",
@@ -394,10 +399,20 @@
       "import": "./dist/id.mjs",
       "default": "./dist/id.mjs"
     },
+    "./image": {
+      "types": "./dist/image.d.mts",
+      "import": "./dist/image.mjs",
+      "default": "./dist/image.mjs"
+    },
     "./inert-outside": {
       "types": "./dist/inert-outside.d.mts",
       "import": "./dist/inert-outside.mjs",
       "default": "./dist/inert-outside.mjs"
+    },
+    "./infinite-scroll": {
+      "types": "./dist/infinite-scroll.d.mts",
+      "import": "./dist/infinite-scroll.mjs",
+      "default": "./dist/infinite-scroll.mjs"
     },
     "./interaction-modality": {
       "types": "./dist/interaction-modality.d.mts",
@@ -493,6 +508,11 @@
       "types": "./dist/progress-bar.d.mts",
       "import": "./dist/progress-bar.mjs",
       "default": "./dist/progress-bar.mjs"
+    },
+    "./qr-code": {
+      "types": "./dist/qr-code.d.mts",
+      "import": "./dist/qr-code.mjs",
+      "default": "./dist/qr-code.mjs"
     },
     "./spinner": {
       "types": "./dist/spinner.d.mts",

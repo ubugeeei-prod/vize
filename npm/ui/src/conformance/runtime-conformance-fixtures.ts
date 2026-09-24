@@ -34,6 +34,7 @@ import { interactionHooksRuntimeFixture } from "../families/interaction/interact
 import { progressBarRuntimeFixture } from "../families/feedback/progress-bar/runtime-conformance-progress-bar-fixtures.ts";
 import { progressRuntimeFixture } from "../families/feedback/progress/runtime-conformance-progress-fixtures.ts";
 import { ratingRuntimeFixture } from "../families/form/rating/runtime-conformance-rating-fixtures.ts";
+import { richRuntimeFixtures } from "./runtime-conformance-rich-fixtures.ts";
 import { sliderRuntimeFixture } from "../families/form/slider/runtime-conformance-slider-fixtures.ts";
 import { spinnerRuntimeFixture } from "../families/feedback/spinner/runtime-conformance-spinner-fixtures.ts";
 import { statusLightRuntimeFixture } from "../families/feedback/status-light/runtime-conformance-status-light-fixtures.ts";
@@ -282,6 +283,7 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
     },
   },
   ratingRuntimeFixture,
+  ...richRuntimeFixtures,
   sliderRuntimeFixture,
   {
     name: "search-field",

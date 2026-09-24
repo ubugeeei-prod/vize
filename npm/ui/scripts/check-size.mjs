@@ -5,7 +5,7 @@ import { gzipSync } from "node:zlib";
 const distributionDirectory = new URL("../dist/", import.meta.url);
 const staticImportPattern = /\b(?:import|export)\s+(?:[^"']*?\s+from\s+)?["'](\.\.?\/[^"']+)["']/g;
 const budgets = new Map([
-  ["index.mjs", 200_100],
+  ["index.mjs", 222_500],
   ["alert.mjs", 1_050],
   ["announcer.mjs", 4_100],
   ["aspect-ratio.mjs", 1_500],
@@ -41,6 +41,10 @@ const budgets = new Map([
   ["tooltip.mjs", 18_100],
   ["input.mjs", 3_900],
   ["radio-group.mjs", 4_600],
+  ["carousel.mjs", 11_400],
+  ["image.mjs", 6_400],
+  ["infinite-scroll.mjs", 6_550],
+  ["qr-code.mjs", 9_400],
   ["rating.mjs", 6_450],
   ["textarea.mjs", 4_000],
   ["search-field.mjs", 4_400],
@@ -63,7 +67,7 @@ const budgets = new Map([
   ["checkbox.mjs", 1_900],
   ["collection.mjs", 5_700],
   ["composite-navigation.mjs", 5_355],
-  ["catalog.mjs", 17_250],
+  ["catalog.mjs", 18_400],
   ["command.mjs", 2_200],
   ["context.mjs", 700],
   ["controllable-state.mjs", 600],
@@ -93,7 +97,7 @@ const budgets = new Map([
   // Styled entries statically import the shared dist/style.css, so their
   // budgets cover the packaged stylesheet alongside their JavaScript.
   ["motion.mjs", 6_850],
-  ["move.mjs", 5_050],
+  ["move.mjs", 5_100],
   ["pointer-grace.mjs", 1_800],
   ["portal.mjs", 1_700],
   ["positioner.mjs", 7_200],
