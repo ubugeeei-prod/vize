@@ -25,6 +25,12 @@ import { tourFamilyCatalog } from "./family-catalog-tour.ts";
 import { selectionFamilyCatalog } from "./family-catalog-selection.ts";
 import { sliderFamilyCatalog } from "./family-catalog-slider.ts";
 import { structureFamilyCatalog } from "./family-catalog-structure.ts";
+import { autocompleteFamilyCatalog } from "./family-catalog-autocomplete.ts";
+import { listboxGridFamilyCatalog } from "./family-catalog-listbox-grid.ts";
+import { mentionFamilyCatalog } from "./family-catalog-mention.ts";
+import { transferListFamilyCatalog } from "./family-catalog-transfer-list.ts";
+import { emojiPickerFamilyCatalog } from "./family-catalog-emoji-picker.ts";
+import { cascaderFamilyCatalog } from "./family-catalog-cascader.ts";
 import { typographyFamilyCatalog } from "./family-catalog-typography.ts";
 import type { UiFamilyCatalogEntry } from "./family-catalog-types.ts";
 
@@ -64,6 +70,12 @@ const allFamilyCatalogEntries = [
   ...selectionFamilyCatalog,
   ...sliderFamilyCatalog,
   ...structureFamilyCatalog,
+  ...autocompleteFamilyCatalog,
+  ...listboxGridFamilyCatalog,
+  ...mentionFamilyCatalog,
+  ...transferListFamilyCatalog,
+  ...emojiPickerFamilyCatalog,
+  ...cascaderFamilyCatalog,
   ...typographyFamilyCatalog,
 ] as const satisfies readonly UiFamilyCatalogEntry[];
 

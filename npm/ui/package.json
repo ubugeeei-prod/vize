@@ -340,6 +340,36 @@
       "import": "./dist/listbox.mjs",
       "default": "./dist/listbox.mjs"
     },
+    "./cascader": {
+      "types": "./dist/cascader.d.mts",
+      "import": "./dist/cascader.mjs",
+      "default": "./dist/cascader.mjs"
+    },
+    "./emoji-picker": {
+      "types": "./dist/emoji-picker.d.mts",
+      "import": "./dist/emoji-picker.mjs",
+      "default": "./dist/emoji-picker.mjs"
+    },
+    "./transfer-list": {
+      "types": "./dist/transfer-list.d.mts",
+      "import": "./dist/transfer-list.mjs",
+      "default": "./dist/transfer-list.mjs"
+    },
+    "./mention": {
+      "types": "./dist/mention.d.mts",
+      "import": "./dist/mention.mjs",
+      "default": "./dist/mention.mjs"
+    },
+    "./listbox-grid": {
+      "types": "./dist/listbox-grid.d.mts",
+      "import": "./dist/listbox-grid.mjs",
+      "default": "./dist/listbox-grid.mjs"
+    },
+    "./autocomplete": {
+      "types": "./dist/autocomplete.d.mts",
+      "import": "./dist/autocomplete.mjs",
+      "default": "./dist/autocomplete.mjs"
+    },
     "./combobox": {
       "types": "./dist/combobox.d.mts",
       "import": "./dist/combobox.mjs",
