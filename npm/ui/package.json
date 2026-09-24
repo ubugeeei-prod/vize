@@ -40,6 +40,11 @@
       "import": "./dist/alert.mjs",
       "default": "./dist/alert.mjs"
     },
+    "./angle-picker": {
+      "types": "./dist/angle-picker.d.mts",
+      "import": "./dist/angle-picker.mjs",
+      "default": "./dist/angle-picker.mjs"
+    },
     "./announcer": {
       "types": "./dist/announcer.d.mts",
       "import": "./dist/announcer.mjs",
@@ -89,6 +94,26 @@
       "types": "./dist/date-range-picker.d.mts",
       "import": "./dist/date-range-picker.mjs",
       "default": "./dist/date-range-picker.mjs"
+    },
+    "./fieldset": {
+      "types": "./dist/fieldset.d.mts",
+      "import": "./dist/fieldset.mjs",
+      "default": "./dist/fieldset.mjs"
+    },
+    "./form-wizard": {
+      "types": "./dist/form-wizard.d.mts",
+      "import": "./dist/form-wizard.mjs",
+      "default": "./dist/form-wizard.mjs"
+    },
+    "./knob": {
+      "types": "./dist/knob.d.mts",
+      "import": "./dist/knob.mjs",
+      "default": "./dist/knob.mjs"
+    },
+    "./phone-field": {
+      "types": "./dist/phone-field.d.mts",
+      "import": "./dist/phone-field.mjs",
+      "default": "./dist/phone-field.mjs"
     },
     "./range-calendar": {
       "types": "./dist/range-calendar.d.mts",

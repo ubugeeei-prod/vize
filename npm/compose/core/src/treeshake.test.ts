@@ -215,7 +215,8 @@ const sentinels = {
   "use-date-time-format": ["useDateTimeFormat"],
   "use-display-names": ["useDisplayNames"],
   "use-field": ["useField"],
-  "use-form": ["useForm", "remapKeys"],
+  "use-form": ["function useForm(", "remapKeys"],
+  "use-form-field-props": ["function useFormFieldProps(", "function formFieldId("],
   "use-list-format": ["useListFormat"],
   "use-map": ["useMap", "getOrInsert"],
   "use-number-format": ["useNumberFormat"],
@@ -1110,6 +1111,12 @@ const utilities: readonly UtilityCase[] = [
     entry: "index",
     module: "use-form",
     shared: ["scope", "standard-schema-validate", "standard-schema-format"],
+  },
+  {
+    binding: "useFormFieldProps",
+    entry: "index",
+    module: "use-form-field-props",
+    shared: [],
   },
   {
     binding: "useListFormat",

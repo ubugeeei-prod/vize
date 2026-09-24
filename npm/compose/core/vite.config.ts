@@ -115,6 +115,7 @@ export default defineConfig({
       "use-file-dialog": "src/use-file-dialog.ts",
       "use-file-system-access": "src/use-file-system-access.ts",
       "use-form": "src/use-form.ts",
+      "use-form-field-props": "src/use-form-field-props.ts",
       "use-fullscreen": "src/use-fullscreen.ts",
       "use-gamepad": "src/use-gamepad.ts",
       "use-hid": "src/use-hid.ts",

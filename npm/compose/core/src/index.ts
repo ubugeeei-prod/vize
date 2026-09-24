@@ -103,6 +103,7 @@ export * from "./use-field.ts";
 export * from "./use-file-dialog.ts";
 export * from "./use-file-system-access.ts";
 export * from "./use-form.ts";
+export * from "./use-form-field-props.ts";
 export * from "./use-fullscreen.ts";
 export * from "./use-gamepad.ts";
 export * from "./use-hid.ts";

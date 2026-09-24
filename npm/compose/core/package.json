@@ -563,6 +563,11 @@
       "import": "./dist/use-form.mjs",
       "default": "./dist/use-form.mjs"
     },
+    "./use-form-field-props": {
+      "types": "./dist/use-form-field-props.d.mts",
+      "import": "./dist/use-form-field-props.mjs",
+      "default": "./dist/use-form-field-props.mjs"
+    },
     "./use-fullscreen": {
       "types": "./dist/use-fullscreen.d.mts",
       "import": "./dist/use-fullscreen.mjs",
