@@ -69,6 +69,9 @@ fn register_props_hoist(
     element: &ElementOp<'_>,
     id: Option<NodeId>,
 ) -> Result<(), EmitError> {
+    if cx.conditional_v_for_item {
+        return Ok(());
+    }
     if !super::props_static::should_hoist(cx, id, PropHoistPosition::ForItem)
         && !super::props_static::has_legacy_global_for_item_key(&element.bindings)
     {
