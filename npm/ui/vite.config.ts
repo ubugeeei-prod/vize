@@ -229,6 +229,10 @@ export default defineConfig({
       "composite-navigation":
         "src/families/foundations/composite-navigation/composite-navigation.ts",
       context: "src/families/foundations/context/context.ts",
+      forwarding: "src/families/foundations/forwarding/forwarding.ts",
+      polymorphic: "src/families/foundations/polymorphic/polymorphic.ts",
+      "slot-utils": "src/families/foundations/slot-utils/slot-utils.ts",
+      variants: "src/families/foundations/variants/variants.ts",
       "controllable-state": "src/families/foundations/controllable-state/controllable-state.ts",
       dialog: "src/families/overlays/dialog/dialog.ts",
       "alert-dialog": "src/families/overlays/alert-dialog/alert-dialog.ts",

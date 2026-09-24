@@ -95,6 +95,21 @@
       "import": "./dist/breadcrumb.mjs",
       "default": "./dist/breadcrumb.mjs"
     },
+    "./forwarding": {
+      "types": "./dist/forwarding.d.mts",
+      "import": "./dist/forwarding.mjs",
+      "default": "./dist/forwarding.mjs"
+    },
+    "./polymorphic": {
+      "types": "./dist/polymorphic.d.mts",
+      "import": "./dist/polymorphic.mjs",
+      "default": "./dist/polymorphic.mjs"
+    },
+    "./slot-utils": {
+      "types": "./dist/slot-utils.d.mts",
+      "import": "./dist/slot-utils.mjs",
+      "default": "./dist/slot-utils.mjs"
+    },
     "./tabs": {
       "types": "./dist/tabs.d.mts",
       "import": "./dist/tabs.mjs",
@@ -604,6 +619,11 @@
       "types": "./dist/typeahead.d.mts",
       "import": "./dist/typeahead.mjs",
       "default": "./dist/typeahead.mjs"
+    },
+    "./variants": {
+      "types": "./dist/variants.d.mts",
+      "import": "./dist/variants.mjs",
+      "default": "./dist/variants.mjs"
     },
     "./virtualizer": {
       "types": "./dist/virtualizer.d.mts",

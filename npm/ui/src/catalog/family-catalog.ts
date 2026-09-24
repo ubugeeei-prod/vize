@@ -6,6 +6,7 @@ import { dateTimeFamilyCatalog } from "./family-catalog-date-time.ts";
 import { feedbackFamilyCatalog } from "./family-catalog-feedback.ts";
 import { focusFamilyCatalog } from "./family-catalog-focus.ts";
 import { foundationFamilyCatalog } from "./family-catalog-foundations.ts";
+import { helperFamilyCatalog } from "./family-catalog-helpers.ts";
 import { i18nFamilyCatalog } from "./family-catalog-i18n.ts";
 import { interactionGestureFamilyCatalog } from "../families/interaction/catalog/gestures.ts";
 import { interactionSupportFamilyCatalog } from "../families/interaction/catalog/support.ts";
@@ -41,6 +42,7 @@ const allFamilyCatalogEntries = [
   ...dateTimeFamilyCatalog,
   ...feedbackFamilyCatalog,
   ...foundationFamilyCatalog,
+  ...helperFamilyCatalog,
   ...focusFamilyCatalog,
   ...i18nFamilyCatalog,
   ...interactionGestureFamilyCatalog,
