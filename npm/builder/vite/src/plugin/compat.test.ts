@@ -137,6 +137,12 @@ const msg = 'hello'
     /export default _sfc_main/,
     "Compiled Markdown SFC modules should export the component",
   );
+  assert.match(
+    result.code,
+    /import "\/docs\/Page\.md\?vue=&type=style&index=0&lang=css\.css";/,
+    "Virtual SFC styles should use Vite CSS imports in development",
+  );
+  assert.doesNotMatch(result.code, /__vize_css__/, "Virtual SFC CSS must not bypass Vite");
 }
 
 {

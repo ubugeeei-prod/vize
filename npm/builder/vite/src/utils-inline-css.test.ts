@@ -53,7 +53,7 @@ const cases = [
     name: "dev, plain scoped style",
     compiled: compiled({ hasScoped: true, styles: [styleBlock({ scoped: true })] }),
     options: { isProduction: false, isDev: true, extractCss: false, filePath: FILE },
-    expected: true,
+    expected: false,
   },
   {
     name: "dev, no style block but css present",
@@ -95,7 +95,7 @@ const cases = [
     name: "production client build, extraction off",
     compiled: compiled(),
     options: { isProduction: true, isDev: false, extractCss: false, filePath: FILE },
-    expected: true,
+    expected: false,
   },
   {
     name: "production SSR build",
@@ -134,19 +134,19 @@ void test("embedsInlineCss agrees with what generateOutput emits", () => {
   );
 });
 
-// Regression guard for over-skipping: a dev build must still embed the CSS, so
-// `loadCompiledSfcModule` must still resolve its `@import`s there. If the
-// predicate ever returned `false` for this case the plugin would ship an
-// unresolved `@import` to the browser.
-void test("a dev build still embeds plain CSS, so its @imports still need resolving", () => {
+// A real SFC block goes through Vite's CSS pipeline in development. Callers
+// without block metadata retain the old inline fallback, including @import
+// resolution, so cached or external compiler results remain usable.
+void test("development styles use Vite imports and metadata-free CSS keeps the fallback", () => {
   const withImport = compiled({ css: `@import "./partial.css";\n${CSS_MARKER}` });
   const options = { isProduction: false, isDev: true, extractCss: false, filePath: FILE };
 
-  assert.equal(embedsInlineCss(withImport, options), true);
-  const output = generateOutput(withImport, options);
-  assert.equal(
-    output.includes(JSON.stringify(`@import "./partial.css";\n${CSS_MARKER}`)),
-    true,
-    "the dev module must carry the CSS verbatim so an unresolved @import would be visible",
+  assert.equal(embedsInlineCss(withImport, options), false);
+  assert.match(
+    generateOutput(withImport, options),
+    /import "\/src\/Marker\.vue\?vue=&type=style&index=0&lang=css\.css";/,
   );
+  const metadataFree = { ...withImport, styles: [] };
+  assert.equal(embedsInlineCss(metadataFree, options), true);
+  assert.match(generateOutput(metadataFree, options), /__vize_css__/);
 });

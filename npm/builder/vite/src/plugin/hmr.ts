@@ -161,7 +161,6 @@ export async function handleHotUpdateHook(
         options.requireAcceptingClientModule,
       );
 
-      const hasDelegated = hasDelegatedStyles(newCompiled);
       const customElement = isPluginVueCustomElement(state.mergedOptions, file);
 
       if (customElement && updateType === "style-only") {
@@ -174,7 +173,10 @@ export async function handleHotUpdateHook(
         return [];
       }
 
-      if (hasDelegated && updateType === "style-only") {
+      // Client SFC styles are imported as Vite CSS modules even when they are
+      // plain CSS. Invalidate those modules so Vite reruns the configured CSS
+      // transformer before sending the style update to the browser.
+      if (newCompiled.styles?.length && updateType === "style-only") {
         const affectedModules: Set<import("vite").ModuleNode> = new Set();
         for (const block of newCompiled.styles ?? []) {
           const params = new URLSearchParams();
@@ -204,7 +206,7 @@ export async function handleHotUpdateHook(
         return [];
       }
 
-      if (updateType === "style-only" && newCompiled.css && !hasDelegated) {
+      if (updateType === "style-only" && newCompiled.css && !hasDelegatedStyles(newCompiled)) {
         state.pendingHmrUpdateTypes.delete(file);
         server.ws.send({
           type: "custom",

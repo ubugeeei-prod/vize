@@ -298,6 +298,61 @@ assert.equal(
 }
 
 {
+  const vueFile = "/src/PlainStyle.vue";
+  const previousSource = `<template><div class="root">red</div></template><style scoped>.root { color: red; }</style>`;
+  const nextSource = `<template><div class="root">red</div></template><style scoped>.root { color: blue; }</style>`;
+  const previousCompiled = compileFile(
+    vueFile,
+    new Map(),
+    { sourceMap: false, ssr: false, vapor: false },
+    previousSource,
+  );
+  const params = new URLSearchParams();
+  params.set("vue", "");
+  params.set("type", "style");
+  params.set("index", "0");
+  params.set("scoped", `data-v-${previousCompiled.scopeId}`);
+  params.set("lang", "css");
+  const styleId = `${vueFile}?${params.toString()}.css`;
+  const styleModule = { url: styleId };
+  const sent: unknown[] = [];
+  const state = {
+    cache: new Map([[vueFile, previousCompiled]]),
+    ssrCache: new Map(),
+    collectedCss: new Map(),
+    precompileMetadata: new Map(),
+    pendingHmrUpdateTypes: new Map(),
+    isProduction: false,
+    mergedOptions: {},
+    cssAliasRules: [],
+    clientViteBase: "/",
+    root: "/src",
+    filter: () => true,
+    logger: { log() {}, error() {} },
+  } as unknown as VizePluginState;
+  const ctx = {
+    file: vueFile,
+    server: {
+      moduleGraph: {
+        getModulesByFile(id: string) {
+          return id === styleId ? new Set([styleModule]) : undefined;
+        },
+        invalidateModule() {},
+      },
+      ws: {
+        send(message: unknown) {
+          sent.push(message);
+        },
+      },
+    },
+    read: async () => nextSource,
+  } as unknown as HmrContext;
+
+  assert.deepEqual(await handleHotUpdateHook(state, ctx), [styleModule]);
+  assert.deepEqual(sent, [], "Plain CSS HMR must let Vite rerun its CSS transformer");
+}
+
+{
   const emitted: Array<{ type: "asset"; fileName: string; source: string }> = [];
   const existingCss = new Set(["assets/app.css"]);
   const dynamicCss = new Set<string>();

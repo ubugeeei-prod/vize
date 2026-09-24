@@ -58,11 +58,10 @@ function supportsTemplateOnlyHmr(output: string): boolean {
 /**
  * Prepend a runtime `<style>` injection for plain CSS to a module's output.
  *
- * This is the same inline-CSS path plain SFC `<style>` blocks use in
- * {@link generateOutput}: a guarded `document.createElement('style')` keyed by a
- * stable id so the rule is injected once and idempotently. `styleKey` seeds the
- * element id. Used for both SFC plain CSS and JSX `<style scoped>` CSS (#1495,
- * #1533), whose content is already scope-rewritten by the compiler.
+ * A guarded `document.createElement('style')` keyed by a stable id makes the
+ * fallback injection idempotent. `styleKey` seeds the element id. SFCs with
+ * block metadata use Vite style imports; this remains for metadata-free SFCs
+ * and JSX `<style scoped>` CSS (#1495, #1533).
  */
 export function prependInlineStyleInjection(output: string, css: string, styleKey: string): string {
   const cssCode = JSON.stringify(css);
@@ -112,7 +111,7 @@ export interface GenerateOutputOptions {
   extractCss?: boolean;
   /**
    * Absolute path of the source .vue file.
-   * Required for generating virtual style imports for preprocessor/CSS Modules delegation.
+   * Required for generating virtual style imports for SFC style blocks.
    */
   filePath?: string;
   /**
@@ -125,18 +124,16 @@ export interface GenerateOutputOptions {
 /**
  * Whether the SFC's `<style>` blocks are handed to Vite as virtual imports.
  *
- * Some blocks require Vite's CSS pipeline (preprocessor or CSS Modules), and a
- * production client build routes plain CSS through it too so nesting,
- * minification, and chunk ownership still apply. In both cases the blocks are
- * emitted as imports and `compiled.css` is not used.
+ * Every client-side SFC style block goes through Vite's CSS pipeline. This is
+ * also necessary during development and tests: the user's CSS transformer and
+ * targets must run before the stylesheet reaches the browser or jsdom.
+ * `compiled.css` remains a fallback for callers without block metadata.
  */
 function usesStyleImports(compiled: CompiledModule, options: GenerateOutputOptions): boolean {
   return (
     !!options.filePath &&
     !!compiled.styles?.length &&
-    (options.customElement ||
-      hasDelegatedStyles(compiled) ||
-      (!options.ssr && options.isProduction && !!options.extractCss))
+    (options.customElement || hasDelegatedStyles(compiled) || !options.ssr)
   );
 }
 
@@ -237,14 +234,13 @@ export function generateOutputWithMap(
   }
 
   // Determine whether to use style imports or inline CSS injection.
-  // Production CSS extraction must still import plain CSS through Vite so its
-  // CSS pipeline can apply nesting, minification, and chunk graph ownership.
+  // Import client styles through Vite in every mode so its configured CSS
+  // transformer applies to development and test runs as well as builds.
   const useStyleImports = usesStyleImports(compiled, options);
 
   if (useStyleImports) {
     // --- Delegated style handling ---
-    // Some style blocks require Vite's CSS pipeline (preprocessor or CSS Modules).
-    // Emit virtual style imports for ALL blocks so Vite handles them uniformly.
+    // Emit virtual style imports for all blocks so Vite handles them uniformly.
     const styleImports: string[] = [];
     const cssModuleImports: string[] = [];
     const customElementStyleBindings: string[] = [];
@@ -322,7 +318,7 @@ export function generateOutputWithMap(
       );
     }
   } else if (!ssr && compiled.css && !(isProduction && extractCss)) {
-    // --- Inline CSS injection (original behavior for plain CSS) ---
+    // --- Fallback for callers without per-block style metadata ---
     emitted.edit(prependInlineStyleInjection(emitted.code, compiled.css, compiled.scopeId));
   }
 

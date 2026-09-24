@@ -762,6 +762,7 @@ const nestedCssState: VizePluginState = {
 export default _sfc_main`,
         scopeId: "nestedcss",
         hasScoped: true,
+        css: `#pages-store[data-v-nestedcss] { row-gap: 1.5rem; @media (--mobile) { row-gap: 1rem; } }`,
         styles: [
           {
             content: `#pages-store { row-gap: 1.5rem; @media (--mobile) { row-gap: 1rem; } h1 { margin: 0; } :deep(.divider) { border: 0; } }`,
@@ -776,6 +777,24 @@ export default _sfc_main`,
   ]),
   ssrCache: new Map(),
 };
+
+const nestedCssComponentLoad = loadHook(nestedCssState, toVirtualId(nestedCssPath), {
+  ssr: false,
+});
+assert.ok(
+  nestedCssComponentLoad && typeof nestedCssComponentLoad === "object",
+  "Nested CSS component should load",
+);
+assert.match(
+  nestedCssComponentLoad.code,
+  /import "\/src\/NestedStyles\.vue\?vue=&type=style&index=0&scoped=data-v-nestedcss&lang=css\.css";/,
+  "Development and test modules should send scoped CSS through Vite's transformer",
+);
+assert.doesNotMatch(
+  nestedCssComponentLoad.code,
+  /__vize_css__|document\.createElement/,
+  "Nested source CSS must not bypass Vite via a runtime style tag",
+);
 
 const nestedCssVirtualLoad = loadHook(
   nestedCssState,
