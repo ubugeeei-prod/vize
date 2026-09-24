@@ -2,6 +2,11 @@
 //!
 //! Run with: cargo bench -p vize_atelier_sfc
 
+#![expect(
+    clippy::expect_used,
+    reason = "benchmarks abort on fixture parse errors"
+)]
+
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
@@ -493,7 +498,10 @@ fn bench_parse_simple(c: &mut Criterion) {
     group.throughput(Throughput::Bytes(SIMPLE_SFC.len() as u64));
 
     group.bench_function("simple", |b| {
-        b.iter(|| parse_sfc(black_box(SIMPLE_SFC), SfcParseOptions::default()))
+        b.iter(|| {
+            parse_sfc(black_box(SIMPLE_SFC), SfcParseOptions::default())
+                .expect("failed to parse simple benchmark SFC")
+        })
     });
 
     group.finish();
@@ -504,7 +512,10 @@ fn bench_parse_medium(c: &mut Criterion) {
     group.throughput(Throughput::Bytes(MEDIUM_SFC.len() as u64));
 
     group.bench_function("medium", |b| {
-        b.iter(|| parse_sfc(black_box(MEDIUM_SFC), SfcParseOptions::default()))
+        b.iter(|| {
+            parse_sfc(black_box(MEDIUM_SFC), SfcParseOptions::default())
+                .expect("failed to parse medium benchmark SFC")
+        })
     });
 
     group.finish();
@@ -515,7 +526,10 @@ fn bench_parse_complex(c: &mut Criterion) {
     group.throughput(Throughput::Bytes(COMPLEX_SFC.len() as u64));
 
     group.bench_function("complex", |b| {
-        b.iter(|| parse_sfc(black_box(COMPLEX_SFC), SfcParseOptions::default()))
+        b.iter(|| {
+            parse_sfc(black_box(COMPLEX_SFC), SfcParseOptions::default())
+                .expect("failed to parse complex benchmark SFC")
+        })
     });
 
     group.finish();
@@ -532,7 +546,10 @@ fn bench_parse_throughput(c: &mut Criterion) {
     group.bench_function("all_sizes", |b| {
         b.iter(|| {
             for source in &all_sources {
-                let _ = black_box(parse_sfc(black_box(*source), SfcParseOptions::default()));
+                let _ = black_box(
+                    parse_sfc(black_box(*source), SfcParseOptions::default())
+                        .expect("failed to parse throughput benchmark SFC"),
+                );
             }
         })
     });
