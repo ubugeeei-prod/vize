@@ -90,12 +90,6 @@ async function loadVueModule(plugin: Plugin, id: string): Promise<string> {
   return code as string;
 }
 
-function extractEmbeddedCss(code: string): string {
-  const match = code.match(/export const __vize_css__ = (?<css>"(?:\\.|[^"\\])*");/);
-  assert.ok(match?.groups?.css, "module output must embed component CSS");
-  return JSON.parse(match.groups.css) as string;
-}
-
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -104,6 +98,16 @@ async function loadResolvedVueModule(plugin: Plugin, id: string): Promise<string
   const resolved = await resolveVueId(plugin, id);
   assert.ok(resolved, `${id} must resolve as a Vue module`);
   return loadVueModule(plugin, resolved);
+}
+
+async function loadResolvedStyleModule(plugin: Plugin, id: string): Promise<string> {
+  const code = await loadResolvedVueModule(plugin, id);
+  const styleId = `${id}?vue=&type=style&index=0&lang=css.css`;
+  assert.ok(
+    code.includes(`import ${JSON.stringify(styleId)};`),
+    `${id} must hand its CSS to Vite through a style import`,
+  );
+  return loadVueModule(plugin, styleId);
 }
 
 async function probeIncludeFilter(): Promise<void> {
@@ -127,23 +131,24 @@ async function probeProductionCssImport(): Promise<void> {
   const id = path.join(root, "Comp.vue");
   const devPlugin = await bootPlugin(root);
   const devCode = await loadResolvedVueModule(devPlugin, id);
-  assert.match(devCode, /__vize_css__/, "development output injects component CSS at runtime");
+  assert.doesNotMatch(devCode, /__vize_css__/);
+  assert.match(await loadResolvedStyleModule(devPlugin, id), /\.probe\{color:red\}/);
 
   const prodPlugin = await bootPlugin(root, { isProduction: true });
   const prodCode = await loadResolvedVueModule(prodPlugin, id);
   assert.doesNotMatch(prodCode, /__vize_css__/);
-  assert.match(prodCode, /import ".*Comp\.vue\?vue=&type=style&index=0[^"]*"/);
+  assert.match(await loadResolvedStyleModule(prodPlugin, id), /\.probe\{color:red\}/);
 }
 
 async function probeStyleTrim(): Promise<void> {
   const root = createFixture({ "Comp.vue": spacedStyle });
   const id = path.join(root, "Comp.vue");
   const defaultPlugin = await bootPlugin(root);
-  const defaultCss = extractEmbeddedCss(await loadResolvedVueModule(defaultPlugin, id));
+  const defaultCss = await loadResolvedStyleModule(defaultPlugin, id);
   assert.equal(defaultCss, defaultCss.trim());
 
   const rawPlugin = await bootPlugin(root, { style: { trim: false } });
-  const rawCss = extractEmbeddedCss(await loadResolvedVueModule(rawPlugin, id));
+  const rawCss = await loadResolvedStyleModule(rawPlugin, id);
   assert.match(rawCss, /^\n/);
   assert.match(rawCss, /\n$/);
 }
@@ -184,10 +189,9 @@ async function probeCustomElementOutput(): Promise<void> {
     await loadResolvedVueModule(defaultPlugin, path.join(root, "Element.ce.vue")),
     "Element.ce",
   );
-  assert.match(
-    await loadResolvedVueModule(defaultPlugin, path.join(root, "Plain.vue")),
-    /__vize_css__/,
-  );
+  const plainId = path.join(root, "Plain.vue");
+  assert.doesNotMatch(await loadResolvedVueModule(defaultPlugin, plainId), /__vize_css__/);
+  assert.match(await loadResolvedStyleModule(defaultPlugin, plainId), /\.probe\{color:red\}/);
 
   const featurePlugin = await bootPlugin(root, { features: { customElement: /Feature\.vue$/ } });
   assertCustomElementStyleOutput(

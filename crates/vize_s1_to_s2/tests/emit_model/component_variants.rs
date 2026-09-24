@@ -95,16 +95,34 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
 #[test]
 fn custom_component_model_modifiers_are_literal_keys() {
-    for source in [
-        r#"<Foo v-model.trim.foo-bar="msg" />"#,
-        r#"<Foo v-model:[field].trim.foo-bar="msg" />"#,
-    ] {
-        let code = assembled(source);
-        assert!(
-            code.contains(r#"{ trim: true, "foo-bar": true }"#),
-            "{source}: {code}"
-        );
-    }
+    assert_eq!(
+        assembled(r#"<Foo v-model.trim.foo-bar="msg" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, {
+    modelValue: msg,
+    \"onUpdate:modelValue\": $event => ((msg) = $event),
+    modelModifiers: { trim: true, \"foo-bar\": true }
+  }, null, 8 /* PROPS */, [\"modelValue\", \"onUpdate:modelValue\"]))
+}")
+    );
+    assert_eq!(
+        assembled(r#"<Foo v-model:[field].trim.foo-bar="msg" />"#),
+        pin("\
+const { resolveComponent: _resolveComponent, normalizeProps: _normalizeProps, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, _normalizeProps({ [(field)]: msg,
+  [\"onUpdate:\" + (field)]: $event => ((msg) = $event),
+  [(field) + \"Modifiers\"]: { trim: true, \"foo-bar\": true } }), null, 16 /* FULL_PROPS */))
+}")
+    );
 }
 
 #[test]
