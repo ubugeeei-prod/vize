@@ -16,23 +16,39 @@ mod support;
 
 use support::with_transformed;
 use vize_s0::Allocator;
-use vize_s1_to_s2::{UnsupportedReason as Reason, emit_dom, emit_dom_source};
+use vize_s1_to_s2::{
+    DomEmitOptions, UnsupportedReason as Reason, emit_dom_source, emit_dom_with_options,
+};
 
-fn assembled(source: &str) -> String {
+fn assembled_with_options(source: &str, is_ts: bool) -> String {
     with_transformed(source, |lowered, _folio, facts, _budget| {
-        emit_dom(lowered, facts)
-            .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
-            .assembled()
-            .to_string()
+        emit_dom_with_options(
+            lowered,
+            facts,
+            &DomEmitOptions {
+                is_ts,
+                ..DomEmitOptions::DEFAULT
+            },
+        )
+        .unwrap_or_else(|error| panic!("emit refused {source:?}: {error:?}"))
+        .assembled()
+        .to_string()
     })
 }
 
-fn shipped(source: &str) -> String {
+fn assembled(source: &str) -> String {
+    assembled_with_options(source, false)
+}
+
+fn shipped_with_options(source: &str, is_ts: bool) -> String {
     let allocator = Allocator::new();
     let (_, errors, old) = vize_atelier_dom::compile_template_legacy_with_options(
         &allocator,
         source,
-        vize_atelier_dom::DomCompilerOptions::default(),
+        vize_atelier_dom::DomCompilerOptions {
+            is_ts,
+            ..vize_atelier_dom::DomCompilerOptions::default()
+        },
     );
     let blocking: Vec<_> = errors
         .iter()
@@ -40,6 +56,18 @@ fn shipped(source: &str) -> String {
         .collect();
     assert!(blocking.is_empty(), "{source:?}: {blocking:?}");
     format!("{}\n{}", old.preamble, old.code)
+}
+
+fn shipped(source: &str) -> String {
+    shipped_with_options(source, false)
+}
+
+fn assert_shipped_parity_with_options(source: &str, is_ts: bool) {
+    assert_eq!(
+        assembled_with_options(source, is_ts),
+        shipped_with_options(source, is_ts),
+        "{source}"
+    );
 }
 
 fn assert_shipped_parity(source: &str) {
@@ -128,16 +156,22 @@ fn duplicate_lexical_handler_declarations_stay_unsupported() {
 
 #[test]
 fn ts_non_null_call_handlers_keep_legacy_wrapped_shape() {
-    assert_shipped_parity(r#"<button @click="payload!.click()"></button>"#);
-    assert_shipped_parity(r#"<div @keyup.d="documentation!.$el.click()"></div>"#);
-    assert_shipped_parity(r#"<div @contextmenu.prevent="options!.tippy?.show()"></div>"#);
+    for source in [
+        r#"<button @click="payload!.click()"></button>"#,
+        r#"<div @keyup.d="documentation!.$el.click()"></div>"#,
+        r#"<div @contextmenu.prevent="options!.tippy?.show()"></div>"#,
+    ] {
+        assert_shipped_parity(source);
+        assert_shipped_parity_with_options(source, true);
+    }
 }
 
 #[test]
 fn ts_non_null_assignment_handlers_keep_legacy_wrapped_shape() {
-    assert_shipped_parity(
-        r#"<button @click="draft.params.poll!.expiresIn = expiresInOption.seconds"></button>"#,
-    );
+    let source =
+        r#"<button @click="draft.params.poll!.expiresIn = expiresInOption.seconds"></button>"#;
+    assert_shipped_parity(source);
+    assert_shipped_parity_with_options(source, true);
 }
 
 #[test]
