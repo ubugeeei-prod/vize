@@ -28,6 +28,9 @@ pub enum PugErrorCode {
     MalformedKeyword,
     /// `INVALID_TOKEN`: a token pug's parser does not accept here.
     InvalidToken,
+    /// The source is too large to address with `u32` offsets; nothing was
+    /// parsed (the whole source is the end-of-file token's leading).
+    SourceTooLarge,
 }
 
 impl PugErrorCode {
@@ -45,6 +48,7 @@ impl PugErrorCode {
             Self::UnexpectedText => "Unexpected text",
             Self::MalformedKeyword => "Malformed pug keyword",
             Self::InvalidToken => "Unexpected token",
+            Self::SourceTooLarge => "Pug source is too large to address with u32 offsets",
         }
     }
 }

@@ -31,6 +31,8 @@ mod attrs;
 mod emit;
 mod literal;
 mod map;
+#[cfg(test)]
+mod oversize_tests;
 mod refusal;
 mod view;
 
@@ -38,7 +40,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_davinci::diagnostic::{Diagnostic, Severity};
 use vize_s0::{Allocator, Span, String};
-use vize_s1::pug::{PugError, PugTree, parse_pug};
+use vize_s1::pug::{PugError, PugErrorCode, PugTree, parse_pug};
 
 pub use map::PugSourceMap;
 pub use view::PugBlockView;
@@ -96,6 +98,21 @@ pub fn derive_template_with(
     errors: &[PugError],
     rendering: PugRendering,
 ) -> PugTemplate {
+    // A source S1 could not address was not parsed: refuse it before the
+    // emitter reserves a buffer the size of the source.
+    if let Some(error) = errors
+        .iter()
+        .find(|error| error.code == PugErrorCode::SourceTooLarge)
+    {
+        return PugTemplate {
+            html: Default::default(),
+            map: PugSourceMap::default(),
+            diagnostics: alloc::vec![crate::exemptions::surface_syntax(
+                Span::new(error.offset, error.offset),
+                error.code.message(),
+            )],
+        };
+    }
     let mut emitter = emit::Emitter::new(tree, rendering);
     for error in errors {
         emitter.diagnostics.push(crate::exemptions::surface_syntax(

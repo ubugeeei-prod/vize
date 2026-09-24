@@ -42,6 +42,8 @@ mod chars;
 mod error;
 mod lex;
 mod logical;
+#[cfg(test)]
+mod oversize_tests;
 mod render;
 mod tree;
 
@@ -64,22 +66,38 @@ pub fn parse_pug<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> (PugTree<'a>, Vec<'a, PugError>) {
+    parse_pug_within(allocator, source, u32::MAX as usize)
+}
+
+/// [`parse_pug`] with the addressable-size limit as a parameter, so the
+/// oversized path is testable without a 4 GiB input.
+fn parse_pug_within<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    limit: usize,
+) -> (PugTree<'a>, Vec<'a, PugError>) {
+    let mut errors = Vec::new_in(&allocator);
     // S1 addresses sources with `u32` offsets. A larger source keeps byte
-    // fidelity as the end-of-file token's leading, with no nodes.
-    if u32::try_from(source.len()).is_err() {
+    // fidelity as the end-of-file token's leading, with no nodes, and
+    // reports `SourceTooLarge` so consumers refuse it instead of deriving
+    // an empty template.
+    if source.len() > limit {
+        errors.push(PugError {
+            code: PugErrorCode::SourceTooLarge,
+            offset: 0,
+        });
         let eof = crate::surface::Token::present(source, crate::slice::from(source, source.len()));
         let tree = PugTree {
             source,
             nodes: Vec::new_in(&allocator),
             eof,
         };
-        return (tree, Vec::new_in(&allocator));
+        return (tree, errors);
     }
     let logical = logical::Logical::new(allocator, source);
     let mut tokens = Vec::new_in(&allocator);
     let mut lex_errors = Vec::new_in(&allocator);
     lex::lex(allocator, logical.text, &mut tokens, &mut lex_errors);
-    let mut errors = Vec::new_in(&allocator);
     for &(code, at) in lex_errors.iter() {
         errors.push(PugError {
             code,
