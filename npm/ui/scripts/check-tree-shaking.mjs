@@ -117,15 +117,23 @@ for (const { canonicalName: family, bundleBudget } of treeShakingEntries) {
   // Styled families pull the shared packaged stylesheet (dist has exactly one
   // style.css); unstyled families must not retain any CSS at all.
   const styledFamilySignatures = new Map([
+    ["combobox", /data-vize-ui=combobox-status/],
     ["motion", /--vize-ui-motion-duration-fast/],
     ["progress-bar", /--vize-ui-progress-bar-percent/],
     ["scroll-area", /--vize-ui-scroll-area-overflow-y/],
     ["theme", /--vize-ui-color-canvas/],
     ["visually-hidden", /clip-path:inset\(50%\)/],
   ]);
-  const styledSignature = styledFamilySignatures.get(family);
-  if (styledSignature) {
-    assert.match(rootOutput.css, styledSignature);
+  // A family that composes an allowed styled family legitimately retains that
+  // family's stylesheet.
+  const styledSignatures = [family, ...allowedRetainedFamilies].flatMap((retainedFamily) => {
+    const signature = styledFamilySignatures.get(retainedFamily);
+    return signature === undefined ? [] : [signature];
+  });
+  if (styledSignatures.length > 0) {
+    for (const styledSignature of styledSignatures) {
+      assert.match(rootOutput.css, styledSignature);
+    }
   } else {
     assert.equal(rootOutput.css, "", `${exportName} retained another component's stylesheet`);
   }

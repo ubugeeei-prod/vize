@@ -61,6 +61,17 @@ pub struct LockedItem {
     pub files: BTreeMap<String, String>,
 }
 
+impl LockedItem {
+    /// Display form: `ui:switch` or `@acme/button`.
+    pub fn label(&self) -> String {
+        if self.kind.starts_with('@') {
+            cstr!("{}/{}", self.kind, self.name)
+        } else {
+            cstr!("{}:{}", self.kind, self.name)
+        }
+    }
+}
+
 impl Lockfile {
     /// Read the lockfile, or an empty one when it does not exist.
     pub fn read(root: &Path, path: &Path) -> LibResult<Self> {
@@ -128,7 +139,12 @@ impl Lockfile {
 
     /// Locked items whose name or `kind:name` matches `query`.
     pub fn find(&self, query: &str) -> Vec<&LockedItem> {
-        let (kind, name) = match query.split_once(':') {
+        let split = if query.starts_with('@') {
+            query.split_once('/')
+        } else {
+            query.split_once(':')
+        };
+        let (kind, name) = match split {
             Some((kind, name)) => (Some(kind), name),
             None => (None, query),
         };
@@ -138,7 +154,7 @@ impl Lockfile {
             .collect()
     }
 
-    /// Whether any other locked item of the same kind depends on `name`.
+    /// Locked items of the same source that depend on `name`.
     pub fn dependents<'a>(&'a self, kind: &str, name: &str) -> Vec<&'a LockedItem> {
         self.items
             .iter()

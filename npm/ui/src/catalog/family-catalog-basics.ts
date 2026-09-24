@@ -145,7 +145,7 @@ export const basicFamilyCatalog = [
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Textarea",
-      retainedSignature: "data-vize-ui.+textarea",
+      retainedSignature: "data-vize-ui[^-a-z]{0,8}textarea",
       allowedRetainedFamilies: ["controllable-state"],
       maximumJavaScriptGzipBytes: 2_400,
       maximumCssGzipBytes: 0,

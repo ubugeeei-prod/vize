@@ -464,6 +464,34 @@ local libConfigDef: JsonSchema = new JsonSchema {
       type = "string"
       description = "Lockfile path (default: vize-lib.lock.json)"
     }
+    ["registries"] = new JsonSchema {
+      type = "object"
+      description = "Third-party registries by @namespace, pulled as @namespace/<item>"
+      propertyNames = new JsonSchema { pattern = "^@[a-z0-9][a-z0-9._-]*$" }
+      additionalProperties = new JsonSchema {
+        oneOf = new Listing {
+          new JsonSchema {
+            type = "string"
+            description = "Path to a registry, npm:<package>[@range], or an https:// URL of a registry.json"
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["source"] = new JsonSchema {
+                type = "string"
+                description = "Path to a registry, npm:<package>[@range], or an https:// URL of a registry.json"
+              }
+              ["dir"] = new JsonSchema {
+                type = "string"
+                description = "Destination directory for this namespace's items"
+              }
+            }
+            required = new Listing { "source" }
+            additionalProperties = false
+          }
+        }
+      }
+    }
   }
   additionalProperties = false
 }

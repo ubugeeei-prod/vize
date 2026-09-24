@@ -7,6 +7,9 @@ export { default as DialogOverlay } from "./dialog-overlay.vue";
 export { default as DialogPortal } from "./dialog-portal.vue";
 export { default as DialogTitle } from "./dialog-title.vue";
 export { default as DialogTrigger } from "./dialog-trigger.vue";
+/** Typed Dialog context, published so composed families (for example Drawer) can drive Dialog parts. */
+export { dialogContext } from "./dialog-context.ts";
+export type { DialogContextValue } from "./dialog-context.ts";
 export type {
   DialogAutoFocusEvent,
   DialogCloseExpose,
