@@ -92,6 +92,26 @@ pub enum Origin {
     Url(String),
 }
 
+/// Accept package names, not filesystem paths or npm command options.
+fn valid_npm_package_name(package: &str) -> bool {
+    fn segment(value: &str) -> bool {
+        let mut chars = value.chars();
+        chars
+            .next()
+            .is_some_and(|first| first.is_ascii_alphanumeric())
+            && chars.all(|character| {
+                character.is_ascii_alphanumeric() || matches!(character, '.' | '_' | '-')
+            })
+    }
+
+    if let Some(scoped) = package.strip_prefix('@') {
+        return scoped
+            .split_once('/')
+            .is_some_and(|(scope, name)| segment(scope) && segment(name));
+    }
+    segment(package)
+}
+
 impl Origin {
     /// Parse a configured source; relative paths resolve against `base`.
     pub fn parse(source: &str, base: &Path) -> LibResult<Self> {
@@ -110,7 +130,7 @@ impl Origin {
                 ),
                 None => (String::from(spec), None),
             };
-            if package.is_empty() {
+            if !valid_npm_package_name(&package) {
                 return Err(LibError::new(cstr!("invalid npm registry source {source}")));
             }
             return Ok(Self::Npm {
@@ -341,4 +361,25 @@ pub fn manifest_path_for(path: &Path) -> LibResult<PathBuf> {
         "no registry.json at {} (expected a file, a registry directory, or a package directory)",
         path.display()
     )))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Origin;
+    use std::path::Path;
+
+    #[test]
+    fn npm_registry_source_accepts_packages_but_rejects_paths_and_options() {
+        let base = Path::new("/project");
+        assert!(Origin::parse("npm:vue@^3", base).is_ok());
+        assert!(Origin::parse("npm:@acme/vue-kit@latest", base).is_ok());
+        for source in [
+            "npm:../../outside",
+            "npm:@acme/../outside",
+            "npm:--help",
+            "npm:@acme//kit",
+        ] {
+            assert!(Origin::parse(source, base).is_err(), "{source}");
+        }
+    }
 }
