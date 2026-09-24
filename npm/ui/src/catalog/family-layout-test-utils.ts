@@ -70,6 +70,7 @@ export const rehomedFlatFamilies: readonly RehomedFlatFamily[] = [
 ];
 
 export const uiFamilyRoots = new Map<string, string>([
+  ["a11y-audit", "src/families/accessibility/a11y-audit/"],
   ["action-sheet", "src/families/overlays/action-sheet/"],
   ["alert", "src/families/feedback/alert/"],
   ["alert-dialog", "src/families/overlays/alert-dialog/"],
@@ -117,6 +118,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["date-range-picker", "src/families/date-time/date-range-picker/"],
   ["datetime-field", "src/families/date-time/datetime-field/"],
   ["dialog", "src/families/overlays/dialog/"],
+  ["direction", "src/families/i18n/direction/"],
   ["dismissable-layer", "src/families/overlays/dismissable-layer/"],
   ["drag-and-drop", "src/families/interaction/drag-and-drop/"],
   ["dropdown-menu", "src/families/menus/dropdown-menu/"],
@@ -132,6 +134,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["focus-guards", "src/families/accessibility/focus-guards/"],
   ["drawer", "src/families/overlays/drawer/"],
   ["focus-scope", "src/families/accessibility/focus-scope/"],
+  ["focus-visible", "src/families/accessibility/focus-visible/"],
   ["form-wizard", "src/families/form/form-wizard/"],
   ["fullscreen-button", "src/families/actions/fullscreen-button/"],
   ["grid", "src/families/layout/grid/"],
@@ -153,6 +156,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["kanban", "src/families/data/kanban/"],
   ["kbd", "src/families/typography/kbd/"],
   ["knob", "src/families/form/knob/"],
+  ["landmark", "src/families/accessibility/landmark/"],
   ["lightbox", "src/families/media/lightbox/"],
   ["link", "src/families/navigation/link/"],
   ["list", "src/families/layout/list/"],
@@ -161,6 +165,7 @@ export const uiFamilyRoots = new Map<string, string>([
   ["live-region", "src/families/accessibility/live-region/"],
   ["locale", "src/families/i18n/locale/"],
   ["long-press", "src/families/interaction/long-press/"],
+  ["media-preferences", "src/families/accessibility/media-preferences/"],
   ["menu", "src/families/menus/menu/"],
   ["menubar", "src/families/menus/menubar/"],
   ["marquee", "src/families/media/marquee/"],

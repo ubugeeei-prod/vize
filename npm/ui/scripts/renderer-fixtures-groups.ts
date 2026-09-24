@@ -1,3 +1,5 @@
+import { a11yI18nRendererFixtures } from "./renderer-fixtures-a11y-i18n.ts";
+import { a11yPrefsRendererFixtures } from "./renderer-fixtures-a11y-prefs.ts";
 import { audioPlayerRendererFixtures } from "./renderer-fixtures-audio-player.ts";
 import { audioVisualizerRendererFixtures } from "./renderer-fixtures-audio-visualizer.ts";
 import { avatarGroupRendererFixtures } from "./renderer-fixtures-avatar-group.ts";
@@ -44,7 +46,11 @@ import { videoPlayerRendererFixtures } from "./renderer-fixtures-video-player.ts
 import { wayfindingRendererFixtures } from "./renderer-fixtures-wayfinding.ts";
 import { webcamCaptureRendererFixtures } from "./renderer-fixtures-webcam-capture.ts";
 
+import { landmarkRendererFixtures } from "./renderer-fixtures-landmark.ts";
 export const groupedRendererFixtures = [
+  ...a11yI18nRendererFixtures,
+  ...a11yPrefsRendererFixtures,
+  ...landmarkRendererFixtures,
   ...audioPlayerRendererFixtures,
   ...audioVisualizerRendererFixtures,
   ...avatarGroupRendererFixtures,

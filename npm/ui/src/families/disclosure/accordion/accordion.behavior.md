@@ -51,19 +51,19 @@ trigger, or arrow-key navigation. `hidden="until-found"` keeps find-in-page supp
 
 ## Public Root Props
 
-| Prop               | Type                                  | Default      | Contract                                                                   |
-| ------------------ | ------------------------------------- | ------------ | -------------------------------------------------------------------------- |
-| `type`             | `"single" \| "multiple"`              | required     | Selection mode and model shape.                                            |
-| `id`               | `string \| null`                      | `undefined`  | Consumer-owned base id; `null`/`undefined` use the deterministic fallback. |
-| `modelValue`       | `Value \| null` or `readonly Value[]` | `undefined`  | Controlled open item(s).                                                   |
-| `defaultValue`     | `Value \| null` or `readonly Value[]` | `undefined`  | Initial uncontrolled open item(s).                                         |
-| `disabled`         | `boolean`                             | `false`      | Disables user activation of every item.                                    |
-| `collapsible`      | `boolean`                             | `false`      | Lets a single accordion collapse its open item.                            |
-| `orientation`      | `"vertical" \| "horizontal"`          | `"vertical"` | Arrow-key axis.                                                            |
-| `dir`              | `"ltr" \| "rtl"`                      | `"ltr"`      | Reading direction for horizontal navigation.                               |
-| `loop`             | `boolean`                             | `true`       | Wrap arrow-key navigation.                                                 |
-| `hiddenUntilFound` | `boolean`                             | `false`      | Closed panels use `hidden="until-found"` after mount.                      |
-| `headingLevel`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6`          | `3`          | Default AccordionHeader level.                                             |
+| Prop               | Type                                  | Default      | Contract                                                                        |
+| ------------------ | ------------------------------------- | ------------ | ------------------------------------------------------------------------------- |
+| `type`             | `"single" \| "multiple"`              | required     | Selection mode and model shape.                                                 |
+| `id`               | `string \| null`                      | `undefined`  | Consumer-owned base id; `null`/`undefined` use the deterministic fallback.      |
+| `modelValue`       | `Value \| null` or `readonly Value[]` | `undefined`  | Controlled open item(s).                                                        |
+| `defaultValue`     | `Value \| null` or `readonly Value[]` | `undefined`  | Initial uncontrolled open item(s).                                              |
+| `disabled`         | `boolean`                             | `false`      | Disables user activation of every item.                                         |
+| `collapsible`      | `boolean`                             | `false`      | Lets a single accordion collapse its open item.                                 |
+| `orientation`      | `"vertical" \| "horizontal"`          | `"vertical"` | Arrow-key axis.                                                                 |
+| `dir`              | `"ltr" \| "rtl"`                      | `undefined`  | Reading direction; inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`. |
+| `loop`             | `boolean`                             | `true`       | Wrap arrow-key navigation.                                                      |
+| `hiddenUntilFound` | `boolean`                             | `false`      | Closed panels use `hidden="until-found"` after mount.                           |
+| `headingLevel`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6`          | `3`          | Default AccordionHeader level.                                                  |
 
 ## Events
 

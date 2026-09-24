@@ -28,13 +28,14 @@ import type {
   SplitterPanelConstraints,
   SplitterResizeReason,
 } from "./splitter-types.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 const {
   id = undefined,
   layout = undefined,
   defaultLayout = undefined,
   orientation = "horizontal",
-  dir = "ltr",
+  dir = undefined,
   disabled = false,
   keyboardStep = 10,
 } = defineProps<{
@@ -68,9 +69,9 @@ const {
   readonly orientation?: SplitterOrientation;
 
   /**
-   * Reading direction used to map horizontal arrow keys and pointer movement.
+   * Reading direction used to map horizontal arrow keys and pointer movement. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: SplitterDirection;
 
@@ -111,7 +112,7 @@ defineSlots<{
 const element = useTemplateRef<HTMLDivElement>("element");
 const baseId = useDeterministicId({ id: () => id, hint: "splitter" });
 const orientationState = computed(() => orientation);
-const dirState = computed(() => dir);
+const dirState = useResolvedDirection(() => dir);
 const disabledState = computed(() => disabled);
 const keyboardStepState = computed(() => keyboardStep);
 const panels = createCollectionRegistry<string, SplitterPanelRegistrationInput>();

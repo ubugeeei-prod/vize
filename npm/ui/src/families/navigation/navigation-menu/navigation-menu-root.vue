@@ -20,6 +20,7 @@ import type {
   NavigationMenuSlotState,
   NavigationMenuValue,
 } from "./navigation-menu-types.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 const {
   id = undefined,
@@ -29,7 +30,7 @@ const {
   skipDelayDuration = 300,
   closeDelay = 150,
   orientation = "horizontal",
-  dir = "ltr",
+  dir = undefined,
   ariaLabel = undefined,
   ariaLabelledby = undefined,
 } = defineProps<{
@@ -83,9 +84,9 @@ const {
   readonly orientation?: NavigationMenuOrientation;
 
   /**
-   * Reading direction for horizontal arrow keys and motion attributes.
+   * Reading direction for horizontal arrow keys and motion attributes. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: NavigationMenuDirection;
 
@@ -124,7 +125,7 @@ defineSlots<{
 const element = useTemplateRef<HTMLElement>("element");
 const baseId = useDeterministicId({ id: () => id, hint: "navigation-menu" });
 const orientationState = computed(() => orientation);
-const dirState = computed(() => dir);
+const dirState = useResolvedDirection(() => dir);
 const registry = createCollectionRegistry<string, string>();
 const triggers = shallowReactive(new Map<string, Readonly<ShallowRef<HTMLButtonElement | null>>>());
 const contents = shallowReactive(new Map<string, Readonly<ShallowRef<HTMLDivElement | null>>>());

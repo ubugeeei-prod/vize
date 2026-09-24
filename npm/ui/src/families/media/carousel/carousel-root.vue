@@ -30,6 +30,7 @@ import type {
   CarouselRootExpose,
   CarouselSlotState,
 } from "./carousel-types.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 const {
   id = undefined,
@@ -38,7 +39,7 @@ const {
   defaultValue = 0,
   loop = false,
   orientation = "horizontal",
-  dir = "ltr",
+  dir = undefined,
   draggable = true,
   autoplay = false,
   playing = undefined,
@@ -92,9 +93,9 @@ const {
   readonly orientation?: CarouselOrientation;
 
   /**
-   * Reading direction used for horizontal arrow keys and scroll offsets.
+   * Reading direction used for horizontal arrow keys and scroll offsets. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: CarouselDirection;
 
@@ -194,7 +195,7 @@ const viewportId = computed(() => deriveDeterministicId(baseId.value, "viewport"
 const count = computed(() => Math.max(0, Math.floor(slideCount)));
 const loopState = computed(() => loop && count.value > 1);
 const orientationState = computed(() => orientation);
-const dirState = computed(() => dir);
+const dirState = useResolvedDirection(() => dir);
 const indexState = useControllableState<number>({
   value: () => modelValue,
   defaultValue: () => defaultValue,

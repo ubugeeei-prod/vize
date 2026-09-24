@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { useMenuRoot } from "../menu/menu-root-runtime.ts";
 import type { MenuDirection, MenuSlotState } from "../menu/menu-types.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 const {
   id = undefined,
   open = undefined,
   defaultOpen = false,
   modal = true,
-  dir = "ltr",
+  dir = undefined,
   loop = false,
   disabled = false,
 } = defineProps<{
@@ -40,9 +41,9 @@ const {
   readonly modal?: boolean;
 
   /**
-   * Reading direction: flips submenu arrow keys and submenu placement.
+   * Reading direction: flips submenu arrow keys and submenu placement. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: MenuDirection;
 
@@ -60,6 +61,8 @@ const {
    */
   readonly disabled?: boolean;
 }>();
+
+const dirState = useResolvedDirection(() => dir);
 
 const emit = defineEmits<{
   /** Fired with the requested open value (supports `v-model:open`). */
@@ -80,7 +83,7 @@ const menu = useMenuRoot({
   open: () => open,
   defaultOpen: () => defaultOpen,
   modal: () => modal,
-  dir: () => dir,
+  dir: () => dirState.value,
   loop: () => loop,
   disabled: () => disabled,
   onOpenChange: (value, previous, event) => {

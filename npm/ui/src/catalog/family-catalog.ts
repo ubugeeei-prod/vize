@@ -1,3 +1,7 @@
+import { mediaPreferencesFamilyCatalog } from "./family-catalog-media-preferences.ts";
+import { focusVisibleFamilyCatalog } from "./family-catalog-focus-visible.ts";
+import { landmarkFamilyCatalog } from "./family-catalog-landmark.ts";
+import { a11yAuditFamilyCatalog, directionFamilyCatalog } from "./family-catalog-a11y-i18n.ts";
 import { accordionFamilyCatalog } from "./family-catalog-accordion.ts";
 import { popconfirmFamilyCatalog } from "./family-catalog-popconfirm.ts";
 import { notificationCenterFamilyCatalog } from "./family-catalog-notification-center.ts";
@@ -76,6 +80,11 @@ export {
 } from "./family-catalog-types.ts";
 
 const allFamilyCatalogEntries = [
+  ...mediaPreferencesFamilyCatalog,
+  ...focusVisibleFamilyCatalog,
+  ...a11yAuditFamilyCatalog,
+  ...landmarkFamilyCatalog,
+  ...directionFamilyCatalog,
   ...accordionFamilyCatalog,
   ...popconfirmFamilyCatalog,
   ...notificationCenterFamilyCatalog,

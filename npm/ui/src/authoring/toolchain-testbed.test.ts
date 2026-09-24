@@ -22,7 +22,7 @@ test("package check keeps the UI source corpus on the toolchain gate", async () 
   );
   assert.equal(
     manifest.scripts.check,
-    "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed",
+    "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed && pnpm check:vapor-runtime",
   );
   assert.match(manifest.scripts["check:static"], /vue-tsc --noEmit -p tsconfig\.typecheck\.json/);
   assert.equal(manifest.scripts.fmt, "vp fmt --write src scripts vite.config.ts");

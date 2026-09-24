@@ -55,6 +55,16 @@
       "import": "./dist/announcer.mjs",
       "default": "./dist/announcer.mjs"
     },
+    "./a11y-audit": {
+      "types": "./dist/a11y-audit.d.mts",
+      "import": "./dist/a11y-audit.mjs",
+      "default": "./dist/a11y-audit.mjs"
+    },
+    "./landmark": {
+      "types": "./dist/landmark.d.mts",
+      "import": "./dist/landmark.mjs",
+      "default": "./dist/landmark.mjs"
+    },
     "./aspect-ratio": {
       "types": "./dist/aspect-ratio.d.mts",
       "import": "./dist/aspect-ratio.mjs",
@@ -790,6 +800,11 @@
       "import": "./dist/interaction-modality.mjs",
       "default": "./dist/interaction-modality.mjs"
     },
+    "./media-preferences": {
+      "types": "./dist/media-preferences.d.mts",
+      "import": "./dist/media-preferences.mjs",
+      "default": "./dist/media-preferences.mjs"
+    },
     "./interaction-hooks": {
       "types": "./dist/interaction-hooks.d.mts",
       "import": "./dist/interaction-hooks.mjs",
@@ -799,6 +814,11 @@
       "types": "./dist/focus.d.mts",
       "import": "./dist/focus.mjs",
       "default": "./dist/focus.mjs"
+    },
+    "./focus-visible": {
+      "types": "./dist/focus-visible.d.mts",
+      "import": "./dist/focus-visible.mjs",
+      "default": "./dist/focus-visible.mjs"
     },
     "./focus-scope": {
       "types": "./dist/focus-scope.d.mts",
@@ -834,6 +854,11 @@
       "types": "./dist/locale.d.mts",
       "import": "./dist/locale.mjs",
       "default": "./dist/locale.mjs"
+    },
+    "./direction": {
+      "types": "./dist/direction.d.mts",
+      "import": "./dist/direction.mjs",
+      "default": "./dist/direction.mjs"
     },
     "./long-press": {
       "types": "./dist/long-press.d.mts",

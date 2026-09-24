@@ -49,6 +49,7 @@ import type {
   TreeState,
   TreeVirtualizer,
 } from "./tree-types.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 const {
   id = undefined,
@@ -71,7 +72,7 @@ const {
   checkable = false,
   checkPropagation = "cascade",
   disabled = false,
-  dir = "ltr",
+  dir = undefined,
   typeahead = true,
   typeaheadTimeout = 500,
   virtualizer = undefined,
@@ -215,9 +216,9 @@ const {
   readonly disabled?: boolean;
 
   /**
-   * Reading direction used to map ArrowRight and ArrowLeft to expand and collapse.
+   * Reading direction used to map ArrowRight and ArrowLeft to expand and collapse. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: TreeDirection;
 
@@ -302,7 +303,7 @@ const baseId = useDeterministicId({ id: () => id, hint: "tree" });
 const disabledState = computed(() => disabled);
 const checkableState = computed(() => checkable);
 const selectionModeState = computed(() => selectionMode);
-const dirState = computed(() => dir);
+const dirState = useResolvedDirection(() => dir);
 const cascade = computed(() => checkPropagation === "cascade");
 const loaded = shallowReactive(new Map<TreeKey, readonly T[]>());
 const loadStates = shallowReactive(new Map<TreeKey, TreeLoadState>());

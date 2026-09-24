@@ -9,6 +9,10 @@ import { useDeterministicId } from "../families/foundations/id/deterministic-id.
 import LinkAnchor from "../families/navigation/link/link-anchor.vue";
 import { skipLinkRuntimeFixture } from "../families/navigation/skip-link/runtime-conformance-skip-link-fixtures.ts";
 import { collapsibleRuntimeFixtures } from "./runtime-conformance-collapsible-fixtures.ts";
+import { mediaPreferencesRuntimeFixtures } from "../families/accessibility/media-preferences/runtime-conformance-media-preferences-fixtures.ts";
+import { focusVisibleRuntimeFixtures } from "../families/accessibility/focus-visible/runtime-conformance-focus-visible-fixtures.ts";
+import { landmarkRuntimeFixtures } from "../families/accessibility/landmark/runtime-conformance-landmark-fixtures.ts";
+import { directionRuntimeFixtures } from "../families/i18n/direction/runtime-conformance-direction-fixtures.ts";
 import { accordionRuntimeFixtures } from "../families/disclosure/accordion/runtime-conformance-accordion-fixtures.ts";
 import { hoverCardRuntimeFixtures } from "../families/overlays/hover-card/runtime-conformance-hover-card-fixtures.ts";
 import { confirmRuntimeFixture } from "../families/overlays/confirm/runtime-conformance-confirm-fixtures.ts";
@@ -136,6 +140,10 @@ export const controlRuntimeFixtures: readonly RuntimeFixture[] = [
   ...stepperRuntimeFixtures,
   emptyStateRuntimeFixture,
   ...collapsibleRuntimeFixtures,
+  ...mediaPreferencesRuntimeFixtures,
+  ...focusVisibleRuntimeFixtures,
+  ...landmarkRuntimeFixtures,
+  ...directionRuntimeFixtures,
   ...accordionRuntimeFixtures,
   ...hoverCardRuntimeFixtures,
   confirmRuntimeFixture,

@@ -30,7 +30,7 @@ const strengthId = useId();
       <PasswordFieldToggle v-slot="{ visible }">{{
         visible ? "Hide" : "Show"
       }}</PasswordFieldToggle>
-      <meter aria-label="Password strength" :min="0" :max="4" :value="strength?.score ?? 0" />
+      <meter aria-label="Password strength" :min="0" :max="4" :value="strength?.score ?? 0"></meter>
       <p :id="strengthId">Strength: {{ strength?.label ?? "none" }}</p>
       <p v-if="capsLock" role="status">Caps Lock is on.</p>
     </PasswordField>

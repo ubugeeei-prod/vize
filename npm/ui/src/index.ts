@@ -16,8 +16,10 @@ export * from "./families/foundations/theme/theme.ts";
 // precede the shared SFC helper chunk in the root bundle exactly as it does in
 // the locale subpath bundle for the byte-equality packaging gate.
 export * from "./families/i18n/locale/locale.ts";
+export * from "./families/i18n/direction/direction.ts";
 export * from "./families/feedback/alert/alert.ts";
 export * from "./families/accessibility/announcer/announcer.ts";
+export * from "./families/accessibility/a11y-audit/a11y-audit.ts";
 export * from "./families/layout/aspect-ratio/aspect-ratio.ts";
 export * from "./families/layout/avatar/avatar.ts";
 export * from "./families/feedback/badge/badge.ts";
@@ -176,7 +178,9 @@ export * from "./families/feedback/spinner/spinner.ts";
 export * from "./families/feedback/status-light/status-light.ts";
 export * from "./families/interaction/press/press.ts";
 export * from "./families/accessibility/interaction-modality/interaction-modality.ts";
+export * from "./families/accessibility/media-preferences/media-preferences.ts";
 export * from "./families/accessibility/focus/focus.ts";
+export * from "./families/accessibility/focus-visible/focus-visible.ts";
 export * from "./families/interaction/interaction-hooks/interaction-hooks.ts";
 export * from "./families/accessibility/scroll-lock/scroll-lock.ts";
 export * from "./families/interaction/shortcut/shortcut.ts";
@@ -212,3 +216,4 @@ export * from "./families/overlays/action-sheet/action-sheet.ts";
 export * from "./families/interaction/pull-to-refresh/pull-to-refresh.ts";
 export * from "./families/interaction/swipe-actions/swipe-actions.ts";
 export * from "./families/navigation/pager/pager.ts";
+export * from "./families/accessibility/landmark/landmark.ts";

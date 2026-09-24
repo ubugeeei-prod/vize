@@ -21,6 +21,7 @@ import type {
   ResizableSource,
   ResizableState,
 } from "./resizable-types.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 interface ResizableSession {
   readonly edge: ResizablePhysicalEdge;
@@ -40,7 +41,7 @@ const {
   step = 10,
   largeStep = 50,
   disabled = false,
-  dir = "ltr",
+  dir = undefined,
 } = defineProps<{
   /**
    * Consumer-owned root id. `null` and `undefined` select a deterministic fallback.
@@ -121,9 +122,9 @@ const {
   readonly disabled?: boolean;
 
   /**
-   * Reading direction used to resolve `start` and `end` handles.
+   * Reading direction used to resolve `start` and `end` handles. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: ResizableDirection;
 }>();
@@ -157,7 +158,7 @@ const sizeState = useControllableState<ResizableSize>({
 const session = shallowRef<ResizableSession | null>(null);
 const currentSize = computed(() => sizeState.value.value);
 const disabledState = computed(() => disabled);
-const dirState = computed(() => dir);
+const dirState = useResolvedDirection(() => dir);
 const stepState = computed(() => (Number.isFinite(step) && step > 0 ? step : 1));
 const largeStepState = computed(() =>
   Number.isFinite(largeStep) && largeStep > 0 ? largeStep : stepState.value,
@@ -279,7 +280,7 @@ defineExpose(exposed);
   <div
     :id="rootId"
     ref="element"
-    :dir
+    :dir="dirState"
     :style
     data-vize-ui="resizable-root"
     part="root"
