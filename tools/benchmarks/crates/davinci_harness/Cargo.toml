@@ -31,3 +31,6 @@ vize_s2 = { workspace = true }
 [[bench]]
 name = "selfcheck"
 harness = false
+
+[lints]
+workspace = true

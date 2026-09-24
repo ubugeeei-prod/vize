@@ -30,10 +30,6 @@ const PENDING: &[&str] = &[
     "crates/vize_s1",
     "crates/vize_s2",
     "crates/vize_vitrine",
-    "tests/davinci_test_support",
-    "tests/vize_test_runner",
-    "tools/benchmarks/crates/davinci_harness",
-    "tools/benchmarks/crates/vize",
 ];
 
 fn main() -> ExitCode {

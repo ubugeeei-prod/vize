@@ -184,7 +184,7 @@ fn strip_describe(path: &str) -> &str {
         && let Some(cut) = path.rfind(" (")
         && cut > 0
     {
-        return &path[..cut];
+        return path.get(..cut).unwrap_or(path);
     }
     path
 }

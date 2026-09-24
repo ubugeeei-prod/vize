@@ -71,13 +71,15 @@ pub fn template_block(source: &str) -> Option<&str> {
     } else {
         source.find("\n<template").map(|index| index + 1)?
     };
-    let open_end = source[open_line_start..]
+    let open_end = source
+        .get(open_line_start..)?
         .find('>')
         .map(|index| open_line_start + index + 1)?;
-    let close_newline = source[open_end..]
+    let close_newline = source
+        .get(open_end..)?
         .find("\n</template>")
         .map(|index| open_end + index)?;
-    Some(&source[open_end..close_newline + 1])
+    source.get(open_end..close_newline + 1)
 }
 
 #[cfg(test)]

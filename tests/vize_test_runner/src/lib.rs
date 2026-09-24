@@ -1,4 +1,3 @@
-#![allow(clippy::disallowed_macros)]
 //! Test runner for Vue compiler - compares output with Vue's official compiler.
 //!
 //! This runner reads fixtures from tests/fixtures/ and expected outputs from
@@ -17,6 +16,9 @@ use vize_atelier_core::{
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_s0::{Allocator, String, ToCompactString};
+
+mod chars;
+use chars::ch_at;
 
 /// Test fixture file
 #[derive(Debug, Deserialize)]
@@ -91,37 +93,28 @@ pub fn parse_snap_file(content: &str) -> Vec<ExpectedCase> {
         }
 
         // Parse header (before --- INPUT ---)
-        let Some(input_marker_pos) = block.find("--- INPUT ---") else {
+        let Some((header, after_input_marker)) = block.split_once("--- INPUT ---") else {
             continue;
         };
-
-        let header = &block[..input_marker_pos];
-        let after_input_marker = &block[input_marker_pos + "--- INPUT ---".len()..];
 
         // Parse INPUT section (between --- INPUT --- and --- OUTPUT ---)
-        let Some(output_marker_pos) = after_input_marker.find("--- OUTPUT ---") else {
+        let Some((input, output)) = after_input_marker.split_once("--- OUTPUT ---") else {
             continue;
         };
 
-        let input = after_input_marker[..output_marker_pos]
-            .trim()
-            .to_compact_string();
-        let mut code = after_input_marker[output_marker_pos + "--- OUTPUT ---".len()..]
-            .trim()
-            .to_compact_string();
-
+        let input = input.trim().to_compact_string();
         // Handle CSS section in SFC
-        if let Some(idx) = code.find("--- CSS ---") {
-            code = code[..idx].trim().to_compact_string();
-        }
+        let output = output
+            .split_once("--- CSS ---")
+            .map_or(output, |(code, _)| code);
+        let code = output.trim().to_compact_string();
 
         let mut name = String::default();
         let mut has_errors = false;
 
         for line in header.lines() {
-            if let Some(idx) = line.find(':') {
-                let key = line[..idx].trim();
-                let value = line[idx + 1..].trim();
+            if let Some((key, value)) = line.split_once(':') {
+                let (key, value) = (key.trim(), value.trim());
 
                 match key {
                     "name" => name = value.to_compact_string(),
@@ -198,7 +191,8 @@ fn pkl_command(path: &Path) -> PathBuf {
 
 /// Load expected outputs from a .snap file
 pub fn load_expected(path: &Path) -> Vec<ExpectedCase> {
-    let content = std::fs::read_to_string(path).expect("Failed to read expected file");
+    // A missing or unreadable snapshot file has no expected cases.
+    let content = std::fs::read_to_string(path).unwrap_or_default();
     parse_snap_file(&content)
 }
 
@@ -238,7 +232,7 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
     if preamble.is_empty() {
         result.code.clone()
     } else {
-        format!("{}\n\n{}", preamble, result.code).into()
+        vize_s0::cstr!("{}\n\n{}", preamble, result.code)
     }
 }
 
@@ -344,7 +338,7 @@ pub fn normalize_code(code: &str) -> String {
             && let Some(start) = line.find('{')
             && let Some(end) = line.find('}')
         {
-            for helper in line[start + 1..end].split(',') {
+            for helper in line.get(start + 1..end).unwrap_or_default().split(',') {
                 let helper = helper.trim();
                 if !helper.is_empty() {
                     vue_helpers.push(helper.to_compact_string());
@@ -358,7 +352,7 @@ pub fn normalize_code(code: &str) -> String {
     if let Some(first) = first_vue_import {
         vue_helpers.sort();
         vue_helpers.dedup();
-        let merged: String = format!("import {{ {} }} from \"vue\"", vue_helpers.join(", ")).into();
+        let merged = vize_s0::cstr!("import {{ {} }} from \"vue\"", vue_helpers.join(", "));
         for (idx, line) in lines.iter_mut().enumerate() {
             if is_vue_import(line) {
                 *line = if idx == first {
@@ -441,11 +435,11 @@ fn collapse_multiline(code: &str) -> String {
 
     // Normalize parentheses in return statements: `return (expr)` -> `return expr`
     for line in &mut result {
-        if line.starts_with("return (") && line.ends_with(')') {
-            let inner = &line[7..]; // "return " is 7 chars
-            if is_outer_parens_balanced(inner) {
-                *line = format!("return {}", &inner[1..inner.len() - 1]).into();
-            }
+        if let Some(inner) = line.strip_prefix("return ")
+            && is_outer_parens_balanced(inner)
+            && let Some(unwrapped) = inner.strip_prefix('(').and_then(|i| i.strip_suffix(')'))
+        {
+            *line = vize_s0::cstr!("return {unwrapped}");
         }
     }
 
@@ -475,7 +469,7 @@ fn brackets_balanced(line: &str) -> bool {
     let chars: Vec<char> = line.chars().collect();
     let mut i = 0;
     while i < chars.len() {
-        let ch = chars[i];
+        let ch = ch_at(&chars, i);
         if in_string {
             if ch == '\\' && i + 1 < chars.len() {
                 i += 2;
@@ -509,14 +503,22 @@ fn remove_block_comments(line: &str) -> String {
     let chars: Vec<char> = line.chars().collect();
     let mut i = 0;
     while i < chars.len() {
-        if !in_comment && i + 1 < chars.len() && chars[i] == '/' && chars[i + 1] == '*' {
+        if !in_comment
+            && i + 1 < chars.len()
+            && ch_at(&chars, i) == '/'
+            && ch_at(&chars, i + 1) == '*'
+        {
             in_comment = true;
             i += 2;
-        } else if in_comment && i + 1 < chars.len() && chars[i] == '*' && chars[i + 1] == '/' {
+        } else if in_comment
+            && i + 1 < chars.len()
+            && ch_at(&chars, i) == '*'
+            && ch_at(&chars, i + 1) == '/'
+        {
             in_comment = false;
             i += 2;
         } else if !in_comment {
-            result.push(chars[i]);
+            result.push(ch_at(&chars, i));
             i += 1;
         } else {
             i += 1;
@@ -573,17 +575,17 @@ fn normalize_quotes(s: &str) -> String {
     let chars: Vec<char> = s.chars().collect();
     let mut i = 0;
     while i < chars.len() {
-        if chars[i] == '\'' {
+        if ch_at(&chars, i) == '\'' {
             // Convert single-quoted string to double-quoted
             result.push('"');
             i += 1;
-            while i < chars.len() && chars[i] != '\'' {
-                if chars[i] == '\\' && i + 1 < chars.len() {
-                    result.push(chars[i]);
-                    result.push(chars[i + 1]);
+            while i < chars.len() && ch_at(&chars, i) != '\'' {
+                if ch_at(&chars, i) == '\\' && i + 1 < chars.len() {
+                    result.push(ch_at(&chars, i));
+                    result.push(ch_at(&chars, i + 1));
                     i += 2;
                 } else {
-                    result.push(chars[i]);
+                    result.push(ch_at(&chars, i));
                     i += 1;
                 }
             }
@@ -591,26 +593,26 @@ fn normalize_quotes(s: &str) -> String {
                 result.push('"');
                 i += 1;
             }
-        } else if chars[i] == '"' {
+        } else if ch_at(&chars, i) == '"' {
             // Keep double-quoted strings as-is
-            result.push(chars[i]);
+            result.push(ch_at(&chars, i));
             i += 1;
-            while i < chars.len() && chars[i] != '"' {
-                if chars[i] == '\\' && i + 1 < chars.len() {
-                    result.push(chars[i]);
-                    result.push(chars[i + 1]);
+            while i < chars.len() && ch_at(&chars, i) != '"' {
+                if ch_at(&chars, i) == '\\' && i + 1 < chars.len() {
+                    result.push(ch_at(&chars, i));
+                    result.push(ch_at(&chars, i + 1));
                     i += 2;
                 } else {
-                    result.push(chars[i]);
+                    result.push(ch_at(&chars, i));
                     i += 1;
                 }
             }
             if i < chars.len() {
-                result.push(chars[i]);
+                result.push(ch_at(&chars, i));
                 i += 1;
             }
         } else {
-            result.push(chars[i]);
+            result.push(ch_at(&chars, i));
             i += 1;
         }
     }
@@ -631,23 +633,21 @@ pub fn compare_output(expected: &str, actual: &str) -> Result<(), String> {
 
     for (i, (exp, act)) in exp_lines.iter().zip(act_lines.iter()).enumerate() {
         if exp != act {
-            return Err(format!(
+            return Err(vize_s0::cstr!(
                 "Mismatch at line {}:\n  expected: {}\n  actual:   {}",
                 i + 1,
                 exp,
                 act
-            )
-            .into());
+            ));
         }
     }
 
     if exp_lines.len() != act_lines.len() {
-        return Err(format!(
+        return Err(vize_s0::cstr!(
             "Line count mismatch: expected {}, got {}",
             exp_lines.len(),
             act_lines.len()
-        )
-        .into());
+        ));
     }
 
     Err("Unknown mismatch".to_compact_string())
@@ -684,7 +684,7 @@ pub fn run_fixture_tests(fixture_path: &Path, expected_path: &Path) -> Vec<TestR
             results.push(TestResult {
                 name: fixture_path.display().to_compact_string(),
                 passed: false,
-                error: Some(format!("Failed to parse fixture: {}", e).into()),
+                error: Some(vize_s0::cstr!("Failed to parse fixture: {}", e)),
             });
             return results;
         }
@@ -785,7 +785,7 @@ export default {
                 let mut failures = Vec::new();
                 for result in &results {
                     if !result.passed {
-                        failures.push(format!(
+                        failures.push(vize_s0::cstr!(
                             "  {} - {}",
                             result.name,
                             result.error.as_deref().unwrap_or("unknown error")

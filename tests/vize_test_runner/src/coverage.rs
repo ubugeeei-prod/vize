@@ -1,10 +1,14 @@
-#![allow(clippy::disallowed_macros)]
 //! Coverage report generator for Vue compiler tests
 //!
 //! Usage:
 //!   cargo run -p vize_test_runner --bin coverage          # Summary only
 //!   cargo run -p vize_test_runner --bin coverage -- -v    # Show failing tests
 //!   cargo run -p vize_test_runner --bin coverage -- -vv   # Show diffs
+
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test-report tooling formats its comparison output with std format"
+)]
 
 use std::path::PathBuf;
 use vize_s0::String;
@@ -42,8 +46,10 @@ fn main() {
     let show_diff = args.iter().any(|a| a == "-vv");
 
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let fixtures_dir = manifest_dir.parent().unwrap().join("fixtures");
-    let expected_dir = manifest_dir.parent().unwrap().join("expected");
+    // The crate lives at `tests/vize_test_runner`, so its parent is `tests/`.
+    let tests_dir = manifest_dir.parent().unwrap_or(&manifest_dir);
+    let fixtures_dir = tests_dir.join("fixtures");
+    let expected_dir = tests_dir.join("expected");
 
     let test_files = [
         ("vdom/element", CompilerMode::Vdom),

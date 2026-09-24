@@ -26,9 +26,22 @@
 //! davinci_harness::main!(groups);
 //! ```
 
-// Same test-only relaxation vize_croquis uses: assertion messages render
-// errors with `to_string`, which the production ban list disallows.
-#![cfg_attr(test, allow(clippy::disallowed_methods))]
+// Bench tooling: a bench that cannot record its result, or whose stage
+// window is misused, is a failed bench, so the harness aborts loudly.
+#![expect(
+    clippy::expect_used,
+    clippy::unreachable,
+    reason = "bench tooling fails the bench run by panicking, like a test"
+)]
+// Test assertion messages render errors with `to_string`, which the
+// production ban list disallows.
+#![cfg_attr(
+    test,
+    expect(
+        clippy::disallowed_methods,
+        reason = "test assertions render errors with to_string"
+    )
+)]
 
 pub mod alloc;
 pub mod fixtures;
@@ -69,7 +82,12 @@ pub fn percentile_ns(sorted_ns: &[f64], q: f64) -> u64 {
     );
     let rank = (q * sorted_ns.len() as f64).ceil() as usize;
     let index = rank.max(1) - 1;
-    sorted_ns[index.min(sorted_ns.len() - 1)].round() as u64
+    let sample = sorted_ns
+        .get(index)
+        .or(sorted_ns.last())
+        .copied()
+        .unwrap_or(0.0);
+    sample.round() as u64
 }
 
 /// Run one bench through criterion and export the Davinci metric report.

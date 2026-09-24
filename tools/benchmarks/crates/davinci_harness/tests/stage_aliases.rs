@@ -1,11 +1,5 @@
 //! Davinci stage aliases resolve as real crate names for implementation code.
 
-#![allow(
-    clippy::disallowed_macros,
-    clippy::disallowed_types,
-    clippy::disallowed_methods
-)]
-
 use vize_s0::Allocator;
 use vize_s2::{folio::DisegnoFolio, verify::Rigor};
 
