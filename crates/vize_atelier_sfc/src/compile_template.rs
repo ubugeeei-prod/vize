@@ -206,47 +206,22 @@ pub(crate) fn compile_template_block(
         dom_opts.croquis = Some(Box::new(c));
     }
 
-    // Compile template. SFC assembly consumes only diagnostics and emitted
-    // render code, so use the section-only entry when it can preserve the
-    // requested semantics. Module-mode static hoisting still stays on the
-    // compatibility path until S2's hoist analysis covers the full DOM lane.
-    let route_through_sections = inline || !dom_opts.hoist_static;
-    let (errors, result) = if route_through_sections {
-        profile!(
-            "atelier.sfc.template.dom",
-            vize_atelier_dom::compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options(
-                allocator,
-                &template.content,
-                dom_opts,
-                template_syntax,
-                hoisted_scope_attr,
-                custom_elements.clone(),
-                codegen_options.clone(),
-                codegen_experimental_options.clone(),
-            )
+    // SFC assembly consumes diagnostics and emitted render code. The
+    // section-only entry selects S2 where it can preserve the full module,
+    // and falls back to the compatibility path for unsupported shapes.
+    let (errors, result) = profile!(
+        "atelier.sfc.template.dom",
+        vize_atelier_dom::compile_sfc_template_with_custom_elements_template_syntax_hoisted_scope_id_sections_codegen_and_experimental_options(
+            allocator,
+            &template.content,
+            dom_opts,
+            template_syntax,
+            hoisted_scope_attr,
+            custom_elements.clone(),
+            codegen_options.clone(),
+            codegen_experimental_options,
         )
-    } else {
-        let (_, errors, result) = profile!(
-            "atelier.sfc.template.dom",
-            vize_atelier_dom::compile_template_with_custom_elements_template_syntax_hoisted_scope_id_codegen_and_experimental_options(
-                allocator,
-                &template.content,
-                dom_opts,
-                template_syntax,
-                hoisted_scope_attr,
-                custom_elements.clone(),
-                codegen_options.clone(),
-                codegen_experimental_options,
-            )
-        );
-        (
-            errors,
-            vize_atelier_core::codegen::CodegenResultWithSections {
-                result,
-                sections: None,
-            },
-        )
-    };
+    );
 
     // See above — drop recoverable parser diagnostics from the gating
     // check so duplicate-attribute SFCs still produce valid render code. (#958)

@@ -265,7 +265,9 @@ pub(super) fn emit_call(
     let emit_flag = flag != 0 && !omit_text_only;
     let omit_empty_once_patch_child = once && !has_children && flag & !(2 | 4) == 0;
     let empty_runtime_for = for_item
-        && (directive::has_runtime(&element.bindings) || has_cloak(&element.bindings))
+        && (directive::has_runtime(&element.bindings)
+            || has_cloak(&element.bindings)
+            || once_layout)
         && !has_binds
         && element.attributes.is_empty()
         && if_key.is_none();
