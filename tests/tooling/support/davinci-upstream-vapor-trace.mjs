@@ -14,7 +14,12 @@ assert.equal(compilerVersion, require("vue/package.json").version);
 
 const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
-const { source, context, steps, components = {} } = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+const {
+  source,
+  context,
+  steps,
+  components = {},
+} = JSON.parse(Buffer.concat(chunks).toString("utf8"));
 assert.equal(typeof source, "string");
 assert.ok(source.length > 0);
 assert.ok(context && typeof context === "object" && !Array.isArray(context));
