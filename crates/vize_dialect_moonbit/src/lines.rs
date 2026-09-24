@@ -48,7 +48,7 @@ impl<'a> Lines<'a> {
             .get(line + 1)
             .map_or(self.text.len(), |next| next - 1);
         let steps = usize::try_from(at.col).ok()?.checked_sub(1)?;
-        let line_text = &self.text[start..end];
+        let line_text = self.text.get(start..end)?;
         if steps == line_text.chars().count() {
             return Some(end);
         }
@@ -63,9 +63,15 @@ impl<'a> Lines<'a> {
     #[must_use]
     pub fn position(&self, offset: usize) -> LineCol {
         let offset = offset.min(self.text.len());
-        let line = self.starts.partition_point(|&start| start <= offset) - 1;
-        let start = self.starts[line];
-        let col = self.text[start..]
+        let line = self
+            .starts
+            .partition_point(|&start| start <= offset)
+            .saturating_sub(1);
+        let start = self.starts.get(line).copied().unwrap_or(0);
+        let col = self
+            .text
+            .get(start..)
+            .unwrap_or_default()
             .char_indices()
             .take_while(|&(at, _)| start + at < offset)
             .count();
@@ -91,7 +97,10 @@ impl<'a> Lines<'a> {
             .starts
             .get(index + 1)
             .map_or(self.text.len(), |next| next - 1);
-        self.text[start..end].trim_end_matches('\r')
+        self.text
+            .get(start..end)
+            .unwrap_or_default()
+            .trim_end_matches('\r')
     }
 }
 

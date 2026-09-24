@@ -3,6 +3,8 @@
 //! committed `moonc` answers. `moonc_e2e` proves those answers are what
 //! the pinned toolchain says today.
 
+#![expect(clippy::string_slice, reason = "tests assert by panicking")]
+
 mod support;
 
 use std::fmt::Write as _;

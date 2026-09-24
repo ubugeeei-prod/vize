@@ -12,7 +12,9 @@ use crate::dialect::{MoonBitDialect, is_handler_path};
 use crate::sfc::DIALECT;
 
 pub(super) fn generated_offset(text: &str) -> u32 {
-    u32::try_from(text.len()).expect("a projection fits the u32 offset space")
+    // A projection is a few times its SFC, far inside the u32 offset space;
+    // saturate rather than wrap if that ever stopped holding.
+    u32::try_from(text.len()).unwrap_or(u32::MAX)
 }
 
 /// An expression's authored text and file-absolute span.
@@ -218,9 +220,9 @@ impl<'a> Emitter<'a> {
             facts: vize_s0::Vec::new_in(&self.allocator),
         });
         let start = generated_offset(&self.projection.text);
-        MoonBitDialect
-            .emit(ExprRef::Foreign(foreign), &mut self.projection.text)
-            .expect("the dialect emits its own payload verbatim");
+        // The dialect emits its own payload verbatim into a `String`, which
+        // cannot fail.
+        let _ = MoonBitDialect.emit(ExprRef::Foreign(foreign), &mut self.projection.text);
         let end = generated_offset(&self.projection.text);
         let index = self.projection.positions.len();
         self.projection.links.push(SpanLink {
@@ -239,7 +241,7 @@ impl<'a> Emitter<'a> {
     /// current end of the text.
     fn close_statement(&mut self, first: usize) {
         let end = generated_offset(&self.projection.text);
-        for position in &mut self.projection.positions[first..] {
+        for position in self.projection.positions.iter_mut().skip(first) {
             position.statement.end = end;
         }
     }
@@ -258,8 +260,10 @@ impl<'a> Emitter<'a> {
     }
 
     fn use_helper(&mut self, helper: &str) {
-        if let Some(at) = HELPERS.iter().position(|(name, _)| *name == helper) {
-            self.used[at] = true;
+        if let Some(at) = HELPERS.iter().position(|(name, _)| *name == helper)
+            && let Some(used) = self.used.get_mut(at)
+        {
+            *used = true;
         }
     }
 }

@@ -78,8 +78,9 @@ pub fn parse_line(line: &str) -> Result<MooncDiagnostic, ParseError> {
     let value: Value =
         serde_json::from_str(line).map_err(|error| ParseError(cstr!("not JSON ({error})")))?;
     let text = |field: &str| {
-        value[field]
-            .as_str()
+        value
+            .get(field)
+            .and_then(Value::as_str)
             .ok_or_else(|| ParseError(cstr!("`{field}` is not a string")))
     };
     if text("$message_type")? != "diagnostic" {
@@ -90,8 +91,9 @@ pub fn parse_line(line: &str) -> Result<MooncDiagnostic, ParseError> {
         "warning" => Level::Warning,
         other => return Err(ParseError(cstr!("unknown level `{other}`"))),
     };
-    let code = value["error_code"]
-        .as_u64()
+    let code = value
+        .get("error_code")
+        .and_then(Value::as_u64)
         .and_then(|code| u32::try_from(code).ok())
         .ok_or_else(|| ParseError(cstr!("`error_code` is not a u32")))?;
     let loc = text("loc")?;

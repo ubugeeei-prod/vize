@@ -37,3 +37,6 @@ required-features = ["moonc"]
 [[example]]
 name = "moonbit_check"
 required-features = ["moonc"]
+
+[lints]
+workspace = true

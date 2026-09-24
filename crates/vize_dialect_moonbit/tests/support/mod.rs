@@ -6,7 +6,7 @@
 //! rendering). `VIZE_UPDATE_MOONBIT_FIXTURES=1` rewrites a golden instead
 //! of comparing it; every comparison is exact.
 
-#![allow(dead_code, reason = "each suite uses a subset")]
+#![expect(clippy::panic, reason = "tests assert by panicking")]
 
 use std::path::PathBuf;
 

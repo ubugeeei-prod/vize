@@ -1,6 +1,8 @@
 //! The capability answers on hand-picked MoonBit expressions: exact where
 //! the scan can prove it, pessimal everywhere else.
 
+#![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
+
 use vize_dialect_moonbit::dialect::{MoonBitDialect, is_handler_path};
 use vize_s0::{Allocator, Span};
 use vize_s2::expr::capability::ExprDialect;

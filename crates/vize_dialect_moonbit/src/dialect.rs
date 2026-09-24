@@ -53,7 +53,7 @@ pub(crate) fn free_names(source: &str) -> (Vec<&str>, bool) {
     let mut exact = true;
     let mut parens = 0usize;
     for (index, token) in tokens.iter().enumerate() {
-        let before = index.checked_sub(1).map(|at| tokens[at]);
+        let before = index.checked_sub(1).and_then(|at| tokens.get(at).copied());
         let after = tokens.get(index + 1).copied();
         match *token {
             Tok::Keyword(word) if BINDERS.contains(&word) => exact = false,

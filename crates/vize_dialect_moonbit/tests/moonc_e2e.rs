@@ -6,6 +6,8 @@
 //! (`.github/actions/setup-moonbit`); a different `moonc` fails the
 //! version assertion before any diagnostic is compared.
 
+#![expect(clippy::expect_used, reason = "tests assert by panicking")]
+
 mod support;
 
 use vize_dialect_moonbit::host::{CheckUnit, HostError, MooncHost};

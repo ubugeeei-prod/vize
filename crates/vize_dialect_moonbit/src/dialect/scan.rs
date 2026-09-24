@@ -144,9 +144,10 @@ impl<'s> Scanner<'s> {
             b':' if pair(b':') => (Tok::PathSep, 2),
             _ if !byte.is_ascii() => {
                 // Non-ASCII text outside a literal: step one char, emit nothing.
-                let width = self.source[self.pos..]
-                    .chars()
-                    .next()
+                let width = self
+                    .source
+                    .get(self.pos..)
+                    .and_then(|rest| rest.chars().next())
                     .map_or(1, char::len_utf8);
                 self.pos += width;
                 return;
@@ -218,7 +219,8 @@ impl<'s> Scanner<'s> {
         {
             self.pos += 1;
         }
-        let word = &self.source[start..self.pos];
+        // The loop above only stepped over ASCII bytes.
+        let word = self.source.get(start..self.pos).unwrap_or_default();
         self.out.push(match word {
             "true" | "false" => Tok::Literal,
             _ if KEYWORDS.binary_search(&word).is_ok() => Tok::Keyword(word),
