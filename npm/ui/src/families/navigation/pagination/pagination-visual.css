@@ -1,0 +1,170 @@
+/* Optional page controls; state, range, and navigation remain native. */
+@layer vize.preset {
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-pagination-radius: initial;
+    --vize-ui-pagination-gap: initial;
+    --vize-ui-pagination-font: initial;
+    --vize-ui-pagination-selected-fill: initial;
+    --vize-ui-pagination-selected-ink: initial;
+    --vize-ui-pagination-shadow: initial;
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-pagination-radius: 0.1875rem;
+    --vize-ui-pagination-gap: var(--vize-ui-space-sm);
+    --vize-ui-pagination-selected-fill: var(--vize-ui-color-text);
+    --vize-ui-pagination-selected-ink: var(--vize-ui-color-canvas);
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-pagination-radius: 0.125rem;
+    --vize-ui-pagination-gap: var(--vize-ui-space-xs);
+    --vize-ui-pagination-font: var(--vize-ui-type-family-mono);
+    --vize-ui-pagination-selected-fill: var(--vize-ui-color-accent);
+    --vize-ui-pagination-selected-ink: var(--vize-ui-color-accent-contrast);
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-pagination-radius: var(--vize-ui-radius-md);
+    --vize-ui-pagination-gap: var(--vize-ui-space-sm);
+    --vize-ui-pagination-selected-fill: var(--vize-ui-color-surface);
+    --vize-ui-pagination-selected-ink: var(--vize-ui-color-accent);
+    --vize-ui-pagination-shadow: var(--vize-ui-elevation-raised);
+  }
+
+  :where([data-vize-ui="pagination"]) {
+    color: var(--vize-ui-color-text);
+    font-family: var(--vize-ui-pagination-font, var(--vize-ui-type-family-sans));
+  }
+
+  :where([data-vize-ui="pagination-list"]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--vize-ui-pagination-gap, var(--vize-ui-space-xs));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :where([data-vize-ui="pagination-item"]) {
+    display: inline-flex;
+  }
+
+  :where(
+    [data-vize-ui="pagination-page"],
+    [data-vize-ui="pagination-previous"],
+    [data-vize-ui="pagination-next"]
+  ) {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--vize-ui-size-control-md);
+    min-block-size: var(--vize-ui-size-control-md);
+    padding-inline: var(--vize-ui-space-sm);
+    border: var(--vize-ui-border-width-thin) solid var(--vize-ui-color-border);
+    border-radius: var(--vize-ui-pagination-radius, var(--vize-ui-radius-sm));
+    background: var(--vize-ui-color-surface);
+    color: var(--vize-ui-color-text);
+    font: inherit;
+    font-size: var(--vize-ui-type-size-sm);
+    line-height: var(--vize-ui-type-leading-tight);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      background-color var(--vize-ui-motion-duration-fast, 120ms)
+        var(--vize-ui-motion-ease-standard, ease-out),
+      border-color var(--vize-ui-motion-duration-fast, 120ms)
+        var(--vize-ui-motion-ease-standard, ease-out),
+      color var(--vize-ui-motion-duration-fast, 120ms) var(--vize-ui-motion-ease-standard, ease-out);
+  }
+
+  :where(
+    [data-vize-ui="pagination-page"]:hover:not(:disabled),
+    [data-vize-ui="pagination-previous"]:hover:not(:disabled),
+    [data-vize-ui="pagination-next"]:hover:not(:disabled)
+  ) {
+    border-color: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-ui="pagination-page"][data-current="true"]) {
+    border-color: var(--vize-ui-color-accent);
+    background: var(--vize-ui-pagination-selected-fill, var(--vize-ui-color-accent));
+    color: var(--vize-ui-pagination-selected-ink, var(--vize-ui-color-accent-contrast));
+    box-shadow: var(--vize-ui-pagination-shadow, none);
+    font-weight: var(--vize-ui-type-weight-bold);
+  }
+
+  :where(
+    [data-vize-ui="pagination-page"]:focus-visible,
+    [data-vize-ui="pagination-previous"]:focus-visible,
+    [data-vize-ui="pagination-next"]:focus-visible
+  ) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+  }
+
+  :where(
+    [data-vize-ui="pagination-page"]:disabled,
+    [data-vize-ui="pagination-previous"]:disabled,
+    [data-vize-ui="pagination-next"]:disabled
+  ) {
+    opacity: var(--vize-ui-opacity-disabled);
+    cursor: default;
+  }
+
+  :where([data-vize-ui="pagination-ellipsis"]) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: var(--vize-ui-size-control-md);
+    min-block-size: var(--vize-ui-size-control-md);
+    color: var(--vize-ui-color-text-muted);
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where(
+      [data-vize-ui="pagination-page"],
+      [data-vize-ui="pagination-previous"],
+      [data-vize-ui="pagination-next"]
+    ) {
+      transition-duration: 0ms;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where(
+      [data-vize-ui="pagination-page"],
+      [data-vize-ui="pagination-previous"],
+      [data-vize-ui="pagination-next"]
+    ) {
+      background: ButtonFace;
+      border-color: ButtonBorder;
+      color: ButtonText;
+      box-shadow: none;
+    }
+    :where([data-vize-ui="pagination-page"][data-current="true"]) {
+      background: Highlight;
+      border-color: Highlight;
+      color: HighlightText;
+    }
+    :where(
+      [data-vize-ui="pagination-page"]:focus-visible,
+      [data-vize-ui="pagination-previous"]:focus-visible,
+      [data-vize-ui="pagination-next"]:focus-visible
+    ) {
+      outline-color: Highlight;
+    }
+    :where(
+      [data-vize-ui="pagination-page"]:disabled,
+      [data-vize-ui="pagination-previous"]:disabled,
+      [data-vize-ui="pagination-next"]:disabled
+    ) {
+      color: GrayText;
+      opacity: 1;
+    }
+  }
+}
