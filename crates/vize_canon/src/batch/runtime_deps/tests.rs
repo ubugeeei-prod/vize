@@ -238,6 +238,48 @@ fn materialized_runtime_dom_writes_runtime_core_stub_when_core_is_absent() {
 }
 
 #[test]
+fn vue_namespace_mirror_can_add_other_scoped_packages_without_writing_to_store() {
+    let temp = tempfile::tempdir().unwrap();
+    let project = temp.path().join("project");
+    let explicit = temp.path().join("explicit");
+    let virtual_root = temp.path().join("virtual");
+    let vue = create_package(&explicit, "vue");
+    let namespace = explicit.join("@vue");
+    create_package_with_types(&namespace, "runtime-dom", "export const dom: 1;");
+    create_package_with_types(&namespace, "runtime-core", "export const core: 1;");
+    create_package_with_types(&namespace, "shared", "export const shared: 1;");
+    let apollo =
+        create_package_with_types(&explicit, "apollo-composable", "export const apollo: 1;");
+
+    with_test_env_overrides(
+        &[
+            ("VIZE_VUE_PACKAGE", Some(vue.as_path())),
+            ("VIZE_VUE_NAMESPACE_PACKAGE", Some(namespace.as_path())),
+            ("VIZE_VUE_RUNTIME_DOM_PACKAGE", None),
+            ("VIZE_VITE_PACKAGE", None),
+            ("VIZE_RUNTIME_NODE_MODULES", None),
+            (
+                "VIZE_TEST_WORKSPACE_NODE_MODULES",
+                Some(Path::new("__none__")),
+            ),
+        ],
+        || {
+            materialize_runtime_dependencies(&project, &virtual_root, &[]).unwrap();
+            let mirrored = virtual_root.join("node_modules/@vue");
+            assert!(mirrored.is_dir());
+            assert!(std::fs::read_link(&mirrored).is_err());
+            assert_eq!(
+                std::fs::read_to_string(mirrored.join("shared/index.d.ts")).unwrap(),
+                "export const shared: 1;"
+            );
+            symlink_package_dir(&apollo, &mirrored.join("apollo-composable")).unwrap();
+            assert!(mirrored.join("apollo-composable/index.d.ts").exists());
+            assert!(!namespace.join("apollo-composable").exists());
+        },
+    );
+}
+
+#[test]
 fn package_dir_link_leaves_self_targets_untouched() {
     let temp = tempfile::tempdir().unwrap();
     let node_modules = temp.path().join("node_modules");

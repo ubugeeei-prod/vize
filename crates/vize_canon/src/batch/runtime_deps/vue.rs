@@ -9,7 +9,29 @@ use super::stubs::{
     VUE_RUNTIME_DOM_STUB_PACKAGE_JSON, VUE_RUNTIME_DOM_STUB_TYPES,
 };
 use super::{ensure_stub_dir, package_link_source, prune_stub_dir, symlink_path};
-use crate::batch::materialize_fs::{remove_path, write_if_changed};
+use crate::batch::materialize_fs::write_if_changed;
+
+/// Names reserved by Canon's Vue runtime mirror. Other `@vue/*` packages may
+/// come from the project's ancestor installs and must remain resolvable.
+pub(in crate::batch) fn protected_vue_namespace_packages(
+    project_root: &Path,
+) -> Vec<vize_carton::String> {
+    let Some(vue_source) = resolve_vue_package(project_root) else {
+        return vec!["runtime-dom".into(), "runtime-core".into()];
+    };
+    match resolve_vue_runtime_packages(project_root, &vue_source) {
+        VueRuntimePackages::Namespace(namespace) => std::fs::read_dir(namespace)
+            .into_iter()
+            .flatten()
+            .filter_map(|entry| entry.ok()?.file_name().into_string().ok().map(Into::into))
+            .collect(),
+        VueRuntimePackages::RuntimeDom(_) | VueRuntimePackages::Stub => vec![
+            "runtime-dom".into(),
+            "runtime-core".into(),
+            "reactivity".into(),
+        ],
+    }
+}
 
 pub(super) fn materialize_vue_support(
     project_root: &Path,
@@ -101,8 +123,19 @@ fn materialize_vue_namespace_packages(
     let has_runtime_dom = runtime_dom_source.exists();
     let has_runtime_core = vue_namespace_source.join("runtime-core").exists();
     if has_runtime_dom && has_runtime_core {
-        if symlink_path(vue_namespace_source, &vue_namespace_target).is_err() {
-            remove_path(&vue_namespace_target)?;
+        // The source namespace can be a pnpm store directory. Keep the mirror
+        // scope real so adding unrelated `@vue/*` packages never writes through
+        // a whole-scope symlink into that store.
+        ensure_stub_dir(&vue_namespace_target)?;
+        for entry in std::fs::read_dir(vue_namespace_source)? {
+            let entry = entry?;
+            let source = entry.path();
+            let target = vue_namespace_target.join(entry.file_name());
+            if source.is_dir() {
+                symlink_path(&source, &target)?;
+            } else if source.is_file() {
+                write_if_changed(&target, &std::fs::read(source)?)?;
+            }
         }
         return Ok(());
     }

@@ -20,6 +20,7 @@ pub(crate) use vue::{write_vue_facade, write_vue_runtime_dom_stub};
 use resolver::resolve_package;
 use stubs::{VITE_CLIENT_STUB, VITE_STUB_PACKAGE_JSON};
 use vue::materialize_vue_support;
+pub(super) use vue::protected_vue_namespace_packages;
 
 /// Materialize Canon's own runtime dependency entries.
 ///

@@ -99,6 +99,12 @@ pub(super) fn remove_path(path: &Path) -> io::Result<()> {
         Err(error) => return Err(error),
     };
     let file_type = metadata.file_type();
+    #[cfg(windows)]
+    if (file_type.is_dir() || path.is_dir()) && fs::read_link(path).is_ok() {
+        // Junctions report as directories rather than symlinks. Remove the
+        // junction itself, never recursively delete its package-store target.
+        return fs::remove_dir(path);
+    }
     if file_type.is_dir() && !file_type.is_symlink() {
         match fs::remove_dir_all(path) {
             Ok(()) => {
@@ -197,4 +203,27 @@ fn prune_dir(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::remove_path;
+
+    #[test]
+    fn removing_a_directory_link_preserves_its_target() {
+        let temp = tempfile::tempdir().unwrap();
+        let source = temp.path().join("store/package");
+        let link = temp.path().join("mirror/package");
+        std::fs::create_dir_all(&source).unwrap();
+        std::fs::write(source.join("sentinel.txt"), "user data").unwrap();
+        crate::batch::runtime_deps::symlink_package_dir(&source, &link).unwrap();
+
+        remove_path(&link).unwrap();
+
+        assert!(std::fs::symlink_metadata(&link).is_err());
+        assert_eq!(
+            std::fs::read_to_string(source.join("sentinel.txt")).unwrap(),
+            "user data"
+        );
+    }
 }
