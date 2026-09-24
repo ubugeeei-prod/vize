@@ -133,6 +133,18 @@ fn check_follows_reference_path_from_included_declaration() {
         "import source from \"./data.txt?raw\";\nexport const text: string = source;\nexport const modules = import.meta.glob<{ default: object }>(\"./*.ts\");\n",
     );
 
+    let typescript = Command::new(&corsa_path)
+        .current_dir(&project_root)
+        .args(["--project", "tsconfig.json"])
+        .output()
+        .unwrap();
+    assert!(
+        typescript.status.success(),
+        "TypeScript baseline failed:\nstdout:\n{}\nstderr:\n{}",
+        std::str::from_utf8(&typescript.stdout).unwrap(),
+        std::str::from_utf8(&typescript.stderr).unwrap()
+    );
+
     let run_check = || {
         Command::new(env!("CARGO_BIN_EXE_vize"))
             .current_dir(&project_root)
