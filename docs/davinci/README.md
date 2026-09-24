@@ -1,10 +1,10 @@
 # Davinci — Next-Generation Compiler Infrastructure
 
-> [!WARNING]
-> Davinci is a **rearchitecture program in its design phase**. Nothing on these pages
-> is implemented, scheduled, or promised. These documents exist so the intended shape
-> of the next-generation infrastructure is written down and reviewable before any
-> code moves. Every decision recorded here may be revisited.
+> [!NOTE]
+> Davinci is being implemented incrementally. The [phase plan](./plan/README.md)
+> and its task checkboxes and records track what has landed and what remains open.
+> Architecture and roadmap pages describe the intended design; a documented
+> contract alone does not mean that its implementation is complete.
 
 Davinci is the project name — and the name of the resulting infrastructure — for
 rearchitecting Vize's compiler core around a **multi-stage IR**, in the spirit of
@@ -19,18 +19,35 @@ in the middle, with no performance regression at any step.
   trees, and non-JS host targets (the Volt/Elixir pattern) through a published
   target contract.
 
-## Why now
+## Where to start
 
-The current pipeline has one shared parse AST (`vize_relief`) and no shared IR
-after it. The costs are concrete and measured, not hypothetical: template
-expressions are re-parsed by oxc dozens of times per compile into throwaway
-arenas, the Vapor backend runs the entire VDOM transform and then discards it,
+1. Read the [architecture](./architecture.md) for the S0–S4 stage model and the
+   [phase plan](./plan/README.md) for the current task index. Open a phase file
+   before its task contracts: the phase index shows completed work, start gates,
+   and links to the implementation records.
+2. Follow the foundation in [`vize_davinci`](../../crates/vize_davinci/src/lib.rs),
+   then the lossless surface tree in [`vize_s1`](../../crates/vize_s1/src/lib.rs),
+   the semantic IR in [`vize_s2`](../../crates/vize_s2/src/lib.rs), and the
+   conversion in [`vize_s1_to_s2`](../../crates/vize_s1_to_s2/src/lib.rs).
+   These are experimental stage crates; use the phase records to distinguish
+   implemented contracts from production-connected paths.
+3. For a concrete behavior, start with the relevant phase record, follow its
+   owning crate and test paths, then use the [test directory guide](../../tests/README.md)
+   to locate the corresponding oracle. The broader [source guide](../content/architecture/source-guide.md)
+   maps the shipped compiler and product entry points.
+
+## Why Davinci began
+
+The pre-Davinci pipeline had one shared parse AST (`vize_relief`) and no shared
+IR after it. The original costs were concrete and measured: template
+expressions were re-parsed by oxc dozens of times per compile into throwaway
+arenas, the Vapor backend ran the entire VDOM transform and then discarded it,
 three independent parsers read the same `.vue` text, and two independent virtual
-TypeScript generators disagree about source mapping. The full evidence list, with
+TypeScript generators disagreed about source mapping. The baseline evidence, with
 file paths, is in [Motivation](./motivation.md).
 
-Davinci is therefore **also a performance project**. The rearchitecture removes
-work the current design forces us to repeat, so "Be Fast Above All"
+Davinci is therefore **also a performance project**. The rearchitecture aims to
+remove work the earlier design forced us to repeat, so "Be Fast Above All"
 (`ubugeeei-redundancy.md`) is an argument for it, not against it.
 
 ## Decided positions
