@@ -191,6 +191,25 @@ test("clicking the create option creates the typed value", async () => {
   handle.unmount();
 });
 
+test("readonly combobox never offers or creates a custom option", async () => {
+  const handle = mountCombobox({
+    createOption: (text: string) => ({ id: 7, name: text }),
+    defaultOpen: true,
+    readonly: true,
+  });
+  (handle.wrapper.vm as unknown as { setInputValue(value: string): void }).setInputValue("Oslo");
+  await settle();
+  assert.equal(
+    handle.root().querySelector("[data-vize-ui='combobox-create-item']")?.hasAttribute("hidden"),
+    true,
+  );
+  keydown(comboboxInput(handle), "Enter");
+  await settle();
+  assert.equal(handle.wrapper.emitted("create"), undefined);
+  assert.equal(handle.wrapper.emitted("update:modelValue"), undefined);
+  handle.unmount();
+});
+
 test("multiple mode renders chips, keeps the popup open, and deletes with Backspace", async () => {
   const handle = mountCombobox({ defaultValue: [cities[0]], multiple: true });
   const input = comboboxInput(handle);

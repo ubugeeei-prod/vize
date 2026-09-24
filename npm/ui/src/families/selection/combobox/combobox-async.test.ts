@@ -123,6 +123,38 @@ test("loadItems is debounced", async () => {
   handle.unmount();
 });
 
+test("a debounced query aborts the previous request before the timer fires", async () => {
+  const requests: { query: string; signal: AbortSignal; result: Deferred<readonly City[]> }[] = [];
+  const handle = mountCombobox(
+    {
+      debounce: 30,
+      loadItems: (query: string, context: ComboboxLoadContext) => {
+        const result = deferred<readonly City[]>();
+        requests.push({ query, result, signal: context.signal });
+        return result.promise;
+      },
+    },
+    { itemsMode: true },
+  );
+  const input = comboboxInput(handle);
+  keydown(input, "ArrowDown");
+  await settle();
+  assert.equal(requests.length, 1);
+
+  await type(input, "bo");
+  assert.equal(requests[0]?.signal.aborted, true);
+  requests[0]?.result.resolve(cities);
+  await settle();
+  assert.deepEqual(visibleOptions(handle), [], "the stale result never appears during debounce");
+
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  assert.equal(requests[1]?.query, "bo");
+  requests[1]?.result.resolve(cities.slice(0, 3));
+  await settle();
+  assert.deepEqual(visibleOptions(handle), ["Berlin", "Bogotá", "Boston"]);
+  handle.unmount();
+});
+
 interface Row {
   readonly id: number;
   readonly label: string;

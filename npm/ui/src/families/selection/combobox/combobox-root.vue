@@ -224,7 +224,12 @@ const exactMatch = computed(() => {
   );
 });
 const canCreate = computed(
-  () => createOption !== undefined && query.value.trim().length > 0 && !exactMatch.value,
+  () =>
+    !disabledState.value &&
+    !readonlyState.value &&
+    createOption !== undefined &&
+    query.value.trim().length > 0 &&
+    !exactMatch.value,
 );
 const createActive = computed(() => activeEntry.value?.kind === "create");
 const selectedText = computed(() => selected.value.map(textFor));
@@ -344,7 +349,14 @@ function choose(value: T, nativeEvent: Event | null): boolean {
 
 function create(nativeEvent: Event | null): boolean {
   const typed = text.value.trim();
-  if (createOption === undefined || typed.length === 0) return false;
+  if (
+    disabledState.value ||
+    readonlyState.value ||
+    createOption === undefined ||
+    typed.length === 0
+  ) {
+    return false;
+  }
   const value = createOption(typed);
   emit("create", value, typed);
   return choose(value, nativeEvent);
@@ -539,6 +551,9 @@ function scheduleLoad(immediate: boolean): void {
   if (loadItems === undefined || !mounted) return;
   if (timer !== null) clearTimeout(timer);
   timer = null;
+  // A request for the previous query is stale as soon as this query arrives,
+  // even when the replacement waits for the debounce interval.
+  controller?.abort();
   const currentQuery = currentQueryText();
   if (immediate || debounce <= 0) {
     runLoad(currentQuery);
