@@ -94,6 +94,20 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 
 #[test]
+fn custom_component_model_modifiers_are_literal_keys() {
+    for source in [
+        r#"<Foo v-model.trim.foo-bar="msg" />"#,
+        r#"<Foo v-model:[field].trim.foo-bar="msg" />"#,
+    ] {
+        let code = assembled(source);
+        assert!(
+            code.contains(r#"{ trim: true, "foo-bar": true }"#),
+            "{source}: {code}"
+        );
+    }
+}
+
+#[test]
 fn component_modifiers_are_constant_model_modifiers() {
     assert_eq!(
         assembled(r#"<Foo v-model.lazy.trim="msg" />"#),

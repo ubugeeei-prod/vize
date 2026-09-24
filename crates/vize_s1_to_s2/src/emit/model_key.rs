@@ -5,7 +5,7 @@ use vize_s0::{Span, String, camelize};
 use vize_s2::expr::{ExprRef, JsExpr};
 use vize_s2::op::ModelOp;
 
-use super::js::push_ident_key;
+use super::js::{escape_js_string, is_valid_js_identifier, push_ident_key};
 use super::prefix::Site;
 use super::{EmitCx, EmitError};
 
@@ -98,7 +98,13 @@ pub(super) fn emit_modifiers(
         if i > 0 {
             cx.buf.push(", ");
         }
-        cx.buf.push(modifier);
+        if is_valid_js_identifier(modifier) {
+            cx.buf.push(modifier);
+        } else {
+            cx.buf.push("\"");
+            cx.buf.push(escape_js_string(modifier).as_str());
+            cx.buf.push("\"");
+        }
         cx.buf.push(": true");
     }
     cx.buf.push(" }");
