@@ -16,6 +16,7 @@ pub(super) fn compiler_parser_options(
 ) -> ParserOptions {
     ParserOptions {
         whitespace,
+        is_pre_tag: |tag| tag == "pre",
         custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()

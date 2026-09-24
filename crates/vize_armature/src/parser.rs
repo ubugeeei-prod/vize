@@ -180,7 +180,7 @@ impl<'a> Parser<'a> {
                     condense_whitespace(allocator, &mut root.children, self.options.is_pre_tag);
                 }
                 WhitespaceStrategy::Preserve => {
-                    preserve_whitespace(&mut root.children, self.options.is_pre_tag);
+                    preserve_whitespace(allocator, &mut root.children, self.options.is_pre_tag);
                 }
             }
         }

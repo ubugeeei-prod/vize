@@ -673,6 +673,40 @@ fn test_parse_whitespace_condense_preserves_pre_children() {
 }
 
 #[test]
+fn test_parse_pre_crlf_matches_vue_in_both_whitespace_modes() {
+    // @vue/compiler-core@3.5.41 baseParse with isPreTag normalizes CRLF in
+    // both direct and nested <pre> text, for condense and preserve alike.
+    let source = "<pre>one\r\ntwo<span>three\r\nfour</span></pre>";
+    for whitespace in [WhitespaceStrategy::Condense, WhitespaceStrategy::Preserve] {
+        let allocator = Allocator::new();
+        let (root, errors) = parse_with_options(
+            &allocator,
+            source,
+            ParserOptions {
+                whitespace,
+                is_pre_tag: |tag| tag == "pre",
+                ..ParserOptions::default()
+            },
+        );
+        assert!(errors.is_empty(), "{whitespace:?}: {errors:?}");
+        let TemplateChildNode::Element(pre) = &root.children[0] else {
+            panic!("expected pre");
+        };
+        let TemplateChildNode::Text(text) = &pre.children[0] else {
+            panic!("expected direct text");
+        };
+        assert_eq!(text.content, "one\ntwo", "{whitespace:?}");
+        let TemplateChildNode::Element(span) = &pre.children[1] else {
+            panic!("expected span");
+        };
+        let TemplateChildNode::Text(text) = &span.children[0] else {
+            panic!("expected nested text");
+        };
+        assert_eq!(text.content, "three\nfour", "{whitespace:?}");
+    }
+}
+
+#[test]
 fn test_parse_error_missing_end_tag() {
     let allocator = Allocator::new();
     let (_root, errors) = parse(&allocator, "<div>");

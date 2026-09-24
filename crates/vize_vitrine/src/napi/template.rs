@@ -55,6 +55,7 @@ pub fn compile(template: String, options: Option<CompilerOptions>) -> Result<Com
         vize_atelier_core::options::CustomElementMatcher::from_patterns(custom_element_patterns);
     let parser_opts = ParserOptions {
         whitespace,
+        is_pre_tag: |tag| tag == "pre",
         custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()
@@ -250,6 +251,7 @@ pub fn parse_template(
         &template,
         ParserOptions {
             whitespace,
+            is_pre_tag: |tag| tag == "pre",
             custom_renderer: opts.custom_renderer.unwrap_or(false),
             experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
             ..Default::default()

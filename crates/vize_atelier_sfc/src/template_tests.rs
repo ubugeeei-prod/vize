@@ -57,6 +57,40 @@ fn scoped_vue_whitespace_strategy_reaches_sfc_client_ssr_and_vapor() {
 }
 
 #[test]
+fn scoped_vue_whitespace_preserve_normalizes_pre_crlf_in_sfc_output() {
+    use vize_atelier_core::{WhitespaceStrategy, parser::with_whitespace_strategy};
+
+    let descriptor = parse_sfc(
+        "<template><pre>one\r\ntwo<span>three\r\nfour</span></pre></template>",
+        Default::default(),
+    )
+    .unwrap();
+    for ssr in [false, true] {
+        let mut options = SfcCompileOptions::default();
+        options.template.ssr = ssr;
+        let result = with_whitespace_strategy(WhitespaceStrategy::Preserve, || {
+            compile_sfc(&descriptor, options).unwrap()
+        });
+        assert!(
+            result.code.contains("one\\ntwo") || result.code.contains("one\ntwo"),
+            "ssr={ssr}: {}",
+            result.code
+        );
+        assert!(
+            result.code.contains("three\\nfour") || result.code.contains("three\nfour"),
+            "ssr={ssr}: {}",
+            result.code
+        );
+        assert!(
+            !result.code.contains("\\r\\n"),
+            "ssr={ssr}: {}",
+            result.code
+        );
+        assert!(!result.code.contains("\r\n"), "ssr={ssr}: {}", result.code);
+    }
+}
+
+#[test]
 fn test_compile_sfc_ts_ref_condition_and_handler_keep_value_access() {
     use vize_carton::ToCompactString;
 

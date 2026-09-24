@@ -146,12 +146,14 @@ pub(super) fn condense_whitespace<'a>(
         }
 
         // Recurse into elements
-        if let Some(TemplateChildNode::Element(el)) = children.get_mut(i)
-            && !is_pre_tag(el.tag)
-        {
-            ensure_sufficient_stack(|| {
-                condense_whitespace(allocator, &mut el.children, is_pre_tag)
-            });
+        if let Some(TemplateChildNode::Element(el)) = children.get_mut(i) {
+            if is_pre_tag(el.tag) {
+                ensure_sufficient_stack(|| normalize_pre_newlines(allocator, &mut el.children));
+            } else {
+                ensure_sufficient_stack(|| {
+                    condense_whitespace(allocator, &mut el.children, is_pre_tag)
+                });
+            }
         }
 
         i += 1;
@@ -160,8 +162,10 @@ pub(super) fn condense_whitespace<'a>(
 
 /// Vue's `preserve` mode keeps mixed text verbatim, but still drops leading
 /// and trailing whitespace-only children and normalizes whitespace-only nodes
-/// between meaningful siblings to one space. `<pre>` remains raw in both modes.
+/// between meaningful siblings to one space. `<pre>` keeps its whitespace
+/// except that Vue normalizes CRLF line endings to LF.
 pub(super) fn preserve_whitespace<'a>(
+    allocator: &'a Allocator,
     children: &mut Vec<'a, TemplateChildNode<'a>>,
     is_pre_tag: fn(&str) -> bool,
 ) {
@@ -176,8 +180,37 @@ pub(super) fn preserve_whitespace<'a>(
             TemplateChildNode::Text(text) if text.content.chars().all(is_vue_whitespace) => {
                 text.content = " ";
             }
-            TemplateChildNode::Element(element) if !is_pre_tag(element.tag) => {
-                ensure_sufficient_stack(|| preserve_whitespace(&mut element.children, is_pre_tag));
+            TemplateChildNode::Element(element) => {
+                if is_pre_tag(element.tag) {
+                    ensure_sufficient_stack(|| {
+                        normalize_pre_newlines(allocator, &mut element.children)
+                    });
+                } else {
+                    ensure_sufficient_stack(|| {
+                        preserve_whitespace(allocator, &mut element.children, is_pre_tag)
+                    });
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+/// Vue normalizes Windows line endings in text nodes throughout `<pre>`,
+/// including descendants, without condensing or dropping their whitespace.
+fn normalize_pre_newlines<'a>(
+    allocator: &'a Allocator,
+    children: &mut Vec<'a, TemplateChildNode<'a>>,
+) {
+    for child in children.iter_mut() {
+        match child {
+            TemplateChildNode::Text(text) if text.content.contains("\r\n") => {
+                text.content = allocator.alloc_str(&text.content.replace("\r\n", "\n"));
+            }
+            TemplateChildNode::Element(element) => {
+                ensure_sufficient_stack(|| {
+                    normalize_pre_newlines(allocator, &mut element.children)
+                });
             }
             _ => {}
         }
