@@ -115,6 +115,11 @@
       "import": "./dist/calendar.mjs",
       "default": "./dist/calendar.mjs"
     },
+    "./dashboard-grid": {
+      "types": "./dist/dashboard-grid.d.mts",
+      "import": "./dist/dashboard-grid.mjs",
+      "default": "./dist/dashboard-grid.mjs"
+    },
     "./date-field": {
       "types": "./dist/date-field.d.mts",
       "import": "./dist/date-field.mjs",
@@ -145,6 +150,16 @@
       "import": "./dist/knob.mjs",
       "default": "./dist/knob.mjs"
     },
+    "./masonry": {
+      "types": "./dist/masonry.d.mts",
+      "import": "./dist/masonry.mjs",
+      "default": "./dist/masonry.mjs"
+    },
+    "./master-detail": {
+      "types": "./dist/master-detail.d.mts",
+      "import": "./dist/master-detail.mjs",
+      "default": "./dist/master-detail.mjs"
+    },
     "./phone-field": {
       "types": "./dist/phone-field.d.mts",
       "import": "./dist/phone-field.mjs",
@@ -165,10 +180,20 @@
       "import": "./dist/range-calendar.mjs",
       "default": "./dist/range-calendar.mjs"
     },
+    "./responsive": {
+      "types": "./dist/responsive.d.mts",
+      "import": "./dist/responsive.mjs",
+      "default": "./dist/responsive.mjs"
+    },
     "./safe-area": {
       "types": "./dist/safe-area.d.mts",
       "import": "./dist/safe-area.mjs",
       "default": "./dist/safe-area.mjs"
+    },
+    "./sticky-stack": {
+      "types": "./dist/sticky-stack.d.mts",
+      "import": "./dist/sticky-stack.mjs",
+      "default": "./dist/sticky-stack.mjs"
     },
     "./swipe-actions": {
       "types": "./dist/swipe-actions.d.mts",
@@ -1106,6 +1131,11 @@
       "types": "./dist/media-source.d.mts",
       "import": "./dist/media-source.mjs",
       "default": "./dist/media-source.mjs"
+    },
+    "./window-manager": {
+      "types": "./dist/window-manager.d.mts",
+      "import": "./dist/window-manager.mjs",
+      "default": "./dist/window-manager.mjs"
     }
   },
   "publishConfig": {
