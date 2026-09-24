@@ -123,6 +123,7 @@ fn allows_object_2tuple_property_key() {
         r#"<li v-for="(count, type) in bindingsSummary" :key="type">{{ count }}</li>"#,
         r#"<li v-for="(group, source) in bindingsBySource" :key="source">{{ group }}</li>"#,
         r#"<li v-for="(deps, file) in dependencyGraph" :key="file">{{ deps }}</li>"#,
+        r#"<li v-for="(variantResults, variantName) in groupedResults" :key="variantName">{{ variantResults.length }}</li>"#,
     ] {
         let result = linter.lint_template(template, "App.vue");
         assert_eq!(result.error_count, 0, "{template}");
@@ -136,11 +137,35 @@ fn reports_array_index_even_when_named_key() {
     for template in [
         r#"<li v-for="(item, key) in [1, 2]" :key="key">{{ item }}</li>"#,
         r#"<li v-for="(item, key) in Array.from(items)" :key="key">{{ item }}</li>"#,
+        r#"<li v-for="(item, variantName) in [1, 2]" :key="variantName">{{ item }}</li>"#,
     ] {
         let result = linter.lint_template(template, "App.vue");
         assert_eq!(result.error_count, 0, "{template}");
         assert_eq!(result.warning_count, 1, "{template}");
     }
+}
+
+#[test]
+fn allows_computed_record_property_name_as_key() {
+    let linter = create_linter();
+    let result = linter.lint_sfc(
+        r#"<script setup lang="ts">
+import { computed } from "vue";
+const groupedResults = computed(() => {
+  const groups: Record<string, string[]> = {};
+  groups.variant = ["result"];
+  return groups;
+});
+</script>
+<template>
+  <div v-for="(variantResults, variantName) in groupedResults" :key="variantName">
+    {{ variantResults.length }}
+  </div>
+</template>"#,
+        "VrtPanel.vue",
+    );
+    assert_eq!(result.error_count, 0);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
@@ -156,11 +181,13 @@ fn reports_short_positional_index_alias() {
 #[test]
 fn reports_unconventionally_named_array_index() {
     let linter = create_linter();
-    let result = linter.lint_template(
+    for template in [
         r#"<li v-for="(item, row) in list" :key="row">{{ item }}</li>"#,
-        "App.vue",
-    );
-    assert_eq!(result.warning_count, 1);
+        r#"<li v-for="(item, itemName) in items" :key="itemName">{{ item }}</li>"#,
+    ] {
+        let result = linter.lint_template(template, "App.vue");
+        assert_eq!(result.warning_count, 1, "{template}");
+    }
 }
 
 #[test]
