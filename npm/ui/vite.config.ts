@@ -75,6 +75,10 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/feedback/badge/badge-visual.css",
   },
   {
+    fileName: "component-breadcrumb.css",
+    source: "src/families/navigation/breadcrumb/breadcrumb-visual.css",
+  },
+  {
     fileName: "component-button.css",
     source: "src/families/actions/button/button-visual.css",
   },
@@ -95,6 +99,10 @@ const cssAssetEntrypoints = Object.freeze([
     source: "src/families/form/input/input-visual.css",
   },
   {
+    fileName: "component-pagination.css",
+    source: "src/families/navigation/pagination/pagination-visual.css",
+  },
+  {
     fileName: "component-progress-bar.css",
     source: "src/families/feedback/progress-bar/progress-bar.css",
   },
@@ -105,6 +113,14 @@ const cssAssetEntrypoints = Object.freeze([
   {
     fileName: "component-switch.css",
     source: "src/families/selection/switch/switch-visual.css",
+  },
+  {
+    fileName: "component-stepper.css",
+    source: "src/families/navigation/stepper/stepper-visual.css",
+  },
+  {
+    fileName: "component-tabs.css",
+    source: "src/families/navigation/tabs/tabs-visual.css",
   },
   {
     fileName: "component-textarea.css",
@@ -272,6 +288,10 @@ export default defineConfig({
       "composite-navigation":
         "src/families/foundations/composite-navigation/composite-navigation.ts",
       context: "src/families/foundations/context/context.ts",
+      forwarding: "src/families/foundations/forwarding/forwarding.ts",
+      polymorphic: "src/families/foundations/polymorphic/polymorphic.ts",
+      "slot-utils": "src/families/foundations/slot-utils/slot-utils.ts",
+      variants: "src/families/foundations/variants/variants.ts",
       "controllable-state": "src/families/foundations/controllable-state/controllable-state.ts",
       dialog: "src/families/overlays/dialog/dialog.ts",
       "alert-dialog": "src/families/overlays/alert-dialog/alert-dialog.ts",

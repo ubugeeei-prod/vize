@@ -1,0 +1,104 @@
+/* Optional path treatment. Separator glyphs stay in the consumer's markup. */
+@layer vize.preset {
+  :where([data-vize-theme], :host([data-vize-theme])) {
+    --vize-ui-breadcrumb-font: initial;
+    --vize-ui-breadcrumb-gap: initial;
+    --vize-ui-breadcrumb-current: initial;
+    --vize-ui-breadcrumb-underline: initial;
+  }
+
+  :where([data-vize-theme~="paper"], :host([data-vize-theme~="paper"])) {
+    --vize-ui-breadcrumb-gap: var(--vize-ui-space-sm);
+    --vize-ui-breadcrumb-current: var(--vize-ui-color-text);
+    --vize-ui-breadcrumb-underline: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-theme~="signal"], :host([data-vize-theme~="signal"])) {
+    --vize-ui-breadcrumb-font: var(--vize-ui-type-family-mono);
+    --vize-ui-breadcrumb-gap: var(--vize-ui-space-sm);
+    --vize-ui-breadcrumb-current: var(--vize-ui-color-accent);
+    --vize-ui-breadcrumb-underline: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-theme~="atelier"], :host([data-vize-theme~="atelier"])) {
+    --vize-ui-breadcrumb-gap: var(--vize-ui-space-md);
+    --vize-ui-breadcrumb-current: var(--vize-ui-color-text);
+    --vize-ui-breadcrumb-underline: var(--vize-ui-color-accent);
+  }
+
+  :where([data-vize-ui="breadcrumb"]) {
+    color: var(--vize-ui-color-text-muted);
+    font-family: var(--vize-ui-breadcrumb-font, var(--vize-ui-type-family-sans));
+    font-size: var(--vize-ui-type-size-sm);
+    line-height: var(--vize-ui-type-leading-normal);
+  }
+
+  :where([data-vize-ui="breadcrumb-list"]) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--vize-ui-space-xs) var(--vize-ui-breadcrumb-gap, var(--vize-ui-space-sm));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  :where([data-vize-ui="breadcrumb-item"]) {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 1.75rem;
+  }
+
+  :where(
+    [data-vize-ui="breadcrumb-item"][data-current="true"],
+    [data-vize-ui="breadcrumb-link"][data-current="true"]
+  ) {
+    color: var(--vize-ui-breadcrumb-current, var(--vize-ui-color-text));
+    font-weight: var(--vize-ui-type-weight-medium);
+  }
+
+  :where([data-vize-ui="breadcrumb-link"]) {
+    color: inherit;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.2em;
+    transition:
+      color var(--vize-ui-motion-duration-fast, 120ms) var(--vize-ui-motion-ease-standard, ease-out),
+      text-decoration-color var(--vize-ui-motion-duration-fast, 120ms)
+        var(--vize-ui-motion-ease-standard, ease-out);
+  }
+
+  :where([data-vize-ui="breadcrumb-link"]:hover:not([aria-current])) {
+    color: var(--vize-ui-color-text);
+    text-decoration-color: var(--vize-ui-breadcrumb-underline, var(--vize-ui-color-accent));
+  }
+
+  :where([data-vize-ui="breadcrumb-link"]:focus-visible) {
+    outline: var(--vize-ui-focus-ring-width) solid var(--vize-ui-focus-ring-color);
+    outline-offset: var(--vize-ui-focus-ring-offset);
+    text-decoration-color: currentColor;
+  }
+
+  :where([data-vize-ui="breadcrumb-separator"]) {
+    margin-inline-start: var(--vize-ui-space-xs);
+    color: var(--vize-ui-color-text-muted);
+    opacity: var(--vize-ui-opacity-muted);
+    user-select: none;
+  }
+}
+
+@layer vize.policy {
+  @media (prefers-reduced-motion: reduce) {
+    :where([data-vize-ui="breadcrumb-link"]) {
+      transition-duration: 0ms;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where([data-vize-ui="breadcrumb-link"]:focus-visible) {
+      outline-color: Highlight;
+    }
+    :where([data-vize-ui="breadcrumb-link"][aria-current]) {
+      color: CanvasText;
+    }
+  }
+}
