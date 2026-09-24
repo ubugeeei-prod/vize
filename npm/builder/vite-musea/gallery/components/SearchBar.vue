@@ -43,6 +43,7 @@ onUnmounted(() => {
       v-model="model"
       type="text"
       class="search-input"
+      aria-label="Search components"
       placeholder="Search components... (⌘K)"
     />
     <kbd v-if="!model" class="search-kbd">⌘K</kbd>
@@ -60,7 +61,8 @@ onUnmounted(() => {
   background: var(--musea-bg-tertiary);
   border: 1px solid var(--musea-border);
   border-radius: var(--musea-radius-md);
-  padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  padding-block: 0.5rem;
+  padding-inline: 2.25rem 0.75rem;
   color: var(--musea-text);
   font-size: 0.8125rem;
   outline: none;
@@ -80,7 +82,7 @@ onUnmounted(() => {
 
 .search-icon {
   position: absolute;
-  left: 0.75rem;
+  inset-inline-start: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--musea-text-muted);
@@ -89,7 +91,7 @@ onUnmounted(() => {
 
 .search-kbd {
   position: absolute;
-  right: 0.5rem;
+  inset-inline-end: 0.5rem;
   top: 50%;
   transform: translateY(-50%);
   background: var(--musea-bg-elevated);

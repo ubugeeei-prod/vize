@@ -38,6 +38,7 @@ const navItems: NavItem[] = [
 ];
 
 const searchInput = ref<HTMLInputElement | null>(null);
+const dialogRef = ref<HTMLDivElement | null>(null);
 const query = ref("");
 const selectedIndex = ref(0);
 const searchHistory = ref<string[]>([]);
@@ -185,17 +186,50 @@ watch(
   },
 );
 
+function focusSelectedResult() {
+  const buttons = dialogRef.value?.querySelectorAll<HTMLButtonElement>(".search-result");
+  buttons?.[selectedIndex.value]?.focus();
+}
+
+function keepFocusInDialog(e: KeyboardEvent) {
+  const focusable = dialogRef.value?.querySelectorAll<HTMLElement>("button, input");
+  if (!focusable?.length) return;
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (!(e.target instanceof Node) || !dialogRef.value?.contains(e.target)) {
+    e.preventDefault();
+    first.focus();
+  } else if (e.shiftKey && e.target === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && e.target === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
 const handleKeydown = (e: KeyboardEvent) => {
   switch (e.key) {
     case "ArrowDown":
       e.preventDefault();
-      selectedIndex.value = Math.min(selectedIndex.value + 1, results.value.length - 1);
+      selectedIndex.value = Math.min(
+        selectedIndex.value + 1,
+        Math.max(results.value.length - 1, 0),
+      );
+      if (e.target instanceof HTMLButtonElement && e.target.classList.contains("search-result")) {
+        focusSelectedResult();
+      }
       break;
     case "ArrowUp":
       e.preventDefault();
       selectedIndex.value = Math.max(selectedIndex.value - 1, 0);
+      if (e.target instanceof HTMLButtonElement && e.target.classList.contains("search-result")) {
+        focusSelectedResult();
+      }
       break;
     case "Enter":
+      if (e.target instanceof HTMLButtonElement) break;
       e.preventDefault();
       if (results.value[selectedIndex.value]) {
         selectResult(results.value[selectedIndex.value]);
@@ -224,10 +258,18 @@ const selectFromHistory = (term: string) => {
   searchInput.value?.focus();
 };
 
+function selectIndex(index: number) {
+  selectedIndex.value = index;
+}
+
 const clearHistory = () => {
   searchHistory.value = [];
   localStorage.removeItem("musea-search-history");
 };
+
+function closeSearch() {
+  emit("close");
+}
 
 // Global keyboard listener for Cmd+K / Ctrl+K
 const handleGlobalKeydown = (e: KeyboardEvent) => {
@@ -237,8 +279,14 @@ const handleGlobalKeydown = (e: KeyboardEvent) => {
       // This should trigger parent to open
       // But handled externally
     } else {
-      emit("close");
+      closeSearch();
     }
+    return;
+  }
+  if (props.isOpen && e.key === "Tab") {
+    keepFocusInDialog(e);
+  } else if (props.isOpen && (e.key === "Escape" || dialogRef.value?.contains(e.target as Node))) {
+    handleKeydown(e);
   }
 };
 
@@ -254,8 +302,22 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="isOpen" class="search-modal-overlay" @click.self="emit('close')">
-        <div class="search-modal" @keydown="handleKeydown">
+      <div v-if="isOpen" class="search-modal-overlay">
+        <button
+          type="button"
+          class="search-modal-backdrop"
+          aria-label="Close search"
+          tabindex="-1"
+          @click="closeSearch"
+        />
+        <div
+          ref="dialogRef"
+          class="search-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search components"
+          tabindex="-1"
+        >
           <!-- Search Input -->
           <div class="search-input-wrapper">
             <MdiIcon class="search-icon" :path="mdiMagnify" :size="20" />
@@ -264,6 +326,7 @@ onUnmounted(() => {
               v-model="query"
               type="text"
               class="search-input"
+              aria-label="Search components and variants"
               placeholder="Search components, variants, tags..."
               autocomplete="off"
             />
@@ -273,50 +336,52 @@ onUnmounted(() => {
           <!-- Results -->
           <div class="search-results">
             <template v-if="results.length > 0">
-              <div
+              <button
                 v-for="(result, index) in results"
                 :key="
                   result.type === 'nav'
                     ? `nav-${result.nav.route}`
                     : `${result.art.path}-${result.variantName || ''}`
                 "
+                type="button"
                 :class="['search-result', { 'search-result--selected': index === selectedIndex }]"
-                @click="selectResult(result)"
-                @mouseenter="selectedIndex = index"
+                @click="() => selectResult(result)"
+                @mouseenter="() => selectIndex(index)"
+                @focus="() => selectIndex(index)"
               >
                 <template v-if="result.type === 'nav'">
-                  <div class="result-icon">
+                  <span class="result-icon">
                     <MdiIcon :path="result.nav.icon" :size="16" />
-                  </div>
-                  <div class="result-content">
-                    <div class="result-title">{{ result.nav.name }}</div>
-                    <div class="result-meta">
+                  </span>
+                  <span class="result-content">
+                    <span class="result-title">{{ result.nav.name }}</span>
+                    <span class="result-meta">
                       <span class="result-match-type">page</span>
-                    </div>
-                  </div>
+                    </span>
+                  </span>
                 </template>
                 <template v-else>
-                  <div class="result-icon">
+                  <span class="result-icon">
                     <MdiIcon v-if="result.matchType === 'variant'" :path="mdiDiamond" :size="16" />
                     <MdiIcon v-else :path="mdiPalette" :size="16" />
-                  </div>
-                  <div class="result-content">
-                    <div class="result-title">
+                  </span>
+                  <span class="result-content">
+                    <span class="result-title">
                       {{ result.art.metadata.title }}
                       <span v-if="result.variantName" class="result-variant">
                         / {{ result.variantName }}
                       </span>
-                    </div>
-                    <div class="result-meta">
+                    </span>
+                    <span class="result-meta">
                       <span v-if="result.art.metadata.category" class="result-category">
                         {{ result.art.metadata.category }}
                       </span>
                       <span class="result-match-type">{{ result.matchType }}</span>
-                    </div>
-                  </div>
+                    </span>
+                  </span>
                 </template>
                 <kbd class="result-shortcut">↵</kbd>
-              </div>
+              </button>
             </template>
 
             <!-- Empty state with history -->
@@ -325,15 +390,16 @@ onUnmounted(() => {
                 <span>Recent Searches</span>
                 <button type="button" class="history-clear" @click="clearHistory">Clear</button>
               </div>
-              <div
+              <button
                 v-for="term in searchHistory"
                 :key="term"
+                type="button"
                 class="search-history-item"
-                @click="selectFromHistory(term)"
+                @click="() => selectFromHistory(term)"
               >
                 <MdiIcon class="history-icon" :path="mdiHistory" :size="14" />
                 {{ term }}
-              </div>
+              </button>
             </template>
 
             <!-- No results -->
@@ -365,10 +431,19 @@ onUnmounted(() => {
   align-items: flex-start;
   justify-content: center;
   padding-top: 15vh;
-  z-index: 1000;
+  z-index: var(--musea-layer-modal);
+}
+
+.search-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
 }
 
 .search-modal {
+  position: relative;
   width: 100%;
   max-width: 560px;
   background: var(--musea-bg-secondary);
@@ -424,11 +499,17 @@ onUnmounted(() => {
 
 .search-result {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
   border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
+  font-family: inherit;
+  text-align: start;
   transition: background-color 0.1s;
 }
 
@@ -438,6 +519,9 @@ onUnmounted(() => {
 }
 
 .result-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1rem;
   width: 24px;
   text-align: center;
@@ -445,11 +529,13 @@ onUnmounted(() => {
 }
 
 .result-content {
+  display: block;
   flex: 1;
   min-width: 0;
 }
 
 .result-title {
+  display: block;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--musea-text);
@@ -491,8 +577,10 @@ onUnmounted(() => {
   transition: opacity 0.1s;
 }
 
-.search-result--selected .result-shortcut {
-  opacity: 1;
+.search-result--selected {
+  .result-shortcut {
+    opacity: 1;
+  }
 }
 
 .search-history-header {
@@ -521,13 +609,18 @@ onUnmounted(() => {
 
 .search-history-item {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 0.75rem;
   padding: 0.625rem 0.75rem;
   border-radius: 6px;
+  border: 0;
+  background: transparent;
   font-size: 0.875rem;
   color: var(--musea-text-secondary);
   cursor: pointer;
+  font-family: inherit;
+  text-align: start;
   transition: background-color 0.1s;
 }
 
@@ -568,15 +661,17 @@ onUnmounted(() => {
   color: var(--musea-text-muted);
 }
 
-.search-footer-item kbd {
-  padding: 0.125rem 0.375rem;
-  background: var(--musea-bg-primary);
-  border: 1px solid var(--musea-border);
-  border-radius: 3px;
-  font-size: 0.625rem;
-  font-family: inherit;
-  min-width: 18px;
-  text-align: center;
+.search-footer-item {
+  kbd {
+    padding: 0.125rem 0.375rem;
+    background: var(--musea-bg-primary);
+    border: 1px solid var(--musea-border);
+    border-radius: 3px;
+    font-size: 0.625rem;
+    font-family: inherit;
+    min-width: 18px;
+    text-align: center;
+  }
 }
 
 /* Transition */
@@ -590,8 +685,10 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-.modal-enter-from .search-modal,
-.modal-leave-to .search-modal {
-  transform: scale(0.95) translateY(-20px);
+.modal-enter-from,
+.modal-leave-to {
+  .search-modal {
+    transform: scale(0.95) translateY(-20px);
+  }
 }
 </style>

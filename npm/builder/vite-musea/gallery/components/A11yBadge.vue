@@ -71,7 +71,7 @@ const title = computed(() => {
 </script>
 
 <template>
-  <span v-if="count !== null" class="a11y-badge" :class="'severity-' + severity" :title="title">
+  <span v-show="count !== null" class="a11y-badge" :class="'severity-' + severity" :title="title">
     {{ count }}
   </span>
 </template>
@@ -97,7 +97,7 @@ const title = computed(() => {
 
 .severity-passed {
   background: rgba(74, 222, 128, 0.18);
-  color: #4ade80;
+  color: var(--musea-a11y-passed);
 }
 
 .severity-moderate {

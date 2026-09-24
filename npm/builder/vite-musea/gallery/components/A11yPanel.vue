@@ -51,18 +51,34 @@ function toggleViolation(id: string) {
   expandedViolation.value = expandedViolation.value === id ? null : id;
 }
 
+function safeUrl(rawUrl: string, destination: "preview" | "help"): string | undefined {
+  if (!rawUrl) return undefined;
+  try {
+    const url = new URL(rawUrl, window.location.href);
+    if (destination === "preview" && url.origin === window.location.origin) {
+      return url.href;
+    }
+    if (destination === "help" && url.protocol === "https:") {
+      return url.href;
+    }
+  } catch {
+    // Ignore malformed URLs from a static gallery or an audit result.
+  }
+  return undefined;
+}
+
 function getImpactColor(impact: string): string {
   switch (impact) {
     case "critical":
-      return "#f87171";
+      return "var(--musea-a11y-critical)";
     case "serious":
-      return "#fb923c";
+      return "var(--musea-a11y-serious)";
     case "moderate":
-      return "#fbbf24";
+      return "var(--musea-a11y-moderate)";
     case "minor":
-      return "#60a5fa";
+      return "var(--musea-a11y-minor)";
     default:
-      return "#7b8494";
+      return "var(--musea-a11y-unknown)";
   }
 }
 
@@ -99,10 +115,12 @@ watch(result, (nextResult) => {
   <div class="a11y-panel">
     <!-- Hidden iframe for testing -->
     <iframe
-      v-if="previewUrl"
+      v-if="safeUrl(previewUrl, 'preview')"
       ref="iframeRef"
-      :src="previewUrl"
+      :src="safeUrl(previewUrl, 'preview')"
       class="a11y-iframe"
+      title="Accessibility test preview"
+      sandbox="allow-scripts allow-same-origin"
       @load="onIframeLoad"
     />
 
@@ -142,19 +160,19 @@ watch(result, (nextResult) => {
             <span class="a11y-stat-value">{{ summary.total }}</span>
             <span class="a11y-stat-label">Violations</span>
           </div>
-          <div class="a11y-stat critical" v-if="summary.critical > 0">
+          <div v-if="summary.critical > 0" class="a11y-stat critical">
             <span class="a11y-stat-value">{{ summary.critical }}</span>
             <span class="a11y-stat-label">Critical</span>
           </div>
-          <div class="a11y-stat serious" v-if="summary.serious > 0">
+          <div v-if="summary.serious > 0" class="a11y-stat serious">
             <span class="a11y-stat-value">{{ summary.serious }}</span>
             <span class="a11y-stat-label">Serious</span>
           </div>
-          <div class="a11y-stat moderate" v-if="summary.moderate > 0">
+          <div v-if="summary.moderate > 0" class="a11y-stat moderate">
             <span class="a11y-stat-value">{{ summary.moderate }}</span>
             <span class="a11y-stat-label">Moderate</span>
           </div>
-          <div class="a11y-stat minor" v-if="summary.minor > 0">
+          <div v-if="summary.minor > 0" class="a11y-stat minor">
             <span class="a11y-stat-value">{{ summary.minor }}</span>
             <span class="a11y-stat-label">Minor</span>
           </div>
@@ -176,7 +194,12 @@ watch(result, (nextResult) => {
             class="a11y-violation"
             :class="{ expanded: expandedViolation === violation.id }"
           >
-            <div class="a11y-violation-header" @click="toggleViolation(violation.id)">
+            <button
+              type="button"
+              class="a11y-violation-header"
+              :aria-expanded="expandedViolation === violation.id"
+              @click="() => toggleViolation(violation.id)"
+            >
               <span class="a11y-impact" :style="{ color: getImpactColor(violation.impact) }">
                 {{ violation.impact }}
               </span>
@@ -187,15 +210,21 @@ watch(result, (nextResult) => {
                 :path="expandedViolation === violation.id ? mdiChevronUp : mdiChevronDown"
                 :size="14"
               />
-            </div>
+            </button>
             <div v-if="expandedViolation === violation.id" class="a11y-violation-detail">
               <p class="a11y-description">{{ violation.description }}</p>
-              <a :href="violation.helpUrl" target="_blank" class="a11y-help-link">
+              <a
+                v-if="safeUrl(violation.helpUrl, 'help')"
+                :href="safeUrl(violation.helpUrl, 'help')"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="a11y-help-link"
+              >
                 Learn more
                 <MdiIcon :path="mdiOpenInNew" :size="12" />
               </a>
               <div class="a11y-nodes">
-                <div v-for="(node, i) in violation.nodes" :key="i" class="a11y-node">
+                <div v-for="node in violation.nodes" :key="node.target.join(' ')" class="a11y-node">
                   <pre class="a11y-node-html">{{ node.html }}</pre>
                   <p v-if="node.failureSummary" class="a11y-node-summary">
                     {{ node.failureSummary }}
@@ -278,10 +307,10 @@ watch(result, (nextResult) => {
 
 .a11y-error {
   padding: 1rem;
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.2);
+  background: color-mix(in srgb, var(--musea-a11y-critical) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--musea-a11y-critical) 20%, transparent);
   border-radius: var(--musea-radius-sm);
-  color: #f87171;
+  color: var(--musea-a11y-critical);
   font-size: 0.8125rem;
 }
 
@@ -315,23 +344,27 @@ watch(result, (nextResult) => {
   letter-spacing: 0.05em;
 }
 
-.a11y-stat.has-issues .a11y-stat-value {
-  color: #f87171;
-}
-.a11y-stat.critical .a11y-stat-value {
-  color: #f87171;
-}
-.a11y-stat.serious .a11y-stat-value {
-  color: #fb923c;
-}
-.a11y-stat.moderate .a11y-stat-value {
-  color: #fbbf24;
-}
-.a11y-stat.minor .a11y-stat-value {
-  color: #60a5fa;
-}
-.a11y-stat.passes .a11y-stat-value {
-  color: #4ade80;
+.a11y-stat {
+  &.has-issues .a11y-stat-value,
+  &.critical .a11y-stat-value {
+    color: var(--musea-a11y-critical);
+  }
+
+  &.serious .a11y-stat-value {
+    color: var(--musea-a11y-serious);
+  }
+
+  &.moderate .a11y-stat-value {
+    color: var(--musea-a11y-moderate);
+  }
+
+  &.minor .a11y-stat-value {
+    color: var(--musea-a11y-minor);
+  }
+
+  &.passes .a11y-stat-value {
+    color: var(--musea-a11y-passed);
+  }
 }
 
 .a11y-success {
@@ -339,10 +372,10 @@ watch(result, (nextResult) => {
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: rgba(74, 222, 128, 0.1);
-  border: 1px solid rgba(74, 222, 128, 0.2);
+  background: color-mix(in srgb, var(--musea-a11y-passed) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--musea-a11y-passed) 20%, transparent);
   border-radius: var(--musea-radius-sm);
-  color: #4ade80;
+  color: var(--musea-a11y-passed);
   font-weight: 500;
 }
 
@@ -361,11 +394,17 @@ watch(result, (nextResult) => {
 
 .a11y-violation-header {
   display: flex;
+  width: 100%;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
   cursor: pointer;
+  font-family: inherit;
   font-size: 0.75rem;
+  text-align: start;
 }
 
 .a11y-violation-header:hover {
@@ -385,7 +424,7 @@ watch(result, (nextResult) => {
 
 .a11y-node-count {
   color: var(--musea-text-muted);
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .a11y-expand-icon {

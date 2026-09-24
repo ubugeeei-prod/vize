@@ -17,6 +17,12 @@
   --musea-error: #dc2626;
   --musea-info: #2563eb;
   --musea-warning: #d97706;
+  --musea-a11y-critical: #f87171;
+  --musea-a11y-serious: #fb923c;
+  --musea-a11y-moderate: #fbbf24;
+  --musea-a11y-minor: #60a5fa;
+  --musea-a11y-passed: #4ade80;
+  --musea-a11y-unknown: #7b8494;
   --musea-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   --musea-overlay: rgba(18, 18, 18, 0.6);
   --musea-radius-sm: 4px;
@@ -27,6 +33,7 @@
   --musea-font-mono: "JetBrains Mono", "SF Mono", "Fira Code", monospace;
   --musea-sidebar-width: 260px;
   --musea-header-height: 56px;
+  --musea-layer-modal: 1000;
 }
 
 /* Explicit light theme */
