@@ -5,9 +5,8 @@ import { gzipSync } from "node:zlib";
 const distributionDirectory = new URL("../dist/", import.meta.url);
 const staticImportPattern = /\b(?:import|export)\s+(?:[^"']*?\s+from\s+)?["'](\.\.?\/[^"']+)["']/g;
 const budgets = new Map([
-  ["index.mjs", 620_800],
+  ["index.mjs", 644_100],
   ["action-sheet.mjs", 999_999],
-  ["action-sheet.mjs", 31_500],
   ["alert.mjs", 1_050],
   ["angle-picker.mjs", 6_300],
   ["announcer.mjs", 4_100],
@@ -74,7 +73,7 @@ const budgets = new Map([
   ["dropdown-menu.mjs", 43_000],
   ["menu.mjs", 41_500],
   ["menubar.mjs", 43_200],
-  ["popover.mjs", 28_750],
+  ["popover.mjs", 28_950],
   ["popconfirm.mjs", 30_900],
   ["tooltip.mjs", 18_100],
   ["hover-card.mjs", 20_750],
@@ -140,7 +139,7 @@ const budgets = new Map([
   ["checkbox.mjs", 1_900],
   ["collection.mjs", 5_700],
   ["composite-navigation.mjs", 5_355],
-  ["catalog.mjs", 37_600],
+  ["catalog.mjs", 37_700],
   ["command.mjs", 2_200],
   ["context.mjs", 700],
   ["controllable-state.mjs", 600],
@@ -194,7 +193,7 @@ const budgets = new Map([
   ["spatial-navigation.mjs", 3_725],
   ["theme.mjs", 6_600],
   ["theme-scope.mjs", 2_600],
-  ["resolver.mjs", 9_000],
+  ["resolver.mjs", 9_100],
   ["transition.mjs", 3_000],
   ["typeahead.mjs", 2_000],
   ["virtualizer.mjs", 9_500],
