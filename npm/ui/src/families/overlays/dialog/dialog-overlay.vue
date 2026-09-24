@@ -67,6 +67,7 @@ defineExpose(exposed);
       v-if="present"
       ref="element"
       aria-hidden="true"
+      :inert="context.open.value ? undefined : true"
       data-vize-ui="dialog-overlay"
       part="overlay"
       :hidden="context.open.value || context.exiting.value ? undefined : true"

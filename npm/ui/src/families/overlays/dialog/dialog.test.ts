@@ -149,6 +149,7 @@ test("keeps force-mounted closed layers hidden without document side effects", a
   assert.ok(content instanceof HTMLElement);
   assert.equal(portal.hasAttribute("hidden"), false);
   assert.equal(overlay.hasAttribute("hidden"), true);
+  assert.equal(overlay.hasAttribute("inert"), true);
   assert.equal(contentHost.hasAttribute("hidden"), true);
   assert.equal(content.getAttribute("data-state"), "closed");
   assert.equal(document.documentElement.getAttribute("data-vize-scroll-locked"), null);
@@ -273,6 +274,7 @@ test("styled exit keeps only an inert visual layer after modal behavior ends", a
   assert.equal(host.hasAttribute("inert"), true);
   assert.equal(host.getAttribute("aria-hidden"), "true");
   assert.equal(overlay.hasAttribute("hidden"), false);
+  assert.equal(overlay.hasAttribute("inert"), true);
   assert.equal(overlay.style.pointerEvents, "none");
   assert.equal(outside.hasAttribute("inert"), false);
   assert.equal(document.documentElement.getAttribute("data-vize-scroll-locked"), null);
