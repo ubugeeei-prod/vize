@@ -4,6 +4,7 @@
 //! and processing withDefaults defaults.
 
 mod ast_resolve;
+mod callable;
 mod defaults;
 mod emits;
 mod runtime_type;

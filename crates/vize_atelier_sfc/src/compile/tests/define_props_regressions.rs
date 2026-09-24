@@ -364,3 +364,83 @@ const {{ href = DEFAULT_HREF }} = defineProps<{{ href?: string }}>()
         );
     }
 }
+
+/// `@vue/compiler-sfc` 3.6 infers `Function` for call and construct signatures
+/// and `Object` for every other member, so a callable scale interface accepts
+/// the function values it describes.
+#[test]
+fn test_callable_object_types_infer_function_runtime_types() {
+    let source = r#"<script setup lang="ts">
+interface Scale { (value: number): number; readonly range: number[] }
+interface Formatter { (value: number): string }
+type Labelled = { label: string; (value: string): void }
+defineProps<{
+  scale: Scale
+  format: Formatter
+  labelled: Labelled
+  inline: { (value: number): number; bandwidth?: number }
+  plain: { run(): void; label: string }
+}>()
+</script>
+
+<template><div /></template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile");
+
+    let compact = without_whitespace(&result.code);
+    for expected in [
+        "scale:{type:[Function,Object],required:true}",
+        "format:{type:Function,required:true}",
+        "labelled:{type:[Object,Function],required:true}",
+        "inline:{type:[Function,Object],required:true}",
+        "plain:{type:Object,required:true}",
+    ] {
+        assert!(
+            compact.contains(expected),
+            "missing `{expected}`:\n{}",
+            result.code
+        );
+    }
+}
+
+#[test]
+fn test_imported_callable_interface_infers_function_runtime_type() {
+    let project = temp_compile_project_dir("imported-callable-interface-props");
+    let src = project.join("src");
+    fs::create_dir_all(&src).unwrap();
+    fs::write(
+        src.join("chart-types.ts"),
+        r#"export interface ChartAxisScale<Tick> {
+  (value: Tick): number;
+  readonly range: readonly number[];
+  readonly ticks: (count?: number) => Tick[];
+}
+"#,
+    )
+    .unwrap();
+
+    let axis_path = src.join("Axis.vue");
+    let source = r#"<script setup lang="ts" generic="Tick">
+import type { ChartAxisScale } from "./chart-types.ts"
+
+const { scale } = defineProps<{ readonly scale: ChartAxisScale<Tick> }>()
+</script>
+
+<template><g :data-range="scale.range.length" /></template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("Failed to parse SFC");
+    let mut opts = SfcCompileOptions::default();
+    opts.script.id = Some(axis_path.to_string_lossy().as_ref().to_compact_string());
+    let result = compile_sfc(&descriptor, opts).expect("compile");
+
+    assert!(
+        without_whitespace(&result.code).contains("scale:{type:[Function,Object],required:true}"),
+        "imported callable interfaces must accept functions:\n{}",
+        result.code
+    );
+}
+
+fn without_whitespace(code: &str) -> vize_carton::String {
+    code.chars().filter(|c| !c.is_whitespace()).collect()
+}

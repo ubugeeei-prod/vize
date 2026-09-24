@@ -3,8 +3,10 @@ use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{FxHashMap, String, ToCompactString, cstr};
 
 use super::{
-    super::context::GenerateContext, component_props::generate_component_props_str,
-    component_slots::generate_slot_fn, insertion::emit_insertion_state,
+    super::{context::GenerateContext, setup::escape_js_string_literal},
+    component_props::generate_component_props_str,
+    component_slots::generate_slot_fn,
+    insertion::emit_insertion_state,
 };
 
 pub(super) fn component_resolution_var(tag: &str) -> String {
@@ -82,6 +84,28 @@ pub(super) fn generate_create_component(
 
     // Determine component variable and creation function based on kind
     let (component_var, create_fn): (String, &str) = match kind {
+        ComponentKind::Dynamic
+            if component
+                .is_expr
+                .as_ref()
+                .is_some_and(|is_exp| is_exp.is_static) =>
+        {
+            // A static `is` resolves once, as in `@vue/compiler-vapor`:
+            // `createComponentWithFallback(resolveDynamicComponent("a"), ...)`.
+            ctx.use_helper("resolveDynamicComponent");
+            ctx.use_helper("createComponentWithFallback");
+            let name = component
+                .is_expr
+                .as_ref()
+                .map_or("", |is_exp| is_exp.content);
+            (
+                cstr!(
+                    "_resolveDynamicComponent(\"{}\")",
+                    escape_js_string_literal(name)
+                ),
+                "createComponentWithFallback",
+            )
+        }
         ComponentKind::Dynamic => {
             ctx.use_helper("createDynamicComponent");
             let is_arg = if let Some(ref is_exp) = component.is_expr {

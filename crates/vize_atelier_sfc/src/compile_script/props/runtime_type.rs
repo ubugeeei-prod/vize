@@ -254,8 +254,10 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
             // Handle array types
             if ts_type.ends_with("[]") || ts_type.starts_with("Array<") {
                 "Array".to_compact_string()
-            } else if ts_type.starts_with('{') || contains_top_level_colon(ts_type) {
-                // Object literal type
+            } else if ts_type.starts_with('{') {
+                // Object literal type; call signatures make it callable too
+                super::callable::object_type_source_runtime_type(ts_type)
+            } else if contains_top_level_colon(ts_type) {
                 "Object".to_compact_string()
             } else if ts_type.starts_with('(') && ts_type.contains("=>") {
                 // Function type (fallback, already handled above)
@@ -368,9 +370,9 @@ pub fn resolve_prop_js_type(
 
     // Look up in interfaces
     if let Some(body) = interfaces.get(base_name) {
-        // Interfaces always resolve to Object
-        let _ = body;
-        return Some("Object".to_compact_string());
+        // Interfaces are objects, and functions too when they declare call
+        // or construct signatures.
+        return Some(super::callable::object_type_source_runtime_type(body));
     }
 
     None

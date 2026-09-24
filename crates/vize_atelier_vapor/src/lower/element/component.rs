@@ -161,6 +161,14 @@ pub(super) fn transform_component<'a>(
                 if attr.name == "key" {
                     continue;
                 }
+                // `<component is="a">` names its component statically; it is
+                // resolved once instead of being forwarded as a prop.
+                if kind == ComponentKind::Dynamic && attr.name == "is" {
+                    let value = attr.value.as_ref().map_or("", |value| value.content);
+                    let node = SimpleExpressionNode::new(value, true, SourceLocation::STUB);
+                    is_expr = Some(Box::new_in(node, &ctx.allocator));
+                    continue;
+                }
                 let key_node = SimpleExpressionNode::new(attr.name, true, SourceLocation::STUB);
                 let key = Box::new_in(key_node, &ctx.allocator);
                 let mut values = Vec::new_in(&ctx.allocator);

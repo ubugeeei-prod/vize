@@ -3,6 +3,7 @@
 //! Parses TypeScript type definitions and walks the resulting AST to collect
 //! prop types, resolving interface/type-alias references, mapped types, and
 //! literal unions into runtime constructors.
+use super::callable;
 use super::runtime_type::ts_type_to_js_type;
 use super::types::PropTypeInfo;
 use oxc_allocator::Allocator;
@@ -324,9 +325,8 @@ fn ts_type_to_js_type_from_ast_inner(
         TSType::TSBooleanKeyword(_) => "Boolean".to_compact_string(),
         TSType::TSSymbolKeyword(_) => "Symbol".to_compact_string(),
         TSType::TSBigIntKeyword(_) => "BigInt".to_compact_string(),
-        TSType::TSObjectKeyword(_) | TSType::TSTypeLiteral(_) | TSType::TSMappedType(_) => {
-            "Object".to_compact_string()
-        }
+        TSType::TSObjectKeyword(_) | TSType::TSMappedType(_) => "Object".to_compact_string(),
+        TSType::TSTypeLiteral(literal) => callable::type_literal_runtime_type(literal),
         TSType::TSArrayType(_) | TSType::TSTupleType(_) => "Array".to_compact_string(),
         TSType::TSFunctionType(_) | TSType::TSConstructorType(_) => "Function".to_compact_string(),
         TSType::TSLiteralType(lit) => js_type_for_ts_literal(&lit.literal),
@@ -400,8 +400,8 @@ fn ts_type_to_js_type_from_ast_inner(
             let Some(name) = simple_type_name(&type_ref.type_name) else {
                 return "null".to_compact_string();
             };
-            if interfaces.is_some_and(|interfaces| interfaces.contains_key(name)) {
-                return "Object".to_compact_string();
+            if let Some(body) = interfaces.and_then(|interfaces| interfaces.get(name)) {
+                return callable::object_type_source_runtime_type(body);
             }
             if let Some(type_aliases) = type_aliases
                 && let Some(alias) = type_aliases.get(name)
