@@ -111,8 +111,8 @@ compilerConfigDef: JsonSchema = new JsonSchema {
     }
     ["whitespace"] = new JsonSchema {
       type = "string"
-      enum = new Listing { "condense"; "preserve" }
-      description = "Vue template whitespace strategy"
+      enum = new Listing { "condense"; "preserve"; "vue2-line-breaks" }
+      description = "Vue template whitespace strategy or opt-in Vue 2 line-break migration mode"
       default = "condense"
     }
     ["sourceMap"] = new JsonSchema {

@@ -46,4 +46,20 @@ assert.equal(batchOptions.includeSourceMap, false);
 // source-map decision has to be visible in it (#3399).
 assert.equal(buildCompileBatchOptions({ ...batchInput, sourceMap: true }).includeSourceMap, true);
 
+const migrationFile = buildCompileFileOptions("/src/Legacy.vue", {
+  ...batchInput,
+  whitespace: "vue2-line-breaks",
+});
+const migrationBatch = buildCompileBatchOptions({
+  ...batchInput,
+  whitespace: "vue2-line-breaks",
+});
+assert.equal(migrationFile.whitespace, "vue2-line-breaks");
+assert.equal(migrationBatch.whitespace, "vue2-line-breaks");
+assert.notDeepEqual(
+  migrationBatch,
+  batchOptions,
+  "precompile keys must distinguish migration mode",
+);
+
 console.log("vite-plugin-vize compile option tests passed!");

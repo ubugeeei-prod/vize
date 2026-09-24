@@ -48,6 +48,18 @@ assert.equal(
   "The plugin-vue template option should override the Vize compiler default",
 );
 
+assert.equal(
+  getCompileOptionsForRequest(
+    {
+      isProduction: false,
+      mergedOptions: { whitespace: "vue2-line-breaks" },
+    },
+    false,
+  ).whitespace,
+  "vue2-line-breaks",
+  "Vize's migration mode should reach on-demand compilation",
+);
+
 assert.deepEqual(
   getCompileOptionsForRequest(
     {

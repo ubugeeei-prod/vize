@@ -181,22 +181,21 @@ fn compile_sfc_batch_with_results_inner(
                 scope_id: Some(scope_id.clone()),
             };
 
-            let compile_result =
-                vize_atelier_core::parser::with_whitespace_strategy(whitespace, || {
-                    sfc_compile_for_adapter(
-                        &descriptor,
-                        compile_opts,
-                        template_syntax,
-                        custom_elements.clone(),
-                        // A requested map is the compiler's structured SFC module map.
-                        vize_atelier_core::CodegenOptions {
-                            source_map: include_source_map,
-                            ..Default::default()
-                        },
-                        script_output,
-                        experimentals.sfc_options(),
-                    )
-                });
+            let compile_result = whitespace.apply(|| {
+                sfc_compile_for_adapter(
+                    &descriptor,
+                    compile_opts,
+                    template_syntax,
+                    custom_elements.clone(),
+                    // A requested map is the compiler's structured SFC module map.
+                    vize_atelier_core::CodegenOptions {
+                        source_map: include_source_map,
+                        ..Default::default()
+                    },
+                    script_output,
+                    experimentals.sfc_options(),
+                )
+            });
 
             match compile_result {
                 Ok(result) => {

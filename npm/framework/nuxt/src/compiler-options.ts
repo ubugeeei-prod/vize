@@ -74,8 +74,8 @@ export interface VizeNuxtCompilerOptions {
   customElements?: string[];
   /** Template syntax compatibility mode. */
   templateSyntax?: "standard" | "strict" | "quirks";
-  /** Vue template whitespace strategy. */
-  whitespace?: "condense" | "preserve";
+  /** Vue template whitespace strategy, or Vize's opt-in Vue 2 line-break migration mode. */
+  whitespace?: "condense" | "preserve" | "vue2-line-breaks";
   /** Root directory to scan for .vue files. */
   root?: string;
   /** Glob patterns to scan for .vue files during pre-compilation. */

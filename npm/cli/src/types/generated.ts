@@ -109,9 +109,9 @@ export interface CompilerConfig {
    */
   templateSyntax?: "standard" | "strict" | "quirks";
   /**
-   * Vue template whitespace strategy
+   * Vue template whitespace strategy or opt-in Vue 2 line-break migration mode
    */
-  whitespace?: "condense" | "preserve";
+  whitespace?: "condense" | "preserve" | "vue2-line-breaks";
   /**
    * Enable source map generation
    */

@@ -3,7 +3,7 @@ module vize.CompilerConfig
 
 typealias VueVersion = "3"|"2.7"|"2"|"1"|"0.11"|"0.10"
 typealias TemplateSyntax = "standard" | "strict" | "quirks"
-typealias Whitespace = "condense" | "preserve"
+typealias Whitespace = "condense" | "preserve" | "vue2-line-breaks"
 typealias JsxMode = "vdom" | "vapor"
 typealias JsxCompat = "native" | "babel"
 
@@ -52,7 +52,7 @@ class CompilerConfig {
   /// Template syntax compatibility mode.
   templateSyntax: TemplateSyntax = "standard"
 
-  /// Vue template whitespace strategy.
+  /// Vue template whitespace strategy or opt-in Vue 2 line-break migration mode.
   whitespace: Whitespace = "condense"
 
   /// Enable source map generation.

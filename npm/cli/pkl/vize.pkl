@@ -10,7 +10,7 @@ module vize.Config
 
 typealias CompilerMode = "module" | "function"
 typealias TemplateSyntax = "standard" | "strict" | "quirks"
-typealias Whitespace = "condense" | "preserve"
+typealias Whitespace = "condense" | "preserve" | "vue2-line-breaks"
 typealias JsxMode = "vdom" | "vapor"
 typealias JsxCompat = "native" | "babel"
 typealias ScriptExt = "ts" | "js"

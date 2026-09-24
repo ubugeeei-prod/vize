@@ -109,7 +109,10 @@ pub(super) fn condense_whitespace<'a>(
             if !prev_is_text && !next_is_text && has_newline {
                 WhitespaceAction::Remove(run_end - i)
             } else {
-                WhitespaceAction::Condense(run_end - i)
+                WhitespaceAction::Condense(
+                    run_end - i,
+                    super::current_legacy_line_breaks() && prev_is_text && has_newline,
+                )
             }
         } else {
             WhitespaceAction::Keep
@@ -122,10 +125,11 @@ pub(super) fn condense_whitespace<'a>(
                 }
                 continue;
             }
-            WhitespaceAction::Condense(len) => {
-                // Condense whitespace runs to a single space.
+            WhitespaceAction::Condense(len, keep_line_break) => {
+                // The migration mode keeps the segment break that Vue 3's
+                // default condense strategy would turn into one space.
                 if let Some(TemplateChildNode::Text(text)) = children.get_mut(i) {
-                    text.content = " ";
+                    text.content = if keep_line_break { "\n" } else { " " };
                 }
                 for _ in 1..len {
                     children.remove(i + 1);
@@ -245,6 +249,6 @@ enum WhitespaceAction {
     Keep,
     /// Remove the node entirely
     Remove(usize),
-    /// Condense a run to a single space
-    Condense(usize),
+    /// Condense a run to a single space, or a migration line break.
+    Condense(usize, bool),
 }

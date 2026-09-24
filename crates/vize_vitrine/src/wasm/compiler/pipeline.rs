@@ -25,9 +25,7 @@ pub(in crate::wasm) fn compile_internal(
     binding_metadata: Option<BindingMetadata>,
 ) -> Result<CompileResult, String> {
     let whitespace = crate::whitespace::resolve_whitespace(opts.whitespace.as_deref())?;
-    vize_atelier_core::parser::with_whitespace_strategy(whitespace, || {
-        compile_internal_scoped(template, opts, vapor, binding_metadata)
-    })
+    whitespace.apply(|| compile_internal_scoped(template, opts, vapor, binding_metadata))
 }
 
 fn compile_internal_scoped(

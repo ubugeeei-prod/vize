@@ -125,7 +125,8 @@ pub(super) fn s2_emit_refusal(
         // S2 lowering currently implements only the default condense mode.
         _ if vize_atelier_core::parser::current_whitespace_strategy(
             WhitespaceStrategy::Condense,
-        ) != WhitespaceStrategy::Condense =>
+        ) != WhitespaceStrategy::Condense
+            || vize_atelier_core::parser::current_legacy_line_breaks() =>
         {
             DomLegacyReason::Whitespace
         }

@@ -197,18 +197,17 @@ fn compile_sfc_batch_inner(
                 scope_id: None,
             };
 
-            let compile_result =
-                vize_atelier_core::parser::with_whitespace_strategy(whitespace, || {
-                    sfc_compile_for_adapter(
-                        &descriptor,
-                        compile_opts,
-                        template_syntax,
-                        custom_elements.clone(),
-                        vize_atelier_core::CodegenOptions::default(),
-                        script_output,
-                        experimentals.sfc_options(),
-                    )
-                });
+            let compile_result = whitespace.apply(|| {
+                sfc_compile_for_adapter(
+                    &descriptor,
+                    compile_opts,
+                    template_syntax,
+                    custom_elements.clone(),
+                    vize_atelier_core::CodegenOptions::default(),
+                    script_output,
+                    experimentals.sfc_options(),
+                )
+            });
 
             match compile_result {
                 Ok(result) => BatchStats {

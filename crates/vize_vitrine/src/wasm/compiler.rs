@@ -76,15 +76,17 @@ impl Compiler {
             crate::whitespace::resolve_whitespace(parsed.options.whitespace.as_deref())
                 .map_err(|message| JsValue::from_str(&message))?;
 
-        let (root, errors) = parse_with_options_custom_elements_and_template_syntax(
-            &allocator,
-            template,
-            compiler_parser_options(&parsed.options, whitespace),
-            CustomElementMatcher::from_patterns(crate::types::custom_element_patterns(
-                parsed.options.custom_elements.as_deref(),
-            )),
-            template_syntax,
-        );
+        let (root, errors) = whitespace.apply(|| {
+            parse_with_options_custom_elements_and_template_syntax(
+                &allocator,
+                template,
+                compiler_parser_options(&parsed.options, whitespace.strategy),
+                CustomElementMatcher::from_patterns(crate::types::custom_element_patterns(
+                    parsed.options.custom_elements.as_deref(),
+                )),
+                template_syntax,
+            )
+        });
 
         if !errors.is_empty() {
             return Err(crate::parse_errors::message(&errors, template).into());

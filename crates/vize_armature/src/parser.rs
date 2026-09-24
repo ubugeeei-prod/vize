@@ -23,7 +23,10 @@ mod whitespace;
 mod whitespace_context;
 
 pub use entry::*;
-pub use whitespace_context::{current_whitespace_strategy, with_whitespace_strategy};
+pub use whitespace_context::{
+    current_legacy_line_breaks, current_whitespace_strategy, with_whitespace_mode,
+    with_whitespace_strategy,
+};
 
 #[cfg(test)]
 mod tests;

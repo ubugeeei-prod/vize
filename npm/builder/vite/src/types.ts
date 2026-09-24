@@ -190,8 +190,8 @@ export interface VizeOptions extends ExperimentalPluginOptions {
    */
   templateSyntax?: "standard" | "strict" | "quirks";
 
-  /** Vue template whitespace strategy. @default "condense" */
-  whitespace?: "condense" | "preserve";
+  /** Vue whitespace strategy, or Vize's narrow Vue 2 line-break migration mode. @default "condense" */
+  whitespace?: "condense" | "preserve" | "vue2-line-breaks";
 
   /**
    * Root directory to scan for .vue files

@@ -271,6 +271,7 @@ fn bridge_supported(request: &SsrS4Request<'_>) -> bool {
     vize_atelier_core::parser::current_whitespace_strategy(
         vize_atelier_core::WhitespaceStrategy::Condense,
     ) == vize_atelier_core::WhitespaceStrategy::Condense
+        && !vize_atelier_core::parser::current_legacy_line_breaks()
         && !options.comments
         && !options.custom_renderer
         && !options.experimental_patterned_template

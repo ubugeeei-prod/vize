@@ -132,7 +132,7 @@ pub fn compile_sfc(
         scope_id: external_scope_id,
     };
 
-    let compile_result = vize_atelier_core::parser::with_whitespace_strategy(whitespace, || {
+    let compile_result = whitespace.apply(|| {
         sfc_compile_for_adapter(
             &descriptor,
             compile_opts,

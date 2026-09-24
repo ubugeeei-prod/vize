@@ -627,6 +627,39 @@ fn test_parse_whitespace_preserve_matches_vue_mixed_and_between_element_text() {
 }
 
 #[test]
+fn test_vue2_migration_line_break_after_interpolation() {
+    // Vue 2.6.14 / 2.7.16 emit `_v("\n  " + _s(name) + "\n  ")`
+    // for this source. The opt-in mode preserves the trailing segment break;
+    // Vue 3's standard condense and preserve modes both emit one space.
+    let allocator = Allocator::new();
+    let source = "<p>\n  {{ name }}\n  <i />\n</p>";
+    let parse_with = || parse_with_options(&allocator, source, ParserOptions::default());
+    let (default, errors) = parse_with();
+    assert!(
+        errors.iter().all(CompilerError::is_recoverable),
+        "{errors:?}"
+    );
+    let (legacy, errors) =
+        super::with_whitespace_mode(WhitespaceStrategy::Condense, true, parse_with);
+    assert!(
+        errors.iter().all(CompilerError::is_recoverable),
+        "{errors:?}"
+    );
+    let text_after_interpolation = |root: &vize_relief::RootNode<'_>| {
+        let TemplateChildNode::Element(p) = &root.children[0] else {
+            panic!("expected p");
+        };
+        assert!(matches!(p.children[0], TemplateChildNode::Interpolation(_)));
+        let TemplateChildNode::Text(text) = &p.children[1] else {
+            panic!("expected text after interpolation");
+        };
+        text.content.to_string()
+    };
+    assert_eq!(text_after_interpolation(&default), " ");
+    assert_eq!(text_after_interpolation(&legacy), "\n");
+}
+
+#[test]
 fn test_parse_whitespace_condense_skips_comment_gaps_when_comments_disabled() {
     let allocator = Allocator::new();
     let (root, errors) = parse_with_options(

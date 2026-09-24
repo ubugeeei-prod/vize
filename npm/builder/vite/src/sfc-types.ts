@@ -2,7 +2,7 @@ import type { ExperimentalCompileFlags } from "./experimental-options.ts";
 import type { ModuleOutputInfo } from "./utils/module-output.js";
 
 export interface SfcCompileOptionsNapi extends ExperimentalCompileFlags {
-  whitespace?: "condense" | "preserve";
+  whitespace?: "condense" | "preserve" | "vue2-line-breaks";
   filename?: string;
   mode?: "module" | "function";
   sourceMap?: boolean;

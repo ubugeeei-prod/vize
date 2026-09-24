@@ -61,7 +61,7 @@ pub(super) fn batch_options_bits(
     vapor: bool,
     is_ts: bool,
     template_syntax: TemplateSyntaxMode,
-    whitespace: vize_atelier_core::WhitespaceStrategy,
+    whitespace: crate::whitespace::ResolvedWhitespace,
     standalone: bool,
     experimental_bits: u16,
 ) -> u16 {
@@ -70,7 +70,8 @@ pub(super) fn batch_options_bits(
         | (u16::from(is_ts) << 2)
         | (u16::from(template_syntax_bits(template_syntax)) << 3)
         | (u16::from(standalone) << 5)
-        | (u16::from(whitespace == vize_atelier_core::WhitespaceStrategy::Preserve) << 10)
+        | (u16::from(whitespace.strategy == vize_atelier_core::WhitespaceStrategy::Preserve) << 10)
+        | (u16::from(whitespace.legacy_line_breaks) << 11)
         | experimental_bits
 }
 

@@ -91,6 +91,32 @@ fn scoped_vue_whitespace_preserve_normalizes_pre_crlf_in_sfc_output() {
 }
 
 #[test]
+fn scoped_vue2_line_breaks_keep_issue_6518_text_before_icon() {
+    use vize_atelier_core::{WhitespaceStrategy, parser::with_whitespace_mode};
+
+    let descriptor = parse_sfc(
+        "<template><p>\n  {{ name }}\n  <i />\n</p></template>",
+        Default::default(),
+    )
+    .unwrap();
+    for ssr in [false, true] {
+        let mut options = SfcCompileOptions::default();
+        options.template.ssr = ssr;
+        let default = compile_sfc(&descriptor, options.clone()).unwrap();
+        let legacy = with_whitespace_mode(WhitespaceStrategy::Condense, true, || {
+            compile_sfc(&descriptor, options).unwrap()
+        });
+        assert_ne!(default.code, legacy.code, "ssr={ssr}");
+        let expected = if ssr {
+            "_ssrInterpolate(_ctx.name)}\n<i>"
+        } else {
+            "_toDisplayString(_ctx.name) + \"\\n\""
+        };
+        assert!(legacy.code.contains(expected), "ssr={ssr}: {}", legacy.code);
+    }
+}
+
+#[test]
 fn test_compile_sfc_ts_ref_condition_and_handler_keep_value_access() {
     use vize_carton::ToCompactString;
 

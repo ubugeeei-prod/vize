@@ -156,7 +156,8 @@ fn compile_vapor_inner_with_stack<'a>(
             retained_lane: options.davinci_retained_lane
                 || vize_atelier_core::parser::current_whitespace_strategy(
                     vize_atelier_core::WhitespaceStrategy::Condense,
-                ) == vize_atelier_core::WhitespaceStrategy::Preserve,
+                ) == vize_atelier_core::WhitespaceStrategy::Preserve
+                || vize_atelier_core::parser::current_legacy_line_breaks(),
             inline: options.inline,
         },
     );
