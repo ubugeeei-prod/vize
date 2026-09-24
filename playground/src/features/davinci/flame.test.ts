@@ -177,12 +177,14 @@ describe("FlameView", () => {
     await choose("{ not json", () => wrapper.find("[role=alert]").exists());
     expect(wrapper.find("[role=alert]").text()).toBe("build.json: The file is not JSON.");
 
-    await choose(JSON.stringify(build), () => wrapper.find("#davinci-flame-key").exists());
+    // The key select's id also comes from `useId()`: find it through its class.
+    const keySelect = () => wrapper.find<HTMLSelectElement>(".davinci-flame-bar select");
+    await choose(JSON.stringify(build), () => keySelect().exists());
     expect(wrapper.find("[role=alert]").exists()).toBe(false);
     expect(wrapper.find(".davinci-flame-bar p").text()).toBe(
       "Showing build.json (tool vize, command analyze-sfc)",
     );
-    const select = wrapper.find<HTMLSelectElement>("#davinci-flame-key");
+    const select = keySelect();
     expect(select.findAll("option").map((option) => option.text())).toEqual([
       "davinci.pass.walk",
       "compile.template",
