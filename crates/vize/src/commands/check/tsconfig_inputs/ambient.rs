@@ -60,14 +60,16 @@ pub(crate) fn collect_hidden_ambient_declaration_files(
         collect_default_check_files_inner(&project_root, tsconfig_path, false, false, cache)
             .into_iter()
             .collect::<FxHashSet<_>>();
-    let hidden =
-        collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache)
-            .into_iter()
-            .filter(|path| !visible.contains(path))
-            .collect();
+    // Included declarations can themselves reference declarations outside the
+    // tsconfig include. Keep them as graph roots even though they are already
+    // visible inputs: their referenced files still need to enter the mirror.
+    let files = collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
     let explicit_type_declarations =
         collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
-    collect_ambient_declaration_files_from(project_root, hidden, explicit_type_declarations)
+    collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations)
+        .into_iter()
+        .filter(|path| !visible.contains(path))
+        .collect()
 }
 
 fn collect_ambient_declaration_files_from(

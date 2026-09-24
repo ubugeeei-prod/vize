@@ -2,7 +2,7 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::path::{Path, PathBuf};
 
-use super::collect_ambient_declaration_files;
+use super::{collect_ambient_declaration_files, collect_hidden_ambient_declaration_files};
 use crate::commands::check::tsconfig_inputs::TsconfigInputCache;
 
 fn write(root: &Path, rel: &str, content: &str) {
@@ -30,6 +30,46 @@ fn relative_paths(root: &Path, files: &[PathBuf]) -> Vec<String> {
                 .replace('\\', "/")
         })
         .collect()
+}
+
+#[test]
+fn hidden_ambient_collection_follows_references_from_visible_declarations() {
+    let root = unique_case_dir("visible-reference-roots");
+    let _ = std::fs::remove_dir_all(&root);
+    write(
+        &root,
+        "env.d.ts",
+        "/// <reference path=\"./types/raw.d.ts\" />\nexport {};\n",
+    );
+    write(
+        &root,
+        "types/raw.d.ts",
+        "/// <reference path=\"./nested.d.ts\" />\ndeclare module '*?raw' { const source: string; export default source; }\n",
+    );
+    write(
+        &root,
+        "types/nested.d.ts",
+        "interface ImportMeta { glob(pattern: string): unknown; }\n",
+    );
+    write(&root, "src/a.ts", "export const a = 1;\n");
+    write(
+        &root,
+        "tsconfig.json",
+        r#"{ "include": ["env.d.ts", "src/**/*"] }"#,
+    );
+
+    let project_root = root.canonicalize().unwrap();
+    let files = collect_hidden_ambient_declaration_files(
+        &project_root,
+        Some(&project_root.join("tsconfig.json")),
+        &mut TsconfigInputCache::default(),
+    );
+
+    assert_eq!(
+        relative_paths(&project_root, &files),
+        vec!["types/raw.d.ts", "types/nested.d.ts"]
+    );
+    let _ = std::fs::remove_dir_all(&root);
 }
 
 #[test]

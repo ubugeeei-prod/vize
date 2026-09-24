@@ -96,6 +96,76 @@ fn write(root: &Path, rel: &str, content: &str) {
 }
 
 #[test]
+fn check_follows_reference_path_from_included_declaration() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project_root = unique_case_dir("included-reference-path");
+    let _ = std::fs::remove_dir_all(&project_root);
+    write(
+        &project_root,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "noEmit": true,
+    "types": []
+  },
+  "include": ["env.d.ts", "src/**/*"]
+}"#,
+    );
+    write(
+        &project_root,
+        "env.d.ts",
+        "/// <reference path=\"./types/raw.d.ts\" />\nexport {};\n",
+    );
+    write(
+        &project_root,
+        "types/raw.d.ts",
+        "declare module \"*?raw\" {\n  const source: string;\n  export default source;\n}\ninterface ImportMeta {\n  glob<T>(pattern: string): Record<string, () => Promise<T>>;\n}\n",
+    );
+    write(
+        &project_root,
+        "src/a.ts",
+        "import source from \"./data.txt?raw\";\nexport const text: string = source;\nexport const modules = import.meta.glob<{ default: object }>(\"./*.ts\");\n",
+    );
+
+    let run_check = || {
+        Command::new(env!("CARGO_BIN_EXE_vize"))
+            .current_dir(&project_root)
+            .env("CORSA_PATH", &corsa_path)
+            .args(["check", "--tsconfig", "tsconfig.json", "--format", "json"])
+            .output()
+            .unwrap()
+    };
+    let output = run_check();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    assert!(
+        output.status.success(),
+        "included reference path should load ambient declarations:\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    );
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    assert_eq!(json["errorCount"], serde_json::json!(0), "{stdout}");
+
+    // A genuinely missing reference must still produce TypeScript's TS6053.
+    write(
+        &project_root,
+        "env.d.ts",
+        "/// <reference path=\"./types/missing.d.ts\" />\nexport {};\n",
+    );
+    let output = run_check();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    assert!(!output.status.success(), "{stdout}");
+    assert!(stdout.contains("TS6053"), "{stdout}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_loads_reference_types_from_tsconfig_ambient_declarations() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
