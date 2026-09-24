@@ -335,8 +335,8 @@
         </div>
         <small>Card stays still. Status changes and the measured tooltip use brief motion.</small>
       </section>
-      <section aria-labelledby="navigation-heading">
-        <h2 id="navigation-heading">Navigation</h2>
+      <section aria-label="Navigation">
+        <h2>Navigation</h2>
         <div class="navigation-samples">
           <div>
             <p>Path</p>
@@ -356,48 +356,31 @@
           </div>
           <div>
             <p>Sections</p>
-            <div id="visual-tabs" data-vize-ui="tabs-root">
+            <div data-vize-ui="tabs-root" data-visual-tabs>
               <div data-vize-ui="tabs-list" role="tablist" aria-label="Preview sections">
                 <button
-                  id="preview-overview-tab"
                   type="button"
                   role="tab"
                   data-vize-ui="tabs-trigger"
                   data-selected="true"
                   aria-selected="true"
-                  aria-controls="preview-overview-panel"
                 >
                   Overview
                 </button>
                 <button
-                  id="preview-history-tab"
                   type="button"
                   role="tab"
                   data-vize-ui="tabs-trigger"
                   data-selected="false"
                   aria-selected="false"
-                  aria-controls="preview-history-panel"
                 >
                   History
                 </button>
               </div>
-              <div
-                id="preview-overview-panel"
-                data-vize-ui="tabs-content"
-                role="tabpanel"
-                aria-labelledby="preview-overview-tab"
-                tabindex="0"
-              >
+              <div data-vize-ui="tabs-content" role="tabpanel" tabindex="0">
                 A clear place to begin.
               </div>
-              <div
-                id="preview-history-panel"
-                data-vize-ui="tabs-content"
-                role="tabpanel"
-                aria-labelledby="preview-history-tab"
-                tabindex="0"
-                hidden
-              >
+              <div data-vize-ui="tabs-content" role="tabpanel" tabindex="0" hidden>
                 Earlier changes stay available.
               </div>
             </div>
@@ -445,7 +428,12 @@
                   </button>
                 </div>
                 <div data-vize-ui="stepper-item" role="listitem">
-                  <button type="button" data-vize-ui="stepper-trigger" data-current="true">
+                  <button
+                    type="button"
+                    data-vize-ui="stepper-trigger"
+                    data-current="true"
+                    aria-current="step"
+                  >
                     02 Review
                   </button>
                 </div>
@@ -515,16 +503,26 @@
       });
 
       const previewTabs = [
-        ...document.querySelectorAll('#visual-tabs [data-vize-ui="tabs-trigger"]'),
+        ...document.querySelectorAll('[data-visual-tabs] [data-vize-ui="tabs-trigger"]'),
       ];
+      const previewPanels = [
+        ...document.querySelectorAll('[data-visual-tabs] [data-vize-ui="tabs-content"]'),
+      ];
+      previewTabs.forEach((tab, index) => {
+        const panel = previewPanels[index];
+        tab.id = `visual-tab-${index}`;
+        panel.id = `visual-panel-${index}`;
+        tab.setAttribute("aria-controls", panel.id);
+        panel.setAttribute("aria-labelledby", tab.id);
+      });
       function selectPreviewTab(selected, focus = false) {
-        for (const tab of previewTabs) {
+        previewTabs.forEach((tab, index) => {
           const active = tab === selected;
           tab.dataset.selected = String(active);
           tab.setAttribute("aria-selected", String(active));
           tab.tabIndex = active ? 0 : -1;
-          document.getElementById(tab.getAttribute("aria-controls")).hidden = !active;
-        }
+          previewPanels[index].hidden = !active;
+        });
         if (focus) selected.focus();
       }
       previewTabs.forEach((tab, index) => {
