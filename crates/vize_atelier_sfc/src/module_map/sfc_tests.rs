@@ -72,7 +72,7 @@ fn render(code: &str, source: &str, map: &serde_json::Value) -> Vec<String> {
         .collect()
 }
 
-const SHAPES: [&str; 7] = [
+const SHAPES: [&str; 8] = [
     "<script setup>\nimport { ref } from 'vue'\nconst n = ref(1)\n</script>\n<template><p>{{ n }}</p></template>\n",
     "<script setup lang=\"ts\">\nconst props = defineProps<{ a: string }>()\nconst b: number = 1\n</script>\n<template><p>{{ props.a }}{{ b }}</p></template>\n",
     "<script lang=\"ts\">\nexport default { data: () => ({ n: 1 as number }) }\n</script>\n<template><p>{{ n }}</p></template>\n",
@@ -80,6 +80,7 @@ const SHAPES: [&str; 7] = [
     "<script setup>\nconst Lazy = defineLazyHydrationComponent('visible', () => import('./A.vue'))\nconst keep = 1\n</script>\n<template><Lazy :n=\"keep\" /></template>\n",
     "<script setup>\ndefinePageMeta({ layout: 'x' })\nconst after = 2\n</script>\n<template><p>{{ after }}</p></template>\n",
     "<script setup>\nimport { reactive } from 'vue'\nconst form = reactive({ a: '' })\nconst stay = await Promise.resolve(1)\n</script>\n<template><input v-model=\"form\">{{ stay }}</template>\n",
+    "<script>\nexport default { name: 'ScriptOnly' }\n</script>\n",
 ];
 
 #[test]
@@ -142,6 +143,28 @@ fn rewritten_statements_anchor_at_their_authored_statement() {
         segments
             .iter()
             .any(|segment| segment == r#""const _sfc_m" -> "export defau""#),
+        "{segments:#?}"
+    );
+}
+
+#[test]
+fn script_only_default_export_maps_to_its_authored_statement() {
+    let source = SHAPES[7];
+    let result = compile(source, false, true);
+    assert!(
+        result
+            .code
+            .contains("export default { name: 'ScriptOnly' }")
+    );
+    let segments = render(
+        &result.code,
+        source,
+        result.map.as_ref().expect("source map"),
+    );
+    assert!(
+        segments
+            .iter()
+            .any(|segment| segment == r#""export defau" -> "export defau""#),
         "{segments:#?}"
     );
 }

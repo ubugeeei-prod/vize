@@ -43,20 +43,25 @@ pub(super) fn prepared_script(
     (lazy, content, runs)
 }
 
-/// A `<script>`-only component's script: `export default` rewritten to
-/// `const _sfc_main`, then TypeScript stripped when the source is TypeScript
-/// and the output is not. `runs` (the content's provenance) is carried
-/// through both passes.
+/// A normal `<script>` block: rewrite its default export only when generated
+/// render or component metadata must be attached, then strip TypeScript when
+/// the output is JavaScript. Carry `runs` through both passes.
 pub(super) fn script_module(
     content: &str,
     runs: Option<Runs>,
     source_is_ts: bool,
     is_ts: bool,
+    needs_component_binding: bool,
 ) -> (String, Option<Runs>) {
-    let (rewritten, _, rewrite_runs) = profile!(
-        "atelier.sfc.normal_script.rewrite_default",
-        rewrite_default_traced(content, "_sfc_main", source_is_ts)
-    );
+    let (rewritten, rewrite_runs) = if needs_component_binding {
+        let (rewritten, _, runs) = profile!(
+            "atelier.sfc.normal_script.rewrite_default",
+            rewrite_default_traced(content, "_sfc_main", source_is_ts)
+        );
+        (rewritten, runs)
+    } else {
+        (content.to_compact_string(), Runs::identity(content.len()))
+    };
     let runs = runs.map(|runs| rewrite_runs.compose(&runs));
     if !source_is_ts || is_ts {
         return (rewritten, runs);
@@ -95,7 +100,10 @@ pub(super) fn module_map(
     filename: &str,
 ) -> Option<serde_json::Value> {
     let mut placed = Runs::default();
-    placed.append(at, &output?);
+    // `compile_sfc` trims trailing newlines before building the map. Clip a
+    // verbatim script run to the emitted module so validation keeps the
+    // remaining authored bytes instead of discarding the whole run.
+    placed.append(at, &output?.slice(0, code.len().saturating_sub(at)));
     let provenance = match rewrite {
         Some(rewrite) => rewrite.compose(&placed),
         None => placed,

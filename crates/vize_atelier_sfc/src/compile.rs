@@ -182,10 +182,18 @@ fn compile_sfc_inner(
         // Check if source script is TypeScript
         let source_is_ts = is_ts_lang(script.lang.as_deref());
 
-        // Rewrite `export default` to `const _sfc_main = ...` (parsed as
-        // TypeScript if the source is), then transpile TypeScript if needed.
-        let (mut final_script, script_runs) =
-            module_trace::script_module(&script_content, script_runs, source_is_ts, is_ts);
+        // A script-only SFC needs no mutable component binding unless the
+        // compiler must attach generated metadata. Preserve its default export
+        // just as compiler-sfc does, including in SSR output.
+        let needs_component_binding =
+            has_template || is_vapor || !compiled_styles.css_modules.is_empty();
+        let (mut final_script, script_runs) = module_trace::script_module(
+            &script_content,
+            script_runs,
+            source_is_ts,
+            is_ts,
+            needs_component_binding,
+        );
         // The script's position in the module, for its source-map provenance.
         let mut script_at = 0;
         if let Some(transform) = lazy_hydration_transform {
@@ -366,7 +374,8 @@ fn compile_sfc_inner(
                 }
             }
         } else {
-            // No template - just output rewritten script and export
+            // Without generated metadata the original script already exports
+            // its component; only metadata-bearing scripts need `_sfc_main`.
             code.push_str(&final_script);
             if is_vapor {
                 code.push_str("\n_sfc_main.__vapor = true");
@@ -375,7 +384,9 @@ fn compile_sfc_inner(
                 code.push('\n');
                 append_css_modules_assignment(&mut code, "_sfc_main", &compiled_styles.css_modules);
             }
-            code.push_str("\nexport default _sfc_main\n");
+            if needs_component_binding {
+                code.push_str("\nexport default _sfc_main\n");
+            }
         }
 
         let rewrite = finalize_output_mode(&mut code, &mut warnings, &options, &codegen_options);
