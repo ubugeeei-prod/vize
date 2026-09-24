@@ -9,6 +9,11 @@ impl Linter {
     /// Rules not in the list will be skipped during linting.
     #[inline]
     pub fn with_enabled_rules(mut self, rules: Option<Vec<String>>) -> Self {
+        self.explicit_no_get_current_instance = rules.as_ref().is_some_and(|rules| {
+            rules
+                .iter()
+                .any(|rule| rule == "script/no-get-current-instance")
+        });
         if rules.is_some() {
             if matches!(self.preset, Some(LintPreset::Incremental)) {
                 self.registry = crate::RuleRegistry::with_preset(LintPreset::Opinionated);
@@ -31,6 +36,9 @@ impl Linter {
         if rules.is_empty() {
             return self;
         }
+        self.explicit_no_get_current_instance |= rules
+            .iter()
+            .any(|rule| rule == "script/no-get-current-instance");
 
         let mut enabled_rules = self.enabled_rules.take().unwrap_or_else(|| {
             let mut names = self

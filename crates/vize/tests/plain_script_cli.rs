@@ -112,7 +112,7 @@ const schema = z.object({
 }
 
 #[test]
-fn lint_supports_plain_ts_inputs() {
+fn lint_opinionated_allows_get_current_instance_in_plain_ts() {
     let project = tempfile::tempdir().unwrap();
     write_project_file(
         project.path(),
@@ -139,8 +139,8 @@ const instance = getCurrentInstance();
         .output()
         .unwrap();
 
-    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+    assert_eq!(output.status.code(), Some(0), "{}", output_details(&output));
     let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("script/no-get-current-instance"));
+    assert!(!stdout.contains("script/no-get-current-instance"));
     assert!(stdout.contains("Linted 1 files"));
 }

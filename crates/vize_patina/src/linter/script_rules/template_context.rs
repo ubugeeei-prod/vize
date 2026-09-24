@@ -20,7 +20,7 @@ fn block_has_active_template_ast_rule(
     filename: &str,
     is_plain_script: bool,
 ) -> bool {
-    active_builtin_script_rule_entries(linter).any(|entry| {
+    active_builtin_script_rule_entries(linter, true).any(|entry| {
         let rule = resolved_rule(linter, entry);
         rule.uses_template_ast()
             && (is_plain_script || rule.runs_on_script_setup())

@@ -71,6 +71,10 @@ pub struct Linter {
     pub(crate) help_level: HelpLevel,
     /// Built-in script rules enabled for this linter.
     pub(crate) script_rules: &'static [&'static str],
+    /// Project-wide Vapor mode, when selected by the host.
+    pub(crate) vapor_mode: bool,
+    /// Whether the host selected the Vapor-only instance rule by name.
+    pub(crate) explicit_no_get_current_instance: bool,
     /// Project-configured replacements for configurable built-in script rules,
     /// keyed by rule name. When present, the configured instance runs in place
     /// of the static registry singleton (see `script/no-restricted-globals` and
@@ -111,6 +115,8 @@ impl Linter {
             severity_overrides: FxHashMap::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
+            vapor_mode: false,
+            explicit_no_get_current_instance: false,
             css_rules: builtin_css_rule_names(preset),
             musea_rules: &[],
             musea_design_tokens: None,
@@ -136,6 +142,8 @@ impl Linter {
             severity_overrides: FxHashMap::default(),
             help_level: HelpLevel::default(),
             script_rules: builtin_script_rule_names(preset),
+            vapor_mode: false,
+            explicit_no_get_current_instance: false,
             css_rules: builtin_css_rule_names(preset),
             musea_rules: &[],
             musea_design_tokens: None,
@@ -161,6 +169,8 @@ impl Linter {
             severity_overrides: FxHashMap::default(),
             help_level: HelpLevel::default(),
             script_rules: ecosystem_builtin_script_rule_names(),
+            vapor_mode: false,
+            explicit_no_get_current_instance: false,
             css_rules: builtin_css_rule_names(LintPreset::Ecosystem),
             musea_rules: &[],
             musea_design_tokens: None,
@@ -186,6 +196,8 @@ impl Linter {
             severity_overrides: FxHashMap::default(),
             help_level: HelpLevel::default(),
             script_rules: &[],
+            vapor_mode: false,
+            explicit_no_get_current_instance: false,
             css_rules: &[],
             musea_rules: &[],
             musea_design_tokens: None,

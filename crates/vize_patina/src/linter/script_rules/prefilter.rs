@@ -240,7 +240,7 @@ fn is_ecosystem_script_rule(rule_name: &str) -> bool {
 }
 
 pub(super) fn has_only_active_ecosystem_script_rules(linter: &Linter) -> bool {
-    active_builtin_script_rule_entries(linter)
+    active_builtin_script_rule_entries(linter, true)
         .all(|entry| is_ecosystem_script_rule(entry.rule_name))
 }
 

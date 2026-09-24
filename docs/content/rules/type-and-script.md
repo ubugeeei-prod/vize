@@ -271,10 +271,13 @@ onMounted(() => {
 ## `script/no-get-current-instance`
 
 Reports `getCurrentInstance()` in Vapor-oriented components. It reaches into runtime internals that
-Vapor cannot safely optimize.
+Vapor cannot safely optimize. The `opinionated` preset applies this rule to SFCs marked with
+`<script vapor>` or `<script setup vapor>`, and to projects configured for Vapor mode. Plain
+JavaScript and TypeScript files outside Vapor mode are not reported unless the rule is enabled
+explicitly.
 
 Default severity: `error`  
-Presets: `nuxt`, `opinionated`
+Presets: `opinionated` in Vapor mode
 
 Bad:
 

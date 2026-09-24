@@ -16,7 +16,10 @@ use prefilter::{
     script_rule_applies_to_filename, script_rule_may_match,
 };
 pub use registry::BuiltinScriptRuleMeta;
-use registry::{ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry};
+use registry::{
+    ALL_BUILTIN_SCRIPT_RULE_NAMES, BUILTIN_SCRIPT_RULES, BuiltinScriptRuleEntry,
+    RULE_NO_GET_CURRENT_INSTANCE,
+};
 
 #[cfg(test)]
 use registry::OPT_IN_SCRIPT_RULE_NAMES;
@@ -49,17 +52,25 @@ pub(crate) const fn opt_in_script_rule_names() -> &'static [&'static str] {
 
 #[inline]
 pub(crate) fn has_active_builtin_script_rules(linter: &Linter) -> bool {
-    active_builtin_script_rule_entries(linter).next().is_some()
+    active_builtin_script_rule_entries(linter, true)
+        .next()
+        .is_some()
 }
 
 fn active_builtin_script_rule_entries(
     linter: &Linter,
+    vapor_component: bool,
 ) -> impl Iterator<Item = &'static BuiltinScriptRuleEntry> + '_ {
     linter
         .script_rules
         .iter()
         .copied()
         .filter(|rule_name| linter.is_rule_enabled(rule_name))
+        .filter(move |rule_name| {
+            *rule_name != RULE_NO_GET_CURRENT_INSTANCE
+                || vapor_component
+                || linter.explicit_no_get_current_instance
+        })
         .filter_map(builtin_script_rule_entry)
 }
 
@@ -102,6 +113,15 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
     {
         return;
     }
+    let vapor_component = linter.vapor_mode
+        || descriptor
+            .script
+            .as_ref()
+            .is_some_and(|script| script.attrs.contains_key("vapor"))
+        || descriptor
+            .script_setup
+            .as_ref()
+            .is_some_and(|script| script.attrs.contains_key("vapor"));
 
     // Parse each block at most once and only when an active AST rule could
     // match it. Byte rules run directly against the source.
@@ -109,10 +129,14 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         .script
         .as_ref()
         .map(|block| (block.content.as_ref(), block.loc.start))
-        .filter(|(source, _)| block_has_active_rule(linter, source, result.filename.as_str()));
+        .filter(|(source, _)| {
+            block_has_active_rule(linter, vapor_component, source, result.filename.as_str())
+        });
     let script_alloc = Allocator::default();
     let script_parsed = script
-        .filter(|(source, _)| block_has_active_ast_rule(linter, source, result.filename.as_str()))
+        .filter(|(source, _)| {
+            block_has_active_ast_rule(linter, vapor_component, source, result.filename.as_str())
+        })
         .map(|(source, _)| {
             let parsed = profile!(
                 "patina.script_rule.parse",
@@ -125,10 +149,14 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         .script_setup
         .as_ref()
         .map(|block| (block.content.as_ref(), block.loc.start))
-        .filter(|(source, _)| block_has_active_rule(linter, source, result.filename.as_str()));
+        .filter(|(source, _)| {
+            block_has_active_rule(linter, vapor_component, source, result.filename.as_str())
+        });
     let setup_alloc = Allocator::default();
     let script_setup_parsed = script_setup
-        .filter(|(source, _)| block_has_active_ast_rule(linter, source, result.filename.as_str()))
+        .filter(|(source, _)| {
+            block_has_active_ast_rule(linter, vapor_component, source, result.filename.as_str())
+        })
         .map(|(source, _)| {
             let parsed = profile!(
                 "patina.script_rule.parse",
@@ -165,7 +193,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
         sole_script_block: descriptor.script.is_some() != descriptor.script_setup.is_some(),
     };
 
-    for entry in active_builtin_script_rule_entries(linter) {
+    for entry in active_builtin_script_rule_entries(linter, vapor_component) {
         let rule = resolved_rule(linter, entry);
         if let Some((source, offset)) = script {
             run_builtin_script_rule(
@@ -226,14 +254,24 @@ fn entry_may_match(
 ///
 /// Mirrors the per-rule `is_rule_enabled` + `script_rules.contains` +
 /// `script_rule_may_match` gate so a block matching no rule is never parsed.
-fn block_has_active_rule(linter: &Linter, source: &str, filename: &str) -> bool {
-    active_builtin_script_rule_entries(linter)
+fn block_has_active_rule(
+    linter: &Linter,
+    vapor_component: bool,
+    source: &str,
+    filename: &str,
+) -> bool {
+    active_builtin_script_rule_entries(linter, vapor_component)
         .any(|entry| entry_may_match(linter, entry, source, filename))
 }
 
 /// Whether any enabled AST-based built-in script rule could match `source`.
-fn block_has_active_ast_rule(linter: &Linter, source: &str, filename: &str) -> bool {
-    active_builtin_script_rule_entries(linter).any(|entry| {
+fn block_has_active_ast_rule(
+    linter: &Linter,
+    vapor_component: bool,
+    source: &str,
+    filename: &str,
+) -> bool {
+    active_builtin_script_rule_entries(linter, vapor_component).any(|entry| {
         resolved_rule(linter, entry).uses_ast() && entry_may_match(linter, entry, source, filename)
     })
 }
@@ -308,19 +346,21 @@ pub(crate) fn append_builtin_script_rules_for_source(
     result: &mut LintResult,
 ) {
     // Skip work entirely when no enabled rule could match this block.
-    if !block_has_active_rule(linter, source, result.filename.as_str()) {
+    if !block_has_active_rule(linter, linter.vapor_mode, source, result.filename.as_str()) {
         return;
     }
 
     let allocator = Allocator::default();
-    let parsed = block_has_active_ast_rule(linter, source, result.filename.as_str()).then(|| {
-        profile!(
-            "patina.script_rule.parse",
-            Parser::new(&allocator, source, script_source_type()).parse()
-        )
-    });
+    let parsed =
+        block_has_active_ast_rule(linter, linter.vapor_mode, source, result.filename.as_str())
+            .then(|| {
+                profile!(
+                    "patina.script_rule.parse",
+                    Parser::new(&allocator, source, script_source_type()).parse()
+                )
+            });
 
-    for entry in active_builtin_script_rule_entries(linter) {
+    for entry in active_builtin_script_rule_entries(linter, linter.vapor_mode) {
         let rule = resolved_rule(linter, entry);
         // Inline HTML scripts have no SFC template, so the context is empty.
         run_builtin_script_rule(

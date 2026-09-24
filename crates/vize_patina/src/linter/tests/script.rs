@@ -24,21 +24,59 @@ await nextTick()
 }
 
 #[test]
-fn lint_script_runs_script_rules() {
-    let result = Linter::with_preset(LintPreset::Opinionated).lint_script(
-        r#"import { getCurrentInstance } from "vue";
+fn non_vapor_composable_allows_get_current_instance_in_bundled_presets() {
+    let source = r#"import { getCurrentInstance } from "vue";
 
-const instance = getCurrentInstance();
-"#,
-        "vite.config.ts",
+export const useInstanceProxy = () => {
+  const instance = getCurrentInstance();
+  return instance?.proxy;
+};
+"#;
+    for preset in [LintPreset::HappyPath, LintPreset::Opinionated] {
+        let result =
+            Linter::with_preset(preset).lint_script(source, "src/composables/useInstance.ts");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != "script/no-get-current-instance"),
+            "{preset:?}: {:?}",
+            result.diagnostics
+        );
+    }
+}
+
+#[test]
+fn explicitly_enabled_get_current_instance_rule_runs_on_plain_script() {
+    let source = "import { getCurrentInstance } from 'vue'; getCurrentInstance();";
+    let result = Linter::with_preset(LintPreset::Opinionated)
+        .with_additional_rules(vec!["script/no-get-current-instance".into()])
+        .lint_script(source, "src/composables/useInstance.ts");
+    assert_eq!(
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "script/no-get-current-instance")
+            .count(),
+        2,
+        "{:?}",
+        result.diagnostics
     );
+}
 
-    assert!(result.error_count > 0, "{:?}", result.diagnostics);
+#[test]
+fn project_vapor_mode_runs_get_current_instance_rule_on_plain_script() {
+    let source = "import { getCurrentInstance } from 'vue'; getCurrentInstance();";
+    let result = Linter::with_preset(LintPreset::Opinionated)
+        .with_vapor_mode(Some(true))
+        .lint_script(source, "src/composables/useInstance.ts");
     assert!(
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.rule_name == "script/no-get-current-instance")
+            .any(|diagnostic| diagnostic.rule_name == "script/no-get-current-instance"),
+        "{:?}",
+        result.diagnostics
     );
 }
 

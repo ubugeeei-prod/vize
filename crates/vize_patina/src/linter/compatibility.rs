@@ -19,6 +19,7 @@ impl Linter {
     /// Apply project-wide SFC Vapor mode to lint rules.
     #[inline]
     pub fn with_vapor_mode(mut self, enabled: Option<bool>) -> Self {
+        self.vapor_mode = enabled == Some(true);
         if enabled == Some(false) {
             self.disabled_rules
                 .insert(String::from("script/no-get-current-instance"));

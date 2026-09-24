@@ -157,7 +157,7 @@ await nextTick()
 #[test]
 fn test_lint_sfc_opinionated_reports_no_get_current_instance() {
     let linter = Linter::with_preset(LintPreset::Opinionated);
-    let sfc = r#"<script setup lang="ts">
+    let sfc = r#"<script setup lang="ts" vapor>
 import { getCurrentInstance } from 'vue'
 
 const instance = getCurrentInstance()
@@ -169,6 +169,54 @@ const instance = getCurrentInstance()
             .diagnostics
             .iter()
             .any(|diagnostic| diagnostic.rule_name == "script/no-get-current-instance")
+    );
+}
+
+#[test]
+fn test_lint_sfc_opinionated_gates_get_current_instance_by_vapor_attribute() {
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    for script_tag in ["<script setup lang=\"ts\">", "<script lang=\"ts\">"] {
+        let source = format!(
+            "{script_tag}\nimport {{ getCurrentInstance }} from 'vue'\ngetCurrentInstance()\n</script>\n<template><div /></template>\n"
+        );
+        let plain = linter.lint_sfc(&source, "Component.vue");
+        assert!(
+            plain
+                .diagnostics
+                .iter()
+                .all(|diagnostic| diagnostic.rule_name != "script/no-get-current-instance"),
+            "{:?}",
+            plain.diagnostics
+        );
+
+        let vapor_source = source.replacen('>', " vapor>", 1);
+        let vapor = linter.lint_sfc(&vapor_source, "Component.vue");
+        assert_eq!(
+            vapor
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.rule_name == "script/no-get-current-instance")
+                .count(),
+            2,
+            "{:?}",
+            vapor.diagnostics
+        );
+    }
+}
+
+#[test]
+fn test_explicit_vapor_false_disables_get_current_instance_in_vapor_sfc() {
+    let source = "<script setup vapor>import { getCurrentInstance } from 'vue'; getCurrentInstance();</script>";
+    let result = Linter::with_preset(LintPreset::Opinionated)
+        .with_vapor_mode(Some(false))
+        .lint_sfc(source, "Component.vue");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .all(|diagnostic| diagnostic.rule_name != "script/no-get-current-instance"),
+        "{:?}",
+        result.diagnostics
     );
 }
 
