@@ -104,6 +104,27 @@ fn encoded_conditional_operators_match_legacy_in_both_dom_shapes() {
 }
 
 #[test]
+fn scoped_component_props_do_not_trigger_static_child_cache() {
+    let _guard = PROFILER_TEST_LOCK.lock().unwrap();
+    let source = "<template><main><h1>Not found</h1><router-link to='/'>Home</router-link></main></template><style scoped>h1 { color: red; }</style>";
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    for shape in [Shape::DomInline, Shape::DomModule] {
+        let profiler = global_profiler();
+        profiler.clear();
+        profiler.enable();
+        let selected = compile(&descriptor, "ScopedLink.vue", shape).unwrap();
+        let counters = profiler.counter_summary();
+        profiler.disable();
+        profiler.clear();
+        assert_eq!(classify(shape, &counters), Ok(Lane::Accepted), "{shape:?}");
+        let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+            compile(&descriptor, "ScopedLink.vue", shape)
+        });
+        assert_eq!(divergence(&selected, &legacy), None, "{shape:?}");
+    }
+}
+
+#[test]
 fn production_compiles_report_and_hold_their_davinci_reach() {
     let _guard = PROFILER_TEST_LOCK.lock().unwrap();
     std::thread::Builder::new()

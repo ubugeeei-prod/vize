@@ -19,9 +19,18 @@ pub(super) fn enabled(
     root: &Region<'_>,
     facts: &S2Facts,
     wrappers: &SideTable<WrapperKeys>,
+    allow_component_props_hoist: bool,
 ) -> bool {
     let mut walk = PageWalk::new();
-    region_has_legacy_hoist(&mut walk, &root.ops, facts, wrappers, true, false) || {
+    region_has_legacy_hoist(
+        &mut walk,
+        &root.ops,
+        facts,
+        wrappers,
+        true,
+        false,
+        allow_component_props_hoist,
+    ) || {
         let mut walk = PageWalk::new();
         foreign_props::region_has_non_branch_foreign_props_hoist(&mut walk, &root.ops, facts, false)
     }
@@ -34,9 +43,18 @@ fn region_has_legacy_hoist(
     wrappers: &SideTable<WrapperKeys>,
     is_root: bool,
     hoist_static_vnodes: bool,
+    allow_component_props_hoist: bool,
 ) -> bool {
     for op in ops {
-        if op_has_legacy_hoist(walk, op, facts, wrappers, is_root, hoist_static_vnodes) {
+        if op_has_legacy_hoist(
+            walk,
+            op,
+            facts,
+            wrappers,
+            is_root,
+            hoist_static_vnodes,
+            allow_component_props_hoist,
+        ) {
             return true;
         }
     }
@@ -50,6 +68,7 @@ fn op_has_legacy_hoist(
     wrappers: &SideTable<WrapperKeys>,
     is_root: bool,
     hoist_static_vnodes: bool,
+    allow_component_props_hoist: bool,
 ) -> bool {
     let id = walk.mint();
     match op {
@@ -67,19 +86,37 @@ fn op_has_legacy_hoist(
                 wrappers,
                 is_root,
                 hoist_static_vnodes,
+                allow_component_props_hoist,
             )
         }
         Op::Component(component) => {
             walk.skip(component.bindings.len());
             let fact = id.and_then(|id| facts.static_facts.get(id)).copied();
-            component_has_legacy_hoist(walk, component, fact, facts, wrappers)
+            component_has_legacy_hoist(
+                walk,
+                component,
+                fact,
+                facts,
+                wrappers,
+                allow_component_props_hoist,
+            )
         }
         Op::If(if_op) => if_op.branches.iter().any(|branch| {
-            branch_roots_have_legacy_hoist(walk, &branch.region.ops, facts, wrappers)
+            branch_roots_have_legacy_hoist(
+                walk,
+                &branch.region.ops,
+                facts,
+                wrappers,
+                allow_component_props_hoist,
+            )
         }),
-        Op::For(for_op) => {
-            for_children_have_legacy_hoist(walk, &for_op.region.ops, facts, wrappers)
-        }
+        Op::For(for_op) => for_children_have_legacy_hoist(
+            walk,
+            &for_op.region.ops,
+            facts,
+            wrappers,
+            allow_component_props_hoist,
+        ),
         Op::Slot(slot) => {
             walk.skip(slot.bindings.len());
             skip_region(walk, &slot.fallback.ops);
@@ -97,6 +134,7 @@ fn element_has_legacy_hoist(
     wrappers: &SideTable<WrapperKeys>,
     is_root: bool,
     hoist_static_vnodes: bool,
+    allow_component_props_hoist: bool,
 ) -> bool {
     match fact.level {
         StaticLevel::FullyStatic => {
@@ -129,6 +167,7 @@ fn element_has_legacy_hoist(
                     wrappers,
                     false,
                     child_hoist_static_vnodes,
+                    allow_component_props_hoist,
                 )
             })
         }
@@ -141,12 +180,23 @@ fn component_has_legacy_hoist(
     fact: Option<StaticFacts>,
     facts: &S2Facts,
     wrappers: &SideTable<WrapperKeys>,
+    allow_component_props_hoist: bool,
 ) -> bool {
-    if fact.is_some_and(|fact| fact.props_hoistable && (fact.foreign || fact.nested_static)) {
+    if allow_component_props_hoist
+        && fact.is_some_and(|fact| fact.props_hoistable && (fact.foreign || fact.nested_static))
+    {
         return true;
     }
     ensure_sufficient_stack(|| {
-        region_has_legacy_hoist(walk, &component.children.ops, facts, wrappers, false, true)
+        region_has_legacy_hoist(
+            walk,
+            &component.children.ops,
+            facts,
+            wrappers,
+            false,
+            true,
+            allow_component_props_hoist,
+        )
     })
 }
 
@@ -155,6 +205,7 @@ fn branch_roots_have_legacy_hoist(
     ops: &[Op<'_>],
     facts: &S2Facts,
     wrappers: &SideTable<WrapperKeys>,
+    allow_component_props_hoist: bool,
 ) -> bool {
     // A single child is the branch block itself, under `<template v-if>` too;
     // only the children of a fragment branch are hoisted whole.
@@ -198,6 +249,7 @@ fn branch_roots_have_legacy_hoist(
                         wrappers,
                         false,
                         true,
+                        allow_component_props_hoist,
                     )
                 }) {
                     return true;
@@ -213,6 +265,7 @@ fn branch_roots_have_legacy_hoist(
                         wrappers,
                         false,
                         true,
+                        allow_component_props_hoist,
                     )
                 }) {
                     return true;
@@ -285,6 +338,7 @@ fn for_children_have_legacy_hoist(
     ops: &[Op<'_>],
     facts: &S2Facts,
     wrappers: &SideTable<WrapperKeys>,
+    allow_component_props_hoist: bool,
 ) -> bool {
     match ops {
         [Op::Element(element)] => {
@@ -297,23 +351,48 @@ fn for_children_have_legacy_hoist(
                 return true;
             }
             ensure_sufficient_stack(|| {
-                region_has_legacy_hoist(walk, &element.children.ops, facts, wrappers, false, true)
+                region_has_legacy_hoist(
+                    walk,
+                    &element.children.ops,
+                    facts,
+                    wrappers,
+                    false,
+                    true,
+                    allow_component_props_hoist,
+                )
             })
         }
         [Op::Component(component)] => {
             let id = walk.mint();
             walk.skip(component.bindings.len());
-            if id
-                .and_then(|id| facts.static_facts.get(id))
-                .is_some_and(|fact| fact.props_hoistable)
+            if allow_component_props_hoist
+                && id
+                    .and_then(|id| facts.static_facts.get(id))
+                    .is_some_and(|fact| fact.props_hoistable)
             {
                 return true;
             }
             ensure_sufficient_stack(|| {
-                region_has_legacy_hoist(walk, &component.children.ops, facts, wrappers, false, true)
+                region_has_legacy_hoist(
+                    walk,
+                    &component.children.ops,
+                    facts,
+                    wrappers,
+                    false,
+                    true,
+                    allow_component_props_hoist,
+                )
             })
         }
-        _ => region_has_legacy_hoist(walk, ops, facts, wrappers, false, true),
+        _ => region_has_legacy_hoist(
+            walk,
+            ops,
+            facts,
+            wrappers,
+            false,
+            true,
+            allow_component_props_hoist,
+        ),
     }
 }
 

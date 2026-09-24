@@ -105,7 +105,13 @@ fn emit_condition(
     match condition {
         ExprRef::Js(js) => {
             let source = super::js::js_expr_source(js);
-            let decoded = super::decode_html_attribute_entities(source.as_str());
+            let decoded = source
+                .as_str()
+                .contains('&')
+                .then(|| super::decode_html_attribute_entities(source.as_str()));
+            let emitted = decoded
+                .as_ref()
+                .map_or(source.as_str(), |value| value.as_str());
             if let Some((leading, trailing)) =
                 authored_condition_padding(cx.source, branch_span, source.as_str(), js.span)
                     .or_else(|| {
@@ -117,10 +123,10 @@ fn emit_condition(
                     .or_else(|| authored_condition_quote_padding(cx.source, js.source, js.span))
             {
                 cx.buf.push(leading);
-                cx.buf.push(decoded.as_str());
+                cx.buf.push(emitted);
                 cx.buf.push(trailing);
             } else {
-                cx.buf.push(decoded.as_str());
+                cx.buf.push(emitted);
             }
             Ok(())
         }
@@ -135,7 +141,13 @@ fn emit_condition(
                 .then(|| super::js::RawJs::Borrowed(opaque.source))
             });
             if let Some(raw) = raw {
-                let decoded = super::decode_html_attribute_entities(raw.as_str());
+                let decoded = raw
+                    .as_str()
+                    .contains('&')
+                    .then(|| super::decode_html_attribute_entities(raw.as_str()));
+                let emitted = decoded
+                    .as_ref()
+                    .map_or(raw.as_str(), |value| value.as_str());
                 if let Some((leading, trailing)) = authored_condition_padding(
                     cx.source,
                     branch_span,
@@ -143,10 +155,10 @@ fn emit_condition(
                     condition.span(),
                 ) {
                     cx.buf.push(leading);
-                    cx.buf.push(decoded.as_str());
+                    cx.buf.push(emitted);
                     cx.buf.push(trailing);
                 } else {
-                    cx.buf.push(decoded.as_str());
+                    cx.buf.push(emitted);
                 }
                 Ok(())
             } else {
