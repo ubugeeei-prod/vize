@@ -5,7 +5,7 @@ import type { ComputedRef } from "vue";
 import ComboboxRoot from "../combobox/combobox-root.vue";
 import { useControllableState } from "../../foundations/controllable-state/controllable-state.ts";
 import type { ComboboxSlotState } from "../combobox/combobox-types.ts";
-import { createSelectValueEquality } from "../select/select-model.ts";
+import { createSelectValueEquality, defaultSelectText } from "../select/select-model.ts";
 import { pushAutocompleteHistory, removeAutocompleteHistory } from "./autocomplete-history.ts";
 import type {
   AutocompleteRootExpose,
@@ -68,7 +68,6 @@ const historyState = useControllableState<readonly T[]>({
 const recent = computed(() => historyState.value.value);
 const historyCount = computed(() => recent.value.length);
 const hasHistory = computed(() => historyCount.value > 0);
-let lastQuery = "";
 
 function currentHistory(): readonly T[] {
   return historyState.value.value;
@@ -89,13 +88,12 @@ function clearHistory(): void {
 function onModelValue(value: T | null): void {
   if (value !== null) {
     remember(value);
-    emit("submit", itemText?.(value) ?? lastQuery, value);
+    emit("submit", itemText?.(value) ?? defaultSelectText(value, by), value);
   }
   emit("update:modelValue", value);
 }
 
 function onInputValue(text: string): void {
-  lastQuery = text;
   emit("update:inputValue", text);
 }
 

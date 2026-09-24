@@ -114,6 +114,17 @@ test("choosing a suggestion records it in history and emits submit", async () =>
   handle.unmount();
 });
 
+test("a chosen suggestion submits its label without a custom itemText", async () => {
+  const handle = mountAutocomplete({ items: places, itemText: undefined });
+  const field = input(handle);
+  field.focus();
+  await type(field, "kyot");
+  keydown(field, "Enter");
+  await settle();
+  assert.deepEqual(handle.wrapper.emitted("submit"), [["Kyoto Tower", places[1]]]);
+  handle.unmount();
+});
+
 test("an empty query shows history first, newest first, deduplicated and capped", async () => {
   const handle = mountAutocomplete({
     defaultHistory: [places[2], places[0]],
