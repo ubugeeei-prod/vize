@@ -1,10 +1,10 @@
-const CDATA: &[u8] = b"CDATA[";
-const CDATA_END: &[u8] = b"]]>";
-const COMMENT_END: &[u8] = b"-->";
-const TITLE_END: &[u8] = b"</title";
-const TEXTAREA_END: &[u8] = b"</textarea";
-const SCRIPT_END: &[u8] = b"</script";
-const STYLE_END: &[u8] = b"</style";
+const CDATA: &[u8; 6] = b"CDATA[";
+const CDATA_END: &[u8; 3] = b"]]>";
+const COMMENT_END: &[u8; 3] = b"-->";
+const TITLE_END: &[u8; 7] = b"</title";
+const TEXTAREA_END: &[u8; 10] = b"</textarea";
+const SCRIPT_END: &[u8; 8] = b"</script";
+const STYLE_END: &[u8; 7] = b"</style";
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub(super) enum Sequence {
@@ -28,6 +28,20 @@ impl Sequence {
             Self::TextareaEnd => TEXTAREA_END,
             Self::ScriptEnd => SCRIPT_END,
             Self::StyleEnd => STYLE_END,
+        }
+    }
+
+    /// The first byte of [`Self::bytes`].
+    #[inline]
+    pub fn first_byte(self) -> u8 {
+        match self {
+            Self::Cdata => CDATA[0],
+            Self::CdataEnd => CDATA_END[0],
+            Self::CommentEnd => COMMENT_END[0],
+            Self::TitleEnd => TITLE_END[0],
+            Self::TextareaEnd => TEXTAREA_END[0],
+            Self::ScriptEnd => SCRIPT_END[0],
+            Self::StyleEnd => STYLE_END[0],
         }
     }
 }

@@ -12,8 +12,13 @@ use super::{
 };
 
 impl PatternParser<'_> {
+    /// The unparsed source from the cursor on.
+    pub fn remaining(&self) -> &str {
+        self.source.get(self.pos..).unwrap_or_default()
+    }
+
     pub fn peek(&self) -> Option<char> {
-        self.source[self.pos..].chars().next()
+        self.remaining().chars().next()
     }
 
     pub fn space(&mut self) {
@@ -27,7 +32,7 @@ impl PatternParser<'_> {
 
     pub fn eat(&mut self, token: &str) -> bool {
         self.space();
-        if !self.source[self.pos..].starts_with(token) {
+        if !self.remaining().starts_with(token) {
             return false;
         }
         self.pos += token.len();
@@ -36,7 +41,7 @@ impl PatternParser<'_> {
 
     pub fn word(&mut self, token: &str) -> bool {
         self.space();
-        let Some(rest) = self.source[self.pos..].strip_prefix(token) else {
+        let Some(rest) = self.remaining().strip_prefix(token) else {
             return false;
         };
         if rest.chars().next().is_some_and(is_identifier_part) {
@@ -65,7 +70,7 @@ impl PatternParser<'_> {
             self.pos += c.len_utf8();
         }
         Ok(PatternBinding {
-            name: String::from(&self.source[start..self.pos]),
+            name: String::from(self.source.get(start..self.pos).unwrap_or_default()),
             span: Span::new(start as u32, self.pos as u32),
         })
     }
@@ -147,7 +152,7 @@ impl PatternParser<'_> {
                 self.pos += 1;
                 self.digits();
             }
-            if self.pos == unsigned || &self.source[unsigned..self.pos] == "." {
+            if self.pos == unsigned || self.source.get(unsigned..self.pos) == Some(".") {
                 return Err(self.error("Expected a numeric literal."));
             }
             if matches!(self.peek(), Some('e' | 'E')) {
@@ -209,7 +214,10 @@ impl PatternParser<'_> {
         let expression = oxc_parser::Parser::new(&self.js, source, SourceType::ts())
             .parse_expression()
             .map_err(|_| self.error(&vize_s0::cstr!("Invalid {kind} expression.")))?;
-        if !is_expression_trailing_trivia(&source[expression.span().end as usize..]) {
+        let trailing = source
+            .get(expression.span().end as usize..)
+            .unwrap_or_default();
+        if !is_expression_trailing_trivia(trailing) {
             return Err(self.error(&vize_s0::cstr!("Unexpected token after {kind} expression.")));
         }
         Ok(expression)
@@ -227,11 +235,11 @@ fn string_units(value: &str, escaped_surrogates: bool) -> Vec<u16> {
         if c == '\u{fffd}' {
             let mut unit = 0u16;
             for _ in 0..4 {
-                unit = unit * 16
-                    + chars
-                        .next()
-                        .and_then(|c| c.to_digit(16))
-                        .expect("OXC surrogate encoding") as u16;
+                // Not OXC's surrogate escape after all: count the text as is.
+                let Some(digit) = chars.next().and_then(|c| c.to_digit(16)) else {
+                    return value.encode_utf16().collect();
+                };
+                unit = unit * 16 + digit as u16;
             }
             result.push(unit);
         } else {

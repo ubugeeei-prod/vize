@@ -9,6 +9,12 @@
 //! single `#[test]` (its own test binary, no concurrent recorder): parallel
 //! tests in the same binary would interleave increments.
 
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
+
 use oxc_ast::ast::Expression;
 use vize_armature::parse;
 use vize_relief::{

@@ -199,7 +199,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     }
 
     pub(super) fn state_interpolation_open(&mut self, c: u8) {
-        if c == self.delimiter_open[self.delimiter_index] {
+        if self.delimiter_open.get(self.delimiter_index) == Some(&c) {
             self.delimiter_index += 1;
             if self.delimiter_index == self.delimiter_open.len() {
                 let start = self.index + 1 - self.delimiter_open.len();
@@ -238,7 +238,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     }
 
     pub(super) fn state_interpolation_close(&mut self, c: u8) {
-        if c == self.delimiter_close[self.delimiter_index] {
+        if self.delimiter_close.get(self.delimiter_index) == Some(&c) {
             self.delimiter_index += 1;
             if self.delimiter_index == self.delimiter_close.len() {
                 let expr_end = self.index + 1 - self.delimiter_close.len();
@@ -406,7 +406,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.section_start = self.index;
             return;
         }
-        if c == LOWER_V && self.index + 1 < self.input.len() && self.input[self.index + 1] == DASH {
+        if c == LOWER_V && self.input.get(self.index + 1) == Some(&DASH) {
             self.state = State::InDirName;
             self.section_start = self.index;
         } else if c == DOT || c == COLON || c == AT || c == NUMBER {
@@ -642,7 +642,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn state_cdata_sequence(&mut self, c: u8) {
         let prefix = Sequence::Cdata.bytes();
-        if c == prefix[self.sequence_index] {
+        if prefix.get(self.sequence_index) == Some(&c) {
             self.sequence_index += 1;
             if self.sequence_index == prefix.len() {
                 self.state = State::InCommentLike;
@@ -670,8 +670,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         let end = self.index.saturating_sub(2);
         match closing {
             Sequence::CdataEnd => self.callbacks.on_cdata(self.section_start, end),
-            Sequence::CommentEnd => self.callbacks.on_comment(self.section_start, end),
-            _ => unreachable!("InCommentLike only closes CommentEnd or CdataEnd"),
+            _ => self.callbacks.on_comment(self.section_start, end),
         }
         self.sequence_index = 0;
         self.current_sequence = None;
@@ -704,7 +703,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.current_sequence = None;
             self.section_start = self.index + 1;
             self.state = State::Text;
-        } else if c == sequence_bytes[self.sequence_index] {
+        } else if sequence_bytes.get(self.sequence_index) == Some(&c) {
             self.sequence_index += 1;
             if self.sequence_index == sequence_bytes.len() {
                 self.finish_comment_like(sequence);
@@ -715,7 +714,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             {
                 self.callbacks
                     .on_error(ErrorCode::NestedComment, self.index);
-            } else if sequence != Sequence::CommentEnd && self.fast_forward_to(sequence_bytes[0]) {
+            } else if sequence != Sequence::CommentEnd
+                && self.fast_forward_to(sequence.first_byte())
+            {
                 self.sequence_index = 1;
             }
         } else if sequence == Sequence::CommentEnd
@@ -724,7 +725,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         {
             self.callbacks
                 .on_error(ErrorCode::IncorrectlyClosedComment, self.index);
-        } else if c != sequence_bytes[self.sequence_index - 1] {
+        } else if sequence_bytes.get(self.sequence_index - 1) != Some(&c) {
             // Allow long sequences, eg. --->, ]]]>
             self.sequence_index = 0;
         }
@@ -733,9 +734,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     // </script
     // </style
     pub(super) fn state_before_special_s(&mut self, c: u8) {
-        if c == Sequence::ScriptEnd.bytes()[3] {
+        if Sequence::ScriptEnd.bytes().get(3) == Some(&c) {
             self.start_special(Sequence::ScriptEnd, 4);
-        } else if c == Sequence::StyleEnd.bytes()[3] {
+        } else if Sequence::StyleEnd.bytes().get(3) == Some(&c) {
             self.start_special(Sequence::StyleEnd, 4);
         } else {
             self.state = State::InTagName;
@@ -746,9 +747,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     // </title>
     // </textarea>
     pub(super) fn state_before_special_t(&mut self, c: u8) {
-        if c == Sequence::TitleEnd.bytes()[3] {
+        if Sequence::TitleEnd.bytes().get(3) == Some(&c) {
             self.start_special(Sequence::TitleEnd, 4);
-        } else if c == Sequence::TextareaEnd.bytes()[3] {
+        } else if Sequence::TextareaEnd.bytes().get(3) == Some(&c) {
             self.start_special(Sequence::TextareaEnd, 4);
         } else {
             self.state = State::InTagName;
@@ -778,7 +779,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         let is_match = if is_end {
             is_end_of_tag_section(c)
         } else {
-            (c | 0x20) == sequence_bytes[self.sequence_index]
+            sequence_bytes.get(self.sequence_index) == Some(&(c | 0x20))
         };
 
         if !is_match {
@@ -820,11 +821,10 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.sequence_index = 0;
         }
 
-        if (c | 0x20) == sequence_bytes[self.sequence_index] {
+        if sequence_bytes.get(self.sequence_index) == Some(&(c | 0x20)) {
             self.sequence_index += 1;
         } else if self.sequence_index == 0 {
-            // TODO(SFC root): align with vue-core `(TextareaEnd && !inSFCRoot)` — `<textarea>` at SFC
-            // file root should behave as RAWTEXT (no `&`/interpolation here); not distinguished yet.
+            // vue-core skips this for an SFC-root `<textarea>`; armature has no SFC mode.
             if matches!(sequence, Sequence::TitleEnd | Sequence::TextareaEnd) {
                 if c == AMP {
                     self.start_entity();
@@ -853,7 +853,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     /// `0` rewind, `<0` wait for more buffer). Here: `Some` → `emit_entity_char`; `None` → rewind
     /// (like `0`); no `<0` path. `Context` follows `base_state` for htmlize attribute rules.
     pub(super) fn state_in_entity(&mut self) {
-        let raw = &self.input[self.entity_start..];
+        let raw = self.input.get(self.entity_start..).unwrap_or_default();
         let context = match self.base_state {
             State::Text | State::InRCDATA => Context::General,
             _ => Context::Attribute,

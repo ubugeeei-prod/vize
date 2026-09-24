@@ -10,7 +10,11 @@
 //!
 //! Test-only: `std::string::String` and `format!` build the deeply nested source
 //! strings that the parser is fed here.
-#![allow(clippy::disallowed_macros, clippy::disallowed_types)]
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    reason = "the nesting fixtures are generated std strings"
+)]
 
 use vize_armature::parse;
 use vize_relief::{

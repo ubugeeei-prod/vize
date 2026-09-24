@@ -46,9 +46,11 @@ impl<'a> Parser<'a> {
                         self.in_v_pre,
                     ));
                 }
-                let mut parent = self
-                    .pop_stack_entry()
-                    .expect("formatting match is still open");
+                // The loop keeps the formatting match below `entry` open.
+                let Some(mut parent) = self.pop_stack_entry() else {
+                    self.push_stack_entry(entry);
+                    break;
+                };
                 self.push_entry_as_child(&mut parent.element.children, entry);
                 self.push_stack_entry(parent);
             }

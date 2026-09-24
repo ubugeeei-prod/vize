@@ -72,45 +72,39 @@ pub(super) fn condense_whitespace<'a>(
     is_pre_tag: fn(&str) -> bool,
 ) {
     // First pass: remove leading whitespace-only text nodes
-    while !children.is_empty() {
-        if let TemplateChildNode::Text(ref text) = children[0]
-            && text.content.chars().all(is_vue_whitespace)
-        {
-            children.remove(0);
-            continue;
-        }
-        break;
+    while children.first().is_some_and(is_whitespace_text) {
+        children.remove(0);
     }
 
     // Remove trailing whitespace-only text nodes
-    while !children.is_empty() {
-        let last = children.len() - 1;
-        if let TemplateChildNode::Text(ref text) = children[last]
-            && text.content.chars().all(is_vue_whitespace)
-        {
-            children.remove(last);
-            continue;
-        }
-        break;
+    while children.last().is_some_and(is_whitespace_text) {
+        children.pop();
     }
 
     let mut i = 0;
-    while i < children.len() {
-        let action = if is_whitespace_text(&children[i]) {
+    while let Some(child) = children.get(i) {
+        let action = if is_whitespace_text(child) {
             let mut run_end = i + 1;
-            let mut has_newline = whitespace_has_newline(&children[i]);
-            while run_end < children.len() && is_whitespace_text(&children[run_end]) {
-                has_newline |= whitespace_has_newline(&children[run_end]);
+            let mut has_newline = whitespace_has_newline(child);
+            while let Some(next) = children
+                .get(run_end)
+                .filter(|next| is_whitespace_text(next))
+            {
+                has_newline |= whitespace_has_newline(next);
                 run_end += 1;
             }
 
-            let prev = (0..i)
+            let before = children.get(..i).unwrap_or_default();
+            let after = children.get(run_end..).unwrap_or_default();
+            let prev_is_text = before
+                .iter()
                 .rev()
-                .find(|&idx| !is_whitespace_text(&children[idx]));
-            let next = (run_end..children.len()).find(|&idx| !is_whitespace_text(&children[idx]));
-
-            let prev_is_text = prev.is_some_and(|idx| is_text_like(&children[idx]));
-            let next_is_text = next.is_some_and(|idx| is_text_like(&children[idx]));
+                .find(|node| !is_whitespace_text(node))
+                .is_some_and(is_text_like);
+            let next_is_text = after
+                .iter()
+                .find(|node| !is_whitespace_text(node))
+                .is_some_and(is_text_like);
 
             if !prev_is_text && !next_is_text && has_newline {
                 WhitespaceAction::Remove(run_end - i)
@@ -130,7 +124,7 @@ pub(super) fn condense_whitespace<'a>(
             }
             WhitespaceAction::Condense(len) => {
                 // Condense whitespace runs to a single space.
-                if let TemplateChildNode::Text(ref mut text) = children[i] {
+                if let Some(TemplateChildNode::Text(text)) = children.get_mut(i) {
                     text.content = " ";
                 }
                 for _ in 1..len {
@@ -143,7 +137,7 @@ pub(super) fn condense_whitespace<'a>(
                 // matching Vue's `condense` strategy. Without this `x   y\n
                 // z` would keep its raw whitespace and diverge from
                 // `@vue/compiler-sfc`. (#960)
-                if let TemplateChildNode::Text(ref mut text) = children[i]
+                if let Some(TemplateChildNode::Text(text)) = children.get_mut(i)
                     && let Some(condensed) = condense_internal_whitespace(allocator, text.content)
                 {
                     text.content = condensed;
@@ -152,7 +146,7 @@ pub(super) fn condense_whitespace<'a>(
         }
 
         // Recurse into elements
-        if let TemplateChildNode::Element(ref mut el) = children[i]
+        if let Some(TemplateChildNode::Element(el)) = children.get_mut(i)
             && !is_pre_tag(el.tag)
         {
             ensure_sufficient_stack(|| {

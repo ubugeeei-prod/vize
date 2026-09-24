@@ -27,8 +27,8 @@ fn first_scalar(expansion: &[u8]) -> Option<char> {
 fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> {
     let mut j = 1usize;
     let mut steps = 0usize;
-    while steps < ENTITY_MAX_LENGTH - 1 && j < input.len() {
-        if input[j].is_ascii_alphanumeric() {
+    while steps < ENTITY_MAX_LENGTH - 1 {
+        if input.get(j).is_some_and(u8::is_ascii_alphanumeric) {
             j += 1;
             steps += 1;
         } else {
@@ -44,7 +44,7 @@ fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> 
     }
 
     if context == Context::Attribute {
-        let candidate = &input[..consumed_end];
+        let candidate = input.get(..consumed_end)?;
         if candidate.len() < ENTITY_MIN_LENGTH {
             return None;
         }
@@ -55,7 +55,7 @@ fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> 
 
     let max_len = min(consumed_end, ENTITY_MAX_LENGTH);
     for check_len in (ENTITY_MIN_LENGTH..=max_len).rev() {
-        if let Some(expansion) = ENTITIES.get(&input[..check_len]) {
+        if let Some(expansion) = input.get(..check_len).and_then(|name| ENTITIES.get(name)) {
             let ch = first_scalar(expansion)?;
             return Some((ch, check_len));
         }
@@ -64,7 +64,7 @@ fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> 
 }
 
 fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
-    if input.len() < 3 || input[0] != b'&' || input[1] != b'#' {
+    if input.len() < 3 || !input.starts_with(b"&#") {
         return None;
     }
 
@@ -73,10 +73,10 @@ fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
         Some(b'x' | b'X') => {
             pos += 1;
             let start = pos;
-            while pos < input.len() && input[pos].is_ascii_hexdigit() {
+            while input.get(pos).is_some_and(u8::is_ascii_hexdigit) {
                 pos += 1;
             }
-            let hex = &input[start..pos];
+            let hex = input.get(start..pos)?;
             if hex.is_empty() {
                 return None;
             }
@@ -84,10 +84,10 @@ fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
         }
         Some(c) if c.is_ascii_digit() => {
             let start = pos;
-            while pos < input.len() && input[pos].is_ascii_digit() {
+            while input.get(pos).is_some_and(u8::is_ascii_digit) {
                 pos += 1;
             }
-            let dec = &input[start..pos];
+            let dec = input.get(start..pos)?;
             if dec.is_empty() {
                 return None;
             }
@@ -110,7 +110,6 @@ fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
 }
 
 /// <https://html.spec.whatwg.org/multipage/parsing.html#numeric-character-reference-end-state>
-#[allow(clippy::match_same_arms)]
 fn correct_numeric_entity(number: u32) -> char {
     match number {
         0x00 => '\u{FFFD}',

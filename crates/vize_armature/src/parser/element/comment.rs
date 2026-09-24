@@ -46,7 +46,7 @@ impl<'a> Parser<'a> {
 
     fn comment_loc_end(&self, start: usize, end: usize) -> usize {
         let end = self.clamp_to_char_boundary(end);
-        let rest = &self.source[end..];
+        let rest = self.source.get(end..).unwrap_or_default();
         if rest.starts_with("-->") {
             end + 3
         } else if start == end && rest.starts_with("->") {

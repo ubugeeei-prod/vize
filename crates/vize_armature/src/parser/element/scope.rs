@@ -27,9 +27,10 @@ impl<'a> Parser<'a> {
         if tag.eq_ignore_ascii_case("a") {
             if self.open_a_count > 0
                 && let Some(index) = self.find_open_element_index("a")
+                && let Some(loc) = self.stack.get(index).map(|entry| entry.element.loc.clone())
             {
                 self.report_tree_construction_recovery(
-                    &self.stack[index].element.loc.clone(),
+                    &loc,
                     "Nested anchor start tag closed the previous anchor before inserting the new one.",
                 );
                 self.note_implicitly_closed_stack_entries_from(index);
@@ -41,9 +42,10 @@ impl<'a> Parser<'a> {
         if tag.eq_ignore_ascii_case("button") {
             if self.open_button_count > 0
                 && let Some(index) = self.find_open_element_index("button")
+                && let Some(loc) = self.stack.get(index).map(|entry| entry.element.loc.clone())
             {
                 self.report_tree_construction_recovery(
-                    &self.stack[index].element.loc.clone(),
+                    &loc,
                     "Nested button start tag closed the previous button before inserting the new one.",
                 );
                 self.note_implicitly_closed_stack_entries_from(index);
@@ -87,19 +89,18 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn find_last_open_element_index(&self, tags: &[&str]) -> Option<usize> {
-        (0..self.stack.len()).rev().find(|&i| {
-            is_html_tree_element(&self.stack[i].element)
-                && Self::tag_in(self.stack[i].element.tag, tags)
+        self.stack.iter().rposition(|entry| {
+            is_html_tree_element(&entry.element) && Self::tag_in(entry.element.tag, tags)
         })
     }
 
     fn find_open_li_element_in_list_item_scope(&self) -> Option<usize> {
-        for i in (0..self.stack.len()).rev() {
-            if !is_html_tree_element(&self.stack[i].element) {
+        for (i, entry) in self.stack.iter().enumerate().rev() {
+            if !is_html_tree_element(&entry.element) {
                 return None;
             }
 
-            let tag = self.stack[i].element.tag;
+            let tag = entry.element.tag;
             if tag.eq_ignore_ascii_case("li") {
                 return Some(i);
             }
@@ -112,12 +113,12 @@ impl<'a> Parser<'a> {
     }
 
     fn find_open_p_element_in_button_scope(&self) -> Option<usize> {
-        for i in (0..self.stack.len()).rev() {
-            if !is_html_tree_element(&self.stack[i].element) {
+        for (i, entry) in self.stack.iter().enumerate().rev() {
+            if !is_html_tree_element(&entry.element) {
                 return None;
             }
 
-            let tag = self.stack[i].element.tag;
+            let tag = entry.element.tag;
             if tag.eq_ignore_ascii_case("p") {
                 return Some(i);
             }

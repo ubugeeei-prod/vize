@@ -35,9 +35,6 @@ pub struct Tokenizer<'a, C: Callbacks> {
     delimiter_close: &'a [u8],
     /// Current delimiter index
     delimiter_index: usize,
-    /// In pre tag
-    #[allow(dead_code)]
-    in_pre: bool,
     /// The start of the last entity.
     entity_start: usize,
 
@@ -106,7 +103,6 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             delimiter_open,
             delimiter_close,
             delimiter_index: 0,
-            in_pre: false,
             entity_start: 0,
             base_state: State::Text,
             current_sequence: None,
@@ -153,7 +149,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     fn fast_forward_to(&mut self, c: u8) -> bool {
         while self.index + 1 < self.input.len() {
             self.index += 1;
-            if self.input[self.index] == c {
+            if self.input.get(self.index) == Some(&c) {
                 return true;
             }
         }
@@ -163,9 +159,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     /// Tokenize the input
     pub fn tokenize(&mut self) {
-        while self.index < self.input.len() {
-            let c = self.input[self.index];
-
+        while let Some(&c) = self.input.get(self.index) {
             match self.state {
                 State::Text => self.state_text(c),
                 State::InterpolationOpen => self.state_interpolation_open(c),

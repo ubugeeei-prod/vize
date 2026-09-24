@@ -16,6 +16,8 @@ mod entry;
 #[cfg(test)]
 mod experimental_tests;
 mod expression;
+#[cfg(all(test, feature = "legacy"))]
+mod legacy_tests;
 mod pending_text;
 mod whitespace;
 
@@ -122,8 +124,6 @@ pub(super) enum StackInsertion {
 pub(super) struct CurrentElement<'a> {
     pub(super) tag: &'a str,
     pub(super) tag_start: usize,
-    #[allow(dead_code)]
-    pub(super) tag_end: usize,
     pub(super) ns: Namespace,
     pub(super) is_self_closing: bool,
     pub(super) props: Vec<'a, PropNode<'a>>,
@@ -145,7 +145,6 @@ pub(super) struct CurrentDirective<'a> {
     pub(super) name: &'a str,
     pub(super) raw_name: &'a str,
     pub(super) name_start: usize,
-    #[allow(dead_code)]
     pub(super) name_end: usize,
     pub(super) arg: Option<(&'a str, usize, usize, bool)>, // (content, start, end, is_dynamic)
     pub(super) modifiers: Vec<'a, (&'a str, usize, usize)>,
@@ -186,14 +185,14 @@ impl<'a> Parser<'a> {
     /// Get source slice
     fn get_source(&self, start: usize, end: usize) -> &str {
         let (start, end) = self.normalize_span(start, end);
-        &self.source[start..end]
+        self.source.get(start..end).unwrap_or_default()
     }
 
     /// Get a source slice tied to the arena lifetime (`get_source` narrows to
     /// `&self`); retained expression ASTs parse from `'a` text.
     fn get_source_retained(&self, start: usize, end: usize) -> &'a str {
         let (start, end) = self.normalize_span(start, end);
-        &self.source[start..end]
+        self.source.get(start..end).unwrap_or_default()
     }
 
     fn normalize_span(&self, start: usize, end: usize) -> (usize, usize) {
@@ -229,8 +228,10 @@ impl<'a> Parser<'a> {
     }
 
     fn add_fostered_child(&mut self, child: TemplateChildNode<'a>) {
-        if let Some(table_index) = self.nearest_table_index() {
-            self.stack[table_index].fostered_before.push(child);
+        if let Some(table_index) = self.nearest_table_index()
+            && let Some(table) = self.stack.get_mut(table_index)
+        {
+            table.fostered_before.push(child);
         } else {
             self.add_child(child);
         }

@@ -10,6 +10,11 @@
 //! raw tokenization; the parse cases include a fresh arena per iteration, the
 //! same allocation pattern as one production template compile.
 
+#![expect(
+    clippy::expect_used,
+    reason = "the harness unwraps known-good fixtures"
+)]
+
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_armature::{Callbacks, ErrorCode, Parser, QuoteType, Tokenizer};

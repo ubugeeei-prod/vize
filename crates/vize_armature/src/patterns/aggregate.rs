@@ -84,7 +84,7 @@ impl PatternParser<'_> {
             .as_ref()
             .map_or(start as u32 + 3, |binding| binding.span.end);
         self.space();
-        if !self.source[self.pos..].starts_with(close) {
+        if !self.remaining().starts_with(close) {
             return Err(self
                 .error("Rest must be last, without a trailing comma; use ... or ...const name."));
         }

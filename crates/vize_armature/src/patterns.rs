@@ -8,6 +8,7 @@ mod aggregate;
 mod attribute;
 mod parser;
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;
 mod tokens;
 

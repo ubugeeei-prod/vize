@@ -41,7 +41,10 @@ impl<'s> PatternParser<'s> {
             // Keep the authored delimiters in validation: a terminated line
             // comment is legal, but it must not swallow the closing parenthesis.
             if !matches!(
-                self.validate_expression(&self.source[start - 1..=end], "guard")?,
+                self.validate_expression(
+                    self.source.get(start - 1..=end).unwrap_or_default(),
+                    "guard"
+                )?,
                 Expression::ParenthesizedExpression(_)
             ) {
                 return Err(self.error("Expected if (guard)."));
@@ -186,7 +189,7 @@ impl<'s> PatternParser<'s> {
 
     pub fn expression(&self, start: usize) -> PatternExpression {
         PatternExpression {
-            text: String::from(&self.source[start..self.pos]),
+            text: String::from(self.source.get(start..self.pos).unwrap_or_default()),
             span: Span::new(start as u32, self.pos as u32),
         }
     }

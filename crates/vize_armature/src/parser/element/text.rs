@@ -72,7 +72,9 @@ impl<'a> Parser<'a> {
         };
 
         let can_merge = matches!(
-            self.stack[table_index].fostered_before.last(),
+            self.stack
+                .get(table_index)
+                .and_then(|table| table.fostered_before.last()),
             Some(TemplateChildNode::Text(_))
         );
 
@@ -81,15 +83,17 @@ impl<'a> Parser<'a> {
             let text_node = TextNode::new(content, loc);
             let boxed = Box::new_in(text_node, &self.allocator);
             self.flush_pending_text();
-            self.stack[table_index]
-                .fostered_before
-                .push(TemplateChildNode::Text(boxed));
+            if let Some(table) = self.stack.get_mut(table_index) {
+                table.fostered_before.push(TemplateChildNode::Text(boxed));
+            }
             return;
         }
 
         self.merge_into_pending(TextSlot::Fostered(table_index), content);
-        if let Some(TemplateChildNode::Text(text_node)) =
-            self.stack[table_index].fostered_before.last_mut()
+        if let Some(TemplateChildNode::Text(text_node)) = self
+            .stack
+            .get_mut(table_index)
+            .and_then(|table| table.fostered_before.last_mut())
         {
             text_node.loc.set_end(end as u32);
         }

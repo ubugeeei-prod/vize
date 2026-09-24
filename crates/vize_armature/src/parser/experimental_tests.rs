@@ -1,5 +1,3 @@
-#![allow(clippy::disallowed_macros)]
-
 use super::{parse, parse_with_options};
 use vize_relief::{
     CommentKind, PropNode, TemplateChildNode, errors::ErrorCode, options::ParserOptions,

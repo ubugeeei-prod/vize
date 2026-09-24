@@ -17,7 +17,6 @@ use std::{fs, process::ExitCode};
 /// PR that adds `[lints] workspace = true` to that member.
 const PENDING: &[&str] = &[
     "crates/vize",
-    "crates/vize_armature",
     "crates/vize_atelier_core",
     "crates/vize_atelier_dom",
     "crates/vize_atelier_jsx",

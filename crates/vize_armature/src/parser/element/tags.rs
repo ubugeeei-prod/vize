@@ -38,7 +38,6 @@ impl<'a> Parser<'a> {
         self.current_element = Some(CurrentElement {
             tag,
             tag_start: start,
-            tag_end: end,
             ns,
             is_self_closing: false,
             props: vize_s0::Vec::new_in(&self.allocator),
@@ -85,8 +84,8 @@ impl<'a> Parser<'a> {
             if has_v_pre {
                 let allocator = self.allocator;
                 let mut i = 0;
-                while i < element.props.len() {
-                    if let PropNode::Directive(dir) = &element.props[i] {
+                while let Some(prop) = element.props.get(i) {
+                    if let PropNode::Directive(dir) = prop {
                         if dir.name == "pre" {
                             // Remove v-pre directive itself
                             element.props.remove(i);
@@ -132,7 +131,9 @@ impl<'a> Parser<'a> {
                             },
                             &allocator,
                         ));
-                        element.props[i] = attr;
+                        if let Some(slot) = element.props.get_mut(i) {
+                            *slot = attr;
+                        }
                     }
                     i += 1;
                 }
@@ -333,8 +334,8 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn find_open_element_index(&self, tag: &str) -> Option<usize> {
-        (0..self.stack.len())
-            .rev()
-            .find(|&i| self.stack[i].element.tag.eq_ignore_ascii_case(tag))
+        self.stack
+            .iter()
+            .rposition(|entry| entry.element.tag.eq_ignore_ascii_case(tag))
     }
 }

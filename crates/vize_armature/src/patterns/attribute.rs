@@ -16,12 +16,11 @@ impl Attribute {
         let mut text = String::default();
         let mut offsets = vec![0];
         let mut at = 0;
-        while at < source.len() {
-            let (ch, len) = try_decode_entity(&source.as_bytes()[at..], Context::Attribute)
-                .unwrap_or_else(|| {
-                    let ch = source[at..].chars().next().expect("character boundary");
-                    (ch, ch.len_utf8())
-                });
+        while let Some(rest) = source.get(at..)
+            && let Some(first) = rest.chars().next()
+        {
+            let (ch, len) = try_decode_entity(rest.as_bytes(), Context::Attribute)
+                .unwrap_or((first, first.len_utf8()));
             text.push(ch);
             offsets.extend(std::iter::repeat_n(at as u32, ch.len_utf8() - 1));
             at += len;
@@ -34,7 +33,8 @@ impl Attribute {
         self.offsets
             .get(offset as usize)
             .copied()
-            .unwrap_or_else(|| *self.offsets.last().expect("initial offset"))
+            .or_else(|| self.offsets.last().copied())
+            .unwrap_or_default()
     }
 
     fn span(&self, span: &mut Span) {
@@ -115,6 +115,7 @@ pub fn attribute_source_offset(source: &str, decoded: u32) -> u32 {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use super::*;
 

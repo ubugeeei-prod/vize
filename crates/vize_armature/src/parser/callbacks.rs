@@ -22,8 +22,7 @@ pub(super) fn parse_directive_name(raw: &str) -> &str {
     // Handle v-directive
     if let Some(rest) = raw.strip_prefix("v-") {
         // Find end of directive name (before : or .)
-        let end = rest.find([':', '.']).unwrap_or(rest.len());
-        return &rest[..end];
+        return rest.split([':', '.']).next().unwrap_or(rest);
     }
 
     raw

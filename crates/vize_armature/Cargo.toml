@@ -56,3 +56,6 @@ harness = false
 # instead. Whether the accumulated legacy delta deserves a version bump is a
 # release-time concern owned by release tooling, not a per-PR gate.
 constructible_struct_adds_field = "allow"
+
+[lints]
+workspace = true

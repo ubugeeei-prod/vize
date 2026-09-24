@@ -26,7 +26,9 @@ impl<C: Callbacks> Tokenizer<'_, C> {
             self.callbacks.on_attrib_name_end(end);
             self.section_start = end;
             self.state = State::AfterAttrName;
-            self.state_after_attr_name(self.input[end]);
+            if let Some(&c) = self.input.get(end) {
+                self.state_after_attr_name(c);
+            }
         }
     }
 }
@@ -46,7 +48,11 @@ fn scan_argument(input: &[u8], start: usize) -> (usize, bool) {
         if is_boundary(byte) {
             return (index, false);
         }
-        let delimiter = *delimiters.last().unwrap();
+        // The stack only empties when the argument's own `]` closes it,
+        // which returns below.
+        let Some(&delimiter) = delimiters.last() else {
+            return (index, true);
+        };
         if matches!(delimiter, b'\'' | b'"' | b'`') {
             match byte {
                 b'\\' => {
@@ -85,4 +91,5 @@ fn scan_argument(input: &[u8], start: usize) -> (usize, bool) {
 }
 
 #[cfg(test)]
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests;

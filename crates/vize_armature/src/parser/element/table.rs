@@ -12,9 +12,8 @@ impl<'a> Parser<'a> {
             return None;
         }
 
-        (0..self.stack.len()).rev().find(|&i| {
-            is_html_tree_element(&self.stack[i].element)
-                && self.stack[i].element.tag.eq_ignore_ascii_case("table")
+        self.stack.iter().rposition(|entry| {
+            is_html_tree_element(&entry.element) && entry.element.tag.eq_ignore_ascii_case("table")
         })
     }
 

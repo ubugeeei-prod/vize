@@ -66,9 +66,10 @@ impl<'a> Parser<'a> {
     /// stack, so they are matched first, and an intervening unmatched tag is
     /// dropped exactly as the real stack would drop it.
     pub(super) fn close_flattened_element(&mut self, tag: &str) -> bool {
-        let Some(index) = (0..self.flattened_tags.len())
-            .rev()
-            .find(|&i| self.flattened_tags[i].eq_ignore_ascii_case(tag))
+        let Some(index) = self
+            .flattened_tags
+            .iter()
+            .rposition(|flattened| flattened.eq_ignore_ascii_case(tag))
         else {
             return false;
         };
