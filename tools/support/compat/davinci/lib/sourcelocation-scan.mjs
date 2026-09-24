@@ -116,7 +116,7 @@ export function citeSite(allSites, relPath, member = null) {
   if (!site) {
     throw new Error(
       `citation lost: no ${member ?? "inventoried"} read found in ${relPath}; ` +
-        `re-classify this consumer in tools/davinci/sourcelocation-inventory.mjs`,
+        `re-classify this consumer in tools/support/compat/davinci/sourcelocation-inventory.mjs`,
     );
   }
   return `${site.relPath}:${site.line}`;
@@ -128,7 +128,7 @@ export function citeAnchor(relPath, anchor) {
   if (!existsSync(file)) {
     throw new Error(
       `citation lost: ${relPath} does not exist; ` +
-        `re-classify this consumer in tools/davinci/sourcelocation-inventory.mjs`,
+        `re-classify this consumer in tools/support/compat/davinci/sourcelocation-inventory.mjs`,
     );
   }
   const lines = readFileSync(file, "utf8").split("\n");
@@ -136,7 +136,7 @@ export function citeAnchor(relPath, anchor) {
   if (idx === -1) {
     throw new Error(
       `citation lost: ${anchor} not found in ${relPath}; ` +
-        `re-classify this consumer in tools/davinci/sourcelocation-inventory.mjs`,
+        `re-classify this consumer in tools/support/compat/davinci/sourcelocation-inventory.mjs`,
     );
   }
   return `${relPath}:${idx + 1}`;
@@ -172,7 +172,7 @@ export function assertAnchorAbsent(relPath, anchor, description) {
     throw new Error(
       `deletion regressed: ${description} reappeared at ${relPath}:${idx + 1}; ` +
         `it was deleted by Davinci P1-4 — re-classify it in ` +
-        `tools/davinci/sourcelocation-inventory.mjs if it is back by design`,
+        `tools/support/compat/davinci/sourcelocation-inventory.mjs if it is back by design`,
     );
   }
 }
@@ -184,7 +184,7 @@ export function assertSymbolAbsent(name, description) {
     throw new Error(
       `deletion regressed: ${count} reference(s) to ${name} reappeared (${description}); ` +
         `it was deleted by Davinci P1-4 — re-classify it in ` +
-        `tools/davinci/sourcelocation-inventory.mjs if it is back by design`,
+        `tools/support/compat/davinci/sourcelocation-inventory.mjs if it is back by design`,
     );
   }
 }

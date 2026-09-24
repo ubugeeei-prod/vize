@@ -43,7 +43,7 @@ const REGEN_COMMAND = "rust-script tools/commands/davinci/sourcelocation-invento
 const SUMMARY_COMMAND = "rust-script tools/commands/davinci/sourcelocation-inventory.rs --summary";
 
 /** `source` reads counted at generation time of the P0-9 map, all migrated
- * to `Span::slice` by Davinci P1-3. */
+ * away from `SourceLocation::source` by Davinci P1-3. */
 const P0_9_SOURCE_READS = 106;
 /** Line/column reads counted when P1-4 executed: 3 direct sites plus the 4
  * known-missed reads the limits section of the P0-9 map documented. */
@@ -57,7 +57,7 @@ function generate(scan) {
     throw new Error(
       `P1-3/P1-4 ratchet: ${grandTotal} deleted-member read(s) reintroduced on loc-shaped ` +
         `receivers (first: \`${site.member}\` at ${site.relPath}:${site.line}); read covered ` +
-        `text via \`span.slice(source)\` and derive line/column from offsets via ` +
+        `text via \`span.slice(source)\` or existing expression content, and derive line/column from offsets via ` +
         `\`vize_carton::line_index\` instead`,
     );
   }
@@ -83,11 +83,12 @@ function generate(scan) {
     [["**total**", ...MEMBERS.map(() => "0"), "0", "0"]],
   );
 
-  // Group 1 citations: content reads, anchored on their migrated
-  // `Span::slice` forms so a moved consumer still fails regeneration.
+  // Group 1 citations: content reads, anchored on the current consumer
+  // expression. Codegen uses the node's existing content; the other named
+  // consumers still slice their source through Span.
   const g1Codegen = citeAnchor(
     "crates/vize_atelier_core/src/codegen/expression/generate.rs",
-    /span\.slice\(&ctx\.source\)/,
+    /^\s*let content = &simple\.content;$/,
   );
   const g1Croquis = citeAnchor(
     "crates/vize_croquis/src/drawer/template/components.rs",
@@ -132,7 +133,7 @@ function generate(scan) {
   return `<!-- GENERATED FILE — do not edit by hand.
      Regenerate: ${REGEN_COMMAND}
      Verify:     rust-script tools/commands/davinci/sourcelocation-inventory.rs --check
-     Generator:  tools/davinci/sourcelocation-inventory.mjs -->
+     Generator:  tools/support/compat/davinci/sourcelocation-inventory.mjs -->
 
 # \`SourceLocation\` consumer inventory
 
@@ -143,8 +144,8 @@ across \`crates/*/src\`, plus the migration group each consumer moved to as
 relief nodes switched to two-u32 byte spans instead of owned
 \`{ start: Position, end: Position, source: String }\` triples
 ([architecture.md](../architecture.md), S0). This was the migration map
-Davinci P1 executed (P0-9). P1-3 executed group 1 (\`source\` reads to
-\`Span::slice\`); P1-4 executed groups 2 and 3 (line/column reads to
+Davinci P1 executed (P0-9). P1-3 executed group 1 (\`source\` reads off
+\`SourceLocation\`); P1-4 executed groups 2 and 3 (line/column reads to
 offset-derived rendering, the \`Position\` type and its converters deleted).
 The scan now counts zero across all five members, and regeneration fails if
 any read — or any deleted carrier — comes back.
@@ -181,18 +182,21 @@ any read — or any deleted carrier — comes back.
 ${countsTable}
 ## Migration groups
 
-### Group 1 — content reads moved to \`Span::slice\` (migrated by P1-3: ${P0_9_SOURCE_READS} sites at P0-9, 0 remain)
+### Group 1 — content reads moved off \`SourceLocation::source\` (migrated by P1-3: ${P0_9_SOURCE_READS} sites at P0-9, 0 remain)
 
 The dominant consumer class by far: code that wants **the text a node
 covers** — codegen re-emitting an expression, croquis capturing a binding
 name, a lint rule inspecting raw expression text, a test asserting what the
 parser captured. Each read used to pay for an owned \`String\` copied into
-the node at parse time; the node now stores 8 bytes and the read is
+the node at parse time; the location now stores 8 bytes. Most consumers use
 \`span.slice(source)\` against the one authored source string (or, for
-block-relative spans, against that block's text). Representative migrated
-sites:
+block-relative spans, against that block's text). Codegen's simple expression
+already carries \`content\` as a source slice or arena copy, so it reads that
+text directly and also preserves text changed by transforms. Representative
+migrated sites:
 
-- \`${g1Codegen}\` — codegen reads the recorded expression text verbatim
+- \`${g1Codegen}\` — codegen reads \`simple.content\` directly; its retained
+  expression text can differ from the original span after a transform
 - \`${g1Croquis}\` — croquis captures component/expression text into
   analysis products
 - \`${g1Patina}\` — lint rule matches against raw expression text
