@@ -1,3 +1,4 @@
+import { normalizeMediaSource } from "../../../media/media-source.ts";
 import { normalizeRotation, rotatedBounds } from "./image-cropper-geometry.ts";
 import type {
   CropArea,
@@ -21,9 +22,29 @@ export class ImageCropperError extends Error {
 function loadImage(
   source: HTMLImageElement | string,
   crossOrigin: CropImageOptions["crossOrigin"],
+  allowInsecure: CropImageOptions["allowInsecure"],
 ): Promise<HTMLImageElement> {
+  let safeSource: string | undefined;
+  if (typeof source === "string") {
+    try {
+      safeSource = normalizeMediaSource(source, {
+        kind: "image",
+        allowInsecure: allowInsecure === true,
+      });
+    } catch {
+      return Promise.reject(
+        new ImageCropperError("VIZE_UI_IMAGE_CROPPER_IMAGE_LOAD", "the image source is invalid"),
+      );
+    }
+  }
   const image = typeof source === "string" ? document.createElement("img") : source;
-  if (image.complete && image.naturalWidth > 0) return Promise.resolve(image);
+  if (typeof source !== "string" && image.complete) {
+    return image.naturalWidth > 0
+      ? Promise.resolve(image)
+      : Promise.reject(
+          new ImageCropperError("VIZE_UI_IMAGE_CROPPER_IMAGE_LOAD", "the image failed to load"),
+        );
+  }
   return new Promise((resolve, reject) => {
     const cleanup = (): void => {
       image.removeEventListener("load", onLoad);
@@ -39,9 +60,9 @@ function loadImage(
     };
     image.addEventListener("load", onLoad);
     image.addEventListener("error", onError);
-    if (typeof source === "string") {
+    if (safeSource !== undefined) {
       image.crossOrigin = crossOrigin ?? "anonymous";
-      image.src = source;
+      image.src = safeSource;
     }
   });
 }
@@ -92,7 +113,7 @@ async function render(
   if (!(width >= 1 && height >= 1)) {
     throw new ImageCropperError("VIZE_UI_IMAGE_CROPPER_EMPTY_CROP", "the crop area is empty");
   }
-  const image = await loadImage(source, options.crossOrigin);
+  const image = await loadImage(source, options.crossOrigin, options.allowInsecure);
   const scale = Math.min(
     1,
     options.maxWidth !== undefined && options.maxWidth > 0 ? options.maxWidth / width : 1,

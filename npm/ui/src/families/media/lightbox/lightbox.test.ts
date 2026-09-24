@@ -334,6 +334,29 @@ test("preloads neighbouring images on the client while open", async () => {
   }
 });
 
+test("does not preload unsafe image sources", async () => {
+  const created: string[] = [];
+  const previousImage = globalThis.Image;
+  class FakeImage {
+    decoding = "auto";
+    set src(value: string) {
+      created.push(value);
+    }
+  }
+  globalThis.Image = FakeImage as unknown as typeof Image;
+  try {
+    const handle = mountLightbox({
+      getPreloadSrc: () => "javascript:alert(1)",
+    });
+    handle.exposes<LightboxRootExpose<Photo>>().openAt(1);
+    await nextTick();
+    assert.deepEqual(created, []);
+    handle.unmount();
+  } finally {
+    globalThis.Image = previousImage;
+  }
+});
+
 test("localized messages label every control", async () => {
   const handle = mountLightbox(
     {

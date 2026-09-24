@@ -132,6 +132,9 @@ export interface CropImageOptions {
    * @default "anonymous"
    */
   readonly crossOrigin?: "" | "anonymous" | "use-credentials";
+
+  /** Permit unencrypted `http:` URL sources for local development. @default false */
+  readonly allowInsecure?: boolean;
 }
 
 /** Result encoding selected by {@link CropImageOptions}. */

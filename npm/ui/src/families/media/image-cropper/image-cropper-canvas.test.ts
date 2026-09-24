@@ -122,6 +122,25 @@ test("loads URL sources with CORS before cropping", async () => {
   });
 });
 
+test("rejects unsafe and already-failed image sources without waiting for another event", async () => {
+  await withCanvas(async (log) => {
+    const crop = { x: 0, y: 0, width: 10, height: 10 };
+    const isLoadError = (error: unknown) =>
+      error instanceof ImageCropperError && error.code === "VIZE_UI_IMAGE_CROPPER_IMAGE_LOAD";
+
+    await assert.rejects(cropImage("javascript:alert(1)", crop), isLoadError);
+    assert.equal(log.images.length, 0);
+
+    await assert.rejects(cropImage(loadedImage(0, 0), crop), isLoadError);
+
+    const pending = cropImage("http://localhost/photo.png", crop, { allowInsecure: true });
+    const image = log.images.at(-1);
+    assert.equal(image?.src, "http://localhost/photo.png");
+    image?.dispatchEvent(new Event("error"));
+    await assert.rejects(pending, isLoadError);
+  });
+});
+
 test("rejects empty crops, missing canvases, failed loads, and failed encodes with typed errors", async () => {
   const isCode = (code: string) => (error: unknown) =>
     error instanceof ImageCropperError &&

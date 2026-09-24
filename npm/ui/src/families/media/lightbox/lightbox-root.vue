@@ -3,6 +3,7 @@ import { computed, useTemplateRef, watch } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useControllableState } from "../../foundations/controllable-state/controllable-state.ts";
+import { normalizeMediaSource } from "../../../media/media-source.ts";
 import {
   deriveDeterministicId,
   useDeterministicId,
@@ -226,11 +227,18 @@ watch(
     )) {
       const item = items[neighbour];
       const source = item === undefined ? undefined : getPreloadSrc(item);
-      if (source === undefined || preloaded.has(source)) continue;
-      preloaded.add(source);
+      if (source === undefined) continue;
+      let safeSource: string;
+      try {
+        safeSource = normalizeMediaSource(source, { kind: "image" });
+      } catch {
+        continue;
+      }
+      if (preloaded.has(safeSource)) continue;
+      preloaded.add(safeSource);
       const image = new Image();
       image.decoding = "async";
-      image.src = source;
+      image.src = safeSource;
     }
   },
   { flush: "post" },
