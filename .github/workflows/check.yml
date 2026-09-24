@@ -197,6 +197,8 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Check generated reference docs
+        run: vp node --test tests/tooling/lib-reference-docs.test.ts
       - name: Build vize CLI
         run: cargo build --profile ci -p vize
       - name: Install vize CLI
