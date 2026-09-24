@@ -47,6 +47,11 @@
       "import": "./dist/async-resource.mjs",
       "default": "./dist/async-resource.mjs"
     },
+    "./battery": {
+      "types": "./dist/battery.d.mts",
+      "import": "./dist/battery.mjs",
+      "default": "./dist/battery.mjs"
+    },
     "./capability": {
       "types": "./dist/capability.d.mts",
       "import": "./dist/capability.mjs",
@@ -56,6 +61,21 @@
       "types": "./dist/catalog.d.mts",
       "import": "./dist/catalog.mjs",
       "default": "./dist/catalog.mjs"
+    },
+    "./device-motion": {
+      "types": "./dist/device-motion.d.mts",
+      "import": "./dist/device-motion.mjs",
+      "default": "./dist/device-motion.mjs"
+    },
+    "./device-orientation": {
+      "types": "./dist/device-orientation.d.mts",
+      "import": "./dist/device-orientation.mjs",
+      "default": "./dist/device-orientation.mjs"
+    },
+    "./device-pixel-ratio": {
+      "types": "./dist/device-pixel-ratio.d.mts",
+      "import": "./dist/device-pixel-ratio.mjs",
+      "default": "./dist/device-pixel-ratio.mjs"
     },
     "./disposal-scope": {
       "types": "./dist/disposal-scope.d.mts",
@@ -86,6 +106,21 @@
       "types": "./dist/focus.d.mts",
       "import": "./dist/focus.mjs",
       "default": "./dist/focus.mjs"
+    },
+    "./fps": {
+      "types": "./dist/fps.d.mts",
+      "import": "./dist/fps.mjs",
+      "default": "./dist/fps.mjs"
+    },
+    "./geolocation": {
+      "types": "./dist/geolocation.d.mts",
+      "import": "./dist/geolocation.mjs",
+      "default": "./dist/geolocation.mjs"
+    },
+    "./idle": {
+      "types": "./dist/idle.d.mts",
+      "import": "./dist/idle.mjs",
+      "default": "./dist/idle.mjs"
     },
     "./intersection-observer": {
       "types": "./dist/intersection-observer.d.mts",
@@ -122,6 +157,16 @@
       "import": "./dist/mutation-observer.mjs",
       "default": "./dist/mutation-observer.mjs"
     },
+    "./network": {
+      "types": "./dist/network.d.mts",
+      "import": "./dist/network.mjs",
+      "default": "./dist/network.mjs"
+    },
+    "./page-leave": {
+      "types": "./dist/page-leave.d.mts",
+      "import": "./dist/page-leave.mjs",
+      "default": "./dist/page-leave.mjs"
+    },
     "./pinch": {
       "types": "./dist/pinch.d.mts",
       "import": "./dist/pinch.mjs",
@@ -136,6 +181,16 @@
       "types": "./dist/pointer-lock.d.mts",
       "import": "./dist/pointer-lock.mjs",
       "default": "./dist/pointer-lock.mjs"
+    },
+    "./preferences": {
+      "types": "./dist/preferences.d.mts",
+      "import": "./dist/preferences.mjs",
+      "default": "./dist/preferences.mjs"
+    },
+    "./preferred-languages": {
+      "types": "./dist/preferred-languages.d.mts",
+      "import": "./dist/preferred-languages.mjs",
+      "default": "./dist/preferred-languages.mjs"
     },
     "./resize-observer": {
       "types": "./dist/resize-observer.d.mts",
@@ -156,6 +211,11 @@
       "types": "./dist/scope.d.mts",
       "import": "./dist/scope.mjs",
       "default": "./dist/scope.mjs"
+    },
+    "./screen-orientation": {
+      "types": "./dist/screen-orientation.d.mts",
+      "import": "./dist/screen-orientation.mjs",
+      "default": "./dist/screen-orientation.mjs"
     },
     "./scroll": {
       "types": "./dist/scroll.d.mts",

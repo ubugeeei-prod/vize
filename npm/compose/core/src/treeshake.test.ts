@@ -30,10 +30,10 @@ const sentinels = {
   "capability-is-available": ["isCapabilityAvailable"],
   "capability-is-unavailable": ["isCapabilityUnavailable"],
   catalog: ["COMPOSABLE_CATALOG", "provenance-preserving source-copy installer"],
-  "document-visibility": ["useDocumentVisibility", "visibilitychange"],
+  "document-visibility": ["useDocumentVisibility", "readVisibilityState"],
   "disposal-scope": ["createDisposalScope", "VIZE_COMPOSE_DISPOSAL_FAILED"],
   "event-listener": ["useEventListener", "isListening"],
-  "media-query": ["useMediaQuery", "matchMedia"],
+  "media-query": ["useMediaQuery"],
   "retry-async": ["retryAsync", "VIZE_COMPOSE_RETRY_INVALID_MAXIMUM_RETRIES"],
   "retry-delay": ["calculateRetryDelay", "VIZE_COMPOSE_RETRY_INVALID_ATTEMPT"],
   locale: ["useLocale", "getTextInfo"],
@@ -73,6 +73,23 @@ const sentinels = {
   "pointer-swipe": ["function usePointerSwipe("],
   "text-selection": ["function useTextSelection("],
   "window-size": ["function useWindowSize("],
+  battery: ["function useBattery(", "chargingtimechange"],
+  "device-motion": ["function useDeviceMotion("],
+  "device-orientation": ["function useDeviceOrientation("],
+  "motion-permission": ["function requestMotionPermission("],
+  "device-pixel-ratio": ["function useDevicePixelRatio(", "dppx"],
+  fps: ["function useFps("],
+  geolocation: ["function useGeolocation("],
+  idle: ["function useIdle("],
+  network: ["function useNetwork("],
+  online: ["function useOnline("],
+  "page-leave": ["function usePageLeave("],
+  "preferred-dark": ["function usePreferredDark("],
+  "preferred-color-scheme": ["function usePreferredColorScheme("],
+  "preferred-contrast": ["function usePreferredContrast(", "prefers-contrast"],
+  "preferred-transparency": ["function usePreferredReducedTransparency("],
+  "preferred-languages": ["function usePreferredLanguages(", "languagechange"],
+  "screen-orientation": ["function useScreenOrientation("],
 } as const;
 
 type ModuleName = keyof typeof sentinels;
@@ -299,6 +316,73 @@ const utilities: readonly UtilityCase[] = [
   },
   { binding: "useTextSelection", entry: "index", module: "text-selection", shared: ["scope"] },
   { binding: "useWindowSize", entry: "index", module: "window-size", shared: ["scope"] },
+  { binding: "useBattery", entry: "index", module: "battery", shared: ["scope"] },
+  {
+    binding: "useDeviceMotion",
+    entry: "index",
+    module: "device-motion",
+    shared: ["motion-permission", "scope"],
+  },
+  {
+    binding: "useDeviceOrientation",
+    entry: "index",
+    module: "device-orientation",
+    shared: ["motion-permission", "scope"],
+  },
+  { binding: "requestMotionPermission", entry: "index", module: "motion-permission", shared: [] },
+  {
+    binding: "useDevicePixelRatio",
+    entry: "index",
+    module: "device-pixel-ratio",
+    shared: ["scope"],
+  },
+  { binding: "useFps", entry: "index", module: "fps", shared: ["scope"] },
+  {
+    binding: "useGeolocation",
+    entry: "index",
+    module: "geolocation",
+    shared: ["capability-available", "capability-unavailable", "scope"],
+  },
+  { binding: "useIdle", entry: "index", module: "idle", shared: ["scope"] },
+  { binding: "useNetwork", entry: "index", module: "network", shared: ["scope"] },
+  { binding: "useOnline", entry: "index", module: "online", shared: ["network", "scope"] },
+  { binding: "usePageLeave", entry: "index", module: "page-leave", shared: ["scope"] },
+  {
+    binding: "usePreferredDark",
+    entry: "index",
+    module: "preferred-dark",
+    shared: ["media-query"],
+  },
+  {
+    binding: "usePreferredColorScheme",
+    entry: "index",
+    module: "preferred-color-scheme",
+    shared: ["media-query"],
+  },
+  {
+    binding: "usePreferredContrast",
+    entry: "index",
+    module: "preferred-contrast",
+    shared: ["media-query"],
+  },
+  {
+    binding: "usePreferredReducedTransparency",
+    entry: "index",
+    module: "preferred-transparency",
+    shared: ["media-query"],
+  },
+  {
+    binding: "usePreferredLanguages",
+    entry: "index",
+    module: "preferred-languages",
+    shared: ["scope"],
+  },
+  {
+    binding: "useScreenOrientation",
+    entry: "index",
+    module: "screen-orientation",
+    shared: ["scope"],
+  },
 ];
 
 const VIRTUAL_ID = "virtual:compose-treeshake-entry";
@@ -426,7 +510,7 @@ void test("bundling the catalog retains metadata without utility implementations
   assert.doesNotMatch(code, /\bimport\s|\bfrom\s*["']/);
   assert.doesNotMatch(
     code,
-    /\b(?:class|function)\s+(?:DisposalError|PointerLockError|anyAbortSignal|availableCapability|createDisposalScope|deadlineAbortSignal|isCapabilityAvailable|isCapabilityUnavailable|isElementNode|normalizeKeyName|resolveElements?|swipeDirection|timeoutAbortSignal|toPointerKind|tryOnScopeDispose|unavailableCapability|use[A-Z]\w*)\b/,
+    /\b(?:class|function)\s+(?:DisposalError|PointerLockError|anyAbortSignal|availableCapability|createDisposalScope|deadlineAbortSignal|isCapabilityAvailable|isCapabilityUnavailable|isElementNode|normalizeKeyName|requestMotionPermission|resolveElements?|swipeDirection|timeoutAbortSignal|toPointerKind|tryOnScopeDispose|unavailableCapability|use[A-Z]\w*)\b/,
   );
 });
 
