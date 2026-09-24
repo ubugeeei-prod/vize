@@ -23,7 +23,7 @@ const emit = defineEmits<{
         ]"
         :aria-pressed="selected === rung.id"
         :data-stage="rung.id"
-        @click="emit('select', rung.id)"
+        @click="() => emit('select', rung.id)"
       >
         <span class="davinci-station-ordinal">{{ rung.ordinal }}</span>
         <span class="davinci-station-name">{{ rung.name }}</span>
@@ -36,7 +36,7 @@ const emit = defineEmits<{
       :class="['davinci-station', { active: selected === 's4' }]"
       :aria-pressed="selected === 's4'"
       data-stage="s4"
-      @click="emit('select', 's4')"
+      @click="() => emit('select', 's4')"
     >
       <span class="davinci-station-ordinal">S4</span>
       <span class="davinci-station-name">Output</span>

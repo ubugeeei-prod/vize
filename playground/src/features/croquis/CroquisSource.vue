@@ -31,7 +31,9 @@ defineExpose({
         <input v-model="visualize" type="checkbox" />
         <span>Visualize Scopes</span>
       </label>
-      <button class="btn-ghost" @click="source = ANALYSIS_PRESET">Reset</button>
+      <button type="button" class="btn-ghost" @click="() => (source = ANALYSIS_PRESET)">
+        Reset
+      </button>
     </div>
   </div>
   <div class="experimental-controls">

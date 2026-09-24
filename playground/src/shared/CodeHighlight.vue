@@ -96,7 +96,7 @@ watch(
 
   display: flex;
   font-family: "JetBrains Mono", monospace;
-  font-size: 13px;
+  font-size: var(--code-highlight-font-size, 13px);
   line-height: var(--code-line-height);
   border: 1px solid var(--code-border);
   border-radius: 6px;
@@ -104,56 +104,55 @@ watch(
   background: var(--code-bg);
   color: var(--code-foreground);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
 
-.code-highlight :deep(.line-numbers) {
-  display: flex;
-  flex-direction: column;
-  padding-top: 16px;
-  padding-bottom: 16px;
-  background: var(--code-gutter-bg);
-  border-right: 1px solid var(--code-border);
-  user-select: none;
-  flex-shrink: 0;
-  position: sticky;
-  left: 0;
-}
+  & :deep(.line-numbers) {
+    display: flex;
+    flex-direction: column;
+    padding-block: 16px;
+    background: var(--code-gutter-bg);
+    border-inline-end: 1px solid var(--code-border);
+    user-select: none;
+    flex-shrink: 0;
+    position: sticky;
+    inset-inline-start: 0;
+  }
 
-.code-highlight :deep(.code-content) {
-  flex: 1;
-  min-width: 0;
-  padding: 16px 20px;
-  overflow-x: auto;
-}
+  & :deep(.code-content) {
+    flex: 1;
+    min-width: 0;
+    padding: 16px 20px;
+    overflow-x: auto;
+  }
 
-.code-highlight.with-line-numbers :deep(.code-content) {
-  padding-left: 16px;
-}
+  &.with-line-numbers :deep(.code-content) {
+    padding-inline-start: 16px;
+  }
 
-.code-highlight :deep(.line-number) {
-  display: block;
-  padding: 0 14px;
-  text-align: right;
-  color: var(--code-line-number);
-  line-height: var(--code-line-height);
-  height: var(--code-line-height);
-  box-sizing: border-box;
-}
+  & :deep(.line-number) {
+    display: block;
+    padding: 0 14px;
+    text-align: right;
+    color: var(--code-line-number);
+    line-height: var(--code-line-height);
+    height: var(--code-line-height);
+    box-sizing: border-box;
+  }
 
-.code-highlight :deep(.code-line) {
-  white-space: pre;
-  color: var(--code-foreground);
-  line-height: var(--code-line-height);
-  min-height: var(--code-line-height);
-  box-sizing: border-box;
-}
+  & :deep(.code-line) {
+    white-space: pre;
+    color: var(--code-foreground);
+    line-height: var(--code-line-height);
+    min-height: var(--code-line-height);
+    box-sizing: border-box;
+  }
 
-.code-highlight :deep(.code-line span) {
-  color: var(--l, var(--code-foreground));
-  line-height: inherit;
-}
+  & :deep(.code-line span) {
+    color: var(--l, var(--code-foreground));
+    line-height: inherit;
+  }
 
-body[data-theme="dark"] .code-highlight :deep(.code-line span) {
-  color: var(--d, var(--code-foreground));
+  body[data-theme="dark"] & :deep(.code-line span) {
+    color: var(--d, var(--code-foreground));
+  }
 }
 </style>

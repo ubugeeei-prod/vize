@@ -127,52 +127,73 @@ onMounted(async () => {
 
       <div class="main-tabs">
         <button
+          type="button"
           :class="['main-tab', { active: mainTab === 'atelier' }]"
-          @click="mainTab = 'atelier'"
+          @click="() => (mainTab = 'atelier')"
         >
           <span class="tab-name">Atelier</span>
           <span class="tab-desc">compiler</span>
         </button>
         <button
+          type="button"
           :class="['main-tab', { active: mainTab === 'inspector' }]"
-          @click="mainTab = 'inspector'"
+          @click="() => (mainTab = 'inspector')"
         >
           <span class="tab-name">Inspector</span>
           <span class="tab-desc">diff</span>
         </button>
-        <button :class="['main-tab', { active: mainTab === 'patina' }]" @click="mainTab = 'patina'">
+        <button
+          type="button"
+          :class="['main-tab', { active: mainTab === 'patina' }]"
+          @click="() => (mainTab = 'patina')"
+        >
           <span class="tab-name">Patina</span>
           <span class="tab-desc">linter</span>
         </button>
-        <button :class="['main-tab', { active: mainTab === 'glyph' }]" @click="mainTab = 'glyph'">
+        <button
+          type="button"
+          :class="['main-tab', { active: mainTab === 'glyph' }]"
+          @click="() => (mainTab = 'glyph')"
+        >
           <span class="tab-name">Glyph</span>
           <span class="tab-desc">formatter</span>
         </button>
-        <button :class="['main-tab', { active: mainTab === 'canon' }]" @click="mainTab = 'canon'">
+        <button
+          type="button"
+          :class="['main-tab', { active: mainTab === 'canon' }]"
+          @click="() => (mainTab = 'canon')"
+        >
           <span class="tab-name">Canon</span>
           <span class="tab-desc">typecheck</span>
         </button>
         <button
+          type="button"
           :class="['main-tab', { active: mainTab === 'croquis' }]"
-          @click="mainTab = 'croquis'"
+          @click="() => (mainTab = 'croquis')"
         >
           <span class="tab-name">Croquis</span>
           <span class="tab-desc">analyzer</span>
         </button>
         <button
+          type="button"
           :class="['main-tab', { active: mainTab === 'cross-file' }]"
-          @click="mainTab = 'cross-file'"
+          @click="() => (mainTab = 'cross-file')"
         >
           <span class="tab-name">Cross</span>
           <span class="tab-desc">xfile</span>
         </button>
-        <button :class="['main-tab', { active: mainTab === 'musea' }]" @click="mainTab = 'musea'">
+        <button
+          type="button"
+          :class="['main-tab', { active: mainTab === 'musea' }]"
+          @click="() => (mainTab = 'musea')"
+        >
           <span class="tab-name">Musea</span>
           <span class="tab-desc">story</span>
         </button>
         <button
+          type="button"
           :class="['main-tab', { active: mainTab === 'davinci' }]"
-          @click="mainTab = 'davinci'"
+          @click="() => (mainTab = 'davinci')"
         >
           <span class="tab-name">Davinci</span>
           <span class="tab-desc">stages</span>
@@ -181,6 +202,7 @@ onMounted(async () => {
 
       <div class="options">
         <button
+          type="button"
           class="theme-toggle"
           title="Copy environment information"
           aria-label="Copy environment information"
@@ -192,6 +214,7 @@ onMounted(async () => {
         </button>
 
         <button
+          type="button"
           class="theme-toggle"
           :title="isDark ? 'Light mode' : 'Dark mode'"
           @click="toggleTheme"

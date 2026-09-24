@@ -32,8 +32,8 @@ const summary = computed(() => summarizeRemarks(props.remarks));
       </p>
       <ul class="davinci-remark-list">
         <li
-          v-for="(remark, index) in remarks"
-          :key="index"
+          v-for="remark in remarks"
+          :key="`${remark.stage}:${remark.pass}:${remark.kind}:${remark.name}:${remark.span.start}:${remark.span.end}`"
           :class="['davinci-remark', remark.kind]"
         >
           <span class="davinci-remark-outcome">{{ remark.kind }}</span>
@@ -44,7 +44,7 @@ const summary = computed(() => summarizeRemarks(props.remarks));
               formatArg(arg)
             }}</span></span
           >
-          <button type="button" class="davinci-ghost" @click="emit('locate', remark)">
+          <button type="button" class="davinci-ghost" @click="() => emit('locate', remark)">
             Show source
           </button>
         </li>

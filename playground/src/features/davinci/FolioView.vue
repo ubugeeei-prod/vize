@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, useTemplateRef, watch } from "vue";
 import type { FolioLine, PageKind } from "./folioLines";
+import { withTokenOffsets } from "../../utils/withTokenOffsets";
 
 const props = defineProps<{
   lines: FolioLine[];
@@ -52,13 +53,13 @@ function toggle(index: number) {
         :data-line="line.index"
         :aria-pressed="selected === line.index"
         :title="spanTitle(line)"
-        @mouseenter="emit('hover', line.index)"
-        @focus="emit('hover', line.index)"
-        @mouseleave="emit('hover', null)"
-        @blur="emit('hover', null)"
-        @click="toggle(line.index)"
-        @keydown.enter.prevent="toggle(line.index)"
-        @keydown.space.prevent="toggle(line.index)"
+        @mouseenter="() => emit('hover', line.index)"
+        @focus="() => emit('hover', line.index)"
+        @mouseleave="() => emit('hover', null)"
+        @blur="() => emit('hover', null)"
+        @click="() => toggle(line.index)"
+        @keydown.enter.prevent="() => toggle(line.index)"
+        @keydown.space.prevent="() => toggle(line.index)"
       >
         <span
           :class="['davinci-mark', marks?.get(line.index)]"
@@ -67,9 +68,12 @@ function toggle(index: number) {
         ></span>
         <span class="davinci-ln">{{ line.index + 1 }}</span>
         <span class="davinci-code"
-          ><span v-for="(token, ti) in line.tokens" :key="ti" :class="`tk-${token.type}`">{{
-            token.text
-          }}</span></span
+          ><span
+            v-for="token in withTokenOffsets(line.tokens)"
+            :key="token.offset"
+            :class="`tk-${token.type}`"
+            >{{ token.text }}</span
+          ></span
         >
       </div>
       <div
@@ -84,9 +88,11 @@ function toggle(index: number) {
         ></span>
         <span class="davinci-ln">{{ line.index + 1 }}</span>
         <span class="davinci-code"
-          ><span v-for="(token, ti) in line.tokens" :key="ti" :class="`tk-${token.type}`">{{
-            token.text
-          }}</span
+          ><span
+            v-for="token in withTokenOffsets(line.tokens)"
+            :key="token.offset"
+            :class="`tk-${token.type}`"
+            >{{ token.text }}</span
           ><template v-if="line.tokens.length === 0">&#160;</template></span
         >
       </div>

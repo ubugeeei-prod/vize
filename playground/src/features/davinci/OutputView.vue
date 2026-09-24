@@ -35,7 +35,7 @@ const code = computed(() => variant.value.formattedCode || variant.value.code);
         :class="['davinci-subtab', { active: target === item.id }]"
         :aria-selected="target === item.id"
         :title="item.note"
-        @click="emit('update:target', item.id)"
+        @click="() => emit('update:target', item.id)"
       >
         {{ item.label }}
       </button>

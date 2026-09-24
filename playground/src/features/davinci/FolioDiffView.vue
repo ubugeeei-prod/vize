@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { InspectorDiff } from "../../wasm/types/inspector";
 import { folioTokens } from "./folioLines";
+import { withTokenOffsets } from "../../utils/withTokenOffsets";
 
 defineProps<{
   diff: InspectorDiff;
@@ -25,8 +26,8 @@ defineProps<{
     </p>
     <div class="davinci-folio" aria-label="Page difference">
       <div
-        v-for="(line, index) in diff.lines"
-        :key="index"
+        v-for="line in diff.lines"
+        :key="`${line.kind}:${line.leftLine}:${line.rightLine}`"
         :class="['davinci-line', `diff-${line.kind}`]"
       >
         <span class="davinci-ln">{{ line.rightLine ?? line.leftLine ?? "" }}</span>
@@ -35,8 +36,8 @@ defineProps<{
         }}</span>
         <span class="davinci-code"
           ><span
-            v-for="(token, ti) in folioTokens(line.text)"
-            :key="ti"
+            v-for="token in withTokenOffsets(folioTokens(line.text))"
+            :key="token.offset"
             :class="`tk-${token.type}`"
             >{{ token.text }}</span
           ><template v-if="line.text.length === 0">&#160;</template></span

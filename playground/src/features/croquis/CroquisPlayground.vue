@@ -8,6 +8,7 @@ import CroquisStatsPanel from "./CroquisStatsPanel.vue";
 import ReactivityOverlayPanel from "./ReactivityOverlayPanel.vue";
 import { getSourceLabel, getSourceClass } from "./bindingHelpers";
 import { getScopeColorClass } from "./scopeColors";
+import { withTokenOffsets } from "../../utils/withTokenOffsets";
 
 const props = defineProps<{
   compiler: WasmModule | null;
@@ -67,15 +68,24 @@ const {
           </span>
         </div>
         <div class="tabs">
-          <button :class="['tab', { active: activeTab === 'vir' }]" @click="activeTab = 'vir'">
+          <button
+            type="button"
+            :class="['tab', { active: activeTab === 'vir' }]"
+            @click="() => (activeTab = 'vir')"
+          >
             VIR
           </button>
-          <button :class="['tab', { active: activeTab === 'stats' }]" @click="activeTab = 'stats'">
+          <button
+            type="button"
+            :class="['tab', { active: activeTab === 'stats' }]"
+            @click="() => (activeTab = 'stats')"
+          >
             Stats
           </button>
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'reactivity' }]"
-            @click="activeTab = 'reactivity'"
+            @click="() => (activeTab = 'reactivity')"
           >
             Reactivity
             <span v-if="reactivityOverlay?.summary.lossCount" class="tab-badge">
@@ -83,20 +93,23 @@ const {
             </span>
           </button>
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'bindings' }]"
-            @click="activeTab = 'bindings'"
+            @click="() => (activeTab = 'bindings')"
           >
             Bindings
           </button>
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'scopes' }]"
-            @click="activeTab = 'scopes'"
+            @click="() => (activeTab = 'scopes')"
           >
             Scopes
           </button>
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'diagnostics' }]"
-            @click="activeTab = 'diagnostics'"
+            @click="() => (activeTab = 'diagnostics')"
           >
             Diagnostics
             <span v-if="diagnostics.length > 0" class="tab-badge">{{ diagnostics.length }}</span>
@@ -128,8 +141,8 @@ const {
                   <span class="vir-line-text"
                     ><template v-if="line.tokens.length > 0"
                       ><span
-                        v-for="(token, ti) in line.tokens"
-                        :key="ti"
+                        v-for="token in withTokenOffsets(line.tokens)"
+                        :key="token.offset"
                         :class="['vir-token', `vir-${token.type}`]"
                         >{{ token.text }}</span
                       ></template
@@ -147,11 +160,11 @@ const {
           <!-- Stats Tab -->
           <CroquisStatsPanel
             v-else-if="activeTab === 'stats'"
-            :stats="stats"
-            :macros="macros"
-            :css="css"
-            :type-exports="typeExports"
-            :invalid-exports="invalidExports"
+            :stats
+            :macros
+            :css
+            :type-exports
+            :invalid-exports
           />
 
           <!-- Reactivity Tab -->
@@ -254,8 +267,8 @@ const {
 
             <div v-else class="diagnostic-list">
               <div
-                v-for="(diag, i) in diagnostics"
-                :key="i"
+                v-for="diag in diagnostics"
+                :key="`${diag.start}:${diag.end}:${diag.code}:${diag.message}`"
                 :class="['diagnostic-item', `severity-${diag.severity}`]"
               >
                 <div class="diagnostic-header">

@@ -147,7 +147,9 @@ onUnmounted(() => {
           <h2>Source</h2>
         </div>
         <div class="panel-actions">
-          <button class="btn-ghost" @click="source = LINT_PRESET">Reset</button>
+          <button type="button" class="btn-ghost" @click="() => (source = LINT_PRESET)">
+            Reset
+          </button>
         </div>
       </div>
       <div class="editor-container">
@@ -170,15 +172,20 @@ onUnmounted(() => {
         </div>
         <div class="tabs">
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'diagnostics' }]"
-            @click="activeTab = 'diagnostics'"
+            @click="() => (activeTab = 'diagnostics')"
           >
             Diagnostics
             <span v-if="lintResult?.diagnostics.length" class="tab-badge">{{
               lintResult.diagnostics.length
             }}</span>
           </button>
-          <button :class="['tab', { active: activeTab === 'rules' }]" @click="activeTab = 'rules'">
+          <button
+            type="button"
+            :class="['tab', { active: activeTab === 'rules' }]"
+            @click="() => (activeTab = 'rules')"
+          >
             Rules
             <span class="tab-count">{{ enabledRuleCount }}/{{ rules.length }}</span>
           </button>
@@ -200,7 +207,7 @@ onUnmounted(() => {
                 <select
                   v-model="currentLocale"
                   aria-label="Locale"
-                  @change="setLocale(currentLocale)"
+                  @change="() => setLocale(currentLocale)"
                 >
                   <option v-for="locale in locales" :key="locale.code" :value="locale.code">
                     {{ locale.name }}
@@ -218,8 +225,8 @@ onUnmounted(() => {
 
             <div v-else class="diagnostics-list">
               <div
-                v-for="(diagnostic, i) in lintResult.diagnostics"
-                :key="i"
+                v-for="diagnostic in lintResult.diagnostics"
+                :key="`${diagnostic.rule}:${diagnostic.location.start.offset}:${diagnostic.location.end.offset}:${diagnostic.message}`"
                 :class="['diagnostic-item', `severity-${diagnostic.severity}`]"
               >
                 <div class="diagnostic-header">
@@ -251,28 +258,32 @@ onUnmounted(() => {
               <div class="rules-actions">
                 <div class="preset-actions" role="group" aria-label="Lint preset">
                   <button
+                    type="button"
                     :class="[
                       'btn-action',
                       'btn-preset',
                       { active: selectedPreset === 'general-recommended' },
                     ]"
-                    @click="applyPreset('general-recommended')"
+                    @click="() => applyPreset('general-recommended')"
                   >
                     General Recommended
                   </button>
                   <button
+                    type="button"
                     :class="[
                       'btn-action',
                       'btn-preset',
                       { active: selectedPreset === 'opinionated' },
                     ]"
-                    @click="applyPreset('opinionated')"
+                    @click="() => applyPreset('opinionated')"
                   >
                     Opinionated
                   </button>
                 </div>
-                <button class="btn-action" @click="enableAllRules">Enable All</button>
-                <button class="btn-action" @click="disableAllRules">Disable All</button>
+                <button type="button" class="btn-action" @click="enableAllRules">Enable All</button>
+                <button type="button" class="btn-action" @click="disableAllRules">
+                  Disable All
+                </button>
               </div>
             </div>
 
@@ -303,7 +314,7 @@ onUnmounted(() => {
                   :checked="isCategoryFullyEnabled(selectedCategory)"
                   :indeterminate="isCategoryPartiallyEnabled(selectedCategory)"
                   class="rule-checkbox"
-                  @change="toggleCategory(selectedCategory, $event.target.checked)"
+                  @change="($event) => toggleCategory(selectedCategory, $event.target.checked)"
                 />
                 <span class="category-label">{{ selectedCategory }}</span>
                 <span class="category-count">{{ filteredRules.length }} rules</span>
@@ -322,7 +333,7 @@ onUnmounted(() => {
                       type="checkbox"
                       :checked="enabledRules.has(rule.name)"
                       class="rule-checkbox"
-                      @change="toggleRule(rule.name)"
+                      @change="() => toggleRule(rule.name)"
                     />
                     <code class="rule-id">{{ rule.name }}</code>
                   </label>

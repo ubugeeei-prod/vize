@@ -2,7 +2,7 @@
 import "./DavinciPlayground.css";
 import "./StageRail.css";
 import "./FolioView.css";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, useId, watch } from "vue";
 import { type WasmModule, getWasm } from "../../wasm/index";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import { DAVINCI_EXAMPLES } from "../../shared/presets/davinci";
@@ -66,6 +66,7 @@ function toggleView(view: "diff" | "remarks" | "flame") {
 }
 
 const example = ref(DAVINCI_EXAMPLES[0].key);
+const exampleId = useId();
 
 function loadExample(key: string) {
   const found = DAVINCI_EXAMPLES.find((item) => item.key === key);
@@ -106,33 +107,35 @@ function snippet(text: string): string {
 <template>
   <div class="davinci-playground">
     <section class="davinci-source" aria-label="Source">
-      <header class="davinci-bar">
+      <div class="davinci-bar">
         <h2 class="davinci-title">Source</h2>
         <span class="davinci-hint">Put the cursor on markup to find it in the stage page</span>
         <div class="davinci-example">
-          <label class="davinci-hint" for="davinci-example">Example</label>
-          <select id="davinci-example" v-model="example" class="davinci-select">
+          <label class="davinci-hint" :for="exampleId">Example</label>
+          <select :id="exampleId" v-model="example" class="davinci-select">
             <option v-for="item in DAVINCI_EXAMPLES" :key="item.key" :value="item.key">
               {{ item.label }}
             </option>
           </select>
         </div>
-        <button type="button" class="davinci-ghost" @click="loadExample(example)">Reset</button>
-      </header>
+        <button type="button" class="davinci-ghost" @click="() => loadExample(example)">
+          Reset
+        </button>
+      </div>
       <div class="davinci-editor">
         <MonacoEditor v-model="source" language="vue" :highlights :theme @cursor="onCursor" />
       </div>
     </section>
 
     <section class="davinci-stages" aria-label="Davinci stage ladder">
-      <header class="davinci-bar">
+      <div class="davinci-bar">
         <h2 class="davinci-title">Davinci stage ladder</h2>
         <span v-if="ladderTime !== null" class="davinci-badge" title="analyzeSfc wall time"
           >{{ ladderTime.toFixed(2) }} ms</span
         >
         <span class="davinci-badge" title="Spolvero feed schema_version">feed v1</span>
         <span class="davinci-hint davinci-keys">Keys 1–4 pick a stage, ← → walk the steps</span>
-      </header>
+      </div>
 
       <div v-if="error" class="davinci-message error" role="alert">{{ error }}</div>
       <template v-else-if="ladder">
@@ -152,7 +155,7 @@ function snippet(text: string): string {
             role="tab"
             :class="['davinci-subtab', { active: pageView === 'page' && page?.key === tab.key }]"
             :aria-selected="page?.key === tab.key"
-            @click="selectPage(rung.id, tab.key)"
+            @click="() => selectPage(rung.id, tab.key)"
           >
             {{ tab.label }}
           </button>
@@ -162,7 +165,7 @@ function snippet(text: string): string {
             type="button"
             :class="['davinci-subtab', { active: pageView === 'diff' }]"
             :aria-pressed="pageView === 'diff'"
-            @click="toggleView('diff')"
+            @click="() => toggleView('diff')"
           >
             Diff vs {{ previousPage.label }}
           </button>
@@ -170,7 +173,7 @@ function snippet(text: string): string {
             type="button"
             :class="['davinci-subtab', { active: pageView === 'remarks' }]"
             :aria-pressed="pageView === 'remarks'"
-            @click="toggleView('remarks')"
+            @click="() => toggleView('remarks')"
           >
             Remarks <span class="davinci-count">{{ remarks.length }}</span>
           </button>
@@ -178,7 +181,7 @@ function snippet(text: string): string {
             type="button"
             :class="['davinci-subtab', { active: pageView === 'flame' }]"
             :aria-pressed="pageView === 'flame'"
-            @click="toggleView('flame')"
+            @click="() => toggleView('flame')"
           >
             Flame
           </button>
@@ -208,8 +211,8 @@ function snippet(text: string): string {
             :kind="page.kind"
             :selected="selectedLine"
             :linked="linkedLines"
-            @hover="hoveredLine = $event"
-            @select="selectedLine = $event"
+            @hover="($event) => (hoveredLine = $event)"
+            @select="($event) => (selectedLine = $event)"
           />
           <div v-else class="davinci-message">This stage produced no page for the source.</div>
         </div>
@@ -221,8 +224,8 @@ function snippet(text: string): string {
             >
             <code class="davinci-snippet">{{ snippet(focusSource.text) }}</code>
             <span
-              v-for="(record, index) in focusProvenance"
-              :key="index"
+              v-for="record in focusProvenance"
+              :key="`${record.span.start}:${record.span.end}:${record.rule}:${record.node}`"
               :class="['davinci-why', { fact: record.rule.startsWith('pass.') }]"
               :title="`${record.rule}: ${record.before} → ${record.after}`"
               >{{ record.rule

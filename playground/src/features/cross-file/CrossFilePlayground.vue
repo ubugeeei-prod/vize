@@ -311,9 +311,10 @@ onUnmounted(() => {
           <button
             v-for="preset in PRESETS"
             :key="preset.id"
+            type="button"
             :class="['preset-item', { active: currentPreset === preset.id }]"
             :title="preset.description"
-            @click="handleSelectPreset($event)"
+            @click="($event) => handleSelectPreset($event)"
           >
             <svg class="preset-icon" viewBox="0 0 24 24">
               <path :d="preset.icon" fill="currentColor" />
@@ -327,10 +328,10 @@ onUnmounted(() => {
         <div class="section-header">
           <h3>Project Files</h3>
           <div class="section-actions">
-            <button class="icon-btn" title="Add file" @click="addFile">
+            <button type="button" class="icon-btn" title="Add file" @click="addFile">
               <svg viewBox="0 0 24 24"><path :d="mdiPlus" fill="currentColor" /></svg>
             </button>
-            <button class="icon-btn" title="Reset" @click="resetProject">
+            <button type="button" class="icon-btn" title="Reset" @click="resetProject">
               <svg viewBox="0 0 24 24"><path :d="mdiRefresh" fill="currentColor" /></svg>
             </button>
           </div>
@@ -349,8 +350,8 @@ onUnmounted(() => {
                 'has-warnings': issuesByFile[name]?.some((i) => i.severity === 'warning'),
               },
             ]"
-            @click="handleFileClick($event)"
-            @keydown.enter="handleFileClick($event)"
+            @click="($event) => handleFileClick($event)"
+            @keydown.enter="($event) => handleFileClick($event)"
           >
             <svg class="file-icon" viewBox="0 0 24 24">
               <path :d="getFileIcon(name)" fill="currentColor" />
@@ -363,7 +364,12 @@ onUnmounted(() => {
             >
               <span class="badge-count">{{ issuesByFile[name].length }}</span>
             </span>
-            <button v-if="fileNames.length > 1" class="file-delete" @click.stop="removeFile(name)">
+            <button
+              v-if="fileNames.length > 1"
+              type="button"
+              class="file-delete"
+              @click.stop="() => removeFile(name)"
+            >
               <svg viewBox="0 0 24 24"><path :d="mdiClose" fill="currentColor" /></svg>
             </button>
           </div>
@@ -386,8 +392,8 @@ onUnmounted(() => {
                   role="button"
                   tabindex="0"
                   class="dep-target"
-                  @click="handleFileClick($event)"
-                  @keydown.enter="handleFileClick($event)"
+                  @click="($event) => handleFileClick($event)"
+                  @keydown.enter="($event) => handleFileClick($event)"
                   >{{ dep }}</span
                 >
               </div>
@@ -405,23 +411,26 @@ onUnmounted(() => {
         </div>
         <div class="profile-switch" role="group" aria-label="Analysis profile">
           <button
+            type="button"
             :class="['profile-btn', { active: selectedProfile === 'signals' }]"
             title="Relationship and reactivity signals"
-            @click="setAnalysisProfile('signals')"
+            @click="() => setAnalysisProfile('signals')"
           >
             Signals
           </button>
           <button
+            type="button"
             :class="['profile-btn', { active: selectedProfile === 'validation' }]"
             title="Project validation checks"
-            @click="setAnalysisProfile('validation')"
+            @click="() => setAnalysisProfile('validation')"
           >
             Validation
           </button>
           <button
+            type="button"
             :class="['profile-btn', { active: selectedProfile === 'all' }]"
             title="All project diagnostics"
-            @click="setAnalysisProfile('all')"
+            @click="() => setAnalysisProfile('all')"
           >
             All
           </button>
@@ -487,8 +496,9 @@ onUnmounted(() => {
           <button
             v-for="name in fileNames"
             :key="name"
+            type="button"
             :class="['editor-tab', { active: activeFile === name }]"
-            @click="handleFileClick($event)"
+            @click="($event) => handleFileClick($event)"
           >
             <svg class="tab-icon" viewBox="0 0 24 24">
               <path :d="getFileIcon(name)" fill="currentColor" />
@@ -537,8 +547,9 @@ onUnmounted(() => {
         <h3>Diagnostics</h3>
         <div class="diagnostics-stats">
           <button
+            type="button"
             :class="['filter-chip', { active: severityFilter === 'all' }]"
-            @click="setSeverityFilter('all')"
+            @click="() => setSeverityFilter('all')"
           >
             {{ crossFileIssues.length }} all
           </button>
@@ -549,20 +560,23 @@ onUnmounted(() => {
       </div>
       <div class="severity-filters" role="group" aria-label="Severity filter">
         <button
+          type="button"
           :class="['filter-btn error', { active: severityFilter === 'error' }]"
-          @click="setSeverityFilter('error')"
+          @click="() => setSeverityFilter('error')"
         >
           Errors
         </button>
         <button
+          type="button"
           :class="['filter-btn warning', { active: severityFilter === 'warning' }]"
-          @click="setSeverityFilter('warning')"
+          @click="() => setSeverityFilter('warning')"
         >
           Warnings
         </button>
         <button
+          type="button"
           :class="['filter-btn info', { active: severityFilter === 'info' }]"
-          @click="setSeverityFilter('info')"
+          @click="() => setSeverityFilter('info')"
         >
           Info
         </button>
@@ -587,8 +601,8 @@ onUnmounted(() => {
               role="button"
               tabindex="0"
               :class="['issue-card', issue.severity, { selected: selectedIssue?.id === issue.id }]"
-              @click="handleSelectIssue(issue)"
-              @keydown.enter="handleSelectIssue(issue)"
+              @click="() => handleSelectIssue(issue)"
+              @keydown.enter="() => handleSelectIssue(issue)"
             >
               <div class="issue-header">
                 <svg class="severity-icon" viewBox="0 0 24 24">
@@ -605,7 +619,11 @@ onUnmounted(() => {
                 <span class="suggestion-text">{{ issue.suggestion }}</span>
               </div>
               <div v-if="issue.relatedLocations?.length" class="issue-related">
-                <div v-for="(rel, i) in issue.relatedLocations" :key="i" class="related-item">
+                <div
+                  v-for="rel in issue.relatedLocations"
+                  :key="`${rel.file}:${rel.line}:${rel.message}`"
+                  class="related-item"
+                >
                   <span class="related-loc">{{ rel.file }}:{{ rel.line }}</span>
                   <span class="related-msg">{{ rel.message }}</span>
                 </div>

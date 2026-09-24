@@ -124,7 +124,9 @@ onUnmounted(() => {
             </svg>
             Examples
           </a>
-          <button class="btn-ghost" @click="source = ART_PRESET">Reset</button>
+          <button type="button" class="btn-ghost" @click="() => (source = ART_PRESET)">
+            Reset
+          </button>
         </div>
       </div>
       <div class="editor-container">
@@ -143,19 +145,25 @@ onUnmounted(() => {
         </div>
         <div class="tabs">
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'parsed' }]"
-            @click="activeTab = 'parsed'"
+            @click="() => (activeTab = 'parsed')"
           >
             Metadata
           </button>
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'variants' }]"
-            @click="activeTab = 'variants'"
+            @click="() => (activeTab = 'variants')"
           >
             Variants
             <span v-if="variantCount > 0" class="tab-count">{{ variantCount }}</span>
           </button>
-          <button :class="['tab', { active: activeTab === 'csf' }]" @click="activeTab = 'csf'">
+          <button
+            type="button"
+            :class="['tab', { active: activeTab === 'csf' }]"
+            @click="() => (activeTab = 'csf')"
+          >
             CSF
           </button>
         </div>
@@ -234,8 +242,8 @@ onUnmounted(() => {
                     role="button"
                     tabindex="0"
                     :title="`Click to copy: ${token.name}`"
-                    @click="copyToClipboard(token.name)"
-                    @keydown.enter="copyToClipboard(token.name)"
+                    @click="() => copyToClipboard(token.name)"
+                    @keydown.enter="() => copyToClipboard(token.name)"
                   >
                     <div class="color-swatch" :style="{ background: token.value }"></div>
                     <div class="token-info">
@@ -257,8 +265,8 @@ onUnmounted(() => {
                     role="button"
                     tabindex="0"
                     :title="`Click to copy: ${token.name}`"
-                    @click="copyToClipboard(token.name)"
-                    @keydown.enter="copyToClipboard(token.name)"
+                    @click="() => copyToClipboard(token.name)"
+                    @keydown.enter="() => copyToClipboard(token.name)"
                   >
                     <code class="token-name">{{ token.name }}</code>
                     <span class="token-value">{{ token.value }}</span>
@@ -278,8 +286,8 @@ onUnmounted(() => {
                     role="button"
                     tabindex="0"
                     :title="`Click to copy: ${token.name}`"
-                    @click="copyToClipboard(token.name)"
-                    @keydown.enter="copyToClipboard(token.name)"
+                    @click="() => copyToClipboard(token.name)"
+                    @keydown.enter="() => copyToClipboard(token.name)"
                   >
                     <code class="token-name">{{ token.name }}</code>
                     <span class="token-value">{{ token.value }}</span>
@@ -308,7 +316,13 @@ onUnmounted(() => {
                     <span v-if="variant.isDefault" class="default-badge">default</span>
                     <span v-if="variant.skipVrt" class="skip-badge">skip vrt</span>
                   </div>
-                  <button class="btn-copy" @click="copyToClipboard(variant.template)">Copy</button>
+                  <button
+                    type="button"
+                    class="btn-copy"
+                    @click="() => copyToClipboard(variant.template)"
+                  >
+                    Copy
+                  </button>
                 </div>
                 <div class="variant-template">
                   <CodeHighlight :code="variant.template" language="html" :theme />
@@ -323,7 +337,13 @@ onUnmounted(() => {
               <span class="output-title">Storybook CSF</span>
               <div class="csf-actions">
                 <code class="filename-badge">{{ csfOutput.filename }}</code>
-                <button class="btn-copy" @click="copyToClipboard(csfOutput.code)">Copy</button>
+                <button
+                  type="button"
+                  class="btn-copy"
+                  @click="() => copyToClipboard(csfOutput.code)"
+                >
+                  Copy
+                </button>
               </div>
             </div>
             <div class="code-container">

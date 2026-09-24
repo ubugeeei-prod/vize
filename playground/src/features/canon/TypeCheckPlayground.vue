@@ -171,8 +171,10 @@ onUnmounted(() => {
           <h2>Source</h2>
         </div>
         <div class="panel-actions">
-          <button class="btn-ghost" @click="setPreset('untyped')">Untyped</button>
-          <button class="btn-ghost" @click="setPreset('typed')">Typed</button>
+          <button type="button" class="btn-ghost" @click="() => setPreset('untyped')">
+            Untyped
+          </button>
+          <button type="button" class="btn-ghost" @click="() => setPreset('typed')">Typed</button>
         </div>
       </div>
       <div class="experimental-controls">
@@ -198,21 +200,24 @@ onUnmounted(() => {
         </div>
         <div class="tabs">
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'diagnostics' }]"
-            @click="activeTab = 'diagnostics'"
+            @click="() => (activeTab = 'diagnostics')"
           >
             Diagnostics
             <span v-if="diagnostics.length" class="tab-badge">{{ diagnostics.length }}</span>
           </button>
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'virtualTs' }]"
-            @click="activeTab = 'virtualTs'"
+            @click="() => (activeTab = 'virtualTs')"
           >
             Virtual TS
           </button>
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'capabilities' }]"
-            @click="activeTab = 'capabilities'"
+            @click="() => (activeTab = 'capabilities')"
           >
             Info
           </button>
@@ -270,8 +275,8 @@ onUnmounted(() => {
 
             <div v-else class="diagnostics-list">
               <div
-                v-for="(diagnostic, i) in diagnostics"
-                :key="i"
+                v-for="diagnostic in diagnostics"
+                :key="`${diagnostic.startLine}:${diagnostic.startColumn}:${diagnostic.code}:${diagnostic.message}`"
                 :class="['diagnostic-item', `severity-${diagnostic.severity}`]"
               >
                 <div class="diagnostic-header">
@@ -346,7 +351,7 @@ onUnmounted(() => {
               <div class="capability-section">
                 <h3>Notes</h3>
                 <ul class="notes-list">
-                  <li v-for="(note, i) in capabilities.notes" :key="i">
+                  <li v-for="note in capabilities.notes" :key="note">
                     {{ note }}
                   </li>
                 </ul>

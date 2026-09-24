@@ -7,6 +7,7 @@ defineProps<{
 
 <template>
   <button
+    type="button"
     class="btn"
     :class="[`btn--${variant ?? 'default'}`, { 'btn--disabled': disabled }]"
     :disabled="disabled"
@@ -17,41 +18,45 @@ defineProps<{
 
 <style scoped>
 .btn {
+  --button-border: #ccc;
+
   padding: 0.5rem 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid var(--button-border);
   border-radius: 4px;
   cursor: pointer;
   font-size: 1rem;
   transition: all 0.2s;
+  background: var(--button-background);
+  color: var(--button-foreground);
 }
 
 .btn--default {
-  background: #fff;
-  color: #333;
+  --button-background: #fff;
+  --button-foreground: #333;
 }
 
 .btn--default:hover:not(:disabled) {
-  background: #f5f5f5;
+  --button-background: #f5f5f5;
 }
 
 .btn--primary {
-  background: #42b883;
-  border-color: #42b883;
-  color: #fff;
+  --button-background: #42b883;
+  --button-border: #42b883;
+  --button-foreground: #fff;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: #33a06f;
+  --button-background: #33a06f;
 }
 
 .btn--secondary {
-  background: #35495e;
-  border-color: #35495e;
-  color: #fff;
+  --button-background: #35495e;
+  --button-border: #35495e;
+  --button-foreground: #fff;
 }
 
 .btn--secondary:hover:not(:disabled) {
-  background: #2c3e50;
+  --button-background: #2c3e50;
 }
 
 .btn--disabled {

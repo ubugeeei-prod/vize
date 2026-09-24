@@ -45,6 +45,11 @@ const options = ref<FormatOptions>({
   sortBlocks: true,
 });
 
+function setMaxAttributesPerLine(event: Event) {
+  const value = (event.target as HTMLInputElement).value;
+  options.value.maxAttributesPerLine = value === "" ? null : Number(value);
+}
+
 const diffLines = computed(() => {
   if (!formatResult.value) return [];
 
@@ -176,8 +181,12 @@ onUnmounted(() => {
           <h2>Source</h2>
         </div>
         <div class="panel-actions">
-          <button class="btn-ghost" @click="source = GLYPH_PRESET">Reset</button>
-          <button class="btn-ghost" @click="copyToClipboard(source)">Copy</button>
+          <button type="button" class="btn-ghost" @click="() => (source = GLYPH_PRESET)">
+            Reset
+          </button>
+          <button type="button" class="btn-ghost" @click="() => copyToClipboard(source)">
+            Copy
+          </button>
         </div>
       </div>
       <div class="editor-container">
@@ -202,17 +211,23 @@ onUnmounted(() => {
         </div>
         <div class="tabs">
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'formatted' }]"
-            @click="activeTab = 'formatted'"
+            @click="() => (activeTab = 'formatted')"
           >
             Formatted
           </button>
-          <button :class="['tab', { active: activeTab === 'diff' }]" @click="activeTab = 'diff'">
+          <button
+            type="button"
+            :class="['tab', { active: activeTab === 'diff' }]"
+            @click="() => (activeTab = 'diff')"
+          >
             Diff
           </button>
           <button
+            type="button"
             :class="['tab', { active: activeTab === 'options' }]"
-            @click="activeTab = 'options'"
+            @click="() => (activeTab = 'options')"
           >
             Options
           </button>
@@ -231,7 +246,11 @@ onUnmounted(() => {
             <div class="output-header-bar">
               <span class="output-title">Formatted Code</span>
               <div class="output-actions">
-                <button class="btn-ghost" @click="copyToClipboard(formatResult?.code || '')">
+                <button
+                  type="button"
+                  class="btn-ghost"
+                  @click="() => copyToClipboard(formatResult?.code || '')"
+                >
                   Copy
                 </button>
               </div>
@@ -260,20 +279,19 @@ onUnmounted(() => {
                 >
               </span>
             </div>
-            <div v-if="!formatResult.changed" class="success-state">
-              <svg class="success-icon" viewBox="0 0 24 24">
-                <path :d="mdiCheck" fill="currentColor" />
-              </svg>
-              <span>No changes needed</span>
-            </div>
-            <div v-else class="diff-view">
+            <div v-if="formatResult.changed" class="diff-view">
               <div class="diff-line-numbers">
-                <span v-for="(_line, i) in diffLines" :key="i" class="diff-ln">{{ i + 1 }}</span>
+                <span
+                  v-for="(line, i) in diffLines"
+                  :key="`${line.type}:${line.lineNum}`"
+                  class="diff-ln"
+                  >{{ i + 1 }}</span
+                >
               </div>
               <div class="diff-code">
                 <div
-                  v-for="(line, i) in diffLines"
-                  :key="i"
+                  v-for="line in diffLines"
+                  :key="`${line.type}:${line.lineNum}`"
                   :class="['diff-line', `diff-${line.type}`]"
                 >
                   <span class="line-prefix">{{
@@ -282,6 +300,12 @@ onUnmounted(() => {
                   <span class="line-content">{{ line.content || " " }}</span>
                 </div>
               </div>
+            </div>
+            <div v-else class="success-state">
+              <svg class="success-icon" viewBox="0 0 24 24">
+                <path :d="mdiCheck" fill="currentColor" />
+              </svg>
+              <span>No changes needed</span>
             </div>
           </div>
 
@@ -475,7 +499,7 @@ onUnmounted(() => {
 
               <div class="options-section">
                 <h3 class="section-title">Vue SFC</h3>
-                <div class="toggle-grid" style="margin-bottom: 0.75rem">
+                <div class="toggle-grid toggle-grid--before-options">
                   <div class="toggle-card">
                     <div class="toggle-main">
                       <input
@@ -517,18 +541,13 @@ onUnmounted(() => {
                         placeholder="auto"
                         aria-label="Max Attrs Per Line"
                         class="option-input"
-                        @input="
-                          options.maxAttributesPerLine =
-                            ($event.target as HTMLInputElement).value === ''
-                              ? null
-                              : Number(($event.target as HTMLInputElement).value)
-                        "
+                        @input="setMaxAttributesPerLine"
                       />
                     </div>
                     <span class="option-desc">Max attributes per line before wrapping</span>
                   </div>
                 </div>
-                <div class="toggle-grid" style="margin-top: 0.75rem">
+                <div class="toggle-grid toggle-grid--after-options">
                   <div class="toggle-card">
                     <div class="toggle-main">
                       <input

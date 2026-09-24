@@ -70,7 +70,7 @@ function labelLoss(loss: ReactivityOverlayLoss): string {
       </div>
     </div>
 
-    <section class="reactivity-section">
+    <section class="reactivity-section" aria-label="Sources">
       <h3 class="section-title">Sources</h3>
       <div v-if="sources.length === 0" class="empty-state">No reactive sources</div>
       <div v-else class="reactivity-source-list">
@@ -85,7 +85,7 @@ function labelLoss(loss: ReactivityOverlayLoss): string {
       </div>
     </section>
 
-    <section class="reactivity-section">
+    <section class="reactivity-section" aria-label="Losses">
       <h3 class="section-title">Losses</h3>
       <div v-if="losses.length === 0" class="success-state">No reactivity loss</div>
       <div v-else class="reactivity-loss-list">
@@ -99,7 +99,7 @@ function labelLoss(loss: ReactivityOverlayLoss): string {
       </div>
     </section>
 
-    <section class="reactivity-section">
+    <section class="reactivity-section" aria-label="Effect graph">
       <h3 class="section-title">Effect Graph</h3>
       <div v-if="edges.length === 0" class="empty-state">No effect edges</div>
       <div v-else class="reactivity-edge-list">

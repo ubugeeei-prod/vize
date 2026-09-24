@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import "./InspectorPlayground.css";
 import { mdiGithub } from "@mdi/js";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, useId, watch } from "vue";
 import MonacoEditor from "../../shared/MonacoEditor.vue";
 import CodeHighlight from "../../shared/CodeHighlight.vue";
 import { codeToThemedTokenLines, type CodeHighlightLanguage } from "../../shared/codeHighlighting";
 import { PRESETS } from "../../presets";
 import { useClipboard } from "../../utils/useClipboard";
 import { useTheme } from "../../utils/useTheme";
+import { withTokenOffsets } from "../../utils/withTokenOffsets";
 import { type loadWasm, getWasm } from "../../wasm/index";
 import { compileInspectorReport } from "./compareCompilers";
 import {
@@ -46,6 +47,7 @@ const options = ref<InspectorOptions>({
   customRenderer: false,
   templateSyntax: "standard",
 });
+const templateSyntaxId = useId();
 const report = ref<InspectorReport | null>(null);
 const error = ref<string | null>(null);
 const isCompiling = ref(false);
@@ -288,9 +290,13 @@ onUnmounted(() => {
     <div class="panel-header">
       <h2>Inspector Source</h2>
       <div class="panel-actions">
-        <button class="btn-ghost" @click="copyToClipboard(source)">Copy</button>
-        <button class="btn-ghost" @click="copyToClipboard(permalink)">Permalink</button>
-        <button class="btn-ghost" @click="copyToClipboard(payloadJson)">Payload</button>
+        <button type="button" class="btn-ghost" @click="() => copyToClipboard(source)">Copy</button>
+        <button type="button" class="btn-ghost" @click="() => copyToClipboard(permalink)">
+          Permalink
+        </button>
+        <button type="button" class="btn-ghost" @click="() => copyToClipboard(payloadJson)">
+          Payload
+        </button>
       </div>
     </div>
 
@@ -298,9 +304,10 @@ onUnmounted(() => {
       <button
         v-for="(file, index) in files"
         :key="`${file.path}-${index}`"
+        type="button"
         :class="['inspector-file-tab', { active: selectedFileIndex === index }]"
         :title="file.path"
-        @click="selectedFileIndex = index"
+        @click="() => (selectedFileIndex = index)"
       >
         {{ file.path }}
       </button>
@@ -310,20 +317,23 @@ onUnmounted(() => {
       <div class="inspector-controls">
         <div class="inspector-targets" aria-label="Compiler target">
           <button
+            type="button"
             :class="['inspector-target', { active: target === 'dom' }]"
-            @click="target = 'dom'"
+            @click="() => (target = 'dom')"
           >
             DOM
           </button>
           <button
+            type="button"
             :class="['inspector-target', { active: target === 'ssr' }]"
-            @click="target = 'ssr'"
+            @click="() => (target = 'ssr')"
           >
             SSR
           </button>
           <button
+            type="button"
             :class="['inspector-target', { active: target === 'vapor' }]"
-            @click="target = 'vapor'"
+            @click="() => (target = 'vapor')"
           >
             Vapor
           </button>
@@ -333,8 +343,8 @@ onUnmounted(() => {
           <span>custom renderer</span>
         </label>
         <div class="inspector-option">
-          <label for="inspector-template-syntax">template syntax</label>
-          <select id="inspector-template-syntax" v-model="options.templateSyntax">
+          <label :for="templateSyntaxId">template syntax</label>
+          <select :id="templateSyntaxId" v-model="options.templateSyntax">
             <option value="standard">standard</option>
             <option value="strict">strict</option>
             <option value="quirks">quirks</option>
@@ -356,44 +366,51 @@ onUnmounted(() => {
       </h2>
       <div class="tabs">
         <button
+          type="button"
           :class="['tab', { active: activeOutputTab === 'compare' }]"
-          @click="activeOutputTab = 'compare'"
+          @click="() => (activeOutputTab = 'compare')"
         >
           Compare
         </button>
         <button
+          type="button"
           :class="['tab', { active: activeOutputTab === 'official' }]"
-          @click="activeOutputTab = 'official'"
+          @click="() => (activeOutputTab = 'official')"
         >
           Vue
         </button>
         <button
+          type="button"
           :class="['tab', { active: activeOutputTab === 'vize' }]"
-          @click="activeOutputTab = 'vize'"
+          @click="() => (activeOutputTab = 'vize')"
         >
           Vize
         </button>
         <button
+          type="button"
           :class="['tab', { active: activeOutputTab === 'virtual-ts' }]"
-          @click="activeOutputTab = 'virtual-ts'"
+          @click="() => (activeOutputTab = 'virtual-ts')"
         >
           Virtual TS
         </button>
         <button
+          type="button"
           :class="['tab', { active: activeOutputTab === 'vir' }]"
-          @click="activeOutputTab = 'vir'"
+          @click="() => (activeOutputTab = 'vir')"
         >
           VIR
         </button>
         <button
+          type="button"
           :class="['tab', { active: activeOutputTab === 'graph' }]"
-          @click="activeOutputTab = 'graph'"
+          @click="() => (activeOutputTab = 'graph')"
         >
           Graph
         </button>
         <button
+          type="button"
           :class="['tab', { active: activeOutputTab === 'payload' }]"
-          @click="activeOutputTab = 'payload'"
+          @click="() => (activeOutputTab = 'payload')"
         >
           Payload
         </button>
@@ -425,24 +442,24 @@ onUnmounted(() => {
 
       <template v-else-if="report">
         <div v-if="inspectorMessages.length > 0" class="inspector-warning-list">
-          <pre
-            v-for="(warning, index) in inspectorMessages"
-            :key="index"
-            class="inspector-warning"
-            >{{ warning }}</pre>
+          <pre v-for="warning in inspectorMessages" :key="warning" class="inspector-warning">{{
+            warning
+          }}</pre>
         </div>
 
         <div v-if="activeOutputTab === 'compare'" class="inspector-tab-panel">
           <div class="inspector-diff-toolbar" aria-label="Diff view">
             <button
+              type="button"
               :class="['inspector-diff-mode', { active: diffViewMode === 'merged' }]"
-              @click="diffViewMode = 'merged'"
+              @click="() => (diffViewMode = 'merged')"
             >
               Merged
             </button>
             <button
+              type="button"
               :class="['inspector-diff-mode', { active: diffViewMode === 'split' }]"
-              @click="diffViewMode = 'split'"
+              @click="() => (diffViewMode = 'split')"
             >
               Split
             </button>
@@ -452,8 +469,8 @@ onUnmounted(() => {
           </div>
           <div v-else-if="diffViewMode === 'merged'" class="inspector-diff">
             <div
-              v-for="(line, index) in highlightedDiffLines"
-              :key="index"
+              v-for="line in highlightedDiffLines"
+              :key="`${line.kind}:${line.leftLine}:${line.rightLine}`"
               :class="['inspector-diff-line', line.kind]"
             >
               <span class="inspector-diff-num">{{ line.leftLine ?? "" }}</span>
@@ -463,8 +480,8 @@ onUnmounted(() => {
               }}</span>
               <code class="inspector-diff-code"
                 ><span
-                  v-for="(token, tokenIndex) in line.tokens"
-                  :key="tokenIndex"
+                  v-for="token in withTokenOffsets(line.tokens)"
+                  :key="token.offset"
                   :style="{ '--d': token.darkColor, '--l': token.lightColor }"
                   >{{ token.content }}</span
                 ></code
@@ -473,15 +490,15 @@ onUnmounted(() => {
           </div>
           <div v-else class="inspector-diff inspector-diff-split">
             <div
-              v-for="(row, index) in splitDiffRows"
-              :key="index"
+              v-for="row in splitDiffRows"
+              :key="`${row.left.kind}:${row.left.line}:${row.right.kind}:${row.right.line}`"
               :class="['inspector-split-line', `left-${row.left.kind}`, `right-${row.right.kind}`]"
             >
               <span class="inspector-diff-num">{{ row.left.line ?? "" }}</span>
               <code :class="['inspector-diff-code', 'inspector-split-code', row.left.kind]"
                 ><span
-                  v-for="(token, tokenIndex) in row.left.tokens"
-                  :key="tokenIndex"
+                  v-for="token in withTokenOffsets(row.left.tokens)"
+                  :key="token.offset"
                   :style="{ '--d': token.darkColor, '--l': token.lightColor }"
                   >{{ token.content }}</span
                 ></code
@@ -489,8 +506,8 @@ onUnmounted(() => {
               <span class="inspector-diff-num">{{ row.right.line ?? "" }}</span>
               <code :class="['inspector-diff-code', 'inspector-split-code', row.right.kind]"
                 ><span
-                  v-for="(token, tokenIndex) in row.right.tokens"
-                  :key="tokenIndex"
+                  v-for="token in withTokenOffsets(row.right.tokens)"
+                  :key="token.offset"
                   :style="{ '--d': token.darkColor, '--l': token.lightColor }"
                   >{{ token.content }}</span
                 ></code
@@ -543,8 +560,8 @@ onUnmounted(() => {
               <span class="inspector-vir-line-text"
                 ><template v-if="line.tokens.length > 0"
                   ><span
-                    v-for="(token, tokenIndex) in line.tokens"
-                    :key="tokenIndex"
+                    v-for="token in withTokenOffsets(line.tokens)"
+                    :key="token.offset"
                     :class="['vir-token', `vir-${token.type}`]"
                     >{{ token.text }}</span
                   ></template

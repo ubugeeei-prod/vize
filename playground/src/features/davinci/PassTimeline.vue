@@ -94,7 +94,7 @@ function walkTitle(walk: TimelineWalk): string {
                 :step
                 :current="current === step.key"
                 :title="describe(step)"
-                @select="emit('select', step)"
+                @select="() => emit('select', step)"
               />
             </li>
           </ol>
@@ -111,7 +111,7 @@ function walkTitle(walk: TimelineWalk): string {
             :step="entry.step"
             :current="current === entry.step.key"
             :title="describe(entry.step)"
-            @select="emit('select', entry.step)"
+            @select="() => emit('select', entry.step)"
           />
         </li>
       </template>

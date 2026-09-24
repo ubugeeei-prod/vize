@@ -23,7 +23,7 @@ const emit = defineEmits<{
       { producer: step.producer, changed: step.changed, current },
     ]"
     :title="title"
-    @click="emit('select')"
+    @click="() => emit('select')"
   >
     <span class="davinci-step-mark" aria-hidden="true"></span>
     <span class="davinci-step-rung">{{ step.rung.toUpperCase() }}</span>

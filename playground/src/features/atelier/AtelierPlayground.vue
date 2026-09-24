@@ -91,8 +91,10 @@ function loadExperimentalExample(key: string) {
     <div class="panel-header">
       <h2>{{ inputMode === "sfc" ? "SFC (.vue)" : "Template" }}</h2>
       <div class="panel-actions">
-        <button class="btn-ghost" @click="handlePresetChange(selectedPreset)">Reset</button>
-        <button class="btn-ghost" @click="copyToClipboard(source)">Copy</button>
+        <button type="button" class="btn-ghost" @click="() => handlePresetChange(selectedPreset)">
+          Reset
+        </button>
+        <button type="button" class="btn-ghost" @click="() => copyToClipboard(source)">Copy</button>
       </div>
     </div>
     <div class="experimental-controls">
@@ -114,33 +116,55 @@ function loadExperimentalExample(key: string) {
         <span v-if="compileTime !== null" class="compile-time">{{ compileTime.toFixed(4) }}ms</span>
       </h2>
       <div class="tabs">
-        <button :class="['tab', { active: activeTab === 'code' }]" @click="activeTab = 'code'">
+        <button
+          type="button"
+          :class="['tab', { active: activeTab === 'code' }]"
+          @click="() => (activeTab = 'code')"
+        >
           Code
         </button>
-        <button :class="['tab', { active: activeTab === 'ast' }]" @click="activeTab = 'ast'">
+        <button
+          type="button"
+          :class="['tab', { active: activeTab === 'ast' }]"
+          @click="() => (activeTab = 'ast')"
+        >
           AST
         </button>
         <button
           v-if="inputMode === 'sfc'"
+          type="button"
           :class="['tab', { active: activeTab === 'bindings' }]"
-          @click="activeTab = 'bindings'"
+          @click="() => (activeTab = 'bindings')"
         >
           Bindings
         </button>
-        <button :class="['tab', { active: activeTab === 'tokens' }]" @click="activeTab = 'tokens'">
+        <button
+          type="button"
+          :class="['tab', { active: activeTab === 'tokens' }]"
+          @click="() => (activeTab = 'tokens')"
+        >
           Tokens ({{ tokenStats.total }})
         </button>
         <button
+          type="button"
           :class="['tab', { active: activeTab === 'helpers' }]"
-          @click="activeTab = 'helpers'"
+          @click="() => (activeTab = 'helpers')"
         >
           Helpers
         </button>
         <template v-if="inputMode === 'sfc'">
-          <button :class="['tab', { active: activeTab === 'sfc' }]" @click="activeTab = 'sfc'">
+          <button
+            type="button"
+            :class="['tab', { active: activeTab === 'sfc' }]"
+            @click="() => (activeTab = 'sfc')"
+          >
             SFC
           </button>
-          <button :class="['tab', { active: activeTab === 'css' }]" @click="activeTab = 'css'">
+          <button
+            type="button"
+            :class="['tab', { active: activeTab === 'css' }]"
+            @click="() => (activeTab = 'css')"
+          >
             CSS
           </button>
         </template>
@@ -168,29 +192,38 @@ function loadExperimentalExample(key: string) {
                 <button
                   v-for="target in availableCodeOutputTargets"
                   :key="target"
+                  type="button"
                   :class="['toggle-btn', { active: codeOutputTarget === target }]"
-                  @click="codeOutputTarget = target"
+                  @click="() => (codeOutputTarget = target)"
                 >
                   {{ CODE_OUTPUT_LABELS[target] }}
                 </button>
               </div>
               <div class="code-mode-toggle code-view-toggle">
                 <button
+                  type="button"
                   :class="['toggle-btn', { active: codeViewMode === 'ts' }]"
                   :disabled="!activeCodeOutput.isTypeScript"
-                  @click="activeCodeOutput.isTypeScript && (codeViewMode = 'ts')"
+                  @click="() => activeCodeOutput.isTypeScript && (codeViewMode = 'ts')"
                 >
                   TS
                 </button>
                 <button
+                  type="button"
                   :class="['toggle-btn', { active: codeViewMode === 'js' }]"
                   :disabled="!activeCodeOutput.isTypeScript"
-                  @click="activeCodeOutput.isTypeScript && (codeViewMode = 'js')"
+                  @click="() => activeCodeOutput.isTypeScript && (codeViewMode = 'js')"
                 >
                   JS
                 </button>
               </div>
-              <button class="btn-ghost" @click="copyToClipboard(activeCodeOutputText)">Copy</button>
+              <button
+                type="button"
+                class="btn-ghost"
+                @click="() => copyToClipboard(activeCodeOutputText)"
+              >
+                Copy
+              </button>
             </div>
           </div>
           <div v-if="activeCodeOutput.error" class="wasm-error">
@@ -267,7 +300,13 @@ function loadExperimentalExample(key: string) {
                 <input v-model="astCollapsed" type="checkbox" />
                 <span>Compact</span>
               </label>
-              <button class="btn-ghost btn-small" @click="copyToClipboard(astJson)">Copy</button>
+              <button
+                type="button"
+                class="btn-ghost btn-small"
+                @click="() => copyToClipboard(astJson)"
+              >
+                Copy
+              </button>
             </div>
           </div>
           <CodeHighlight :code="astJson" language="json" :theme show-line-numbers />
@@ -277,7 +316,7 @@ function loadExperimentalExample(key: string) {
         <div v-else-if="activeTab === 'helpers'" class="helpers-output">
           <h4>Runtime Helpers Used ({{ output.helpers?.length ?? 0 }})</h4>
           <ul v-if="output.helpers?.length > 0" class="helpers-list">
-            <li v-for="(helper, i) in output.helpers" :key="i" class="helper-item">
+            <li v-for="helper in output.helpers" :key="helper" class="helper-item">
               <span class="helper-name">{{ helper }}</span>
             </li>
           </ul>
@@ -328,7 +367,11 @@ function loadExperimentalExample(key: string) {
 
           <div v-if="sfcResult.descriptor.styles?.length > 0" class="sfc-block">
             <h5>Styles ({{ sfcResult.descriptor.styles?.length }})</h5>
-            <div v-for="(style, i) in sfcResult.descriptor.styles" :key="i" class="style-block">
+            <div
+              v-for="style in sfcResult.descriptor.styles"
+              :key="style.loc.start"
+              class="style-block"
+            >
               <span class="style-meta">
                 <span v-if="style.scoped" class="badge">scoped</span>
                 <span v-if="style.lang" class="badge">{{ style.lang }}</span>
@@ -357,7 +400,11 @@ function loadExperimentalExample(key: string) {
             <div class="css-compiled">
               <h5>Compiled CSS</h5>
               <div class="code-actions">
-                <button class="btn-ghost" @click="copyToClipboard(formattedCss || cssResult.code)">
+                <button
+                  type="button"
+                  class="btn-ghost"
+                  @click="() => copyToClipboard(formattedCss || cssResult.code)"
+                >
                   Copy
                 </button>
               </div>
@@ -372,7 +419,7 @@ function loadExperimentalExample(key: string) {
             <div v-if="cssResult.cssVars?.length > 0" class="css-vars">
               <h5>CSS Variables (v-bind)</h5>
               <ul class="helpers-list">
-                <li v-for="(v, i) in cssResult.cssVars" :key="i" class="helper-item">
+                <li v-for="v in cssResult.cssVars" :key="v" class="helper-item">
                   <span class="helper-name">{{ v }}</span>
                 </li>
               </ul>
@@ -380,9 +427,7 @@ function loadExperimentalExample(key: string) {
 
             <div v-if="cssResult.errors?.length > 0" class="css-errors">
               <h5>Errors</h5>
-              <pre v-for="(err, i) in cssResult.errors" :key="i" class="error-message">{{
-                err
-              }}</pre>
+              <pre v-for="err in cssResult.errors" :key="err" class="error-message">{{ err }}</pre>
             </div>
           </template>
           <p v-else class="no-css">No styles in this SFC</p>
@@ -445,8 +490,8 @@ function loadExperimentalExample(key: string) {
           <h4>Token Stream</h4>
           <div class="token-stream">
             <div
-              v-for="(token, i) in lexicalTokens"
-              :key="i"
+              v-for="token in lexicalTokens"
+              :key="`${token.line}:${token.column}:${token.type}`"
               class="token-item"
               :style="{ '--token-color': getTokenTypeColor(token.type) }"
             >
@@ -486,8 +531,8 @@ function loadExperimentalExample(key: string) {
                 </div>
                 <div class="group-tokens">
                   <span
-                    v-for="(token, i) in tokens.slice(0, 12)"
-                    :key="i"
+                    v-for="token in tokens.slice(0, 12)"
+                    :key="`${token.line}:${token.column}:${token.type}`"
                     class="group-token-chip"
                     :style="{
                       '--chip-color': getTokenTypeColor(String(type)),
