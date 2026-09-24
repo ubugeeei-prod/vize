@@ -37,9 +37,40 @@ pub(super) fn materialize_runtime_dependencies(
     ensure_dir(&node_modules_dir)?;
 
     materialize_vue_support(project_root, &node_modules_dir)?;
+    prune_stale_vue_package_links(project_root, &node_modules_dir)?;
     materialize_vite_support(project_root, &node_modules_dir)?;
     prune_runtime_node_modules(&node_modules_dir, preserved_entries)?;
 
+    Ok(())
+}
+
+fn prune_stale_vue_package_links(
+    project_root: &Path,
+    node_modules_dir: &Path,
+) -> std::io::Result<()> {
+    let namespace = node_modules_dir.join("@vue");
+    let entries = match std::fs::read_dir(&namespace) {
+        Ok(entries) => entries,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error),
+    };
+    let runtime_names = protected_vue_namespace_packages(project_root);
+    for entry in entries {
+        let entry = entry?;
+        let file_name = entry.file_name();
+        if file_name
+            .to_str()
+            .is_some_and(|file_name| runtime_names.iter().any(|name| name.as_str() == file_name))
+        {
+            continue;
+        }
+        // Package shadows are real generated directories, while ancestor
+        // packages are links. The link pass rebuilds current ancestor packages
+        // after this runtime pass, so remove only stale links from a cold run.
+        if std::fs::read_link(entry.path()).is_ok() {
+            remove_path(&entry.path())?;
+        }
+    }
     Ok(())
 }
 

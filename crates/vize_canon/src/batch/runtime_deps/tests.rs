@@ -275,6 +275,10 @@ fn vue_namespace_mirror_can_add_other_scoped_packages_without_writing_to_store()
             symlink_package_dir(&apollo, &mirrored.join("apollo-composable")).unwrap();
             assert!(mirrored.join("apollo-composable/index.d.ts").exists());
             assert!(!namespace.join("apollo-composable").exists());
+
+            materialize_runtime_dependencies(&project, &virtual_root, &[]).unwrap();
+            assert!(!mirrored.join("apollo-composable").exists());
+            assert!(apollo.join("index.d.ts").exists());
         },
     );
 }
