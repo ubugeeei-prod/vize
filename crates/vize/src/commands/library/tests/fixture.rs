@@ -37,6 +37,11 @@ pub fn write_registry(dir: &Path, kind: &str, version: &str, items: &[Item<'_>])
     } else {
         "@vizejs/composable"
     };
+    write_registry_as(dir, package, kind, version, items);
+}
+
+/// Like [`write_registry`] for an arbitrary (third-party) package name.
+pub fn write_registry_as(dir: &Path, package: &str, kind: &str, version: &str, items: &[Item<'_>]) {
     let default_dir = if kind == "ui" {
         "src/components/vize"
     } else {

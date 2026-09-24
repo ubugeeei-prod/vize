@@ -82,8 +82,10 @@ export const selectionFamilyCatalog = [
         "controllable-state",
         "typeahead",
       ],
-      maximumJavaScriptGzipBytes: 13_000,
-      maximumCssGzipBytes: 0,
+      // Includes the accessible async result announcement and its packaged
+      // structural stylesheet, including the shared style.css asset.
+      maximumJavaScriptGzipBytes: 13_200,
+      maximumCssGzipBytes: 7_800,
     },
     aliases: [
       "combobox",
