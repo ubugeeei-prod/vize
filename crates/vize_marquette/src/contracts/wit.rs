@@ -11,7 +11,7 @@ use std::fmt;
 use std::path::Path;
 
 use vize_s0::{String, ToCompactString, cstr};
-use wit_parser::{Handle, Resolve, Type, TypeDefKind, TypeId, TypeOwner, WorldItem};
+use wit_parser::{Handle, PackageId, Resolve, Type, TypeDefKind, TypeId, TypeOwner, WorldItem};
 
 use super::{
     CONTRACT_SURFACE_FORMAT, CONTRACT_SURFACE_FORMAT_VERSION, Case, ContractSurface, Field,
@@ -45,7 +45,8 @@ impl std::error::Error for WitSurfaceError {}
 ///
 /// # Errors
 ///
-/// `wit-parser`'s resolution error, or a package without a version.
+/// `wit-parser`'s resolution error, a package without a version, or an invalid
+/// reference in the resolved package.
 pub fn surface_from_wit(
     dir: &Path,
     protocol: &Protocol,
@@ -54,10 +55,20 @@ pub fn surface_from_wit(
     let (package_id, _sources) = resolve
         .push_dir(dir)
         .map_err(|error| WitSurfaceError(cstr!("{error:#}")))?;
+    surface_from_resolve(&resolve, package_id, protocol)
+}
+
+fn unknown_id(kind: &str) -> WitSurfaceError {
+    WitSurfaceError(cstr!("wit-parser returned an unknown {kind} id"))
+}
+
+fn surface_from_resolve(
+    resolve: &Resolve,
+    package_id: PackageId,
+    protocol: &Protocol,
+) -> Result<ContractSurface, WitSurfaceError> {
     let Some(package) = resolve.packages.get(package_id) else {
-        return Err(WitSurfaceError(cstr!(
-            "wit-parser returned an unknown package id"
-        )));
+        return Err(unknown_id("package"));
     };
     let Some(version) = &package.name.version else {
         return Err(WitSurfaceError(cstr!(
@@ -65,17 +76,21 @@ pub fn surface_from_wit(
             package.name
         )));
     };
-    let render = Render(&resolve);
+    let render = Render(resolve);
     let interfaces = package
         .interfaces
         .iter()
-        .filter_map(|(name, &id)| {
-            let interface = resolve.interfaces.get(id)?;
-            let types = interface
-                .types
-                .iter()
-                .filter_map(|(name, &ty)| Some((name.to_compact_string(), render.shape(ty)?)))
-                .collect();
+        .map(|(name, &id)| {
+            let interface = resolve
+                .interfaces
+                .get(id)
+                .ok_or_else(|| unknown_id("interface"))?;
+            let mut types = BTreeMap::new();
+            for (name, &ty) in &interface.types {
+                if let Some(shape) = render.shape(ty)? {
+                    types.insert(name.to_compact_string(), shape);
+                }
+            }
             let functions = interface
                 .functions
                 .iter()
@@ -84,52 +99,71 @@ pub fn surface_from_wit(
                         params: function
                             .params
                             .iter()
-                            .map(|param| Field {
-                                name: param.name.to_compact_string(),
-                                ty: render.ty(&param.ty),
+                            .map(|param| {
+                                Ok(Field {
+                                    name: param.name.to_compact_string(),
+                                    ty: render.ty(&param.ty)?,
+                                })
                             })
-                            .collect(),
-                        result: function.result.as_ref().map(|ty| render.ty(ty)),
+                            .collect::<Result<Vec<_>, WitSurfaceError>>()?,
+                        result: function
+                            .result
+                            .as_ref()
+                            .map(|ty| render.ty(ty))
+                            .transpose()?,
                     };
-                    (name.to_compact_string(), shape)
+                    Ok((name.to_compact_string(), shape))
                 })
-                .collect();
-            Some((
+                .collect::<Result<BTreeMap<_, _>, WitSurfaceError>>()?;
+            Ok((
                 name.to_compact_string(),
                 InterfaceSurface { types, functions },
             ))
         })
-        .collect();
+        .collect::<Result<BTreeMap<_, _>, WitSurfaceError>>()?;
     let worlds = package
         .worlds
         .iter()
-        .filter_map(|(name, &id)| {
-            let world = resolve.worlds.get(id)?;
-            let items = |items: &wit_parser::IndexMap<_, WorldItem>| -> BTreeSet<String> {
-                items
-                    .iter()
-                    .filter_map(|(key, item)| match item {
-                        WorldItem::Interface { id, .. } => Some(render.interface(*id)),
-                        WorldItem::Function(_) => {
-                            Some(cstr!("func:{}", resolve.name_world_key(key)))
+        .map(|(name, &id)| {
+            let world = resolve.worlds.get(id).ok_or_else(|| unknown_id("world"))?;
+            let items = |items: &wit_parser::IndexMap<_, WorldItem>| -> Result<BTreeSet<String>, WitSurfaceError> {
+                let mut names = BTreeSet::new();
+                for (key, item) in items {
+                    match item {
+                        WorldItem::Interface { id, .. } => {
+                            names.insert(render.interface(*id)?);
                         }
-                        WorldItem::Type { .. } => None,
-                    })
-                    .collect()
+                        WorldItem::Function(function) => {
+                            for param in &function.params {
+                                render.ty(&param.ty)?;
+                            }
+                            if let Some(result) = &function.result {
+                                render.ty(result)?;
+                            }
+                            names.insert(cstr!("func:{}", resolve.name_world_key(key)));
+                        }
+                        // World types do not have a surface entry, but their
+                        // references still must resolve before accepting it.
+                        WorldItem::Type { id, .. } => {
+                            render.shape(*id)?;
+                        }
+                    }
+                }
+                Ok(names)
             };
             let name = name.to_compact_string();
             let surface = WorldSurface {
-                imports: items(&world.imports),
-                exports: items(&world.exports),
+                imports: items(&world.imports)?,
+                exports: items(&world.exports)?,
                 required_features: protocol
                     .required_features
                     .get(&name)
                     .cloned()
                     .unwrap_or_default(),
             };
-            Some((name, surface))
+            Ok((name, surface))
         })
-        .collect();
+        .collect::<Result<BTreeMap<_, _>, WitSurfaceError>>()?;
     Ok(ContractSurface {
         format: String::from(CONTRACT_SURFACE_FORMAT),
         format_version: CONTRACT_SURFACE_FORMAT_VERSION,
@@ -146,41 +180,49 @@ pub fn surface_from_wit(
 struct Render<'a>(&'a Resolve);
 
 impl Render<'_> {
-    fn interface(&self, id: wit_parser::InterfaceId) -> String {
-        match self
+    fn interface(&self, id: wit_parser::InterfaceId) -> Result<String, WitSurfaceError> {
+        let interface = self
             .0
             .interfaces
             .get(id)
-            .and_then(|interface| interface.name.as_ref())
-        {
+            .ok_or_else(|| unknown_id("interface"))?;
+        Ok(match interface.name.as_ref() {
             Some(name) => name.to_compact_string(),
             None => self.0.id_of(id).unwrap_or_default().to_compact_string(),
-        }
+        })
     }
 
     /// The named shape of `id`, or `None` for a transparent alias.
-    fn shape(&self, id: TypeId) -> Option<TypeShape> {
-        let fields = |fields: &[wit_parser::Field]| {
+    fn shape(&self, id: TypeId) -> Result<Option<TypeShape>, WitSurfaceError> {
+        let fields = |fields: &[wit_parser::Field]| -> Result<Vec<Field>, WitSurfaceError> {
             fields
                 .iter()
-                .map(|field| Field {
-                    name: field.name.to_compact_string(),
-                    ty: self.ty(&field.ty),
+                .map(|field| {
+                    Ok(Field {
+                        name: field.name.to_compact_string(),
+                        ty: self.ty(&field.ty)?,
+                    })
                 })
                 .collect()
         };
-        Some(match &self.0.types.get(id)?.kind {
-            TypeDefKind::Type(_) => return None,
-            TypeDefKind::Record(record) => TypeShape::Record(fields(&record.fields)),
+        let def = self.0.types.get(id).ok_or_else(|| unknown_id("type"))?;
+        Ok(Some(match &def.kind {
+            TypeDefKind::Type(inner) => {
+                self.ty(inner)?;
+                return Ok(None);
+            }
+            TypeDefKind::Record(record) => TypeShape::Record(fields(&record.fields)?),
             TypeDefKind::Variant(variant) => TypeShape::Variant(
                 variant
                     .cases
                     .iter()
-                    .map(|case| Case {
-                        name: case.name.to_compact_string(),
-                        ty: case.ty.as_ref().map(|ty| self.ty(ty)),
+                    .map(|case| {
+                        Ok(Case {
+                            name: case.name.to_compact_string(),
+                            ty: case.ty.as_ref().map(|ty| self.ty(ty)).transpose()?,
+                        })
                     })
-                    .collect(),
+                    .collect::<Result<Vec<_>, WitSurfaceError>>()?,
             ),
             TypeDefKind::Enum(enum_) => TypeShape::Enum(
                 enum_
@@ -197,12 +239,12 @@ impl Render<'_> {
                     .collect(),
             ),
             TypeDefKind::Resource => TypeShape::Resource,
-            kind => TypeShape::Alias(self.kind(kind)),
-        })
+            kind => TypeShape::Alias(self.kind(kind)?),
+        }))
     }
 
-    fn ty(&self, ty: &Type) -> String {
-        String::from(match ty {
+    fn ty(&self, ty: &Type) -> Result<String, WitSurfaceError> {
+        Ok(String::from(match ty {
             Type::Bool => "bool",
             Type::U8 => "u8",
             Type::U16 => "u16",
@@ -218,56 +260,63 @@ impl Render<'_> {
             Type::String => "string",
             Type::ErrorContext => "error-context",
             Type::Id(id) => return self.id(*id),
-        })
+        }))
     }
 
-    fn id(&self, id: TypeId) -> String {
-        let Some(def) = self.0.types.get(id) else {
-            return String::default();
-        };
+    fn id(&self, id: TypeId) -> Result<String, WitSurfaceError> {
+        let def = self.0.types.get(id).ok_or_else(|| unknown_id("type"))?;
         match (&def.name, &def.kind) {
             (_, TypeDefKind::Type(inner)) => self.ty(inner),
             (Some(name), _) => match def.owner {
-                TypeOwner::Interface(owner) => cstr!("{}.{name}", self.interface(owner)),
+                TypeOwner::Interface(owner) => Ok(cstr!("{}.{name}", self.interface(owner)?)),
                 TypeOwner::World(world) => {
                     let world = self
                         .0
                         .worlds
                         .get(world)
-                        .map_or("", |world| world.name.as_str());
-                    cstr!("{world}.{name}")
+                        .ok_or_else(|| unknown_id("world"))?;
+                    Ok(cstr!("{}.{name}", world.name))
                 }
-                TypeOwner::None => name.to_compact_string(),
+                TypeOwner::None => Ok(name.to_compact_string()),
             },
             (None, kind) => self.kind(kind),
         }
     }
 
-    fn kind(&self, kind: &TypeDefKind) -> String {
-        let opt = |ty: &Option<Type>| ty.as_ref().map_or(String::from("_"), |ty| self.ty(ty));
-        match kind {
-            TypeDefKind::List(ty) => cstr!("list<{}>", self.ty(ty)),
-            TypeDefKind::FixedLengthList(ty, len) => cstr!("list<{}, {len}>", self.ty(ty)),
-            TypeDefKind::Option(ty) => cstr!("option<{}>", self.ty(ty)),
-            TypeDefKind::Map(key, value) => cstr!("map<{}, {}>", self.ty(key), self.ty(value)),
+    fn kind(&self, kind: &TypeDefKind) -> Result<String, WitSurfaceError> {
+        let opt = |ty: &Option<Type>| -> Result<String, WitSurfaceError> {
+            ty.as_ref().map_or(Ok(String::from("_")), |ty| self.ty(ty))
+        };
+        Ok(match kind {
+            TypeDefKind::List(ty) => cstr!("list<{}>", self.ty(ty)?),
+            TypeDefKind::FixedLengthList(ty, len) => cstr!("list<{}, {len}>", self.ty(ty)?),
+            TypeDefKind::Option(ty) => cstr!("option<{}>", self.ty(ty)?),
+            TypeDefKind::Map(key, value) => cstr!("map<{}, {}>", self.ty(key)?, self.ty(value)?),
             TypeDefKind::Result(result) => {
-                cstr!("result<{}, {}>", opt(&result.ok), opt(&result.err))
+                cstr!("result<{}, {}>", opt(&result.ok)?, opt(&result.err)?)
             }
             TypeDefKind::Tuple(tuple) => {
-                let types: Vec<String> = tuple.types.iter().map(|ty| self.ty(ty)).collect();
+                let types: Vec<String> = tuple
+                    .types
+                    .iter()
+                    .map(|ty| self.ty(ty))
+                    .collect::<Result<_, _>>()?;
                 cstr!("tuple<{}>", types.join(", "))
             }
-            TypeDefKind::Handle(Handle::Own(id)) => cstr!("own<{}>", self.id(*id)),
-            TypeDefKind::Handle(Handle::Borrow(id)) => cstr!("borrow<{}>", self.id(*id)),
-            TypeDefKind::Future(ty) => cstr!("future<{}>", opt(ty)),
-            TypeDefKind::Stream(ty) => cstr!("stream<{}>", opt(ty)),
-            TypeDefKind::Type(ty) => self.ty(ty),
+            TypeDefKind::Handle(Handle::Own(id)) => cstr!("own<{}>", self.id(*id)?),
+            TypeDefKind::Handle(Handle::Borrow(id)) => cstr!("borrow<{}>", self.id(*id)?),
+            TypeDefKind::Future(ty) => cstr!("future<{}>", opt(ty)?),
+            TypeDefKind::Stream(ty) => cstr!("stream<{}>", opt(ty)?),
+            TypeDefKind::Type(ty) => return self.ty(ty),
             TypeDefKind::Record(_)
             | TypeDefKind::Variant(_)
             | TypeDefKind::Enum(_)
             | TypeDefKind::Flags(_)
             | TypeDefKind::Resource
             | TypeDefKind::Unknown => String::from("unnamed"),
-        }
+        })
     }
 }
+
+#[cfg(test)]
+mod tests;

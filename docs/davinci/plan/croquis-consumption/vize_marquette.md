@@ -18,4 +18,4 @@ _None._
 
 | product         | resolved | grep |
 | --------------- | -------: | ---: |
-| `Croquis.types` |        0 |    8 |
+| `Croquis.types` |        0 |   11 |
