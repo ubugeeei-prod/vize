@@ -252,11 +252,11 @@ pub struct BatteryCensus {
 /// The committed census. Re-pinned deliberately, in both lanes at once.
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
-    rule_fixtures: 854,
-    rule_fixture_calls: 1016,
+    rule_fixtures: 857,
+    rule_fixture_calls: 1021,
     rule_fixture_skipped: 64,
     matrix: 90,
-    template_lines: 6128,
+    template_lines: 6213,
     restructured: 0,
     jsx: JsxComparison {
         roots: 13,
