@@ -201,7 +201,7 @@ function onWrongChange(value: string) { console.log(value); }
         [
             ("7:10", "[TS2322]"),
             ("8:10", "[TS2322]"),
-            ("8:20", "[TS2322]")
+            ("8:21", "[TS2322]")
         ],
         "stdout:\n{normalized}\nstderr:\n{stderr}"
     );
