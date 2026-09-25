@@ -5,6 +5,9 @@ on:
     branches: [main, davinci]
   pull_request:
     branches: [main, davinci]
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
   # Full validation runs daily and on explicit dispatch (including releases).
   schedule:
     # 03:11 UTC daily (~12:11 JST). Offset from native-smoke and e2e to spread
@@ -61,7 +64,7 @@ jobs:
           cache: true
           run-install: false
       - name: Check Davinci source inventories
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}
         run: |
           node tools/support/compat/davinci/croquis-consumers.mjs --check
           node tools/support/compat/davinci/consumer-migration-surfaces.mjs --check
@@ -74,7 +77,7 @@ jobs:
         if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         run: vp run --filter './npm/native' build:debug && vp run --workspace-root check:ci
       - name: Check fast JS/TS
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}
         run: vp run --workspace-root check:repo
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})
@@ -639,7 +642,7 @@ jobs:
     name: test-report
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    if: ${{ always() && github.event_name == 'pull_request' }}
+    if: ${{ always() && (github.event_name == 'pull_request' || github.event_name == 'merge_group') }}
     needs:
       - fmt-rust
       - check-js
