@@ -62,7 +62,8 @@ const msg = "x"
   // Module mode emits a top-level render function and attaches it to the SFC
   // descriptor while setup returns the bindings consumed through `$setup`.
   t.assert.match(result.code, /_sfc_main/);
-  t.assert.match(result.code, /export function render/);
+  t.assert.match(result.code, /function _sfc_render\(/);
+  t.assert.match(result.code, /render: _sfc_render/);
   t.assert.match(result.code, /setup\(__props\)/);
   t.assert.match(result.code, /_createElementBlock/);
   t.assert.match(result.code, /from "vue"/);
