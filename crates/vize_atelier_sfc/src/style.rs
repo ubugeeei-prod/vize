@@ -659,7 +659,10 @@ fn split_parenthesized_argument(input: &str) -> Option<(&str, &str)> {
         match ch {
             '\'' | '"' => quote = Some(ch),
             '(' => depth += 1,
-            ')' if depth == 0 => return Some((&input[..index], &input[index + 1..])),
+            ')' if depth == 0 => {
+                let (inner, trailing) = input.split_at_checked(index)?;
+                return Some((inner, trailing.get(1..)?));
+            }
             ')' => depth -= 1,
             _ => {}
         }
