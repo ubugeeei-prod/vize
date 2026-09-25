@@ -1,8 +1,8 @@
 use super::NoUnusedComponents;
 use crate::context::LintContext;
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{IdentifierReference, ImportDeclaration, ImportDeclarationSpecifier, TSType};
-use oxc_ast_visit::{Visit, walk::walk_ts_type};
+use oxc_ast::ast::{IdentifierReference, ImportDeclaration, ImportDeclarationSpecifier};
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_s0::{CompactString, FxHashSet};
@@ -41,7 +41,6 @@ pub(super) fn script_setup_component_import_references(
         component_imports: FxHashSet::default(),
         referenced_imports: FxHashSet::default(),
         scopes: Vec::new(),
-        type_depth: 0,
     };
     visitor.visit_program(&parsed.program);
     visitor.referenced_imports
@@ -71,7 +70,6 @@ struct ScriptSetupComponentImportVisitor {
     component_imports: FxHashSet<CompactString>,
     referenced_imports: FxHashSet<CompactString>,
     scopes: Vec<FxHashSet<CompactString>>,
-    type_depth: usize,
 }
 
 impl<'a> Visit<'a> for ScriptSetupComponentImportVisitor {
@@ -126,20 +124,10 @@ impl<'a> Visit<'a> for ScriptSetupComponentImportVisitor {
     }
 
     fn visit_identifier_reference(&mut self, it: &IdentifierReference<'a>) {
-        if self.type_depth > 0 {
-            return;
-        }
-
         let name = it.name.as_str();
         if self.component_imports.contains(name) && !self.is_shadowed(name) {
             self.referenced_imports.insert(CompactString::new(name));
         }
-    }
-
-    fn visit_ts_type(&mut self, it: &TSType<'a>) {
-        self.type_depth += 1;
-        walk_ts_type(self, it);
-        self.type_depth -= 1;
     }
 }
 

@@ -86,7 +86,7 @@ use vize_s0::cstr;
 use vize_s0::{CompactString, FxHashSet};
 
 use self::usage::{
-    PropsAccess, classify_props_access, push_identifier_tokens, template_references,
+    PropsAccess, classify_props_access, push_script_references, template_references,
 };
 
 static META: RuleMeta = RuleMeta {
@@ -187,9 +187,19 @@ impl Rule for NoUnusedProperties {
             }
 
             let mut referenced = template_references(root);
-            push_script_tokens(declaring_script, call_span, &mut referenced);
+            push_script_references(
+                declaring_script,
+                Some(call_span),
+                declaring_block.and_then(|block| block.lang.as_deref()),
+                &mut referenced,
+            );
             if let Some(plain) = plain_script.filter(|_| script_setup.is_some()) {
-                push_identifier_tokens(&plain.content, &mut referenced);
+                push_script_references(
+                    &plain.content,
+                    None,
+                    plain.lang.as_deref(),
+                    &mut referenced,
+                );
             }
 
             // Vue consumes the modifier companion prop for each `defineModel`
@@ -249,19 +259,4 @@ impl Rule for NoUnusedProperties {
 
 fn unshift_span((start, end): (u32, u32), delta: u32) -> (u32, u32) {
     (start.saturating_sub(delta), end.saturating_sub(delta))
-}
-
-/// Push the identifier tokens of `script`, minus the `defineProps` call.
-///
-/// The call always spells every prop name, so leaving it in would mark them all
-/// used. Everything around it counts, including a destructuring pattern and a
-/// `withDefaults` defaults object.
-fn push_script_tokens(script: &str, span: (u32, u32), names: &mut FxHashSet<CompactString>) {
-    let (start, end) = (span.0 as usize, span.1 as usize);
-    if let Some(before) = script.get(..start) {
-        push_identifier_tokens(before, names);
-    }
-    if let Some(after) = script.get(end..) {
-        push_identifier_tokens(after, names);
-    }
 }

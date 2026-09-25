@@ -2,6 +2,49 @@
 
 use super::{lint_sfc, owned, unused};
 
+#[test]
+fn issue_6689_comments_strings_and_imports_do_not_use_props() {
+    let sfc = r#"<script setup lang="ts">
+// the title is shown elsewhere
+const label = "subtitle";
+import type { Phase } from "./phase";
+
+defineProps<{
+  title: string;
+  subtitle: string;
+  phase: Phase;
+  count: number;
+}>();
+</script>
+
+<template><h1>{{ label }}</h1></template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![
+            unused(sfc, "title", "title: string;"),
+            unused(sfc, "subtitle", "subtitle: string;"),
+            unused(sfc, "phase", "phase: Phase;"),
+            unused(sfc, "count", "count: number;"),
+        ]
+    );
+}
+
+#[test]
+fn script_identifier_reference_still_uses_a_prop() {
+    let sfc = r#"<script setup lang="ts">
+defineProps<{ used: string; unused: string }>();
+console.log(used);
+</script>
+
+<template><div /></template>
+"#;
+    assert_eq!(
+        owned(&lint_sfc(sfc)),
+        vec![unused(sfc, "unused", "unused: string")]
+    );
+}
+
 // --- The recovered case: an unassigned defineProps -------------------------
 
 #[test]

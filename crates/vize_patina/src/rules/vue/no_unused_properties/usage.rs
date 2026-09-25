@@ -16,9 +16,9 @@
 //! * Shadowing is **not** honoured. `v-for="msg in rows"` binds an iteration
 //!   variable rather than the prop, but treating it as a reference only
 //!   suppresses a report.
-//! * The whole script block is scanned, minus the `defineProps` call itself —
-//!   which must be excluded, since the declaration always spells the name and
-//!   would otherwise mark every prop used.
+//! * Script references are read from the JavaScript/TypeScript AST, minus the
+//!   `defineProps` call itself. Comments, strings and import paths cannot be
+//!   mistaken for references.
 //!
 //! The one place precision is used is the template *AST*: a name that appears
 //! only in an HTML comment, a text node or a plain attribute is genuinely not a
@@ -26,6 +26,11 @@
 //! compile is scanned — a directive's expression *and* its argument, an
 //! interpolation's content, and a `v-for`'s source and aliases.
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{IdentifierReference, StaticMemberExpression};
+use oxc_ast_visit::{Visit, walk::walk_static_member_expression};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 use vize_s0::{CompactString, FxHashSet};
 
@@ -131,6 +136,69 @@ fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a st
     match exp {
         ExpressionNode::Simple(simple) => simple.content,
         ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
+    }
+}
+
+/// Collect actual script references while excluding the prop declaration call.
+/// If the script cannot be parsed, keep the older conservative token scan so a
+/// syntax error cannot create an unrelated unused-prop diagnostic.
+pub(super) fn push_script_references(
+    script: &str,
+    excluded: Option<(u32, u32)>,
+    lang: Option<&str>,
+    names: &mut FxHashSet<CompactString>,
+) {
+    let path = match lang {
+        Some("tsx") => "component.tsx",
+        Some("jsx") => "component.jsx",
+        Some("ts") => "component.ts",
+        _ => "component.js",
+    };
+    let source_type = SourceType::from_path(path).unwrap_or_else(|_| SourceType::ts());
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, source_type).parse();
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        let (start, end) = excluded.unwrap_or((script.len() as u32, script.len() as u32));
+        if let Some(before) = script.get(..start as usize) {
+            push_identifier_tokens(before, names);
+        }
+        if let Some(after) = script.get(end as usize..) {
+            push_identifier_tokens(after, names);
+        }
+        return;
+    }
+
+    ScriptReferenceVisitor { excluded, names }.visit_program(&parsed.program);
+}
+
+struct ScriptReferenceVisitor<'a> {
+    excluded: Option<(u32, u32)>,
+    names: &'a mut FxHashSet<CompactString>,
+}
+
+impl ScriptReferenceVisitor<'_> {
+    fn outside_excluded(&self, start: u32, end: u32) -> bool {
+        self.excluded.is_none_or(|(excluded_start, excluded_end)| {
+            end <= excluded_start || start >= excluded_end
+        })
+    }
+}
+
+impl<'a> Visit<'a> for ScriptReferenceVisitor<'_> {
+    fn visit_identifier_reference(&mut self, it: &IdentifierReference<'a>) {
+        if self.outside_excluded(it.span.start, it.span.end) {
+            self.names.insert(CompactString::new(it.name.as_str()));
+        }
+    }
+
+    fn visit_static_member_expression(&mut self, it: &StaticMemberExpression<'a>) {
+        // `this.msg` in a sibling Options API block can read a prop. Treat
+        // static members conservatively, just as the previous token scan did.
+        if self.outside_excluded(it.property.span.start, it.property.span.end) {
+            self.names
+                .insert(CompactString::new(it.property.name.as_str()));
+        }
+        walk_static_member_expression(self, it);
     }
 }
 

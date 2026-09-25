@@ -93,3 +93,35 @@ export default {
         vec!["Component 'SfButton' is registered but never used in template"]
     );
 }
+
+#[test]
+fn issue_6690_typeof_component_import_is_used_in_script_setup() {
+    let sfc = r#"<script setup lang="ts">
+import { ref } from 'vue';
+import Child from './Child.vue';
+
+const childRef = ref<InstanceType<typeof Child>>();
+defineExpose({ childRef });
+</script>
+
+<template><div>hello</div></template>
+"#;
+
+    assert_eq!(lint_messages(sfc), Vec::<String>::new());
+}
+
+#[test]
+fn component_name_in_type_string_is_not_a_reference() {
+    let sfc = r#"<script setup lang="ts">
+import Child from './Child.vue';
+type Label = 'Child';
+</script>
+
+<template><div>hello</div></template>
+"#;
+
+    assert_eq!(
+        lint_messages(sfc),
+        vec!["Component 'Child' is registered but never used in template"]
+    );
+}
