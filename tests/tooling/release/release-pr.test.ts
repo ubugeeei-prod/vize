@@ -108,7 +108,7 @@ test("Actions candidate authorization checks actual Git ancestry and never creat
       number: 42,
       state: "open",
       merged: false,
-      draft: false,
+      draft: true,
       user: { login: "maintainer" },
       head: { sha: head, ref: "release/v1.2.3", repo: { full_name: "owner/repo" } },
       base: { sha: base, ref: "main", repo: { full_name: "owner/repo" } },
