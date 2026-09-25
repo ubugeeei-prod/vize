@@ -40,4 +40,4 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `build_effect_graph_from_sfc_scripts` |        1 |    2 |
 | `Croquis.bindings`                    |        0 |    2 |
 | `Croquis.scopes`                      |        0 |    1 |
-| `Croquis.types`                       |        0 |    2 |
+| `Croquis.types`                       |        0 |    3 |
