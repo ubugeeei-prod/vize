@@ -126,3 +126,34 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
     "Package imports from Rollup-internal Vize SFC modules should use the original source package",
   );
 }
+
+{
+  const root = fs.mkdtempSync(path.join(testRoot, "vue-mock-"));
+  const parent = path.join(root, "src", "Parent.vue");
+  const child = path.join(root, "src", "Child.vue");
+  const test = path.join(root, "src", "parent.test.ts");
+  writeFixtureFile(
+    path.join(root, "package.json"),
+    JSON.stringify({ private: true, imports: { "#src/*": "./src/*" } }),
+  );
+  writeFixtureFile(parent, '<script setup>import Child from "#src/Child.vue"</script>');
+  writeFixtureFile(child, "<template><p>real child</p></template>");
+  writeFixtureFile(test, 'vi.mock("#src/Child.vue")');
+
+  const state = createState(root);
+  const ctx = {
+    resolve: async () => ({ id: child }),
+  };
+  const mockedId = expectResolvedId(
+    await resolveIdHook(ctx, state, "#src/Child.vue", test, undefined),
+  );
+  const importedId = expectResolvedId(
+    await resolveIdHook(ctx, state, "#src/Child.vue", toPluginVisibleVirtualId(parent), undefined),
+  );
+
+  assert.equal(
+    importedId,
+    mockedId,
+    "A package-imported Vue SFC and its Vitest mock must have the same module ID",
+  );
+}

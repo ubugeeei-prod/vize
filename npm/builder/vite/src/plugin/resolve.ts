@@ -781,6 +781,20 @@ async function resolveAliasedVueImport(
   return null;
 }
 
+function resolvePackageVueModuleId(
+  state: VizePluginState,
+  resolvedId: string,
+  isSsrRequest: boolean,
+  isDependencyScan: boolean,
+): string | null {
+  const realPath = normalizeResolvedVuePath(resolvedId);
+  if (!realPath || (!state.cache.has(realPath) && !fs.existsSync(realPath))) return null;
+  if (state.filter && !realPath.includes("node_modules") && !state.filter(realPath)) {
+    return null;
+  }
+  return isDependencyScan ? realPath : toPluginVisibleVirtualId(realPath, isSsrRequest);
+}
+
 export async function resolveIdHook(
   ctx: ResolveContext,
   state: VizePluginState,
@@ -942,11 +956,22 @@ export async function resolveIdHook(
     }
 
     if (id.startsWith("#")) {
+      // A mock registered from a test resolves this specifier through the
+      // ordinary Vue SFC path below. Give imports from compiled SFCs that same
+      // module ID, so Vitest can replace the import with its registered mock.
       try {
         const resolved = await resolveWithVite(ctx, state, id, cleanImporter, { skipSelf: true });
-        if (resolved) return resolved;
+        if (resolved) {
+          return !resolved.external && id.endsWith(".vue")
+            ? (resolvePackageVueModuleId(state, resolved.id, isSsrRequest, isDependencyScan) ??
+                resolved)
+            : resolved;
+        }
       } catch {}
-      return resolvePackageJsonImportFromVizeImporter(state, id, cleanImporter);
+      const fallback = resolvePackageJsonImportFromVizeImporter(state, id, cleanImporter);
+      return fallback && id.endsWith(".vue")
+        ? (resolvePackageVueModuleId(state, fallback, isSsrRequest, isDependencyScan) ?? fallback)
+        : fallback;
     }
 
     // For non-vue files, resolve relative to the real importer

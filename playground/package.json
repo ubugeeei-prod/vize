@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "imports": {
+    "#mock-child/*": "./e2e/fixtures/package-imports-mock/*"
+  },
   "scripts": {
     "dev": "vp dev --config vite.app.config.ts",
     "build": "vp build --config vite.app.config.ts",
