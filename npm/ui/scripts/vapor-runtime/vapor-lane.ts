@@ -24,7 +24,14 @@ const vue = await import("vue");
 const { loadRuntimeFixtures } = await import("./fixtures.ts");
 // `VIZE_VAPOR_FIXTURES=a,b` narrows the lane to named fixtures while debugging.
 const only = process.env.VIZE_VAPOR_FIXTURES?.split(",").filter(Boolean);
-const fixtures = (await loadRuntimeFixtures()).filter(
+const allFixtures = await loadRuntimeFixtures();
+if (
+  only !== undefined &&
+  (only.length === 0 || only.some((name) => !allFixtures.some((fixture) => fixture.name === name)))
+) {
+  throw new Error("VIZE_VAPOR_FIXTURES must name existing fixtures");
+}
+const fixtures = allFixtures.filter(
   (fixture) => only === undefined || only.includes(fixture.name),
 );
 

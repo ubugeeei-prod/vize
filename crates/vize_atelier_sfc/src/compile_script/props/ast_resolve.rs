@@ -401,7 +401,7 @@ fn ts_type_to_js_type_from_ast_inner(
                 return "null".to_compact_string();
             };
             if let Some(body) = interfaces.and_then(|interfaces| interfaces.get(name)) {
-                return callable::object_type_source_runtime_type(body);
+                return callable::interface_body_runtime_type(body);
             }
             if let Some(type_aliases) = type_aliases
                 && let Some(alias) = type_aliases.get(name)

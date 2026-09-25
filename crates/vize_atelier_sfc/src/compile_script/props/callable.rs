@@ -25,6 +25,17 @@ pub(super) fn type_literal_runtime_type(literal: &TSTypeLiteral<'_>) -> String {
 /// extends other interfaces). Anything that is not a literal member list
 /// stays `Object`.
 pub(super) fn object_type_source_runtime_type(source: &str) -> String {
+    source_runtime_type(source, false)
+}
+
+/// Interfaces use their own body members for runtime constructor inference.
+/// A synthesized `Base & { ... }` retains the base for prop resolution, but
+/// Vue does not infer an `Object` constructor from that extends clause.
+pub(super) fn interface_body_runtime_type(source: &str) -> String {
+    source_runtime_type(source, true)
+}
+
+fn source_runtime_type(source: &str, interface_body: bool) -> String {
     // Call and construct signatures always contain a parameter list.
     if !source.contains('(') {
         return "Object".to_compact_string();
@@ -42,10 +53,18 @@ pub(super) fn object_type_source_runtime_type(source: &str) -> String {
     match &alias.type_annotation {
         TSType::TSTypeLiteral(literal) => kinds.push_members(literal),
         TSType::TSIntersectionType(intersection) => {
-            for part in &intersection.types {
-                match part {
-                    TSType::TSTypeLiteral(literal) => kinds.push_members(literal),
-                    _ => kinds.object = true,
+            if interface_body {
+                if let Some(TSType::TSTypeLiteral(literal)) = intersection.types.last() {
+                    kinds.push_members(literal);
+                } else {
+                    kinds.object = true;
+                }
+            } else {
+                for part in &intersection.types {
+                    match part {
+                        TSType::TSTypeLiteral(literal) => kinds.push_members(literal),
+                        _ => kinds.object = true,
+                    }
                 }
             }
         }
@@ -91,7 +110,7 @@ impl RuntimeKinds {
 
 #[cfg(test)]
 mod tests {
-    use super::object_type_source_runtime_type;
+    use super::{interface_body_runtime_type, object_type_source_runtime_type};
 
     #[test]
     fn callable_members_follow_vue_member_order() {
@@ -118,5 +137,13 @@ mod tests {
                 "{source}"
             );
         }
+        assert_eq!(
+            interface_body_runtime_type("Base & { (value: number): number }"),
+            "Function"
+        );
+        assert_eq!(
+            interface_body_runtime_type("Base & { (value: number): number; range: number[] }"),
+            "[Function, Object]"
+        );
     }
 }

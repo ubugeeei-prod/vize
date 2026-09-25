@@ -372,7 +372,7 @@ pub fn resolve_prop_js_type(
     if let Some(body) = interfaces.get(base_name) {
         // Interfaces are objects, and functions too when they declare call
         // or construct signatures.
-        return Some(super::callable::object_type_source_runtime_type(body));
+        return Some(super::callable::interface_body_runtime_type(body));
     }
 
     None

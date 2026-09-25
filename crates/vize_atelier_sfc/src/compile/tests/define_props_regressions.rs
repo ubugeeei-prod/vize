@@ -373,11 +373,15 @@ fn test_callable_object_types_infer_function_runtime_types() {
     let source = r#"<script setup lang="ts">
 interface Scale { (value: number): number; readonly range: number[] }
 interface Formatter { (value: number): string }
+interface ExtendedFormatter extends Record<string, unknown> { (value: number): string }
 type Labelled = { label: string; (value: string): void }
+type ExtendedLabelled = Record<string, unknown> & { (value: string): void }
 defineProps<{
   scale: Scale
   format: Formatter
+  extendedFormat: ExtendedFormatter
   labelled: Labelled
+  extendedLabelled: ExtendedLabelled
   inline: { (value: number): number; bandwidth?: number }
   plain: { run(): void; label: string }
 }>()
@@ -392,7 +396,9 @@ defineProps<{
     for expected in [
         "scale:{type:[Function,Object],required:true}",
         "format:{type:Function,required:true}",
+        "extendedFormat:{type:Function,required:true}",
         "labelled:{type:[Object,Function],required:true}",
+        "extendedLabelled:{type:[Object,Function],required:true}",
         "inline:{type:[Function,Object],required:true}",
         "plain:{type:Object,required:true}",
     ] {

@@ -37,6 +37,7 @@ pub(super) fn transform_component<'a>(
     let mut slots = Vec::new_in(&ctx.allocator);
     let mut v_show_exp: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
     let mut is_expr: Option<Box<'a, SimpleExpressionNode<'a>>> = None;
+    let mut is_selected = false;
     let mut has_dynamic_slot = false;
 
     // Check for v-slot on the component itself (scoped default slot)
@@ -78,11 +79,14 @@ pub(super) fn transform_component<'a>(
                                 continue;
                             }
                             if kind == ComponentKind::Dynamic && key_exp.content == "is" {
-                                if let Some(ref exp) = dir.exp
-                                    && let ExpressionNode::Simple(val_exp) = exp
-                                {
-                                    let node = SimpleExpressionNode::from_node(val_exp);
-                                    is_expr = Some(Box::new_in(node, &ctx.allocator));
+                                if !is_selected {
+                                    is_selected = true;
+                                    if let Some(ref exp) = dir.exp
+                                        && let ExpressionNode::Simple(val_exp) = exp
+                                    {
+                                        let node = SimpleExpressionNode::from_node(val_exp);
+                                        is_expr = Some(Box::new_in(node, &ctx.allocator));
+                                    }
                                 }
                                 continue;
                             }
@@ -164,9 +168,12 @@ pub(super) fn transform_component<'a>(
                 // `<component is="a">` names its component statically; it is
                 // resolved once instead of being forwarded as a prop.
                 if kind == ComponentKind::Dynamic && attr.name == "is" {
-                    let value = attr.value.as_ref().map_or("", |value| value.content);
-                    let node = SimpleExpressionNode::new(value, true, SourceLocation::STUB);
-                    is_expr = Some(Box::new_in(node, &ctx.allocator));
+                    if !is_selected {
+                        is_selected = true;
+                        let value = attr.value.as_ref().map_or("", |value| value.content);
+                        let node = SimpleExpressionNode::new(value, true, SourceLocation::STUB);
+                        is_expr = Some(Box::new_in(node, &ctx.allocator));
+                    }
                     continue;
                 }
                 let key_node = SimpleExpressionNode::new(attr.name, true, SourceLocation::STUB);

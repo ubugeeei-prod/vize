@@ -44,5 +44,18 @@ fn a_static_is_resolves_the_component_once() {
             code.contains("_createDynamicComponent(() => (_ctx.view), "),
             "{code}"
         );
+
+        let code = compiled(r#"<component is="a" :is="view" />"#, retained);
+        assert!(
+            code.contains(r#"_createComponentWithFallback(_resolveDynamicComponent("a"), "#),
+            "{code}"
+        );
+        assert!(!code.contains("createDynamicComponent"), "{code}");
+
+        let code = compiled(r#"<component :is="view" is="a" />"#, retained);
+        assert!(
+            code.contains("_createDynamicComponent(() => (_ctx.view), "),
+            "{code}"
+        );
     }
 }
