@@ -6,7 +6,7 @@ import { defineComponent as _defineComponent } from 'vue'
 import { openBlock as _openBlock, createBlock as _createBlock, createCommentVNode as _createCommentVNode } from "vue"
 
 
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return ($props.predefine)
     ? (_openBlock(), _createBlock($setup.Predefine, {
       key: 0,
@@ -22,7 +22,7 @@ export default /*@__PURE__*/_defineComponent({
   props: {
     predefine: { type: Array, required: false }
   },
-  render: render,
+  render: _sfc_render,
   setup(__props: any) {
 
 
