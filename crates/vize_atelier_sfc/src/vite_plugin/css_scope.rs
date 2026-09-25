@@ -393,7 +393,18 @@ fn scope_selector(selector: &str, scope_id: &str) -> String {
     };
     let mut body = legacy_deep::normalize_scoped_selector_body(body);
 
-    if let Some(slotted) = find_pseudo_function_any(body.as_str(), &["::v-slotted(", ":slotted("]) {
+    if let Some(global) = find_pseudo_function_any(body.as_str(), &["::v-global(", ":global("]) {
+        // A global selector is wholly unscoped, including any prefix or suffix
+        // outside the pseudo function. This mirrors the SFC compiler's CSS path.
+        let (before, inner, after) = global.parts(body.as_str());
+        let mut unscoped = String::with_capacity(before.len() + inner.len() + after.len());
+        unscoped.push_str(before);
+        unscoped.push_str(inner);
+        unscoped.push_str(after);
+        body = unscoped;
+    } else if let Some(slotted) =
+        find_pseudo_function_any(body.as_str(), &["::v-slotted(", ":slotted("])
+    {
         body = slotted::scope_slotted_selector(body.as_str(), &slotted, scope_id);
     } else if let Some(deep) =
         find_pseudo_function_any(body.as_str(), &["::v-deep(", "::deep(", ":deep("])

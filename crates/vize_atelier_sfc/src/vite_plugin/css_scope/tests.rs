@@ -9,6 +9,38 @@ fn scopes_basic_selectors() {
 }
 
 #[test]
+fn keeps_global_selectors_unscoped_in_mixed_style_blocks() {
+    assert_eq!(
+        scope_css_for_pipeline(
+            ":global(.probe) { color: red; }.local { color: blue; }",
+            "data-v-x"
+        )
+        .as_str(),
+        ".probe{color: red;}.local[data-v-x]{color: blue;}"
+    );
+    assert_eq!(
+        scope_css_for_pipeline(
+            ".host:global(.probe):hover, ::v-global(.badge:is(.primary, .secondary)) { color: red; }",
+            "data-v-x"
+        )
+        .as_str(),
+        ".host.probe:hover,.badge:is(.primary, .secondary){color: red;}"
+    );
+}
+
+#[test]
+fn keeps_global_selectors_unscoped_inside_media_and_nested_rules() {
+    assert_eq!(
+        scope_css_for_pipeline(
+            "@media (min-width: 1px) { .host { :global(.probe) { color: red; } .local { color: blue; } } }",
+            "data-v-x"
+        )
+        .as_str(),
+        "@media (min-width: 1px) {  .host .probe{color: red;} .host .local[data-v-x]{color: blue;}}"
+    );
+}
+
+#[test]
 fn unwraps_deep_inside_scoped_selector() {
     assert_eq!(
         scope_css_for_pipeline(
