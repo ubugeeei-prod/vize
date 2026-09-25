@@ -335,7 +335,7 @@ fn normalize_deep_selectors(selector: &str) -> String {
         out.push(' ');
     }
     if let Some(rest) = after.strip_prefix('(')
-        && let Some((inner, trailing)) = rest.split_once(')')
+        && let Some((inner, trailing)) = split_parenthesized_argument(rest)
     {
         let inner = inner.trim();
         out.push_str(modern);
@@ -544,7 +544,7 @@ fn find_top_level_pseudo(selector: &str) -> Option<usize> {
 fn transform_deep(selector: &str, attr_selector: &str) -> String {
     // :deep(.child) -> [data-v-xxx] .child
     if let Some((before, after)) = selector.split_once(":deep(")
-        && let Some((inner, rest)) = after.split_once(')')
+        && let Some((inner, rest)) = split_parenthesized_argument(after)
     {
         let scoped_before = scope_deep_prefix(before, attr_selector);
 
@@ -601,12 +601,17 @@ fn trailing_combinator_start(value: &str) -> Option<usize> {
 fn transform_slotted(selector: &str, attr_selector: &str) -> String {
     // :slotted(.child) -> .child[data-v-xxx-s]
     if let Some((_, after)) = selector.split_once(":slotted(")
-        && let Some((inner, rest)) = after.split_once(')')
+        && let Some((inner, rest)) = split_parenthesized_argument(after)
     {
         let mut result = String::with_capacity(inner.len() + attr_selector.len() + rest.len() + 2);
         result.push_str(inner);
-        result.push_str(attr_selector);
-        result.push_str("-s");
+        if let Some(scope) = attr_selector.strip_suffix(']') {
+            result.push_str(scope);
+            result.push_str("-s]");
+        } else {
+            result.push_str(attr_selector);
+            result.push_str("-s");
+        }
         result.push_str(rest);
         return result;
     }
@@ -618,7 +623,7 @@ fn transform_slotted(selector: &str, attr_selector: &str) -> String {
 fn transform_global(selector: &str) -> String {
     // :global(.class) -> .class
     if let Some((before, after)) = selector.split_once(":global(")
-        && let Some((inner, rest)) = after.split_once(')')
+        && let Some((inner, rest)) = split_parenthesized_argument(after)
     {
         let mut result = String::with_capacity(before.len() + inner.len() + rest.len());
         result.push_str(before);
@@ -628,6 +633,39 @@ fn transform_global(selector: &str) -> String {
     }
 
     selector.to_compact_string()
+}
+
+/// Split the contents after an opening `(` at its matching closing `)`.
+fn split_parenthesized_argument(input: &str) -> Option<(&str, &str)> {
+    let mut depth = 0usize;
+    let mut quote = None;
+    let mut escaped = false;
+
+    for (index, ch) in input.char_indices() {
+        if escaped {
+            escaped = false;
+            continue;
+        }
+        if ch == '\\' {
+            escaped = true;
+            continue;
+        }
+        if let Some(active_quote) = quote {
+            if ch == active_quote {
+                quote = None;
+            }
+            continue;
+        }
+        match ch {
+            '\'' | '"' => quote = Some(ch),
+            '(' => depth += 1,
+            ')' if depth == 0 => return Some((&input[..index], &input[index + 1..])),
+            ')' => depth -= 1,
+            _ => {}
+        }
+    }
+
+    None
 }
 
 /// Extract CSS v-bind() expressions

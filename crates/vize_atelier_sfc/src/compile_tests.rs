@@ -8,6 +8,33 @@ use super::{SfcCompileOptions, compile_sfc, compile_sfc_with_template_syntax, pa
 use vize_atelier_core::TemplateSyntaxMode;
 
 #[test]
+fn test_compile_sfc_scoped_css_nested_deep_and_slotted() {
+    let source = r#"<template><div class="a"><slot /></div></template>
+<style scoped>
+.a > :deep(:where(b, c) > d) { color: red; }
+.a :deep(:is(.b) .c) { color: green; }
+:slotted(.x) { color: blue; }
+</style>"#;
+    let descriptor = parse_sfc(source, Default::default()).unwrap();
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            scope_id: Some("abc123".into()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let css = result.css.expect("scoped styles should emit CSS");
+
+    assert!(
+        css.contains(".a[data-v-abc123] > :where(b, c) > d"),
+        "{css}"
+    );
+    assert!(css.contains(".a[data-v-abc123] :is(.b) .c"), "{css}");
+    assert!(css.contains(".x[data-v-abc123-s]"), "{css}");
+}
+
+#[test]
 fn test_compile_sfc_with_define_emits() {
     let source = r#"
 <template>

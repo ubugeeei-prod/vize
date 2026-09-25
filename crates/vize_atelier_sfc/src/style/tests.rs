@@ -46,7 +46,26 @@ fn test_scope_legacy_deep_combinators() {
 #[test]
 fn test_scope_v_slotted_function_form() {
     let result = scope_selector("::v-slotted(.bar)", "[data-v-123]");
-    assert_eq!(result, ".bar[data-v-123]-s");
+    assert_eq!(result, ".bar[data-v-123-s]");
+}
+
+#[test]
+fn test_scope_slotted_suffix_stays_inside_attribute() {
+    let css = ":slotted(.x) { color: blue; }";
+    assert_eq!(
+        apply_scoped_css(css, "data-v-abc123"),
+        ".x[data-v-abc123-s]{ color: blue; }"
+    );
+}
+
+#[test]
+fn test_scope_deep_preserves_nested_function_boundaries() {
+    let css =
+        ".a > :deep(:where(b, c) > d) { color: red; }\n.a :deep(:is(.b) .c) { color: green; }";
+    assert_eq!(
+        apply_scoped_css(css, "data-v-abc123"),
+        ".a[data-v-abc123] > :where(b, c) > d{ color: red; }.a[data-v-abc123] :is(.b) .c{ color: green; }"
+    );
 }
 
 #[test]
