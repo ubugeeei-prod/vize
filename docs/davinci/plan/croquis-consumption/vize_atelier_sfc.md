@@ -81,4 +81,4 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `Croquis.bindings`  |       16 |  225 |
 | `Croquis.hoists`    |        0 |    2 |
 | `Croquis.macros`    |       11 |  106 |
-| `Croquis.types`     |        0 |   11 |
+| `Croquis.types`     |        0 |   12 |
