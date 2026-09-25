@@ -156,8 +156,16 @@ async function probeStyleTrim(): Promise<void> {
 async function probeTemplateCompilerOptions(): Promise<void> {
   const root = createFixture({ "Comp.vue": withComment });
   const id = path.join(root, "Comp.vue");
-  const defaultPlugin = await bootPlugin(root);
-  assert.doesNotMatch(await loadResolvedVueModule(defaultPlugin, id), /kept/);
+  const developmentPlugin = await bootPlugin(root);
+  assert.match(await loadResolvedVueModule(developmentPlugin, id), /kept/);
+
+  const productionPlugin = await bootPlugin(root, {}, { command: "build", isProduction: true });
+  assert.doesNotMatch(await loadResolvedVueModule(productionPlugin, id), /kept/);
+
+  const commentsDisabledPlugin = await bootPlugin(root, {
+    template: { compilerOptions: { comments: false } },
+  });
+  assert.doesNotMatch(await loadResolvedVueModule(commentsDisabledPlugin, id), /kept/);
 
   const commentsPlugin = await bootPlugin(root, {
     template: { compilerOptions: { comments: true } },
