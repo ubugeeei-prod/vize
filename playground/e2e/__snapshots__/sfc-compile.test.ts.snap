@@ -9,14 +9,14 @@ exports[`SFC Compilation > Basic SFC > should compile template-only SFC 1`] = `
 exports[`SFC Compilation > SSR Mode > should keep custom renderer intrinsics as elements while preserving imported lowercase bindings 1`] = `
 {
   "dom": "import { createCommentVNode as _createCommentVNode, createElementBlock as _createElementBlock, createVNode as _createVNode, openBlock as _openBlock } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock("mesh", null, [$setup.visible ? (_openBlock(), _createElementBlock("group", { key: 0 }, [_createVNode($setup.Primitive)])) : _createCommentVNode("v-if", true)]);
 }
 import { Primitive } from "@tresjs/core";
 const visible = true;
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     const __returned__ = {
       Primitive,
@@ -64,7 +64,7 @@ export default {
 exports[`SFC Compilation > SSR Mode > should resolve dotted component tags through setup member bindings in both DOM and SSR output 1`] = `
 {
   "dom": "import { createBlock as _createBlock, createVNode as _createVNode, openBlock as _openBlock, withCtx as _withCtx } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createBlock($setup.Form.Item, { label: "Teacher" }, {
     default: _withCtx(() => [_createVNode($setup.Input)]),
     _: 1
@@ -73,7 +73,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 import { Form, Input } from "ant-design-vue";
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     const __returned__ = {
       Input,
@@ -122,7 +122,7 @@ export default {
 exports[`SFC Compilation > SSR Mode > should resolve kebab-case imported components through setup bindings in both DOM and SSR output 1`] = `
 {
   "dom": "import { createElementBlock as _createElementBlock, createVNode as _createVNode, Fragment as _Fragment, openBlock as _openBlock } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock(
     _Fragment,
     null,
@@ -134,7 +134,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 import DashTest from "./dash-test.vue";
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     const __returned__ = { DashTest };
     Object.defineProperty(__returned__, "__isScriptSetup", {
@@ -189,7 +189,7 @@ export default {
 
 exports[`SFC Compilation > TypeScript Support > should handle complex generic types 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock(
     "div",
     { ref: "editorRef" },
@@ -201,7 +201,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 import { ref, shallowRef } from "vue";
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     const editorRef = ref(null);
     const instance = shallowRef(null);
@@ -224,7 +224,7 @@ exports[`SFC Compilation > TypeScript Support > should handle interface declarat
 "import { defineComponent as _defineComponent } from 'vue'
 import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue"
 
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString($setup.user.name), 1 /* TEXT */))
 }
 
@@ -235,7 +235,7 @@ interface User {
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
-  render: render,
+  render: _sfc_render,
   setup(__props) {
 
 const user: User = { name: 'test', age: 25 }
@@ -252,7 +252,7 @@ exports[`SFC Compilation > TypeScript Support > should handle type aliases 1`] =
 "import { defineComponent as _defineComponent } from 'vue'
 import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue"
 
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString($setup.status), 1 /* TEXT */))
 }
 
@@ -261,7 +261,7 @@ const status: Status = 'active'
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
-  render: render,
+  render: _sfc_render,
   setup(__props) {
 
 const __returned__ = { status }
@@ -274,7 +274,7 @@ return __returned__
 
 exports[`SFC Compilation > TypeScript Support > should strip generic type parameters from ref/reactive 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock(
     "div",
     null,
@@ -286,7 +286,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 import { reactive, ref } from "vue";
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     const count = ref(0);
     const items = ref([]);
@@ -309,7 +309,7 @@ export default {
 
 exports[`SFC Compilation > TypeScript Support > should strip type annotations from script setup 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock(
     "div",
     null,
@@ -322,7 +322,7 @@ const count = 0;
 const name = "test";
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     const __returned__ = {
       name,

@@ -2,7 +2,7 @@
 
 exports[`Edge Cases > Complex TypeScript > should downcompile optional chaining type declarations by default 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock(
     "div",
     null,
@@ -13,7 +13,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     const user = {};
     const name = user?.name?.first;
@@ -33,7 +33,7 @@ export default {
 exports[`Edge Cases > Complex TypeScript > should handle async/await with types 1`] = `
 "import { withAsyncContext as _withAsyncContext } from "vue";
 import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock(
     "div",
     null,
@@ -44,7 +44,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   async setup(__props) {
     let __temp, __restore;
     async function fetchData() {
@@ -66,7 +66,7 @@ export default {
 
 exports[`Edge Cases > Complex TypeScript > should handle class with decorators pattern 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock(
     "div",
     null,
@@ -77,7 +77,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     class MyClass {
       name;
@@ -104,7 +104,7 @@ export default {
 
 exports[`Edge Cases > Complex TypeScript > should handle generic function declarations 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock(
     "div",
     null,
@@ -115,7 +115,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     function identity(value) {
       return value;
@@ -136,12 +136,12 @@ export default {
 
 exports[`Edge Cases > Complex TypeScript > should handle type assertions 1`] = `
 "import { createElementBlock as _createElementBlock, openBlock as _openBlock } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return _openBlock(), _createElementBlock("div", null, "Test");
 }
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     const element = document.querySelector(".test");
     const value = someValue;
@@ -162,7 +162,7 @@ exports[`Edge Cases > Complex TypeScript > should preserve optional chaining typ
 "import { defineComponent as _defineComponent } from 'vue'
 import { createElementBlock as _createElementBlock, openBlock as _openBlock, toDisplayString as _toDisplayString } from "vue"
 
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock("div", null, _toDisplayString($setup.name), 1 /* TEXT */))
 }
 
@@ -170,7 +170,7 @@ interface User { name?: { first: string } }
 
 export default /*@__PURE__*/_defineComponent({
   __name: 'anonymous',
-  render: render,
+  render: _sfc_render,
   setup(__props) {
 
 const user: User = {}
