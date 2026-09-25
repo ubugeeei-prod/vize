@@ -354,6 +354,24 @@ fn check_resolves_tsconfig_types_package_with_esm_declaration_entry() {
     assert!(!stdout.contains("TS2688"), "{stdout}");
     assert!(stdout.matches("TS2322").count() >= 2, "{stdout}");
 
+    let explicit = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.json",
+            "src/App.vue",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+    let explicit_stdout = std::str::from_utf8(&explicit.stdout).unwrap();
+    assert!(!explicit.status.success(), "{explicit_stdout}");
+    assert!(!explicit_stdout.contains("TS2688"), "{explicit_stdout}");
+    assert!(explicit_stdout.contains("TS2322"), "{explicit_stdout}");
+
     let _ = std::fs::remove_dir_all(&project_root);
 }
 

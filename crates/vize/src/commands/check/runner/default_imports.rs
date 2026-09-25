@@ -18,7 +18,7 @@ use crate::commands::check::{
     path_cache::CanonicalPathCache,
     tsconfig_inputs::{
         TsconfigInputCache, collect_ambient_declaration_files, collect_default_check_files,
-        collect_hidden_ambient_declaration_files,
+        collect_hidden_ambient_declaration_files, collect_tsconfig_type_declaration_files,
     },
 };
 
@@ -143,10 +143,16 @@ pub(super) fn register_ambient_declaration_files(
     tsconfig_path: Option<&Path>,
     tsconfig_input_cache: &mut TsconfigInputCache,
 ) {
+    let implicit_type_files = collect_tsconfig_type_declaration_files(project_root, tsconfig_path)
+        .into_iter()
+        .collect::<FxHashSet<_>>();
     for path in
         collect_hidden_ambient_declaration_files(project_root, tsconfig_path, tsconfig_input_cache)
     {
-        if !files.contains(&path) {
+        // TypeScript resolves compilerOptions.types from the mirrored real
+        // node_modules tree. Registering those files as virtual sources can
+        // shadow a package's .d.mts entry and raise a false TS2688 (#6695).
+        if !implicit_type_files.contains(&path) && !files.contains(&path) {
             files.push(path);
         }
     }
@@ -189,6 +195,19 @@ pub(super) fn register_explicit_ambient_imports_with_session(
         Some(context.tsconfig_path),
         tsconfig_input_cache,
     );
+    let explicit_program_files = collect_default_check_files(
+        context.project_root,
+        Some(context.tsconfig_path),
+        context.import_options.include_jsx,
+        tsconfig_input_cache,
+    )
+    .into_iter()
+    .collect::<FxHashSet<_>>();
+    let implicit_type_files =
+        collect_tsconfig_type_declaration_files(context.project_root, Some(context.tsconfig_path))
+            .into_iter()
+            .filter(|path| !explicit_program_files.contains(path))
+            .collect::<FxHashSet<_>>();
     ambient_declarations.extend(
         context
             .additional_ambient_declarations
@@ -198,6 +217,7 @@ pub(super) fn register_explicit_ambient_imports_with_session(
     );
     ambient_declarations.sort();
     ambient_declarations.dedup();
+    ambient_declarations.retain(|path| !implicit_type_files.contains(path));
     let program_ambient_declarations = ambient_declarations
         .iter()
         .filter(|path| should_register_explicit_ambient_declaration(path))
