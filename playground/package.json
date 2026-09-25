@@ -23,7 +23,7 @@
     "prettier": "catalog:repo-tooling",
     "shiki": "catalog:content",
     "typescript": "catalog:typescript",
-    "vue": "catalog:vue-beta"
+    "vue": "3.6.0-rc.6"
   },
   "devDependencies": {
     "@playwright/test": "catalog:testing",

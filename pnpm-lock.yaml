@@ -1273,8 +1273,8 @@ importers:
         specifier: catalog:typescript
         version: 6.0.3
       vue:
-        specifier: catalog:vue-beta
-        version: 3.6.0-beta.10(typescript@6.0.3)
+        specifier: 3.6.0-rc.6
+        version: 3.6.0-rc.6(typescript@6.0.3)
     devDependencies:
       '@playwright/test':
         specifier: catalog:testing
@@ -1284,7 +1284,7 @@ importers:
         version: link:../npm/builder/vite
       '@vue/test-utils':
         specifier: catalog:vue-stable
-        version: 2.4.10(@vue/compiler-dom@3.6.0-rc.6)(@vue/server-renderer@3.5.41)(vue@3.6.0-beta.10(typescript@6.0.3))
+        version: 2.4.10(@vue/compiler-dom@3.6.0-rc.6)(@vue/server-renderer@3.5.41)(vue@3.6.0-rc.6(typescript@6.0.3))
       playwright:
         specifier: catalog:testing
         version: 1.62.1
@@ -18496,11 +18496,11 @@ snapshots:
     optionalDependencies:
       '@vue/server-renderer': 3.5.41
 
-  '@vue/test-utils@2.4.10(@vue/compiler-dom@3.6.0-rc.6)(@vue/server-renderer@3.5.41)(vue@3.6.0-beta.10(typescript@6.0.3))':
+  '@vue/test-utils@2.4.10(@vue/compiler-dom@3.6.0-rc.6)(@vue/server-renderer@3.5.41)(vue@3.6.0-rc.6(typescript@6.0.3))':
     dependencies:
       '@vue/compiler-dom': 3.6.0-rc.6
       js-beautify: 1.15.4
-      vue: 3.6.0-beta.10(typescript@6.0.3)
+      vue: 3.6.0-rc.6(typescript@6.0.3)
       vue-component-type-helpers: 3.3.9
     optionalDependencies:
       '@vue/server-renderer': 3.5.41
