@@ -175,9 +175,16 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 fn component_object_on_with_other_props_preserves_component_event_names() {
     let source = r#"<Foo id="x" v-on="handlers" />"#;
     let generated = assembled(source);
-    assert!(
-        generated.contains("_mergeProps({ id: \"x\" }, _toHandlers(handlers))"),
-        "{generated}"
+    assert_eq!(
+        generated,
+        pin("\
+const { resolveComponent: _resolveComponent, mergeProps: _mergeProps, toHandlers: _toHandlers, openBlock: _openBlock, createBlock: _createBlock } = Vue
+
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Foo = _resolveComponent(\"Foo\")
+
+  return (_openBlock(), _createBlock(_component_Foo, _mergeProps({ id: \"x\" }, _toHandlers(handlers)), null, 16 /* FULL_PROPS */))
+}")
     );
     assert_eq!(generated, shipped(source));
 }
