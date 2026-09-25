@@ -207,6 +207,9 @@ fn walk_parameters<'a>(
     let mut found = Vec::new();
     for param in params.items.iter() {
         walk_binding_pattern_expressions(&param.pattern, &mut found);
+        if let Some(initializer) = &param.initializer {
+            walk_expr(initializer, &mut found);
+        }
     }
     if let Some(rest) = &params.rest {
         walk_binding_pattern_expressions(&rest.rest.argument, &mut found);

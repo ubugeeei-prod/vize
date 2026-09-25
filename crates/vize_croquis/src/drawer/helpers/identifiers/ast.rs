@@ -204,6 +204,11 @@ mod tests {
                 "(a, b = a, { c = d } = e) => b + c + f",
                 vec!["d", "e", "f"],
             ),
+            ("(value = fallback) => value", vec!["fallback"]),
+            (
+                "function ({ value } = options) { return value }",
+                vec!["options"],
+            ),
             ("function named() { return named }", vec![]),
         ] {
             let names: Vec<_> = extract_identifier_refs_oxc_ast(source)
