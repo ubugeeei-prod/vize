@@ -128,8 +128,8 @@ Good:
 ## `vue/component-definition-name-casing`
 
 Reports component filenames that are neither PascalCase nor kebab-case.
-`MyComponent.vue` and `my-component.vue` are both accepted. `index.vue` and
-`App.vue` are accepted too.
+`MyComponent.vue` and `my-component.vue` are both accepted. `index.vue`,
+`App.vue`, and all-uppercase names like `UI.vue` are accepted too.
 
 Default severity: `warning`\
 Presets: `happy-path`, `nuxt`, `opinionated`
@@ -145,6 +145,7 @@ Good:
 
 ```text
 MyComponent.vue
+UI.vue
 my-component.vue
 index.vue
 App.vue

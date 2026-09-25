@@ -8,8 +8,8 @@
 //! guide argues against, so neither is reported.
 //!
 //! Mixed shapes stay reported, because they are neither convention: camelCase
-//! (`myComponent`), SCREAMING_CASE, and anything mixing a capital into a
-//! hyphenated name (`my-Component`).
+//! (`myComponent`), names with underscores, and anything mixing a capital into
+//! a hyphenated name (`my-Component`).
 //!
 //! ## Examples
 //!
@@ -22,6 +22,7 @@
 //! ### Valid
 //! ```text
 //! MyComponent.vue
+//! UI.vue
 //! my-component.vue
 //! index.vue
 //! App.vue
@@ -54,17 +55,10 @@ fn is_pascal_case(s: &str) -> bool {
     if !first.is_ascii_uppercase() {
         return false;
     }
-    // Must not contain hyphens
-    if s.contains('-') {
-        return false;
-    }
-    // Must not be all uppercase (SCREAMING_CASE)
-    if s.chars()
-        .all(|c| c.is_ascii_uppercase() || !c.is_alphabetic())
-    {
-        return false;
-    }
-    true
+    // Single-letter and all-uppercase names are valid PascalCase. Keep
+    // punctuation and separators out so dotted or underscored stems still
+    // follow the component filename conventions.
+    s.chars().all(|c| c.is_ascii_alphanumeric())
 }
 
 /// A hyphen-separated lowercase name: `my-component`, `job-board-2`.
@@ -166,6 +160,22 @@ mod tests {
         let linter = create_linter();
         let result = linter.lint_template(r#"<div>Content</div>"#, "MyComponent.vue");
         assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_single_letter_and_initialisms() {
+        let linter = create_linter();
+        for stem in ["A", "UI", "Foo2", "TheH1Title"] {
+            let result = linter.lint_template(r#"<div>Content</div>"#, &format!("{stem}.vue"));
+            assert_eq!(result.warning_count, 0, "{stem} must be valid PascalCase");
+        }
+    }
+
+    #[test]
+    fn test_invalid_underscored_uppercase_name() {
+        let linter = create_linter();
+        let result = linter.lint_template(r#"<div>Content</div>"#, "MY_COMPONENT.vue");
+        assert_eq!(result.warning_count, 1);
     }
 
     #[test]
