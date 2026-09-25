@@ -3,7 +3,7 @@ use super::keys::{provide_key_display, provide_key_identity};
 use super::types::{ProvideInjectBranch, ProvideInjectMatch};
 use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
 use crate::registry::FileId;
-use vize_carton::{CompactString, FxHashSet, cstr};
+use vize_carton::{CompactString, FxHashMap, FxHashSet, cstr};
 use vize_croquis::provide::InjectPattern;
 
 mod diagnostics;
@@ -17,15 +17,18 @@ pub(crate) fn analyze_provide_inject_with_index(
 ) -> (
     Vec<ProvideInjectMatch>,
     Vec<ProvideInjectBranch>,
+    Vec<(FileId, FileId)>,
     Vec<CrossFileDiagnostic>,
 ) {
     let mut matches = Vec::new();
     let mut branches = Vec::new();
+    let mut edges = Vec::new();
     let mut diagnostics = index.string_key_diagnostics();
 
     // Track which provides are used
     let mut used_provides: FxHashSet<(FileId, u32)> = FxHashSet::default();
     let mut recorded_matches: FxHashSet<(FileId, u32, FileId, u32)> = FxHashSet::default();
+    let mut resolution_cache = FxHashMap::default();
 
     // For each inject, try to find a matching provide in ancestors
     let mut consumer_ids = index.injects().keys().copied().collect::<Vec<_>>();
@@ -35,7 +38,11 @@ pub(crate) fn analyze_provide_inject_with_index(
         for inject in consumer_injects {
             let key_str = provide_key_display(&inject.key);
             let key_identity = provide_key_identity(&inject.key);
-            let provider_branches = index.resolve_provider_branches(consumer_id, &inject.key);
+            let resolution = resolution_cache
+                .entry((consumer_id, key_identity.clone()))
+                .or_insert_with(|| index.resolve_provider_resolution(consumer_id, &inject.key));
+            edges.extend(resolution.edges.iter().copied());
+            let provider_branches = resolution.branches.clone();
             let provider_related = provider_relateds(&provider_branches);
 
             // Check for destructured inject - this causes reactivity loss
@@ -139,14 +146,19 @@ pub(crate) fn analyze_provide_inject_with_index(
             let unmatched_count = provider_branches
                 .iter()
                 .filter(|branch| matches!(branch, ResolvedProviderBranch::Unmatched { .. }))
-                .count();
+                .fold(0usize, |count, branch| {
+                    count.saturating_add(branch.path_count())
+                });
+            let branch_count = provider_branches.iter().fold(0usize, |count, branch| {
+                count.saturating_add(branch.path_count())
+            });
             if unmatched_count > 0 {
                 let diagnostic = unmatched_inject_diagnostic(
                     consumer_id,
                     inject,
                     &key_str,
                     unmatched_count,
-                    provider_branches.len(),
+                    branch_count,
                 );
                 diagnostics.push(with_provider_relateds(
                     diagnostic,
@@ -170,6 +182,7 @@ pub(crate) fn analyze_provide_inject_with_index(
             }
 
             for provider_branch in provider_branches {
+                let path_count = provider_branch.path_count();
                 let (path, provider) = match provider_branch {
                     ResolvedProviderBranch::Matched(provider_match) => {
                         used_provides.insert((
@@ -202,15 +215,13 @@ pub(crate) fn analyze_provide_inject_with_index(
                         }
                         (path, Some((provider_id, provide_offset)))
                     }
-                    ResolvedProviderBranch::Unmatched { path } => (path, None),
+                    ResolvedProviderBranch::Unmatched { path, .. } => (path, None),
                 };
                 branches.push(ProvideInjectBranch {
-                    consumer: consumer_id,
-                    key_identity: key_identity.clone(),
                     path,
                     provider: provider.map(|(provider, _)| provider),
                     provide_offset: provider.map(|(_, offset)| offset),
-                    inject_offset: inject.start,
+                    path_count,
                 });
             }
         }
@@ -242,7 +253,7 @@ pub(crate) fn analyze_provide_inject_with_index(
         }
     }
 
-    (matches, branches, diagnostics)
+    (matches, branches, edges, diagnostics)
 }
 
 fn mismatched_providers<'a>(

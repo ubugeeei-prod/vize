@@ -5,30 +5,21 @@ use crate::registry::{FileId, ModuleRegistry};
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::provide::{InjectEntry, ProvideEntry, ProvideKey};
 
-type BranchesByInject<'a> = FxHashMap<(FileId, CompactString, u32), Vec<&'a ProvideInjectBranch>>;
-
 pub(crate) fn build_provide_inject_tree_with_index(
     registry: &ModuleRegistry,
     index: &ProvideInjectIndex,
     branches: &[ProvideInjectBranch],
+    edges: &[(FileId, FileId)],
 ) -> ProvideInjectTree {
     let mut consumer_counts: FxHashMap<(FileId, u32), usize> = FxHashMap::default();
-    let mut branches_by_inject = BranchesByInject::default();
 
     for branch in branches {
         if let (Some(provider), Some(provide_offset)) = (branch.provider, branch.provide_offset) {
-            *consumer_counts
+            let count = consumer_counts
                 .entry((provider, provide_offset))
-                .or_insert(0) += 1;
+                .or_insert(0);
+            *count = count.saturating_add(branch.path_count);
         }
-        branches_by_inject
-            .entry((
-                branch.consumer,
-                branch.key_identity.clone(),
-                branch.inject_offset,
-            ))
-            .or_default()
-            .push(branch);
     }
 
     // Build the displayed tree from both matched and terminal unmatched paths.
@@ -38,17 +29,14 @@ pub(crate) fn build_provide_inject_tree_with_index(
     let mut child_map: FxHashMap<FileId, Vec<FileId>> = FxHashMap::default();
     let mut nodes_with_parent = FxHashSet::default();
 
+    for &(parent, child) in edges {
+        included_nodes.insert(parent);
+        included_nodes.insert(child);
+        child_map.entry(parent).or_default().push(child);
+        nodes_with_parent.insert(child);
+    }
     for branch in branches {
-        for file_id in &branch.path {
-            included_nodes.insert(*file_id);
-        }
-        for pair in branch.path.windows(2) {
-            let &[parent, child] = pair else {
-                continue;
-            };
-            child_map.entry(parent).or_default().push(child);
-            nodes_with_parent.insert(child);
-        }
+        included_nodes.extend(branch.path.iter().copied());
     }
 
     for &file_id in index.provides().keys() {
@@ -74,7 +62,11 @@ pub(crate) fn build_provide_inject_tree_with_index(
     let roots = root_ids
         .into_iter()
         .map(|file_id| {
-            let mut ancestors = Vec::new();
+            let mut active_nodes = FxHashSet::default();
+            let mut expanded = FxHashSet::default();
+            // Cycles have no natural root. A synthetic root only supplies
+            // context for its descendants; its own injects belong to the
+            // occurrence reached through another component.
             build_node(
                 file_id,
                 registry,
@@ -82,8 +74,10 @@ pub(crate) fn build_provide_inject_tree_with_index(
                 index.provides(),
                 index.injects(),
                 &consumer_counts,
-                &branches_by_inject,
-                &mut ancestors,
+                &FxHashMap::default(),
+                &mut active_nodes,
+                &mut expanded,
+                !nodes_with_parent.contains(&file_id),
             )
         })
         .collect();
@@ -99,10 +93,12 @@ fn build_node(
     provides_map: &FxHashMap<FileId, Vec<ProvideEntry>>,
     injects_map: &FxHashMap<FileId, Vec<InjectEntry>>,
     consumer_counts: &FxHashMap<(FileId, u32), usize>,
-    branches_by_inject: &BranchesByInject<'_>,
-    ancestors: &mut Vec<FileId>,
+    active_providers: &FxHashMap<CompactString, FileId>,
+    active_nodes: &mut FxHashSet<FileId>,
+    expanded: &mut FxHashSet<(FileId, Vec<(CompactString, FileId)>)>,
+    show_injects: bool,
 ) -> ProvideNode {
-    ancestors.push(file_id);
+    active_nodes.insert(file_id);
 
     let component_name = registry.get(file_id).and_then(|e| e.component_name.clone());
 
@@ -131,36 +127,48 @@ fn build_node(
     // Build injects info
     let injects = injects_map
         .get(&file_id)
+        .filter(|_| show_injects)
         .map(|is| {
             is.iter()
-                .filter_map(|i| {
+                .map(|i| {
                     let key = match &i.key {
                         ProvideKey::String(s) => s.clone(),
                         ProvideKey::Symbol(s) => s.clone(),
                     };
                     let key_identity = provide_key_identity(&i.key);
-                    // A reused component can occur below different providers.
-                    // Resolve against this rendered ancestor branch, not only
-                    // the consumer file and key shared by every occurrence.
-                    let provider = branches_by_inject
-                        .get(&(file_id, key_identity, i.start))
-                        .and_then(|branches| provider_for_branch(branches, ancestors))?;
-                    Some(InjectInfo {
+                    let provider = active_providers.get(&key_identity).copied();
+                    InjectInfo {
                         key,
                         has_default: i.default_value.is_some(),
                         provider,
                         offset: i.start,
-                    })
+                    }
                 })
                 .collect()
         })
         .unwrap_or_default();
 
-    // Find children (components that inject from this provider)
+    let mut child_providers = active_providers.clone();
+    if let Some(provides) = provides_map.get(&file_id) {
+        for provide in provides {
+            child_providers.insert(provide_key_identity(&provide.key), file_id);
+        }
+    }
+    let mut provider_context = child_providers
+        .iter()
+        .map(|(key, provider)| (key.clone(), *provider))
+        .collect::<Vec<_>>();
+    provider_context.sort_by(|left, right| left.0.cmp(&right.0));
+
+    // A shared DAG node needs one expanded subtree per provider context.
+    // Repeated render paths in the same context retain the node but refer to
+    // the already-expanded descendants instead of copying them exponentially.
     let mut children = Vec::new();
-    if let Some(child_ids) = child_map.get(&file_id) {
+    if expanded.insert((file_id, provider_context))
+        && let Some(child_ids) = child_map.get(&file_id)
+    {
         for &child_id in child_ids {
-            if ancestors.contains(&child_id) {
+            if active_nodes.contains(&child_id) {
                 continue;
             }
             let child_node = build_node(
@@ -170,14 +178,16 @@ fn build_node(
                 provides_map,
                 injects_map,
                 consumer_counts,
-                branches_by_inject,
-                ancestors,
+                &child_providers,
+                active_nodes,
+                expanded,
+                true,
             );
             children.push(child_node);
         }
     }
 
-    ancestors.pop();
+    active_nodes.remove(&file_id);
 
     ProvideNode {
         file_id,
@@ -186,17 +196,6 @@ fn build_node(
         injects,
         children,
     }
-}
-
-fn provider_for_branch(
-    branches: &[&ProvideInjectBranch],
-    ancestors: &[FileId],
-) -> Option<Option<FileId>> {
-    branches
-        .iter()
-        .filter(|branch| ancestors.ends_with(&branch.path))
-        .max_by_key(|branch| branch.path.len())
-        .map(|branch| branch.provider)
 }
 
 fn select_root_ids(

@@ -89,6 +89,154 @@ fn test_same_provider_diamond_preserves_each_path_deterministically() {
     );
 }
 
+#[test]
+fn deep_diamond_counts_paths_without_expanding_each_path() {
+    const DEPTH: usize = 20;
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+    analyzer.add_file_with_analysis(
+        Path::new("Provider.vue"),
+        "",
+        script_analysis(
+            "import { provide } from 'vue'; provide('theme', 'dark')",
+            &["A0", "B0"],
+        ),
+    );
+    for level in 0..=DEPTH {
+        let next_a = format!("A{}", level + 1);
+        let next_b = format!("B{}", level + 1);
+        let children = if level == DEPTH {
+            Vec::new()
+        } else {
+            vec![next_a.as_str(), next_b.as_str()]
+        };
+        for prefix in ["A", "B"] {
+            let component = format!("{prefix}{level}");
+            let path = format!("{component}.vue");
+            let script = if level == DEPTH {
+                "import { inject } from 'vue'; const theme = inject('theme')"
+            } else {
+                "// pass through"
+            };
+            analyzer.add_file_with_analysis(
+                Path::new(&path),
+                "",
+                script_analysis(script, &children),
+            );
+        }
+    }
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    let provider = analyzer
+        .registry()
+        .get_id(Path::new("Provider.vue"))
+        .expect("provider should be registered");
+    assert_eq!(result.provide_inject_matches.len(), 2);
+    assert!(
+        result
+            .provide_inject_matches
+            .iter()
+            .all(|provider_match| provider_match.provider == provider)
+    );
+    let tree = result
+        .provide_inject_tree
+        .as_ref()
+        .expect("tree should be built");
+    assert_eq!(tree.roots.len(), 1);
+    assert_eq!(tree.roots[0].provides[0].consumer_count, 1 << (DEPTH + 1));
+    let summary = result
+        .provide_inject_tree_summary
+        .expect("summary should be built");
+    assert_eq!(summary.node_count, 2 * (DEPTH + 1) + 1);
+    assert_eq!(summary.max_provider_consumer_count, 1 << (DEPTH + 1));
+    assert!(
+        result.diagnostics.iter().all(|diagnostic| !matches!(
+            diagnostic.kind,
+            crate::diagnostics::CrossFileDiagnosticKind::UnmatchedInject { .. }
+                | crate::diagnostics::CrossFileDiagnosticKind::UnusedProvide { .. }
+        )),
+        "all render paths should retain the provider"
+    );
+
+    fn count_rendered_nodes(node: &serde_json::Value) -> usize {
+        1 + node["children"]
+            .as_array()
+            .expect("tree node children should be an array")
+            .iter()
+            .map(count_rendered_nodes)
+            .sum::<usize>()
+    }
+    let tree_json = serde_json::to_value(tree).expect("tree should serialize");
+    assert!(
+        count_rendered_nodes(&tree_json["roots"][0]) <= 4 * (DEPTH + 1) + 1,
+        "the tree should grow with components and edges, not render paths"
+    );
+}
+
+#[test]
+fn partial_diamond_reports_logical_path_counts() {
+    const DEPTH: usize = 8;
+    let mut analyzer =
+        CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));
+    for level in 0..=DEPTH {
+        let next_a = format!("A{}", level + 1);
+        let next_b = format!("B{}", level + 1);
+        let children = if level == DEPTH {
+            Vec::new()
+        } else {
+            vec![next_a.as_str(), next_b.as_str()]
+        };
+        for prefix in ["A", "B"] {
+            let component = format!("{prefix}{level}");
+            let path = format!("{component}.vue");
+            let script = if level == 0 && prefix == "A" {
+                "import { provide } from 'vue'; provide('theme', 'dark')"
+            } else if level == DEPTH {
+                "import { inject } from 'vue'; const theme = inject('theme')"
+            } else {
+                "// pass through"
+            };
+            analyzer.add_file_with_analysis(
+                Path::new(&path),
+                "",
+                script_analysis(script, &children),
+            );
+        }
+    }
+    analyzer.rebuild_component_edges();
+
+    let result = analyzer.analyze();
+    assert_eq!(result.provide_inject_matches.len(), 2);
+    let unmatched = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            matches!(
+                diagnostic.kind,
+                crate::diagnostics::CrossFileDiagnosticKind::UnmatchedInject { .. }
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(unmatched.len(), 2);
+    assert!(
+        unmatched
+            .iter()
+            .all(|diagnostic| diagnostic.message.contains("128 of 256 ancestor branches"))
+    );
+    let tree = result
+        .provide_inject_tree
+        .as_ref()
+        .expect("tree should be built");
+    assert_eq!(tree.roots.len(), 2);
+    let provider_root = tree
+        .roots
+        .iter()
+        .find(|root| root.component_name.as_deref() == Some("A0"))
+        .expect("provider root should be present");
+    assert_eq!(provider_root.provides[0].consumer_count, 256);
+}
+
 fn diamond_analyzer(registration_order: &[&str]) -> CrossFileAnalyzer {
     let mut analyzer =
         CrossFileAnalyzer::new(CrossFileOptions::default().with_provide_inject(true));

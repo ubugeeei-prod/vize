@@ -22,21 +22,38 @@ pub(crate) struct ResolvedProvider {
     pub provider_id: FileId,
     pub provide: ProvideEntry,
     pub path: Vec<FileId>,
+    pub path_count: usize,
 }
 
 #[derive(Debug, Clone)]
 pub(crate) enum ResolvedProviderBranch {
     Matched(ResolvedProvider),
-    Unmatched { path: Vec<FileId> },
+    Unmatched {
+        path: Vec<FileId>,
+        path_count: usize,
+    },
 }
 
 impl ResolvedProviderBranch {
     pub(crate) fn path(&self) -> &[FileId] {
         match self {
             Self::Matched(provider) => &provider.path,
-            Self::Unmatched { path } => path,
+            Self::Unmatched { path, .. } => path,
         }
     }
+
+    pub(crate) fn path_count(&self) -> usize {
+        match self {
+            Self::Matched(provider) => provider.path_count,
+            Self::Unmatched { path_count, .. } => *path_count,
+        }
+    }
+}
+
+pub(crate) struct ProviderResolution {
+    pub branches: Vec<ResolvedProviderBranch>,
+    /// Parent/child edges on a path to a nearest provider or an unmatched root.
+    pub edges: Vec<(FileId, FileId)>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -142,6 +159,124 @@ impl ProvideInjectIndex {
         consumer: FileId,
         key: &ProvideKey,
     ) -> Vec<ResolvedProviderBranch> {
+        self.resolve_provider_resolution(consumer, key).branches
+    }
+
+    /// Collapse shared DAG ancestors while retaining exact branch counts and
+    /// one deterministic representative path for each terminal outcome.
+    pub(crate) fn resolve_provider_resolution(
+        &self,
+        consumer: FileId,
+        key: &ProvideKey,
+    ) -> ProviderResolution {
+        let mut visited = FxHashSet::default();
+        visited.insert(consumer);
+        let mut queue = vec![consumer];
+        let mut cursor = 0;
+        let mut parents_by_node: FxHashMap<FileId, Vec<FileId>> = FxHashMap::default();
+        let mut predecessor = FxHashMap::default();
+        let mut terminals = Vec::new();
+        let mut edges = Vec::new();
+
+        while let Some(&current) = queue.get(cursor) {
+            cursor += 1;
+            if current != consumer
+                && self
+                    .provides
+                    .get(&current)
+                    .and_then(|provides| matching_provider(provides, key))
+                    .is_some()
+            {
+                terminals.push(current);
+                continue;
+            }
+
+            let Some(parents) = self.component_parents.get(&current) else {
+                terminals.push(current);
+                continue;
+            };
+            if parents.is_empty() {
+                terminals.push(current);
+                continue;
+            }
+            for &parent in parents {
+                edges.push((parent, current));
+                predecessor.entry(parent).or_insert(current);
+                if visited.insert(parent) {
+                    queue.push(parent);
+                }
+            }
+            parents_by_node.insert(current, parents.clone());
+        }
+
+        // Count all render paths through the explored DAG without materializing
+        // them. A cycle needs the ancestor-sensitive behavior of the old walk.
+        let mut remaining_children: FxHashMap<FileId, usize> =
+            visited.iter().map(|&file_id| (file_id, 0)).collect();
+        for parents in parents_by_node.values() {
+            for parent in parents {
+                *remaining_children.entry(*parent).or_default() += 1;
+            }
+        }
+        let mut ready = vec![consumer];
+        let mut ready_cursor = 0;
+        let mut path_counts = FxHashMap::default();
+        path_counts.insert(consumer, 1usize);
+        while let Some(&current) = ready.get(ready_cursor) {
+            ready_cursor += 1;
+            let count = path_counts.get(&current).copied().unwrap_or(0);
+            for &parent in parents_by_node.get(&current).into_iter().flatten() {
+                let paths = path_counts.entry(parent).or_insert(0);
+                *paths = paths.saturating_add(count);
+                let remaining = remaining_children
+                    .get_mut(&parent)
+                    .expect("each explored parent has a counter");
+                *remaining -= 1;
+                if *remaining == 0 {
+                    ready.push(parent);
+                }
+            }
+        }
+        if ready_cursor != visited.len() {
+            return self.resolve_provider_paths_with_cycles(consumer, key);
+        }
+
+        let mut branches = terminals
+            .into_iter()
+            .map(|terminal| {
+                let mut path = vec![terminal];
+                let mut current = terminal;
+                while current != consumer {
+                    current = predecessor[&current];
+                    path.push(current);
+                }
+                let path_count = path_counts.get(&terminal).copied().unwrap_or(1);
+                if let Some(provide) = self
+                    .provides
+                    .get(&terminal)
+                    .filter(|_| terminal != consumer)
+                    .and_then(|provides| matching_provider(provides, key))
+                {
+                    ResolvedProviderBranch::Matched(ResolvedProvider {
+                        provider_id: terminal,
+                        provide: provide.clone(),
+                        path,
+                        path_count,
+                    })
+                } else {
+                    ResolvedProviderBranch::Unmatched { path, path_count }
+                }
+            })
+            .collect::<Vec<_>>();
+        branches.sort_by(|left, right| self.compare_paths(left.path(), right.path()));
+        ProviderResolution { branches, edges }
+    }
+
+    fn resolve_provider_paths_with_cycles(
+        &self,
+        consumer: FileId,
+        key: &ProvideKey,
+    ) -> ProviderResolution {
         let mut branches = Vec::new();
         let mut frames = vec![AncestorFrame {
             current: consumer,
@@ -162,6 +297,7 @@ impl ProvideInjectIndex {
                     provider_id: current,
                     provide: provide.clone(),
                     path: path_from_frame(&frames, frame_index),
+                    path_count: 1,
                 }));
                 continue;
             }
@@ -181,12 +317,17 @@ impl ProvideInjectIndex {
             if !explored_parent {
                 branches.push(ResolvedProviderBranch::Unmatched {
                     path: path_from_frame(&frames, frame_index),
+                    path_count: 1,
                 });
             }
         }
 
         branches.sort_by(|left, right| self.compare_paths(left.path(), right.path()));
-        branches
+        let edges = branches
+            .iter()
+            .flat_map(|branch| branch.path().windows(2).map(|pair| (pair[0], pair[1])))
+            .collect();
+        ProviderResolution { branches, edges }
     }
 
     pub(crate) fn sort_file_ids(&self, file_ids: &mut [FileId]) {

@@ -34,12 +34,11 @@ pub struct ProvideInjectMatch {
 /// without finding a provider so diagnostics and tree output can retain them.
 #[derive(Debug, Clone)]
 pub(crate) struct ProvideInjectBranch {
-    pub consumer: FileId,
-    pub key_identity: CompactString,
     pub path: Vec<FileId>,
     pub provider: Option<FileId>,
     pub provide_offset: Option<u32>,
-    pub inject_offset: u32,
+    /// Number of render paths represented by this branch.
+    pub path_count: usize,
 }
 
 /// Tree representation of provide/inject relationships.
