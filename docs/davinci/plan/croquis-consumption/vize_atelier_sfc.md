@@ -69,11 +69,12 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | product             | resolved | grep |
 | ------------------- | -------: | ---: |
 | `BindingMetadata`   |       31 |   49 |
+| `BlockKind`         |        0 |   10 |
 | `Croquis`           |       17 |   44 |
 | `Drawer`            |        7 |    9 |
 | `DrawerOptions`     |        5 |    6 |
 | `ReactivityTracker` |        0 |    1 |
-| `Scope`             |        0 |    5 |
+| `Scope`             |        0 |    6 |
 | `ScopeKind`         |        2 |    3 |
 | `Span`              |        0 |    7 |
 | `Symbol`            |        0 |    4 |
