@@ -3,7 +3,10 @@
 //! Walks the AST to find identifier references to destructured props,
 //! collecting rewrites while respecting lexical scoping and shadowing.
 
-use oxc_ast::ast::{BindingPattern, Expression, Program, Statement};
+use oxc_ast::ast::{
+    Argument, BindingPattern, Class, ClassElement, Expression, FormalParameters, Function, Program,
+    PropertyKey, Statement,
+};
 use vize_carton::FxHashMap;
 
 use super::helpers::gen_props_access_exp;
@@ -106,24 +109,13 @@ pub(crate) fn collect_from_statement<'a>(
             if let Some(id) = &func.id {
                 local_bindings.insert(id.name.to_compact_string(), true);
             }
-            // Walk function body with new scope
-            if let Some(body) = &func.body {
-                let mut inner_bindings = local_bindings.clone();
-                // Register parameters
-                for param in func.params.items.iter() {
-                    register_binding_pattern(&param.pattern, &mut inner_bindings);
-                }
-                // Walk body statements
-                for body_stmt in body.statements.iter() {
-                    collect_from_statement(
-                        body_stmt,
-                        source,
-                        local_to_key,
-                        &mut inner_bindings,
-                        rewrites,
-                    );
-                }
+            collect_from_function(func, source, local_to_key, local_bindings, rewrites);
+        }
+        Statement::ClassDeclaration(class) => {
+            if let Some(id) = &class.id {
+                local_bindings.insert(id.name.to_compact_string(), true);
             }
+            collect_from_class(class, source, local_to_key, local_bindings, rewrites);
         }
         Statement::ForStatement(for_stmt) => {
             let mut inner_bindings = local_bindings.clone();
@@ -371,9 +363,7 @@ pub(crate) fn collect_from_expression<'a>(
         Expression::CallExpression(call) => {
             // Check arguments
             for arg in call.arguments.iter() {
-                if let Some(expr) = arg.as_expression() {
-                    collect_from_expression(expr, source, local_to_key, local_bindings, rewrites);
-                }
+                collect_from_argument(arg, source, local_to_key, local_bindings, rewrites);
             }
             // Check callee
             collect_from_expression(&call.callee, source, local_to_key, local_bindings, rewrites);
@@ -381,34 +371,23 @@ pub(crate) fn collect_from_expression<'a>(
         Expression::ArrowFunctionExpression(arrow) => {
             // Create new scope for arrow function
             let mut inner_bindings = local_bindings.clone();
-            // Register parameters
-            for param in arrow.params.items.iter() {
-                register_binding_pattern(&param.pattern, &mut inner_bindings);
-            }
+            collect_from_parameters(
+                &arrow.params,
+                source,
+                local_to_key,
+                &mut inner_bindings,
+                rewrites,
+            );
             // Walk body statements - for expression bodies, OXC wraps the expression in a statement
             for stmt in arrow.body.statements.iter() {
                 collect_from_statement(stmt, source, local_to_key, &mut inner_bindings, rewrites);
             }
         }
         Expression::FunctionExpression(func) => {
-            // Create new scope for function
-            let mut inner_bindings = local_bindings.clone();
-            // Register parameters
-            for param in func.params.items.iter() {
-                register_binding_pattern(&param.pattern, &mut inner_bindings);
-            }
-            // Walk body statements
-            if let Some(body) = &func.body {
-                for stmt in body.statements.iter() {
-                    collect_from_statement(
-                        stmt,
-                        source,
-                        local_to_key,
-                        &mut inner_bindings,
-                        rewrites,
-                    );
-                }
-            }
+            collect_from_function(func, source, local_to_key, local_bindings, rewrites);
+        }
+        Expression::ClassExpression(class) => {
+            collect_from_class(class, source, local_to_key, local_bindings, rewrites);
         }
         Expression::BinaryExpression(bin) => {
             collect_from_expression(&bin.left, source, local_to_key, local_bindings, rewrites);
@@ -472,11 +451,9 @@ pub(crate) fn collect_from_expression<'a>(
                         } else {
                             // `{ [side]: value }`: the computed key is an
                             // expression that may read a destructured prop.
-                            if p.computed
-                                && let Some(key) = p.key.as_expression()
-                            {
-                                collect_from_expression(
-                                    key,
+                            if p.computed {
+                                collect_from_property_key(
+                                    &p.key,
                                     source,
                                     local_to_key,
                                     local_bindings,
@@ -624,9 +601,7 @@ pub(crate) fn collect_from_expression<'a>(
                 rewrites,
             );
             for arg in new_expr.arguments.iter() {
-                if let Some(e) = arg.as_expression() {
-                    collect_from_expression(e, source, local_to_key, local_bindings, rewrites);
-                }
+                collect_from_argument(arg, source, local_to_key, local_bindings, rewrites);
             }
         }
         Expression::SequenceExpression(seq) => {
@@ -681,15 +656,7 @@ pub(crate) fn collect_from_expression<'a>(
             match &chain.expression {
                 oxc_ast::ast::ChainElement::CallExpression(call) => {
                     for arg in call.arguments.iter() {
-                        if let Some(e) = arg.as_expression() {
-                            collect_from_expression(
-                                e,
-                                source,
-                                local_to_key,
-                                local_bindings,
-                                rewrites,
-                            );
-                        }
+                        collect_from_argument(arg, source, local_to_key, local_bindings, rewrites);
                     }
                     collect_from_expression(
                         &call.callee,
@@ -737,6 +704,269 @@ pub(crate) fn collect_from_expression<'a>(
             }
         }
         _ => {}
+    }
+}
+
+fn collect_from_argument<'a>(
+    arg: &Argument<'a>,
+    source: &str,
+    local_to_key: &FxHashMap<&str, &str>,
+    local_bindings: &FxHashMap<String, bool>,
+    rewrites: &mut Vec<(usize, usize, String)>,
+) {
+    if let Argument::SpreadElement(spread) = arg {
+        collect_from_expression(
+            &spread.argument,
+            source,
+            local_to_key,
+            local_bindings,
+            rewrites,
+        );
+    } else if let Some(expr) = arg.as_expression() {
+        collect_from_expression(expr, source, local_to_key, local_bindings, rewrites);
+    }
+}
+
+fn collect_from_property_key<'a>(
+    key: &PropertyKey<'a>,
+    source: &str,
+    local_to_key: &FxHashMap<&str, &str>,
+    local_bindings: &FxHashMap<String, bool>,
+    rewrites: &mut Vec<(usize, usize, String)>,
+) {
+    // OXC represents `[name]` as a StaticIdentifier even though this is a
+    // computed reference. `as_expression()` alone skips that case.
+    if let PropertyKey::StaticIdentifier(id) = key {
+        if let Some(prop_key) = local_to_key.get(id.name.as_str())
+            && !local_bindings.contains_key(id.name.as_str())
+        {
+            rewrites.push((
+                id.span.start as usize,
+                id.span.end as usize,
+                gen_props_access_exp(prop_key),
+            ));
+        }
+    } else if let Some(expr) = key.as_expression() {
+        collect_from_expression(expr, source, local_to_key, local_bindings, rewrites);
+    }
+}
+
+fn collect_from_binding_pattern_expressions<'a>(
+    pattern: &BindingPattern<'a>,
+    source: &str,
+    local_to_key: &FxHashMap<&str, &str>,
+    local_bindings: &FxHashMap<String, bool>,
+    rewrites: &mut Vec<(usize, usize, String)>,
+) {
+    match pattern {
+        BindingPattern::BindingIdentifier(_) => {}
+        BindingPattern::AssignmentPattern(assign) => {
+            collect_from_binding_pattern_expressions(
+                &assign.left,
+                source,
+                local_to_key,
+                local_bindings,
+                rewrites,
+            );
+            collect_from_expression(
+                &assign.right,
+                source,
+                local_to_key,
+                local_bindings,
+                rewrites,
+            );
+        }
+        BindingPattern::ObjectPattern(obj) => {
+            for prop in obj.properties.iter() {
+                if prop.computed {
+                    collect_from_property_key(
+                        &prop.key,
+                        source,
+                        local_to_key,
+                        local_bindings,
+                        rewrites,
+                    );
+                }
+                collect_from_binding_pattern_expressions(
+                    &prop.value,
+                    source,
+                    local_to_key,
+                    local_bindings,
+                    rewrites,
+                );
+            }
+            if let Some(rest) = &obj.rest {
+                collect_from_binding_pattern_expressions(
+                    &rest.argument,
+                    source,
+                    local_to_key,
+                    local_bindings,
+                    rewrites,
+                );
+            }
+        }
+        BindingPattern::ArrayPattern(arr) => {
+            for elem in arr.elements.iter().flatten() {
+                collect_from_binding_pattern_expressions(
+                    elem,
+                    source,
+                    local_to_key,
+                    local_bindings,
+                    rewrites,
+                );
+            }
+            if let Some(rest) = &arr.rest {
+                collect_from_binding_pattern_expressions(
+                    &rest.argument,
+                    source,
+                    local_to_key,
+                    local_bindings,
+                    rewrites,
+                );
+            }
+        }
+    }
+}
+
+fn collect_from_parameters<'a>(
+    params: &FormalParameters<'a>,
+    source: &str,
+    local_to_key: &FxHashMap<&str, &str>,
+    local_bindings: &mut FxHashMap<String, bool>,
+    rewrites: &mut Vec<(usize, usize, String)>,
+) {
+    // All parameter names exist while defaults are evaluated. A reference to
+    // a same-named parameter is shadowed, even if it occurs in a later slot.
+    for param in params.items.iter() {
+        register_binding_pattern(&param.pattern, local_bindings);
+    }
+    if let Some(rest) = &params.rest {
+        register_binding_pattern(&rest.rest.argument, local_bindings);
+    }
+    for param in params.items.iter() {
+        collect_from_binding_pattern_expressions(
+            &param.pattern,
+            source,
+            local_to_key,
+            local_bindings,
+            rewrites,
+        );
+        if let Some(initializer) = &param.initializer {
+            collect_from_expression(initializer, source, local_to_key, local_bindings, rewrites);
+        }
+    }
+    if let Some(rest) = &params.rest {
+        collect_from_binding_pattern_expressions(
+            &rest.rest.argument,
+            source,
+            local_to_key,
+            local_bindings,
+            rewrites,
+        );
+    }
+}
+
+fn collect_from_function<'a>(
+    func: &Function<'a>,
+    source: &str,
+    local_to_key: &FxHashMap<&str, &str>,
+    local_bindings: &FxHashMap<String, bool>,
+    rewrites: &mut Vec<(usize, usize, String)>,
+) {
+    let mut inner_bindings = local_bindings.clone();
+    if let Some(id) = &func.id {
+        inner_bindings.insert(id.name.to_compact_string(), true);
+    }
+    collect_from_parameters(
+        &func.params,
+        source,
+        local_to_key,
+        &mut inner_bindings,
+        rewrites,
+    );
+    if let Some(body) = &func.body {
+        for stmt in body.statements.iter() {
+            collect_from_statement(stmt, source, local_to_key, &mut inner_bindings, rewrites);
+        }
+    }
+}
+
+fn collect_from_class<'a>(
+    class: &Class<'a>,
+    source: &str,
+    local_to_key: &FxHashMap<&str, &str>,
+    local_bindings: &FxHashMap<String, bool>,
+    rewrites: &mut Vec<(usize, usize, String)>,
+) {
+    let mut inner_bindings = local_bindings.clone();
+    if let Some(id) = &class.id {
+        inner_bindings.insert(id.name.to_compact_string(), true);
+    }
+    if let Some(super_class) = &class.super_class {
+        collect_from_expression(super_class, source, local_to_key, &inner_bindings, rewrites);
+    }
+    for elem in class.body.body.iter() {
+        match elem {
+            ClassElement::MethodDefinition(method) => {
+                if method.computed {
+                    collect_from_property_key(
+                        &method.key,
+                        source,
+                        local_to_key,
+                        &inner_bindings,
+                        rewrites,
+                    );
+                }
+                collect_from_function(
+                    &method.value,
+                    source,
+                    local_to_key,
+                    &inner_bindings,
+                    rewrites,
+                );
+            }
+            ClassElement::PropertyDefinition(prop) => {
+                if prop.computed {
+                    collect_from_property_key(
+                        &prop.key,
+                        source,
+                        local_to_key,
+                        &inner_bindings,
+                        rewrites,
+                    );
+                }
+                if let Some(value) = &prop.value {
+                    collect_from_expression(value, source, local_to_key, &inner_bindings, rewrites);
+                }
+            }
+            ClassElement::AccessorProperty(prop) => {
+                if prop.computed {
+                    collect_from_property_key(
+                        &prop.key,
+                        source,
+                        local_to_key,
+                        &inner_bindings,
+                        rewrites,
+                    );
+                }
+                if let Some(value) = &prop.value {
+                    collect_from_expression(value, source, local_to_key, &inner_bindings, rewrites);
+                }
+            }
+            ClassElement::StaticBlock(block) => {
+                let mut block_bindings = inner_bindings.clone();
+                for stmt in block.body.iter() {
+                    collect_from_statement(
+                        stmt,
+                        source,
+                        local_to_key,
+                        &mut block_bindings,
+                        rewrites,
+                    );
+                }
+            }
+            ClassElement::TSIndexSignature(_) => {}
+        }
     }
 }
 

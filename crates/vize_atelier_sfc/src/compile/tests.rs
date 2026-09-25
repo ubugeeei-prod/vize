@@ -1380,6 +1380,39 @@ const doubled = computed(() => count * 2)
 }
 
 #[test]
+fn test_props_destructure_rewrites_spread_keys_and_parameter_defaults() {
+    let input = r#"<script setup lang="ts">
+const { a, b, c, d, e, f } = defineProps<{
+  a: number[]; b: number[]; c: string; d: string; e: string; f: number
+}>()
+const r1 = () => Math.max(0, ...a)
+const r2 = () => new Set(...[b])
+const r3 = () => ({ [c]: 1 })
+const r4 = () => class { [d] = 1 }
+const r5 = () => ({ get [e]() { return 1 } })
+const r6 = (x = f) => x
+</script>
+<template><div>{{ r1() }}{{ r2() }}{{ r3() }}{{ r4() }}{{ r5() }}{{ r6() }}</div></template>"#;
+
+    let descriptor = parse_sfc(input, SfcParseOptions::default()).unwrap();
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).unwrap();
+    for expected in [
+        "...__props.a",
+        "...[__props.b]",
+        "[__props.c]",
+        "[__props.d]",
+        "[__props.e]",
+        "x = __props.f",
+    ] {
+        assert!(
+            result.code.contains(expected),
+            "missing {expected} in compiled SFC:\n{}",
+            result.code
+        );
+    }
+}
+
+#[test]
 fn test_props_destructure_mutable_defaults_use_factories() {
     let input = r#"<script setup lang="ts">
 const {

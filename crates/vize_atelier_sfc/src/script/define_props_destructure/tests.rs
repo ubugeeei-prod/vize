@@ -279,6 +279,39 @@ mod tests {
     }
 
     #[test]
+    fn test_transform_call_and_new_spread_arguments() {
+        let bindings = make_bindings(&["a", "b", "c"]);
+        let source = "const one = () => Math.max(0, ...a); const two = () => new Set(...[b]); const three = () => fn?.(...[c])";
+        let result = transform_destructured_props(source, &bindings).unwrap();
+        assert_eq!(
+            result,
+            "const one = () => Math.max(0, ...__props.a); const two = () => new Set(...[__props.b]); const three = () => fn?.(...[__props.c])"
+        );
+    }
+
+    #[test]
+    fn test_transform_computed_object_and_class_keys() {
+        let bindings = make_bindings(&["c", "d", "e", "f"]);
+        let source = "const obj = { [c]: 1, get [d]() { return 1 } }; const C = class { [e] = f; get [d]() { return f } }";
+        let result = transform_destructured_props(source, &bindings).unwrap();
+        assert_eq!(
+            result,
+            "const obj = { [__props.c]: 1, get [__props.d]() { return 1 } }; const C = class { [__props.e] = __props.f; get [__props.d]() { return __props.f } }"
+        );
+    }
+
+    #[test]
+    fn test_transform_parameter_defaults_with_shadowing() {
+        let bindings = make_bindings(&["count", "key"]);
+        let source = "const one = (x = count) => x; function two({ value = count, [key]: other }) { return other }; const three = (count = 1) => count; const four = (key) => ({ [key]: count })";
+        let result = transform_destructured_props(source, &bindings).unwrap();
+        assert_eq!(
+            result,
+            "const one = (x = __props.count) => x; function two({ value = __props.count, [__props.key]: other }) { return other }; const three = (count = 1) => count; const four = (key) => ({ [key]: __props.count })"
+        );
+    }
+
+    #[test]
     fn test_transform_multiple_statements() {
         let bindings = make_bindings(&["msg", "count"]);
 
