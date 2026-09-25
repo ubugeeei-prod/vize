@@ -151,4 +151,24 @@ mod tests {
             );
         }
     }
+
+    /// A block-bodied handler (`@click="() => { ... }"`) reports the
+    /// references that escape it, in source order, and keeps its own
+    /// parameters and lexical declarations local.
+    #[test]
+    fn block_bodied_functions_report_references_that_escape_them() {
+        let source = "() => { const local = $router; $router.replace(local); return other }";
+        let refs = extract_identifier_refs_oxc_ast(source);
+        let names: Vec<&str> = refs.iter().map(|r| r.name.as_str()).collect();
+        assert_eq!(names, vec!["$router", "$router", "other"], "{source}");
+        assert_eq!(refs[0].offset, source.find("$router").unwrap() as u32);
+        assert_eq!(refs[1].offset, source.rfind("$router").unwrap() as u32);
+
+        let source = "function (event) { if (event) { handle(event, $el) } }";
+        let names: Vec<_> = extract_identifier_refs_oxc_ast(source)
+            .into_iter()
+            .map(|r| r.name)
+            .collect();
+        assert_eq!(names, vec!["handle", "$el"], "{source}");
+    }
 }

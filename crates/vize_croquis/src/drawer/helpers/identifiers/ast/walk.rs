@@ -1,7 +1,8 @@
 mod assignment_target;
 
 use oxc_ast::ast::{
-    ArrayExpressionElement, BindingPattern, Expression, ObjectPropertyKind, PropertyKey,
+    ArrayExpressionElement, BindingPattern, Expression, FunctionBody, ObjectPropertyKind,
+    PropertyKey, Statement,
 };
 
 use super::super::IdentifierRef;
@@ -97,22 +98,22 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierR
             }
         }
         Expression::ArrowFunctionExpression(arrow) => {
-            let mut param_names: Vec<&str> = Vec::new();
+            let mut locals: Vec<&str> = Vec::new();
             for param in arrow.params.items.iter() {
-                collect_binding_names(&param.pattern, &mut param_names);
+                collect_binding_names(&param.pattern, &mut locals);
             }
-
-            if arrow.expression
-                && let Some(oxc_ast::ast::Statement::ExpressionStatement(expr_stmt)) =
-                    arrow.body.statements.first()
-            {
-                let mut body_idents = Vec::new();
-                walk_expr(&expr_stmt.expression, &mut body_idents);
-                for ident in body_idents {
-                    if !param_names.contains(&ident.name.as_str()) {
-                        identifiers.push(ident);
-                    }
-                }
+            walk_function_body(&arrow.body, &mut locals, identifiers);
+        }
+        Expression::FunctionExpression(function) => {
+            let mut locals: Vec<&str> = Vec::new();
+            if let Some(id) = &function.id {
+                locals.push(id.name.as_str());
+            }
+            for param in function.params.items.iter() {
+                collect_binding_names(&param.pattern, &mut locals);
+            }
+            if let Some(body) = &function.body {
+                walk_function_body(body, &mut locals, identifiers);
             }
         }
         Expression::SequenceExpression(seq) => {
@@ -190,6 +191,97 @@ pub(super) fn walk_expr(expr: &Expression<'_>, identifiers: &mut Vec<IdentifierR
         | Expression::BigIntLiteral(_)
         | Expression::StringLiteral(_)
         | Expression::RegExpLiteral(_) => {}
+        _ => {}
+    }
+}
+
+/// Walk a function body, reporting only the references that escape it.
+///
+/// A concise arrow body is a single expression statement; a block body
+/// (`@click="() => { $router.replace(to) }"`) declares its own lexical
+/// bindings, which are collected first so a `const` shadowing a template name
+/// stays local while `$router` and `to` still reach template scope. Statement
+/// kinds outside the handled set contribute nothing, as before.
+fn walk_function_body<'a>(
+    body: &'a FunctionBody<'a>,
+    locals: &mut Vec<&'a str>,
+    identifiers: &mut Vec<IdentifierRef>,
+) {
+    collect_statement_declarations(&body.statements, locals);
+    let mut body_idents = Vec::new();
+    for statement in body.statements.iter() {
+        walk_statement(statement, &mut body_idents);
+    }
+    for ident in body_idents {
+        if !locals.contains(&ident.name.as_str()) {
+            identifiers.push(ident);
+        }
+    }
+}
+
+/// Names a statement list declares (`const`/`let`/`var`, functions, classes),
+/// including those of nested plain blocks, so the body walk can drop them.
+fn collect_statement_declarations<'a>(statements: &'a [Statement<'a>], locals: &mut Vec<&'a str>) {
+    for statement in statements {
+        match statement {
+            Statement::VariableDeclaration(declaration) => {
+                for declarator in declaration.declarations.iter() {
+                    collect_binding_names(&declarator.id, locals);
+                }
+            }
+            Statement::FunctionDeclaration(function) => {
+                if let Some(id) = &function.id {
+                    locals.push(id.name.as_str());
+                }
+            }
+            Statement::ClassDeclaration(class) => {
+                if let Some(id) = &class.id {
+                    locals.push(id.name.as_str());
+                }
+            }
+            Statement::BlockStatement(block) => {
+                collect_statement_declarations(&block.body, locals);
+            }
+            _ => {}
+        }
+    }
+}
+
+/// Walk the expressions a body statement evaluates. Loops, `try`, `switch` and
+/// other statement kinds are not descended into, matching the previous
+/// behavior for those shapes.
+fn walk_statement(statement: &Statement<'_>, identifiers: &mut Vec<IdentifierRef>) {
+    match statement {
+        Statement::ExpressionStatement(expression) => {
+            walk_expr(&expression.expression, identifiers);
+        }
+        Statement::ReturnStatement(ret) => {
+            if let Some(argument) = &ret.argument {
+                walk_expr(argument, identifiers);
+            }
+        }
+        Statement::ThrowStatement(throw) => {
+            walk_expr(&throw.argument, identifiers);
+        }
+        Statement::VariableDeclaration(declaration) => {
+            for declarator in declaration.declarations.iter() {
+                if let Some(init) = &declarator.init {
+                    walk_expr(init, identifiers);
+                }
+            }
+        }
+        Statement::IfStatement(if_statement) => {
+            walk_expr(&if_statement.test, identifiers);
+            walk_statement(&if_statement.consequent, identifiers);
+            if let Some(alternate) = &if_statement.alternate {
+                walk_statement(alternate, identifiers);
+            }
+        }
+        Statement::BlockStatement(block) => {
+            for statement in block.body.iter() {
+                walk_statement(statement, identifiers);
+            }
+        }
         _ => {}
     }
 }
