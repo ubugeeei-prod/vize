@@ -31,9 +31,7 @@ if (
 ) {
   throw new Error("VIZE_VAPOR_FIXTURES must name existing fixtures");
 }
-const fixtures = allFixtures.filter(
-  (fixture) => only === undefined || only.includes(fixture.name),
-);
+const fixtures = allFixtures.filter((fixture) => only === undefined || only.includes(fixture.name));
 
 function describe(error: unknown): string {
   return error instanceof Error ? (error.stack ?? error.message) : String(error);
