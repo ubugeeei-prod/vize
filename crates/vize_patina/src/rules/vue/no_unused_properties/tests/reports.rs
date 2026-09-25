@@ -19,10 +19,18 @@ defineProps<{
 
 <template><h1>{{ label }}</h1></template>
 "#;
+    let title_declaration = "title: string;";
+    let title_start = sfc.find("\n  title: string;").unwrap() as u32 + 3;
     assert_eq!(
         owned(&lint_sfc(sfc)),
         vec![
-            unused(sfc, "title", "title: string;"),
+            (
+                "vue/no-unused-properties",
+                crate::diagnostic::Severity::Warning,
+                title_start,
+                title_start + title_declaration.len() as u32,
+                "Prop 'title' is defined but never used".to_string(),
+            ),
             unused(sfc, "subtitle", "subtitle: string;"),
             unused(sfc, "phase", "phase: Phase;"),
             unused(sfc, "count", "count: number;"),
