@@ -1758,6 +1758,12 @@ export default defineComponent({
     );
 
     assert_eq!(result.bindings.get("format"), Some(BindingType::Options));
+    // The template-facing span is the method's, not the import specifier's.
+    let method_start = source.find("format(date").unwrap();
+    assert_eq!(
+        result.binding_spans.get("format"),
+        Some(&(method_start as u32, (method_start + "format".len()) as u32))
+    );
     // The import itself is still known to module-scope consumers.
     assert_eq!(
         result
@@ -1765,5 +1771,26 @@ export default defineComponent({
             .get("format")
             .map(CompactString::as_str),
         Some("date-fns")
+    );
+}
+
+#[test]
+fn test_script_setup_import_still_shadows_same_named_prop() {
+    // `<script setup>` templates read setup bindings before props, so an
+    // import keeps the name even when a prop registered earlier shares it.
+    let source = r#"
+const props = defineProps<{ format: string }>()
+import { format } from 'date-fns'
+"#;
+    let result = parse_script_setup(source);
+
+    assert_eq!(
+        result.bindings.get("format"),
+        Some(BindingType::SetupMaybeRef)
+    );
+    let import_start = source.find("format }").unwrap();
+    assert_eq!(
+        result.binding_spans.get("format"),
+        Some(&(import_start as u32, (import_start + "format".len()) as u32))
     );
 }

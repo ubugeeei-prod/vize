@@ -80,10 +80,13 @@ pub(super) fn process_import(result: &mut ScriptParseResult, import: &ImportDecl
             // (it runs before this walk) owns the template name even when an
             // import spells it the same. Overwriting it here would type
             // `{{ format(x) }}` as the imported `format` rather than the method.
-            let instance_member = matches!(
-                result.bindings.get(name),
-                Some(BindingType::Props | BindingType::Data | BindingType::Options)
-            );
+            // `<script setup>` is the opposite: its template reads setup
+            // bindings first, so an import there shadows a same-named prop.
+            let instance_member = result.is_non_setup_script
+                && matches!(
+                    result.bindings.get(name),
+                    Some(BindingType::Props | BindingType::Data | BindingType::Options)
+                );
             if !instance_member {
                 result
                     .binding_spans
