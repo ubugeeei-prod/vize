@@ -133,6 +133,11 @@ fn collect_tsconfig_type_declaration_files(
     collect_tsconfig_type_packages(tsconfig_path)
         .into_iter()
         .flat_map(|package| resolve_type_package_declaration_files(search_start, package.as_str()))
+        // TypeScript loads compilerOptions.types from the mirrored node_modules
+        // tree itself. Registering a package entry as a source file shadows its
+        // real declaration (notably index.d.mts) and can make the type library
+        // fail to resolve with TS2688, hiding every file diagnostic (#6695).
+        .filter(|path| !path_has_component(path, NODE_MODULES_DIR))
         .collect()
 }
 

@@ -279,6 +279,85 @@ if (import.meta.vitest) {
 }
 
 #[test]
+fn check_resolves_tsconfig_types_package_with_esm_declaration_entry() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project_root = unique_case_dir("tsconfig-types-esm-entry");
+    let _ = std::fs::remove_dir_all(&project_root);
+    link_workspace_vue(&project_root).unwrap();
+    write(
+        &project_root,
+        "node_modules/@vizejs/vite-plugin/package.json",
+        r#"{
+  "name": "@vizejs/vite-plugin",
+  "type": "module",
+  "types": "./index.d.mts",
+  "exports": { ".": { "types": "./index.d.mts" } }
+}"#,
+    );
+    write(
+        &project_root,
+        "node_modules/@vizejs/vite-plugin/index.d.mts",
+        "import \"./client.d.ts\";\nexport {};\n",
+    );
+    write(
+        &project_root,
+        "node_modules/@vizejs/vite-plugin/client.d.ts",
+        "declare module \"*.vue\" { const component: unknown; export default component; }\n",
+    );
+    write(
+        &project_root,
+        "tsconfig.json",
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": ["@vizejs/vite-plugin"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue"]
+}"#,
+    );
+    write(
+        &project_root,
+        "src/main.ts",
+        "const n: number = \"wrong\";\nexport { n };\n",
+    );
+    write(
+        &project_root,
+        "src/App.vue",
+        "<script setup lang=\"ts\">\nconst s: string = 1;\n</script>\n<template><div>{{ s }}</div></template>\n",
+    );
+
+    let baseline = Command::new(&corsa_path)
+        .current_dir(&project_root)
+        .args(["--project", "tsconfig.json"])
+        .output()
+        .unwrap();
+    let baseline_stdout = std::str::from_utf8(&baseline.stdout).unwrap();
+    assert!(baseline_stdout.contains("TS2322"), "{baseline_stdout}");
+    assert!(!baseline_stdout.contains("TS2688"), "{baseline_stdout}");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args(["check", "--tsconfig", "tsconfig.json", "--format", "json"])
+        .output()
+        .unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    assert!(!output.status.success(), "{stdout}\n{stderr}");
+    assert!(!stdout.contains("TS2688"), "{stdout}");
+    assert!(stdout.matches("TS2322").count() >= 2, "{stdout}");
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_provides_define_art_for_standalone_musea_art_files() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
         return;
