@@ -103,3 +103,50 @@ export default {
 
     insta::assert_snapshot!(result.code.as_str());
 }
+
+#[test]
+fn test_vapor_slot_hydration_creates_nodes_in_document_order() {
+    let child = r#"<script setup vapor>
+const label = "child"
+</script>
+<template><button><slot /></button></template>"#;
+    let app = r#"<script setup vapor>
+import { ref } from "vue"
+import Child from "./Child.vue"
+const msg = ref("hi")
+</script>
+<template><Child>Open</Child><p>{{ msg }}</p></template>"#;
+
+    let compile = |source| {
+        let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
+        compile_sfc(
+            &descriptor,
+            SfcCompileOptions {
+                vapor: true,
+                ..Default::default()
+            },
+        )
+        .expect("compile SFC")
+        .code
+    };
+    let child_code = compile(child);
+    let app_code = compile(app);
+
+    let insertion = child_code.find("_setInsertionState(").expect(&child_code);
+    let slot = child_code
+        .find("_createSlot(\"default\")")
+        .expect(&child_code);
+    assert!(
+        insertion < slot,
+        "slot needs its parent cursor: {child_code}"
+    );
+
+    let component = app_code
+        .find("= _createComponentWithFallback(")
+        .expect(&app_code);
+    let paragraph = app_code.find("= t1()").expect(&app_code);
+    assert!(
+        component < paragraph,
+        "component must hydrate first: {app_code}"
+    );
+}

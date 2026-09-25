@@ -18,13 +18,13 @@ export function render(_ctx) {
   const n1 = _next(n0, 1)
   _setInsertionState(n0)
   const n3 = ((_for_item0) => {
-    const n8 = t1()
-    const n9 = t2()
-    const n10 = t3()
     const n5 = _createIf(() => (_for_item0.value[0] === 0), () => {
       const n7 = t0()
       return n7
     })
+    const n8 = t1()
+    const n9 = t2()
+    const n10 = t3()
     _renderEffect(() => _setText(n9, _toDisplayString(_ctx.label)))
     return [n5, n8, n9, n10]
   })(_computed(() => (((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [-1]; })(_ctx.status))))

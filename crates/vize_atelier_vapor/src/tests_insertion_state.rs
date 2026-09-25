@@ -172,6 +172,41 @@ fn slot_outlets_use_insertion_state_instead_of_insert() {
 }
 
 #[test]
+fn root_component_precedes_later_element_during_hydration() {
+    each_lane("<Child>Open</Child><p>{{ msg }}</p>", |code| {
+        let component = code.find("_createComponentWithFallback(").expect(code);
+        let paragraph = code.find("const n2 = t1()").expect(code);
+        assert!(
+            component < paragraph,
+            "component must be created first:\n{code}"
+        );
+    });
+}
+
+#[test]
+fn alternating_root_nodes_are_created_in_document_order() {
+    for (source, helper) in [
+        (
+            "<Child/><p>A</p><Child/><p>B</p>",
+            "_createComponentWithFallback(",
+        ),
+        ("<slot/><p>A</p><slot/><p>B</p>", "_createSlot("),
+    ] {
+        each_lane(source, |code| {
+            let creations: std::vec::Vec<&str> = code
+                .lines()
+                .filter(|line| line.starts_with("const n") && line.contains(" = "))
+                .collect();
+            assert_eq!(creations.len(), 4, "{code}");
+            assert!(creations[0].contains(helper), "{code}");
+            assert!(creations[1].contains(" = t"), "{code}");
+            assert!(creations[2].contains(helper), "{code}");
+            assert!(creations[3].contains(" = t"), "{code}");
+        });
+    }
+}
+
+#[test]
 fn dynamic_event_names_rebind_through_on_binding() {
     // Upstream: `_onBinding(n0, _ctx.ev, handler, { once: true })` inside a
     // render effect, so the previous listener is removed on every rename.

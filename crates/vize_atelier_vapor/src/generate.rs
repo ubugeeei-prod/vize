@@ -164,7 +164,17 @@ fn generate_block_guarded(
     block: &BlockIRNode<'_>,
     element_template_map: &FxHashMap<usize, usize>,
 ) {
-    // Instantiate templates for elements in this block's returns
+    // Hydration advances through root nodes as they are created. Interleave
+    // template instantiation with returned components, slots and control-flow
+    // blocks in source order; creating every template first can make a later
+    // DOM element consume an earlier component's server node.
+    let root_ops: FxHashMap<usize, usize> = block
+        .operation
+        .iter()
+        .enumerate()
+        .filter_map(|(index, op)| returned_root_operation_id(op).map(|id| (id, index)))
+        .collect();
+    let mut generated_root_ops = FxHashSet::default();
     for element_id in block.returns.iter() {
         if let Some(&template_index) = element_template_map.get(element_id) {
             let mut line = String::with_capacity(32);
@@ -174,6 +184,9 @@ fn generate_block_guarded(
             line.push_str(&template_index.to_compact_string());
             line.push_str("()");
             ctx.push_line(&line);
+        } else if let Some(&index) = root_ops.get(element_id) {
+            generate_operation(ctx, &block.operation[index], element_template_map);
+            generated_root_ops.insert(index);
         }
     }
 
@@ -198,8 +211,10 @@ fn generate_block_guarded(
     }
 
     // Generate remaining operations (skip ChildRef/NextRef already generated above)
-    for op in block.operation.iter() {
-        if !matches!(op, OperationNode::ChildRef(_) | OperationNode::NextRef(_)) {
+    for (index, op) in block.operation.iter().enumerate() {
+        if !generated_root_ops.contains(&index)
+            && !matches!(op, OperationNode::ChildRef(_) | OperationNode::NextRef(_))
+        {
             generate_operation(ctx, op, element_template_map);
         }
     }
@@ -235,6 +250,16 @@ fn generate_block_guarded(
         } else {
             ctx.push_line(&["return [", &returns, "]"].concat());
         }
+    }
+}
+
+fn returned_root_operation_id(op: &OperationNode<'_>) -> Option<usize> {
+    match op {
+        OperationNode::CreateComponent(node) if node.parent.is_none() => Some(node.id),
+        OperationNode::SlotOutlet(node) if node.parent.is_none() => Some(node.id),
+        OperationNode::If(node) if node.parent.is_none() => Some(node.id),
+        OperationNode::For(node) if node.parent.is_none() => Some(node.id),
+        _ => None,
     }
 }
 

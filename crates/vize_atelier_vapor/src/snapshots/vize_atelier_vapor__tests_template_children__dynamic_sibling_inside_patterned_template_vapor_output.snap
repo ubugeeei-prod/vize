@@ -16,13 +16,13 @@ export function render(_ctx) {
   const n1 = _next(n0, 1)
   _setInsertionState(n0)
   const n3 = ((_for_item0) => {
-    const n9 = t1()
-    const n8 = _child(n9)
-    const x8 = _txt(n8)
     const n5 = _createIf(() => (_for_item0.value[0] === 0), () => {
       const n7 = t0()
       return n7
     })
+    const n9 = t1()
+    const n8 = _child(n9)
+    const x8 = _txt(n8)
     _renderEffect(() => {
       _setProp(n9, "id", _ctx.plainId)
       _setText(x8, _toDisplayString(_ctx.label))

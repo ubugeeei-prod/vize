@@ -17,11 +17,11 @@ export function render(_ctx) {
   const x1 = _txt(n1)
   _setInsertionState(n0)
   const n3 = ((_for_item0) => {
-    const n8 = t1()
     const n5 = _createIf(() => (_for_item0.value[0] === 0), () => {
       const n7 = t0()
       return n7
     })
+    const n8 = t1()
     return [n5, n8]
   })(_computed(() => (((__vize_match_0_0) => { a0: { if (__vize_match_0_0 !== 'ready') break a0; return [0]; } return [-1]; })(_ctx.status))))
   _renderEffect(() => _setText(x1, _toDisplayString(_ctx.x)))
