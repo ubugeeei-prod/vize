@@ -112,6 +112,13 @@ pub(in crate::virtual_ts::scope) fn generate_instance_global_refs(
 /// `None` keeps the generic instance-global form, whose `{}` for a component
 /// that declares no props is what `vue-tsc` reports too.
 ///
+/// The instance type is `any` whenever Vue's own `defineComponent` typing
+/// gives up on the options — a loosely typed mixin (`ComponentOptionsMixin`
+/// from a `.d.ts`) alongside a concrete one is the measured case. Inferring
+/// `$props` out of `any` yields `unknown`, which then reports `TS18046` on
+/// every `$props.x` read that `vue-tsc` accepts; an `any` instance keeps
+/// `$props` unchecked instead, matching the rest of the instance surface.
+///
 /// Resolved lazily: building the prop model walks the macro and type tables, and
 /// the overwhelming majority of templates never name `$props` at all.
 fn instance_props_type(
@@ -127,7 +134,7 @@ fn instance_props_type(
         && !has_script_setup(summary);
     resolve_on_instance.then(|| {
         String::from(
-            "(typeof __default__ extends abstract new (...args: any) => infer __I ? __I extends { $props: infer __P } ? __P : {} : {})",
+            "(typeof __default__ extends abstract new (...args: any) => infer __I ? __VizeIsAny<__I> extends true ? any : __I extends { $props: infer __P } ? __P : {} : {})",
         )
     })
 }

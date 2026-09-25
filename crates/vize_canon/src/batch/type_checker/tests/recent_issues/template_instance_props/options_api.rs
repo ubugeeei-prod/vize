@@ -130,3 +130,104 @@ fn options_api_props_reach_template_dollar_props() {
         "an Options API `$props` resolves the authored instance's props"
     );
 }
+
+/// A mixin typed as the loose `ComponentOptionsMixin` — what a hand-written
+/// `.d.ts` for a shared mixin package declares.
+const LOOSE_MIXIN: &str = r#"import type { ComponentOptionsMixin } from 'vue'
+
+export declare const devices: ComponentOptionsMixin
+"#;
+
+const CONCRETE_MIXIN: &str = r#"import { defineComponent } from 'vue'
+
+export const routing = defineComponent({
+  methods: {
+    go(name: string): string {
+      return name
+    },
+  },
+})
+"#;
+
+const TWO_MIXINS: &str = r#"<script lang="ts">
+import { defineComponent } from 'vue'
+import { devices } from './devices'
+import { routing } from './routing'
+
+export default defineComponent({
+  mixins: [devices, routing],
+  props: {
+    label: { type: String, required: true },
+  },
+})
+</script>
+
+<template>
+  <div>{{ $props.label }}</div>
+</template>
+"#;
+
+/// With a loose and a concrete mixin side by side, Vue's own `defineComponent`
+/// typing resolves the instance to `any`. Inferring `$props` out of `any`
+/// produced `unknown`, and every `$props.x` read reported
+/// `TS18046 '$props' is of type 'unknown'`; `vue-tsc` reports nothing.
+#[test]
+fn options_api_any_instance_keeps_template_dollar_props_unchecked() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    let workspace_root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("workspace root should exist");
+    let test_node_modules = workspace_root.join("tests").join("node_modules");
+    if !test_node_modules.join("vue/package.json").is_file() {
+        return;
+    }
+    let project_root = with_workspace_node_modules_override(
+        Some(
+            test_node_modules
+                .to_str()
+                .expect("test node_modules path should be UTF-8"),
+        ),
+        || {
+            create_project_case(
+                "template-instance-props-options-api-any-instance",
+                &[
+                    ("src/devices.ts", LOOSE_MIXIN),
+                    ("src/routing.ts", CONCRETE_MIXIN),
+                    ("src/TwoMixins.vue", TWO_MIXINS),
+                ],
+            )
+        },
+    );
+
+    let mut checker = BatchTypeChecker::new(&project_root).unwrap();
+    checker.enable_options_api();
+    checker.scan_project().unwrap();
+    let result = checker.check_project().unwrap();
+    let mut snapshot: Vec<_> = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| {
+            (
+                relative_path(&project_root, &diagnostic.file),
+                diagnostic.code,
+                cstr!(
+                    "{}:{}:error {}",
+                    diagnostic.line + 1,
+                    diagnostic.column + 1,
+                    diagnostic.message
+                ),
+            )
+        })
+        .collect();
+    snapshot.sort();
+    let _ = std::fs::remove_dir_all(&project_root);
+
+    assert_eq!(
+        snapshot,
+        Vec::<(String, Option<u32>, String)>::new(),
+        "an `any` instance keeps `$props` unchecked instead of `unknown`"
+    );
+}
