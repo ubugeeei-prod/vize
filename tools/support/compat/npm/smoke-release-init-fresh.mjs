@@ -98,7 +98,10 @@ function installPlannedDependencies(context, projectRoot, manager, shape) {
 function runFreshProjectCell(context, cell) {
   const manager = PACKAGE_MANAGERS[cell.packageManager];
   const shape = PROJECT_SHAPES[cell.shape];
-  const projectRootPath = path.join(context.freshRoot, `${shape.id}-${manager.id}`);
+  const projectRootPath = path.join(
+    context.freshRoot,
+    cell.projectDirectory ?? `${shape.id}-${manager.id}`,
+  );
   const authored = { ...shape.files(context.peers), ...manager.projectFiles };
   const tracked = [...Object.keys(authored), ...shape.createdFiles, ...shape.updatedFiles];
 

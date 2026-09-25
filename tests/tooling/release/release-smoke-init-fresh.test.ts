@@ -125,6 +125,18 @@ test("the fresh-project matrix covers every documented package manager", () => {
   }
 });
 
+test("the fresh-project matrix exercises a project path with spaces and non-ASCII text", () => {
+  assert.ok(
+    FRESH_INIT_MATRIX.some((cell) => {
+      const directory = cell.projectDirectory ?? "";
+      return (
+        directory.includes(" ") && [...directory].some((character) => character.charCodeAt(0) > 127)
+      );
+    }),
+    "fresh-install smoke must exercise a spaced Unicode project path",
+  );
+});
+
 test("the fresh-project matrix covers every declared project shape", () => {
   const matrixShapes = new Set(FRESH_INIT_MATRIX.map((cell) => cell.shape));
   for (const shape of Object.keys(PROJECT_SHAPES)) {

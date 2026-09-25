@@ -14,7 +14,8 @@ import { VITE_VUE_JS_CHECKJS_SHAPE } from "./smoke-release-init-js-shapes.mjs";
 
 /** Cells this slice runs. Further cells are added here, not in the driver. */
 export const FRESH_INIT_MATRIX = [
-  { packageManager: "npm", shape: "vite-vue-ts" },
+  // The npm cell also validates CLI, installer, and diagnostic paths on every smoke host.
+  { packageManager: "npm", shape: "vite-vue-ts", projectDirectory: "vite vue 日本語" },
   { packageManager: "npm", shape: "vite-vue-js-checkjs" },
   { packageManager: "pnpm", shape: "vite-vue-ts" },
   { packageManager: "yarn", shape: "vite-vue-ts" },
