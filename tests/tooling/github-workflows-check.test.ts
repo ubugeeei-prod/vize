@@ -96,14 +96,14 @@ test("SemVer checks run on exact-SHA release dispatches", () => {
   assert.match(script, /BASELINE_REV="\$\(git rev-parse HEAD\^1\)"/);
 });
 
-test("check workflow comments a detailed PR test report for each head push", () => {
+test("check workflow gates PRs and merge groups, and comments on PRs", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const reportJob = workflowJobBody(workflow, "test-report");
   const commentJob = workflowJobBody(workflow, "test-report-comment");
 
   assert.match(
     reportJob,
-    /if:\s*\$\{\{\s*always\(\) && github\.event_name == 'pull_request'\s*\}\}/,
+    /if:\s*\$\{\{\s*always\(\) && \(github\.event_name == 'pull_request' \|\| github\.event_name == 'merge_group'\)\s*\}\}/,
   );
   assert.match(reportJob, /contents:\s*read/);
   assert.doesNotMatch(reportJob, /issues:\s*write/);
@@ -125,6 +125,10 @@ test("check workflow comments a detailed PR test report for each head push", () 
   );
   assert.match(reportJob, /name:\s*test-inventory/);
 
+  assert.match(
+    commentJob,
+    /if:\s*\$\{\{\s*always\(\) && github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.repo\.full_name == github\.repository\s*\}\}/,
+  );
   assert.match(commentJob, /needs:\n\s+- test-report\b/);
   assert.match(commentJob, /actions:\s*read/);
   assert.match(commentJob, /contents:\s*read/);
