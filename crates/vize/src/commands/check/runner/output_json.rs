@@ -8,7 +8,9 @@ use super::super::{
     display_path,
 };
 use super::{DeclarationSummary, RenderedDiagnostics};
-use crate::commands::check::path_cache::CanonicalPathCache;
+use crate::commands::check::{
+    path_cache::CanonicalPathCache, tsconfig_inputs::collect_tsconfig_type_declaration_files,
+};
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
 pub(super) fn emit_json(
@@ -67,6 +69,19 @@ pub(super) fn emit_json(
                 .iter()
                 .map(|path| display_path(cwd, path).into())
                 .collect::<Vec<_>>();
+            if let Some(tsconfig_path) = execution.tsconfig_path.as_deref() {
+                // TypeScript loads compilerOptions.types from real node_modules.
+                // They belong to the program graph even though scanning them as
+                // virtual sources would cause false resolution errors (#6695).
+                files.extend(
+                    collect_tsconfig_type_declaration_files(
+                        &execution.program_root,
+                        Some(tsconfig_path),
+                    )
+                    .iter()
+                    .map(|path| display_path(cwd, path).into()),
+                );
+            }
             files.sort();
             files.dedup();
             let mut root = display_path(cwd, &execution.program_root);
