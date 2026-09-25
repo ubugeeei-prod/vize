@@ -623,14 +623,6 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Update VRT snapshots
-        if: steps.vrt.outcome == 'failure'
-        run: vp run --filter './playground' test:vrt:update
-
-      - name: Fail if VRT failed
-        if: steps.vrt.outcome == 'failure'
-        run: exit 1
-
       - name: Upload VRT diff artifacts
         if: steps.vrt.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -638,6 +630,10 @@ jobs:
           name: vrt-diff
           path: playground/e2e/vrt/test-results/
           retention-days: 7
+
+      - name: Fail if VRT failed
+        if: steps.vrt.outcome == 'failure'
+        run: exit 1
 
   test-report:
     name: test-report
