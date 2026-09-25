@@ -112,11 +112,10 @@ describe("compileInspectorReport (vapor)", () => {
       "[typescript]
       import { defineVaporComponent as _defineVaporComponent } from 'vue'
       import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, template as _template } from 'vue';
-      const t0 = _template("<div> ", true)
+      const t0 = _template("<div> ", 1)
       const msg: string = 'hi'
       export default /*@__PURE__*/_defineVaporComponent({
         __name: 'App',
-        __multiRoot: false,
         setup(__props) {
 
 
