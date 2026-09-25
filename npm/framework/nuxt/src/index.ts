@@ -31,6 +31,7 @@ import {
   stabilizeNuxtInjectedKeysForVizeVirtualModule,
 } from "./utils";
 import { appendOriginalVueSourceForUnoCss } from "./unocss";
+import { externalizeVueRuntimeForNuxtSsr } from "./ssr-runtime";
 const VIZE_NUXT_AUTO_IMPORT_PATCHED = "__vizeNuxtAutoImportPatched";
 const VUE_RUNTIME_DEDUPE = [
   "vue",
@@ -341,6 +342,17 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
       nuxt.options.vite ||= {};
       dedupeVueRuntimePackages(nuxt.options.vite);
     });
+    nuxt.hook(
+      "vite:extendConfig",
+      (
+        config: { build?: { rolldownOptions?: { external?: unknown } } },
+        context: { isServer?: boolean } | undefined,
+      ) => {
+        if (nuxt.options.dev === false && context?.isServer) {
+          externalizeVueRuntimeForNuxtSsr(config);
+        }
+      },
+    );
   }
 
   if (usesVizeCompiler) {
