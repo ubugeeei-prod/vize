@@ -79,7 +79,7 @@ test("deploy-docs deploy job keeps a full checkout so local actions and scripts 
   assert.doesNotMatch(deployJob, /sparse-checkout:/);
 });
 
-test("deploy-docs isolates musea example cargo checks from the sticky target cache", () => {
+test("docs build isolates musea example cargo checks in a dedicated sticky disk", () => {
   const manifest = JSON.parse(readRepoFile("examples", "vite-musea", "package.json")) as {
     scripts?: Record<string, string>;
   };
@@ -88,9 +88,15 @@ test("deploy-docs isolates musea example cargo checks from the sticky target cac
 
   assert.match(
     checkScript,
-    /cargo run\s[^&]*--target-dir\s+\.\.\/\.\.\/target\/docs-example\b/,
-    "musea example check script must pin cargo's target dir to target/docs-example so it does not reuse the sticky target cache",
+    /cargo run\s[^&]*--target-dir\s+\.\.\/\.\.\/\.docs-example-target\b/,
+    "musea example check script must use the dedicated docs example target",
   );
+
+  const workflow = readRepoFile(".github", "workflows", "build-docs.yml");
+  const job = workflowJobBody(workflow, "build-playground");
+  assert.match(job, /secondary-key: docs-example/);
+  assert.match(job, /secondary-target-path: \.docs-example-target/);
+  assert.doesNotMatch(job, /cargo clean --target-dir/);
 });
 
 test("WASM build jobs install MoonBit before invoking moon run", () => {

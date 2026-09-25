@@ -94,6 +94,9 @@ jobs:
         with:
           key: docs-wasm
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          secondary-key: docs-example
+          secondary-target-path: .docs-example-target
+          secondary-cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
 
       # wasm-bindgen outputs only: both directories also hold tracked sources.
       - name: Cache WASM build
@@ -130,9 +133,6 @@ jobs:
 
       - name: Build playground
         run: vp run --filter './playground' build
-
-      - name: Clean musea example Rust target
-        run: cargo clean --target-dir target/docs-example
 
       - name: Build musea-examples
         run: vp run --filter './examples/vite-musea' build

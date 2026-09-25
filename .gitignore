@@ -1,5 +1,6 @@
 # Rust
 target/
+.docs-example-target/
 
 # Davinci bench harness run output (committed baselines live under baseline/)
 tools/benchmarks/results/davinci/*.json

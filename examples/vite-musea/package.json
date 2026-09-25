@@ -9,7 +9,7 @@
     "preview": "vp preview --config vite.app.config.ts",
     "gallery:ui": "node ../../npm/ui/scripts/generate-gallery.ts && vp dev --config vite.ui-gallery.config.ts",
     "gallery:ui:build": "node ../../npm/ui/scripts/generate-gallery.ts && vp build --config vite.ui-gallery.config.ts",
-    "check": "cargo run --quiet --target-dir ../../target/docs-example --manifest-path ../../Cargo.toml -p vize -- check && vp check src vite.config.ts vite.app.config.ts vite.ui-gallery.config.ts vize.config.ts playwright.config.ts",
+    "check": "cargo run --quiet --target-dir ../../.docs-example-target --manifest-path ../../Cargo.toml -p vize -- check && vp check src vite.config.ts vite.app.config.ts vite.ui-gallery.config.ts vize.config.ts playwright.config.ts",
     "check:fix": "vp check --fix src vite.config.ts vite.app.config.ts vize.config.ts playwright.config.ts",
     "fmt": "vp fmt --write src vite.config.ts vite.app.config.ts vize.config.ts playwright.config.ts",
     "vrt": "musea-vrt",
