@@ -44,7 +44,7 @@ test("renders byte-identical closed and open picker markup across SSR requests",
     assert.equal(left, right);
     assert.match(left, /data-vize-ui="date-picker"/);
     assert.match(left, /data-vize-ui="date-field"/);
-    assert.match(left, /type="hidden" name="departure" value="2026-09-12"/);
+    assert.match(left, /type="text" name="departure" value="2026-09-12"/);
     assert.match(left, new RegExp(`aria-expanded="${String(open)}"`, "u"));
     if (open) {
       assert.match(left, /role="dialog"/);

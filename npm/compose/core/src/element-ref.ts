@@ -1,4 +1,4 @@
-import { shallowRef } from "vue";
+import { hasInjectionContext, onMounted, shallowRef } from "vue";
 import type { ComponentPublicInstance, ShallowRef } from "vue";
 
 import { resolveElement } from "./element-target.ts";
@@ -19,7 +19,8 @@ export interface ElementRefControls<TargetElement extends Element> {
  *
  * An instance-free alternative to "current element" helpers: it never reads
  * `getCurrentInstance()`, so it works in Vapor components, render functions,
- * and plain effect scopes. Component refs are unwrapped to their root
+ * and plain effect scopes. Inside a component the element is published after
+ * mounting (Vapor sets function refs during render), keeping hydration stable. Component refs are unwrapped to their root
  * element, and an optional guard narrows the element type (elements failing
  * it resolve to `null`). The ref is `null` during server rendering.
  *
@@ -37,9 +38,21 @@ export function useElementRef<TargetElement extends Element>(
 ): ElementRefControls<TargetElement>;
 export function useElementRef(guard?: (element: Element) => boolean): ElementRefControls<Element> {
   const element = shallowRef<Element | null>(null);
+  // Vapor assigns function refs while rendering, VDOM after patching; inside
+  // a component the element is published once it has mounted so both
+  // renderers hydrate the same (server) state first.
+  let mounted = !hasInjectionContext();
+  let pending: Element | null = null;
+  if (!mounted) {
+    onMounted(() => {
+      mounted = true;
+      element.value = pending;
+    });
+  }
   const setRef: ElementRefSetter = (value) => {
     const resolved = resolveElement(value);
-    element.value = resolved && (!guard || guard(resolved)) ? resolved : null;
+    pending = resolved && (!guard || guard(resolved)) ? resolved : null;
+    if (mounted) element.value = pending;
   };
   return { element, setRef };
 }

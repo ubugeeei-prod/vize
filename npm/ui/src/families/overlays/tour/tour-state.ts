@@ -2,7 +2,10 @@ import { toValue } from "vue";
 
 import type { PlacementAlign, PlacementSide } from "../positioner/positioner.ts";
 import type {
+  TourBeforeEnter,
+  TourBeforeEnterContext,
   TourContentPlacement,
+  TourMessages,
   TourSpotlightRect,
   TourStepDefinition,
   TourTarget,
@@ -95,4 +98,54 @@ export function isTourEditableTarget(target: EventTarget | null): boolean {
   if (target.isContentEditable) return true;
   const tag = target.tagName;
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+}
+
+/** Default Tour strings; every field can be overridden through TourRoot `messages`. */
+export const defaultTourMessages: TourMessages = Object.freeze({
+  progress: (current: number, total: number) => `${current} / ${total}`,
+  previous: "",
+  next: "",
+  finish: "",
+  close: "",
+  skip: "",
+});
+
+/** Merge partial message overrides onto {@link defaultTourMessages}. */
+export function resolveTourMessages(overrides: Partial<TourMessages> | undefined): TourMessages {
+  return overrides === undefined ? defaultTourMessages : { ...defaultTourMessages, ...overrides };
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  return (
+    (typeof value === "object" || typeof value === "function") &&
+    value !== null &&
+    "then" in value &&
+    typeof value.then === "function"
+  );
+}
+
+/**
+ * Run `beforeEnter` hooks in order and report whether navigation may continue.
+ *
+ * Returns a boolean when every hook settles synchronously, so hook-free and synchronous
+ * navigation stays synchronous; otherwise returns a promise. The first `false` stops the chain.
+ * Synchronous throws propagate to the caller; asynchronous failures reject the promise.
+ */
+export function runTourHooks<Step extends TourStepDefinition>(
+  hooks: readonly TourBeforeEnter<Step>[],
+  context: TourBeforeEnterContext<Step>,
+  from = 0,
+): boolean | Promise<boolean> {
+  for (let position = from; position < hooks.length; position += 1) {
+    const hook = hooks[position];
+    if (hook === undefined) continue;
+    const result = hook(context);
+    if (isPromiseLike(result)) {
+      return Promise.resolve(result).then((value) =>
+        value === false ? false : runTourHooks(hooks, context, position + 1),
+      );
+    }
+    if (result === false) return false;
+  }
+  return true;
 }

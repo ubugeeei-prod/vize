@@ -26,6 +26,8 @@ async function collectSourceSfcFiles(
     entries.map(async (entry): Promise<readonly string[]> => {
       const entryPath = path.join(directory, entry.name);
       const relativePath = path.join(relativeDirectory, entry.name);
+      // Usage demos are covered by src/gallery/examples.test.ts.
+      if (entry.isDirectory() && entry.name === "examples") return [];
       if (entry.isDirectory()) return collectSourceSfcFiles(entryPath, relativePath);
       return entry.isFile() && entry.name.endsWith(".vue") ? [relativePath] : [];
     }),

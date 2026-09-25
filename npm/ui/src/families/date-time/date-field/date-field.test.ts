@@ -44,7 +44,7 @@ function iso(value: unknown): string {
   return value === null ? "null" : formatIsoDate(value as PlainDate);
 }
 
-test("renders locale-ordered spinbutton segments with literals and a hidden ISO input", () => {
+test("renders locale-ordered spinbutton segments with literals and a named ISO input", () => {
   const handle = mountInteraction(DateField, {
     props: {
       id: "birthday",
@@ -85,7 +85,7 @@ test("renders locale-ordered spinbutton segments with literals and a hidden ISO 
     root.querySelector("[data-vize-ui='date-field-literal']")?.getAttribute("aria-hidden"),
     "true",
   );
-  const input = root.querySelector<HTMLInputElement>("input[type='hidden']");
+  const input = root.querySelector<HTMLInputElement>("input[data-vize-ui$='-field-input']");
   assert.equal(input?.name, "birthday");
   assert.equal(input?.value, "2026-09-05");
   handle.unmount();
@@ -403,4 +403,44 @@ test("segment helpers expose pure bounds, stepping, typing, and layouts", () => 
     resolveDateSegmentLayout("ja-JP").map((part) => part.type),
     ["year", "literal", "month", "literal", "day"],
   );
+});
+
+test("required fields participate in native constraint validation", async () => {
+  const Form = defineComponent({
+    setup: () => () =>
+      h("form", [
+        h(DateField, {
+          locale: "en-US",
+          required: true,
+          min: createPlainDate(2026, 1, 1),
+          invalidMessage: "Pick a 2026 date",
+        }),
+      ]),
+  });
+  const handle = mountInteraction(Form);
+  const form = handle.root() as HTMLFormElement;
+  const input = form.querySelector<HTMLInputElement>("[data-vize-ui='date-field-input']");
+  assert.ok(input);
+  assert.equal(input.required, true);
+  assert.equal(input.type, "text");
+  assert.equal(input.getAttribute("aria-hidden"), "true");
+  assert.equal(input.getAttribute("tabindex"), "-1");
+  assert.equal(input.name, "");
+  assert.equal(form.checkValidity(), false);
+  assert.equal(input.validity.valueMissing, true);
+  assert.equal(document.activeElement, segment(form, "month"));
+
+  const field = form.querySelector("[data-vize-ui='date-field']") as HTMLElement;
+  await key(segment(field, "year"), "ArrowUp");
+  await key(segment(field, "month"), "ArrowUp");
+  await key(segment(field, "day"), "ArrowUp");
+  await nextTick();
+  assert.equal(input.validity.valueMissing, false);
+  assert.equal(form.checkValidity(), true);
+  await key(segment(field, "year"), "End");
+  await key(segment(field, "year"), "Home");
+  await nextTick();
+  assert.equal(input.validationMessage, "Pick a 2026 date");
+  assert.equal(form.checkValidity(), false);
+  handle.unmount();
 });

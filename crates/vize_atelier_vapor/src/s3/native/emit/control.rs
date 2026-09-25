@@ -9,11 +9,11 @@ use vize_carton::{Box, Vec, ensure_sufficient_stack};
 
 use super::super::{AuthoredSpan, Content, Expr};
 use super::{Emitter, take};
-use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode};
+use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, InsertionAnchor, NegativeBranch, OperationNode};
 
 /// Parent element, insertion anchor, and whether the control op is the
 /// parent's only child.
-pub(super) type Placement = (usize, usize, bool);
+pub(super) type Placement = (usize, InsertionAnchor, bool);
 
 type Branches<'s, 'a> = &'s [(Option<Expr<'a>>, AuthoredSpan, &'s [usize])];
 
@@ -144,7 +144,7 @@ impl<'a> Emitter<'a, '_> {
         &mut self,
         branches: Branches<'_, 'a>,
         parent: Option<usize>,
-        anchor: Option<usize>,
+        anchor: Option<InsertionAnchor>,
     ) -> Option<NegativeBranch<'a>> {
         ensure_sufficient_stack(|| match branches.first()? {
             (None, _, roots) => {

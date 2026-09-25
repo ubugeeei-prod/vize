@@ -30,7 +30,7 @@ test("renders byte-identical locale-ordered date segments across SSR requests", 
   assert.match(left, /role="spinbutton"/);
   assert.match(left, /contenteditable="true"/);
   assert.match(left, /aria-valuetext="9 – September"/);
-  assert.match(left, /type="hidden" name="birthday" value="2026-09-05"/);
+  assert.match(left, /type="text" name="birthday" value="2026-09-05"/);
   assert.doesNotMatch(left, /function|NaN/);
 });
 

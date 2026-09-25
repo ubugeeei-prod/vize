@@ -217,17 +217,20 @@ fn example_gallery_components_keep_their_variants() {
         rows,
         [
             (
-                "Alert.vue",
+                "MuseaAlert.vue",
                 "Default,Success,Warning,Error,With Close Button"
             ),
-            ("Avatar.vue", "Default,With Image,Sizes,Group"),
-            ("Badge.vue", "Default,Variants,Sizes"),
+            ("MuseaAvatar.vue", "Default,With Image,Sizes,Group"),
+            ("MuseaBadge.vue", "Default,Variants,Sizes"),
             (
-                "Button.vue",
+                "MuseaButton.vue",
                 "Default,Primary,Secondary,Disabled,Sizes,All Variants"
             ),
-            ("Card.vue", "Default,With Image,Outlined,Elevated"),
-            ("Input.vue", "Default,With Value,Search,With Error,Disabled"),
+            ("MuseaCard.vue", "Default,With Image,Outlined,Elevated"),
+            (
+                "MuseaInput.vue",
+                "Default,With Value,Search,With Error,Disabled"
+            ),
         ]
     );
 }

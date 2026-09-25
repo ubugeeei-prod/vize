@@ -5,6 +5,7 @@ import type { Placement } from "../positioner/positioner.ts";
 import type {
   TourDirection,
   TourDismissReason,
+  TourMessages,
   TourSlotState,
   TourState,
   TourStepDefinition,
@@ -28,6 +29,8 @@ export interface TourContextValue {
   readonly placement: ComputedRef<Placement>;
   readonly dir: ComputedRef<TourDirection>;
   readonly keyboardNavigation: ComputedRef<boolean>;
+  readonly pending: Readonly<ShallowRef<boolean>>;
+  readonly messages: ComputedRef<TourMessages>;
   readonly target: Readonly<ShallowRef<Element | null>>;
   readonly targetState: ComputedRef<TourTargetState>;
   readonly slotState: ComputedRef<TourSlotState>;

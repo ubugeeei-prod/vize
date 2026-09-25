@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import process from "node:process";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { pathToFileURL } from "node:url";
 import { Window } from "happy-dom";
 import { build } from "vite-plus";
 import { evaluateCompiledRender } from "./davinci-runtime-trace.mjs";
+import { vueVaporRuntimeEntry } from "./vue-vapor-release.mjs";
 
 /** One process owns one DOM and one Vue module, including its scheduler and effects. */
 export async function traceMountedBackend({
@@ -240,7 +241,7 @@ export async function loadRuntime() {
       write: false,
       minify: false,
       lib: {
-        entry: fileURLToPath(import.meta.resolve("vue/dist/vue.runtime.esm-bundler.js")),
+        entry: vueVaporRuntimeEntry,
         formats: ["es"],
       },
     },

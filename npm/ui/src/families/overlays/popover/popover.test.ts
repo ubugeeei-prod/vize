@@ -282,3 +282,12 @@ async function handleClick(
   await handle.click(trigger);
   await settlePopover();
 }
+
+test("content role can announce an alertdialog", async () => {
+  const handle = mountPopover({ defaultOpen: true }, {}, { role: "alertdialog" });
+  await settlePopover();
+  const content = popoverContent(handle.root());
+  assert.ok(content);
+  assert.equal(content.getAttribute("role"), "alertdialog");
+  handle.unmount();
+});

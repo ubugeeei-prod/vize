@@ -9,7 +9,7 @@ use vize_carton::{Vec, ensure_sufficient_stack};
 use super::super::{BindingKind, Content};
 use super::spans::{tag_offset, value_offset};
 use super::{Emitter, escaped, take};
-use crate::ir::{BlockIRNode, InsertNodeIRNode, OperationNode};
+use crate::ir::{BlockIRNode, InsertionAnchor};
 
 impl<'a> Emitter<'a, '_> {
     /// An element that starts a template.
@@ -143,6 +143,9 @@ impl<'a> Emitter<'a, '_> {
         // The last referenced element child and its offset: a later element
         // sibling is reached from it, as the retained lane and upstream do.
         let mut previous: Option<(usize, usize)> = None;
+        // A block keeps its `<!---->` placeholder only when a template-rendered
+        // sibling follows it; trailing blocks append at their unit index.
+        let mut placeholders = self.block_placeholders(&children).into_iter();
         while let Some(&child) = children.get(cursor) {
             cursor += 1;
             let Some(node) = self.artifact.nodes.get(child) else {
@@ -174,17 +177,15 @@ impl<'a> Emitter<'a, '_> {
                     self.node(child, id, nested, template, block);
                 }
                 Content::If { .. } | Content::For(_) => {
-                    // The placeholder is the authored insertion position.
-                    template.push_str("<!---->");
                     let Some(parent) = parent else {
                         self.invariant_broken();
                         continue;
                     };
-                    let anchor = self.child(parent, offset, block);
+                    let anchor =
+                        self.insertion_anchor(parent, offset, &mut placeholders, template, block);
                     self.control(child, Some((parent, anchor, only_child)), block);
                 }
                 Content::Component { .. } => {
-                    template.push_str("<!---->");
                     let Some(parent) = parent else {
                         self.invariant_broken();
                         continue;
@@ -194,11 +195,11 @@ impl<'a> Emitter<'a, '_> {
                         self.invariant_broken();
                         continue;
                     };
-                    let anchor = self.child(parent, offset, block);
+                    let anchor =
+                        self.insertion_anchor(parent, offset, &mut placeholders, template, block);
                     self.component(child, Some(id), Some((parent, anchor)), block);
                 }
                 Content::Outlet { .. } => {
-                    template.push_str("<!---->");
                     let Some(parent) = parent else {
                         self.invariant_broken();
                         continue;
@@ -208,17 +209,9 @@ impl<'a> Emitter<'a, '_> {
                         self.invariant_broken();
                         continue;
                     };
-                    let anchor = self.child(parent, offset, block);
-                    self.outlet(child, id, block);
-                    let mut elements = Vec::new_in(&self.allocator);
-                    elements.push(id);
-                    block
-                        .operation
-                        .push(OperationNode::InsertNode(InsertNodeIRNode {
-                            elements,
-                            parent,
-                            anchor: Some(anchor),
-                        }));
+                    let anchor =
+                        self.insertion_anchor(parent, offset, &mut placeholders, template, block);
+                    self.outlet(child, id, Some((parent, anchor)), block);
                 }
             }
             offset += 1;
@@ -226,5 +219,39 @@ impl<'a> Emitter<'a, '_> {
         if let Some(node) = self.artifact.nodes.get_mut(index) {
             node.children = children;
         }
+    }
+
+    /// For each block child (control flow, component, outlet) in order,
+    /// whether a template-rendered sibling (text or element) follows it.
+    fn block_placeholders(&self, children: &[usize]) -> std::vec::Vec<bool> {
+        let mut rendered_after = false;
+        let mut flags = std::vec::Vec::new();
+        for child in children.iter().rev() {
+            match self.artifact.nodes.get(*child).map(|node| &node.content) {
+                Some(Content::Text { .. } | Content::Element { .. }) => rendered_after = true,
+                Some(_) => flags.push(rendered_after),
+                None => {}
+            }
+        }
+        flags.reverse();
+        flags
+    }
+
+    /// The insertion anchor of the next block child: a `<!---->` placeholder
+    /// written into `template` when a rendered sibling follows, otherwise an
+    /// append at the block's logical unit index.
+    fn insertion_anchor(
+        &mut self,
+        parent: usize,
+        offset: usize,
+        placeholders: &mut std::vec::IntoIter<bool>,
+        template: &mut EmitDocument,
+        block: &mut BlockIRNode<'a>,
+    ) -> InsertionAnchor {
+        if !placeholders.next().unwrap_or(true) {
+            return InsertionAnchor::Index(offset);
+        }
+        template.push_str("<!---->");
+        InsertionAnchor::Node(self.child(parent, offset, block))
     }
 }

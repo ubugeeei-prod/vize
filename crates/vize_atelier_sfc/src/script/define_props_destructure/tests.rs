@@ -244,6 +244,20 @@ mod tests {
     }
 
     #[test]
+    fn test_transform_computed_object_key() {
+        // ui sticky: `{ [side]: offset }` must read the prop, not a free
+        // `side` binding (`ReferenceError` during SSR).
+        let bindings = make_bindings(&["side"]);
+
+        let source = "const style = computed(() => ({ position: 'sticky', [side]: '0px' }))";
+        let result = transform_destructured_props(source, &bindings).unwrap();
+        assert_eq!(
+            result,
+            "const style = computed(() => ({ position: 'sticky', [__props.side]: '0px' }))"
+        );
+    }
+
+    #[test]
     fn test_transform_computed_member_key() {
         let bindings = make_bindings(&["row"]);
 

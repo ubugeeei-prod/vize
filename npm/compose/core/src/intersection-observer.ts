@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { ComponentPublicInstance, MaybeRefOrGetter, Ref, WatchHandle } from "vue";
 
 import { resolveElement, resolveElements } from "./element-target.ts";
@@ -110,8 +110,21 @@ export function useIntersectionObserver(
   let stopped = false;
   let stopWatch: WatchHandle | undefined;
 
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
   const host = (): IntersectionObserverHost | null | undefined =>
-    options.host === undefined ? browserIntersectionObserverHost() : toValue(options.host);
+    !mounted.value
+      ? undefined
+      : options.host === undefined
+        ? browserIntersectionObserverHost()
+        : toValue(options.host);
   isSupported.value = host()?.IntersectionObserver !== undefined;
 
   const connect = (): void => {

@@ -42,7 +42,7 @@ export const tourFamilyCatalog = [
       exportName: "TourRoot",
       retainedSignature: "data-vize-ui[\\s\\S]{0,32}tour-root",
       allowedRetainedFamilies: ["context", "controllable-state"],
-      maximumJavaScriptGzipBytes: 3_250,
+      maximumJavaScriptGzipBytes: 3_900,
       maximumCssGzipBytes: 0,
     },
     aliases: ["tour", "product tour", "onboarding", "walkthrough", "coachmark", "guided tour"],

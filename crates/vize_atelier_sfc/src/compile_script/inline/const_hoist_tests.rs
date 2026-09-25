@@ -127,3 +127,26 @@ const a = 1, b = 2
         "multi-declarator statements remain in setup:\n{output}"
     );
 }
+
+#[test]
+fn literals_behind_type_only_wrappers_hoist_like_bare_literals() {
+    // A props default referencing `DEFAULT_HREF` is emitted in the component
+    // options, outside setup. If the declaration stayed in setup because its
+    // initializer is wrapped in `satisfies`/`as const`, module evaluation threw
+    // `ReferenceError: DEFAULT_HREF is not defined`.
+    let source = r##"
+const DEFAULT_HREF = "#main" satisfies string
+const DEFAULT_SIDE = "start" as const
+const DEFAULT_SIZE = (4)
+const BARE = "#main"
+"##;
+    let output = compile(source);
+    let component = output.find("export default").expect("component wrapper");
+    let hoisted_region = &output[..component];
+    for name in ["DEFAULT_HREF", "DEFAULT_SIDE", "DEFAULT_SIZE"] {
+        assert!(
+            hoisted_region.contains(vize_carton::cstr!("const {name}").as_str()),
+            "{name} hoists to module scope:\n{output}"
+        );
+    }
+}

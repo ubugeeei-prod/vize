@@ -69,7 +69,7 @@ compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compi
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/trace.rs	8	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/trace.rs	8	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/compiler/trace.rs	8	raw_oxc	raw OXC	raw	oxc_parser	raw	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_script/inline/const_hoist_tests.rs	7	s0	S0	stage	vize_carton	compat	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_script/inline/const_hoist_tests.rs	7	s0	S0	stage	vize_carton	compat	2
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_script/inline/define_model_tests.rs	3	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	source	crates/vize_atelier_sfc/src/compile_script/inline/helpers.rs	6	s0	S0	stage	vize_carton	compat	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/src/compile_script/inline/static_enum_tests.rs	9	s0	S0	stage	vize_carton	compat	1

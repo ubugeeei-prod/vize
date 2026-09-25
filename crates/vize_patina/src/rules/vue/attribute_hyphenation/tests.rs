@@ -120,3 +120,28 @@ fn test_never_valid_camel_case_attribute_and_native_elements() {
         0
     );
 }
+
+#[test]
+fn test_camel_case_aria_and_data_props_are_allowed() {
+    // Hyphenated `aria-*` / `data-*` names bypass prop type checking in
+    // vue-tsc, so camelCase is the only spelling that type-checks a required
+    // `ariaLabel` prop.
+    assert_eq!(
+        warning_count(
+            r#"<div><IconButton ariaLabel="Close" /><MyComponent :ariaLabelledby="id" :dataSource="rows" /></div>"#,
+        ),
+        0,
+    );
+    assert_eq!(
+        warning_count(r#"<IconButton aria-label="Close" data-testid="x" />"#),
+        0
+    );
+}
+
+#[test]
+fn test_names_that_only_start_like_aria_or_data_still_need_hyphens() {
+    assert_eq!(
+        warning_count(r#"<MyComponent dataset="x" ariadne="y" :databaseName="n" />"#),
+        1,
+    );
+}

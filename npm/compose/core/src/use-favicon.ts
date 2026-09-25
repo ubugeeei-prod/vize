@@ -1,5 +1,7 @@
-import { computed, isRef, ref, toValue, watch } from "vue";
+import { computed, hasInjectionContext, isRef, ref, toValue, watch } from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref } from "vue";
+
+import { useMounted } from "./use-mounted.ts";
 
 /** `<link>` subset updated by {@link useFavicon}. */
 export interface FaviconLink {
@@ -52,7 +54,10 @@ export interface FaviconControls {
    */
   readonly icon: Ref<string | null | undefined>;
 
-  /** Whether a document capability is attached. */
+  /**
+   * Whether a document capability is attached. Inside a component it stays
+   * `false` until mounted, so hydration matches the server render.
+   */
   readonly supported: ComputedRef<boolean>;
 }
 
@@ -127,5 +132,9 @@ export function useFavicon(
     { immediate: true, flush: "sync" },
   );
 
-  return { icon: state, supported: computed(() => resolveHost() !== undefined) };
+  const mounted = hasInjectionContext() ? useMounted() : undefined;
+  return {
+    icon: state,
+    supported: computed(() => (mounted?.value ?? true) && resolveHost() !== undefined),
+  };
 }

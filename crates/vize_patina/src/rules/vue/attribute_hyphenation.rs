@@ -14,7 +14,14 @@
 //! ```vue
 //! <MyComponent my-prop="value" />
 //! <MyComponent :my-prop="value" />
+//! <IconButton ariaLabel="Close" :dataTestid="id" />
 //! ```
+//!
+//! `aria*` / `data*` camelCase names are exempt in `always` mode: template type
+//! checkers (vue-tsc and Vize) treat hyphenated `aria-*` / `data-*` names as
+//! fallthrough attributes instead of camelizing them into props, so writing a
+//! component's `ariaLabel` prop as `aria-label` silently drops its type check —
+//! and cannot satisfy a *required* `ariaLabel` prop at all.
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
@@ -183,7 +190,17 @@ impl AttributeHyphenation {
     }
 
     fn requires_hyphenation(name: &str) -> bool {
-        name.chars().any(char::is_uppercase)
+        name.chars().any(char::is_uppercase) && !Self::is_camel_aria_or_data_prop(name)
+    }
+
+    /// `ariaLabel`, `dataTestid`: props whose hyphenated spelling would be
+    /// type-checked as a fallthrough `aria-*` / `data-*` attribute instead.
+    fn is_camel_aria_or_data_prop(name: &str) -> bool {
+        ["aria", "data"].iter().any(|prefix| {
+            name.strip_prefix(prefix)
+                .and_then(|rest| rest.chars().next())
+                .is_some_and(char::is_uppercase)
+        })
     }
 
     fn forbids_hyphenation(name: &str) -> bool {

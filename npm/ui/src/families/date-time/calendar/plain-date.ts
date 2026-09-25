@@ -379,3 +379,46 @@ function normalizeDate(date: PlainDate): PlainDate {
     ? date
     : Object.freeze({ year: date.year, month: date.month, day: date.day });
 }
+
+/** ISO 8601 week-numbering year and week (`1`–`53`). */
+export interface IsoWeek {
+  /** ISO week-numbering year, which can differ from the calendar year near January 1. */
+  readonly year: number;
+
+  /** Week number from `1` through `53`. */
+  readonly week: number;
+}
+
+/** ISO 8601 week containing `date` (weeks start on Monday; week 1 holds the first Thursday). */
+export function isoWeekOf(date: PlainDate): IsoWeek {
+  const thursday = addDays(date, 3 - ((dayOfWeek(date) + 6) % 7));
+  const firstThursday = addDays(
+    { year: thursday.year, month: 1, day: 1 },
+    (4 - dayOfWeek({ year: thursday.year, month: 1, day: 1 }) + 7) % 7,
+  );
+  return Object.freeze({
+    year: thursday.year,
+    week: Math.floor(daysBetween(firstThursday, thursday) / 7) + 1,
+  });
+}
+
+/** Monday that starts an ISO week, or `null` for weeks that do not exist in that year. */
+export function startOfIsoWeek(value: IsoWeek): PlainDate | null {
+  if (!Number.isInteger(value.year) || !Number.isInteger(value.week) || value.week < 1) return null;
+  const january4 = { year: value.year, month: 1, day: 4 };
+  const monday = addDays(addDays(january4, -((dayOfWeek(january4) + 6) % 7)), (value.week - 1) * 7);
+  return isoWeekOf(monday).year === value.year ? monday : null;
+}
+
+/** Format `YYYY-Www` (HTML `week` input value). */
+export function formatIsoWeek(value: IsoWeek): string {
+  return `${String(value.year).padStart(4, "0")}-W${String(value.week).padStart(2, "0")}`;
+}
+
+/** Parse `YYYY-Www`; anything else, including week 53 in 52-week years, returns `null`. */
+export function parseIsoWeek(value: string): IsoWeek | null {
+  const match = /^(\d{4})-W(\d{2})$/u.exec(value.trim());
+  if (!match) return null;
+  const week = { year: Number(match[1]), week: Number(match[2]) };
+  return startOfIsoWeek(week) ? Object.freeze(week) : null;
+}

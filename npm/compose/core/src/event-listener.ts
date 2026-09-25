@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref, WatchHandle } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -133,6 +133,15 @@ export function useEventListener(
     ...(signal ? { signal } : {}),
   };
   let disposed = false;
+  // Inside a component the target is attached once it has mounted, so a hydrating
+  // client renders `isListening: false` exactly like the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
   let stopWatch: WatchHandle | undefined;
 
   const stop = (): void => {
@@ -144,7 +153,7 @@ export function useEventListener(
     if (disposed || stopWatch || signal?.aborted) return false;
 
     stopWatch = watch(
-      () => toValue(target),
+      () => (mounted.value ? toValue(target) : null),
       (next, _previous, onCleanup) => {
         isListening.value = false;
         if (!next || signal?.aborted) return;

@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, shallowRef } from "vue";
+import { computed, hasInjectionContext, shallowRef } from "vue";
 import type { ComputedRef } from "vue";
 
 import { useMounted } from "./use-mounted.ts";
@@ -21,7 +21,6 @@ import { useMounted } from "./use-mounted.ts";
  * @returns Computed support flag.
  */
 export function useSupported(check: () => unknown): ComputedRef<boolean> {
-  const ready =
-    getCurrentInstance() === null ? shallowRef(typeof window !== "undefined") : useMounted();
+  const ready = hasInjectionContext() ? useMounted() : shallowRef(typeof window !== "undefined");
   return computed(() => ready.value && Boolean(check()));
 }

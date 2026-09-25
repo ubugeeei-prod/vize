@@ -1,4 +1,4 @@
-import { readonly, ref, shallowRef, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -7,8 +7,11 @@ import { tryOnScopeDispose } from "./scope.ts";
 export interface ElementByPointHost {
   /** Topmost element at a point. */
   elementFromPoint(x: number, y: number): Element | null;
-  /** Every element at a point, topmost first. */
-  elementsFromPoint(x: number, y: number): Element[];
+  /**
+   * Every element at a point, topmost first. Optional: when missing, only
+   * the topmost element is reported.
+   */
+  elementsFromPoint?(x: number, y: number): Element[];
 }
 
 /** Frame scheduler used for continuous polling. */
@@ -76,8 +79,21 @@ export function useElementByPoint(options: UseElementByPointOptions): ElementByP
   const isSupported = ref(false);
   const element = shallowRef<Element | null>(null);
   const elements = shallowRef<readonly Element[]>([]);
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
   const host = (): ElementByPointHost | null | undefined =>
-    options.host === undefined ? browserPointHost() : toValue(options.host);
+    !mounted.value
+      ? undefined
+      : options.host === undefined
+        ? browserPointHost()
+        : toValue(options.host);
 
   const update = (): void => {
     const current = host();
@@ -90,7 +106,11 @@ export function useElementByPoint(options: UseElementByPointOptions): ElementByP
     const x = toValue(options.x);
     const y = toValue(options.y);
     element.value = current.elementFromPoint(x, y);
-    elements.value = current.elementsFromPoint(x, y);
+    elements.value = current.elementsFromPoint
+      ? current.elementsFromPoint(x, y)
+      : element.value
+        ? [element.value]
+        : [];
   };
 
   const stopWatch = watch(() => [host(), toValue(options.x), toValue(options.y)] as const, update, {

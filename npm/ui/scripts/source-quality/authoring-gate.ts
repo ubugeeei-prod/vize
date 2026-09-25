@@ -273,6 +273,9 @@ async function collectFiles(directory: string): Promise<string[]> {
   const files: string[] = [];
   for (const entry of entries) {
     const filename = path.join(directory, entry.name);
+    // `examples/` holds unstyled usage demos, not public SFCs; they are
+    // gated by src/examples/examples.test.ts instead.
+    if (entry.isDirectory() && entry.name === "examples") continue;
     if (entry.isDirectory()) files.push(...(await collectFiles(filename)));
     else if (entry.isFile()) files.push(filename);
   }

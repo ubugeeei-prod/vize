@@ -1,4 +1,4 @@
-import { readonly, ref, shallowRef, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { requestMotionPermission } from "./device-orientation.ts";
@@ -81,8 +81,21 @@ export function useDeviceMotion(options: UseDeviceMotionOptions = {}): DeviceMot
   const rotationRate = shallowRef<MotionRotationRate | null>(null);
   const interval = ref(0);
   const permission = ref<MotionPermissionState>("prompt");
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
   const host = (): DeviceMotionHost | null | undefined =>
-    options.host === undefined ? browserMotionHost() : toValue(options.host);
+    !mounted.value
+      ? undefined
+      : options.host === undefined
+        ? browserMotionHost()
+        : toValue(options.host);
 
   const onMotion = (event: Event): void => {
     if (!isMotionEvent(event)) return;

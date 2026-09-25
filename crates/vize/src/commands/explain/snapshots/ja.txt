@@ -3482,6 +3482,7 @@ vue/attribute-hyphenation · lint ルール
 正しい例:
   <MyComponent my-prop="value" />
   <MyComponent :my-prop="value" />
+  <IconButton ariaLabel="Close" :dataTestid="id" />
 
 ヒント:
   属性名にはケバブケースを使用してください

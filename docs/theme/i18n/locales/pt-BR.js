@@ -18,6 +18,7 @@
       "/guide/troubleshooting": "Solução de problemas",
       "/guide/cli": "CLI",
       "/guide/lib-pull": "Distribuição de código-fonte",
+      "/guide/auto-imports": "Importações automáticas",
       "/guide/ui": "Referência de UI",
       "/guide/composables": "Referência de composables",
       "/guide/content-mapper": "Content Mapper",

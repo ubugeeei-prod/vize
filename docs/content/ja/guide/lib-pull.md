@@ -43,19 +43,19 @@ node_modules/@vizejs/ui/
 
 ## コマンド
 
-| コマンド                                 | 内容                                                                            |
-| ---------------------------------------- | ------------------------------------------------------------------------------- |
-| `vize lib init [--dry-run]`              | プロジェクト構成を検出して `lib` 設定セクションを書き込みます。                 |
-| `vize lib list [--kind ui\|composable]`  | 取得可能なアイテムを一覧表示します。                                            |
-| `vize lib search <words>`                | 名前、タイトル、説明、エイリアスで検索します。                                  |
-| `vize lib info <name>`                   | ファイル、レジストリ依存、npm peer、パッケージバージョンを表示します。          |
-| `vize lib pull <item>... [--dir <dir>]`  | アイテムとレジストリ依存をコピーします。`--dry-run`、`--overwrite`。            |
-| `vize lib add <item>...`                 | shadcn 互換の `pull` のエイリアス (`-p/--path`、`-o/--overwrite`、`-y/--yes`)。 |
-| `vize lib status`                        | 取得済みファイルをロックファイルとインストール済みレジストリと比較します。      |
-| `vize lib diff <name> [--to <version>]`  | ローカルのコピーからレジストリのバージョンへの unified diff を表示します。      |
-| `vize lib update [<name>...] [--to <v>]` | ローカルの編集を壊さずに upstream の変更を適用します。`--dry-run`、`--force`。  |
-| `vize lib remove <name>...`              | アイテムと、他に必要とされない依存を削除します。`--dry-run`、`--force`。        |
-| `vize lib outdated`                      | ロックされたバージョンをインストール済み・最新のレジストリと比較します。        |
+| コマンド                                 | 内容                                                                                    |
+| ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| `vize lib init [--dry-run]`              | プロジェクト構成を検出して `lib` 設定セクションを書き込みます。                         |
+| `vize lib list [--kind ui\|composable]`  | 取得可能なアイテムを一覧表示します。                                                    |
+| `vize lib search <words>`                | 名前、タイトル、説明、エイリアスで検索します。                                          |
+| `vize lib info <name>`                   | ファイル、レジストリ依存、npm peer、パッケージバージョンを表示します。                  |
+| `vize lib pull <item>... [--dir <dir>]`  | アイテムとレジストリ依存をコピーします。`--dry-run`、`--overwrite`、`--with-examples`。 |
+| `vize lib add <item>...`                 | shadcn 互換の `pull` のエイリアス (`-p/--path`、`-o/--overwrite`、`-y/--yes`)。         |
+| `vize lib status`                        | 取得済みファイルをロックファイルとインストール済みレジストリと比較します。              |
+| `vize lib diff <name> [--to <version>]`  | ローカルのコピーからレジストリのバージョンへの unified diff を表示します。              |
+| `vize lib update [<name>...] [--to <v>]` | ローカルの編集を壊さずに upstream の変更を適用します。`--dry-run`、`--force`。          |
+| `vize lib remove <name>...`              | アイテムと、他に必要とされない依存を削除します。`--dry-run`、`--force`。                |
+| `vize lib outdated`                      | ロックされたバージョンをインストール済み・最新のレジストリと比較します。                |
 
 すべてのコマンドは機械可読な出力のための `--json` と、別のプロジェクトを対象にする `--root <dir>` を受け付けます。
 
@@ -151,6 +151,23 @@ vize lib list --kind @acme
 未知のロールや依存、不完全な依存閉包は拒否)、ダウンロードしたすべてのバイトは書き込み前に SHA-256 で検証されます。
 名前空間のアイテムはその `dir` (なければレジストリの `defaultTargetDirectory`) に置かれ、`@namespace` キーでロックされ、
 他の取得済みアイテムが所有するファイルを上書きすることはありません。
+
+## 使用例と Musea ギャラリー
+
+多くの UI ファミリーは、ソースの隣にスタイルなしの使用例を同梱しています
+(`families/<area>/<family>/examples/<family>-*.vue`)。レジストリに含まれますが、要求したときだけ取得されます。
+
+```bash
+vize lib pull switch --with-examples
+```
+
+使用例は取得したソースの隣 (`…/switch/examples/switch-basic.vue`) に置かれ、相対パスでファミリーを import し、
+他のファイルと同じく `vize-lib.lock.json` で追跡されるため、`status`、`diff`、`update` の対象になります。
+一度要求すると `update` でも取得され続けます。
+
+同じ使用例から、ファミリーごとに 1 つのストーリー、使用例ごとに 1 つのバリアントを持つ [Musea](./musea.md) ギャラリーが
+生成されます。チェックアウトでは `examples/vite-musea` で `pnpm gallery:ui` を実行すると、ストーリーを再生成
+(`npm/ui/scripts/generate-gallery.ts`) してギャラリーを起動します。
 
 ## バージョン管理と安全な更新
 

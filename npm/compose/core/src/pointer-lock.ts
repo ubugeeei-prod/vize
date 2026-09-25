@@ -1,4 +1,12 @@
-import { readonly, ref, shallowRef, toValue, watch } from "vue";
+import {
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { resolveElement } from "./element-target.ts";
@@ -82,6 +90,9 @@ export interface PointerLockControls {
  * Rejections are {@link PointerLockError}s with stable codes. Nothing runs
  * during server rendering; listeners are removed with the owning scope.
  *
+ * Inside a component the host is read after mounting, so hydration renders
+ * the server fallback first and never mismatches.
+ *
  * @param target Default reactive element to lock.
  * @param options Movement mode and document capability.
  * @default target undefined
@@ -94,8 +105,21 @@ export function usePointerLock(
 ): PointerLockControls {
   const isSupported = ref(false);
   const element = shallowRef<Element | null>(null);
+  // Inside a component the host is attached by a post-flush job (after the
+  // component mounted), so a hydrating client first renders the same server
+  // fallback. Outside components it is attached synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const host = (): PointerLockHost | null | undefined =>
-    options.host === undefined ? browserPointerLockHost() : toValue(options.host);
+    !hydrated.value
+      ? undefined
+      : options.host === undefined
+        ? browserPointerLockHost()
+        : toValue(options.host);
 
   const stop = watch(
     host,

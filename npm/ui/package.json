@@ -35,25 +35,60 @@
       "import": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
+    "./action-sheet": {
+      "types": "./dist/action-sheet.d.mts",
+      "import": "./dist/action-sheet.mjs",
+      "default": "./dist/action-sheet.mjs"
+    },
     "./alert": {
       "types": "./dist/alert.d.mts",
       "import": "./dist/alert.mjs",
       "default": "./dist/alert.mjs"
+    },
+    "./angle-picker": {
+      "types": "./dist/angle-picker.d.mts",
+      "import": "./dist/angle-picker.mjs",
+      "default": "./dist/angle-picker.mjs"
     },
     "./announcer": {
       "types": "./dist/announcer.d.mts",
       "import": "./dist/announcer.mjs",
       "default": "./dist/announcer.mjs"
     },
+    "./a11y-audit": {
+      "types": "./dist/a11y-audit.d.mts",
+      "import": "./dist/a11y-audit.mjs",
+      "default": "./dist/a11y-audit.mjs"
+    },
+    "./landmark": {
+      "types": "./dist/landmark.d.mts",
+      "import": "./dist/landmark.mjs",
+      "default": "./dist/landmark.mjs"
+    },
     "./aspect-ratio": {
       "types": "./dist/aspect-ratio.d.mts",
       "import": "./dist/aspect-ratio.mjs",
       "default": "./dist/aspect-ratio.mjs"
     },
+    "./audio-player": {
+      "types": "./dist/audio-player.d.mts",
+      "import": "./dist/audio-player.mjs",
+      "default": "./dist/audio-player.mjs"
+    },
+    "./audio-visualizer": {
+      "types": "./dist/audio-visualizer.d.mts",
+      "import": "./dist/audio-visualizer.mjs",
+      "default": "./dist/audio-visualizer.mjs"
+    },
     "./avatar": {
       "types": "./dist/avatar.d.mts",
       "import": "./dist/avatar.mjs",
       "default": "./dist/avatar.mjs"
+    },
+    "./avatar-group": {
+      "types": "./dist/avatar-group.d.mts",
+      "import": "./dist/avatar-group.mjs",
+      "default": "./dist/avatar-group.mjs"
     },
     "./badge": {
       "types": "./dist/badge.d.mts",
@@ -70,10 +105,20 @@
       "import": "./dist/block-ui.mjs",
       "default": "./dist/block-ui.mjs"
     },
+    "./bottom-navigation": {
+      "types": "./dist/bottom-navigation.d.mts",
+      "import": "./dist/bottom-navigation.mjs",
+      "default": "./dist/bottom-navigation.mjs"
+    },
     "./calendar": {
       "types": "./dist/calendar.d.mts",
       "import": "./dist/calendar.mjs",
       "default": "./dist/calendar.mjs"
+    },
+    "./dashboard-grid": {
+      "types": "./dist/dashboard-grid.d.mts",
+      "import": "./dist/dashboard-grid.mjs",
+      "default": "./dist/dashboard-grid.mjs"
     },
     "./date-field": {
       "types": "./dist/date-field.d.mts",
@@ -90,15 +135,110 @@
       "import": "./dist/date-range-picker.mjs",
       "default": "./dist/date-range-picker.mjs"
     },
+    "./fieldset": {
+      "types": "./dist/fieldset.d.mts",
+      "import": "./dist/fieldset.mjs",
+      "default": "./dist/fieldset.mjs"
+    },
+    "./form-wizard": {
+      "types": "./dist/form-wizard.d.mts",
+      "import": "./dist/form-wizard.mjs",
+      "default": "./dist/form-wizard.mjs"
+    },
+    "./knob": {
+      "types": "./dist/knob.d.mts",
+      "import": "./dist/knob.mjs",
+      "default": "./dist/knob.mjs"
+    },
+    "./masonry": {
+      "types": "./dist/masonry.d.mts",
+      "import": "./dist/masonry.mjs",
+      "default": "./dist/masonry.mjs"
+    },
+    "./master-detail": {
+      "types": "./dist/master-detail.d.mts",
+      "import": "./dist/master-detail.mjs",
+      "default": "./dist/master-detail.mjs"
+    },
+    "./phone-field": {
+      "types": "./dist/phone-field.d.mts",
+      "import": "./dist/phone-field.mjs",
+      "default": "./dist/phone-field.mjs"
+    },
+    "./pager": {
+      "types": "./dist/pager.d.mts",
+      "import": "./dist/pager.mjs",
+      "default": "./dist/pager.mjs"
+    },
+    "./pull-to-refresh": {
+      "types": "./dist/pull-to-refresh.d.mts",
+      "import": "./dist/pull-to-refresh.mjs",
+      "default": "./dist/pull-to-refresh.mjs"
+    },
     "./range-calendar": {
       "types": "./dist/range-calendar.d.mts",
       "import": "./dist/range-calendar.mjs",
       "default": "./dist/range-calendar.mjs"
     },
+    "./responsive": {
+      "types": "./dist/responsive.d.mts",
+      "import": "./dist/responsive.mjs",
+      "default": "./dist/responsive.mjs"
+    },
+    "./safe-area": {
+      "types": "./dist/safe-area.d.mts",
+      "import": "./dist/safe-area.mjs",
+      "default": "./dist/safe-area.mjs"
+    },
+    "./sticky-stack": {
+      "types": "./dist/sticky-stack.d.mts",
+      "import": "./dist/sticky-stack.mjs",
+      "default": "./dist/sticky-stack.mjs"
+    },
+    "./swipe-actions": {
+      "types": "./dist/swipe-actions.d.mts",
+      "import": "./dist/swipe-actions.mjs",
+      "default": "./dist/swipe-actions.mjs"
+    },
     "./time-field": {
       "types": "./dist/time-field.d.mts",
       "import": "./dist/time-field.mjs",
       "default": "./dist/time-field.mjs"
+    },
+    "./datetime-field": {
+      "types": "./dist/datetime-field.d.mts",
+      "import": "./dist/datetime-field.mjs",
+      "default": "./dist/datetime-field.mjs"
+    },
+    "./duration-field": {
+      "types": "./dist/duration-field.d.mts",
+      "import": "./dist/duration-field.mjs",
+      "default": "./dist/duration-field.mjs"
+    },
+    "./month-picker": {
+      "types": "./dist/month-picker.d.mts",
+      "import": "./dist/month-picker.mjs",
+      "default": "./dist/month-picker.mjs"
+    },
+    "./time-picker": {
+      "types": "./dist/time-picker.d.mts",
+      "import": "./dist/time-picker.mjs",
+      "default": "./dist/time-picker.mjs"
+    },
+    "./week-picker": {
+      "types": "./dist/week-picker.d.mts",
+      "import": "./dist/week-picker.mjs",
+      "default": "./dist/week-picker.mjs"
+    },
+    "./year-picker": {
+      "types": "./dist/year-picker.d.mts",
+      "import": "./dist/year-picker.mjs",
+      "default": "./dist/year-picker.mjs"
+    },
+    "./scheduler": {
+      "types": "./dist/scheduler.d.mts",
+      "import": "./dist/scheduler.mjs",
+      "default": "./dist/scheduler.mjs"
     },
     "./callout": {
       "types": "./dist/callout.d.mts",
@@ -114,6 +254,21 @@
       "types": "./dist/breadcrumb.d.mts",
       "import": "./dist/breadcrumb.mjs",
       "default": "./dist/breadcrumb.mjs"
+    },
+    "./forwarding": {
+      "types": "./dist/forwarding.d.mts",
+      "import": "./dist/forwarding.mjs",
+      "default": "./dist/forwarding.mjs"
+    },
+    "./polymorphic": {
+      "types": "./dist/polymorphic.d.mts",
+      "import": "./dist/polymorphic.mjs",
+      "default": "./dist/polymorphic.mjs"
+    },
+    "./slot-utils": {
+      "types": "./dist/slot-utils.d.mts",
+      "import": "./dist/slot-utils.mjs",
+      "default": "./dist/slot-utils.mjs"
     },
     "./input-mask": {
       "types": "./dist/input-mask.d.mts",
@@ -220,6 +375,16 @@
       "import": "./dist/button.mjs",
       "default": "./dist/button.mjs"
     },
+    "./floating-action-button": {
+      "types": "./dist/floating-action-button.d.mts",
+      "import": "./dist/floating-action-button.mjs",
+      "default": "./dist/floating-action-button.mjs"
+    },
+    "./back-to-top": {
+      "types": "./dist/back-to-top.d.mts",
+      "import": "./dist/back-to-top.mjs",
+      "default": "./dist/back-to-top.mjs"
+    },
     "./button-group": {
       "types": "./dist/button-group.d.mts",
       "import": "./dist/button-group.mjs",
@@ -249,6 +414,26 @@
       "types": "./dist/toolbar.d.mts",
       "import": "./dist/toolbar.mjs",
       "default": "./dist/toolbar.mjs"
+    },
+    "./data-grid": {
+      "types": "./dist/data-grid.d.mts",
+      "import": "./dist/data-grid.mjs",
+      "default": "./dist/data-grid.mjs"
+    },
+    "./grid-list": {
+      "types": "./dist/grid-list.d.mts",
+      "import": "./dist/grid-list.mjs",
+      "default": "./dist/grid-list.mjs"
+    },
+    "./kanban": {
+      "types": "./dist/kanban.d.mts",
+      "import": "./dist/kanban.mjs",
+      "default": "./dist/kanban.mjs"
+    },
+    "./rich-text": {
+      "types": "./dist/rich-text.d.mts",
+      "import": "./dist/rich-text.mjs",
+      "default": "./dist/rich-text.mjs"
     },
     "./table": {
       "types": "./dist/table.d.mts",
@@ -280,10 +465,20 @@
       "import": "./dist/popover.mjs",
       "default": "./dist/popover.mjs"
     },
+    "./popconfirm": {
+      "types": "./dist/popconfirm.d.mts",
+      "import": "./dist/popconfirm.mjs",
+      "default": "./dist/popconfirm.mjs"
+    },
     "./tooltip": {
       "types": "./dist/tooltip.d.mts",
       "import": "./dist/tooltip.mjs",
       "default": "./dist/tooltip.mjs"
+    },
+    "./notification-center": {
+      "types": "./dist/notification-center.d.mts",
+      "import": "./dist/notification-center.mjs",
+      "default": "./dist/notification-center.mjs"
     },
     "./tour": {
       "types": "./dist/tour.d.mts",
@@ -345,6 +540,21 @@
       "import": "./dist/stack.mjs",
       "default": "./dist/stack.mjs"
     },
+    "./sidebar": {
+      "types": "./dist/sidebar.d.mts",
+      "import": "./dist/sidebar.mjs",
+      "default": "./dist/sidebar.mjs"
+    },
+    "./resizable": {
+      "types": "./dist/resizable.d.mts",
+      "import": "./dist/resizable.mjs",
+      "default": "./dist/resizable.mjs"
+    },
+    "./sticky": {
+      "types": "./dist/sticky.d.mts",
+      "import": "./dist/sticky.mjs",
+      "default": "./dist/sticky.mjs"
+    },
     "./scroll-area": {
       "types": "./dist/scroll-area.d.mts",
       "import": "./dist/scroll-area.mjs",
@@ -390,6 +600,11 @@
       "import": "./dist/kbd.mjs",
       "default": "./dist/kbd.mjs"
     },
+    "./lightbox": {
+      "types": "./dist/lightbox.d.mts",
+      "import": "./dist/lightbox.mjs",
+      "default": "./dist/lightbox.mjs"
+    },
     "./list": {
       "types": "./dist/list.d.mts",
       "import": "./dist/list.mjs",
@@ -399,6 +614,36 @@
       "types": "./dist/listbox.d.mts",
       "import": "./dist/listbox.mjs",
       "default": "./dist/listbox.mjs"
+    },
+    "./cascader": {
+      "types": "./dist/cascader.d.mts",
+      "import": "./dist/cascader.mjs",
+      "default": "./dist/cascader.mjs"
+    },
+    "./emoji-picker": {
+      "types": "./dist/emoji-picker.d.mts",
+      "import": "./dist/emoji-picker.mjs",
+      "default": "./dist/emoji-picker.mjs"
+    },
+    "./transfer-list": {
+      "types": "./dist/transfer-list.d.mts",
+      "import": "./dist/transfer-list.mjs",
+      "default": "./dist/transfer-list.mjs"
+    },
+    "./mention": {
+      "types": "./dist/mention.d.mts",
+      "import": "./dist/mention.mjs",
+      "default": "./dist/mention.mjs"
+    },
+    "./listbox-grid": {
+      "types": "./dist/listbox-grid.d.mts",
+      "import": "./dist/listbox-grid.mjs",
+      "default": "./dist/listbox-grid.mjs"
+    },
+    "./autocomplete": {
+      "types": "./dist/autocomplete.d.mts",
+      "import": "./dist/autocomplete.mjs",
+      "default": "./dist/autocomplete.mjs"
     },
     "./combobox": {
       "types": "./dist/combobox.d.mts",
@@ -414,6 +659,11 @@
       "types": "./dist/pagination.d.mts",
       "import": "./dist/pagination.mjs",
       "default": "./dist/pagination.mjs"
+    },
+    "./pan-zoom": {
+      "types": "./dist/pan-zoom.d.mts",
+      "import": "./dist/pan-zoom.mjs",
+      "default": "./dist/pan-zoom.mjs"
     },
     "./tags-input": {
       "types": "./dist/tags-input.d.mts",
@@ -495,6 +745,11 @@
       "import": "./dist/drawer.mjs",
       "default": "./dist/drawer.mjs"
     },
+    "./command-palette": {
+      "types": "./dist/command-palette.d.mts",
+      "import": "./dist/command-palette.mjs",
+      "default": "./dist/command-palette.mjs"
+    },
     "./dismissable-layer": {
       "types": "./dist/dismissable-layer.d.mts",
       "import": "./dist/dismissable-layer.mjs",
@@ -555,6 +810,16 @@
       "import": "./dist/image.mjs",
       "default": "./dist/image.mjs"
     },
+    "./image-compare": {
+      "types": "./dist/image-compare.d.mts",
+      "import": "./dist/image-compare.mjs",
+      "default": "./dist/image-compare.mjs"
+    },
+    "./image-cropper": {
+      "types": "./dist/image-cropper.d.mts",
+      "import": "./dist/image-cropper.mjs",
+      "default": "./dist/image-cropper.mjs"
+    },
     "./inert-outside": {
       "types": "./dist/inert-outside.d.mts",
       "import": "./dist/inert-outside.mjs",
@@ -570,6 +835,11 @@
       "import": "./dist/interaction-modality.mjs",
       "default": "./dist/interaction-modality.mjs"
     },
+    "./media-preferences": {
+      "types": "./dist/media-preferences.d.mts",
+      "import": "./dist/media-preferences.mjs",
+      "default": "./dist/media-preferences.mjs"
+    },
     "./interaction-hooks": {
       "types": "./dist/interaction-hooks.d.mts",
       "import": "./dist/interaction-hooks.mjs",
@@ -579,6 +849,11 @@
       "types": "./dist/focus.d.mts",
       "import": "./dist/focus.mjs",
       "default": "./dist/focus.mjs"
+    },
+    "./focus-visible": {
+      "types": "./dist/focus-visible.d.mts",
+      "import": "./dist/focus-visible.mjs",
+      "default": "./dist/focus-visible.mjs"
     },
     "./focus-scope": {
       "types": "./dist/focus-scope.d.mts",
@@ -595,6 +870,11 @@
       "import": "./dist/history.mjs",
       "default": "./dist/history.mjs"
     },
+    "./hotspot": {
+      "types": "./dist/hotspot.d.mts",
+      "import": "./dist/hotspot.mjs",
+      "default": "./dist/hotspot.mjs"
+    },
     "./hover": {
       "types": "./dist/hover.d.mts",
       "import": "./dist/hover.mjs",
@@ -610,10 +890,20 @@
       "import": "./dist/locale.mjs",
       "default": "./dist/locale.mjs"
     },
+    "./direction": {
+      "types": "./dist/direction.d.mts",
+      "import": "./dist/direction.mjs",
+      "default": "./dist/direction.mjs"
+    },
     "./long-press": {
       "types": "./dist/long-press.d.mts",
       "import": "./dist/long-press.mjs",
       "default": "./dist/long-press.mjs"
+    },
+    "./marquee": {
+      "types": "./dist/marquee.d.mts",
+      "import": "./dist/marquee.mjs",
+      "default": "./dist/marquee.mjs"
     },
     "./measure": {
       "types": "./dist/measure.d.mts",
@@ -665,6 +955,11 @@
       "import": "./dist/qr-code.mjs",
       "default": "./dist/qr-code.mjs"
     },
+    "./qr-code/kanji": {
+      "types": "./dist/qr-code-kanji.d.mts",
+      "import": "./dist/qr-code-kanji.mjs",
+      "default": "./dist/qr-code-kanji.mjs"
+    },
     "./spinner": {
       "types": "./dist/spinner.d.mts",
       "import": "./dist/spinner.mjs",
@@ -690,6 +985,11 @@
       "import": "./dist/shortcut.mjs",
       "default": "./dist/shortcut.mjs"
     },
+    "./signature-pad": {
+      "types": "./dist/signature-pad.d.mts",
+      "import": "./dist/signature-pad.mjs",
+      "default": "./dist/signature-pad.mjs"
+    },
     "./sortable": {
       "types": "./dist/sortable.d.mts",
       "import": "./dist/sortable.mjs",
@@ -704,6 +1004,11 @@
       "types": "./dist/theme.d.mts",
       "import": "./dist/theme.mjs",
       "default": "./dist/theme.mjs"
+    },
+    "./resolver": {
+      "types": "./dist/resolver.d.mts",
+      "import": "./dist/resolver.mjs",
+      "default": "./dist/resolver.mjs"
     },
     "./theme-scope": {
       "types": "./dist/theme-scope.d.mts",
@@ -720,10 +1025,25 @@
       "import": "./dist/typeahead.mjs",
       "default": "./dist/typeahead.mjs"
     },
+    "./variants": {
+      "types": "./dist/variants.d.mts",
+      "import": "./dist/variants.mjs",
+      "default": "./dist/variants.mjs"
+    },
+    "./video-player": {
+      "types": "./dist/video-player.d.mts",
+      "import": "./dist/video-player.mjs",
+      "default": "./dist/video-player.mjs"
+    },
     "./virtualizer": {
       "types": "./dist/virtualizer.d.mts",
       "import": "./dist/virtualizer.mjs",
       "default": "./dist/virtualizer.mjs"
+    },
+    "./chart": {
+      "types": "./dist/chart.d.mts",
+      "import": "./dist/chart.mjs",
+      "default": "./dist/chart.mjs"
     },
     "./chart-shape": {
       "types": "./dist/chart-shape.d.mts",
@@ -745,6 +1065,11 @@
       "import": "./dist/scroll-spy.mjs",
       "default": "./dist/scroll-spy.mjs"
     },
+    "./scrubber-preview": {
+      "types": "./dist/scrubber-preview.d.mts",
+      "import": "./dist/scrubber-preview.mjs",
+      "default": "./dist/scrubber-preview.mjs"
+    },
     "./toc": {
       "types": "./dist/toc.d.mts",
       "import": "./dist/toc.mjs",
@@ -765,19 +1090,28 @@
       "import": "./dist/visually-hidden.mjs",
       "default": "./dist/visually-hidden.mjs"
     },
+    "./webcam-capture": {
+      "types": "./dist/webcam-capture.d.mts",
+      "import": "./dist/webcam-capture.mjs",
+      "default": "./dist/webcam-capture.mjs"
+    },
     "./style.css": "./dist/style.css",
     "./theme.css": "./dist/theme.css",
     "./base.css": "./dist/theme.css",
     "./component-alert.css": "./dist/component-alert.css",
     "./component-badge.css": "./dist/component-badge.css",
+    "./component-breadcrumb.css": "./dist/component-breadcrumb.css",
     "./component-button.css": "./dist/component-button.css",
     "./component-card.css": "./dist/component-card.css",
     "./component-checkbox.css": "./dist/component-checkbox.css",
     "./component-dialog.css": "./dist/component-dialog.css",
     "./component-input.css": "./dist/component-input.css",
+    "./component-pagination.css": "./dist/component-pagination.css",
     "./component-progress-bar.css": "./dist/component-progress-bar.css",
     "./component-scroll-area.css": "./dist/component-scroll-area.css",
     "./component-switch.css": "./dist/component-switch.css",
+    "./component-stepper.css": "./dist/component-stepper.css",
+    "./component-tabs.css": "./dist/component-tabs.css",
     "./component-textarea.css": "./dist/component-textarea.css",
     "./component-tooltip.css": "./dist/component-tooltip.css",
     "./motion.css": "./dist/motion.css",
@@ -793,6 +1127,11 @@
       "import": "./dist/media.mjs",
       "default": "./dist/media.mjs"
     },
+    "./media-player": {
+      "types": "./dist/media-player.d.mts",
+      "import": "./dist/media-player.mjs",
+      "default": "./dist/media-player.mjs"
+    },
     "./media/pdf": {
       "types": "./dist/media-pdf.d.mts",
       "import": "./dist/media-pdf.mjs",
@@ -802,6 +1141,11 @@
       "types": "./dist/media-source.d.mts",
       "import": "./dist/media-source.mjs",
       "default": "./dist/media-source.mjs"
+    },
+    "./window-manager": {
+      "types": "./dist/window-manager.d.mts",
+      "import": "./dist/window-manager.mjs",
+      "default": "./dist/window-manager.mjs"
     }
   },
   "publishConfig": {
@@ -815,12 +1159,15 @@
     "test": "vp test run",
     "check:catalog": "vp test run src/catalog/family-catalog.test.ts",
     "check:static": "vp check src scripts vite.config.ts tsconfig.typecheck.json && vue-tsc --noEmit -p tsconfig.typecheck.json",
+    "check:vapor-runtime": "vp exec node scripts/check-vapor-runtime.ts",
     "check:story-testbed": "vp exec node scripts/story-testbed.ts check --format json",
-    "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed",
+    "check": "pnpm lint:sfc && pnpm check:static && pnpm check:story-testbed && pnpm check:vapor-runtime",
     "check:fix": "vp check --fix src scripts vite.config.ts tsconfig.typecheck.json",
     "build:registry": "vp exec node scripts/build-source-registry.ts",
+    "check:examples": "vp exec node scripts/generate-gallery.ts --check",
     "check:size": "node scripts/check-size.mjs",
     "docs:reference": "vp exec node scripts/generate-reference-docs.ts",
+    "generate:resolver": "vp exec node scripts/generate-resolver-manifest.ts",
     "check:tree-shaking": "node scripts/check-tree-shaking.mjs",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
@@ -836,7 +1183,8 @@
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-stable",
-    "vue-tsc": "catalog:typescript"
+    "vue-tsc": "catalog:typescript",
+    "vue-vapor-runtime": "npm:vue@3.6.0-rc.6"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

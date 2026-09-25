@@ -43,19 +43,19 @@ serve, então cada versão é imutável e reproduzível.
 
 ## Comandos
 
-| Comando                                  | O que faz                                                                            |
-| ---------------------------------------- | ------------------------------------------------------------------------------------ |
-| `vize lib init [--dry-run]`              | Detecta o layout do projeto e grava a seção `lib` da configuração.                   |
-| `vize lib list [--kind ui\|composable]`  | Lista os itens disponíveis.                                                          |
-| `vize lib search <words>`                | Busca por nomes, títulos, descrições e aliases.                                      |
-| `vize lib info <name>`                   | Mostra arquivos, dependências do registro, peers npm e a versão do pacote.           |
-| `vize lib pull <item>... [--dir <dir>]`  | Copia itens e suas dependências do registro; `--dry-run`, `--overwrite`.             |
-| `vize lib add <item>...`                 | Alias de `pull` compatível com o shadcn (`-p/--path`, `-o/--overwrite`, `-y/--yes`). |
-| `vize lib status`                        | Compara os arquivos copiados com o lockfile e o registro instalado.                  |
-| `vize lib diff <name> [--to <version>]`  | Diff unificado da sua cópia local para uma versão do registro.                       |
-| `vize lib update [<name>...] [--to <v>]` | Aplica mudanças upstream sem sobrescrever edições locais; `--dry-run`, `--force`.    |
-| `vize lib remove <name>...`              | Remove itens e dependências que nada mais usa; `--dry-run`, `--force`.               |
-| `vize lib outdated`                      | Compara as versões do lock com os registros instalado e mais recente.                |
+| Comando                                  | O que faz                                                                                   |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `vize lib init [--dry-run]`              | Detecta o layout do projeto e grava a seção `lib` da configuração.                          |
+| `vize lib list [--kind ui\|composable]`  | Lista os itens disponíveis.                                                                 |
+| `vize lib search <words>`                | Busca por nomes, títulos, descrições e aliases.                                             |
+| `vize lib info <name>`                   | Mostra arquivos, dependências do registro, peers npm e a versão do pacote.                  |
+| `vize lib pull <item>... [--dir <dir>]`  | Copia itens e suas dependências do registro; `--dry-run`, `--overwrite`, `--with-examples`. |
+| `vize lib add <item>...`                 | Alias de `pull` compatível com o shadcn (`-p/--path`, `-o/--overwrite`, `-y/--yes`).        |
+| `vize lib status`                        | Compara os arquivos copiados com o lockfile e o registro instalado.                         |
+| `vize lib diff <name> [--to <version>]`  | Diff unificado da sua cópia local para uma versão do registro.                              |
+| `vize lib update [<name>...] [--to <v>]` | Aplica mudanças upstream sem sobrescrever edições locais; `--dry-run`, `--force`.           |
+| `vize lib remove <name>...`              | Remove itens e dependências que nada mais usa; `--dry-run`, `--force`.                      |
+| `vize lib outdated`                      | Compara as versões do lock com os registros instalado e mais recente.                       |
 
 Todos os comandos aceitam `--json` para saída legível por máquina e `--root <dir>` para operar em outro projeto.
 
@@ -153,6 +153,24 @@ malformados, papéis ou dependências desconhecidos e fechamento de dependência
 byte baixado é verificado com SHA-256 antes de ser gravado. Os itens de um namespace vão para o seu `dir` (senão o
 `defaultTargetDirectory` do registro), ficam no lock sob a chave `@namespace` e nunca sobrescrevem um arquivo que
 pertence a outro item copiado.
+
+## Exemplos de uso e a galeria Musea
+
+A maioria das famílias de UI traz demos de uso sem estilo ao lado dos fontes
+(`families/<area>/<family>/examples/<family>-*.vue`). Eles são publicados no registro, mas só são copiados
+quando solicitados:
+
+```bash
+vize lib pull switch --with-examples
+```
+
+Os exemplos ficam ao lado dos fontes copiados (`…/switch/examples/switch-basic.vue`), importam a família por
+caminhos relativos e são registrados em `vize-lib.lock.json` como qualquer outro arquivo, então `status`,
+`diff` e `update` os cobrem; depois de solicitados, `update` continua copiando-os.
+
+Os mesmos exemplos alimentam uma galeria [Musea](./musea.md) com uma história por família e uma variante por
+exemplo. No repositório, rode `pnpm gallery:ui` em `examples/vite-musea`: ele regenera as histórias
+(`npm/ui/scripts/generate-gallery.ts`) e inicia a galeria.
 
 ## Versionamento e atualizações seguras
 

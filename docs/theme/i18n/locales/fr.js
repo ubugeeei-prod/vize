@@ -18,6 +18,7 @@
       "/guide/troubleshooting": "Dépannage",
       "/guide/cli": "CLI",
       "/guide/lib-pull": "Distribution des sources",
+      "/guide/auto-imports": "Imports automatiques",
       "/guide/ui": "Référence UI",
       "/guide/composables": "Référence des composables",
       "/guide/content-mapper": "Content Mapper",

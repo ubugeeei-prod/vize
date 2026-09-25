@@ -266,7 +266,9 @@ watch(
   (element, _previous, onCleanup) => {
     const owner =
       form === undefined ? element?.closest("form") : element?.ownerDocument.getElementById(form);
-    if (!(owner instanceof HTMLFormElement)) return;
+    // `owner` is absent during server rendering, where DOM constructors such
+    // as `HTMLFormElement` do not exist: check it before `instanceof`.
+    if (owner == null || !(owner instanceof HTMLFormElement)) return;
     const onReset = () => {
       if (!state.controlled.value) state.reset();
       // Native reset clears field values first; re-apply the restored characters after it.

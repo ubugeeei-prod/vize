@@ -1,5 +1,5 @@
 import {
-  getCurrentInstance,
+  hasInjectionContext,
   getCurrentScope,
   onMounted,
   onScopeDispose,
@@ -256,7 +256,7 @@ export function useFocusGuards(options: FocusGuardsOptions): FocusGuardsControll
     throw new Error(`${setupDiagnostic}: use inside component setup or an active effect scope`);
   }
   const controller = createFocusGuards(options);
-  if (getCurrentInstance()) onMounted(controller.activate);
+  if (hasInjectionContext()) onMounted(controller.activate);
   else controller.activate();
   onScopeDispose(controller.dispose);
   return controller;

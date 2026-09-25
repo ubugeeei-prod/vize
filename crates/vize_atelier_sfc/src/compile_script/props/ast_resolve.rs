@@ -330,6 +330,7 @@ fn ts_type_to_js_type_from_ast_inner(
         TSType::TSArrayType(_) | TSType::TSTupleType(_) => "Array".to_compact_string(),
         TSType::TSFunctionType(_) | TSType::TSConstructorType(_) => "Function".to_compact_string(),
         TSType::TSLiteralType(lit) => js_type_for_ts_literal(&lit.literal),
+        TSType::TSTemplateLiteralType(_) => "String".to_compact_string(),
         TSType::TSUnionType(union) => {
             combine_runtime_js_types(union.types.iter().filter_map(|ty| {
                 if matches!(

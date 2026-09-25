@@ -202,7 +202,7 @@ fn infer_variable_binding_type(
 }
 
 fn is_literal(expr: &Expression<'_>) -> bool {
-    match expr {
+    match unwrap_type_only_wrappers(expr) {
         Expression::StringLiteral(_)
         | Expression::NumericLiteral(_)
         | Expression::BooleanLiteral(_)
@@ -254,5 +254,20 @@ pub(super) fn merge_normal_script_bindings(
 ) {
     for (name, binding_type) in &normal_bindings.bindings {
         target.bindings.entry(name.clone()).or_insert(*binding_type);
+    }
+}
+
+/// Strip type-only wrappers (`as`, `satisfies`, `!`, parentheses), matching
+/// Vue's `unwrapTSNode`: `const HREF = "#main" satisfies Href` is as literal
+/// as `const HREF = "#main"`.
+fn unwrap_type_only_wrappers<'e, 'a>(mut expr: &'e Expression<'a>) -> &'e Expression<'a> {
+    loop {
+        expr = match expr {
+            Expression::ParenthesizedExpression(inner) => &inner.expression,
+            Expression::TSAsExpression(inner) => &inner.expression,
+            Expression::TSSatisfiesExpression(inner) => &inner.expression,
+            Expression::TSNonNullExpression(inner) => &inner.expression,
+            _ => return expr,
+        };
     }
 }

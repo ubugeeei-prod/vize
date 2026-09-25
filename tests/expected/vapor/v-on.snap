@@ -201,16 +201,13 @@ options: vapor
 --- INPUT ---
 <button @[event]="handler"></button>
 --- OUTPUT ---
-import { createInvoker as _createInvoker, on as _on, renderEffect as _renderEffect, template as _template } from 'vue';
+import { onBinding as _onBinding, renderEffect as _renderEffect, template as _template } from 'vue';
 const t0 = _template("<button></button>", true)
 
 export function render(_ctx) {
   const n0 = t0()
   _renderEffect(() => {
-    
-    _on(n0, _ctx.event, _createInvoker(e => _ctx.handler(e)), {
-      effect: true
-    })
+    _onBinding(n0, _ctx.event, e => _ctx.handler(e))
   })
   return n0
 }

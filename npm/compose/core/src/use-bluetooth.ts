@@ -1,4 +1,14 @@
-import { computed, readonly, ref, shallowReadonly, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -192,6 +202,8 @@ function availabilityOf(event: Event): boolean | undefined {
  *
  * Server rendering: `supported`, `available` and `connected` are false and
  * nothing is queried.
+ * Inside a component the host is resolved after mounting, so hydration
+ * renders this server state first.
  *
  * @example
  * ```ts
@@ -212,8 +224,22 @@ export function useBluetooth(options: UseBluetoothOptions = {}): BluetoothContro
   const error = shallowRef<unknown>(undefined);
   const notifications = new Set<BluetoothNotificationStop>();
 
-  const resolveHost = (): BluetoothHost | undefined =>
-    options.host === undefined ? browserBluetoothHost() : (toValue(options.host) ?? undefined);
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+
+  const resolveHost = (): BluetoothHost | undefined => {
+    if (!hydrated.value) return undefined;
+    return options.host === undefined
+      ? browserBluetoothHost()
+      : (toValue(options.host) ?? undefined);
+  };
 
   const onDisconnected = (): void => {
     connected.value = false;

@@ -90,7 +90,13 @@ fn write_element_template(
         // transparent wrapper in Vapor just as it is in the main element
         // dispatcher, so its children contribute directly to the enclosing
         // element's static template instead of producing a component lookup.
-        append_child_templates(template, &el.children, scope_id);
+        let placeholders = super::insertion::block_placeholders(&el.children);
+        append_child_templates(
+            template,
+            &el.children,
+            scope_id,
+            &mut placeholders.into_iter(),
+        );
 
         template.push_str("</");
         template.push_str(el.tag);
@@ -102,6 +108,7 @@ fn append_child_templates(
     template: &mut EmitDocument,
     children: &[TemplateChildNode<'_>],
     scope_id: Option<&str>,
+    placeholders: &mut std::vec::IntoIter<bool>,
 ) {
     for child in children {
         match child {
@@ -113,15 +120,19 @@ fn append_child_templates(
             }
             TemplateChildNode::Element(child_el) if child_el.tag_type == ElementType::Template => {
                 ensure_sufficient_stack(|| {
-                    append_child_templates(template, &child_el.children, scope_id)
+                    append_child_templates(template, &child_el.children, scope_id, placeholders)
                 });
             }
             TemplateChildNode::Element(child_el) if is_template_backed_element(child_el) => {
                 ensure_sufficient_stack(|| write_element_template(template, child_el, scope_id));
             }
+            // Only a block followed by template-rendered siblings keeps its
+            // insertion placeholder (see `insertion::block_placeholders`).
             TemplateChildNode::Element(_)
             | TemplateChildNode::If(_)
-            | TemplateChildNode::For(_) => {
+            | TemplateChildNode::For(_)
+                if placeholders.next().unwrap_or(true) =>
+            {
                 template.push_str("<!---->");
             }
             _ => {}

@@ -1,0 +1,17 @@
+# Masonry behavior contract
+
+Normative state x input -> outcome table for `masonry.vue` (`@vizejs/ui/masonry`).
+Rows are proven by `masonry-layout.test.ts`, `masonry.test.ts`, and
+`masonry-ssr.test.ts`; compile-only assertions live in `masonry.types.test-d.ts`.
+
+| #   | State             | Input                       | Outcome                                                                                               | Proven by                                                                                                                              |
+| --- | ----------------- | --------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| MS1 | heights, columns  | compute layout              | each item goes to the shortest column (leftmost on ties) with gap-aware offsets                       | `appends each item to the shortest column with leftmost tie-breaking`                                                                  |
+| MS2 | invalid input     | compute layout              | invalid heights/gaps count as `0`; non-positive or fractional columns throw `VIZE_UI_MASONRY_COLUMNS` | `treats invalid heights and gaps as zero and rejects invalid column counts`                                                            |
+| MS3 | layout, window    | visible items               | items intersecting the window (plus overscan) are selected in source order                            | `selects items intersecting a window with overscan`                                                                                    |
+| MS4 | estimated heights | render                      | balanced flex columns render the `item` slot with item, index, and column                             | `distributes estimated heights into balanced columns with slot state`                                                                  |
+| MS5 | mounted           | measure real heights        | measured heights (by key) replace estimates and columns rebalance                                     | `rebalances after measuring real heights`                                                                                              |
+| MS6 | virtualized       | scroll                      | only items near the viewport render, absolutely positioned inside a full-height sizer                 | `virtualizes items near the scroll viewport`                                                                                           |
+| MS7 | invalid prop      | `columns: 0`                | the component falls back to one column instead of throwing                                            | `falls back to one column for invalid counts`                                                                                          |
+| MS8 | SSR               | isolated requests / hydrate | the estimated distribution is byte-identical and hydrates without warnings                            | `renders a byte-identical estimated distribution across SSR requests`, `hydrates the estimated distribution without mismatch warnings` |
+| MS9 | DOM/SSR/Vapor     | compile                     | the SFC compiles in every renderer lane                                                               | `scripts/check-renderers.ts`                                                                                                           |

@@ -149,6 +149,8 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
     // Handle string literal types: "foo" or 'bar' -> String
     if (ts_type.starts_with('"') && ts_type.ends_with('"'))
         || (ts_type.starts_with('\'') && ts_type.ends_with('\''))
+        // Template literal types (`#${string}`) are strings at runtime.
+        || (ts_type.len() > 1 && ts_type.starts_with('`') && ts_type.ends_with('`'))
     {
         return "String".to_compact_string();
     }
@@ -172,6 +174,23 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
         return "Function".to_compact_string();
     }
 
+    // `(A)` → `A` when the parentheses wrap the whole type (not `(a) => b`).
+    if let Some(inner) = strip_wrapping_parentheses(ts_type) {
+        return ts_type_to_js_type(inner);
+    }
+
+    // Conditional types (`T extends U ? A : B`) are checked before the union
+    // split and the object-literal heuristic: their top-level `:` would
+    // otherwise read as an object literal and yield `Object`. Like Vue, the
+    // runtime type is the union of both branches (unknown if either is).
+    if let Some((when_true, when_false)) = split_top_level_conditional(ts_type) {
+        let mut union = String::with_capacity(when_true.len() + when_false.len() + 3);
+        union.push_str(when_true);
+        union.push_str(" | ");
+        union.push_str(when_false);
+        return ts_type_to_js_type(&union);
+    }
+
     // Handle union types — split at top level only (respecting nesting).
     // For mixed types like `string | number`, produce `[String, Number]`.
     {
@@ -191,11 +210,19 @@ pub(crate) fn ts_type_to_js_type(ts_type: &str) -> String {
             let mut js_types: Vec<String> = Vec::new();
             for part in &meaningful {
                 let jt = ts_type_to_js_type(part);
-                if !js_types.contains(&jt) {
-                    if jt == "null" {
-                        return jt;
+                if jt == "null" {
+                    return jt;
+                }
+                // A member that is itself a union (`[A, B]`) contributes its
+                // constructors individually.
+                let members = jt
+                    .strip_prefix('[')
+                    .and_then(|rest| rest.strip_suffix(']'))
+                    .map_or_else(|| vec![jt.as_str()], |inner| inner.split(", ").collect());
+                for member in members {
+                    if !js_types.iter().any(|existing| existing == member) {
+                        js_types.push(member.to_compact_string());
                     }
-                    js_types.push(jt);
                 }
             }
 
@@ -373,4 +400,99 @@ pub fn is_valid_identifier(s: &str) -> bool {
     }
 
     chars.all(|c| c.is_alphanumeric() || c == '_' || c == '$')
+}
+
+/// Split `Check extends Extends ? True : False` into its branches when the
+/// conditional operator sits at the top level (outside `<>`, `()`, `[]`, `{}`
+/// and string literals). Nested conditionals in the false branch stay intact.
+fn split_top_level_conditional(s: &str) -> Option<(&str, &str)> {
+    let mut depth: i32 = 0;
+    let mut prev = '\0';
+    let mut quote: Option<char> = None;
+    let mut question: Option<usize> = None;
+    let mut pending = 0usize;
+    for (index, c) in s.char_indices() {
+        if let Some(open) = quote {
+            if c == open && prev != '\\' {
+                quote = None;
+            }
+            prev = c;
+            continue;
+        }
+        match c {
+            '"' | '\'' | '`' => quote = Some(c),
+            '(' | '[' | '{' | '<' => depth += 1,
+            ')' | ']' | '}' => depth -= 1,
+            '>' if prev != '=' => depth -= 1,
+            '?' if depth == 0 => {
+                if question.is_none() {
+                    question = Some(index);
+                } else {
+                    pending += 1;
+                }
+            }
+            ':' if depth == 0 => {
+                if let Some(start) = question {
+                    if pending == 0 {
+                        let head = s.get(..start)?;
+                        if !head.contains(" extends ") {
+                            return None;
+                        }
+                        return Some((s.get(start + 1..index)?.trim(), s.get(index + 1..)?.trim()));
+                    }
+                    pending -= 1;
+                }
+            }
+            _ => {}
+        }
+        prev = c;
+    }
+    None
+}
+
+/// The inner type when `s` is entirely wrapped in one pair of parentheses.
+fn strip_wrapping_parentheses(s: &str) -> Option<&str> {
+    let inner = s.strip_prefix('(')?.strip_suffix(')')?;
+    let mut depth: i32 = 0;
+    for c in inner.chars() {
+        match c {
+            '(' => depth += 1,
+            ')' => {
+                depth -= 1;
+                if depth < 0 {
+                    return None;
+                }
+            }
+            _ => {}
+        }
+    }
+    (depth == 0).then_some(inner.trim())
+}
+
+#[cfg(test)]
+mod conditional_type_tests {
+    use super::ts_type_to_js_type;
+
+    #[test]
+    fn conditional_types_union_their_branches_instead_of_reading_as_objects() {
+        assert_eq!(
+            ts_type_to_js_type(r#"T extends "multiple" ? readonly V[] : V | null"#),
+            "null"
+        );
+        assert_eq!(
+            ts_type_to_js_type("T extends string ? string : number"),
+            "[String, Number]"
+        );
+        assert_eq!(
+            ts_type_to_js_type("T extends string ? string[] : number[]"),
+            "Array"
+        );
+        assert_eq!(
+            ts_type_to_js_type("A extends B ? (C extends D ? string : number) : boolean"),
+            "[String, Number, Boolean]"
+        );
+        assert_eq!(ts_type_to_js_type("`#${string}`"), "String");
+        // Object literals and optional-looking members are not conditionals.
+        assert_eq!(ts_type_to_js_type("{ a?: string; b: number }"), "Object");
+    }
 }

@@ -312,6 +312,11 @@ test("check workflow builds local native bindings before JS checks", () => {
   assert.match(buildJob, /vp run --filter '\.\/npm\/native' build:ci/);
   assert.match(buildJob, /vp run --filter '\.\/npm\/ui' check/);
   assert.ok(
+    buildJob.indexOf("build:ci") < buildJob.indexOf("check:conformance"),
+    "composable renderer conformance needs the locally built native binding",
+  );
+  assert.match(buildJob, /vp run --filter '\.\/npm\/compose\/core' check:conformance/);
+  assert.ok(
     buildJob.indexOf("uses: ./.github/actions/setup-rust-script") <
       buildJob.indexOf("run: vp run --workspace-root build:packages"),
     "build-js-packages must install rust-script before build:packages",

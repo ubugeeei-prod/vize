@@ -4,15 +4,14 @@ expression: code.as_str()
 ---
 import { child as _child, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<span>a</span>", true)
-const t1 = _template("<div><button><!----></button></div>", true)
+const t1 = _template("<div><button></button></div>", true)
 export function render(_ctx) {
 const n0 = t1()
 const n1 = _child(n0)
-const n2 = _child(n1)
-_setInsertionState(n1, n2, true)
-const n3 = _createIf(() => (_ctx.ok), () => {
-const n5 = t0()
-return n5
+_setInsertionState(n1)
+const n2 = _createIf(() => (_ctx.ok), () => {
+const n4 = t0()
+return n4
 })
 return n0
 }

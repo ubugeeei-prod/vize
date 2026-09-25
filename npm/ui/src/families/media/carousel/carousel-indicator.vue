@@ -31,7 +31,12 @@ const context = carouselContext.use();
 const element = useTemplateRef<HTMLButtonElement>("element");
 const active = computed(() => context.index.value === index);
 const disabled = computed(() => index < 0 || index >= context.slideCount.value);
-const label = computed(() => ariaLabel ?? `Slide ${index + 1}`);
+const label = computed(
+  () =>
+    ariaLabel ??
+    context.messages.value.indicatorLabel?.(index + 1, context.slideCount.value) ??
+    `Slide ${index + 1}`,
+);
 const slotState = computed<CarouselIndicatorSlotState>(() => ({ active: active.value, index }));
 let unregister: (() => void) | null = null;
 

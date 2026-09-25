@@ -8,7 +8,7 @@ use super::{
         destructure::parse_destructure_bindings,
         generate_block,
     },
-    insertion::{block_requires_parent_insertion_state, emit_insertion_state},
+    insertion::emit_insertion_state,
 };
 
 /// Generate For
@@ -73,9 +73,6 @@ pub(super) fn generate_for(
     head.push_str(&[", (", &params, ") => {"].concat());
     ctx.push_line_spanned(&head);
     ctx.indent();
-    if block_requires_parent_insertion_state(&for_node.render) {
-        emit_insertion_state(ctx, for_node.parent, for_node.anchor);
-    }
     ctx.push_component_scope();
     generate_block(ctx, &for_node.render, element_template_map);
     ctx.pop_component_scope();

@@ -52,6 +52,37 @@ pub struct RegistryItem {
     pub registry_dependencies: Vec<String>,
     pub dependencies: Vec<NpmDependency>,
     pub content_hash: String,
+    /// Usage demos, pulled only with `--with-examples` (optional in the schema).
+    #[serde(default)]
+    pub examples: Vec<RegistryExample>,
+}
+
+/// One unstyled usage demo shipped with an item.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RegistryExample {
+    pub path: String,
+    pub title: String,
+    pub description: String,
+    pub sha256: String,
+    pub size: u64,
+}
+
+impl RegistryItem {
+    /// Files a pull writes: the item's sources plus, on request, its examples.
+    pub fn pulled_files(&self, with_examples: bool) -> Vec<RegistryFile> {
+        let examples = self
+            .examples
+            .iter()
+            .filter(|_| with_examples)
+            .map(|example| RegistryFile {
+                path: example.path.clone(),
+                role: String::from("example"),
+                sha256: example.sha256.clone(),
+                size: example.size,
+            });
+        self.files.iter().cloned().chain(examples).collect()
+    }
 }
 
 /// One published file.

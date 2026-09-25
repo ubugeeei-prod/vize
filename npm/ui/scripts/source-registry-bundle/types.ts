@@ -56,6 +56,24 @@ export interface LibRegistryFile {
   readonly size: number;
 }
 
+/**
+ * One unstyled usage demo (`<entry dir>/examples/<slug>.vue`). Examples are
+ * not part of `files` or `contentHash`; `vize lib pull --with-examples`
+ * copies them next to the item and the Musea gallery renders them.
+ */
+export interface LibRegistryExample {
+  /** POSIX path relative to `src/` and to the registry `files/` directory. */
+  readonly path: string;
+  /** Title derived from the file name (`controlled-state` -> `Controlled state`). */
+  readonly title: string;
+  /** Leading `<!-- … -->` comment of the example, or `""`. */
+  readonly description: string;
+  /** Lowercase hex SHA-256 of the exact published bytes. */
+  readonly sha256: string;
+  /** Byte length of the published file. */
+  readonly size: number;
+}
+
 /** One npm package the item's own files import. */
 export interface LibRegistryNpmDependency {
   /** Package name, e.g. `vue`. */
@@ -96,6 +114,8 @@ export interface LibRegistryItem {
    * path order. Stable across releases when the item's sources did not change.
    */
   readonly contentHash: string;
+  /** Usage demos, sorted by path; empty when the item ships none. */
+  readonly examples: readonly LibRegistryExample[];
 }
 
 /** Package that published the registry. */

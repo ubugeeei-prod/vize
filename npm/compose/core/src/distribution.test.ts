@@ -35,8 +35,8 @@ void test("publishes every utility through a typed side-effect-free subpath", as
       conditions.import,
       `${subpath} must expose one deterministic ESM implementation`,
     );
-    assert.match(conditions.import, /^\.\/dist\/[a-z-]+\.mjs$/);
-    assert.match(conditions.types, /^\.\/dist\/[a-z-]+\.d\.mts$/);
+    assert.match(conditions.import, /^\.\/dist\/[a-z][a-z0-9-]*\.mjs$/);
+    assert.match(conditions.types, /^\.\/dist\/[a-z][a-z0-9-]*\.d\.mts$/);
     await access(new URL(conditions.import, packageRoot));
     await access(new URL(conditions.types, packageRoot));
     const runtime = (await import(new URL(conditions.import, packageRoot).href)) as object;

@@ -25,10 +25,12 @@ import type {
   CarouselChangeReason,
   CarouselDirection,
   CarouselFocusBehavior,
+  CarouselMessages,
   CarouselOrientation,
   CarouselRootExpose,
   CarouselSlotState,
 } from "./carousel-types.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 const {
   id = undefined,
@@ -37,7 +39,7 @@ const {
   defaultValue = 0,
   loop = false,
   orientation = "horizontal",
-  dir = "ltr",
+  dir = undefined,
   draggable = true,
   autoplay = false,
   playing = undefined,
@@ -47,6 +49,7 @@ const {
   respectReducedMotion = true,
   ariaLabel = undefined,
   ariaLabelledby = undefined,
+  messages = undefined,
 } = defineProps<{
   /**
    * Consumer-owned carousel base id. `null` and `undefined` select a deterministic fallback.
@@ -90,9 +93,9 @@ const {
   readonly orientation?: CarouselOrientation;
 
   /**
-   * Reading direction used for horizontal arrow keys and scroll offsets.
+   * Reading direction used for horizontal arrow keys and scroll offsets. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: CarouselDirection;
 
@@ -160,6 +163,14 @@ const {
    * @default undefined
    */
   readonly ariaLabelledby?: string;
+
+  /**
+   * Localized role descriptions and slide/indicator names. Omitted entries use
+   * the English WAI-ARIA example wording.
+   *
+   * @default undefined
+   */
+  readonly messages?: CarouselMessages;
 }>();
 
 const emit = defineEmits<{
@@ -184,7 +195,7 @@ const viewportId = computed(() => deriveDeterministicId(baseId.value, "viewport"
 const count = computed(() => Math.max(0, Math.floor(slideCount)));
 const loopState = computed(() => loop && count.value > 1);
 const orientationState = computed(() => orientation);
-const dirState = computed(() => dir);
+const dirState = useResolvedDirection(() => dir);
 const indexState = useControllableState<number>({
   value: () => modelValue,
   defaultValue: () => defaultValue,
@@ -390,8 +401,12 @@ function updateMap<Value>(
   return next;
 }
 
+const messagesState = computed<CarouselMessages>(() => messages ?? {});
+const roleDescription = computed(() => messagesState.value.carousel ?? "carousel");
+
 carouselContext.provide({
   autoplay: autoplayState,
+  messages: messagesState,
   canScrollNext,
   canScrollPrev,
   dir: dirState,
@@ -476,7 +491,7 @@ defineExpose(exposed);
   <section
     :id="baseId"
     ref="element"
-    aria-roledescription="carousel"
+    :aria-roledescription="roleDescription"
     :aria-label="ariaLabel"
     :aria-labelledby="ariaLabelledby"
     :dir="dirState"

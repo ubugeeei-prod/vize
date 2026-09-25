@@ -29,6 +29,8 @@ mod tests_davinci_differential;
 #[cfg(test)]
 mod tests_dotted_slots;
 #[cfg(test)]
+mod tests_insertion_state;
+#[cfg(test)]
 mod tests_setup_components;
 #[cfg(test)]
 mod tests_sibling_navigation;

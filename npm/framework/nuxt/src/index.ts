@@ -19,6 +19,7 @@ import {
   resolveNuxtUnoCssOptions,
 } from "./options";
 import { createNuxtModuleResolver } from "./resolver";
+import { setupVizeLibraries } from "./libraries";
 import {
   buildNuxtDevAssetBase,
   isVizeGeneratedVueModuleId,
@@ -303,6 +304,12 @@ async function setupVizeNuxtModule(options: VizeNuxtOptions, nuxt: NuxtWithBuild
   const unocssOptions = resolveNuxtUnoCssOptions(options.unocss);
 
   if (museaOptions !== false) nuxt.hook("components:dirs", appendMuseaArtComponentIgnore);
+
+  await setupVizeLibraries(
+    { ui: options.ui, composables: options.composables },
+    nuxt.options.rootDir,
+    loadNuxtKit,
+  );
 
   const compilerOptions = resolveNuxtCompilerOptions(
     nuxt.options.rootDir,
@@ -646,3 +653,4 @@ export type {
   VizeNuxtUnoCssOptions,
   VizeNuxtVueVersion,
 } from "./options";
+export type { VizeNuxtComposablesOptions, VizeNuxtUiOptions } from "./libraries";

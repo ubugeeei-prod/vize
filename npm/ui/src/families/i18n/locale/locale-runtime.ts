@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, toValue } from "vue";
+import { computed, hasInjectionContext, toValue } from "vue";
 import type { ComputedRef, MaybeRefOrGetter } from "vue";
 
 import { createContext } from "../../foundations/context/context.ts";
@@ -282,7 +282,7 @@ export function resolveSearchCollator(
 
 /** Require setup. */
 function requireLocaleSetup(): void {
-  if (!getCurrentInstance()) {
+  if (!hasInjectionContext()) {
     throw new Error(`${setupDiagnostic}: use inside component setup`);
   }
 }

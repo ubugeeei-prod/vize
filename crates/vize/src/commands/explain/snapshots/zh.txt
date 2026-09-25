@@ -3642,6 +3642,7 @@ vue/attribute-hyphenation · lint 规则
 正确示例:
   <MyComponent my-prop="value" />
   <MyComponent :my-prop="value" />
+  <IconButton ariaLabel="Close" :dataTestid="id" />
 
 帮助:
   属性名使用kebab-case风格

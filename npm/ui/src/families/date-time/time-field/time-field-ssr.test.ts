@@ -35,7 +35,7 @@ test("renders byte-identical locale-ordered time segments across SSR requests", 
   assert.match(left, /contenteditable="true"/);
   assert.match(left, /aria-valuetext="PM"/);
   assert.match(left, /data-hour-cycle="12"/);
-  assert.match(left, /type="hidden" name="alarm" value="21:05:09"/);
+  assert.match(left, /type="text" name="alarm" value="21:05:09"/);
   assert.doesNotMatch(left, /function|NaN/);
 });
 

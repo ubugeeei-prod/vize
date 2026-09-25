@@ -41,6 +41,7 @@ test("CI JS checks keep native-backed UI lint behind the native build", () => {
     "pnpm lint:sfc",
     "pnpm check:static",
     "pnpm check:story-testbed",
+    "pnpm check:vapor-runtime",
   ]);
 });
 

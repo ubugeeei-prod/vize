@@ -183,6 +183,16 @@
       "import": "./dist/geolocation.mjs",
       "default": "./dist/geolocation.mjs"
     },
+    "./i18n": {
+      "types": "./dist/i18n.d.mts",
+      "import": "./dist/i18n.mjs",
+      "default": "./dist/i18n.mjs"
+    },
+    "./icu-message": {
+      "types": "./dist/icu-message.d.mts",
+      "import": "./dist/icu-message.mjs",
+      "default": "./dist/icu-message.mjs"
+    },
     "./idle": {
       "types": "./dist/idle.d.mts",
       "import": "./dist/idle.mjs",
@@ -318,6 +328,11 @@
       "import": "./dist/resize-observer.mjs",
       "default": "./dist/resize-observer.mjs"
     },
+    "./resolver": {
+      "types": "./dist/resolver.d.mts",
+      "import": "./dist/resolver.mjs",
+      "default": "./dist/resolver.mjs"
+    },
     "./retry-async": {
       "types": "./dist/retry-async.d.mts",
       "import": "./dist/retry-async.mjs",
@@ -428,10 +443,20 @@
       "import": "./dist/use-broadcast-channel.mjs",
       "default": "./dist/use-broadcast-channel.mjs"
     },
+    "./use-builtin-ai": {
+      "types": "./dist/use-builtin-ai.d.mts",
+      "import": "./dist/use-builtin-ai.mjs",
+      "default": "./dist/use-builtin-ai.mjs"
+    },
     "./use-clipboard": {
       "types": "./dist/use-clipboard.d.mts",
       "import": "./dist/use-clipboard.mjs",
       "default": "./dist/use-clipboard.mjs"
+    },
+    "./use-compression-stream": {
+      "types": "./dist/use-compression-stream.d.mts",
+      "import": "./dist/use-compression-stream.mjs",
+      "default": "./dist/use-compression-stream.mjs"
     },
     "./use-confirm-dialog": {
       "types": "./dist/use-confirm-dialog.d.mts",
@@ -543,6 +568,11 @@
       "import": "./dist/use-form.mjs",
       "default": "./dist/use-form.mjs"
     },
+    "./use-form-field-props": {
+      "types": "./dist/use-form-field-props.d.mts",
+      "import": "./dist/use-form-field-props.mjs",
+      "default": "./dist/use-form-field-props.mjs"
+    },
     "./use-fullscreen": {
       "types": "./dist/use-fullscreen.d.mts",
       "import": "./dist/use-fullscreen.mjs",
@@ -613,6 +643,11 @@
       "import": "./dist/use-mounted.mjs",
       "default": "./dist/use-mounted.mjs"
     },
+    "./use-navigation-api": {
+      "types": "./dist/use-navigation-api.d.mts",
+      "import": "./dist/use-navigation-api.mjs",
+      "default": "./dist/use-navigation-api.mjs"
+    },
     "./use-notification": {
       "types": "./dist/use-notification.d.mts",
       "import": "./dist/use-notification.mjs",
@@ -643,6 +678,11 @@
       "import": "./dist/use-payment-request.mjs",
       "default": "./dist/use-payment-request.mjs"
     },
+    "./use-performance-observer": {
+      "types": "./dist/use-performance-observer.d.mts",
+      "import": "./dist/use-performance-observer.mjs",
+      "default": "./dist/use-performance-observer.mjs"
+    },
     "./use-permission": {
       "types": "./dist/use-permission.d.mts",
       "import": "./dist/use-permission.mjs",
@@ -658,6 +698,11 @@
       "import": "./dist/use-previous.mjs",
       "default": "./dist/use-previous.mjs"
     },
+    "./use-push-subscription": {
+      "types": "./dist/use-push-subscription.d.mts",
+      "import": "./dist/use-push-subscription.mjs",
+      "default": "./dist/use-push-subscription.mjs"
+    },
     "./use-queue": {
       "types": "./dist/use-queue.d.mts",
       "import": "./dist/use-queue.mjs",
@@ -672,6 +717,21 @@
       "types": "./dist/use-relative-time-format.d.mts",
       "import": "./dist/use-relative-time-format.mjs",
       "default": "./dist/use-relative-time-format.mjs"
+    },
+    "./use-request-idle-callback": {
+      "types": "./dist/use-request-idle-callback.d.mts",
+      "import": "./dist/use-request-idle-callback.mjs",
+      "default": "./dist/use-request-idle-callback.mjs"
+    },
+    "./use-route-query": {
+      "types": "./dist/use-route-query.d.mts",
+      "import": "./dist/use-route-query.mjs",
+      "default": "./dist/use-route-query.mjs"
+    },
+    "./use-scheduler-post-task": {
+      "types": "./dist/use-scheduler-post-task.d.mts",
+      "import": "./dist/use-scheduler-post-task.mjs",
+      "default": "./dist/use-scheduler-post-task.mjs"
     },
     "./use-screen-details": {
       "types": "./dist/use-screen-details.d.mts",
@@ -697,6 +757,11 @@
       "types": "./dist/use-serial.d.mts",
       "import": "./dist/use-serial.mjs",
       "default": "./dist/use-serial.mjs"
+    },
+    "./use-service-worker": {
+      "types": "./dist/use-service-worker.d.mts",
+      "import": "./dist/use-service-worker.mjs",
+      "default": "./dist/use-service-worker.mjs"
     },
     "./use-set": {
       "types": "./dist/use-set.d.mts",
@@ -742,6 +807,11 @@
       "types": "./dist/use-storage.d.mts",
       "import": "./dist/use-storage.mjs",
       "default": "./dist/use-storage.mjs"
+    },
+    "./use-storage-estimate": {
+      "types": "./dist/use-storage-estimate.d.mts",
+      "import": "./dist/use-storage-estimate.mjs",
+      "default": "./dist/use-storage-estimate.mjs"
     },
     "./use-style-tag": {
       "types": "./dist/use-style-tag.d.mts",
@@ -808,6 +878,16 @@
       "import": "./dist/use-vibrate.mjs",
       "default": "./dist/use-vibrate.mjs"
     },
+    "./use-view-transition": {
+      "types": "./dist/use-view-transition.d.mts",
+      "import": "./dist/use-view-transition.mjs",
+      "default": "./dist/use-view-transition.mjs"
+    },
+    "./use-visual-viewport": {
+      "types": "./dist/use-visual-viewport.d.mts",
+      "import": "./dist/use-visual-viewport.mjs",
+      "default": "./dist/use-visual-viewport.mjs"
+    },
     "./use-wake-lock": {
       "types": "./dist/use-wake-lock.d.mts",
       "import": "./dist/use-wake-lock.mjs",
@@ -818,10 +898,20 @@
       "import": "./dist/use-web-authn.mjs",
       "default": "./dist/use-web-authn.mjs"
     },
+    "./use-web-locks": {
+      "types": "./dist/use-web-locks.d.mts",
+      "import": "./dist/use-web-locks.mjs",
+      "default": "./dist/use-web-locks.mjs"
+    },
     "./use-web-midi": {
       "types": "./dist/use-web-midi.d.mts",
       "import": "./dist/use-web-midi.mjs",
       "default": "./dist/use-web-midi.mjs"
+    },
+    "./use-web-vitals": {
+      "types": "./dist/use-web-vitals.d.mts",
+      "import": "./dist/use-web-vitals.mjs",
+      "default": "./dist/use-web-vitals.mjs"
     },
     "./use-websocket": {
       "types": "./dist/use-websocket.d.mts",
@@ -892,6 +982,7 @@
     "build:registry": "vp exec node scripts/build-source-registry.ts",
     "check:size": "node scripts/check-size.mjs",
     "check:types": "vp exec tsc --noEmit -p tsconfig.json",
+    "check:conformance": "vp exec node scripts/check-conformance.ts",
     "fmt": "vp fmt --write src scripts vite.config.ts"
   },
   "dependencies": {
@@ -899,9 +990,12 @@
   },
   "devDependencies": {
     "@types/node": "catalog:typescript",
+    "@vizejs/native": "workspace:*",
+    "happy-dom": "catalog:testing",
     "typescript": "catalog:typescript",
     "vite-plus": "catalog:vite-stack",
-    "vue": "catalog:vue-stable"
+    "vue": "catalog:vue-stable",
+    "vue-vapor-runtime": "npm:vue@3.6.0-beta.10"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

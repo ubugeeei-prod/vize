@@ -1,4 +1,4 @@
-import { readonly, shallowRef, toValue, watch } from "vue";
+import { hasInjectionContext, readonly, shallowRef, toValue, watch, watchPostEffect } from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -32,8 +32,9 @@ export interface UsePreferredLanguagesOptions {
  *
  * Updates on `languagechange`. The default host is gated on `window`, so
  * Node's own `navigator` never leaks the server locale into the render;
- * server renders expose `ssrLanguages`. The listener is removed with the
- * owning reactive scope.
+ * server renders expose `ssrLanguages`. Inside a component the languages are
+ * read after mounting, so hydration renders `ssrLanguages` first. The
+ * listener is removed with the owning reactive scope.
  *
  * @param options Server fallback and window capability.
  * @default options {}
@@ -44,9 +45,23 @@ export function usePreferredLanguages(
 ): Readonly<Ref<readonly string[]>> {
   const fallback = options.ssrLanguages ?? ["en"];
   const languages = shallowRef<readonly string[]>(fallback);
+  // Inside a component the host is attached by a post-flush job (after the
+  // component mounted), so a hydrating client first renders the same server
+  // fallback. Outside components it is attached synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
 
   const stop = watch(
-    () => (options.host === undefined ? browserLanguagesHost() : toValue(options.host)),
+    () =>
+      hydrated.value
+        ? options.host === undefined
+          ? browserLanguagesHost()
+          : toValue(options.host)
+        : undefined,
     (host, _previous, onCleanup) => {
       if (!host) {
         languages.value = fallback;

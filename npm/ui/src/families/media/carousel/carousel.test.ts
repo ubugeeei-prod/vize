@@ -657,6 +657,23 @@ test("exposes typed state and imperative navigation and rotation controls", asyn
   handle.unmount();
 });
 
+test("messages localize role descriptions and slide and indicator names", () => {
+  const handle = mountCarousel({
+    messages: {
+      carousel: "カルーセル",
+      slide: "スライド",
+      slideLabel: (position: number, count: number) => `${count}枚中${position}枚目`,
+      indicatorLabel: (position: number) => `スライド${position}`,
+    },
+  });
+  const root = handle.root();
+  assert.equal(root.getAttribute("aria-roledescription"), "カルーセル");
+  assert.equal(slidesOf(root)[1]?.getAttribute("aria-roledescription"), "スライド");
+  assert.equal(slidesOf(root)[1]?.getAttribute("aria-label"), "3枚中2枚目");
+  assert.equal(indicatorsOf(root)[2]?.getAttribute("aria-label"), "スライド3");
+  handle.unmount();
+});
+
 test("compound parts require a matching root provider", () => {
   for (const [part, props] of [
     [CarouselViewport, {}],

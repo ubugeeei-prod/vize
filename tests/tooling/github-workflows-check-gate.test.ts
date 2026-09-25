@@ -114,6 +114,18 @@ test("PR and main push stay fast while full checks require schedule or dispatch"
   );
   assert.match(commands("check-js"), /vp run --workspace-root check:repo/);
   assert.match(commands("check-js"), /vp run --workspace-root check:ci/);
+  const appSteps = workflow.jobs?.["check-vize-apps"]?.steps ?? [];
+  const referenceDocs = appSteps.findIndex(
+    (step) => step.name === "Check generated reference docs",
+  );
+  assert.equal(
+    appSteps[referenceDocs]?.run,
+    "vp node --test tests/tooling/lib-reference-docs.test.ts",
+  );
+  assert.ok(
+    referenceDocs < appSteps.findIndex((step) => step.name === "Build vize CLI"),
+    "generated reference docs must be checked before the Rust build",
+  );
   assert.match(commands("check-vize-apps"), /cargo build --profile ci -p vize/);
   assert.match(commands("test-scripts"), /vp run --workspace-root test:scripts/);
   assert.match(commands("test-js-packages"), /vp run --workspace-root test:js/);

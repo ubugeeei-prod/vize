@@ -1,4 +1,12 @@
-import { readonly, ref, toValue, watch } from "vue";
+import {
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -79,6 +87,9 @@ export interface ScreenOrientationControls {
  * Lock failures (not fullscreen, unsupported) resolve `false` instead of
  * throwing.
  *
+ * Inside a component the host is read after mounting, so hydration renders
+ * the server fallback first and never mismatches.
+ *
  * @param options Server fallback and window capability.
  * @default options {}
  * @returns Reactive orientation plus lock actions.
@@ -90,7 +101,17 @@ export function useScreenOrientation(
   const isSupported = ref(false);
   const orientation = ref<OrientationType>(fallback);
   const angle = ref(0);
+  // Inside a component the host is attached by a post-flush job (after the
+  // component mounted), so a hydrating client first renders the same server
+  // fallback. Outside components it is attached synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const target = (): ScreenOrientationLike | undefined => {
+    if (!hydrated.value) return undefined;
     const host = options.host === undefined ? browserScreenHost() : toValue(options.host);
     return host?.screen.orientation;
   };

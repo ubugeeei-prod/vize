@@ -1,4 +1,13 @@
-import { computed, readonly, ref, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  onMounted,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { availableCapability, unavailableCapability } from "./capability.ts";
@@ -120,8 +129,21 @@ export function useGeolocation(options: UseGeolocationOptions = {}): Geolocation
   const locatedAt = ref<number | null>(null);
   const error = shallowRef<GeolocationPositionError | null>(null);
   const isActive = ref(options.immediate ?? true);
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
   const host = (): GeolocationHost | null | undefined =>
-    options.host === undefined ? browserGeolocationHost() : toValue(options.host);
+    !mounted.value
+      ? undefined
+      : options.host === undefined
+        ? browserGeolocationHost()
+        : toValue(options.host);
 
   const stopWatch = watch(
     [host, isActive],

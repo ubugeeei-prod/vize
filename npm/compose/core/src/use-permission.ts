@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, readonly, ref, toValue, watchEffect } from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -137,6 +137,8 @@ function toDescriptor(
  * Server rendering: no browser window exists, so nothing is queried and
  * `state` stays at `initialState` (`"unknown"`) with `supported` false.
  * Unknown names (the browser rejects the query) report `"unsupported"`.
+ * Inside a component the first query runs after mounting, so hydration
+ * renders `initialState` exactly like the server did.
  *
  * @example
  * ```ts
@@ -197,12 +199,14 @@ export function usePermission(
   };
 
   if (typeof window !== "undefined" || options.host !== undefined) {
-    watch(
-      [() => toValue(name), resolveHost],
+    // `query` reads the name and host synchronously, so the effect re-runs
+    // when either changes. Inside a component the first query waits for the
+    // post-render flush: hydration renders `initialState` like the server.
+    watchEffect(
       () => {
         void query();
       },
-      { immediate: true, flush: "sync" },
+      { flush: hasInjectionContext() ? "post" : "sync" },
     );
   }
 

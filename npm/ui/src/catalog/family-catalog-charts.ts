@@ -1,15 +1,74 @@
 import {
   catalogOwner,
+  componentQualityGates,
   stableQualityGates,
   type UiFamilyCatalogEntry,
 } from "./family-catalog-types.ts";
 
+const chartFamilyRoot = "src/families/charts/chart/";
 const chartScaleFamilyRoot = "src/families/charts/chart-scale/";
 const chartShapeFamilyRoot = "src/families/charts/chart-shape/";
 
 const chartMathQualityGates = [...stableQualityGates, "ssr", "hydration"] as const;
 
 export const chartFamilyCatalog = [
+  {
+    canonicalName: "chart",
+    title: "Chart",
+    packageSubpath: "./chart",
+    entryFile: `${chartFamilyRoot}chart.ts`,
+    sourceFiles: [
+      `${chartFamilyRoot}chart-area.vue`,
+      `${chartFamilyRoot}chart-axis.vue`,
+      `${chartFamilyRoot}chart-bars.vue`,
+      `${chartFamilyRoot}chart-crosshair.vue`,
+      `${chartFamilyRoot}chart-data-table.vue`,
+      `${chartFamilyRoot}chart-grid.vue`,
+      `${chartFamilyRoot}chart-legend.vue`,
+      `${chartFamilyRoot}chart-line.vue`,
+      `${chartFamilyRoot}chart-pie.vue`,
+      `${chartFamilyRoot}chart-points.vue`,
+      `${chartFamilyRoot}chart-root.vue`,
+      `${chartFamilyRoot}chart-tooltip.vue`,
+      `${chartFamilyRoot}chart.ts`,
+      `${chartFamilyRoot}chart-context.ts`,
+      `${chartFamilyRoot}chart-format.ts`,
+      `${chartFamilyRoot}chart-navigation.ts`,
+      `${chartFamilyRoot}chart-render-fixture.ts`,
+      `${chartFamilyRoot}chart-series.ts`,
+      `${chartFamilyRoot}chart-types.ts`,
+    ],
+    behaviorContract: `${chartFamilyRoot}chart.behavior.md`,
+    tests: [`${chartFamilyRoot}chart.test.ts`, `${chartFamilyRoot}chart-ssr.test.ts`],
+    typeTests: [`${chartFamilyRoot}chart.types.test-d.ts`],
+    rendererFixture: "ChartConsumer.vue",
+    qualityGates: componentQualityGates,
+    bundleBudget: {
+      exportName: "ChartRoot",
+      retainedSignature: 'data-vize-ui":(?:`chart`|"chart"|\'chart\')',
+      allowedRetainedFamilies: ["context", "controllable-state"],
+      maximumJavaScriptGzipBytes: 3_250,
+      maximumCssGzipBytes: 0,
+    },
+    aliases: ["chart", "line chart", "bar chart", "pie chart", "data visualization", "graph"],
+    upstreamCoverage: [
+      "WAI-ARIA graphics roles",
+      "Highcharts accessibility module",
+      "Recharts",
+      "visx",
+      "Unovis",
+    ],
+    dependencies: [
+      "announcer",
+      "chart-scale",
+      "chart-shape",
+      "context",
+      "controllable-state",
+      "id",
+    ],
+    maturity: "stable",
+    owner: catalogOwner,
+  },
   {
     canonicalName: "chart-scale",
     title: "Chart Scale",

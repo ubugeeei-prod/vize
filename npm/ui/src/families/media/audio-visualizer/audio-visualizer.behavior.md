@@ -1,0 +1,31 @@
+# AudioVisualizer Behavior Contract
+
+Normative state x input -> outcome table for `useAudioAnalyser`, `audio-visualizer.vue`, and
+`audio-visualizer-bars.vue` (`@vizejs/ui/audio-visualizer`). Every row is proven by the named
+test.
+
+The analyser never renders anything itself: it publishes typed frame buffers, `level`, and
+`peak`, and the SFCs pass them to slots so consumers draw SVG, canvas, or CSS bars. Nothing is
+created during server rendering, and connection is deferred to a microtask so hydration sees the
+server's `idle` state.
+
+| ID   | State                 | Input                                       | Outcome                                                                                                                                                      | Evidence                                                                                 |
+| ---- | --------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| AV1  | setup                 | media element source                        | stays `idle` through setup, then connects in a microtask, reads one frame, and waits `suspended` for a gesture; no frames loop meanwhile                     | `stays idle until connection is deferred past setup, then routes a media element`        |
+| AV2  | suspended             | `resume()` / animation frames               | resumes the context, reads every animation frame, and stops the loop on scope dispose                                                                        | `stays idle until connection is deferred past setup, then routes a media element`        |
+| AV3  | media element         | two analysers / `play` event                | the element's source node is created once per context and stays routed to the speakers; playing the element resumes the context                              | `media-element sources are created once per element and stay audible`                    |
+| AV4  | stream / node / other | connect                                     | streams and nodes feed the analyser without destination routing (no feedback); non-`MediaStream` stream-likes are `unsupported`; `null` is `idle`            | `streams and nodes connect without destination routing; unknown sources are unsupported` |
+| AV5  | `precision="float"`   | read                                        | buffers are `Float32Array` decibels and samples; bands normalize decibels over the configured range                                                          | `float precision reads decibel and sample buffers`                                       |
+| AV6  | running               | `paused`, `frameRate`, setting changes      | `paused` stops reads (`paused` state); `frameRate` throttles reads; fft size, smoothing, and decibel range re-apply and buffers resize                       | `pausing, frame-rate throttling, and reactive settings control reads`                    |
+| AV7  | reduced motion        | `throttle` / `pause`                        | the preference throttles reads to `reducedMotionFrameRate` or pauses them                                                                                    | `reduced motion throttles or pauses frame reads`                                         |
+| AV8  | invalid / failing     | bad fft size, no scope, no Web Audio, throw | invalid fft sizes throw a typed `RangeError`; use outside a scope throws; missing Web Audio is `unsupported`; connection errors are `error` with `error` set | `invalid fft sizes, missing Web Audio, and connection failures are reported`             |
+| AV9  | connected             | `dispose()`                                 | disconnects nodes, returns to `idle`, and ignores later source changes                                                                                       | `disposing disconnects nodes and ignores later source changes`                           |
+| AV10 | AudioVisualizer       | render / frames                             | decorative (`aria-hidden`) unless named (`role="img"`); slots receive buffers, level, bands, and waveform paths that update per frame                        | `the visualizer is decorative by default and exposes frame data to slots`                |
+| AV11 | AudioVisualizerBars   | render / custom slot / no provider          | renders one bar span per bar with `--vize-ui-audio-visualizer-bar`, or the custom slot; requires the root provider                                           | `bars render one span per bar with height custom properties or a custom slot`            |
+| AV12 | pure helpers          | levels, bars, edges, paths                  | RMS and peak clamp to `0..1`; bar edges cover every bin; bars average normalized bins; waveform paths are deterministic                                      | `pure helpers compute levels, bars, edges, and waveform paths deterministically`         |
+| AV13 | SSR                   | isolated requests                           | markup is byte-identical, `idle`, with zeroed level and bars                                                                                                 | `renders byte-identical idle visualizer markup across isolated SSR requests`             |
+| AV14 | SSR / hydration       | hydrate                                     | server markup hydrates without warnings or node replacement                                                                                                  | `hydrates visualizer markup without warnings or node replacement`                        |
+| AV15 | types                 | compile                                     | `precision` infers `Uint8Array` or `Float32Array` buffers; states and sources are closed; data refs are read-only                                            | `audio-visualizer.types.test-d.ts`                                                       |
+
+`precision` is read once at setup. Buffers are reused between frames; the refs are triggered on
+every read, so copy a buffer if a frame must be retained.

@@ -161,7 +161,7 @@ impl<'a> Emitter<'a, '_> {
                     Content::Component { .. } => self.component(child, None, None, &mut block),
                     Content::Outlet { .. } => {
                         let id = self.id();
-                        self.outlet(child, id, &mut block);
+                        self.outlet(child, id, None, &mut block);
                         block.returns.push(id);
                     }
                 }

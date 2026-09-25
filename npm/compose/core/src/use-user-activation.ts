@@ -1,4 +1,13 @@
-import { computed, readonly, ref, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -126,10 +135,21 @@ export function useUserActivation(options: UseUserActivationOptions = {}): UserA
   const isActive = ref(false);
   let timer: { scheduler: IntervalScheduler; handle: unknown } | undefined;
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveHost = (): UserActivationLike | undefined =>
-    options.userActivation === undefined
-      ? browserUserActivation()
-      : (toValue(options.userActivation) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.userActivation === undefined
+        ? browserUserActivation()
+        : (toValue(options.userActivation) ?? undefined);
 
   const stopPolling = (): void => {
     timer?.scheduler.clearInterval(timer.handle);
@@ -156,13 +176,18 @@ export function useUserActivation(options: UseUserActivationOptions = {}): UserA
 
   const stopWatch = watch(
     () =>
-      options.target === undefined
-        ? typeof window === "undefined"
-          ? undefined
-          : window
-        : (toValue(options.target) ?? undefined),
-    (target, _previous, onCleanup) => {
-      if (!target || !resolveHost()) return;
+      [
+        options.target === undefined
+          ? typeof window === "undefined"
+            ? undefined
+            : window
+          : (toValue(options.target) ?? undefined),
+        resolveHost(),
+      ] as const,
+    ([target, host], _previous, onCleanup) => {
+      // Read the state once the host resolves (after mount inside a component).
+      if (host) refresh();
+      if (!target || !host) return;
       const events = options.events ?? defaultEvents;
       for (const type of events)
         target.addEventListener(type, onEvent, { capture: true, passive: true });
@@ -172,8 +197,6 @@ export function useUserActivation(options: UseUserActivationOptions = {}): UserA
     },
     { immediate: true, flush: "sync" },
   );
-
-  if (resolveHost()) refresh();
 
   const stop = (): void => {
     stopWatch();

@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { hasInjectionContext, onMounted, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -110,6 +110,15 @@ export function useIdle(timeout = 60_000, options: UseIdleOptions = {}): IdleCon
   let handle: unknown;
   let hasTimer = false;
   let tracking = false;
+  // Inside a component the host is read once it has mounted, so a hydrating
+  // client first renders the same fallback as the server. `hasInjectionContext`
+  // also detects Vapor components (unlike `getCurrentInstance`).
+  const mounted = shallowRef(!hasInjectionContext());
+  if (!mounted.value) {
+    onMounted(() => {
+      mounted.value = true;
+    });
+  }
 
   const clear = (): void => {
     if (!hasTimer) return;
@@ -129,7 +138,12 @@ export function useIdle(timeout = 60_000, options: UseIdleOptions = {}): IdleCon
   };
 
   const stop = watch(
-    () => (options.host === undefined ? browserIdleHost() : toValue(options.host)),
+    () =>
+      !mounted.value
+        ? undefined
+        : options.host === undefined
+          ? browserIdleHost()
+          : toValue(options.host),
     (host, _previous, onCleanup) => {
       if (!host) return;
       tracking = true;

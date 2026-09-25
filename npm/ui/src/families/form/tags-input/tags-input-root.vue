@@ -372,9 +372,13 @@ function tryAddText(
   return tryAddTag(tag, trimmed, source, currentTags);
 }
 
+function readTags(): readonly T[] {
+  return tags.value;
+}
+
 function commitSegments(segments: readonly string[], source: TagsInputAddSource): string[] {
   const rejected: string[] = [];
-  let currentTags = tags.value;
+  let currentTags = readTags();
   for (const segment of segments) {
     const next = tryAddText(segment, source, currentTags);
     if (next === null) rejected.push(segment);
@@ -527,7 +531,9 @@ watch(
   (root, _previous, onCleanup) => {
     const owner =
       form === undefined ? root?.closest("form") : root?.ownerDocument.getElementById(form);
-    if (!(owner instanceof HTMLFormElement)) return;
+    // `owner` is absent during server rendering, where DOM constructors such
+    // as `HTMLFormElement` do not exist: check it before `instanceof`.
+    if (owner == null || !(owner instanceof HTMLFormElement)) return;
     const onReset = () => {
       inputValue.value = "";
       editingIndex.value = null;

@@ -159,7 +159,11 @@ describe("FlameView", () => {
       span("davinci.pass.walk", "s2", "v-slot", 3_000),
     ]);
     const wrapper = mount(FlameView, { props: { profile: PROFILE, baseline: PROFILE } });
-    const input = wrapper.find<HTMLInputElement>("#davinci-flame-file");
+    // The input id comes from `useId()`; the label must point at it.
+    const input = wrapper.find<HTMLInputElement>("input.davinci-flame-file");
+    const label = wrapper.find("label[for]");
+    expect(input.attributes("id")).toBeTruthy();
+    expect(label.attributes("for")).toBe(input.attributes("id"));
     // Reading a File is asynchronous in every engine: wait for the view to settle.
     const choose = async (text: string, settled: () => boolean) => {
       const file = new File([text], "build.json", { type: "application/json" });
@@ -173,12 +177,14 @@ describe("FlameView", () => {
     await choose("{ not json", () => wrapper.find("[role=alert]").exists());
     expect(wrapper.find("[role=alert]").text()).toBe("build.json: The file is not JSON.");
 
-    await choose(JSON.stringify(build), () => wrapper.find("#davinci-flame-key").exists());
+    // The key select's id also comes from `useId()`: find it through its class.
+    const keySelect = () => wrapper.find<HTMLSelectElement>(".davinci-flame-bar select");
+    await choose(JSON.stringify(build), () => keySelect().exists());
     expect(wrapper.find("[role=alert]").exists()).toBe(false);
     expect(wrapper.find(".davinci-flame-bar p").text()).toBe(
       "Showing build.json (tool vize, command analyze-sfc)",
     );
-    const select = wrapper.find<HTMLSelectElement>("#davinci-flame-key");
+    const select = keySelect();
     expect(select.findAll("option").map((option) => option.text())).toEqual([
       "davinci.pass.walk",
       "compile.template",

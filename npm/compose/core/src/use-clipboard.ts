@@ -1,4 +1,13 @@
-import { computed, readonly, ref, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -244,6 +253,9 @@ const unsupported: ClipboardFailure = { status: "unsupported", error: undefined 
  * empty and `supported` is false. The `copied` reset timer and the optional
  * `copy`/`cut` listeners are released when the owning scope stops.
  *
+ * Inside a component the host is read after mounting, so hydration renders
+ * the server fallback first and never mismatches.
+ *
  * @example
  * ```ts
  * const { copy, copied } = useClipboard();
@@ -268,6 +280,15 @@ export function useClipboard(options: UseClipboardOptions = {}): ClipboardContro
   const error = shallowRef<ClipboardFailure | undefined>(undefined);
   let resetHandle: unknown;
   let resetPending = false;
+  // Inside a component the host is attached by a post-flush job (after the
+  // component mounted), so a hydrating client first renders the same server
+  // fallback. Outside components it is attached synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
 
   const resolveHost = (): ClipboardHost | undefined =>
     options.host === undefined ? browserClipboardHost() : (toValue(options.host) ?? undefined);
@@ -279,6 +300,7 @@ export function useClipboard(options: UseClipboardOptions = {}): ClipboardContro
   const writePermission = usePermission("clipboard-write", { host: permissionHost });
 
   const supported = computed(() => {
+    if (!hydrated.value) return false;
     const host = resolveHost();
     return Boolean(host?.clipboard) || Boolean(allowLegacy && host?.legacyCopy);
   });

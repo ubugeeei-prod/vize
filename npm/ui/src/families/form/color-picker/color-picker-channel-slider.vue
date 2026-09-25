@@ -2,9 +2,7 @@
 import { computed, shallowRef, useTemplateRef } from "vue";
 
 import {
-  formatColorChannelValue,
   getColorChannelGradient,
-  getColorChannelLabel,
   getColorChannelRange,
   getColorChannelValue,
   resolveColorChannelSpace,
@@ -111,7 +109,7 @@ const percent = computed(() => valueToPercent(range.value, value.value));
 const dragging = computed(() => activePointer.value !== null);
 
 const label = computed(() =>
-  ariaLabelledby === undefined ? (ariaLabel ?? getColorChannelLabel(channel)) : ariaLabel,
+  ariaLabelledby === undefined ? (ariaLabel ?? context.channelLabel(channel)) : ariaLabel,
 );
 const gradientDirection = computed(() => {
   if (orientation === "vertical") return "to top";
@@ -262,7 +260,7 @@ defineExpose(exposed);
       :aria-valuemin="min"
       :aria-valuemax="max"
       :aria-valuenow="value"
-      :aria-valuetext="formatColorChannelValue(channel, value)"
+      :aria-valuetext="context.channelValueText(channel, value)"
       :aria-disabled="context.disabled.value ? 'true' : undefined"
       :aria-readonly="context.readOnly.value ? 'true' : undefined"
       data-vize-ui="color-picker-channel-thumb"

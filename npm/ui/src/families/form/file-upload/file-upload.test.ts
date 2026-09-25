@@ -264,10 +264,23 @@ test("drag enter and leave track nesting and flag rejected payloads", async () =
   assert.equal(zone.getAttribute("data-dragging"), null);
   assert.equal(root.getAttribute("data-dragging"), null);
 
-  dispatchTransfer(zone, "dragenter", fakeTransfer({ types: ["text/plain"] }));
+  const acceptedOver = fakeTransfer({ types: ["image/png"] });
+  dispatchTransfer(zone, "dragenter", acceptedOver);
+  dispatchTransfer(zone, "dragover", acceptedOver);
+  assert.equal(Reflect.get(acceptedOver, "dropEffect"), "copy");
+  dispatchTransfer(zone, "dragleave", acceptedOver);
+
+  const rejected = fakeTransfer({ types: ["text/plain"] });
+  dispatchTransfer(zone, "dragenter", rejected);
   await nextTick();
   assert.equal(zone.getAttribute("data-drag-reject"), "true");
   assert.equal(zone.getAttribute("data-state"), "rejecting");
+  dispatchTransfer(zone, "dragover", rejected);
+  assert.equal(
+    Reflect.get(rejected, "dropEffect"),
+    "none",
+    "rejected previews refuse the drop by default",
+  );
   dispatchTransfer(zone, "dragleave", fakeTransfer({ types: ["text/plain"] }));
 
   const text = new Event("dragenter", { bubbles: true, cancelable: true });
@@ -349,7 +362,7 @@ test("dropped directories expand recursively and keep relative paths", async () 
   handle.unmount();
 });
 
-test("paste adds clipboard files on the dropzone or the whole document", async () => {
+test("paste adds clipboard files on the dropzone or the whole document outside editable controls", async () => {
   const handle = mountUpload({ multiple: true });
   const root = handle.root();
   const clip = file("clip.png", "image/png");
@@ -382,6 +395,36 @@ test("paste adds clipboard files on the dropzone or the whole document", async (
   await settle();
   assert.deepEqual(names(documentHandle.root()), ["doc.png"]);
   assert.equal(accepted, 1);
+  const field = document.createElement("textarea");
+  document.body.append(field);
+  const typed = dispatchTransfer(
+    field,
+    "paste",
+    fakeTransfer({ files: [file("typed.png")] }),
+    "clipboardData",
+  );
+  await settle();
+  assert.equal(accepted, 1, "pastes into editable controls outside the dropzone are ignored");
+  assert.equal(typed.defaultPrevented, false);
+  field.remove();
+  await documentHandle.wrapper.setProps({ disabled: true });
+  dispatchTransfer(
+    document.body,
+    "paste",
+    fakeTransfer({ files: [file("off.png")] }),
+    "clipboardData",
+  );
+  await settle();
+  assert.equal(accepted, 1, "disabled uploads release the document listener");
+  await documentHandle.wrapper.setProps({ disabled: false });
+  dispatchTransfer(
+    document.body,
+    "paste",
+    fakeTransfer({ files: [file("on.png")] }),
+    "clipboardData",
+  );
+  await settle();
+  assert.equal(accepted, 2);
   documentHandle.unmount();
   const late = dispatchTransfer(
     document.body,
@@ -390,7 +433,7 @@ test("paste adds clipboard files on the dropzone or the whole document", async (
     "clipboardData",
   );
   await settle();
-  assert.equal(accepted, 1, "document listener is released on unmount");
+  assert.equal(accepted, 2, "document listener is released on unmount");
   assert.equal(late.defaultPrevented, false);
 });
 
@@ -591,7 +634,7 @@ test("formats sizes with the locale prop, IEC units, or a custom formatter", asy
   const french = mountUpload({ defaultValue: [sized], locale: "fr-FR", sizeStandard: "iec" });
   assert.equal(
     french.root().querySelector('[data-vize-ui="file-upload-item-size"]')?.textContent,
-    "2,4 KiB",
+    "2,4\u00a0KiB",
   );
   french.unmount();
 });

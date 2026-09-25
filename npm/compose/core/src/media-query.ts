@@ -1,4 +1,4 @@
-import { computed, readonly, ref, toValue, watchEffect } from "vue";
+import { computed, hasInjectionContext, readonly, ref, toValue, watchEffect } from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref } from "vue";
 
 /** Capability required to evaluate media queries. */
@@ -28,7 +28,9 @@ export interface UseMediaQueryOptions {
  * Evaluate a reactive media query without requiring browser globals.
  *
  * During server rendering (or whenever no capability host resolves) the ref
- * holds the configured server value and no subscription is created. The
+ * holds the configured server value and no subscription is created. Inside a
+ * component the first match is read after mounting, so hydration renders the
+ * server value first and never mismatches. The
  * change subscription follows the reactive query and host: each
  * re-evaluation removes the previous listener, and the final listener is
  * removed when the owning reactive scope stops. Call inside an active scope
@@ -46,21 +48,28 @@ export function useMediaQuery(
 ): Readonly<Ref<boolean>> {
   const matches = ref(options.ssrValue ?? false);
 
-  watchEffect((onCleanup) => {
-    const host = options.host === undefined ? browserMediaQueryHost() : toValue(options.host);
-    if (!host) {
-      matches.value = options.ssrValue ?? false;
-      return;
-    }
+  // Inside a component the first read waits for the post-render flush, so a
+  // hydrating client renders the same `ssrValue` the server did and then
+  // switches to the live result. Outside components the read is synchronous.
+  const flush = hasInjectionContext() ? "post" : "pre";
+  watchEffect(
+    (onCleanup) => {
+      const host = options.host === undefined ? browserMediaQueryHost() : toValue(options.host);
+      if (!host) {
+        matches.value = options.ssrValue ?? false;
+        return;
+      }
 
-    const media = host.matchMedia(toValue(query));
-    const update = (): void => {
-      matches.value = media.matches;
-    };
-    update();
-    media.addEventListener("change", update);
-    onCleanup(() => media.removeEventListener("change", update));
-  });
+      const media = host.matchMedia(toValue(query));
+      const update = (): void => {
+        matches.value = media.matches;
+      };
+      update();
+      media.addEventListener("change", update);
+      onCleanup(() => media.removeEventListener("change", update));
+    },
+    { flush },
+  );
 
   return readonly(matches);
 }

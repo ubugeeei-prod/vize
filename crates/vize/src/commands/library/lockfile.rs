@@ -55,10 +55,17 @@ pub struct LockedItem {
     pub dir: String,
     /// `true` when requested by name; `false` when pulled only as a dependency.
     pub direct: bool,
+    /// `true` when the item's examples were pulled too (`--with-examples`).
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub examples: bool,
     /// Registry dependency closure at pull time.
     pub registry_dependencies: Vec<String>,
     /// Registry-relative path -> SHA-256 of the bytes written at pull time.
     pub files: BTreeMap<String, String>,
+}
+
+fn is_false(value: &bool) -> bool {
+    !*value
 }
 
 impl LockedItem {
@@ -184,6 +191,7 @@ mod tests {
             content_hash: "0".repeat(64).into(),
             dir: "src/components/vize".into(),
             direct: true,
+            examples: false,
             registry_dependencies: Vec::new(),
             files: BTreeMap::new(),
         }
@@ -199,7 +207,7 @@ mod tests {
         let parsed: Lockfile = serde_json::from_slice(&bytes).unwrap();
         let names: Vec<&str> = parsed.items.iter().map(|item| item.name.as_str()).collect();
         assert_eq!(names, ["use-toggle", "id", "switch"]);
-        assert!(bytes.ends_with(b"}\n"));
+        assert_eq!(bytes.get(bytes.len() - 2..), Some(&b"}\n"[..]));
     }
 
     #[test]

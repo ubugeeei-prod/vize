@@ -1,4 +1,13 @@
-import { computed, readonly, ref, shallowRef, toValue, unref } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowRef,
+  toValue,
+  unref,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -663,14 +672,27 @@ export function useWebAuthn(options: UseWebAuthnOptions = {}): WebAuthnControls 
   const error = shallowRef<unknown>(undefined);
   let controller: AbortController | undefined;
 
+  // Inside a component the host resolves only after mount (a post-flush
+  // job), so a hydrating client first renders the same unsupported state as
+  // the server. Outside components it resolves immediately.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const resolveCredentials = (): WebAuthnCredentialsHost | undefined =>
-    options.credentials === undefined
-      ? browserCredentials()
-      : (toValue(options.credentials) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.credentials === undefined
+        ? browserCredentials()
+        : (toValue(options.credentials) ?? undefined);
   const resolveStatics = (): PublicKeyCredentialStatics | undefined =>
-    options.publicKeyCredential === undefined
-      ? browserStatics()
-      : (unref(options.publicKeyCredential) ?? undefined);
+    !hydrated.value
+      ? undefined
+      : options.publicKeyCredential === undefined
+        ? browserStatics()
+        : (unref(options.publicKeyCredential) ?? undefined);
 
   const abort = (reason?: unknown): void => {
     const current = controller;

@@ -1,4 +1,15 @@
-import { computed, readonly, ref, shallowReactive, shallowReadonly, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  ref,
+  shallowReactive,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComponentPublicInstance, MaybeRefOrGetter, Ref, WritableComputedRef } from "vue";
 
 import { isElementNode, resolveElement } from "./element-target.ts";
@@ -148,6 +159,9 @@ const defaultScheduler: TimeoutScheduler = {
  * passive and removed together with the idle timer when the owning reactive
  * scope stops.
  *
+ * Inside a component the host is read after mounting, so hydration renders
+ * the server fallback first and never mismatches.
+ *
  * @param target Reactive element, component, or window-like target.
  * @param options Edge offsets, idle timing, behavior, and callbacks.
  * @default options {}
@@ -163,12 +177,22 @@ export function useScroll(
   const internalX = ref(0);
   const internalY = ref(0);
   const isScrolling = ref(false);
+  // Inside a component the host is attached by a post-flush job (after the
+  // component mounted), so a hydrating client first renders the same server
+  // fallback. Outside components it is attached synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
   const arrivedState = shallowReactive({ left: true, right: false, top: true, bottom: false });
   const directions = shallowReactive({ left: false, right: false, top: false, bottom: false });
   let idleHandle: unknown;
   let hasIdleTimer = false;
 
   const resolveContainer = (): Element | ScrollWindowHost | null => {
+    if (!hydrated.value) return null;
     const value = toValue(target);
     if (isScrollWindow(value)) return value;
     return resolveElement(value);

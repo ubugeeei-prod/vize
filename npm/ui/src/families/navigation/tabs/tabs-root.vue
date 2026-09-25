@@ -22,6 +22,7 @@ import type {
   TabsValue,
 } from "./tabs-types.ts";
 import { getTabsValueIdSegment, tabsValueEquals } from "./tabs-value.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 type TabsInternalValue = TabsValue | undefined;
 
@@ -32,7 +33,7 @@ const {
   disabled = false,
   activationMode = "automatic",
   orientation = "horizontal",
-  dir = "ltr",
+  dir = undefined,
   loop = true,
 } = defineProps<{
   /**
@@ -78,9 +79,9 @@ const {
   readonly orientation?: TabsOrientation;
 
   /**
-   * Reading direction used for horizontal arrow-key navigation.
+   * Reading direction used for horizontal arrow-key navigation. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: TabsDirection;
 
@@ -111,7 +112,7 @@ const listId = computed(() => deriveDeterministicId(baseId.value, "list"));
 const disabledState = computed(() => disabled);
 const activationModeState = computed(() => activationMode);
 const orientationState = computed(() => orientation);
-const dirState = computed(() => dir);
+const dirState = useResolvedDirection(() => dir);
 const registry = createCollectionRegistry<string, string>({ disabledBehavior: "skip" });
 const firstEnabledValue = computed<TabsValue>(() => registry.navigableItems.value[0]?.key ?? null);
 const valueState = useControllableState<TabsInternalValue>({

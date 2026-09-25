@@ -35,7 +35,7 @@ void test("entries have one ordered export subpath, source, and integral size bu
   );
   assert.deepEqual(rootEntry.reexportedEntries, sortedUnique(rootEntry.reexportedEntries));
   assert.deepEqual(rootEntry.isolatedEntries, sortedUnique(rootEntry.isolatedEntries));
-  assert.deepEqual(rootEntry.isolatedEntries, ["./temporal"]);
+  assert.deepEqual(rootEntry.isolatedEntries, ["./resolver", "./temporal"]);
   for (const entry of entries) {
     const basename = entry.subpath.slice(2);
     assert.equal(entry.source, `src/${basename}.ts`);

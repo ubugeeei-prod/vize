@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
+import { collectExamples } from "./examples.ts";
 import {
   isRelativeSpecifier,
   packageNameOfSpecifier,
@@ -255,7 +256,37 @@ export function buildLibRegistry(input: LibRegistryBuildInput): LibRegistryBundl
         .sort(([left], [right]) => compareStrings(left, right))
         .map(([name, importer]) => npmDependency(name, input, importer)),
       contentHash: computeContentHash(files),
+      examples: [],
     };
+  });
+
+  const filesByItem = new Map(
+    manifestItems.map((item) => [item.name, item.files.map((file) => file.path)]),
+  );
+  const allowedPackages = new Set([
+    ...Object.keys(input.peerDependencies),
+    ...Object.keys(input.dependencies),
+  ]);
+  const familiesByDirectory = new Map<string, string[]>();
+  for (const item of manifestItems) {
+    const directory = path.posix.dirname(item.entry);
+    familiesByDirectory.set(directory, [...(familiesByDirectory.get(directory) ?? []), item.name]);
+  }
+  const withExamples = manifestItems.map((item): LibRegistryItem => {
+    const closureFiles = new Set(
+      [item.name, ...item.registryDependencies].flatMap((name) => filesByItem.get(name) ?? []),
+    );
+    const collected = collectExamples(
+      input.sourceRoot,
+      item.name,
+      familiesByDirectory.get(path.posix.dirname(item.entry)) ?? [item.name],
+      item.entry,
+      closureFiles,
+      allowedPackages,
+      sha256Hex,
+    );
+    for (const [file, bytes] of collected.bytes) published.set(file, bytes);
+    return { ...item, examples: collected.examples };
   });
 
   return {
@@ -266,7 +297,7 @@ export function buildLibRegistry(input: LibRegistryBuildInput): LibRegistryBundl
       kind: input.kind,
       filesDirectory: LIB_REGISTRY_FILES_DIRECTORY,
       defaultTargetDirectory: input.defaultTargetDirectory,
-      items: manifestItems,
+      items: withExamples,
     },
     files: published,
   };

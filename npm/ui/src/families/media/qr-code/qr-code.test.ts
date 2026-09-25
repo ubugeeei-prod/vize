@@ -4,7 +4,8 @@ import { test } from "vite-plus/test";
 import { mount } from "@vue/test-utils";
 import { h, nextTick } from "vue";
 
-import { encodeQrCode, qrCodeToSvgPath } from "./qr-code.ts";
+import { createQrCodeNumericSegment, encodeQrCode, qrCodeToSvgPath } from "./qr-code.ts";
+import { qrCodeKanjiEncoder } from "./qr-code-kanji.ts";
 import type { QrCodeExpose, QrCodeSlotState } from "./qr-code.ts";
 import QrCode from "./qr-code.vue";
 
@@ -94,6 +95,44 @@ test("forwards encoder options and re-encodes when props change", async () => {
   assert.equal(svg.getAttribute("data-version"), "1");
   assert.equal(svg.getAttribute("data-error-correction"), "H");
   assert.equal(svg.getAttribute("data-mode"), "byte");
+  handle.unmount();
+});
+
+test("forwards segmentation, Kanji, and ECI options and accepts explicit segments", async () => {
+  const url = "HTTPS://EXAMPLE.COM/ORDER/31415926535897932384626";
+  const handle = mountQrCode({ props: { value: url, quietZone: 0 } });
+  const svg = handle.root();
+  assert.equal(svg.getAttribute("data-mode"), "mixed");
+  const pathOf = (options: Parameters<typeof encodeQrCode>[1]) =>
+    qrCodeToSvgPath(encodeQrCode(url, options));
+  assert.equal(svg.querySelector("path")?.getAttribute("d"), pathOf({}));
+
+  await handle.wrapper.setProps({ segmentation: "single" });
+  assert.equal(svg.getAttribute("data-mode"), "alphanumeric");
+
+  await handle.wrapper.setProps({
+    value: "日本語",
+    segmentation: "optimal",
+    kanji: qrCodeKanjiEncoder,
+  });
+  assert.equal(svg.getAttribute("data-mode"), "kanji");
+  assert.equal(svg.getAttribute("aria-label"), "日本語");
+
+  await handle.wrapper.setProps({ kanji: undefined, utf8Eci: true });
+  const exposed = handle.exposes<QrCodeExpose>();
+  assert.equal(exposed.matrix?.eci, 26);
+  assert.equal(svg.getAttribute("data-mode"), "byte");
+
+  await handle.wrapper.setProps({ utf8Eci: false, eci: 3 });
+  assert.equal(exposed.matrix?.eci, 3);
+
+  await handle.wrapper.setProps({
+    eci: undefined,
+    value: [createQrCodeNumericSegment("2024")],
+    label: "Year",
+  });
+  assert.equal(svg.getAttribute("data-mode"), "numeric");
+  assert.equal(svg.getAttribute("aria-label"), "Year");
   handle.unmount();
 });
 

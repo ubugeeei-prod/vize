@@ -34,6 +34,7 @@ import {
   getAccordionValueIdSegment,
   toAccordionModel,
 } from "./accordion-value.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 const {
   type,
@@ -43,7 +44,7 @@ const {
   disabled = false,
   collapsible = false,
   orientation = "vertical",
-  dir = "ltr",
+  dir = undefined,
   loop = true,
   hiddenUntilFound = false,
   headingLevel = 3,
@@ -100,9 +101,9 @@ const {
   readonly orientation?: AccordionOrientation;
 
   /**
-   * Reading direction used for horizontal arrow-key navigation.
+   * Reading direction used for horizontal arrow-key navigation. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: AccordionDirection;
 
@@ -151,7 +152,7 @@ const typeState = computed<AccordionType>(() => type);
 const disabledState = computed(() => disabled);
 const collapsibleState = computed(() => type === "multiple" || collapsible);
 const orientationState = computed(() => orientation);
-const dirState = computed(() => dir);
+const dirState = useResolvedDirection(() => dir);
 const hiddenUntilFoundState = computed(() => hiddenUntilFound);
 const headingLevelState = computed(() => headingLevel);
 const registry = createCollectionRegistry<AccordionValue, AccordionValue>({
@@ -354,7 +355,7 @@ defineExpose(exposed);
     :id="baseId"
     data-vize-ui="accordion-root"
     part="root"
-    :dir
+    :dir="dirState"
     :data-type="type"
     :data-orientation="orientation"
     :data-disabled="disabled ? 'true' : undefined"

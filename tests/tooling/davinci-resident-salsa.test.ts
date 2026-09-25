@@ -49,7 +49,7 @@ test("the salsa check fails on an injected edge in vize_atelier_sfc", () => {
     rename: null,
     kind: null,
     optional: false,
-    req: "=0.28.4",
+    req: "=0.28.5",
   });
   assert.deepEqual(outsideResidentTier(injected), ["vize_atelier_sfc"]);
 });
@@ -60,11 +60,11 @@ test("salsa is pinned exactly with rayon off, and the resident crate is unpublis
   };
   const salsa = manifest.workspace.dependencies.salsa;
   assert.deepEqual(salsa, {
-    version: "=0.28.4",
+    version: "=0.28.5",
     "default-features": false,
     features: ["macros", "inventory"],
   });
-  assert.equal(dependency(metadata, "vize_resident", "salsa", null).req, "=0.28.4");
+  assert.equal(dependency(metadata, "vize_resident", "salsa", null).req, "=0.28.5");
   assert.deepEqual(workspacePackage(metadata, "vize_resident").publish, []);
 });
 

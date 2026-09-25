@@ -2,6 +2,7 @@
 
 mod component;
 mod deferred;
+mod insertion;
 pub(super) mod template;
 
 use vize_carton::{Box, String, Vec, ensure_sufficient_stack};
@@ -398,6 +399,8 @@ pub(crate) fn transform_element<'a>(
                 name,
                 props,
                 fallback,
+                parent: None,
+                anchor: None,
             };
 
             block.operation.push(OperationNode::SlotOutlet(slot_outlet));

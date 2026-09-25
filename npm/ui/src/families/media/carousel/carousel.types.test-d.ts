@@ -19,6 +19,7 @@ import {
   type CarouselFocusBehavior,
   type CarouselIndicatorGroupExpose,
   type CarouselIndicatorSlotState,
+  type CarouselMessages,
   type CarouselOrientation,
   type CarouselPauseReason,
   type CarouselRootExpose,
@@ -107,3 +108,8 @@ const _unknownAutoplay: CarouselAutoplayState = "running";
 const _unknownReason: CarouselChangeReason = "swipe";
 // @ts-expect-error exposed state is read-only.
 root.index = 2;
+type _MessageFormatters = Expect<
+  Equal<Parameters<NonNullable<CarouselMessages["slideLabel"]>>, [position: number, count: number]>
+>;
+// @ts-expect-error role descriptions are strings.
+const _badMessages: CarouselMessages = { slide: 1 };

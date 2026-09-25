@@ -45,7 +45,7 @@ node_modules/@vizejs/ui/
 | `vize lib list [--kind ui\|composable]`  | 列出可拉取的条目。                                                         |
 | `vize lib search <words>`                | 按名称、标题、描述和别名搜索。                                             |
 | `vize lib info <name>`                   | 显示文件、注册表依赖、npm peer 和包版本。                                  |
-| `vize lib pull <item>... [--dir <dir>]`  | 复制条目及其注册表依赖；`--dry-run`、`--overwrite`。                       |
+| `vize lib pull <item>... [--dir <dir>]`  | 复制条目及其注册表依赖；`--dry-run`、`--overwrite`、`--with-examples`。    |
 | `vize lib add <item>...`                 | 与 shadcn 兼容的 `pull` 别名 (`-p/--path`、`-o/--overwrite`、`-y/--yes`)。 |
 | `vize lib status`                        | 将已拉取的文件与锁文件和已安装的注册表进行比较。                           |
 | `vize lib diff <name> [--to <version>]`  | 显示从本地副本到注册表版本的 unified diff。                                |
@@ -140,6 +140,21 @@ vize lib list --kind @acme
 第三方注册表使用与官方注册表相同的 JSON Schema 校验 (未知字段、格式错误的摘要、未知的角色或依赖、不完整的依赖闭包都会被拒绝)，
 下载的每个字节在写入前都会用 SHA-256 校验。命名空间的条目放在其 `dir` (否则为注册表的 `defaultTargetDirectory`)，
 以 `@namespace` 为键锁定，并且永远不会覆盖其他已拉取条目拥有的文件。
+
+## 使用示例与 Musea 画廊
+
+大多数 UI 系列在源码旁附带无样式的使用示例 (`families/<area>/<family>/examples/<family>-*.vue`)。
+它们随注册表发布，但只有在请求时才会拉取：
+
+```bash
+vize lib pull switch --with-examples
+```
+
+示例会放在拉取的源码旁 (`…/switch/examples/switch-basic.vue`)，通过相对路径导入该系列，并像其他文件一样记录在
+`vize-lib.lock.json` 中，因此 `status`、`diff` 和 `update` 都会覆盖它们；一旦请求过，`update` 会继续拉取。
+
+同样的示例会生成一个 [Musea](./musea.md) 画廊：每个系列一个故事，每个示例一个变体。在仓库中于
+`examples/vite-musea` 运行 `pnpm gallery:ui`，即可重新生成故事 (`npm/ui/scripts/generate-gallery.ts`) 并启动画廊。
 
 ## 版本管理与安全更新
 

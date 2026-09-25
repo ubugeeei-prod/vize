@@ -1,4 +1,4 @@
-import { getCurrentInstance, onMounted, shallowRef } from "vue";
+import { hasInjectionContext, onMounted, shallowRef } from "vue";
 import type { ShallowRef } from "vue";
 
 /**
@@ -7,8 +7,9 @@ import type { ShallowRef } from "vue";
  * `false` during server rendering and during hydration, `true` from the
  * component's `onMounted` on: gate client-only rendering behind it to keep
  * hydration stable. Outside a component (no instance to mount) it stays
- * `false`. Uses only public lifecycle hooks, so it works in Vapor
- * components too.
+ * `false`. Component detection uses `hasInjectionContext()` rather than
+ * `getCurrentInstance()`, which returns `null` inside Vapor components, so
+ * the flag also flips in Vapor.
  *
  * @example
  * ```ts
@@ -20,7 +21,7 @@ import type { ShallowRef } from "vue";
  */
 export function useMounted(): Readonly<ShallowRef<boolean>> {
   const mounted = shallowRef(false);
-  if (getCurrentInstance() !== null) {
+  if (hasInjectionContext()) {
     onMounted(() => {
       mounted.value = true;
     });

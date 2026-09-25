@@ -1,4 +1,12 @@
+import { QrCodeEncodeError } from "./qr-code-error.ts";
 import {
+  appendBits,
+  createQrCodeEciSegment,
+  createQrCodeSegments,
+  qrCodeSegmentBitLength,
+} from "./qr-code-segments.ts";
+import {
+  QR_CODE_ECI_MODE_INDICATOR,
   QR_CODE_ERROR_CORRECTION_LEVELS,
   QR_CODE_FORMAT_BITS,
   QR_CODE_MODE_INDICATOR,
@@ -11,46 +19,20 @@ import {
   rawDataModuleCount,
 } from "./qr-code-tables.ts";
 import type {
-  QrCodeEncodeErrorCode,
   QrCodeEncodeOptions,
   QrCodeErrorCorrection,
   QrCodeMask,
   QrCodeMatrix,
   QrCodeMode,
+  QrCodeSegment,
   QrCodeValue,
   QrCodeVersion,
 } from "./qr-code-types.ts";
 
-/** Typed encoder diagnostic. `message` starts with the stable {@link code}. */
-export class QrCodeEncodeError extends Error {
-  /** Stable machine-readable diagnostic code. */
-  readonly code: QrCodeEncodeErrorCode;
+export { QrCodeEncodeError } from "./qr-code-error.ts";
 
-  constructor(code: QrCodeEncodeErrorCode, detail: string) {
-    super(`${code}: ${detail}`);
-    this.name = "QrCodeEncodeError";
-    this.code = code;
-  }
-}
-
-const NUMERIC = /^[0-9]*$/;
-const ALPHANUMERIC = /^[0-9A-Z $%*+./:-]*$/;
-const ALPHANUMERIC_CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 const MASKS: readonly QrCodeMask[] = [0, 1, 2, 3, 4, 5, 6, 7];
-
-/** One encoded data segment before the version is fixed. */
-export interface QrCodeSegment {
-  /** Encoding mode of the segment. */
-  readonly mode: QrCodeMode;
-  /** Character (or byte) count written to the count indicator. */
-  readonly count: number;
-  /** Encoded payload bits, excluding mode and count headers. */
-  readonly bits: readonly number[];
-}
-
-function appendBits(target: number[], value: number, length: number): void {
-  for (let index = length - 1; index >= 0; index--) target.push((value >>> index) & 1);
-}
+const UTF8_ECI = 26;
 
 function isVersion(value: unknown): value is QrCodeVersion {
   return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 40;
@@ -58,87 +40,6 @@ function isVersion(value: unknown): value is QrCodeVersion {
 
 function isMask(value: unknown): value is QrCodeMask {
   return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 7;
-}
-
-function encodeNumeric(text: string): QrCodeSegment {
-  const bits: number[] = [];
-  for (let index = 0; index < text.length; index += 3) {
-    const chunk = text.slice(index, index + 3);
-    appendBits(bits, Number.parseInt(chunk, 10), chunk.length * 3 + 1);
-  }
-  return { mode: "numeric", count: text.length, bits };
-}
-
-function encodeAlphanumeric(text: string): QrCodeSegment {
-  const bits: number[] = [];
-  let index = 0;
-  for (; index + 1 < text.length; index += 2) {
-    const pair =
-      ALPHANUMERIC_CHARSET.indexOf(text.charAt(index)) * 45 +
-      ALPHANUMERIC_CHARSET.indexOf(text.charAt(index + 1));
-    appendBits(bits, pair, 11);
-  }
-  if (index < text.length) appendBits(bits, ALPHANUMERIC_CHARSET.indexOf(text.charAt(index)), 6);
-  return { mode: "alphanumeric", count: text.length, bits };
-}
-
-function encodeBytes(bytes: Uint8Array): QrCodeSegment {
-  const bits: number[] = [];
-  for (const byte of bytes) appendBits(bits, byte, 8);
-  return { mode: "byte", count: bytes.length, bits };
-}
-
-function utf8(text: string): Uint8Array {
-  return new TextEncoder().encode(text);
-}
-
-/**
- * Select the most compact single mode that represents the whole value.
- *
- * @throws {QrCodeEncodeError} `VIZE_UI_QR_INVALID_MODE` when a forced mode
- * cannot represent the value.
- */
-export function createQrCodeSegments(
-  value: QrCodeValue,
-  mode: QrCodeMode | "auto",
-): readonly QrCodeSegment[] {
-  if (typeof value !== "string") {
-    if (mode !== "auto" && mode !== "byte") {
-      throw new QrCodeEncodeError(
-        "VIZE_UI_QR_INVALID_MODE",
-        `binary values can only use byte mode, not ${mode}`,
-      );
-    }
-    return value.length === 0 ? [] : [encodeBytes(value)];
-  }
-  if (value.length === 0) return [];
-  if (mode === "numeric" || (mode === "auto" && NUMERIC.test(value))) {
-    if (!NUMERIC.test(value)) {
-      throw new QrCodeEncodeError("VIZE_UI_QR_INVALID_MODE", "numeric mode accepts only digits");
-    }
-    return [encodeNumeric(value)];
-  }
-  if (mode === "alphanumeric" || (mode === "auto" && ALPHANUMERIC.test(value))) {
-    if (!ALPHANUMERIC.test(value)) {
-      throw new QrCodeEncodeError(
-        "VIZE_UI_QR_INVALID_MODE",
-        "alphanumeric mode accepts only 0-9, A-Z, space, and $%*+-./:",
-      );
-    }
-    return [encodeAlphanumeric(value)];
-  }
-  return [encodeBytes(utf8(value))];
-}
-
-/** Total bits for the segments at a version, or `Infinity` when a count overflows. */
-function segmentBitLength(segments: readonly QrCodeSegment[], version: QrCodeVersion): number {
-  let total = 0;
-  for (const segment of segments) {
-    const countBits = characterCountBits(segment.mode, version);
-    if (segment.count >= 2 ** countBits) return Number.POSITIVE_INFINITY;
-    total += 4 + countBits + segment.bits.length;
-  }
-  return total;
 }
 
 /** Multiply two elements of GF(2^8) modulo the QR polynomial `x^8 + x^4 + x^3 + x^2 + 1`. */
@@ -199,8 +100,12 @@ export function createDataCodewords(
 ): readonly number[] {
   const bits: number[] = [];
   for (const segment of segments) {
-    appendBits(bits, QR_CODE_MODE_INDICATOR[segment.mode], 4);
-    appendBits(bits, segment.count, characterCountBits(segment.mode, version));
+    if (segment.mode === "eci") {
+      appendBits(bits, QR_CODE_ECI_MODE_INDICATOR, 4);
+    } else {
+      appendBits(bits, QR_CODE_MODE_INDICATOR[segment.mode], 4);
+      appendBits(bits, segment.count, characterCountBits(segment.mode, version));
+    }
     for (const bit of segment.bits) bits.push(bit);
   }
   const capacityBits = dataCodewordCount(version, ecc) * 8;
@@ -512,11 +417,43 @@ function readVersionOption(name: string, value: unknown, fallback: QrCodeVersion
   return value;
 }
 
+/** ECI designator requested by `eci` / `utf8Eci`, or `null`. */
+function readEciOption(options: QrCodeEncodeOptions): number | null {
+  const explicit = options.eci;
+  if (options.utf8Eci === true) {
+    if (explicit !== undefined && explicit !== UTF8_ECI) {
+      throw new QrCodeEncodeError(
+        "VIZE_UI_QR_INVALID_OPTION",
+        `utf8Eci conflicts with eci ${explicit}`,
+      );
+    }
+    return UTF8_ECI;
+  }
+  return explicit ?? null;
+}
+
+function isSegmentList(value: QrCodeValue): value is readonly QrCodeSegment[] {
+  return Array.isArray(value);
+}
+
+function dataModeOf(segments: readonly QrCodeSegment[]): QrCodeMatrix["mode"] {
+  let mode: QrCodeMode | null = null;
+  for (const segment of segments) {
+    if (segment.mode === "eci") continue;
+    if (mode !== null && mode !== segment.mode) return "mixed";
+    mode = segment.mode;
+  }
+  return mode;
+}
+
 /**
- * Encode text or bytes as an immutable QR Code symbol.
+ * Encode text, bytes, or explicit segments as an immutable QR Code symbol.
  *
- * Text is encoded in the most compact single mode (numeric, alphanumeric, or
- * UTF-8 bytes without an ECI header). The smallest fitting version is chosen
+ * Text is split into optimally mixed numeric, alphanumeric, byte (UTF-8), and
+ * — with a `kanji` encoder — Kanji segments, re-optimized for each range of
+ * character-count widths (versions 1–9, 10–26, 27–40). `segmentation:
+ * "single"` or a forced `mode` keeps one segment. An `eci` / `utf8Eci` header
+ * precedes the data when requested. The smallest fitting version is chosen
  * unless `version` fixes one, and the mask with the lowest penalty is applied
  * unless `mask` fixes one. Pure and deterministic, so it is safe during SSR.
  *
@@ -552,13 +489,36 @@ export function encodeQrCode(value: QrCodeValue, options: QrCodeEncodeOptions = 
   if (maskOption !== "auto" && !isMask(maskOption)) {
     throw new QrCodeEncodeError("VIZE_UI_QR_INVALID_OPTION", "mask must be an integer in 0..7");
   }
+  const segmentation = options.segmentation ?? "optimal";
+  if (segmentation !== "optimal" && segmentation !== "single") {
+    throw new QrCodeEncodeError(
+      "VIZE_UI_QR_INVALID_OPTION",
+      "segmentation must be optimal or single",
+    );
+  }
+  const eci = readEciOption(options);
+  const header = eci === null ? [] : [createQrCodeEciSegment(eci)];
 
-  const segments = createQrCodeSegments(value, options.mode ?? "auto");
+  // Optimal segmentation depends on count-indicator widths, which change at
+  // versions 10 and 27, so segments are recomputed when entering a new range.
+  const segmentsFor = (candidate: QrCodeVersion): readonly QrCodeSegment[] => {
+    if (isSegmentList(value)) return [...header, ...value];
+    const data = createQrCodeSegments(value, {
+      kanji: options.kanji,
+      mode: options.mode ?? "auto",
+      segmentation,
+      version: candidate,
+    });
+    return [...header, ...data];
+  };
+  const rangeStarts = new Set([minVersion, 10, 27]);
+  let segments: readonly QrCodeSegment[] = [];
   let version: QrCodeVersion | null = null;
   let usedBits = 0;
   for (let candidate: number = minVersion; candidate <= maxVersion; candidate++) {
     if (!isVersion(candidate)) break;
-    const bits = segmentBitLength(segments, candidate);
+    if (rangeStarts.has(candidate)) segments = segmentsFor(candidate);
+    const bits = qrCodeSegmentBitLength(segments, candidate);
     if (bits <= dataCodewordCount(candidate, requestedEcc) * 8) {
       version = candidate;
       usedBits = bits;
@@ -610,9 +570,26 @@ export function encodeQrCode(value: QrCodeValue, options: QrCodeEncodeOptions = 
     size: canvas.size,
     errorCorrection: ecc,
     mask,
-    mode: segments[0]?.mode ?? null,
+    mode: dataModeOf(segments),
+    segments: Object.freeze(
+      segments.map((segment) =>
+        Object.freeze({
+          mode: segment.mode,
+          count: segment.mode === "eci" ? eciDesignatorOf(segment) : segment.count,
+        }),
+      ),
+    ),
+    eci,
     modules: Object.freeze([...canvas.modules]),
   });
+}
+
+/** Decode the designator from an ECI segment's 8/16/24 payload bits. */
+function eciDesignatorOf(segment: QrCodeSegment): number {
+  const prefix = segment.bits[0] === 0 ? 1 : segment.bits[1] === 0 ? 2 : 3;
+  let value = 0;
+  for (const bit of segment.bits.slice(prefix)) value = value * 2 + bit;
+  return value;
 }
 
 /** Whether the module at `(x, y)` is dark. Coordinates outside the symbol are light. */
@@ -648,6 +625,9 @@ export function qrCodeCapacity(
     }
     case "byte":
       count = Math.floor(available / 8);
+      break;
+    case "kanji":
+      count = Math.floor(available / 13);
       break;
   }
   return Math.min(count, maxCount);

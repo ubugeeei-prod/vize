@@ -1,0 +1,13 @@
+# WeekPicker behavior contract
+
+Normative state x input -> outcome table for `week-picker-root.vue`
+(`@vizejs/ui/week-picker`). WeekPicker reuses the Calendar runtime and parts
+(`calendar.behavior.md` keyboard, locale, bounds, and SSR rows apply) with a
+whole-week selection model. Every row is proven by the named test.
+
+| #   | State | Input                    | Outcome                                                                                                                                                                                                                               | Proven by                                                                                                                  |
+| --- | ----- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| W1  | any   | render / day activation  | grids show a leading `<th scope="row">` ISO week number column (omit with `hideWeekNumbers`); activating a day selects its locale week as a `DateRange`, emits `update:modelValue`, `change`, `select`, and `name` submits `YYYY-Www` | `activating any day selects its locale week and shows ISO week numbers`                                                    |
+| W2  | any   | pointer / keyboard focus | the week under the pointer or focus is previewed with `data-preview`; weeks follow the locale start (Sunday for `en-US`); `isoWeek` and `setValue` are exposed                                                                        | `pointer and keyboard focus preview the week; US locales start on Sunday`                                                  |
+| W3  | model | helpers                  | `isoWeekOf`, `startOfIsoWeek`, `formatIsoWeek`, and `parseIsoWeek` handle year boundaries and week 53; `weekOf` honors any week start                                                                                                 | `ISO week helpers cover year boundaries and week 53`                                                                       |
+| W4  | SSR   | isolated requests        | byte-identical markup and silent hydration                                                                                                                                                                                            | `renders byte-identical week picker markup across isolated SSR requests`, `hydrates week picker markup without mismatches` |

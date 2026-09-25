@@ -45,13 +45,18 @@ export const QR_CODE_MODE_INDICATOR: Readonly<Record<QrCodeMode, number>> = Obje
   numeric: 0x1,
   alphanumeric: 0x2,
   byte: 0x4,
+  kanji: 0x8,
 });
+
+/** Mode indicator nibble for an ECI header segment. */
+export const QR_CODE_ECI_MODE_INDICATOR = 0x7;
 
 const CHARACTER_COUNT_BITS: Readonly<Record<QrCodeMode, readonly [number, number, number]>> =
   Object.freeze({
     numeric: [10, 12, 14],
     alphanumeric: [9, 11, 13],
     byte: [8, 16, 16],
+    kanji: [8, 10, 12],
   });
 
 function tableValue(

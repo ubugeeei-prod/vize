@@ -32,7 +32,13 @@ const slideId = computed(() => context.getSlideId(index));
 const active = computed(() => context.index.value === index);
 const inView = computed(() => context.isInView(index));
 const state = computed<CarouselSlideState>(() => (active.value ? "active" : "inactive"));
-const label = computed(() => ariaLabel ?? `${index + 1} of ${context.slideCount.value}`);
+const label = computed(
+  () =>
+    ariaLabel ??
+    context.messages.value.slideLabel?.(index + 1, context.slideCount.value) ??
+    `${index + 1} of ${context.slideCount.value}`,
+);
+const roleDescription = computed(() => context.messages.value.slide ?? "slide");
 // Slides measured out of view leave the tab order and accessibility tree; the
 // server and the first client render keep every slide interactive.
 const inert = computed(() => inView.value === false && !active.value);
@@ -85,7 +91,7 @@ defineExpose(exposed);
     :id="slideId"
     ref="element"
     role="group"
-    aria-roledescription="slide"
+    :aria-roledescription="roleDescription"
     :aria-label="label"
     :inert="inert ? true : undefined"
     data-vize-ui="carousel-slide"

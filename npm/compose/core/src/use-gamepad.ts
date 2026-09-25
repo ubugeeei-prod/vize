@@ -1,4 +1,13 @@
-import { computed, readonly, shallowReadonly, shallowRef, toValue, watch } from "vue";
+import {
+  computed,
+  hasInjectionContext,
+  readonly,
+  shallowReadonly,
+  shallowRef,
+  toValue,
+  watch,
+  watchPostEffect,
+} from "vue";
 import type { ComputedRef, MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -320,6 +329,8 @@ export function mapGamepad<const Mapping extends GamepadMapping>(
  *
  * Server rendering: no frames or listeners, `supported` is false and
  * `gamepads` is empty.
+ * Inside a component the host is resolved after mounting, so hydration
+ * renders this server state first.
  *
  * @example
  * ```ts
@@ -340,8 +351,20 @@ export function useGamepad<const Mapping extends GamepadMapping = Record<never, 
   const mapping = options.mapping;
   if (mapping !== undefined) mapGamepad({ buttons: [], axes: [] }, mapping);
 
-  const resolveHost = (): GamepadHost | undefined =>
-    options.host === undefined ? browserGamepadHost() : (toValue(options.host) ?? undefined);
+  // Inside a component the host is resolved only after mounting, so a
+  // hydrating client renders the server's unsupported state first. Outside
+  // components it resolves synchronously.
+  const hydrated = shallowRef(!hasInjectionContext());
+  if (!hydrated.value) {
+    watchPostEffect(() => {
+      hydrated.value = true;
+    });
+  }
+
+  const resolveHost = (): GamepadHost | undefined => {
+    if (!hydrated.value) return undefined;
+    return options.host === undefined ? browserGamepadHost() : (toValue(options.host) ?? undefined);
+  };
 
   const readPads = (host: GamepadHost): GamepadLike[] =>
     Array.from(host.navigator.getGamepads()).filter(

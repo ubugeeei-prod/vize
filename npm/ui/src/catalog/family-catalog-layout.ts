@@ -250,7 +250,7 @@ export const layoutFamilyCatalog = [
     qualityGates: componentQualityGates,
     bundleBudget: {
       exportName: "Stack",
-      retainedSignature: "data-vize-ui[\\s\\S]{0,32}stack",
+      retainedSignature: "data-vize-ui[\\s\\S]{0,32}[`\"']stack[`\"']",
       maximumJavaScriptGzipBytes: 1_050,
       maximumCssGzipBytes: 0,
     },

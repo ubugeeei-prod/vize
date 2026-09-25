@@ -2,17 +2,15 @@
 source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
-import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, child as _child, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
-const t0 = _template("<main><!----></main>", true)
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<main></main>", true)
 export function render(_ctx) {
 const n0 = t0()
-const n1 = _child(n0)
-_setInsertionState(n0, n1, true)
-const n2 = _createIf(() => (_ctx.ok), () => {
-_setInsertionState(n0, n1, true)
+_setInsertionState(n0)
+const n1 = _createIf(() => (_ctx.ok), () => {
 const _component_MyComp = _resolveComponent("MyComp")
-const n4 = _createComponentWithFallback(_component_MyComp, null, null, true)
-return n4
+const n3 = _createComponentWithFallback(_component_MyComp, null, null, true)
+return n3
 })
 return n0
 }

@@ -133,6 +133,7 @@ fn pulls_real_items_that_compile_and_resolve_on_their_own() {
             "pull",
             "switch",
             "use-storage",
+            "--with-examples",
         ],
     );
     assert_ok(&pulled);
@@ -145,13 +146,12 @@ fn pulls_real_items_that_compile_and_resolve_on_their_own() {
         .iter()
         .map(|item| item["name"].as_str().unwrap())
         .collect();
-    assert!(
-        names.contains(&"switch") && names.contains(&"use-storage"),
-        "{names:?}"
-    );
-    assert!(
-        names.contains(&"controllable-state"),
-        "switch pulls its foundations: {names:?}"
+    // The lockfile lists composables before ui items, each sorted by name:
+    // `use-storage` with its `scope` dependency, then `switch` with the
+    // foundations it pulls.
+    assert_eq!(
+        names,
+        ["scope", "use-storage", "controllable-state", "id", "switch"]
     );
 
     let mut files = Vec::new();
@@ -177,7 +177,17 @@ fn pulls_real_items_that_compile_and_resolve_on_their_own() {
             );
         }
     }
-    assert!(!vue_files.is_empty());
+    // The pulled `.vue` sources, including the usage demo `--with-examples`
+    // copies.
+    vue_files.sort();
+    assert_eq!(
+        vue_files,
+        [
+            "src/components/vize/families/foundations/id/deterministic-id-provider.vue",
+            "src/components/vize/families/selection/switch/examples/switch-basic.vue",
+            "src/components/vize/families/selection/switch/switch-control.vue",
+        ]
+    );
 
     for vue_file in &vue_files {
         assert_ok(&vize(

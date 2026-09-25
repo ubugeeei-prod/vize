@@ -127,6 +127,8 @@ watch([disabledState, orientationState, pressedValues, rovingFocusState], () => 
 });
 
 function getElementNode(target: PrimitiveElement | null): Element | null {
+  // No target during server rendering, where `Element` itself is undefined.
+  if (target == null) return null;
   if (target instanceof Element) return target;
   if (target != null && target.$el instanceof Element) return target.$el;
   return null;

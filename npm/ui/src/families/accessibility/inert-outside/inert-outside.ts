@@ -1,5 +1,5 @@
 import {
-  getCurrentInstance,
+  hasInjectionContext,
   getCurrentScope,
   onMounted,
   onScopeDispose,
@@ -123,7 +123,7 @@ export function useInertOutside(options: InertOutsideOptions): InertOutsideContr
     throw new Error(`${setupDiagnostic}: use inside component setup or an active effect scope`);
   }
   const controller = createInertOutside(options);
-  if (getCurrentInstance()) onMounted(controller.activate);
+  if (hasInjectionContext()) onMounted(controller.activate);
   else controller.activate();
   onScopeDispose(controller.dispose);
   return controller;

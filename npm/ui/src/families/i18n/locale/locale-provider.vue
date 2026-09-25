@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { reactive, watchEffect } from "vue";
+import { computed, reactive, watchEffect } from "vue";
+
+import { directionContext } from "../direction/direction-runtime.ts";
 
 import {
   localeContext,
@@ -96,6 +98,8 @@ watchEffect(() => {
 });
 
 localeContext.provide(value);
+// Direction-aware families read the resolved direction through the shared direction context.
+directionContext.provide(computed(() => value.direction));
 </script>
 
 <template>

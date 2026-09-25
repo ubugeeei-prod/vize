@@ -66,6 +66,7 @@ const {
   ariaLabel = undefined,
   ariaLabelledby = undefined,
   ariaDescribedby = undefined,
+  role = "dialog",
 } = defineProps<{
   /** Keep the content mounted while the popover is closed. @default false */
   readonly forceMount?: boolean;
@@ -127,6 +128,12 @@ const {
   readonly ariaLabelledby?: string;
   /** Space-separated ids that describe the popover dialog. @default undefined */
   readonly ariaDescribedby?: string;
+  /**
+   * Content role. Use `"alertdialog"` for confirmations that interrupt the user and need a response.
+   *
+   * @default "dialog"
+   */
+  readonly role?: "alertdialog" | "dialog";
 }>();
 
 const emit = defineEmits<{
@@ -296,7 +303,7 @@ defineExpose(exposed);
               :id="context.contentId.value"
               ref="element"
               v-bind="dismissableLayer.layerProps"
-              role="dialog"
+              :role
               tabindex="-1"
               :aria-modal="context.modal.value ? 'true' : undefined"
               :aria-label="ariaLabel"

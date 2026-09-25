@@ -101,6 +101,15 @@ impl ItemPlan {
     }
 }
 
+/// Per-item switches for [`plan_item`].
+#[derive(Debug, Clone, Copy, Default)]
+pub struct PlanFlags {
+    /// Requested by name rather than pulled as a dependency.
+    pub direct: bool,
+    /// Also write the item's usage examples.
+    pub with_examples: bool,
+}
+
 /// Plan one registry item into `root/dir`, three-way against `existing`.
 ///
 /// `source` is the lockfile key (`ui`, `composable`, or `@ns`).
@@ -111,12 +120,17 @@ pub fn plan_item(
     registry: &LoadedRegistry,
     item: &RegistryItem,
     existing: Option<&LockedItem>,
-    direct: bool,
+    flags: PlanFlags,
 ) -> LibResult<ItemPlan> {
+    let PlanFlags {
+        direct,
+        with_examples,
+    } = flags;
     let base = join_dir(root, dir)?;
-    let mut files = Vec::with_capacity(item.files.len());
+    let pulled = item.pulled_files(with_examples);
+    let mut files = Vec::with_capacity(pulled.len());
     let mut locked_files = BTreeMap::new();
-    for file in &item.files {
+    for file in &pulled {
         let target = join_relative(&base, &file.path)?;
         ensure_project_path(root, &target)?;
         let local = file_sha256(&target)?;
@@ -178,6 +192,7 @@ pub fn plan_item(
             content_hash: item.content_hash.clone(),
             dir: dir.into(),
             direct,
+            examples: with_examples && !item.examples.is_empty(),
             registry_dependencies: item.registry_dependencies.clone(),
             files: locked_files,
         },

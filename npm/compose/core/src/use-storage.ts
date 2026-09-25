@@ -1,4 +1,4 @@
-import { readonly, ref, shallowRef, toValue, watch } from "vue";
+import { hasInjectionContext, readonly, ref, shallowRef, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref, ShallowRef } from "vue";
 
 import { tryOnScopeDispose } from "./scope.ts";
@@ -134,7 +134,7 @@ export interface UseStorageOptions<Value> {
    * through the first render so server-rendered markup hydrates without a
    * mismatch, then reads storage after mounting.
    *
-   * @default "sync"
+   * @default "post-flush" inside a component, "sync" otherwise
    */
   readonly initialRead?: "sync" | "post-flush";
 
@@ -342,9 +342,9 @@ function isSameDocumentDetail(detail: unknown): detail is SameDocumentDetail {
  *
  * Server rendering: without a browser `window` no storage is touched and
  * `state` holds the default. Node's global `localStorage` is intentionally
- * ignored because it would be shared between requests. Use
- * `initialRead: "post-flush"` to hydrate server markup that rendered the
- * default before switching to the stored value.
+ * ignored because it would be shared between requests. Inside a component
+ * `initialRead` defaults to `"post-flush"`, so hydrating markup that rendered
+ * the default matches before switching to the stored value.
  *
  * Failures (quota, disabled storage, malformed data) never throw; they are
  * exposed through `error` and `onError`.
@@ -560,7 +560,7 @@ export function useStorage<Value>(
     refresh();
   };
   let stopDeferred: (() => void) | undefined;
-  if ((options.initialRead ?? "sync") === "sync") {
+  if ((options.initialRead ?? (hasInjectionContext() ? "post-flush" : "sync")) === "sync") {
     start();
   } else {
     // A post-flush job runs after the owning component mounted (so hydration

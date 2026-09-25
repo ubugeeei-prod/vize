@@ -17,6 +17,7 @@ const publicEntries = [
   ".",
   "./catalog",
   "./theme-scope",
+  "./resolver",
   ...uiFamilyCatalog.map((entry) => entry.packageSubpath),
 ] as const;
 
@@ -45,14 +46,18 @@ test("every public entry exposes generated JavaScript and declarations", async (
   for (const name of [
     "alert",
     "badge",
+    "breadcrumb",
     "button",
     "card",
     "checkbox",
     "dialog",
     "input",
+    "pagination",
     "progress-bar",
     "scroll-area",
     "switch",
+    "stepper",
+    "tabs",
     "textarea",
     "tooltip",
   ]) {
@@ -92,12 +97,16 @@ test("optional component styles stay separate from headless JavaScript", async (
   for (const name of [
     "alert",
     "badge",
+    "breadcrumb",
     "button",
     "card",
     "checkbox",
     "dialog",
     "input",
+    "pagination",
     "switch",
+    "stepper",
+    "tabs",
     "textarea",
     "tooltip",
   ]) {

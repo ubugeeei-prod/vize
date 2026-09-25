@@ -1,4 +1,4 @@
-import { readonly, ref, toValue, watch } from "vue";
+import { nextTick, readonly, ref, toValue, watch } from "vue";
 import type { MaybeRefOrGetter, Ref } from "vue";
 
 import { useScroll } from "./scroll.ts";
@@ -73,15 +73,20 @@ export function useInfiniteScroll(
     if (disposed || isLoading.value || !toValue(canLoadMore)) return;
     if (!scroll.arrivedState[direction] || !hasContainer(target)) return;
     isLoading.value = true;
+    const before = contentSize(target);
     try {
       await onLoadMore();
     } finally {
       isLoading.value = false;
     }
-    await Promise.resolve();
+    await nextTick();
     if (disposed) return;
     scroll.measure();
-    void check();
+    // Only keep filling while loads actually grow the content: a loader that
+    // adds nothing (or content that cannot be measured) would otherwise spin
+    // forever at the edge. The next edge change or `reset()` re-checks.
+    const after = contentSize(target);
+    if (after === undefined || after !== before) void check();
   };
 
   const stop = watch(
@@ -106,4 +111,25 @@ export function useInfiniteScroll(
 function hasContainer(target: MaybeRefOrGetter<ScrollTargetValue>): boolean {
   const value = toValue(target);
   return value !== null && value !== undefined;
+}
+
+function contentSize(target: MaybeRefOrGetter<ScrollTargetValue>): string | undefined {
+  const value: unknown = toValue(target);
+  if (typeof value !== "object" || value === null) return undefined;
+  const element: unknown =
+    "scrollHeight" in value
+      ? value
+      : "documentElement" in value
+        ? value.documentElement
+        : "document" in value && typeof value.document === "object" && value.document !== null
+          ? Reflect.get(value.document, "documentElement")
+          : "$el" in value
+            ? value.$el
+            : undefined;
+  if (typeof element !== "object" || element === null) return undefined;
+  const height: unknown = Reflect.get(element, "scrollHeight");
+  const width: unknown = Reflect.get(element, "scrollWidth");
+  return typeof height === "number" && typeof width === "number"
+    ? `${String(height)}x${String(width)}`
+    : undefined;
 }

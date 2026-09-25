@@ -18,7 +18,7 @@ import {
 const sourceRoot = path.resolve("src");
 const allowedSourceRootFiles = ["css.d.ts", "index.ts"] as const;
 const familySfcPattern =
-  /^families\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\.vue$/u;
+  /^families\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*\/(?:examples\/)?[a-z0-9]+(?:-[a-z0-9]+)*\.vue$/u;
 const rootDeterministicIdImportPattern =
   /from\s+["'](?:\.\.\/)+deterministic-id(?:-provider)?\.(?:ts|vue)["']/u;
 

@@ -111,7 +111,10 @@ fn pull_status_and_remove_round_trip_through_the_binary() {
 
     let failed = vize(&root, &registry, &["pull", "missing"]);
     assert!(!failed.status.success());
-    assert!(String::from_utf8_lossy(&failed.stderr).contains("error: no registry item matches"));
+    assert_eq!(
+        String::from_utf8_lossy(&failed.stderr),
+        "error: no registry item matches \"missing\" (no --registry provides composable items)\n"
+    );
 
     let removed = vize(&root, &registry, &["remove", "button"]);
     assert!(

@@ -4,7 +4,7 @@
 
 use vize_carton::Box;
 
-use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, NegativeBranch, OperationNode};
+use crate::ir::{BlockIRNode, ForIRNode, IfIRNode, InsertionAnchor, NegativeBranch, OperationNode};
 use vize_atelier_core::{
     ExpressionNode, ForNode, IfNode, PropNode, SimpleExpressionNode, SourceLocation,
     TemplateChildNode,
@@ -26,7 +26,7 @@ pub(crate) fn transform_if_node_into_parent<'a>(
     if_node: &IfNode<'a>,
     block: &mut BlockIRNode<'a>,
     parent: usize,
-    anchor: usize,
+    anchor: InsertionAnchor,
 ) {
     transform_if_node_with_options(ctx, if_node, block, Some(parent), Some(anchor), false);
 }
@@ -36,7 +36,7 @@ fn transform_if_node_with_options<'a>(
     if_node: &IfNode<'a>,
     block: &mut BlockIRNode<'a>,
     parent: Option<usize>,
-    anchor: Option<usize>,
+    anchor: Option<InsertionAnchor>,
     add_return: bool,
 ) {
     // The first branch is the v-if condition.
@@ -105,7 +105,7 @@ pub(crate) fn transform_remaining_branches<'a>(
     ctx: &mut TransformContext<'a>,
     branches: &[vize_atelier_core::IfBranchNode<'a>],
     parent: Option<usize>,
-    anchor: Option<usize>,
+    anchor: Option<InsertionAnchor>,
 ) -> NegativeBranch<'a> {
     let Some((branch, rest)) = branches.split_first() else {
         // A caller passes at least one branch; an empty chain is an empty block.
@@ -178,7 +178,7 @@ pub(crate) fn transform_for_node_into_parent<'a>(
     for_node: &ForNode<'a>,
     block: &mut BlockIRNode<'a>,
     parent: usize,
-    anchor: usize,
+    anchor: InsertionAnchor,
     only_child: bool,
 ) {
     transform_for_node_with_options(
@@ -197,7 +197,7 @@ fn transform_for_node_with_options<'a>(
     for_node: &ForNode<'a>,
     block: &mut BlockIRNode<'a>,
     parent: Option<usize>,
-    anchor: Option<usize>,
+    anchor: Option<InsertionAnchor>,
     add_return: bool,
     only_child: bool,
 ) {

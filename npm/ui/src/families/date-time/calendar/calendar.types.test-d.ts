@@ -6,10 +6,13 @@ import {
   CalendarNext,
   CalendarRoot,
   CalendarYearSelect,
+  CalendarMultipleRoot,
   createPlainDate,
   parseIsoDate,
   type CalendarDayState,
   type CalendarDayStateToken,
+  type CalendarMultipleRootExpose,
+  type CalendarSelectionMode,
   type CalendarNavigationUnit,
   type CalendarRootExpose,
   type CalendarSlotState,
@@ -45,6 +48,15 @@ type _DayStateIsClosed = Expect<
     "disabled" | "idle" | "outside" | "range-middle" | "selected" | "unavailable"
   >
 >;
+type _ModeIsClosed = Expect<Equal<CalendarSelectionMode, "single" | "multiple" | "range" | "week">>;
+declare const multiple: CalendarMultipleRootExpose;
+type _MultipleValue = Expect<Equal<typeof multiple.value, readonly PlainDate[]>>;
+const multipleProps: InstanceType<typeof CalendarMultipleRoot>["$props"] = {
+  modelValue: [createPlainDate(2026, 9, 1)],
+  maxSelections: 3,
+  "onUpdate:modelValue": (value: readonly PlainDate[]) => value,
+};
+void multipleProps;
 type _UnitIsClosed = Expect<Equal<CalendarNavigationUnit, "month" | "year">>;
 type _ExposeValue = Expect<Equal<typeof root.value, PlainDate | null>>;
 type _ExposeSetValue = Expect<Equal<typeof root.setValue, (value: PlainDate | null) => boolean>>;

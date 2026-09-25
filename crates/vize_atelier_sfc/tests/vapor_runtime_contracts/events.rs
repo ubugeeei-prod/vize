@@ -97,7 +97,11 @@ fn component_event_arguments_change_reactively_without_stale_listeners() {
                 {"patch": {"event": format!("{prefix}update:second"), "value": "external"}, "preserve": [".first", ".second"]},
                 {"click": ".first"},
                 {"click": ".second"},
-                {"patch": {"event": prefix}},
+                // An event name no child emits. (An empty name is not portable:
+                // Vue 3.6 rc Vapor forwards the resulting `""` handler key to
+                // the child as an attribute, which the DOM rejects, while the
+                // official compiler emits the same code.)
+                {"patch": {"event": format!("{prefix}unbound")}},
                 {"click": ".second"},
                 {"patch": {"event": format!("{prefix}update:first")}},
                 {"click": ".first"}

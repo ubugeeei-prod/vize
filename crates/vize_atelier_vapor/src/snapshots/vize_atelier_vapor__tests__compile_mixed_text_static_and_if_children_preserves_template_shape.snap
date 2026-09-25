@@ -2,17 +2,16 @@
 source: crates/vize_atelier_vapor/src/tests.rs
 expression: code.as_str()
 ---
-import { child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, nthChild as _nthChild, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
 const t0 = _template("<em class=\"weekend-label\">Weekend</em>", true)
-const t1 = _template("<span>  <em class=\"day-offset\">same day</em><!----></span>", true)
+const t1 = _template("<span>  <em class=\"day-offset\">same day</em></span>", true)
 export function render(_ctx) {
 const n0 = t1()
-const n1 = _nthChild(n0, 2)
 const x0 = _txt(n0)
-_setInsertionState(n0, n1, true)
-const n2 = _createIf(() => (_ctx.isWeekend), () => {
-const n4 = t0()
-return n4
+_setInsertionState(n0, 2)
+const n1 = _createIf(() => (_ctx.isWeekend), () => {
+const n3 = t0()
+return n3
 })
 _renderEffect(() => {
 _setClass(n0, ["date-line", { weekend: _ctx.isWeekend }])

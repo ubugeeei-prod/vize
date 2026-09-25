@@ -10,12 +10,13 @@ import type { MenuDirection, MenuEntryFocus } from "../menu/menu-types.ts";
 import { menubarContext } from "./menubar-context.ts";
 import type { MenubarMenuRecord, MenubarMoveDirection } from "./menubar-context.ts";
 import type { MenubarRootExpose, MenubarSlotState } from "./menubar-types.ts";
+import { useResolvedDirection } from "../../i18n/direction/direction-runtime.ts";
 
 const {
   id = undefined,
   modelValue = undefined,
   defaultValue = null,
-  dir = "ltr",
+  dir = undefined,
   loop = true,
   ariaLabel = undefined,
   ariaLabelledby = undefined,
@@ -43,9 +44,9 @@ const {
   readonly defaultValue?: string | null;
 
   /**
-   * Reading direction: flips Left/Right arrow meaning across triggers and menus.
+   * Reading direction: flips Left/Right arrow meaning across triggers and menus. `undefined` inherits `DirectionProvider`/`LocaleProvider`, then `"ltr"`.
    *
-   * @default "ltr"
+   * @default undefined
    */
   readonly dir?: MenuDirection;
 
@@ -89,7 +90,7 @@ const valueState = useControllableState<string | null>({
   value: () => modelValue,
   defaultValue: () => defaultValue,
 });
-const dirState = computed(() => dir);
+const dirState = useResolvedDirection(() => dir);
 const loopState = computed(() => loop);
 const registry = createCollectionRegistry<string, MenubarMenuRecord>({
   disabledBehavior: "focusable",
@@ -172,12 +173,12 @@ defineExpose({
     aria-orientation="horizontal"
     :aria-label="ariaLabel"
     :aria-labelledby="ariaLabelledby"
-    :dir
+    :dir="dirState"
     data-vize-ui="menubar"
     part="root"
     :data-state="valueState.value.value === null ? 'closed' : 'open'"
   >
-    <slot :dir :value="valueState.value.value" />
+    <slot :dir="dirState" :value="valueState.value.value" />
   </div>
 </template>
 

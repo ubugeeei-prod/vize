@@ -5,13 +5,14 @@ gates. Compiler coverage discovers SFCs recursively. Runtime fixtures describe
 the component-specific accessible markup, and a coverage assertion rejects any
 new SFC that does not add its SSR and hydration evidence.
 
-| Lane         | Executable evidence                                                | Required invariant                                                                        |
-| ------------ | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| DOM          | Native Vize SFC compilation                                        | No errors, warnings, empty modules, or Vapor markers                                      |
-| SSR          | Native Vize SFC compilation plus concurrent `renderToString` tests | Stable request-local markup, accessible server semantics, and no Vapor fallback           |
-| Hydration    | SSR markup hydrated by a fresh client application                  | No warning, error, or root-node replacement                                               |
-| Vapor        | Native Vize SFC compilation                                        | A real Vapor component marker with no diagnostic fallback                                 |
-| Tree shaking | Production consumer bundles through public package exports         | Root and subpath parity, unused family elimination, exact CSS retention, and gzip budgets |
+| Lane          | Executable evidence                                                                                                                            | Required invariant                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| DOM           | Native Vize SFC compilation                                                                                                                    | No errors, warnings, empty modules, or Vapor markers                                                                                           |
+| SSR           | Native Vize SFC compilation plus concurrent `renderToString` tests                                                                             | Stable request-local markup, accessible server semantics, and no Vapor fallback                                                                |
+| Hydration     | SSR markup hydrated by a fresh client application                                                                                              | No warning, error, or root-node replacement                                                                                                    |
+| Vapor         | Native Vize SFC compilation                                                                                                                    | A real Vapor component marker with no diagnostic fallback                                                                                      |
+| Vapor runtime | `pnpm check:vapor-runtime`: every fixture server-rendered in real Node, then client-mounted and hydrated as native Vapor components on Vue 3.6 | No warning, error, or failing `assertHydratedDom`; regressions and fixed entries both fail against `scripts/vapor-runtime/known-failures.json` |
+| Tree shaking  | Production consumer bundles through public package exports                                                                                     | Root and subpath parity, unused family elimination, exact CSS retention, and gzip budgets                                                      |
 
 The hydration suite covers every currently shipped SFC, including the
 renderless deterministic-ID provider. The dedicated ID suite additionally
