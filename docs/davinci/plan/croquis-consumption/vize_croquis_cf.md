@@ -54,7 +54,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `MacroKind`                  |     1 |     1 |
 | `PropDefinition`             |     3 |     3 |
 | `ProvideEntry`               |     2 |     7 |
-| `ProvideKey`                 |     7 |    34 |
+| `ProvideKey`                 |     7 |    36 |
 | `RaceConditionRisk`          |     2 |     4 |
 | `RaceConditionRiskKind`      |     2 |     3 |
 | `ReactiveKind`               |     5 |    33 |
