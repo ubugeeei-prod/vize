@@ -168,11 +168,11 @@ fn generate_block_guarded(
     // template instantiation with returned components, slots and control-flow
     // blocks in source order; creating every template first can make a later
     // DOM element consume an earlier component's server node.
-    let root_ops: FxHashMap<usize, usize> = block
+    let root_ops: FxHashMap<usize, (usize, &OperationNode<'_>)> = block
         .operation
         .iter()
         .enumerate()
-        .filter_map(|(index, op)| returned_root_operation_id(op).map(|id| (id, index)))
+        .filter_map(|(index, op)| returned_root_operation_id(op).map(|id| (id, (index, op))))
         .collect();
     let mut generated_root_ops = FxHashSet::default();
     for element_id in block.returns.iter() {
@@ -184,8 +184,8 @@ fn generate_block_guarded(
             line.push_str(&template_index.to_compact_string());
             line.push_str("()");
             ctx.push_line(&line);
-        } else if let Some(&index) = root_ops.get(element_id) {
-            generate_operation(ctx, &block.operation[index], element_template_map);
+        } else if let Some(&(index, op)) = root_ops.get(element_id) {
+            generate_operation(ctx, op, element_template_map);
             generated_root_ops.insert(index);
         }
     }
