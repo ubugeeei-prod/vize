@@ -4123,7 +4123,7 @@
           "componentFile": "src/components/Select.vue",
           "tagName": "v-select",
           "tagAnchor": "    <v-select ",
-          "completionItemCount": 66,
+          "completionItemCount": 67,
           "completionItems": [
             { "label": "v-if", "rank": 0 },
             { "label": "v-else-if", "rank": 1 },
