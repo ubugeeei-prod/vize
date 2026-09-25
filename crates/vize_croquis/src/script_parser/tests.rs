@@ -1732,3 +1732,38 @@ function processItem(item) {
 
     assert_snapshot!(output);
 }
+
+#[test]
+fn test_options_api_instance_member_wins_over_same_named_import() {
+    // A plain `<script>` template resolves `format` on the instance, so the
+    // method owns the name even though the script also imports a `format`.
+    let source = r#"
+import { defineComponent } from 'vue'
+import { format } from 'date-fns'
+
+export default defineComponent({
+  methods: {
+    format(date: string): string {
+      return format(new Date(date), 'yyyy/MM/dd')
+    },
+  },
+})
+"#;
+    let result = parse_script_with_options(
+        source,
+        ScriptParserOptions {
+            options_api: true,
+            ..ScriptParserOptions::default()
+        },
+    );
+
+    assert_eq!(result.bindings.get("format"), Some(BindingType::Options));
+    // The import itself is still known to module-scope consumers.
+    assert_eq!(
+        result
+            .import_sources
+            .get("format")
+            .map(CompactString::as_str),
+        Some("date-fns")
+    );
+}

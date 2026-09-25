@@ -74,9 +74,21 @@ pub(super) fn process_import(result: &mut ScriptParseResult, import: &ImportDecl
                 }
             }
 
-            result
-                .binding_spans
-                .insert(CompactString::new(name), (local_span.start, local_span.end));
+            // A plain `<script>` template resolves names against the component
+            // instance, never against module scope, so a `data` / `computed` /
+            // `methods` / `props` member the Options API pass already registered
+            // (it runs before this walk) owns the template name even when an
+            // import spells it the same. Overwriting it here would type
+            // `{{ format(x) }}` as the imported `format` rather than the method.
+            let instance_member = matches!(
+                result.bindings.get(name),
+                Some(BindingType::Props | BindingType::Data | BindingType::Options)
+            );
+            if !instance_member {
+                result
+                    .binding_spans
+                    .insert(CompactString::new(name), (local_span.start, local_span.end));
+            }
 
             // Named imports may be a ref. Default and namespace imports are const.
             let binding_type = if is_type_only || is_type_spec {
@@ -93,7 +105,9 @@ pub(super) fn process_import(result: &mut ScriptParseResult, import: &ImportDecl
             );
 
             if !is_type_only && !is_type_spec {
-                result.bindings.add(name, binding_type);
+                if !instance_member {
+                    result.bindings.add(name, binding_type);
+                }
                 result
                     .import_sources
                     .insert(CompactString::new(name), CompactString::new(source_name));

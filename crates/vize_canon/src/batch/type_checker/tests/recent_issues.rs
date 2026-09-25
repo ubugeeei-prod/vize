@@ -25,6 +25,7 @@ mod optional_boolean_props;
 mod options_api_bridge_anchors;
 mod options_api_data_assignment;
 mod options_api_declaration_instance;
+mod options_api_import_shadow;
 mod options_api_inherited_members;
 mod pascal_case_prop_names;
 mod public_instance_contract;
