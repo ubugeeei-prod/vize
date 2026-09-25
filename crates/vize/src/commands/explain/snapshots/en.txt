@@ -3571,6 +3571,7 @@ invalid:
 
 valid:
   MyComponent.vue
+  UI.vue
   my-component.vue
   index.vue
   App.vue

@@ -3522,6 +3522,7 @@ vue/component-definition-name-casing · lint ルール
 
 正しい例:
   MyComponent.vue
+  UI.vue
   my-component.vue
   index.vue
   App.vue
