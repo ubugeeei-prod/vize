@@ -31,7 +31,7 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) text_nodes: FxHashMap<usize, String>,
     /// Position of every node reached by a `ChildRef`/`NextRef` operation
     /// (element_id -> (parent_id, absolute rendered index within the parent)).
-    /// Sibling navigation needs both to emit a hydration index (#3330), and a
+    /// Multi-step sibling navigation needs both for `_nthChild` (#3330), and a
     /// `NextRef` only names its predecessor, so each operation records where it
     /// landed for the next one to read.
     node_positions: FxHashMap<usize, (usize, usize)>,

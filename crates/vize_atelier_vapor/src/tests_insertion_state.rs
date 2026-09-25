@@ -80,7 +80,7 @@ fn a_block_before_rendered_siblings_is_inserted_before_its_placeholder() {
         r#"const t0 = _template("<div><span></span><!----><span></span></div>", true)
 export function render(_ctx) {
 const n1 = t0()
-const n2 = _next(_child(n1), 1)
+const n2 = _next(_child(n1))
 _setInsertionState(n1, n2)
 const n0 = _createSlot("default")
 return n1

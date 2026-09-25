@@ -13,7 +13,7 @@ const t2 = _template("<div><ul></ul><span> </span></div>", true)
 export function render(_ctx) {
   const n2 = t2()
   const n0 = _child(n2)
-  const n1 = _next(n0, 1)
+  const n1 = _next(n0)
   const x1 = _txt(n1)
   _setInsertionState(n0)
   const n3 = ((_for_item0) => {

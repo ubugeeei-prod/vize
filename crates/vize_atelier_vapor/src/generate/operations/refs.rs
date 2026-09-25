@@ -91,7 +91,7 @@ pub(super) fn generate_child_ref(ctx: &mut GenerateContext, child_ref: &ChildRef
             child_ref.child_id, child_ref.parent_id
         ));
     } else if child_ref.offset == 1 {
-        let expr = build_next_chain(cstr!("_child(n{})", child_ref.parent_id), 1, 1, ctx);
+        let expr = build_next_chain(cstr!("_child(n{})", child_ref.parent_id), 1, ctx);
         ctx.push_line_fmt(format_args!("const n{} = {}", child_ref.child_id, expr));
     } else {
         // Outside hydration the runtime `next()` advances a single sibling, so
@@ -109,16 +109,14 @@ pub(super) fn generate_child_ref(ctx: &mut GenerateContext, child_ref: &ChildRef
 ///
 /// A jump of two or more siblings becomes an absolute `_nthChild` lookup for
 /// the same reason `generate_child_ref` uses one: chaining bare `_next(node)`
-/// calls works outside hydration but returns `null` while hydrating, because
-/// each call reaches `locateChildByLogicalIndex(parent, undefined)` and no
-/// index ever equals `undefined`. A single-step jump stays a `_next`, carrying
-/// this node's **absolute** index so hydration resolves the same node — a
-/// literal `1` is only correct when the target happens to be the parent's
-/// second child (#3330).
+/// calls risks losing the correct logical sibling during hydration. A
+/// single-step jump stays a bare `_next`: as of Vue 3.6.0-rc.9 its optional
+/// second argument is `isText`, so passing the old absolute index creates an
+/// empty text node before the element and shifts subsequent targets (#6727).
 ///
-/// The node only names its predecessor, so the parent and this node's absolute
-/// index come from the position the predecessor recorded: every sibling chain
-/// is anchored by a `ChildRef`, which knows both.
+/// The node only names its predecessor, so the parent and absolute index for
+/// `_nthChild` come from the position the predecessor recorded: every sibling
+/// chain is anchored by a `ChildRef`, which knows both.
 pub(super) fn generate_next_ref(ctx: &mut GenerateContext, next_ref: &NextRefIRNode) {
     let position = ctx
         .node_position(next_ref.prev_id)
@@ -129,19 +127,11 @@ pub(super) fn generate_next_ref(ctx: &mut GenerateContext, next_ref: &NextRefIRN
             ctx.use_helper("nthChild");
             cstr!("_nthChild(n{}, {})", parent_id, index)
         }
-        Some((_, index)) => {
-            build_next_chain(cstr!("n{}", next_ref.prev_id), next_ref.offset, index, ctx)
-        }
+        Some(_) => build_next_chain(cstr!("n{}", next_ref.prev_id), next_ref.offset, ctx),
         // Without an anchored predecessor there is no parent handle to look the
-        // node up on, so the hop stays relative and the index falls back to the
-        // offset. Sibling chains always start at a `ChildRef`, so this is only a
-        // safety net.
-        None => build_next_chain(
-            cstr!("n{}", next_ref.prev_id),
-            next_ref.offset,
-            next_ref.offset,
-            ctx,
-        ),
+        // node up on, so the hop stays relative. Sibling chains always start
+        // at a `ChildRef`, so this is only a safety net.
+        None => build_next_chain(cstr!("n{}", next_ref.prev_id), next_ref.offset, ctx),
     };
 
     if let Some((parent_id, index)) = position {
@@ -150,18 +140,13 @@ pub(super) fn generate_next_ref(ctx: &mut GenerateContext, next_ref: &NextRefIRN
     ctx.push_line_fmt(format_args!("const n{} = {}", next_ref.child_id, expr));
 }
 
-/// Build a navigation expression for a jump of at most one sibling, passing
-/// `index` as the hydration hint. Multi-step jumps never reach here.
-fn build_next_chain(
-    base: String,
-    offset: usize,
-    index: usize,
-    ctx: &mut GenerateContext,
-) -> String {
+/// Build a navigation expression for a jump of at most one element sibling.
+/// Multi-step jumps never reach here.
+fn build_next_chain(base: String, offset: usize, ctx: &mut GenerateContext) -> String {
     if offset == 0 {
         base
     } else {
         ctx.use_helper("next");
-        cstr!("_next({}, {})", base, index)
+        cstr!("_next({})", base)
     }
 }

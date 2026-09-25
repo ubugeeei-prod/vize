@@ -334,13 +334,11 @@ pub struct ChildRefIRNode {
 /// Next sibling reference operation (`_next` / `_nthChild` helper).
 ///
 /// `offset` is how many rendered siblings separate this node from `prev_id`.
-/// The runtime's `next(node, i)` advances **one** sibling outside hydration
-/// and treats `i` as an absolute index into the parent while hydrating, so a
-/// jump of two or more must become `_nthChild(parent, index)` and a
-/// single-step jump must carry this node's real index — not a literal `1`
-/// (#3330). The generator derives the parent and the absolute index by
-/// walking back to the `ChildRef` that anchors the sibling chain, so they do
-/// not have to be restated here.
+/// A jump of two or more becomes `_nthChild(parent, index)` because `next`
+/// advances one sibling. For a single step, Vue 3.6.0-rc.9 expects
+/// `next(node, isText?)`; element targets must not pass the old absolute index
+/// as that argument (#6727). The generator still tracks the parent and index
+/// for `_nthChild` lookups by walking back to the anchoring `ChildRef`.
 ///
 /// The short-lived `parent_id` and `index` fields from #3337 are gone again:
 /// this struct is externally constructible, so generation-only state belongs in

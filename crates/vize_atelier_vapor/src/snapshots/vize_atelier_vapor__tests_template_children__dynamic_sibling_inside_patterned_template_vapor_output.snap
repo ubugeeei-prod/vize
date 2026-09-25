@@ -13,7 +13,7 @@ const t2 = _template("<div><ul></ul><footer>Tail</footer></div>", true)
 export function render(_ctx) {
   const n2 = t2()
   const n0 = _child(n2)
-  const n1 = _next(n0, 1)
+  const n1 = _next(n0)
   _setInsertionState(n0)
   const n3 = ((_for_item0) => {
     const n5 = _createIf(() => (_for_item0.value[0] === 0), () => {

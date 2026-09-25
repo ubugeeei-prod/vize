@@ -1,21 +1,10 @@
-//! Regression tests for multi-step sibling navigation (#3330).
+//! Regression tests for sibling navigation (#3330, #6727).
 //!
-//! The Vue Vapor runtime's `next(node, i)` advances **exactly one** sibling
-//! outside hydration — `i` is an absolute logical index consulted only while
-//! hydrating, never a step count:
-//!
-//! ```js
-//! function next(node, logicalIndex) {
-//!   if (isHydrating) return locateChildByLogicalIndex(node.parentNode, logicalIndex)
-//!   return _next(node) // one sibling
-//! }
-//! ```
-//!
-//! Emitting `_next(node, 3)` for a three-sibling jump therefore landed one
-//! sibling over, and the chained `_child()` that followed dereferenced `null`
-//! (`TypeError: Cannot read properties of null (reading 'firstChild')`).
-//! Multi-step jumps must use `_nthChild(parent, index)`, which honours the
-//! index in both modes — the same rule `@vue/compiler-vapor` follows.
+//! Vue 3.6.0-rc.9 changed `next(node, logicalIndex)` to
+//! `next(node, isText?)`. Passing an element index as the second argument now
+//! inserts a blank text node during hydration and shifts all later targets.
+//! One-step element navigation must use `_next(node)`; multi-step jumps still
+//! use `_nthChild(parent, index)`, which retains the absolute-index contract.
 
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
@@ -33,9 +22,8 @@ fn compile(template: &str) -> String {
     result.code.clone()
 }
 
-/// Split every `_next(base, index)` call in `code` into its two arguments,
-/// balancing parentheses so a call base like `_child(n2)` stays intact. Calls
-/// without a top-level comma yield `None` as the index.
+/// Split every `_next(base, isText?)` call in `code` into its arguments,
+/// balancing parentheses so a call base like `_child(n2)` stays intact.
 fn next_calls(code: &str) -> Vec<(&str, Option<&str>)> {
     let bytes = code.as_bytes();
     let mut calls = Vec::new();
@@ -88,10 +76,10 @@ fn multi_step_navigation_uses_nth_child_not_a_counted_next() {
         !code.contains("_next(_child(n1), 3)"),
         "a counted _next advances only one sibling at runtime:\n{code}"
     );
-    // The single-sibling hop between the two `<li>` elements stays a `_next`,
-    // carrying its absolute index so hydration resolves the same node.
+    // The single-sibling hop between the two `<li>` elements stays a bare
+    // `_next`, which resolves the logical sibling in the current runtime.
     assert!(
-        code.contains("_next(n2, 1)"),
+        code.contains("_next(n2)"),
         "expected a single-step _next for the adjacent sibling:\n{code}"
     );
     assert!(
@@ -100,10 +88,10 @@ fn multi_step_navigation_uses_nth_child_not_a_counted_next() {
     );
 }
 
-/// No `_next` call may ever carry a step count above one: that argument is a
-/// hydration index, and treating it as a count is exactly the #3330 defect.
+/// Element references must never pass a second argument to `_next`: Vue
+/// 3.6.0-rc.9 interprets any truthy second argument as `isText` (#6727).
 #[test]
-fn no_emitted_next_call_advances_more_than_one_sibling() {
+fn element_next_calls_do_not_pass_is_text() {
     // Plain HTML tags only: an unknown tag resolves as a component and never
     // reaches the sibling-navigation path, which would make this vacuous.
     for template in [
@@ -116,33 +104,17 @@ fn no_emitted_next_call_advances_more_than_one_sibling() {
         // every parent, not just `n1`.
         r#"<div><section><p/><span :id="x"><i/></span><span :id="y"><i/></span></section><span :id="z"><i/></span></div>"#,
     ] {
-        let mut checked_child_bases = 0usize;
         let code = compile(template);
         assert!(
             code.contains("_next(") || code.contains("_nthChild("),
             "expected this template to exercise sibling navigation:\n{template}\n{code}"
         );
-        // Every `_next(base, i)` advances exactly one sibling at runtime, so
-        // its second argument must never be read as a step count. The only
-        // shapes the generator may emit are `_next(_child(nP), 1)` and
-        // `_next(nX, i)` for an adjacent hop; a `_next` starting from a
-        // `_child` of *any* parent with an index above 1 is a counted jump —
-        // the #3330 defect.
-        for (base, index) in next_calls(&code) {
-            if !base.starts_with("_child(") {
-                continue;
-            }
+        for (_, is_text) in next_calls(&code) {
             assert_eq!(
-                index,
-                Some("1"),
-                "a counted _next advances only one sibling at runtime:\n{template}\n{code}"
+                is_text, None,
+                "an element target must not pass isText:\n{template}\n{code}"
             );
-            checked_child_bases += 1;
         }
-        assert!(
-            checked_child_bases > 0 || code.contains("_nthChild("),
-            "expected a _child-anchored hop or an absolute lookup:\n{template}\n{code}"
-        );
     }
 }
 
@@ -161,7 +133,7 @@ fn single_step_navigation_shapes_are_unchanged() {
 
     let second = compile(r#"<div><a/><b :id="x"/></div>"#);
     assert!(
-        second.contains("_next(_child(n1), 1)"),
+        second.contains("_next(_child(n1))"),
         "index 1 stays one _next step from the first child:\n{second}"
     );
     assert!(
@@ -170,68 +142,51 @@ fn single_step_navigation_shapes_are_unchanged() {
     );
 }
 
-/// The hydration hint on a single-step `_next` must be the target's absolute
-/// index in the parent, not a literal `1`. During hydration the runtime reads
-/// it as `locateChildByLogicalIndex(parent, i)`, so a wrong index resolves the
-/// wrong node — or `null` — even though client-side rendering looks correct.
+/// A single-step hop after static siblings still uses `_next(node)`.
 #[test]
-fn single_step_next_carries_the_targets_absolute_index() {
+fn single_step_next_after_static_siblings_has_no_second_argument() {
     // `<span :id="y">` is the parent's child at index 3, exactly one rendered
     // sibling past `<span :id="x">` at index 2.
     let code = compile(r#"<div><p/><p/><span :id="x"><i/></span><span :id="y"><i/></span></div>"#);
 
-    // The base variable name depends on id allocation; the hydration hint is
-    // what this pins.
-    let next_calls: Vec<&str> = code
-        .match_indices("_next(")
-        .map(|(at, _)| {
-            let rest = &code[at + "_next(".len()..];
-            &rest[..rest.find(')').unwrap_or(rest.len())]
-        })
-        .collect();
+    let next_calls = next_calls(&code);
     assert!(
-        next_calls.iter().any(|call| call.ends_with(", 3")),
-        "expected the absolute index 3 as the hydration hint, got {next_calls:?}:\n{code}"
+        next_calls.iter().any(|(base, _)| base.starts_with('n')),
+        "expected a hop from the previous element, got {next_calls:?}:\n{code}"
     );
     assert!(
-        !next_calls.iter().any(|call| call.ends_with(", 1")),
-        "a literal 1 resolves the wrong node while hydrating, got {next_calls:?}:\n{code}"
+        next_calls.iter().all(|(_, is_text)| is_text.is_none()),
+        "element hops must omit isText, got {next_calls:?}:\n{code}"
     );
 }
 
-/// Chained bare `_next(node)` calls must never be emitted: each one reaches
-/// `locateChildByLogicalIndex(parent, undefined)` during hydration, where no
-/// index equals `undefined`, so the chain yields `null`.
+/// The reporter's hydration case has an input between two dynamic children.
+/// Its second and third element references must not be mistaken for blank
+/// text targets by Vue 3.6.0-rc.9.
 #[test]
-fn no_bare_next_call_is_emitted() {
-    for template in [
-        r#"<div><p/><span :id="x"><i/></span><p/><p/><span :id="y"><i/></span></div>"#,
-        r#"<div><span :id="x"><i/></span><p/><p/><p/><span :id="y"><i/></span></div>"#,
-    ] {
-        let code = compile(template);
-        for line in code.lines() {
-            let mut from = 0;
-            while let Some(at) = line[from..].find("_next(") {
-                let open = from + at + "_next(".len();
-                // Balance parentheses: the base may itself be a call, e.g.
-                // `_next(_child(n2), 1)`.
-                let (mut depth, mut i, mut has_top_level_comma) = (1usize, open, false);
-                let bytes = line.as_bytes();
-                while i < bytes.len() && depth > 0 {
-                    match bytes[i] {
-                        b'(' => depth += 1,
-                        b')' => depth -= 1,
-                        b',' if depth == 1 => has_top_level_comma = true,
-                        _ => {}
-                    }
-                    i += 1;
-                }
-                assert!(
-                    has_top_level_comma,
-                    "every _next must carry a hydration index:\n{template}\n{line}"
-                );
-                from = open;
-            }
-        }
+fn input_between_interpolations_uses_element_sibling_navigation() {
+    let source = r#"<div><h1>{{ a }}</h1><input v-model="q"><p>{{ b }}</p></div>"#;
+    for retained in [false, true] {
+        let allocator = Allocator::new();
+        let result = compile_vapor(
+            &allocator,
+            source,
+            super::VaporCompilerOptions {
+                davinci_retained_lane: retained,
+                ..Default::default()
+            },
+        );
+        assert!(
+            result.error_messages.is_empty(),
+            "{:?}",
+            result.error_messages
+        );
+        let code = result.code;
+        let calls = next_calls(&code);
+        assert!(calls.len() >= 2, "expected adjacent element hops:\n{code}");
+        assert!(
+            calls.iter().all(|(_, is_text)| is_text.is_none()),
+            "input and following paragraph must be element targets:\n{code}"
+        );
     }
 }

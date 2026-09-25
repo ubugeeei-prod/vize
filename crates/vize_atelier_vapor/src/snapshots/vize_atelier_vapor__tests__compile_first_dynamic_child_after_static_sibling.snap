@@ -6,7 +6,7 @@ import { child as _child, next as _next, setClass as _setClass, renderEffect as 
 const t0 = _template("<div><span>static</span><button>x</button></div>", true)
 export function render(_ctx) {
 const n0 = t0()
-const n1 = _next(_child(n0), 1)
+const n1 = _next(_child(n0))
 _renderEffect(() => _setClass(n1, _ctx.cls))
 return n0
 }

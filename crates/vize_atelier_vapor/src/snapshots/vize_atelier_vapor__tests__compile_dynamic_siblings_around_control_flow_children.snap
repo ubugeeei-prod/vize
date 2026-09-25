@@ -10,7 +10,7 @@ export function render(_ctx) {
 const n0 = t1()
 const n1 = _child(n0)
 const n2 = _child(n1)
-const n3 = _next(_child(n1), 1)
+const n3 = _next(_child(n1))
 const n7 = _nthChild(n1, 2)
 n2.$evtclick = _createInvoker($event => (_ctx.activeTab = 'code'))
 _setInsertionState(n1, n3)
