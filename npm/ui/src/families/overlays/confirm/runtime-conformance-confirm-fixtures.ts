@@ -13,7 +13,7 @@ export const confirmRuntimeFixture: RuntimeFixture = {
   assertServerMarkup(html) {
     assert.match(html, /data-vize-ui="confirm-provider"/);
     assert.match(html, /data-state="idle"/);
-    assert.match(html, /id="runtime-confirm"/);
+    assert.doesNotMatch(html, /id="runtime-confirm"/);
     assert.doesNotMatch(html, /role="alertdialog"/);
   },
   assertHydratedDom(host) {

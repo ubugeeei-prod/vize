@@ -104,7 +104,7 @@ const state = computed<ConfirmState>(() => (open.value ? "pending" : "idle"));
 const retiring = shallowRef<readonly ConfirmRequest[]>([]);
 const presentedRequests = computed<readonly ConfirmRequest[]>(() => {
   const active = queue.active.value;
-  return active === null ? retiring.value : [...retiring.value, active];
+  return active === null ? retiring.value : retiring.value.concat(active);
 });
 let chosen: string | null = null;
 let restoreTarget: HTMLElement | null = null;
@@ -124,14 +124,14 @@ watch(
       }
     }
     if (active !== null || previous === null) return;
-    void nextTick(() =>
-      nextTick(() => {
+    void nextTick(() => {
+      void nextTick(() => {
         if (disposed || queue.active.value !== null) return;
         const target = restoreTarget?.isConnected ? restoreTarget : host.value;
         target?.focus();
         restoreTarget = null;
-      }),
-    );
+      });
+    });
   },
   { flush: "sync" },
 );
@@ -140,14 +140,14 @@ function settle(value: string | null, requestId?: string): void {
   const request = queue.active.value;
   if (request === null || (requestId !== undefined && request.id !== requestId)) return;
   if (!queue.settleActive(value)) return;
-  retiring.value = [...retiring.value, request];
+  retiring.value = retiring.value.concat(request);
   emit("settle", request, value);
 }
 
 function cancelAll(): void {
   const request = queue.active.value;
   queue.cancelAll();
-  if (request !== null) retiring.value = [...retiring.value, request];
+  if (request !== null) retiring.value = retiring.value.concat(request);
 }
 
 function completeRetirement(requestId: string): void {
@@ -226,7 +226,7 @@ defineExpose(exposed);
   >
     <slot />
     <DialogRoot
-      v-for="request in presentedRequests as readonly ConfirmRequest[]"
+      v-for="request in presentedRequests"
       :id="queue.active.value?.id === request.id ? dialogId : `${dialogId}-${request.id}`"
       :key="request.id"
       :open="queue.active.value?.id === request.id"
