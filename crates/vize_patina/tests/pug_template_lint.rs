@@ -67,10 +67,7 @@ fn pug_diagnostics_match_the_html_twin_and_land_on_pug() {
     assert_eq!(spans(&from_pug, &pug), spans(&from_html, &html));
     assert_eq!(
         spans(&from_pug, &pug),
-        [
-            ("vue/component-definition-name-casing", ""),
-            ("vue/require-v-for-key", "v-for=\"item in items\""),
-        ]
+        [("vue/require-v-for-key", "v-for=\"item in items\""),]
     );
 }
 
