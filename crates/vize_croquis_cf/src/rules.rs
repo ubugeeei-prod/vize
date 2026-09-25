@@ -57,7 +57,8 @@ pub use props_validation::{
     PropsValidationIssue, PropsValidationIssueKind, analyze_props_validation,
 };
 pub(crate) use provide_inject::{
-    ProvideInjectIndex, analyze_provide_inject_with_index, build_provide_inject_tree_with_index,
+    ProvideInjectAnalysis, ProvideInjectIndex, analyze_provide_inject_with_index,
+    build_provide_inject_tree_with_index,
 };
 pub use provide_inject::{ProvideInjectMatch, ProvideInjectTree, ProvideInjectTreeSummary};
 pub use race_conditions::RaceConditionIssue;

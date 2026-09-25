@@ -228,9 +228,12 @@ impl ProvideInjectIndex {
             for &parent in parents_by_node.get(&current).into_iter().flatten() {
                 let paths = path_counts.entry(parent).or_insert(0);
                 *paths = paths.saturating_add(count);
-                let remaining = remaining_children
-                    .get_mut(&parent)
-                    .expect("each explored parent has a counter");
+                let Some(remaining) = remaining_children.get_mut(&parent) else {
+                    return self.resolve_provider_paths_with_cycles(consumer, key);
+                };
+                if *remaining == 0 {
+                    return self.resolve_provider_paths_with_cycles(consumer, key);
+                }
                 *remaining -= 1;
                 if *remaining == 0 {
                     ready.push(parent);
@@ -241,33 +244,34 @@ impl ProvideInjectIndex {
             return self.resolve_provider_paths_with_cycles(consumer, key);
         }
 
-        let mut branches = terminals
-            .into_iter()
-            .map(|terminal| {
-                let mut path = vec![terminal];
-                let mut current = terminal;
-                while current != consumer {
-                    current = predecessor[&current];
-                    path.push(current);
-                }
-                let path_count = path_counts.get(&terminal).copied().unwrap_or(1);
-                if let Some(provide) = self
-                    .provides
-                    .get(&terminal)
-                    .filter(|_| terminal != consumer)
-                    .and_then(|provides| matching_provider(provides, key))
-                {
-                    ResolvedProviderBranch::Matched(ResolvedProvider {
-                        provider_id: terminal,
-                        provide: provide.clone(),
-                        path,
-                        path_count,
-                    })
-                } else {
-                    ResolvedProviderBranch::Unmatched { path, path_count }
-                }
-            })
-            .collect::<Vec<_>>();
+        let mut branches = Vec::with_capacity(terminals.len());
+        for terminal in terminals {
+            let mut path = vec![terminal];
+            let mut current = terminal;
+            while current != consumer {
+                let Some(&next) = predecessor.get(&current) else {
+                    return self.resolve_provider_paths_with_cycles(consumer, key);
+                };
+                current = next;
+                path.push(current);
+            }
+            let path_count = path_counts.get(&terminal).copied().unwrap_or(1);
+            if let Some(provide) = self
+                .provides
+                .get(&terminal)
+                .filter(|_| terminal != consumer)
+                .and_then(|provides| matching_provider(provides, key))
+            {
+                branches.push(ResolvedProviderBranch::Matched(ResolvedProvider {
+                    provider_id: terminal,
+                    provide: provide.clone(),
+                    path,
+                    path_count,
+                }));
+            } else {
+                branches.push(ResolvedProviderBranch::Unmatched { path, path_count });
+            }
+        }
         branches.sort_by(|left, right| self.compare_paths(left.path(), right.path()));
         ProviderResolution { branches, edges }
     }
@@ -325,7 +329,14 @@ impl ProvideInjectIndex {
         branches.sort_by(|left, right| self.compare_paths(left.path(), right.path()));
         let edges = branches
             .iter()
-            .flat_map(|branch| branch.path().windows(2).map(|pair| (pair[0], pair[1])))
+            .flat_map(|branch| {
+                branch.path().windows(2).filter_map(|pair| {
+                    let &[parent, child] = pair else {
+                        return None;
+                    };
+                    Some((parent, child))
+                })
+            })
             .collect();
         ProviderResolution { branches, edges }
     }

@@ -12,14 +12,16 @@ use self::diagnostics::{
     with_provider_relateds,
 };
 
+pub(crate) struct ProvideInjectAnalysis {
+    pub matches: Vec<ProvideInjectMatch>,
+    pub branches: Vec<ProvideInjectBranch>,
+    pub edges: Vec<(FileId, FileId)>,
+    pub diagnostics: Vec<CrossFileDiagnostic>,
+}
+
 pub(crate) fn analyze_provide_inject_with_index(
     index: &ProvideInjectIndex,
-) -> (
-    Vec<ProvideInjectMatch>,
-    Vec<ProvideInjectBranch>,
-    Vec<(FileId, FileId)>,
-    Vec<CrossFileDiagnostic>,
-) {
+) -> ProvideInjectAnalysis {
     let mut matches = Vec::new();
     let mut branches = Vec::new();
     let mut edges = Vec::new();
@@ -253,7 +255,12 @@ pub(crate) fn analyze_provide_inject_with_index(
         }
     }
 
-    (matches, branches, edges, diagnostics)
+    ProvideInjectAnalysis {
+        matches,
+        branches,
+        edges,
+        diagnostics,
+    }
 }
 
 fn mismatched_providers<'a>(
