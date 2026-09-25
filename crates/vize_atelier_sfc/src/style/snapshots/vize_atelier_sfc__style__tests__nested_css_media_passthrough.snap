@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_sfc/src/style.rs
+source: crates/vize_atelier_sfc/src/style/tests.rs
 expression: result.as_str()
 ---
 #pages-store[data-v-123]{
@@ -8,7 +8,7 @@ expression: result.as_str()
   @media (--mobile) {
     row-gap: 1rem;
   }
-  h1 {
+  h1[data-v-123]{
     padding: 7.5rem 0;
     @media (--mobile) {
       padding: 2.5rem 0.75rem;

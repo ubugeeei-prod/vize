@@ -1,5 +1,7 @@
 //! Style block processing and scoped CSS.
 
+mod nested;
+
 use vize_carton::{String, ToCompactString};
 
 use crate::types::{CssModuleMapping, SfcError, SfcStyleBlock, StyleCompileOptions};
@@ -257,7 +259,7 @@ pub fn apply_scoped_css(css: &str, scope_id: &str) -> String {
         output.push_str(rest);
     }
 
-    output
+    nested::scope_nested_selectors(output.as_str(), attr_selector.as_str()).unwrap_or(output)
 }
 
 /// Text buffered since `start`, without the `{` that was just pushed.

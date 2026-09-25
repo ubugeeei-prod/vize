@@ -8,6 +8,33 @@ use super::{SfcCompileOptions, compile_sfc, compile_sfc_with_template_syntax, pa
 use vize_atelier_core::TemplateSyntaxMode;
 
 #[test]
+fn test_compile_sfc_scopes_native_css_nesting_in_production_css() {
+    let source = r#"<template><div class="box"><span class="label">hi</span></div></template>
+<style scoped>
+.box {
+  color: red;
+  .label {
+    color: blue;
+  }
+}
+</style>"#;
+    let descriptor = parse_sfc(source, Default::default()).unwrap();
+    let result = compile_sfc(
+        &descriptor,
+        SfcCompileOptions {
+            scope_id: Some("abc123".into()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let css = result.css.expect("production SFC CSS should be emitted");
+
+    assert!(css.contains(".box[data-v-abc123]"), "{css}");
+    assert!(css.contains(".label[data-v-abc123]"), "{css}");
+    assert!(!css.contains(".label {"), "{css}");
+}
+
+#[test]
 fn test_compile_sfc_scoped_css_nested_deep_and_slotted() {
     let source = r#"<template><div class="a"><slot /></div></template>
 <style scoped>

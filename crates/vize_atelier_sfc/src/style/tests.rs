@@ -59,6 +59,24 @@ fn test_scope_slotted_suffix_stays_inside_attribute() {
 }
 
 #[test]
+fn test_scope_nested_rules_and_rules_inside_nested_media() {
+    let css = ".box { color: red; .label { color: blue; } /* responsive */ @media (min-width: 30rem) { .label, &:hover { color: green; } } }";
+    let result = apply_scoped_css(css, "data-v-abc123");
+
+    assert!(result.contains(".box[data-v-abc123]"), "{result}");
+    assert!(
+        result.contains(".label[data-v-abc123]{ color: blue; }"),
+        "{result}"
+    );
+    assert!(result.contains("@media (min-width: 30rem)"), "{result}");
+    assert!(
+        result.contains(".label[data-v-abc123], &[data-v-abc123]:hover"),
+        "{result}"
+    );
+    assert!(!result.contains(".label{"), "{result}");
+}
+
+#[test]
 fn test_scope_deep_preserves_nested_function_boundaries() {
     let css =
         ".a > :deep(:where(b, c) > d) { color: red; }\n.a :deep(:is(.b) .c) { color: green; }";
