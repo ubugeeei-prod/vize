@@ -5,6 +5,25 @@ import path from "node:path";
 
 import { compileBatch, compileFile, compileJsxModule } from "./compiler.ts";
 
+const renderBindingCompiled = compileFile(
+  "/src/Foo.vue",
+  new Map(),
+  { sourceMap: false, ssr: false, vapor: false },
+  `<script setup lang="ts">
+import { render } from "./lib";
+import { ref } from "vue";
+const props = defineProps<{ text: string }>();
+const html = ref("");
+html.value = render(props.text);
+</script>
+<template><div v-html="html" /></template>`,
+);
+assert.match(renderBindingCompiled.code, /import \{ render \} from ["']\.\/lib["']/);
+assert.match(renderBindingCompiled.code, /function _sfc_render\(/);
+assert.match(renderBindingCompiled.code, /render: _sfc_render/);
+assert.match(renderBindingCompiled.code, /html\.value = render\(props\.text\)/);
+assert.doesNotMatch(renderBindingCompiled.code, /(?:export )?function render\(/);
+
 const invalidCache = new Map();
 assert.throws(
   () =>

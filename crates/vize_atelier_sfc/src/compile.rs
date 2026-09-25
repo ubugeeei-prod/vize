@@ -721,6 +721,22 @@ fn compile_sfc_inner(
         ),
     };
 
+    // In separate client output the template function shares module scope with
+    // the user's imports and declarations. Keep its name distinct from common
+    // script bindings such as `import { render } from "./lib"`.
+    let (template_render_fn, template_render_fn_name) = if script_output.separates_template()
+        && !is_vapor
+        && !options.template.ssr
+        && !template_render_fn.is_empty()
+    {
+        (
+            rewrite_client_render_for_sfc_main(&template_render_fn),
+            "_sfc_render",
+        )
+    } else {
+        (template_render_fn, template_render_fn_name)
+    };
+
     // When demotion rewrote the content, the shared AST is stale for the
     // rewritten text; the inline compiler re-parses in that rare case.
     let (setup_content_for_inline, setup_program_for_inline) = match demoted_setup_content.as_ref()

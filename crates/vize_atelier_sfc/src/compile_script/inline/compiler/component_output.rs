@@ -95,7 +95,12 @@ pub(super) fn emit_component_definition(
     output.extend_from_slice(model_props_emits_buf);
     if !template.render_fn.is_empty() {
         output.extend_from_slice(b"  ");
-        output.extend_from_slice(template.render_fn_name.as_bytes());
+        let render_field = if template.render_fn_name == "_sfc_render" {
+            "render"
+        } else {
+            template.render_fn_name
+        };
+        output.extend_from_slice(render_field.as_bytes());
         output.extend_from_slice(b": ");
         if let Some(alias) = vapor_render_alias {
             output.extend_from_slice(alias.as_bytes());
