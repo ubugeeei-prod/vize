@@ -147,6 +147,62 @@ const count: string = 0;
 }
 
 #[test]
+fn check_text_diagnostics_attribute_prop_error_to_prop_instead_of_adjacent_event() {
+    let Some(corsa_path) = resolve_test_corsa_path() else {
+        return;
+    };
+    let project_root = create_cli_project(
+        "text-static-prop-source-context",
+        &[
+            (
+                "src/Child.vue",
+                r#"<script setup lang="ts">
+defineProps<{ count: number }>();
+defineEmits<{ change: [value: number] }>();
+</script>
+<template><span /></template>
+"#,
+            ),
+            (
+                "src/App.vue",
+                r#"<script setup lang="ts">
+import Child from "./Child.vue";
+function onChange(value: number) { console.log(value); }
+function onWrongChange(value: string) { console.log(value); }
+</script>
+<template>
+  <Child count="1" @change="onChange" />
+  <Child count="1" @change="onWrongChange" />
+</template>
+"#,
+            ),
+        ],
+    );
+
+    let output = run_check(&project_root, &corsa_path, None);
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let stderr = std::str::from_utf8(&output.stderr).unwrap();
+    let normalized = normalize_check_output(stdout, &project_root);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "stdout:\n{normalized}\nstderr:\n{stderr}"
+    );
+    assert!(
+        normalized.contains("[TS2322] Type 'string' is not assignable to type 'number'. (source: <Child count=\"1\" @change=\"onChange\" />; binding: count)"),
+        "stdout:\n{normalized}\nstderr:\n{stderr}"
+    );
+    assert!(
+        normalized.contains("  3 error(s)\n")
+            && normalized.matches("binding: count)").count() == 2
+            && normalized.matches("binding: @change)").count() == 1,
+        "stdout:\n{normalized}\nstderr:\n{stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
+#[test]
 fn check_text_diagnostics_name_template_bindings() {
     let Some(corsa_path) = resolve_test_corsa_path() else {
         return;

@@ -51,8 +51,7 @@ fn truncate(line: &str) -> CompactString {
 
 fn binding_context(line: &str, column: usize) -> Option<CompactString> {
     source_token_at(line, column)
-        .and_then(|(start, token)| valid_binding_start_at(line, start).then_some(token))
-        .and_then(binding_context_from_token)
+        .and_then(|(start, token)| attribute_context(line, start, token))
         .or_else(|| binding_context_from_line(line, column))
 }
 
@@ -101,7 +100,7 @@ fn binding_context_from_line(line: &str, column: usize) -> Option<CompactString>
             continue;
         }
 
-        if !valid_binding_start_at(line, cursor) {
+        if !is_attribute_boundary(line, cursor) || is_inside_quoted_attribute_value(line, cursor) {
             cursor += 1;
             continue;
         }
@@ -113,12 +112,21 @@ fn binding_context_from_line(line: &str, column: usize) -> Option<CompactString>
         {
             end += 1;
         }
-        if let Some(context) = binding_context_from_token(line.get(cursor..end).unwrap_or_default())
+        if let Some(context) =
+            attribute_context(line, cursor, line.get(cursor..end).unwrap_or_default())
         {
-            let distance = cursor.abs_diff(column);
-            if distance < best_distance {
-                best = Some(context);
-                best_distance = distance;
+            if (cursor..attribute_end(line, end)).contains(&column) {
+                return Some(context);
+            }
+            // A diagnostic on the component tag can only be associated with a
+            // nearby directive. A static prop is relevant when the position
+            // actually falls inside that attribute, not merely on the same tag.
+            if contextual_binding_starts_at(line, cursor) {
+                let distance = cursor.abs_diff(column);
+                if distance < best_distance {
+                    best = Some(context);
+                    best_distance = distance;
+                }
             }
         }
         cursor = end.max(cursor + 1);
@@ -126,10 +134,52 @@ fn binding_context_from_line(line: &str, column: usize) -> Option<CompactString>
     best
 }
 
-fn valid_binding_start_at(line: &str, cursor: usize) -> bool {
-    contextual_binding_starts_at(line, cursor)
-        && is_attribute_boundary(line, cursor)
-        && !is_inside_quoted_attribute_value(line, cursor)
+fn attribute_context(line: &str, cursor: usize, token: &str) -> Option<CompactString> {
+    if !is_attribute_boundary(line, cursor) || is_inside_quoted_attribute_value(line, cursor) {
+        return None;
+    }
+    binding_context_from_token(token).or_else(|| {
+        let after_name = line.get(cursor + token.len()..)?;
+        (line.trim_start().starts_with('<')
+            && token
+                .as_bytes()
+                .first()
+                .is_some_and(u8::is_ascii_alphabetic)
+            && after_name.trim_start().starts_with('='))
+        .then(|| CompactString::from(token))
+    })
+}
+
+fn attribute_end(line: &str, name_end: usize) -> usize {
+    let bytes = line.as_bytes();
+    let mut cursor = name_end;
+    while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+        cursor += 1;
+    }
+    if bytes.get(cursor) != Some(&b'=') {
+        return name_end;
+    }
+    cursor += 1;
+    while bytes.get(cursor).is_some_and(u8::is_ascii_whitespace) {
+        cursor += 1;
+    }
+    if let Some(&quote @ (b'\'' | b'"')) = bytes.get(cursor) {
+        cursor += 1;
+        while let Some(&byte) = bytes.get(cursor) {
+            cursor += 1;
+            if byte == quote {
+                break;
+            }
+        }
+    } else {
+        while bytes
+            .get(cursor)
+            .is_some_and(|&byte| !byte.is_ascii_whitespace() && byte != b'>')
+        {
+            cursor += 1;
+        }
+    }
+    cursor
 }
 
 fn is_attribute_boundary(line: &str, cursor: usize) -> bool {
@@ -278,6 +328,27 @@ mod tests {
         assert_eq!(
             context_at(line, line.find("bad").unwrap()).as_deref(),
             Some("'value'")
+        );
+    }
+
+    #[test]
+    fn binding_context_uses_static_prop_at_diagnostic_position_before_event() {
+        let line = r#"<Child count="1" @change="onChange" />"#;
+        assert_eq!(
+            context_at(line, line.find("count").unwrap()).as_deref(),
+            Some("count")
+        );
+        assert_eq!(
+            context_at(line, line.find('1').unwrap()).as_deref(),
+            Some("count")
+        );
+        assert_eq!(
+            context_at(line, line.find("@change").unwrap()).as_deref(),
+            Some("@change")
+        );
+        assert_eq!(
+            context_at(line, line.find("onChange").unwrap()).as_deref(),
+            Some("@change")
         );
     }
 
