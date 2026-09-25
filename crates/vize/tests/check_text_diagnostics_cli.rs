@@ -188,16 +188,41 @@ function onWrongChange(value: string) { console.log(value); }
         Some(1),
         "stdout:\n{normalized}\nstderr:\n{stderr}"
     );
-    assert!(
-        normalized.contains("[TS2322] Type 'string' is not assignable to type 'number'. (source: <Child count=\"1\" @change=\"onChange\" />; binding: count)"),
+    let diagnostic_headers: Vec<_> = normalized
+        .lines()
+        .filter_map(|line| {
+            let rest = line.trim_start().strip_prefix("error:")?;
+            let mut fields = rest.split_whitespace();
+            Some((fields.next()?, fields.next()?))
+        })
+        .collect();
+    assert_eq!(
+        diagnostic_headers,
+        [
+            ("7:10", "[TS2322]"),
+            ("8:10", "[TS2322]"),
+            ("8:20", "[TS2322]")
+        ],
         "stdout:\n{normalized}\nstderr:\n{stderr}"
     );
-    assert!(
-        normalized.contains("  3 error(s)\n")
-            && normalized.matches("binding: count)").count() == 2
-            && normalized.matches("binding: @change)").count() == 1,
+    let source_bindings: Vec<_> = normalized
+        .lines()
+        .filter_map(|line| {
+            let (_, source_and_binding) = line.rsplit_once("(source: ")?;
+            let (source, binding) = source_and_binding.rsplit_once("; binding: ")?;
+            Some((source, binding.strip_suffix(')')?))
+        })
+        .collect();
+    assert_eq!(
+        source_bindings,
+        [
+            (r#"<Child count="1" @change="onChange" />"#, "count"),
+            (r#"<Child count="1" @change="onWrongChange" />"#, "count"),
+            (r#"<Child count="1" @change="onWrongChange" />"#, "@change"),
+        ],
         "stdout:\n{normalized}\nstderr:\n{stderr}"
     );
+    assert_eq!(normalized.lines().last(), Some("  3 error(s)"));
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
