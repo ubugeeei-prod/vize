@@ -2,8 +2,8 @@
 //!
 //! Warn about potentially unsafe URL bindings.
 //!
-//! Dynamic URLs in href and src attributes can be exploited for XSS
-//! attacks using `javascript:` protocol or data URLs.
+//! URLs in navigation and active-content attributes can be exploited for XSS
+//! attacks using `javascript:` protocol or executable data URLs.
 //!
 //! ## Security Risks
 //!
@@ -18,7 +18,6 @@
 //! <!-- User-provided URLs need sanitization -->
 //! <a :href="userProvidedUrl">Link</a>
 //! <iframe :src="dynamicUrl"></iframe>
-//! <img :src="imageUrl" />
 //! ```
 //!
 //! ### Safe Patterns
@@ -31,6 +30,9 @@
 //!
 //! <!-- Using router-link instead of href -->
 //! <router-link :to="{ name: 'profile', params: { id } }">Profile</router-link>
+//!
+//! <!-- Image and media URLs do not execute javascript: URLs -->
+//! <img :src="imageUrl" />
 //! ```
 //!
 //! ## Best Practices
@@ -47,7 +49,8 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_s0::is_native_tag;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unsafe-url",
@@ -61,32 +64,29 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct NoUnsafeUrl;
 
-/// Attributes that are URL-bearing on any element (the name implies a URL even
-/// on a custom component).
-const GLOBAL_URL_ATTRS: &[&str] = &["href", "xlink:href", "src", "srcset"];
+/// Only inspect URLs where the browser can navigate or run active content.
+/// Component props have no known DOM destination, and image/media resource
+/// attributes do not execute `javascript:` URLs.
+fn is_unsafe_url_sink(name: &str, element: &ElementNode<'_>) -> bool {
+    if element.tag_type != ElementType::Element || !is_native_tag(element.tag) {
+        return false;
+    }
 
-/// Attributes that are URL-bearing only on specific HTML elements. On any other
-/// element — a `<div>`, or a custom component — they are ordinary props (for
-/// example `<MyComponent :data="rows" />`), so treating them as URLs there is a
-/// false positive.
-fn is_element_scoped_url_attr(name: &str, tag: &str) -> bool {
-    if name.eq_ignore_ascii_case("data") {
-        // `<object data="…">` is the only element where `data` is a URL.
-        tag.eq_ignore_ascii_case("object")
+    let tag = element.tag;
+    if name.eq_ignore_ascii_case("href") || name.eq_ignore_ascii_case("xlink:href") {
+        matches!(tag, "a" | "area" | "base")
+            || (tag == "script" && name.eq_ignore_ascii_case("xlink:href"))
+    } else if name.eq_ignore_ascii_case("src") {
+        matches!(tag, "iframe" | "frame" | "embed" | "script")
+    } else if name.eq_ignore_ascii_case("data") {
+        tag == "object"
     } else if name.eq_ignore_ascii_case("action") {
-        tag.eq_ignore_ascii_case("form")
+        tag == "form"
     } else if name.eq_ignore_ascii_case("formaction") {
-        tag.eq_ignore_ascii_case("button") || tag.eq_ignore_ascii_case("input")
+        matches!(tag, "button" | "input")
     } else {
         false
     }
-}
-
-fn is_url_attr_on(name: &str, tag: &str) -> bool {
-    GLOBAL_URL_ATTRS
-        .iter()
-        .any(|attr| name.eq_ignore_ascii_case(attr))
-        || is_element_scoped_url_attr(name, tag)
 }
 
 fn is_router_link_tag(tag: &str) -> bool {
@@ -95,18 +95,6 @@ fn is_router_link_tag(tag: &str) -> bool {
 
 fn is_slot_tag(tag: &str) -> bool {
     tag == "slot"
-}
-
-fn is_unsafe_static_attr_value(attr_name: &str, value: &str) -> bool {
-    if attr_name.eq_ignore_ascii_case("srcset") {
-        return value
-            .split(',')
-            .map(str::trim_start)
-            .filter_map(|candidate| candidate.split_ascii_whitespace().next())
-            .any(is_unsafe_url);
-    }
-
-    is_unsafe_url(value)
 }
 
 fn is_hash_only_href_binding(attr_name: &str, directive: &DirectiveNode) -> bool {
@@ -232,7 +220,7 @@ impl Rule for NoUnsafeUrl {
             };
 
             let attr_name = attr.name;
-            if !is_url_attr_on(attr_name, element.tag) {
+            if !is_unsafe_url_sink(attr_name, element) {
                 continue;
             }
 
@@ -240,7 +228,7 @@ impl Rule for NoUnsafeUrl {
                 continue;
             };
 
-            if !is_unsafe_static_attr_value(attr_name, value.content) {
+            if !is_unsafe_url(value.content) {
                 continue;
             }
 
@@ -275,7 +263,7 @@ impl Rule for NoUnsafeUrl {
         };
 
         // Check if this is a potentially unsafe attribute
-        if !is_url_attr_on(attr_name, element.tag) {
+        if !is_unsafe_url_sink(attr_name, element) {
             return;
         }
 

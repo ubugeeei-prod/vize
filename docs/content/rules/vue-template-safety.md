@@ -56,8 +56,10 @@ Good:
 
 ## `vue/no-unsafe-url`
 
-Reports URL bindings and static URL attributes that may resolve to unsafe schemes such as
-`javascript:`, `vbscript:`, or executable `data:` payloads.
+Reports URL bindings and static URL attributes on navigation and active-content
+elements that may resolve to unsafe schemes such as `javascript:`, `vbscript:`,
+or executable `data:` payloads. Component props and image/media sources are
+outside this rule's scope.
 
 Default severity: `warning`\
 Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
@@ -68,7 +70,7 @@ Bad:
 <template>
   <iframe src="javascript:alert(1)"></iframe>
   <object data="data:text/html,<script>alert(1)</script>"></object>
-  <img srcset="/safe.png 1x, javascript:alert(1) 2x" />
+  <embed :src="nextUrl" />
   <a :href="nextUrl">Continue</a>
 </template>
 ```

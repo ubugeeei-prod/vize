@@ -63,13 +63,13 @@ fn test_allows_static_image_data_url() {
 }
 
 #[test]
-fn test_warns_static_unsafe_srcset_candidate() {
+fn test_allows_static_image_srcset() {
     let linter = create_linter();
     let result = linter.lint_template(
         r#"<img srcset="/safe.png 1x, javascript:alert(1) 2x">"#,
         "test.vue",
     );
-    assert_eq!(result.warning_count, 1);
+    assert_eq!(result.warning_count, 0);
 }
 
 #[test]
@@ -161,6 +161,36 @@ fn test_warns_dynamic_src() {
         result.diagnostics[0].message,
         "Dynamic :src binding may be vulnerable to XSS via javascript: protocol"
     );
+}
+
+#[test]
+fn test_only_reports_active_url_sinks() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<div><MediaPlayer :src="url" /><media-player :src="url" /><img :src="url" /><video :src="url" /><audio :src="url" /><source :src="url" /><a :href="url">link</a><iframe :src="url" /><form :action="url"><button :formaction="url">go</button></form><object :data="url" /><embed :src="url" /><script :src="url" /></div>"#,
+        "test.vue",
+    );
+    assert_eq!(result.warning_count, 7);
+}
+
+#[test]
+fn test_allows_static_unsafe_urls_in_image_and_component_props() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<div><img src="javascript:alert(1)" /><video src="javascript:alert(1)" /><MediaPlayer src="javascript:alert(1)" /></div>"#,
+        "test.vue",
+    );
+    assert_eq!(result.warning_count, 0);
+}
+
+#[test]
+fn test_warns_static_unsafe_urls_in_active_sinks() {
+    let linter = create_linter();
+    let result = linter.lint_template(
+        r#"<div><a href="javascript:alert(1)">link</a><iframe src="javascript:alert(1)" /><form action="javascript:alert(1)" /><object data="data:text/html,<script>alert(1)</script>" /></div>"#,
+        "test.vue",
+    );
+    assert_eq!(result.warning_count, 4);
 }
 
 #[test]
