@@ -3,7 +3,7 @@ source: crates/vize_atelier_sfc/tests/dynamic_template_ref.rs
 expression: result.code.as_str()
 ---
 import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Child = _resolveComponent("Child");
   return _openBlock(true), _createElementBlock(
     _Fragment,
@@ -23,7 +23,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 import { ref } from "vue";
 export default {
   __name: "anonymous",
-  render,
+  render: _sfc_render,
   setup(__props) {
     const menus = ref([[{ id: 1 }]]);
     const menuList = ref([]);

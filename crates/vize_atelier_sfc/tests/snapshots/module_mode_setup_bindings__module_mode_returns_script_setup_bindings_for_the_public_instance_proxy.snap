@@ -5,7 +5,7 @@ expression: result.code.as_str()
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
 
 
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList($setup.flattenTree, (node) => {
     return (_openBlock(), _createElementBlock("div", { key: node }, _toDisplayString(node), 1 /* TEXT */))
   }), 128 /* KEYED_FRAGMENT */))
@@ -15,7 +15,7 @@ import { computed } from 'vue'
 
 export default {
   __name: 'anonymous',
-  render: render,
+  render: _sfc_render,
   setup(__props, { expose: __expose }) {
 
 const nodes = [1, 2, 3]

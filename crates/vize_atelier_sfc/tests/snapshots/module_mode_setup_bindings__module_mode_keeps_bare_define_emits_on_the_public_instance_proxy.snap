@@ -6,7 +6,7 @@ import { createElementVNode as _createElementVNode, openBlock as _openBlock, cre
 
 const _hoisted_1 = /*#__PURE__*/ _createElementVNode("div")
 
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createBlock(_Transition, {
     onAfterLeave: $event => (_ctx.$emit('destroy'))
   }, {
@@ -20,7 +20,7 @@ export function render(_ctx, _cache, $props, $setup, $data, $options) {
 export default {
   __name: 'anonymous',
   emits: ['destroy'],
-  render: render,
+  render: _sfc_render,
   setup(__props, { emit: $emit }) {
 
 

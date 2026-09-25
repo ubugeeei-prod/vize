@@ -4,7 +4,7 @@ expression: result.code.as_str()
 ---
 import { mergeDefaults as _mergeDefaults } from "vue";
 import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from "vue";
-export function render(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return $setup.props.value !== undefined ? (_openBlock(), _createElementBlock(
     "span",
     { key: 0 },
@@ -26,7 +26,7 @@ export default {
       required: false
     }
   }, checkboxDefaults),
-  render,
+  render: _sfc_render,
   setup(__props) {
     const props = __props;
     const __returned__ = { props };
