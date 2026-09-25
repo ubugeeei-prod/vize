@@ -89,24 +89,6 @@ test("TS-29 reference traces are complete and exercise identity policies", () =>
   }
 });
 
-test("TS-29 Vapor gaps are confined to the pinned upstream class", () => {
-  assert.deepEqual(
-    gaps.map((entry) => entry.name),
-    cases.map((entry) => entry.name).filter((name) => name.startsWith("object-positional-")),
-  );
-  for (const gap of gaps) {
-    const reference = behaviors.find((entry) => entry.name === gap.name)!.trace;
-    assert.notDeepEqual(gap.trace, reference);
-    const strip = (trace: Snapshot[]) =>
-      JSON.parse(
-        JSON.stringify(trace, (key, value) =>
-          key === "data-id"
-            ? "*"
-            : key === "identities"
-              ? value.map(([, l]: [string, number]) => l)
-              : value,
-        ),
-      );
-    assert.deepEqual(strip(gap.trace), strip(reference), `${gap.name} exceeds the gap class`);
-  }
+test("TS-29 Vapor has no recorded gaps after rc insertion alignment", () => {
+  assert.deepEqual(gaps, []);
 });
