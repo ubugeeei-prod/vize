@@ -102,9 +102,27 @@ const openState = useControllableState({
 const open = openState.value;
 const state = computed<ConfirmState>(() => (open.value ? "pending" : "idle"));
 const retiring = shallowRef<readonly ConfirmRequest[]>([]);
-const presentedRequests = computed<readonly ConfirmRequest[]>(() => {
+interface PresentedRequest {
+  readonly request: ConfirmRequest;
+  readonly dialogId: string;
+  readonly active: boolean;
+  readonly onOpenChange: (value: boolean) => void;
+  readonly onExitComplete: () => void;
+}
+
+const presentedRequests = computed<readonly PresentedRequest[]>(() => {
   const active = queue.active.value;
-  return active === null ? retiring.value : retiring.value.concat(active);
+  const requests = active === null ? retiring.value : retiring.value.concat(active);
+  return requests.map((request) => {
+    const isActive = active?.id === request.id;
+    return {
+      request,
+      dialogId: isActive ? dialogId.value : `${dialogId.value}-${request.id}`,
+      active: isActive,
+      onOpenChange: (value: boolean) => onOpenChange(value, request.id),
+      onExitComplete: () => completeRetirement(request.id),
+    };
+  });
 });
 let chosen: string | null = null;
 let restoreTarget: HTMLElement | null = null;
@@ -226,33 +244,33 @@ defineExpose(exposed);
   >
     <slot />
     <DialogRoot
-      v-for="request in presentedRequests"
-      :id="queue.active.value?.id === request.id ? dialogId : `${dialogId}-${request.id}`"
-      :key="request.id"
-      :open="queue.active.value?.id === request.id"
-      @update:open="(value: boolean) => onOpenChange(value, request.id)"
-      @exit-complete="() => completeRetirement(request.id)"
+      v-for="entry in presentedRequests"
+      :id="entry.dialogId"
+      :key="entry.request.id"
+      :open="entry.active"
+      @update:open="entry.onOpenChange"
+      @exit-complete="entry.onExitComplete"
     >
       <DialogPortal :to :disabled="portalDisabled">
         <DialogOverlay />
         <AlertDialogContent
           :lock-scroll
           :restore-focus="false"
-          :aria-describedby="request.description === null ? null : undefined"
-          :data-confirm-kind="request.kind"
-          :data-destructive="request.destructive ? 'true' : undefined"
+          :aria-describedby="entry.request.description === null ? null : undefined"
+          :data-confirm-kind="entry.request.kind"
+          :data-destructive="entry.request.destructive ? 'true' : undefined"
         >
-          <slot name="content" v-bind="slotPropsFor(request)">
-            <DialogTitle>{{ request.title }}</DialogTitle>
-            <DialogDescription v-if="request.description !== null">
-              {{ request.description }}
+          <slot name="content" v-bind="slotPropsFor(entry.request)">
+            <DialogTitle>{{ entry.request.title }}</DialogTitle>
+            <DialogDescription v-if="entry.request.description !== null">
+              {{ entry.request.description }}
             </DialogDescription>
             <div data-vize-ui="confirm-actions" part="actions">
               <DialogClose data-confirm-action="cancel">
-                {{ request.cancelLabel }}
+                {{ entry.request.cancelLabel }}
               </DialogClose>
               <DialogClose
-                v-for="action in actionsOf(request)"
+                v-for="action in actionsOf(entry.request)"
                 :key="action.value"
                 :data-confirm-action="action.value"
                 :data-destructive="action.destructive ? 'true' : undefined"
