@@ -112,6 +112,9 @@ export function getCompileOptionsForRequest(
     vapor: !ssr && (state.mergedOptions?.vapor ?? false),
     customRenderer: state.mergedOptions?.customRenderer ?? false,
     templateSyntax: state.mergedOptions?.templateSyntax ?? "standard",
+    // Vue keeps template comments in development and drops them in production.
+    // An explicit template.compilerOptions.comments overrides this default.
+    templateComments: !state.isProduction,
     ...resolvePluginVueCompileOptions(state.mergedOptions ?? {}),
   };
 

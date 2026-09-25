@@ -68,6 +68,8 @@ export interface BatchCompileOptionsNapi {
   customRenderer?: boolean;
   customElements?: Array<string>;
   templateSyntax?: string;
+  /** Preserve template comments; disabled by default for direct native calls. */
+  templateComments?: boolean;
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
   experimentalSelfComponent?: boolean;
@@ -1086,6 +1088,8 @@ export interface SfcCompileOptionsNapi {
   customRenderer?: boolean;
   customElements?: Array<string>;
   templateSyntax?: string;
+  /** Preserve template comments; disabled by default for direct native calls. */
+  templateComments?: boolean;
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
   experimentalSelfComponent?: boolean;
