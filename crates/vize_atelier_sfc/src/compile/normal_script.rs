@@ -56,7 +56,7 @@ fn extract_traced(
     trace: bool,
 ) -> (String, Option<Runs>) {
     use oxc_allocator::Allocator;
-    use oxc_ast::ast::Statement;
+    use oxc_ast::ast::{ImportDeclarationSpecifier, Statement};
     use oxc_codegen::Codegen;
     use oxc_parser::Parser;
     use oxc_semantic::SemanticBuilder;
@@ -170,6 +170,21 @@ fn extract_traced(
         );
         if ret2.diagnostics.is_empty() {
             let mut program2 = ret2.program;
+
+            // With only_remove_type_imports, OXC turns an import whose named
+            // specifiers are all inline `type` into a side-effect import. Such
+            // an import has no runtime meaning when emitting JavaScript. Keep
+            // explicit `import {}` and bare imports, which do load the module.
+            program2.body.retain(|stmt| {
+                !matches!(stmt, Statement::ImportDeclaration(import)
+                if import.specifiers.as_ref().is_some_and(|specifiers| {
+                    !specifiers.is_empty()
+                        && specifiers.iter().all(|specifier| {
+                            matches!(specifier, ImportDeclarationSpecifier::ImportSpecifier(named)
+                                if named.import_kind.is_type())
+                        })
+                }))
+            });
 
             // Run semantic analysis
             // `with_enum_eval(true)`: OXC 0.142's TypeScript enum transform

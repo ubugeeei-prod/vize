@@ -1723,6 +1723,48 @@ const count = ref(0)
     );
 }
 
+#[test]
+fn test_dual_script_erases_inline_type_only_import_without_erasing_runtime_imports() {
+    let source = r#"<script lang="ts">
+import { type Foo } from './types-only'
+import { type Bar, runtimeValue } from './mixed'
+import {} from './empty-import'
+import './side-effect'
+const make = (): Foo => ({ id: runtimeValue })
+</script>
+
+<script setup lang="ts">
+const value = make()
+</script>
+
+<template>{{ value.id }}</template>"#;
+
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse SFC");
+    let result = compile_sfc(&descriptor, SfcCompileOptions::default()).expect("compile SFC");
+    let code = result.code.as_str();
+
+    assert!(
+        !code.contains("types-only"),
+        "type-only import survived:\n{code}"
+    );
+    assert!(
+        !code.contains("type Bar"),
+        "inline type specifier survived:\n{code}"
+    );
+    assert!(
+        code.contains("runtimeValue"),
+        "value import was removed:\n{code}"
+    );
+    assert!(
+        code.contains("empty-import"),
+        "empty import was removed:\n{code}"
+    );
+    assert!(
+        code.contains("side-effect"),
+        "side-effect import was removed:\n{code}"
+    );
+}
+
 /// #993: a module-scope side effect in the normal `<script>` block must appear exactly once
 /// in the output (it would run twice if the import line were duplicated).
 #[test]
