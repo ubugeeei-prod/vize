@@ -16,7 +16,7 @@ pub fn release(
     root: &Path,
 ) -> Result<(), String> {
     let started = Instant::now();
-    let mut run_id = None;
+    let mut run_id: Option<u64> = None;
     let mut attempted_resume = false;
     let mut promoted = false;
     loop {
