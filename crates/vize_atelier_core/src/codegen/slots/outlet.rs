@@ -238,7 +238,7 @@ fn generate_slot_outlet_props_inner(
                 if !first {
                     ctx.push(", ");
                 }
-                generate_von_object_exp(ctx, &el.props);
+                generate_von_object_exp(ctx, &el.props, true);
                 first = false;
             }
 
@@ -260,7 +260,7 @@ fn generate_slot_outlet_props_inner(
             generate_vbind_object_exp(ctx, &el.props);
             ctx.push("))");
         } else {
-            generate_von_object_exp(ctx, &el.props);
+            generate_von_object_exp(ctx, &el.props, true);
         }
         return;
     }

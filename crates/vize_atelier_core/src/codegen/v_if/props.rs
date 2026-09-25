@@ -1,6 +1,6 @@
 //! Source-ordered props generation for v-if branches.
 
-use crate::{ElementNode, ExpressionNode, IfBranchNode, PropNode, RuntimeHelper};
+use crate::{ElementNode, ElementType, ExpressionNode, IfBranchNode, PropNode, RuntimeHelper};
 use vize_s0::{FxHashSet, String};
 
 use super::{
@@ -92,7 +92,10 @@ pub(super) fn generate_if_branch_props(
             ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
             ctx.push("(");
             generate_expression(ctx, expression);
-            ctx.push(", true)");
+            if el.tag_type == ElementType::Element {
+                ctx.push(", true");
+            }
+            ctx.push(")");
         }
     }
 

@@ -191,13 +191,15 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                 ctx.use_helper(RuntimeHelper::MergeProps);
                 ctx.push(ctx.helper(RuntimeHelper::MergeProps));
                 ctx.push("(");
-                generate_von_object_exp(ctx, props);
+                let is_plain_element = ctx.props_is_plain_element;
+                generate_von_object_exp(ctx, props, is_plain_element);
                 ctx.push(", { \"");
                 ctx.push(sid);
                 ctx.push("\": \"\" })");
             } else {
                 // _toHandlers(_ctx.handlers)
-                generate_von_object_exp(ctx, props);
+                let is_plain_element = ctx.props_is_plain_element;
+                generate_von_object_exp(ctx, props, is_plain_element);
             }
         }
         return;

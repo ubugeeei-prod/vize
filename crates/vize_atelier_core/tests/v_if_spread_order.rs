@@ -82,7 +82,11 @@ fn component_v_if_keeps_interleaved_object_spreads_in_source_order() {
 #[test]
 fn object_v_on_preserves_case_only_for_native_elements() {
     let component = compile(r#"<Widget v-on="handlers" />"#);
-    let native = compile(r#"<div v-on="handlers" />"#);
+    let native = compile(r#"<div v-on="handlers"></div>"#);
+    let component_if = compile(r#"<Widget v-if="show" v-on="handlers" />"#);
+    let native_if = compile(r#"<div v-if="show" v-on="handlers"></div>"#);
+    let component_for = compile(r#"<Widget v-for="item in items" v-on="handlers" />"#);
+    let native_for = compile(r#"<div v-for="item in items" v-on="handlers"></div>"#);
     assert!(
         component.contains("_toHandlers(_ctx.handlers)"),
         "{component}"
@@ -94,6 +98,22 @@ fn object_v_on_preserves_case_only_for_native_elements() {
     assert!(
         native.contains("_toHandlers(_ctx.handlers, true)"),
         "{native}"
+    );
+    assert!(
+        component_if.contains("_toHandlers(_ctx.handlers)"),
+        "{component_if}"
+    );
+    assert!(
+        native_if.contains("_toHandlers(_ctx.handlers, true)"),
+        "{native_if}"
+    );
+    assert!(
+        component_for.contains("_toHandlers(_ctx.handlers)"),
+        "{component_for}"
+    );
+    assert!(
+        native_for.contains("_toHandlers(_ctx.handlers, true)"),
+        "{native_for}"
     );
 }
 

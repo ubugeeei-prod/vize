@@ -699,7 +699,11 @@ fn generate_for_item_props_merged(
                 generate_expression(ctx, exp);
             }
         } else {
-            super::super::props::generate_von_object_exp(ctx, std::slice::from_ref(prop));
+            super::super::props::generate_von_object_exp(
+                ctx,
+                std::slice::from_ref(prop),
+                el.tag_type == ElementType::Element,
+            );
         }
     }
 

@@ -59,7 +59,11 @@ pub(crate) fn generate_vbind_object_exp(ctx: &mut CodegenContext, props: &[PropN
 }
 
 /// Generate the v-on object expression wrapped with toHandlers
-pub(crate) fn generate_von_object_exp(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
+pub(crate) fn generate_von_object_exp(
+    ctx: &mut CodegenContext,
+    props: &[PropNode<'_>],
+    is_plain_element: bool,
+) {
     ctx.use_helper(RuntimeHelper::ToHandlers);
     ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
     ctx.push("(");
@@ -72,7 +76,7 @@ pub(crate) fn generate_von_object_exp(ctx: &mut CodegenContext, props: &[PropNod
             generate_expression(ctx, exp);
             // Preserve uppercase event names only for native elements.
             // Component emits expect `onUpdate:modelValue`, not `on:update:modelValue`.
-            if ctx.props_is_plain_element {
+            if is_plain_element {
                 ctx.push(", true");
             }
             break;
