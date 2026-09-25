@@ -398,7 +398,7 @@ defineProps<{
         "format:{type:Function,required:true}",
         "extendedFormat:{type:Function,required:true}",
         "labelled:{type:[Object,Function],required:true}",
-        "extendedLabelled:{type:[Object,Function],required:true}",
+        "extendedLabelled:{type:Function,required:true}",
         "inline:{type:[Function,Object],required:true}",
         "plain:{type:Object,required:true}",
     ] {
