@@ -112,3 +112,52 @@ defineProps<{
     await fs.promises.rm(tempDir, { recursive: true, force: true });
   }
 });
+
+void test("script component art exposes runtime props in analysis and palette", async () => {
+  const root = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-script-palette-"));
+  const artPath = path.join(root, "my-button.art.vue");
+  const componentPath = path.join(root, "my-button.ts");
+
+  try {
+    await fs.promises.writeFile(
+      artPath,
+      `<script setup lang="ts">defineArt("./my-button.ts", { title: "MyButton" })</script>
+<art><variant name="Default" default><MyButton label="Hello" /></variant></art>`,
+    );
+    await fs.promises.writeFile(
+      componentPath,
+      `import { defineComponent, h } from "vue";
+export default defineComponent({
+  props: { label: { type: String, default: "Button" }, disabled: Boolean },
+  emits: ["click"],
+  setup: props => () => h("button", props.label),
+});`,
+    );
+    const art = createArt(artPath);
+    art.isInline = false;
+    art.componentPath = undefined;
+    art.metadata.component = "./my-button.ts";
+    const ctx = createContext(root, new Map([[artPath, art]]));
+    const encodedPath = encodeURIComponent(artPath);
+    const analysis = JSON.parse(await invokeApi(ctx, `/arts/${encodedPath}/analysis`));
+    assert.deepEqual(analysis, {
+      props: [
+        { name: "label", type: "string", required: false, default_value: "Button" },
+        { name: "disabled", type: "boolean", required: false },
+      ],
+      emits: ["click"],
+    });
+
+    const palette = JSON.parse(await invokeApi(ctx, `/arts/${encodedPath}/palette`));
+    const controls = new Map(
+      (palette.controls as Array<{ name: string; control: string; default_value?: unknown }>).map(
+        (control) => [control.name, control],
+      ),
+    );
+    assert.equal(controls.get("label")?.control, "text");
+    assert.equal(controls.get("label")?.default_value, "Button");
+    assert.equal(controls.get("disabled")?.control, "boolean");
+  } finally {
+    await fs.promises.rm(root, { recursive: true, force: true });
+  }
+});

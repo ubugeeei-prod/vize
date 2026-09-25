@@ -124,6 +124,10 @@ runtime code and the language server uses the same source for prop and slot infe
 The source string participates in path completion, unresolved-file diagnostics, document links, and
 go-to-definition.
 
+Render-function components can also be referenced from `.ts`, `.tsx`, `.js`, or `.jsx` files:
+`defineArt("./MyButton.ts", { title: "MyButton" })`. Musea imports the module's default export
+and reads statically declared runtime `props` and `emits` for the analysis and props panel.
+
 `<art title="..." component="...">` still works for compatibility, and explicit `<art>` attributes
 override `defineArt` metadata when both are present.
 

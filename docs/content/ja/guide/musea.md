@@ -126,6 +126,10 @@ const pressed = ref(false);
 ソース文字列は、パス補完、未解決ファイルの診断、ドキュメントのリンク、および
 定義に進みます。
 
+render 関数で書いたコンポーネントには、`.ts`、`.tsx`、`.js`、`.jsx` ファイルも指定できます。
+例: `defineArt("./MyButton.ts", { title: "MyButton" })`。Musea は default export を読み込み、
+静的に宣言された runtime `props` と `emits` を分析画面と props パネルに表示します。
+
 `<art title="..." component="...">` は互換性のために引き続き機能し、明示的な `<art>` 属性も機能します
 両方が存在する場合、`defineArt` メタデータをオーバーライドします。
 

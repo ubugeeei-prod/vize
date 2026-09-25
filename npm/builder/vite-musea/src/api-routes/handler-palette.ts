@@ -13,7 +13,8 @@ import {
   resolveReadableArtPath,
 } from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
-import { decodeUrlComponent, HttpError } from "../security.js";
+import { analyzeScriptComponent } from "../script-component-analysis.js";
+import { decodeUrlComponent, HttpError, isVueSourcePath } from "../security.js";
 
 type PaletteControl = {
   name: string;
@@ -86,13 +87,11 @@ export async function handleArtPalette(
 
     try {
       const componentSource = await fs.promises.readFile(resolvedComponentPath, "utf-8");
-      const analysis = binding.analyzeSfc
-        ? binding.analyzeSfc(componentSource, {
-            filename: resolvedComponentPath,
-          })
-        : analyzeSfcFallback(componentSource, {
-            filename: resolvedComponentPath,
-          });
+      const analysis = isVueSourcePath(resolvedComponentPath)
+        ? binding.analyzeSfc
+          ? binding.analyzeSfc(componentSource, { filename: resolvedComponentPath })
+          : analyzeSfcFallback(componentSource, { filename: resolvedComponentPath })
+        : analyzeScriptComponent(componentSource, resolvedComponentPath);
 
       if (analysis.props.length > 0) {
         mergeSfcPropsIntoPalette(palette, analysis.props);

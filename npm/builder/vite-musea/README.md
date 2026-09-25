@@ -91,6 +91,9 @@ and the metadata shown in the gallery. Prefer a relative component path string; 
 removed and Musea generates the component import. The Musea language server uses the same source
 for path completion, missing-file diagnostics, go-to-definition, and prop/slot inference.
 
+The source may be a `.vue`, `.ts`, `.tsx`, `.js`, or `.jsx` file. For render-function components,
+Musea reads statically declared runtime `props` and `emits` for the analysis and props panel.
+
 ## TypeScript and Editor Setup
 
 Add the client types once, usually in `src/env.d.ts`:

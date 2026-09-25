@@ -72,7 +72,8 @@
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",
-    "pngjs": "catalog:content"
+    "pngjs": "catalog:content",
+    "typescript": "catalog:typescript"
   },
   "devDependencies": {
     "@mdi/js": "catalog:content",
@@ -86,7 +87,6 @@
     "marked-highlight": "catalog:content",
     "monaco-editor": "catalog:content",
     "tsx": "catalog:typescript",
-    "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
     "vite-plus": "catalog:vite-stack",
     "vue": "catalog:vue-stable",

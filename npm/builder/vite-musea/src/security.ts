@@ -6,6 +6,7 @@ import { HttpError } from "./http-error.js";
 export { HttpError } from "./http-error.js";
 export {
   assertArtVueSourcePath,
+  assertComponentSourcePath,
   assertVueSourcePath,
   decodeUrlComponent,
   isArtVueSourcePath,

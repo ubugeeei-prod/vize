@@ -167,6 +167,14 @@ export function assertVueSourcePath(candidatePath: string, label = "path"): void
   }
 }
 
+/** Accept Vue SFCs and script modules while validating the resolved realpath. */
+export function assertComponentSourcePath(candidatePath: string, label = "path"): void {
+  const realPath = realpathNearest(candidatePath).toLowerCase();
+  if (!/\.(?:vue|ts|tsx|js|jsx)$/.test(realPath)) {
+    throw new HttpError(`${label} must be a .vue, .ts, .tsx, .js, or .jsx file`, 400);
+  }
+}
+
 export function isArtVueSourcePath(candidatePath: string): boolean {
   return hasSuffix(candidatePath, ".art.vue");
 }

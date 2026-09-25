@@ -14,7 +14,8 @@ import {
   resolveReadableArtPath,
 } from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
-import { decodeUrlComponent, HttpError } from "../security.js";
+import { analyzeScriptComponent } from "../script-component-analysis.js";
+import { decodeUrlComponent, HttpError, isVueSourcePath } from "../security.js";
 
 function sendCaughtError(sendError: SendError, error: unknown): void {
   if (error instanceof HttpError) {
@@ -72,17 +73,14 @@ export async function handleArtAnalysis(
 
     if (resolvedComponentPath) {
       const source = await fs.promises.readFile(resolvedComponentPath, "utf-8");
-      const binding = loadNative();
-      if (binding.analyzeSfc) {
-        const analysis = binding.analyzeSfc(source, {
-          filename: resolvedComponentPath,
-        });
+      if (isVueSourcePath(resolvedComponentPath)) {
+        const binding = loadNative();
+        const analysis = binding.analyzeSfc
+          ? binding.analyzeSfc(source, { filename: resolvedComponentPath })
+          : analyzeSfcFallback(source, { filename: resolvedComponentPath });
         sendJson(analysis);
       } else {
-        const analysis = analyzeSfcFallback(source, {
-          filename: resolvedComponentPath,
-        });
-        sendJson(analysis);
+        sendJson(analyzeScriptComponent(source, resolvedComponentPath));
       }
     } else {
       sendJson({ props: [], emits: [] });
