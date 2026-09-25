@@ -171,4 +171,46 @@ mod tests {
             .collect();
         assert_eq!(names, vec!["handle", "$el"], "{source}");
     }
+
+    #[test]
+    fn block_bodied_functions_scope_their_declarations_lexically() {
+        for (source, expected) in [
+            // Rest parameters bind like the others.
+            ("(...args) => { consume(args) }", vec!["consume"]),
+            (
+                "function (a, ...rest) { return a + rest.length + b }",
+                vec!["b"],
+            ),
+            // `const` / `let` belong to their block; `var` hoists.
+            ("() => { { const local = 1 } return local }", vec!["local"]),
+            (
+                "() => { if (flag) { const inner = make(); use(inner) } else { use(inner) } }",
+                vec!["flag", "make", "use", "use", "inner"],
+            ),
+            (
+                "() => { var a = 1; if (x) { var b = 2 } return a + b }",
+                vec!["x"],
+            ),
+            (
+                "() => { function helper() {} class Local {} return [helper, Local] }",
+                vec![],
+            ),
+            // Default values and computed keys read the surrounding scope.
+            (
+                "() => { const { value = fallback, [key]: picked } = options; return value + picked }",
+                vec!["fallback", "key", "options"],
+            ),
+            (
+                "(a, b = a, { c = d } = e) => b + c + f",
+                vec!["d", "e", "f"],
+            ),
+            ("function named() { return named }", vec![]),
+        ] {
+            let names: Vec<_> = extract_identifier_refs_oxc_ast(source)
+                .into_iter()
+                .map(|r| r.name)
+                .collect();
+            assert_eq!(names, expected, "{source}");
+        }
+    }
 }
