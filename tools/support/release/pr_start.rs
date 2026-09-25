@@ -131,12 +131,13 @@ fn prepare_and_open(bump: &str, repository: &str, work: &Path) -> Result<(), Str
         work,
     )?;
     let body = work.join(".git-release-pr-body.md");
-    fs::write(&body, format!("## Release {tag}\n\nPrepare aligned workspace and package versions from current main.\n\nThe release workflow builds and verifies all artifacts before a tag exists. The release command refreshes this PR when main advances, then atomically fast-forwards main and creates the tag. Publication consumes the already-validated artifacts.\n\n- Required author role: maintain or admin\n- Failed validation leaves this PR open and creates no tag\n- Resume: `vp run release --resume <PR number>`\n\n<!-- vize-release-bump: {bump} -->\n<!-- vize-release-base-version: {base_version} -->\n")).map_err(|e| e.to_string())?;
+    fs::write(&body, format!("## Release {tag}\n\nPrepare aligned workspace and package versions from current main.\n\nThe release workflow builds and verifies all artifacts before a tag exists. The release command refreshes this PR when main advances, then atomically fast-forwards main and creates the tag. Publication consumes the already-validated artifacts.\n\nThis PR remains draft while validation runs. Do not convert it to ready or merge it in the GitHub UI. The release command promotes main and the tag together; GitHub then records an indirect merge.\n\n- Required author role: maintain or admin\n- Failed validation leaves this PR open and creates no tag\n- Resume: `vp run release --resume <PR number>`\n\n<!-- vize-release-bump: {bump} -->\n<!-- vize-release-base-version: {base_version} -->\n")).map_err(|e| e.to_string())?;
     let created = github::output(
         "gh",
         &[
             "pr",
             "create",
+            "--draft",
             "--repo",
             repository,
             "--base",
@@ -167,7 +168,7 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
     let repository = github::repository(root)?;
     let login = github::output("gh", &["api", "user", "--jq", ".login"], root)?;
     pr_contract::maintainer(&github::author(&repository, &login, root)?)?;
-    let pr = github::api(&repository, &format!("pulls/{number}"), root)?;
+    let pr = github::protect_release_pr(&repository, number, root)?;
     let head = pr_contract::field(&pr, "/head/sha")?;
     let branch = pr_contract::field(&pr, "/head/ref")?;
     let tag = branch.strip_prefix("release/").ok_or("Not a release PR")?;

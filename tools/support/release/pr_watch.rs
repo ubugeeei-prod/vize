@@ -20,7 +20,25 @@ pub fn release(
     let mut attempted_resume = false;
     let mut promoted = false;
     loop {
+        let pr = github::protect_release_pr(repository, number, root)?;
         let head = github::git(&["rev-parse", "HEAD"], root)?;
+        if !promoted && pr.get("merged").and_then(Value::as_bool) != Some(true) {
+            let remote_head = pr_contract::field(&pr, "/head/sha")?;
+            let branch = pr_contract::field(&pr, "/head/ref")?;
+            if sync_head(branch, remote_head, root)? {
+                // A refreshed head needs a fresh validation run.
+                if let Some(id) = run_id {
+                    let _ = github::output(
+                        "gh",
+                        &["run", "cancel", &id.to_string(), "--repo", repository],
+                        root,
+                    );
+                }
+                run_id = None;
+                attempted_resume = false;
+                continue;
+            }
+        }
         let candidate = github::candidate(repository, number, &head, tag, true, root)?;
         let main = github::fetch_main(root)?;
         if candidate.merged || github::tag_target(tag, root)?.as_deref() == Some(&head) {
@@ -112,6 +130,33 @@ pub fn release(
         println!("PR #{number}: waiting for validation or publication (run {id}).");
         sleep(Duration::from_secs(20));
     }
+}
+
+pub fn sync_head(branch: &str, expected: &str, root: &Path) -> Result<bool, String> {
+    pr_contract::sha(expected)?;
+    let tag = branch.strip_prefix("release/").ok_or("Not a release PR")?;
+    pr_contract::tag(tag)?;
+    github::git(
+        &[
+            "fetch",
+            "--no-tags",
+            "origin",
+            &format!("refs/heads/{branch}"),
+        ],
+        root,
+    )?;
+    if github::git(&["rev-parse", "FETCH_HEAD"], root)? != expected {
+        // A push can become visible on the branch before the PR API reports
+        // its new head. Wait for those two GitHub views to agree.
+        sleep(Duration::from_secs(2));
+        return Ok(true);
+    }
+    if github::git(&["rev-parse", "HEAD"], root)? == expected {
+        return Ok(false);
+    }
+    github::clean(root)?;
+    github::git(&["reset", "--hard", expected], root)?;
+    Ok(true)
 }
 
 fn find_or_dispatch(

@@ -77,8 +77,8 @@ pub fn candidate(
     if (!merged && field(pr, "/state")? != "open") || (merged && !allow_merged) {
         return Err("Release PR must be open until promotion.".into());
     }
-    if pr.get("draft").and_then(Value::as_bool) != Some(false) {
-        return Err("A draft PR cannot be released.".into());
+    if !merged && pr.get("draft").and_then(Value::as_bool) != Some(true) {
+        return Err("An open release PR must remain draft until atomic main/tag promotion.".into());
     }
     for pointer in ["/base/repo/full_name", "/head/repo/full_name"] {
         if field(pr, pointer)? != repository {
@@ -106,6 +106,21 @@ pub fn candidate(
         tag: release_tag.into(),
         merged,
     })
+}
+
+/// A draft PR cannot be merged through GitHub while validation is in progress.
+/// GitHub marks it as indirectly merged once the atomic main/tag push succeeds.
+pub fn needs_draft(pr: &Value) -> Result<bool, String> {
+    if pr.get("merged").and_then(Value::as_bool) == Some(true) {
+        return Ok(false);
+    }
+    if field(pr, "/state")? != "open" {
+        return Err("Release PR must be open until promotion.".into());
+    }
+    match pr.get("draft").and_then(Value::as_bool) {
+        Some(draft) => Ok(!draft),
+        None => Err("Missing release PR draft state.".into()),
+    }
 }
 
 pub fn current_parent(parent: &str, main: &str) -> Result<(), String> {

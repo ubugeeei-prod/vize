@@ -4,6 +4,8 @@ use std::{
     env, fs,
     path::Path,
     process::{Command, Stdio},
+    thread::sleep,
+    time::Duration,
 };
 
 pub fn output(program: &str, args: &[&str], cwd: &Path) -> Result<String, String> {
@@ -46,6 +48,46 @@ pub fn api(repository: &str, resource: &str, root: &Path) -> Result<Value, Strin
     let path = format!("repos/{repository}/{resource}");
     let text = output("gh", &["api", &path], root)?;
     serde_json::from_str(&text).map_err(|e| format!("Invalid GitHub response: {e}"))
+}
+
+/// Recover a legacy or manually readied release PR before any validation work.
+/// Verification still checks the exact head and draft state after this call.
+pub fn protect_release_pr(repository: &str, number: u64, root: &Path) -> Result<Value, String> {
+    let resource = format!("pulls/{number}");
+    let mut pr = api(repository, &resource, root)?;
+    let branch = pr_contract::field(&pr, "/head/ref")?;
+    let tag = branch.strip_prefix("release/").ok_or("Not a release PR")?;
+    pr_contract::tag(tag)?;
+    if pr_contract::field(&pr, "/base/ref")? != "main"
+        || pr_contract::field(&pr, "/base/repo/full_name")? != repository
+        || pr_contract::field(&pr, "/head/repo/full_name")? != repository
+    {
+        return Err("Release PR must target main from a branch in this repository.".into());
+    }
+    if pr_contract::needs_draft(&pr)? {
+        let conversion = output(
+            "gh",
+            &[
+                "pr",
+                "ready",
+                "--undo",
+                &number.to_string(),
+                "--repo",
+                repository,
+            ],
+            root,
+        );
+        for _ in 0..5 {
+            pr = api(repository, &resource, root)?;
+            if !pr_contract::needs_draft(&pr)? {
+                return Ok(pr);
+            }
+            sleep(Duration::from_secs(2));
+        }
+        conversion?;
+        return Err("Release PR is still mergeable after converting it to draft.".into());
+    }
+    Ok(pr)
 }
 
 pub fn repository(root: &Path) -> Result<String, String> {

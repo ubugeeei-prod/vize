@@ -1,4 +1,4 @@
-use super::{pr_contract as contract, pr_github as github, pr_promote};
+use super::{pr_contract as contract, pr_github as github, pr_promote, pr_watch};
 use serde_json::{Value, json};
 use std::{
     fs,
@@ -10,7 +10,7 @@ const HEAD: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const BASE: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
 fn pull() -> Value {
-    json!({"number": 42, "state": "open", "merged": false, "draft": false,
+    json!({"number": 42, "state": "open", "merged": false, "draft": true,
         "user": {"login": "maintainer"},
         "head": {"sha": HEAD, "ref": "release/v1.2.3", "repo": {"full_name": "owner/repo"}},
         "base": {"sha": BASE, "ref": "main", "repo": {"full_name": "owner/repo"}}})
@@ -48,7 +48,7 @@ fn only_maintain_and_admin_authors_can_release() {
 }
 
 #[test]
-fn candidate_rejects_forks_drafts_wrong_bases_and_changed_heads() {
+fn candidate_rejects_forks_ready_prs_wrong_bases_and_changed_heads() {
     for (pointer, value) in [
         ("/head/repo/full_name", json!("fork/repo")),
         ("/base/repo/full_name", json!("other/repo")),
@@ -56,7 +56,7 @@ fn candidate_rejects_forks_drafts_wrong_bases_and_changed_heads() {
         ("/head/ref", json!("feature")),
         ("/head/sha", json!(BASE)),
         ("/state", json!("closed")),
-        ("/draft", json!(true)),
+        ("/draft", json!(false)),
     ] {
         let mut pr = pull();
         *pr.pointer_mut(pointer).unwrap() = value;
@@ -75,6 +75,55 @@ fn candidate_rejects_forks_drafts_wrong_bases_and_changed_heads() {
     }
     assert!(contract::current_parent(BASE, HEAD).is_err());
     assert!(contract::current_parent(BASE, BASE).is_ok());
+}
+
+#[test]
+fn release_pr_stays_draft_until_atomic_promotion() {
+    let mut pr = pull();
+    assert!(!contract::needs_draft(&pr).unwrap());
+    pr["draft"] = json!(false);
+    assert!(contract::needs_draft(&pr).unwrap());
+    assert!(
+        contract::candidate(
+            &pr,
+            &json!({"role_name": "maintain"}),
+            "owner/repo",
+            HEAD,
+            "v1.2.3",
+            false
+        )
+        .is_err()
+    );
+    pr["draft"] = json!(true);
+    assert!(
+        contract::candidate(
+            &pr,
+            &json!({"role_name": "maintain"}),
+            "owner/repo",
+            HEAD,
+            "v1.2.3",
+            false
+        )
+        .is_ok()
+    );
+    // GitHub may retain or clear draft when the head is indirectly merged.
+    pr["merged"] = json!(true);
+    pr["state"] = json!("closed");
+    for draft in [true, false] {
+        pr["draft"] = json!(draft);
+        assert!(!contract::needs_draft(&pr).unwrap());
+        assert!(
+            contract::candidate(
+                &pr,
+                &json!({"role_name": "maintain"}),
+                "owner/repo",
+                HEAD,
+                "v1.2.3",
+                true
+            )
+            .is_ok()
+        );
+    }
 }
 
 #[test]
@@ -219,6 +268,55 @@ fn existing_tag_rejects_main_update_too() {
     assert_eq!(
         github::tag_target("v1.2.3", &repo.work).unwrap().as_deref(),
         Some(original.as_str())
+    );
+}
+
+#[test]
+fn refreshed_pr_head_replaces_stale_local_validation_head() {
+    let repo = Repo::new();
+    let original = repo.main();
+    let first = repo.candidate();
+    github::git(&["push", "origin", "release/v1.2.3"], &repo.work).unwrap();
+    github::git(&["checkout", "main"], &repo.work).unwrap();
+    assert!(pr_watch::sync_head("release/v1.2.3", &first, &repo.work).unwrap());
+    assert_eq!(
+        github::git(&["rev-parse", "HEAD"], &repo.work).unwrap(),
+        first
+    );
+    assert!(!pr_watch::sync_head("release/v1.2.3", &first, &repo.work).unwrap());
+
+    github::git(
+        &[
+            "-c",
+            "core.hooksPath=/dev/null",
+            "commit",
+            "--allow-empty",
+            "-m",
+            "refresh",
+        ],
+        &repo.work,
+    )
+    .unwrap();
+    let second = github::git(&["rev-parse", "HEAD"], &repo.work).unwrap();
+    github::git(
+        &[
+            "push",
+            "origin",
+            &format!("{second}:refs/heads/release/v1.2.3"),
+        ],
+        &repo.work,
+    )
+    .unwrap();
+    github::git(&["reset", "--hard", &original], &repo.work).unwrap();
+    assert!(pr_watch::sync_head("release/v1.2.3", &first, &repo.work).unwrap());
+    assert_eq!(
+        github::git(&["rev-parse", "HEAD"], &repo.work).unwrap(),
+        original
+    );
+    assert!(pr_watch::sync_head("release/v1.2.3", &second, &repo.work).unwrap());
+    assert_eq!(
+        github::git(&["rev-parse", "HEAD"], &repo.work).unwrap(),
+        second
     );
 }
 
