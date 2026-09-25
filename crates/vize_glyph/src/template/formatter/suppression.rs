@@ -34,6 +34,19 @@ const SAME_LINE_PRAGMAS: [&[u8]; 2] = [b"eslint-disable-line", b"vize-disable-li
 /// overwhelming majority of templates that carry no suppression at all.
 const PRAGMA_MARKERS: [&[u8]; 2] = [b"-disable-", b"@vize:"];
 
+#[derive(Clone, Copy)]
+pub(super) enum ChunkJoin {
+    NewLine,
+    BlankLine,
+    Continue(bool),
+}
+
+impl ChunkJoin {
+    pub(super) fn is_continuation(self) -> bool {
+        matches!(self, Self::Continue(_))
+    }
+}
+
 /// Tracks which output line the formatter is currently filling, so chunks that
 /// share an unsplittable source line share an output line too.
 pub(super) struct LineJoiner<'s> {
@@ -61,30 +74,41 @@ impl<'s> LineJoiner<'s> {
 
     /// Decide how to start the chunk that begins at `start` in the source.
     ///
-    /// `None` starts a fresh line at the caller's indent — the ordinary case.
-    /// `Some(spaced)` continues the line the previous chunk opened, inserting a
+    /// `NewLine` starts a fresh line at the caller's indent — the ordinary case.
+    /// `Continue(spaced)` continues the line the previous chunk opened, inserting a
     /// single separating space when the source separated the two chunks with
     /// whitespace. The gap between two chunks is whitespace by construction:
     /// an empty gap stays adjacent, horizontal whitespace becomes one space,
     /// and any authored line break keeps a fresh output line.
-    pub(super) fn open(&mut self, start: usize) -> Option<bool> {
+    pub(super) fn open(&mut self, start: usize) -> ChunkJoin {
         let previous = self.current;
         self.current = self.locked_index(start);
+        let mut blank_line = false;
         if let Some(end) = self.previous_end.filter(|end| *end <= start) {
             let gap = self.source.get(end..start).unwrap_or_default();
             if gap.is_empty() {
-                return Some(false);
+                return ChunkJoin::Continue(false);
             }
             if !gap.iter().any(|byte| matches!(byte, b'\n' | b'\r'))
                 && gap.iter().copied().all(is_whitespace)
             {
-                return Some(true);
+                return ChunkJoin::Continue(true);
             }
+            // Collapse authored empty lines to one between markup chunks.
+            // The source gap must contain only whitespace; text and directive
+            // expression newlines must never become template layout.
+            blank_line = self.source.get(start) == Some(&b'<')
+                && gap.iter().copied().all(is_whitespace)
+                && gap.iter().filter(|&&byte| byte == b'\n').take(2).count() == 2;
         }
         if self.current.is_none() || self.current != previous {
-            return None;
+            return if blank_line {
+                ChunkJoin::BlankLine
+            } else {
+                ChunkJoin::NewLine
+            };
         }
-        Some(
+        ChunkJoin::Continue(
             start > 0
                 && self
                     .source
@@ -117,10 +141,20 @@ impl<'s> LineJoiner<'s> {
 impl TemplateFormatter<'_> {
     /// Start a chunk of output, either on a fresh indented line or continuing
     /// the current one. See [`LineJoiner::open`] for how `join` is decided.
-    pub(super) fn open_chunk(&self, output: &mut Vec<u8>, depth: usize, join: Option<bool>) {
-        let Some(spaced) = join else {
-            self.write_indent(output, depth);
-            return;
+    pub(super) fn open_chunk(&self, output: &mut Vec<u8>, depth: usize, join: ChunkJoin) {
+        let spaced = match join {
+            ChunkJoin::NewLine => {
+                self.write_indent(output, depth);
+                return;
+            }
+            ChunkJoin::BlankLine => {
+                if !output.is_empty() {
+                    output.extend_from_slice(self.newline);
+                }
+                self.write_indent(output, depth);
+                return;
+            }
+            ChunkJoin::Continue(spaced) => spaced,
         };
         // The previous chunk already closed its line; take that newline back so
         // both chunks stay on the line their suppression comment covers.

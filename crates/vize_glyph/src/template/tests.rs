@@ -24,6 +24,38 @@ fn test_format_nested_template() {
 }
 
 #[test]
+fn keeps_one_blank_line_between_template_siblings() {
+    let source = "<div>\n  <header>title</header>\n\n\n  <main>body</main>\n\n  <footer>foot</footer>\n</div>";
+    let expected =
+        "<div>\n  <header>title</header>\n\n  <main>body</main>\n\n  <footer>foot</footer>\n</div>";
+    let options = FormatOptions::default();
+    let formatted = format_template_content(source, &options).unwrap();
+    assert_eq!(formatted.as_str(), expected);
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted
+    );
+}
+
+#[test]
+fn keeps_leading_line_comments_inside_multiline_directives() {
+    let source = "<main\n  :data-loading=\"\n    // explain why this flag is used here\n    loading\n  \"\n  @close=\"\n    // always attach a close handler\n    () => close()\n  \"\n>\n  body\n</main>";
+    let options = FormatOptions {
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+    let formatted = format_template_content(source, &options).unwrap();
+    assert_eq!(
+        formatted.as_str(),
+        "<main\n  :data-loading=\"\n    // explain why this flag is used here\n    loading\n  \"\n  @close=\"\n    // always attach a close handler\n    () => close()\n  \"\n>\n  body\n</main>"
+    );
+    assert_eq!(
+        format_template_content(&formatted, &options).unwrap(),
+        formatted
+    );
+}
+
+#[test]
 fn test_format_with_attributes() {
     let source = r#"<div class="container" id="main">Content</div>"#;
     let options = FormatOptions::default();

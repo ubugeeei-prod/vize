@@ -236,6 +236,33 @@ fn test_format_sfc_multiline_comment_is_idempotent() {
 }
 
 #[test]
+fn template_blank_lines_and_leading_directive_comments_round_trip() {
+    let source = "<script setup lang=\"ts\">\nconst loading = true;\nfunction close() {}\n</script>\n\n<template>\n  <main\n    :data-loading=\"\n      // explain why this flag is used here\n      loading\n    \"\n    @close=\"\n      // always attach a close handler\n      () => close()\n    \"\n  >\n    <header>title</header>\n\n    <footer>foot</footer>\n  </main>\n</template>\n";
+    let options = FormatOptions {
+        sort_attributes: false,
+        ..FormatOptions::default()
+    };
+    let first = format_sfc(source, &options).unwrap().code;
+    assert!(
+        first.contains(
+            ":data-loading=\"\n      // explain why this flag is used here\n      loading\n    \""
+        ),
+        "{first}"
+    );
+    assert!(
+        first.contains(
+            "@close=\"\n      // always attach a close handler\n      () => close()\n    \""
+        ),
+        "{first}"
+    );
+    assert!(
+        first.contains("<header>title</header>\n\n    <footer>foot</footer>"),
+        "{first}"
+    );
+    assert_eq!(format_sfc(&first, &options).unwrap().code, first);
+}
+
+#[test]
 fn test_format_sfc_multiline_interpolation_with_trailing_text_is_idempotent() {
     let source = "<template>\n  <div>\n    <span>\n      {{ $t(\"compose.drafts\", nonEmptyDrafts.length, { named: { v: formatNumber(nonEmptyDrafts.length) } }) }}&#160;\n    </span>\n  </div>\n</template>\n";
     let options = FormatOptions::default();

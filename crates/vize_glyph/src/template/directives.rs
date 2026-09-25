@@ -78,6 +78,14 @@ fn format_directive_value(name: &str, value: &str, options: &FormatOptions) -> (
         return (value.to_compact_string(), false);
     }
 
+    // Formatting a leading line comment as a standalone JS expression moves
+    // it onto the opening quote and may rewrap the expression beneath it.
+    // Keep the authored multiline value so the comment still covers the same
+    // expression and the opening/closing quote stay on their own lines.
+    if value.contains('\n') && trimmed.starts_with("//") {
+        return (value.to_compact_string(), false);
+    }
+
     // v-for has special syntax: "(item, index) in items"
     if name == "v-for" {
         return (format_v_for_expression(trimmed), false);

@@ -5,7 +5,7 @@
 
 use super::{
     TemplateFormatter, format_interpolation_expression, format_interpolations,
-    suppression::{LineJoiner, TextRun},
+    suppression::{ChunkJoin, LineJoiner, TextRun},
 };
 use vize_s0::String;
 
@@ -35,12 +35,15 @@ impl TemplateFormatter<'_> {
                 self.rewrap_text_with_multiline_interpolation(&formatted, depth)
         {
             let join = joiner.open(start);
-            if join.is_some() {
+            if join.is_continuation() {
                 self.open_chunk(output, depth, join);
                 let indent_len = self.indent.len() * depth;
                 let dedented = rewrapped.as_bytes().get(indent_len..).unwrap_or_default();
                 output.extend_from_slice(dedented);
             } else {
+                if matches!(join, ChunkJoin::BlankLine) && !output.is_empty() {
+                    output.extend_from_slice(self.newline);
+                }
                 output.extend_from_slice(rewrapped.as_bytes());
             }
             joiner.finish(end);
