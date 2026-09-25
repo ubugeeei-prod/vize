@@ -209,7 +209,7 @@ dependencies = [
 
 [[package]]
 name = "vize_extension_sdk"
-version = "0.426.4"
+version = "0.426.5"
 dependencies = [
  "dlmalloc",
  "wit-bindgen",
