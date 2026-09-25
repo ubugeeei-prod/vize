@@ -336,11 +336,7 @@
     },
     {
       "file": "src/page/home/home.vue",
-      "diagnostics": [
-        "error:21:85 [TS2339] Property 'id' does not exist on type 'never'.",
-        "error:21:100 [TS2339] Property 'id' does not exist on type 'never'.",
-        "error:22:28 [TS2339] Property 'name' does not exist on type 'never'."
-      ]
+      "diagnostics": []
     },
     {
       "file": "src/page/login/login.vue",
@@ -706,7 +702,7 @@
       "diagnostics": []
     }
   ],
-  "errorCount": 411,
+  "errorCount": 408,
   "warningCount": 0,
   "fileCount": 61
 }
