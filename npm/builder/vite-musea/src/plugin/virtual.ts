@@ -40,7 +40,7 @@ export interface VirtualModuleState {
   getScanRoots: () => string[];
   getVueVersion: () => MuseaVueVersion | undefined;
   getServer: () => {
-    moduleGraph: { getModulesByFile(id: string): Set<ModuleNode> | undefined };
+    moduleGraph: { idToModuleMap: Map<string, ModuleNode> };
   } | null;
   processArtFile: (filePath: string) => Promise<void>;
 }
@@ -216,18 +216,14 @@ export function createLoad(state: VirtualModuleState) {
 }
 
 export function createHandleHotUpdate(state: VirtualModuleState) {
-  return async function handleHotUpdate(ctx: { file: string }): Promise<ModuleNode[] | undefined> {
+  return async function handleHotUpdate(ctx: {
+    file: string;
+    modules: ModuleNode[];
+  }): Promise<ModuleNode[] | undefined> {
     const { file } = ctx;
     if (file.endsWith(".art.vue") && state.artFiles.has(file)) {
       await state.processArtFile(file);
-
-      // Invalidate virtual modules
-      const virtualId = VIRTUAL_MUSEA_PREFIX + file + "?musea-virtual";
-      const server = state.getServer();
-      const modules = server?.moduleGraph.getModulesByFile(virtualId);
-      if (modules) {
-        return [...modules];
-      }
+      return artHotUpdateModules(state, file, ctx.modules);
     }
 
     // Inline art: HMR for .vue files with <art> blocks
@@ -238,15 +234,35 @@ export function createHandleHotUpdate(state: VirtualModuleState) {
       state.artFiles.has(file)
     ) {
       await state.processArtFile(file);
-
-      const virtualId = VIRTUAL_MUSEA_PREFIX + file;
-      const server = state.getServer();
-      const modules = server?.moduleGraph.getModulesByFile(virtualId);
-      if (modules) {
-        return [...modules];
-      }
+      return artHotUpdateModules(state, file, ctx.modules);
     }
 
     return undefined;
   };
+}
+
+function artHotUpdateModules(
+  state: VirtualModuleState,
+  file: string,
+  sourceModules: ModuleNode[],
+): ModuleNode[] {
+  const modules = new Set(sourceModules);
+  const graph = state.getServer()?.moduleGraph;
+  if (!graph) return [...modules];
+
+  // Virtual modules are indexed by their resolved IDs, not by their source
+  // file. Include already-loaded variants (also removed or renamed ones) and
+  // previews so Vite reloads the whole art dependency chain.
+  const exactIds = new Set([
+    `${VIRTUAL_MUSEA_PREFIX}${file}?musea-virtual`,
+    `\0musea-art:${file}?musea-virtual`,
+    `\0musea-shared:${file}?musea-virtual`,
+  ]);
+  const derivedPrefixes = [`\0musea-variant:${file}:`, `\0musea-preview:${file}:`];
+  for (const [id, module] of graph.idToModuleMap) {
+    if (exactIds.has(id) || derivedPrefixes.some((prefix) => id.startsWith(prefix))) {
+      modules.add(module);
+    }
+  }
+  return [...modules];
 }
