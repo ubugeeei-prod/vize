@@ -70,7 +70,11 @@ pub(crate) fn generate_von_object_exp(ctx: &mut CodegenContext, props: &[PropNod
             && let Some(exp) = &dir.exp
         {
             generate_expression(ctx, exp);
-            ctx.push(", true"); // true for handlerOnly
+            // Preserve uppercase event names only for native elements.
+            // Component emits expect `onUpdate:modelValue`, not `on:update:modelValue`.
+            if ctx.props_is_plain_element {
+                ctx.push(", true");
+            }
             break;
         }
     }

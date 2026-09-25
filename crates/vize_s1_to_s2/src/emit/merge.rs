@@ -1,9 +1,8 @@
 //! Object-spread `v-bind` (`ui.bind` with no name) and object `v-on`
 //! (`ui.on` with no name): `normalizeProps` / `guardReactiveProps` when
-//! a bind spread is alone, `toHandlers(..., true)` when an on spread is
-//! alone, `mergeProps` when a spread sits beside other props or the
-//! two spread kinds mix. The `, true` is Vue's `handlerOnly` flag — the
-//! shipped `generate_von_object_exp` always emits it.
+//! a bind spread is alone, `toHandlers(...)` for component event objects,
+//! `toHandlers(..., true)` for native element event objects, and `mergeProps`
+//! when a spread sits beside other props or the two spread kinds mix.
 
 mod args;
 
@@ -175,7 +174,7 @@ pub(super) fn emit_spread_props(
         }
         match lone {
             Arg::BindSpread(bind) => emit_normalize_guard(cx, bind)?,
-            Arg::OnSpread(on) => emit_to_handlers(cx, on)?,
+            Arg::OnSpread(on) => emit_to_handlers(cx, on, is_plain_element)?,
             Arg::Object { .. } => {
                 return Err(EmitError::unsupported(Reason::LoneObjectArgument));
             }
@@ -207,7 +206,7 @@ pub(super) fn emit_spread_props(
         }
         match arg {
             Arg::BindSpread(bind) => bind_value(bind)?.emit_authored(cx, bind)?,
-            Arg::OnSpread(on) => emit_to_handlers(cx, on)?,
+            Arg::OnSpread(on) => emit_to_handlers(cx, on, is_plain_element)?,
             Arg::Object { if_key, pieces, .. } => {
                 let force_multiline = force_multiline_object_arg(&args, i, pieces, for_item);
                 emit_props_object(
@@ -258,7 +257,11 @@ fn emit_normalize_guard(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), Em
     Ok(())
 }
 
-fn emit_to_handlers(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError> {
+fn emit_to_handlers(
+    cx: &mut EmitCx<'_>,
+    on: &OnOp<'_>,
+    is_plain_element: bool,
+) -> Result<(), EmitError> {
     let source = match on.handler {
         Some(expr) => super::js::expr_source(&expr, false)
             .ok_or_else(|| EmitError::unsupported_at(Reason::ObjectOnHandlerNotJs, expr.span()))?,
@@ -276,7 +279,10 @@ fn emit_to_handlers(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError>
         if let Some(expr) = on.handler {
             cx.push_prefixed_expr(&expr, Site::Expression)?;
         }
-        cx.buf.push(", true)");
+        if is_plain_element {
+            cx.buf.push(", true");
+        }
+        cx.buf.push(")");
         return Ok(());
     }
     if let Some((leading, trailing)) = authored_object_on_padding(
@@ -291,7 +297,10 @@ fn emit_to_handlers(cx: &mut EmitCx<'_>, on: &OnOp<'_>) -> Result<(), EmitError>
     } else {
         cx.buf.push(source.as_str());
     }
-    cx.buf.push(", true)");
+    if is_plain_element {
+        cx.buf.push(", true");
+    }
+    cx.buf.push(")");
     Ok(())
 }
 

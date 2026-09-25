@@ -166,9 +166,20 @@ const { resolveComponent: _resolveComponent, toHandlers: _toHandlers, openBlock:
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Foo = _resolveComponent(\"Foo\")
 
-  return (_openBlock(), _createBlock(_component_Foo, _toHandlers(handlers, true), null, 16 /* FULL_PROPS */))
+  return (_openBlock(), _createBlock(_component_Foo, _toHandlers(handlers), null, 16 /* FULL_PROPS */))
 }")
     );
+}
+
+#[test]
+fn component_object_on_with_other_props_preserves_component_event_names() {
+    let source = r#"<Foo id="x" v-on="handlers" />"#;
+    let generated = assembled(source);
+    assert!(
+        generated.contains("_mergeProps({ id: \"x\" }, _toHandlers(handlers))"),
+        "{generated}"
+    );
+    assert_eq!(generated, shipped(source));
 }
 
 #[test]

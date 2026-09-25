@@ -73,9 +73,27 @@ fn component_v_if_keeps_interleaved_object_spreads_in_source_order() {
 
     assert!(
         output.contains(
-            "_mergeProps({\n      key: 0,\n      id: \"before\"\n    }, _toHandlers(_ctx.listeners, true), {\n      title: \"middle\"\n    }, _ctx.attrs, {\n      onClick: _ctx.after\n    })",
+            "_mergeProps({\n      key: 0,\n      id: \"before\"\n    }, _toHandlers(_ctx.listeners), {\n      title: \"middle\"\n    }, _ctx.attrs, {\n      onClick: _ctx.after\n    })",
         ),
         "component spreads and prop segments must keep source order:\n{output}",
+    );
+}
+
+#[test]
+fn object_v_on_preserves_case_only_for_native_elements() {
+    let component = compile(r#"<Widget v-on="handlers" />"#);
+    let native = compile(r#"<div v-on="handlers" />"#);
+    assert!(
+        component.contains("_toHandlers(_ctx.handlers)"),
+        "{component}"
+    );
+    assert!(
+        !component.contains("_toHandlers(_ctx.handlers, true)"),
+        "{component}"
+    );
+    assert!(
+        native.contains("_toHandlers(_ctx.handlers, true)"),
+        "{native}"
     );
 }
 

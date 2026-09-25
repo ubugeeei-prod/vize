@@ -124,14 +124,17 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
                         generate_expression(ctx, exp);
                     }
                 } else {
-                    // v-on spread wrapped with _toHandlers(..., true)
+                    // v-on spread: preserve event-name case only on native elements.
                     ctx.use_helper(RuntimeHelper::ToHandlers);
                     ctx.push(ctx.helper(RuntimeHelper::ToHandlers));
                     ctx.push("(");
                     if let Some(exp) = &dir.exp {
                         generate_expression(ctx, exp);
                     }
-                    ctx.push(", true)");
+                    if ctx.props_is_plain_element {
+                        ctx.push(", true");
+                    }
+                    ctx.push(")");
                 }
             }
 
@@ -184,7 +187,7 @@ pub fn generate_props(ctx: &mut CodegenContext, props: &[PropNode<'_>]) {
             // v-on="handlers" alone
             // If we have scope_id, we need to merge it with the handlers
             if let Some(ref sid) = scope_id {
-                // _mergeProps(_toHandlers(handlers, true), { "data-v-xxx": "" })
+                // _mergeProps(_toHandlers(handlers[, true]), { "data-v-xxx": "" })
                 ctx.use_helper(RuntimeHelper::MergeProps);
                 ctx.push(ctx.helper(RuntimeHelper::MergeProps));
                 ctx.push("(");
