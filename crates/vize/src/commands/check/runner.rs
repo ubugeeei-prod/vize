@@ -264,7 +264,7 @@ fn prepare_and_execute(
     let project_root =
         resolve_project_root(program_tsconfig_path.as_deref(), cwd, &candidate.files);
     let logical_program_root = logical_program_root.unwrap_or_else(|| project_root.clone());
-    resolve::retain_project_files(&mut candidate.files, &project_root);
+    resolve::retain_project_files(&mut candidate.files, &candidate.inputs, &project_root);
     if candidate.files.is_empty() {
         return Ok(None);
     }

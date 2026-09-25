@@ -4,7 +4,7 @@
 use std::path::{Path, PathBuf};
 
 use vize_canon::DeclarationEmitOptions;
-use vize_s0::String;
+use vize_s0::{FxHashSet, String};
 
 use crate::commands::check::tsconfig_inputs::{
     TsconfigDeclarationOptions, load_tsconfig_declaration_options,
@@ -123,12 +123,21 @@ pub(super) fn project_root_has_package_boundary(project_root: &Path) -> bool {
     project_root.join("package.json").is_file()
 }
 
-pub(super) fn retain_project_files(files: &mut Vec<PathBuf>, project_root: &Path) {
+pub(super) fn retain_project_files(
+    files: &mut Vec<PathBuf>,
+    inputs: &[PathBuf],
+    project_root: &Path,
+) {
     // Ambient `compilerOptions.types` packages can resolve from an ancestor
     // `node_modules` outside the source root. The virtual project extends the
-    // real tsconfig and lets TypeScript load those packages normally.
-    files
-        .retain(|path| path.starts_with(project_root) || !path_has_component(path, "node_modules"));
+    // real tsconfig and lets TypeScript load those packages normally. Explicit
+    // tsconfig `files` entries are program roots even when they live there.
+    let input_set: FxHashSet<_> = inputs.iter().map(PathBuf::as_path).collect();
+    files.retain(|path| {
+        input_set.contains(path.as_path())
+            || path.starts_with(project_root)
+            || !path_has_component(path, "node_modules")
+    });
 }
 
 fn has_source_input_outside_root(root: &Path, files: &[PathBuf]) -> bool {
