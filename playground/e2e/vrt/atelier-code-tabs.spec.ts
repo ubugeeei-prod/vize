@@ -4,6 +4,7 @@ async function waitForAtelier(page: Page) {
   await page.goto("/?tab=atelier");
   await page.waitForFunction(
     () => document.querySelector(".wasm-status")?.textContent?.includes("WASM"),
+    undefined,
     { timeout: 15_000 },
   );
   await page.waitForSelector(".compile-time", { timeout: 20_000 });
@@ -23,6 +24,7 @@ async function getCodeLines(page: Page) {
 async function waitForHighlightedOutput(page: Page) {
   await page.waitForFunction(
     () => !!document.querySelector('.code-output .code-line span[style*="--d:"]'),
+    undefined,
     { timeout: 10_000 },
   );
 }

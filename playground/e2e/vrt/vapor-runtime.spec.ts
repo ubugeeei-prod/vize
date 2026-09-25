@@ -45,6 +45,7 @@ function collectRuntimeIssues(page: Page) {
 async function waitForWasm(page: Page) {
   await page.waitForFunction(
     () => document.querySelector(".wasm-status")?.textContent?.includes("WASM"),
+    undefined,
     { timeout: 15_000 },
   );
 }

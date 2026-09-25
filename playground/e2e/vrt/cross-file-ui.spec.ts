@@ -4,6 +4,7 @@ async function openCrossFile(page: Page) {
   await page.goto("/?tab=cross-file");
   await page.waitForFunction(
     () => document.querySelector(".wasm-status")?.textContent?.includes("WASM"),
+    undefined,
     { timeout: 15_000 },
   );
   await page.waitForSelector(".cross-file-playground .status-time", { timeout: 15_000 });

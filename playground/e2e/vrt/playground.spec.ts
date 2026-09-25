@@ -45,6 +45,7 @@ function masks(page: Page, tab: (typeof TABS)[number]) {
 async function waitForReady(page: Page, tab: (typeof TABS)[number]) {
   await page.waitForFunction(
     () => document.querySelector(".wasm-status")?.textContent?.includes("WASM"),
+    undefined,
     { timeout: 15_000 },
   );
 
