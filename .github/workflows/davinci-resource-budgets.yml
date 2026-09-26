@@ -168,6 +168,11 @@ jobs:
         with:
           key: davinci-resource
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Verify assertion, module, and source length gates
+        run: >-
+          vp exec node --test tests/tooling/davinci-assertion-lint.test.ts
+          tests/tooling/davinci-module-layout.test.ts tests/tooling/source-file-lengths.test.ts
       - name: Build the production server
         run: >-
           cargo build --profile ci-opt -p vize
