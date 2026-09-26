@@ -26,6 +26,9 @@ metadata.vize.stability = "experimental"
 # counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
 davinci-differential = ["typescript"]
 
+# Detailed attribution only; absent from ordinary and timed-pair builds.
+davinci-benchmark-profile = []
+
 # The `is_ts` lane erases types by running oxc's transformer, whose
 # `Transformer::new` takes a `&std::path::Path` — so it needs `std`. It stays
 # off by default so the TS-24 portability lane keeps building this library

@@ -29,11 +29,13 @@ use vize_s2::provenance::ProvenanceRecord;
 use vize_s2::scope::{ScopeFacts, ScopeTag};
 
 mod custom_element;
+mod expression_cache;
 mod for_parts;
 mod span;
 
 pub(crate) struct Cx<'a> {
     pub allocator: &'a Allocator,
+    pub expression_cache: expression_cache::ExpressionCache<'a>,
     block: SourceBlock<'a>,
     /// The complete authored source that S0 spans are measured against.
     pub source: &'a str,
@@ -76,6 +78,7 @@ impl<'a> Cx<'a> {
     ) -> Self {
         Self {
             allocator,
+            expression_cache: expression_cache::ExpressionCache::new(),
             block,
             source: block.root_source(),
             next_op: 0,

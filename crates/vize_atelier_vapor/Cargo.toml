@@ -33,7 +33,7 @@ thiserror = { workspace = true }
 # No parser differential or code path is enabled in normal builds.
 davinci-benchmark = []
 # Attribution binary only; kept out of profile-disabled acceptance timings.
-davinci-benchmark-profile = ["davinci-benchmark"]
+davinci-benchmark-profile = ["davinci-benchmark", "vize_s1_to_s2/davinci-benchmark-profile"]
 # Arms the Davinci P1-7 differential lane in this crate's retained resolve
 # path and in vize_atelier_core's migrated sites. Off in production builds.
 davinci-differential = ["vize_atelier_core/davinci-differential"]

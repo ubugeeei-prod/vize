@@ -47,7 +47,7 @@ pub(crate) fn expression_in<'a>(cx: &Cx<'a>, slice: &'a str, span: Span) -> Expr
             facts: vize_s0::Vec::new_in(&cx.allocator),
         }));
     }
-    ExprRef::parse_js_in(cx.allocator, slice, span)
+    cx.expression_cache.parse(cx.allocator, slice, span)
 }
 
 /// `v-on` handler admission: a lone expression keeps the retained JS
@@ -119,7 +119,7 @@ pub(crate) fn filter_expr_at<'a>(cx: &Cx<'a>, text: &'a str) -> ExprRef<'a> {
     {
         return ExprRef::Filter(filter);
     }
-    ExprRef::parse_js_in(cx.allocator, slice, span)
+    cx.expression_cache.parse(cx.allocator, slice, span)
 }
 
 /// A position-classified escape at an exact place: the reasons only the
