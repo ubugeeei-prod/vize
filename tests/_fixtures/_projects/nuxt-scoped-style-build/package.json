@@ -1,0 +1,12 @@
+{
+  "name": "vize-repro-6825",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "nuxt build" },
+  "dependencies": {
+    "@vizejs/nuxt": "0.428.1",
+    "nuxt": "4.5.2",
+    "vue": "3.5.43"
+  },
+  "devDependencies": { "typescript": "7", "vize": "0.428.1" }
+}

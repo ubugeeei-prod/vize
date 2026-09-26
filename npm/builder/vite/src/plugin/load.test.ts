@@ -651,7 +651,7 @@ assert.ok(
 );
 assert.match(
   cssModuleLoad.code,
-  /import buttonStyles from "\/src\/ModuleButton\.vue\?vue=&type=style&index=0&lang=css&module=buttonStyles\.module\.css";/,
+  /import buttonStyles from "\/src\/ModuleButton\.vue\.__vize_style_0\.module\.css\?vue=&type=style&index=0&lang=css&module=buttonStyles&vize-file=%2Fsrc%2FModuleButton.vue";/,
   "CSS module virtual loads should emit delegated style imports",
 );
 assert.match(
@@ -712,7 +712,7 @@ assert.ok(
 );
 assert.match(
   applyCssLoad.code,
-  /import "\/src\/ApplyStyles\.vue\?vue=&type=style&index=0&scoped=data-v-applycss&lang=css\.css";/,
+  /import "\/src\/ApplyStyles\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&scoped=data-v-applycss&lang=css&vize-file=%2Fsrc%2FApplyStyles.vue";/,
   "CSS with @apply should be delegated so PostCSS and UnoCSS transformers can run",
 );
 assert.doesNotMatch(
@@ -787,7 +787,7 @@ assert.ok(
 );
 assert.match(
   nestedCssComponentLoad.code,
-  /import "\/src\/NestedStyles\.vue\?vue=&type=style&index=0&scoped=data-v-nestedcss&lang=css\.css";/,
+  /import "\/src\/NestedStyles\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&scoped=data-v-nestedcss&lang=css&vize-file=%2Fsrc%2FNestedStyles.vue";/,
   "Development and test modules should send scoped CSS through Vite's transformer",
 );
 assert.doesNotMatch(
@@ -885,7 +885,7 @@ assert.doesNotMatch(
 );
 assert.match(
   onDemandProdLoad.code,
-  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css\.css";/,
+  /import ".*OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=[^"\n]+";/,
   "Production on-demand loads should emit a Vite-visible plain CSS import",
 );
 assert.equal(
@@ -895,7 +895,7 @@ assert.equal(
 );
 assert.match(
   onDemandProdLoad.code,
-  /import ".*OnDemandProd\.vue\?vue=&type=style&index=0&lang=css\.css";/,
+  /import ".*OnDemandProd\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=[^"\n]+";/,
   "Production on-demand loads should emit a virtual style import for CSS extraction",
 );
 
