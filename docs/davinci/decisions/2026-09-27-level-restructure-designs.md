@@ -129,6 +129,55 @@ layout is in the
   LSP read it. There are no L3/L4 targets for petite-vue.
 - `vize_dialect_moonbit` dissolves into per-level `lang/moonbit` modules.
 
+## JSX semantics
+
+Tracked in [#6885](https://github.com/ubugeeei-prod/vize/issues/6885)
+(normalization) and [#6884](https://github.com/ubugeeei-prod/vize/issues/6884)
+(vue-jsx-vapor oracle). The issue body of #6885 holds the full text.
+
+JSX semantics has two axes:
+
+1. **Component execution model**, chosen per component function (by
+   `"use vue:vapor"` / `"use vue:vdom"` or by config):
+   - _Re-render_: the function body re-runs on every update.
+   - _Run-once_: the function runs once, and each JSX expression is its own
+     reactive effect.
+2. **Interpretation depth**, a dialect chosen once per file:
+   - _Opaque_: JS control flow stays plain expressions.
+   - _Reactive getter_: expressions are tracked as effects.
+   - _Structural_: `&&`, `?:` and `.map()` lower to `If` / `For`, and L3
+     decisions apply.
+
+|                 | Re-render            | Run-once      |
+| --------------- | -------------------- | ------------- |
+| Opaque          | babel (official TSX) | —             |
+| Reactive getter | —                    | vue-jsx-vapor |
+| Structural      | Vize VDOM            | Vize Vapor    |
+
+- **The execution model is semantics, not just a target**, and it fixes the
+  L4 target: VDOM needs re-render and Vapor needs run-once. A mismatch is a
+  diagnostic.
+- **Canonicalization:** a different runtime meaning gives different L2 ops,
+  and the same runtime meaning gives the same L2.
+  - Components carry `exec: ReRender | RunOnce`.
+  - Each interpretation depth gets its own expression ops.
+  - L3 and L4 never branch on the JSX dialect.
+- **Dialect variants are const compositions of features** under
+  `framework/vue/jsx/` ([#6841](https://github.com/ubugeeei-prod/vize/issues/6841)).
+  Features include control-flow lowering, patch flags, `_ctx.` prefixing,
+  `v-model` / `v-slots` attributes and `on*` props.
+- **Parity:**
+  - babel is checked against `@vue/babel-plugin-jsx` semantically, through a
+    differential oracle.
+  - vue-jsx-vapor is checked against `vue-jsx-vapor` semantically, through a
+    differential oracle ([#6884](https://github.com/ubugeeei-prod/vize/issues/6884)).
+  - Native Vize output stays byte-identical to today's.
+- **Vize Vapor may differ observably from vue-jsx-vapor** on the same source.
+  Every such difference is documented and surfaced as a diagnostic.
+- **The vocabulary is Vue-only first.** Extracting a framework-neutral form
+  shared with Solid is left to
+  [#6859](https://github.com/ubugeeei-prod/vize/issues/6859).
+
 ## Type check
 
 Tracked in [#6849](https://github.com/ubugeeei-prod/vize/issues/6849) and [#6879](https://github.com/ubugeeei-prod/vize/issues/6879). The detailed design is in the

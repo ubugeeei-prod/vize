@@ -180,6 +180,11 @@ in the companion record.
 See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks)
 in the companion record.
 
+## JSX semantics
+
+See the [JSX semantics decisions](./2026-09-27-level-restructure-designs.md#jsx-semantics)
+in the companion record.
+
 ## Products on the levels
 
 Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and
