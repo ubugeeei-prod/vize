@@ -1,0 +1,31 @@
+{
+  "sourceRevision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+  "sourcePath": "crates/vize_glyph/src/options.rs",
+  "formatOptions": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": false,
+    "jsxSingleQuote": false,
+    "trailingComma": "all",
+    "bracketSpacing": true,
+    "bracketSameLine": false,
+    "arrowParens": "always",
+    "endOfLine": "lf",
+    "quoteProps": "as-needed",
+    "singleAttributePerLine": false,
+    "vueIndentScriptAndStyle": false,
+    "sortAttributes": true,
+    "attributeSortOrder": "alphabetical",
+    "mergeBindAndNonBindAttrs": false,
+    "maxAttributesPerLine": null,
+    "attributeGroups": null,
+    "normalizeDirectiveShorthands": true,
+    "sortBlocks": true
+  },
+  "runtimeFlags": {
+    "skip_script_stabilization": false
+  },
+  "state": "existing-test-defaults-reference; CLI mapping not executed"
+}

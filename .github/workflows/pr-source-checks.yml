@@ -208,7 +208,7 @@ jobs:
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
       - name: Build and install vize CLI
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        run: cargo build --profile ci -p vize && sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       - name: Prepare the pinned plugin isolation runtime
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs

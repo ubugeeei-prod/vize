@@ -1,0 +1,248 @@
+{
+  "schema": "vize.differential.manifest",
+  "version": 1,
+  "baseRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+  "product": "formatter",
+  "cases": [
+    {
+      "id": "formatter/sfc/split-v-pre-indentation",
+      "state": "active",
+      "targets": ["fmt"],
+      "inputs": {
+        "root": "sfc-split-v-pre-indentation",
+        "files": [
+          {
+            "path": "App.vue",
+            "sha256": "7ee5086667bb92cab2e96bbf0e19507182fd8643cd9c9194efd9a6d391b45660",
+            "role": "entry"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [6882, 6891],
+        "commits": [
+          {
+            "sha": "b963c08c70f501fd15905f69bfdc3ded6ccbfd3a",
+            "role": "fix",
+            "paths": [
+              "crates/vize_glyph/src/formatter.rs",
+              "crates/vize_glyph/tests/sfc_v_pre_idempotence.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "repository-authored",
+            "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+            "path": "crates/vize_glyph/tests/sfc_v_pre_idempotence.rs",
+            "symbol": "v_pre_on_a_split_opening_tag_keeps_its_indentation"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/sfc_v_pre_idempotence.rs",
+          "symbol": "v_pre_on_a_split_opening_tag_keeps_its_indentation",
+          "line": 38,
+          "executor": "rust-test",
+          "asserts": ["full-output-bytes", "idempotence"],
+          "limitations": [
+            "Rust witness source inspected, not rerun here; actual candidate CLI capture and its Release provenance are in baselineCapture."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "unknown",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue-sfc", "html-template", "v-pre"]
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI adapter registered. Captured baseline uses independently identified Release candidate; branch CI execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "artifacts": [
+            {
+              "path": "sfc-split-v-pre-indentation/reference.expected.txt",
+              "sha256": "34bd690e22b70ae542cfe0bd5edd5f6412a03df9ba90a647c053e15a1e323eab",
+              "role": "existing-test-reference",
+              "provenance": {
+                "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+                "path": "crates/vize_glyph/tests/sfc_v_pre_idempotence.rs",
+                "symbol": "v_pre_on_a_split_opening_tag_keeps_its_indentation",
+                "assertion": "assert_stable(source, expected); helper assert_eq!(first.code.as_str(), expected, \"pass 1 output\");"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": ["structured-FormatResult.changed; CLI raw logs retained separately"],
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "formatter/sfc/plain-style-nested-comments",
+      "state": "active",
+      "targets": ["fmt"],
+      "inputs": {
+        "root": "sfc-plain-style-nested-comments",
+        "files": [
+          {
+            "path": "App.vue",
+            "sha256": "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+            "role": "entry"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [6882, 6891],
+        "commits": [
+          {
+            "sha": "2f0217ef47c3d3c3330d7b4049e5feb2e25791b8",
+            "role": "fix",
+            "paths": [
+              "crates/vize_glyph/src/style.rs",
+              "crates/vize_glyph/src/style/comment_scan.rs",
+              "crates/vize_glyph/tests/sfc_plain_style_comments.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "repository-authored",
+            "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+            "path": "crates/vize_glyph/tests/sfc_plain_style_comments.rs",
+            "symbol": "plain_style_preserves_nested_comments"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/sfc_plain_style_comments.rs",
+          "symbol": "plain_style_preserves_nested_comments",
+          "line": 4,
+          "executor": "rust-test",
+          "asserts": ["full-output-bytes", "idempotence"],
+          "limitations": [
+            "Rust witness source inspected, not rerun here; actual candidate CLI capture and its Release provenance are in baselineCapture."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "unknown",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue-sfc", "html-template", "css-scoped"]
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI adapter registered. Captured baseline uses independently identified Release candidate; branch CI execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "artifacts": [
+            {
+              "path": "sfc-plain-style-nested-comments/reference.expected.txt",
+              "sha256": "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+              "role": "existing-test-reference",
+              "provenance": {
+                "revision": "9e203108c7b77b8a0bf6243d5db1f2c09c878eac",
+                "path": "crates/vize_glyph/tests/sfc_plain_style_comments.rs",
+                "symbol": "plain_style_preserves_nested_comments",
+                "assertion": "assert_eq!(first.code, source);"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": ["structured-FormatResult.changed; CLI raw logs retained separately"],
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    }
+  ],
+  "adapterOptions": {
+    "argv": ["fmt", "--no-config", "--write", "App.vue"],
+    "passes": 3
+  },
+  "configurationReference": {
+    "path": "format-options-reference.json",
+    "sha256": "9475d618d39ad19dc44bd3c971209bab5091932c6df4481671d5cdd60cc378e7",
+    "role": "existing-test-defaults-reference; actual CLI mapping pending"
+  },
+  "baselineCapture": {
+    "kind": "release-candidate-observation",
+    "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+    "releaseState": "candidate-observed; publication-not-confirmed",
+    "artifacts": [
+      {
+        "path": "capture/report.json",
+        "sha256": "94f079ebb52bba6b6116159cb3c0d593ad5c1fce91abd65e88f1ee200f5d4c88"
+      },
+      {
+        "path": "capture/artifact-receipt.json",
+        "sha256": "718ab167de7ccfe534dbe6a34915b1306121de6034a56ad002e9422df82a2f51"
+      }
+    ],
+    "executedManifestSha256": "96c780292682ca8ab3a4bc39339a1fff410967150948bf7d18498fc77dc23653"
+  }
+}

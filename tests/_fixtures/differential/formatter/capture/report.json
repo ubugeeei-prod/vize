@@ -1,0 +1,135 @@
+{
+  "schema": "vize.differential.baseline-capture",
+  "version": 1,
+  "kind": "release-candidate-observation",
+  "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+  "manifestSha256": "96c780292682ca8ab3a4bc39339a1fff410967150948bf7d18498fc77dc23653",
+  "artifactReceipt": "artifact-receipt.json",
+  "argv": [
+    "fmt",
+    "--no-config",
+    "--write",
+    "App.vue"
+  ],
+  "rows": [
+    {
+      "id": "formatter/sfc/split-v-pre-indentation",
+      "state": "matched-reference",
+      "passes": [
+        {
+          "pass": 1,
+          "inputBase64": "PHRlbXBsYXRlPgogIDxjb2RlCiAgICB2LXByZQogICAgY2xhc3M9ImZvbnQtY29kZSI+CiAgICB7eyB2YXJpYWJsZSB9fQogIDwvY29kZT4KPC90ZW1wbGF0ZT4K",
+          "inputSha256": "7ee5086667bb92cab2e96bbf0e19507182fd8643cd9c9194efd9a6d391b45660",
+          "exitStatus": 0,
+          "signal": null,
+          "stdoutBase64": "",
+          "stderrBase64": "Rm91bmQgMSBmaWxlKHMpClJlZm9ybWF0dGVkOiBBcHAudnVlCgpGb3JtYXR0ZWQgMSBmaWxlKHMpCiAgMSBmaWxlKHMpIHJlZm9ybWF0dGVkCg==",
+          "processError": null,
+          "outputBase64": "PHRlbXBsYXRlPgogIDxjb2RlIHYtcHJlIGNsYXNzPSJmb250LWNvZGUiPgogICAge3sgdmFyaWFibGUgfX0KICA8L2NvZGU+CjwvdGVtcGxhdGU+Cg==",
+          "outputSha256": "34bd690e22b70ae542cfe0bd5edd5f6412a03df9ba90a647c053e15a1e323eab",
+          "referenceComparison": {
+            "state": "equal"
+          }
+        },
+        {
+          "pass": 2,
+          "inputBase64": "PHRlbXBsYXRlPgogIDxjb2RlIHYtcHJlIGNsYXNzPSJmb250LWNvZGUiPgogICAge3sgdmFyaWFibGUgfX0KICA8L2NvZGU+CjwvdGVtcGxhdGU+Cg==",
+          "inputSha256": "34bd690e22b70ae542cfe0bd5edd5f6412a03df9ba90a647c053e15a1e323eab",
+          "exitStatus": 0,
+          "signal": null,
+          "stdoutBase64": "",
+          "stderrBase64": "Rm91bmQgMSBmaWxlKHMpCgpGb3JtYXR0ZWQgMSBmaWxlKHMpCiAgMSBmaWxlKHMpIHVuY2hhbmdlZAo=",
+          "processError": null,
+          "outputBase64": "PHRlbXBsYXRlPgogIDxjb2RlIHYtcHJlIGNsYXNzPSJmb250LWNvZGUiPgogICAge3sgdmFyaWFibGUgfX0KICA8L2NvZGU+CjwvdGVtcGxhdGU+Cg==",
+          "outputSha256": "34bd690e22b70ae542cfe0bd5edd5f6412a03df9ba90a647c053e15a1e323eab",
+          "referenceComparison": {
+            "state": "equal"
+          }
+        },
+        {
+          "pass": 3,
+          "inputBase64": "PHRlbXBsYXRlPgogIDxjb2RlIHYtcHJlIGNsYXNzPSJmb250LWNvZGUiPgogICAge3sgdmFyaWFibGUgfX0KICA8L2NvZGU+CjwvdGVtcGxhdGU+Cg==",
+          "inputSha256": "34bd690e22b70ae542cfe0bd5edd5f6412a03df9ba90a647c053e15a1e323eab",
+          "exitStatus": 0,
+          "signal": null,
+          "stdoutBase64": "",
+          "stderrBase64": "Rm91bmQgMSBmaWxlKHMpCgpGb3JtYXR0ZWQgMSBmaWxlKHMpCiAgMSBmaWxlKHMpIHVuY2hhbmdlZAo=",
+          "processError": null,
+          "outputBase64": "PHRlbXBsYXRlPgogIDxjb2RlIHYtcHJlIGNsYXNzPSJmb250LWNvZGUiPgogICAge3sgdmFyaWFibGUgfX0KICA8L2NvZGU+CjwvdGVtcGxhdGU+Cg==",
+          "outputSha256": "34bd690e22b70ae542cfe0bd5edd5f6412a03df9ba90a647c053e15a1e323eab",
+          "referenceComparison": {
+            "state": "equal"
+          }
+        }
+      ],
+      "native": {
+        "state": "unsupported"
+      },
+      "pairedComparison": "not-compared"
+    },
+    {
+      "id": "formatter/sfc/plain-style-nested-comments",
+      "state": "matched-reference",
+      "passes": [
+        {
+          "pass": 1,
+          "inputBase64": "PHRlbXBsYXRlPgogIDxkaXYgY2xhc3M9ImJveCI+aGVsbG88L2Rpdj4KPC90ZW1wbGF0ZT4KCjxzdHlsZSBzY29wZWQ+Ci5ib3ggewogIC8qIGtlZXAgY29sb3Igbm90ZSAqLwogIGNvbG9yOiByZWQ7CiAgLyoga2VlcCBuZXN0ZWQgbm90ZSAqLwogIC5pbm5lciB7CiAgICBjb2xvcjogYmx1ZTsgLyoga2VlcCBpbmxpbmUgbm90ZSAqLwogIH0KfQo8L3N0eWxlPgo=",
+          "inputSha256": "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+          "exitStatus": 0,
+          "signal": null,
+          "stdoutBase64": "",
+          "stderrBase64": "Rm91bmQgMSBmaWxlKHMpCgpGb3JtYXR0ZWQgMSBmaWxlKHMpCiAgMSBmaWxlKHMpIHVuY2hhbmdlZAo=",
+          "processError": null,
+          "outputBase64": "PHRlbXBsYXRlPgogIDxkaXYgY2xhc3M9ImJveCI+aGVsbG88L2Rpdj4KPC90ZW1wbGF0ZT4KCjxzdHlsZSBzY29wZWQ+Ci5ib3ggewogIC8qIGtlZXAgY29sb3Igbm90ZSAqLwogIGNvbG9yOiByZWQ7CiAgLyoga2VlcCBuZXN0ZWQgbm90ZSAqLwogIC5pbm5lciB7CiAgICBjb2xvcjogYmx1ZTsgLyoga2VlcCBpbmxpbmUgbm90ZSAqLwogIH0KfQo8L3N0eWxlPgo=",
+          "outputSha256": "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+          "referenceComparison": {
+            "state": "equal"
+          }
+        },
+        {
+          "pass": 2,
+          "inputBase64": "PHRlbXBsYXRlPgogIDxkaXYgY2xhc3M9ImJveCI+aGVsbG88L2Rpdj4KPC90ZW1wbGF0ZT4KCjxzdHlsZSBzY29wZWQ+Ci5ib3ggewogIC8qIGtlZXAgY29sb3Igbm90ZSAqLwogIGNvbG9yOiByZWQ7CiAgLyoga2VlcCBuZXN0ZWQgbm90ZSAqLwogIC5pbm5lciB7CiAgICBjb2xvcjogYmx1ZTsgLyoga2VlcCBpbmxpbmUgbm90ZSAqLwogIH0KfQo8L3N0eWxlPgo=",
+          "inputSha256": "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+          "exitStatus": 0,
+          "signal": null,
+          "stdoutBase64": "",
+          "stderrBase64": "Rm91bmQgMSBmaWxlKHMpCgpGb3JtYXR0ZWQgMSBmaWxlKHMpCiAgMSBmaWxlKHMpIHVuY2hhbmdlZAo=",
+          "processError": null,
+          "outputBase64": "PHRlbXBsYXRlPgogIDxkaXYgY2xhc3M9ImJveCI+aGVsbG88L2Rpdj4KPC90ZW1wbGF0ZT4KCjxzdHlsZSBzY29wZWQ+Ci5ib3ggewogIC8qIGtlZXAgY29sb3Igbm90ZSAqLwogIGNvbG9yOiByZWQ7CiAgLyoga2VlcCBuZXN0ZWQgbm90ZSAqLwogIC5pbm5lciB7CiAgICBjb2xvcjogYmx1ZTsgLyoga2VlcCBpbmxpbmUgbm90ZSAqLwogIH0KfQo8L3N0eWxlPgo=",
+          "outputSha256": "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+          "referenceComparison": {
+            "state": "equal"
+          }
+        },
+        {
+          "pass": 3,
+          "inputBase64": "PHRlbXBsYXRlPgogIDxkaXYgY2xhc3M9ImJveCI+aGVsbG88L2Rpdj4KPC90ZW1wbGF0ZT4KCjxzdHlsZSBzY29wZWQ+Ci5ib3ggewogIC8qIGtlZXAgY29sb3Igbm90ZSAqLwogIGNvbG9yOiByZWQ7CiAgLyoga2VlcCBuZXN0ZWQgbm90ZSAqLwogIC5pbm5lciB7CiAgICBjb2xvcjogYmx1ZTsgLyoga2VlcCBpbmxpbmUgbm90ZSAqLwogIH0KfQo8L3N0eWxlPgo=",
+          "inputSha256": "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+          "exitStatus": 0,
+          "signal": null,
+          "stdoutBase64": "",
+          "stderrBase64": "Rm91bmQgMSBmaWxlKHMpCgpGb3JtYXR0ZWQgMSBmaWxlKHMpCiAgMSBmaWxlKHMpIHVuY2hhbmdlZAo=",
+          "processError": null,
+          "outputBase64": "PHRlbXBsYXRlPgogIDxkaXYgY2xhc3M9ImJveCI+aGVsbG88L2Rpdj4KPC90ZW1wbGF0ZT4KCjxzdHlsZSBzY29wZWQ+Ci5ib3ggewogIC8qIGtlZXAgY29sb3Igbm90ZSAqLwogIGNvbG9yOiByZWQ7CiAgLyoga2VlcCBuZXN0ZWQgbm90ZSAqLwogIC5pbm5lciB7CiAgICBjb2xvcjogYmx1ZTsgLyoga2VlcCBpbmxpbmUgbm90ZSAqLwogIH0KfQo8L3N0eWxlPgo=",
+          "outputSha256": "3bb6591e44487de32067d123b9dfdf303a4381c53f0c8bcebf3026c23b4021ed",
+          "referenceComparison": {
+            "state": "equal"
+          }
+        }
+      ],
+      "native": {
+        "state": "unsupported"
+      },
+      "pairedComparison": "not-compared"
+    }
+  ],
+  "summary": {
+    "plannedCases": 2,
+    "legacyMatches": 2,
+    "legacyFailures": 0,
+    "nativeUnsupported": 2,
+    "pairedComparisons": 0,
+    "nativeHandled": 0,
+    "nativeEquivalent": 0
+  }
+}
