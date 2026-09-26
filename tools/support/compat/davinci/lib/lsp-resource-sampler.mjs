@@ -11,6 +11,9 @@ export function createSampler(root) {
   const ticks = Number(execFileSync("getconf", ["CLK_TCK"], { encoding: "utf8" }));
   const page = Number(execFileSync("getconf", ["PAGESIZE"], { encoding: "utf8" }));
   assert.ok(ticks > 0 && page > 0);
+  // Keep the last observed own CPU time after a child exits. Subtracting only
+  // the two live-tree totals would lose retired Corsa workers' accumulated CPU.
+  const observedCpu = new Map();
   const sample = () => {
     const processes = new Map();
     for (const pid of fs.readdirSync("/proc").filter((entry) => /^\d+$/.test(entry))) {
@@ -23,6 +26,7 @@ export function createSampler(root) {
         processes.set(Number(pid), {
           pid: Number(pid),
           parent: Number(fields[1]),
+          birth_ticks: Number(fields[19]),
           rss_bytes: Math.max(0, Number(fields[21])) * page,
           // Live children's own times are counted separately; adding cutime /
           // cstime here would double count already reaped descendants' CPU.
@@ -43,9 +47,12 @@ export function createSampler(root) {
       }
       return false;
     });
+    for (const entry of tree) {
+      observedCpu.set(`${entry.pid}:${entry.birth_ticks}`, entry.cpu_seconds);
+    }
     return {
       rss_bytes: tree.reduce((total, entry) => total + entry.rss_bytes, 0),
-      cpu_seconds: tree.reduce((total, entry) => total + entry.cpu_seconds, 0),
+      cpu_seconds: [...observedCpu.values()].reduce((total, value) => total + value, 0),
       processes: tree,
     };
   };

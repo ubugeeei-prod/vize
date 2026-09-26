@@ -40,8 +40,9 @@ The Linux `/proc/<pid>/stat` sampler runs every 50 ms from server startup
 through the final ten-second idle window. It sums RSS for Maestro and **all
 live descendants**, including Corsa, and saves per-process RSS at peak and
 idle. The Node harness and build processes are outside that process tree.
-CPU is the sum of live processes' `utime + stime`; child CPU is not counted
-twice through `cutime + cstime`.
+CPU retains each observed process identity's `utime + stime` counter after
+exit, keyed by PID and birth ticks. Retiring a Corsa process therefore cannot
+subtract its prior CPU. Child CPU is not counted twice through `cutime + cstime`.
 
 The dispatch lane records one independent session using a `ci-opt` binary
 (release, thin LTO, 16 codegen units) on `blacksmith-32vcpu-ubuntu-2404`.
