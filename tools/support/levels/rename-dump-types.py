@@ -100,8 +100,23 @@ def use_leaves(text):
     return leaves
 
 
-def use_statement(path, statement, targets):
+def owner_at(path, masked, position):
     owner = names.module(path)
+    if not owner:
+        return None
+    for match in re.finditer(r'\bmod\s+(\w+)\s*\{', masked):
+        if match.end() > position:
+            break
+        depth, cursor = 1, match.end()
+        while depth and cursor < position:
+            depth += (masked[cursor] == '{') - (masked[cursor] == '}')
+            cursor += 1
+        if depth:
+            owner += '::' + match[1]
+    return owner
+
+def use_statement(path, statement, targets, owner=None):
+    owner = owner or names.module(path)
     visibility, body = statement.split('use ', 1)
     groups = {}
     aliases = {}
@@ -157,18 +172,18 @@ def rewrite(path, source, targets):
     source = re.sub(r'/// Compatibility alias[^\n]*\n(?:#\[[^\n]*\]\n)?pub type (?:DisegnoFolio|ImpetoFolio|ReactivityFolio) = \w+;\n', '', source)
     saved = []
     pattern = r'(?:pub(?:\([^)]*\))?\s+)?use\s+[^;]+;'
-    def use(match):
+    def use(match, owner):
         statement = match[0]
         if not re.search(r'Folio|\bfolio\b|values_folio|DumpPage', statement):
             return statement
-        saved.append(use_statement(path, statement, targets))
+        saved.append(use_statement(path, statement, targets, owner))
         return f'__DUMP_USE_{len(saved) - 1}__'
     # Mask comments/literals first so quoted examples cannot become imports.
     parts = list(lexer.tokens(source, True))
     mask = ''.join(' ' * (b-a) if kind in {'comment', 'literal'} else source[a:b] for kind,a,b in parts)
     matches = list(re.finditer(pattern, mask))
     for match in reversed(matches):
-        source = source[:match.start()] + use(type('Match', (), {'__getitem__': lambda self, key: source[match.start():match.end()]})()) + source[match.end():]
+        source = source[:match.start()] + use(type('Match', (), {'__getitem__': lambda self, key: source[match.start():match.end()]})(), owner_at(path, mask, match.start())) + source[match.end():]
     # Preserve already-resolved qualified paths while rewriting local identifiers.
     owner = names.module(path)
     chain = r'(?:\$crate|[A-Za-z_]\w*)(?:::[A-Za-z_]\w*)+'
@@ -197,7 +212,7 @@ def rewrite(path, source, targets):
             if text == 'values_folio':
                 text = 'values_dump'
         elif kind == 'comment':
-            text = text.replace('#[folio(', '#[dump(')
+            text = text.replace('#[folio(', '#[dump(').replace('[`folio`]', '[`dump`]')
             text = re.sub(chain, lambda m: qualified_target(m[0], owner, targets), text)
             text = re.sub(r'\b[A-Za-z_]\w*\b', lambda m: names.local(path, m[0]), text)
         result.append(text)
@@ -231,6 +246,15 @@ fn canonical_dump_namespace_keeps_the_full_wire_contract() {
 """
     return source
 
+
+def migrate_storage(source):
+    result = []
+    for line in source.splitlines(keepends=True):
+        fields = line.split('\t')
+        if len(fields) == 11:
+            fields[2] = names.destination(fields[2])
+        result.append('\t'.join(fields))
+    return ''.join(result)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -288,6 +312,17 @@ def main():
                 formatted = subprocess.run(['rustfmt', '--edition', '2024', '--config', 'skip_children=true'], input=expected, text=True, stdout=subprocess.PIPE, check=True, cwd=args.repo).stdout
                 if canonical(actual) != canonical(formatted):
                     raise ValueError('refusing changed consumer: ' + str(target))
+    ledger = 'docs/davinci/plan/storage-inventory.tsv'
+    original = git(args.repo, 'show', names.BASE + ':' + ledger)
+    expected = migrate_storage(original)
+    actual = (args.repo / ledger).read_text()
+    if args.verify:
+        if actual != expected:
+            raise ValueError('storage path inventory replay mismatch')
+    elif actual == original:
+        writes.append((args.repo / ledger, expected))
+    elif actual != expected:
+        raise ValueError('refusing changed storage inventory')
     for target, expected in writes:
         target.write_text(expected)
     print(json.dumps({'base': names.BASE, 'rewrittenRustFiles': len(changed), 'verified': args.verify, 'writes': len(writes)}))

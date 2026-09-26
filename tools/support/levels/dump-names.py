@@ -40,7 +40,7 @@ def generic(identifier):
 
 def module(path):
     parts = path.split('/')
-    if len(parts) < 4 or parts[0] != 'crates' or parts[2] != 'src':
+    if len(parts) < 4 or parts[0] != 'crates' or parts[2] != 'src' or parts[3] == 'bin':
         return None
     tail = '/'.join(parts[3:]).removesuffix('.rs')
     return parts[1] + ('' if tail == 'lib' else '::' + tail.replace('/', '::'))

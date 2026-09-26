@@ -56,10 +56,10 @@ use std::process::ExitCode;
 
 use args::{Args, Mode, parse_args};
 
-use crate::dump::collector::Collector;
-use crate::dump::croquis::Page as CroquisPage;
-use crate::dump::remarks::RemarkLog;
-use crate::dump::{Dump, Mode as DumpMode};
+use vize_davinci::dump::collector::Collector;
+use vize_davinci::dump::croquis::Page as CroquisPage;
+use vize_davinci::dump::remarks::RemarkLog;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, RemarkCollector,
     TimingObserver, parse_pipelines, pipeline::PipelineSpec, print_pipelines, run_pipeline,
@@ -88,7 +88,7 @@ fn first_divergent_line(input: &str, printed: &str) -> usize {
 
 /// Why a stage could not reprint the input.
 enum StageError {
-    Parse(crate::dump::Error),
+    Parse(vize_davinci::dump::Error),
     UnknownStage,
 }
 

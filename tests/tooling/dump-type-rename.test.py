@@ -65,6 +65,25 @@ class DumpRenameTests(unittest.TestCase):
         self.assertIn('is_ident("dump")', result)
         self.assertIn('#[dump(name = "s3-folio")]', result)
 
+    def test_inline_test_import_resolves_to_its_enclosing_dump_module(self):
+        result = RENAME.rewrite('crates/vize_l3/src/folio.rs',
+            'pub struct L3Folio {} #[cfg(test)] mod tests { use super::L3Folio; }', TARGETS)
+        self.assertIn('use crate::dump::Page;', result)
+        self.assertNotIn('use crate::Page;', result)
+
+    def test_binary_sources_keep_external_library_dump_paths(self):
+        result = RENAME.rewrite('crates/vize_davinci/src/bin/davinci-opt/main.rs',
+            'use vize_davinci::folio::{Folio, FolioError}; '
+            'enum StageError { Parse(vize_davinci::folio::FolioError) }', TARGETS)
+        self.assertIn('use vize_davinci::dump::{Dump, Error as DumpError};', result)
+        self.assertIn('Parse(vize_davinci::dump::Error)', result)
+        self.assertNotIn('crate::dump', result)
+
+    def test_storage_inventory_changes_only_the_owned_path_column(self):
+        source = 'infra\tcontract\tcrates/vize_davinci/src/folio/dump.rs\t1\t7\t0\t2\t0\t0\t0\t0\n'
+        expected = source.replace('src/folio/dump.rs', 'src/dump/collector.rs')
+        self.assertEqual(RENAME.migrate_storage(source), expected)
+
 
 if __name__ == '__main__':
     unittest.main()

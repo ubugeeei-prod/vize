@@ -45,3 +45,11 @@ still require Actions evidence at the eventual published head.
 
 Lean namespaces/formal paths, serialized/runtime naming, remaining test names,
 CLI option removal and the shared production observer are later slices.
+
+## Scope-resolution correction
+
+A follow-up preserves the first prepared head and fixes inline test-module and
+separate binary-crate import resolution. Root-only malformed `Page` imports and
+binary `crate::dump` imports must be rejected by source validation. Regression
+fixtures cover both cases. The 33 reviewed storage inventory paths follow the
+move manifest; all category/count fields and row order remain unchanged.

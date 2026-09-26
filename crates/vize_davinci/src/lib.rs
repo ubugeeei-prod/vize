@@ -24,7 +24,7 @@
 //!   fused at build time.
 //! - [`legacy_plan`] — the shipped backends' template traversals, declared as
 //!   plans so a migration has something to be measured against.
-//! - [`folio`] — the textual stage-dump contract (`trait Dump`).
+//! - [`dump`] — the textual stage-dump contract (`trait Dump`).
 //! - [`key`] — [`ArtifactKey`](key::ArtifactKey), the span-relative content
 //!   identity every cache of a stage artifact keys on (P5-1a).
 //! - [`summary`] — [`SfcSummary`](summary::SfcSummary), the per-SFC interface

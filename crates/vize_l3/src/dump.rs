@@ -298,7 +298,7 @@ fn parse_edge_kind(text: &str, line: usize) -> Result<EdgeKind, DumpError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::Page;
+    use crate::dump::Page;
     use crate::op::Phase;
     use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
     use vize_l0::{String, cstr};

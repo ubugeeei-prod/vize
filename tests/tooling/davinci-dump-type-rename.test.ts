@@ -12,6 +12,6 @@ test("Dump migration rejects alias collisions and preserves wire/API boundaries"
     encoding: "utf8",
   });
   assert.equal(result.status, 0, result.stderr || result.error?.message);
-  assert.match(result.stderr, /Ran 7 tests/u);
+  assert.match(result.stderr, /Ran 10 tests/u);
   assert.match(result.stderr, /\bOK\b/u);
 });

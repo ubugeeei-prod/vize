@@ -10,9 +10,9 @@
 
 use std::path::Path;
 
-use crate::dump::collector::Collector;
-use crate::dump::feed::{StageFeed, StageRemark};
-use crate::dump::remarks::RemarkLog;
+use vize_davinci::dump::collector::Collector;
+use vize_davinci::dump::feed::{StageFeed, StageRemark};
+use vize_davinci::dump::remarks::RemarkLog;
 use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
 use vize_l0::{String, cstr};
 

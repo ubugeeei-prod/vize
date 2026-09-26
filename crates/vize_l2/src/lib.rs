@@ -24,7 +24,7 @@
 //!   AST, foreign dialect (type-only until phase 6), or the classified
 //!   escape with pessimal documented semantics (P2-5b's decision; record
 //!   in `docs/davinci/plan/phase-2-records/p2-5b.md`).
-//! - [`folio`] — [`crate::dump::Page`], the L2 stage dump
+//! - [`dump`] — [`crate::dump::Page`], the L2 stage dump
 //!   (`docs/davinci/plan/folio-format.md`, "Disegno page").
 //! - [`verify`] — the between-pass invariant checks (P2-6), debug/CI only:
 //!   local in the GHC `-dcore-lint` sense, and never in a release build.
