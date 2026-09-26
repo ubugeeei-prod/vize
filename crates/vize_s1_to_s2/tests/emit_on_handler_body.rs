@@ -133,8 +133,25 @@ fn module_only_handler_forms_stay_unsupported() {
     for source in [
         r#"<div @click="import thing from 'pkg'"></div>"#,
         r#"<div @click="export const value = 1"></div>"#,
+        r#"<div @click="import type Thing from 'pkg'"></div>"#,
+        r#"<div @click="export type Thing = string"></div>"#,
+        r#"<div @click="\u0069mport thing from 'pkg'"></div>"#,
+        r#"<div @click="\u0065xport const value = 1"></div>"#,
     ] {
         assert_eq!(refused_reason(source), Some(Reason::OnHandlerNotJs));
+    }
+}
+
+#[test]
+fn handler_keyword_text_does_not_become_a_module_declaration() {
+    for source in [
+        r#"<button @click="important = 1; exported = 2"></button>"#,
+        r#"<button @click="log('import'); log('export')"></button>"#,
+        r#"<button @click="first(); /* import export */ second()"></button>"#,
+        r#"<button @click="if (ready) { return false; } finish()"></button>"#,
+    ] {
+        assert_shipped_parity(source);
+        assert_shipped_parity_with_options(source, true);
     }
 }
 

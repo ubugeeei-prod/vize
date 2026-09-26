@@ -86,6 +86,12 @@ fn parses_as_handler_body(cx: &Cx<'_>, source: &str) -> bool {
 }
 
 fn contains_module_declaration(cx: &Cx<'_>, source: &str) -> bool {
+    // Static declarations require a literal import/export keyword. Keep the
+    // parser authoritative for keyword-bearing text, including strings and
+    // comments, without reparsing ordinary statement handlers as modules.
+    if !source.contains("import") && !source.contains("export") {
+        return false;
+    }
     let parsed = Parser::new(
         cx.allocator.as_oxc(),
         source,

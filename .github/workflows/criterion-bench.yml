@@ -285,6 +285,9 @@ jobs:
         run: |
           vp exec cargo test -p vize_atelier_vapor --features davinci-benchmark --lib compile::benchmark::tests
           vp exec cargo clippy -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf -- -D warnings -D clippy::wildcard_imports
+      - name: Check expression admission and authored spans
+        if: ${{ matrix.repetition == 1 }}
+        run: vp exec cargo test -p vize_s1_to_s2 --test emit_on_handler_body --test ir_contract_spans
       - name: Build before timed windows
         run: vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf
       - name: Measure shipping adapter pairs
