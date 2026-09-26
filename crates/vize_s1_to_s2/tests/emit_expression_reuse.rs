@@ -3,14 +3,13 @@
 #![expect(
     clippy::expect_used,
     clippy::panic,
-    clippy::disallowed_types,
     reason = "tests compare owned emitted modules and assert by panicking"
 )]
 
 mod support;
 
 use support::{assert_transformed_sound, with_transformed};
-use vize_s0::Allocator;
+use vize_s0::{Allocator, String};
 use vize_s1_to_s2::{DomEmitOptions, emit_dom_with_options};
 
 #[test]
@@ -47,7 +46,7 @@ fn repeated_text_preserves_loop_slot_and_root_resolution() {
                     errors.iter().all(|error| error.is_compatibility_notice()),
                     "legacy diagnostics: {errors:?}"
                 );
-                let mut expected = legacy.preamble.to_string();
+                let mut expected = String::from(legacy.preamble.as_str());
                 expected.push('\n');
                 expected.push_str(legacy.code.as_str());
                 assert_eq!(emitted.assembled().as_str(), expected, "{source}");

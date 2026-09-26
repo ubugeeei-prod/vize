@@ -262,7 +262,7 @@ impl<'a> Cx<'a> {
 
     /// The span of a token's own text (`leading` excluded; a `Missing`
     /// token is zero-width at the offset where its syntax belongs).
-    pub(crate) fn token_span(&self, token: &Token<'a>) -> Span {
+    pub(crate) fn token_span(&self, token: &Token<'_>) -> Span {
         self.span_of(token.text)
     }
 
