@@ -1,0 +1,10 @@
+---
+source: crates/vize_atelier_vapor/src/s3/tests/slot_props.rs
+expression: code
+---
+import { createSlot as _createSlot } from 'vue';
+
+export function render(_ctx) {
+  const n0 = _createSlot(() => (_ctx.otherSlot), { title: "fixed", $: [() => ({ [(_ctx.otherName)]: _ctx.otherValue })] })
+  return n0
+}

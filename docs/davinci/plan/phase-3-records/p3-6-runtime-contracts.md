@@ -9,6 +9,7 @@ P3-6's complete surface and performance acceptance remain open.
 - [Computed DOM event names](p3-6-computed-events.md)
 - [Computed component prop and event names](p3-6-component-names.md)
 - [Computed component model argument names](p3-6-model-names.md)
+- [Computed slot outlet prop names](p3-6-slot-props.md)
 - [Flat select models and raw option values](p3-6-select-models.md)
 - [Static events in once subtrees](p3-6-once-events.md)
 - [Teleport targets and cleanup](p3-6-teleport.md)
