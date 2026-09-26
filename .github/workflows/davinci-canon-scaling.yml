@@ -1,0 +1,124 @@
+name: Davinci Canon distinct-host scaling
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: davinci-canon-scaling-${{ github.sha }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  compare:
+    name: ${{ matrix.case }} / ${{ matrix.files }} open and warmed providers
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        files: [32, 512]
+        case: [before, after]
+        include:
+          - case: before
+            source: 18a105fd5fa7ebbe385881dc6052ed44f12b498b
+          - case: after
+            source: fba75ade0ca66d9b1bfbdafb22251878f9c15de1
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ matrix.source }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the repository Rust toolchain
+        run: |
+          rustup toolchain install || rustup show active-toolchain
+          cargo --version
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: davinci-canon-scaling
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}-${{ matrix.case }}-${{ matrix.files }}
+      - name: Save exact source and protocol provenance
+        env:
+          SOURCE_SHA: ${{ matrix.source }}
+          CASE: ${{ matrix.case }}
+          FILES: ${{ matrix.files }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, subprocess
+          source = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+          assert source == os.environ["SOURCE_SHA"]
+          data = {
+              "case": os.environ["CASE"],
+              "files": int(os.environ["FILES"]),
+              "source_revision": source,
+              "workflow_revision": os.environ["GITHUB_SHA"],
+              "before_revision": "18a105fd5fa7ebbe385881dc6052ed44f12b498b",
+              "candidate_patches": ["93c3e770fe3d5e2651355ae138d29f55abc75e87", "f18898088cd8ac6d16270674c67ba9c909e7641f"],
+              "scope": "all buffers opened first; every buffer structurally witnessed, then every distinct provider warmed",
+              "services": ["editor", "ecosystem", "lint", "typecheck"],
+              "runs": 1,
+              "idle_seconds": 10,
+              "sampler": "50 ms Linux process-tree RSS and cumulative sampled CPU, including all Corsa descendants",
+              "build": "ci-opt: release, thin LTO, 16 codegen units",
+              "acceptance": "controlled observation only; no numeric ceiling",
+              "deadline_minutes": 15,
+          }
+          path = pathlib.Path(os.environ["RUNNER_TEMP"]) / "source-methodology.json"
+          path.write_text(json.dumps(data, indent=2) + "\n")
+          PY
+      - name: Build the measured production server
+        run: >-
+          cargo build --profile ci-opt -p vize
+          --config 'profile.ci-opt.inherits="release"'
+          --config 'profile.ci-opt.lto="thin"'
+          --config 'profile.ci-opt.codegen-units=16'
+      - name: Measure the identical bounded distinct-host protocol
+        env:
+          FILES: ${{ matrix.files }}
+        run: >-
+          timeout --signal=TERM --kill-after=30s 15m
+          vp exec node tools/support/compat/davinci/lsp-resources.mjs
+          --server target/ci-opt/vize --files "$FILES" --warm-providers "$FILES"
+          --runs 1 --idle-seconds 10 --out "$RUNNER_TEMP/lsp-resource.json"
+      - name: Save binary identity and exact command with every result
+        if: ${{ always() }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          root = pathlib.Path(os.environ["RUNNER_TEMP"])
+          manifest_path = root / "source-methodology.json"
+          if manifest_path.exists():
+              manifest = json.loads(manifest_path.read_text())
+              binary = pathlib.Path("target/ci-opt/vize")
+              if binary.exists():
+                  manifest["binary_sha256"] = hashlib.sha256(binary.read_bytes()).hexdigest()
+              result_path = root / "lsp-resource.json"
+              if result_path.exists():
+                  result = json.loads(result_path.read_text())
+                  manifest["command"] = result["command"]
+                  result["comparison_source"] = manifest
+                  result_path.write_text(json.dumps(result, indent=2) + "\n")
+              manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: ${{ always() }}
+        with:
+          name: canon-distinct-host-${{ matrix.case }}-${{ matrix.files }}
+          path: |
+            ${{ runner.temp }}/lsp-resource.json
+            ${{ runner.temp }}/source-methodology.json
+          if-no-files-found: warn
