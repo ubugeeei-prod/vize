@@ -3,6 +3,7 @@ use vize_atelier_core::ExpressionNode;
 use vize_carton::{String, cstr};
 
 use super::super::context::GenerateContext;
+use super::super::setup::escape_js_string_literal;
 
 fn directive_resolution_var(name: &str) -> String {
     let mut ident = String::with_capacity(name.len() + 11);
@@ -22,7 +23,7 @@ fn directive_arg(ctx: &GenerateContext, directive: &DirectiveIRNode<'_>) -> Stri
         match arg {
             ExpressionNode::Simple(exp) => {
                 if exp.is_static {
-                    cstr!("\"{}\"", exp.content)
+                    cstr!("\"{}\"", escape_js_string_literal(exp.content))
                 } else {
                     ctx.resolve_expression_node(exp)
                 }
@@ -64,7 +65,7 @@ fn directive_modifiers(directive: &DirectiveIRNode<'_>) -> Option<String> {
         .dir
         .modifiers
         .iter()
-        .map(|modifier| cstr!("{}: true", modifier.content))
+        .map(|modifier| cstr!("\"{}\": true", escape_js_string_literal(modifier.content)))
         .collect::<std::vec::Vec<_>>()
         .join(", ");
 
@@ -126,18 +127,25 @@ pub(super) fn generate_directive(ctx: &mut GenerateContext, directive: &Directiv
         return;
     }
 
-    ctx.use_helper("withDirectives");
+    ctx.use_helper("withVaporDirectives");
     let resolved = directive_resolution_var(directive.name);
-    match modifiers {
-        Some(modifiers) => ctx.push_line_fmt(format_args!(
-            "_withDirectives({}, [[{}, {}, {}, {}]])",
-            element, resolved, value, arg, modifiers
-        )),
-        None => ctx.push_line_fmt(format_args!(
-            "_withDirectives({}, [[{}, {}, {}]])",
-            element, resolved, value, arg
-        )),
+    let mut binding = resolved;
+    if directive.dir.exp.is_some() {
+        binding.push_str(&cstr!(", () => ({value})"));
+    } else if directive.dir.arg.is_some() || modifiers.is_some() {
+        binding.push_str(", undefined");
     }
+    if directive.dir.arg.is_some() {
+        binding.push_str(&cstr!(", () => ({arg})"));
+    } else if modifiers.is_some() {
+        binding.push_str(", undefined");
+    }
+    if let Some(modifiers) = modifiers {
+        binding.push_str(&cstr!(", {modifiers}"));
+    }
+    ctx.push_line_fmt(format_args!(
+        "_withVaporDirectives({element}, [[{binding}]])"
+    ));
 }
 
 /// Generate v-model for element

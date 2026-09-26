@@ -21,6 +21,7 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
             || !props.iter().any(|prop| prop.key == "to")
             || props.iter().any(|prop| {
                 !matches!(prop.key, "to" | "disabled" | "defer")
+                    || prop.dynamic_name.is_some()
                     || prop.handler
                     || prop.value_kind != PropValueKind::Expression
             })

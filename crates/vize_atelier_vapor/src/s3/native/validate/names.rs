@@ -1,4 +1,4 @@
-//! Exact static prop/event names and retained computed DOM event names.
+//! Exact static prop/event names and retained computed names.
 
 use super::super::{BindingKind, Expr};
 use super::{
@@ -27,7 +27,7 @@ pub(super) fn named<'a>(
         return Err(LegacyReason::Binding.into());
     }
     let dynamic = match name.value.kind {
-        ValueKind::Js if event => Some(js(retained, name)?),
+        ValueKind::Js => Some(js(retained, name)?),
         ValueKind::Literal
             if if event {
                 event_name(name.value.text)

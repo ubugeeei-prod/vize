@@ -88,7 +88,10 @@ pub(super) fn transform_component<'a>(
                             if key_exp.is_static && key_exp.content == "key" {
                                 continue;
                             }
-                            if kind == ComponentKind::Dynamic && key_exp.content == "is" {
+                            if kind == ComponentKind::Dynamic
+                                && key_exp.is_static
+                                && key_exp.content == "is"
+                            {
                                 if !is_selected {
                                     is_selected = true;
                                     if let Some(ref exp) = dir.exp
@@ -286,6 +289,30 @@ pub(super) fn transform_component<'a>(
     block
         .operation
         .push(OperationNode::CreateComponent(create_component));
+    for prop in &el.props {
+        if let PropNode::Directive(dir) = prop
+            && !matches!(
+                dir.name,
+                "bind"
+                    | "on"
+                    | "model"
+                    | "slot"
+                    | "show"
+                    | "once"
+                    | "memo"
+                    | "cloak"
+                    | "pre"
+                    | "if"
+                    | "else"
+                    | "else-if"
+                    | "for"
+                    | "text"
+                    | "html"
+            )
+        {
+            super::super::directive::transform_directive(ctx, dir, element_id, el, block);
+        }
+    }
     if add_return {
         block.returns.push(element_id);
     }

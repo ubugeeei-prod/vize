@@ -1,0 +1,196 @@
+---
+source: crates/vize_atelier_vapor/tests/vapor_custom_directive_parity.rs
+expression: actual
+---
+[
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": Null,
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": Null,
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": Null,
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": Null,
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": Null,
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": Null,
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": Null,
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": Null,
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": Null,
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": Null,
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": Null,
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": Null,
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "lazy": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("cleanup"),
+                "tag": String("p"),
+                "value": Null,
+            },
+        ],
+        "tree": Array [],
+    },
+]

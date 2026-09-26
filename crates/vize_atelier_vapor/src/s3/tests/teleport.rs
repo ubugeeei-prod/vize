@@ -46,12 +46,13 @@ fn unproved_builtin_contracts_keep_explicit_legacy_routes() {
     for source in [
         r#"<teleport to="body"><span>content</span></teleport>"#,
         r#"<Teleport><span>missing target</span></Teleport>"#,
+        r#"<Teleport to="body" :[disabled]="value"><span>content</span></Teleport>"#,
         r#"<Teleport to="body" @click="save"><span>content</span></Teleport>"#,
         r#"<Teleport v-bind="props"><span>content</span></Teleport>"#,
         r#"<Teleport to="body" v-model="value"><span>content</span></Teleport>"#,
         r#"<Teleport to="body" v-slot="p">{{ p.value }}</Teleport>"#,
         r#"<Teleport to="body"><template #default><span>content</span></template></Teleport>"#,
-        r#"<KeepAlive><MyComp /></KeepAlive>"#,
+        r#"<KeepAlive><MyComp /><AnotherComp /></KeepAlive>"#,
         r#"<Suspense><MyComp /></Suspense>"#,
         r#"<Transition><span>content</span></Transition>"#,
     ] {

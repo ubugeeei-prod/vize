@@ -37,6 +37,8 @@ pub(crate) struct GenerateContext<'a> {
     node_positions: FxHashMap<usize, (usize, usize)>,
     /// Whether currently inside a non-root block (v-if, v-for)
     pub(crate) is_fragment: bool,
+    /// A dynamic component at this KeepAlive slot root needs SLOT_ROOT (4).
+    pub(crate) keep_alive_slot: bool,
     /// For-loop scope stack
     pub(crate) for_scopes: std::vec::Vec<ForScope>,
     /// Slot scope stack for scoped slots
@@ -81,6 +83,7 @@ impl<'a> GenerateContext<'a> {
             text_nodes: FxHashMap::default(),
             node_positions: FxHashMap::default(),
             is_fragment: false,
+            keep_alive_slot: false,
             for_scopes: std::vec::Vec::new(),
             slot_scopes: std::vec::Vec::new(),
             slot_scope_count: 0,

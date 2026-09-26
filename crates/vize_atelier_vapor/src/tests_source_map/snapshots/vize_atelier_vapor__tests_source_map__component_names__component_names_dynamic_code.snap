@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/component_names.rs
+expression: code
+---
+import { createDynamicComponent as _createDynamicComponent, toHandlerKey as _toHandlerKey } from 'vue';
+
+export function render(_ctx) {
+  const n0 = _createDynamicComponent(() => (_ctx.view), { $: [
+    () => ({ [(_ctx.is)]: _ctx.value }),
+    () => ({ [(_toHandlerKey(_ctx.eventName))]: _ctx.record })
+  ] }, null, true)
+  return n0
+}

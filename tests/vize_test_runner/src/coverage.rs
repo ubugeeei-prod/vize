@@ -14,25 +14,13 @@ use std::path::PathBuf;
 use vize_s0::String;
 use vize_test_runner::{CompilerMode, run_fixture_tests};
 
-const MIN_VDOM_PASSED: usize = 457;
-const MIN_VAPOR_PASSED: usize = 116;
+const MIN_VDOM_PASSED: usize = 459;
+const MIN_VAPOR_PASSED: usize = 117;
 const MIN_SFC_PASSED: usize = 167;
-const MIN_TOTAL_PASSED: usize = 740;
+const MIN_TOTAL_PASSED: usize = 743;
 
-// Known v1 alpha fixture debt. CI allows these exact failures so existing gaps
-// do not block unrelated work, but any new failure or pass-count regression
-// fails the coverage job.
-//
-// Core-directive backend-parity matrix (#1161): the Vapor backend drops the
-// entire directive when a custom directive is applied to a *component*
-// (no _resolveDirective / _withDirectives is emitted), losing the binding value,
-// argument and modifiers. The matching expected snapshot encodes the desired
-// payload-preserving output (mirroring the VDOM backend), so it intentionally
-// FAILS until the compiler bug is fixed. See tests/fixtures/PARITY.md.
-const KNOWN_FAILURES: &[(&str, &str)] = &[(
-    "vapor/parity-core-directives",
-    "parity custom directive on component (payload loss)",
-)];
+// All tracked compiler fixtures pass; any future failure must fail coverage.
+const KNOWN_FAILURES: &[(&str, &str)] = &[];
 
 fn is_known_failure(path: &str, name: &str) -> bool {
     KNOWN_FAILURES
@@ -282,12 +270,10 @@ mod tests {
 
     #[test]
     fn tracks_the_current_known_failure_budget() {
-        // Exactly one tracked failure: the #1161 Vapor custom-directive
-        // payload-loss case on components. See tests/fixtures/PARITY.md.
-        assert_eq!(KNOWN_FAILURES.len(), 1);
+        assert!(KNOWN_FAILURES.is_empty());
         let unique_failures: FxHashSet<_> = KNOWN_FAILURES.iter().collect();
         assert_eq!(unique_failures.len(), KNOWN_FAILURES.len());
-        assert!(is_known_failure(
+        assert!(!is_known_failure(
             "vapor/parity-core-directives",
             "parity custom directive on component (payload loss)"
         ));

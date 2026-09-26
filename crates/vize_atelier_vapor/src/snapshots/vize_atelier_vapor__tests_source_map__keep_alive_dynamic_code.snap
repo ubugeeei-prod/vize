@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map.rs
+expression: code
+---
+import { createComponent as _createComponent, createDynamicComponent as _createDynamicComponent, VaporKeepAlive as _VaporKeepAlive, extend as _extend } from 'vue';
+
+export function render(_ctx) {
+  const n1 = _createComponent(_VaporKeepAlive, {
+    include: () => (_ctx.names),
+    max: () => (_ctx.limit)
+  }, {
+    "default": _extend(() => {
+      const n0 = _createDynamicComponent(() => (_ctx.views[_ctx.selected]), { label: () => (_ctx.label) }, null, 4)
+      return n0
+    }, { _: 1 })
+  }, true)
+  return n1
+}

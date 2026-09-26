@@ -11,6 +11,7 @@
     reason = "tests assert by panicking and compare std-string fixtures"
 )]
 
+mod component_names;
 mod dynamic_content;
 mod dynamic_events;
 mod dynamic_models;

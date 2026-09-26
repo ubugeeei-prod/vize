@@ -1,0 +1,346 @@
+---
+source: crates/vize_atelier_vapor/tests/vapor_custom_directive_parity.rs
+expression: actual
+---
+[
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [
+                    String("A"),
+                ],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("B"),
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [
+                    String("B"),
+                ],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("B"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("C"),
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [
+                    String("C"),
+                ],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("B"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("C"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("D"),
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [
+                    String("D"),
+                ],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("B"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("C"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("D"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("E"),
+            },
+        ],
+        "tree": Array [
+            Object {
+                "attributes": Object {},
+                "children": Array [
+                    String("E"),
+                ],
+                "tag": String("p"),
+            },
+        ],
+    },
+    Object {
+        "hooks": Array [
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("setup"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("A"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("B"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("C"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("D"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("effect"),
+                "tag": String("p"),
+                "value": String("E"),
+            },
+            Object {
+                "arg": Null,
+                "modifiers": Object {
+                    "foo-bar": Bool(true),
+                },
+                "name": String("focus"),
+                "phase": String("cleanup"),
+                "tag": String("p"),
+                "value": String("E"),
+            },
+        ],
+        "tree": Array [],
+    },
+]
