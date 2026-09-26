@@ -26,31 +26,31 @@ fn controlled_transition_hooks_match_native_retained_and_official_runtime() {
             "static",
             "Transition",
             r#"<button data-id="child" @click="send">{{ label }}</button>"#,
-            include_str!("snapshots/static.json"),
+            include_str!("__snapshots__/static.json"),
         ),
         (
             "single",
             "Transition",
             r#"<button v-if="show" data-id="child" @click="send">{{ label }}</button>"#,
-            include_str!("snapshots/single.json"),
+            include_str!("__snapshots__/single.json"),
         ),
         (
             "cancel",
             "Transition",
             r#"<button v-if="show" data-id="child" @click="send">{{ label }}</button>"#,
-            include_str!("snapshots/cancel.json"),
+            include_str!("__snapshots__/cancel.json"),
         ),
         (
             "group",
             "TransitionGroup",
             r#"<li v-for="item in items" :key="item.id" :data-id="item.id">{{ item.text }}</li>"#,
-            include_str!("snapshots/group.json"),
+            include_str!("__snapshots__/group.json"),
         ),
         (
             "group-div",
             "TransitionGroup",
             r#"<li v-for="item in items" :key="item.id" :data-id="item.id">{{ item.text }}</li>"#,
-            include_str!("snapshots/group-div.json"),
+            include_str!("__snapshots__/group-div.json"),
         ),
     ] {
         let tag = if scenario == "group-div" {

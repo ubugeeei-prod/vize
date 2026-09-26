@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/transition.rs
+expression: segments
+---
+[
+    "1:23 \"button> \" -> \"button v\"",
+    "2:23 \"main><!-\" -> \"main><Tr\"",
+    "2:36 \"i>tail</\" -> \"i>tail</\"",
+    "2:38 \"tail</i>\" -> \"tail</i>\"",
+    "5:0 \"export f\" -> \"<main><T\"",
+    "14:17 \"_createI\" -> \"<button \"",
+    "14:34 \"_ctx.sho\" -> \"show\\\" @c\" [show]",
+    "17:43 \"_ctx.sen\" -> \"send\\\">{{\" [send]",
+    "18:58 \"_ctx.lab\" -> \"label }}\" [label]",
+]

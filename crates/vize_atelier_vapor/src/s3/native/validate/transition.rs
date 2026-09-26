@@ -88,24 +88,21 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
         ) {
             return Err(LegacyReason::Component.into());
         }
-        // Nested controls, components, outlets and built-ins need separate proofs.
-        html_tree(nodes, root, 0)?;
-    }
-    Ok(())
-}
-
-fn html_tree(nodes: &[Node<'_>], node: &Node<'_>, depth: u8) -> Result<()> {
-    if depth > 16
-        || node
+        // Descendant element IDs inside conditional roots have a separate
+        // retained/native ordering obligation. Keep this slice text-only.
+        if root
             .bindings
             .iter()
             .any(|binding| !matches!(binding.kind, BindingKind::Prop | BindingKind::Event))
-        || !matches!(node.content, Content::Element { .. } | Content::Text { .. })
-    {
-        return Err(LegacyReason::Component.into());
-    }
-    for index in &node.children {
-        html_tree(nodes, at(nodes, *index)?, depth + 1)?;
+            || root.children.iter().any(|index| {
+                !matches!(
+                    nodes.get(*index).map(|node| &node.content),
+                    Some(Content::Text { .. })
+                )
+            })
+        {
+            return Err(LegacyReason::Component.into());
+        }
     }
     Ok(())
 }
