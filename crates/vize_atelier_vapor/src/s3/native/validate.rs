@@ -4,6 +4,7 @@
 
 mod attach;
 mod component;
+mod component_model;
 mod control;
 mod expressions;
 mod ident;

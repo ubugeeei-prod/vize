@@ -1,5 +1,5 @@
 //! `v-model` on a native input/textarea/select or an ordinary component. S2 carries
-//! the same reference for reads and writes, an optional static argument, and
+//! the same reference for reads and writes, an optional static or computed argument, and
 //! the owner kind. The shared generator realizes either the DOM directive or
 //! the component's prop, update listener, and modifiers prop.
 
@@ -28,7 +28,8 @@ pub(super) fn model<'a>(
     let read_operand = one(values, Role::ModelRead)?;
     let read = read_operand.value;
     let write = one(values, Role::ModelWrite)?.value;
-    let name = one(values, Role::Name)?.value;
+    let name_operand = one(values, Role::Name)?;
+    let name = name_operand.value;
     let mut element = None;
     let mut modifiers = Vec::new_in(&alloc);
     for value in values {
@@ -37,7 +38,7 @@ pub(super) fn model<'a>(
         }
         match (value.role, value.name, value.value.kind) {
             (Role::BindingKind | Role::ModelRead | Role::ModelWrite, None, _) => {}
-            (Role::Name, None, ValueKind::Absent | ValueKind::Literal) => {}
+            (Role::Name, None, ValueKind::Absent | ValueKind::Literal | ValueKind::Js) => {}
             (Role::ModelAttribute, Some("element-kind"), ValueKind::Literal) => {
                 if element.replace(value.value.text).is_some() {
                     return Err(LegacyReason::Binding.into());
@@ -63,8 +64,14 @@ pub(super) fn model<'a>(
     let name = match (element, name.kind) {
         (Some("component"), ValueKind::Absent) => "modelValue",
         (Some("component"), ValueKind::Literal) if component_prop(name.text) => name.text,
+        (Some("component"), ValueKind::Js) => name.text,
         (Some("input" | "textarea" | "select"), ValueKind::Absent) => "",
         _ => return Err(LegacyReason::Binding.into()),
+    };
+    let dynamic_name = if name_operand.value.kind == ValueKind::Js {
+        Some(js(retained, name_operand)?)
+    } else {
+        None
     };
     // Reads and writes share the same authored assignment target. Retained
     // member ASTs preserve computed keys without reparsing generated handlers.
@@ -93,14 +100,14 @@ pub(super) fn model<'a>(
         Binding {
             kind: BindingKind::Model,
             name,
-            dynamic_name: None,
+            dynamic_name,
             value,
             modifiers,
             merge: None,
             model_element: element,
             position: 0,
             spans: [
-                (read.span.start, read.span.end),
+                (name_operand.value.span.start, name_operand.value.span.end),
                 (read.span.start, read.span.end),
             ],
         },

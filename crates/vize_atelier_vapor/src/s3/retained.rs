@@ -86,6 +86,7 @@ impl<'s, 'a> Retained<'s, 'a> {
                 BindingOp::SlotContent(slot) => slot.name,
                 BindingOp::Bind(bind) => bind.name,
                 BindingOp::On(on) => on.name,
+                BindingOp::Model(model) => model.argument,
                 _ => None,
             };
             if let Some(DynamicName::Dynamic(name)) = name {

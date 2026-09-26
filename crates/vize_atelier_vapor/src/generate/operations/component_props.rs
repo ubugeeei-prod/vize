@@ -61,6 +61,11 @@ fn generate_component_spread_props_str(ctx: &GenerateContext, props: &[IRProp<'_
         if !prop.key.is_static {
             push_component_static_prop_group(ctx, &mut sources, &mut static_group);
             let key = ctx.resolve_expression_node(&prop.key);
+            let key = match prop.value_kind {
+                PropValueKind::ModelUpdate => cstr!("\"update:\" + ({key})"),
+                PropValueKind::ModelModifiers => cstr!("({key}) + \"Modifiers\""),
+                PropValueKind::Expression => key,
+            };
             // Dynamic handler keys retain the event-name expression through
             // lowering; convert after resolving its authored lexical scope.
             let key = if prop.key.is_handler_key {

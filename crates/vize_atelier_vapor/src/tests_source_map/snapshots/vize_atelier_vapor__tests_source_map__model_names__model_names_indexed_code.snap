@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/model_names.rs
+expression: code
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, toHandlerKey as _toHandlerKey } from 'vue';
+
+export function render(_ctx) {
+  const _component_Child = _resolveComponent("Child")
+  const n0 = _createComponentWithFallback(_component_Child, { $: [
+    () => ({ [(_ctx.names[_ctx.index])]: _ctx.form[_ctx.field] }),
+    () => ({ [(_toHandlerKey("update:" + (_ctx.names[_ctx.index])))]: $event => ((_ctx.form[_ctx.field]) = $event) }),
+    () => ({ [((_ctx.names[_ctx.index]) + "Modifiers")]: { "trim": true } })
+  ] }, null, true)
+  return n0
+}

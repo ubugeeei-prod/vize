@@ -1,0 +1,23 @@
+---
+source: crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/model_names.rs
+expression: compiled.code
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, toHandlerKey as _toHandlerKey, setInsertionState as _setInsertionState, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<main data-id=\"root\"><!----><b data-id=\"mirror\"> </b></main>", true)
+
+export function render(_ctx) {
+  const n1 = t0()
+  const n2 = _child(n1)
+  const n3 = _next(_child(n1))
+  const x3 = _txt(n3)
+  const _component_Child = _resolveComponent("Child")
+  _setInsertionState(n1, n2)
+  const n0 = _createComponentWithFallback(_component_Child, { $: [
+    { title: () => ("static") },
+    () => ({ [(_ctx.names[_ctx.index])]: _ctx.value }),
+    () => ({ [(_toHandlerKey("update:" + (_ctx.names[_ctx.index])))]: $event => ((_ctx.value) = $event) }),
+    () => ({ [((_ctx.names[_ctx.index]) + "Modifiers")]: { "trim": true } })
+  ] }, null, true)
+  _renderEffect(() => _setText(x3, _toDisplayString(_ctx.value)))
+  return n1
+}

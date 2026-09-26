@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/model_names.rs
+expression: code
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, toHandlerKey as _toHandlerKey } from 'vue';
+
+export function render(_ctx) {
+  const _component_Child = _resolveComponent("Child")
+  const n0 = _createComponentWithFallback(_component_Child, { $: [
+    () => ({ [(_ctx.name)]: _ctx.value }),
+    () => ({ [(_toHandlerKey("update:" + (_ctx.name)))]: $event => ((_ctx.value) = $event) })
+  ] }, null, true)
+  return n0
+}
