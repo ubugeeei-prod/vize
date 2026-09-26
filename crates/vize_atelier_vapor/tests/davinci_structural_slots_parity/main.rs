@@ -134,14 +134,14 @@ fn assert_semantics(name: &str, frames: &[Value]) {
         "object" => (
             &[
                 "A:a:0:P0B:b:1:P0tail",
-                "A2:a:1:P1B2:b:0:P1tail",
-                "A2:a:1:P1B2:b:0:P1tail",
-                "C:c:0:P1B3:b:1:P1tail",
-                "C:c:0:P1B3:b:1:P1tail",
+                "A2:a:0:P1B2:b:1:P1tail",
+                "A2:a:0:P1B2:b:1:P1tail",
+                "C:c:1:P1B3:b:0:P1tail",
+                "C:c:1:P1B3:b:0:P1tail",
                 "onetwotail",
                 "",
             ],
-            json!(["A2:a:1:P1", "C:c:0:P1"]),
+            json!(["A2:a:0:P1", "C:c:1:P1"]),
         ),
         _ => panic!("unknown runtime case"),
     };

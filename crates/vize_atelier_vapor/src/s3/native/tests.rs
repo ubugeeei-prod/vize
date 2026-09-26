@@ -65,3 +65,36 @@ fn accepted_payload_reaches_shared_generation_with_authored_anchors() {
     assert!(result.code.contains("_ctx.save(e)"));
     assert!(result.code.contains("_ctx.label"));
 }
+
+#[test]
+fn damaged_structural_slot_branch_never_emits_partial_component() {
+    use super::Content;
+    for source in [
+        r#"<Child><template #one v-if="enabled">A</template><template #two v-else>B</template></Child>"#,
+        r#"<Child><template v-for="item in items" #[item.name]>A</template></Child>"#,
+    ] {
+        let allocator = Allocator::new();
+        let VaporS3BridgeStatus::Accepted(mut artifact) =
+            lower_source_for_vapor(&allocator, source, options())
+        else {
+            panic!("structural slot source must first be accepted");
+        };
+        let node = artifact
+            .0
+            .nodes
+            .iter_mut()
+            .find(|node| matches!(node.content, Content::If { .. } | Content::For(_)))
+            .unwrap();
+        match &mut node.content {
+            Content::If { branches } => branches.last_mut().unwrap().roots[0] = usize::MAX,
+            Content::For(_) => node.children[0] = usize::MAX,
+            _ => unreachable!(),
+        }
+        let result = emit_accepted(&allocator, source, artifact, None, true, |_, _| {
+            panic!("damaged carrier must never reach generation")
+        });
+        assert!(result.code.is_empty());
+        assert!(result.map.is_none());
+        assert_eq!(result.error_messages.len(), 1);
+    }
+}

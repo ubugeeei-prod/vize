@@ -2,7 +2,9 @@
 
 The bounded native S3 contract covers `v-if` / `v-else-if` / `v-else`
 and `v-for` directly on a component's named `<template #slot>` carriers.
-Each branch or loop body must contain exactly one authored carrier. Ordinary
+Each branch or loop body must contain exactly one authored carrier. A chain
+contains at most 64 branches. Carrier attributes and extra bindings stay
+refused. Ordinary
 and dynamic components accept the contract; builtin wrappers retain their
 separate runtime policies.
 
@@ -12,8 +14,9 @@ body. Changing a name moves the slot to its corresponding child outlet;
 missing carriers restore the child's fallback.
 
 Looped carriers use the published Vue 3.6.0-rc.9 `createForSlots` helper.
-The body receives reactive item/key/index refs, while name and optional identity
-callbacks receive raw aliases. Array replacement, ordering changes and object
+The body receives reactive item/key/index refs, while the name
+callback receives raw aliases. Explicit loop key bindings retain their separate
+unproved contract. Array replacement, ordering changes and object
 key/index changes update the refs without capturing stale loop values. Slot
 props introduce their own lexical scope and can shadow loop aliases.
 

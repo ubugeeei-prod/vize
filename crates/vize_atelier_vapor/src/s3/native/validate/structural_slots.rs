@@ -1,7 +1,7 @@
 //! A conditional or loop selects one direct authored slot template.
 //! Nested carriers and implicit content beside named slots stay refused.
 
-use super::super::{Content, Node};
+use super::super::{BindingKind, Content, Node};
 use super::{
     Result,
     slots::{has_slot, slot_name},
@@ -12,20 +12,25 @@ fn carrier(nodes: &[Node<'_>], index: usize) -> bool {
     nodes.get(index).is_some_and(|node| {
         matches!(
             node.content,
-            Content::Element {
-                tag: "template",
-                ..
-            }
+            Content::Element { tag: "template", ref attributes, .. }
+                if attributes.is_empty()
         ) && has_slot(node)
+            && node
+                .bindings
+                .iter()
+                .all(|binding| binding.kind == BindingKind::Slot)
     })
 }
 
 fn structural(nodes: &[Node<'_>], index: usize) -> bool {
     match nodes.get(index).map(|node| &node.content) {
-        Some(Content::If { branches }) => branches
-            .iter()
-            .all(|branch| matches!(branch.roots.as_slice(), [child] if carrier(nodes, *child))),
-        Some(Content::For(_)) => matches!(
+        Some(Content::If { branches }) => {
+            branches.len() <= 64
+                && branches.iter().all(
+                    |branch| matches!(branch.roots.as_slice(), [child] if carrier(nodes, *child)),
+                )
+        }
+        Some(Content::For(body)) if body.key_prop.is_none() => matches!(
             nodes.get(index).map(|node| node.children.as_slice()),
             Some([child]) if carrier(nodes, *child)
         ),
@@ -63,7 +68,7 @@ pub(super) fn check(nodes: &[Node<'_>], parents: &[Option<usize>]) -> Result<()>
                             )
                         })
             });
-            if !has_slot(node) || !(direct || controlled) {
+            if !carrier(nodes, index) || !(direct || controlled) {
                 return Err(LegacyReason::Element.into());
             }
         }

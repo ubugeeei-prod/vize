@@ -7,18 +7,31 @@ use vize_carton::Box;
 
 impl<'a> Emitter<'a, '_> {
     pub(super) fn component_slot(&mut self, index: usize) -> Option<IRSlot<'a>> {
-        let node = self.artifact.nodes.get_mut(index)?;
+        let Some(node) = self.artifact.nodes.get_mut(index) else {
+            self.invariant_broken();
+            return None;
+        };
         match &mut node.content {
             Content::Element {
                 tag: "template", ..
             } => {
-                let slot = slot_of(node)?;
+                let Some(slot) = slot_of(node) else {
+                    self.invariant_broken();
+                    return None;
+                };
                 let members = take(self.allocator, &mut node.children);
                 let block = self.block(&members);
                 self.id();
                 Some(self.slot(index, Some(slot), block))
             }
             Content::If { branches } => {
+                if !branches
+                    .first()
+                    .is_some_and(|branch| branch.condition.is_some())
+                {
+                    self.invariant_broken();
+                    return None;
+                }
                 let branches = take(self.allocator, branches);
                 self.conditional_slot(&branches)
             }
@@ -66,6 +79,10 @@ impl<'a> Emitter<'a, '_> {
             return None;
         };
         let mut slot = self.component_slot(*child)?;
+        if branch.condition.is_none() && !rest.is_empty() {
+            self.invariant_broken();
+            return None;
+        }
         if let Some(condition) = branch.condition {
             let negative = self
                 .conditional_slot(rest)

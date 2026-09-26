@@ -105,6 +105,7 @@ fn loop_slot_source_is_owned_by_the_checked_payload() {
 #[test]
 fn unsupported_structural_slot_shapes_stay_legacy() {
     for source in [
+        r#"<Child><template v-for="item in items" :key="item.id" #[item.name]>A</template></Child>"#,
         r#"<Child><template #one v-if="on">A</template>implicit</Child>"#,
         r#"<Child v-slot="p"><template #one v-if="on">A</template></Child>"#,
         r#"<Child><template v-if="on"><template #one>A</template><template #two>B</template></template></Child>"#,
