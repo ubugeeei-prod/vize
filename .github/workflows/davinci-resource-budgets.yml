@@ -184,16 +184,17 @@ jobs:
           vp exec node tools/support/compat/davinci/lsp-resources.mjs
           --server target/ci-opt/vize --files 2 --runs 1 --idle-seconds 10
           --out "${RUNNER_TEMP}/lsp-resource-smoke.json"
-      - name: Measure 10000 production providers, open buffers, and Corsa
+      - name: Measure 10000 open buffers, 16 production providers, and Corsa
         run: >-
+          timeout --signal=TERM --kill-after=30s 45m
           vp exec node tools/support/compat/davinci/lsp-resources.mjs
-          --server target/ci-opt/vize --files 10000 --runs 1 --idle-seconds 10
+          --server target/ci-opt/vize --files 10000 --warm-providers 16 --runs 1 --idle-seconds 10
           --out "${RUNNER_TEMP}/lsp-resource.json"
       - name: Summarize the actual scope and every process
         if: ${{ !cancelled() }}
         run: |
           {
-            echo '### Production Maestro LSP: 10000 open and metadata-warmed SFC providers'
+            echo '### Production Maestro LSP: 10000 open SFCs, 16 metadata provider witnesses'
             echo 'Maestro and all Corsa descendants are included; the Node harness is excluded.'
             echo 'The isolated resident example and nine-file TS-44 baseline remain separate.'
             echo '```json'
@@ -201,7 +202,7 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ !cancelled() }}
+        if: ${{ always() }}
         with:
           name: production-lsp-resource-linux-x64-ci
           path: ${{ runner.temp }}/lsp-resource*.json

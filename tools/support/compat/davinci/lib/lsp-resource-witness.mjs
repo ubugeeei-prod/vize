@@ -22,12 +22,29 @@ export async function metadataCompletion(session, uri, source, type = "string") 
   return prop;
 }
 
-export async function controlledEdits(session, workspace) {
+export async function bodyEditChurn(session, workspace, count = 32) {
+  const childUri = documentUri(workspace, 0);
+  const parentUri = documentUri(workspace, 1);
+  let version = 1;
+  for (let edit = 0; edit < count; edit++) {
+    const value = edit + 1 === count ? 1 : edit + 2;
+    session.notify("textDocument/didChange", {
+      textDocument: { uri: childUri, version: ++version },
+      contentChanges: [
+        { text: componentSource(0).replace("checked: number = 1", `checked: number = ${value}`) },
+      ],
+    });
+    await metadataCompletion(session, parentUri, componentSource(1));
+  }
+  return { edits: count, unchanged_prop_completion_replies: count, final_version: version };
+}
+
+export async function controlledEdits(session, workspace, initialVersion = 1) {
   const childUri = documentUri(workspace, 0);
   const parentUri = documentUri(workspace, 1);
   const parent = componentSource(1);
   let child = componentSource(0);
-  let version = 1;
+  let version = initialVersion;
   let publications = 0;
   let afterEdit = 0;
   const publicationSequence = new WeakMap();

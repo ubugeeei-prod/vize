@@ -8,13 +8,14 @@ import path from "node:path";
 import { LspSession } from "../../../../tests/tooling/support/lsp/session.ts";
 import { componentSource, documentUri, prepareWorkspace } from "./lib/lsp-resource-workspace.mjs";
 import { createSampler, mib } from "./lib/lsp-resource-sampler.mjs";
-import { controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.mjs";
+import { bodyEditChurn, controlledEdits, metadataCompletion } from "./lib/lsp-resource-witness.mjs";
 
 const args = process.argv.slice(2);
 const flag = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
 const out = path.resolve(flag("--out", "lsp-resource.json"));
 const files = Number(flag("--files", "10000"));
 const openFiles = Number(flag("--open-files", String(files)));
+const warmProviders = Number(flag("--warm-providers", String(openFiles)));
 const runs = Number(flag("--runs", "1"));
 const idleSeconds = Number(flag("--idle-seconds", "10"));
 const preset = flag("--preset", "linux-x64-ci");
@@ -26,6 +27,12 @@ async function measure() {
     Number.isInteger(openFiles) && openFiles >= 2 && openFiles <= files && openFiles % 2 === 0,
   );
   assert.ok(Number.isInteger(runs) && runs > 0 && idleSeconds >= 10);
+  assert.ok(
+    Number.isInteger(warmProviders) &&
+      warmProviders >= 2 &&
+      warmProviders <= openFiles &&
+      warmProviders % 2 === 0,
+  );
   const server = fs.realpathSync(flag("--server", "target/ci-opt/vize"));
   process.env.VIZE_LSP_BIN = server;
   const measurement = {
@@ -33,7 +40,8 @@ async function measure() {
     preset,
     workspace_files: files,
     open_files: openFiles,
-    unique_imported_providers: openFiles,
+    unique_imported_providers: warmProviders,
+    provider_coverage: `${warmProviders} of ${openFiles} open providers receive prop completions`,
     runs,
     completed_runs: 0,
     complete: false,
@@ -67,46 +75,83 @@ async function measure() {
       opened_files: 0,
       metadata_requests: 0,
       successful_unique_provider_requests: 0,
+      resident_document_witnesses: 0,
       diagnostic_publications: 0,
     };
     session.notificationObservers.push((method) => {
       if (method === "textDocument/publishDiagnostics") result.diagnostic_publications++;
     });
+    measurement.active_run = result;
+    save();
     try {
       await session.initialize(workspace, measurement.services);
       result.initialized_ms = performance.now() - started;
-      // Open bounded batches and require a real imported-provider completion
-      // for each file. Each pair imports its distinct opposite SFC. Never
-      // close the buffers before measuring idle or substitute fixture alpha.
+      const open = (index) => {
+        session.notify("textDocument/didOpen", {
+          textDocument: {
+            uri: documentUri(workspace, index),
+            languageId: "vue",
+            version: 1,
+            text: componentSource(index),
+          },
+        });
+        result.opened_files++;
+      };
+      open(0);
+      open(1);
+      await metadataCompletion(session, documentUri(workspace, 1), componentSource(1));
+      result.controlled_edits_scope = "two open files before the bulk residency workload";
+      result.body_edit_churn = await bodyEditChurn(session, workspace);
+      result.controlled_edits = await controlledEdits(
+        session,
+        workspace,
+        result.body_edit_churn.final_version,
+      );
+      save();
+      // Bulk notifications avoid repeated full native analysis between batches.
+      // Every buffer stays open; structural replies below prove it is resident.
       for (let batch = 0; batch < openFiles; batch += 32) {
         const end = Math.min(batch + 32, openFiles);
-        for (let index = batch; index < end; index++) {
-          session.notify("textDocument/didOpen", {
-            textDocument: {
-              uri: documentUri(workspace, index),
-              languageId: "vue",
-              version: 1,
-              text: componentSource(index),
-            },
-          });
-          result.opened_files++;
-        }
-        for (let index = batch; index < end; index++) {
-          result.metadata_requests++;
-          await metadataCompletion(session, documentUri(workspace, index), componentSource(index));
-          result.successful_unique_provider_requests++;
-        }
+        for (let index = Math.max(batch, 2); index < end; index++) open(index);
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+      for (let batch = 0; batch < openFiles; batch += 32) {
+        const end = Math.min(batch + 32, openFiles);
+        await Promise.all(
+          Array.from({ length: end - batch }, async (_, offset) => {
+            const symbols = await session.request(
+              "textDocument/documentSymbol",
+              { textDocument: { uri: documentUri(workspace, batch + offset) } },
+              300_000,
+            );
+            assert.ok(symbols?.some((symbol) => symbol.name === "script setup"));
+            assert.ok(symbols.some((symbol) => symbol.name === "template"));
+            result.resident_document_witnesses++;
+          }),
+        );
         if (end % 256 === 0 || end === openFiles) {
           result.warming_elapsed_ms = performance.now() - started;
-          result.current_rss_mib = mib(sampler.sample().rss_bytes);
+          const current = sampler.sample();
+          result.current_rss_mib = mib(current.rss_bytes);
+          result.current_processes = current.processes;
           console.error(
-            `run ${run + 1}: ${end}/${openFiles} open and metadata-warmed; ${result.current_rss_mib} MiB`,
+            `run ${run + 1}: ${end}/${openFiles} resident document witnesses; ${result.current_rss_mib} MiB`,
           );
           measurement.active_run = result;
           save();
         }
       }
-      result.controlled_edits = await controlledEdits(session, workspace);
+      const pairs = warmProviders / 2;
+      for (let pair = 0; pair < pairs; pair++) {
+        const first = pairs === 1 ? 0 : Math.floor((pair * (openFiles / 2 - 1)) / (pairs - 1)) * 2;
+        for (const index of [first, first + 1]) {
+          result.metadata_requests++;
+          await metadataCompletion(session, documentUri(workspace, index), componentSource(index));
+          result.successful_unique_provider_requests++;
+        }
+        measurement.active_run = result;
+        save();
+      }
       const idleStart = performance.now();
       const before = sampler.sample();
       await new Promise((resolve) => setTimeout(resolve, idleSeconds * 1000));
