@@ -5,10 +5,10 @@
 //! or `v-on` object on a component becomes a `$` source in that order.
 
 use oxc_allocator::HashSet;
-use vize_carton::{Allocator, String, Vec, cstr};
+use vize_carton::{Allocator, Vec};
 use vize_s3::op::{OpId, RegionId};
 
-use super::super::{Binding, BindingKind, Content, Expr, Node, Prop};
+use super::super::{Binding, BindingKind, Content, Node, Prop};
 use super::{Result, Slots, at, at_mut, component::component_prop};
 use crate::s3::{AdmissionFailure, LegacyReason};
 
@@ -130,7 +130,9 @@ pub(super) fn bindings<'a>(
                 if !fresh {
                     return Err(LegacyReason::Component.into());
                 }
-                component_model(props, &binding, position, &mut names, index, alloc)?;
+                super::component_model::expand(
+                    props, &binding, position, &mut names, index, alloc,
+                )?;
                 continue;
             }
             Content::Component { props, .. } => {
@@ -211,73 +213,6 @@ pub(super) fn bindings<'a>(
         {
             props.sort_by_key(|prop| prop.position);
         }
-    }
-    Ok(())
-}
-
-/// Expand a checked component model into the same getter, update listener,
-/// and optional modifier props as the retained component transform.
-fn component_model<'a>(
-    props: &mut Vec<'a, Prop<'a>>,
-    binding: &Binding<'a>,
-    position: u32,
-    names: &mut HashSet<'_, (usize, BindingKind, &'a str, bool)>,
-    index: usize,
-    alloc: &'a Allocator,
-) -> Result<()> {
-    let prop = binding.name;
-    let event = alloc.alloc_str(&cstr!("update:{prop}"));
-    let modifiers = if binding.modifiers.is_empty() {
-        None
-    } else if matches!(prop, "modelValue" | "model-value") {
-        Some("modelModifiers")
-    } else {
-        Some(alloc.alloc_str(&cstr!("{prop}Modifiers")))
-    };
-    if !names.insert((index, BindingKind::Prop, prop, false))
-        || !names.insert((index, BindingKind::Event, event, false))
-        || modifiers.is_some_and(|name| !names.insert((index, BindingKind::Prop, name, false)))
-    {
-        return Err(LegacyReason::Component.into());
-    }
-    props.push(Prop {
-        key: prop,
-        dynamic_name: None,
-        value: Some(binding.value),
-        value_kind: crate::ir::PropValueKind::Expression,
-        dynamic: true,
-        handler: false,
-        position,
-    });
-    props.push(Prop {
-        key: event,
-        dynamic_name: None,
-        value: Some(binding.value),
-        value_kind: crate::ir::PropValueKind::ModelUpdate,
-        dynamic: true,
-        handler: true,
-        position,
-    });
-    if let Some(name) = modifiers {
-        let mut object = String::from("{ ");
-        for (i, modifier) in binding.modifiers.iter().enumerate() {
-            if i != 0 {
-                object.push_str(", ");
-            }
-            object.push('"');
-            object.push_str(&crate::generate::escape_js_string_literal(modifier));
-            object.push_str("\": true");
-        }
-        object.push_str(" }");
-        props.push(Prop {
-            key: name,
-            dynamic_name: None,
-            value: Some(Expr::plain(alloc.alloc_str(&object))),
-            value_kind: crate::ir::PropValueKind::ModelModifiers,
-            dynamic: true,
-            handler: false,
-            position,
-        });
     }
     Ok(())
 }

@@ -22,7 +22,8 @@ TS-33 compares three parent forms with the pinned official compiler. Exact
 traces cover computed prop replacement, removal of old event handlers,
 restoration of static prop values, repeated updates, stable child node identity
 and unmount. Computed DOM props have their own [contract](p3-6-computed-dom-props.md).
-Slot outlet prop names, component event modifiers, prop modifiers and computed model arguments remain explicit legacy
-surfaces. P3-6's full acceptance remains open.
+Slot outlet prop names, component event modifiers and prop modifiers remain explicit
+legacy surfaces. Computed model arguments have their own
+[runtime contract](p3-6-model-names.md). P3-6's full acceptance remains open.
 
 Contract: [P3-6](p3-6.md).

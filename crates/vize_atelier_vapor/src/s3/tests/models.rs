@@ -188,7 +188,6 @@ fn unsupported_models_select_exact_legacy_reasons() {
         r#"<input v-model.foo="x">"#,
         r#"<input :type="kind" v-model="x">"#,
         r#"<input v-model="a" v-model="b">"#,
-        r#"<MyComp v-model:[field]="x" />"#,
         r#"<MyComp v-model="_ctx.x" />"#,
     ] {
         let allocator = Allocator::new();

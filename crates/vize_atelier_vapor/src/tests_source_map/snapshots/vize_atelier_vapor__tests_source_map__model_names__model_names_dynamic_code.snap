@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/model_names.rs
+expression: code
+---
+import { createDynamicComponent as _createDynamicComponent, toHandlerKey as _toHandlerKey } from 'vue';
+
+export function render(_ctx) {
+  const n0 = _createDynamicComponent(() => (_ctx.view), { $: [
+    () => ({ [(_ctx.name.toLowerCase())]: _ctx.form.title }),
+    () => ({ [(_toHandlerKey("update:" + (_ctx.name.toLowerCase())))]: $event => ((_ctx.form.title) = $event) }),
+    () => ({ [((_ctx.name.toLowerCase()) + "Modifiers")]: { "number": true } })
+  ] }, null, true)
+  return n0
+}
