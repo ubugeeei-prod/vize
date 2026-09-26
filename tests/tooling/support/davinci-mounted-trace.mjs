@@ -153,9 +153,17 @@ export async function traceMountedBackend({
             option.selected = step.selectedValues.includes(option.value);
         }
         if (Object.hasOwn(step, "selectedIndexes")) {
-          assert.ok(target instanceof window.HTMLSelectElement, "selected indexes require a select");
+          assert.ok(
+            target instanceof window.HTMLSelectElement,
+            "selected indexes require a select",
+          );
           assert.ok(Array.isArray(step.selectedIndexes), "selected indexes must be an array");
-          assert.ok(step.selectedIndexes.every((index) => Number.isInteger(index) && index >= 0 && index < target.options.length), "selected index out of range");
+          assert.ok(
+            step.selectedIndexes.every(
+              (index) => Number.isInteger(index) && index >= 0 && index < target.options.length,
+            ),
+            "selected index out of range",
+          );
           for (const [index, option] of [...target.options].entries())
             option.selected = step.selectedIndexes.includes(index);
         }
