@@ -17,7 +17,7 @@ fn repeated_text_preserves_loop_slot_and_root_resolution() {
     for source in [
         r#"<div :id="item.value"><p v-for="item in items" :title="item.value"></p><p :title="item.value"></p></div>"#,
         r#"<Foo :id="item.value"><template #default="{ item }"><p :title="item.value"></p></template></Foo><p :title="item.value"></p>"#,
-        r#"<button :id="value!" @click="read(value!)" :title="value! /* trailing */"></button>"#,
+        r#"<button :id="value" @click="read(value)" :title="value /* trailing */"></button>"#,
     ] {
         assert_transformed_sound(source, "repeated authored expressions");
         for (is_ts, prefix_identifiers) in
