@@ -1,8 +1,8 @@
 # Decision Record — Level Restructure (2026-09-27)
 
 > [!NOTE]
-> This record collects the decisions from the maintainer's 2026-09-27 design
-> session. It is the working source of truth for crate layout, naming, level
+> This record and its linked companion pages collect the decisions from
+> the maintainer's 2026-09-27 design session. It is the working source of truth for crate layout, naming, level
 > responsibilities and CI tiers. Where it conflicts with older pages (S0–S4
 > naming, the `vize_davinci` substrate crate, Folio naming, S4 placement,
 > charter rows #1, #5 and #11), this record wins until those pages are
@@ -141,6 +141,10 @@ design is in the
   expressions follow `<script lang>`, and a language mismatch between
   `<script>` and `<script setup>` is a diagnostic.
 
+- Two decisions from the same design comment belong to the next section:
+  the `const` pattern table of `fn` pointers, and parsing each expression
+  once (L4 rewrites from the L2 identifier-resolution table).
+
 ## L1→L2 and L2
 
 Tracked in [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and
@@ -158,48 +162,28 @@ Tracked in [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and
 
 ## L3 is the decision layer
 
-Tracked in [#6839](https://github.com/ubugeeei-prod/vize/issues/6839).
-
-- L3 holds backend decisions keyed by L2 node ids: the static/dynamic
-  partition, hoist and cache placement, effect grouping and ordering.
-- DOM and SSR read the L2 tree plus L3 decisions. Vapor reads the L3
-  program. This replaces charter row #9's "SSR thin path".
-- DOM stops deciding hoisting in L2 passes; that logic is currently
-  duplicated with L3 `Placement`.
-- **Done-when condition:** the DOM lane is not slower than today.
+See the [l3 is the decision layer decisions](./2026-09-27-level-restructure-designs.md#l3-is-the-decision-layer)
+in the companion record.
 
 ## L4: emission
 
-Tracked in [#6840](https://github.com/ubugeeei-prod/vize/issues/6840).
+See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-emission)
+in the companion record.
 
-- One crate, `vize_l4`, with these parts:
-  - `document`: `EmitDocument` and source maps. Legacy codegen depends on it.
-  - `expr`: expression rewriting
-  - `helper`: runtime helper vocabulary
-  - targets `dom/`, `ssr/`, `vapor/`, then `ts/` (the type-check projection)
-    and other frameworks
-- SSR runs natively, without legacy codegen or Croquis.
-- **Vapor generates JavaScript directly from L3, with no legacy IR.**
-  Architectural soundness takes priority over reuse. Output stays
-  byte-identical.
-- `vize_atelier_*` become thin shells that only select a lane and fall back
-  to legacy.
+## Script side
+
+See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side)
+in the companion record.
 
 ## Dialects, languages, frameworks
 
-Tracked in [#6841](https://github.com/ubugeeei-prod/vize/issues/6841),
-[#6842](https://github.com/ubugeeei-prod/vize/issues/6842) and
-[#6843](https://github.com/ubugeeei-prod/vize/issues/6843).
+See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks)
+in the companion record.
 
-- Each level holds variant code in modules: `dialect/` (Vue variants: vue3,
-  vue2, vue1, vue0, petite, quirks), `lang/`, `framework/` and `markup/`.
-  Core modules never reference them, and a gate test enforces this.
-- One descriptor per file and one capability derivation replace
-  `LegacyDialectCapabilities` and `LegacyCaps`.
-- Quirks is a dialect. Vue 0.x and 1.x are implemented on Davinci.
-- petite-vue gets L1/L2 support (document profile plus hooks), and lint and
-  LSP read it. There are no L3/L4 targets for petite-vue.
-- `vize_dialect_moonbit` dissolves into per-level `lang/moonbit` modules.
+## JSX semantics
+
+See the [JSX semantics decisions](./2026-09-27-level-restructure-designs.md#jsx-semantics)
+in the companion record.
 
 ## Products on the levels
 
@@ -215,20 +199,15 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and
   through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.
 
+## Type check
+
+See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-check)
+in the companion record.
+
 ## Legacy deletion criteria
 
-Tracked in [#6828](https://github.com/ubugeeei-prod/vize/issues/6828) and
-[#6852](https://github.com/ubugeeei-prod/vize/issues/6852)–[#6854](https://github.com/ubugeeei-prod/vize/issues/6854).
-
-1. Every legacy fix adds its input to the differential corpus. The merge
-   queue checks that the Davinci lane matches.
-2. Zero fallbacks across the corpus, every dialect and the real-project
-   corpus.
-3. Rules 1 and 2 hold for a stability period before deletion.
-
-The criteria apply per product: compiler output, lint diagnostics, formatter
-output, type-check diagnostics and LSP snapshots. Acceptance rates are
-published for native Davinci work only.
+See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria)
+in the companion record.
 
 ## Multi-framework
 
@@ -290,7 +269,9 @@ whole-workspace resident state.
   watch modes) use the salsa-based resident tier. The one-shot CLI uses the
   fused non-salsa pipeline.
 - **One semantic query API over L2** serves every product
-  ([#6871](https://github.com/ubugeeei-prod/vize/issues/6871)).
+  ([#6871](https://github.com/ubugeeei-prod/vize/issues/6871)). See the
+  [semantic query API design](./2026-09-27-level-restructure-designs.md#semantic-query-api-6871)
+  in the companion record.
 - **LSP state stays coarse**
   ([#6872](https://github.com/ubugeeei-prod/vize/issues/6872)):
   - Queries are per SFC block and per expression embed, not per node.
@@ -326,3 +307,8 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
   `.github/**`.
 - VRT, tsgo-required tests and ledger checks leave the PR tier.
 - Whole-repo generated ledgers stop being committed.
+
+## Order of work
+
+See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work)
+in the companion record.
