@@ -108,7 +108,19 @@ or idle measurement. Increasing request cost and memory growth require a
 separate production scaling investigation. The bounded workload above does
 not establish the abandoned all-provider scope.
 
-The same final runtime producer's unchanged nine-file TS-44 baseline passed
+Its retained job log shows the increasing cost directly. Elapsed values below
+are measured from the beginning of the measurement step, using log timestamps.
+
+| Open and provider-warmed files | Step elapsed |  Summed RSS |
+| -----------------------------: | -----------: | ----------: |
+|                          1,024 |      594.0 s | 3,456.3 MiB |
+|                          2,048 |    2,431.5 s | 6,378.9 MiB |
+|                          2,304 |    3,104.0 s | 7,138.5 MiB |
+
+Doubling 1,024 to 2,048 files took about four times the elapsed time. RSS grew
+roughly linearly over these checkpoints; its allocation owners are unknown.
+
+The same measured runtime producer's unchanged nine-file TS-44 baseline passed
 in [run 36240385542](https://github.com/ubugeeei-prod/vize/actions/runs/36240385542/job/108399647923),
 artifact `10905870609`. Three runs recorded maximum peak **286.4 MiB**,
 maximum idle **277.5 MiB**, maximum idle CPU **0.217%**, and keystroke p95
