@@ -17,7 +17,6 @@ mod dynamic_content;
 mod dynamic_events;
 mod dynamic_models;
 mod dynamic_slots;
-mod keep_alive;
 mod once_events;
 mod select_models;
 mod teleport;

@@ -1,3 +1,16 @@
+//! Isolated native, retained and official KeepAlive runtime comparisons.
+//! Retained compiles cannot change another binary's process-global walk probes.
+
+#![expect(
+    clippy::disallowed_macros,
+    clippy::disallowed_methods,
+    clippy::disallowed_types,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::unwrap_used,
+    reason = "tests assert by panicking and compare std-string fixtures"
+)]
+
 //! Cache reactivation, eviction, filters, updates and event continuity.
 
 use serde_json::{Value, json};
@@ -5,7 +18,9 @@ use vize_atelier_core::walk_probe::WalkCounts;
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
-use super::trace::trace;
+mod trace;
+
+use trace::trace;
 
 fn view(child: &str, label: &str, id: u32, events: Value) -> Value {
     json!({
