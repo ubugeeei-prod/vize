@@ -32,8 +32,8 @@ const ADMITTED: &[(&str, &str, JsxLang)] = &[
         JsxLang::Jsx,
     ),
     (
-        "logical and",
-        "const A = () => <div>{cond && <span>yes</span>}</div>;",
+        "boolean logical and",
+        "const A = () => <div>{!!cond && <span>yes</span>}</div>;",
         JsxLang::Jsx,
     ),
     (
@@ -170,11 +170,18 @@ const ADMITTED: &[(&str, &str, JsxLang)] = &[
 
 /// Cases that stay on the walker (`v-once` / `v-memo` on a JSX element are
 /// not projected to L2); parity holds either way.
-const OBSERVED: &[(&str, &str, JsxLang)] = &[(
-    "v-once",
-    "const A = () => <div><p v-once>{a}</p></div>;",
-    JsxLang::Jsx,
-)];
+const OBSERVED: &[(&str, &str, JsxLang)] = &[
+    (
+        "v-once",
+        "const A = () => <div><p v-once>{a}</p></div>;",
+        JsxLang::Jsx,
+    ),
+    (
+        "unknown logical and value (legacy scope, native pending)",
+        "const A = () => <div>{cond && <span>yes</span>}</div>;",
+        JsxLang::Jsx,
+    ),
+];
 
 fn compile(source: &str, lang: JsxLang, lane: SsrLane) -> std::vec::Vec<String> {
     let allocator = Allocator::new();

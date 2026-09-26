@@ -1,5 +1,6 @@
 //! HTML escaping utilities and child/control-flow processing for SSR codegen.
 
+mod branch_fragment;
 mod destructure;
 mod escape;
 mod match_scope;
@@ -196,9 +197,9 @@ impl<'a> SsrCodegenContext<'a> {
 
             self.indent_level += 1;
 
-            // Check if branch needs fragment
-            let needs_fragment =
-                !disable_nested_fragments && rendered_child_count(&branch.children) > 1;
+            let needs_fragment = !disable_nested_fragments
+                && (rendered_child_count(&branch.children) > 1
+                    || branch_fragment::single_text_branch(&branch.children));
 
             self.process_children_with_fallthrough_attrs(
                 &branch.children,
@@ -208,7 +209,6 @@ impl<'a> SsrCodegenContext<'a> {
                 inherit_attrs,
             );
             self.flush_push();
-
             self.indent_level -= 1;
         }
 

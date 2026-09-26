@@ -43,3 +43,9 @@ Thank you for the concrete reproductions that made these regressions actionable.
 Native JSX `<div>{...items}</div>` spreads the items into the children, as
 `@vue/babel-plugin-jsx` does, instead of rendering `toDisplayString(items)`.
 VDOM output supports it. Vapor and SSR report it as unsupported.
+
+## JSX rendering fix
+
+Native JSX `value && <Child/>` preserves falsy numbers such as `0` and `NaN`
+instead of rendering nothing. Boolean, nullish and empty-string children stay
+empty, and the condition is evaluated once per render or reactive update.

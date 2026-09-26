@@ -24,7 +24,7 @@ fn l2_vdom_admitted_cases_match_relief_codegen() {
         ),
         (
             "logical and child",
-            "const A = () => <ul>{ok && <li>{item}</li>}</ul>;",
+            "const A = () => <ul>{!!ok && <li>{item}</li>}</ul>;",
             JsxLang::Jsx,
         ),
         (

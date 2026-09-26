@@ -255,6 +255,7 @@ fn lower_source_with_compat<'a>(
     });
     let mapper = SpanMapper::new(source);
     let mut lowerer = Lowerer::with_compat(bump, &mapper, compat, babel, scoping);
+    lowerer.collect_boolean_bindings(&parsed.program);
     for diagnostic in parsed.diagnostics {
         lowerer.report(diagnostic);
     }

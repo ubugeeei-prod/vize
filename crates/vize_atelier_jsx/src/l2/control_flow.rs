@@ -47,6 +47,11 @@ pub(super) fn lower_for<'a>(
     node: Option<NodeId>,
     cx: &mut ProjectCx,
 ) -> Result<Op<'a>, L2Refusal> {
+    // A lexical binding scope executes once and renders its body directly.
+    // It must never become ui.for, which iterates the source as a list.
+    if for_node.parse_result.match_scope {
+        return Err(L2Refusal::TransformedChild);
+    }
     let source_expr = lower_expression(allocator, &for_node.source)?;
     let value = match &for_node.value_alias {
         Some(value) => lower_expression(allocator, value)?,

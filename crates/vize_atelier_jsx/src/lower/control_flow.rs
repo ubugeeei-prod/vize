@@ -4,23 +4,14 @@
 //! Idiomatic JSX control flow is written as an expression child:
 //!
 //! ```jsx
-//! {cond && <X/>}             // -> single-branch IfNode
+//! {boolean && <X/>}          // -> single-branch IfNode
+//! {value && <X/>}            // -> scoped If with a falsy-value branch
 //! {cond ? <A/> : <B/>}       // -> two-branch IfNode
 //! {items.map((i) => <li/>)}  // -> ForNode (v-for)
 //! ```
 //!
-//! Without this pass every such child would fall through to
-//! [`InterpolationNode`](vize_relief::InterpolationNode) and be codegen'd as
-//! `_toDisplayString(expr)` (TEXT), silently mis-compiling the render output.
-//!
-//! The core transform consumes **pre-built** [`IfNode`]/[`ForNode`] children
-//! directly (no `v-if`/`v-for` directives required), and VDOM/Vapor codegen
-//! derive everything they need from `source` + the alias expressions, so the
-//! whole transform stays inside this lowering crate.
-//!
-//! Anything that is not confidently recognized as one of the three patterns
-//! returns `None`, so it falls back to today's interpolation behavior — no
-//! regressions.
+//! Shared transforms consume the pre-built If/For nodes. Unrecognized shapes
+//! still use interpolation; logical-and keeps its falsy primitive result.
 
 use oxc_ast::ast::{
     ArrowFunctionExpression, CallExpression, ConditionalExpression, Expression, Function,
@@ -59,24 +50,13 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     ) -> Option<TemplateChildNode<'a>> {
         match unwrap_parens(expr) {
             Expression::LogicalExpression(logical) => {
-                // `cond && <X/>`: render `<X/>` when `cond` is truthy.
                 if logical.operator != LogicalOperator::And {
                     // `||` / `??` are value coalescing, not conditional
                     // rendering — leave them to interpolation.
                     return None;
                 }
                 let branch_child = self.lower_jsx_expression(&logical.right)?;
-
-                let mut if_node = IfNode::new(self.bump(), self.mapper().location(container_span));
-                let condition = self.dyn_expr(logical.left.span());
-                let mut branch = IfBranchNode::new(
-                    self.bump(),
-                    Some(condition),
-                    self.mapper().location(logical.span),
-                );
-                branch.children.push(branch_child);
-                if_node.branches.push(branch);
-                Some(TemplateChildNode::If(self.boxed(if_node)))
+                Some(self.lower_logical_and(logical, branch_child, container_span))
             }
             Expression::ConditionalExpression(conditional) => {
                 self.lower_conditional(conditional, container_span)
@@ -344,7 +324,6 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     }
 }
 
-/// `true` if the expression is a JSX element or fragment (parens unwrapped).
 fn is_jsx(expr: &Expression<'_>) -> bool {
     matches!(
         unwrap_parens(expr),
@@ -360,11 +339,7 @@ fn unwrap_parens<'e, 'a>(mut expr: &'e Expression<'a>) -> &'e Expression<'a> {
     expr
 }
 
-/// View a non-empty `JSXExpression` as its inherited `Expression`.
-///
-/// `JSXExpression` is layout-compatible with `Expression` (it only adds the
-/// `EmptyExpression` discriminant), so the safe `as_expression` accessor returns
-/// the borrowed `Expression` for every non-empty case.
+/// View a non-empty `JSXExpression` through its safe inherited accessor.
 fn jsx_expression_as_expression<'e, 'a>(expr: &'e JSXExpression<'a>) -> Option<&'e Expression<'a>> {
     match expr {
         JSXExpression::EmptyExpression(_) => None,
