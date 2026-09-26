@@ -264,7 +264,7 @@ pub enum ComponentKind {
     Teleport,
     /// KeepAlive: VaporKeepAlive + createComponent
     KeepAlive,
-    /// Suspense: resolveComponent("Suspense") + createComponentWithFallback, slots wrapped with withVaporCtx
+    /// Suspense: renderer primitive + createComponent, using ordinary Vapor slots
     Suspense,
     /// Dynamic component: createDynamicComponent
     Dynamic,

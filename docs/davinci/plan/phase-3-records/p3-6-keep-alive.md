@@ -14,7 +14,7 @@ an `extend`-annotated slot function and a direct dynamic child receives the
 runtime's `SLOT_ROOT` flag (4). Both native and retained generation use this
 contract. Nested ordinary component slots restore the surrounding context.
 The two existing KeepAlive fixture expectations change for this correction;
-Suspense remains a separate unproved contract.
+Suspense has a separate [async lifecycle contract](p3-6-suspense.md).
 
 ## Evidence
 

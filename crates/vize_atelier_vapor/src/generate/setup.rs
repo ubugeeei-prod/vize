@@ -20,7 +20,7 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
             "createDynamicComponent" => 4,
             "VaporTeleport" => 5,
             "VaporKeepAlive" => 6,
-            "withVaporCtx" => 7,
+            "Suspense" => 7,
             "extend" => 7,
             "withDirectives" => 46,
             "withVaporDirectives" => 46,

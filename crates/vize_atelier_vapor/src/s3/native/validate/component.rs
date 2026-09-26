@@ -24,6 +24,7 @@ pub(super) fn component<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Res
         kind: match tag.value.text {
             "Teleport" => crate::ir::ComponentKind::Teleport,
             "KeepAlive" => crate::ir::ComponentKind::KeepAlive,
+            "Suspense" => crate::ir::ComponentKind::Suspense,
             _ => crate::ir::ComponentKind::Regular,
         },
         tag: tag.value.text,
@@ -101,7 +102,7 @@ fn static_props<'a>(
 /// bindings attach). Teleport has a separate checked runtime contract;
 /// other built-ins and self references stay on the legacy lane.
 fn component_tag(tag: &str) -> bool {
-    if matches!(tag, "Teleport" | "KeepAlive") {
+    if matches!(tag, "Teleport" | "KeepAlive" | "Suspense") {
         return true;
     }
     !matches!(

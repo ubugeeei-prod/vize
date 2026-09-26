@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/suspense.rs
+expression: segments
+---
+[
+    "1:23 \"p> </p>\\\"\" -> \"p>{{ wai\"",
+    "3:0 \"export f\" -> \"<Suspens\"",
+    "4:51 \"AsyncChi\" -> \"AsyncChi\"",
+    "6:5 \"default\\\"\" -> \"default>\"",
+    "6:15 \"() => {⏎\" -> \"<templat\"",
+    "10:5 \"fallback\" -> \"fallback\"",
+    "10:16 \"() => {⏎\" -> \"<templat\"",
+    "13:56 \"_ctx.wai\" -> \"waiting \" [waiting]",
+]

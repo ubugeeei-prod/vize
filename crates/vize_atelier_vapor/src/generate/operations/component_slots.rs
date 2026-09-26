@@ -14,7 +14,6 @@ pub(super) fn generate_slot_fn(
         .fn_exp
         .as_ref()
         .map(|fn_exp| ctx.push_slot_scope(fn_exp.content));
-    let legacy_context = kind == ComponentKind::Suspense;
     let keep_alive = kind == ComponentKind::KeepAlive;
     if keep_alive {
         ctx.use_helper("extend");
@@ -22,13 +21,6 @@ pub(super) fn generate_slot_fn(
             .as_ref()
             .map(|v| cstr!(" _extend(({}) => {{\n", v))
             .unwrap_or_else(|| String::from(" _extend(() => {\n"));
-        ctx.push(&param);
-    } else if legacy_context {
-        ctx.use_helper("withVaporCtx");
-        let param: String = slot_props_var
-            .as_ref()
-            .map(|v| cstr!(" _withVaporCtx(({}) => {{\n", v))
-            .unwrap_or_else(|| String::from(" _withVaporCtx(() => {\n"));
         ctx.push(&param);
     } else {
         // The slot function opens at the authored `<template #slot>`.
@@ -53,8 +45,6 @@ pub(super) fn generate_slot_fn(
     ctx.push("}");
     if keep_alive {
         ctx.push(", { _: 1 })");
-    } else if legacy_context {
-        ctx.push(")");
     }
     if slot_props_var.is_some() {
         ctx.pop_slot_scope();

@@ -17,6 +17,7 @@ mod order;
 mod select;
 mod slots;
 mod spread;
+mod suspense;
 mod teleport;
 mod tree;
 
@@ -175,6 +176,7 @@ pub(super) fn admit<'a>(
     slots::check(&nodes, &parents)?;
     teleport::check(&nodes)?;
     keep_alive::check(&nodes)?;
+    suspense::check(&nodes)?;
     model::check(&nodes)?;
     select::check(&nodes, &parents)?;
     once::check(&nodes, &parents)?;

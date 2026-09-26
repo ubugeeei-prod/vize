@@ -18,6 +18,7 @@ use vize_carton::Allocator;
 mod component_names;
 mod computed_dom;
 mod model_names;
+mod suspense;
 
 mod support;
 use support::{Lane, mapped, mapped_on};
