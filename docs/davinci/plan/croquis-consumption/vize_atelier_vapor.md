@@ -21,5 +21,5 @@ _None._
 | `BindingMetadata`  |        0 |   16 |
 | `Span`             |        0 |   20 |
 | `SymbolId`         |        0 |    4 |
-| `Croquis.bindings` |        0 |   42 |
+| `Croquis.bindings` |        0 |   44 |
 | `Croquis.symbols`  |        0 |    4 |
