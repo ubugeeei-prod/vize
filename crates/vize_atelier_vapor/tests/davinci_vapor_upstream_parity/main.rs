@@ -17,6 +17,7 @@ mod dynamic_models;
 mod dynamic_slots;
 mod teleport;
 mod select_models;
+mod once_events;
 mod trace;
 
 use serde_json::{Value, json};

@@ -189,7 +189,6 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<div v-for=\"x in (xs as any)\"></div>",
         "<div>{{ one as number }}</div>",
         "<div v-pre>{{ literal }}</div>",
-        "<div v-once @click=\"save\"></div>",
         "<input v-model.foo=\"text\" />",
         "<MyComp v-model:[field]=\"checked\" />",
         "<div :[key]=\"value\"></div>",
@@ -241,6 +240,9 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         VaporS3BridgeStatus::Legacy(LegacyReason::Selected)
     ));
 }
+
+#[path = "tests/once_events.rs"]
+mod once_events;
 
 #[test]
 fn native_event_families_are_admitted() {

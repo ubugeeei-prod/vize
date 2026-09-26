@@ -4,7 +4,14 @@ crates/vize_atelier_vapor/src/s3/tests.rs	@custom-event.capture
 crates/vize_atelier_vapor/src/s3/tests/attributes.rs	@keydown.enter
 crates/vize_atelier_vapor/src/s3/tests/components.rs	@change.once
 crates/vize_atelier_vapor/src/s3/tests/models.rs	@keydown.enter
+crates/vize_atelier_vapor/src/s3/tests/once_events.rs	@click.stop.prevent
+crates/vize_atelier_vapor/src/s3/tests/once_events.rs	@focus.capture
+crates/vize_atelier_vapor/src/s3/tests/once_events.rs	@click.once
+crates/vize_atelier_vapor/src/s3/tests/once_events.rs	@keydown.enter
 crates/vize_atelier_vapor/src/tests.rs	@click.stop
+crates/vize_atelier_vapor/tests/davinci_expr_reparse_floor.rs	@click.stop.prevent
+crates/vize_atelier_vapor/tests/davinci_expr_reparse_floor.rs	@focus.capture
+crates/vize_atelier_vapor/tests/davinci_expr_reparse_floor.rs	@keydown.enter
 crates/vize_atelier_vapor/tests/davinci_mounted_behavior/events.rs	@keydown.enter.stop
 crates/vize_atelier_vapor/tests/davinci_vapor_artifact.rs	@keydown.enter
 crates/vize_atelier_vapor/tests/davinci_vapor_artifact.rs	@click.stop
@@ -14,3 +21,7 @@ crates/vize_atelier_vapor/tests/davinci_vapor_artifact.rs	@keydown.enter
 crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs	@click.stop
 crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs	@keydown.enter.stop
 crates/vize_atelier_vapor/tests/davinci_vapor_native_budget.rs	@change.once
+crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/once_events.rs	@click.stop.prevent
+crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/once_events.rs	@keydown.enter.stop.prevent
+crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/once_events.rs	@click.once
+crates/vize_atelier_vapor/tests/davinci_vapor_upstream_parity/once_events.rs	@click.stop.prevent

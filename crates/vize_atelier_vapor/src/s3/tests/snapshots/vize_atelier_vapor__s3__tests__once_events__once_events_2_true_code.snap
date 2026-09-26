@@ -1,0 +1,22 @@
+---
+source: crates/vize_atelier_vapor/src/s3/tests/once_events.rs
+expression: native.code
+---
+import { child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, createInvoker as _createInvoker, withKeys as _withKeys, on as _on, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<main><button> </button></main>", true)
+_delegateEvents("keydown")
+
+export function render(_ctx) {
+  const n0 = t0()
+  const n1 = _child(n0)
+  const x1 = _txt(n1)
+  _on(n1, "focus", _createInvoker(e => _ctx.save(e)), {
+    capture: true
+  })
+  _on(n1, "click", _createInvoker(e => _ctx.save(e)), {
+    once: true
+  })
+  n1.$evtkeydown = _createInvoker(_withKeys($event => (_ctx.record(_ctx.label)), ["enter"]))
+  _setText(x1, _toDisplayString(_ctx.label))
+  return n0
+}

@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map.rs
+expression: segments
+---
+[
+    "1:23 \"button> \" -> \"button v\"",
+    "4:0 \"export f\" -> \"<button \"",
+    "7:16 \"title\\\", \" -> \"title=\\\"l\"",
+    "7:24 \"_ctx.lab\" -> \"label\\\" @\" [label]",
+    "8:37 \"_ctx.sav\" -> \"save\\\">{{\" [save]",
+    "9:32 \"_ctx.lab\" -> \"label }}\" [label]",
+]

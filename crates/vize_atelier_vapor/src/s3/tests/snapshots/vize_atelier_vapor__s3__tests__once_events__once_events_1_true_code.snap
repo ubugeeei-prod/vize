@@ -1,0 +1,18 @@
+---
+source: crates/vize_atelier_vapor/src/s3/tests/once_events.rs
+expression: native.code
+---
+import { child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setProp as _setProp, createInvoker as _createInvoker, withModifiers as _withModifiers, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<main><div><button> </button></div></main>", true)
+_delegateEvents("click")
+
+export function render(_ctx) {
+  const n0 = t0()
+  const n1 = _child(n0)
+  const n2 = _child(n1)
+  const x2 = _txt(n2)
+  _setProp(n1, "title", _ctx.label)
+  n2.$evtclick = _createInvoker(_withModifiers($event => (_ctx.record(_ctx.label)), ["stop","prevent"]))
+  _setText(x2, _toDisplayString(_ctx.label))
+  return n0
+}

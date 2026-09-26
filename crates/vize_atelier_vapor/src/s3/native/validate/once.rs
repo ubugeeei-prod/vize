@@ -1,4 +1,4 @@
-//! A small `v-once` surface: a plain element/text subtree with bound props.
+//! A `v-once` plain element/text subtree with bound props and static events.
 //! Control flow, components and other directives retain the existing lane
 //! until their one-time contracts are checked independently.
 
@@ -45,7 +45,9 @@ fn check_subtree(nodes: &[Node<'_>], index: usize, root: bool) -> Result<()> {
             _ => return Err(LegacyReason::Operation.into()),
         }
         if node.bindings.iter().any(|binding| {
-            binding.kind != BindingKind::Prop && !(root && binding.kind == BindingKind::Once)
+            !(binding.kind == BindingKind::Prop
+                || (binding.kind == BindingKind::Event && binding.dynamic_name.is_none())
+                || (root && binding.kind == BindingKind::Once))
         }) {
             return Err(LegacyReason::Operation.into());
         }

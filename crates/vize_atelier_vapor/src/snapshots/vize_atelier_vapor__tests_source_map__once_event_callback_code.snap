@@ -1,0 +1,15 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map.rs
+expression: code
+---
+import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';
+const t0 = _template("<button> </button>", true)
+_delegateEvents("click")
+
+export function render(_ctx) {
+  const n0 = t0()
+  const x0 = _txt(n0)
+  n0.$evtclick = _createInvoker((event) => _ctx.record(event.type))
+  _setText(x0, _toDisplayString(_ctx.label))
+  return n0
+}
