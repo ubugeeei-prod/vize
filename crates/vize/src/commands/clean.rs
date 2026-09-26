@@ -224,9 +224,12 @@ fn remove_path(path: &Path) -> Result<bool, std::io::Error> {
 
 fn remove_empty_artifact_roots(root: &Path, scope: CleanScope) {
     if matches!(scope, CleanScope::All | CleanScope::Project) {
-        for virtual_root in std::iter::once(vize_canon::project_virtual_root(root))
-            .chain(vize_canon::legacy_project_virtual_roots(root))
-        {
+        // The current user-cache `canon/projects` containers are shared by
+        // unrelated projects. Removing them while empty races a different
+        // project's create_dir_all or lock-file creation. Only remove the
+        // current namespace above; retain its shared ancestors. Legacy roots
+        // belong to this project/worktree and are no longer materialized.
+        for virtual_root in vize_canon::legacy_project_virtual_roots(root) {
             let Some(projects_dir) = virtual_root.parent() else {
                 continue;
             };

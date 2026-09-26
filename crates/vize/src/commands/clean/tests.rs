@@ -5,6 +5,9 @@ use super::{
 };
 use std::path::Path;
 
+#[cfg(target_os = "linux")]
+mod parallel;
+
 #[test]
 fn scoped_vize_artifact_dirs_can_target_each_root() {
     assert_eq!(
