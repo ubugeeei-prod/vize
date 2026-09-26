@@ -23,6 +23,7 @@ pub(crate) fn generate_imports(ctx: &GenerateContext) -> String {
             "withVaporCtx" => 7,
             "extend" => 7,
             "withDirectives" => 46,
+            "withVaporDirectives" => 46,
             "insert" => 9,
             "child" => 10,
             "next" => 11,

@@ -33,13 +33,13 @@ options: vapor
 --- INPUT ---
 <div v-focus:top.lazy="value" />
 --- OUTPUT ---
-import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, template as _template } from 'vue';
+import { resolveDirective as _resolveDirective, withVaporDirectives as _withVaporDirectives, template as _template } from 'vue';
 const t0 = _template("<div></div>", true)
 
 export function render(_ctx) {
   const _directive_focus = _resolveDirective("focus")
   const n0 = t0()
-  _withDirectives(n0, [[_directive_focus, _ctx.value, "top", { lazy: true }]])
+  _withVaporDirectives(n0, [[_directive_focus, () => (_ctx.value), () => ("top"), { "lazy": true }]])
   return n0
 }
 ===
@@ -48,13 +48,13 @@ options: vapor
 --- INPUT ---
 <MyComp v-focus:top.lazy="value" />
 --- OUTPUT ---
-import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withDirectives as _withDirectives, createComponentWithFallback as _createComponentWithFallback } from 'vue';
+import { resolveDirective as _resolveDirective, resolveComponent as _resolveComponent, withVaporDirectives as _withVaporDirectives, createComponentWithFallback as _createComponentWithFallback } from 'vue';
 
 export function render(_ctx) {
-  const _component_MyComp = _resolveComponent("MyComp")
   const _directive_focus = _resolveDirective("focus")
+  const _component_MyComp = _resolveComponent("MyComp")
   const n0 = _createComponentWithFallback(_component_MyComp, null, null, true)
-  _withDirectives(n0, [[_directive_focus, _ctx.value, "top", { lazy: true }]])
+  _withVaporDirectives(n0, [[_directive_focus, () => (_ctx.value), () => ("top"), { "lazy": true }]])
   return n0
 }
 ===

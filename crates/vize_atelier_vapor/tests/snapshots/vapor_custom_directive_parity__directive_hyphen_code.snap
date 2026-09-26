@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_vapor/tests/vapor_custom_directive_parity.rs
+expression: parent.code
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, resolveDirective as _resolveDirective, withVaporDirectives as _withVaporDirectives } from 'vue';
+
+export function render(_ctx) {
+  const _directive_focus = _resolveDirective("focus")
+  const _component_Child = _resolveComponent("Child")
+  const n0 = _createComponentWithFallback(_component_Child, { label: () => (_ctx.value) }, null, true)
+  _withVaporDirectives(n0, [[_directive_focus, () => (_ctx.value), undefined, { "foo-bar": true }]])
+  return n0
+}

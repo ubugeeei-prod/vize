@@ -17,17 +17,17 @@ All three are run by the existing compiler test suite / CI: VDOM and Vapor via
 the `coverage` runner (`cargo run -p vize_test_runner --bin coverage`), SSR via
 `cargo test -p vize_atelier_ssr`.
 
-| Input                                                | VDOM | Vapor                 | SSR   |
-| ---------------------------------------------------- | ---- | --------------------- | ----- |
-| `<div v-pre :id="raw" @click="raw">{{ raw }}</div>`  | yes  | yes                   | n/a\* |
-| `<div v-cloak>{{ msg }}</div>`                       | yes  | yes                   | n/a\* |
-| `<div v-focus:top.lazy="value" />` (element)         | yes  | yes                   | n/a\* |
-| `<MyComp v-focus:top.lazy="value" />` (component)    | yes  | KNOWN FAILURE (#1161) | n/a\* |
-| `<div v-once>{{ msg }}</div>`                        | yes  | yes                   | n/a\* |
-| `<div v-memo="[id]">{{ msg }}</div>`                 | yes  | not applicable\*\*    | n/a\* |
-| `<Teleport to="body"><span /></Teleport>`            | yes  | yes (VaporTeleport)   | yes   |
-| `<KeepAlive><component :is="current" /></KeepAlive>` | yes  | yes (VaporKeepAlive)  | n/a\* |
-| `<Suspense><AsyncComponent /></Suspense>`            | yes  | yes (fallback)        | yes   |
+| Input                                                | VDOM | Vapor                | SSR   |
+| ---------------------------------------------------- | ---- | -------------------- | ----- |
+| `<div v-pre :id="raw" @click="raw">{{ raw }}</div>`  | yes  | yes                  | n/a\* |
+| `<div v-cloak>{{ msg }}</div>`                       | yes  | yes                  | n/a\* |
+| `<div v-focus:top.lazy="value" />` (element)         | yes  | yes                  | n/a\* |
+| `<MyComp v-focus:top.lazy="value" />` (component)    | yes  | yes                  | n/a\* |
+| `<div v-once>{{ msg }}</div>`                        | yes  | yes                  | n/a\* |
+| `<div v-memo="[id]">{{ msg }}</div>`                 | yes  | not applicable\*\*   | n/a\* |
+| `<Teleport to="body"><span /></Teleport>`            | yes  | yes (VaporTeleport)  | yes   |
+| `<KeepAlive><component :is="current" /></KeepAlive>` | yes  | yes (VaporKeepAlive) | n/a\* |
+| `<Suspense><AsyncComponent /></Suspense>`            | yes  | yes (fallback)       | yes   |
 
 `yes` = a parity snapshot asserts the compiled output.
 
@@ -44,16 +44,14 @@ Vapor backend (Vapor uses fine-grained effects instead of memoized vnode
 sub-trees), so it is intentionally omitted from the Vapor matrix rather than
 marked as a failure.
 
-## Tracked known failure
+## Component directive payload regression
 
-`vapor/parity-core-directives :: parity custom directive on component (payload
-loss)` is registered in `tests/vize_test_runner/src/coverage.rs`
-(`KNOWN_FAILURES`). When a custom directive is applied to a **component**, the
-Vapor backend currently drops the directive entirely: it emits the component
-creation with no `_resolveDirective` / `_withDirectives`, losing the binding
-value, argument, and modifiers. The expected snapshot encodes the desired
-payload-preserving output (mirroring the VDOM backend) and therefore fails
-against today's compiler. This is intentional per the #1161 acceptance criteria
-("at least one snapshot fails on current Vapor custom-directive payload loss
-before the implementation fix"). The element-level custom-directive case
-(`v-focus:top.lazy` on a `<div>`) already preserves its payload and passes.
+The formerly failing `vapor/parity-core-directives :: parity custom directive on
+component (payload loss)` case now passes and is no longer exempted by the
+coverage runner. Both elements and components emit `withVaporDirectives` with
+reactive value and argument getters plus the original modifier object. Mounted
+comparisons with the pinned official compiler verify functional directive
+setup, effects, dynamic component replacement and cleanup. These are Vapor
+functional directives; the runtime's VDOM object-hook format is a different
+contract. The fixture records the runtime correction rather than weakening the
+payload-preservation expectation.
