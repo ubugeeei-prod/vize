@@ -2,12 +2,13 @@
 //! I/O, admission counters and profile attribution stay outside timing windows.
 
 mod davinci_production_perf {
+    pub mod attribution;
     pub mod corpus;
     pub mod measure;
     pub mod shapes;
 }
 
-use davinci_production_perf::{corpus, measure, shapes::Shape};
+use davinci_production_perf::{attribution, corpus, measure, shapes::Shape};
 use serde_json::json;
 use std::{env, fs, path::PathBuf};
 
@@ -29,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut shapes = Vec::new();
     for shape in Shape::ALL {
         shapes.push(if attribution_only {
-            measure::attribution(&corpus, shape)
+            attribution::run(&corpus, shape)?
         } else {
             measure::run(&corpus, shape)?
         });

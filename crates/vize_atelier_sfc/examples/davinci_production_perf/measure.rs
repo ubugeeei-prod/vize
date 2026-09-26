@@ -1,6 +1,7 @@
 //! Admission and output observations are separate from profile-disabled timing.
 
 use super::{
+    attribution::profile,
     corpus::{Input, hash},
     shapes::{Shape, compile, explicit_vapor_source},
 };
@@ -9,10 +10,10 @@ use std::{hint::black_box, time::Instant};
 use vize_atelier_sfc::{SfcCompileResult, SfcError, SfcParseOptions, parse_sfc};
 use vize_s0::{
     String, cstr,
-    profiler::{CounterSummary, ProfileExportOptions, global_profiler},
+    profiler::{CounterSummary, global_profiler},
 };
 
-fn compile_source(input: &Input, shape: Shape) -> Result<SfcCompileResult, SfcError> {
+pub(super) fn compile_source(input: &Input, shape: Shape) -> Result<SfcCompileResult, SfcError> {
     let descriptor = parse_sfc(
         &input.source,
         SfcParseOptions {
@@ -23,7 +24,7 @@ fn compile_source(input: &Input, shape: Shape) -> Result<SfcCompileResult, SfcEr
     compile(&descriptor, &input.filename, shape)
 }
 
-fn retained<R>(shape: Shape, f: impl FnOnce() -> R) -> R {
+pub(super) fn retained<R>(shape: Shape, f: impl FnOnce() -> R) -> R {
     let vapor = || vize_atelier_vapor::compile::benchmark::with_retained_lane(f);
     match shape {
         Shape::DomInline | Shape::DomModule => {
@@ -34,7 +35,7 @@ fn retained<R>(shape: Shape, f: impl FnOnce() -> R) -> R {
     }
 }
 
-fn lane(counters: &CounterSummary, backend: Shape) -> std::io::Result<String> {
+pub(super) fn lane(counters: &CounterSummary, backend: Shape) -> std::io::Result<String> {
     let mut selections = Vec::new();
     for entry in &counters.entries {
         let selection = [Shape::DomInline, Shape::Ssr, Shape::Vapor]
@@ -176,37 +177,6 @@ fn samples(inputs: &[&Input], shape: Shape) -> Value {
     })
 }
 
-fn profile(inputs: &[Input], shape: Shape, force_retained: bool) -> Value {
-    let profiler = global_profiler();
-    profiler.clear();
-    profiler.enable();
-    let batch = || {
-        for input in inputs {
-            drop(black_box(compile_source(input, shape)));
-        }
-    };
-    if force_retained {
-        retained(shape, batch);
-    } else {
-        batch();
-    }
-    profiler.disable();
-    let report = profiler.export_report(&ProfileExportOptions {
-        command: "davinci-production-perf-attribution",
-        allocation: None,
-        budget: Default::default(),
-    });
-    profiler.clear();
-    json!(report)
-}
-
-pub fn attribution(inputs: &[Input], shape: Shape) -> Value {
-    json!({
-        "shape": shape.id(), "selected_profile": profile(inputs, shape, false),
-        "retained_profile": profile(inputs, shape, true),
-    })
-}
-
 pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::Error>> {
     let selector_probe = selector_probe(shape)?;
     let profiler = global_profiler();
@@ -311,7 +281,7 @@ pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::
             Shape::Ssr => "SSR LegacyOnly scoped override; it does not emit a selection counter",
             Shape::Vapor => "Vapor legacy.selected scoped override",
         },
-        "selected_profile": profile(inputs, shape, false),
-        "retained_profile": profile(inputs, shape, true),
+        "selected_profile": profile(&all, shape, false),
+        "retained_profile": profile(&all, shape, true),
     }))
 }
