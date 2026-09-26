@@ -5,7 +5,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use vize_s0::{String, ToCompactString, cstr};
+use vize_s0::{String, ToCompactString};
 
 pub struct Input {
     pub filename: String,
@@ -32,7 +32,15 @@ fn collect(root: &Path, paths: &mut Vec<PathBuf>) -> std::io::Result<()> {
 }
 
 pub fn hash(bytes: &[u8]) -> String {
-    cstr!("{:x}", Sha256::digest(bytes))
+    hex(Sha256::digest(bytes).iter().copied())
+}
+
+fn hex(bytes: impl Iterator<Item = u8>) -> String {
+    let mut output = String::with_capacity(64);
+    for nibble in bytes.flat_map(|byte| [byte >> 4, byte & 0x0f]) {
+        output.push(char::from_digit(u32::from(nibble), 16).unwrap_or('0'));
+    }
+    output
 }
 
 pub fn load(root: &Path) -> std::io::Result<Vec<Input>> {
@@ -66,5 +74,5 @@ pub fn manifest_hash(inputs: &[Input]) -> String {
         hasher.update(input.sha256.as_bytes());
         hasher.update([0]);
     }
-    cstr!("{:x}", hasher.finalize())
+    hex(hasher.finalize().iter().copied())
 }

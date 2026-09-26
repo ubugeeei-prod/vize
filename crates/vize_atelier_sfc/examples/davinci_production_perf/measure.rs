@@ -37,6 +37,25 @@ fn retained<R>(shape: Shape, f: impl FnOnce() -> R) -> R {
 fn lane(counters: &CounterSummary, backend: Shape) -> std::io::Result<String> {
     let mut selections = Vec::new();
     for entry in &counters.entries {
+        let selection = [Shape::DomInline, Shape::Ssr, Shape::Vapor]
+            .iter()
+            .any(|shape| {
+                entry
+                    .name
+                    .strip_prefix(shape.namespace())
+                    .is_some_and(|suffix| {
+                        suffix == "accepted"
+                            || suffix == "rejected"
+                            || suffix.starts_with("legacy.")
+                    })
+            });
+        if selection && !entry.name.starts_with(backend.namespace()) && entry.total > 0 {
+            return Err(std::io::Error::other(cstr!(
+                "unexpected backend selection {} for {}",
+                entry.name,
+                backend.id()
+            )));
+        }
         let Some(suffix) = entry.name.strip_prefix(backend.namespace()) else {
             continue;
         };
