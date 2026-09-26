@@ -3,8 +3,8 @@ use super::{
     retained::Retained,
 };
 
-mod keep_alive;
 mod component_names;
+mod keep_alive;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Allocator;
 use vize_s3::{
@@ -244,7 +244,6 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
     ));
 }
 
-#[path = "tests/once_events.rs"]
 mod once_events;
 
 #[test]

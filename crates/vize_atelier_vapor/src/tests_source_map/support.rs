@@ -1,6 +1,8 @@
 //! Independent source-map decoder and compilation fixtures.
 
-use crate::{VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_with_experimental_options};
+use crate::{
+    VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_with_experimental_options,
+};
 use vize_carton::Allocator;
 
 const BASE64: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -119,4 +121,3 @@ pub(super) fn mapped_on(
     let segments = render(&with_map.code, source, &map);
     (with_map.code.as_str().into(), segments)
 }
-
