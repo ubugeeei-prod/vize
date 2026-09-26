@@ -276,7 +276,7 @@ pub(super) fn transform_component<'a>(
         tag: el.tag,
         props,
         slots,
-        asset: kind == ComponentKind::Regular || kind == ComponentKind::Suspense,
+        asset: kind == ComponentKind::Regular,
         once: false,
         dynamic_slots: has_dynamic_slot,
         kind,

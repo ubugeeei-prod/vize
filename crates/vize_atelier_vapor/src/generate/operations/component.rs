@@ -57,18 +57,18 @@ pub(super) fn generate_create_component(
 ) {
     let tag = &component.tag;
     let kind = component.kind;
-    let use_with_vapor_ctx = kind == ComponentKind::Suspense || kind == ComponentKind::KeepAlive;
+    let resolve_slot_components =
+        kind == ComponentKind::Suspense || kind == ComponentKind::KeepAlive;
 
     // Track if this component was already resolved by a parent (Suspense/KeepAlive)
     let was_already_resolved = ctx.is_component_resolved(tag);
 
     // For Suspense/KeepAlive, resolve inner components FIRST (before the outer component)
-    if use_with_vapor_ctx {
+    if resolve_slot_components {
         for slot in component.slots.iter() {
             for op in slot.block.operation.iter() {
                 if let OperationNode::CreateComponent(inner_comp) = op
-                    && (inner_comp.kind == ComponentKind::Regular
-                        || inner_comp.kind == ComponentKind::Suspense)
+                    && inner_comp.kind == ComponentKind::Regular
                     && !ctx.is_component_resolved(inner_comp.tag)
                 {
                     emit_component_resolution(
@@ -127,13 +127,9 @@ pub(super) fn generate_create_component(
             ("_VaporKeepAlive".to_compact_string(), "createComponent")
         }
         ComponentKind::Suspense => {
-            ctx.use_helper("createComponentWithFallback");
-            let comp_var = component_resolution_var(tag);
-            if !ctx.is_component_resolved(tag) {
-                emit_component_resolution(ctx, comp_var.as_str(), tag);
-                ctx.mark_component_resolved(tag);
-            }
-            (comp_var, "createComponentWithFallback")
+            ctx.use_helper("Suspense");
+            ctx.use_helper("createComponent");
+            ("_Suspense".to_compact_string(), "createComponent")
         }
         ComponentKind::Regular => {
             ctx.use_helper("createComponentWithFallback");

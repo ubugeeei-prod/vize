@@ -113,16 +113,15 @@ options: vapor
 --- INPUT ---
 <Suspense><AsyncComponent /></Suspense>
 --- OUTPUT ---
-import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, withVaporCtx as _withVaporCtx } from 'vue';
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, createComponent as _createComponent, Suspense as _Suspense } from 'vue';
 
 export function render(_ctx) {
   const _component_AsyncComponent = _resolveComponent("AsyncComponent")
-  const _component_Suspense = _resolveComponent("Suspense")
-  const n1 = _createComponentWithFallback(_component_Suspense, null, {
-    "default": _withVaporCtx(() => {
+  const n1 = _createComponent(_Suspense, null, {
+    "default": () => {
       const n0 = _createComponentWithFallback(_component_AsyncComponent)
       return n0
-    })
+    }
   }, true)
   return n1
 }

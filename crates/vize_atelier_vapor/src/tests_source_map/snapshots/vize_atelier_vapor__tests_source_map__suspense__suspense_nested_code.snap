@@ -1,0 +1,30 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/suspense.rs
+expression: code
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, createComponent as _createComponent, Suspense as _Suspense, child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createIf as _createIf, template as _template } from 'vue';
+const t0 = _template("<p> </p>")
+const t1 = _template("<main><!----><i>tail</i></main>", true)
+
+export function render(_ctx) {
+  const n0 = t1()
+  const n1 = _child(n0)
+  _setInsertionState(n0, n1)
+  const n2 = _createIf(() => (_ctx.visible), () => {
+    const _component_AsyncChild = _resolveComponent("AsyncChild")
+    const n8 = _createComponent(_Suspense, { timeout: () => (_ctx.limit) }, {
+      "default": () => {
+        const n4 = _createComponentWithFallback(_component_AsyncChild)
+        return n4
+      },
+      "fallback": () => {
+        const n6 = t0()
+        const x6 = _txt(n6)
+        _renderEffect(() => _setText(x6, _toDisplayString(_ctx.waiting)))
+        return n6
+      }
+    }, true)
+    return n8
+  })
+  return n0
+}

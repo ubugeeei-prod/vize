@@ -13,9 +13,10 @@ P3-6's complete surface and performance acceptance remain open.
 - [Static events in once subtrees](p3-6-once-events.md)
 - [Teleport targets and cleanup](p3-6-teleport.md)
 - [KeepAlive cache lifetimes](p3-6-keep-alive.md)
+- [Asynchronous Suspense lifetimes](p3-6-suspense.md)
 - [Retained custom directive payloads](p3-6-custom-directives.md)
 
-Computed prop names on Teleport and KeepAlive remain unproved. Their checked
+Computed prop names on Teleport, KeepAlive and Suspense remain unproved. Their checked
 schemas reject such names even when the raw JavaScript happens to spell a known
 prop. Ordinary component computed names have their own wider contract.
 
