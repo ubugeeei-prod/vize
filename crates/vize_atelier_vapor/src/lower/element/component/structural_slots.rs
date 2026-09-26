@@ -2,6 +2,7 @@
 
 use super::{TransformContext, slots::resolve_named_slot, transform_children};
 use crate::ir::{IRSlot, IRSlotControl, IRSlotLoop};
+use vize_atelier_core::walk_probe::{WalkStage, record_visits};
 use vize_atelier_core::{
     ElementNode, ExpressionNode, IfBranchNode, PropNode, SimpleExpressionNode, SourceLocation,
     TemplateChildNode,
@@ -52,6 +53,20 @@ pub(super) fn lower<'a>(
     ctx: &mut TransformContext<'a>,
     child: &TemplateChildNode<'a>,
 ) -> Option<IRSlot<'a>> {
+    lower_node(ctx, child, false)
+}
+
+fn lower_node<'a>(
+    ctx: &mut TransformContext<'a>,
+    child: &TemplateChildNode<'a>,
+    controlled: bool,
+) -> Option<IRSlot<'a>> {
+    // Control metadata replaces transform_children's visits to the control
+    // node and its template carriers; count the nodes this lowering consumes.
+    // Direct ordinary named templates retain their existing collection path.
+    if controlled || matches!(child, TemplateChildNode::If(_) | TemplateChildNode::For(_)) {
+        record_visits(WalkStage::VaporLower, 1);
+    }
     if let Some(element) = carrier(child) {
         return template(ctx, element);
     }
@@ -69,7 +84,7 @@ pub(super) fn lower<'a>(
             };
             let previous = ctx.structural_slot_spans;
             ctx.structural_slot_spans = true;
-            let slot = lower(ctx, child);
+            let slot = lower_node(ctx, child, true);
             ctx.structural_slot_spans = previous;
             let mut slot = slot?;
             let value = expression(ctx, node.value_alias.as_ref()?);
@@ -107,7 +122,7 @@ fn conditional<'a>(
     let [child] = branch.children.as_slice() else {
         return None;
     };
-    let mut slot = lower(ctx, child)?;
+    let mut slot = lower_node(ctx, child, true)?;
     if let Some(condition) = &branch.condition {
         slot.control = Some(IRSlotControl::If {
             condition: expression(ctx, condition),
