@@ -38,6 +38,18 @@ and Babel JSX 2.0.1. It also reproduces a real hydration warning for a ternary
 whose alternate is a text value: client Fragment markers are absent in SSR.
 The mounted regression targets the project's existing Vue Vapor RC runtime.
 
+The source-built fixed producer at `225b436e9f5d0ca6f7e28988ce28b27007386615`
+uses Rust 1.98.0, the default JSX feature set and the debug test profile. Its
+complete four-input, three-backend outputs are frozen in
+`tests/_fixtures/differential/jsx/falsy-and.fixed-legacy.json`. The test compares
+both code facets as UTF-8 bytes and diagnostics, maps and function names as
+complete structured data. This corpus is a product-specific companion while
+the shared JSX adapter remains unavailable. It records zero native credit.
+Two executions of that producer agreed on all 24 code facets and 128 runtime
+observations, including one initial read, reactive updates, warning-free
+hydration and keyed DOM retention. The artifact digest and producer recipe
+are retained in the fixture; comment-bearing raw HTML is a separate facet.
+
 This is a legacy correction, not a Davinci native acceptance claim. The L2
 projection refuses a synthetic lexical scope instead of treating it as ui.for;
 the existing default VDOM/SSR selection then uses the scope-capable legacy
@@ -48,7 +60,6 @@ backend. The boolean fast path keeps its existing native If projection.
 - Register a complete JSX adapter in the shared differential product registry.
   Its current compiler adapter owns only its exact SFC profiles; JSX fixtures
   do not enter the global Vue fixture walker.
-- Record a fresh source build and run all affected compiler/runtime gates.
 - Add the native JSX scope/value producer and compare its complete output
   byte-for-byte with the fixed legacy result. Native handled/equivalent credit
   remains zero for the unknown-value fixtures until that producer pair exists.

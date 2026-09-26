@@ -97,14 +97,18 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
 ### source
 const A = () => <div>{cond && <span>yes</span>}</div>;
 ### output
-import { ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
 
 function ssrRender(_ctx, _push, _parent, _attrs) {
   _push(`<div${_ssrRenderAttrs(_attrs)}>`)
-  if (cond) {
-    _push(`<span>yes</span>`)
-  } else {
-    _push(`<!---->`)
+  { const _jsx_value22 = cond
+    if (_jsx_value22) {
+      _push(`<span>yes</span>`)
+    } else if (typeof _jsx_value22 === "number" || typeof _jsx_value22 === "string" || typeof _jsx_value22 === "bigint") {
+      _push(`<!--[-->${_ssrInterpolate(_jsx_value22)}<!--]-->`)
+    } else {
+      _push(`<!---->`)
+    }
   }
   _push(`</div>`)
 }

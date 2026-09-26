@@ -36,8 +36,7 @@ const FIXTURES: [(&str, &str); 4] = [
     ),
 ];
 
-#[test]
-fn actual_values_updates_and_hydration_match_jsx_child_semantics() {
+fn compile_fixtures() -> Value {
     let mut fixtures = serde_json::Map::new();
     for (id, source) in FIXTURES {
         let mut outputs = serde_json::Map::new();
@@ -82,6 +81,72 @@ fn actual_values_updates_and_hydration_match_jsx_child_semantics() {
         }
         fixtures.insert(id.into(), json!({"source": source, "outputs": outputs}));
     }
+    Value::Object(fixtures)
+}
+
+#[test]
+fn fixed_legacy_output_matches_complete_frozen_bytes_and_metadata() {
+    let golden: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/jsx/falsy-and.fixed-legacy.json"
+    ))
+    .expect("authenticated source-built compiler fixture");
+    let actual = compile_fixtures();
+    let expected = &golden["fixtures"];
+    assert_eq!(
+        actual.as_object().expect("complete object").len(),
+        expected.as_object().expect("complete object").len()
+    );
+    for (id, source) in FIXTURES {
+        assert_eq!(
+            expected[id]["source"]
+                .as_str()
+                .expect("complete text facet")
+                .as_bytes(),
+            source.as_bytes()
+        );
+        for backend in ["vdom", "vapor", "ssr"] {
+            let output = &actual[id]["outputs"][backend];
+            let fixed = &expected[id]["outputs"][backend];
+            // Public text facets retain every byte, including final newlines.
+            for facet in ["code", "componentCode"] {
+                assert_eq!(
+                    output[facet]
+                        .as_str()
+                        .expect("complete text facet")
+                        .as_bytes(),
+                    fixed[facet]
+                        .as_str()
+                        .expect("complete text facet")
+                        .as_bytes(),
+                    "{id}/{backend}/{facet}"
+                );
+            }
+            // Complete structured facets are a separate comparison.
+            for facet in ["diagnostics", "map", "functionName"] {
+                assert_eq!(output[facet], fixed[facet], "{id}/{backend}/{facet}");
+            }
+            assert_eq!(
+                output
+                    .as_object()
+                    .expect("complete object")
+                    .keys()
+                    .collect::<Vec<_>>(),
+                fixed
+                    .as_object()
+                    .expect("complete object")
+                    .keys()
+                    .collect::<Vec<_>>()
+            );
+        }
+    }
+    assert_eq!(golden["native"]["handled"], 0);
+    assert_eq!(golden["native"]["equivalent"], 0);
+    assert_eq!(golden["native"]["pair"], "pending");
+}
+
+#[test]
+fn actual_values_updates_and_hydration_match_jsx_child_semantics() {
+    let fixtures = compile_fixtures();
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut child = Command::new("node")
         .arg(root.join("tests/tooling/support/jsx-falsy-and-runtime.mjs"))
