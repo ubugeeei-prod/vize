@@ -34,6 +34,9 @@ issues are all closed.
 
 - **Record every decision and TODO in an issue or in `docs/`.** Never keep
   them only in session or agent memory.
+- **Record each decision in two places in the same change:** as a comment
+  on its issue, and in the
+  [decision record](./docs/davinci/decisions/2026-09-27-level-restructure.md).
 - **Keep PRs small** and give them conventional titles, e.g.
   `refactor(l1): …`.
 - **Put moves in move-only commits.** Git rename detection then keeps

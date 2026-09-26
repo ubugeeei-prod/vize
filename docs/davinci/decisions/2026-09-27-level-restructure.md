@@ -225,18 +225,62 @@ detailed design is in the
   lane selection only, and the other `vize_atelier_*` crates become thin
   shells that select a lane and fall back to legacy.
 
+## Script side
+
+Tracked in [#6844](https://github.com/ubugeeei-prod/vize/issues/6844). The
+detailed design is in the
+[#6844 design comment](https://github.com/ubugeeei-prod/vize/issues/6844#issuecomment-5847967507).
+
+- **L1** parses each script block with the language provider (oxc AST plus
+  spans).
+- **Macros** (`defineProps`, `defineEmits`, …) go through a pattern table
+  keyed by callee name, the same way directives do.
+- **L2 core** holds scopes, symbols, imports/exports and references.
+- **L2 `framework::vue`** holds binding kinds, the
+  props/emits/model/slots contract and reactivity facts. It feeds the
+  identifier-resolution table that L4 uses.
+- **Scope and symbol analysis is one lightweight, Vue-focused walk** that
+  every product shares. It does not use `oxc_semantic`. When a product needs
+  more, extend that walk instead of adding a second analysis. Instruction
+  counts gate it
+  ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868)).
+- **Setup output is span-level rewriting** in L4 `module/`, following the
+  MagicString model.
+- **Cross-file type resolution is lazy.** Only types referenced by macros
+  are resolved. They are resolved through the project model
+  ([#6874](https://github.com/ubugeeei-prod/vize/issues/6874)) and cached in
+  the resident tier.
+
 ## Dialects, languages, frameworks
 
 Tracked in [#6841](https://github.com/ubugeeei-prod/vize/issues/6841),
 [#6842](https://github.com/ubugeeei-prod/vize/issues/6842) and
-[#6843](https://github.com/ubugeeei-prod/vize/issues/6843).
+[#6843](https://github.com/ubugeeei-prod/vize/issues/6843). The detailed
+layout is in the
+[#6841 design comment](https://github.com/ubugeeei-prod/vize/issues/6841#issuecomment-5847986623).
 
-- Each level holds variant code in modules: `dialect/` (Vue variants: vue3,
-  vue2, vue1, vue0, petite, quirks), `lang/`, `framework/` and `markup/`.
-  Core modules never reference them, and a gate test enforces this.
-- One descriptor per file and one capability derivation replace
-  `LegacyDialectCapabilities` and `LegacyCaps`.
-- Quirks is a dialect. Vue 0.x and 1.x are implemented on Davinci.
+- **Per-level layout** (each level includes only the parts it needs):
+
+  ```
+  core
+  container/vue
+  markup/{html_core, vue}
+  profile/{document, component}
+  lang/{js, ts}
+  framework/vue/{feature/*, version.rs, quirks.rs}
+  registry.rs
+  ```
+
+- **Versions are const compositions of features** (`framework/vue/feature/*`
+  combined in `version.rs`). They replace `LegacyCaps` and
+  `LegacyDialectCapabilities`.
+- **One registry per level** (`registry.rs`) is the only place that names
+  variants.
+- **Core never references axis modules.** An import-path test in the PR tier
+  (T0) enforces this.
+- **Quirks is a feature set orthogonal to versions** (`quirks.rs`), and
+  `TemplateSyntaxMode` moves there. Vue 0.x and 1.x are implemented on
+  Davinci.
 - petite-vue gets L1/L2 support (document profile plus hooks), and lint and
   LSP read it. There are no L3/L4 targets for petite-vue.
 - `vize_dialect_moonbit` dissolves into per-level `lang/moonbit` modules.
