@@ -1,0 +1,238 @@
+{
+  "scope": "production Maestro LSP with all descendants, including Corsa; harness excluded",
+  "preset": "linux-x64-ci",
+  "workspace_files": 10000,
+  "open_files": 10000,
+  "unique_imported_providers": 16,
+  "provider_coverage": "16 of 10000 open providers receive prop completions",
+  "runs": 1,
+  "completed_runs": 1,
+  "complete": true,
+  "services": {
+    "editor": true,
+    "ecosystem": true,
+    "lint": true,
+    "typecheck": true
+  },
+  "server": "/home/runner/_work/vize/vize/target/ci-opt/vize",
+  "server_binary_mib": 47,
+  "build": "ci-opt: release, thin LTO, 16 codegen units",
+  "sampler": "Linux /proc process-tree summed RSS every 50 ms, from spawn through idle",
+  "idle_seconds": 10,
+  "acceptance": "record-only: broader workload than the separately enforced nine-file TS-44 baseline",
+  "command": [
+    "/home/runner/_work/vize/vize/node_modules/.pnpm/node@runtime+24.14.0/node_modules/node/bin/node",
+    "/home/runner/_work/vize/vize/tools/support/compat/davinci/lsp-resources.mjs",
+    "--server",
+    "target/ci-opt/vize",
+    "--files",
+    "10000",
+    "--warm-providers",
+    "16",
+    "--runs",
+    "1",
+    "--idle-seconds",
+    "10",
+    "--out",
+    "/home/runner/_work/_temp/lsp-resource.json"
+  ],
+  "github_run": "https://github.com/ubugeeei-prod/vize/actions/runs/36240038670",
+  "revision": "a4e59f078ce1bb42d27681938bc591bce3b12e24",
+  "per_run": [
+    {
+      "run": 1,
+      "dependencies": {
+        "corsaPath": "/home/runner/_work/vize/vize/node_modules/.pnpm/@typescript+typescript-linux-x64@7.0.2/node_modules/@typescript/typescript-linux-x64/lib/tsc",
+        "vuePath": "/home/runner/_work/vize/vize/node_modules/.pnpm/vue@3.6.0-beta.10_typescript@6.0.3/node_modules/vue"
+      },
+      "opened_files": 10000,
+      "metadata_requests": 16,
+      "successful_unique_provider_requests": 16,
+      "resident_document_witnesses": 10000,
+      "diagnostic_publications": 10140,
+      "initialized_ms": 100.53962199999998,
+      "controlled_edits_scope": "two open files before the bulk residency workload",
+      "body_edit_churn": {
+        "edits": 32,
+        "unchanged_prop_completion_replies": 32,
+        "final_version": 33
+      },
+      "controlled_edits": [
+        {
+          "edit": "body type error",
+          "version": 34,
+          "diagnostic": {
+            "code": 2322,
+            "message": "Type 'string' is not assignable to type 'number'.",
+            "range": {
+              "end": {
+                "character": 13,
+                "line": 11
+              },
+              "start": {
+                "character": 6,
+                "line": 11
+              }
+            },
+            "severity": 1,
+            "source": "vize/types"
+          }
+        },
+        {
+          "edit": "body change",
+          "prop_type": "string",
+          "elapsed_ms": 53.443137000000206
+        },
+        {
+          "edit": "public prop",
+          "version": 36,
+          "completion_type": "number",
+          "diagnostic": {
+            "code": 2322,
+            "message": "Type 'string' is not assignable to type 'number'.",
+            "range": {
+              "end": {
+                "character": 57,
+                "line": 16
+              },
+              "start": {
+                "character": 52,
+                "line": 16
+              }
+            },
+            "severity": 1,
+            "source": "vize/types"
+          }
+        },
+        {
+          "edit": "public emit",
+          "version": 37,
+          "hover": "```typescript\nconst Peer: VueComponent\n{\n  props: { label: string; file0?: number };\n  emits: { save: [value: number] };\n  slots: { default(props: { value: string }): unknown };\n  model: \"count\": number;\n}\n```\n\nVue component: Component00000.vue"
+        },
+        {
+          "edit": "public expose",
+          "version": 38,
+          "diagnostic": {
+            "code": 2339,
+            "message": "Property 'toUpperCase' does not exist on type 'number'.",
+            "range": {
+              "end": {
+                "character": 35,
+                "line": 4
+              },
+              "start": {
+                "character": 24,
+                "line": 4
+              }
+            },
+            "severity": 1,
+            "source": "vize/types"
+          }
+        },
+        {
+          "edit": "restore interface",
+          "version": 39,
+          "parent_diagnostics_cleared": true
+        }
+      ],
+      "warming_elapsed_ms": 70777.895699,
+      "current_rss_mib": 788.7,
+      "current_processes": [
+        {
+          "pid": 11911,
+          "parent": 11903,
+          "birth_ticks": 18292,
+          "rss_bytes": 568754176,
+          "cpu_seconds": 68.76,
+          "command": "vize"
+        },
+        {
+          "pid": 11969,
+          "parent": 11911,
+          "birth_ticks": 18295,
+          "rss_bytes": 87293952,
+          "cpu_seconds": 0.26,
+          "command": "tsc"
+        },
+        {
+          "pid": 12005,
+          "parent": 11911,
+          "birth_ticks": 18299,
+          "rss_bytes": 170967040,
+          "cpu_seconds": 3.07,
+          "command": "tsc"
+        }
+      ],
+      "rss_idle_mib": 1039.5,
+      "idle_cpu_pct": 143.83477027004227,
+      "idle_processes": [
+        {
+          "pid": 11911,
+          "parent": 11903,
+          "birth_ticks": 18292,
+          "rss_bytes": 695431168,
+          "cpu_seconds": 75.36,
+          "command": "vize"
+        },
+        {
+          "pid": 12005,
+          "parent": 11911,
+          "birth_ticks": 18299,
+          "rss_bytes": 256688128,
+          "cpu_seconds": 6.41,
+          "command": "tsc"
+        },
+        {
+          "pid": 13564,
+          "parent": 11911,
+          "birth_ticks": 26087,
+          "rss_bytes": 137887744,
+          "cpu_seconds": 0.55,
+          "command": "tsc"
+        }
+      ],
+      "elapsed_ms": 83569.31788300001,
+      "rss_peak_mib": 1120.8,
+      "peak_processes": [
+        {
+          "pid": 11911,
+          "parent": 11903,
+          "birth_ticks": 18292,
+          "rss_bytes": 694906880,
+          "cpu_seconds": 75.06,
+          "command": "vize"
+        },
+        {
+          "pid": 12005,
+          "parent": 11911,
+          "birth_ticks": 18299,
+          "rss_bytes": 244105216,
+          "cpu_seconds": 6.19,
+          "command": "tsc"
+        },
+        {
+          "pid": 13524,
+          "parent": 11911,
+          "birth_ticks": 26058,
+          "rss_bytes": 133955584,
+          "cpu_seconds": 0.63,
+          "command": "tsc"
+        },
+        {
+          "pid": 13564,
+          "parent": 11911,
+          "birth_ticks": 26087,
+          "rss_bytes": 102236160,
+          "cpu_seconds": 0.42,
+          "command": "tsc"
+        }
+      ],
+      "resource_samples": 1668
+    }
+  ],
+  "metrics": {
+    "rss_peak_mib": 1120.8,
+    "rss_idle_mib": 1039.5,
+    "idle_cpu_pct": 143.83477027004227
+  }
+}

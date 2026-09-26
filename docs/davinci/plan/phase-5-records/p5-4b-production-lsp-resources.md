@@ -71,6 +71,29 @@ The production job is part of the manually dispatched
 `davinci-resource-budgets.yml` workflow. Its artifact is named
 `production-lsp-resource-linux-x64-ci`.
 
+The bounded scope completed in [run
+36240038670](https://github.com/ubugeeei-prod/vize/actions/runs/36240038670/job/108398702433),
+resource `a4e59f078ce1bb42d27681938bc591bce3b12e24`, producer
+`049358b200baa82d99b04c40f95aa68d0e8fae7c`, artifact `10905478324`.
+The [complete measurement JSON](./p5-4b-production-lsp-resources.json) is
+retained with this record: one 83.569-second session, 10,000 open buffers and
+10,000 successful residency replies, sixteen metadata provider replies,
+32 body edits, and the controlled public-interface diagnostic oracle.
+
+| Observation                      |  Summed RSS |   Maestro |                Corsa descendants |
+| -------------------------------- | ----------: | --------: | -------------------------------: |
+| Peak                             | 1,120.8 MiB | 662.7 MiB | 458.0 MiB across three processes |
+| End of ten seconds without input | 1,039.5 MiB | 663.2 MiB |   376.3 MiB across two processes |
+
+The input-idle window still had background work: cumulative sampled tree CPU
+was **143.8348%**, summed across cores and retaining exited children's last
+observed counters. This is not settled idle. An earlier successful run,
+`36239737301`, used a net live-process CPU difference that undercounted checker
+churn; its CPU result is superseded. Multiple checker children are observed,
+not proof of a leak: the client owns native/editor transports and may briefly
+overlap a replacement session with its predecessor during project reload.
+No broader RSS or CPU ceiling is claimed.
+
 The earlier strict attempt requested a native prop completion after every
 open batch, intending to warm all 10,000 interface providers. [Run
 36236392245](https://github.com/ubugeeei-prod/vize/actions/runs/36236392245/job/108388832165)
@@ -90,3 +113,25 @@ Three runs recorded maximum peak **285.6 MiB**, maximum idle **281.5 MiB**,
 maximum idle CPU **0.133%**, and keystroke p95 **30.0 ms**, within the
 existing pinned ceilings. Its wider provider loop was cancelled after the
 earlier timeout diagnosis; it is not a completed 10k observation.
+
+## Scaling followup
+
+Source inspection establishes repeated project-wide work in the strict sweep:
+
+- Native prop completion opens a canonical project after obtaining structural
+  interface metadata (`completion/template/component_native.rs`).
+- Every open canonical request snapshots all open Corsa overlays, canonicalizes
+  their paths, and sorts/hashes every overlay's bytes for a context fingerprint.
+- The per-host Canon context cache holds eight entries. Distinct host requests
+  miss it; rebuilding registers previous live project sources and regenerates
+  their Vue projections (`vue_dependencies_alias/context/build.rs`).
+- Each rebuilt context stamps its source closure, materializes the project
+  union, and returns cloned materialized source text and mapping tables.
+
+This repeated growing-project work is consistent with the observed time curve;
+its individual contributions have not been profiled. The old strict log only
+has summed RSS, so its 7,138.5 MiB cannot be attributed to Maestro or Corsa.
+The bounded artifact records that attribution. Canon bridge profiling is
+disabled by the current Maestro bridge configuration, and overlay counters
+are test-only. A separate Canon/Maestro scaling change must preserve unsaved
+dependency freshness and live project membership while reducing this work.
