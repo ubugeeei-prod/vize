@@ -158,7 +158,7 @@ pub const L2: LayerCrate = LayerCrate {
 pub const L3: LayerCrate = LayerCrate {
     id: "l3",
     crate_alias: "vize_l3",
-    package: "vize_impeto",
+    package: "vize_l3",
     role: "reactivity and backend scheduling IR",
 };
 
@@ -244,7 +244,7 @@ mod tests {
         assert_eq!(L0.package, "vize_carton");
         assert_eq!(L1.package, "vize_l1");
         assert_eq!(L2.package, "vize_l2");
-        assert_eq!(L3.package, "vize_impeto");
+        assert_eq!(L3.package, "vize_l3");
         assert_eq!(L1_TO_L2.package, "vize_l1_to_l2");
     }
 

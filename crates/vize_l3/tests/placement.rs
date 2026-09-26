@@ -12,10 +12,10 @@ mod placement {
 }
 
 use placement::fixture::{Build, JS, LIT, fixture};
-use vize_impeto::op::{OpId, OpKind};
-use vize_impeto::placement::{Placement, PlacementRecord, PlacementSet, annotate};
-use vize_impeto::verify::verify;
 use vize_l0::Allocator;
+use vize_l3::op::{OpId, OpKind};
+use vize_l3::placement::{Placement, PlacementRecord, PlacementSet, annotate};
+use vize_l3::verify::verify;
 
 use Placement::{Cache, Group, Hoist};
 
@@ -167,7 +167,7 @@ fn handlers_under_a_for_scope_never_cache() {
     build.op(0, OpKind::For, 0, (0, 50), true);
     build.operand(
         0,
-        vize_impeto::operand::OperandRole::ForSource,
+        vize_l3::operand::OperandRole::ForSource,
         None,
         JS,
         "items",

@@ -9,9 +9,9 @@
 
 - **Naming** → charter #11. Stage aliases are the primary implementation names
   (`vize_l1`, `vize_l2`, `vize_l3`, `vize_l1_to_l2`). L1 has already been
-  mechanically renamed from Sinopia; L3 currently keeps the `vize_impeto`
-  package id; remaining art names stay courtesy aliases and, where not yet
-  renamed, historical package ids until their own rename PRs land.
+  mechanically renamed from Sinopia; L3 now uses the physical `vize_l3`
+  package id. Remaining type and serialized codenames are tracked in #6832;
+  product art names remain outside the level rename scope.
 - **L3 scope** → charter #9. DOM + Vapor through L3; SSR thin L2→L4 path
   reading partition facts. Phase 3 measurements keep veto power.
 - **Incrementality** → charter #10. salsa in the resident tier only; fused

@@ -12,7 +12,7 @@ const ordinaryModuleRoots = [
   "crates/vize_carton",
   "crates/vize_croquis",
   "crates/vize_davinci",
-  "crates/vize_impeto",
+  "crates/vize_l3",
   "crates/vize_l2",
   "crates/vize_patina",
   "crates/vize_l1_to_l2",

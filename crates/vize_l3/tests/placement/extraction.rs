@@ -11,14 +11,14 @@ use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::pass::{
     Fusability, NoObserver, PassKind, Preserved, RemarkCollector, RemarkCounter,
 };
-use vize_impeto::extract::{
+use vize_l0::{Allocator, Span};
+use vize_l3::extract::{
     Decision, DecisionKind, Delta, EXTRACT, Extraction, Metric, Metrics, OptTier, Reason, extract,
 };
-use vize_impeto::op::{OpId, OpKind};
-use vize_impeto::optimize::{OPTIMIZE, optimize};
-use vize_impeto::placement::{ANNOTATE, Placement, annotate};
-use vize_impeto::verify::verify;
-use vize_l0::{Allocator, Span};
+use vize_l3::op::{OpId, OpKind};
+use vize_l3::optimize::{OPTIMIZE, optimize};
+use vize_l3::placement::{ANNOTATE, Placement, annotate};
+use vize_l3::verify::verify;
 
 const CANONICAL: Metrics = Metrics {
     emitted_size: 192,

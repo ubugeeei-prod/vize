@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use vize_carton::CompactString;
 use vize_davinci::summary::AlphaEntry;
-use vize_impeto::lattice::EffectKind;
+use vize_l3::lattice::EffectKind;
 
 use super::{AlphaSchema, ComponentContract, ReactivityContract, entries, serialize};
 use crate::Croquis;

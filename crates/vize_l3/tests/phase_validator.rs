@@ -1,8 +1,8 @@
-use vize_impeto::op::{
+use vize_l0::{Allocator, Span, String, cstr};
+use vize_l3::op::{
     EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
 };
-use vize_impeto::verify::verify;
-use vize_l0::{Allocator, Span, String, cstr};
+use vize_l3::verify::verify;
 
 fn base<'a>(allocator: &'a Allocator, phase: Phase) -> Program<'a> {
     let mut program = Program::new(allocator, phase);

@@ -1,8 +1,8 @@
 #![expect(clippy::indexing_slicing, reason = "tests assert by panicking")]
-use vize_impeto::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
-use vize_impeto::operand::{Operand, OperandRole as Role, OperandValue, ValueKind};
-use vize_impeto::verify::{ViolationCode, verify};
 use vize_l0::{Allocator, Span, cstr};
+use vize_l3::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
+use vize_l3::operand::{Operand, OperandRole as Role, OperandValue, ValueKind};
+use vize_l3::verify::{ViolationCode, verify};
 
 fn program(arena: &Allocator) -> Program<'_> {
     let mut program = Program::new(arena, Phase::Built);

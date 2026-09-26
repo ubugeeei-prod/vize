@@ -1,8 +1,8 @@
 //! Exact rejections for malformed records and committed choices.
 
-use vize_impeto::placement::Placement::{Cache, Group, Hoist, Inline};
-use vize_impeto::placement::annotate;
 use vize_l0::Allocator;
+use vize_l3::placement::Placement::{Cache, Group, Hoist, Inline};
+use vize_l3::placement::annotate;
 
 use super::fixture::{Build, JS, LIT, fixture, messages};
 

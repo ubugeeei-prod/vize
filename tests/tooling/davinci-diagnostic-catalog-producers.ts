@@ -95,7 +95,7 @@ export function croquisProblems(codes: string[], entries: Array<[string, Entry]>
 
 /** `ViolationCode::as_str` arms: variant name to `L3V00N`. */
 export function parseL3Codes(): Map<string, string> {
-  const source = read("crates", "vize_impeto", "src", "verify", "violation.rs");
+  const source = read("crates", "vize_l3", "src", "verify", "violation.rs");
   return stringArms(block(source, "pub const fn as_str"), "Self");
 }
 

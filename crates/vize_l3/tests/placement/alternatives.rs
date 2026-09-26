@@ -1,9 +1,9 @@
 //! Exact rejections for alternatives the canonical graph does not permit.
 
-use vize_impeto::op::OpKind;
-use vize_impeto::operand::{OperandRole, ValueKind};
-use vize_impeto::placement::Placement::{Cache, Group, Hoist, Inline};
 use vize_l0::Allocator;
+use vize_l3::op::OpKind;
+use vize_l3::operand::{OperandRole, ValueKind};
+use vize_l3::placement::Placement::{Cache, Group, Hoist, Inline};
 
 use super::fixture::{Build, JS, LIT, fixture, messages};
 
@@ -208,7 +208,7 @@ fn component_content_never_groups() {
     build.region(1, 0, 0, (10, 30));
     build.text(1, 1, (10, 20), (JS, "item"), true);
     build.text(2, 1, (20, 30), (JS, "item"), true);
-    vize_impeto::placement::annotate(&mut build.program);
+    vize_l3::placement::annotate(&mut build.program);
     assert_eq!(build.program.placements.as_slice(), []);
 
     build.record(2, &[Inline, Group], Some(1));
