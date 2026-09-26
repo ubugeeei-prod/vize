@@ -12,6 +12,7 @@ fn retains_authored_external_inputs_but_drops_external_node_modules() {
     super::super::resolve::retain_project_files(
         &mut files,
         &[app.clone(), shared.clone()],
+        &[],
         &package_root,
     );
 
@@ -54,8 +55,34 @@ fn retains_explicit_tsconfig_files_under_ancestor_node_modules() {
 
     let mut files = inputs.clone();
     files.push(ambient_types);
-    super::super::resolve::retain_project_files(&mut files, &inputs, &package_root);
+    super::super::resolve::retain_project_files(&mut files, &inputs, &[], &package_root);
     assert_eq!(files, inputs);
 
     let _ = std::fs::remove_dir_all(&workspace);
+}
+
+/// Explicit runs (`vize check src/a.tsx`) keep only the explicit inputs in
+/// `inputs`; the tsconfig `files` entries arrive through
+/// `register_explicit_ambient_imports` as program declarations. They are
+/// program roots like the inputs and must survive under an ancestor
+/// `node_modules`, while implicitly resolved `types` packages still drop.
+#[test]
+fn retains_explicit_run_program_declarations_under_ancestor_node_modules() {
+    let workspace = unique_case_dir("explicit-run-node-modules-declarations");
+    let package_root = workspace.join("app");
+    let app = package_root.join("src/a.tsx");
+    let jsx = workspace.join("preset/node_modules/vue/jsx.d.ts");
+    let ambient_types = workspace.join("node_modules/@types/ambient/index.d.ts");
+    let inputs = vec![app.clone()];
+    let program_declarations = vec![jsx.clone()];
+    let mut files = vec![app.clone(), jsx.clone(), ambient_types];
+
+    super::super::resolve::retain_project_files(
+        &mut files,
+        &inputs,
+        &program_declarations,
+        &package_root,
+    );
+
+    assert_eq!(files, vec![app, jsx]);
 }

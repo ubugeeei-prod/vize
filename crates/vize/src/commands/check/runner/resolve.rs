@@ -126,13 +126,20 @@ pub(super) fn project_root_has_package_boundary(project_root: &Path) -> bool {
 pub(super) fn retain_project_files(
     files: &mut Vec<PathBuf>,
     inputs: &[PathBuf],
+    program_declarations: &[PathBuf],
     project_root: &Path,
 ) {
     // Ambient `compilerOptions.types` packages can resolve from an ancestor
     // `node_modules` outside the source root. The virtual project extends the
     // real tsconfig and lets TypeScript load those packages normally. Explicit
-    // tsconfig `files` entries are program roots even when they live there.
-    let input_set: FxHashSet<_> = inputs.iter().map(PathBuf::as_path).collect();
+    // tsconfig `files` entries are program roots even when they live there:
+    // default runs carry them in `inputs`, explicit runs (`vize check src`)
+    // register them separately as `program_declarations`.
+    let input_set: FxHashSet<_> = inputs
+        .iter()
+        .chain(program_declarations)
+        .map(PathBuf::as_path)
+        .collect();
     files.retain(|path| {
         input_set.contains(path.as_path())
             || path.starts_with(project_root)

@@ -36,6 +36,14 @@ pub(super) struct RegisteredLocalImports {
     pub(super) package_routes: Vec<vize_canon::PackageRouteBinding>,
 }
 
+pub(super) struct RegisteredExplicitAmbientImports {
+    pub(super) package_routes: Vec<vize_canon::PackageRouteBinding>,
+    /// Declarations reached through the program tsconfig's `files`/`include`.
+    /// They are program roots even under an ancestor `node_modules`, so the
+    /// runner keeps them past `retain_project_files` like explicit inputs.
+    pub(super) program_declarations: Vec<PathBuf>,
+}
+
 #[derive(Clone, Copy)]
 pub(super) struct DefaultRunFileContext<'a> {
     pub(super) project_root: &'a Path,
@@ -175,6 +183,7 @@ pub(super) fn register_explicit_ambient_imports(
         package_routes,
         &mut import_session,
     )
+    .package_routes
 }
 
 pub(super) fn register_explicit_ambient_imports_with_session(
@@ -184,7 +193,7 @@ pub(super) fn register_explicit_ambient_imports_with_session(
     canonical_paths: &mut CanonicalPathCache,
     package_routes: &mut vize_canon::PackageRouteResolver,
     import_session: &mut LocalImportSession,
-) -> Vec<vize_canon::PackageRouteBinding> {
+) -> RegisteredExplicitAmbientImports {
     let keep_package_local =
         super::resolve::project_root_has_package_boundary(context.project_root);
     // Declarations reached through the program tsconfig's `files`/`include` are
@@ -236,10 +245,13 @@ pub(super) fn register_explicit_ambient_imports_with_session(
         .registrations
         .retain(|path| local_import_is_allowed(path, Some(context.explicit_input_root), true));
     files.extend(discovered.registrations);
-    files.extend(program_ambient_declarations);
+    files.extend(program_ambient_declarations.iter().cloned());
     files.sort();
     files.dedup();
-    discovered.package_routes
+    RegisteredExplicitAmbientImports {
+        package_routes: discovered.package_routes,
+        program_declarations: program_ambient_declarations,
+    }
 }
 
 fn should_register_explicit_ambient_declaration(path: &Path) -> bool {

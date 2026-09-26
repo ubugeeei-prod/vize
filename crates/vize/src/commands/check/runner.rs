@@ -164,6 +164,7 @@ fn prepare_and_execute(
     };
     let mut import_time = Duration::ZERO;
     let mut authored_imports = Vec::new();
+    let mut explicit_program_declarations = Vec::new();
     let mut package_routes = std::mem::take(&mut candidate.package_routes);
     let mut import_session = LocalImportSession::new(package_route_resolver);
     if !args.patterns.is_empty() || candidate.rebuild_supporting_files {
@@ -244,7 +245,7 @@ fn prepare_and_execute(
                 &candidate.files,
             );
         let import_start = Instant::now();
-        package_routes.extend(register_explicit_ambient_imports_with_session(
+        let registered = register_explicit_ambient_imports_with_session(
             &mut candidate.files,
             ExplicitAmbientImportContext::new(
                 &project_root,
@@ -258,13 +259,20 @@ fn prepare_and_execute(
             canonical_paths,
             package_route_resolver,
             &mut import_session,
-        ));
+        );
         import_time += import_start.elapsed();
+        package_routes.extend(registered.package_routes);
+        explicit_program_declarations = registered.program_declarations;
     }
     let project_root =
         resolve_project_root(program_tsconfig_path.as_deref(), cwd, &candidate.files);
     let logical_program_root = logical_program_root.unwrap_or_else(|| project_root.clone());
-    resolve::retain_project_files(&mut candidate.files, &candidate.inputs, &project_root);
+    resolve::retain_project_files(
+        &mut candidate.files,
+        &candidate.inputs,
+        &explicit_program_declarations,
+        &project_root,
+    );
     if candidate.files.is_empty() {
         return Ok(None);
     }
