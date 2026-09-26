@@ -16,6 +16,11 @@ on:
         required: false
         default: false
         type: boolean
+      production_only:
+        description: Measure whole-SFC shipping shapes on three independent reference runners
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}
@@ -46,6 +51,7 @@ env:
 
 jobs:
   criterion-ab:
+    if: ${{ !inputs.production_only }}
     name: criterion-ab
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
@@ -181,6 +187,7 @@ jobs:
           retention-days: 14
 
   dialect-guard:
+    if: ${{ !inputs.production_only }}
     name: dialect-guard
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -230,3 +237,73 @@ jobs:
             --on-bin target/on/ci-opt/vize \
             --out-dir "$GITHUB_WORKSPACE/dialect-guard-out" \
             --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
+
+  production-pairs:
+    if: ${{ inputs.production_only }}
+    name: production-pairs (${{ matrix.repetition }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        repetition: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate exact production comparison head
+        env:
+          BASE_SHA: ${{ inputs.base_sha }}
+          HEAD_SHA: ${{ inputs.head_sha }}
+          DISPATCH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD_SHA" == "$DISPATCH_SHA" ]]
+          [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
+          git merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: davinci-production-pairs-${{ matrix.repetition }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - name: Check scoped selector and benchmark compile contract
+        run: |
+          vp exec cargo test -p vize_atelier_vapor --features davinci-benchmark --lib compile::benchmark::tests
+          vp exec cargo clippy -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf -- -D warnings -D clippy::wildcard_imports
+      - name: Build before timed windows
+        run: vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-bench --example davinci_production_perf
+      - name: Measure shipping adapter pairs
+        env:
+          VIZE_BENCH_HEAD_SHA: ${{ inputs.head_sha }}
+        run: |
+          mkdir -p production-perf
+          target/ci-opt/examples/davinci_production_perf production-perf/samples.json
+          {
+            git rev-parse HEAD
+            rustc --version --verbose
+            uname -a
+            lscpu
+          } > production-perf/runner.txt
+      - name: Upload raw samples and separate attribution profiles
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: davinci-production-perf-${{ matrix.repetition }}
+          path: production-perf/
+          if-no-files-found: warn
+          retention-days: 30
