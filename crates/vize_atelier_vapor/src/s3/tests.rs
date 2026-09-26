@@ -3,7 +3,6 @@ use super::{
     retained::Retained,
 };
 
-#[path = "tests/component_names.rs"]
 mod component_names;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Allocator;

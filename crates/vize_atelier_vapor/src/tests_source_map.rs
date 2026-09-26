@@ -18,7 +18,6 @@ use super::{
 };
 use vize_carton::Allocator;
 
-#[path = "tests_source_map_component_names.rs"]
 mod component_names;
 
 const BASE64: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
