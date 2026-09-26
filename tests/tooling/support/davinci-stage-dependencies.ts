@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseToml } from "@iarna/toml";
+import { readMetadata as readCargoMetadata } from "../../../tools/support/compat/davinci/level-dependencies.mjs";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -30,13 +30,7 @@ export type Metadata = { packages: Package[] };
 export const metadata = readMetadata();
 
 export function readMetadata(): Metadata {
-  const result = spawnSync(
-    "cargo",
-    ["metadata", "--no-deps", "--format-version", "1", "--locked"],
-    { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
-  );
-  assert.equal(result.status, 0, result.stderr);
-  return JSON.parse(result.stdout) as Metadata;
+  return readCargoMetadata(repoRoot) as Metadata;
 }
 
 export function workspacePackage(metadata: Metadata, name: string): Package {
