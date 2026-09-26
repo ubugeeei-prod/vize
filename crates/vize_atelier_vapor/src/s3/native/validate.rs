@@ -20,6 +20,7 @@ mod spread;
 mod structural_slots;
 mod suspense;
 mod teleport;
+mod transition;
 mod tree;
 
 use std::borrow::Cow;
@@ -178,6 +179,7 @@ pub(super) fn admit<'a>(
     teleport::check(&nodes)?;
     keep_alive::check(&nodes)?;
     suspense::check(&nodes)?;
+    transition::check(&nodes)?;
     model::check(&nodes)?;
     select::check(&nodes, &parents)?;
     once::check(&nodes, &parents)?;

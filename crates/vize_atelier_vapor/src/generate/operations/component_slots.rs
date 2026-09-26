@@ -1,4 +1,4 @@
-use crate::ir::{ComponentKind, IRSlot};
+use crate::ir::{ComponentKind, IRSlot, OperationNode};
 use vize_carton::{FxHashMap, String, cstr};
 
 use super::super::{context::GenerateContext, generate_block};
@@ -15,7 +15,18 @@ pub(super) fn generate_slot_fn(
         .as_ref()
         .map(|fn_exp| ctx.push_slot_scope(fn_exp.content));
     let keep_alive = kind == ComponentKind::KeepAlive;
-    if keep_alive {
+    let transition = matches!(
+        kind,
+        ComponentKind::Transition | ComponentKind::TransitionGroup
+    );
+    let nonstable = keep_alive
+        || transition
+            && slot
+                .block
+                .operation
+                .iter()
+                .any(|op| matches!(op, OperationNode::If(_) | OperationNode::For(_)));
+    if nonstable {
         ctx.use_helper("extend");
         let param = slot_props_var
             .as_ref()
@@ -37,13 +48,16 @@ pub(super) fn generate_slot_fn(
     ctx.push_component_scope();
     let previous = ctx.keep_alive_slot;
     ctx.keep_alive_slot = keep_alive;
+    let previous_transition = ctx.transition_slot;
+    ctx.transition_slot = transition;
     generate_block(ctx, &slot.block, element_template_map);
     ctx.keep_alive_slot = previous;
+    ctx.transition_slot = previous_transition;
     ctx.pop_component_scope();
     ctx.deindent();
     ctx.push_indent();
     ctx.push("}");
-    if keep_alive {
+    if nonstable {
         ctx.push(", { _: 1 })");
     }
     if slot_props_var.is_some() {
