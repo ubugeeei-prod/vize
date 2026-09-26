@@ -216,15 +216,15 @@ options: vapor
 --- INPUT ---
 <KeepAlive><Component /></KeepAlive>
 --- OUTPUT ---
-import { resolveComponent as _resolveComponent, VaporKeepAlive as _VaporKeepAlive, createComponentWithFallback as _createComponentWithFallback, withVaporCtx as _withVaporCtx, createComponent as _createComponent } from 'vue';
+import { resolveComponent as _resolveComponent, VaporKeepAlive as _VaporKeepAlive, createComponentWithFallback as _createComponentWithFallback, extend as _extend, createComponent as _createComponent } from 'vue';
 
 export function render(_ctx) {
   const _component_Component = _resolveComponent("Component")
   const n1 = _createComponent(_VaporKeepAlive, null, {
-    "default": _withVaporCtx(() => {
+    "default": _extend(() => {
       const n0 = _createComponentWithFallback(_component_Component)
       return n0
-    })
+    }, { _: 1 })
   }, true)
   return n1
 }

@@ -96,14 +96,14 @@ options: vapor
 --- INPUT ---
 <KeepAlive><component :is="current" /></KeepAlive>
 --- OUTPUT ---
-import { createComponent as _createComponent, createDynamicComponent as _createDynamicComponent, VaporKeepAlive as _VaporKeepAlive, withVaporCtx as _withVaporCtx } from 'vue';
+import { createComponent as _createComponent, createDynamicComponent as _createDynamicComponent, VaporKeepAlive as _VaporKeepAlive, extend as _extend } from 'vue';
 
 export function render(_ctx) {
   const n1 = _createComponent(_VaporKeepAlive, null, {
-    "default": _withVaporCtx(() => {
-      const n0 = _createDynamicComponent(() => (_ctx.current), null, null, true)
+    "default": _extend(() => {
+      const n0 = _createDynamicComponent(() => (_ctx.current), null, null, 4)
       return n0
-    })
+    }, { _: 1 })
   }, true)
   return n1
 }

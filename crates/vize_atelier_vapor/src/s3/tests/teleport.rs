@@ -51,7 +51,7 @@ fn unproved_builtin_contracts_keep_explicit_legacy_routes() {
         r#"<Teleport to="body" v-model="value"><span>content</span></Teleport>"#,
         r#"<Teleport to="body" v-slot="p">{{ p.value }}</Teleport>"#,
         r#"<Teleport to="body"><template #default><span>content</span></template></Teleport>"#,
-        r#"<KeepAlive><MyComp /></KeepAlive>"#,
+        r#"<KeepAlive><MyComp /><AnotherComp /></KeepAlive>"#,
         r#"<Suspense><MyComp /></Suspense>"#,
         r#"<Transition><span>content</span></Transition>"#,
     ] {

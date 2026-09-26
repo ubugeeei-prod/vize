@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map.rs
+expression: segments
+---
+[
+    "2:0 \"export f\" -> \"<KeepAli\"",
+]

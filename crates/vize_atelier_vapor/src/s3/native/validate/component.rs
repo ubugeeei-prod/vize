@@ -21,10 +21,10 @@ pub(super) fn component<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Res
     }
     let props = static_props(values, Role::Tag, alloc)?;
     Ok(Content::Component {
-        kind: if tag.value.text == "Teleport" {
-            crate::ir::ComponentKind::Teleport
-        } else {
-            crate::ir::ComponentKind::Regular
+        kind: match tag.value.text {
+            "Teleport" => crate::ir::ComponentKind::Teleport,
+            "KeepAlive" => crate::ir::ComponentKind::KeepAlive,
+            _ => crate::ir::ComponentKind::Regular,
         },
         tag: tag.value.text,
         tag_span: (tag.value.span.start, tag.value.span.end),
@@ -100,7 +100,7 @@ fn static_props<'a>(
 /// bindings attach). Teleport has a separate checked runtime contract;
 /// other built-ins and self references stay on the legacy lane.
 fn component_tag(tag: &str) -> bool {
-    if tag == "Teleport" {
+    if matches!(tag, "Teleport" | "KeepAlive") {
         return true;
     }
     !matches!(

@@ -79,7 +79,6 @@ fn unsupported_component_shapes_select_exact_legacy_reasons() {
         (r#"<component is="view" />"#, Component),
         (r#"<component />"#, Component),
         (r#"<div :is="view"></div>"#, Binding),
-        (r#"<KeepAlive><MyComp /></KeepAlive>"#, Component),
         (r#"<MyComp @change.once="save" />"#, Component),
         (r#"<MyComp :key="id" />"#, Component),
         (r#"<MyComp key="k" />"#, Component),

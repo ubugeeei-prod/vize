@@ -343,3 +343,26 @@ fn once_event_handlers_keep_authored_mapping_units() {
         insta::assert_debug_snapshot!(format!("once_event_{case}_map"), segments);
     }
 }
+
+#[test]
+fn keep_alive_props_and_child_keep_authored_mapping_units() {
+    for (case, source) in [
+        (
+            "static",
+            r#"<KeepAlive include="First" max="2"><MyComp /></KeepAlive>"#,
+        ),
+        (
+            "dynamic",
+            r#"<KeepAlive :include="names" :max="limit"><component :is="views[selected]" :label="label" /></KeepAlive>"#,
+        ),
+    ] {
+        let (code, segments) = mapped_on(source, Lane::Selected);
+        assert_eq!(
+            (code.clone(), segments.clone()),
+            mapped_on(source, Lane::Legacy),
+            "{case}: code and every decoded segment"
+        );
+        insta::assert_snapshot!(format!("keep_alive_{case}_code"), code);
+        insta::assert_debug_snapshot!(format!("keep_alive_{case}_map"), segments);
+    }
+}

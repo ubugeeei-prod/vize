@@ -206,7 +206,7 @@ pub(super) fn generate_create_component(
             name.push_spanned(&ctx.spanned_at(slot.name.content, name_source));
             name.push_str("\":");
             ctx.push_spanned(&name);
-            generate_slot_fn(ctx, slot, element_template_map, use_with_vapor_ctx);
+            generate_slot_fn(ctx, slot, element_template_map, kind);
             if i < static_slots.len() - 1 || !dynamic_slots.is_empty() {
                 ctx.push(",");
             }
@@ -232,7 +232,7 @@ pub(super) fn generate_create_component(
                     component.id,
                     i
                 ));
-                generate_slot_fn(ctx, slot, element_template_map, false);
+                generate_slot_fn(ctx, slot, element_template_map, ComponentKind::Regular);
                 ctx.push(")\n");
                 ctx.deindent();
                 ctx.push_indent();
@@ -248,9 +248,9 @@ pub(super) fn generate_create_component(
 
         ctx.deindent();
         ctx.push_indent();
-        ctx.push("}, true)\n");
+        ctx.push(&cstr!("}}, {})\n", creation_flags(ctx, component)));
     } else {
-        ctx.push(", null, true)\n");
+        ctx.push(&cstr!(", null, {})\n", creation_flags(ctx, component)));
     }
 
     // v-show after component creation
@@ -262,5 +262,23 @@ pub(super) fn generate_create_component(
             component.id,
             resolved
         ));
+    }
+}
+
+fn creation_flags(
+    ctx: &GenerateContext<'_>,
+    component: &CreateComponentIRNode<'_>,
+) -> &'static str {
+    if ctx.keep_alive_slot
+        && component.parent.is_none()
+        && component.kind == ComponentKind::Dynamic
+        && component
+            .is_expr
+            .as_ref()
+            .is_none_or(|expression| !expression.is_static)
+    {
+        "4"
+    } else {
+        "true"
     }
 }
