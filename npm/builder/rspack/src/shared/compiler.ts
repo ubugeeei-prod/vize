@@ -2,6 +2,7 @@
 
 import { createHash } from "node:crypto";
 import * as native from "@vizejs/native";
+import { prependMappedJsxCode } from "../../../shared/source-map.ts";
 import type {
   CompiledModule,
   JsxCompileResultNapi,
@@ -90,13 +91,14 @@ export function compileJsxModule(
 
   const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
   let code = result.code;
-  // The native v3 map targets the unshifted render code; drop it once the
-  // inline-style injection prepends to `code` (#1533).
   let map = result.map ?? null;
   if (css) {
     const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
-    code = prependInlineStyleInjection(code, css, styleKey);
-    map = null;
+    ({ code, map } = prependMappedJsxCode(
+      code,
+      map,
+      prependInlineStyleInjection("", css, styleKey),
+    ));
   }
 
   return { code, map, warnings: result.warnings };

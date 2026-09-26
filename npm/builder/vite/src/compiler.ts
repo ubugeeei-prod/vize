@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import * as native from "@vizejs/native";
+import { prependMappedJsxCode } from "../../shared/source-map.ts";
 import type {
   CompiledModule,
   BatchFileInput,
@@ -266,13 +267,14 @@ export function compileJsxModule(
   // verbatim. Skipped under SSR, matching the SFC inline-CSS path.
   const css = (result.scopedStyles ?? []).map((style) => style.css).join("\n");
   let code = result.code;
-  // Prepending the inline-style injection shifts the render code, so the v3 map
-  // (which targets the unshifted render code) is dropped once we mutate `code`.
   let map = result.map ?? null;
   if (css && !options.ssr) {
     const styleKey = result.scopedStyles[0].scopeId.replace(/^data-v-/, "");
-    code = prependInlineStyleInjection(code, css, styleKey);
-    map = null;
+    ({ code, map } = prependMappedJsxCode(
+      code,
+      map,
+      prependInlineStyleInjection("", css, styleKey),
+    ));
   }
 
   return {
