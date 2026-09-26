@@ -8,12 +8,11 @@ Admission requires authored `:css="false"`. A Transition contains one implicit
 HTML root, optionally carrying a single `v-if` without an else branch. A
 TransitionGroup contains one keyed, direct HTML `v-for` root and a static
 `tag="ul"` or `tag="div"`. Root tags are `p`, `button`, `div`, `span` and `li`;
-plain HTML/text descendants are bounded to depth 16. Descendant bindings are
-ordinary props and events. The known enter/leave lifecycle listener names
+children are text/interpolations. Root bindings are ordinary props and events. The known enter/leave lifecycle listener names
 retain their authored expression ASTs.
 
 CSS transitions, appearance, modes, dynamic tags, computed wrapper props,
-spreads, components, named/scoped slots, multiple roots, nested controls,
+spreads, components, named/scoped slots, multiple roots, nested elements or controls,
 keyed Transition roots and other directives remain explicit legacy selections.
 These restrictions describe this native contract, not every capability of the
 published runtime. Full P3-6 acceptance remains open.

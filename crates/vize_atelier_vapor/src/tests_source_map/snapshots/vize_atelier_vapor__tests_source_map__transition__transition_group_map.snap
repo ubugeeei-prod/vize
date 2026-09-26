@@ -1,0 +1,13 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/transition.rs
+expression: segments
+---
+[
+    "1:23 \"li> </li\" -> \"li v-for\"",
+    "3:0 \"export f\" -> \"<Transit\"",
+    "9:17 \"_createF\" -> \"<li v-fo\"",
+    "9:35 \"_ctx.ite\" -> \"items\\\" :\" [items]",
+    "13:24 \"data-id\\\"\" -> \"data-id=\"",
+    "13:34 \"_for_ite\" -> \"item.id\\\"\"",
+    "14:40 \"_for_ite\" -> \"item.tex\"",
+]

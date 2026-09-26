@@ -7,7 +7,7 @@ use vize_carton::Allocator;
 const SOURCES: &[&str] = &[
     r#"<Transition :css="false"><p>{{ label }}</p></Transition>"#,
     r#"<Transition :css="false" @enter="enter" @leave="leave"><button v-if="show" @click="save">{{ label }}</button></Transition>"#,
-    r#"<main><Transition :css="false" @before-enter="beforeEnter" @enter-cancelled="cancel"><div v-if="visible"><span>{{ label }}</span></div></Transition><i>tail</i></main>"#,
+    r#"<main><Transition :css="false" @before-enter="beforeEnter" @enter-cancelled="cancel"><div v-if="visible">{{ label }}</div></Transition><i>tail</i></main>"#,
     r#"<TransitionGroup tag="ul" :css="false" @enter="enter" @leave="leave"><li v-for="item in items" :key="item.id" :data-id="item.id">{{ item.text }}</li></TransitionGroup>"#,
     r#"<TransitionGroup tag="div" :css="false"><span v-for="item in items" :key="item.id">{{ item.text }}</span></TransitionGroup>"#,
 ];
@@ -66,6 +66,7 @@ fn unproved_transition_shapes_remain_explicit_legacy() {
         r#"<Transition :css="false"><Child /></Transition>"#,
         r#"<Transition :css="false"><p v-if="show">one</p><p v-else>two</p></Transition>"#,
         r#"<Transition :css="false"><div><p v-if="show">nested</p></div></Transition>"#,
+        r#"<Transition :css="false"><div v-if="visible"><span>{{ label }}</span></div></Transition>"#,
         r#"<Transition :css="false"><p :key="id">keyed</p></Transition>"#,
         r#"<Transition :css="false"><template #default><p>slot</p></template></Transition>"#,
         r#"<Transition :css="false" :[name]="value"><p>computed</p></Transition>"#,
