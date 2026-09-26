@@ -200,6 +200,29 @@ The detailed op design is in the
   a differential-corpus fixture and a release note. Native Davinci output
   then matches the fixed output byte-for-byte.
 
+### Remaining JSX semantics
+
+Decided in the
+[#6885 follow-up comment](https://github.com/ubugeeei-prod/vize/issues/6885#issuecomment-5848385488).
+
+- **A runtime slots object** becomes the L2 op `SlotsObject { expr }`. Every
+  target supports it, and it is never dropped silently. The legacy lanes get
+  a diagnostic now ([#6889](https://github.com/ubugeeei-prod/vize/issues/6889)).
+- **Spread children** follow JSX semantics as a `DynamicChild` spread. The
+  legacy lane is fixed first
+  ([#6888](https://github.com/ubugeeei-prod/vize/issues/6888)).
+- **Attribute spellings normalize to the same L2 ops as templates:**
+  - `onClickCapture` and similar become `On` with modifiers.
+  - The `v-model` array forms and `v-models` become `Model`.
+  - `v-slots` and children-as-slots become `SlotContent` or `SlotsObject`.
+  - Spread props become ordered dynamic props.
+
+  Which spellings a dialect accepts is a dialect feature.
+
+- **Every equivalent oracle row gets a value-sensitive counterpart**
+  ([#6890](https://github.com/ubugeeei-prod/vize/issues/6890)), so an
+  "equivalent" verdict also covers runtime values such as falsy children.
+
 ## Type check
 
 Tracked in [#6849](https://github.com/ubugeeei-prod/vize/issues/6849) and [#6879](https://github.com/ubugeeei-prod/vize/issues/6879). The detailed design is in the
