@@ -134,7 +134,7 @@ fn only_proven_booleans_use_plain_if_and_value_scopes_decline_l2_lists() {
     ];
     for (condition, boolean) in cases {
         let source = format!(
-            "const flag = count > 0; const alias = flag; let mutable = true; const App = () => <div>{{{condition} && <span/>}}</div>;"
+            "const flag = count > 0; const alias = flag; let mutable = true; const App = () => <div>{{({condition}) && <span/>}}</div>;"
         );
         let allocator = Allocator::new();
         let output = lower_source(&allocator, allocator.as_oxc(), &source, JsxLang::Tsx);
@@ -168,6 +168,23 @@ fn only_proven_booleans_use_plain_if_and_value_scopes_decline_l2_lists() {
             );
         }
     }
+}
+
+#[test]
+fn same_named_parameter_does_not_inherit_a_boolean_const_proof() {
+    let allocator = Allocator::new();
+    let source = "const flag = true; const App = (flag) => <div>{flag && <span/>}</div>;";
+    let output = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    assert!(!output.has_errors());
+    let root = &output.roots[0];
+    let TemplateChildNode::Element(element) = &root.root.children[0] else {
+        panic!("authored div");
+    };
+    let TemplateChildNode::For(scope) = &element.children[0] else {
+        panic!("parameter's symbol is distinct from the outer boolean const");
+    };
+    assert!(scope.parse_result.match_scope);
+    assert!(root.l2.is_err());
 }
 
 #[test]

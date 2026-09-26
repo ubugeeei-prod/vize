@@ -152,6 +152,8 @@ for (const [id, fixture] of Object.entries(fixtures).filter(([id]) => id !== "lo
     const node = host();
     state.value = 0;
     const app = mount(backend, render, node, warnings);
+    await Vue.nextTick();
+    assert.equal(calls, 1, `${id}/${backend}: one initial evaluation`);
     let previousSpan = null;
     let previousTruthy = false;
     for (const [label, value] of values) {
