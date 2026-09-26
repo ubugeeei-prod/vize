@@ -144,3 +144,60 @@ jobs:
           name: resident-resource-${{ env.RESOURCE_PRESET }}
           path: ${{ runner.temp }}/resident-resource.json
           retention-days: 30
+
+  production-lsp-resource:
+    name: Production 10k open SFC process-tree RSS (record only)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - name: Install JS dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the repository Rust toolchain
+        run: rustup toolchain install || rustup show active-toolchain
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: davinci-resource
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build the production server
+        run: >-
+          cargo build --profile ci-opt -p vize
+          --config 'profile.ci-opt.inherits="release"'
+          --config 'profile.ci-opt.lto="thin"'
+          --config 'profile.ci-opt.codegen-units=16'
+      - name: Verify the protocol and controlled edit oracle
+        run: >-
+          vp exec node tools/support/compat/davinci/lsp-resources.mjs
+          --server target/ci-opt/vize --files 2 --runs 1 --idle-seconds 10
+          --out "${RUNNER_TEMP}/lsp-resource-smoke.json"
+      - name: Measure 10000 production providers, open buffers, and Corsa
+        run: >-
+          vp exec node tools/support/compat/davinci/lsp-resources.mjs
+          --server target/ci-opt/vize --files 10000 --runs 3 --idle-seconds 10
+          --out "${RUNNER_TEMP}/lsp-resource.json"
+      - name: Summarize the actual scope and every process
+        if: ${{ !cancelled() }}
+        run: |
+          {
+            echo '### Production Maestro LSP: 10000 open and metadata-warmed SFC providers'
+            echo 'Maestro and all Corsa descendants are included; the Node harness is excluded.'
+            echo 'The isolated resident example and nine-file TS-44 baseline remain separate.'
+            echo '```json'
+            cat "${RUNNER_TEMP}/lsp-resource.json" || cat "${RUNNER_TEMP}/lsp-resource-smoke.json"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ !cancelled() }}
+        with:
+          name: production-lsp-resource-linux-x64-ci
+          path: ${{ runner.temp }}/lsp-resource*.json
+          retention-days: 30
