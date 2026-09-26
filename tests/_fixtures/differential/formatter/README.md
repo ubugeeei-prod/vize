@@ -44,10 +44,15 @@ artifacts never use `.vue` suffixes. The sibling `differential` directory does
 not enter `_projects` resident tuples, TS-42 roots, fuzz globs or the canonical
 146-project registry.
 
-Before the fixture PR is published, regenerate existing L2/L3 Folios and the
-L2 generated remarks backlog with their actual tests, preserve old rows, and
-verify without UPDATE. Measure Canon's exact 64 companion gate; its eligible
-diagnostic rows are expected unchanged for these static/v-pre templates, but
-source inspection is not a passing run. Those corpus measurements and this branch's source-built CI gate are pending.
-The separately recorded candidate CLI capture has passed; it does not create
-a CI-profile build receipt for the downloaded Release artifact.
+Official L2/L3 generators and normal-mode checks have passed on the actual
+fixture branch using warmed targets. L2: 445 files, 1028 remarks (156 applied,
+872 missed); L3: 445 files, 150 remarks (15 applied, 135 missed). Exactly two
+membership rows in each baseline and two applied L2 rows belong to these new
+inputs. Removing only those new-input rows restores each old baseline SHA;
+the backlog changes only its count summary. Canon's feature-gated check passed
+with its unchanged 64 diagnostic comparisons. See `corpus-integration.json`
+for actual commands, source identity, log hashes and old-byte proofs.
+
+This branch's fresh source-built CLI Actions gate remains pending. Candidate
+CLI capture passed separately and never creates a CI-profile receipt for the
+downloaded Release artifact. Native formatter acceptance remains zero.

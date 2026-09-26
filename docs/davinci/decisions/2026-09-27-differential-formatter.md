@@ -28,7 +28,13 @@ formatter history provenance from [#6882](https://github.com/ubugeeei-prod/vize/
   Folios and generated remarks backlog in the same fixture PR, preserving old
   rows, and measure Canon's companion diagnostic count. `_projects` resident,
   TS-42 explicit roots and canonical real-project registration are unchanged.
-- Candidate CLI capture is measured; branch CI, native execution, and existing
-  corpus baseline generation remain pending. The downloaded Release artifact
-  receives its real run/artifact receipt, never a fabricated CI build stamp.
-  Required corpus measurements follow the verified release boundary.
+- Candidate CLI capture and warm official corpus integration are measured.
+  L2/L3 normal-mode checks pass at 445 files; L2 adds two applied remarks,
+  keeping missed 872 unchanged, and L3 remark counts stay unchanged. Removing
+  exactly the new inputs' membership/remark rows restores both old baseline
+  hashes; generated backlog changes only its count summary. Canon's targeted
+  diagnostic gate measured the unchanged 64 comparisons. The fixture's
+  `corpus-integration.json` records actual commands, source and byte proofs.
+- Fresh branch CLI Actions and native execution remain pending. The downloaded
+  Release artifact retains its real run/artifact receipt, never a fabricated
+  CI build stamp. Public actions remain on hold while publishing completes.
