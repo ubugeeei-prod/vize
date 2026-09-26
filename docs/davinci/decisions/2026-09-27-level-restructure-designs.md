@@ -178,6 +178,28 @@ JSX semantics has two axes:
   shared with Solid is left to
   [#6859](https://github.com/ubugeeei-prod/vize/issues/6859).
 
+### JSX L2 ops
+
+The detailed op design is in the
+[#6885 design comment](https://github.com/ubugeeei-prod/vize/issues/6885#issuecomment-5848360240).
+
+- **`ComponentDef { exec: ReRender | RunOnce, body }`.** The execution model
+  is context on the component definition, not a per-node flag. SFC templates
+  share the same concept.
+- **`DynamicChild { expr }`** is its own op, separate from `Interpolation`.
+- **`RenderExpr { expr, regions }`** holds JSX nested inside expressions in
+  the babel and vue-jsx-vapor dialects.
+- **Structural lowering happens only when it preserves semantics.**
+  `cond && <A/>` becomes an `If` only when `cond` is provably boolean.
+  Otherwise it becomes an `If` whose falsy branch renders the value of
+  `cond`, or it stays a `DynamicChild`.
+- **Today's native lowering breaks this rule.** It turns `cond && <X/>` into
+  an `If` unconditionally, so `count && <X/>` with `count === 0` renders
+  nothing instead of `"0"`. This is fixed as bug
+  [#6887](https://github.com/ubugeeei-prod/vize/issues/6887): a legacy fix,
+  a differential-corpus fixture and a release note. Native Davinci output
+  then matches the fixed output byte-for-byte.
+
 ## Type check
 
 Tracked in [#6849](https://github.com/ubugeeei-prod/vize/issues/6849) and [#6879](https://github.com/ubugeeei-prod/vize/issues/6879). The detailed design is in the
