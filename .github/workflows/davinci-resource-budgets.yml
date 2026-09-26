@@ -187,7 +187,7 @@ jobs:
       - name: Measure 10000 production providers, open buffers, and Corsa
         run: >-
           vp exec node tools/support/compat/davinci/lsp-resources.mjs
-          --server target/ci-opt/vize --files 10000 --runs 3 --idle-seconds 10
+          --server target/ci-opt/vize --files 10000 --runs 1 --idle-seconds 10
           --out "${RUNNER_TEMP}/lsp-resource.json"
       - name: Summarize the actual scope and every process
         if: ${{ !cancelled() }}

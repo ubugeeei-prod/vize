@@ -15,7 +15,7 @@ const flag = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) 
 const out = path.resolve(flag("--out", "lsp-resource.json"));
 const files = Number(flag("--files", "10000"));
 const openFiles = Number(flag("--open-files", String(files)));
-const runs = Number(flag("--runs", "3"));
+const runs = Number(flag("--runs", "1"));
 const idleSeconds = Number(flag("--idle-seconds", "10"));
 const preset = flag("--preset", "linux-x64-ci");
 await measure();

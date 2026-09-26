@@ -38,15 +38,16 @@ idle. The Node harness and build processes are outside that process tree.
 CPU is the sum of live processes' `utime + stime`; child CPU is not counted
 twice through `cutime + cstime`.
 
-Three independent sessions use `ci-opt` binaries (release, thin LTO, 16
-codegen units) on `blacksmith-32vcpu-ubuntu-2404`. The artifact records all
-per-run values and the maximum peak/idle RSS across runs. This broader scope
+The dispatch lane records one independent session using a `ci-opt` binary
+(release, thin LTO, 16 codegen units) on `blacksmith-32vcpu-ubuntu-2404`.
+`--runs` can request additional independent sessions; the artifact records
+every per-run value and the maximum peak/idle RSS across completed runs. This broader scope
 is **record only**: the 337/316 MiB ceilings belong to the separate nine-file
 TS-44 baseline, and no new numeric ceiling is selected to fit this result.
 
 ```sh
 vp exec node tools/support/compat/davinci/lsp-resources.mjs \
-  --server target/ci-opt/vize --files 10000 --runs 3 --idle-seconds 10 \
+  --server target/ci-opt/vize --files 10000 --runs 1 --idle-seconds 10 \
   --out /tmp/production-lsp-resource.json
 ```
 
