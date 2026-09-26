@@ -17,7 +17,7 @@ use crate::op::{EdgeKind, EffectId, OpId, OpKind, Program, RegionId};
 /// Flat L3 document model.
 #[doc(alias = "ImpetoFolio")]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
-#[dump(name = "s3-folio")]
+#[dump(name = "l3-dump-v2")]
 pub struct Page {
     /// `built`, `partitioned`, or `scheduled`.
     pub phase: String,
@@ -288,12 +288,12 @@ fn parse_span(text: &str, line: usize) -> Result<Span, DumpError> {
 
 fn parse_op_kind(text: &str, line: usize) -> Result<OpKind, DumpError> {
     OpKind::from_mnemonic(text)
-        .ok_or_else(|| DumpError::new(line, cstr!("unknown Impeto op kind `{text}`")))
+        .ok_or_else(|| DumpError::new(line, cstr!("unknown L3 op kind `{text}`")))
 }
 
 fn parse_edge_kind(text: &str, line: usize) -> Result<EdgeKind, DumpError> {
     EdgeKind::from_str(text)
-        .ok_or_else(|| DumpError::new(line, cstr!("unknown Impeto edge kind `{text}`")))
+        .ok_or_else(|| DumpError::new(line, cstr!("unknown L3 edge kind `{text}`")))
 }
 
 #[cfg(test)]
@@ -314,16 +314,16 @@ mod tests {
     #[test]
     fn derived_page_rejects_an_unknown_record_kind() {
         let input = "\
-[s3-folio]
+[l3-dump-v2]
 phase=built
 
-[s3-folio.ops]
-id=0 kind=impeto.missing region=0 effect=- span=0:1
+[l3-dump-v2.ops]
+id=0 kind=l3.missing region=0 effect=- span=0:1
 
 ";
         assert_eq!(
             Page::parse(input).unwrap_err(),
-            DumpError::new(5, cstr!("unknown Impeto op kind `impeto.missing`"))
+            DumpError::new(5, cstr!("unknown L3 op kind `l3.missing`"))
         );
     }
 

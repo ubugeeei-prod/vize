@@ -45,7 +45,9 @@ describe("folioTokens", () => {
       { type: "text", text: " " },
       { type: "span", text: "@3:36" },
     ]);
-    expect(folioTokens("[s3-folio.ops]")).toEqual([{ type: "section", text: "[s3-folio.ops]" }]);
+    expect(folioTokens("[l3-dump-v2.ops]")).toEqual([
+      { type: "section", text: "[l3-dump-v2.ops]" },
+    ]);
     expect(folioTokens("id=0 parent=- owner=- span=3:36").map((token) => token.type)).toEqual([
       "key",
       "number",

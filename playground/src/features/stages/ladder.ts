@@ -108,7 +108,7 @@ function rungFacts(id: RungId, pages: LadderPage[]): string[] {
       const partition = byKind("partition")?.text ?? "";
       const kinds = sectionLines(partition, "s3-partition-folio.ops");
       const dynamic = kinds.filter((line) => /\bkind=dynamic\b/.test(line)).length;
-      return [plural(sectionLines(graph, "s3-folio.ops").length, "op"), `${dynamic} dynamic`];
+      return [plural(sectionLines(graph, "l3-dump-v2.ops").length, "op"), `${dynamic} dynamic`];
     }
   }
 }

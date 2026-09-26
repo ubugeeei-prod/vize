@@ -92,7 +92,7 @@ describe("Davinci stage ladder from the real compiler", () => {
     );
     expect(authored("l2/lower", 'ui.on name="keyup"')).toBe('@keyup.enter="add"');
     expect(authored("l2/lower", 'js("todo.text"')).toBe("{{ todo.text }}");
-    expect(authored("l3/lower", "kind=impeto.for")).toMatch(/^<TodoItem v-for="todo in todos"/);
+    expect(authored("l3/lower", "kind=l3.for")).toMatch(/^<TodoItem v-for="todo in todos"/);
     expect(authored("l3-partition/lower", "op=17 ")).toBe("<footer>{{ remaining }} left</footer>");
     expect(authored("l3-values/lower", '"model-read",3')).toBe("draft");
   });

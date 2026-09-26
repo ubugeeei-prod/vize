@@ -1,5 +1,5 @@
 // The L3 partition facts laid over the L3 graph page: each op line of
-// `[s3-folio.ops]` gets the static/dynamic kind the `[s3-partition-folio]`
+// `[l3-dump-v2.ops]` gets the static/dynamic kind the `[s3-partition-folio]`
 // page exported for that op id. Both pages come from the same lowering; this
 // only joins them by op id.
 
@@ -23,7 +23,7 @@ export function graphLineKinds(
   let inOps = false;
   graphPage.split("\n").forEach((line, index) => {
     if (line.startsWith("[")) {
-      inOps = line === "[s3-folio.ops]";
+      inOps = line === "[l3-dump-v2.ops]";
       return;
     }
     const id = inOps ? /^id=(\d+) /.exec(line) : null;

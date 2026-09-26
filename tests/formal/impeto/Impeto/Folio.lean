@@ -99,7 +99,7 @@ def parsePhaseLine (line : Nat) (text : String) (state : State) : Except String 
 def parseRecordLine (line : Nat) (text : String) (state : State) : Except String State := do
   let tokens := text.splitOn " "
   match state.current with
-  | .none => fail line "record before [s3-folio]"
+  | .none => fail line "record before [l3-dump-v2]"
   | .root => parsePhaseLine line text state
   | .regions =>
       let region := <- parseRegion line tokens
@@ -122,15 +122,15 @@ def parseLine (line : Nat) (raw : String) (state : State) : Except String State 
   let text := raw.trimAscii.toString
   if text.isEmpty then
     pure state
-  else if text == "[s3-folio]" then
+  else if text == "[l3-dump-v2]" then
     pure { state with current := .root }
-  else if text == "[s3-folio.regions]" then
+  else if text == "[l3-dump-v2.regions]" then
     pure { state with current := .regions }
-  else if text == "[s3-folio.ops]" then
+  else if text == "[l3-dump-v2.ops]" then
     pure { state with current := .ops }
-  else if text == "[s3-folio.edges]" then
+  else if text == "[l3-dump-v2.edges]" then
     pure { state with current := .edges }
-  else if text == "[s3-folio.effects]" then
+  else if text == "[l3-dump-v2.effects]" then
     pure { state with current := .effects }
   else
     parseRecordLine line text state

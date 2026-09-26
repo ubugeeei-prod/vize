@@ -3,22 +3,22 @@ use vize_l3::op::{EdgeKind, OpKind, Phase};
 #[test]
 fn op_kind_mnemonics_are_the_vapor_generalization_set() {
     let kinds = [
-        (OpKind::SetProp, "impeto.set-prop"),
-        (OpKind::SetDynamicProps, "impeto.set-dynamic-props"),
-        (OpKind::SetText, "impeto.set-text"),
-        (OpKind::SetEvent, "impeto.set-event"),
-        (OpKind::SetHtml, "impeto.set-html"),
-        (OpKind::SetTemplateRef, "impeto.set-template-ref"),
-        (OpKind::InsertNode, "impeto.insert-node"),
-        (OpKind::PrependNode, "impeto.prepend-node"),
-        (OpKind::Directive, "impeto.directive"),
-        (OpKind::If, "impeto.if"),
-        (OpKind::For, "impeto.for"),
-        (OpKind::CreateComponent, "impeto.create-component"),
-        (OpKind::SlotOutlet, "impeto.slot-outlet"),
-        (OpKind::GetTextChild, "impeto.get-text-child"),
-        (OpKind::ChildRef, "impeto.child-ref"),
-        (OpKind::NextRef, "impeto.next-ref"),
+        (OpKind::SetProp, "l3.set-prop"),
+        (OpKind::SetDynamicProps, "l3.set-dynamic-props"),
+        (OpKind::SetText, "l3.set-text"),
+        (OpKind::SetEvent, "l3.set-event"),
+        (OpKind::SetHtml, "l3.set-html"),
+        (OpKind::SetTemplateRef, "l3.set-template-ref"),
+        (OpKind::InsertNode, "l3.insert-node"),
+        (OpKind::PrependNode, "l3.prepend-node"),
+        (OpKind::Directive, "l3.directive"),
+        (OpKind::If, "l3.if"),
+        (OpKind::For, "l3.for"),
+        (OpKind::CreateComponent, "l3.create-component"),
+        (OpKind::SlotOutlet, "l3.slot-outlet"),
+        (OpKind::GetTextChild, "l3.get-text-child"),
+        (OpKind::ChildRef, "l3.child-ref"),
+        (OpKind::NextRef, "l3.next-ref"),
     ];
     assert_eq!(kinds.len(), 16);
     for (kind, mnemonic) in kinds {

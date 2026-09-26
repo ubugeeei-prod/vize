@@ -218,11 +218,11 @@ mod tests {
     #[test]
     fn explicit_page_names_preserve_headers_after_type_renames() {
         let model = model_of(parse_quote! {
-            #[dump(name = "s3-folio")]
+            #[dump(name = "l3-dump-v2")]
             struct L3Page { phase: String }
         })
         .expect("a stable wire header derives");
-        assert_eq!(model.page, "s3-folio");
+        assert_eq!(model.page, "l3-dump-v2");
         for input in [
             parse_quote! { #[dump(name = "bad.name")] struct Sample { x: u32 } },
             parse_quote! { #[dump(name = "")] struct Sample { x: u32 } },

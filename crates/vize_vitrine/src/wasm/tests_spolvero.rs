@@ -38,18 +38,18 @@ rule=pass.hoist-static.fact node=0 before="ui.element" after="level=dynamic-text
 
 "#;
 
-const L3_PAGE: &str = "[s3-folio]
+const L3_PAGE: &str = "[l3-dump-v2]
 phase=built
 
-[s3-folio.regions]
+[l3-dump-v2.regions]
 id=0 parent=- owner=- span=3:23
 id=1 parent=0 owner=0 span=8:17
 
-[s3-folio.ops]
-id=0 kind=impeto.insert-node region=0 effect=- span=3:23
-id=1 kind=impeto.set-text region=1 effect=0 span=8:17
+[l3-dump-v2.ops]
+id=0 kind=l3.insert-node region=0 effect=- span=3:23
+id=1 kind=l3.set-text region=1 effect=0 span=8:17
 
-[s3-folio.effects]
+[l3-dump-v2.effects]
 id=0 owner=1 region=1 span=8:17
 
 ";

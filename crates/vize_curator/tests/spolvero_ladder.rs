@@ -69,26 +69,26 @@ rule=pass.hoist-static.fact node=3 before="ui.component" after="level=not-static
 
 "##;
 
-const L3_PAGE: &str = "[s3-folio]
+const L3_PAGE: &str = "[l3-dump-v2]
 phase=built
 
-[s3-folio.regions]
+[l3-dump-v2.regions]
 id=0 parent=- owner=- span=3:90
 id=1 parent=0 owner=0 span=21:30
 id=2 parent=0 owner=3 span=57:83
 id=3 parent=2 owner=5 span=70:72
 
-[s3-folio.ops]
-id=0 kind=impeto.insert-node region=0 effect=- span=3:36
-id=1 kind=impeto.set-prop region=0 effect=0 span=8:20
-id=2 kind=impeto.set-text region=1 effect=1 span=21:30
-id=3 kind=impeto.create-component region=0 effect=2 span=39:90
-id=4 kind=impeto.set-prop region=0 effect=3 span=45:56
-id=5 kind=impeto.insert-node region=2 effect=4 span=57:83
-id=6 kind=impeto.slot-outlet region=2 effect=5 span=67:69
-id=7 kind=impeto.set-text region=3 effect=6 span=70:72
+[l3-dump-v2.ops]
+id=0 kind=l3.insert-node region=0 effect=- span=3:36
+id=1 kind=l3.set-prop region=0 effect=0 span=8:20
+id=2 kind=l3.set-text region=1 effect=1 span=21:30
+id=3 kind=l3.create-component region=0 effect=2 span=39:90
+id=4 kind=l3.set-prop region=0 effect=3 span=45:56
+id=5 kind=l3.insert-node region=2 effect=4 span=57:83
+id=6 kind=l3.slot-outlet region=2 effect=5 span=67:69
+id=7 kind=l3.set-text region=3 effect=6 span=70:72
 
-[s3-folio.edges]
+[l3-dump-v2.edges]
 from=1 to=2 kind=effect-order effect=-
 from=2 to=3 kind=effect-order effect=-
 from=3 to=4 kind=effect-order effect=-
@@ -97,7 +97,7 @@ from=5 to=6 kind=effect-order effect=-
 from=6 to=7 kind=effect-order effect=-
 from=0 to=3 kind=dom-order effect=-
 
-[s3-folio.effects]
+[l3-dump-v2.effects]
 id=0 owner=1 region=0 span=8:20
 id=1 owner=2 region=1 span=21:30
 id=2 owner=3 region=0 span=39:90
@@ -283,7 +283,7 @@ fn a_malformed_template_still_climbs_every_rung() {
             (
                 "s3",
                 "lower",
-                "[s3-folio]\nphase=built\n\n[s3-folio.regions]\nid=0 parent=- owner=- span=1:27\nid=1 parent=0 owner=0 span=1:27\n\n[s3-folio.ops]\nid=0 kind=impeto.insert-node region=0 effect=- span=1:27\n\n",
+                "[l3-dump-v2]\nphase=built\n\n[l3-dump-v2.regions]\nid=0 parent=- owner=- span=1:27\nid=1 parent=0 owner=0 span=1:27\n\n[l3-dump-v2.ops]\nid=0 kind=l3.insert-node region=0 effect=- span=1:27\n\n",
             ),
             (
                 "s3-partition",

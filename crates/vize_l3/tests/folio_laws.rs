@@ -6,22 +6,22 @@ use vize_l3::op::{
 };
 
 const CANONICAL: &str = "\
-[s3-folio]
+[l3-dump-v2]
 phase=scheduled
 
-[s3-folio.regions]
+[l3-dump-v2.regions]
 id=0 parent=- owner=- span=0:80
 id=1 parent=0 owner=0 span=5:70
 
-[s3-folio.ops]
-id=0 kind=impeto.if region=0 effect=- span=0:80
-id=1 kind=impeto.set-text region=1 effect=0 span=10:20
-id=2 kind=impeto.insert-node region=1 effect=0 span=21:30
+[l3-dump-v2.ops]
+id=0 kind=l3.if region=0 effect=- span=0:80
+id=1 kind=l3.set-text region=1 effect=0 span=10:20
+id=2 kind=l3.insert-node region=1 effect=0 span=21:30
 
-[s3-folio.edges]
+[l3-dump-v2.edges]
 from=1 to=2 kind=effect-order effect=0
 
-[s3-folio.effects]
+[l3-dump-v2.effects]
 id=0 owner=1 region=1 span=10:30
 
 ";

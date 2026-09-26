@@ -244,7 +244,7 @@ fn parse_errors_carry_line_numbers_and_exact_messages() {
 }
 
 #[derive(Debug, PartialEq, Dump)]
-#[dump(name = "s3-folio")]
+#[dump(name = "l3-dump-v2")]
 struct RenamedLayerPage {
     phase: String,
     ops: Vec<String>,
@@ -252,7 +252,7 @@ struct RenamedLayerPage {
 
 #[test]
 fn renamed_types_keep_explicit_wire_headers_and_sections() {
-    let text = "[s3-folio]\nphase=built\n\n[s3-folio.ops]\none\n\n";
+    let text = "[l3-dump-v2]\nphase=built\n\n[l3-dump-v2.ops]\none\n\n";
     let page = RenamedLayerPage::parse(text).expect("legacy header parses");
     assert_eq!(page.print_to_string(DumpMode::Full).as_str(), text);
     assert_eq!(
