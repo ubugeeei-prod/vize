@@ -1,5 +1,5 @@
 ---
-source: crates/vize_atelier_vapor/src/tests_source_map_component_names.rs
+source: crates/vize_atelier_vapor/src/tests_source_map/component_names.rs
 expression: segments
 ---
 [

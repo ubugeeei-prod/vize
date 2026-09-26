@@ -20,6 +20,7 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
             || !node.bindings.is_empty()
             || props.iter().any(|prop| {
                 !matches!(prop.key, "include" | "exclude" | "max")
+                    || prop.dynamic_name.is_some()
                     || prop.handler
                     || prop.value_kind != PropValueKind::Expression
             })

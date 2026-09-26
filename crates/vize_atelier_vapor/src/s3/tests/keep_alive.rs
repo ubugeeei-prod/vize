@@ -60,6 +60,7 @@ fn unproved_cache_boundaries_keep_explicit_legacy_routes() {
         r#"<KeepAlive v-bind="props"><MyComp /></KeepAlive>"#,
         r#"<KeepAlive @change="save"><MyComp /></KeepAlive>"#,
         r#"<KeepAlive :unknown="value"><MyComp /></KeepAlive>"#,
+        r#"<KeepAlive :[include]="names"><MyComp /></KeepAlive>"#,
     ] {
         let allocator = Allocator::new();
         assert!(
