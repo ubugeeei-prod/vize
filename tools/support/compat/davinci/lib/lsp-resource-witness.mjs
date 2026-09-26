@@ -28,9 +28,18 @@ export async function controlledEdits(session, workspace) {
   const parent = componentSource(1);
   let child = componentSource(0);
   let version = 1;
+  let publications = 0;
+  let afterEdit = 0;
+  const publicationSequence = new WeakMap();
+  session.notificationObservers.push((method, params) => {
+    if (method === "textDocument/publishDiagnostics") {
+      publicationSequence.set(params, ++publications);
+    }
+  });
   const proof = [];
   const change = (next) => {
     child = next;
+    afterEdit = publications;
     session.notify("textDocument/didChange", {
       textDocument: { uri: childUri, version: ++version },
       contentChanges: [{ text: child }],
@@ -40,6 +49,7 @@ export async function controlledEdits(session, workspace) {
     const params = await session.waitForNotification(
       "textDocument/publishDiagnostics",
       (value) =>
+        publicationSequence.get(value) > afterEdit &&
         value.uri === uri &&
         value.version === documentVersion &&
         value.diagnostics.some((entry) => entry.code === code && pattern.test(entry.message)),
@@ -66,6 +76,7 @@ export async function controlledEdits(session, workspace) {
   await session.waitForNotification(
     "textDocument/publishDiagnostics",
     (value) =>
+      publicationSequence.get(value) > afterEdit &&
       value.uri === childUri &&
       value.version === version &&
       !value.diagnostics.some((entry) => entry.code === 2322),
@@ -110,6 +121,7 @@ export async function controlledEdits(session, workspace) {
   await session.waitForNotification(
     "textDocument/publishDiagnostics",
     (value) =>
+      publicationSequence.get(value) > afterEdit &&
       value.uri === parentUri &&
       value.version === 1 &&
       !value.diagnostics.some((entry) => entry.code === 2339 || entry.code === 2322),
