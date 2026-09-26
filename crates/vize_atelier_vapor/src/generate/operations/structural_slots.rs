@@ -43,6 +43,10 @@ pub(super) fn generate_dynamic_slot(
     index: usize,
 ) {
     ctx.push_indent();
+    let previous = ctx.structural_slot_spans;
+    if slot.control.is_some() {
+        ctx.structural_slot_spans = true;
+    }
     if let Some(IRSlotControl::For(each)) = &slot.control {
         looped(ctx, slot, each, templates);
     } else if slot.control.is_some() {
@@ -54,6 +58,7 @@ pub(super) fn generate_dynamic_slot(
         payload(ctx, slot, templates, &cache_name(component, index, 0));
         ctx.push(")");
     }
+    ctx.structural_slot_spans = previous;
 }
 
 fn payload(

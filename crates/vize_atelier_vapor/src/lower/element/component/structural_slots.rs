@@ -56,12 +56,22 @@ pub(super) fn lower<'a>(
         return template(ctx, element);
     }
     match child {
-        TemplateChildNode::If(node) => conditional(ctx, &node.branches),
+        TemplateChildNode::If(node) => {
+            let previous = ctx.structural_slot_spans;
+            ctx.structural_slot_spans = true;
+            let slot = conditional(ctx, &node.branches);
+            ctx.structural_slot_spans = previous;
+            slot
+        }
         TemplateChildNode::For(node) => {
             let [child] = node.children.as_slice() else {
                 return None;
             };
-            let mut slot = lower(ctx, child)?;
+            let previous = ctx.structural_slot_spans;
+            ctx.structural_slot_spans = true;
+            let slot = lower(ctx, child);
+            ctx.structural_slot_spans = previous;
+            let mut slot = slot?;
             let value = expression(ctx, node.value_alias.as_ref()?);
             let key_prop = carrier(child)?.props.iter().find_map(|prop| match prop {
                 PropNode::Directive(dir)

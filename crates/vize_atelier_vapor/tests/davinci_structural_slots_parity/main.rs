@@ -161,19 +161,37 @@ fn assert_semantics(name: &str, frames: &[Value]) {
         "{name}: unmount"
     );
     assert_eq!(
-        frames[0]["identities"], frames[1]["identities"],
+        identities(frames, 0),
+        identities(frames, 1),
         "{name}: body/props reuse"
     );
     if name != "conditional" {
         assert_eq!(
-            frames[3]["identities"][2][1],
-            json!(2),
+            identities(frames, 3)
+                .get(2)
+                .unwrap()
+                .get(1)
+                .unwrap()
+                .as_u64(),
+            Some(2),
             "{name}: same-name item replacement"
         );
         assert_eq!(
-            frames[3]["identities"][3][1],
-            json!(3),
+            identities(frames, 3)
+                .get(3)
+                .unwrap()
+                .get(1)
+                .unwrap()
+                .as_u64(),
+            Some(3),
             "{name}: other slot stays mounted"
         );
     }
+}
+
+fn identities(frames: &[Value], index: usize) -> &Value {
+    let Some(frame) = frames.get(index) else {
+        panic!("missing runtime frame {index}")
+    };
+    frame.get("identities").unwrap()
 }

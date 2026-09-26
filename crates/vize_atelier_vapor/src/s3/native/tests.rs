@@ -88,7 +88,7 @@ fn damaged_structural_slot_branch_never_emits_partial_component() {
         match &mut node.content {
             Content::If { branches } => branches.last_mut().unwrap().roots[0] = usize::MAX,
             Content::For(_) => node.children[0] = usize::MAX,
-            _ => unreachable!(),
+            _ => panic!("fixture must contain a slot control"),
         }
         let result = emit_accepted(&allocator, source, artifact, None, true, |_, _| {
             panic!("damaged carrier must never reach generation")

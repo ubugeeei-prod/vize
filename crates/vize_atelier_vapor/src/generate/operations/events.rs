@@ -29,7 +29,15 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
             // Authored and transformed callbacks already own their parameters.
             ctx.spanned_expression_node(value)
         } else {
-            EmitDocument::from(resolve_inline_handler(ctx, value))
+            let body = resolve_inline_handler(ctx, value);
+            if ctx.structural_slot_spans {
+                ctx.spanned_at(
+                    &body,
+                    (value.loc.span.start < value.loc.span.end).then_some(value.loc.span.start),
+                )
+            } else {
+                EmitDocument::from(body)
+            }
         }
     } else {
         EmitDocument::plain("() => {}")

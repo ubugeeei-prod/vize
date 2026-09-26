@@ -105,7 +105,12 @@ fn collect_text_runs<'a>(
         match child {
             TemplateChildNode::Text(text) => {
                 begin_text_run(run_index, rendered_index);
-                let exp = SimpleExpressionNode::new(text.content, true, SourceLocation::STUB);
+                let loc = if ctx.structural_slot_spans {
+                    text.loc.clone()
+                } else {
+                    SourceLocation::STUB
+                };
+                let exp = SimpleExpressionNode::new(text.content, true, loc);
                 values.push(Box::new_in(exp, &ctx.allocator));
             }
             TemplateChildNode::Interpolation(interp) => {

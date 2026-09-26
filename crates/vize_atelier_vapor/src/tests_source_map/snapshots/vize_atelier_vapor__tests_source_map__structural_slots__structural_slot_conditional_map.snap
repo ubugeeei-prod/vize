@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/structural_slots.rs
+expression: segments
+---
+[
+    "1:23 \"b> </b>\\\"\" -> \"b>{{p.x}\"",
+    "2:22 \"B\\\")⏎⏎exp\" -> \"B</templ\"",
+    "4:0 \"export f\" -> \"<Child><\"",
+    "5:46 \"Child\\\")⏎\" -> \"Child><t\"",
+    "10:13 \"_ctx.ena\" -> \"enabled\\\"\" [enabled]",
+    "11:14 \"_ctx.nam\" -> \"names[se\" [names]",
+    "11:25 \"_ctx.sel\" -> \"selected\" [selected]",
+    "12:36 \"(p) => {\" -> \"<templat\"",
+    "15:60 \"p.x)))⏎ \" -> \"p.x}}</b\"",
+    "19:15 \"two\\\",⏎  \" -> \"two v-el\"",
+    "20:40 \"() => {⏎\" -> \"<templat\"",
+]

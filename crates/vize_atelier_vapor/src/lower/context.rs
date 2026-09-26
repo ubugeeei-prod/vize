@@ -22,6 +22,8 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) element_template_map: FxHashMap<usize, usize>,
     pub(crate) standalone_text_elements: FxHashSet<usize>,
     non_reactive_scopes: usize,
+    /// Preserve authored text anchors in structural slot bodies.
+    pub(crate) structural_slot_spans: bool,
     pub(crate) diagnostics: std::vec::Vec<String>,
     /// `Some` when a source map is requested.
     pub(crate) template_spans: Option<TemplateSpans>,
@@ -39,6 +41,7 @@ impl<'a> TransformContext<'a> {
             element_template_map: FxHashMap::default(),
             standalone_text_elements: FxHashSet::default(),
             non_reactive_scopes: 0,
+            structural_slot_spans: false,
             diagnostics: std::vec::Vec::new(),
             template_spans: None,
         }

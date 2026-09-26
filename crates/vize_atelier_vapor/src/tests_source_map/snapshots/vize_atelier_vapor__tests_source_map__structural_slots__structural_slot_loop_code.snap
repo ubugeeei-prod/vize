@@ -1,0 +1,23 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/structural_slots.rs
+expression: code
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, createInvoker as _createInvoker, delegateEvents as _delegateEvents, createForSlots as _createForSlots, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<button> : : </button>")
+_delegateEvents("click")
+
+export function render(_ctx) {
+  const _component_Child = _resolveComponent("Child")
+  const n2 = _createComponentWithFallback(_component_Child, null, {
+    $: [
+      _createForSlots(() => (_ctx.items), (_for_item0, _for_key0) => (p) => {
+        const n0 = t0()
+        const x0 = _txt(n0)
+        n0.$evtclick = _createInvoker($event => (_ctx.record(_for_item0.value.label)))
+        _renderEffect(() => _setText(x0, _toDisplayString(_for_item0.value.label) + ":" + _toDisplayString(_for_key0.value) + ":" + _toDisplayString(p.x)))
+        return n0
+      }, (item, key) => (item.name))
+    ]
+  }, true)
+  return n2
+}

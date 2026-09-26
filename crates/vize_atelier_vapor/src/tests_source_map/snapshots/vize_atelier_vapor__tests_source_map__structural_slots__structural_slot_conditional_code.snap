@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/structural_slots.rs
+expression: code
+---
+import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<b> </b>")
+const t1 = _template("B")
+
+export function render(_ctx) {
+  const _component_Child = _resolveComponent("Child")
+  let _slot4_0
+  let _slot4_0_1
+  const n4 = _createComponentWithFallback(_component_Child, null, {
+    $: [
+      () => (_ctx.enabled ? {
+        name: _ctx.names[_ctx.selected],
+        fn: _slot4_0 || (_slot4_0 = (p) => {
+          const n0 = t0()
+          const x0 = _txt(n0)
+          _renderEffect(() => _setText(x0, _toDisplayString(p.x)))
+          return n0
+        })
+      } : {
+        name: "two",
+        fn: _slot4_0_1 || (_slot4_0_1 = () => {
+          const n2 = t1()
+          return n2
+        })
+      })
+    ]
+  }, true)
+  return n4
+}

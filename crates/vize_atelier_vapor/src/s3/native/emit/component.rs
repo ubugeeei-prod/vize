@@ -48,12 +48,7 @@ impl<'a> Emitter<'a, '_> {
         // unless the component's own `v-slot` names it.
         let mut slots = Vec::new_in(&self.allocator);
         let own = self.artifact.nodes.get(index).and_then(slot_of);
-        let named = children.iter().any(|child| {
-            self.artifact.nodes.get(*child).is_some_and(|node| {
-                slot_of(node).is_some()
-                    || matches!(node.content, Content::If { .. } | Content::For(_))
-            })
-        });
+        let named = own.is_none() && children.iter().any(|child| self.slot_carrier(*child));
         if named {
             for child in children {
                 if let Some(slot) = self.component_slot(child) {

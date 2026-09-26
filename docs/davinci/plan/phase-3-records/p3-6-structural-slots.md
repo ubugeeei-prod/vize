@@ -45,3 +45,17 @@ same structural slot metadata for direct code and mapping comparisons.
 These proofs cover this bounded slot surface. Nested conditional/loop carriers,
 complex parameter patterns and builtin wrapper policies remain independent
 contracts; the broader P3-6 exit is still open.
+
+## Focused evidence
+
+The local focused run passed 238 Vapor library tests, the dedicated mounted
+binary (three workloads, each native/retained/official), the native reparse and
+walk floor, and Clippy for the library, tests and examples. Both lane code and
+decoded mappings match the four committed conditional/loop snapshots.
+
+The existing allocation gate measured native calls of
+`75 / 73 / 109 / 93 / 132 / 105 / 156` against the unchanged stricter committed
+ceilings `75 / 74 / 109 / 100 / 134 / 106 / 158`. No allocation fixture or
+measurement window changed. Ordinary default-slot controls and nested component
+`v-slot` bodies have explicit regressions so they remain DOM content rather
+than becoming slot selectors.

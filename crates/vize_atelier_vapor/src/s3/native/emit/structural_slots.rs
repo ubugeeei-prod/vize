@@ -6,6 +6,31 @@ use crate::ir::{IRSlot, IRSlotControl, IRSlotLoop};
 use vize_carton::Box;
 
 impl<'a> Emitter<'a, '_> {
+    /// Ordinary default-slot DOM controls are distinct from slot selectors.
+    pub(super) fn slot_carrier(&self, index: usize) -> bool {
+        let slot = |index: usize| {
+            self.artifact.nodes.get(index).is_some_and(|node| {
+                matches!(
+                    node.content,
+                    Content::Element {
+                        tag: "template",
+                        ..
+                    }
+                ) && slot_of(node).is_some()
+            })
+        };
+        let Some(node) = self.artifact.nodes.get(index) else {
+            return false;
+        };
+        match &node.content {
+            Content::If { branches } => branches
+                .iter()
+                .any(|branch| branch.roots.iter().any(|child| slot(*child))),
+            Content::For(_) => node.children.iter().any(|child| slot(*child)),
+            _ => slot(index),
+        }
+    }
+
     pub(super) fn component_slot(&mut self, index: usize) -> Option<IRSlot<'a>> {
         let Some(node) = self.artifact.nodes.get_mut(index) else {
             self.invariant_broken();

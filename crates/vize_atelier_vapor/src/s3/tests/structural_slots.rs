@@ -60,6 +60,42 @@ fn checked_structural_slots_match_retained_code() {
 }
 
 #[test]
+fn ordinary_default_slot_controls_keep_their_dom_contract() {
+    for source in [
+        r#"<Child v-slot="{ blocked }"><p v-if="blocked">waiting</p><span v-else>ready</span></Child>"#,
+        r#"<Child><p v-if="enabled">A</p><span v-else>B</span></Child>"#,
+        r#"<Child><p v-for="item in items">{{item}}</p></Child>"#,
+        r#"<Child><Nested v-if="enabled" v-slot="p"><b>{{p.x}}</b></Nested></Child>"#,
+        r#"<Child><Nested v-slot="p"><b>{{p.x}}</b></Nested></Child>"#,
+    ] {
+        let allocator = Allocator::new();
+        assert!(
+            matches!(
+                lower_source_for_vapor(&allocator, source, options()),
+                VaporS3BridgeStatus::Accepted(_)
+            ),
+            "{source}"
+        );
+        let native = compile_vapor(&allocator, source, VaporCompilerOptions::default());
+        let retained = compile_vapor(
+            &allocator,
+            source,
+            VaporCompilerOptions {
+                davinci_retained_lane: true,
+                ..Default::default()
+            },
+        );
+        assert!(
+            native.error_messages.is_empty(),
+            "{source}: {:?}",
+            native.error_messages
+        );
+        assert_eq!(native.code, retained.code, "{source}");
+        assert!(!native.code.contains("createForSlots"), "{source}");
+    }
+}
+
+#[test]
 fn conditional_slot_condition_is_owned_by_the_checked_payload() {
     let allocator = Allocator::new();
     let mut lowered = lowered_source(&allocator, SOURCES[0]);

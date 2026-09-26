@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/structural_slots.rs
+expression: segments
+---
+[
+    "1:23 \"button> \" -> \"button @\"",
+    "1:31 \": : </bu\" -> \":{{key}}\"",
+    "1:33 \": </butt\" -> \":{{p.x}}\"",
+    "4:0 \"export f\" -> \"<Child><\"",
+    "5:46 \"Child\\\")⏎\" -> \"Child><t\"",
+    "8:29 \"_ctx.ite\" -> \"items\\\" #\" [items]",
+    "8:69 \"(p) => {\" -> \"<templat\"",
+    "11:38 \"$event =\" -> \"record(i\"",
+    "12:58 \"_for_ite\" -> \"item.lab\"",
+    "12:85 \":\\\" + _to\" -> \":{{key}}\"",
+    "12:107 \"_for_key\" -> \"key}}:{{\"",
+    "12:127 \":\\\" + _to\" -> \":{{p.x}}\"",
+    "12:149 \"p.x)))⏎ \" -> \"p.x}}</b\"",
+    "14:25 \"item.nam\" -> \"item.nam\"",
+]
