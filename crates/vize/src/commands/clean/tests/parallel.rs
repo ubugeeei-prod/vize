@@ -25,6 +25,12 @@ fn shared_cache_containers_survive_clean_and_parallel_materialization() {
         std::str::from_utf8(&output.stdout).unwrap_or("<non-UTF-8 stdout>"),
         std::str::from_utf8(&output.stderr).unwrap_or("<non-UTF-8 stderr>")
     );
+    assert!(
+        std::str::from_utf8(&output.stdout)
+            .unwrap()
+            .contains("parallel-clean-cold-cache-complete"),
+        "the subprocess did not complete the regression helper"
+    );
 }
 
 #[test]
@@ -86,6 +92,7 @@ fn cold_cache_child() {
     assert!(projects.is_dir());
     assert!(canon.is_dir());
     assert_eq!(std::fs::read_dir(projects).unwrap().count(), 0);
+    println!("parallel-clean-cold-cache-complete");
 }
 
 fn clean(root: &Path, scope: CleanScope, force: bool) {
