@@ -43,11 +43,12 @@ pub(super) fn bindings<'a>(
             _ => {}
         }
     }
-    // Elements whose props merge through a `v-bind` object keep every static
+    // Props merged through an object or computed key keep every static
     // attribute and `:class`/`:style` as its own ordered source.
     let mut spreads = super::filled(alloc, false, nodes.len());
     for (target, .., binding) in bindings.iter() {
-        if binding.kind == BindingKind::Spread
+        if (binding.kind == BindingKind::Spread
+            || binding.kind == BindingKind::Prop && binding.dynamic_name.is_some())
             && let Some(&Some((index, _))) = slots.get(target.index() as usize)
         {
             *at_mut(&mut spreads, index)? = true;
@@ -146,17 +147,13 @@ pub(super) fn bindings<'a>(
                 ));
             }
         }
-        // Computed prop names have a component contract. DOM setter selection
-        // and outlet prop normalization remain separate unproved surfaces.
-        if binding.kind == BindingKind::Prop && binding.dynamic_name.is_some() {
-            return Err(LegacyReason::Binding.into());
-        }
         if !fresh && *at(&spreads, index)? {
             // Only a `:class`/`:style` beside its static attribute repeats.
             if binding.kind != BindingKind::Prop
                 || !matches!(binding.name, "class" | "style")
-                || (at(nodes, index)?.bindings.iter())
-                    .any(|b| b.kind == binding.kind && b.name == binding.name)
+                || (at(nodes, index)?.bindings.iter()).any(|b| {
+                    b.kind == binding.kind && b.name == binding.name && b.dynamic_name.is_none()
+                })
             {
                 return Err(LegacyReason::Binding.into());
             }
@@ -166,10 +163,16 @@ pub(super) fn bindings<'a>(
                 return Err(LegacyReason::Binding.into());
             }
         }
-        if binding.kind == BindingKind::Prop && binding.name == "is" {
+        if binding.kind == BindingKind::Prop
+            && binding.dynamic_name.is_none()
+            && binding.name == "is"
+        {
             return Err(LegacyReason::Binding.into());
         }
-        if binding.kind == BindingKind::Prop && binding.name == "key" {
+        if binding.kind == BindingKind::Prop
+            && binding.dynamic_name.is_none()
+            && binding.name == "key"
+        {
             // Only the body element of an element-carried loop owns a key.
             let owner = match *at(parents, index)? {
                 Some(parent) => Some(&mut at_mut(nodes, parent)?.content),

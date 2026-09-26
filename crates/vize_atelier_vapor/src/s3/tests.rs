@@ -4,6 +4,7 @@ use super::{
 };
 
 mod component_names;
+mod computed_dom;
 mod keep_alive;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Allocator;
@@ -194,7 +195,7 @@ fn unsupported_source_semantics_have_explicit_legacy_routes() {
         "<div v-pre>{{ literal }}</div>",
         "<input v-model.foo=\"text\" />",
         "<MyComp v-model:[field]=\"checked\" />",
-        "<div :[key]=\"value\"></div>",
+        "<div :[key].camel=\"value\"></div>",
         "<div ref=\"node\"></div>",
         "<div :style=\"s\" style></div>",
         "<div @click=\"a++; b++\"></div>",

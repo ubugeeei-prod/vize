@@ -1,4 +1,4 @@
-//! An element with a `v-bind` object: its static attributes, `:prop`s and the
+//! An element with an object or computed key: its attributes, props and the
 //! object become one `setDynamicProps` effect over upstream's ordered sources.
 //! Props between objects form literal groups; the runtime merges the sources
 //! in authored order, so later sources win and `class`/`style` concatenate.
@@ -11,7 +11,7 @@ use crate::ir::{BlockIRNode, IRProp, MergedPropsSource, OperationNode, SetMerged
 
 /// A merged source in authored order: a literal prop, or the object itself.
 enum Entry<'a> {
-    Prop(&'a str, Expr<'a>, bool),
+    Prop(Expr<'a>, bool, Expr<'a>, bool),
     Object(Expr<'a>),
 }
 
@@ -35,7 +35,12 @@ impl<'a> Emitter<'a, '_> {
                 // The value span's start is the authored position among sources.
                 (
                     span.0,
-                    Entry::Prop(name, Expr::plain(value.unwrap_or("")), true),
+                    Entry::Prop(
+                        Expr::plain(name),
+                        true,
+                        Expr::plain(value.unwrap_or("")),
+                        true,
+                    ),
                 )
             }),
             &self.allocator,
@@ -43,7 +48,14 @@ impl<'a> Emitter<'a, '_> {
         for binding in &node.bindings {
             let entry = match binding.kind {
                 BindingKind::Spread => Entry::Object(binding.value),
-                BindingKind::Prop => Entry::Prop(binding.name, binding.value, false),
+                BindingKind::Prop => Entry::Prop(
+                    binding
+                        .dynamic_name
+                        .unwrap_or_else(|| Expr::plain(binding.name)),
+                    binding.dynamic_name.is_none(),
+                    binding.value,
+                    false,
+                ),
                 // Admission lets a spread element bind only props.
                 _ => {
                     self.invariant_broken();
@@ -64,17 +76,21 @@ impl<'a> Emitter<'a, '_> {
                     }
                     sources.push(MergedPropsSource::Object(self.expression(value, false)));
                 }
-                Entry::Prop(name, value, is_static) => {
+                Entry::Prop(name, static_name, value, is_static) => {
                     let value = self.expression(value, is_static);
                     // Only `class`/`style` repeat (checked on admission).
-                    if let Some(prop) = group.iter_mut().find(|prop| prop.key.content == name) {
+                    if static_name
+                        && let Some(prop) = group
+                            .iter_mut()
+                            .find(|prop| prop.key.is_static && prop.key.content == name.text)
+                    {
                         prop.values.push(value);
                         continue;
                     }
                     let mut values = Vec::new_in(&self.allocator);
                     values.push(value);
                     group.push(IRProp::new(
-                        self.expression(Expr::plain(name), true),
+                        self.expression(name, static_name),
                         values,
                         false,
                     ));

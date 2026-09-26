@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/computed_dom.rs
+expression: segments
+---
+[
+    "1:23 \"div>text\" -> \"div titl\"",
+    "1:27 \"text</di\" -> \"text</di\"",
+    "3:0 \"export f\" -> \"<div tit\"",
+]

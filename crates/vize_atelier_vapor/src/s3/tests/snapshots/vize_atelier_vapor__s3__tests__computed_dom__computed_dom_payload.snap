@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_vapor/src/s3/tests/computed_dom.rs
+expression: code
+---
+import { setDynamicProps as _setDynamicProps, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<div></div>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _renderEffect(() => _setDynamicProps(n0, [{ title: "restored", [_ctx.otherName]: _ctx.otherValue }]))
+  return n0
+}

@@ -61,7 +61,9 @@ fn write_element_template(
     // Add static attributes (skip those overridden by dynamic bindings)
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop {
-            if is_runtime_only_attr(attr.name) {
+            if super::super::merged_props::uses_computed_props(el)
+                || is_runtime_only_attr(attr.name)
+            {
                 continue;
             }
             if dynamic_attrs.contains(attr.name) {
@@ -253,7 +255,7 @@ fn has_static_ref_for(el: &ElementNode<'_>) -> bool {
     })
 }
 
-pub(super) fn is_runtime_only_attr(name: &str) -> bool {
+pub(in crate::lower) fn is_runtime_only_attr(name: &str) -> bool {
     matches!(name, "ref" | "ref_for" | "ref_key")
 }
 

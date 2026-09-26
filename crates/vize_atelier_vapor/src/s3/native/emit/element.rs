@@ -65,8 +65,10 @@ impl<'a> Emitter<'a, '_> {
                     return None;
                 };
                 // A `v-bind` object merges the static attributes at runtime.
-                let merged =
-                    (node.bindings.iter()).any(|binding| binding.kind == BindingKind::Spread);
+                let merged = (node.bindings.iter()).any(|binding| {
+                    binding.kind == BindingKind::Spread
+                        || binding.kind == BindingKind::Prop && binding.dynamic_name.is_some()
+                });
                 let attributes = if merged {
                     Vec::new_in(&self.allocator)
                 } else {
