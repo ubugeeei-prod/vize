@@ -1,9 +1,9 @@
 //! Spolvero feed construction for the inspector (Davinci P2-18).
 //!
 //! The inspector's stage pages, in the feed shape `vize_davinci` owns
-//! (`folio::feed::SpolveroFeed`, committed schema
+//! (`folio::feed::StageFeed`, committed schema
 //! `docs/davinci/plan/spolvero-feed.schema.json`). There is exactly one
-//! serializer of that shape - `SpolveroFeed::to_json` - so this module
+//! serializer of that shape - `StageFeed::to_json` - so this module
 //! builds pages and parses the feed's own output into the
 //! `serde_json::Value` the payload embeds; it never re-encodes the shape.
 //!
@@ -41,7 +41,7 @@ mod profile;
 
 pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
 pub use profile::{LADDER_STEP_KEY, LADDER_WALK_KEY, ladder_profile};
-pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage, SpolveroRemark};
+pub use vize_davinci::folio::feed::{StageFeed, StagePage, StageRemark};
 use vize_davinci::pass::RemarkCollector;
 use vize_l0::{Allocator, String, cstr};
 
@@ -51,12 +51,12 @@ use super::payload::InspectorSourceFile;
 
 /// The L1 page for one template: L1 parse + byte-faithful render.
 #[must_use]
-pub fn l1_page(path: &str, template: &str) -> SpolveroPage {
+pub fn l1_page(path: &str, template: &str) -> StagePage {
     let allocator = Allocator::default();
     let (tree, _errors) = vize_l1::parse(&allocator, template);
     let mut text = String::default();
     vize_l1::render::render(&tree, &mut |slice| text.push_str(slice));
-    SpolveroPage {
+    StagePage {
         path: Some(String::from(path)),
         stage: cstr!("s1"),
         pass: cstr!("parse"),
@@ -70,7 +70,7 @@ pub fn l1_page(path: &str, template: &str) -> SpolveroPage {
 /// offsets into `template` - the frame of the feed's L1/L2 pages, so a
 /// remark and the page lines it explains highlight the same source bytes.
 #[must_use]
-pub fn template_remarks(path: &str, template: &str) -> Vec<SpolveroRemark> {
+pub fn template_remarks(path: &str, template: &str) -> Vec<StageRemark> {
     let allocator = Allocator::default();
     let (tree, errors) = vize_l1::parse(&allocator, template);
     let mut lowered =
@@ -80,7 +80,7 @@ pub fn template_remarks(path: &str, template: &str) -> Vec<SpolveroRemark> {
     collector
         .finish()
         .into_iter()
-        .map(|remark| SpolveroRemark {
+        .map(|remark| StageRemark {
             path: Some(String::from(path)),
             remark,
         })
@@ -91,10 +91,10 @@ pub fn template_remarks(path: &str, template: &str) -> Vec<SpolveroRemark> {
 ///
 /// # Panics
 ///
-/// Never in practice: `SpolveroFeed::to_json` emits valid JSON by the
+/// Never in practice: `StageFeed::to_json` emits valid JSON by the
 /// feed's escaping law (pinned by the TS-52 tests).
 #[must_use]
-pub fn spolvero_value(command: &str, pages: Vec<SpolveroPage>) -> serde_json::Value {
+pub fn spolvero_value(command: &str, pages: Vec<StagePage>) -> serde_json::Value {
     spolvero_value_with_remarks(command, pages, Vec::new())
 }
 
@@ -106,15 +106,15 @@ pub fn spolvero_value(command: &str, pages: Vec<SpolveroPage>) -> serde_json::Va
 #[must_use]
 pub fn spolvero_value_with_remarks(
     command: &str,
-    pages: Vec<SpolveroPage>,
-    remarks: Vec<SpolveroRemark>,
+    pages: Vec<StagePage>,
+    remarks: Vec<StageRemark>,
 ) -> serde_json::Value {
-    let feed = SpolveroFeed {
+    let feed = StageFeed {
         command: String::from(command),
         pages,
         remarks,
     };
-    // `SpolveroFeed::to_json` emits valid JSON by the feed escaping law;
+    // `StageFeed::to_json` emits valid JSON by the feed escaping law;
     // `null` is the unreachable fallback rather than an abort.
     serde_json::from_str(feed.to_json().as_str()).unwrap_or_default()
 }

@@ -4,7 +4,7 @@ import PassTimeline from "./PassTimeline.vue";
 import RemarksPanel from "./RemarksPanel.vue";
 import FolioDiffView from "./FolioDiffView.vue";
 import type { TimelineStep } from "./ladder";
-import type { SpolveroRemark } from "./remarks";
+import type { StageRemark } from "./remarks";
 
 describe("PassTimeline timings", () => {
   const steps: TimelineStep[] = [
@@ -97,7 +97,7 @@ describe("RemarksPanel", () => {
   });
 
   it("lists remarks by kind with their arguments and locates each site", async () => {
-    const remarks: SpolveroRemark[] = [
+    const remarks: StageRemark[] = [
       {
         stage: "l2",
         pass: "hoist-static",

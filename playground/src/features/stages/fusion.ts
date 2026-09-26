@@ -1,4 +1,4 @@
-import { layerId } from "../../wasm/types/spolvero";
+import { layerId } from "../../wasm/types/stages";
 
 // The L2 transform plan's walks (C-3), read off the compiler's
 // `[fusion-plan-folio]` page: which passes share one traversal. The pass

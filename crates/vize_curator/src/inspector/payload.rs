@@ -59,7 +59,7 @@ pub struct InspectorPayload {
     files: Vec<InspectorPayloadFile>,
     /// The Spolvero feed (P2-18): the payload's L1/L2 stage pages as the
     /// schema-versioned document `spolvero-feed.schema.json` commits.
-    /// Kept as a pre-serialized value so `SpolveroFeed::to_json` stays the
+    /// Kept as a pre-serialized value so `StageFeed::to_json` stays the
     /// shape's only serializer (the feed's own snake_case keys included).
     spolvero: serde_json::Value,
 }
@@ -145,7 +145,7 @@ pub fn build_payload(
     options: InspectorOptions,
     files: Vec<InspectorSourceFile>,
 ) -> InspectorPayload {
-    let spolvero = super::spolvero::payload_spolvero(&files);
+    let spolvero = super::stages::payload_spolvero(&files);
     let files: Vec<_> = files
         .into_iter()
         .map(|file| InspectorPayloadFile {

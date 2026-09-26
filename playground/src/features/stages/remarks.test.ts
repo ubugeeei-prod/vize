@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vite-plus/test";
-import { formatArg, remarksAt, summarizeRemarks, type SpolveroRemark } from "./remarks";
+import { formatArg, remarksAt, summarizeRemarks, type StageRemark } from "./remarks";
 
 const remark = (
-  kind: SpolveroRemark["kind"],
+  kind: StageRemark["kind"],
   name: string,
   span: [number, number],
-  args: SpolveroRemark["args"] = [],
-): SpolveroRemark => ({
+  args: StageRemark["args"] = [],
+): StageRemark => ({
   stage: "l2",
   pass: "hoist-static",
   kind,

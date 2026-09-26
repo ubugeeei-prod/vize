@@ -1,4 +1,4 @@
-import { layerId } from "../../wasm/types/spolvero";
+import { layerId } from "../../wasm/types/stages";
 
 // The flame view (C-4): profiler spans, pass x stage x block, as a flame
 // graph - and the same graph against a pinned baseline run. Frames come

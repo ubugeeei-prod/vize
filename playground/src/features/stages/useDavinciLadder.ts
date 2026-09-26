@@ -9,7 +9,7 @@ import {
   type ComputedRef,
 } from "vue";
 import type { WasmModule } from "../../wasm/index";
-import { negotiateSpolveroFeed } from "../../wasm/types/spolvero";
+import { negotiateSpolveroFeed } from "../../wasm/types/stages";
 import {
   ladderStepTimings,
   ladderWalkTimings,
@@ -32,7 +32,7 @@ import {
   templateStartInSfc,
   type Range,
 } from "./offsets";
-import { remarksAt, type SpolveroRemark } from "./remarks";
+import { remarksAt, type StageRemark } from "./remarks";
 import { parseProvenance, recordsForNode } from "./provenance";
 import { graphLineKinds, partitionKinds } from "./partition";
 
@@ -78,7 +78,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
   const cursorBytes = ref<number | null>(null);
   const pageView = ref<PageView>("page");
   const pinnedSpan = ref<Range | null>(null);
-  const remarks = computed<SpolveroRemark[]>(() => ladder.value?.remarks ?? []);
+  const remarks = computed<StageRemark[]>(() => ladder.value?.remarks ?? []);
 
   const rung = computed(() =>
     stage.value === "l4" ? null : (ladder.value?.rungs.find((r) => r.id === stage.value) ?? null),
@@ -165,7 +165,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     selectedLine.value = null;
   }
 
-  function locateRemark(remark: SpolveroRemark) {
+  function locateRemark(remark: StageRemark) {
     pinnedSpan.value = remark.span;
   }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import type { SpolveroFeed } from "../../wasm/types/spolvero";
+import type { StageFeed } from "../../wasm/types/stages";
 import { buildLadder } from "./ladder";
 
 // The feed `analyzeSfc` returns for `<div>{{ msg }}</div>`, byte-for-byte as
@@ -43,7 +43,7 @@ operand=[1,"text",null,null,null,"js","msg","",11,14]
 
 `;
 
-function feed(extra: SpolveroFeed["pages"] = []): SpolveroFeed {
+function feed(extra: StageFeed["pages"] = []): StageFeed {
   const path = "Component.vue";
   return {
     schema_version: 1,
@@ -208,7 +208,7 @@ describe("buildLadder", () => {
       span: { start: 3, end: 23 },
       args: [{ key: "tag", value: "div" }],
     });
-    const withRemarks: SpolveroFeed = {
+    const withRemarks: StageFeed = {
       ...feed(),
       remarks: [remark("Component.vue", "hoist-static"), remark("Other.vue", "hoist-static")],
     };

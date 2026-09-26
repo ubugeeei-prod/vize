@@ -14,7 +14,7 @@ export function layerId(stage: string): string {
 /** The feed format version this playground renders. */
 export const SPOLVERO_FEED_SCHEMA_VERSION = 1;
 
-export interface SpolveroPage {
+export interface StagePage {
   /** Source file the page was produced for, or null for a pipeline run. */
   path: string | null;
   /** Stage (or stage page family): `s1`, `s2`, `s3`, `s3-partition`, `s3-values`. */
@@ -26,7 +26,7 @@ export interface SpolveroPage {
 }
 
 /** One optimization remark (P3-13) for the file at `path`. */
-export interface SpolveroFeedRemark {
+export interface StageFeedRemark {
   path: string | null;
   stage: string;
   pass: string;
@@ -37,21 +37,21 @@ export interface SpolveroFeedRemark {
   args: { key: string; value: string | number | boolean }[];
 }
 
-export interface SpolveroFeed {
+export interface StageFeed {
   schema_version: number;
   command: string;
-  pages: SpolveroPage[];
+  pages: StagePage[];
   /** Additive to v1: absent means no remarks. */
-  remarks?: SpolveroFeedRemark[];
+  remarks?: StageFeedRemark[];
 }
 
-export type SpolveroNegotiation = { ok: true; feed: SpolveroFeed } | { ok: false; error: string };
+export type StageNegotiation = { ok: true; feed: StageFeed } | { ok: false; error: string };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function isPage(value: unknown): value is SpolveroPage {
+function isPage(value: unknown): value is StagePage {
   return (
     isRecord(value) &&
     (value.path === null || typeof value.path === "string") &&
@@ -63,7 +63,7 @@ function isPage(value: unknown): value is SpolveroPage {
 
 const REMARK_KINDS = new Set(["applied", "missed", "analysis"]);
 
-function isRemark(value: unknown): value is SpolveroFeedRemark {
+function isRemark(value: unknown): value is StageFeedRemark {
   return (
     isRecord(value) &&
     (value.path === null || typeof value.path === "string") &&
@@ -89,7 +89,7 @@ function isRemark(value: unknown): value is SpolveroFeedRemark {
  * Accept a raw `spolvero` member only when its `schema_version` is the one
  * this view understands and every page has the committed shape.
  */
-export function negotiateSpolveroFeed(raw: unknown): SpolveroNegotiation {
+export function negotiateSpolveroFeed(raw: unknown): StageNegotiation {
   if (!isRecord(raw)) {
     return { ok: false, error: "The compiler result carries no Spolvero feed." };
   }
@@ -117,11 +117,11 @@ export function negotiateSpolveroFeed(raw: unknown): SpolveroNegotiation {
       return { ok: false, error: `Spolvero feed remark ${bad} does not match the schema.` };
     }
   }
-  const feed: SpolveroFeed = {
+  const feed: StageFeed = {
     schema_version: version,
     command: raw.command,
-    pages: raw.pages as SpolveroPage[],
+    pages: raw.pages as StagePage[],
   };
-  if (remarks !== undefined) feed.remarks = remarks as SpolveroFeedRemark[];
+  if (remarks !== undefined) feed.remarks = remarks as StageFeedRemark[];
   return { ok: true, feed };
 }

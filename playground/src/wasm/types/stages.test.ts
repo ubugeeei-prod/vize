@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { SPOLVERO_FEED_SCHEMA_VERSION, layerId, negotiateSpolveroFeed } from "./spolvero";
+import { SPOLVERO_FEED_SCHEMA_VERSION, layerId, negotiateSpolveroFeed } from "./stages";
 
 const page = { path: "Component.vue", stage: "s1", pass: "parse", text: "<p />" };
 

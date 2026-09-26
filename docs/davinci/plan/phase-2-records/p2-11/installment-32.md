@@ -28,7 +28,7 @@ The durable witnesses are:
 - [`lowering_elements.rs`](../../../../../crates/vize_l1_to_l2/tests/lowering_elements.rs)
   - well-formed `v-show` lowers to `vue.show`; the deferral witness remains on
     a still-unmapped directive.
-- [`davinci_s2_show.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_show.rs)
+- [`davinci_s2_show.rs`](../../../../../crates/vize_atelier_dom/tests/l2_show.rs)
   - S2-vs-shipped byte fixtures plus per-node patch-flag extraction across the
     realized cases above.
 - [`emit_unsupported_census.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_census.rs)

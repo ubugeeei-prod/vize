@@ -4,7 +4,7 @@ mod diff;
 mod graph;
 mod imports;
 mod payload;
-mod spolvero;
+mod stages;
 
 #[cfg(test)]
 mod tests;
@@ -22,8 +22,8 @@ pub use payload::{
     InspectorTemplateSyntax, build_agent_report, build_payload, build_playground_url,
     serialize_agent_report, serialize_payload,
 };
-pub use spolvero::{
-    LADDER_STEP_KEY, LADDER_WALK_KEY, LadderClock, LadderRun, LadderStep, SpolveroFeed,
-    SpolveroPage, SpolveroRemark, l1_page, ladder_pages, ladder_profile, ladder_run,
-    spolvero_value, spolvero_value_with_remarks, template_remarks,
+pub use stages::{
+    LADDER_STEP_KEY, LADDER_WALK_KEY, LadderClock, LadderRun, LadderStep, StageFeed, StagePage,
+    StageRemark, l1_page, ladder_pages, ladder_profile, ladder_run, spolvero_value,
+    spolvero_value_with_remarks, template_remarks,
 };

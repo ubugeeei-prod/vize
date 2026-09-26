@@ -23,7 +23,7 @@ mod support;
 use vize_l0::Allocator;
 use vize_l1_to_l2::emit_dom_source;
 
-mod davinci_l2_slots {
+mod l2_slots {
     use super::*;
 
     mod battery;

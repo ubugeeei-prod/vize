@@ -11,7 +11,7 @@ outlet paths the old emitter used.
 
 The durable witnesses are:
 
-- [`davinci_s2_expression_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_expression_residuals.rs)
+- [`davinci_s2_expression_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/l2_expression_residuals.rs)
   - compares the expression residuals against shipped DOM output.
 - [`props_value.rs`](../../../../../crates/vize_l1_to_l2/src/emit/props_value.rs)
   and [`children.rs`](../../../../../crates/vize_l1_to_l2/src/emit/children.rs)

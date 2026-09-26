@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { formatArg, summarizeRemarks, type SpolveroRemark } from "./remarks";
+import { formatArg, summarizeRemarks, type StageRemark } from "./remarks";
 
 const props = defineProps<{
-  remarks: SpolveroRemark[];
+  remarks: StageRemark[];
 }>();
 
 const emit = defineEmits<{
   /** Show a remark's authored site in the source. */
-  locate: [SpolveroRemark];
+  locate: [StageRemark];
 }>();
 
 const summary = computed(() => summarizeRemarks(props.remarks));

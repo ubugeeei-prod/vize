@@ -47,7 +47,7 @@ use vize_l2_to_l3::L3PartitionFolio;
 use vize_l3::folio::L3Folio;
 use vize_l3::values_folio::L3ValuesFolio;
 
-use super::SpolveroPage;
+use super::StagePage;
 
 /// A monotonic clock in nanoseconds, supplied by the host. The library takes
 /// no clock of its own: native hosts can pass `Instant`, the browser build
@@ -72,7 +72,7 @@ pub struct LadderStep {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LadderRun {
     /// Every stage page, in pipeline order (see the module table).
-    pub pages: Vec<SpolveroPage>,
+    pub pages: Vec<StagePage>,
     /// Every step, in run order.
     pub steps: Vec<LadderStep>,
     /// Every walk of the transform plan, in run order; `pass` names the
@@ -83,7 +83,7 @@ pub struct LadderRun {
 /// Every stage page for `template`, in pipeline order (see the module
 /// table). `path` names the source file on every page.
 #[must_use]
-pub fn ladder_pages(path: &str, template: &str) -> Vec<SpolveroPage> {
+pub fn ladder_pages(path: &str, template: &str) -> Vec<StagePage> {
     ladder_run(path, template, &|| 0).pages
 }
 
@@ -145,7 +145,7 @@ impl PassObserver for PassStart<'_> {
 /// [`ladder_pages`] plus the wall time of every step by `clock`.
 #[must_use]
 pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderRun {
-    let page = |stage: &str, pass: &str, text: String| SpolveroPage {
+    let page = |stage: &str, pass: &str, text: String| StagePage {
         path: Some(String::from(path)),
         stage: String::from(stage),
         pass: String::from(pass),
@@ -192,7 +192,7 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
             plan.print_to_string(FolioMode::Full),
         ));
     }
-    pages.extend(dump.pages.into_iter().map(|dumped| SpolveroPage {
+    pages.extend(dump.pages.into_iter().map(|dumped| StagePage {
         path: Some(String::from(path)),
         stage: dumped.stage,
         pass: dumped.pass,

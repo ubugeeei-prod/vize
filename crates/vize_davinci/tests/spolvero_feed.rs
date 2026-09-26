@@ -13,7 +13,7 @@ use std::process::{Command, Output, Stdio};
 
 use davinci_test_support::schema as schema_check;
 use vize_davinci::folio::dump::FolioDump;
-use vize_davinci::folio::feed::{SpolveroFeed, SpolveroFeedSchemaMismatch};
+use vize_davinci::folio::feed::{StageFeed, StageFeedSchemaMismatch};
 use vize_davinci::pass::{Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved};
 
 /// A canonical `[budget-observer]` page - the smallest committed-format
@@ -68,14 +68,14 @@ fn negotiate_feed_schema(feed: &serde_json::Value) -> Result<(), SchemaGateError
     let Ok(version) = u32::try_from(version) else {
         return Err(SchemaGateError::NonNumericVersion);
     };
-    SpolveroFeed::negotiate_schema_version(version).map_err(SchemaGateError::VersionMismatch)
+    StageFeed::negotiate_schema_version(version).map_err(SchemaGateError::VersionMismatch)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum SchemaGateError {
     MissingVersion,
     NonNumericVersion,
-    VersionMismatch(SpolveroFeedSchemaMismatch),
+    VersionMismatch(StageFeedSchemaMismatch),
 }
 
 /// Load the committed schema relative to this crate's manifest.
@@ -156,7 +156,7 @@ fn the_feed_escapes_page_text_into_valid_json_exactly() {
     let nasty = "a\"b\\c\nd\re\tf\u{1}g\u{3042}\n";
     let mut dump = FolioDump::new(false);
     dump.after_pass(&event, nasty);
-    let feed = SpolveroFeed::of_dump("davinci-opt", &dump);
+    let feed = StageFeed::of_dump("davinci-opt", &dump);
 
     let json = feed.to_json();
     assert_eq!(
@@ -248,18 +248,16 @@ fn consumers_negotiate_schema_version_before_reading_pages() {
     feed["schema_version"] = serde_json::Value::from(2);
     assert_eq!(
         negotiate_feed_schema(&feed),
-        Err(SchemaGateError::VersionMismatch(
-            SpolveroFeedSchemaMismatch {
-                expected: 1,
-                found: 2,
-            }
-        ))
+        Err(SchemaGateError::VersionMismatch(StageFeedSchemaMismatch {
+            expected: 1,
+            found: 2,
+        }))
     );
 }
 
 #[test]
 fn the_feed_carries_remarks_beside_the_pages() {
-    use vize_davinci::folio::feed::SpolveroRemark;
+    use vize_davinci::folio::feed::StageRemark;
     use vize_davinci::pass::RemarkKind;
     use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
     use vize_l0::{Span, String};
@@ -268,8 +266,8 @@ fn the_feed_carries_remarks_beside_the_pages() {
         key: String::from(key),
         value: RemarkArgValue::Str(String::from(value)),
     };
-    let mut feed = SpolveroFeed::new("inspector");
-    feed.remarks.push(SpolveroRemark {
+    let mut feed = StageFeed::new("inspector");
+    feed.remarks.push(StageRemark {
         path: Some(String::from("src/App.vue")),
         remark: RecordedRemark {
             stage: String::from("s2"),

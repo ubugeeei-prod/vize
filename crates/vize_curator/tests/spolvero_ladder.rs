@@ -14,7 +14,7 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_curator::inspector::{SpolveroPage, ladder_pages, spolvero_value};
+use vize_curator::inspector::{StagePage, ladder_pages, spolvero_value};
 
 const TEMPLATE: &str = "\n  <div :class=\"cls\">{{ msg }}</div>\n  <Comp v-model=\"x\"><template #a>hi</template></Comp>\n";
 
@@ -158,7 +158,7 @@ fn load_schema() -> serde_json::Value {
     serde_json::from_str(&text).expect("committed schema is valid JSON")
 }
 
-fn rungs(pages: &[SpolveroPage]) -> Vec<(&str, &str)> {
+fn rungs(pages: &[StagePage]) -> Vec<(&str, &str)> {
     pages
         .iter()
         .map(|page| (page.stage.as_str(), page.pass.as_str()))

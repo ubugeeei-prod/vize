@@ -12,7 +12,7 @@ pub(crate) type HostClock<'c> = &'c dyn Fn() -> u64;
 pub(super) fn spolvero_members(
     filename: &str,
     template: Option<&str>,
-    remarks: Vec<vize_curator::inspector::SpolveroRemark>,
+    remarks: Vec<vize_curator::inspector::StageRemark>,
     clock: HostClock<'_>,
 ) -> (serde_json::Value, serde_json::Value) {
     let run =

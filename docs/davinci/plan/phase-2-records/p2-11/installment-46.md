@@ -10,7 +10,7 @@ shape instead of refusing nested structural combinations at the branch boundary.
 
 The durable witnesses are:
 
-- [`davinci_s2_if_for.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_if_for.rs)
+- [`davinci_s2_if_for.rs`](../../../../../crates/vize_atelier_dom/tests/l2_if_for.rs)
   - compares the nested `v-if` / `v-for` S2 output against the shipped DOM lane.
 - [`emit_if.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_if.rs)
   - pins the direct S2 emitter output for the structural lowering.

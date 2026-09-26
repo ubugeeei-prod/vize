@@ -10,7 +10,7 @@ same text fact shape the shipped codegen observes.
 
 The durable witnesses are:
 
-- [`davinci_s2_text_facts.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_text_facts.rs)
+- [`davinci_s2_text_facts.rs`](../../../../../crates/vize_atelier_dom/tests/l2_text_facts.rs)
   - compares slot text fact behavior against shipped output.
 - [`vslot_pass.rs`](../../../../../crates/vize_l1_to_l2/tests/vslot_pass.rs)
   - pins the slot pass consumption law.

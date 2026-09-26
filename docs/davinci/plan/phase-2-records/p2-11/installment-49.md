@@ -10,7 +10,7 @@ of being rejected when the slot carrier also has a key.
 
 The durable witnesses are:
 
-- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_slots.rs)
+- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/l2_slots.rs)
   - compares keyed forwarding against the shipped DOM output.
 - [`emit_create_slots.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_create_slots.rs)
   - pins the direct `createSlots` output.

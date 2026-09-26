@@ -3,9 +3,9 @@
 // pass timeline in feed order. Pure data shaping over the negotiated feed -
 // every fact shown comes from a page the compiler printed.
 
-import { layerId, type SpolveroFeed, type SpolveroPage } from "../../wasm/types/spolvero";
+import { layerId, type StageFeed, type StagePage } from "../../wasm/types/stages";
 import type { PageKind } from "./folioLines";
-import type { SpolveroRemark } from "./remarks";
+import type { StageRemark } from "./remarks";
 import { parseFusionPlan, planWalks, type TimelineWalk } from "./fusion";
 
 export type RungId = "l1" | "l2" | "l3";
@@ -55,7 +55,7 @@ export interface StageLadder {
   /** Stage names the view does not know how to place, kept visible. */
   unplaced: string[];
   /** The passes' optimization remarks for this file, in canonical order. */
-  remarks: SpolveroRemark[];
+  remarks: StageRemark[];
   /** The L2 transform plan's walks, in run order (empty without a plan page). */
   walks: TimelineWalk[];
 }
@@ -125,17 +125,17 @@ function pageLabel(stage: string, pass: string): string {
  * and `walkTimings` (keyed `stage/lead-pass`) each walk's.
  */
 export function buildLadder(
-  feed: SpolveroFeed,
+  feed: StageFeed,
   path?: string,
   timings: ReadonlyMap<string, number> = new Map(),
   walkTimings: ReadonlyMap<string, number> = new Map(),
 ): StageLadder {
-  const pages: SpolveroPage[] = feed.pages
+  const pages: StagePage[] = feed.pages
     .filter((page) => path === undefined || page.path === path)
     .map((page) => ({ ...page, stage: layerId(page.stage) }));
   const grouped: Record<RungId, LadderPage[]> = { l1: [], l2: [], l3: [] };
   const unplaced: string[] = [];
-  const remarks: SpolveroRemark[] = (feed.remarks ?? [])
+  const remarks: StageRemark[] = (feed.remarks ?? [])
     .filter((remark) => path === undefined || remark.path === path)
     .map(({ stage, pass, kind, name, span, args }) => ({
       stage: layerId(stage),

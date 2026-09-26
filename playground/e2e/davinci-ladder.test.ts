@@ -3,7 +3,7 @@
 // print lands on the authored source the editor highlights.
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { loadWasm, type WasmModule } from "../src/wasm";
-import { negotiateSpolveroFeed } from "../src/wasm/types/spolvero";
+import { negotiateSpolveroFeed } from "../src/wasm/types/stages";
 import {
   LADDER_STEP_KEY,
   ladderStepTimings,
@@ -12,12 +12,12 @@ import {
   type ProfileExport,
 } from "../src/wasm/types/profile";
 import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
-import { buildLadder, type StageLadder } from "../src/features/davinci/ladder";
-import { folioLines } from "../src/features/davinci/folioLines";
-import { parseProvenance, recordsForNode } from "../src/features/davinci/provenance";
-import { remarksAt, summarizeRemarks } from "../src/features/davinci/remarks";
-import { templateBytesToSfcRange, templateStartInSfc } from "../src/features/davinci/offsets";
-import { flameGraph } from "../src/features/davinci/flame";
+import { buildLadder, type StageLadder } from "../src/features/stages/ladder";
+import { folioLines } from "../src/features/stages/folioLines";
+import { parseProvenance, recordsForNode } from "../src/features/stages/provenance";
+import { remarksAt, summarizeRemarks } from "../src/features/stages/remarks";
+import { templateBytesToSfcRange, templateStartInSfc } from "../src/features/stages/offsets";
+import { flameGraph } from "../src/features/stages/flame";
 
 const FILENAME = "Component.vue";
 let wasm: WasmModule;
