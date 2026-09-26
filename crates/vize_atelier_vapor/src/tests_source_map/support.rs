@@ -17,7 +17,7 @@ pub(super) enum Lane {
     Legacy,
 }
 
-fn compile_on(source: &str, source_map: bool, lane: Lane) -> crate::VaporCompileResult {
+pub(super) fn compile_on(source: &str, source_map: bool, lane: Lane) -> crate::VaporCompileResult {
     let allocator = Allocator::new();
     let result = compile_vapor_with_experimental_options(
         &allocator,
@@ -44,7 +44,7 @@ fn compile_on(source: &str, source_map: bool, lane: Lane) -> crate::VaporCompile
 
 /// Absolute `(generated line, generated column, source line, source column,
 /// name index)` for every segment.
-fn decode(mappings: &str) -> std::vec::Vec<(usize, i64, i64, i64, Option<i64>)> {
+pub(super) fn decode(mappings: &str) -> std::vec::Vec<(usize, i64, i64, i64, Option<i64>)> {
     let mut segments = std::vec::Vec::new();
     let (mut source_line, mut source_column, mut name) = (0i64, 0i64, 0i64);
     for (line, group) in mappings.split(';').enumerate() {
