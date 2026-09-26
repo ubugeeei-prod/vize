@@ -61,7 +61,7 @@ fn cold_cache_child() {
     std::thread::scope(|scope| {
         let mut workers = Vec::new();
         for index in 0..8 {
-            let project = root.join(vize_carton::cstr!("{index}").as_str());
+            let project = root.join(vize_s0::cstr!("{index}").as_str());
             std::fs::create_dir_all(&project).unwrap();
             let barrier = &barrier;
             workers.push(scope.spawn(move || {
