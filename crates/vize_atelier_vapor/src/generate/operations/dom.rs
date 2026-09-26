@@ -64,6 +64,9 @@ pub(crate) fn set_prop_call(
         ("setClass", call("_setClass", None, ""))
     } else if *key == "style" {
         ("setStyle", call("_setStyle", None, ""))
+    } else if *key == "value" && set_prop.tag == "option" && !set_prop.prop_modifier {
+        // Select models read the option's raw `_value`, not its DOM string.
+        ("setValue", call("_setValue", None, ""))
     } else if set_prop.prop_modifier {
         ("setDOMProp", call("_setDOMProp", Some(&named), ""))
     } else if is_svg {

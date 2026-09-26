@@ -1,4 +1,4 @@
-//! `v-model` on a native input/textarea or an ordinary component. S2 carries
+//! `v-model` on a native input/textarea/select or an ordinary component. S2 carries
 //! the same reference for reads and writes, an optional static argument, and
 //! the owner kind. The shared generator realizes either the DOM directive or
 //! the component's prop, update listener, and modifiers prop.
@@ -63,7 +63,7 @@ pub(super) fn model<'a>(
     let name = match (element, name.kind) {
         (Some("component"), ValueKind::Absent) => "modelValue",
         (Some("component"), ValueKind::Literal) if component_prop(name.text) => name.text,
-        (Some("input" | "textarea"), ValueKind::Absent) => "",
+        (Some("input" | "textarea" | "select"), ValueKind::Absent) => "",
         _ => return Err(LegacyReason::Binding.into()),
     };
     // Reads and writes share the same authored assignment target. Retained
@@ -75,7 +75,7 @@ pub(super) fn model<'a>(
         || text.starts_with('_')
         || text.starts_with('$')
         || text.contains("$event")
-        || !matches!(element, Some("input" | "textarea" | "component"))
+        || !matches!(element, Some("input" | "textarea" | "select" | "component"))
     {
         return Err(LegacyReason::Binding.into());
     }
@@ -108,7 +108,8 @@ pub(super) fn model<'a>(
 }
 
 /// A native model binds to an `<input>` with static `type`, or an empty
-/// `<textarea>`. Component models become props before this check.
+/// `<textarea>`, or a `<select>` checked by the separate parsing guard.
+/// Component models become props before this check.
 /// Textarea contents are RCDATA, so child text needs its own parser contract.
 pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
     for node in nodes {
@@ -148,7 +149,7 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
                 return Err(LegacyReason::Binding.into());
             }
             Content::Element {
-                tag: "input" | "textarea",
+                tag: "input" | "textarea" | "select",
                 ..
             } => {}
             _ if model.is_some() => return Err(LegacyReason::Binding.into()),

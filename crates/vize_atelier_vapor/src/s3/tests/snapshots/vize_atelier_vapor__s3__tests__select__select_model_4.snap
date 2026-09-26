@@ -1,0 +1,17 @@
+---
+source: crates/vize_atelier_vapor/src/s3/tests/select.rs
+expression: native.code
+---
+import { child as _child, toDisplayString as _toDisplayString, applySelectModel as _applySelectModel, setValue as _setValue, setElementText as _setElementText, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<select><option></option></select>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const n1 = _child(n0)
+  _applySelectModel(n0, () => (_ctx.selected), _value => (_ctx.selected = _value))
+  _renderEffect(() => {
+    _setValue(n1, _ctx.item)
+    _setElementText(n1, _toDisplayString(_ctx.label))
+  })
+  return n0
+}

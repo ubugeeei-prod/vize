@@ -1,0 +1,20 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map.rs
+expression: code
+---
+import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, applySelectModel as _applySelectModel, setValue as _setValue, renderEffect as _renderEffect, template as _template } from 'vue';
+const t0 = _template("<select multiple><option> </option><option>B</option></select>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  const n1 = _child(n0)
+  const n2 = _next(n1)
+  const x1 = _txt(n1)
+  _applySelectModel(n0, () => (_ctx.selected), _value => (_ctx.selected = _value))
+  _renderEffect(() => {
+    _setValue(n1, _ctx.first)
+    _setText(x1, _toDisplayString(_ctx.label))
+    _setValue(n2, _ctx.second)
+  })
+  return n0
+}

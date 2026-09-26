@@ -1,0 +1,16 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map.rs
+expression: segments
+---
+[
+    "1:23 \"select><\" -> \"select v\"",
+    "1:31 \"option v\" -> \"option v\"",
+    "1:38 \"value=\\\\\\\"\" -> \"value=\\\"a\"",
+    "1:46 \"a\\\\\\\">A</o\" -> \"a\\\">A</op\"",
+    "1:50 \"A</optio\" -> \"A</optio\"",
+    "1:61 \"option v\" -> \"option v\"",
+    "1:68 \"value=\\\\\\\"\" -> \"value=\\\"b\"",
+    "1:76 \"b\\\\\\\">B</o\" -> \"b\\\">B</op\"",
+    "1:80 \"B</optio\" -> \"B</optio\"",
+    "3:0 \"export f\" -> \"<select \"",
+]

@@ -15,6 +15,10 @@ use vize_atelier_core::{
 use vize_carton::{Allocator, String};
 
 const MALFORMED: &[&str] = &[
+    "<select v-model=\"x\"><option>a<option>b</select>",
+    "<select v-model=\"x\"><div>bad</div></select>",
+    "<select v-model=\"x\"><option><b>bad</b></option></select>",
+    "<select v-model=\"x\"><select v-model=\"y\"></select></select>",
     "<div a=\"1\" a=\"2\"></div>",
     "<div :a=\"x\" :a=\"y\"></div>",
     "<div></span>",

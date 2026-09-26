@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_vapor/src/s3/tests/select.rs
+expression: code
+---
+import { applySelectModel as _applySelectModel, template as _template } from 'vue';
+const t0 = _template("<select><option value=\"a\">A</option></select>", true)
+
+export function render(_ctx) {
+  const n0 = t0()
+  _applySelectModel(n0, () => (_ctx.replacement), _value => (_ctx.replacement = _value))
+  return n0
+}
