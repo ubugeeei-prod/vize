@@ -49,7 +49,7 @@ name = "davinci"
 harness = false
 
 [[test]]
-name = "davinci_l2_filters"
+name = "l2_filters"
 path = "tests/l2_filters.rs"
 required-features = ["legacy"]
 

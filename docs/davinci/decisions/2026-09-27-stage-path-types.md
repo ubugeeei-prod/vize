@@ -29,3 +29,12 @@ generator are outstanding. #6832 remains open and #6833 does not start here.
 Focused source and pure reader checks are local preparation. Rust workspace,
 WASM, browser and differential execution require exact-head Actions after
 the release owner lifts the publication hold.
+
+## Cargo target registration correction
+
+The first prepared path slice missed the explicit DOM filter test registration.
+The target becomes `l2_filters`, retaining its `legacy` required feature.
+A focused gate checks every workspace metadata target's source file and every
+explicit manifest target's registration. Cargo metadata alone may omit malformed
+explicit targets, so source-path existence without that cross-check is insufficient.
+The original move/protected-byte proofs do not establish runnable manifests.

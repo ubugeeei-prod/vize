@@ -30,7 +30,7 @@ FILES = {
     'playground/src/wasm/types/spolvero.ts': 'playground/src/wasm/types/stages.ts',
     'playground/src/wasm/types/spolvero.test.ts': 'playground/src/wasm/types/stages.test.ts',
 }
-ALLOWED_SUFFIXES = {'.rs', '.ts', '.vue', '.md', '.tsv', '.json', '.yml', '.pkl'}
+ALLOWED_SUFFIXES = {'.rs', '.ts', '.vue', '.md', '.tsv', '.json', '.yml', '.pkl', '.toml'}
 PROTECTED_SEGMENTS = {'snapshots', '__snapshots__', '_fixtures', 'fixtures', 'versions'}
 
 
@@ -136,6 +136,8 @@ def rewrite(name, source):
     needles = [*TYPES, *PREFIXES, *FILES, 'features/davinci/', 'wasm/types/spolvero', 'spolvero::']
     if name in {'crates/vize_curator/src/inspector.rs', 'crates/vize_vitrine/src/wasm/analyze.rs'}:
         needles.append('spolvero')
+    if name == 'crates/vize_atelier_dom/Cargo.toml':
+        needles.append('davinci_l2_filters')
     if name.startswith('playground/src/wasm/types/'):
         needles.append('./spolvero')
     if name in {'crates/vize_atelier_dom/tests/l2_slots.rs',
@@ -149,7 +151,10 @@ def rewrite(name, source):
         return re.sub(r'(<script\b[^>]*>)(.*?)(</script>)',
                       lambda m: m[1] + rewrite(name + '.ts', m[2]) + m[3], source, flags=re.S)
     if Path(name).suffix not in {'.rs', '.ts', '.vue'}:
-        return path_refs(source)
+        source = path_refs(source)
+        if name == 'crates/vize_atelier_dom/Cargo.toml':
+            source = source.replace('name = "davinci_l2_filters"', 'name = "l2_filters"')
+        return source
     result = []
     previous = ''
     for kind, start, end in tokens(source, name.endswith('.rs')):
