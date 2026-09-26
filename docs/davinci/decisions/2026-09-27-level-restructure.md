@@ -314,3 +314,11 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 in the companion record.
 
 [Nuxt critical CSS module identity](./2026-09-27-nuxt-critical-css.md) records [#6897](https://github.com/ubugeeei-prod/vize/issues/6897); compiler migration and SSR slot scope remain separate.
+
+## #6861 — Rust test phase measurements
+
+For [#6861](https://github.com/ubugeeei-prod/vize/issues/6861), measure
+workspace-test compilation and execution separately without changing gates.
+See the [measurement protocol](./2026-09-27-ci-measurements.md). Validate
+normal automatic CI artifacts before closing the issue; #6865 and #6868
+remain separate requirements before declaring full T1 coverage.

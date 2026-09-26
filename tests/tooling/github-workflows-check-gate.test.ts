@@ -220,11 +220,15 @@ test("PR and merge-group source checks are included in the required report", () 
   assert.match(commands("pr-rust-source"), /write-coverage-summary\.rs/);
   const rustSteps = sourceWorkflow.jobs?.["pr-rust-source"]?.steps ?? [];
   const pklIndex = rustSteps.findIndex((step) => step.name === "Install Pkl CLI");
-  const testIndex = rustSteps.findIndex((step) => step.name === "Test Rust workspace");
+  const buildIndex = rustSteps.findIndex((step) => step.name === "Build Rust workspace tests");
+  const runIndex = rustSteps.findIndex((step) => step.name === "Run Rust workspace tests");
   assert.ok(
-    pklIndex >= 0 && testIndex >= 0 && pklIndex < testIndex,
-    "Pkl fixtures need the CLI before workspace tests",
+    pklIndex >= 0 && buildIndex >= 0 && pklIndex < buildIndex,
+    "Pkl fixtures need the CLI before workspace test compilation",
   );
+  assert.ok(runIndex > buildIndex, "Workspace test compilation must precede execution");
+  assert.match(rustSteps[buildIndex]?.run ?? "", /cargo test --workspace --no-run --timings/);
+  assert.match(rustSteps[runIndex]?.run ?? "", /cargo test --workspace(?:;|$)/m);
   assert.match(commands("pr-js-packages"), /vp run --workspace-root test:js/);
   assert.match(commands("pr-js-packages"), /vp run --filter '\.\/npm\/ui' check/);
   assert.match(commands("pr-tooling-scripts"), /vp run --workspace-root test:scripts/);
