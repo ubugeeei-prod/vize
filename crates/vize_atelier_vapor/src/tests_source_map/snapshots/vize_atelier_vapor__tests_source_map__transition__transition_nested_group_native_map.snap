@@ -1,0 +1,12 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/transition.rs
+expression: native_segments
+---
+[
+    "1:23 \"li><span\" -> \"li v-for\"",
+    "1:27 \"span> </\" -> \"span>{{ \"",
+    "3:0 \"export f\" -> \"<Transit\"",
+    "9:17 \"_createF\" -> \"<li v-fo\"",
+    "9:35 \"_ctx.ite\" -> \"items\\\" :\" [items]",
+    "13:58 \"_for_ite\" -> \"item.tex\"",
+]

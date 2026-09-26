@@ -52,10 +52,34 @@ fn controlled_transition_hooks_match_native_retained_and_official_runtime() {
             r#"<li v-for="item in items" :key="item.id" :data-id="item.id">{{ item.text }}</li>"#,
             include_str!("__snapshots__/group-div.json"),
         ),
+        (
+            "nested-static",
+            "Transition",
+            r#"<div data-id="child"><button data-id="inner" @click="send">{{ label }}</button></div>"#,
+            include_str!("__snapshots__/nested-static.json"),
+        ),
+        (
+            "nested-single",
+            "Transition",
+            r#"<div v-if="show" data-id="child"><button data-id="inner" @click="send">{{ label }}</button></div>"#,
+            include_str!("__snapshots__/nested-single.json"),
+        ),
+        (
+            "nested-cancel",
+            "Transition",
+            r#"<div v-if="show" data-id="child"><button data-id="inner" @click="send">{{ label }}</button></div>"#,
+            include_str!("__snapshots__/nested-cancel.json"),
+        ),
+        (
+            "group-nested",
+            "TransitionGroup",
+            r#"<li v-for="item in items" :key="item.id" :data-id="item.id"><span :data-id="item.id + '-inner'">{{ item.text }}</span></li>"#,
+            include_str!("__snapshots__/group-nested.json"),
+        ),
     ] {
         let tag = if scenario == "group-div" {
             r#"tag="div" "#
-        } else if scenario == "group" {
+        } else if scenario.starts_with("group") {
             r#"tag="ul" "#
         } else {
             ""

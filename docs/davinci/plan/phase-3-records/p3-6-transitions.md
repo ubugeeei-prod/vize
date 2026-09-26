@@ -8,11 +8,12 @@ Admission requires authored `:css="false"`. A Transition contains one implicit
 HTML root, optionally carrying a single `v-if` without an else branch. A
 TransitionGroup contains one keyed, direct HTML `v-for` root and a static
 `tag="ul"` or `tag="div"`. Root tags are `p`, `button`, `div`, `span` and `li`;
-children are text/interpolations. Root bindings are ordinary props and events. The known enter/leave lifecycle listener names
-retain their authored expression ASTs.
+children are ordinary HTML, text and interpolations to a maximum descendant
+depth of 16. Element bindings are ordinary props and events. The known
+enter/leave lifecycle listener names retain their authored expression ASTs.
 
 CSS transitions, appearance, modes, dynamic tags, computed wrapper props,
-spreads, components, named/scoped slots, multiple roots, nested elements or controls,
+spreads, components, named/scoped slots, multiple roots, nested controls,
 keyed Transition roots and other directives remain explicit legacy selections.
 These restrictions describe this native contract, not every capability of the
 published runtime. Full P3-6 acceptance remains open.
@@ -41,11 +42,20 @@ the cancelled enter. Final unmount and late callbacks leave the host empty.
 The keyed group traces use both accepted container tags. They check pending
 removal and addition, hook order, retained keyed node identities, text updates,
 reordering, removal of every child and final teardown. Runtime warnings and
-errors are asserted empty. CSS transform/move animation is not measured.
+errors are asserted empty. Nested static, conditional and keyed roots additionally
+check descendant text and event delivery, cancellation, node identities and
+teardown. Nine scenarios run independently against all three compiler outputs.
+CSS transform/move animation is not measured.
 
 The compile contract covers both identifier prefix settings, exact parser
-agreement and native/retained code equality. Source-map snapshots cover a
-conditional root and keyed loop. Payload mutations change the checked group
+agreement and native/retained code equality for text-only roots. Nested HTML
+preserves the reviewed numbering policies recorded in [P3-6](p3-6.md): native
+parent-first allocation and retained child-first allocation. The comparison
+renames only resolved generated binding symbols and their references; authored
+properties, shorthand keys, literals and shadowed bindings remain exact. Direct
+`eval` is refused by that test helper because it can observe binding names.
+Both nested lanes have separate exact generated-code and decoded source-map
+snapshots. Ordinary existing snapshots remain unchanged. Payload mutations change the checked group
 container independently of the authored source and refuse a changed CSS
 operand. The isolated floor binary checks zero legacy walks and expression
 reparses; the seven existing allocation ceilings are unchanged.

@@ -34,6 +34,7 @@ thiserror = { workspace = true }
 davinci-differential = ["vize_atelier_core/davinci-differential"]
 
 [dev-dependencies]
+oxc_semantic = { workspace = true }
 criterion = { workspace = true }
 davinci_harness = { workspace = true }
 vize_davinci = { workspace = true }

@@ -1,0 +1,25 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/transition.rs
+expression: native
+---
+import { createComponent as _createComponent, extend as _extend, child as _child, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, VaporTransitionGroup as _VaporTransitionGroup, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<li><span> </span></li>")
+
+export function render(_ctx) {
+  const n4 = _createComponent(_VaporTransitionGroup, {
+    tag: () => ("ul"),
+    css: () => (false)
+  }, {
+    "default": _extend(() => {
+      const n0 = _createFor(() => (_ctx.items), (_for_item0) => {
+        const n2 = t0()
+        const n3 = _child(n2)
+        const x3 = _txt(n3)
+        _renderEffect(() => _setText(x3, _toDisplayString(_for_item0.value.text)))
+        return n2
+      }, (item) => (item.id), 40)
+      return n0
+    }, { _: 1 })
+  }, true)
+  return n4
+}

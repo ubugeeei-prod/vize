@@ -31,6 +31,8 @@ mod tests_dotted_slots;
 #[cfg(test)]
 mod tests_dynamic_component;
 #[cfg(test)]
+mod tests_generated_identity;
+#[cfg(test)]
 mod tests_insertion_state;
 #[cfg(test)]
 mod tests_setup_components;
