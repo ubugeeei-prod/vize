@@ -99,6 +99,12 @@ input observations and runner provenance; runner 1 also retains separate
 detailed bridge attribution. `davinci-production-summary` validates and
 aggregates those reports.
 
+The committed [raw timing record](./p3-6-production-control.samples.json)
+preserves every cohort's paired arrays and all three runner provenance dumps
+beyond artifact expiry. It pins the exact raw-report hashes and the shared
+per-input observation hash; full per-input records and separate detailed
+attribution remain in the run artifacts.
+
 Ratios below are selected divided by retained. Each row retains the three
 independent runner ratios; the center is their median. Clean accepted cohorts
 exclude diagnostics on either lane. These controlled observations show slower
