@@ -20,18 +20,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .nth(1)
         .ok_or("usage: davinci_production_perf <output.json>")?;
     let corpus = corpus::load(&root.join("tests/_fixtures"))?;
+    let attribution_only = env::args()
+        .nth(2)
+        .is_some_and(|arg| arg == "--attribution-only");
+    if cfg!(feature = "davinci-production-profile") && !attribution_only {
+        return Err("detailed attribution builds cannot produce timed acceptance samples".into());
+    }
     let mut shapes = Vec::new();
     for shape in Shape::ALL {
-        shapes.push(measure::run(&corpus, shape)?);
+        shapes.push(if attribution_only {
+            measure::attribution(&corpus, shape)
+        } else {
+            measure::run(&corpus, shape)?
+        });
     }
     let report = json!({
         "schema_version": 1,
+        "mode": if attribution_only { "attribution-only (no acceptance timings)" } else { "controlled-pairs" },
         "head_sha": env::var("VIZE_BENCH_HEAD_SHA").unwrap_or_default(),
         "manifest_sha256": corpus::manifest_hash(&corpus),
         "files": corpus.len(),
         "profile": "ci-opt (opt-level=3, thin LTO, 16 codegen units)",
         "allocator": "mimalloc (same default as native CLI; allocation tracking disabled)",
-        "features": "native,davinci-production-bench; no retained-AST differential dual-run",
+        "features": if cfg!(feature = "davinci-production-profile") { "native,davinci-production-profile; no retained-AST differential dual-run" }
+            else { "native,davinci-production-bench; no retained-AST differential dual-run" },
         "options": "P3-17 shipping adapter shapes; Standard syntax, default codegen, default DOM compiler options, script/style ids=fixture path; scoped styles inferred; inline DOM/Vapor, separate DOM module/SSR",
         "window": "parse_sfc + compile_sfc_for_adapter + result destruction; source I/O excluded; profiler disabled; retained scope changes outside timing",
         "sampling": "one warmup batch per lane; 9 samples, 5 corpus passes each; lane order alternates each sample; all/accepted/fallback/diagnostic/no-template/parse-error/routed-Vapor cohorts reported separately",

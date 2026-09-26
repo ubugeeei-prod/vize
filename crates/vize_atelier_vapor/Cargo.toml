@@ -32,6 +32,8 @@ thiserror = { workspace = true }
 # Whole-SFC retained selector for the controlled production benchmark only.
 # No parser differential or code path is enabled in normal builds.
 davinci-benchmark = []
+# Attribution binary only; kept out of profile-disabled acceptance timings.
+davinci-benchmark-profile = ["davinci-benchmark"]
 # Arms the Davinci P1-7 differential lane in this crate's retained resolve
 # path and in vize_atelier_core's migrated sites. Off in production builds.
 davinci-differential = ["vize_atelier_core/davinci-differential"]

@@ -23,7 +23,7 @@ on:
         type: boolean
 
 concurrency:
-  group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}
+  group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}
   cancel-in-progress: true
 
 env:
@@ -299,6 +299,13 @@ jobs:
             uname -a
             lscpu
           } > production-perf/runner.txt
+      - name: Collect detailed bridge attribution in a separate binary
+        if: ${{ matrix.repetition == 1 }}
+        env:
+          VIZE_BENCH_HEAD_SHA: ${{ inputs.head_sha }}
+        run: |
+          vp exec cargo build --profile ci-opt -p vize_atelier_sfc --features davinci-production-profile --example davinci_production_perf
+          target/ci-opt/examples/davinci_production_perf production-perf/bridge-attribution.json --attribution-only
       - name: Upload raw samples and separate attribution profiles
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

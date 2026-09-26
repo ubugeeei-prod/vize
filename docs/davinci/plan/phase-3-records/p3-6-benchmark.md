@@ -1,5 +1,9 @@
 # P3-6 Vapor compile comparison
 
+The complementary [whole-SFC protocol](./p3-6-production-perf.md) measures the
+four P3-17 shipping adapter shapes on three independent reference runners.
+It reports native adoption separately from admitted and fallback timings.
+
 The manual `Criterion Bench` workflow measures the seven `vapor_native_pair`
 fixtures shared by `crates/vize_atelier_vapor/benches/davinci.rs` and
 `tools/benchmarks/scripts/vapor-compiler-compare.mjs`. Each fixture compiles
