@@ -12,6 +12,7 @@ mod names;
 mod once;
 mod operands;
 mod order;
+mod select;
 mod slots;
 mod spread;
 mod teleport;
@@ -172,6 +173,7 @@ pub(super) fn admit<'a>(
     slots::check(&nodes, &parents)?;
     teleport::check(&nodes)?;
     model::check(&nodes)?;
+    select::check(&nodes, &parents)?;
     once::check(&nodes, &parents)?;
     spread::check(&nodes)?;
     tree::check_nesting(&nodes, &parents, alloc)?;

@@ -308,6 +308,7 @@ mod elements;
 mod events;
 mod models;
 mod parser_agreement;
+mod select;
 mod slots;
 mod spreads;
 mod teleport;

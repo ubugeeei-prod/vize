@@ -25,7 +25,8 @@ pub(super) fn element<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Resul
         // These HTML tags have ordinary template parsing. Parser-context
         // elements (tables, select, templates, namespaces) require a separate
         // contract before their child indexes can be materialized. Textarea is
-        // admitted only when empty and model-bound (checked after attachment).
+        // admitted only when empty and model-bound. Select options need the
+        // flat model-bound parsing contract (checked after attachment).
         // List items are admitted with the same nesting guard as buttons.
         // A `<template>` is admitted only as slot content (checked once its
         // slot binding attaches), and never carries attributes.
@@ -35,7 +36,7 @@ pub(super) fn element<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Resul
             | "label" | "input" | "img" | "br" | "hr" | "ul" | "ol" | "li" | "template"
             | "p" | "a" | "form" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
             | "abbr" | "code" | "data" | "kbd" | "mark" | "samp" | "sub" | "sup"
-            | "time" | "var" | "textarea")
+            | "time" | "var" | "textarea" | "select" | "option")
         || tag.value.text == "template" && values.len() != 2
     {
         return Err(LegacyReason::Element.into());
