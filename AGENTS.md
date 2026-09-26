@@ -47,6 +47,13 @@ issues are all closed.
   - Legacy products keep byte-exact output, checked by the differential
     corpus.
   - A PR that fixes legacy behavior must add a corpus fixture.
+  - Before replacing a product's legacy path, that product's fix-history
+    fixture issue must be closed:
+    [#6879](https://github.com/ubugeeei-prod/vize/issues/6879) type checker,
+    [#6880](https://github.com/ubugeeei-prod/vize/issues/6880) compiler,
+    [#6881](https://github.com/ubugeeei-prod/vize/issues/6881) linter,
+    [#6882](https://github.com/ubugeeei-prod/vize/issues/6882) formatter,
+    [#6883](https://github.com/ubugeeei-prod/vize/issues/6883) LSP.
 - **Dependencies:** level crates never take normal dependencies on legacy
   crates (`vize_armature`, `vize_relief`, `vize_atelier_*`,
   `vize_croquis`).
