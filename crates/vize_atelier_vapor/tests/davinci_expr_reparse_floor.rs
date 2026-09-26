@@ -53,6 +53,11 @@ fn vapor_legacy_reparse_floor_holds() {
     // the same single-test binary so process-global probes cannot race.
     for source in [
         r#"<slot :name="name"></slot>"#,
+        r#"<Child :[propName]="value" @[eventName]="record" />"#,
+        r#"<Child label="static" :[label]="value" @[eventName]="record" />"#,
+        r#"<component :is="view" :[is]="value" @[eventName]="record" />"#,
+        r#"<Child :[names[selected]]="value" @[events[selected]]="record(value)" />"#,
+        r#"<Child :[name.toLowerCase()]="value" @['saved-'+suffix]="(v) => record(v)" />"#,
         r#"<slot :name="names[selected]" :value="count"><b>{{ fallback }}</b></slot>"#,
         r#"<slot :name="enabled ? first : second"></slot>"#,
         r#"<slot :name="'prefix-' + selected"></slot>"#,

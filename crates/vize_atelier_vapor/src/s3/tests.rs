@@ -2,6 +2,9 @@ use super::{
     LegacyReason, VaporS3BridgeOptions, VaporS3BridgeStatus, admit, lower_source_for_vapor,
     retained::Retained,
 };
+
+#[path = "tests/component_names.rs"]
+mod component_names;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Allocator;
 use vize_s3::{

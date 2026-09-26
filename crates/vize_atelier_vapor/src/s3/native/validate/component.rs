@@ -78,6 +78,7 @@ fn static_props<'a>(
                 };
                 props.push(Prop {
                     key: name,
+                    dynamic_name: None,
                     value: literal,
                     value_kind: crate::ir::PropValueKind::Expression,
                     dynamic: false,

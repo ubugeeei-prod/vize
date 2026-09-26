@@ -84,6 +84,7 @@ impl<'s, 'a> Retained<'s, 'a> {
         for binding in bindings {
             let name = match binding {
                 BindingOp::SlotContent(slot) => slot.name,
+                BindingOp::Bind(bind) => bind.name,
                 BindingOp::On(on) => on.name,
                 _ => None,
             };
