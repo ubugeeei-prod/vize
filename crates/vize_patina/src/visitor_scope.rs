@@ -5,8 +5,8 @@
 //! template-local bindings from unresolved identifiers.
 
 use vize_croquis::drawer::{extract_slot_props, parse_v_for_expression};
+use vize_l0::CompactString;
 use vize_relief::ExpressionNode;
-use vize_s0::CompactString;
 
 /// Parse v-for expression to extract variable names.
 ///
@@ -43,11 +43,11 @@ pub fn parse_slot_scope_variables(exp: &ExpressionNode) -> Vec<CompactString> {
 #[cfg(test)]
 mod tests {
     use super::{CompactString, ExpressionNode, parse_slot_scope_variables, parse_v_for_variables};
+    use vize_l0::Allocator;
     use vize_relief::SimpleExpressionNode;
-    use vize_s0::Allocator;
 
     fn make_simple_exp<'a>(allocator: &'a Allocator, content: &'a str) -> ExpressionNode<'a> {
-        ExpressionNode::Simple(vize_s0::Box::new_in(
+        ExpressionNode::Simple(vize_l0::Box::new_in(
             SimpleExpressionNode::new(content, false, vize_relief::SourceLocation::STUB),
             &allocator,
         ))

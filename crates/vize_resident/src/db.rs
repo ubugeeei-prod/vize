@@ -3,23 +3,23 @@
 //! ```text
 //! SourceFile.text (input, LOW) ──► sfc_blocks ──► Block { source, start }
 //!                                                   │ (tracked fields)
-//!                         Block.source ──► s1_block │
+//!                         Block.source ──► l1_block │
 //!  ProjectConfig (input, HIGH) ─┐                   │
-//!                         Block.source ──► s2_page ◄┘
+//!                         Block.source ──► l2_page ◄┘
 //! ```
 //!
 //! `sfc_blocks` re-runs on every keystroke, but it only *re-creates* the
 //! file's [`Block`]s: a block's identity is `(file, kind, ordinal)`, and its
-//! content ([`BlockSource`], carrying the P5-1a S0 key) and position
-//! (`start`, the S0 side table) are separate tracked fields. Salsa compares
+//! content ([`BlockSource`], carrying the P5-1a L0 key) and position
+//! (`start`, the L0 side table) are separate tracked fields. Salsa compares
 //! each re-created field with the previous value and bumps only the ones
 //! that changed, so an edit in one block leaves every other block's
-//! `source` untouched and their `s1_block` / `s2_page` memos are reused
+//! `source` untouched and their `l1_block` / `l2_page` memos are reused
 //! without running — backdating at the firewall. An edit above a block
 //! moves only its `start`, which no stage query reads.
 
 use salsa::{Database as _, Durability, Setter as _};
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::accounting::{Accounting, Recorder, tally};
 use crate::artifact::{
@@ -61,11 +61,11 @@ pub struct Block<'db> {
     /// Index among the file's blocks of the same kind.
     #[returns(copy)]
     pub ordinal: u32,
-    /// The block's content and S0 key — the firewall every stage reads.
+    /// The block's content and L0 key — the firewall every stage reads.
     #[tracked]
     #[returns(ref)]
     pub source: BlockSource,
-    /// File-absolute start of the content — the S0 side table.
+    /// File-absolute start of the content — the L0 side table.
     #[tracked]
     #[returns(copy)]
     pub start: u32,
@@ -80,16 +80,16 @@ pub fn sfc_blocks(db: &dyn salsa::Database, file: SourceFile) -> Vec<Block<'_>> 
         .collect()
 }
 
-/// The block's S1 artifact (`Some` for an HTML template block).
+/// The block's L1 artifact (`Some` for an HTML template block).
 #[salsa::tracked(returns(ref))]
-pub fn s1_block<'db>(db: &'db dyn salsa::Database, block: Block<'db>) -> Option<SurfaceArtifact> {
+pub fn l1_block<'db>(db: &'db dyn salsa::Database, block: Block<'db>) -> Option<SurfaceArtifact> {
     surface_artifact(block.source(db))
 }
 
-/// The block's S2 artifact (`Some` for template and style blocks), with
+/// The block's L2 artifact (`Some` for template and style blocks), with
 /// block-relative spans.
 #[salsa::tracked(returns(ref))]
-pub fn s2_page<'db>(db: &'db dyn salsa::Database, block: Block<'db>) -> Option<PageArtifact> {
+pub fn l2_page<'db>(db: &'db dyn salsa::Database, block: Block<'db>) -> Option<PageArtifact> {
     page_artifact(block.source(db), ProjectConfig::get(db).stage(db))
 }
 
@@ -185,8 +185,8 @@ impl ResidentDatabase {
                 ordinal: block.ordinal(self),
                 start: block.start(self),
                 source_key: block.source(self).key,
-                surface: s1_block(self, block).clone(),
-                page: s2_page(self, block).clone(),
+                surface: l1_block(self, block).clone(),
+                page: l2_page(self, block).clone(),
             })
             .collect()
     }
@@ -195,7 +195,13 @@ impl ResidentDatabase {
     #[must_use]
     pub fn take_accounting(&self) -> Accounting {
         tally(self.recorder.drain(), |ingredient| {
-            String::from(self.ingredient_debug_name(ingredient).as_ref())
+            // Accounting records keep their existing query IDs across source renames.
+            let name = self.ingredient_debug_name(ingredient);
+            String::from(match name.as_ref() {
+                "l1_block" => "s1_block",
+                "l2_page" => "s2_page",
+                name => name,
+            })
         })
     }
 }

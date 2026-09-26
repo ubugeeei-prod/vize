@@ -169,7 +169,7 @@ test("PR, merge group, and main push stay fast while full checks require schedul
   assert.match(commands("test-js-packages"), /vp run --workspace-root test:js/);
   assert.match(commands("clippy-and-test"), /cargo clippy --workspace/);
   assert.match(commands("clippy-and-test"), /cargo test --workspace/);
-  assert.match(commands("clippy-and-test"), /cargo bench -p vize_s1_to_s2/);
+  assert.match(commands("clippy-and-test"), /cargo bench -p vize_l1_to_l2/);
   assert.match(commands("branch-coverage"), /coverage:source:branch/);
   assert.match(commands("playground-test"), /test:browser/);
   assert.deepEqual(workflow.jobs?.["playground-test"]?.needs, ["build-js-packages"]);

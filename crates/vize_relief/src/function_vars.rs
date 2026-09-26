@@ -19,7 +19,7 @@ pub(crate) fn for_each_var_in_statements<'a>(
     statements: &[Statement<'a>],
     mut visit: impl FnMut(&BindingPattern<'a>),
 ) {
-    let mut pending: vize_s0::SmallVec<[_; 8]> = statements.iter().collect();
+    let mut pending: vize_l0::SmallVec<[_; 8]> = statements.iter().collect();
     while let Some(statement) = pending.pop() {
         match statement {
             Statement::VariableDeclaration(declaration) => {

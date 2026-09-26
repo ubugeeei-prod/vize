@@ -17,7 +17,7 @@
   only mandatory passes perform; mandatory passes run at every optimization
   level, are unfusable barriers, and are where user-facing dataflow
   diagnostics attach — dataflow-hungry lint rules become mandatory-diagnostic
-  passes over canonical S2/S3, which structurally ends dual diagnostic
+  passes over canonical L2/L3, which structurally ends dual diagnostic
   assembly. Only optional passes participate in fusion and the traversal
   budget; optimization tiers scale **budgets, never pass sets** (the Flambda2
   model — no forked pipelines, all tiers emit summary-compatible output).
@@ -53,12 +53,12 @@
   invalidation is "any used fingerprint changed". App-global facts (global
   components, app-level provide/inject, dialect-wide directives) are the
   orphan-instance equivalent and live in a dedicated global summary with its
-  own fingerprint. S3 code-shape decisions never enter a summary — contracts,
+  own fingerprint. L3 code-shape decisions never enter a summary — contracts,
   not chosen optimizations. Incrementalization is hybrid — only genuinely recursive
   fact groups (graph reachability, route typing, transitive slots) are
   incremental; block-local facts recompute from content-keyed artifacts.
   _Below_ salsa sits a Lean-style **snapshot tree**: stage tasks at natural
-  joints (header → block → S2 region) with one reuse rule — old syntax ≡ new
+  joints (header → block → L2 region) with one reuse rule — old syntax ≡ new
   syntax ⇒ adopt the old subtree — plus cascade-cancellation tokens, covering
   most keystroke traffic without pushing salsa finer.
 
@@ -69,18 +69,18 @@ tier; in-tree implementations are Vue-family only:
 
 | Contract                                    | Plugs in at                                             | In-tree                                | External (examples)                         |
 | ------------------------------------------- | ------------------------------------------------------- | -------------------------------------- | ------------------------------------------- |
-| Input dialect                               | S1 parser + S1→S2 lowering                              | Vue 3, Vue 2 (`legacy`), SFC, JSX, pug | Svelte, Solid, Astro                        |
-| Expression dialect                          | S2 `ExprRef` capability set                             | JS/TS (oxc)                            | MoonBit, Elixir-hosted                      |
-| Output target                               | S3/S2 → S4 emitter                                      | VDOM, Vapor, SSR, virtual TS, `.d.ts`  | Volt (Elixir), other hosts                  |
-| **JS plugins / custom rules** (charter #29) | S2 neutral-core view + fact query API, via napi/vitrine | rule authoring SDK                     | user-land lint rules, project-local plugins |
+| Input dialect                               | L1 parser + L1→L2 lowering                              | Vue 3, Vue 2 (`legacy`), SFC, JSX, pug | Svelte, Solid, Astro                        |
+| Expression dialect                          | L2 `ExprRef` capability set                             | JS/TS (oxc)                            | MoonBit, Elixir-hosted                      |
+| Output target                               | L3/L2 → L4 emitter                                      | VDOM, Vapor, SSR, virtual TS, `.d.ts`  | Volt (Elixir), other hosts                  |
+| **JS plugins / custom rules** (charter #29) | L2 neutral-core view + fact query API, via napi/vitrine | rule authoring SDK                     | user-land lint rules, project-local plugins |
 
 The JS tier serves end users (Vue developers write JS, not Rust) across all
 four charter-#29 hook families, each with a defined boundary: **custom rules
-and fact providers** see the neutral-core S2 view and declare fact demands
+and fact providers** see the neutral-core L2 view and declare fact demands
 exactly like Rust rules, executing outside the fused walks in batched passes;
-**compile transform hooks** join the pipeline at the single pre-canonical S2
+**compile transform hooks** join the pipeline at the single pre-canonical L2
 point (per-block batches — compilation waits there and only there, and a
-cache hit skips the join); **formatter/output hooks** attach after S4/format
+cache hit skips the join); **formatter/output hooks** attach after L4/format
 emission, batched per document. Node-visit batches cross the napi boundary in
 bulk, never per-node chatter.
 Each plugin's cost is attributed in output (a slow rule is visible), and JS

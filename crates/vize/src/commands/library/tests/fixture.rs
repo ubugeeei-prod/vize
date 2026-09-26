@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use clap::Parser;
 use serde_json::{Value, json};
-use vize_s0::String;
+use vize_l0::String;
 
 use super::super::error::LibResult;
 use super::super::fs_ops::{content_hash, sha256_hex};
@@ -74,9 +74,9 @@ pub fn write_registry_as(dir: &Path, package: &str, kind: &str, version: &str, i
             "name": item.name,
             "kind": kind,
             "title": item.name,
-            "description": vize_s0::cstr!("{} fixture item", item.name).as_str(),
+            "description": vize_l0::cstr!("{} fixture item", item.name).as_str(),
             "aliases": item.aliases,
-            "packageSubpath": vize_s0::cstr!("./{}", item.name).as_str(),
+            "packageSubpath": vize_l0::cstr!("./{}", item.name).as_str(),
             "entry": item.files.first().map(|(path, _)| *path).unwrap_or_default(),
             "files": files,
             "registryDependencies": item.deps,

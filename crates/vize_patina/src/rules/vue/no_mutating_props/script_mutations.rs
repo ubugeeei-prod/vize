@@ -29,7 +29,7 @@ use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::operator::UnaryOperator;
 use oxc_syntax::symbol::SymbolId;
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 const MUTATING_ARRAY_METHODS: &[&str] = &[
     "push",

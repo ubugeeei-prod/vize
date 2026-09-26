@@ -6,7 +6,7 @@ import {
   type StorageMeasurement,
 } from "./davinci-storage-scan.ts";
 
-export type StorageScope = "infra" | "s1" | "s2" | "s3" | "s1_to_s2" | "s2_to_s3";
+export type StorageScope = "infra" | "l1" | "l2" | "l3" | "l1_to_l2" | "l2_to_l3";
 export type VecCategory = "contract" | "analysis" | "lower" | "pass" | "emit";
 export type InventoryRow = {
   scope: StorageScope;
@@ -17,7 +17,7 @@ export type InventoryRow = {
 export type StorageSummary = StorageMeasurement & { files: number };
 export type ScopeSummary = Record<StorageKind, StorageSummary>;
 
-const scopes: StorageScope[] = ["infra", "s1", "s2", "s3", "s1_to_s2", "s2_to_s3"];
+const scopes: StorageScope[] = ["infra", "l1", "l2", "l3", "l1_to_l2", "l2_to_l3"];
 const categories: VecCategory[] = ["contract", "analysis", "lower", "pass", "emit"];
 const header = [
   "scope",
@@ -25,8 +25,8 @@ const header = [
   "file",
   "alloc_vec_direct",
   "alloc_vec_bound",
-  "s0_string_direct",
-  "s0_string_bound",
+  "l0_string_direct",
+  "l0_string_bound",
   "arena_vec_direct",
   "arena_vec_bound",
   "small_vec_direct",
@@ -34,7 +34,7 @@ const header = [
 ].join("\t");
 
 export const categoryReasons: Record<VecCategory, string> = {
-  contract: "variable-length owned Folio/S2 contract data",
+  contract: "variable-length owned Folio/L2 contract data",
   analysis: "unbounded diagnostics, lookup storage, and traversal results",
   lower: "source-sized lowering worklists and owned results",
   pass: "source-sized pass facts, provenance, and traversal worklists",
@@ -63,7 +63,7 @@ export function parseStorageInventory(source: string): InventoryRow[] {
     const storage = emptyFileStorage();
     const counts = values.map((value) => count(value, index + 2));
     [storage.allocVec.directPaths, storage.allocVec.boundUses] = counts.slice(0, 2);
-    [storage.s0String.directPaths, storage.s0String.boundUses] = counts.slice(2, 4);
+    [storage.l0String.directPaths, storage.l0String.boundUses] = counts.slice(2, 4);
     [storage.arenaVec.directPaths, storage.arenaVec.boundUses] = counts.slice(4, 6);
     [storage.smallVec.directPaths, storage.smallVec.boundUses] = counts.slice(6, 8);
     const hasAllocVec = storage.allocVec.directPaths > 0 || storage.allocVec.boundUses > 0;

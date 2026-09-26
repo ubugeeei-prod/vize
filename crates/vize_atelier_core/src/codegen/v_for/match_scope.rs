@@ -7,7 +7,7 @@
 //! and client, server and hydrated output agree node for node.
 
 use crate::{ElementType, ForNode, RuntimeHelper, TemplateChildNode};
-use vize_s0::String;
+use vize_l0::String;
 
 use super::super::{
     children::is_directive_comment, context::CodegenContext, element::helpers::generate_root_node,

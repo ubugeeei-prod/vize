@@ -13,11 +13,11 @@ while drifting the flag program.
 
 The durable witnesses are:
 
-- [`davinci_s2_recent_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_recent_patch_flags.rs)
+- [`davinci_s2_recent_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_recent_patch_flags.rs)
   - S2-vs-shipped byte comparison plus exact patch-site extraction for
     `v-show`, `v-html`, `v-text`, `v-cloak`, object `v-bind` modifiers and
     object `v-on` modifiers.
-- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs)
+- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_patch_flags.rs)
   - the earlier broad matrix remains below the source-length budget; this
     installment keeps the late-surface witness split rather than growing it
     past the enforced limit.

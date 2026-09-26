@@ -12,7 +12,7 @@ use std::{
 };
 
 use serde_json::{Value, json};
-use vize_s0::{
+use vize_l0::{
     corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable},
     cstr,
 };

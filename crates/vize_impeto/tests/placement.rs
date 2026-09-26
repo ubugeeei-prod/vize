@@ -1,4 +1,4 @@
-//! P3-10 placements: the TS-27 validator (`S3V010`) accepts exactly the
+//! P3-10 placements: the TS-27 validator (`L3V010`) accepts exactly the
 //! well-formed alternatives and committed choices, and try-measure-commit
 //! extraction chooses among them.
 
@@ -15,7 +15,7 @@ use placement::fixture::{Build, JS, LIT, fixture};
 use vize_impeto::op::{OpId, OpKind};
 use vize_impeto::placement::{Placement, PlacementRecord, PlacementSet, annotate};
 use vize_impeto::verify::verify;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use Placement::{Cache, Group, Hoist};
 

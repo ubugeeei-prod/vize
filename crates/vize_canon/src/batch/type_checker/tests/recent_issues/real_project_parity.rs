@@ -339,9 +339,9 @@ defineProps<{ items: Item[] }>()
     assert_eq!(
         snapshot,
         Some(vec![(
-            vize_s0::String::from("src/App.vue"),
+            vize_l0::String::from("src/App.vue"),
             Some(2307),
-            vize_s0::String::from(
+            vize_l0::String::from(
                 "2:27:error Cannot find module '@/components/app/list/List.vue' or its corresponding type declarations.",
             ),
         )]),

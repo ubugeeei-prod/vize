@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::super::path_cache::CanonicalPathCache;
 use super::ImportFileOptions;

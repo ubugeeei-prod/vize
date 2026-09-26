@@ -119,7 +119,7 @@ pub(crate) fn names_at(content: &str, region: (usize, usize), offset: usize) -> 
         let self_closing = content
             .get(..tag_end - 1)
             .is_some_and(|head| head.trim_end().ends_with('/'));
-        if self_closing || vize_s0::is_void_tag(name) {
+        if self_closing || vize_l0::is_void_tag(name) {
             if contains(name_span, offset) {
                 return Some(TagNames {
                     first: name_span,

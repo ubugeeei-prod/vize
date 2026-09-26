@@ -7,7 +7,7 @@ use super::{
 };
 use serde_json::{Value, json};
 use std::hint::black_box;
-use vize_s0::profiler::{
+use vize_l0::profiler::{
     ProfileExportOptions, allocation_snapshot, global_profiler, reset_allocation_counters,
 };
 
@@ -84,7 +84,7 @@ pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::
     Ok(json!({
         "shape": shape.id(), "accepted_files": accepted.len(), "input_bridge_spans": input_spans,
         "provenance_scope": if cfg!(feature = "davinci-production-profile") {
-            "Full default provenance at S1→S2 finish. Capacity counters are retained requested storage, not traffic or peak. Record span traffic excludes caller-preformatted after strings; total S1→S2 includes those. Later transform-pass provenance is outside finish counters."
+            "Full default provenance at L1→L2 finish. Capacity counters are retained requested storage, not traffic or peak. Record span traffic excludes caller-preformatted after strings; total L1→L2 includes those. Later transform-pass provenance is outside finish counters."
         } else { "not enabled in this build" },
         "selected_profile": profile(&all, shape, false),
         "retained_profile": profile(&all, shape, true),

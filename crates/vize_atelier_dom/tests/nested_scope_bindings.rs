@@ -5,7 +5,7 @@
 
 use vize_atelier_core::options::CodegenMode;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 fn render(source: &str) -> String {
     let allocator = Allocator::new();

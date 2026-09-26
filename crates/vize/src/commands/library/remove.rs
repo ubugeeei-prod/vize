@@ -1,7 +1,7 @@
 //! `vize lib remove`.
 
 use serde::Serialize;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::error::{LibError, LibResult};
 use super::fs_ops::{ensure_project_path, file_sha256, join_relative, remove_file_and_prune};

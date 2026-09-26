@@ -1,6 +1,6 @@
 use super::config::{Linter, is_type_rule};
 use crate::preset::LintPreset;
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 impl Linter {
     /// Set enabled rules (if None, all rules are enabled).

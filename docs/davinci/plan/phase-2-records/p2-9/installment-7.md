@@ -23,7 +23,7 @@ today; adding one would be a cargo-graph gesture, not a cost model.
 The measured zero-cost shape, copied from the shipped
 `desugar_legacy_template` short-circuit:
 
-- [`LegacyCaps`](../../../../../crates/vize_s1_to_s2/src/lower/caps.rs) is
+- [`LegacyCaps`](../../../../../crates/vize_l1_to_l2/src/lower/caps.rs) is
   three bools resolved once per file from
   `vize_carton::config::VueVersion`. It is a copy of armature's
   `LegacyDialectCapabilities` so ricalco never grows an armature edge.

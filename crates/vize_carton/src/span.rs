@@ -1,6 +1,6 @@
 //! The Davinci span type: two byte offsets into the authored file.
 //!
-//! `Span` is the S0 source-model coordinate (`docs/davinci/architecture.md`):
+//! `Span` is the L0 source-model coordinate (`docs/davinci/architecture.md`):
 //! every node records where it came from as a half-open byte range
 //! `[start, end)` into the one authored source string, and nothing else.
 //! Text is recovered on demand with [`Span::slice`]; line/column exist only

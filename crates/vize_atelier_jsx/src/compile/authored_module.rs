@@ -5,7 +5,7 @@ mod contexts;
 mod mapped;
 mod unsupported;
 
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 use super::JsxComponent;
 use crate::{ComponentSetupSpan, JsxDiagnostic, JsxLang, JsxOutputMode};

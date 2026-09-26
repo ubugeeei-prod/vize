@@ -3,7 +3,7 @@
 use std::fmt;
 use std::path::Path;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 /// A user-facing `vize lib` failure. Every variant renders as one message.
 #[derive(Debug, Clone, PartialEq, Eq)]

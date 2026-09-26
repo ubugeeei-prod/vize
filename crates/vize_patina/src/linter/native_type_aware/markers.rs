@@ -1,6 +1,6 @@
 use super::document::TypeAwareDocument;
 use super::parsing::extract_runtime_object_property_values;
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) enum QueryKind {

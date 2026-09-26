@@ -16,7 +16,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use vize_s0::{String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 use crate::host::{CheckUnit, HostError, MooncHost, RawCheck};
 

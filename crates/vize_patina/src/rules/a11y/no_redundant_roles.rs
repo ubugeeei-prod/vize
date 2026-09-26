@@ -29,8 +29,8 @@ use lightningcss::properties::{Property, PropertyId};
 use lightningcss::rules::CssRule as LCssRule;
 use lightningcss::selector::{Component, Selector};
 use lightningcss::stylesheet::{ParserOptions, StyleSheet};
+use vize_l0::FxHashSet;
 use vize_relief::{ElementNode, ElementType};
-use vize_s0::FxHashSet;
 
 use super::helpers::{
     get_implicit_role, get_implicit_role_by_attr, get_static_attribute_value,

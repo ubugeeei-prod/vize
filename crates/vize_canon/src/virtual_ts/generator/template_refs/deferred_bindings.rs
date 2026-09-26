@@ -39,7 +39,7 @@ use oxc_span::SourceType;
 use std::ops::Range;
 
 use vize_croquis::{BindingType, Croquis};
-use vize_s0::{FxHashMap, FxHashSet, String, append};
+use vize_l0::{FxHashMap, FxHashSet, String, append};
 
 use crate::virtual_ts::{VizeSemanticLink, VizeSemanticLinkKind};
 

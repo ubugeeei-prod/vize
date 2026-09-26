@@ -11,7 +11,7 @@ use super::vocabulary::{candidates, delete};
 const SEEDED: &str = include_str!("../../../tests/fixtures/davinci_reduce/seeded-crash.vue");
 
 #[test]
-fn candidates_are_the_exact_s1_subtrees_in_pre_order() {
+fn candidates_are_the_exact_l1_subtrees_in_pre_order() {
     let source = "<div a=\"1\"> x <b/></div>\n";
     let ranges = candidates(source);
     let slices: Vec<&str> = ranges.iter().map(|range| &source[range.clone()]).collect();
@@ -34,7 +34,7 @@ fn candidates_are_the_exact_s1_subtrees_in_pre_order() {
 #[test]
 fn candidate_ranges_nest_like_a_tree() {
     let ranges = candidates(SEEDED);
-    // Census pin: the fixture's S1 nodes plus attributes; a vocabulary change
+    // Census pin: the fixture's L1 nodes plus attributes; a vocabulary change
     // moves it deliberately.
     assert_eq!(ranges.len(), 92);
     for (index, a) in ranges.iter().enumerate() {

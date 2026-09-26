@@ -33,7 +33,7 @@ use super::{
         is_dynamic_component, is_is_prop, is_renderable_prop, is_whitespace_or_comment,
     },
 };
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 /// Generate element code (non-block)
 pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {

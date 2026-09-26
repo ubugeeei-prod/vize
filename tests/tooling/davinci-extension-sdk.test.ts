@@ -70,12 +70,12 @@ test("the dependency check fails on an injected implementation edge", () => {
     ...sdk,
     dependencies: [
       ...sdk.dependencies,
-      { name: "vize_s1", kind: null },
+      { name: "vize_l1", kind: null },
       { name: "serde", kind: "build" },
     ],
   };
   assert.deepEqual(sdkDependencyViolations(injected, workspaceCrates), [
-    "vize_extension_sdk depends on workspace crate vize_s1",
+    "vize_extension_sdk depends on workspace crate vize_l1",
     "vize_extension_sdk depends on unlisted crate serde",
   ]);
 });
@@ -229,17 +229,24 @@ test("the JS and Rust SDK constants are the released handshake", async () => {
   assert.equal(rustConst("PACKAGE"), `"vize:contracts@${surface.version}"`);
   assert.equal(sdkJs.PROTOCOL_VERSION, surface.protocolVersion);
   assert.equal(rustConst("PROTOCOL_VERSION"), `${surface.protocolVersion}`);
-  assert.equal(sdkJs.S1_PAGE_SCHEMA, surface.pages["s1-page"]);
-  assert.equal(rustConst("S1_PAGE_SCHEMA"), `${surface.pages["s1-page"]}`);
-  assert.equal(sdkJs.S2_PAGE_SCHEMA, surface.pages["s2-page"]);
-  assert.equal(rustConst("S2_PAGE_SCHEMA"), `${surface.pages["s2-page"]}`);
+  assert.equal(sdkJs.L1_PAGE_SCHEMA, surface.pages["s1-page"]);
+  assert.equal(rustConst("L1_PAGE_SCHEMA"), `${surface.pages["s1-page"]}`);
+  assert.equal(sdkJs.L2_PAGE_SCHEMA, surface.pages["s2-page"]);
+  assert.equal(rustConst("L2_PAGE_SCHEMA"), `${surface.pages["s2-page"]}`);
+  for (const layer of [1, 2, 3]) {
+    assert.equal(
+      sdkJs[`S${layer}_PAGE_SCHEMA`],
+      sdkJs[`L${layer}_PAGE_SCHEMA`],
+      `legacy S${layer} schema export remains compatible`,
+    );
+  }
   const required = surface.worlds["input-dialect"].requiredFeatures;
   assert.deepEqual(sdkJs.REQUIRED_FEATURES, required);
   assert.equal(rustConst("REQUIRED_FEATURES"), `&[${required.map((f) => `"${f}"`).join(", ")}]`);
   for (const [name, page] of [
     ["FACTS_PAGE_SCHEMA", "facts-page"],
     ["PROJECTION_PAGE_SCHEMA", "projection-page"],
-    ["S3_PAGE_SCHEMA", "s3-page"],
+    ["L3_PAGE_SCHEMA", "s3-page"],
     ["EMIT_DOCUMENT_PAGE_SCHEMA", "emit-document-page"],
   ]) {
     assert.equal(sdkJs[name], surface.pages[page], name);

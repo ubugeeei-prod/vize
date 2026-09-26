@@ -1,4 +1,4 @@
-// The S3 partition facts laid over the S3 graph page: each op line of
+// The L3 partition facts laid over the L3 graph page: each op line of
 // `[s3-folio.ops]` gets the static/dynamic kind the `[s3-partition-folio]`
 // page exported for that op id. Both pages come from the same lowering; this
 // only joins them by op id.

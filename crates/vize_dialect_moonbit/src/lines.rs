@@ -1,7 +1,7 @@
 //! Line/column positions in **Unicode scalar values**, `moonc`'s unit.
 //!
-//! S0 spans are UTF-8 byte offsets and the LSP speaks UTF-16
-//! (`vize_s0::line_index`); `moonc` reports 1-based lines and 1-based,
+//! L0 spans are UTF-8 byte offsets and the LSP speaks UTF-16
+//! (`vize_l0::line_index`); `moonc` reports 1-based lines and 1-based,
 //! end-exclusive columns counted in Unicode scalar values (measured in
 //! P6-4a: `"😀x"` advances the column by two, not three or five). The
 //! dialect converts at its boundary, in this one place.

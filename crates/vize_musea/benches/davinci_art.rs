@@ -1,6 +1,6 @@
-//! Allocation budget for `parse_art` on the S0/S1 reader (Davinci P4-13).
+//! Allocation budget for `parse_art` on the L0/L1 reader (Davinci P4-13).
 //!
-//! Each case measures one whole `parse_art` call — the SFC split, the S1
+//! Each case measures one whole `parse_art` call — the SFC split, the L1
 //! tree of the `<art>` block, the variants and the `defineArt()` reader —
 //! over a pinned input shaped like the Musea benchmark corpus
 //! (`tools/benchmarks/scripts/musea-corpus.mjs`) and the in-repo gallery.
@@ -17,8 +17,8 @@
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::stage::bench_stage_with_metrics;
+use vize_l0::cstr;
 use vize_musea::{Allocator, ArtParseOptions, parse_art};
-use vize_s0::cstr;
 
 /// The corpus's majority shape: `defineArt()` metadata, three variants, two
 /// style blocks (file 1 of the Musea benchmark corpus).

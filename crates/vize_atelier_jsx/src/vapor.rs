@@ -16,7 +16,7 @@ use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_vapor::{VaporGenerateOptions, generate_vapor_with_options, transform_to_ir};
 use vize_croquis::Croquis;
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
@@ -135,7 +135,7 @@ pub(crate) fn compile_root_to_vapor(
 
     let LoweredRoot {
         mut root,
-        s2: _,
+        l2: _,
         mode,
         component_name,
         component_setup,

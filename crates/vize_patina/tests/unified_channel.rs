@@ -6,10 +6,10 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, PartKind, Stage};
+use vize_l0::{SourceRoot, Span};
 use vize_patina::output::unified::{UnifiedError, to_unified};
 use vize_patina::rule_contracts::contract_for;
 use vize_patina::{Fix, LintDiagnostic, TextEdit};
-use vize_s0::{SourceRoot, Span};
 
 const SOURCE: &str = "<template>\n  <div v-if>ok</div>\n</template>\n";
 

@@ -20,7 +20,7 @@
 //! }
 //! impl Lowering for Dialect {
 //!     fn lower_block(block: SourceBlock) -> LoweredBlock {
-//!         /* write the S1 and S2 pages with `vize_extension_sdk::pages` */
+//!         /* write the L1 and L2 pages with `vize_extension_sdk::pages` */
 //!     }
 //! }
 //! vize_extension_sdk::export_input_dialect!(Dialect);
@@ -88,10 +88,10 @@ pub use typed_bindings::vize::contracts::types;
 pub const PACKAGE: &str = "vize:contracts@0.1.3";
 /// The handshake protocol version of this contract version.
 pub const PROTOCOL_VERSION: u32 = 1;
-/// The S1 page schema version the [`pages::s1`] writer emits.
-pub const S1_PAGE_SCHEMA: u32 = 1;
-/// The S2 page schema version the [`pages::s2`] writer emits.
-pub const S2_PAGE_SCHEMA: u32 = 1;
+/// The L1 page schema version the [`pages::l1`] writer emits.
+pub const L1_PAGE_SCHEMA: u32 = 1;
+/// The L2 page schema version the [`pages::l2`] writer emits.
+pub const L2_PAGE_SCHEMA: u32 = 1;
 /// The features the input-dialect world requires, sorted.
 pub const REQUIRED_FEATURES: &[&str] = &["s1-page@1", "s2-page@1"];
 /// The facts page (`expression-facts` α document) schema version of the
@@ -101,8 +101,13 @@ pub const FACTS_PAGE_SCHEMA: u32 = 1;
 pub const PROJECTION_PAGE_SCHEMA: u32 = 1;
 /// The features the expression-dialect world requires, sorted.
 pub const EXPRESSION_REQUIRED_FEATURES: &[&str] = &["facts-page@1", "projection-page@1"];
-/// The S3 page schema version the output-target world carries.
-pub const S3_PAGE_SCHEMA: u32 = 1;
+/// The L3 page schema version the output-target world carries.
+pub const L3_PAGE_SCHEMA: u32 = 1;
+/// Compatibility names for the original SDK schema constants.
+pub use self::{
+    L1_PAGE_SCHEMA as S1_PAGE_SCHEMA, L2_PAGE_SCHEMA as S2_PAGE_SCHEMA,
+    L3_PAGE_SCHEMA as S3_PAGE_SCHEMA,
+};
 /// The emit-document page schema version the output-target world returns.
 pub const EMIT_DOCUMENT_PAGE_SCHEMA: u32 = 1;
 /// The features the output-target world requires, sorted.

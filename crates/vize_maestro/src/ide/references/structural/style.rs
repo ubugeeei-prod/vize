@@ -1,7 +1,7 @@
 //! Resolve free names in CSS v-bind expressions in the SFC setup scope.
 
 use oxc_semantic::Semantic;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::{
     Allocator, AstKind, FxHashSet, IdeContext, Occurrence, Parser, SemanticBuilder, SourceType,
@@ -11,7 +11,7 @@ use super::{
 #[derive(Default)]
 pub(super) struct Analysis {
     pub occurrences: Vec<Occurrence>,
-    pub free_names: FxHashSet<vize_s0::String>,
+    pub free_names: FxHashSet<vize_l0::String>,
 }
 
 pub(super) fn analyze(ctx: &IdeContext<'_>, semantic: &Semantic<'_>) -> Analysis {

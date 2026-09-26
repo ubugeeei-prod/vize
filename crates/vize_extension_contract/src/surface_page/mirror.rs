@@ -1,8 +1,8 @@
-//! The page ↔ tree bridge: mirroring a live S1 tree into a page, and
+//! The page ↔ tree bridge: mirroring a live L1 tree into a page, and
 //! rebuilding the tree from a page that tiles its source.
 
-use vize_s0::{Allocator, Box, Vec as ArenaVec};
-use vize_s1::{
+use vize_l0::{Allocator, Box, Vec as ArenaVec};
+use vize_l1::{
     AttrValue, Attribute, CloseTag, Element, ElementClose, Interpolation, OpenTag, SurfaceChild,
     SurfaceTree, Token, TokenStatus,
 };
@@ -13,7 +13,7 @@ use super::{
 };
 
 impl SurfacePage {
-    /// Mirror a live S1 tree. Offsets are relative to `tree.source`.
+    /// Mirror a live L1 tree. Offsets are relative to `tree.source`.
     #[must_use]
     pub fn of(tree: &SurfaceTree<'_>) -> Self {
         let base = tree.source.as_ptr() as usize;
@@ -26,7 +26,7 @@ impl SurfacePage {
         }
     }
 
-    /// Rebuild the S1 tree over `source`, after [`Self::check_tiles`].
+    /// Rebuild the L1 tree over `source`, after [`Self::check_tiles`].
     ///
     /// # Errors
     ///

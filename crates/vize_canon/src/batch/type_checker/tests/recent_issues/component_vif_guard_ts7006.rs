@@ -53,9 +53,9 @@ function onSave(_changed: boolean, _invalid: boolean) {}
     assert_eq!(
         snapshot,
         Some(vec![(
-            vize_s0::String::from("src/App.vue"),
+            vize_l0::String::from("src/App.vue"),
             Some(7006),
-            vize_s0::String::from("10:23:error Parameter 'item' implicitly has an 'any' type."),
+            vize_l0::String::from("10:23:error Parameter 'item' implicitly has an 'any' type."),
         )]),
     );
 }

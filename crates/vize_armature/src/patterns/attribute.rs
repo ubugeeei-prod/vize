@@ -4,7 +4,7 @@ use super::{MatchArm, MatchPattern, PatternKind, PatternSyntaxError, parse_match
 use crate::tokenizer::entity_decode::try_decode_entity;
 use htmlize::Context;
 use oxc_span::Span;
-use vize_s0::String;
+use vize_l0::String;
 
 struct Attribute {
     text: String,

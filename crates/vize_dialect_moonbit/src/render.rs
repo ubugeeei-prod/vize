@@ -5,7 +5,7 @@
 //! Unicode scalar values), so the fixtures pin it byte for byte and the
 //! showcase prints exactly what CI checked.
 
-use vize_s0::{String, append};
+use vize_l0::{String, append};
 
 use crate::diagnostic::{Mapped, Origin};
 use crate::lines::Lines;

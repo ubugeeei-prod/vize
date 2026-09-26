@@ -50,7 +50,7 @@ fn is_ts(descriptor: &SfcDescriptor) -> bool {
 
 /// The options `vize_vitrine`'s SFC adapter builds for an SSR compile.
 fn adapter_options(name: &str, descriptor: &SfcDescriptor) -> SfcCompileOptions {
-    let filename: vize_s0::String = name.into();
+    let filename: vize_l0::String = name.into();
     let scoped = descriptor.styles.iter().any(|style| style.scoped);
     let is_ts = is_ts(descriptor);
     SfcCompileOptions {
@@ -150,7 +150,7 @@ pub(crate) fn compare(name: &str, source: &str, report: &mut ProductionReport) {
 pub(crate) fn assert_clean(label: &str, report: &ProductionReport) {
     assert!(
         report.rejected.is_empty(),
-        "{label}: broken S4 plan invariants on the production path: {:#?}",
+        "{label}: broken L4 plan invariants on the production path: {:#?}",
         report.rejected
     );
     assert!(

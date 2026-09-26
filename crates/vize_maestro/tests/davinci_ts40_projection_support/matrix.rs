@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
-use vize_s0::String;
+use vize_l0::String;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -63,7 +63,7 @@ pub fn load_matrix() -> Matrix {
     assert_eq!(matrix.claim, "current-canon-maestro-behavior-only");
     assert!(!matrix.normalization.is_empty());
     let expected_unproven = [
-        "Davinci or S2 projection parity",
+        "Davinci or L2 projection parity",
         "full-corpus vize check diagnostic parity",
         "all tsgo Content Mapper editor features",
         "static slot-name navigation mappings outside Content Mapper",

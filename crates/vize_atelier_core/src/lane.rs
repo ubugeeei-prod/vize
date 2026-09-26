@@ -12,7 +12,7 @@ mod structural_keys;
 pub mod traverse;
 
 use vize_croquis::{Croquis, ScopeChain};
-use vize_s0::{Allocator, Box, SmallVec, String, Vec, interner::Interner, profile};
+use vize_l0::{Allocator, Box, SmallVec, String, Vec, interner::Interner, profile};
 
 use crate::errors::CompilerError;
 use crate::options::TransformOptions;

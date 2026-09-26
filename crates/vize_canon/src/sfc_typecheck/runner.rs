@@ -1,5 +1,5 @@
-use vize_s0::Allocator;
-use vize_s0::cstr;
+use vize_l0::Allocator;
+use vize_l0::cstr;
 
 use crate::script_parse::collect_script_parse_diagnostics;
 

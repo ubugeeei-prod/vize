@@ -11,7 +11,7 @@ mod witnesses {
     use vize_davinci::diagnostic::{Diagnostic, Stage, WitnessChain, WitnessLink};
     use vize_davinci::fact::ids;
     use vize_davinci::witness::{WitnessError, verify};
-    use vize_s0::{Allocator, Span, String};
+    use vize_l0::{Allocator, Span, String};
 
     fn evidence(files: &[(&str, &str)]) -> NestingEvidence {
         let skeletons: Vec<Skeleton> = files

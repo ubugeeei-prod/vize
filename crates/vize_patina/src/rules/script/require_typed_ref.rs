@@ -47,7 +47,7 @@ use oxc_ast_visit::{
     Visit,
     walk::{walk_call_expression, walk_import_declaration},
 };
-use vize_s0::{CompactString, FxHashSet};
+use vize_l0::{CompactString, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-typed-ref",

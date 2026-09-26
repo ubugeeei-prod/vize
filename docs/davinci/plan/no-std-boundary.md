@@ -12,18 +12,18 @@ The claim covers exactly five **library targets**:
 | layer                 | Cargo alias in Davinci code | package id      | role                                         |
 | --------------------- | --------------------------- | --------------- | -------------------------------------------- |
 | shared infrastructure | `vize_davinci`              | `vize_davinci`  | Folio, passes, diagnostics, stage vocabulary |
-| S1                    | `vize_s1`                   | `vize_s1`       | lossless surface tree                        |
-| S2                    | `vize_s2`                   | `vize_s2`       | neutral semantic IR                          |
-| S3                    | `vize_s3`                   | `vize_impeto`   | reactivity and backend scheduling IR         |
-| S1 → S2               | `vize_s1_to_s2`             | `vize_s1_to_s2` | Vue surface lowering and S2 passes           |
+| L1                    | `vize_l1`                   | `vize_l1`       | lossless surface tree                        |
+| L2                    | `vize_l2`                   | `vize_l2`       | neutral semantic IR                          |
+| L3                    | `vize_l3`                   | `vize_impeto`   | reactivity and backend scheduling IR         |
+| L1 → L2               | `vize_l1_to_l2`             | `vize_l1_to_l2` | Vue surface lowering and L2 passes           |
 
 Every library has both `#![no_std]` and `extern crate alloc`. Its source can
 use `core`, `alloc`, and dependency APIs without importing the `std` prelude.
 The required wasm32-wasip2 lane builds all five libraries together.
 
-#### One opt-in exception: `vize_s1_to_s2`'s `typescript` feature
+#### One opt-in exception: `vize_l1_to_l2`'s `typescript` feature
 
-The S2 DOM emitter compiles TypeScript templates the way the shipped lane
+The L2 DOM emitter compiles TypeScript templates the way the shipped lane
 does — by running each expression through oxc's transformer — and
 `Transformer::new` takes a `&std::path::Path`. That one API is the whole
 `std` edge, so it rides a feature that is **off by default**:
@@ -40,9 +40,9 @@ call alone. Both wasm32-wasip2 lane commands below leave the feature off,
 so the portability claim is proved without it; the witness batteries in
 `vize_atelier_dom` select it on their dev edge.
 
-### S0 is deliberately outside the claim
+### L0 is deliberately outside the claim
 
-`vize_s0` is the workspace dependency alias for the package
+`vize_l0` is the workspace dependency alias for the package
 `vize_carton`. It is Davinci's allocator, compact-storage, configuration,
 profiling, and host-service foundation. Carton defines and bridges std types
 and is **accepted std infrastructure by design**; it is not a sixth `no_std`
@@ -67,34 +67,34 @@ visible. `cargo tree --edges normal --depth 1` gives this first-degree ledger:
 
 | library                   | direct normal dependencies                                                                                                                                                                       | disposition                                                                                                                                                                     |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vize_davinci`            | `vize_s0`; `vize_davinci_derive`                                                                                                                                                                 | S0 is the accepted std foundation; the proc macro runs on the host and emits `core`-compatible code                                                                             |
-| S1 / `vize_s1`            | `vize_s0`; `vize_armature`; `vize_relief`                                                                                                                                                        | accepted std parser/tokenizer and AST construction edges                                                                                                                        |
-| S2 / `vize_s2`            | `vize_s0`; `vize_davinci`; `oxc_ast`; `oxc_parser`; `oxc_span`                                                                                                                                   | accepted std OXC expression parsing plus lower-layer edges                                                                                                                      |
-| S3 / `vize_s3`            | `vize_s0`; `vize_davinci`                                                                                                                                                                        | accepted S0 storage plus shared Davinci Folio/diagnostic infrastructure; package id remains `vize_impeto`                                                                       |
-| S1 → S2 / `vize_s1_to_s2` | `vize_s0`; `vize_davinci`; S1; S2; `htmlize`; `oxc_ast`; `oxc_ast_visit`; `oxc_parser`; `oxc_semantic`; `oxc_span`; `oxc_syntax`; and, only under `typescript`, `oxc_codegen`; `oxc_transformer` | accepted conversion-layer closure; dependency direction remains downward. The two feature-gated OXC crates are the TS lane's type erasure and are absent from the default build |
+| `vize_davinci`            | `vize_l0`; `vize_davinci_derive`                                                                                                                                                                 | L0 is the accepted std foundation; the proc macro runs on the host and emits `core`-compatible code                                                                             |
+| L1 / `vize_l1`            | `vize_l0`; `vize_armature`; `vize_relief`                                                                                                                                                        | accepted std parser/tokenizer and AST construction edges                                                                                                                        |
+| L2 / `vize_l2`            | `vize_l0`; `vize_davinci`; `oxc_ast`; `oxc_parser`; `oxc_span`                                                                                                                                   | accepted std OXC expression parsing plus lower-layer edges                                                                                                                      |
+| L3 / `vize_l3`            | `vize_l0`; `vize_davinci`                                                                                                                                                                        | accepted L0 storage plus shared Davinci Folio/diagnostic infrastructure; package id remains `vize_impeto`                                                                       |
+| L1 → L2 / `vize_l1_to_l2` | `vize_l0`; `vize_davinci`; L1; L2; `htmlize`; `oxc_ast`; `oxc_ast_visit`; `oxc_parser`; `oxc_semantic`; `oxc_span`; `oxc_syntax`; and, only under `typescript`, `oxc_codegen`; `oxc_transformer` | accepted conversion-layer closure; dependency direction remains downward. The two feature-gated OXC crates are the TS lane's type erasure and are absent from the default build |
 
-The aliases `vize_s0`, `vize_s1`, `vize_s2`, `vize_s3`, and
-`vize_s1_to_s2` are the primary architectural names. S1, S2, and S1→S2
-package ids now match that vocabulary; S3 keeps the Impeto package id; S0 still
+The aliases `vize_l0`, `vize_l1`, `vize_l2`, `vize_l3`, and
+`vize_l1_to_l2` are the primary architectural names. L1, L2, and L1→L2
+package ids now match that vocabulary; L3 keeps the Impeto package id; L0 still
 retains `vize_carton` until its own compatibility change.
 
 Carton's own direct dependencies include both `no_std`-capable storage crates
 (`compact_str`, `smallvec`, `rustc-hash`) and std-bound host services
 (`oxc_allocator`, `oxc_syntax`, `pklrust`, `stacker`). OXC crates used directly
-by S2 and the conversion library also have no `no_std` marker at the pinned
+by L2 and the conversion library also have no `no_std` marker at the pinned
 revision. Those facts are accepted by this WASI contract; they must not be
 smoothed into a claim that the dependency closure is std-less.
 
 ## Feature-off lane
 
 The default and `--no-default-features` checks cover the same five libraries.
-S1 and S1 → S2 currently expose only opt-in differential-corpus features;
-neither has a default feature. `vize_davinci` and S2 have no feature table.
+L1 and L1 → L2 currently expose only opt-in differential-corpus features;
+neither has a default feature. `vize_davinci` and L2 have no feature table.
 The second check is intentionally retained so a future default feature cannot
 silently make the portable library graph unavailable.
 
 A speculative `std` feature is not required. The libraries are unconditionally
-`#![no_std]`; std behavior stays in S0 and explicit host edges.
+`#![no_std]`; std behavior stays in L0 and explicit host edges.
 
 ## What TS-24 proves
 
@@ -116,10 +116,10 @@ TS-24 is an unconditional step of `.github/workflows/check.yml`'s
 `clippy-and-test` job:
 
 ```sh
-cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_impeto \
-  -p vize_s1_to_s2 --lib --target wasm32-wasip2
-cargo build -p vize_davinci -p vize_s1 -p vize_s2 -p vize_impeto \
-  -p vize_s1_to_s2 --lib --target wasm32-wasip2 --no-default-features
+cargo build -p vize_davinci -p vize_l1 -p vize_l2 -p vize_impeto \
+  -p vize_l1_to_l2 --lib --target wasm32-wasip2
+cargo build -p vize_davinci -p vize_l1 -p vize_l2 -p vize_impeto \
+  -p vize_l1_to_l2 --lib --target wasm32-wasip2 --no-default-features
 ```
 
 `clippy-and-test` is a dependency of the required `test-report` status. The
@@ -129,7 +129,7 @@ target comes from `rust-toolchain.toml`, and
 - unconditional required-job placement;
 - both exact commands and the `--lib` boundary;
 - the five `#![no_std]`/`extern crate alloc` attribute pairs;
-- the S0 alias and its exclusion from the claim;
+- the L0 alias and its exclusion from the claim;
 - the current `davinci-opt` host-binary path.
 
 The step remains inside the existing job because `check.yml` is already over
@@ -149,4 +149,4 @@ A library joins or leaves this contract only when all four surfaces change in
 one reviewed slice: its crate attribute, both CI commands, the tooling test's
 crate list, and this dependency ledger. Public documentation must use the
 same precise wording: five `no_std` stage-library sources over accepted std
-edges, founded on std-hosted S0/Carton.
+edges, founded on std-hosted L0/Carton.

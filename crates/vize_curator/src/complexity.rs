@@ -8,7 +8,7 @@ use vize_croquis_cf::{
     ComplexityBand, ComplexityDimension, ComplexityDimensionBreakdown, ComplexityHotspot,
     ComplexityInput, ComplexityReport, ComponentComplexity, CrossFileResult,
 };
-use vize_s0::{String, appendln, appends};
+use vize_l0::{String, appendln, appends};
 
 /// Render every complexity product of a cross-file analysis.
 pub fn render_cross_file_complexity(result: &CrossFileResult) -> String {

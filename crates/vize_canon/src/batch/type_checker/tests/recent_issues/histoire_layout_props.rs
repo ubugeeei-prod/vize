@@ -3,7 +3,7 @@
 //! vue-tsc reports those excess nested keys (#5722).
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
-use vize_s0::String;
+use vize_l0::String;
 
 #[test]
 fn story_layout_prop_reports_branch_exclusive_fields() {

@@ -6,7 +6,7 @@ use std::{
 
 use ignore::{DirEntry, WalkBuilder};
 use vize_croquis::{Analyzer, AnalyzerOptions, naming::to_pascal_case};
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 use super::{is_declaration_path, normalize_global_component_binding_name};
 
@@ -81,7 +81,7 @@ fn collect_explicit_template_component_names(files: &[PathBuf]) -> FxHashSet<Str
         let Some(template) = descriptor.template.as_ref() else {
             continue;
         };
-        let allocator = vize_s0::Allocator::new();
+        let allocator = vize_l0::Allocator::new();
         let (root, _) = vize_armature::parse(&allocator, template.content.as_ref());
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
         analyzer.analyze_template(&root);

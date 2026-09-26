@@ -25,16 +25,16 @@
 //!
 //! This crate is optimized for high performance:
 //! - **Zero-copy parsing**: All strings are borrowed from source
-//! - **Arena allocation**: Uses `vize_s0::Allocator` for fast allocation
+//! - **Arena allocation**: Uses `vize_l0::Allocator` for fast allocation
 //! - **Minimal allocations**: Only allocates when absolutely necessary
 //! - **Shared parse stages**: Art files split through the shared SFC block
-//!   splitter (Davinci S0) and the `<art>` block parses as a lossless S1
+//!   splitter (Davinci L0) and the `<art>` block parses as a lossless L1
 //!   surface tree — no private byte scanner
 //!
 //! ## Usage
 //!
 //! ```rust
-//! use vize_s0::Allocator;
+//! use vize_l0::Allocator;
 //! use vize_musea::{parse_art, transform_to_csf};
 //! use vize_musea::types::ArtParseOptions;
 //!
@@ -95,8 +95,8 @@ pub use types::{
     ArtStyleBlockOwned, ArtVariant, ArtVariantOwned, CsfOutput, SourceLocation, ViewportConfig,
 };
 
-// Re-export vize_s0::Allocator for convenience
-pub use vize_s0::Allocator;
+// Re-export vize_l0::Allocator for convenience
+pub use vize_l0::Allocator;
 
 /// Former entry point for a Rust-side component gallery server.
 ///

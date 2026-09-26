@@ -39,14 +39,14 @@ mod prefer_nested_selectors;
 mod prefer_slotted;
 mod require_font_display;
 
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use lightningcss::stylesheet::{ParserOptions, StyleSheet};
 use memchr::memmem;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
-use vize_s0::String;
-use vize_s0::ToCompactString;
+use vize_l0::String;
+use vize_l0::ToCompactString;
 
 pub use no_display_none::NoDisplayNone;
 pub use no_hardcoded_values::NoHardcodedValues;

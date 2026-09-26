@@ -9,7 +9,7 @@
 //!
 //! The fingerprint covers that declaration alone — its α group, that
 //! group's schema, its identity, its contract. It does not cover the file
-//! or any sibling declaration. [`AlphaPages`] has no body and no S3
+//! or any sibling declaration. [`AlphaPages`] has no body and no L3
 //! code-shape field, and [`Facet::from_alpha_group`] refuses every group
 //! that is not one of those pages, so a hot-path optimization has nowhere
 //! to go.
@@ -29,8 +29,8 @@ pub use usage::Usage;
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_s0::hash::StableHasher128;
-use vize_s0::{String, cstr};
+use vize_l0::hash::StableHasher128;
+use vize_l0::{String, cstr};
 
 /// The XXH3-128 fingerprint of one declaration. Not a file hash.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -133,7 +133,7 @@ pub struct AlphaEntry {
 
 /// The α pages a per-SFC summary is built from.
 ///
-/// There is no field for a function body or an S3 code-shape decision.
+/// There is no field for a function body or an L3 code-shape decision.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AlphaPages {
     /// `component-signature`.

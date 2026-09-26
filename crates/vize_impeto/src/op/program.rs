@@ -1,4 +1,4 @@
-use vize_s0::{Allocator, Span, Vec};
+use vize_l0::{Allocator, Span, Vec};
 
 use super::{EffectId, OpId, OpKind, Phase, Region, RegionId, StateEdge};
 use crate::operand::Operand;
@@ -44,7 +44,7 @@ pub struct EffectScope {
     pub span: Span,
 }
 
-/// One S3 program artifact.
+/// One L3 program artifact.
 #[derive(Debug)]
 pub struct Program<'a> {
     pub phase: Phase,

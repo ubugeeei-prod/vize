@@ -46,7 +46,7 @@
 
 **Deps:** P4-1a.
 
-**Non-goals:** caching facts across compiles (P5-1); S3 phase ordering (phase 3).
+**Non-goals:** caching facts across compiles (P5-1); L3 phase ordering (phase 3).
 
 **Landed 2026-09-22:** `after_pass` invalidation, `PRESERVE_STRUCTURE` / `PRESERVE_BINDINGS` over the new `fact::ids` table, the `FactVerifyObserver` recompute-and-compare mode with the lying-pass fixture, and the 19/19-alloc bench pair — see the [P4-1b record](./phase-4-records/p4-1b.md).
 
@@ -82,7 +82,7 @@
 
 **Steps:**
 
-- [x] `vize_croquis` gains a `vize_davinci` dependency; groups implement `FactGroup`, keyed as written in the P4-2 schema doc (binding name / `SymbolId`; S2 `NodeId` re-keying waits for S2 to carry script scope)
+- [x] `vize_croquis` gains a `vize_davinci` dependency; groups implement `FactGroup`, keyed as written in the P4-2 schema doc (binding name / `SymbolId`; L2 `NodeId` re-keying waits for L2 to carry script scope)
 - [x] Declarative spec + naive evaluator in `crates/vize_croquis/src/facts/spec/` (the Polonius discipline); TS-34 compares it with production over the P2-15 matrix plane and a corpus shard (`VIZE_DAVINCI_FACT_CORPUS`, the two test-scripts submodules, skips counted)
 - [ ] Switch readers to `get::<Bindings>()` / `get::<UndefinedRefs>()` **except** `crates/vize_canon/src/virtual_ts/**` and `crates/vize_maestro/src/virtual_code/**` (lane C deletes those readers in P4-5c) **and the legacy compile lane** (`vize_atelier_core/src/lane/`, `vize_atelier_jsx`, the `vize_atelier_sfc` compiler), which reads the analysis it builds in the same pipeline as a fused attribute (semantic-engine.md #2): a demand there costs a table build per compile — measured 0.02–1.02 % of an SFC compile on the P0-2 ladder, a regression charter #22 refuses — and the lane retires with the legacy transform lane (charter #26); the struct fields stay as producer storage until then _(scope amended 2026-09-22, see the record)_. The DOM reader `vize_atelier_dom/src/compile/croquis_facts.rs` demands `Bindings` (`dom/croquis-projection`). The legacy compile lane stays fused.
 - [x] Regenerate [croquis-consumption.md](./croquis-consumption.md) (`rust-script tools/commands/davinci/croquis-consumers.rs --write`)
@@ -141,7 +141,7 @@ TS-38 adds no suppression candidate. See the [P4-3c record](./phase-4-records/p4
 
 **Non-goals:** default-preset enablement of `vue/no-undefined-refs` (FN-1, an FP-audit change); whole-project dead code.
 
-## P4-3d — Reactivity merges into the S3 lattice
+## P4-3d — Reactivity merges into the L3 lattice
 
 **Start gate:** startable now — P3-independent (P3-2 landed).
 
@@ -165,11 +165,11 @@ TS-38 adds no suppression candidate. See the [P4-3c record](./phase-4-records/p4
 
 ## P4-3e — Effect-graph fact group
 
-**Start gate:** gated on P3-6 — Vapor on S3 is the consumer this group is shaped for.
+**Start gate:** gated on P3-6 — Vapor on L3 is the consumer this group is shaped for.
 
 **Lane:** B
 
-**Deliverable:** `build_effect_graph_from_*` (`effect_graph.rs` + `effect_graph/`) becomes the `EffectGraph` group demanded by Vapor's S3 effect grouping, Doctor (`crates/vize/src/commands/doctor/analysis.rs`) and croquis_cf complexity.
+**Deliverable:** `build_effect_graph_from_*` (`effect_graph.rs` + `effect_graph/`) becomes the `EffectGraph` group demanded by Vapor's L3 effect grouping, Doctor (`crates/vize/src/commands/doctor/analysis.rs`) and croquis_cf complexity.
 
 **Steps:**
 
@@ -180,7 +180,7 @@ TS-38 adds no suppression candidate. See the [P4-3c record](./phase-4-records/p4
 
 **Deps:** P4-1a, P4-3d, P3-6.
 
-**Non-goals:** new effect rules; S3 grouping itself (P3-6).
+**Non-goals:** new effect rules; L3 grouping itself (P3-6).
 
 ## P4-3f — Provide inject and race fact groups
 
@@ -261,15 +261,15 @@ TS-38 adds no suppression candidate. See the [P4-3c record](./phase-4-records/p4
 
 **Deps:** none (phase-2 exit).
 
-**Non-goals:** a new generator (P4-5b); deleting generators (P4-5c); the S4 document (P3-9).
+**Non-goals:** a new generator (P4-5b); deleting generators (P4-5c); the L4 document (P3-9).
 
-## P4-5b — S2 projection as an S4 target
+## P4-5b — L2 projection as an L4 target
 
-**Start gate:** gated on P3-9 — the projection emits through P3-9's span-carrying S4 document; a projection-private emitter would be a second emission design (charter #26).
+**Start gate:** gated on P3-9 — the projection emits through P3-9's span-carrying L4 document; a projection-private emitter would be a second emission design (charter #26).
 
 **Lane:** C
 
-**Deliverable:** the virtual-language projection generated from S2 (template) plus the retained oxc program (script) as an S4 target emitting `ProjectionMapping` rows, in `crates/vize_canon/src/projection/`, with the TS-25 differential lane comparing it against the current generators.
+**Deliverable:** the virtual-language projection generated from L2 (template) plus the retained oxc program (script) as an L4 target emitting `ProjectionMapping` rows, in `crates/vize_canon/src/projection/`, with the TS-25 differential lane comparing it against the current generators.
 
 **Steps:**
 

@@ -24,11 +24,11 @@ fn text_and_attribute_rules_preserve_both_registry_orders() {
         ] {
             let mut expected = linter.lint_template(source, "test.vue");
             crate::linter::engine::offset_result(&mut expected, 10);
-            let sfc = vize_s0::cstr!("<template>{source}</template>");
+            let sfc = vize_l0::cstr!("<template>{source}</template>");
             let actual = linter.lint_sfc(&sfc, "test.vue");
             assert_eq!(
-                vize_s0::cstr!("{:?}", actual.diagnostics),
-                vize_s0::cstr!("{:?}", expected.diagnostics),
+                vize_l0::cstr!("{:?}", actual.diagnostics),
+                vize_l0::cstr!("{:?}", expected.diagnostics),
                 "{source}; reversed={reversed}"
             );
         }

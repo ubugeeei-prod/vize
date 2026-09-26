@@ -20,7 +20,7 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 // Std-only manual test harness: the manifest deserializes into plain structs, so
 // std `String` (what `serde` derives into) is intentional here rather than the
-// workspace `vize_s0::String`.
+// workspace `vize_l0::String`.
 #![expect(clippy::disallowed_types, reason = "serde derives into std String")]
 
 use std::fs;
@@ -30,7 +30,7 @@ use std::process::Command;
 
 use serde::Deserialize;
 use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[derive(Deserialize)]
 struct Manifest {

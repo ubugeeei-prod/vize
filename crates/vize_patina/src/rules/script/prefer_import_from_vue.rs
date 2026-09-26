@@ -23,11 +23,11 @@
 
 use oxc_ast::ast::{ImportDeclaration, Program, Statement};
 use oxc_span::GetSpan;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
-use vize_s0::String;
+use vize_l0::String;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/prefer-import-from-vue",

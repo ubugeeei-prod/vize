@@ -13,8 +13,8 @@
 
 #[cfg(all(test, feature = "davinci-differential"))]
 #[expect(clippy::expect_used, reason = "tests assert by panicking")]
-mod s2_differential;
-mod s2_emit;
+mod l2_differential;
+mod l2_emit;
 
 use vize_atelier_core::codegen::generate_with_vnode_factory_and_merge_props;
 use vize_atelier_core::lane::transform_with_jsx_compatibility;
@@ -24,7 +24,7 @@ use vize_atelier_core::options::{CodegenMode, CodegenOptions, TransformOptions};
 // body under JSX's no-prefix closure model.
 use vize_atelier_core::CompilerError;
 use vize_croquis::Croquis;
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::scoped::{ScopedStyle, build_scoped_style};
@@ -160,7 +160,7 @@ pub(crate) fn compile_root_to_vdom<'a>(
 ) -> VdomComponent {
     let LoweredRoot {
         mut root,
-        s2,
+        l2,
         mode,
         component_name,
         component_setup,
@@ -176,9 +176,9 @@ pub(crate) fn compile_root_to_vdom<'a>(
     let scoped_style =
         scoped_css.map(|css| build_scoped_style(component_name.as_deref(), css.as_str()));
 
-    if let Some(emit) = s2_emit::try_emit_s2_vdom(
+    if let Some(emit) = l2_emit::try_emit_l2_vdom(
         allocator,
-        s2,
+        l2,
         is_ts,
         component_name.as_deref(),
         scoped_style.as_ref().map(|style| style.scope_id.as_str()),

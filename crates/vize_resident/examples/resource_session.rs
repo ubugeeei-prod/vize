@@ -4,11 +4,11 @@
 
 use std::{io::Write as _, process::ExitCode, time::Duration};
 use vize_davinci::summary::{AlphaEntry, AlphaPages, Facet, Fingerprint, SfcSummary, Signature};
+use vize_l0::{String, cstr};
 use vize_resident::{
     DeclarationName, ResidentDatabase, SourceFile, StageConfig, SummaryInput,
     compute_file_artifacts, declaration_fingerprint, sfc_summary,
 };
-use vize_s0::{String, cstr};
 
 #[salsa::tracked(returns(copy))]
 fn dependent_use<'db>(

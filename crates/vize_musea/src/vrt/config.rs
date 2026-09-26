@@ -1,7 +1,7 @@
 //! VRT configuration types.
 
 use serde::{Deserialize, Serialize};
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 use super::preset::ViewportPreset;
 use crate::types::ViewportConfig;

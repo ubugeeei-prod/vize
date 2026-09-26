@@ -26,7 +26,7 @@ use std::process::{Command, Stdio};
 
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr_with_options};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 fn binding_type(name: &str) -> BindingType {
     match name {

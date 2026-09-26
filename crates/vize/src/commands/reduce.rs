@@ -2,7 +2,7 @@
 //! still fails the same way (Davinci P3-14, `folio-reduce`).
 //!
 //! llvm-reduce's model: a dumb deterministic driver ([`driver`]), an
-//! IR-aware deletion vocabulary ([`vocabulary`]: S1 subtrees, always
+//! IR-aware deletion vocabulary ([`vocabulary`]: L1 subtrees, always
 //! re-printable), and a sovereign interestingness predicate ([`oracle`]),
 //! composed by listing checks.
 //!
@@ -28,7 +28,7 @@ use clap::Args;
 use vize_davinci::folio::repro::ReproFolio;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::pass::RemarkKind;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::davinci_ice::{self, ARTIFACT_STAGE_SOURCE, IceFailure};
 use driver::{ReduceError, reduce};
@@ -52,15 +52,15 @@ pub struct ReduceArgs {
     #[arg(long, value_name = "REMARK")]
     pub remark: Vec<std::string::String>,
 
-    /// Keep inputs whose post-transform S2 folio contains this text
+    /// Keep inputs whose post-transform L2 folio contains this text
     #[arg(long, value_name = "TEXT")]
     pub folio_contains: Vec<std::string::String>,
 
-    /// Keep inputs with an S1->S2 diagnostic whose message contains this text
+    /// Keep inputs with an L1->L2 diagnostic whose message contains this text
     #[arg(long, value_name = "TEXT")]
     pub diagnostic: Vec<std::string::String>,
 
-    /// Keep inputs whose S2 transform pipeline walks more than N times
+    /// Keep inputs whose L2 transform pipeline walks more than N times
     #[arg(long, value_name = "N")]
     pub walks_over: Option<u32>,
 

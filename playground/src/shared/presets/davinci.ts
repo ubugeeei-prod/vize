@@ -32,7 +32,7 @@ function add() {
 `;
 
 // A mostly static page: the hoist-static analysis marks whole subtrees fully
-// static, and S3 partitions almost every op as static.
+// static, and L3 partitions almost every op as static.
 const STATIC_ISLANDS = `<script setup lang="ts">
 const year = new Date().getFullYear();
 </script>

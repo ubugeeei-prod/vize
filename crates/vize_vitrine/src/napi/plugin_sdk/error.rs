@@ -18,7 +18,7 @@ pub enum HostError {
         name: String,
         known: &'static [&'static str],
     },
-    /// A manifest listed a node kind S2 does not have.
+    /// A manifest listed a node kind L2 does not have.
     UnknownKind { plugin: String, kind: String },
     /// Caching needs an explicit, unique list of plugin-owned ambient inputs.
     InvalidCacheInputs { plugin: String, detail: String },
@@ -48,7 +48,7 @@ impl fmt::Display for HostError {
                 known.join(", ")
             ),
             Self::UnknownKind { plugin, kind } => {
-                write!(f, "{plugin}: `{kind}` is not an S2 node kind")
+                write!(f, "{plugin}: `{kind}` is not an L2 node kind")
             }
             Self::InvalidCacheInputs { plugin, detail } => {
                 write!(f, "{plugin}: invalid cacheInputs ({detail})")

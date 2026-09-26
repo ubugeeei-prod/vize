@@ -15,7 +15,7 @@ use vize_davinci::fact::{
 };
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::pass::AnalysisId;
-use vize_s0::String;
+use vize_l0::String;
 
 const SCHEMA_DOC: &str = include_str!("../../../../docs/davinci/plan/fact-alpha-schemas.md");
 

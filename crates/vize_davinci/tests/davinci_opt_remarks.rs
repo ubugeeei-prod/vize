@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
 use davinci_test_support::schema as schema_check;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 const BUDGET: &str =
     "[budget-observer]\nwalks=2\npasses=3\nanalyses=0\npipelines=1\nfailures=0\n\n";
@@ -71,7 +71,7 @@ fn remarks_writes_the_run_document_even_when_empty() {
     assert_eq!(
         text_of(&output.stderr),
         cstr!(
-            "davinci-opt: pipeline s2(alpha,beta): walks=1 passes=2\n\
+            "davinci-opt: pipeline l2(alpha,beta): walks=1 passes=2\n\
              davinci-opt: remarks {}: 0 remark(s)\n",
             path.display()
         )

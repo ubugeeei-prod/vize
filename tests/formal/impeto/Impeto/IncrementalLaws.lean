@@ -8,7 +8,7 @@ reconciliation:
 * the patched tree displays exactly the freshly rendered view (`update_tree`),
   so incremental maintenance equals recompute-from-scratch;
 * each top-level node either keeps the identity of the previous sibling with
-  its S3 address or receives a fresh identity from the allocator window;
+  its L3 address or receives a fresh identity from the allocator window;
 * the allocator advances by exactly the number of elements with no retained
   address (`reconcile_allocations`), so a keyed reorder or payload patch
   allocates nothing and work is linear in the inserted delta.
@@ -16,7 +16,7 @@ reconciliation:
 
 namespace Impeto.Incremental
 
-/-- Identity of the first previous sibling carrying this S3 address. -/
+/-- Identity of the first previous sibling carrying this L3 address. -/
 def retainedIdentity? (previous : List Node) (owner : String) : Option Nat :=
   match previous.find? (fun node => address node == some owner) with
   | some (.element _ identity _ _ _ _ _) => some identity
@@ -181,7 +181,7 @@ theorem siblings_advance {fuel : Nat} {desired : List View} {previous nodes : Li
   omega
 
 /-- Keyed retention: every top-level element keeps the identity of the previous
-sibling with its S3 address, or takes a fresh identity from `[next, after)`. -/
+sibling with its L3 address, or takes a fresh identity from `[next, after)`. -/
 theorem siblings_identity (fuel : Nat) : ∀ (desired : List View) (previous : List Node)
     (seen : List String) (next : Nat) (nodes : List Node) (after : Nat),
     siblings fuel previous seen desired next = .ok (nodes, after) ->

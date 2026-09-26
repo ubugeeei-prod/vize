@@ -10,7 +10,7 @@ use super::super::{
 use super::StaticMerge;
 use super::dynamic_arg::emit_dynamic_directive_arg;
 use super::v_model::generate_vmodel_prop;
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 /// Check if an expression is a static literal (no runtime identifiers).
 /// Returns true for: object literals, array literals, string literals, numbers
@@ -175,14 +175,14 @@ fn generate_vbind_prop(
             is_class = *key == "class";
             is_style = *key == "style";
 
-            let base_key: vize_s0::String =
+            let base_key: vize_l0::String =
                 if has_camel || matches!(static_key_casing, StaticBindKeyCasing::Camelize) {
                     camelize(key)
                 } else {
                     key.to_compact_string()
                 };
 
-            let transformed_key: vize_s0::String = if has_prop {
+            let transformed_key: vize_l0::String = if has_prop {
                 // Add . prefix for DOM property binding
                 let mut name = String::with_capacity(1 + base_key.len());
                 name.push('.');

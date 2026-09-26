@@ -28,7 +28,7 @@ use oxc_ast::ast::{
 };
 use oxc_span::GetSpan;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::Lowerer;
 

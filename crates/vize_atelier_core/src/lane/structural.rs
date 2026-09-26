@@ -1,6 +1,6 @@
 //! Structural directive transforms (v-if, v-for).
 
-use vize_s0::{Box, Vec};
+use vize_l0::{Box, Vec};
 
 use crate::errors::ErrorCode;
 use crate::{

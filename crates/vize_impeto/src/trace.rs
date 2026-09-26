@@ -1,12 +1,12 @@
 //! Executable backend-observation traces for Impeto programs.
 //!
 //! The Lean reference is the normative semantics. This Rust mirror exists so
-//! generated S3 fixtures can be checked by ordinary cargo tests before the
+//! generated L3 fixtures can be checked by ordinary cargo tests before the
 //! dedicated Lean lane compares the same text.
 
 use core::fmt::{self, Write};
 
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::op::{EffectId, Op, OpKind, Program};
 

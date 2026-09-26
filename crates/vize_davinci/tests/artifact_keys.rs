@@ -1,7 +1,7 @@
 //! TS-43 — stage artifact key stability (Davinci P5-1a).
 //!
 //! Every block of an SFC is keyed at each stage that has an artifact for
-//! it: S0 for every block, the S1 surface page and the S2 page for the
+//! it: L0 for every block, the L1 surface page and the L2 page for the
 //! template. Three properties, all by exact equality:
 //!
 //! 1. **Golden keys, two platforms.** `fixtures/keys/base.keys` is the full
@@ -36,9 +36,9 @@ use std::path::{Path, PathBuf};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_davinci::key::{ArtifactKey, source_block_key};
-use vize_s0::{Allocator, SourceRoot, String};
-use vize_s1_to_s2::key::SurfacePage;
-use vize_s2::folio::S2Folio;
+use vize_l0::{Allocator, SourceRoot, String};
+use vize_l1_to_l2::key::SurfacePage;
+use vize_l2::folio::L2Folio;
 
 type Keys = BTreeMap<String, ArtifactKey>;
 
@@ -74,17 +74,17 @@ fn label(block: &str, stage: &str) -> String {
     out
 }
 
-/// S1 and S2 keys of a template block, parsed from its slice of the file
+/// L1 and L2 keys of a template block, parsed from its slice of the file
 /// and lowered with file-absolute spans (the production shape).
 fn template_keys(source: &str, block: &str, start: u32) -> (ArtifactKey, ArtifactKey) {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_s1::parse(&allocator, block);
+    let (tree, errors) = vize_l1::parse(&allocator, block);
     let s1 = ArtifactKey::of(&SurfacePage(&tree), start);
     let frame = SourceRoot::new(source)
         .and_then(|root| root.block(block, start))
         .expect("template block frame");
-    let lowered = vize_s1_to_s2::lower_source_block(&allocator, &tree, &errors, frame);
-    let s2 = ArtifactKey::of(&S2Folio::of(&lowered.root.ops), start);
+    let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, frame);
+    let s2 = ArtifactKey::of(&L2Folio::of(&lowered.root.ops), start);
     (s1, s2)
 }
 

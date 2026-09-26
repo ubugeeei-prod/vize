@@ -21,15 +21,15 @@ function compiler() {
   return consumer;
 }
 
-void test("Atelier core hoist static steps import S0 through the preferred name", () => {
+void test("Atelier core hoist static steps import L0 through the preferred name", () => {
   const rows = compiler().fileRows;
 
   for (const [relPath, mode, sites] of hoistStaticRows) {
     const row = rows.find((candidate) => candidate.relPath === relPath && candidate.mode === mode);
     assert.ok(row, `${relPath} (${mode})`);
-    assert.equal(row.surfaceCounts.s0, sites, relPath);
-    assert.equal(row.surfaceNameCounts.s0.vize_s0, sites, relPath);
-    assert.equal(row.surfaceNameCounts.s0.vize_carton ?? 0, 0, relPath);
+    assert.equal(row.surfaceCounts.l0, sites, relPath);
+    assert.equal(row.surfaceNameCounts.l0.vize_l0, sites, relPath);
+    assert.equal(row.surfaceNameCounts.l0.vize_carton ?? 0, 0, relPath);
 
     const source = fs.readFileSync(path.join(repoRoot, relPath), "utf8");
     assert.doesNotMatch(source, /\bvize_carton\b/u, relPath);
@@ -41,7 +41,7 @@ void test("Atelier core hoist static steps import S0 through the preferred name"
         row.relPath === "crates/vize_atelier_core/src/steps/hoist_static.rs" ||
         row.relPath.startsWith("crates/vize_atelier_core/src/steps/hoist_static/"),
     )
-    .filter((row) => (row.surfaceNameCounts.s0.vize_carton ?? 0) > 0)
+    .filter((row) => (row.surfaceNameCounts.l0.vize_carton ?? 0) > 0)
     .map((row) => `${row.relPath}:${row.mode}`);
   assert.deepEqual(compatRows, []);
 });

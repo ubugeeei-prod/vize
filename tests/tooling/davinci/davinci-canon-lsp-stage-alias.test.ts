@@ -63,13 +63,13 @@ function cargoMetadata(): CargoMetadata {
   ) as CargoMetadata;
 }
 
-test("Canon LSP client imports S0 storage through the stage alias", () => {
+test("Canon LSP client imports L0 storage through the stage alias", () => {
   const rootManifest = readToml("Cargo.toml");
   const canonManifest = readToml("crates", "vize_canon", "Cargo.toml");
   const workspaceDependencies = asRecord(asRecord(rootManifest.workspace).dependencies);
   const canonDependencies = asRecord(canonManifest.dependencies);
-  const workspaceS0 = asRecord(workspaceDependencies.vize_s0);
-  const canonS0 = asRecord(canonDependencies.vize_s0);
+  const workspaceS0 = asRecord(workspaceDependencies.vize_l0);
+  const canonS0 = asRecord(canonDependencies.vize_l0);
 
   assert.equal(workspaceS0.package, "vize_carton");
   assert.equal(workspaceS0.path, "crates/vize_carton");
@@ -82,7 +82,7 @@ test("Canon LSP client imports S0 storage through the stage alias", () => {
   assert.ok(cartonPackage);
   assert.ok(canonPackage);
   const s0Dependency = canonPackage.dependencies.find(
-    (dependency) => dependency.name === "vize_carton" && dependency.rename === "vize_s0",
+    (dependency) => dependency.name === "vize_carton" && dependency.rename === "vize_l0",
   );
   assert.ok(s0Dependency);
   assert.equal(s0Dependency.path, path.join(repoRoot, "crates", "vize_carton"));
@@ -98,11 +98,11 @@ test("Canon LSP client imports S0 storage through the stage alias", () => {
     if (/\bvize_carton::|use vize_carton\b/u.test(source)) {
       offenders.push(path.relative(repoRoot, file));
     }
-    if (/\bvize_s0::|use vize_s0\b/u.test(source)) {
+    if (/\bvize_l0::|use vize_l0\b/u.test(source)) {
       aliasImportCount += 1;
     }
   }
 
   assert.deepEqual(offenders, []);
-  assert.ok(aliasImportCount > 0, "lsp_client should use vize_s0");
+  assert.ok(aliasImportCount > 0, "lsp_client should use vize_l0");
 });

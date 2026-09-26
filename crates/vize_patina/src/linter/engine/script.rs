@@ -1,4 +1,4 @@
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 use crate::linter::config::{LintResult, Linter};
 

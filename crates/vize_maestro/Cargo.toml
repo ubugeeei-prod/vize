@@ -52,7 +52,7 @@ oxc_syntax.workspace = true
 oxc_diagnostics.workspace = true
 
 # Internal crates
-vize_s0.workspace = true
+vize_l0.workspace = true
 vize_relief.workspace = true
 vize_armature.workspace = true
 vize_atelier_sfc.workspace = true

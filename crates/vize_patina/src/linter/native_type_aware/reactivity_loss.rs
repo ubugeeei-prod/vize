@@ -7,7 +7,7 @@ use vize_croquis::{
     reactivity::{ReactivityLoss, ReactivityLossKind},
     script_parser::ScriptParseResult,
 };
-use vize_s0::{CompactString, FxHashSet, String, ToCompactString, cstr};
+use vize_l0::{CompactString, FxHashSet, String, ToCompactString, cstr};
 
 #[derive(Clone)]
 pub(super) struct ReactivityLossQuery {

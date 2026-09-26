@@ -3,7 +3,7 @@ use std::borrow::Cow;
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_glyph::{FormatOptions, format_sfc};
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 type BlockAttrs<'a> = FxHashMap<Cow<'a, str>, Cow<'a, str>>;
 

@@ -9,23 +9,23 @@
 //!
 //! # What the feed carries today
 //!
-//! - **S1**: one page per `.vue` file with a template block, produced by
-//!   parsing the template into `vize_s1`'s lossless surface tree and
+//! - **L1**: one page per `.vue` file with a template block, produced by
+//!   parsing the template into `vize_l1`'s lossless surface tree and
 //!   rendering it back (`stage: "s1"`, `pass: "parse"` - a parse product,
-//!   not a pass product). By the S1 byte-fidelity law (TS-19) the text
+//!   not a pass product). By the L1 byte-fidelity law (TS-19) the text
 //!   equals the authored template bytes, malformed input included - which
-//!   is exactly what the ladder's S1 rung shows, proven through the tree
+//!   is exactly what the ladder's L1 rung shows, proven through the tree
 //!   rather than copied from the source.
-//! - **The full ladder** ([`ladder_pages`]): S1, the S2 (Disegno) lowering
-//!   page, the transform plan's walks (`[fusion-plan-folio]`), one S2 page
-//!   per executed transform pass, and the S3 (Impeto)
-//!   graph, partition-fact and value pages - all from one S1 parse through
+//! - **The full ladder** ([`ladder_pages`]): L1, the L2 (Disegno) lowering
+//!   page, the transform plan's walks (`[fusion-plan-folio]`), one L2 page
+//!   per executed transform pass, and the L3 (Impeto)
+//!   graph, partition-fact and value pages - all from one L1 parse through
 //!   the real lowerings and pass manager. The wasm `analyzeSfc` result (the
 //!   playground's Davinci view) carries it. The inspector payload keeps its
-//!   S1-only pages: it rides inside share URLs (the P2-18 growth note), and
+//!   L1-only pages: it rides inside share URLs (the P2-18 growth note), and
 //!   the playground recomputes the ladder from the same sources.
 //! - **Remarks** (P3-13): every inline HTML template's optimization remarks
-//!   from the S2 transform pipeline ([`template_remarks`]), spans in the
+//!   from the L2 transform pipeline ([`template_remarks`]), spans in the
 //!   template's byte frame (the pages' frame) - the decision explanations
 //!   Spolvero renders (C-5).
 //! - **Step and walk timings** ([`ladder_run`], [`ladder_profile`]): the
@@ -43,19 +43,19 @@ pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
 pub use profile::{LADDER_STEP_KEY, LADDER_WALK_KEY, ladder_profile};
 pub use vize_davinci::folio::feed::{SpolveroFeed, SpolveroPage, SpolveroRemark};
 use vize_davinci::pass::RemarkCollector;
-use vize_s0::{Allocator, String, cstr};
+use vize_l0::{Allocator, String, cstr};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 
 use super::payload::InspectorSourceFile;
 
-/// The S1 page for one template: S1 parse + byte-faithful render.
+/// The L1 page for one template: L1 parse + byte-faithful render.
 #[must_use]
-pub fn s1_page(path: &str, template: &str) -> SpolveroPage {
+pub fn l1_page(path: &str, template: &str) -> SpolveroPage {
     let allocator = Allocator::default();
-    let (tree, _errors) = vize_s1::parse(&allocator, template);
+    let (tree, _errors) = vize_l1::parse(&allocator, template);
     let mut text = String::default();
-    vize_s1::render::render(&tree, &mut |slice| text.push_str(slice));
+    vize_l1::render::render(&tree, &mut |slice| text.push_str(slice));
     SpolveroPage {
         path: Some(String::from(path)),
         stage: cstr!("s1"),
@@ -64,19 +64,19 @@ pub fn s1_page(path: &str, template: &str) -> SpolveroPage {
     }
 }
 
-/// The optimization remarks (P3-13) the S2 transform pipeline emits for
-/// one template: S1 parse, S1→S2 lowering (Vue 3 dialect), the transform
+/// The optimization remarks (P3-13) the L2 transform pipeline emits for
+/// one template: L1 parse, L1→L2 lowering (Vue 3 dialect), the transform
 /// pipeline under a remark collector, in canonical order. Spans are byte
-/// offsets into `template` - the frame of the feed's S1/S2 pages, so a
+/// offsets into `template` - the frame of the feed's L1/L2 pages, so a
 /// remark and the page lines it explains highlight the same source bytes.
 #[must_use]
 pub fn template_remarks(path: &str, template: &str) -> Vec<SpolveroRemark> {
     let allocator = Allocator::default();
-    let (tree, errors) = vize_s1::parse(&allocator, template);
+    let (tree, errors) = vize_l1::parse(&allocator, template);
     let mut lowered =
-        vize_s1_to_s2::lower_with_caps(&allocator, &tree, &errors, vize_s1_to_s2::LegacyCaps::VUE3);
+        vize_l1_to_l2::lower_with_caps(&allocator, &tree, &errors, vize_l1_to_l2::LegacyCaps::VUE3);
     let mut collector = RemarkCollector::new();
-    let _facts = vize_s1_to_s2::pass::run_transform(&mut lowered, &mut collector);
+    let _facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut collector);
     collector
         .finish()
         .into_iter()
@@ -119,9 +119,9 @@ pub fn spolvero_value_with_remarks(
     serde_json::from_str(feed.to_json().as_str()).unwrap_or_default()
 }
 
-/// The inspector payload's feed: S1 pages for every parseable `.vue` file
+/// The inspector payload's feed: L1 pages for every parseable `.vue` file
 /// with a template, in payload file order (see the module docs for why the
-/// payload stays S1-only), plus each inline HTML template's optimization
+/// payload stays L1-only), plus each inline HTML template's optimization
 /// remarks (P3-13).
 pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Value {
     let mut pages = Vec::new();
@@ -134,7 +134,7 @@ pub(super) fn payload_spolvero(files: &[InspectorSourceFile]) -> serde_json::Val
             continue;
         };
         if let Some(template) = descriptor.template.as_ref() {
-            pages.push(s1_page(file.path.as_str(), template.content.as_ref()));
+            pages.push(l1_page(file.path.as_str(), template.content.as_ref()));
             let html = template.lang.as_deref().is_none_or(|lang| lang == "html");
             if template.src.is_none() && html {
                 remarks.extend(template_remarks(

@@ -32,7 +32,7 @@ def plainText (text : String) : Bool :=
   !text.toList.any (fun c => c == '&' || c == '<' || c == '\n' || c == '\t' || c == '\r') &&
     (text.splitOn "  ").length == 1
 
-/-- Compound text as S3 preserves it: literal runs and `{{ expression }}` holes. -/
+/-- Compound text as L3 preserves it: literal runs and `{{ expression }}` holes. -/
 def compoundParts (text : String) : Except String (List (Bool × String)) := do
   let pieces := text.splitOn "{{"
   let some first := pieces.head? | throw "empty compound text"

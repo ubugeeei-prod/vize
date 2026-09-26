@@ -3,7 +3,7 @@
 mod aggregate;
 
 use vize_armature::patterns::{MatchArm, MatchPattern, PatternKind};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 struct Selector<'a> {
     prefix: &'a str,

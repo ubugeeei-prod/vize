@@ -21,7 +21,7 @@
 
 use core::fmt;
 
-use vize_s0::String;
+use vize_l0::String;
 
 pub mod croquis;
 pub mod dump;

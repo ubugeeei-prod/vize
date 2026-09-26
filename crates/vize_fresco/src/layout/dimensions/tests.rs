@@ -1,4 +1,4 @@
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::super::{Dimension, LengthPercentageAuto};
 use super::{corpus, parse_dimension, parse_f32, parse_length_percentage_auto};

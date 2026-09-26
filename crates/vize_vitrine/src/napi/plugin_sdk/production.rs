@@ -30,7 +30,7 @@ use vize_croquis::{
 };
 use vize_davinci::fact::Demand;
 use vize_davinci::summary::{AlphaPages, Facet};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 pub const GROUPS: &[&str] = &[
     Bindings::NAME,

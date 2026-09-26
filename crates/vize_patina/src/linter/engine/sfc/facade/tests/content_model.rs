@@ -5,8 +5,8 @@ use crate::linter::Linter;
 use crate::markup::{MarkupContext, MarkupDocument, MarkupRule};
 use crate::rule::{Rule, RuleRegistry};
 use crate::rules::vue::PermittedContents;
-use vize_s0::cstr;
-use vize_s0::i18n::Locale;
+use vize_l0::cstr;
+use vize_l0::i18n::Locale;
 
 #[test]
 fn authored_nesting_preserves_full_diagnostics_in_every_locale() {
@@ -54,7 +54,7 @@ impl MarkupRule for DocumentOnly {
         "vue/permitted-contents"
     }
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
-        assert!(document.is_s2());
+        assert!(document.is_l2());
         PermittedContents.enter_document(ctx, document);
     }
 }
@@ -75,7 +75,7 @@ impl Rule for DocumentOnly {
 }
 
 #[test]
-fn permitted_contents_runs_only_from_the_s2_document_hook() {
+fn permitted_contents_runs_only_from_the_l2_document_hook() {
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(DocumentOnly));
     let result = Linter::with_registry(registry).lint_sfc(

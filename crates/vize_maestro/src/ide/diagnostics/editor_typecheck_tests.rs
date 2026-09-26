@@ -12,7 +12,7 @@ use super::editor_typecheck_fixture::{
 };
 use super::{DiagnosticService, sources};
 use tower_lsp::lsp_types::Url;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[test]
 fn sync_collect_does_not_surface_legacy_type_false_positives() {

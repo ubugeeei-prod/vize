@@ -3,7 +3,7 @@
 
 use std::collections::BTreeMap;
 
-use vize_s0::{CompactString, cstr};
+use vize_l0::{CompactString, cstr};
 
 use super::{
     CANONICAL_CORPUS_RELATIVE, InventoryError, SubmoduleState, is_canonical_root,

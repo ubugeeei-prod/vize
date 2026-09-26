@@ -9,7 +9,7 @@
 use std::sync::{Arc, Barrier};
 
 use harness::RealCorsaRenameSession;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 mod direct_first;
 pub(in crate::ide) mod harness;

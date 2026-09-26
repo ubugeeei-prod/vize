@@ -48,7 +48,7 @@ test("Davinci and OXC share one exact CompactString implementation", () => {
   const cartonDependency = carton.dependencies.find(
     (dependency) => dependency.name === "compact_str",
   );
-  assert.ok(cartonDependency, "the S0 package must depend on compact_str");
+  assert.ok(cartonDependency, "the L0 package must depend on compact_str");
   assert.equal(cartonDependency.req, "=0.10.0");
 
   const oxcSpan = workspacePackage(metadata, "oxc_span");

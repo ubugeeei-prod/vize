@@ -19,7 +19,7 @@ use vize_atelier_ssr::differential::with_legacy_lane;
 
 fn compile(source: &str) -> String {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse");
-    let filename: vize_s0::String = "Fixture.vue".into();
+    let filename: vize_l0::String = "Fixture.vue".into();
     let options = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),

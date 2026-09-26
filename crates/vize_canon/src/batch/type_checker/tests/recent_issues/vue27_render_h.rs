@@ -5,7 +5,7 @@ use super::super::{
     resolve_test_tsgo_binary,
 };
 use crate::batch::TypeChecker;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 const VUE_27_TYPES: &str = r#"export interface VNode {}
 export interface VNodeData {}

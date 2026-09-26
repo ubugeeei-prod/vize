@@ -2,7 +2,7 @@
 
 use clap::Args;
 use std::path::PathBuf;
-use vize_s0::String;
+use vize_l0::String;
 
 use super::patterns::LINT_DEFAULT_PATTERNS;
 

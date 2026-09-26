@@ -3,7 +3,7 @@
 use std::path::{Component, Path, PathBuf};
 
 use tower_lsp::lsp_types::Url;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::module_specifier;
 

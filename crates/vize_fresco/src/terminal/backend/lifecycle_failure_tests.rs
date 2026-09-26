@@ -2,7 +2,7 @@
 
 use std::io::{self, Write};
 
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 use super::{Backend, TerminalMode, TerminalOptions, TerminalRestorationError};
 

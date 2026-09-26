@@ -9,7 +9,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::OnceLock;
 
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 pub(crate) struct Fixtures {
     pub(crate) invalid: Option<String>,

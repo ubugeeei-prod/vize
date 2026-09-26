@@ -11,9 +11,9 @@ slot walks so later slots keep shipped render order.
 
 The durable witnesses are:
 
-- [`davinci_s2_once.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_once.rs)
+- [`davinci_s2_once.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_once.rs)
   - pins `v-once` directive handling.
-- [`emit_vslots.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_vslots.rs)
+- [`emit_vslots.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_vslots.rs)
   - covers slot-carrier emission order.
 
 This installment does not tick P2-11. The production-lane switch remains open.

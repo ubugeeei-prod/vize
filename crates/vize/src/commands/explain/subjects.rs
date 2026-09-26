@@ -1,5 +1,5 @@
 //! Every code `vize explain` knows, generated from the producers' own
-//! metadata: compiler, lint, Canon type, S3 verifier and cross-file diagnostics.
+//! metadata: compiler, lint, Canon type, L3 verifier and cross-file diagnostics.
 //! TS-53 also compares their generated pages against the producer definitions.
 
 use std::sync::OnceLock;
@@ -7,6 +7,8 @@ use std::sync::OnceLock;
 use vize_canon::TypeErrorCode;
 use vize_croquis_cf::CrossFileDiagnostic;
 use vize_davinci::diagnostic::Severity as Claim;
+use vize_l0::FxHashSet;
+use vize_l3::verify::ViolationCode;
 use vize_patina::rule_contracts::contract_for;
 use vize_patina::rules::css::{
     CssRule, NoDisplayNone, NoHardcodedValues, NoIdSelectors, NoImportant, NoUtilityClasses,
@@ -17,8 +19,6 @@ use vize_patina::{
     RuleCategory, RuleRegistry, Severity, builtin_musea_rules, builtin_script_rules,
 };
 use vize_relief::ErrorCode;
-use vize_s0::FxHashSet;
-use vize_s3::verify::ViolationCode;
 
 /// A lint rule, as its metadata and its [`RuleContract`](vize_davinci::diagnostic::RuleContract)
 /// declare it.
@@ -41,7 +41,7 @@ pub(crate) enum Subject {
     Compiler(ErrorCode),
     Rule(Rule),
     Canon(TypeErrorCode),
-    S3(ViolationCode),
+    L3(ViolationCode),
     CrossFile(&'static str),
 }
 
@@ -51,7 +51,7 @@ impl Subject {
             Self::Compiler(code) => code.code(),
             Self::Rule(rule) => rule.name,
             Self::Canon(code) => code.diagnostic_code(),
-            Self::S3(code) => code.as_str(),
+            Self::L3(code) => code.as_str(),
             Self::CrossFile(code) => code,
         }
     }
@@ -173,7 +173,7 @@ fn load() -> Vec<Subject> {
             .into_iter()
             .map(Subject::Canon)
             .collect::<Vec<_>>(),
-        ViolationCode::ALL.into_iter().map(Subject::S3).collect(),
+        ViolationCode::ALL.into_iter().map(Subject::L3).collect(),
         CrossFileDiagnostic::CODES
             .into_iter()
             .map(Subject::CrossFile)

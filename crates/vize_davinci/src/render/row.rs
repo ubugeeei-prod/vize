@@ -12,7 +12,7 @@ use alloc::vec::Vec;
 
 use super::paint::{Painter, Style};
 use super::text;
-use vize_s0::String;
+use vize_l0::String;
 
 #[derive(Debug, Clone, Default)]
 pub(crate) struct Row<'t> {

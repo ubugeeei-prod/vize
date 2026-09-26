@@ -13,7 +13,7 @@ use alloc::collections::BTreeMap;
 use alloc::collections::BTreeSet;
 use alloc::vec::Vec;
 
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 use super::args_text;
 use super::corpus::CorpusRemark;

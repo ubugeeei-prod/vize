@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 use tower_lsp::lsp_types::Url;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 pub(super) fn assert_mirror_root(
     trace: &[u8],

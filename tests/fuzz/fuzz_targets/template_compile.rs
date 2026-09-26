@@ -11,7 +11,7 @@
 // fixtures by `tools/commands/ci/fuzz/seed_corpus.rs`.
 use libfuzzer_sys::fuzz_target;
 use vize_atelier_dom::compile_template;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 fuzz_target!(|data: &[u8]| {
     let Ok(source) = std::str::from_utf8(data) else {

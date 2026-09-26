@@ -10,7 +10,7 @@ use vize_fresco::{
     DiagnosticWorkspaceKeymap, DiagnosticWorkspaceState, Key, KeyEvent, KeyEventKind,
     terminal::CursorShape,
 };
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 use super::super::DoctorSource;
 use filter::{cycle, search_document};

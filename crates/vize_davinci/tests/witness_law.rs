@@ -18,7 +18,7 @@ use vize_davinci::diagnostic::{
 };
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::AnalysisId;
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 static FIXTURE_EXEMPTION: Exemption = Exemption::new("witness_law_fixture", "fixture/kind");
 
@@ -203,8 +203,8 @@ fn an_exemption_name_outside_the_inventory_alphabet_is_refused() {
         ("", "kind", producer),
         ("Vize", "kind", producer),
         ("vize\ts1", "kind", producer),
-        ("vize_s1_to_s2", "", code),
-        ("vize_s1_to_s2", "v-if \"key\"", code),
+        ("vize_l1_to_l2", "", code),
+        ("vize_l1_to_l2", "v-if \"key\"", code),
     ];
     for (name, kind, expected) in refused {
         let message = panic_message(move || {

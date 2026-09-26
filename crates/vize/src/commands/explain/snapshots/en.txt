@@ -3672,7 +3672,7 @@ vue/max-template-complexity · lint rule
 Limit a component's own template complexity (cyclomatic and cognitive)
 
 tier: exact
-domain: control flow of HTML SFC templates as lowered to S2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
+domain: control flow of HTML SFC templates as lowered to L2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
 severity: warning
 category: recommended
 autofix: no
@@ -6196,62 +6196,62 @@ help:
 
     // ✅ Keep the ref
     const x = ref(0);
-=== S3V001
-S3V001 · S3 verification
+=== L3V001
+L3V001 · L3 verification
 An op, region, or effect id is repeated.
 
 help:
   Give every op, region, and effect its own id.
-=== S3V002
-S3V002 · S3 verification
+=== L3V002
+L3V002 · L3 verification
 The program has no root region, or the root names a parent or owner.
 
 help:
   Region r#0 must exist and must not name a parent or an owner.
-=== S3V003
-S3V003 · S3 verification
+=== L3V003
+L3V003 · L3 verification
 An op names a region that does not exist.
 
 help:
   Point the op at a region in this program.
-=== S3V004
-S3V004 · S3 verification
+=== L3V004
+L3V004 · L3 verification
 A state edge names an endpoint that does not resolve.
 
 help:
   Both ends of a state edge must be ops in this program.
-=== S3V005
-S3V005 · S3 verification
+=== L3V005
+L3V005 · L3 verification
 A region names a parent or owner that does not resolve, or a non-root region omits them.
 
 help:
   Every region except r#0 must name a parent region and an owner op that exist.
-=== S3V006
-S3V006 · S3 verification
+=== L3V006
+L3V006 · L3 verification
 A region, op, or effect escapes the region that contains it, or regions form a parent cycle.
 
 help:
   Keep each span inside its parent and owner, and do not cycle parent links.
-=== S3V007
-S3V007 · S3 verification
+=== L3V007
+L3V007 · L3 verification
 An effect names a missing scope, owner, or region, or a state edge leaves its effect scope.
 
 help:
   Keep the effect and its edges inside the region and effect scope it names.
-=== S3V008
-S3V008 · S3 verification
+=== L3V008
+L3V008 · L3 verification
 A scheduled edge points backward or at itself.
 
 help:
   Schedule edges toward a later op.
-=== S3V009
-S3V009 · S3 verification
+=== L3V009
+L3V009 · L3 verification
 An operand is not valid for its op.
 
 help:
   Use an operand the op's verifier accepts.
-=== S3V010
-S3V010 · S3 verification
+=== L3V010
+L3V010 · L3 verification
 A placement alternative or committed choice does not match the placement rules.
 
 help:

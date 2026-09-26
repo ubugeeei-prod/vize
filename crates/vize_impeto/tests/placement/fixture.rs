@@ -1,4 +1,4 @@
-//! A hand-built S3 program exercising every placement alternative.
+//! A hand-built L3 program exercising every placement alternative.
 //!
 //! ```text
 //! op0 insert-node <div>                     r0  static
@@ -20,7 +20,7 @@ use vize_impeto::op::{
 use vize_impeto::operand::{Operand, OperandRole, OperandValue, ValueKind};
 use vize_impeto::placement::{Placement, PlacementRecord, PlacementSet};
 use vize_impeto::verify::verify;
-use vize_s0::{Allocator, Span, String, cstr};
+use vize_l0::{Allocator, Span, String, cstr};
 
 pub const JS: ValueKind = ValueKind::Js;
 pub const LIT: ValueKind = ValueKind::Literal;

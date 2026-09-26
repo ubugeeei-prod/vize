@@ -94,7 +94,7 @@ fn is_path_boundary(character: char) -> bool {
 
 #[cfg(test)]
 mod hint_tests {
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     use super::{rewrite_corsa_message, strip_corsa_overlay_paths};
 

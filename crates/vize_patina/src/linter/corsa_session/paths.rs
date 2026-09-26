@@ -2,7 +2,7 @@ use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicU64, Ordering},
 };
-use vize_s0::{
+use vize_l0::{
     String, ToCompactString,
     corsa_resolver::{CORSA_EXECUTABLE_NAMES, CorsaResolveError, CorsaResolveRequest},
     cstr,
@@ -199,7 +199,7 @@ pub(super) fn resolve_corsa_executable(
         project_root: Some(project_root),
     };
 
-    match vize_s0::corsa_resolver::resolve_corsa_executable(request) {
+    match vize_l0::corsa_resolver::resolve_corsa_executable(request) {
         Ok(path) => Ok(path),
         // Preserve the historical lenient fallback: a bare `corsa` lets the
         // spawn-time `PATH` lookup have the final word.
@@ -239,7 +239,7 @@ mod tests {
         path::{Path, PathBuf},
         sync::atomic::{AtomicU64, Ordering},
     };
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     static NEXT_CASE_ID: AtomicU64 = AtomicU64::new(0);
 
@@ -274,7 +274,7 @@ mod tests {
             .join("@typescript")
             .join(&*cstr!(
                 "native-preview-{}",
-                vize_s0::corsa_resolver::platform_suffix()
+                vize_l0::corsa_resolver::platform_suffix()
             ))
             .join("lib")
             .join("tsgo");

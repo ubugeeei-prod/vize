@@ -3,7 +3,7 @@ use lsp_types::{
     Diagnostic, DiagnosticSeverity, DocumentDiagnosticReport, DocumentDiagnosticReportResult,
     NumberOrString, Position, Range,
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 pub(super) fn extract_diagnostics(report: DocumentDiagnosticReportResult) -> Vec<Diagnostic> {
     match report {

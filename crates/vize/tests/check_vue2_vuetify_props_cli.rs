@@ -4,7 +4,7 @@ use std::{
     process::Command,
 };
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;

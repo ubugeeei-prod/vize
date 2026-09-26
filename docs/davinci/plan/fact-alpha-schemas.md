@@ -27,7 +27,7 @@ per-SFC summary serializes, so this table is the summary's contract.
 
 | group              | id  | alpha_schema | key                                                                          | value                                                                      | status             |
 | ------------------ | --- | ------------ | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------ |
-| `bindings`         | 1   | 1            | binding name as authored (`String`); `SymbolId` once S2 carries script scope | binding kind (`BindingType` spelling) and declaration span                 | planned — P4-3a    |
+| `bindings`         | 1   | 1            | binding name as authored (`String`); `SymbolId` once L2 carries script scope | binding kind (`BindingType` spelling) and declaration span                 | planned — P4-3a    |
 | `undefined-refs`   | 2   | 1            | identifier name (`String`)                                                   | reference count and first-reference span                                   | planned — P4-3a    |
 | `expression-facts` | 12  | 1            | expression id the host assigned in the batch (`u32`)                         | referenced bindings (comma-separated, source order), exactness, const-ness | registered — P6-1b |
 

@@ -1,9 +1,9 @@
 //! Decoders for the payload-carrying `<variant>` attribute values (`args`,
-//! `viewport`). They read one attribute value S1 already delimited; nothing
+//! `viewport`). They read one attribute value L1 already delimited; nothing
 //! here scans the file.
 
 use crate::types::ViewportConfig;
-use vize_s0::{Allocator, FxHashMap};
+use vize_l0::{Allocator, FxHashMap};
 
 /// Parse args JSON string into a map with arena-allocated keys.
 /// HTML entities are decoded before parsing.

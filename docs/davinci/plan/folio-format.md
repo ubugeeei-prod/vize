@@ -206,10 +206,10 @@ coverage):
 
 ## Disegno page (P2-5a; expression payloads P2-5b)
 
-The S2 stage dump: an owned document model (`DisegnoFolio`,
-`crates/vize_s2/src/folio.rs`) of one op tree. Hand-written under the
+The L2 stage dump: an owned document model (`DisegnoFolio`,
+`crates/vize_l2/src/folio.rs`) of one op tree. Hand-written under the
 "Derived pages" boundary, because the derived grammar is flat (header
-scalars plus one-level sections) while the S2 artifact is region-nested by
+scalars plus one-level sections) while the L2 artifact is region-nested by
 its central design decision — ops own their regions — and flattening the
 tree into derivable lines would move structure validation outside `parse`,
 stripping its 1-based line numbers.
@@ -255,7 +255,7 @@ below):
 **Expression payloads** (P2-5b): every expression position serializes as
 owned text + span, never an AST, because arena references cannot persist
 across a compile (P1-11) — a `js` payload re-parses into the arena on
-load (`vize_s2::expr::JsExpr::parse_in`; the total fallback is
+load (`vize_l2::expr::JsExpr::parse_in`; the total fallback is
 `ExprRef::parse_js_in`, which loads unadmitted text as `opaque` with the
 text-classified reason).
 
@@ -274,20 +274,20 @@ attribute names containing `=`, a space or `"`, modifier names containing
 embedding other control characters are outside the contract. The folio
 models the dump, not the analysis: tree shape is validated, semantic
 invariants (branch ordering, region well-formedness beyond the grammar)
-belong to the S2 verifier (P2-6). The committed reference page is
-`crates/vize_s2/tests/fixtures/reference.folio`, pinned by TS-16 in
-`crates/vize_s2/tests/folio_laws.rs` (which also pins every opaque
+belong to the L2 verifier (P2-6). The committed reference page is
+`crates/vize_l2/tests/fixtures/reference.folio`, pinned by TS-16 in
+`crates/vize_l2/tests/folio_laws.rs` (which also pins every opaque
 reason spelling both directions) and mirrored from a live arena tree in
 `tests/folio_mirror.rs`; the arena-reset replay law is
 `tests/expr_replay.rs`. Provenance records get their own derived page,
 `[s2-provenance-folio]` (`rule=… node=… before="…" after="…" @s:e`, this
-page's escapes; grammar in `vize_s2::folio::provenance`, TS-16 laws in
+page's escapes; grammar in `vize_l2::folio::provenance`, TS-16 laws in
 `tests/provenance_folio.rs`).
 
-## S2 verifier invariants (P2-6)
+## L2 verifier invariants (P2-6)
 
 The semantic invariants the disegno grammar deliberately does not encode,
-checked by `vize_s2::verify` between passes in debug/CI builds only
+checked by `vize_l2::verify` between passes in debug/CI builds only
 (guardrail 5: verification never ships — the release shape of
 `VerifyObserver` is a ZST with empty check bodies, const-asserted at the
 type). Checks are local in the GHC `-dcore-lint` sense — a line plus the
@@ -295,16 +295,16 @@ facts it and its owner already declare, no global inference — and run in
 one page-order walk, so an aggregated report is deterministic. A violation
 renders as one line, `{code} @{start}:{end} {message}`, canonical `en`
 locale; a between-pass failure panics with the report headed by the
-offending pass (`` S2 verifier: {n} violation(s) after `{stage}.{pass}` ``).
+offending pass (`` L2 verifier: {n} violation(s) after `{stage}.{pass}` ``).
 
 | code   | rigor      | invariant                                               |
 | ------ | ---------- | ------------------------------------------------------- |
-| S2V001 | structural | a span never runs backwards (`start <= end`)            |
-| S2V002 | structural | a nested line's span stays inside its immediate owner's |
-| S2V003 | structural | every `NodeId` a side table references resolves         |
-| S2V004 | canonical  | `ui.if` owns at least one branch                        |
-| S2V005 | canonical  | the leading branch of `ui.if` carries a condition       |
-| S2V006 | canonical  | an unconditional branch is the trailing branch          |
+| L2V001 | structural | a span never runs backwards (`start <= end`)            |
+| L2V002 | structural | a nested line's span stays inside its immediate owner's |
+| L2V003 | structural | every `NodeId` a side table references resolves         |
+| L2V004 | canonical  | `ui.if` owns at least one branch                        |
+| L2V005 | canonical  | the leading branch of `ui.if` carries a condition       |
+| L2V006 | canonical  | an unconditional branch is the trailing branch          |
 
 **Rigor follows `PassKind`.** The structural set holds after every pass;
 the canonical set additionally holds from the first `MandatoryLowering`
@@ -314,7 +314,7 @@ pass on — the kind that canonicalizes
 that establish more canonical form (P2-9); a new invariant lands here
 first, with its code.
 
-**Node numbering (S2V003).** S2 ids are dense and page-ordered: every op
+**Node numbering (L2V003).** L2 ids are dense and page-ordered: every op
 line top to bottom (`attr` and `branch` lines carry no id), so a `NodeId`
 resolves iff its index is below the artifact's total op count — the same
 count the printed `ops=` header states. P2-8's lowering mints ids in this
@@ -330,21 +330,21 @@ artifact today because `ExprSlot` is zero-sized; the P2-5b seam is
 `VerifyObserver::check_live`, where the walk validates each expression
 position's stamp once `ExprRef` gives the positions identity.
 
-**Invalid fixtures (TS-18).** `crates/vize_s2/tests/fixtures/invalid/`
+**Invalid fixtures (TS-18).** `crates/vize_l2/tests/fixtures/invalid/`
 holds hand-built pages that are grammar-valid and semantically invalid,
 each committed beside its exact expected rendering (`.expected`,
 whole-file equality, no partial matching). The harness is
-`crates/vize_s2/tests/verifier_fixtures.rs`; the id-resolution and
+`crates/vize_l2/tests/verifier_fixtures.rs`; the id-resolution and
 liveness lanes, which no page text can encode, are pinned with the same
 exact oracles in `tests/verifier_observer.rs`.
 
 ## Impeto page (P3-1)
 
-The S3 stage dump is documented in
+The L3 stage dump is documented in
 [`folio-format-impeto.md`](./folio-format-impeto.md). That page owns the flat
 Impeto grammar and the TS-27 validator contract.
 
 ## Contract pages (P6-1a, P6-1b)
 
-The input world's lossless surface page is documented in [`folio-format-s1.md`](./folio-format-s1.md),
+The input world's lossless surface page is documented in [`folio-format-s1.md`](./folio-format-l1.md),
 the expression world's projection page in [`folio-format-projection.md`](./folio-format-projection.md).

@@ -1,12 +1,12 @@
 //! Parser behaviour under the opt-in legacy Vue dialects.
 
 use super::parse_with_options;
+use vize_l0::Allocator;
 use vize_relief::{ExpressionNode, TemplateChildNode, options::ParserOptions};
-use vize_s0::Allocator;
 
 #[test]
 fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {
-    use vize_s0::config::VueVersion;
+    use vize_l0::config::VueVersion;
 
     let allocator = Allocator::new();
     let options = ParserOptions {
@@ -36,7 +36,7 @@ fn triple_mustache_under_v1_lowers_to_raw_html_interpolation() {
 
 #[test]
 fn v1_double_mustache_stays_escaped_alongside_triple() {
-    use vize_s0::config::VueVersion;
+    use vize_l0::config::VueVersion;
 
     let allocator = Allocator::new();
     let options = ParserOptions {

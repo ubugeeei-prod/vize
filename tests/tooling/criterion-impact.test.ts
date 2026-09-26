@@ -120,7 +120,7 @@ test("Vapor source changes select the paired Davinci compile benchmark", () => {
     label: "Davinci Vapor native/retained pairs",
   });
   const result = selectCriterionSuites({
-    changedPaths: ["crates/vize_atelier_vapor/src/s3.rs"],
+    changedPaths: ["crates/vize_atelier_vapor/src/l3.rs"],
     metadata: metadata(),
     repoDir,
   });

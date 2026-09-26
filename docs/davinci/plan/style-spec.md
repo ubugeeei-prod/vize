@@ -1,6 +1,6 @@
 # Style specification
 
-**Status:** proposal for maintainer sign-off ([charter #41](../README.md#decisions)). No earlier phase pre-committed a direction. This file is the blank-slate discussion, written as output rather than adjectives. [P4-12b](./phase-4-tasks-last.md#p4-12b--glyph-on-s1) implements it. Pug layout is [P4-12c](./phase-4-tasks-last.md#p4-12c--pug-as-an-s1-dialect) and is out of scope here.
+**Status:** proposal for maintainer sign-off ([charter #41](../README.md#decisions)). No earlier phase pre-committed a direction. This file is the blank-slate discussion, written as output rather than adjectives. [P4-12b](./phase-4-tasks-last.md#p4-12b--glyph-on-l1) implements it. Pug layout is [P4-12c](./phase-4-tasks-last.md#p4-12c--pug-as-an-l1-dialect) and is out of scope here.
 
 **Review point (open):** the maintainer signs the direction. Until that happens the fixtures are the proposal on the table, not a compatibility promise with today's Glyph.
 

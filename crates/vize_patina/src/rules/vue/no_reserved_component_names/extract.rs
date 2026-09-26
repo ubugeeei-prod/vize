@@ -10,8 +10,8 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::Span;
-use vize_s0::FxHashMap;
-use vize_s0::String;
+use vize_l0::FxHashMap;
+use vize_l0::String;
 
 pub(super) struct ComponentRegistrationName {
     pub(super) name: String,

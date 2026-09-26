@@ -76,7 +76,7 @@ const BREAKOUT: [&str; 44] = [
     "ul",
     "var",
 ];
-use vize_s0::Span;
+use vize_l0::Span;
 
 const EXTRA: [&str; 9] = [
     "image",

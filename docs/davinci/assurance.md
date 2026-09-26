@@ -26,13 +26,13 @@ none of those three buckets is a design defect, not a bug.
   and keys are newtypes; raw→canonical is a type-level transition; a
   non-canonical artifact cannot reach an optional pass or an emitter.
 - **Totality.** Library code does not panic on any input. Malformed source is
-  a _represented_ state (`Unexpected`/`Missing` S1 nodes), so "broken input"
+  a _represented_ state (`Unexpected`/`Missing` L1 nodes), so "broken input"
   is a normal value flowing through total functions, not an edge case.
   Fuzzing (existing `tests/fuzz` lanes, extended per stage) proves no-crash
   over arbitrary bytes; a fuzz crash fix is complete only with its
   deterministic regression case.
 - **What can't be typed is verified.** Debug/CI stage verifiers between passes
-  (local, artifact-only, Lean-kernel discipline); `render(S1) == source`
+  (local, artifact-only, Lean-kernel discipline); `render(L1) == source`
   bytes; incremental ≡ from-scratch over the corpus; the IVM oracle
   (incremental update ≡ full render); Folio `--full` round-trip injectivity.
 - **When it fails anyway, it fails loudly and reproducibly.** The operational
@@ -125,7 +125,7 @@ Formal verification is applied where the domain is small, closed, and the
 payoff is a load-bearing guarantee — and nowhere else (the Effekt retreat is
 the cautionary tale for formalism as a lifestyle). The targets, in order:
 
-1. **S3's executable reference semantics in Lean.** The MIR anti-lesson says
+1. **L3's executable reference semantics in Lean.** The MIR anti-lesson says
    pin down what an Impeto effect _means_ before optimizing; the React-tRace
    precedent says make the semantics executable and differential-test the
    optimized implementation against it. Writing that reference in Lean makes
@@ -138,7 +138,7 @@ the cautionary tale for formalism as a lifestyle). The targets, in order:
 3. **An independent Folio checker.** Because Folio round-trips, stage
    invariants can be verified out-of-process by a second implementation that
    shares no code with the compiler (the Lean4Lean discipline) — potentially
-   _written in Lean_, parsing folios and checking S2/S3 invariants in CI.
+   _written in Lean_, parsing folios and checking L2/L3 invariants in CI.
 4. **Decidable checkers proved total.** The HTML content-model checker and
    region well-formedness are finite, decidable domains where `exact`
    precision (zero FP/FN) is a provable property, not an aspiration.
@@ -162,7 +162,7 @@ owning the input space:
   parse-preservation — Glyph's four corpus properties generalized to every
   surface); metamorphic SFC mutations with folio-equivalence oracles;
   differential oracles against reference behavior (Vue/vue-tsc parity, the
-  Polonius-style naive rule evaluator for fact groups, the S3 reference
+  Polonius-style naive rule evaluator for fact groups, the L3 reference
   interpreter).
 - **The corpus is the floor, not the ceiling.** 134 real projects prove
   absence of regressions on code that exists; the matrices and properties

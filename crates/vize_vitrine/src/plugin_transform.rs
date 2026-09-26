@@ -1,4 +1,4 @@
-//! Bounded, versioned JS edits at the single pre-canonical S2 boundary.
+//! Bounded, versioned JS edits at the single pre-canonical L2 boundary.
 //!
 //! Plugins never receive Rust AST ownership. The native reader projects real
 //! page IDs; validated edits update existing native attributes in the lowering

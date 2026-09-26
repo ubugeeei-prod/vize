@@ -82,9 +82,9 @@ export function renderComparison(result) {
     "",
     `Vize commit: \`${result.headSha}\`; official \`@vue/compiler-vapor@${result.compilerVersion}\`; runner: \`${result.runner}\`.`,
     "",
-    "Identical source, module mode and prefix identifiers; Rust S3/retained medians are from this job's Criterion export, and the official JavaScript compiler is timed in this job after warmup. Timing excludes process startup and package loading. Different runtimes and sequential sampling make the cross-runtime ratio diagnostic, not a promotion gate.",
+    "Identical source, module mode and prefix identifiers; Rust L3/retained medians are from this job's Criterion export, and the official JavaScript compiler is timed in this job after warmup. Timing excludes process startup and package loading. Different runtimes and sequential sampling make the cross-runtime ratio diagnostic, not a promotion gate.",
     "",
-    "| Fixture | S3 | Retained | Official | S3 / retained | S3 / official |",
+    "| Fixture | L3 | Retained | Official | L3 / retained | L3 / official |",
     "| --- | ---: | ---: | ---: | ---: | ---: |",
   ];
   for (const row of result.rows) {

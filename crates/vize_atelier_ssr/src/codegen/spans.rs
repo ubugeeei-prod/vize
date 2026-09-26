@@ -1,4 +1,4 @@
-//! Span-carrying SSR emission (Davinci P3-9, S4).
+//! Span-carrying SSR emission (Davinci P3-9, L4).
 //!
 //! SSR code is written in two ways: straight into the context's
 //! [`EmitDocument`] (control flow, component calls) and through
@@ -9,7 +9,7 @@
 //! emitted bytes are identical either way (TS-11).
 
 use vize_atelier_core::{DirectiveNode, codegen::document::EmitDocument};
-use vize_s0::Span;
+use vize_l0::Span;
 
 use super::{SsrCodegenContext, TemplatePart};
 

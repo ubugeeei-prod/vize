@@ -1,0 +1,37 @@
+# L1 — the Vue-template surface tree (codename Sinopia, Davinci P2-7).
+#
+# A sinopia is the preparatory underdrawing beneath a fresco: when the
+# finished layer is detached, the sinopia survives as the byte-faithful
+# record of what was actually drawn. This crate is that layer for Vue
+# templates — a lossless surface tree that renders back to the exact
+# source bytes, malformed input included.
+[package]
+name = "vize_l1"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "L1 - the lossless Vue-template surface tree (codename Sinopia, Davinci P2-7)"
+metadata.vize.stability = "experimental"
+
+[features]
+# Arms the corpus-runnable TS-19 lane (`tests/davinci_surface_corpus.rs`),
+# the P1-6/P1-7 differential-lane shape: committed battery with pinned
+# counts, plus `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widening.
+davinci-differential = []
+
+[dependencies]
+vize_armature = { workspace = true }
+vize_l0 = { workspace = true }
+vize_relief = { workspace = true }
+
+[dev-dependencies]
+davinci_test_support.workspace = true
+
+[[test]]
+name = "davinci_surface_corpus"
+required-features = ["davinci-differential"]
+
+[lints]
+workspace = true

@@ -1,7 +1,7 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 pub(super) fn env_path(name: &str, repo_root: &Path) -> Option<PathBuf> {
     std::env::var_os(name).map(|value| {

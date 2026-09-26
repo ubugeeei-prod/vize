@@ -11,7 +11,7 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::error::{LibError, LibResult};
 use super::fetch::{Tools, installed_manifest, pack_registry, url_registry};

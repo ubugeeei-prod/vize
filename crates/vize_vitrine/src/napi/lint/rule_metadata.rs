@@ -1,7 +1,7 @@
+use vize_l0::FxHashSet;
 use vize_patina::{
     LintPreset, RuleCategory, RuleRegistry, Severity, builtin_musea_rules, builtin_script_rules,
 };
-use vize_s0::FxHashSet;
 
 pub(super) struct PatinaRuleMetaNapi<'a> {
     pub(super) name: &'a str,

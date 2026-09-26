@@ -1,4 +1,4 @@
-//! Ordinary phrasing elements admitted by S3 keep dynamic child addresses.
+//! Ordinary phrasing elements admitted by L3 keep dynamic child addresses.
 
 use super::native_control::element;
 use crate::mounted_trace;

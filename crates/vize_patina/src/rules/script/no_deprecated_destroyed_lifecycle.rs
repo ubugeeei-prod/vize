@@ -12,7 +12,7 @@ use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use oxc_ast::ast::{ObjectProperty, ObjectPropertyKind, Program, PropertyKey};
 use oxc_span::GetSpan;
 use vize_croquis::script_parser::collect_options_object;
-use vize_s0::{CompactString, cstr};
+use vize_l0::{CompactString, cstr};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-deprecated-destroyed-lifecycle",

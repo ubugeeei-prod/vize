@@ -1,4 +1,4 @@
-use vize_s0::Span;
+use vize_l0::Span;
 
 use crate::op::{EffectId, EffectScope, Op, OpId, Program, Region, RegionId};
 
@@ -7,7 +7,7 @@ pub(super) fn contains(owner: Span, child: Span) -> bool {
 }
 
 /// The program with each table's density decided once. When every id equals
-/// its position (as the S3 producers mint them), ids are unique and the first
+/// its position (as the L3 producers mint them), ids are unique and the first
 /// record with an id is the one at that index; otherwise lookups scan for the
 /// first record, exactly as before.
 pub(super) struct Tables<'p, 'a> {

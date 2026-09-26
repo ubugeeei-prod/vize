@@ -53,8 +53,8 @@ describe("negotiateProfileExport", () => {
     expect(negotiated.ok).toBe(true);
     if (!negotiated.ok) return;
     expect([...ladderStepTimings(negotiated.profile)]).toEqual([
-      ["s3/lower", 21000],
-      ["s2/hoist-static", 9000],
+      ["l3/lower", 21000],
+      ["l2/hoist-static", 9000],
     ]);
   });
 
@@ -62,7 +62,7 @@ describe("negotiateProfileExport", () => {
     const negotiated = negotiateProfileExport(profile);
     if (!negotiated.ok) throw new Error(negotiated.error);
     expect(LADDER_WALK_KEY).toBe("davinci.pass.walk");
-    expect([...ladderWalkTimings(negotiated.profile)]).toEqual([["s2/hoist-static", 9500]]);
+    expect([...ladderWalkTimings(negotiated.profile)]).toEqual([["l2/hoist-static", 9500]]);
   });
 
   it("refuses other versions, missing profiles and malformed spans", () => {

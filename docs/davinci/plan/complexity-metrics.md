@@ -3,22 +3,22 @@
 **Status:** decided by [P4-9a](./phase-4-tasks-later.md#p4-9a--template-cfg-complexity-facts-and-metric-spec)
 (2026-09-22), confirming the [open-question recommendation](../open-questions.md#complexity-metric-definition)
 with the amendments listed at the end. Production implementation:
-`crates/vize_s1_to_s2/src/pass/cfg.rs` (the `template-complexity` pass).
-Independent implementation: `crates/vize_s1_to_s2/tests/cfg_complexity_oracle/`
+`crates/vize_l1_to_l2/src/pass/cfg.rs` (the `template-complexity` pass).
+Independent implementation: `crates/vize_l1_to_l2/tests/cfg_complexity_oracle/`
 (TS-34). Cross-file attribution and the rule are
 [P4-9b](./phase-4-tasks-later.md#p4-9b--cross-file-complexity-rule-and-doctor-finding).
 
 ## Unit and input
 
-The unit is **one component's template**: one S1→S2 lowering, one S2 root
-region. Both metrics are computed over the S2 control regions — a `ui.if` owns
+The unit is **one component's template**: one L1→L2 lowering, one L2 root
+region. Both metrics are computed over the L2 control regions — a `ui.if` owns
 one region per branch, a `ui.for` owns its repeated region — and the retained
 expression ASTs of the positions the template evaluates. Nothing is scanned
 from text.
 
 ## Cyclomatic complexity (own)
 
-`cyclomatic = 1 + Σ decisions`. S2 control flow is structured (single entry,
+`cyclomatic = 1 + Σ decisions`. L2 control flow is structured (single entry,
 single exit, no jumps), so McCabe's `E − N + 2` over the template's
 control-flow graph equals `1 +` the number of binary decisions; the pass
 counts decisions and never materializes the graph, and the TS-34 oracle builds
@@ -100,7 +100,7 @@ Percentiles are nearest-rank. The command that reproduces the table:
 ```sh
 git submodule update --init --depth 1 tests/_fixtures/_git
 VIZE_DAVINCI_COMPLEXITY_CORPUS=tests/_fixtures/_git \
-  cargo test -p vize_s1_to_s2 --test cfg_complexity_oracle \
+  cargo test -p vize_l1_to_l2 --test cfg_complexity_oracle \
   the_corpus_shard_agrees_with_the_naive_evaluator -- --exact --nocapture
 ```
 

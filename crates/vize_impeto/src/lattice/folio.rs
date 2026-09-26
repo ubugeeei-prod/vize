@@ -4,24 +4,25 @@ use core::str::SplitWhitespace;
 
 use vize_davinci::folio::value::FolioValue;
 use vize_davinci::folio::{Folio, FolioError};
-use vize_s0::{Span, cstr};
+use vize_l0::{Span, cstr};
 
 use super::{
     BindingFact, BindingId, BindingOrigin, EffectSet, EscapeKind, LatticeFacts, ReactivityClass,
     Verdict,
 };
 
-/// Owned folio page for the S3 reactivity lattice.
+/// Owned folio page for the L3 reactivity lattice.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-pub struct S3ReactivityFolio {
+#[folio(name = "s3-reactivity-folio")]
+pub struct L3ReactivityFolio {
     /// Binding facts in binding-id order.
     pub bindings: Vec<FolioBinding>,
 }
 
 /// Compatibility alias for the shorter feature name.
-pub type ReactivityFolio = S3ReactivityFolio;
+pub type ReactivityFolio = L3ReactivityFolio;
 
-impl S3ReactivityFolio {
+impl L3ReactivityFolio {
     /// Mirror live arena facts into the owned folio page.
     #[must_use]
     pub fn of(facts: &LatticeFacts<'_>) -> Self {

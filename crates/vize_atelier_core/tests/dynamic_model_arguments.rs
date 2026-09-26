@@ -8,11 +8,11 @@ use oxc_syntax::operator::BinaryOperator;
 use vize_atelier_core::{
     CodegenMode, CodegenOptions, TransformOptions, generate, parse, transform,
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 fn compile(argument: &str, prefix_identifiers: bool, modifiers: &str) -> String {
     let source = cstr!("<Child v-model:[{argument}]{modifiers}=\"value\" />");
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (mut root, errors) = parse(&allocator, &source);
     assert!(errors.is_empty(), "{errors:?}");
     transform(

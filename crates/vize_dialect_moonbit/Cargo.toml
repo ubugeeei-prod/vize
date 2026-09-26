@@ -28,10 +28,10 @@ sha2 = { workspace = true, optional = true }
 vize_davinci = { workspace = true }
 vize_extension_contract = { workspace = true }
 vize_croquis = { workspace = true }
-vize_s0 = { workspace = true }
-vize_s1 = { workspace = true }
-vize_s1_to_s2 = { workspace = true }
-vize_s2 = { workspace = true }
+vize_l0 = { workspace = true }
+vize_l1 = { workspace = true }
+vize_l1_to_l2 = { workspace = true }
+vize_l2 = { workspace = true }
 
 [dev-dependencies]
 # Wire round-trip fixture only: shipped dialects cannot acquire wasmtime.

@@ -11,7 +11,7 @@ use oxc_ast::ast::{
     BindingPattern, FormalParameters, PropertyKey, TSSignature, TSType, TSTypeParameterDeclaration,
 };
 use oxc_span::GetSpan;
-use vize_s0::String;
+use vize_l0::String;
 
 /// Byte range covering the authored formal parameter list, parentheses excluded.
 ///

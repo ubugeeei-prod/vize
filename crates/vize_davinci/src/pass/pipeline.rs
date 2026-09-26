@@ -17,10 +17,10 @@
 //! equivalence class instead of over bytes. A trailing `-` is rejected for the
 //! same reason it is rejected in a crate name — it reads as a typo.
 //!
-//! An empty pass list is legal: `s2()` is a stage that runs nothing, which a
+//! An empty pass list is legal: `l2()` is a stage that runs nothing, which a
 //! bisecting `--pipeline` needs to be able to say.
 //!
-//! Example: `s2(normalize,fold),s2-to-s3(lower)`.
+//! Example: `l2(normalize,fold),l2-to-l3(lower)`.
 //!
 //! # Errors
 //!
@@ -38,7 +38,7 @@
 //! | `"s2(,a)"`             | `expected a pass name at offset 3`                             |
 //! | `"s2(a,)"`             | `expected a pass name at offset 5`                             |
 //! | `"s2(a))"`             | `expected `,` or end of input after `)` at offset 5`           |
-//! | `"S2(a)"`              | `unexpected character `S` at offset 0`                         |
+//! | `"L2(a)"`              | `unexpected character `L` at offset 0`                         |
 //! | `"s2(a)," `            | `expected a stage name at offset 6`                            |
 //! | `"s2-(a)"`             | `identifier must not end with `-` at offset 2`                 |
 //!
@@ -52,7 +52,7 @@
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_s0::String;
+use vize_l0::String;
 
 /// A parsed pipeline segment: one stage and the pass names it runs.
 ///
@@ -60,7 +60,7 @@ use vize_s0::String;
 /// `Vec`s of borrowed slices.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PipelineSpec<'a> {
-    /// The stage identifier, e.g. `s2`.
+    /// The stage identifier, e.g. `l2`.
     pub stage: &'a str,
     /// The pass names, in execution order. May be empty.
     pub passes: Vec<&'a str>,
@@ -154,7 +154,7 @@ fn read_ident(input: &str, start: usize) -> Result<(&str, usize), PipelineSyntax
     let (ident, _) = rest.split_at_checked(len).unwrap_or((rest, ""));
     if ident.is_empty() {
         // Report the offending character rather than "expected an ident", so
-        // the caller can tell `S2(a)` (wrong case) from `(a)` (missing name).
+        // the caller can tell `L2(a)` (wrong case) from `(a)` (missing name).
         return match rest.chars().next() {
             Some(character) => Err(PipelineSyntaxError::UnexpectedCharacter {
                 offset: start,

@@ -32,7 +32,7 @@ napi = [
 wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:js-sys", "dep:web-sys", "glyph"]
 
 [dependencies]
-vize_s0 = { workspace = true }
+vize_l0 = { workspace = true }
 vize_relief = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
@@ -50,9 +50,9 @@ vize_curator = { workspace = true }
 # P4-16 JS plugin SDK spike: the S2 page and the fact API a JS plugin reads.
 vize_davinci = { workspace = true }
 vize_impeto = { workspace = true }
-vize_s1 = { workspace = true }
-vize_s1_to_s2 = { workspace = true }
-vize_s2 = { workspace = true }
+vize_l1 = { workspace = true }
+vize_l1_to_l2 = { workspace = true }
+vize_l2 = { workspace = true }
 vize = { path = "../vize", default-features = false, features = [
   "glyph",
   "maestro",

@@ -13,8 +13,8 @@
 )]
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
 use std::hint::black_box;
+use vize_l0::{Allocator, append};
 use vize_musea::{ArtParseOptions, parse_art, transform_to_csf, transform_to_vue};
-use vize_s0::{Allocator, append};
 
 // =============================================================================
 // Test Data

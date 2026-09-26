@@ -2,7 +2,7 @@
 //!
 //! The Relief parser applies browser HTML tree construction (a `<div>` start
 //! tag closes an open `<p>`, table content is foster-parented, a nested
-//! `<a>` closes the outer one, …). S1 is lossless and S2 keeps Vue's authored
+//! `<a>` closes the outer one, …). L1 is lossless and L2 keeps Vue's authored
 //! nesting — the tree Vue's `createElement` builds at runtime. When the two
 //! parses nest the same elements differently the facades present different
 //! documents *by design*, so the lane counts such inputs (pinned) instead of
@@ -11,11 +11,11 @@
 //! The check reads the two raw parses, never a facade, so a facade bug cannot
 //! hide in this bucket: both sides are reduced to the pre-order sequence of
 //! `(element start, parent element start)`; the implicit table owners the
-//! Relief parse inserts (zero-width) are transparent, as S1 has none.
+//! Relief parse inserts (zero-width) are transparent, as L1 has none.
 
-use crate::markup::s2::surface::offset_in;
+use crate::markup::l2::surface::offset_in;
+use vize_l1::{SurfaceChild, SurfaceTree};
 use vize_relief::{RootNode, TemplateChildNode};
-use vize_s1::{SurfaceChild, SurfaceTree};
 
 type Nesting = std::vec::Vec<(u32, Option<u32>)>;
 
@@ -49,7 +49,7 @@ fn surface_nesting(
 }
 
 /// Whether the Relief parse of `root` nests elements differently from the
-/// authored S1 tree.
+/// authored L1 tree.
 pub(super) fn is_restructured(root: &RootNode<'_>, tree: &SurfaceTree<'_>) -> bool {
     let (mut relief, mut surface) = (Nesting::new(), Nesting::new());
     relief_nesting(&root.children, None, &mut relief);

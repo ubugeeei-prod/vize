@@ -5,7 +5,7 @@ use oxc_ast::ast::{IdentifierReference, ImportDeclaration, ImportDeclarationSpec
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_s0::{CompactString, FxHashSet};
+use vize_l0::{CompactString, FxHashSet};
 
 pub(super) fn script_setup_component_import_references(
     ctx: &LintContext<'_>,

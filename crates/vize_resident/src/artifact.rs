@@ -6,7 +6,7 @@
 //! artifact the tier serves after an edit sequence with
 //! [`compute_file_artifacts`] run from scratch. Every function here reads a
 //! [`BlockSource`] — content, never position — plus the project's
-//! [`StageConfig`]; a block's position lives in the S0 side table
+//! [`StageConfig`]; a block's position lives in the L0 side table
 //! (`Block::start` in the database), outside every artifact and key.
 
 use std::borrow::Cow;
@@ -14,12 +14,12 @@ use std::borrow::Cow;
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
 use vize_davinci::diagnostic::Diagnostic;
 use vize_davinci::key::{ArtifactKey, source_block_key};
+use vize_l0::config::VueVersion;
+use vize_l0::{Allocator, FxHashMap, String};
+use vize_l1_to_l2::key::SurfacePage;
+use vize_l1_to_l2::{LegacyCaps, lower_style_block, lower_with_caps};
+use vize_l2::folio::L2Folio;
 use vize_relief::ErrorCode;
-use vize_s0::config::VueVersion;
-use vize_s0::{Allocator, FxHashMap, String};
-use vize_s1_to_s2::key::SurfacePage;
-use vize_s1_to_s2::{LegacyCaps, lower_style_block, lower_with_caps};
-use vize_s2::folio::S2Folio;
 
 /// The kind of an SFC block, as its identity in the database sees it.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -37,7 +37,7 @@ pub enum BlockKind {
 }
 
 impl BlockKind {
-    /// The block's tag name — the S0 key's `kind` field.
+    /// The block's tag name — the L0 key's `kind` field.
     #[must_use]
     pub fn tag(&self) -> &str {
         match self {
@@ -50,7 +50,7 @@ impl BlockKind {
 }
 
 /// Everything a stage artifact of one block may read: its kind, header
-/// attributes (sorted — a set) and content, plus the S0 key over them. No
+/// attributes (sorted — a set) and content, plus the L0 key over them. No
 /// position: equal content at any offset is an equal `BlockSource`.
 ///
 /// Its equality is the firewall's: salsa compares a re-created block's
@@ -69,7 +69,7 @@ pub struct BlockSource {
     pub attrs: Vec<(String, String)>,
     /// The block content, exactly as authored.
     pub text: String,
-    /// The P5-1a S0 source-block key over the three fields above.
+    /// The P5-1a L0 source-block key over the three fields above.
     pub key: ArtifactKey,
 }
 
@@ -115,7 +115,7 @@ pub struct StageConfig {
     pub vue_version: VueVersion,
 }
 
-/// One tokenizer finding of an S1 parse, block-relative.
+/// One tokenizer finding of an L1 parse, block-relative.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SurfaceFinding {
     /// The tokenizer's error code.
@@ -124,25 +124,25 @@ pub struct SurfaceFinding {
     pub offset: u32,
 }
 
-/// The S1 artifact of a template block: its P5-1a key and the tokenizer's
+/// The L1 artifact of a template block: its P5-1a key and the tokenizer's
 /// findings. (The tree itself is arena-bound and never leaves its parse.)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SurfaceArtifact {
-    /// The S1 surface page key.
+    /// The L1 surface page key.
     pub key: ArtifactKey,
     /// Tokenizer findings, in report order.
     pub findings: Vec<SurfaceFinding>,
 }
 
-/// The S2 artifact of a block: the owned page, its P5-1a key, and the
+/// The L2 artifact of a block: the owned page, its P5-1a key, and the
 /// lowering's diagnostics. Spans are block-relative (the block is lowered as
 /// its own root); add the block's `start` for file-absolute positions.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PageArtifact {
-    /// The S2 page key.
+    /// The L2 page key.
     pub key: ArtifactKey,
     /// The owned page.
-    pub folio: S2Folio,
+    pub folio: L2Folio,
     /// Surface and lowering diagnostics, in decision order.
     pub diagnostics: Vec<Diagnostic>,
 }
@@ -154,13 +154,13 @@ pub struct BlockArtifacts {
     pub kind: BlockKind,
     /// Index among blocks of the same kind.
     pub ordinal: u32,
-    /// File-absolute start (the S0 side table).
+    /// File-absolute start (the L0 side table).
     pub start: u32,
-    /// The S0 source-block key.
+    /// The L0 source-block key.
     pub source_key: ArtifactKey,
-    /// The S1 artifact (template blocks only).
+    /// The L1 artifact (template blocks only).
     pub surface: Option<SurfaceArtifact>,
-    /// The S2 artifact (template and style blocks).
+    /// The L2 artifact (template and style blocks).
     pub page: Option<PageArtifact>,
 }
 
@@ -255,21 +255,21 @@ fn slot(
     })
 }
 
-/// Whether a template block is HTML (the only S1 input language today).
+/// Whether a template block is HTML (the only L1 input language today).
 fn is_html_template(source: &BlockSource) -> bool {
     source.kind == BlockKind::Template
         && source.attr("src").is_none()
         && source.attr("lang").is_none_or(|lang| lang == "html")
 }
 
-/// The S1 artifact of a block: `Some` for an HTML template block.
+/// The L1 artifact of a block: `Some` for an HTML template block.
 #[must_use]
 pub fn surface_artifact(source: &BlockSource) -> Option<SurfaceArtifact> {
     if !is_html_template(source) {
         return None;
     }
     let allocator = Allocator::default();
-    let (tree, errors) = vize_s1::parse(&allocator, source.text.as_str());
+    let (tree, errors) = vize_l1::parse(&allocator, source.text.as_str());
     Some(SurfaceArtifact {
         key: ArtifactKey::of(&SurfacePage(&tree), 0),
         findings: errors
@@ -282,14 +282,14 @@ pub fn surface_artifact(source: &BlockSource) -> Option<SurfaceArtifact> {
     })
 }
 
-/// The S2 artifact of a block: `Some` for an HTML template block (the op
+/// The L2 artifact of a block: `Some` for an HTML template block (the op
 /// tree) and for a style block (its `vue.css-bind` page).
 #[must_use]
 pub fn page_artifact(source: &BlockSource, config: StageConfig) -> Option<PageArtifact> {
     let allocator = Allocator::default();
     if source.kind == BlockKind::Style {
         let op = lower_style_block(&allocator, source.text.as_str(), 0);
-        let folio = S2Folio::of(core::slice::from_ref(&op));
+        let folio = L2Folio::of(core::slice::from_ref(&op));
         return Some(PageArtifact {
             key: ArtifactKey::of(&folio, 0),
             folio,
@@ -300,9 +300,9 @@ pub fn page_artifact(source: &BlockSource, config: StageConfig) -> Option<PageAr
         return None;
     }
     let caps = LegacyCaps::for_version(config.vue_version);
-    let (tree, errors) = vize_s1::parse(&allocator, source.text.as_str());
+    let (tree, errors) = vize_l1::parse(&allocator, source.text.as_str());
     let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
-    let folio = S2Folio::of(&lowered.root.ops);
+    let folio = L2Folio::of(&lowered.root.ops);
     Some(PageArtifact {
         key: ArtifactKey::of(&folio, 0),
         folio,

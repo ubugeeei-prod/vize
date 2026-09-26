@@ -9,7 +9,7 @@ use crate::markup::{
     MarkupElement, MarkupList, MarkupNode, MarkupRule, MarkupText,
 };
 use std::cell::RefCell;
-use vize_s0::{String, append};
+use vize_l0::{String, append};
 
 /// Records the full hook trace of one document, one line per event.
 #[derive(Default)]

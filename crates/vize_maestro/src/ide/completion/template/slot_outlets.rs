@@ -6,7 +6,7 @@ use vize_relief::{ElementNode, PropNode, RootNode, TemplateChildNode};
 
 #[cfg(test)]
 pub(super) fn extract_template_slot_names(template: &str) -> Vec<String> {
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     extract_slot_names_from_root(&root)
 }

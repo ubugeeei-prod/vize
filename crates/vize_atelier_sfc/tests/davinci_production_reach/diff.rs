@@ -3,7 +3,7 @@
 
 use vize_atelier_sfc::{SfcCompileResult, SfcError};
 
-/// The first field on which the S2-selected and forced-legacy modules differ.
+/// The first field on which the L2-selected and forced-legacy modules differ.
 pub fn divergence(
     selected: &SfcCompileResult,
     legacy: &Result<SfcCompileResult, SfcError>,

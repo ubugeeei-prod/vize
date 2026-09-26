@@ -4,7 +4,7 @@ use std::collections::BTreeSet;
 
 use serde::Serialize;
 use similar::TextDiff;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::LibContext;
 use super::error::{LibError, LibResult};

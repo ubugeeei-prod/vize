@@ -1,5 +1,5 @@
 use super::VirtualCodeGenerator;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 const COMPLEX_BINDINGS_SFC: &str = r#"<script setup lang="ts">
 import DefaultWidget, {

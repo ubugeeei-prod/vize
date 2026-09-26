@@ -1,12 +1,12 @@
-//! P2-12a pre-S2 traversal baseline and the SSR production-selector floor.
+//! P2-12a pre-L2 traversal baseline and the SSR production-selector floor.
 //!
 //! One fused compile per ladder fixture, diffing
 //! `vize_atelier_core::walk_probe` around it: the template-node visits and
-//! stage tree-walks the shipped pipeline makes. `BASELINE` is the pre-S2
+//! stage tree-walks the shipped pipeline makes. `BASELINE` is the pre-L2
 //! sweep that produced `docs/davinci/plan/walk-baseline.md` and filled
 //! `budgets.toml [traversal]`; it stays fixed as the "before" budget.
 //! `PRODUCTION_FLOOR` pins the SSR selector after P3-8 routes admitted
-//! templates through the S4 string plan, which never walks the legacy tree
+//! templates through the L4 string plan, which never walks the legacy tree
 //! for code generation. Any change means a stage started or stopped walking
 //! the legacy tree - re-derive the floor deliberately (`--nocapture` prints
 //! every row and its per-stage breakdown).
@@ -26,7 +26,7 @@ use std::fmt::Write as _;
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_ssr::compile_ssr;
 use vize_davinci::legacy_plan;
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 /// fixture name -> (stage tree-walks, template-node visits) per fused compile.
 const BASELINE: [(&str, u64, u64); 6] = [
@@ -39,7 +39,7 @@ const BASELINE: [(&str, u64, u64); 6] = [
 ];
 
 /// fixture name -> (stage tree-walks, template-node visits) after the SSR
-/// production selector emits admitted templates from the S4 string plan.
+/// production selector emits admitted templates from the L4 string plan.
 const PRODUCTION_FLOOR: [(&str, u64, u64); 6] = [
     ("small", 1, 8),
     ("medium", 1, 33),
@@ -94,15 +94,15 @@ fn ssr_walk_baseline_holds() {
     let expected = rows_for_ladder(&PRODUCTION_FLOOR, "production floor");
     assert_eq!(
         measured, expected,
-        "ssr: the S4 production traversal floor moved from its pin"
+        "ssr: the L4 production traversal floor moved from its pin"
     );
-    let baseline = rows_for_ladder(&BASELINE, "pre-S2 baseline");
+    let baseline = rows_for_ladder(&BASELINE, "pre-L2 baseline");
     for ((fixture, walks, visits), (_, baseline_walks, baseline_visits)) in
         measured.iter().zip(baseline.iter())
     {
         assert!(
             walks <= baseline_walks && visits <= baseline_visits,
-            "ssr {fixture}: production traversal exceeded the pre-S2 baseline"
+            "ssr {fixture}: production traversal exceeded the pre-L2 baseline"
         );
     }
 }

@@ -1,7 +1,7 @@
 //! Error types for vize_glyph formatter.
 
 use thiserror::Error;
-use vize_s0::String;
+use vize_l0::String;
 
 /// Errors that can occur during formatting
 #[derive(Debug, Error)]

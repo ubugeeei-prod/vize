@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use crate::commands::check::path_cache::CanonicalPathCache;
 

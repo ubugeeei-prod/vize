@@ -49,7 +49,7 @@ fn vapor_legacy_reparse_floor_holds() {
             fixture.name
         );
     }
-    // Computed names retain their S2 expression AST. Keep this recorder in
+    // Computed names retain their L2 expression AST. Keep this recorder in
     // the same single-test binary so process-global probes cannot race.
     for source in [
         r#"<slot :name="name"></slot>"#,

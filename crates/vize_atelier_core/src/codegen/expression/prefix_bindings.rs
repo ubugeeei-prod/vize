@@ -1,8 +1,8 @@
 //! Scope storage and assignment binding facts for codegen prefixing.
 
 use super::prefix_visitor::IdentifierVisitor;
+use vize_l0::{FxHashSet, String};
 use vize_relief::ExpressionScope;
-use vize_s0::{FxHashSet, String};
 
 impl<'ast> ExpressionScope<'ast> for IdentifierVisitor<'_, '_> {
     fn push_scope(&mut self) {

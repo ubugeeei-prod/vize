@@ -4,7 +4,7 @@ use std::io::Write;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 #[test]
 fn css_bind_expressions_resolve_in_client_getters_and_ssr_html() {

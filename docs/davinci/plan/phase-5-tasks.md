@@ -11,11 +11,11 @@
 
 **Lane:** A
 
-**Deliverable:** `vize_davinci::key` — content keys per stage artifact (S1 surface tree, S2 page) at block granularity: a normalized-structure hash with spans externalized to S0 side tables (identity excludes presentation), `schema_version` inside every key, and span-relative hashing so an edit above a block changes zero keys of that block.
+**Deliverable:** `vize_davinci::key` — content keys per stage artifact (L1 surface tree, L2 page) at block granularity: a normalized-structure hash with spans externalized to L0 side tables (identity excludes presentation), `schema_version` inside every key, and span-relative hashing so an edit above a block changes zero keys of that block.
 
 **Steps:**
 
-- [x] `crates/vize_davinci/src/key.rs` + `key/`: `ArtifactKey { stage, schema_version, hash: [u8; 16] }`; the hash walks the folio `Full` form with spans rebased to the block start _(S2: `impl KeyedArtifact for S2Folio`; S1: `vize_s1_to_s2::key::SurfacePage`, the lossless render; S0 source blocks: `source_block_key`)_
+- [x] `crates/vize_davinci/src/key.rs` + `key/`: `ArtifactKey { stage, schema_version, hash: [u8; 16] }`; the hash walks the folio `Full` form with spans rebased to the block start _(L2: `impl KeyedArtifact for L2Folio`; L1: `vize_l1_to_l2::key::SurfacePage`, the lossless render; L0 source blocks: `source_block_key`)_
 - [x] Edit-locality fixtures: insert above, inside and below a block; reorder blocks; whitespace-only edits _(ten cases over `tests/fixtures/keys/base.vue`, each pinning its exact changed set)_
 - [x] Register the TS-43 command in [test-suites.md](./test-suites.md): `cargo test -p vize_davinci --test artifact_keys`
 
@@ -54,7 +54,7 @@
 
 **Lane:** B
 
-**Deliverable:** the per-SFC summary built from P4-2's α exports — component signature, prop/emit/slot types, reactivity classes, component references — fingerprinted **per declaration** (the GHC `.hi` model); consumers record which declarations they used and invalidate only on a changed fingerprint. S3 code-shape decisions cannot enter the summary by type (body elision by construction).
+**Deliverable:** the per-SFC summary built from P4-2's α exports — component signature, prop/emit/slot types, reactivity classes, component references — fingerprinted **per declaration** (the GHC `.hi` model); consumers record which declarations they used and invalidate only on a changed fingerprint. L3 code-shape decisions cannot enter the summary by type (body elision by construction).
 
 **Steps:**
 
@@ -95,12 +95,12 @@
 
 **Lane:** C
 
-**Deliverable:** the new crate `crates/vize_resident/` — the resident tier's salsa database (charter #10): inputs are file texts and project config, firewall queries are the P5-1a block keys over S1/S2 artifacts, and the one-shot CLI stays salsa-free. salsa is admitted under charter #39 (version pinned, `cargo audit` clean, only this crate and resident-tier features depend on it).
+**Deliverable:** the new crate `crates/vize_resident/` — the resident tier's salsa database (charter #10): inputs are file texts and project config, firewall queries are the P5-1a block keys over L1/L2 artifacts, and the one-shot CLI stays salsa-free. salsa is admitted under charter #39 (version pinned, `cargo audit` clean, only this crate and resident-tier features depend on it).
 
 **Steps:**
 
 - [x] Crate + `salsa` pinned in the workspace; a `tests/tooling` check that no crate outside the resident tier depends on `salsa` _(`salsa =0.28.4`, `rayon` off; `davinci-resident-salsa.test.ts`)_
-- [x] Queries: `source_text` (input) → `sfc_blocks` → `s1_block` / `s2_page` keyed by block key, with backdating when the key is unchanged _(the firewall is the `Block` tracked struct: content with its S0 key and position are separate tracked fields)_
+- [x] Queries: `source_text` (input) → `sfc_blocks` → `s1_block` / `s2_page` keyed by block key, with backdating when the key is unchanged _(the firewall is the `Block` tracked struct: content with its L0 key and position are separate tracked fields)_
 - [x] Cache-hit accounting counters exposed for TS-46 _(`ResidentDatabase::take_accounting`, read from salsa's event stream)_
 
 **Acceptance:** `cargo test -p vize_resident` — editing one block re-executes only that block's queries (counters pinned exactly); the dependency check green and proven to fail on an injected `salsa` edge in `vize_atelier_sfc`; `cargo audit --deny warnings` green; the one-shot `vize build` binary has no `salsa` in `cargo tree -p vize --no-default-features`.
@@ -140,7 +140,7 @@ The 10k-file RSS and summary TS-42 acceptance remain open.
 
 **Lane:** C
 
-**Deliverable:** Lean-style snapshot tasks at the joints SFC header → block → S2 region: old syntax ≡ new syntax ⇒ adopt the old subtree; cascade-cancellation tokens through stage tasks; threads plus `catch_unwind` isolation instead of per-file processes.
+**Deliverable:** Lean-style snapshot tasks at the joints SFC header → block → L2 region: old syntax ≡ new syntax ⇒ adopt the old subtree; cascade-cancellation tokens through stage tasks; threads plus `catch_unwind` isolation instead of per-file processes.
 
 **Steps:**
 
@@ -161,7 +161,7 @@ The 10k-file RSS and summary TS-42 acceptance remain open.
 
 **Lane:** D
 
-**Deliverable:** hover, completion and definition request paths (`crates/vize_maestro/src/ide/{hover,completion,definition,template_scope,references}`) read cached S1/S2 artifacts through `vize_resident` instead of calling `parse_sfc` per request; each wave records its keystroke-cost change.
+**Deliverable:** hover, completion and definition request paths (`crates/vize_maestro/src/ide/{hover,completion,definition,template_scope,references}`) read cached L1/L2 artifacts through `vize_resident` instead of calling `parse_sfc` per request; each wave records its keystroke-cost change.
 
 **Steps:**
 

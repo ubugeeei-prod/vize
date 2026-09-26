@@ -58,7 +58,7 @@ export function renderSummary({
     lines.push("### Davinci Vapor native vs retained (report-only)");
     lines.push("");
     lines.push(
-      "Each ratio is S3 native median / explicitly retained median on the same source and options; below 1.000x is faster. Base and head use the same Blacksmith runner, with isolated Cargo build graphs. Criterion executes cases sequentially, so these are observations rather than a paired-interleaved throughput gate.",
+      "Each ratio is L3 native median / explicitly retained median on the same source and options; below 1.000x is faster. Base and head use the same Blacksmith runner, with isolated Cargo build graphs. Criterion executes cases sequentially, so these are observations rather than a paired-interleaved throughput gate.",
     );
     lines.push("");
     lines.push(

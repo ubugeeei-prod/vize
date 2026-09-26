@@ -135,7 +135,7 @@ pub struct BuildArgs {
 
     /// Write per-pass Davinci folio dumps for davinci-driven compiles into DIR
     ///
-    /// The compile path has no folio-printable stage artifact until the S2
+    /// The compile path has no folio-printable stage artifact until the L2
     /// build path lands (docs/davinci P2-12b), so today a build writes the
     /// directory and no pages; `davinci-opt --folio-dir` dumps real pages.
     #[arg(long, value_name = "DIR")]

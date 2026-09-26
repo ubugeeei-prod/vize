@@ -3,19 +3,19 @@
 //! Charter #15's first-party tier: the Vue dialect is compiled in behind
 //! the same [`InputDialectGuest`] trait an external guest implements, with
 //! no transport, and its answer goes through the same acceptance. What it
-//! returns is exactly the in-tree boundary: `vize_s1::parse` for the S1
-//! page and `vize_s1_to_s2::lower_source_block_with_caps` for the S2 page
-//! and the diagnostics — before any S2 pass runs, because the host owns the
+//! returns is exactly the in-tree boundary: `vize_l1::parse` for the L1
+//! page and `vize_l1_to_l2::lower_source_block_with_caps` for the L2 page
+//! and the diagnostics — before any L2 pass runs, because the host owns the
 //! pass pipeline.
 
-use vize_s0::{Allocator, SourceRoot, String, cstr};
-use vize_s1_to_s2::{LegacyCaps, lower_source_block_with_caps};
-use vize_s2::folio::S2Folio;
+use vize_l0::{Allocator, SourceRoot, String, cstr};
+use vize_l1_to_l2::{LegacyCaps, lower_source_block_with_caps};
+use vize_l2::folio::L2Folio;
 
 use crate::accept::full_text;
 use crate::contract::{
-    Capability, Diagnostic, GuestError, InputDialectGuest, LoweredBlock, PROTOCOL_VERSION, Page,
-    S1_PAGE_FEATURE, S1_PAGE_SCHEMA, S2_PAGE_FEATURE, S2_PAGE_SCHEMA, SourceBlock,
+    Capability, Diagnostic, GuestError, InputDialectGuest, L1_PAGE_FEATURE, L1_PAGE_SCHEMA,
+    L2_PAGE_FEATURE, L2_PAGE_SCHEMA, LoweredBlock, PROTOCOL_VERSION, Page, SourceBlock,
 };
 use crate::surface_page::SurfacePage;
 
@@ -47,7 +47,7 @@ impl VueDialect {
 pub fn capability() -> Capability {
     Capability {
         protocol_version: PROTOCOL_VERSION,
-        features: [LANG_HTML, S1_PAGE_FEATURE, S2_PAGE_FEATURE]
+        features: [LANG_HTML, L1_PAGE_FEATURE, L2_PAGE_FEATURE]
             .into_iter()
             .map(String::from)
             .collect(),
@@ -80,7 +80,7 @@ pub fn lower_block(block: &SourceBlock, caps: LegacyCaps) -> Result<LoweredBlock
             block.source.len()
         )));
     }
-    // S0 spans are file-absolute, and a block frame is a slice of its root:
+    // L0 spans are file-absolute, and a block frame is a slice of its root:
     // the root is the block behind `base` bytes of ASCII padding, so every
     // span the lowering measures lands at its authored offset.
     let mut root_text = String::with_capacity(base + block.source.len());
@@ -95,16 +95,16 @@ pub fn lower_block(block: &SourceBlock, caps: LegacyCaps) -> Result<LoweredBlock
         .block(source, block.base)
         .map_err(|_| trap("block is not a slice of its root"))?;
     let allocator = Allocator::new();
-    let (tree, errors) = vize_s1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::parse(&allocator, source);
     let lowered = lower_source_block_with_caps(&allocator, &tree, &errors, frame, caps);
     Ok(LoweredBlock {
         surface: Page {
-            schema_version: S1_PAGE_SCHEMA,
+            schema_version: L1_PAGE_SCHEMA,
             text: full_text(&SurfacePage::of(&tree)),
         },
         semantic: Page {
-            schema_version: S2_PAGE_SCHEMA,
-            text: full_text(&S2Folio::of(&lowered.root.ops)),
+            schema_version: L2_PAGE_SCHEMA,
+            text: full_text(&L2Folio::of(&lowered.root.ops)),
         },
         diagnostics: lowered.diagnostics.iter().map(Diagnostic::from).collect(),
     })

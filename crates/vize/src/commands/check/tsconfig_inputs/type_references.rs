@@ -6,7 +6,7 @@ use std::{
 };
 
 use serde_json::Value;
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use super::jsonc::parse_jsonc_value;
 
@@ -55,7 +55,7 @@ fn reference_types_attribute(line: &str) -> Option<&str> {
 }
 
 fn attribute_value<'a>(line: &'a str, name: &str) -> Option<&'a str> {
-    let needle = vize_s0::cstr!("{name}=");
+    let needle = vize_l0::cstr!("{name}=");
     let start = line.find(needle.as_str())? + needle.len();
     let quote = line.get(start..).unwrap_or_default().chars().next()?;
     if quote != '"' && quote != '\'' {
@@ -145,9 +145,9 @@ fn fallback_types_package_name(package: &str) -> Option<std::string::String> {
         let mut parts = scoped.split('/');
         let scope = parts.next()?;
         let name = parts.next()?;
-        return Some(vize_s0::cstr!("@types/{scope}__{name}").into());
+        return Some(vize_l0::cstr!("@types/{scope}__{name}").into());
     }
-    Some(vize_s0::cstr!("@types/{package}").into())
+    Some(vize_l0::cstr!("@types/{package}").into())
 }
 
 fn package_declaration_files(package_root: &Path, subpath: Option<&str>) -> Option<Vec<PathBuf>> {
@@ -216,7 +216,7 @@ fn collect_subpath_export_type_entries(
     let Some(exports) = package_json.get("exports") else {
         return;
     };
-    let key = vize_s0::cstr!("./{subpath}");
+    let key = vize_l0::cstr!("./{subpath}");
     if let Some(export) = exports.get(key.as_str()) {
         collect_export_type_entries(export, package_root, candidates);
     }

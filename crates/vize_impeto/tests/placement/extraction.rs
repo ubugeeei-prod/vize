@@ -18,7 +18,7 @@ use vize_impeto::op::{OpId, OpKind};
 use vize_impeto::optimize::{OPTIMIZE, optimize};
 use vize_impeto::placement::{ANNOTATE, Placement, annotate};
 use vize_impeto::verify::verify;
-use vize_s0::{Allocator, Span};
+use vize_l0::{Allocator, Span};
 
 const CANONICAL: Metrics = Metrics {
     emitted_size: 192,
@@ -239,7 +239,7 @@ fn the_pipeline_attributes_one_structured_remark_per_decision() {
 }
 
 #[test]
-fn both_passes_are_optional_graph_preserving_barriers_of_one_s3_pipeline() {
+fn both_passes_are_optional_graph_preserving_barriers_of_one_l3_pipeline() {
     for (desc, name) in [
         (ANNOTATE, "annotate-placements"),
         (EXTRACT, "extract-placements"),

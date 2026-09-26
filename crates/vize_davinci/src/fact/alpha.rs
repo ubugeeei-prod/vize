@@ -18,7 +18,7 @@
 use core::fmt;
 use core::marker::PhantomData;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::{FactGroup, FactTable};
 use crate::folio::{Folio, FolioError, FolioMode};

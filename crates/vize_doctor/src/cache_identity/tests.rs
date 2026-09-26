@@ -1,5 +1,5 @@
 use serde_json::json;
-use vize_s0::{ToCompactString, cstr};
+use vize_l0::{ToCompactString, cstr};
 
 use super::{
     CAPABILITY_CACHE_KEY_PREFIX, CapabilityCacheIdentity, CapabilityCacheIdentityError,

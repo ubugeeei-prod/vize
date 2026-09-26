@@ -9,7 +9,7 @@
 
 use std::path::Path;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::error::{LibError, LibResult};
 use super::fs_ops::{content_hash, validate_relative_path};

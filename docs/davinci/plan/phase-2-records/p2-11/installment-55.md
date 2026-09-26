@@ -10,7 +10,7 @@ flag program cannot drift while preserving one small rendered fixture.
 
 The durable witnesses are:
 
-- [`davinci_s2_memo.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_memo.rs)
+- [`davinci_s2_memo.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_memo.rs)
   - compares S2 and shipped DOM output and extracts the memo patch sites.
 - [`consumer-migration-surfaces.md`](../../consumer-migration-surfaces.md)
   - records the updated witness inventory.

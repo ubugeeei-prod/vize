@@ -1,7 +1,7 @@
 //! Prop-name scope for the template walk of `vue/no-mutating-props`.
 
+use vize_l0::{FxHashSet, String};
 use vize_relief::{DirectiveNode, ExpressionNode};
-use vize_s0::{FxHashSet, String};
 
 use super::mutation_targets::{MutationTargetKind, prop_mutation_target_kind};
 

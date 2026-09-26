@@ -1,4 +1,4 @@
-//! Shared S2 vs shipped DOM-lane differential harness.
+//! Shared L2 vs shipped DOM-lane differential harness.
 
 pub mod battery;
 pub mod bindings;
@@ -9,9 +9,9 @@ use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_with_options,
     compile_template_with_template_syntax_and_codegen_options,
 };
-use vize_s0::Allocator;
-use vize_s0::config::VueVersion;
-use vize_s1_to_s2::{
+use vize_l0::Allocator;
+use vize_l0::config::VueVersion;
+use vize_l1_to_l2::{
     DomEmitOptions, EmitError, LegacyCaps, UnsupportedReason, emit_dom_source,
     emit_dom_source_with_caps, emit_dom_source_with_options,
 };
@@ -74,9 +74,9 @@ pub fn shipped_with_options(
 }
 
 /// Dual-run under explicit options on both sides: the shipped lane's
-/// `DomCompilerOptions` + `CodegenOptions` against the S2 emitter's
+/// `DomCompilerOptions` + `CodegenOptions` against the L2 emitter's
 /// `DomEmitOptions`, byte-for-byte, with the comparison count pinned.
-pub fn assert_s2_matches_shipped_with_options(
+pub fn assert_l2_matches_shipped_with_options(
     battery: &[(&str, &str)],
     options: &DomCompilerOptions,
     codegen: &CodegenOptions,
@@ -88,53 +88,53 @@ pub fn assert_s2_matches_shipped_with_options(
     for (name, src) in battery {
         let old = shipped_with_options(src, options, codegen);
         let new = emit_dom_source_with_options(&allocator, src, caps, emit)
-            .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
+            .unwrap_or_else(|error| panic!("{name}: L2 emit refused: {error:?}"))
             .assembled();
         assert_eq!(
             old.as_str(),
             new.as_str(),
-            "{name}: S2 DOM emit diverged from the shipped lane"
+            "{name}: L2 DOM emit diverged from the shipped lane"
         );
         compared += 1;
     }
     assert_eq!(
         compared,
         battery.len() as u64,
-        "the S2 dual-run must remain armed"
+        "the L2 dual-run must remain armed"
     );
 }
 
-pub fn assert_s2_matches_shipped(battery: &[(&str, &str)]) {
+pub fn assert_l2_matches_shipped(battery: &[(&str, &str)]) {
     let mut compared = 0u64;
     let allocator = Allocator::new();
     for (name, src) in battery {
         let old = shipped(src);
         let new = emit_dom_source(&allocator, src)
-            .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
+            .unwrap_or_else(|error| panic!("{name}: L2 emit refused: {error:?}"))
             .assembled();
         assert_eq!(
             old.as_str(),
             new.as_str(),
-            "{name}: S2 DOM emit diverged from the shipped lane"
+            "{name}: L2 DOM emit diverged from the shipped lane"
         );
         compared += 1;
     }
     assert_eq!(
         compared,
         battery.len() as u64,
-        "the S2 dual-run must remain armed"
+        "the L2 dual-run must remain armed"
     );
 }
 
-pub fn assert_s2_matches_shipped_with_dialect(battery: &[(&str, &str)], dialect: VueVersion) {
-    assert_s2_matches_shipped_with_dialect_inner(battery, dialect, false)
+pub fn assert_l2_matches_shipped_with_dialect(battery: &[(&str, &str)], dialect: VueVersion) {
+    assert_l2_matches_shipped_with_dialect_inner(battery, dialect, false)
 }
 
-pub fn assert_s2_matches_prefixed_shipped_literals_with_dialect(
+pub fn assert_l2_matches_prefixed_shipped_literals_with_dialect(
     battery: &[(&str, &str)],
     dialect: VueVersion,
 ) {
-    assert_s2_matches_shipped_with_dialect_inner(battery, dialect, true)
+    assert_l2_matches_shipped_with_dialect_inner(battery, dialect, true)
 }
 
 pub fn patch_sites(source: &str) -> Vec<String> {
@@ -190,7 +190,7 @@ fn dynamic_props_array_end(source: &str, comment_end: usize) -> Option<usize> {
     Some(array_start + array_tail.find(']')? + 1)
 }
 
-fn assert_s2_matches_shipped_with_dialect_inner(
+fn assert_l2_matches_shipped_with_dialect_inner(
     battery: &[(&str, &str)],
     dialect: VueVersion,
     prefix_identifiers: bool,
@@ -201,23 +201,23 @@ fn assert_s2_matches_shipped_with_dialect_inner(
     for (name, src) in battery {
         let old = shipped_with_dialect_and_prefix(src, dialect, prefix_identifiers);
         let new = emit_dom_source_with_caps(&allocator, src, caps)
-            .unwrap_or_else(|error| panic!("{name}: S2 emit refused: {error:?}"))
+            .unwrap_or_else(|error| panic!("{name}: L2 emit refused: {error:?}"))
             .assembled();
         assert_eq!(
             old.as_str(),
             new.as_str(),
-            "{name}: S2 DOM emit diverged from the shipped lane"
+            "{name}: L2 DOM emit diverged from the shipped lane"
         );
         compared += 1;
     }
     assert_eq!(
         compared,
         battery.len() as u64,
-        "the S2 dual-run must remain armed"
+        "the L2 dual-run must remain armed"
     );
 }
 
-pub fn assert_s2_refuses(battery: &[(&str, &str, ExpectedRefusal)]) {
+pub fn assert_l2_refuses(battery: &[(&str, &str, ExpectedRefusal)]) {
     let allocator = Allocator::new();
     for (name, src, expected) in battery {
         let error = emit_dom_source(&allocator, src)
@@ -227,12 +227,12 @@ pub fn assert_s2_refuses(battery: &[(&str, &str, ExpectedRefusal)]) {
             ExpectedRefusal::Diagnostics => assert_eq!(
                 error,
                 EmitError::Diagnostics,
-                "{name}: S2 DOM refused with the wrong reason"
+                "{name}: L2 DOM refused with the wrong reason"
             ),
             ExpectedRefusal::Unsupported(reason) => assert_eq!(
                 error.reason(),
                 Some(*reason),
-                "{name}: S2 DOM refused with the wrong reason: {error:?}"
+                "{name}: L2 DOM refused with the wrong reason: {error:?}"
             ),
         }
     }

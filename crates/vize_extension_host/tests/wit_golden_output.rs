@@ -19,7 +19,7 @@ use vize_extension_host::outproc::{OutOfProcessGuest, serve_output_command};
 use vize_extension_host::output::{EmitRequest, OutputError, OutputSession, OutputTargetGuest};
 use vize_extension_host::wasm::WasmOutputGuest;
 use vize_extension_host::{GuestError, GuestLimits};
-use vize_s0::String;
+use vize_l0::String;
 
 fn guest() -> &'static Path {
     static GUEST: OnceLock<PathBuf> = OnceLock::new();

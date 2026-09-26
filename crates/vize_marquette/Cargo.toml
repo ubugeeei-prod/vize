@@ -13,7 +13,7 @@ metadata.vize.stability = "experimental"
 wit = ["dep:wit-parser"]
 
 [dependencies]
-vize_s0.workspace = true
+vize_l0.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true

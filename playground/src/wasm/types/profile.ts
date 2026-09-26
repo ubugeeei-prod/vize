@@ -3,6 +3,8 @@
 // timings in this shape under `spolveroProfile`; like the feed, it is
 // negotiated on `schema_version` before any span is read.
 
+import { layerId } from "./spolvero";
+
 export const PROFILE_EXPORT_SCHEMA_VERSION = 1;
 
 /** The dotted key the compiler records each ladder step under. */
@@ -86,7 +88,7 @@ function timingsUnder(profile: ProfileExport, key: string): Map<string, number> 
   for (const span of profile.spans) {
     const { stage, pass } = span.attribution ?? {};
     if (span.key !== key || !stage || !pass) continue;
-    timings.set(`${stage}/${pass}`, span.wall_ns.total);
+    timings.set(`${layerId(stage)}/${pass}`, span.wall_ns.total);
   }
   return timings;
 }

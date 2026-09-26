@@ -2,7 +2,7 @@
 
 This lane freezes the current Canon and Maestro virtual-language behavior before
 P4-5 replaces both generators. It is a migration oracle, not evidence that
-Davinci or S2 already owns the projection.
+Davinci or L2 already owns the projection.
 
 ## Lanes
 
@@ -71,7 +71,7 @@ plus authored anchor hits on both mapping models.
 
 This baseline does not prove:
 
-- Davinci/S2 projection parity or readiness;
+- Davinci/L2 projection parity or readiness;
 - full-corpus `vize check` false-positive/false-negative parity;
 - complete tsgo Content Mapper editor-feature coverage;
 - static slot-name navigation mappings outside Content Mapper;
@@ -79,4 +79,4 @@ This baseline does not prove:
 - that either current generator can be switched or deleted.
 
 Those remain P4-5/TS-40 exit work. The old-vs-new differential lane gains a new
-side only after an S2 projection exists.
+side only after an L2 projection exists.

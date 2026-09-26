@@ -1,7 +1,7 @@
 use std::{fs, path::Path};
 
 use serde_json::{Map, Value};
-use vize_s0::{FxHashMap, String, ToCompactString};
+use vize_l0::{FxHashMap, String, ToCompactString};
 
 use super::types::{DesignToken, TokenCategory, TokenError, TokenResult};
 

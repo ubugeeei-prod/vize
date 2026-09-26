@@ -91,7 +91,7 @@ test("transform, provider and output helpers encode their native wire contracts"
     schema: 1,
     edits: [{ kind: "replace-static-attribute", node: 0, name: "class", value: "ds-button" }],
   });
-  assert.throws(() => transform.run(JSON.stringify({ ...input, schema: 2 })), /unsupported S2/);
+  assert.throws(() => transform.run(JSON.stringify({ ...input, schema: 2 })), /unsupported L2/);
   const provider = defineFactProvider({
     name: "design",
     version: "1",

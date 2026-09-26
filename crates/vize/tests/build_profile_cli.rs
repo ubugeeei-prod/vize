@@ -5,7 +5,7 @@ use std::{
     process::Command,
 };
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 fn temp_project_dir(test_name: &str) -> PathBuf {
     let nonce = std::time::SystemTime::now()

@@ -7,7 +7,7 @@
 
 use std::collections::BTreeMap;
 
-use vize_s0::profiler::CounterSummary;
+use vize_l0::profiler::CounterSummary;
 
 use super::shapes::Shape;
 
@@ -102,7 +102,7 @@ pub struct Tally {
     pub unrecorded_samples: Vec<String>,
     /// `compile_sfc` errors per error code (not templates this shape reached).
     pub sfc_errors: BTreeMap<String, u64>,
-    /// Croquis-refused DOM templates S2 emits under the projection
+    /// Croquis-refused DOM templates L2 emits under the projection
     /// (`with_croquis_projection`): parity-ready, not yet selected.
     pub ready: u64,
     /// DOM templates (accepted or parity-ready) compared against the forced

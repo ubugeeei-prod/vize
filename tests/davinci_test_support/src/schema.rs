@@ -5,7 +5,7 @@
 
 use serde_json::Value;
 use thiserror::Error;
-use vize_s0::{CompactString, cstr};
+use vize_l0::{CompactString, cstr};
 
 /// A precise validation or validator-capability failure.
 #[derive(Debug, Error, PartialEq, Eq)]

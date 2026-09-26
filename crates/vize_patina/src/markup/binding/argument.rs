@@ -2,7 +2,7 @@
 
 use super::{MarkupBinding, MarkupBindingInner};
 use crate::ir::ByteRange;
-use crate::markup::s2::surface::SurfaceDirective;
+use crate::markup::l2::surface::SurfaceDirective;
 use vize_relief::ExpressionNode;
 
 impl MarkupBinding<'_> {
@@ -16,7 +16,7 @@ impl MarkupBinding<'_> {
                     _ => None,
                 };
             }
-            MarkupBindingInner::S2Binding(binding) => binding.surface?,
+            MarkupBindingInner::L2Binding(binding) => binding.surface?,
             MarkupBindingInner::Surface {
                 attr,
                 static_name: None,

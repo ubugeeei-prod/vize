@@ -12,7 +12,7 @@ use vize_atelier_core::{
 use super::SsrCodegenContext;
 pub(crate) use destructure::{collect_for_scoped_params, extract_destructure_params};
 pub(crate) use escape::{escape_html, escape_html_attr};
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 impl<'a> SsrCodegenContext<'a> {
     /// Process a list of children nodes

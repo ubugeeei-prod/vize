@@ -22,8 +22,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::{is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
 use vize_relief::{ElementNode, ElementType, Namespace};
-use vize_s0::{is_html_tag, is_math_ml_tag, is_svg_tag, is_void_tag};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/html-self-closing",

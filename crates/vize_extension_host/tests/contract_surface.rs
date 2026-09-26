@@ -19,16 +19,16 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 use vize_extension_host::contract::{
-    PROTOCOL_VERSION, REQUIRED_FEATURES, S1_PAGE_SCHEMA, S2_PAGE_SCHEMA,
+    L1_PAGE_SCHEMA, L2_PAGE_SCHEMA, PROTOCOL_VERSION, REQUIRED_FEATURES,
 };
 use vize_extension_host::expression::{self, FACTS_PAGE_SCHEMA, PROJECTION_PAGE_SCHEMA};
-use vize_extension_host::output::{self, EMIT_DOCUMENT_PAGE_SCHEMA, S3_PAGE_SCHEMA};
+use vize_extension_host::output::{self, EMIT_DOCUMENT_PAGE_SCHEMA, L3_PAGE_SCHEMA};
+use vize_l0::{String, cstr};
 use vize_marquette::contracts::wit::{Protocol, surface_from_wit};
 use vize_marquette::{
     ContractSurface, ContractVersion, canonical_surface_json, check_version_policy,
     compare_surfaces,
 };
-use vize_s0::{String, cstr};
 
 const BLESS_ENV: &str = "VIZE_CONTRACT_SURFACE_BLESS";
 
@@ -51,9 +51,9 @@ fn host_protocol() -> Protocol {
             ),
             (String::from("facts-page"), FACTS_PAGE_SCHEMA),
             (String::from("projection-page"), PROJECTION_PAGE_SCHEMA),
-            (String::from("s1-page"), S1_PAGE_SCHEMA),
-            (String::from("s2-page"), S2_PAGE_SCHEMA),
-            (String::from("s3-page"), S3_PAGE_SCHEMA),
+            (String::from("s1-page"), L1_PAGE_SCHEMA),
+            (String::from("s2-page"), L2_PAGE_SCHEMA),
+            (String::from("s3-page"), L3_PAGE_SCHEMA),
         ]),
         required_features: BTreeMap::from([
             (

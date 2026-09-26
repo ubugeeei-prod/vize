@@ -3,7 +3,7 @@ use crate::{
     FindingConfidence, FindingContext, FindingEvidence, FindingFix, FindingImpact, FindingSeverity,
     FixSafety, HealthPenalty, RelatedLocation, RuleCost, SourceLocation, TextEdit,
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::{DoctorFilterDimension, DoctorFilterSpec};
 

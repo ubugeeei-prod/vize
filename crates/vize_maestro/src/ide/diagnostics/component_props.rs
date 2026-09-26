@@ -55,7 +55,7 @@ impl DiagnosticService {
             return Vec::new();
         };
 
-        let allocator = vize_s0::Allocator::new();
+        let allocator = vize_l0::Allocator::new();
         let (root, _) = vize_armature::parse(&allocator, template_content);
         let mut drawer = Drawer::with_options(DrawerOptions {
             analyze_template_scopes: true,

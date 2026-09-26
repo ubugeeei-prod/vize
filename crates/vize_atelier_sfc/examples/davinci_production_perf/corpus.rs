@@ -5,7 +5,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use vize_s0::{String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 pub struct Input {
     pub filename: String,

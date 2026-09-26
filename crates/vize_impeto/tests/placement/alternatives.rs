@@ -3,7 +3,7 @@
 use vize_impeto::op::OpKind;
 use vize_impeto::operand::{OperandRole, ValueKind};
 use vize_impeto::placement::Placement::{Cache, Group, Hoist, Inline};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use super::fixture::{Build, JS, LIT, fixture, messages};
 
@@ -14,7 +14,7 @@ fn hoist_requires_an_insert_node() {
     build.record(6, &[Inline, Hoist], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @50:70 hoist for op#6 requires an insert-node"]
+        ["L3V010 @50:70 hoist for op#6 requires an insert-node"]
     );
 }
 
@@ -25,7 +25,7 @@ fn hoist_requires_a_control_region() {
     build.record(0, &[Inline, Hoist], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @0:100 hoist for op#0 is outside every control region"]
+        ["L3V010 @0:100 hoist for op#0 is outside every control region"]
     );
 }
 
@@ -37,7 +37,7 @@ fn hoist_rejects_instance_attributes() {
     build.record(5, &[Inline, Hoist], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @45:75 hoist for op#5 requires a literal node without instance attributes"]
+        ["L3V010 @45:75 hoist for op#5 requires a literal node without instance attributes"]
     );
 }
 
@@ -48,7 +48,7 @@ fn hoist_rejects_a_dynamic_descendant() {
     build.record(5, &[Inline, Hoist], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @45:75 hoist for op#5 covers non-static op#6"]
+        ["L3V010 @45:75 hoist for op#5 covers non-static op#6"]
     );
 }
 
@@ -66,7 +66,7 @@ fn hoist_rejects_a_dynamic_binding_on_the_root() {
     build.record(5, &[Inline, Hoist], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @45:75 hoist for op#5 covers non-static op#8"]
+        ["L3V010 @45:75 hoist for op#5 covers non-static op#8"]
     );
 }
 
@@ -77,7 +77,7 @@ fn cache_requires_a_set_event() {
     build.record(2, &[Inline, Cache], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @16:25 cache for op#2 requires a set-event"]
+        ["L3V010 @16:25 cache for op#2 requires a set-event"]
     );
 }
 
@@ -93,7 +93,7 @@ fn cache_rejects_a_static_event() {
     build.record(1, &[Inline, Cache], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @5:15 cache for op#1 is already static"]
+        ["L3V010 @5:15 cache for op#1 is already static"]
     );
 }
 
@@ -107,7 +107,7 @@ fn cache_rejects_an_opaque_handler() {
     build.record(1, &[Inline, Cache], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @5:15 cache for op#1 requires one plain js handler under a static event name"]
+        ["L3V010 @5:15 cache for op#1 requires one plain js handler under a static event name"]
     );
 }
 
@@ -129,7 +129,7 @@ fn cache_rejects_a_handler_under_for_scope() {
     build.record(2, &[Inline, Cache], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @10:20 cache for op#2 may read for, slot, or component scope"]
+        ["L3V010 @10:20 cache for op#2 may read for, slot, or component scope"]
     );
 }
 
@@ -140,7 +140,7 @@ fn group_requires_a_direct_reference_leaf_update() {
     build.record(5, &[Inline, Group], Some(2));
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @45:75 group for op#5 requires a dynamic direct-reference leaf update"]
+        ["L3V010 @45:75 group for op#5 requires a dynamic direct-reference leaf update"]
     );
 }
 
@@ -151,14 +151,14 @@ fn group_leaders_must_resolve_and_read_a_direct_reference() {
     build.record(3, &[Inline, Group], Some(99));
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @30:40 group leader op#99 for op#3 does not resolve"]
+        ["L3V010 @30:40 group leader op#99 for op#3 does not resolve"]
     );
 
     let mut build = fixture(&arena, (LIT, "hi"));
     build.record(3, &[Inline, Group], Some(1));
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @30:40 group leader op#1 for op#3 is not a dynamic direct-reference leaf update"]
+        ["L3V010 @30:40 group leader op#1 for op#3 is not a dynamic direct-reference leaf update"]
     );
 }
 
@@ -169,7 +169,7 @@ fn group_leaders_must_precede_their_members() {
     build.record(2, &[Inline, Group], Some(3));
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @16:25 group leader op#3 does not precede op#2"]
+        ["L3V010 @16:25 group leader op#3 does not precede op#2"]
     );
 }
 
@@ -182,7 +182,7 @@ fn group_members_read_the_leader_reference() {
     build.record(1, &[Inline, Group], Some(0));
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @10:20 group for op#1 reads `b` but leader op#0 reads `a`"]
+        ["L3V010 @10:20 group for op#1 reads `b` but leader op#0 reads `a`"]
     );
 }
 
@@ -194,7 +194,7 @@ fn group_members_share_the_leader_scope() {
     assert_eq!(
         messages(&build.program),
         [
-            "S3V010 @50:70 group for op#6 leaves the root, if-branch, or for-item scope of leader op#3"
+            "L3V010 @50:70 group for op#6 leaves the root, if-branch, or for-item scope of leader op#3"
         ]
     );
 }
@@ -215,7 +215,7 @@ fn component_content_never_groups() {
     assert_eq!(
         messages(&build.program),
         [
-            "S3V010 @20:30 group for op#2 leaves the root, if-branch, or for-item scope of leader op#1"
+            "L3V010 @20:30 group for op#2 leaves the root, if-branch, or for-item scope of leader op#1"
         ]
     );
 }
@@ -231,7 +231,7 @@ fn group_leaders_head_their_run() {
     build.record(2, &[Inline, Group], Some(1));
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @20:30 group leader op#1 for op#2 is itself grouped"]
+        ["L3V010 @20:30 group leader op#1 for op#2 is itself grouped"]
     );
 }
 
@@ -242,6 +242,6 @@ fn group_members_are_contiguous_in_the_keyed_effect_chain() {
     build.record(7, &[Inline, Group], Some(3));
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @80:90 group for op#7 is not contiguous with leader op#3"]
+        ["L3V010 @80:90 group for op#7 is not contiguous with leader op#3"]
     );
 }

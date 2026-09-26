@@ -5,6 +5,12 @@
 // any shape-dependent field (devtool.md: refuse a mismatch loudly instead of
 // misrendering).
 
+/** Canonical display names; the negotiated schema-1 feed stays byte-faithful. */
+export function layerId(stage: string): string {
+  if (!/^s[0-4](?:$|-)/.test(stage)) return stage;
+  return stage.replace(/^s([0-4])/, "l$1").replace(/-to-s([0-4])$/, "-to-l$1");
+}
+
 /** The feed format version this playground renders. */
 export const SPOLVERO_FEED_SCHEMA_VERSION = 1;
 
@@ -15,7 +21,7 @@ export interface SpolveroPage {
   stage: string;
   /** Producing step: a pass name, `lower`, or `parse`. */
   pass: string;
-  /** Canonical folio text (S1: the byte-faithful surface render). */
+  /** Canonical folio text (L1: the byte-faithful surface render). */
   text: string;
 }
 

@@ -33,4 +33,4 @@ pub use options::*;
 pub use relief::*;
 
 /// Re-export allocator types for convenience
-pub use vize_s0::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};
+pub use vize_l0::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};

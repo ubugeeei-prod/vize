@@ -13,8 +13,8 @@
 
 use std::path::{Path, PathBuf};
 
+use vize_l0::String;
 use vize_resident::equivalence::{EditScript, EquivalenceReport, parse_script};
-use vize_s0::String;
 
 fn repo() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -109,7 +109,7 @@ fn the_seeded_stale_cache_is_caught() {
     let report = run_plane();
     println!("{}", report.summary());
     // Only length-preserving edits slip past the weakened equality; each one
-    // leaves the stale block's S0 key (and every artifact behind it) served —
+    // leaves the stale block's L0 key (and every artifact behind it) served —
     // by the database (353 states) and by the snapshot tree, whose block
     // joint compares the same `BlockSource` (285 more).
     assert_eq!(report.mismatches.len(), 638);
@@ -119,7 +119,7 @@ fn the_seeded_stale_cache_is_caught() {
             file: String::from("class-component/src/App.vue"),
             script: String::from("05-length-preserving"),
             step: 1,
-            detail: String::from("template[0] s0-key"),
+            detail: String::from("template[0] l0-key"),
         }
     );
     let error = report.verdict().expect_err("the seeded bug must be caught");

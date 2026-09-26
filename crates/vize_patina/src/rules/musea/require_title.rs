@@ -26,7 +26,7 @@
 
 use super::{MuseaLintResult, MuseaRule, MuseaRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 static META: MuseaRuleMeta = MuseaRuleMeta {
     name: "musea/require-title",

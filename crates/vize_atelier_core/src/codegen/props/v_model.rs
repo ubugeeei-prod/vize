@@ -30,10 +30,10 @@ pub(super) fn generate_vmodel_prop(ctx: &mut CodegenContext, dir: &DirectiveNode
         .exp
         .as_ref()
         .map(|e| match e {
-            ExpressionNode::Simple(s) => vize_s0::String::new(s.content),
-            ExpressionNode::Compound(c) => vize_s0::String::new(c.loc.span.slice(&ctx.source)),
+            ExpressionNode::Simple(s) => vize_l0::String::new(s.content),
+            ExpressionNode::Compound(c) => vize_l0::String::new(c.loc.span.slice(&ctx.source)),
         })
-        .unwrap_or_else(|| vize_s0::String::new("undefined"));
+        .unwrap_or_else(|| vize_l0::String::new("undefined"));
 
     // Parentheses preserve comma expressions and derived-key precedence.
     ctx.push("[(");

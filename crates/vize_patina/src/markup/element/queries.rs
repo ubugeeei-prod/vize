@@ -4,11 +4,11 @@ use super::MarkupElement;
 use crate::markup::attribute::MarkupAttribute;
 use crate::markup::binding::{MarkupBinding, MarkupBindingKind};
 use crate::markup::element::MarkupElementInner;
+use crate::markup::l2::L2ElementOp;
+use crate::markup::l2::surface::SurfaceDirective;
 use crate::markup::node::MarkupNode;
-use crate::markup::s2::S2ElementOp;
-use crate::markup::s2::surface::SurfaceDirective;
+use vize_l0::String;
 use vize_relief::ElementNode;
-use vize_s0::String;
 
 impl<'a> MarkupElement<'a> {
     /// Find the first binding matching a [`MarkupBindingKind`] and argument
@@ -80,8 +80,8 @@ impl<'a> MarkupElement<'a> {
             MarkupElementInner::JsxFragment { .. } => {}
             MarkupElementInner::Authored { .. }
             | MarkupElementInner::Relief(_)
-            | MarkupElementInner::S2 { .. }
-            | MarkupElementInner::S2Carrier { .. } => self.walk_directives(&mut |directive| {
+            | MarkupElementInner::L2 { .. }
+            | MarkupElementInner::L2Carrier { .. } => self.walk_directives(&mut |directive| {
                 if directive.name_eq("bind") && directive.arg_name_eq(name) {
                     found = true;
                 }
@@ -112,12 +112,12 @@ impl<'a> MarkupElement<'a> {
     }
 }
 
-/// Whether an S2 `template` op is a Vue special template (`v-slot` carrier, or
+/// Whether an L2 `template` op is a Vue special template (`v-slot` carrier, or
 /// an authored `v-if` / `v-else-if` / `v-else` / `v-for` spelling the lowering
 /// kept the op for) — Relief's `ElementType::Template` rule.
-pub(super) fn s2_template_is_special(
-    op: S2ElementOp<'_>,
-    surface: Option<&vize_s1::Element<'_>>,
+pub(super) fn l2_template_is_special(
+    op: L2ElementOp<'_>,
+    surface: Option<&vize_l1::Element<'_>>,
 ) -> bool {
     match surface {
         Some(element) => element.open.attrs.iter().any(|attr| {
@@ -127,7 +127,7 @@ pub(super) fn s2_template_is_special(
         None => op
             .bindings()
             .iter()
-            .any(|binding| matches!(binding, vize_s2::op::BindingOp::SlotContent(_))),
+            .any(|binding| matches!(binding, vize_l2::op::BindingOp::SlotContent(_))),
     }
 }
 

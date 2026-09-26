@@ -10,7 +10,7 @@ use std::{
 };
 
 use serde_json::Value;
-use vize_s0::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
+use vize_l0::corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable};
 
 #[path = "support/vue_stub.rs"]
 mod vue_stub;

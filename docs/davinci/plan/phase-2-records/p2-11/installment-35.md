@@ -28,18 +28,18 @@ The realized cases are:
 
 The durable witnesses are:
 
-- [`folio_cloak.rs`](../../../../../crates/vize_s2/tests/folio_cloak.rs)
+- [`folio_cloak.rs`](../../../../../crates/vize_l2/tests/folio_cloak.rs)
   - exact Folio parse/print and owned-mirror coverage for `vue.cloak`.
-- [`lowering_vcloak.rs`](../../../../../crates/vize_s1_to_s2/tests/lowering_vcloak.rs)
+- [`lowering_vcloak.rs`](../../../../../crates/vize_l1_to_l2/tests/lowering_vcloak.rs)
   - element and slot-outlet `v-cloak` lower to `vue.cloak`, including
     value-bearing, argument, modifier and dynamic-argument spellings.
-- [`lowering_elements.rs`](../../../../../crates/vize_s1_to_s2/tests/lowering_elements.rs)
+- [`lowering_elements.rs`](../../../../../crates/vize_l1_to_l2/tests/lowering_elements.rs)
   - `v-pre` remains the unmapped-directive witness outside the dedicated
     directive-realization files.
-- [`davinci_s2_cloak.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_cloak.rs)
+- [`davinci_s2_cloak.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_cloak.rs)
   - S2-vs-shipped byte fixtures plus per-node patch-flag extraction across the
     realized cases above.
-- [`op_family.rs`](../../../../../crates/vize_s2/tests/op_family.rs)
+- [`op_family.rs`](../../../../../crates/vize_l2/tests/op_family.rs)
   - the S2 attached-op canary covers the new `vue.cloak` binding variant
     without a wildcard.
 

@@ -41,7 +41,7 @@ use vize_davinci::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassFailure, PassKind, Pipeline, Preserved,
     TimingObserver, parse_pipelines, pipeline::PipelineSpec, run_pipeline,
 };
-use vize_s0::{FxHashMap, String, cstr};
+use vize_l0::{FxHashMap, String, cstr};
 
 mod budget;
 mod replay;
@@ -69,7 +69,7 @@ impl IceFailure {
     /// The one-line rendering every reporting surface shares.
     pub(crate) fn text(&self) -> String {
         failure_text(
-            self.stage.as_str(),
+            vize_davinci::stage::pipeline_display_id(self.stage.as_str()),
             self.pass.as_str(),
             self.reason.as_str(),
         )
@@ -208,7 +208,10 @@ fn build_plans(segments: &[PipelineSpec<'_>]) -> Vec<Pipeline> {
                     )
                 })
                 .collect();
-            Pipeline::new(leak(segment.stage), passes.leak())
+            Pipeline::new(
+                leak(vize_davinci::stage::pipeline_wire_id(segment.stage)),
+                passes.leak(),
+            )
         })
         .collect()
 }

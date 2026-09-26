@@ -6,7 +6,7 @@ use std::io::{ErrorKind, Write as _};
 use std::path::{Component, Path, PathBuf};
 
 use sha2::{Digest, Sha256};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::error::{LibError, LibResult};
 

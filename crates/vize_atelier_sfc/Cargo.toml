@@ -38,14 +38,14 @@ davinci-production-profile = [
 ]
 
 [dependencies]
-vize_s0.workspace = true
+vize_l0.workspace = true
 vize_croquis = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_dom = { workspace = true }
 vize_atelier_ssr = { workspace = true }
 vize_atelier_vapor = { workspace = true }
-# The Davinci pug dialect: `<template lang="pug">` desugars through S1.
-vize_s1_to_s2 = { workspace = true }
+# The Davinci pug dialect: `<template lang="pug">` desugars through L1.
+vize_l1_to_l2 = { workspace = true }
 
 # OXC for JavaScript/TypeScript parsing and transformation
 oxc_parser = { workspace = true }

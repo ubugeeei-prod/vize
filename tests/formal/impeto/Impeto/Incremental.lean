@@ -30,13 +30,13 @@ def eraseAll : List Node -> List View
   | node :: rest => erase node :: eraseAll rest
 end
 
-/-- Reuse the first previous sibling with the same S3 address, or allocate. -/
+/-- Reuse the first previous sibling with the same L3 address, or allocate. -/
 def retain (previous : List Node) (owner tag : String) (next : Nat) :
     Except String (Nat × List Node × Nat) :=
   match previous.find? (fun node => address node == some owner) with
   | some (.element _ identity oldTag _ _ _ children) =>
       if tag = oldTag then .ok (identity, children, next)
-      else .error "stable S3 identity changed element kind"
+      else .error "stable L3 identity changed element kind"
   | _ => .ok (next, [], next + 1)
 
 -- This update machine owns retained identities and the previous materialized

@@ -142,7 +142,7 @@ impl HoverService {
             .unwrap_or_else(|| Self::binding_type_to_ts_display(binding_type).into());
 
         let kind_desc = Self::binding_type_to_description(binding_type);
-        let signature = vize_s0::cstr!("{word}: {inferred_type}");
+        let signature = vize_l0::cstr!("{word}: {inferred_type}");
 
         let mut builder = HoverBuilder::new()
             .title(word)
@@ -151,7 +151,7 @@ impl HoverService {
             .description(kind_desc);
 
         if summary.needs_value_in_script(word) {
-            let tip = vize_s0::cstr!("Use `{}.value` to read or write this ref in script.", word);
+            let tip = vize_l0::cstr!("Use `{}.value` to read or write this ref in script.", word);
             builder = builder.section("Tip", &tip);
         }
 

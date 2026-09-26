@@ -1,7 +1,7 @@
 //! Keep authored CSS color syntax while lightningcss formats the surrounding CSS.
 
 use lightningcss::{traits::Parse, values::color::CssColor};
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 pub(super) struct ColorProtection<'a> {
     pub(super) source: String,

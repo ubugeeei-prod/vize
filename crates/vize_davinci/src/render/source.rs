@@ -1,16 +1,16 @@
 //! The authored file a diagnostic is rendered against.
 //!
 //! P2-1's contract: a diagnostic keys on byte offsets only, and line/column
-//! exist at render time, derived from the authored text through the S0
+//! exist at render time, derived from the authored text through the L0
 //! [`LineIndex`]. [`SourceFile`] builds that index once per file so every
 //! diagnostic in the file reuses it.
 //!
-//! Offsets are normalized exactly as [`vize_s0::Span::slice`] does — clamped
+//! Offsets are normalized exactly as [`vize_l0::Span::slice`] does — clamped
 //! into the text, then snapped down to a `char` boundary — so the renderer
 //! underlines precisely `span.slice(text)` and never panics on a malformed
 //! span.
 
-use vize_s0::line_index::LineIndex;
+use vize_l0::line_index::LineIndex;
 
 use super::text;
 
@@ -59,7 +59,7 @@ impl<'a> SourceFile<'a> {
 
     /// The normalized `[start, end)` of a span; an inverted span is empty at
     /// its clamped end, as `Span::slice` treats it.
-    pub(crate) fn range(&self, span: vize_s0::Span) -> (usize, usize) {
+    pub(crate) fn range(&self, span: vize_l0::Span) -> (usize, usize) {
         let end = self.clamp(span.end);
         let start = self.clamp(span.start).min(end);
         (start, end)
@@ -109,7 +109,7 @@ impl<'a> SourceFile<'a> {
     }
 
     /// One-based `(line, column)` of `offset` for the `-->` location, the
-    /// column in UTF-16 code units exactly as the S0 line index and the LSP
+    /// column in UTF-16 code units exactly as the L0 line index and the LSP
     /// report it, so a terminal location and an editor location agree.
     pub(crate) fn location(&self, offset: usize) -> (u32, u32) {
         let (line, column) = self.index.line_col(offset);

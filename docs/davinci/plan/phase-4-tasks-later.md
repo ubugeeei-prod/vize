@@ -23,7 +23,7 @@
 
 **Non-goals:** verifying witnesses (P4-6b); Patina adoption (P4-6c); rendering (P4-14a).
 
-**Landed 2026-09-22:** the witness law as types, both `compile_fail` canaries with passing twins, and a source-derived exemption inventory (5 `vize_s1_to_s2` rows) that only shrinks — see the [P4-6a record](./phase-4-records/p4-6a.md).
+**Landed 2026-09-22:** the witness law as types, both `compile_fail` canaries with passing twins, and a source-derived exemption inventory (5 `vize_l1_to_l2` rows) that only shrinks — see the [P4-6a record](./phase-4-records/p4-6a.md).
 
 ## P4-6b — Witness verifier
 
@@ -52,13 +52,13 @@
 
 **Lane:** D
 
-**Deliverable:** every one of the 248 rules has a `RuleContract` (tier + domain) in one table, `crates/vize_patina/src/rule_contracts.rs` — a table rather than per-file edits, so lane F keeps sole ownership of `rules/` — and Patina diagnostics convert to `vize_davinci::Diagnostic` with file-absolute spans framed by `vize_s0::{SourceRoot, SourceBlock}`, fixing FP-1's root cause (`type/require-typed-emits` / `type/require-typed-props` report script-block offsets against whole-file lines).
+**Deliverable:** every one of the 248 rules has a `RuleContract` (tier + domain) in one table, `crates/vize_patina/src/rule_contracts.rs` — a table rather than per-file edits, so lane F keeps sole ownership of `rules/` — and Patina diagnostics convert to `vize_davinci::Diagnostic` with file-absolute spans framed by `vize_l0::{SourceRoot, SourceBlock}`, fixing FP-1's root cause (`type/require-typed-emits` / `type/require-typed-props` report script-block offsets against whole-file lines).
 
 **Steps:**
 
 - [x] Table keys == registered rule names, asserted by a test; `tools/davinci/rule-parity.mjs` gains a `tier` column and fails on a rule without one
 - [x] Error-default rules (99 today) without witnesses enter `witness-exemptions.tsv`; that list is the P4-8 waves' drain queue (98 rows: `script/no-potential-component-option-typo` is heuristic, so its contract declares warning — the one `DEMOTED` rule)
-- [x] Offsets canonicalized through the S0 frame — in `crates/vize_patina/src/output/frame.rs` (`ScriptFrame`) rather than `output/shared.rs`, because the formatters only ever see file-absolute offsets: the frame is applied where a range's frame is known (the rule path and the native type-aware warnings). FP-1 [fixed](./ledger-fp.md), 17 → 0 baseline-shift pairs
+- [x] Offsets canonicalized through the L0 frame — in `crates/vize_patina/src/output/frame.rs` (`ScriptFrame`) rather than `output/shared.rs`, because the formatters only ever see file-absolute offsets: the frame is applied where a range's frame is known (the rule path and the native type-aware warnings). FP-1 [fixed](./ledger-fp.md), 17 → 0 baseline-shift pairs
 
 **Acceptance:** [ledger-fp.md](./ledger-fp.md) FP-1 flipped to `fixed` with the layoutit-grid pairs re-measured at 0 of 17; `rust-script tools/commands/davinci/rule-parity.rs --check` green with the tier column (TS-12); TS-9 snapshots unchanged except the FP-1 spans, each changed line listed in the PR; exemption inventory ≤ 99 rule entries; TS-13.
 
@@ -68,7 +68,7 @@
 
 **Landed 2026-09-22:** all 248 rules carry a `RuleContract` (exact 199, complete 32, heuristic 17), the rule-parity matrix renders the tier, Patina converts to `vize_davinci::Diagnostic` through `to_unified`, 98 error rules report under counted exemptions (≤ 99), and FP-1 is fixed at 0 of 17 pairs — see the [P4-6c record](./phase-4-records/p4-6c.md).
 
-## P4-7a — S2-backed markup facade
+## P4-7a — L2-backed markup facade
 
 **Landed 2026-09-22** — full record: [phase-4-records/p4-7a.md](./phase-4-records/p4-7a.md).
 
@@ -76,15 +76,15 @@
 
 **Lane:** E
 
-**Deliverable:** `MarkupDocument` (`crates/vize_patina/src/markup.rs`, 1,636 lines) gains a zero-copy S2 inner variant: SFC templates through the S1→S2 lowering, JSX through P2-16's S2 projection; `ui.if` regions answer `MarkupConditional`, `ui.for` answers `MarkupList`, `ui.bind`/`ui.on`/`ui.model`/`vue.directive` answer `MarkupBinding`. A TS-25 lane proves the facade observes the same document either way.
+**Deliverable:** `MarkupDocument` (`crates/vize_patina/src/markup.rs`, 1,636 lines) gains a zero-copy L2 inner variant: SFC templates through the L1→L2 lowering, JSX through P2-16's L2 projection; `ui.if` regions answer `MarkupConditional`, `ui.for` answers `MarkupList`, `ui.bind`/`ui.on`/`ui.model`/`vue.directive` answer `MarkupBinding`. A TS-25 lane proves the facade observes the same document either way.
 
 **Steps:**
 
-- [x] `crates/vize_patina/src/markup/s2.rs`; Patina gains `vize_s1`, `vize_s2`, `vize_s1_to_s2` dependencies (publishable per the release firewall)
-- [x] `crates/vize_patina/src/markup/differential.rs` behind `davinci-differential`: the full `MarkupRule` hook trace (hook, spans, names, values, modifiers) compared exactly between the Relief/OXC and S2 projections
+- [x] `crates/vize_patina/src/markup/l2.rs`; Patina gains `vize_l1`, `vize_l2`, `vize_l1_to_l2` dependencies (publishable per the release firewall)
+- [x] `crates/vize_patina/src/markup/differential.rs` behind `davinci-differential`: the full `MarkupRule` hook trace (hook, spans, names, values, modifiers) compared exactly between the Relief/OXC and L2 projections
 - [x] Corpus-runnable entry and a plain-suite witness pinning the comparison count
 
-**Acceptance:** `cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential` zero divergence over the rule fixtures and a corpus shard with scope proof; `cargo bench -p vize_patina --bench davinci_markup` S2 variant `allocs` recorded in `budgets.toml` (TS-10); TS-9 unchanged (no lane switched); TS-13.
+**Acceptance:** `cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential` zero divergence over the rule fixtures and a corpus shard with scope proof; `cargo bench -p vize_patina --bench davinci_markup` L2 variant `allocs` recorded in `budgets.toml` (TS-10); TS-9 unchanged (no lane switched); TS-13.
 
 **Deps:** none (phase-2 exit).
 
@@ -96,7 +96,7 @@
 
 **Lane:** E
 
-**Deliverable:** `lint_sfc` and `lint_jsx` drive markup rules over the S2 facade only; `MarkupDocumentInner::{Relief, Jsx}` and `MarkupDocument::from_jsx` are deleted; `ir.rs`'s `LintDocumentKind` maps to S1 input dialects.
+**Deliverable:** `lint_sfc` and `lint_jsx` drive markup rules over the L2 facade only; `MarkupDocumentInner::{Relief, Jsx}` and `MarkupDocument::from_jsx` are deleted; `ir.rs`'s `LintDocumentKind` maps to L1 input dialects.
 
 **Steps:**
 
@@ -109,7 +109,7 @@
 
 **Non-goals:** the 208 rules not yet on the facade (P4-8a…P4-8c).
 
-**Progress 2026-09-22:** `lint_jsx` drives the 40 markup-facade rules over the S2 projection when P2-16 admits the root, and over the lowered Relief document when it refuses. `LintDocumentKind::s1_input_dialect` maps Vue/HTML fragments, JSX modules, and (via template lang) pug. Not closed: `lint_sfc` still runs those rules through the Relief `Rule` visitor — the `MarkupRule` bodies are not snapshot-identical (directive spans, autofixes, dynamic arguments, `vue/permitted-contents`) — and `MarkupDocumentInner::Relief` / `MarkupDocument::from_jsx` remain for that visitor, the content-model skeleton, and the TS-25 witness. See the [P4-7b record](./phase-4-records/p4-7b.md).
+**Progress 2026-09-22:** `lint_jsx` drives the 40 markup-facade rules over the L2 projection when P2-16 admits the root, and over the lowered Relief document when it refuses. `LintDocumentKind::s1_input_dialect` maps Vue/HTML fragments, JSX modules, and (via template lang) pug. Not closed: `lint_sfc` still runs those rules through the Relief `Rule` visitor — the `MarkupRule` bodies are not snapshot-identical (directive spans, autofixes, dynamic arguments, `vue/permitted-contents`) — and `MarkupDocumentInner::Relief` / `MarkupDocument::from_jsx` remain for that visitor, the content-model skeleton, and the TS-25 witness. See the [P4-7b record](./phase-4-records/p4-7b.md).
 
 ## P4-8a — Neutral-core rule wave
 
@@ -121,7 +121,7 @@
 
 **Steps:**
 
-- [ ] Template rules become `MarkupRule`s over the S2 facade; script rules also run on `.jsx`/`.tsx` programs through the script registry
+- [ ] Template rules become `MarkupRule`s over the L2 facade; script rules also run on `.jsx`/`.tsx` programs through the script registry
 - [ ] Paired fixtures `crates/vize_patina/tests/fixtures/parity/<rule>/{sfc.vue,jsx.tsx}` with exact diagnostic snapshots
 - [ ] Each installment regenerates the rule-parity matrix and drains its rules from `witness-exemptions.tsv`
 
@@ -177,11 +177,11 @@
 
 **Lane:** G
 
-**Deliverable:** the metric definition recommended in [open questions](../open-questions.md#complexity-metric-definition), written as `docs/davinci/plan/complexity-metrics.md`, and the `ComplexityFacts` group computed by a fusable analysis pass over S2 regions, replacing today's string counting in `vize_croquis_cf/src/rules/complexity.rs`.
+**Deliverable:** the metric definition recommended in [open questions](../open-questions.md#complexity-metric-definition), written as `docs/davinci/plan/complexity-metrics.md`, and the `ComplexityFacts` group computed by a fusable analysis pass over L2 regions, replacing today's string counting in `vize_croquis_cf/src/rules/complexity.rs`.
 
 **Steps:**
 
-- [x] `crates/vize_s1_to_s2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
+- [x] `crates/vize_l1_to_l2/src/pass/cfg.rs`: `Optional`/`Fusable`, `Preserved::ALL`; per component **own cyclomatic** = 1 + decisions (each `ui.if` branch beyond the first, plus one for an `ui.if` without `v-else`; each `ui.for`; each `&&`, `||`, `??` and `?:` in a retained expression AST; an `Opaque` expression adds 0 and is counted as unknown) and **own cognitive** (+1 per structure, + nesting depth for nested `ui.if`/`ui.for`/scoped-slot regions, +1 per run of like logical operators)
 - [x] TS-34 naive evaluator over the same definition
 - [x] Record the corpus distribution (p50/p90/p95/p99 of both metrics) with its command; pin the default thresholds at the recorded p95 (warn) in the spec
 

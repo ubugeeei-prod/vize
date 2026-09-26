@@ -13,7 +13,7 @@
 use vize_davinci::assert_folio_snapshot;
 use vize_davinci::folio::croquis::CroquisFolio;
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 /// A canonical text exercising every section of the croquis folio.
 const CANONICAL: &str = "\

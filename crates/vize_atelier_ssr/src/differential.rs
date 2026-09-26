@@ -9,10 +9,10 @@
 
 use vize_atelier_core::CompilerError;
 use vize_atelier_core::options::{CustomElementMatcher, TemplateSyntaxMode};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use crate::compile::{SsrLane, compile_ssr_on_lane};
-use crate::s4::{SsrS4Request, select_ssr_lane};
+use crate::l4::{SsrL4Request, select_ssr_lane};
 use crate::{SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
 mod production;
@@ -49,7 +49,7 @@ pub fn compare_ssr_lanes(
         let selection = select_ssr_lane(
             &allocator,
             source,
-            &SsrS4Request {
+            &SsrL4Request {
                 options,
                 experimental,
                 template_syntax: TemplateSyntaxMode::Standard,

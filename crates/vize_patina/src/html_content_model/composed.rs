@@ -21,7 +21,7 @@
 //! not pass `prop` and the caller's oracle proves its absent value falsy
 //! (FP-3): that subtree is not rendered at this usage.
 
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use super::chain::Chain;
 use super::check::{Context, Report, Verdict, check, check_pruned, check_with};

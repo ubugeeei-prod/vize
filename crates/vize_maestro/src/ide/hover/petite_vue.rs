@@ -13,7 +13,7 @@ impl HoverService {
             return None;
         }
 
-        let allocator = vize_s0::Allocator::new();
+        let allocator = vize_l0::Allocator::new();
         let (root, _errors) = vize_armature::parse_document(&allocator, &ctx.content);
 
         let mut drawer = Drawer::with_options(DrawerOptions::full());
@@ -38,7 +38,7 @@ impl HoverService {
             .map(|(_, binding, scope_kind)| (binding, scope_kind))?;
 
         let inferred_type = Self::binding_type_to_ts_display(binding.binding_type);
-        let signature = vize_s0::cstr!("{word}: {inferred_type}");
+        let signature = vize_l0::cstr!("{word}: {inferred_type}");
 
         let scope_note = match scope_kind {
             ScopeKind::VFor => {

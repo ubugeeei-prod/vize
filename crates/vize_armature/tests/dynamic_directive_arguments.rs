@@ -1,6 +1,6 @@
 use vize_armature::parse;
+use vize_l0::{Allocator, cstr};
 use vize_relief::{ErrorCode, ExpressionNode, PropNode, TemplateChildNode};
-use vize_s0::{Allocator, cstr};
 
 #[test]
 fn nested_dynamic_arguments_preserve_content_spans_and_retained_ast() {

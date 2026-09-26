@@ -6,7 +6,7 @@
 
 use tower_lsp::lsp_types::{PrepareRenameResponse, Range, Url, WorkspaceEdit};
 use vize_canon::CorsaBridge;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::super::super::canonical;
 use crate::ide::IdeContext;

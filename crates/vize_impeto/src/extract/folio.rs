@@ -7,7 +7,7 @@ use core::str::FromStr;
 
 use vize_davinci::folio::value::FolioValue;
 use vize_davinci::folio::{Folio, FolioError};
-use vize_s0::{Span, String, cstr};
+use vize_l0::{Span, String, cstr};
 
 use super::report::{Decision, DecisionKind, Delta, Extraction, Reason};
 use crate::op::OpId;
@@ -15,7 +15,8 @@ use crate::placement::folio::{field, parse_placement, parse_u32};
 
 /// One extraction, printed as `[s3-extraction-folio]`.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-pub struct S3ExtractionFolio {
+#[folio(name = "s3-extraction-folio")]
+pub struct L3ExtractionFolio {
     pub tier: String,
     pub candidate_budget: u32,
     pub budget_left: u32,
@@ -28,7 +29,7 @@ pub struct S3ExtractionFolio {
     pub decisions: Vec<FolioDecision>,
 }
 
-impl S3ExtractionFolio {
+impl L3ExtractionFolio {
     /// Mirror one extraction into the owned document model.
     #[must_use]
     pub fn of(extraction: &Extraction) -> Self {

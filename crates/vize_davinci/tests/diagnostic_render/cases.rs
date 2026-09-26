@@ -14,8 +14,8 @@ mod witness;
 use vize_davinci::diagnostic::{
     Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Severity, Stage,
 };
-use vize_s0::Span;
-use vize_s0::i18n::Locale;
+use vize_l0::Span;
+use vize_l0::i18n::Locale;
 
 /// Diagnostics as a case produces them: `(code, diagnostic)`.
 pub type Produced = Vec<(Option<&'static str>, Diagnostic)>;

@@ -10,9 +10,9 @@ event modifier helper preambles aligned with the shipped DOM lane.
 
 The durable witnesses are:
 
-- [`emit_dirs.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_dirs.rs)
+- [`emit_dirs.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_dirs.rs)
   - covers the directive/model/event modifier helper mix.
-- [`buf.rs`](../../../../../crates/vize_s1_to_s2/src/emit/buf.rs)
+- [`buf.rs`](../../../../../crates/vize_l1_to_l2/src/emit/buf.rs)
   - owns same-rank helper preamble ordering.
 
 This installment does not tick P2-11. The production-lane switch remains open.

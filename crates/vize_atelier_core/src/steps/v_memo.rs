@@ -2,8 +2,8 @@
 //!
 //! Transforms v-memo directives for memoized rendering.
 
-use vize_s0::String;
-use vize_s0::ToCompactString;
+use vize_l0::String;
+use vize_l0::ToCompactString;
 
 use crate::lane::TransformContext;
 use crate::{ElementNode, ExpressionNode, PropNode, RuntimeHelper};
@@ -98,7 +98,7 @@ mod tests {
     use super::{get_memo_deps, has_v_memo};
     use crate::TemplateChildNode;
     use crate::parser::parse;
-    use vize_s0::Allocator;
+    use vize_l0::Allocator;
 
     #[test]
     fn test_has_v_memo() {

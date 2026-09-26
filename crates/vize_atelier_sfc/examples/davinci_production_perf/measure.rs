@@ -8,7 +8,7 @@ use super::{
 use serde_json::{Value, json};
 use std::{hint::black_box, time::Instant};
 use vize_atelier_sfc::{SfcCompileResult, SfcError, SfcParseOptions, parse_sfc};
-use vize_s0::{
+use vize_l0::{
     String, cstr,
     profiler::{CounterSummary, global_profiler},
 };

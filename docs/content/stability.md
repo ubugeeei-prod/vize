@@ -98,7 +98,7 @@ details are not compatibility surfaces.
 | `vize_davinci`       | Experimental          | Davinci pipeline and dump-format authors  | `vize_davinci::{Folio, Diagnostic, NodeId}`      | No minimum; note breaks when practical |
 | `vize_davinci_derive` | Experimental        | Davinci dump-format authors               | `vize_davinci_derive::Folio`                     | No minimum; note breaks when practical |
 | `vize_doctor`        | Experimental          | Application health analyzer authors       | `vize_doctor::{DoctorFinding, FindingEvidence}` | No minimum; note breaks when practical |
-| `vize_impeto`        | Experimental          | Davinci backend-scheduling authors        | `vize_impeto::{op, verify, S3Folio}`             | No minimum; note breaks when practical |
+| `vize_impeto`        | Experimental          | Davinci backend-scheduling authors        | `vize_impeto::{op, verify, L3Folio}`             | No minimum; note breaks when practical |
 | `vize_atelier_core`  | Alpha-supported       | Custom Vue compiler backend authors       | `vize_atelier_core::{transform, generate}`      | One minor with `#[deprecated]`         |
 | `vize_atelier_dom`   | Alpha-supported       | VDOM compiler and bundler integrations    | `vize_atelier_dom::compile_template`            | One minor with `#[deprecated]`         |
 | `vize_atelier_vapor` | Experimental          | Opt-in Vapor compiler integrations        | `vize_atelier_vapor::compile_vapor`             | No minimum; note breaks when practical |
@@ -110,10 +110,10 @@ details are not compatibility surfaces.
 | `vize_fresco`        | Incubating            | TUI experiments                           | `vize_fresco::{RenderTree, LayoutEngine}`       | No minimum                             |
 | `vize_canon`         | Compatibility preview | Type-checker and editor integrations      | `vize_canon::{type_check_sfc, TypeChecker}`     | One minor with `#[deprecated]`         |
 | `vize_patina`        | Compatibility preview | Linter and Oxlint integrations            | `vize_patina::{lint, Linter}`                   | One minor with `#[deprecated]`         |
-| `vize_s1`            | Experimental          | Lossless Vue-template tooling authors     | `vize_s1::{parse, SurfaceTree}`                  | No minimum; note breaks when practical |
-| `vize_s1_to_s2`      | Experimental          | Vue lowering and compiler backend authors | `vize_s1_to_s2::{lower, emit_dom}`               | No minimum; note breaks when practical |
-| `vize_s2`            | Experimental          | Dialect-neutral compiler IR authors       | `vize_s2::{op, verify, S2Folio}`                 | No minimum; note breaks when practical |
-| `vize_s2_to_s3`      | Experimental          | Impeto lowering and backend authors       | `vize_s2_to_s3::{lower, PartitionFacts}`         | No minimum; note breaks when practical |
+| `vize_l1`            | Experimental          | Lossless Vue-template tooling authors     | `vize_l1::{parse, SurfaceTree}`                  | No minimum; note breaks when practical |
+| `vize_l1_to_l2`      | Experimental          | Vue lowering and compiler backend authors | `vize_l1_to_l2::{lower, emit_dom}`               | No minimum; note breaks when practical |
+| `vize_l2`            | Experimental          | Dialect-neutral compiler IR authors       | `vize_l2::{op, verify, L2Folio}`                 | No minimum; note breaks when practical |
+| `vize_l2_to_l3`      | Experimental          | Impeto lowering and backend authors       | `vize_l2_to_l3::{lower, PartitionFacts}`         | No minimum; note breaks when practical |
 
 <!-- rust-crate-support:end -->
 

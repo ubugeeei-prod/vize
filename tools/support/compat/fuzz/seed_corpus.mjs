@@ -10,8 +10,8 @@
 //   - js_ts_expression: script snippets and template interpolation expressions
 //   - css_parse: contents of <style>...</style> blocks
 //   - template_compile: contents of <template>...</template> blocks
-//   - s1_lowering: contents of <template>...</template> blocks (Davinci
-//     P2-8 — the S1 parse + S1→S2 lowering pipeline)
+//   - l1_lowering: contents of <template>...</template> blocks (Davinci
+//     P2-8 — the L1 parse + L1→L2 lowering pipeline)
 //   - folio_parse: committed .folio fixture pages (Davinci P2-8 — the
 //     hand-written folio parsers)
 //
@@ -87,7 +87,7 @@ function extractInterpolations(template) {
 
 const FOLIO_GLOBS = [
   "crates/vize_davinci/tests/fixtures/**/*.folio",
-  "crates/vize_s2/tests/fixtures/**/*.folio",
+  "crates/vize_l2/tests/fixtures/**/*.folio",
 ];
 
 function main() {
@@ -96,7 +96,7 @@ function main() {
   const jsTsExpressionDir = resetCorpus("js_ts_expression");
   const cssParseDir = resetCorpus("css_parse");
   const templateDir = resetCorpus("template_compile");
-  const s1LoweringDir = resetCorpus("s1_lowering");
+  const s1LoweringDir = resetCorpus("l1_lowering");
   const folioParseDir = resetCorpus("folio_parse");
 
   let folioCount = 0;
@@ -141,7 +141,7 @@ function main() {
   }
 
   process.stdout.write(
-    `Seeded ${sfcCount} sfc_parse entries, ${templateCount} template entries (template_lexer/template_compile/s1_lowering), ${expressionCount} JS/TS expression entries, ${styleCount} CSS entries, and ${folioCount} folio pages from ${files.length + folioCount} fixtures.\n`,
+    `Seeded ${sfcCount} sfc_parse entries, ${templateCount} template entries (template_lexer/template_compile/l1_lowering), ${expressionCount} JS/TS expression entries, ${styleCount} CSS entries, and ${folioCount} folio pages from ${files.length + folioCount} fixtures.\n`,
   );
 }
 

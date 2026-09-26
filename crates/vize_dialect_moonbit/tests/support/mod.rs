@@ -23,7 +23,7 @@ pub fn dir() -> PathBuf {
 }
 
 /// Read `<name><suffix>` from the fixtures directory.
-pub fn read(name: &str, suffix: &str) -> vize_s0::String {
+pub fn read(name: &str, suffix: &str) -> vize_l0::String {
     let path = dir().join([name, suffix].concat());
     std::fs::read_to_string(&path)
         .map_or_else(|error| panic!("{}: {error}", path.display()), Into::into)
@@ -47,7 +47,7 @@ pub fn golden(name: &str, suffix: &str, actual: &str) {
 }
 
 /// The pinned toolchain version (`.moonbit-version` at the repo root).
-pub fn pinned_toolchain() -> vize_s0::String {
+pub fn pinned_toolchain() -> vize_l0::String {
     let path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.moonbit-version");
     std::fs::read_to_string(&path)
         .unwrap_or_else(|error| panic!("{}: {error}", path.display()))

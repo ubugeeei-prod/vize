@@ -1,6 +1,6 @@
 //! Virtual code generator that transforms SFC into virtual documents.
 //!
-//! Uses arena allocation from vize_s0 for optimal performance.
+//! Uses arena allocation from vize_l0 for optimal performance.
 #![expect(
     clippy::disallowed_methods,
     reason = "VirtualDocument fields store std String"
@@ -23,8 +23,8 @@ mod tests;
 mod tests_semantic_bindings;
 
 use vize_atelier_sfc::SfcDescriptor;
-use vize_s0::Allocator;
-use vize_s0::cstr;
+use vize_l0::Allocator;
+use vize_l0::cstr;
 
 use binding::template_used_script_bindings;
 

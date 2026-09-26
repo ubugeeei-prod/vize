@@ -24,7 +24,7 @@ pub(super) fn analyze_with_patterns(
         Default::default(),
     )
     .ok()?;
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let template = descriptor.template.as_ref();
     let parsed = template.map(|template| vize_armature::parse(&allocator, &template.content));
     let ast = parsed.as_ref().map(|(root, _)| root);

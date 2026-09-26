@@ -1,4 +1,4 @@
-//! P2-12a pre-S2 traversal baseline: the Vapor lane.
+//! P2-12a pre-L2 traversal baseline: the Vapor lane.
 //!
 //! One fused compile per ladder fixture, diffing
 //! `vize_atelier_core::walk_probe` around it: the template-node visits and
@@ -111,6 +111,6 @@ fn vapor_walk_baseline_holds() {
 
     assert_eq!(
         measured, expected,
-        "vapor: the pre-S2 traversal baseline moved from the pinned P2-12a record"
+        "vapor: the pre-L2 traversal baseline moved from the pinned P2-12a record"
     );
 }

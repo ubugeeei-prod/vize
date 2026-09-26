@@ -3623,7 +3623,7 @@ vue/max-template-complexity · lint ルール
 コンポーネント自身のテンプレート複雑度（循環的複雑度と認知的複雑度）に上限を設ける
 
 精度: exact
-対象: control flow of HTML SFC templates as lowered to S2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
+対象: control flow of HTML SFC templates as lowered to L2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
 重大度: 警告
 カテゴリー: recommended
 自動修正: なし
@@ -6035,62 +6035,62 @@ ts/vue/9006 · 型検査の診断
 
     // ✅ refを保持
     const x = ref(0);
-=== S3V001
-S3V001 · S3 検証
+=== L3V001
+L3V001 · L3 検証
 op、region、effect の id が重複しています。
 
 ヒント:
   op、region、effect にはそれぞれ別の id を付けてください。
-=== S3V002
-S3V002 · S3 検証
+=== L3V002
+L3V002 · L3 検証
 ルート region がないか、ルートが parent または owner を持っています。
 
 ヒント:
   region r#0 は存在し、parent も owner も持たない必要があります。
-=== S3V003
-S3V003 · S3 検証
+=== L3V003
+L3V003 · L3 検証
 op が存在しない region を指しています。
 
 ヒント:
   op の region はこのプログラムにある region にしてください。
-=== S3V004
-S3V004 · S3 検証
+=== L3V004
+L3V004 · L3 検証
 state edge の端点が解決できません。
 
 ヒント:
   state edge の両端はこのプログラムの op である必要があります。
-=== S3V005
-S3V005 · S3 検証
+=== L3V005
+L3V005 · L3 検証
 region の parent または owner が解決できないか、ルート以外がそれらを欠いています。
 
 ヒント:
   r#0 以外の region は、存在する parent region と owner op を指定してください。
-=== S3V006
-S3V006 · S3 検証
+=== L3V006
+L3V006 · L3 検証
 region、op、effect が包含 region の外に出ているか、parent が循環しています。
 
 ヒント:
   各スパンを parent と owner の内側に保ち、parent の循環を作らないでください。
-=== S3V007
-S3V007 · S3 検証
+=== L3V007
+L3V007 · L3 検証
 effect が欠けた scope、owner、region を指すか、state edge が effect scope の外に出ています。
 
 ヒント:
   effect とその edge を、指している region と effect scope の内側に保ってください。
-=== S3V008
-S3V008 · S3 検証
+=== L3V008
+L3V008 · L3 検証
 スケジュールされた edge が後方または自分自身を指しています。
 
 ヒント:
   edge はより後ろの op に向けてスケジュールしてください。
-=== S3V009
-S3V009 · S3 検証
+=== L3V009
+L3V009 · L3 検証
 operand がその op に対して無効です。
 
 ヒント:
   その op の検証が受け付ける operand を使ってください。
-=== S3V010
-S3V010 · S3 検証
+=== L3V010
+L3V010 · L3 検証
 placement の候補または採用結果が placement 規則と一致しません。
 
 ヒント:

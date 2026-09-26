@@ -1,11 +1,11 @@
 //! Open/close tag processing and the open-element stack lifecycle.
 
+use vize_l0::{Box, Vec};
 use vize_relief::{
     AttributeNode, ElementNode, ExpressionNode, Namespace, PropNode, TemplateChildNode, TextNode,
     errors::{CompilerError, ErrorCode},
     options::TemplateSyntaxMode,
 };
-use vize_s0::{Box, Vec};
 
 use super::super::{CurrentElement, Parser, ParserStackEntry, StackInsertion};
 use super::is_html_tree_element;
@@ -40,7 +40,7 @@ impl<'a> Parser<'a> {
             tag_start: start,
             ns,
             is_self_closing: false,
-            props: vize_s0::Vec::new_in(&self.allocator),
+            props: vize_l0::Vec::new_in(&self.allocator),
         });
     }
 
@@ -104,7 +104,7 @@ impl<'a> Parser<'a> {
                                 // `v-pre` shape recurs, so it interns.
                                 Some(arg) => {
                                     let mut name =
-                                        vize_s0::String::with_capacity(prefix.len() + arg.len());
+                                        vize_l0::String::with_capacity(prefix.len() + arg.len());
                                     name.push_str(prefix);
                                     name.push_str(arg);
                                     self.interner.intern(&name)

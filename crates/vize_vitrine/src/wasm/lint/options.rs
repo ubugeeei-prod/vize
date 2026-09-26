@@ -29,7 +29,7 @@ fn parse_lint_preset(options: &JsValue) -> WasmPresetSelection {
         .unwrap_or(WasmPresetSelection::Builtin(LintPreset::default()))
 }
 
-fn parse_enabled_rules(options: &JsValue) -> Option<Vec<vize_s0::CompactString>> {
+fn parse_enabled_rules(options: &JsValue) -> Option<Vec<vize_l0::CompactString>> {
     js_sys::Reflect::get(options, &JsValue::from_str("enabledRules"))
         .ok()
         .and_then(|v| {
@@ -39,7 +39,7 @@ fn parse_enabled_rules(options: &JsValue) -> Option<Vec<vize_s0::CompactString>>
             js_sys::Array::from(&v)
                 .iter()
                 .map(|item| item.as_string().map(Into::into))
-                .collect::<Option<Vec<vize_s0::CompactString>>>()
+                .collect::<Option<Vec<vize_l0::CompactString>>>()
         })
 }
 

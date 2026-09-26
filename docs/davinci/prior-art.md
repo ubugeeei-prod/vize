@@ -20,9 +20,9 @@ adopted only _under_ the [assurance doctrine](./assurance.md): the oracle
 remains the full normalized folio snapshot (exact); targeted assertions are
 structural-equality supplements documenting the pass's claimed property —
 rustc's churn problem is solved by printer normalization, not looser oracles. THIR's ephemeral-bridge pattern
-licenses S2→S3 scratch structures that are never persisted stages.
+licenses L2→L3 scratch structures that are never persisted stages.
 _Anti-lesson:_ MIR optimizations were chronically unsound because MIR's runtime
-semantics were never pinned down first — the S3 op reference (what each effect
+semantics were never pinned down first — the L3 op reference (what each effect
 means under Vapor and VDOM interpretation) is written **before** fusable passes,
 with Folio as its concrete syntax. rustc's `optimized_mir` "steal" coupling is
 the named counter-example for keeping phase outputs immutable.
@@ -44,7 +44,7 @@ stable `DefPathHash` vs dense per-session `DefId`; the
 [1.52.1 incident](https://blog.rust-lang.org/2021/05/10/Rust-1.52.1/) (silent
 fingerprint unsoundness for years because verification was off).
 _Import:_ block content keys hash **span-relative** structure (absolute
-positions live in S0 side tables); stable content keys vs dense NodeIds as the
+positions live in L0 side tables); stable content keys vs dense NodeIds as the
 two-level naming; **incremental-vs-clean equivalence in CI from the first
 salsa-backed release**. The two-tier execution split (fused CLI, salsa
 resident) is exactly rustc/rust-analyzer precedent.
@@ -78,9 +78,9 @@ being retired for one-shot lowering
 _Import:_ stage additions and cross-stage escape hatches require charter-level
 review; lowerings are total functions that fail with diagnostics, **never
 rollback**; per-stage canonical form is a one-page documented doctrine whose
-regression test is the Folio snapshot itself. The moment S2 grows a variant
+regression test is the Folio snapshot itself. The moment L2 grows a variant
 that exists only for one input syntax, we've started MLIR's dialect-overload
-problem — that's the review question for every S2 change.
+problem — that's the review question for every L2 change.
 
 **Pass manager.** Five features imported nearly verbatim from
 [MLIR's pass infrastructure](https://mlir.llvm.org/docs/PassManagement/):
@@ -93,7 +93,7 @@ into reading; crash reproducers = last-good folio + pipeline string, replayable
 via `vize repro`; machine-readable timing (JSON) so CI gates on the traversal budget.
 
 **`davinci-opt`.** MLIR's testing culture rests on `mlir-opt` + round-tripping
-textual IR. _Import:_ Folio must **parse, not just print**, for S2/S3; a
+textual IR. _Import:_ Folio must **parse, not just print**, for L2/L3; a
 `davinci-opt` binary reads a folio, runs a named pipeline, prints a folio.
 Without round-trip, every pass test drags the full upstream pipeline — the
 exact coupling MLIR's guide warns against. A `#[derive(Folio)]` proc-macro
@@ -104,7 +104,7 @@ lowerings stay hand-written (the ODS anti-lesson: don't build an op-DSL).
 capability-typed ops — is reproduced statically: capability traits
 (`HasRegions`, `SpanCarrier`, `Reactive`) implemented as exhaustive matches on
 closed stage enums, monomorphized generic walks. The one designated `dyn` seam
-is S4 emitters (per-target trait objects, cheap and right). No `_` arms on
+is L4 emitters (per-target trait objects, cheap and right). No `_` arms on
 stage enums — adding a variant must break every pass that has to handle it.
 
 **Analysis invalidation.** LLVM's new-PM model — lazy analyses from a manager,
@@ -128,7 +128,7 @@ diffing; missed-remarks are a mined feature backlog.
 escape values (undef/poison), constructor-time folding (top infinite-loop
 source) — were all known early and cheap to fix early
 ([nikic](https://www.npopov.com/2021/06/02/Design-issues-in-LLVM-IR.html)).
-_Import as rules:_ every S2/S3 field is either semantic or derivable-and-cached,
+_Import as rules:_ every L2/L3 field is either semantic or derivable-and-cached,
 never both; any `Expr::Opaque` escape variant gets pessimal documented
 semantics from day one; folding happens in exactly one designated pass per
 stage. One **IR contract review milestone** before DevTool/caches depend on the
@@ -136,7 +136,7 @@ formats — the last cheap-fix window.
 
 **folio-reduce.** llvm-reduce's design (dumb driver, sovereign interestingness
 script, IR-aware reduction vocabulary) is feasible and nearly free for Davinci:
-reduce the SFC via S1 subtree deletion (always re-printable), oracles composed
+reduce the SFC via L1 subtree deletion (always re-printable), oracles composed
 from diagnostics, remarks, Folio content, and budget violations — all
 infrastructure that exists for other reasons
 ([llvm-reduce](https://llvm.org/docs/CommandGuide/llvm-reduce.html)).
@@ -182,7 +182,7 @@ _Import:_
 - **`.mbti` interface firewalls** ([virtual packages](https://www.moonbitlang.com/blog/virtual-package)):
   split every stage artifact key into _interface hash_ (exported names, types,
   reactivity classes) vs _body hash_; dependents key on the interface hash so
-  body-only edits never cascade. Interface facts are generated from S2 and
+  body-only edits never cascade. Interface facts are generated from L2 and
   diffed structurally — the mechanism that makes block granularity pay.
 - **Fault-tolerant analysis**: semantic analysis proceeds past errors,
   producing facts for whatever is well-formed — required behavior for the
@@ -200,7 +200,7 @@ _Import:_
 
 _Anti-lessons:_ MoonBit's speed is partly language design (acyclic DAG,
 explicit interfaces) — Vue/JS graphs are cyclic, so interface firewalls need
-conservative widening; no cross-module WPO chasing in S4 (open-world JS); no
+conservative widening; no cross-module WPO chasing in L4 (open-world JS); no
 documented stable moonc API — wrap the CLI surface behind a capability.
 
 ## Unison
@@ -240,7 +240,7 @@ Honest verdict: mostly analogy, two real imports.
   mechanism is right.
 
 _Anti-lesson:_ Effekt's own retreat from its three-paper IR pipeline
-([evolution](https://effekt-lang.org/evolution)) argues S3 analyses stay boring
+([evolution](https://effekt-lang.org/evolution)) argues L3 analyses stay boring
 dataflow (abstract interpretation), not a typed effect calculus, however
 tempting the lattice-as-effect-system framing is. Effect typing requires
 annotated cooperative source we cannot demand; evidence-passing machinery has

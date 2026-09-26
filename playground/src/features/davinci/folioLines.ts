@@ -47,7 +47,7 @@ export interface FolioLine {
   /** Nesting depth for tree pages (two spaces per level). */
   depth: number;
   /**
-   * For an S2 op line, the op's dense page-order id (the `ui.*` lines in
+   * For an L2 op line, the op's dense page-order id (the `ui.*` lines in
    * document order) - the id provenance records name. Null elsewhere.
    */
   node: number | null;
@@ -119,7 +119,7 @@ const SURFACE_TOKEN =
 
 const SURFACE_GROUPS: TokenType[] = ["mustache", "tag", "directive", "attr", "string"];
 
-/** Tokens for one line of the S1 surface page (authored template text). */
+/** Tokens for one line of the L1 surface page (authored template text). */
 export function surfaceTokens(line: string): Token[] {
   return scan(line, SURFACE_TOKEN, SURFACE_GROUPS);
 }

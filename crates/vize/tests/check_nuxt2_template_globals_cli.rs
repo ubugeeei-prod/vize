@@ -9,7 +9,7 @@ use std::{
     process::Command,
 };
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[test]
 fn check_legacy_nuxt2_template_fetch_state_and_route_globals() {

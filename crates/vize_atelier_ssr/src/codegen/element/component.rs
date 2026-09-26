@@ -527,7 +527,7 @@ impl<'a> SsrCodegenContext<'a> {
                 if !simple.is_static && is_simple_identifier(simple.content) =>
             {
                 // A `v-for` alias or slot param is a local, not `_ctx.<key>`.
-                self.strip_ctx_for_scoped_params(&vize_s0::cstr!("_ctx.{}", simple.content))
+                self.strip_ctx_for_scoped_params(&vize_l0::cstr!("_ctx.{}", simple.content))
             }
             _ => self.expression_to_string(expr),
         }

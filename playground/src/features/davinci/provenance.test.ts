@@ -78,7 +78,7 @@ describe("parseProvenance", () => {
     ]);
   });
 
-  it("numbers S2 op lines by page order, the ids records name", () => {
+  it("numbers L2 op lines by page order, the ids records name", () => {
     const s2 = `[disegno]
 ops=3
 

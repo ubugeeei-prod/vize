@@ -19,7 +19,7 @@ use oxc_ast::ast::{
 };
 use oxc_span::GetSpan;
 
-use vize_s0::{CompactString, FxHashMap};
+use vize_l0::{CompactString, FxHashMap};
 
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
 use crate::diagnostic::{LintDiagnostic, Severity};

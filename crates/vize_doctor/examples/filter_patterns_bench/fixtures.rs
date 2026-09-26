@@ -1,18 +1,23 @@
+#![expect(
+    clippy::disallowed_macros,
+    reason = "the identical public API probe crosses dependency alias migrations"
+)]
+
 use vize_doctor::{
     AnalysisProvenance, DoctorCategory, DoctorFilterSpec, DoctorFinding, FindingAssessment,
     FindingConfidence, FindingImpact, FindingSeverity, HealthPenalty, RuleCost, SourceLocation,
 };
-use vize_s0::{String, cstr};
 
 pub fn scenario(kind: &str, count: usize) -> (DoctorFilterSpec, Vec<DoctorFinding>, Vec<bool>) {
-    let patterns: Vec<String> = (0..count)
+    let patterns: Vec<_> = (0..count)
         .map(|index| match kind {
-            "rule-literal" => cstr!("VIZE_DOCTOR_RULE_{index:03}"),
-            "rule-regex" => cstr!("VIZE_DOCTOR_RULE_{index:03}_[AB]"),
-            "path-prefix" => cstr!("packages/app-{index:03}/**"),
-            "path-suffix" => cstr!("**/app-{index:03}/components/Panel.vue"),
-            _ => cstr!("packages/app-{index:03}/src/[AB]*.vue"),
+            "rule-literal" => format!("VIZE_DOCTOR_RULE_{index:03}"),
+            "rule-regex" => format!("VIZE_DOCTOR_RULE_{index:03}_[AB]"),
+            "path-prefix" => format!("packages/app-{index:03}/**"),
+            "path-suffix" => format!("**/app-{index:03}/components/Panel.vue"),
+            _ => format!("packages/app-{index:03}/src/[AB]*.vue"),
         })
+        .map(Into::into)
         .collect();
     let spec = if kind.starts_with("rule-") {
         DoctorFilterSpec {
@@ -35,15 +40,15 @@ pub fn scenario(kind: &str, count: usize) -> (DoctorFilterSpec, Vec<DoctorFindin
             _ => count + candidate,
         };
         let code = match kind {
-            "rule-literal" => cstr!("VIZE_DOCTOR_RULE_{index:03}"),
-            "rule-regex" => cstr!("VIZE_DOCTOR_RULE_{index:03}_A"),
-            _ => "VIZE_DOCTOR_PERFORMANCE_001".into(),
+            "rule-literal" => format!("VIZE_DOCTOR_RULE_{index:03}"),
+            "rule-regex" => format!("VIZE_DOCTOR_RULE_{index:03}_A"),
+            _ => "VIZE_DOCTOR_PERFORMANCE_001".to_owned(),
         };
         let path = match kind {
-            "path-prefix" => cstr!("packages/app-{index:03}/src/组件/Panel.vue"),
-            "path-suffix" => cstr!("packages/日本語/app-{index:03}/components/Panel.vue"),
-            "path-regex" => cstr!("packages/app-{index:03}/src/BPanel.vue"),
-            _ => "packages/account/src/Login.vue".into(),
+            "path-prefix" => format!("packages/app-{index:03}/src/组件/Panel.vue"),
+            "path-suffix" => format!("packages/日本語/app-{index:03}/components/Panel.vue"),
+            "path-regex" => format!("packages/app-{index:03}/src/BPanel.vue"),
+            _ => "packages/account/src/Login.vue".to_owned(),
         };
         findings.push(DoctorFinding::new(
             code,

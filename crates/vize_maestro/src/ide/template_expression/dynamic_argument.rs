@@ -54,7 +54,7 @@ mod tests {
     fn dynamic_arguments_share_expression_routing_for_all_directives() {
         for prefix in [":", "@", "#", "v-bind:", "v-on:", "v-slot:", "v-custom:"] {
             for expression in ["names.", "names.cur", "names[0].", "names[']']."] {
-                let source = vize_s0::cstr!("<Comp {prefix}[{expression}] />");
+                let source = vize_l0::cstr!("<Comp {prefix}[{expression}] />");
                 let cursor = source.find(expression).unwrap() + expression.len();
                 assert!(is_in_vue_template_expression(&source, cursor), "{source}");
                 assert!(

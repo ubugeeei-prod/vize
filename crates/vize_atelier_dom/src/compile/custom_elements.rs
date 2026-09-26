@@ -11,7 +11,7 @@ use vize_atelier_core::{
         CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
     },
 };
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 /// Compile with declarative custom-element patterns without growing public options.
 #[doc(hidden)]
@@ -54,7 +54,7 @@ pub fn compile_template_with_custom_elements_template_syntax_codegen_and_experim
         options,
         template_syntax,
         None,
-        DomCompilePipelineOptions::allow_s2_with_experimental_options(
+        DomCompilePipelineOptions::allow_l2_with_experimental_options(
             custom_elements,
             codegen_options,
             codegen_experimental_options,
@@ -142,7 +142,7 @@ pub fn compile_template_with_custom_elements_template_syntax_hoisted_scope_id_co
 /// Compile an SFC template block with section metadata and custom-element patterns.
 ///
 /// This entry returns only diagnostics and codegen because SFC assembly does
-/// not consume the DOM `RootNode`. That lets the fully supported S2 sections
+/// not consume the DOM `RootNode`. That lets the fully supported L2 sections
 /// lane avoid constructing the legacy transformed AST solely to throw it away;
 /// unsupported or diagnostic inputs still fall back to the ordinary section
 /// path so warning/error behavior stays with the shipped compiler.

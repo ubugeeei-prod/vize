@@ -19,7 +19,7 @@ use crate::rules::vue::{
     AttributeHyphenation, HyphenationStyle, NoMutatingProps, NoMutatingPropsOptions,
     SfcElementOrder, SfcElementOrderOptions,
 };
-use vize_s0::String;
+use vize_l0::String;
 
 impl Linter {
     /// Configure the deny list for `script/no-restricted-globals`.

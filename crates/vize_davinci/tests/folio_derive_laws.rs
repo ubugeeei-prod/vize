@@ -14,7 +14,7 @@
 
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::pass::BudgetObserver;
-use vize_s0::{FxHashMap, String, cstr};
+use vize_l0::{FxHashMap, String, cstr};
 
 /// Every supported field kind on one page.
 #[derive(Debug, Default, PartialEq, Folio)]
@@ -244,4 +244,23 @@ fn parse_errors_carry_line_numbers_and_exact_messages() {
         ),
         FolioError::new(8, cstr!("duplicate map key `alpha`"))
     );
+}
+
+#[derive(Debug, PartialEq, Folio)]
+#[folio(name = "s3-folio")]
+struct RenamedLayerPage {
+    phase: String,
+    ops: Vec<String>,
+}
+
+#[test]
+fn renamed_types_keep_explicit_wire_headers_and_sections() {
+    let text = "[s3-folio]\nphase=built\n\n[s3-folio.ops]\none\n\n";
+    let page = RenamedLayerPage::parse(text).expect("legacy header parses");
+    assert_eq!(page.print_to_string(FolioMode::Full).as_str(), text);
+    assert_eq!(
+        RenamedLayerPage::parse(page.print_to_string(FolioMode::Full).as_str()).expect("roundtrip"),
+        page
+    );
+    assert!(RenamedLayerPage::parse("[renamed-layer-page]\nphase=built\n\n").is_err());
 }

@@ -2,7 +2,7 @@
 
 use core::fmt;
 
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 /// Which invariant a [`Violation`] reports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -38,16 +38,16 @@ impl ViolationCode {
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
-            Self::DuplicateId => "S3V001",
-            Self::RootRegion => "S3V002",
-            Self::OpRegion => "S3V003",
-            Self::EdgeEndpoint => "S3V004",
-            Self::RegionResolution => "S3V005",
-            Self::RegionNesting => "S3V006",
-            Self::EffectScope => "S3V007",
-            Self::ScheduledOrder => "S3V008",
-            Self::Operand => "S3V009",
-            Self::Placement => "S3V010",
+            Self::DuplicateId => "L3V001",
+            Self::RootRegion => "L3V002",
+            Self::OpRegion => "L3V003",
+            Self::EdgeEndpoint => "L3V004",
+            Self::RegionResolution => "L3V005",
+            Self::RegionNesting => "L3V006",
+            Self::EffectScope => "L3V007",
+            Self::ScheduledOrder => "L3V008",
+            Self::Operand => "L3V009",
+            Self::Placement => "L3V010",
         }
     }
 }

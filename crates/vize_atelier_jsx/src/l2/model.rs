@@ -1,0 +1,126 @@
+use vize_l0::{Allocator, Box, Vec};
+use vize_l1_to_l2::lower::{LoweringFeatures, OpFamily};
+use vize_l2::{
+    expr::ExprRef,
+    op::{Attribute, BindingContract, BindingOp, DynamicName, ModelOp},
+};
+use vize_relief::{DirectiveNode, ElementType, ExpressionNode};
+
+use super::{L2Refusal, lower_dynamic_name, lower_expression};
+
+pub(super) fn lower_model<'a>(
+    allocator: &'a Allocator,
+    directive: &DirectiveNode<'a>,
+    element_type: ElementType,
+    native_model_kind: Option<&'a str>,
+    features: &mut LoweringFeatures,
+) -> Result<BindingOp<'a>, L2Refusal> {
+    match element_type {
+        ElementType::Component => lower_component_model(allocator, directive, features),
+        ElementType::Element => {
+            let Some(element_kind) = native_model_kind else {
+                return Err(L2Refusal::Directive);
+            };
+            lower_native_model(allocator, directive, element_kind, features)
+        }
+        _ => Err(L2Refusal::Directive),
+    }
+}
+
+fn lower_component_model<'a>(
+    allocator: &'a Allocator,
+    directive: &DirectiveNode<'a>,
+    features: &mut LoweringFeatures,
+) -> Result<BindingOp<'a>, L2Refusal> {
+    let Some(expression) = directive.exp.as_ref() else {
+        return Err(L2Refusal::Directive);
+    };
+
+    let value = lower_expression(allocator, expression)?;
+    let argument = lower_dynamic_name(allocator, directive.arg.as_ref())?;
+    let mut attributes = Vec::new_in(&allocator);
+    attributes.push(Attribute {
+        name: "element-kind",
+        value: Some("component"),
+        span: directive.loc.span,
+    });
+    for modifier in &directive.modifiers {
+        attributes.push(Attribute {
+            name: modifier.content,
+            value: None,
+            span: modifier.loc.span,
+        });
+    }
+
+    *features = features.observing(OpFamily::Model);
+    Ok(model_op(allocator, directive, value, argument, attributes))
+}
+
+fn lower_native_model<'a>(
+    allocator: &'a Allocator,
+    directive: &DirectiveNode<'a>,
+    element_kind: &'a str,
+    features: &mut LoweringFeatures,
+) -> Result<BindingOp<'a>, L2Refusal> {
+    if directive.arg.is_some()
+        || !directive
+            .modifiers
+            .iter()
+            .all(|modifier| native_modifier_is_supported(modifier.content))
+    {
+        return Err(L2Refusal::Directive);
+    }
+    let Some(expression) = directive.exp.as_ref() else {
+        return Err(L2Refusal::Directive);
+    };
+    if is_jsx_model_tuple(expression) {
+        return Err(L2Refusal::Directive);
+    }
+
+    let value = lower_expression(allocator, expression)?;
+    let mut attributes = Vec::new_in(&allocator);
+    attributes.push(Attribute {
+        name: "element-kind",
+        value: Some(element_kind),
+        span: directive.loc.span,
+    });
+    for modifier in &directive.modifiers {
+        attributes.push(Attribute {
+            name: modifier.content,
+            value: None,
+            span: modifier.loc.span,
+        });
+    }
+
+    *features = features.observing(OpFamily::Model);
+    Ok(model_op(allocator, directive, value, None, attributes))
+}
+
+fn native_modifier_is_supported(modifier: &str) -> bool {
+    matches!(modifier, "lazy" | "number" | "trim")
+}
+
+fn is_jsx_model_tuple(expression: &ExpressionNode<'_>) -> bool {
+    matches!(expression, ExpressionNode::Simple(simple) if simple.content.trim_start().starts_with('['))
+}
+
+fn model_op<'a>(
+    allocator: &'a Allocator,
+    directive: &DirectiveNode<'a>,
+    value: ExprRef<'a>,
+    argument: Option<DynamicName<'a>>,
+    attributes: Vec<'a, Attribute<'a>>,
+) -> BindingOp<'a> {
+    BindingOp::Model(Box::new_in(
+        ModelOp {
+            contract: BindingContract {
+                read: value,
+                write: value,
+            },
+            argument,
+            attributes,
+            span: directive.loc.span,
+        },
+        &allocator,
+    ))
+}

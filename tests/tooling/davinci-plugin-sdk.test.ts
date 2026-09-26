@@ -1,5 +1,5 @@
 // P4-16 (charter #29): one real custom JS rule through vitrine's napi lane —
-// batched S2 visits, static fact demands, deterministic output, per-plugin
+// batched L2 visits, static fact demands, deterministic output, per-plugin
 // cost in the lint output, content-keyed results. Needs the native build
 // (`build:native:test`, which `test:scripts` runs first).
 import assert from "node:assert/strict";

@@ -6,7 +6,7 @@
 
 use alloc::vec::Vec;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::{DeclarationId, Facet, Fingerprint, SfcSummary, SummaryError};
 

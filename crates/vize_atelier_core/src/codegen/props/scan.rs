@@ -6,7 +6,7 @@ use crate::{DirectiveNode, ExpressionNode, PropNode};
 use super::super::context::CodegenContext;
 use super::directives::is_supported_directive;
 use super::events::get_von_event_key;
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 #[derive(Default)]
 pub(super) struct EventNameCounts {

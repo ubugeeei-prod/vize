@@ -1,6 +1,6 @@
 //! `v-for`, and the single-binding scope patterned templates lower to.
 
-use vize_s0::{Box, Vec};
+use vize_l0::{Box, Vec};
 
 use crate::errors::ErrorCode;
 use crate::{ExpressionNode, ForNode, ForParseResult, RuntimeHelper, TemplateChildNode};

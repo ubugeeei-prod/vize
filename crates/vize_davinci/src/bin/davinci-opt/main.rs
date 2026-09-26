@@ -63,9 +63,10 @@ use vize_davinci::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, RemarkCollector,
     TimingObserver, parse_pipelines, pipeline::PipelineSpec, print_pipelines, run_pipeline,
 };
-use vize_s0::String;
+use vize_davinci::stage::{pipeline_display_id, pipeline_wire_id};
+use vize_l0::String;
 
-const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio";
+const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio\nPipeline selectors: l0..l4, l1-to-l2, l2-to-l3 (legacy s names accepted).";
 
 /// The stage list every stage-related message reports, alphabetical.
 const STAGES: &str = "budget-observer, croquis, remarks";
@@ -166,7 +167,7 @@ fn build_plans(segments: &[PipelineSpec<'_>]) -> Vec<Pipeline> {
                     )
                 })
                 .collect();
-            Pipeline::new(leak(segment.stage), passes.leak())
+            Pipeline::new(leak(pipeline_wire_id(segment.stage)), passes.leak())
         })
         .collect()
 }
@@ -207,7 +208,7 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
     // (P2-3); the profiler is enabled only when the export was asked for, so
     // without --timing-json the observer costs one atomic load per walk.
     if args.timing_json.is_some() {
-        let profiler = vize_s0::profiler::global_profiler();
+        let profiler = vize_l0::profiler::global_profiler();
         profiler.clear();
         profiler.enable();
     }
@@ -240,9 +241,16 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
     }
     let Pair(Pair(_, budget), remarks) = observers;
     let log = RemarkLog::new(remarks.finish());
+    let display_segments: Vec<PipelineSpec<'_>> = segments
+        .iter()
+        .map(|segment| PipelineSpec {
+            stage: pipeline_display_id(segment.stage),
+            passes: segment.passes.clone(),
+        })
+        .collect();
     eprintln!(
         "davinci-opt: pipeline {}: walks={} passes={}",
-        print_pipelines(&segments),
+        print_pipelines(&display_segments),
         budget.walks,
         budget.passes,
     );
@@ -259,7 +267,7 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
     }
     if let Some(path) = args.timing_json.as_deref() {
         let result = export::write_timing(path);
-        vize_s0::profiler::global_profiler().disable();
+        vize_l0::profiler::global_profiler().disable();
         if let Err(message) = result {
             eprintln!("davinci-opt: {message}");
             return ExitCode::from(1);

@@ -36,26 +36,26 @@ function parseSurfaceRows(tsv) {
   });
 }
 
-function expectCompilerS0PreferredRow(compiler, relPath, mode, sites) {
+function expectCompilerL0PreferredRow(compiler, relPath, mode, sites) {
   const row = compiler.fileRows.find(
     (candidate) => candidate.relPath === relPath && candidate.mode === mode,
   );
   assert.ok(row, `${relPath} (${mode})`);
-  assert.equal(row.surfaceCounts.s0, sites, relPath);
-  assert.equal(row.surfaceNameCounts.s0.vize_s0, sites, relPath);
-  assert.equal(row.surfaceNameCounts.s0.vize_carton ?? 0, 0, relPath);
+  assert.equal(row.surfaceCounts.l0, sites, relPath);
+  assert.equal(row.surfaceNameCounts.l0.vize_l0, sites, relPath);
+  assert.equal(row.surfaceNameCounts.l0.vize_carton ?? 0, 0, relPath);
 }
 
 void test("consumer migration scan classifies stage physical names separately from code names", () => {
-  const s0 = SURFACES.find((surface) => surface.id === "s0");
+  const s0 = SURFACES.find((surface) => surface.id === "l0");
   assert.ok(s0);
-  assert.equal(s0.label, "S0");
-  assert.equal(surfaceNameKind(s0, "vize_s0"), "preferred");
+  assert.equal(s0.label, "L0");
+  assert.equal(surfaceNameKind(s0, "vize_l0"), "preferred");
   assert.equal(surfaceNameKind(s0, "vize_carton"), "compat");
   const stageSurfaces = SURFACES.filter((surface) => surface.group === "stage");
   assert.deepEqual(
     stageSurfaces.map((surface) => surface.label),
-    ["Davinci", "S0", "S1", "S2", "S1->S2"],
+    ["Davinci", "L0", "L1", "L2", "L1->L2"],
   );
   assert.ok(stageSurfaces.every((surface) => !surface.label.includes("/")));
   const rawOxc = SURFACES.find((surface) => surface.id === "raw_oxc");
@@ -90,31 +90,31 @@ void test("consumer migration TSV exposes matched names and name kind", () => {
   assert.ok(
     rows.some(
       (row) =>
-        row.surface_id === "s0" && row.matched_name === "vize_s0" && row.name_kind === "preferred",
+        row.surface_id === "l0" && row.matched_name === "vize_l0" && row.name_kind === "preferred",
     ),
   );
 
   const physicalLabels = new Map([
-    ["s0", "S0"],
-    ["s1", "S1"],
-    ["s2", "S2"],
-    ["s1_to_s2", "S1->S2"],
+    ["l0", "L0"],
+    ["l1", "L1"],
+    ["l2", "L2"],
+    ["l1_to_l2", "L1->L2"],
   ]);
   for (const row of rows.filter((row) => physicalLabels.has(row.surface_id))) {
     assert.equal(row.surface_group, "stage");
     assert.equal(row.surface, physicalLabels.get(row.surface_id));
   }
-  for (const legacyLabel of ["S0/carton", "S1/sinopia", "S2/disegno", "S1->S2/ricalco"]) {
+  for (const legacyLabel of ["L0/carton", "L1/sinopia", "L2/disegno", "L1->L2/ricalco"]) {
     assert.ok(!rows.some((row) => row.surface === legacyLabel), legacyLabel);
   }
 });
 
 void test("consumer migration TSV serializes every stage label and name class", () => {
   const stages = [
-    { id: "s0", label: "S0", preferred: "vize_s0", compat: "vize_carton" },
-    { id: "s1", label: "S1", preferred: "vize_s1", compat: "vize_sinopia" },
-    { id: "s2", label: "S2", preferred: "vize_s2", compat: "vize_disegno" },
-    { id: "s1_to_s2", label: "S1->S2", preferred: "vize_s1_to_s2", compat: "vize_ricalco" },
+    { id: "l0", label: "L0", preferred: "vize_l0", compat: "vize_carton" },
+    { id: "l1", label: "L1", preferred: "vize_l1", compat: "vize_sinopia" },
+    { id: "l2", label: "L2", preferred: "vize_l2", compat: "vize_disegno" },
+    { id: "l1_to_l2", label: "L1->L2", preferred: "vize_l1_to_l2", compat: "vize_ricalco" },
   ];
   const surfaceNameCounts = Object.fromEntries(SURFACES.map((surface) => [surface.id, {}]));
   for (const stage of stages) {
@@ -164,12 +164,12 @@ void test("consumer migration TSV serializes every stage label and name class", 
   }
 });
 
-void test("Atelier core emit codegen imports S0 through the preferred physical name", () => {
+void test("Atelier core emit codegen imports L0 through the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
 
-  expectCompilerS0PreferredRow(
+  expectCompilerL0PreferredRow(
     compiler,
     "crates/vize_atelier_core/src/codegen/emit.rs",
     "source",
@@ -177,7 +177,7 @@ void test("Atelier core emit codegen imports S0 through the preferred physical n
   );
 });
 
-void test("Atelier core expression codegen imports S0 through the preferred physical name", () => {
+void test("Atelier core expression codegen imports L0 through the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
@@ -192,11 +192,11 @@ void test("Atelier core expression codegen imports S0 through the preferred phys
     ["crates/vize_atelier_core/src/codegen/expression/scope_prefix.rs", "source", 1],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
-    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+    expectCompilerL0PreferredRow(compiler, relPath, mode, sites);
   }
 });
 
-void test("Atelier core generate codegen imports S0 through the preferred physical name", () => {
+void test("Atelier core generate codegen imports L0 through the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
@@ -207,16 +207,16 @@ void test("Atelier core generate codegen imports S0 through the preferred physic
     ["crates/vize_atelier_core/src/codegen/generate/static_vnode.rs", "source", 4],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
-    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+    expectCompilerL0PreferredRow(compiler, relPath, mode, sites);
   }
 });
 
-void test("Atelier core node codegen imports S0 through the preferred physical name", () => {
+void test("Atelier core node codegen imports L0 through the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
 
-  expectCompilerS0PreferredRow(
+  expectCompilerL0PreferredRow(
     compiler,
     "crates/vize_atelier_core/src/codegen/node.rs",
     "source",
@@ -224,7 +224,7 @@ void test("Atelier core node codegen imports S0 through the preferred physical n
   );
 });
 
-void test("Atelier core helper codegen imports S0 through the preferred physical name", () => {
+void test("Atelier core helper codegen imports L0 through the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
@@ -234,11 +234,11 @@ void test("Atelier core helper codegen imports S0 through the preferred physical
     ["crates/vize_atelier_core/src/codegen/helpers/constant_expression.rs", "source", 3],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
-    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+    expectCompilerL0PreferredRow(compiler, relPath, mode, sites);
   }
 });
 
-void test("Atelier core patch flag codegen imports S0 through the preferred physical name", () => {
+void test("Atelier core patch flag codegen imports L0 through the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
@@ -248,11 +248,11 @@ void test("Atelier core patch flag codegen imports S0 through the preferred phys
     ["crates/vize_atelier_core/src/codegen/patch_flag/static_literal.rs", "source", 1],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
-    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+    expectCompilerL0PreferredRow(compiler, relPath, mode, sites);
   }
 });
 
-void test("Atelier core singleton and element step slices import S0 through the preferred name", () => {
+void test("Atelier core singleton and element step slices import L0 through the preferred name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
@@ -268,11 +268,11 @@ void test("Atelier core singleton and element step slices import S0 through the 
     ["crates/vize_atelier_core/src/steps/element.rs", "test", 1],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
-    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+    expectCompilerL0PreferredRow(compiler, relPath, mode, sites);
   }
 });
 
-void test("Atelier core lane element imports S0 through the preferred physical name", () => {
+void test("Atelier core lane element imports L0 through the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const compiler = scan.consumers.find((consumer) => consumer.id === "compiler");
   assert.ok(compiler);
@@ -288,7 +288,7 @@ void test("Atelier core lane element imports S0 through the preferred physical n
     ["crates/vize_atelier_core/src/lane/traverse.rs", "source", 3],
   ];
   for (const [relPath, mode, sites] of expectedRows) {
-    expectCompilerS0PreferredRow(compiler, relPath, mode, sites);
+    expectCompilerL0PreferredRow(compiler, relPath, mode, sites);
   }
 });
 
@@ -320,31 +320,31 @@ void test("consumer migration scan keeps every rollout consumer and surface clas
   }
 });
 
-void test("content-mapper S0 surface stays on the preferred physical name", () => {
+void test("content-mapper L0 surface stays on the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const contentMapper = scan.consumers.find(
     (consumer) => consumer.id === "typechecker-content-mapper",
   );
   assert.ok(contentMapper);
-  assert.equal(contentMapper.surfaceCounts.s0, 9);
+  assert.equal(contentMapper.surfaceCounts.l0, 9);
   assert.equal(contentMapper.nameKindCounts.compat, 0);
   assert.equal(contentMapper.nameKindCounts.preferred, 9);
   assert.ok(
     contentMapper.sites
-      .filter((site) => site.surfaceId === "s0")
-      .every((site) => site.matchedName === "vize_s0" && site.nameKind === "preferred"),
+      .filter((site) => site.surfaceId === "l0")
+      .every((site) => site.matchedName === "vize_l0" && site.nameKind === "preferred"),
   );
 });
 
-void test("LSP S0 surface stays on the preferred physical name", () => {
+void test("LSP L0 surface stays on the preferred physical name", () => {
   const scan = scanConsumerMigrationSurfaces();
   const lsp = scan.consumers.find((consumer) => consumer.id === "lsp");
   assert.ok(lsp);
   assert.equal(lsp.nameKindCounts.compat, 0);
-  assert.ok(lsp.nameKindCounts.preferred > 0, "LSP should keep importing S0 explicitly");
+  assert.ok(lsp.nameKindCounts.preferred > 0, "LSP should keep importing L0 explicitly");
   assert.ok(
     lsp.sites
-      .filter((site) => site.surfaceId === "s0")
-      .every((site) => site.matchedName === "vize_s0" && site.nameKind === "preferred"),
+      .filter((site) => site.surfaceId === "l0")
+      .every((site) => site.matchedName === "vize_l0" && site.nameKind === "preferred"),
   );
 });

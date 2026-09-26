@@ -10,7 +10,7 @@ DOM patch-site list against the shipped DOM lane.
 
 The durable witnesses are:
 
-- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_slots.rs)
+- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_slots.rs)
   - extracts shipped and S2 `createSlots` patch sites and compares them per
     node.
 - [`consumer-migration-surfaces.md`](../../consumer-migration-surfaces.md)

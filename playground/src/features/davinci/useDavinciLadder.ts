@@ -36,7 +36,7 @@ import { remarksAt, type SpolveroRemark } from "./remarks";
 import { parseProvenance, recordsForNode } from "./provenance";
 import { graphLineKinds, partitionKinds } from "./partition";
 
-export type StageId = RungId | "s4";
+export type StageId = RungId | "l4";
 export type OutputTarget = "dom" | "vapor" | "ssr";
 /** What the stage body shows: the page, its diff, the remarks, or the flame view. */
 export type PageView = "page" | "diff" | "remarks" | "flame";
@@ -70,7 +70,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     baseline.value = null;
   }
 
-  const stage = ref<StageId>("s2");
+  const stage = ref<StageId>("l2");
   const pageKeys = ref<Partial<Record<RungId, string>>>({});
   const outputTarget = ref<OutputTarget>("dom");
   const selectedLine = ref<number | null>(null);
@@ -81,7 +81,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
   const remarks = computed<SpolveroRemark[]>(() => ladder.value?.remarks ?? []);
 
   const rung = computed(() =>
-    stage.value === "s4" ? null : (ladder.value?.rungs.find((r) => r.id === stage.value) ?? null),
+    stage.value === "l4" ? null : (ladder.value?.rungs.find((r) => r.id === stage.value) ?? null),
   );
   const page = computed(() => {
     const current = rung.value;
@@ -90,7 +90,7 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
     return current.pages.find((p) => p.key === key) ?? current.pages[0];
   });
   const lines = computed(() => (page.value ? folioLines(page.value.kind, page.value.text) : []));
-  /** On the S3 graph page, each op line's exported static/dynamic partition. */
+  /** On the L3 graph page, each op line's exported static/dynamic partition. */
   const lineMarks = computed(() => {
     const shown = page.value;
     const partition = rung.value?.pages.find((p) => p.kind === "partition");
@@ -118,17 +118,17 @@ export function useDavinciLadder(getCompiler: () => WasmModule | null) {
 
   const focusLine = computed(() => hoveredLine.value ?? selectedLine.value);
   const provenance = computed(() => {
-    const s2 = ladder.value?.rungs.find((r) => r.id === "s2");
+    const s2 = ladder.value?.rungs.find((r) => r.id === "l2");
     const page = s2?.pages.find((p) => p.kind === "provenance");
     return page ? parseProvenance(page.text) : [];
   });
-  /** Why the focused S2 op exists: its lowering record, then pass facts. */
+  /** Why the focused L2 op exists: its lowering record, then pass facts. */
   const focusProvenance = computed(() => {
     const index = focusLine.value;
     const node = index === null ? null : (lines.value[index]?.node ?? null);
     return node === null ? [] : recordsForNode(provenance.value, node);
   });
-  /** What the passes said about the focused S2 op (remarks at its span). */
+  /** What the passes said about the focused L2 op (remarks at its span). */
   const focusRemarks = computed(() => {
     const index = focusLine.value;
     const line = index === null ? null : lines.value[index];

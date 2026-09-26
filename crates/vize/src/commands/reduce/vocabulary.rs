@@ -1,8 +1,8 @@
-//! The S1-subtree deletion vocabulary (P3-14): every node and attribute of
+//! The L1-subtree deletion vocabulary (P3-14): every node and attribute of
 //! the artifact's lossless surface tree, as the byte range whose removal
 //! deletes exactly that subtree.
 //!
-//! S1 renders back to its input byte for byte (TS-19) and parses any input
+//! L1 renders back to its input byte for byte (TS-19) and parses any input
 //! (hole policy), so deleting a node's bytes always leaves a re-parseable,
 //! re-printable artifact — the property llvm-reduce's IR-aware passes buy
 //! with a verifier, bought here by the stage's own contract. A node's range
@@ -17,13 +17,13 @@
 
 use std::ops::Range;
 
-use vize_s0::{Allocator, String};
-use vize_s1::{Attribute, Element, ElementClose, SurfaceChild, Token};
+use vize_l0::{Allocator, String};
+use vize_l1::{Attribute, Element, ElementClose, SurfaceChild, Token};
 
 /// Every deletion candidate of `source`, in pre-order.
 pub(crate) fn candidates(source: &str) -> Vec<Range<usize>> {
     let allocator = Allocator::default();
-    let (tree, _errors) = vize_s1::parse(&allocator, source);
+    let (tree, _errors) = vize_l1::parse(&allocator, source);
     let mut out = Vec::new();
     let base = Base(source.as_ptr() as usize);
     children(&tree.children, base, &mut out);
@@ -31,7 +31,7 @@ pub(crate) fn candidates(source: &str) -> Vec<Range<usize>> {
 }
 
 /// Offset arithmetic against the parsed source: every token slice points
-/// into it (S1 owns no strings).
+/// into it (L1 owns no strings).
 #[derive(Clone, Copy)]
 struct Base(usize);
 

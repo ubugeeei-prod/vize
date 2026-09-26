@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use vize_s0::String as CompactString;
+use vize_l0::String as CompactString;
 
 use crate::virtual_ts::to_safe_identifier;
 

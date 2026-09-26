@@ -8,7 +8,7 @@
 use std::ops::Range;
 
 use vize_atelier_sfc::SfcTemplateBlock;
-use vize_s0::String as CompactString;
+use vize_l0::String as CompactString;
 
 use crate::template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticDirectives};
 

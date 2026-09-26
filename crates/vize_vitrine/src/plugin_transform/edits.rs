@@ -5,10 +5,10 @@ use super::{
 };
 use std::collections::BTreeSet;
 use vize_davinci::id::NodeId;
-use vize_s0::Allocator;
-use vize_s1_to_s2::Lowered;
-use vize_s2::op::Op;
-use vize_s2::provenance::ProvenanceRecord;
+use vize_l0::Allocator;
+use vize_l1_to_l2::Lowered;
+use vize_l2::op::Op;
+use vize_l2::provenance::ProvenanceRecord;
 
 pub(super) fn decode(json: &str) -> Result<Reply> {
     if json.len() > 1_048_576 {
@@ -76,7 +76,7 @@ fn allowed(name: &str) -> bool {
     simple || prefixed
 }
 
-/// Allocate semantic strings as authored entity-encoded S2 attribute values.
+/// Allocate semantic strings as authored entity-encoded L2 attribute values.
 /// The canonical consumer performs its ordinary one decoding step.
 fn encoded<'a>(allocator: &'a Allocator, value: &str) -> &'a str {
     let encoded = value
@@ -94,7 +94,7 @@ pub(super) struct Applied {
     pub value: Option<String>,
 }
 
-/// Called only after all edits validate, so a rejected reply leaves S2 intact.
+/// Called only after all edits validate, so a rejected reply leaves L2 intact.
 pub(super) fn apply(lowered: &mut Lowered<'_>, reply: &Reply, plugin: &str) -> Vec<Applied> {
     let allocator = lowered.allocator;
     let mut applied = Vec::new();

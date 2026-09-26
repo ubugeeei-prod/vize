@@ -18,7 +18,7 @@ use corsa::{
 };
 use lsp_types::Diagnostic;
 use serde_json::Value;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 mod bootstrap;
 mod canon_document;
@@ -222,7 +222,7 @@ impl CorsaProjectClient {
     }
 }
 
-fn next_overlay_version(versions: &mut vize_s0::FxHashMap<String, i32>, uri: &str) -> i32 {
+fn next_overlay_version(versions: &mut vize_l0::FxHashMap<String, i32>, uri: &str) -> i32 {
     let next = versions.get(uri).copied().unwrap_or(0).saturating_add(1);
     versions.insert(uri.into(), next);
     next
@@ -294,7 +294,7 @@ fn remove_session_document(external_uri: &str, document_uri: &str) -> Option<Fil
 }
 
 pub(super) fn line_character_to_utf16_offset(text: &str, line: u32, character: u32) -> u32 {
-    let start = vize_s0::line_index::LineBreaks::Lsp
+    let start = vize_l0::line_index::LineBreaks::Lsp
         .line_starts(text)
         .nth(line as usize)
         .unwrap_or(text.len());

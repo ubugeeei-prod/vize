@@ -6,17 +6,17 @@
 //!    versioned-refusal pattern) — before the text is parsed at all;
 //! 2. each page parses and is canonical (`print(parse(text)) == text`), so
 //!    one tree has one spelling on the wire;
-//! 3. the S1 page's tokens tile the block source exactly;
+//! 3. the L1 page's tokens tile the block source exactly;
 //! 4. every diagnostic span, and every part's span, lies inside the block.
 
 use core::fmt;
 
 use vize_davinci::diagnostic as davinci;
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
-use vize_s0::String;
-use vize_s2::folio::S2Folio;
+use vize_l0::String;
+use vize_l2::folio::L2Folio;
 
-use crate::contract::{LoweredBlock, Page, S1_PAGE_SCHEMA, S2_PAGE_SCHEMA, SourceBlock, Span};
+use crate::contract::{L1_PAGE_SCHEMA, L2_PAGE_SCHEMA, LoweredBlock, Page, SourceBlock, Span};
 use crate::surface_page::{SurfacePage, TileError};
 
 /// A guest answer the host accepted, with the pages parsed.
@@ -24,10 +24,10 @@ use crate::surface_page::{SurfacePage, TileError};
 pub struct Accepted {
     /// The answer exactly as the guest serialized it.
     pub lowered: LoweredBlock,
-    /// The parsed S1 page; it tiles the block source.
+    /// The parsed L1 page; it tiles the block source.
     pub surface: SurfacePage,
-    /// The parsed S2 page.
-    pub semantic: S2Folio,
+    /// The parsed L2 page.
+    pub semantic: L2Folio,
     /// The diagnostics in the in-tree channel's type.
     pub diagnostics: Vec<davinci::Diagnostic>,
 }
@@ -49,7 +49,7 @@ pub enum AcceptError {
     /// A page parses but is not in canonical form; `at` is the first byte
     /// where its text and the canonical reprint differ.
     NotCanonical { page: &'static str, at: usize },
-    /// The S1 page does not tile the block source.
+    /// The L1 page does not tile the block source.
     Tiles(TileError),
     /// Diagnostic `index` (or one of its parts) points outside the block.
     DiagnosticSpan {
@@ -89,8 +89,8 @@ impl fmt::Display for AcceptError {
 ///
 /// The first check the answer fails, as an [`AcceptError`].
 pub fn accept(block: &SourceBlock, lowered: LoweredBlock) -> Result<Accepted, AcceptError> {
-    let surface: SurfacePage = read_page("s1-page", S1_PAGE_SCHEMA, &lowered.surface)?;
-    let semantic: S2Folio = read_page("s2-page", S2_PAGE_SCHEMA, &lowered.semantic)?;
+    let surface: SurfacePage = read_page("s1-page", L1_PAGE_SCHEMA, &lowered.surface)?;
+    let semantic: L2Folio = read_page("s2-page", L2_PAGE_SCHEMA, &lowered.semantic)?;
     surface
         .check_tiles(&block.source)
         .map_err(AcceptError::Tiles)?;

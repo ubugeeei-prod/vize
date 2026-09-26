@@ -2,8 +2,8 @@
 //!
 //! The first-party tier answers through the same session and acceptance as
 //! an external guest. Over the TS-19 battery (and every golden case) the
-//! serialized answer carries the in-tree boundary exactly: the S1 page
-//! rebuilds the parsed tree, the S2 page is the lowered op tree's folio,
+//! serialized answer carries the in-tree boundary exactly: the L1 page
+//! rebuilds the parsed tree, the L2 page is the lowered op tree's folio,
 //! the diagnostics convert back to the in-tree channel unchanged, and the
 //! out-of-process wire's JSON round-trips every value. The committed
 //! goldens that the TS-48 echo guest replays are pinned to this output.
@@ -20,9 +20,9 @@ mod support;
 use davinci_test_support::surface_fixture::{MALFORMED, WELL_FORMED};
 use vize_extension_host::vue::VueDialect;
 use vize_extension_host::{LoweredBlock, Session, SourceBlock, SurfacePage};
-use vize_s0::{Allocator, SourceRoot, String};
-use vize_s1_to_s2::lower_source_block;
-use vize_s2::folio::S2Folio;
+use vize_l0::{Allocator, SourceRoot, String};
+use vize_l1_to_l2::lower_source_block;
+use vize_l2::folio::L2Folio;
 
 use support::{BLESS_ENV, CASES, golden_texts};
 
@@ -58,7 +58,7 @@ fn assert_lossless(source: &str, base: u32, context: &str) {
     let slice = &root_text[base as usize..];
     let frame = root.block(slice, base).expect("own slice");
     let allocator = Allocator::new();
-    let (tree, errors) = vize_s1::parse(&allocator, slice);
+    let (tree, errors) = vize_l1::parse(&allocator, slice);
     let lowered = lower_source_block(&allocator, &tree, &errors, frame);
 
     assert_eq!(
@@ -78,7 +78,7 @@ fn assert_lossless(source: &str, base: u32, context: &str) {
     );
     assert_eq!(
         accepted.semantic,
-        S2Folio::of(&lowered.root.ops),
+        L2Folio::of(&lowered.root.ops),
         "s2 page: {context}"
     );
     assert_eq!(

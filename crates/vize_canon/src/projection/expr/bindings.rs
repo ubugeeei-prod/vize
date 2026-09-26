@@ -1,11 +1,11 @@
-//! Value-bearing bindings projected through the same S4 emission document.
+//! Value-bearing bindings projected through the same L4 emission document.
 //!
 //! Declaration patterns (`v-slot` params and `v-for` aliases) belong to scope
 //! emission, not expression rows. A model's read and write currently share
 //! one authored expression; emit that expression once, not a synthetic setter.
 
 use super::{EmitDocument, ExprDialect, project_expr, project_name};
-use vize_s2::op::BindingOp;
+use vize_l2::op::BindingOp;
 
 pub(super) fn project_bindings<D: ExprDialect>(
     document: &mut EmitDocument,

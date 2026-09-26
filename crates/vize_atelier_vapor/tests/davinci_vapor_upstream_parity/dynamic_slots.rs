@@ -1,5 +1,5 @@
 //! Computed outlet names switch supplied slots and fallback lifetimes through
-//! the native S3 path and the pinned official compiler under the same runtime.
+//! the native L3 path and the pinned official compiler under the same runtime.
 
 use serde_json::{Value, json};
 use vize_atelier_core::walk_probe::WalkCounts;
@@ -83,7 +83,7 @@ fn computed_names_match_official_slot_updates_and_fallback_lifetimes() {
         assert_eq!(
             WalkCounts::snapshot().since(before).total_walks(),
             0,
-            "{case}: native S3"
+            "{case}: native L3"
         );
         insta::assert_snapshot!(format!("dynamic_outlet_{case}"), compiled.code);
         let mut slots = serde_json::Map::new();
@@ -103,7 +103,7 @@ fn computed_names_match_official_slot_updates_and_fallback_lifetimes() {
                 "source": source, "context": context, "steps": steps, "slots": slots,
             }),
         );
-        assert_eq!(vize, expected, "{case}: Vize S3");
+        assert_eq!(vize, expected, "{case}: Vize L3");
         assert_eq!(upstream, expected, "{case}: official Vapor");
     }
 }

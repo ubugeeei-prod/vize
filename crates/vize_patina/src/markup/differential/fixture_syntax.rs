@@ -4,7 +4,7 @@
 //! are decoded with Rust's cooked escapes (`\xNN`, `\u{...}`, continuation).
 //! A textual comma search stops inside `make_rule(a, b)` and drops the template.
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::fixture_cursor::Cursor;
 

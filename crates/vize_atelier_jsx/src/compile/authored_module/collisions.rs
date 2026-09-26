@@ -9,7 +9,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::Visit;
 use oxc_semantic::{Scoping, SemanticBuilder};
-use vize_s0::FxHashMap;
+use vize_l0::FxHashMap;
 
 pub(super) fn check(
     components: &[JsxComponent],
@@ -32,7 +32,7 @@ pub(super) fn check(
     for (name, &(start, end)) in &bindings.names {
         if helpers.names.contains_key(name) {
             return Err(JsxDiagnostic::error(
-                vize_s0::cstr!(
+                vize_l0::cstr!(
                     "JSX authored binding `{name}` shadows a generated runtime helper; rename the binding"
                 ),
                 start,
@@ -58,7 +58,7 @@ pub(super) fn check(
         }
         if let Some((name, start, end)) = missing {
             return Err(JsxDiagnostic::error(
-                vize_s0::cstr!("JSX authored reference `{name}` is shadowed by a generated renderer binding; rename the reference"), start, end,
+                vize_l0::cstr!("JSX authored reference `{name}` is shadowed by a generated renderer binding; rename the reference"), start, end,
             ));
         }
         renderer(&parsed)

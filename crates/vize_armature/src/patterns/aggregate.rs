@@ -1,6 +1,6 @@
 use oxc_span::Span;
 use oxc_syntax::number::ToJsString;
-use vize_s0::{FxHashSet, cstr};
+use vize_l0::{FxHashSet, cstr};
 
 use super::{
     MatchPattern, PatternExpression, PatternKind, PatternProperty, PatternRest,

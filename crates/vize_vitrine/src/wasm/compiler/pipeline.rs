@@ -12,7 +12,7 @@ use vize_atelier_vapor::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions,
     compile_vapor_with_custom_elements_template_syntax_and_experimental_options,
 };
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use super::{compiler_codegen_experimental_options, compiler_codegen_options, self_component_name};
 use crate::wasm::ast::build_ast_json;

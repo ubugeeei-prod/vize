@@ -1,6 +1,6 @@
 use super::{block_indent, opening_tag, write_attr, write_remaining_attrs};
 use crate::{error::FormatError, options::FormatOptions, script};
-use vize_s0::{Allocator, ToCompactString};
+use vize_l0::{Allocator, ToCompactString};
 
 pub(super) fn write_script_block(
     output: &mut Vec<u8>,

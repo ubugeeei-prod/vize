@@ -14,7 +14,7 @@
 //! Richer, structure-aware formatting is a follow-up that needs real parsers.
 
 use vize_glyph::FormatResult;
-use vize_s0::String;
+use vize_l0::String;
 
 /// Format a YAML document (lossless newline normalization).
 pub(super) fn format_yaml(source: &str) -> FormatResult {

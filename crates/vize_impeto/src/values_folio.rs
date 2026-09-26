@@ -1,4 +1,4 @@
-//! Owned value page paired with the graph-only `S3Folio` view.
+//! Owned value page paired with the graph-only `L3Folio` view.
 //! JSON tuples keep arbitrary authored strings line-atomic without inventing
 //! another quoting grammar. Tuple equality is document equality only.
 
@@ -6,7 +6,7 @@ use alloc::vec::Vec;
 use core::fmt;
 use vize_davinci::folio::value::FolioValue;
 use vize_davinci::folio::{Folio, FolioError};
-use vize_s0::{Span, String, cstr};
+use vize_l0::{Span, String, cstr};
 
 use crate::op::Program;
 use crate::operand::{OperandRole, OperandValue, ValueKind};
@@ -29,11 +29,12 @@ pub type OperandRow = (
 pub struct FolioOperand(pub OperandRow);
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-pub struct S3ValuesFolio {
+#[folio(name = "s3-values-folio")]
+pub struct L3ValuesFolio {
     pub operands: Vec<FolioOperand>,
 }
 
-impl S3ValuesFolio {
+impl L3ValuesFolio {
     #[must_use]
     pub fn of(program: &Program<'_>) -> Self {
         Self {
@@ -69,13 +70,13 @@ impl FolioValue for FolioOperand {
     fn parse_value(text: &str, line: usize) -> Result<Self, FolioError> {
         let text = text
             .strip_prefix("operand=")
-            .ok_or_else(|| FolioError::new(line, cstr!("S3 value row must start with operand=")))?;
+            .ok_or_else(|| FolioError::new(line, cstr!("L3 value row must start with operand=")))?;
         let row: OperandRow = serde_json::from_str(text)
-            .map_err(|error| FolioError::new(line, cstr!("invalid S3 operand: {error}")))?;
+            .map_err(|error| FolioError::new(line, cstr!("invalid L3 operand: {error}")))?;
         let role = OperandRole::parse(&row.1)
-            .ok_or_else(|| FolioError::new(line, cstr!("unknown S3 operand role")))?;
+            .ok_or_else(|| FolioError::new(line, cstr!("unknown L3 operand role")))?;
         let kind = ValueKind::parse(&row.5)
-            .ok_or_else(|| FolioError::new(line, cstr!("unknown S3 value kind")))?;
+            .ok_or_else(|| FolioError::new(line, cstr!("unknown L3 value kind")))?;
         let value = OperandValue {
             kind,
             text: &row.6,
@@ -83,7 +84,7 @@ impl FolioValue for FolioOperand {
             span: Span::new(row.8, row.9),
         };
         if !value.is_well_formed() {
-            return Err(FolioError::new(line, cstr!("malformed S3 operand value")));
+            return Err(FolioError::new(line, cstr!("malformed L3 operand value")));
         }
         if !role.accepts_target(row.2.is_some())
             || row.4.is_some()
@@ -93,7 +94,7 @@ impl FolioValue for FolioOperand {
         {
             return Err(FolioError::new(
                 line,
-                cstr!("malformed S3 operand references"),
+                cstr!("malformed L3 operand references"),
             ));
         }
         Ok(Self(row))

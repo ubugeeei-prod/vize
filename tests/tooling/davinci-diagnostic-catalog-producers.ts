@@ -1,4 +1,4 @@
-// Canon and S3 producer readers for the TS-53 catalog check. Split from
+// Canon and L3 producer readers for the TS-53 catalog check. Split from
 // davinci-diagnostic-catalog-sources.ts so both files stay under the
 // source-length budget.
 
@@ -93,13 +93,13 @@ export function croquisProblems(codes: string[], entries: Array<[string, Entry]>
   return problems;
 }
 
-/** `ViolationCode::as_str` arms: variant name to `S3V00N`. */
-export function parseS3Codes(): Map<string, string> {
+/** `ViolationCode::as_str` arms: variant name to `L3V00N`. */
+export function parseL3Codes(): Map<string, string> {
   const source = read("crates", "vize_impeto", "src", "verify", "violation.rs");
   return stringArms(block(source, "pub const fn as_str"), "Self");
 }
 
-/** S3 verifier codes missing a description or help entry in any locale. */
+/** L3 verifier codes missing a description or help entry in any locale. */
 export function s3Problems(codes: Map<string, string>, entries: Array<[string, Entry]>): string[] {
   const table = new Map(entries);
   const problems: string[] = [];

@@ -44,7 +44,7 @@ test("the storage aggregates are derived from the exact inventory, never hand-co
     ...first,
     storage: {
       ...first.storage,
-      s0String: { ...first.storage.s0String, boundUses: first.storage.s0String.boundUses + 1 },
+      l0String: { ...first.storage.l0String, boundUses: first.storage.l0String.boundUses + 1 },
     },
   };
   assert.notEqual(renderStorageSummary([moved, ...rest]), summary);
@@ -56,7 +56,7 @@ test("the storage aggregates are derived from the exact inventory, never hand-co
   // only in the generated summary so no second copy can drift or conflict.
   assert.equal(plan.includes("](./storage-summary.md)"), true);
   assert.doesNotMatch(plan, /^\|\s*(?:contract|analysis|lower|pass|emit)\s*\|\s*\d/mu);
-  assert.doesNotMatch(plan, /^\|\s*(?:infra|s1|s2|s3|s1_to_s2|s2_to_s3)\s*\|/mu);
+  assert.doesNotMatch(plan, /^\|\s*(?:infra|l1|l2|l3|l1_to_l2|l2_to_l3)\s*\|/mu);
   assert.doesNotMatch(plan, /contain \d+ production files/u);
   for (const category of Object.keys(categoryReasons)) {
     assert.match(plan, new RegExp(`^\\| ${category} +\\| [A-Z]`, "mu"));
@@ -88,7 +88,7 @@ test("the storage aggregates are derived from the exact inventory, never hand-co
   const scopeRows = new Map(
     [
       ...summary.matchAll(
-        /^\|\s*(infra|s1|s2|s3|s1_to_s2|s2_to_s3)\s*\|\s*`([^`]+)`\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/gmu,
+        /^\|\s*(infra|l1|l2|l3|l1_to_l2|l2_to_l3)\s*\|\s*`([^`]+)`\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|/gmu,
       ),
     ].map(([, scope, type, files, directPaths, boundUses]) => [
       `${scope}:${type}`,

@@ -10,7 +10,7 @@ use vize_davinci::summary::{
     AlphaEntry, AlphaPages, Facet, GlobalEntry, GlobalError, GlobalFacet, GlobalFacts,
     GlobalResolution, GlobalSummary, SfcSummary, Signature,
 };
-use vize_s0::String;
+use vize_l0::String;
 
 fn entry(name: &str, contract: &str) -> GlobalEntry {
     GlobalEntry {

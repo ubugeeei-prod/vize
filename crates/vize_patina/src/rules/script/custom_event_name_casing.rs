@@ -56,7 +56,7 @@ use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, Expression, Program, Statement, StringLiteral,
 };
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
-use vize_s0::CompactString;
+use vize_l0::CompactString;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/custom-event-name-casing",
@@ -249,7 +249,7 @@ fn report(
         EventNameCasing::KebabCase => "Rename this emitted event to kebab-case (e.g. `my-event`).",
     };
     let diagnostic = LintDiagnostic::error(META.name, message, start, end)
-        .with_label(vize_s0::cstr!("expected {casing_name}"), start, end)
+        .with_label(vize_l0::cstr!("expected {casing_name}"), start, end)
         .with_help(help);
     result.add_diagnostic(diagnostic);
 }

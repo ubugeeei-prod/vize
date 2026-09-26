@@ -19,7 +19,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 const REF_STUB: &str = "declare const currentUser: typeof import('./composables')['currentUser'];";
 
 fn generate(script: &str, template: &str, options: &VirtualTsOptions) -> String {
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -31,7 +31,7 @@ fn generate(script: &str, template: &str, options: &VirtualTsOptions) -> String 
 }
 
 fn generate_legacy(script: &str, template: &str, options: &VirtualTsOptions) -> String {
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
     analyzer.analyze_script_setup(script);
@@ -169,7 +169,7 @@ export default defineComponent({
     },
 })
 "#;
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, r#"<div>{{ currentUser.account }}</div>"#);
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full()).with_options_api();
     analyzer.analyze_script_plain(script);

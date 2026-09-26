@@ -2,10 +2,10 @@
 
 use oxc_ast::ast::{JSXChild, JSXExpression, JSXExpressionContainer, JSXSpreadChild};
 use oxc_span::GetSpan;
+use vize_l0::{Box, Vec};
 use vize_relief::{
     CompoundExpressionChild, CompoundExpressionNode, InterpolationNode, TemplateChildNode, TextNode,
 };
-use vize_s0::{Box, Vec};
 
 use super::Lowerer;
 

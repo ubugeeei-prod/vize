@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 
 use crate::text::{SegmentedText, TextWidth};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 /// Preedit text with cursor and segments.
 #[derive(Debug, Clone, Default)]

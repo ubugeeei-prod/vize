@@ -3,7 +3,7 @@
 use crate::diagnostic::{Verdict, WitnessKey};
 use crate::fact::FactError;
 use crate::pass::AnalysisId;
-use vize_s0::Span;
+use vize_l0::Span;
 
 /// Why a witness chain does not verify: the first failing link, by index in
 /// proof order, with the values that disagree — every variant is an exact

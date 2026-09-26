@@ -14,8 +14,8 @@
     reason = "tests assert by panicking"
 )]
 
+use vize_l0::String;
 use vize_patina::{Linter, OutputFormat, format_results};
-use vize_s0::String;
 
 const TYPED_RULES: [&str; 2] = ["type/require-typed-emits", "type/require-typed-props"];
 

@@ -12,7 +12,7 @@ use super::collect_virtual::{
     CorsaDocument, assemble_corsa_diagnostics, fetch_finished_diagnostics,
 };
 use vize_canon::{CorsaBridgeError, CorsaVueVirtualDocumentOptions};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 /// One attempt either yields diagnostics (possibly empty for non-Corsa
 /// reasons such as unsupported documents) or fails on a bridge call.

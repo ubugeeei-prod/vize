@@ -10,8 +10,8 @@ use vize_atelier_core::{
     options::{CodegenMode, CodegenOptions, TransformOptions},
 };
 use vize_davinci::pass::NoObserver;
-use vize_s0::Allocator;
-use vize_s1_to_s2::{DomEmitMode, DomEmitOptions};
+use vize_l0::Allocator;
+use vize_l1_to_l2::{DomEmitMode, DomEmitOptions};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct CompileOptions<'a> {
@@ -36,10 +36,10 @@ pub(crate) fn compile(
         return Err("transform input exceeds the source/plugin limit".into());
     }
     let allocator = Allocator::new();
-    let (tree, errors) = vize_s1::parse(&allocator, source);
-    let mut lowered = vize_s1_to_s2::lower(&allocator, &tree, &errors);
+    let (tree, errors) = vize_l1::parse(&allocator, source);
+    let mut lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     if !lowered.diagnostics.is_empty() {
-        return Err("transform requires a diagnostic-free S2 lowering".into());
+        return Err("transform requires a diagnostic-free L2 lowering".into());
     }
     // This original-source compatibility tree supplies the established maps.
     // Typed edits are mirrored before canonicalization; no edited string parse.
@@ -138,13 +138,13 @@ pub(crate) fn compile(
     // No analysis product exists before the hooks. Every pass observes the
     // edited native arena; stale hoist/slot/model products cannot survive.
     let profile = if options.hoist_static {
-        vize_s1_to_s2::pass::TransformProfile::DEFAULT
+        vize_l1_to_l2::pass::TransformProfile::DEFAULT
     } else {
-        vize_s1_to_s2::pass::TransformProfile::DEFAULT.without_static_analysis()
+        vize_l1_to_l2::pass::TransformProfile::DEFAULT.without_static_analysis()
     };
     let facts =
-        vize_s1_to_s2::pass::run_dom_transform_with_profile(&mut lowered, &mut NoObserver, profile);
-    let emitted = vize_s1_to_s2::emit_dom_with_options(
+        vize_l1_to_l2::pass::run_dom_transform_with_profile(&mut lowered, &mut NoObserver, profile);
+    let emitted = vize_l1_to_l2::emit_dom_with_options(
         &lowered,
         &facts,
         &DomEmitOptions {
@@ -154,7 +154,7 @@ pub(crate) fn compile(
             ..DomEmitOptions::DEFAULT
         },
     )
-    .map_err(|e| format!("transformed S2 emission rejected: {e:?}"))?;
+    .map_err(|e| format!("transformed L2 emission rejected: {e:?}"))?;
     let diagnostics = vize_atelier_core::transform(
         &allocator,
         &mut compat,
@@ -179,7 +179,7 @@ pub(crate) fn compile(
         },
     );
     if emitted.code != result.code || emitted.preamble != result.preamble {
-        return Err("transformed S2 output differs from the compatibility consumer".into());
+        return Err("transformed L2 output differs from the compatibility consumer".into());
     }
     for (key, reply) in audited {
         cache::put(key, reply, options.cache_dir);
@@ -199,7 +199,7 @@ fn mirror<'a>(
     children: &mut [TemplateChildNode<'a>],
     applied: &[edits::Applied],
 ) {
-    vize_s0::ensure_sufficient_stack(|| {
+    vize_l0::ensure_sufficient_stack(|| {
         for child in children {
             let TemplateChildNode::Element(element) = child else {
                 continue;

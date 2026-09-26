@@ -115,7 +115,7 @@ fn async_suspense_lifetimes_match_native_retained_and_official_vapor() {
     assert_eq!(
         WalkCounts::snapshot().since(before).total_walks(),
         0,
-        "native S3"
+        "native L3"
     );
     let retained = compile_vapor(
         &allocator,

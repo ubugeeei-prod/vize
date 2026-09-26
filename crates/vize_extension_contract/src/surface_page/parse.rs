@@ -1,4 +1,4 @@
-//! The S1 page parser.
+//! The L1 page parser.
 //!
 //! Lenient exactly where the printer normalizes — blank-line placement
 //! (separators vanish), the `bytes=` statement (validated as an integer,
@@ -11,7 +11,7 @@
 //! [`SurfacePage::check_tiles`]: super::SurfacePage::check_tiles
 
 use vize_davinci::folio::FolioError;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::{
     PageAttrValue, PageAttribute, PageClose, PageElement, PageInterpolation, PageNode, PageToken,

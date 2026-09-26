@@ -7,7 +7,7 @@ use std::{
 };
 
 use sha2::{Digest, Sha256};
-use vize_s0::String;
+use vize_l0::String;
 
 mod lease;
 mod ownership;
@@ -28,10 +28,10 @@ pub(super) fn validate_config_cache_root(
     cache_root: &Path,
     project_root: &Path,
 ) -> Result<PathBuf, std::io::Error> {
-    let cache_root = vize_s0::path::canonicalize_non_verbatim(cache_root);
-    let project_root = vize_s0::path::canonicalize_non_verbatim(project_root);
+    let cache_root = vize_l0::path::canonicalize_non_verbatim(cache_root);
+    let project_root = vize_l0::path::canonicalize_non_verbatim(project_root);
     let dependency_root =
-        vize_s0::path::canonicalize_non_verbatim(&project_root.join("node_modules"));
+        vize_l0::path::canonicalize_non_verbatim(&project_root.join("node_modules"));
     let names_dependency_tree = cache_root.components().any(|component| {
         matches!(component, std::path::Component::Normal(name) if name
             .to_string_lossy()
@@ -60,7 +60,7 @@ fn canonicalize_with_missing_tail(path: &Path) -> PathBuf {
             break;
         }
     }
-    let mut resolved = vize_s0::path::canonicalize_non_verbatim(&ancestor);
+    let mut resolved = vize_l0::path::canonicalize_non_verbatim(&ancestor);
     for name in tail.into_iter().rev() {
         resolved.push(name);
     }
@@ -140,7 +140,7 @@ pub(super) fn publish_config_atomically_with_hook(
     if path.exists() {
         return verify_published_config(path, content);
     }
-    let prefix = vize_s0::cstr!(".vize-nuxt-config-{}-", std::process::id());
+    let prefix = vize_l0::cstr!(".vize-nuxt-config-{}-", std::process::id());
     let mut pending = tempfile::Builder::new()
         .prefix(&prefix)
         .suffix(".pending")

@@ -12,7 +12,7 @@ use vize_canon::projection::{
     assemble_diagnostics,
 };
 use vize_canon::virtual_ts::ProjectionMapping;
-use vize_s0::line_index::LineBreaks;
+use vize_l0::line_index::LineBreaks;
 
 use super::super::{VirtualTsResult, sources};
 use super::log_preview::log_preview;

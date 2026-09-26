@@ -7,7 +7,7 @@ use super::{
     DirectiveNode, ExpressionNode, RuntimeHelper, SsrCodegenContext, String, ToCompactString, cstr,
 };
 use vize_atelier_core::BindingType;
-use vize_s0::{camelize, capitalize};
+use vize_l0::{camelize, capitalize};
 
 impl SsrCodegenContext<'_> {
     /// `_ssrGetDirectiveProps(_ctx, dir[, value[, arg[, modifiers]]])` with

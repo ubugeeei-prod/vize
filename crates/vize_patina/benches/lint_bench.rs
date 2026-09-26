@@ -3,10 +3,10 @@
 use std::hint::black_box;
 
 use criterion::{Criterion, Throughput, criterion_group, criterion_main};
+use vize_l0::{String, append, cstr};
 use vize_patina::Linter;
 use vize_patina::rules::musea::MuseaLinter;
 use vize_patina::rules::script::{NoInternalImports, PreferImportFromVue, ScriptLinter};
-use vize_s0::{String, append, cstr};
 
 fn bench_lint_template(c: &mut Criterion) {
     let template = r#"
@@ -59,7 +59,7 @@ fn bench_lint_large_template(c: &mut Criterion) {
 }
 
 fn bench_lint_sfc(c: &mut Criterion) {
-    // Exercise the production SFC entry: descriptor, template, S2 markup and
+    // Exercise the production SFC entry: descriptor, template, L2 markup and
     // template-aware script rules. Template-only benchmarks miss this sharing.
     let linter = Linter::new();
     let mut group = c.benchmark_group("sfc");

@@ -14,7 +14,7 @@
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
-use vize_s0::config::{ConfigLintRuleOptions, LinterConfig};
+use vize_l0::config::{ConfigLintRuleOptions, LinterConfig};
 
 use super::ServerState;
 
@@ -29,9 +29,9 @@ impl WorkspaceFolderConfig {
     /// Load the folder's own `vize.config.*`; a folder without a config file
     /// gets the built-in defaults so contexts stay order-independent.
     fn load(root: PathBuf) -> Self {
-        let (loaded, linter) = vize_s0::config::load_config_and_linter_with_source(Some(&root));
+        let (loaded, linter) = vize_l0::config::load_config_and_linter_with_source(Some(&root));
         if loaded.source_path.is_some() {
-            let rule_options = vize_s0::config::load_config_lint_rule_options(Some(&root));
+            let rule_options = vize_l0::config::load_config_lint_rule_options(Some(&root));
             Self {
                 root,
                 linter,
@@ -150,7 +150,7 @@ fn deepest_enclosing_folder<'a>(
 #[cfg(test)]
 mod tests {
     use tower_lsp::lsp_types::{Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
-    use vize_s0::{config::LintRuleSeverity, cstr};
+    use vize_l0::{config::LintRuleSeverity, cstr};
 
     use crate::server::ServerState;
 

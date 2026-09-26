@@ -43,7 +43,7 @@
   independently, which is fault line 1 of
   [motivation.md](../motivation.md) in number form.
 
-## Post-P1-7 floors (updated 2026-09-07, DOM selector on S2)
+## Post-P1-7 floors (updated 2026-09-07, DOM selector on L2)
 
 Same sweep, same probe, after P1-7 migrated the whole-expression consumers
 onto the parse-once retained ASTs (`SimpleExpressionNode::js_ast`, P1-5).
@@ -61,15 +61,15 @@ equality by `tests/davinci_expr_reparse_floor.rs` in each backend crate.
 
 Every migrated site is at zero on every fixture; the surviving counts are
 the kept-with-reason fallback classes on `large.vue` only (per-site record
-in `phase-1.md` P1-7). The source-map-free DOM S2 selector skips the legacy
-pre-S2 transform when S2 emission succeeds, so it no longer pays the 8
+in `phase-1.md` P1-7). The source-map-free DOM L2 selector skips the legacy
+pre-L2 transform when L2 emission succeeds, so it no longer pays the 8
 slot-pattern parses (`extract_slot_prop_names`, synthesized
 `let <pattern> = __slotProps`) or the 8 slot-default arrows
 (`prefix_slot_defaults`, synthesized `(props) => null`). ssr 17 = 8
 slot-pattern + 8 param-arrow validations (`parse_as_params`) + 1 v-for
 source sub-expression (synthesized by the v-for splitter, so no retained AST
 corresponds); the 10 SSR rendered-handler shape checks (transformed text,
-not node content) left with the legacy codegen walk once P3-8's S4 string
+not node content) left with the legacy codegen walk once P3-8's L4 string
 plan emits `large` (27 before); vapor 8 = slot-pattern parses. Two counters share
 the `davinci.expr.parses` name: the bench recorders' stderr lines read this
 probe (the legacy re-parse count — the table above, which is what P1-7

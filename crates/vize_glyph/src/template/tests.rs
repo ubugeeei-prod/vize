@@ -3,7 +3,7 @@ use crate::options::{AttributeSortOrder, FormatOptions};
 use directives::{custom_attribute_priority, format_v_for_expression, matches_attr_pattern};
 use formatter::format_interpolations;
 use helpers::{is_tag_name_char, is_void_element_str};
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 #[test]
 fn test_format_simple_template() {

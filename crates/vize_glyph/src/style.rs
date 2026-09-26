@@ -12,7 +12,7 @@ use crate::error::FormatError;
 use crate::options::FormatOptions;
 use comment_scan::{SegmentKind, has_nested_comment, split_top_level_comments};
 use lightningcss::stylesheet::{ParserOptions, PrinterOptions, StyleSheet};
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 /// Format CSS content using lightningcss.
 ///

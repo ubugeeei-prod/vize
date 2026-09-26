@@ -28,7 +28,7 @@
 
 use oxc_ast::ast::{ImportDeclarationSpecifier, Program, Statement};
 use oxc_span::GetSpan;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use vize_croquis::COMPILER_MACRO_NAMES;
 

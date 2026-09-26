@@ -1,6 +1,6 @@
-//! Source-map bridging for the S2 DOM production selector.
+//! Source-map bridging for the L2 DOM production selector.
 //!
-//! The S2 DOM emitter owns the selected render code. Until S4 carries mapping
+//! The L2 DOM emitter owns the selected render code. Until L4 carries mapping
 //! spans through a structured emitter, source-map requests borrow the existing
 //! compatibility map only after the compatibility generator proves it would
 //! have emitted the same render module bytes and section boundaries.
@@ -10,7 +10,7 @@ use vize_atelier_core::{
     codegen::{CodegenResultWithSections, generate_with_sections},
     options::CodegenOptions,
 };
-use vize_s0::profile;
+use vize_l0::profile;
 
 pub(super) fn attach_compat_map(
     root: &RootNode<'_>,

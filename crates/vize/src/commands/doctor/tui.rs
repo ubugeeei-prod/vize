@@ -23,7 +23,7 @@ use vize_fresco::{
     input::read_event, install_terminal_panic_hook, install_terminal_signal_hook,
     terminal::TerminalOptions,
 };
-use vize_s0::{String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 use super::{DoctorFormat, DoctorSource};
 use model::{DoctorTuiModel, InteractionOutcome};

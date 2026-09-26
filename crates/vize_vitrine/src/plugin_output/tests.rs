@@ -8,7 +8,7 @@ use crate::CompileResult;
 use vize_atelier_vapor::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_with_experimental_options,
 };
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 mod cache;
 mod maps;

@@ -33,7 +33,7 @@ pub mod record;
 
 pub use record::{RecordedArg, RecordedRemark, RemarkArgValue, RemarkCollector};
 
-use vize_s0::Span;
+use vize_l0::Span;
 
 use super::{PassEvent, PassObserver};
 

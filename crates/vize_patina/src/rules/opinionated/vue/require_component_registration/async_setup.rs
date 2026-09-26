@@ -12,7 +12,7 @@ use oxc_ast::ast::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_atelier_sfc::SfcScriptBlock;
-use vize_s0::{CompactString, FxHashSet};
+use vize_l0::{CompactString, FxHashSet};
 
 pub(super) fn async_component_names(script: &SfcScriptBlock<'_>) -> Vec<CompactString> {
     let source = script.content.as_ref();

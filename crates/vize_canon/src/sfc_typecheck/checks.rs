@@ -4,7 +4,7 @@ pub use super::template_bindings::check_template_bindings;
 use super::{SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity};
 use vize_croquis::reactivity::ReactivityLossKind;
 use vize_croquis::setup_context::ViolationSeverity;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 /// Check props typing.
 pub fn check_props_typing(

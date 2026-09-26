@@ -109,7 +109,7 @@ function renderSlices() {
    drift test. It makes the current dependency shape reviewable without
    changing command routing or defaults.
 2. \`refactor(compiler): introduce stage-named compiler boundary adapters\` -
-   add S0/S1/S2 adapter entrypoints inside the atelier crates while continuing
+   add L0/L1/L2 adapter entrypoints inside the atelier crates while continuing
    to feed the existing Relief/Croquis pipeline. Guard with compiler fixture
    parity and keep the \`vize build\` path unchanged.
 3. \`refactor(linter): add template analysis facade\` - move rule code toward
@@ -117,7 +117,7 @@ function renderSlices() {
    Relief/Croquis. Guard with lint divergence and rule fixture snapshots; no
    default linter backend switch.
 4. \`refactor(typechecker): add virtual document boundary\` - introduce a
-   narrow S0/S1 input contract for virtual TS generation and adapt current
+   narrow L0/L1 input contract for virtual TS generation and adapt current
    callers into it. Guard with the existing typecheck fixture matrix and
    real-project rows.
 5. \`test(content-mapper): pin stage-neutral mapping protocol fixtures\` -
@@ -133,8 +133,8 @@ function renderSlices() {
    implementation delegates to the current Armature/Croquis/Canon stack. Guard
    hover, definition, diagnostics, semantic tokens, and formatting with
    existing LSP e2e tests.
-8. \`refactor(davinci): align physical layer names with s0/s1/s2\` - migrate
-   public internal module/crate references toward S0/S1/S2 naming in small
+8. \`refactor(davinci): align physical layer names with l0/l1/l2\` - migrate
+   public internal module/crate references toward L0/L1/L2 naming in small
    aliasing steps. Keep code names only as compatibility aliases until all
    consumers have moved.
 
@@ -159,7 +159,7 @@ export function renderConsumerMigrationSurfaces(scan, options) {
 # Consumer migration surfaces
 
 This inventory records where the user-facing consumers that must eventually
-sit on Davinci/S0/S1/S2 still name stage crates, legacy AST/parser/Croquis
+sit on Davinci/L0/L1/L2 still name stage crates, legacy AST/parser/Croquis
 crates, or raw OXC crates directly on current \`origin/main\`. It is an
 observational guard for planning only. It does not change rollout state.
 
@@ -171,7 +171,7 @@ observational guard for planning only. It does not change rollout state.
   means "this file directly names this surface", not necessarily that every
   mention is a runtime dependency edge.
 - Stage names are split into preferred physical names and compatibility
-  code-name aliases so S0/S1/S2 migration work is measurable without changing
+  code-name aliases so L0/L1/L2 migration work is measurable without changing
   rollout state.
 - \`source/manifest\` includes production Rust files plus crate manifests.
   \`test/dev\` includes crate \`tests\`, \`benches\`, \`tests.rs\`,

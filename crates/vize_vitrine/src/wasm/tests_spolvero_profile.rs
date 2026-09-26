@@ -52,8 +52,8 @@ fn the_analyze_result_times_every_ladder_step_by_the_host_clock() {
     let clock = squares();
     let result =
         analyze_sfc_json_with_clock(SOURCE, "src/App.vue", false, false, &clock).expect("analysis");
-    // Reads 0..10 bracket parse, S2 lower, the fused analyses
-    // (`hoist-static`, then `template-complexity`) and S3 lower. The walk
+    // Reads 0..10 bracket parse, L2 lower, the fused analyses
+    // (`hoist-static`, then `template-complexity`) and L3 lower. The walk
     // opens on read 4 and closes on read 7.
     let step =
         |stage, pass, nanos, bucket| span("davinci.spolvero.step", stage, pass, nanos, bucket);

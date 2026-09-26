@@ -25,7 +25,7 @@ pub(crate) const WHITESPACE_SIGNIFICANT_NATIVE_ELEMENTS: [&str; 3] = ["pre", "te
 mod attribute_priority_tests;
 
 use crate::{error::FormatError, options::FormatOptions};
-use vize_s0::String;
+use vize_l0::String;
 
 use formatter::TemplateFormatter;
 use helpers::is_whitespace;

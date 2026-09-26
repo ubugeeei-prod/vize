@@ -32,7 +32,7 @@ use super::{
     },
     v_once::generate_v_once_element,
 };
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 /// Generate element as a block
 pub fn generate_element_block(ctx: &mut CodegenContext, el: &ElementNode<'_>) {

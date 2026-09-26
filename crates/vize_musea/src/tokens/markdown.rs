@@ -1,5 +1,5 @@
 use serde_json::Value;
-use vize_s0::{String, append, appends};
+use vize_l0::{String, append, appends};
 
 use super::types::TokenCategory;
 

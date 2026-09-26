@@ -46,8 +46,8 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::cstr;
 use vize_relief::{ElementNode, PropNode, SourceLocation};
-use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/use-unique-element-ids",

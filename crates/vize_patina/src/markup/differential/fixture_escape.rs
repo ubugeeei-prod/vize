@@ -3,7 +3,7 @@
 //! `\xNN` is a 7-bit escape and `\u{...}` is a Unicode scalar, including
 //! `_` separators. Byte and C strings are not `&str` templates.
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::fixture_cursor::Cursor;
 

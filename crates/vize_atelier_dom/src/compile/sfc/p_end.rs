@@ -1,6 +1,6 @@
 //! `<p>` auto-closes before a block start tag. A later `</p>` is the
 //! legacy parser's fatal `InvalidEndTag`, which drops the inline render.
-//! The S2 emitter does not report that error, so the source stays off
+//! The L2 emitter does not report that error, so the source stays off
 //! the SFC fast path.
 
 pub(super) fn source_has_invalid_p_end_tag(source: &str) -> bool {

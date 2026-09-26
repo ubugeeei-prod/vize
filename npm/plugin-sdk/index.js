@@ -1,4 +1,4 @@
-// Authoring API for serialized S2 visits and native compiler hooks.
+// Authoring API for serialized L2 visits and native compiler hooks.
 // See README.md for the runtime and trust boundaries.
 import { createHash } from "node:crypto";
 import { SDK_FINGERPRINT } from "./identity.js";

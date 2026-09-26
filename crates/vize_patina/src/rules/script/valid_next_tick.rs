@@ -50,7 +50,7 @@ use oxc_ast_visit::{
     walk::{walk_arrow_function_expression, walk_import_declaration, walk_statement},
 };
 use oxc_span::Span;
-use vize_s0::{CompactString, FxHashSet};
+use vize_l0::{CompactString, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/valid-next-tick",

@@ -12,7 +12,7 @@ use oxc_ast::ast::{
     Program, PropertyKey, Statement,
 };
 use oxc_span::GetSpan;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 mod support;
 use support::{

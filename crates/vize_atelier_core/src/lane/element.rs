@@ -1,6 +1,6 @@
 //! Element transformation functions.
 
-use vize_s0::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
+use vize_l0::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
 
 use crate::codegen::{escape_js_string, is_valid_js_identifier};
 use crate::errors::ErrorCode;
@@ -124,7 +124,7 @@ fn is_registered_component(ctx: &TransformContext<'_>, tag: &str) -> bool {
     }
 
     if tag.contains('-') || tag.contains('_') {
-        let camel = vize_s0::camelize(tag);
+        let camel = vize_l0::camelize(tag);
         if ctx.is_component_registered(camel.as_str()) {
             return true;
         }

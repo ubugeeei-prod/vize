@@ -9,7 +9,7 @@ pub(super) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, 
 pub(super) fn default_fmt_patterns() -> Vec<std::string::String> {
     FORMAT_EXTENSIONS
         .iter()
-        .map(|extension| vize_s0::cstr!("./**/*.{extension}").into())
+        .map(|extension| vize_l0::cstr!("./**/*.{extension}").into())
         .collect()
 }
 
@@ -32,7 +32,7 @@ mod tests {
     fn default_patterns_cover_each_format_extension_once() {
         let expected = FORMAT_EXTENSIONS
             .iter()
-            .map(|extension| vize_s0::cstr!("./**/*.{extension}"))
+            .map(|extension| vize_l0::cstr!("./**/*.{extension}"))
             .collect::<Vec<_>>();
 
         assert_eq!(default_fmt_patterns(), expected);

@@ -41,9 +41,9 @@ impl Shape {
     /// accepts it.
     pub const fn stage(self) -> &'static str {
         match self {
-            Self::DomInline | Self::DomModule => "S2",
-            Self::Ssr => "S4 plan",
-            Self::Vapor => "native S3",
+            Self::DomInline | Self::DomModule => "L2",
+            Self::Ssr => "L4 plan",
+            Self::Vapor => "native L3",
         }
     }
 
@@ -85,7 +85,7 @@ pub fn compile(
     shape: Shape,
 ) -> Result<SfcCompileResult, SfcError> {
     let has_scoped = descriptor.styles.iter().any(|style| style.scoped);
-    let filename = vize_s0::String::from(filename);
+    let filename = vize_l0::String::from(filename);
     let options = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),

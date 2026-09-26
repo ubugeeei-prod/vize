@@ -15,7 +15,7 @@ use vize_atelier_core::{
 };
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_atelier_vapor::{VaporCompilerOptions, compile_vapor};
-use vize_s0::{Allocator, String, ToCompactString};
+use vize_l0::{Allocator, String, ToCompactString};
 
 mod chars;
 use chars::ch_at;
@@ -201,8 +201,8 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
     let allocator = Allocator::default();
 
     let parser_opts = ParserOptions {
-        is_void_tag: vize_s0::is_void_tag,
-        is_native_tag: Some(vize_s0::is_native_tag),
+        is_void_tag: vize_l0::is_void_tag,
+        is_native_tag: Some(vize_l0::is_native_tag),
         is_pre_tag: |tag| tag == "pre",
         get_namespace: get_dom_namespace,
         ..Default::default()
@@ -232,21 +232,21 @@ pub fn compile_vdom(input: &str, options: &TestOptions) -> String {
     if preamble.is_empty() {
         result.code.clone()
     } else {
-        vize_s0::cstr!("{}\n\n{}", preamble, result.code)
+        vize_l0::cstr!("{}\n\n{}", preamble, result.code)
     }
 }
 
 fn get_dom_namespace(tag: &str, parent: Option<&str>) -> Namespace {
-    if vize_s0::is_svg_tag(tag) {
+    if vize_l0::is_svg_tag(tag) {
         return Namespace::Svg;
     }
-    if vize_s0::is_math_ml_tag(tag) {
+    if vize_l0::is_math_ml_tag(tag) {
         return Namespace::MathMl;
     }
 
     if let Some(parent_tag) = parent {
         let svg_to_html = matches!(parent_tag, "foreignObject" | "desc" | "title");
-        if vize_s0::is_svg_tag(parent_tag) && !svg_to_html {
+        if vize_l0::is_svg_tag(parent_tag) && !svg_to_html {
             return Namespace::Svg;
         }
 
@@ -254,7 +254,7 @@ fn get_dom_namespace(tag: &str, parent: Option<&str>) -> Namespace {
             parent_tag,
             "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext"
         );
-        if vize_s0::is_math_ml_tag(parent_tag) && !mathml_to_html {
+        if vize_l0::is_math_ml_tag(parent_tag) && !mathml_to_html {
             return Namespace::MathMl;
         }
     }
@@ -352,7 +352,7 @@ pub fn normalize_code(code: &str) -> String {
     if let Some(first) = first_vue_import {
         vue_helpers.sort();
         vue_helpers.dedup();
-        let merged = vize_s0::cstr!("import {{ {} }} from \"vue\"", vue_helpers.join(", "));
+        let merged = vize_l0::cstr!("import {{ {} }} from \"vue\"", vue_helpers.join(", "));
         for (idx, line) in lines.iter_mut().enumerate() {
             if is_vue_import(line) {
                 *line = if idx == first {
@@ -439,7 +439,7 @@ fn collapse_multiline(code: &str) -> String {
             && is_outer_parens_balanced(inner)
             && let Some(unwrapped) = inner.strip_prefix('(').and_then(|i| i.strip_suffix(')'))
         {
-            *line = vize_s0::cstr!("return {unwrapped}");
+            *line = vize_l0::cstr!("return {unwrapped}");
         }
     }
 
@@ -633,7 +633,7 @@ pub fn compare_output(expected: &str, actual: &str) -> Result<(), String> {
 
     for (i, (exp, act)) in exp_lines.iter().zip(act_lines.iter()).enumerate() {
         if exp != act {
-            return Err(vize_s0::cstr!(
+            return Err(vize_l0::cstr!(
                 "Mismatch at line {}:\n  expected: {}\n  actual:   {}",
                 i + 1,
                 exp,
@@ -643,7 +643,7 @@ pub fn compare_output(expected: &str, actual: &str) -> Result<(), String> {
     }
 
     if exp_lines.len() != act_lines.len() {
-        return Err(vize_s0::cstr!(
+        return Err(vize_l0::cstr!(
             "Line count mismatch: expected {}, got {}",
             exp_lines.len(),
             act_lines.len()
@@ -684,7 +684,7 @@ pub fn run_fixture_tests(fixture_path: &Path, expected_path: &Path) -> Vec<TestR
             results.push(TestResult {
                 name: fixture_path.display().to_compact_string(),
                 passed: false,
-                error: Some(vize_s0::cstr!("Failed to parse fixture: {}", e)),
+                error: Some(vize_l0::cstr!("Failed to parse fixture: {}", e)),
             });
             return results;
         }
@@ -785,7 +785,7 @@ export default {
                 let mut failures = Vec::new();
                 for result in &results {
                     if !result.passed {
-                        failures.push(vize_s0::cstr!(
+                        failures.push(vize_l0::cstr!(
                             "  {} - {}",
                             result.name,
                             result.error.as_deref().unwrap_or("unknown error")

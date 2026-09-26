@@ -11,7 +11,7 @@
 
 **Lane:** F
 
-**Deliverable:** the P4-16 spike hardened per charter #29: all four hook families (custom lint rules + autofix, custom fact providers, compile transform hooks, formatter/output hooks), batched napi visits, per-plugin cost attribution in lint output, content-keyed caching (P5-13), authoring docs and the `@vizejs/plugin-sdk` package; transform hooks locked to the single pre-canonical S2 point with determinism checks.
+**Deliverable:** the P4-16 spike hardened per charter #29: all four hook families (custom lint rules + autofix, custom fact providers, compile transform hooks, formatter/output hooks), batched napi visits, per-plugin cost attribution in lint output, content-keyed caching (P5-13), authoring docs and the `@vizejs/plugin-sdk` package; transform hooks locked to the single pre-canonical L2 point with determinism checks.
 
 **Steps:**
 

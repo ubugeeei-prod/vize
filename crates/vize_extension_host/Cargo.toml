@@ -2,7 +2,7 @@
 #
 # Hosts input-dialect guests over the `vize:contracts` WIT package in
 # `crates/vize_extension_sdk/wit/`: the capability handshake, host-side acceptance of the
-# serialized S1/S2 pages, the in-tree Vue dialect behind the same trait
+# serialized L1/L2 pages, the in-tree Vue dialect behind the same trait
 # (charter #15's first-party tier), and the external tier's transports.
 #
 # wasmtime is admitted under charter #39 only behind the `extension-host`
@@ -28,10 +28,10 @@ vize_extension_contract = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 vize_davinci = { workspace = true }
-vize_s0 = { workspace = true }
-vize_s1 = { workspace = true }
-vize_s1_to_s2 = { workspace = true }
-vize_s2 = { workspace = true }
+vize_l0 = { workspace = true }
+vize_l1 = { workspace = true }
+vize_l1_to_l2 = { workspace = true }
+vize_l2 = { workspace = true }
 wasmtime = { workspace = true, optional = true }
 
 [dev-dependencies]

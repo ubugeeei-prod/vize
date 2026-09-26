@@ -11,7 +11,7 @@ use vize_fresco::{
     HeadlessSemanticNode, Rect, SemanticRole, SemanticState, TerminalCapabilities,
     terminal::{Cursor, Style},
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::{DoctorSource, DoctorTuiError};
 use crate::commands::doctor::tui::model::{DoctorTuiModel, InteractionMode, severity_label};

@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
     process::Command,
 };
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 const TRES_SCENE: &str = r#"<script setup lang="ts">
 import { TresCanvas } from '@tresjs/core'
@@ -42,7 +42,7 @@ fn write_project_file(root: &Path, path: &str, content: &str) {
     fs::write(file_path, content).unwrap();
 }
 
-fn output_details(output: &std::process::Output) -> vize_s0::String {
+fn output_details(output: &std::process::Output) -> vize_l0::String {
     let stdout = std::str::from_utf8(&output.stdout).unwrap_or("<non-utf8 stdout>");
     let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>");
     cstr!("stdout:\n{}\nstderr:\n{}", stdout, stderr)
@@ -52,7 +52,7 @@ fn needle_count(source: &str, needle: &str) -> usize {
     source.match_indices(needle).count()
 }
 
-fn build_js(project_root: &Path, extra_args: &[&str]) -> vize_s0::String {
+fn build_js(project_root: &Path, extra_args: &[&str]) -> vize_l0::String {
     write_project_file(project_root, "src/Scene.vue", TRES_SCENE);
     let mut args = vec![
         "build",

@@ -2,7 +2,7 @@
 //! session.
 
 use serde_json::Value;
-use vize_s0::String;
+use vize_l0::String;
 
 use super::CorsaProjectClient;
 

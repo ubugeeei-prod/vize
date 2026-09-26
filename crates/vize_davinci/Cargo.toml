@@ -9,7 +9,7 @@ description = "Davinci - dump/round-trip substrate (Folio) for the Vize compiler
 metadata.vize.stability = "experimental"
 
 [dependencies]
-vize_s0 = { workspace = true }
+vize_l0 = { workspace = true }
 # Proc-macro: a host build dependency (never linked into any target, so the
 # wasm32/no_std claims are untouched) - the approved std edge P2-14 audits.
 vize_davinci_derive = { workspace = true }
@@ -25,11 +25,11 @@ serde_json = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_atelier_sfc = { workspace = true }
 vize_croquis = { workspace = true }
-# TS-43 (`tests/artifact_keys.rs`) keys real S1/S2 artifacts; dev-only, so the
-# library's tier-1 edge set (S0 alone) is untouched.
-vize_s1 = { workspace = true }
-vize_s1_to_s2 = { workspace = true }
-vize_s2 = { workspace = true }
+# TS-43 (`tests/artifact_keys.rs`) keys real L1/L2 artifacts; dev-only, so the
+# library's tier-1 edge set (L0 alone) is untouched.
+vize_l1 = { workspace = true }
+vize_l1_to_l2 = { workspace = true }
+vize_l2 = { workspace = true }
 
 [[bin]]
 name = "davinci-opt"

@@ -12,8 +12,8 @@
 //! revert                             restore the file's original text
 //! ```
 
-use vize_s0::config::VueVersion;
-use vize_s0::{String, ToCompactString};
+use vize_l0::config::VueVersion;
+use vize_l0::{String, ToCompactString};
 
 use crate::artifact::{BlockKind, split_blocks};
 

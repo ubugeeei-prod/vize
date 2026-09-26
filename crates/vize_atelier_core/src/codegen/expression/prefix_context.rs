@@ -10,10 +10,10 @@
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_l0::FxHashSet;
+use vize_l0::String;
+use vize_l0::ToCompactString;
 use vize_relief::{ExpressionScope, SimpleExpressionNode};
-use vize_s0::FxHashSet;
-use vize_s0::String;
-use vize_s0::ToCompactString;
 
 use super::super::context::CodegenContext;
 use super::helpers::rewrite_props_aliases;

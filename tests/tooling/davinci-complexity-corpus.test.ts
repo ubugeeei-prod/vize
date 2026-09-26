@@ -37,7 +37,7 @@ test("the complexity corpus shard agrees with the naive evaluator, with a scope 
     [
       "test",
       "-p",
-      "vize_s1_to_s2",
+      "vize_l1_to_l2",
       "--test",
       "cfg_complexity_oracle",
       "the_corpus_shard_agrees_with_the_naive_evaluator",

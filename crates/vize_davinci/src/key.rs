@@ -1,18 +1,18 @@
 //! Stage artifact keys (Davinci P5-1a): the content identity every cache of
 //! a stage artifact keys on.
 //!
-//! An [`ArtifactKey`] names one stage artifact of one SFC block — its S0
-//! source block, its S1 surface page, its S2 page — by content, in the shape
+//! An [`ArtifactKey`] names one stage artifact of one SFC block — its L0
+//! source block, its L1 surface page, its L2 page — by content, in the shape
 //! of Doctor's `cache_identity` (domain-separated, versioned, explicit):
 //!
 //! - **Normalized structure, not presentation.** The hash walks the
-//!   artifact's canonical page: the Disegno folio `Full` form for S2, the
-//!   lossless render for S1 (S1's page — a lossless tree's page *is* its
+//!   artifact's canonical page: the Disegno folio `Full` form for L2, the
+//!   lossless render for L1 (L1's page — a lossless tree's page *is* its
 //!   token sequence). `Full` is the injective form the folio laws pin, so
 //!   two artifacts share a key exactly when their pages are equal.
 //! - **Span-relative.** Every span enters the hash rebased to the start of
 //!   its block ([`rebase`], the rustc relative-span import); the block's
-//!   absolute position is S0 side-table data *outside* the key. An edit
+//!   absolute position is L0 side-table data *outside* the key. An edit
 //!   above a block therefore changes zero keys of that block, and identical
 //!   block content keys identically at any offset.
 //! - **Versioned.** `schema_version` sits inside every key *and* inside the
@@ -28,11 +28,11 @@
 //! flags, platform — are not artifact content; they fold in through the key
 //! manifest (P5-1b), never by widening a page.
 //!
-//! [`StableHasher128`]: vize_s0::hash::StableHasher128
+//! [`StableHasher128`]: vize_l0::hash::StableHasher128
 
 use core::fmt;
 
-use vize_s0::Span;
+use vize_l0::Span;
 
 use crate::stage::Stage;
 
@@ -52,15 +52,15 @@ pub use sink::KeySink;
 /// recipe. Bump it in the same change that alters either; the TS-43 goldens
 /// fail otherwise, which is the point.
 pub mod schema {
-    /// S0 source block: block kind, header attributes as a sorted set, and
+    /// L0 source block: block kind, header attributes as a sorted set, and
     /// the content bytes, each length-prefixed.
     pub const SOURCE_BLOCK: u32 = 1;
-    /// S1 surface page: the lossless render, one length-prefixed piece per
+    /// L1 surface page: the lossless render, one length-prefixed piece per
     /// token slice (`leading`, then `text`), in canonical token order.
-    pub const S1_SURFACE: u32 = 1;
-    /// S2 page: the Disegno folio `Full` form with every span rebased to
+    pub const L1_SURFACE: u32 = 1;
+    /// L2 page: the Disegno folio `Full` form with every span rebased to
     /// the block start.
-    pub const S2_PAGE: u32 = 1;
+    pub const L2_PAGE: u32 = 1;
 }
 
 /// A stage artifact with a content key.
@@ -123,7 +123,7 @@ impl ArtifactKey {
 
 impl fmt::Display for ArtifactKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}.v{}:", self.stage.physical_id(), self.schema_version)?;
+        write!(f, "{}.v{}:", self.stage.wire_id(), self.schema_version)?;
         for byte in self.hash {
             write!(f, "{byte:02x}")?;
         }

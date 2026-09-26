@@ -4,7 +4,7 @@
 
 use super::{Case, diagnostic, fix, help, nth, primary, secondary, span, tr};
 use vize_davinci::diagnostic::Severity;
-use vize_s0::Span;
+use vize_l0::Span;
 
 const WIDE_SOURCE: &str = r#"<script setup lang="ts">
 import { ref } from "vue"

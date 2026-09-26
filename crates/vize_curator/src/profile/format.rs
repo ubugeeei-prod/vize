@@ -2,7 +2,7 @@
 
 use std::time::Duration;
 
-use vize_s0::{String, append, appends};
+use vize_l0::{String, append, appends};
 
 use super::ProfileReport;
 

@@ -5,7 +5,7 @@ use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::error::{LibError, LibResult};
 use super::registry::{LoadedRegistry, RemoteFiles};

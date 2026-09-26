@@ -1,11 +1,11 @@
-//! Temporary candidate scan: Relief visitor diagnostics vs the S2 facade.
+//! Temporary candidate scan: Relief visitor diagnostics vs the L2 facade.
 //! Deleted once a second SFC facade rule is chosen.
 
 use super::{TEMPLATES, rule_fixtures};
 use crate::context::LintContext;
 use crate::diagnostic::LintDiagnostic;
 use crate::ir::TemplateSyntax;
-use crate::markup::{MarkupContext, MarkupDocument, S2Template};
+use crate::markup::{L2Template, MarkupContext, MarkupDocument};
 use crate::rule::RuleRegistry;
 use crate::visitor::LintVisitor;
 use std::fs::OpenOptions;
@@ -13,7 +13,7 @@ use std::io::Write;
 use std::path::Path;
 use vize_armature::Parser;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 const LOG: &str = "/tmp/facade-probe.txt";
 
@@ -85,7 +85,7 @@ const EXTRA: &[&str] = &[
 ];
 
 #[test]
-#[ignore = "manual Relief-vs-S2 scan; it reports candidates and then panics"]
+#[ignore = "manual Relief-vs-L2 scan; it reports candidates and then panics"]
 fn probe_sfc_facade_candidates() {
     let _ = std::fs::remove_file(LOG);
     let registry = RuleRegistry::with_all();
@@ -121,10 +121,10 @@ fn probe_sfc_facade_candidates() {
         }
         let allocator = Allocator::with_capacity(source.len().saturating_mul(4).max(1024));
         let (root, _) = Parser::new(&allocator, source).parse();
-        let lowered = S2Template::lower(&allocator, source);
+        let lowered = L2Template::lower(&allocator, source);
         let markup = lowered.markup();
         let markup = crate::markup::reborrow_markup(&markup);
-        let document = MarkupDocument::from_s2(markup, TemplateSyntax::Vue);
+        let document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
 
         for (slot, &index) in indexes.iter().enumerate() {
             if failed[slot].is_some() {

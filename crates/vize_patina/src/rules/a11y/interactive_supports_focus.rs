@@ -23,8 +23,8 @@ use crate::diagnostic::Severity;
 use crate::ir::TemplateSyntax;
 use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::FxHashSet;
 use vize_relief::RootNode;
-use vize_s0::FxHashSet;
 
 use super::{helpers::is_interactive_role, markup_helpers};
 

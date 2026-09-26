@@ -3,7 +3,7 @@
 use super::inference::infer_control_from_values;
 use super::{Palette, PaletteOptions, PaletteOutput, PropControl};
 use crate::types::ArtDescriptor;
-use vize_s0::{FxHashMap, String, ToCompactString, cstr};
+use vize_l0::{FxHashMap, String, ToCompactString, cstr};
 
 /// Generate palette configuration from an Art descriptor.
 ///
@@ -159,7 +159,7 @@ fn to_pascal_case(s: &str) -> String {
 /// Generate Storybook argTypes definition. Only the tests exercise it today.
 #[cfg(test)]
 pub fn generate_storybook_argtypes(palette: &Palette) -> String {
-    use vize_s0::append;
+    use vize_l0::append;
 
     use super::ControlKind;
 

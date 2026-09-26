@@ -11,8 +11,8 @@ use vize_croquis_cf::{
     DiagnosticSeverity, FileId,
 };
 use vize_curator::complexity::render_cross_file_complexity;
+use vize_l0::{CompactString, FxHashMap, String, ToCompactString, cstr};
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
-use vize_s0::{CompactString, FxHashMap, String, ToCompactString, cstr};
 
 pub(super) struct CrossFileLintOutput {
     pub(super) results: Vec<LintResult>,

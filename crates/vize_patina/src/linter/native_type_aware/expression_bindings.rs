@@ -3,7 +3,7 @@
 //! event handlers as `__vize_cb)((expr))`. This pass adds the binding and
 //! keeps each expression's mapping on its text.
 
-use vize_s0::{String as VizeString, cstr};
+use vize_l0::{String as VizeString, cstr};
 
 use super::document::TypeAwareDocument;
 
@@ -193,7 +193,7 @@ fn collect_handler_arguments(
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use vize_canon::virtual_ts::{ProjectionMapping, VizeMapping};
-    use vize_s0::String as VizeString;
+    use vize_l0::String as VizeString;
 
     use super::bind_template_expressions;
     use crate::linter::native_type_aware::document::TypeAwareDocument;

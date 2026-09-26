@@ -6,7 +6,7 @@ use std::time::Duration;
 use corsa_lsp::{LspClient, LspSpawnConfig, VirtualDocument, jsonrpc::InboundEvent};
 use lsp_types::Uri;
 use serde_json::{Value, json};
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 #[path = "content_mapper_tsgo_lsp_event_forms/cases.rs"]
 mod cases;

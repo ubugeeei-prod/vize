@@ -2,7 +2,7 @@
 
 use std::{error::Error, fmt};
 
-use vize_s0::String;
+use vize_l0::String;
 
 /// One analyzed UTF-8 source supplied explicitly to the SARIF reporter.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -154,7 +154,7 @@ fn explicit_inputs_can_select_files_under_normally_excluded_directories() {
         for pattern in [
             file.display().to_string(),
             file.parent().unwrap().display().to_string(),
-            root.join(vize_s0::cstr!("**/{excluded}/*.vue").as_str())
+            root.join(vize_l0::cstr!("**/{excluded}/*.vue").as_str())
                 .display()
                 .to_string(),
         ] {
@@ -210,8 +210,8 @@ fn collection_reports_each_pattern_with_no_lintable_matches() {
     assert_eq!(
         collection.unmatched_patterns,
         vec![
-            vize_s0::String::from(dir.path().join("src/**/*.{vue,ts}").display().to_string()),
-            vize_s0::String::from(dir.path().join("src/**/*.vue").display().to_string())
+            vize_l0::String::from(dir.path().join("src/**/*.{vue,ts}").display().to_string()),
+            vize_l0::String::from(dir.path().join("src/**/*.vue").display().to_string())
         ]
     );
 }
@@ -233,7 +233,7 @@ fn collection_does_not_report_overlapping_patterns_as_empty() {
     );
 
     assert_eq!(collection.files, vec![script]);
-    assert_eq!(collection.unmatched_patterns, Vec::<vize_s0::String>::new());
+    assert_eq!(collection.unmatched_patterns, Vec::<vize_l0::String>::new());
 }
 
 #[test]
@@ -256,6 +256,6 @@ fn collection_reports_ignored_only_patterns_as_empty() {
     assert_eq!(collection.files, Vec::<std::path::PathBuf>::new());
     assert_eq!(
         collection.unmatched_patterns,
-        vec![vize_s0::String::from(pattern)]
+        vec![vize_l0::String::from(pattern)]
     );
 }

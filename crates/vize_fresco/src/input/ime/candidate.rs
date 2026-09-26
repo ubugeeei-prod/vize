@@ -222,7 +222,7 @@ impl CandidateList {
 #[cfg(test)]
 mod tests {
     use super::{Candidate, CandidateList};
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     #[test]
     fn test_candidate_new() {

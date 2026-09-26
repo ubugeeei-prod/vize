@@ -1,7 +1,7 @@
 //! Bidirectional authored/generated coordinate mapping for Canon documents.
 
 use tower_lsp::lsp_types::Range;
-use vize_s0::line_index::LineBreaks;
+use vize_l0::line_index::LineBreaks;
 
 use super::CanonicalMaterializedSource;
 use super::CanonicalVirtualDocument;

@@ -1,4 +1,4 @@
-//! Span-carrying SSR prop objects (Davinci P3-9, S4).
+//! Span-carrying SSR prop objects (Davinci P3-9, L4).
 //!
 //! Element attribute objects (`_ssrRenderAttrs(_mergeProps({ id: "x" }, _attrs))`)
 //! are assembled from [`VNodePropEntry`] values before they are written. An
@@ -10,7 +10,7 @@
 use vize_atelier_core::{
     AttributeNode, DirectiveNode, ExpressionNode, codegen::document::EmitDocument,
 };
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 use super::props::{component_prop_entry, push_component_prop_entry, push_js_object_key};
 use super::{SsrCodegenContext, VNodePropEntry};

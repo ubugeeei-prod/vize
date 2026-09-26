@@ -13,9 +13,9 @@ The durable witnesses are:
 - [`nested_interactive_recovery.rs`](../../../../../crates/vize_armature/tests/nested_interactive_recovery.rs)
   - keeps redundant recovery end tags recoverable while unrelated hard end tags
     remain hard.
-- [`surface_fidelity.rs`](../../../../../crates/vize_s1/tests/surface_fidelity.rs)
+- [`surface_fidelity.rs`](../../../../../crates/vize_l1/tests/surface_fidelity.rs)
   - pins the S1 surface text and close-kind preservation.
-- [`emit_nested_interactive.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_nested_interactive.rs)
+- [`emit_nested_interactive.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_nested_interactive.rs)
   - compares direct and descendant nested interactive cases byte-for-byte
     against the shipped DOM lane.
 

@@ -4,7 +4,7 @@ import { buildLadder } from "./ladder";
 
 // The feed `analyzeSfc` returns for `<div>{{ msg }}</div>`, byte-for-byte as
 // the Rust `wasm::tests_spolvero` pin states it.
-const S2 = `[disegno]
+const L2 = `[disegno]
 ops=2
 
 [disegno.ops]
@@ -12,7 +12,7 @@ ui.element div @3:23
   ui.interpolation js("msg" @11:14) @8:17
 
 `;
-const S3 = `[s3-folio]
+const L3 = `[s3-folio]
 phase=built
 
 [s3-folio.regions]
@@ -50,9 +50,9 @@ function feed(extra: SpolveroFeed["pages"] = []): SpolveroFeed {
     command: "analyze-sfc",
     pages: [
       { path, stage: "s1", pass: "parse", text: "\n  <div>{{ msg }}</div>\n" },
-      { path, stage: "s2", pass: "lower", text: S2 },
-      { path, stage: "s2", pass: "hoist-static", text: S2 },
-      { path, stage: "s3", pass: "lower", text: S3 },
+      { path, stage: "s2", pass: "lower", text: L2 },
+      { path, stage: "s2", pass: "hoist-static", text: L2 },
+      { path, stage: "s3", pass: "lower", text: L3 },
       { path, stage: "s3-partition", pass: "lower", text: PARTITION },
       { path, stage: "s3-values", pass: "lower", text: VALUES },
       ...extra,
@@ -73,31 +73,31 @@ describe("buildLadder", () => {
       })),
     ).toEqual([
       {
-        id: "s1",
-        ordinal: "S1",
+        id: "l1",
+        ordinal: "L1",
         name: "Surface",
         facts: ["2 lines"],
-        pages: [{ key: "s1/parse", kind: "surface", label: "Surface" }],
+        pages: [{ key: "l1/parse", kind: "surface", label: "Surface" }],
       },
       {
-        id: "s2",
-        ordinal: "S2",
+        id: "l2",
+        ordinal: "L2",
         name: "Disegno",
         facts: ["2 ops", "1 pass"],
         pages: [
-          { key: "s2/lower", kind: "disegno", label: "Lowered" },
-          { key: "s2/hoist-static", kind: "disegno", label: "hoist-static" },
+          { key: "l2/lower", kind: "disegno", label: "Lowered" },
+          { key: "l2/hoist-static", kind: "disegno", label: "hoist-static" },
         ],
       },
       {
-        id: "s3",
-        ordinal: "S3",
+        id: "l3",
+        ordinal: "L3",
         name: "Impeto",
         facts: ["2 ops", "1 dynamic"],
         pages: [
-          { key: "s3/lower", kind: "impeto", label: "Graph" },
-          { key: "s3-partition/lower", kind: "partition", label: "Partition" },
-          { key: "s3-values/lower", kind: "values", label: "Values" },
+          { key: "l3/lower", kind: "impeto", label: "Graph" },
+          { key: "l3-partition/lower", kind: "partition", label: "Partition" },
+          { key: "l3-values/lower", kind: "values", label: "Values" },
         ],
       },
     ]);
@@ -106,10 +106,10 @@ describe("buildLadder", () => {
   });
 
   it("lists steps in run order and marks which passes changed the folio", () => {
-    const changed = { path: "Component.vue", stage: "s2", pass: "legacy", text: `${S2}x` };
+    const changed = { path: "Component.vue", stage: "s2", pass: "legacy", text: `${L2}x` };
     const timings = new Map([
-      ["s2/lower", 5000],
-      ["s2/legacy", 9000],
+      ["l2/lower", 5000],
+      ["l2/legacy", 9000],
     ]);
     const ladder = buildLadder(feed([changed]), undefined, timings);
     const step = (
@@ -129,11 +129,11 @@ describe("buildLadder", () => {
       walk: null,
     });
     expect(ladder.timeline).toEqual([
-      step("parse", "s1", true, true),
-      { ...step("lower", "s2", true, true), nanos: 5000 },
-      step("hoist-static", "s2", false, false),
-      { ...step("legacy", "s2", true, false), nanos: 9000 },
-      step("lower", "s3", true, true),
+      step("parse", "l1", true, true),
+      { ...step("lower", "l2", true, true), nanos: 5000 },
+      step("hoist-static", "l2", false, false),
+      { ...step("legacy", "l2", true, false), nanos: 9000 },
+      step("lower", "l3", true, true),
     ]);
   });
 
@@ -141,11 +141,11 @@ describe("buildLadder", () => {
     const other = { path: "Other.vue", stage: "s1", pass: "parse", text: "<p />" };
     const future = { path: "Component.vue", stage: "s4-plan", pass: "lower", text: "[plan]\n" };
     const ladder = buildLadder(feed([other, future]), "Component.vue");
-    expect(ladder.unplaced).toEqual(["s4-plan"]);
+    expect(ladder.unplaced).toEqual(["l4-plan"]);
     expect(ladder.rungs[0].pages).toHaveLength(1);
   });
 
-  it("files the provenance page under S2 without counting it as a pass or step", () => {
+  it("files the provenance page under L2 without counting it as a pass or step", () => {
     const provenance = {
       path: "Component.vue",
       stage: "s2-provenance",
@@ -155,12 +155,12 @@ describe("buildLadder", () => {
     const ladder = buildLadder(feed([provenance]));
     const s2 = ladder.rungs[1];
     expect(s2.pages.map(({ key, kind, label }) => [key, kind, label])).toEqual([
-      ["s2/lower", "disegno", "Lowered"],
-      ["s2/hoist-static", "disegno", "hoist-static"],
-      ["s2-provenance/transform", "provenance", "Provenance"],
+      ["l2/lower", "disegno", "Lowered"],
+      ["l2/hoist-static", "disegno", "hoist-static"],
+      ["l2-provenance/transform", "provenance", "Provenance"],
     ]);
     expect(s2.facts).toEqual(["2 ops", "1 pass"]);
-    expect(ladder.timeline.map(({ key }) => key)).not.toContain("s2-provenance/transform");
+    expect(ladder.timeline.map(({ key }) => key)).not.toContain("l2-provenance/transform");
   });
 
   it("reads the transform plan's walks off the plan page and times them", () => {
@@ -174,23 +174,23 @@ describe("buildLadder", () => {
     const ladder = buildLadder(
       { ...feed(), pages: [...pages.slice(0, 2), plan, ...pages.slice(2)] },
       "Component.vue",
-      new Map([["s2/hoist-static", 4_000]]),
-      new Map([["s2/hoist-static", 4_000]]),
+      new Map([["l2/hoist-static", 4_000]]),
+      new Map([["l2/hoist-static", 4_000]]),
     );
     const s2 = ladder.rungs[1];
     expect(s2.pages.map(({ key, kind, label }) => [key, kind, label])).toEqual([
-      ["s2/lower", "disegno", "Lowered"],
-      ["s2-plan/transform", "plan", "Plan"],
-      ["s2/hoist-static", "disegno", "hoist-static"],
+      ["l2/lower", "disegno", "Lowered"],
+      ["l2-plan/transform", "plan", "Plan"],
+      ["l2/hoist-static", "disegno", "hoist-static"],
     ]);
     // The rail keeps two facts; the walk count is the timeline summary's.
     expect(s2.facts).toEqual(["2 ops", "1 pass"]);
     // The plan describes steps; it is not one. Only passes carry a walk.
     expect(ladder.timeline.map(({ key, walk }) => [key, walk])).toEqual([
-      ["s1/parse", null],
-      ["s2/lower", null],
-      ["s2/hoist-static", 0],
-      ["s3/lower", null],
+      ["l1/parse", null],
+      ["l2/lower", null],
+      ["l2/hoist-static", 0],
+      ["l3/lower", null],
     ]);
     expect(ladder.walks).toEqual([
       { index: 0, passes: ["hoist-static"], fusable: true, nanos: 4_000 },
@@ -215,7 +215,7 @@ describe("buildLadder", () => {
     const ladder = buildLadder(withRemarks, "Component.vue");
     expect(ladder.remarks).toEqual([
       {
-        stage: "s2",
+        stage: "l2",
         pass: "hoist-static",
         kind: "missed",
         name: "static-subtree",
@@ -224,10 +224,10 @@ describe("buildLadder", () => {
       },
     ]);
     expect(ladder.timeline.map(({ key, remarks }) => [key, remarks])).toEqual([
-      ["s1/parse", 0],
-      ["s2/lower", 0],
-      ["s2/hoist-static", 1],
-      ["s3/lower", 0],
+      ["l1/parse", 0],
+      ["l2/lower", 0],
+      ["l2/hoist-static", 1],
+      ["l3/lower", 0],
     ]);
     expect(buildLadder(feed()).remarks).toEqual([]);
   });

@@ -1,9 +1,9 @@
 //! Structured control flow over a raw Relief template parse.
 //!
 //! A raw parse keeps `v-if` / `v-else-if` / `v-else` / `v-for` as directive
-//! attributes on sibling elements. The facade's contract is S2's: control
+//! attributes on sibling elements. The facade's contract is L2's: control
 //! flow is scopes, not attributes. This module groups a raw sibling list the
-//! way the S1→S2 lowering does (`vize_s1_to_s2::lower::structural`) — the
+//! way the L1→L2 lowering does (`vize_l1_to_l2::lower::structural`) — the
 //! same chain scan, the same gap rule (whitespace-only text and comments
 //! between branches are consumed; kept whitespace re-enters *after* the
 //! scope), the same `v-for` admission (a blank value builds no list) — so a
@@ -164,8 +164,8 @@ impl<'a> ReliefChain<'a> {
 /// An element's reported range: its location, widened to cover a slot
 /// spelling that lies outside it. Only a synthesized slot carrier has one — a
 /// JSX `v-slots` entry lowers to a `<template>` whose `v-slot` is the entry
-/// key, ahead of the rendered body — and S2 widens that op the same way
-/// (a binding stays inside its owner, `S2V002`). An authored template's
+/// key, ahead of the rendered body — and L2 widens that op the same way
+/// (a binding stays inside its owner, `L2V002`). An authored template's
 /// `v-slot` sits in its own opening tag, so the location is unchanged.
 pub(super) fn carrier_range(element: &ElementNode<'_>) -> ByteRange {
     let mut range = loc_to_range(&element.loc);

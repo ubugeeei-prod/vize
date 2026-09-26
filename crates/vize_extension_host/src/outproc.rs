@@ -12,7 +12,7 @@ use std::io::{BufReader, ErrorKind};
 use std::path::Path;
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use crate::contract::{
     Capability, GuestError, GuestLimits, InputDialectGuest, LoweredBlock, SourceBlock,
@@ -76,9 +76,9 @@ pub fn serve_output_command(runner: &Path, component: &Path, limits: GuestLimits
 fn with_limits(command: &mut Command, limits: GuestLimits) {
     command
         .arg("--fuel")
-        .arg(vize_s0::cstr!("{}", limits.fuel_per_call).as_str())
+        .arg(vize_l0::cstr!("{}", limits.fuel_per_call).as_str())
         .arg("--memory")
-        .arg(vize_s0::cstr!("{}", limits.max_memory_bytes).as_str());
+        .arg(vize_l0::cstr!("{}", limits.max_memory_bytes).as_str());
 }
 
 impl OutOfProcessGuest {

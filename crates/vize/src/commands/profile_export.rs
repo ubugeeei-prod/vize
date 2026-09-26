@@ -7,7 +7,7 @@
 use std::path::{Path, PathBuf};
 
 use clap::Args;
-use vize_s0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
+use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
 
 use crate::profile_support;
 

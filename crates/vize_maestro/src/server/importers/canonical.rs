@@ -2,7 +2,7 @@
 
 use std::path::PathBuf;
 use tower_lsp::lsp_types::Url;
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use super::{ServerState, comparable_path, remove_importer};
 

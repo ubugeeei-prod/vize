@@ -2,11 +2,11 @@
 
 use super::binding::MarkupBindingKind;
 use super::jsx_names::{jsx_attribute_arg_name, jsx_attribute_directive_kind, jsx_attribute_ref};
-use super::s2::S2Markup;
-use super::s2::binding::kind_of_directive;
-use super::s2::bound::S2Bound;
-use super::s2::surface::{SurfaceDirective, attr_span};
-use super::{loc_to_range, s2_range, span_to_range};
+use super::l2::L2Markup;
+use super::l2::binding::kind_of_directive;
+use super::l2::bound::L2Bound;
+use super::l2::surface::{SurfaceDirective, attr_span};
+use super::{l2_range, loc_to_range, span_to_range};
 use crate::ir::ByteRange;
 use oxc_ast::ast::JSXAttribute;
 use vize_relief::{DirectiveNode, ExpressionNode};
@@ -18,10 +18,10 @@ enum MarkupDirectiveInner<'a> {
         node: *const JSXAttribute<'a>,
         offset: u32,
     },
-    S2(S2Bound<'a>),
+    L2(L2Bound<'a>),
     Surface {
-        attr: &'a vize_s1::Attribute<'a>,
-        doc: &'a S2Markup<'a>,
+        attr: &'a vize_l1::Attribute<'a>,
+        doc: &'a L2Markup<'a>,
     },
 }
 
@@ -44,22 +44,22 @@ impl<'a> MarkupDirective<'a> {
         }
     }
 
-    pub(super) const fn from_s2(binding: S2Bound<'a>) -> Self {
+    pub(super) const fn from_l2(binding: L2Bound<'a>) -> Self {
         Self {
-            inner: MarkupDirectiveInner::S2(binding),
+            inner: MarkupDirectiveInner::L2(binding),
         }
     }
 
     pub(super) const fn from_surface(
-        attr: &'a vize_s1::Attribute<'a>,
-        doc: &'a S2Markup<'a>,
+        attr: &'a vize_l1::Attribute<'a>,
+        doc: &'a L2Markup<'a>,
     ) -> Self {
         Self {
             inner: MarkupDirectiveInner::Surface { attr, doc },
         }
     }
 
-    fn surface(attr: &'a vize_s1::Attribute<'a>) -> Option<SurfaceDirective<'a>> {
+    fn surface(attr: &'a vize_l1::Attribute<'a>) -> Option<SurfaceDirective<'a>> {
         SurfaceDirective::parse(attr.name.text)
     }
 
@@ -75,7 +75,7 @@ impl<'a> MarkupDirective<'a> {
                     _ => "bind",
                 }
             }
-            MarkupDirectiveInner::S2(binding) => binding.name(),
+            MarkupDirectiveInner::L2(binding) => binding.name(),
             MarkupDirectiveInner::Surface { attr, .. } => {
                 Self::surface(attr).map_or("", |directive| directive.name)
             }
@@ -95,7 +95,7 @@ impl<'a> MarkupDirective<'a> {
                     .unwrap_or(MarkupBindingKind::Bind)
             }
             MarkupDirectiveInner::Relief(_)
-            | MarkupDirectiveInner::S2(_)
+            | MarkupDirectiveInner::L2(_)
             | MarkupDirectiveInner::Surface { .. } => kind_of_directive(self.name()),
         }
     }
@@ -111,7 +111,7 @@ impl<'a> MarkupDirective<'a> {
             MarkupDirectiveInner::Jsx { node, .. } => {
                 jsx_attribute_arg_name(jsx_attribute_ref(node))
             }
-            MarkupDirectiveInner::S2(binding) => binding.arg().map(|(arg, _)| arg),
+            MarkupDirectiveInner::L2(binding) => binding.arg().map(|(arg, _)| arg),
             MarkupDirectiveInner::Surface { attr, .. } => {
                 Self::surface(attr).and_then(|directive| directive.arg)
             }
@@ -134,7 +134,7 @@ impl<'a> MarkupDirective<'a> {
                     visitor(modifier.content);
                 }
             }
-            MarkupDirectiveInner::S2(binding) => binding.walk_modifiers(visitor),
+            MarkupDirectiveInner::L2(binding) => binding.walk_modifiers(visitor),
             MarkupDirectiveInner::Surface { attr, .. } => {
                 if let Some(directive) = Self::surface(attr) {
                     directive.walk_modifiers(visitor);
@@ -162,8 +162,8 @@ impl<'a> MarkupDirective<'a> {
             MarkupDirectiveInner::Jsx { node, offset } => {
                 span_to_range(jsx_attribute_ref(node).span, offset)
             }
-            MarkupDirectiveInner::S2(binding) => s2_range(binding.span()),
-            MarkupDirectiveInner::Surface { attr, doc } => s2_range(attr_span(doc.source, attr)),
+            MarkupDirectiveInner::L2(binding) => l2_range(binding.span()),
+            MarkupDirectiveInner::Surface { attr, doc } => l2_range(attr_span(doc.source, attr)),
         }
     }
 

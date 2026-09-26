@@ -1,16 +1,16 @@
 //! SFC markup rules whose diagnostics match the Relief visitor (P4-7b).
 //!
-//! The admitted rules share one S2 lowering and one traversal. All other
+//! The admitted rules share one L2 lowering and one traversal. All other
 //! template rules stay on the Relief visitor until their parity is proven.
 
 use crate::context::LintContext;
 use crate::ir::TemplateSyntax;
 use crate::linter::config::Linter;
-use crate::markup::{MarkupContext, MarkupDocument, S2Template};
+use crate::markup::{L2Template, MarkupContext, MarkupDocument};
 use crate::visitor::LintVisitor;
 use vize_croquis::Croquis;
+use vize_l0::{Allocator, profile};
 use vize_relief::RootNode;
-use vize_s0::{Allocator, profile};
 
 mod batch;
 
@@ -106,11 +106,11 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     }
     let lowered = profile!(
         "patina.sfc.facade.lower",
-        S2Template::lower(input.allocator, input.source)
+        L2Template::lower(input.allocator, input.source)
     );
     let markup = lowered.markup();
     let markup = crate::markup::reborrow_markup(&markup);
-    let mut document = MarkupDocument::from_s2(markup, TemplateSyntax::Vue);
+    let mut document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
     if let Some(analysis) = input.analysis {
         document = document.with_analysis(analysis);
     }

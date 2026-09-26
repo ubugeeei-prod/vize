@@ -33,12 +33,12 @@ finding source text never promotes a project to runtime coverage. Run
 unknown, unverified, or excluded compatibility dimension must retain a reason and tracking Issue.
 
 `davinci-remarks-baseline.folio` is the TS-32 optimization-remarks baseline (Davinci P3-13): every
-remark the S2 transform pipeline emits over the in-repo `.vue` fixtures (`_git` excluded), keyed by
-file. `cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_remarks_corpus`
+remark the L2 transform pipeline emits over the in-repo `.vue` fixtures (`_git` excluded), keyed by
+file. `cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_remarks_corpus`
 requires exact equality; re-bless with `UPDATE_REMARKS_BASELINE=1`, which refuses any
 `applied → missed` transition not explained in the baseline's `[remarks-corpus.explained]` section.
 
-`davinci-s3-remarks-baseline.folio` is the same gate for S3 extraction (Davinci P3-10): every
-`s3.extract-placements` remark the `-O3` S3 optimization pipeline emits over the same sweep.
-`cargo test -p vize_s2_to_s3 --test davinci_s3_remarks_corpus` requires exact equality and re-blesses
+`davinci-s3-remarks-baseline.folio` is the same gate for L3 extraction (Davinci P3-10): every
+`s3.extract-placements` remark the `-O3` L3 optimization pipeline emits over the same sweep.
+`cargo test -p vize_l2_to_l3 --test davinci_l3_remarks_corpus` requires exact equality and re-blesses
 under the same `UPDATE_REMARKS_BASELINE=1` rules.

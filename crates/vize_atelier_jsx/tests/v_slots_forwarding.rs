@@ -43,7 +43,7 @@ use vize_atelier_jsx::{
     JsxLang, SsrCompileOptions, VaporCompileOptions, VdomCompileOptions, compile_to_ssr,
     compile_to_vapor, compile_to_vdom,
 };
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 fn render_code(source: &str) -> String {
     let bump = Allocator::new();

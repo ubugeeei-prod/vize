@@ -2,7 +2,7 @@
 
 use super::shapes::{Shape, compile};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_s0::profiler::global_profiler;
+use vize_l0::profiler::global_profiler;
 
 #[test]
 fn inline_scope_and_helper_order_match_shipped_compiler() {
@@ -71,7 +71,7 @@ fn assert_inline_parity(filename: &str, source: &str) {
     let profiler = global_profiler();
     profiler.clear();
     profiler.enable();
-    let emitted = compile(&descriptor, filename, Shape::DomInline).expect("S2 compile");
+    let emitted = compile(&descriptor, filename, Shape::DomInline).expect("L2 compile");
     let counters = profiler.counter_summary();
     profiler.disable();
     profiler.clear();
@@ -80,7 +80,7 @@ fn assert_inline_parity(filename: &str, source: &str) {
             .entries
             .iter()
             .any(|entry| entry.name == "davinci.s2_dom.accepted" && entry.total == 1),
-        "{filename} must reach S2: {counters:?}"
+        "{filename} must reach L2: {counters:?}"
     );
     let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
         compile(&descriptor, filename, Shape::DomInline)

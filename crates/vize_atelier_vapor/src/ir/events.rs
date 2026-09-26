@@ -1,4 +1,4 @@
-//! Shared native-event semantics for legacy and S3 lowering.
+//! Shared native-event semantics for legacy and L3 lowering.
 
 use vize_carton::Allocator;
 

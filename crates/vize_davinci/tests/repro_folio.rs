@@ -9,7 +9,7 @@
 
 use vize_davinci::folio::repro::{ReproFolio, failure_text};
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 const CANONICAL: &str = "[repro]\n\
 pipeline=template(transform,codegen)\n\

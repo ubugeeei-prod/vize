@@ -7,7 +7,7 @@ use super::{
     TemplateFormatter, format_interpolation_expression, format_interpolations,
     suppression::{ChunkJoin, LineJoiner, TextRun},
 };
-use vize_s0::String;
+use vize_l0::String;
 
 impl TemplateFormatter<'_> {
     /// Flush accumulated text content with interpolation formatting.

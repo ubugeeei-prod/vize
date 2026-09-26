@@ -1,6 +1,6 @@
 //! Error formatting for inspector compare's official compiler subprocess.
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 pub(super) fn official_compiler_error_message(stderr: &str) -> String {
     if is_missing_vue3_compiler(stderr) {

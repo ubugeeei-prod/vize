@@ -22,7 +22,7 @@ use vize_davinci::pass::{
     Pipeline, Preserved, Remark, RemarkArg, RemarkCounter, RemarkSink, TimingObserver,
     run_pipeline_remarked,
 };
-use vize_s0::Span;
+use vize_l0::Span;
 
 #[global_allocator]
 static ALLOCATOR: CountingAllocator<std::alloc::System> = CountingAllocator::system();

@@ -12,7 +12,7 @@ use std::time::{Duration, Instant};
 
 use parking_lot::Mutex;
 use tower_lsp::lsp_types::Url;
-use vize_s0::FxHashMap;
+use vize_l0::FxHashMap;
 
 use super::MaestroServer;
 

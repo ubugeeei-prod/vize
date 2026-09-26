@@ -6,7 +6,7 @@
 
 use super::{LintResult, Linter};
 use crate::rules::musea::MuseaLinter;
-use vize_s0::profile;
+use vize_l0::profile;
 
 pub(crate) const RULE_REQUIRE_TITLE: &str = "musea/require-title";
 pub(crate) const RULE_REQUIRE_COMPONENT: &str = "musea/require-component";

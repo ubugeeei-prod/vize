@@ -16,7 +16,7 @@ use std::path::Path;
 use vize_dialect_moonbit::diagnostic::Level;
 use vize_dialect_moonbit::native::NativeMoonc;
 use vize_dialect_moonbit::render::render;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 fn main() {
     let mut args = std::env::args().skip(1);

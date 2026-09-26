@@ -179,7 +179,7 @@ const fn decode_lower_hex(byte: u8) -> Option<u8> {
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
     use super::{ContentFingerprint, ContentFingerprintParseError};
-    use vize_s0::{String, ToCompactString, cstr};
+    use vize_l0::{String, ToCompactString, cstr};
 
     #[test]
     fn digest_matches_standard_sha256_vectors() {

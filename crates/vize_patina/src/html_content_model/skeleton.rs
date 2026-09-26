@@ -9,7 +9,7 @@
 //! node kind — never a silent omission — so the checker can answer `unknown`
 //! for it instead of guessing.
 
-use vize_s0::{CompactString, Span};
+use vize_l0::{CompactString, Span};
 
 use super::facts::{Attr, ElemId, Ns};
 use super::tri::Tri;
@@ -169,11 +169,11 @@ pub(super) fn component_usage_name(node: &Node) -> Option<&str> {
 
 /// A hyphenated tag Vue treats as a component, not an HTML element.
 fn resolves_as_component(tag: &str) -> bool {
-    if !tag.contains('-') || vize_s0::is_native_tag(tag) {
+    if !tag.contains('-') || vize_l0::is_native_tag(tag) {
         return false;
     }
     if tag.bytes().any(|byte| byte.is_ascii_uppercase()) {
-        return !vize_s0::is_native_tag(&tag.to_ascii_lowercase());
+        return !vize_l0::is_native_tag(&tag.to_ascii_lowercase());
     }
     true
 }

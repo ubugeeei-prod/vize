@@ -1,4 +1,4 @@
-//! The placement page paired with the graph-only `S3Folio`.
+//! The placement page paired with the graph-only `L3Folio`.
 //!
 //! The graph page keeps the grammar the Lean reference parses; placements are
 //! an overlay, so they print on their own derived page. Parsing checks syntax
@@ -10,18 +10,19 @@ use core::str::SplitWhitespace;
 
 use vize_davinci::folio::value::FolioValue;
 use vize_davinci::folio::{Folio, FolioError};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::{Placement, PlacementRecord, PlacementSet};
 use crate::op::{OpId, Program};
 
 /// Placement records in program order.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-pub struct S3PlacementFolio {
+#[folio(name = "s3-placement-folio")]
+pub struct L3PlacementFolio {
     pub placements: Vec<FolioPlacement>,
 }
 
-impl S3PlacementFolio {
+impl L3PlacementFolio {
     /// Mirror the live placement overlay into the owned document model.
     #[must_use]
     pub fn of(program: &Program<'_>) -> Self {

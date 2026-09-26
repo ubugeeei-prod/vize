@@ -13,7 +13,7 @@
 
 use core::fmt;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::contract::{Capability, LANG_FEATURE_PREFIX, PROTOCOL_VERSION, REQUIRED_FEATURES};
 

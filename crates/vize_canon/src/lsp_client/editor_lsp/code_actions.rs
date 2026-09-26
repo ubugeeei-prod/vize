@@ -2,7 +2,7 @@
 
 use corsa::runtime::block_on;
 use serde_json::{Value, json};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::{CorsaProjectClient, EditorLspSession};
 use crate::LspRange;

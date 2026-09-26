@@ -134,7 +134,7 @@ test("publish_crates native script covers publish and idempotent dry-run modes",
       expectedFrontier(publishedCrates[5]),
     ]);
     assert.match(partial.stdout, /vize_carton .* already published and resolvable/i);
-    assert.match(partial.stdout, /registry-resolvable frontier vize_s1/i);
+    assert.match(partial.stdout, /registry-resolvable frontier vize_l1/i);
     assert.equal(fs.readFileSync(curlLogPath, "utf8").trim().split("\n").length, 6);
 
     const allPublished = runDryRun(publishedCrates);

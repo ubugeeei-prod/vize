@@ -358,7 +358,7 @@ export declare function compileWithOutputPlugins(
 ): OutputPluginsCompileResultNapi;
 
 /**
- * Compile a template using bounded, deterministic edits to the native S2
+ * Compile a template using bounded, deterministic edits to the native L2
  * artifact. Unsupported edits and incompatible canonical output are errors.
  */
 export declare function compileWithTransformPlugins(

@@ -1,4 +1,4 @@
-//! Native S3 object/range loops and root-level control flow, with written-out
+//! Native L3 object/range loops and root-level control flow, with written-out
 //! expectations checked against both published runtimes.
 
 use super::native_control::element;

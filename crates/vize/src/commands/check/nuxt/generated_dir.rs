@@ -7,7 +7,7 @@ use std::{
 
 use ignore::WalkBuilder;
 use serde_json::Value;
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 use super::parsing::nuxt_config_static_string;
 use crate::commands::check::tsconfig_inputs::parse_jsonc_value;
@@ -31,7 +31,7 @@ impl NuxtGeneratedDir {
 
     pub(super) fn imports_path(&self) -> PathBuf {
         for suffix in DECLARATION_SUFFIXES {
-            let path = self.path.join(vize_s0::cstr!("imports{suffix}"));
+            let path = self.path.join(vize_l0::cstr!("imports{suffix}"));
             if path.is_file() {
                 return path;
             }

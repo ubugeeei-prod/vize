@@ -32,10 +32,10 @@
 //! - [`render`] — the rustc/Elm-grade terminal renderer every diagnostic
 //!   surface shares, localized through a caller-supplied catalog.
 //!
-//! The stage IRs themselves land in their own crates (`vize_s2` for S2);
+//! The stage IRs themselves land in their own crates (`vize_l2` for L2);
 //! see `docs/davinci/architecture.md`. New implementation code should prefer
-//! the stage aliases recorded in [`stage`] (`vize_s0`, `vize_s1`, `vize_s2`,
-//! `vize_s1_to_s2`) over any remaining historical art-name package ids.
+//! the stage aliases recorded in [`stage`] (`vize_l0`, `vize_l1`, `vize_l2`,
+//! `vize_l1_to_l2`) over any remaining historical art-name package ids.
 //!
 //! The crate is `no_std + alloc` from birth so every future stage artifact
 //! can print and parse on any target (wasm32-wasip2 included). Host-only

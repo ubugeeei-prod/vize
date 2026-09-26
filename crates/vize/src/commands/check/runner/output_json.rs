@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 use super::super::{
     CheckArgs, JsonFileResult, JsonOutput, JsonProgramResult, ProgramExecution,
@@ -22,7 +22,7 @@ pub(super) fn emit_json(
     total_warnings: usize,
     emitted: Option<&DeclarationSummary>,
     canonical_paths: &mut CanonicalPathCache,
-) -> Result<(), vize_s0::String> {
+) -> Result<(), vize_l0::String> {
     let mut files_json = executions
         .iter()
         .flat_map(|execution| {
@@ -100,7 +100,7 @@ pub(super) fn emit_json(
                     .map(|path| vize_canon::snapshot_tsconfig_compiler_options(cwd, path))
                     .transpose()
                     .map_err(|error| {
-                        vize_s0::cstr!(
+                        vize_l0::cstr!(
                             "Failed to snapshot compiler options for JSON output: {}",
                             error
                         )
@@ -108,7 +108,7 @@ pub(super) fn emit_json(
                 files,
             })
         })
-        .collect::<Result<Vec<_>, vize_s0::String>>()?;
+        .collect::<Result<Vec<_>, vize_l0::String>>()?;
 
     let reported_keys = executions
         .iter()

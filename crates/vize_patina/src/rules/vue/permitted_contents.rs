@@ -48,8 +48,8 @@ use crate::html_content_model::{
 };
 use crate::markup::{MarkupContext, MarkupDocument, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::{CompactString, cstr};
 use vize_relief::RootNode;
-use vize_s0::{CompactString, cstr};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/permitted-contents",
@@ -118,7 +118,7 @@ impl MarkupRule for PermittedContents {
         META.name
     }
 
-    /// SFC reads the authored S1 projection retained by its S2 document.
+    /// SFC reads the authored L1 projection retained by its L2 document.
     /// JSX is lowered without HTML repair and already is authored.
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
         let skeleton = authored_document_skeleton(document);

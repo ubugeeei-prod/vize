@@ -8,18 +8,18 @@
 ## Decided (stubs)
 
 - **Naming** → charter #11. Stage aliases are the primary implementation names
-  (`vize_s1`, `vize_s2`, `vize_s3`, `vize_s1_to_s2`). S1 has already been
-  mechanically renamed from Sinopia; S3 currently keeps the `vize_impeto`
+  (`vize_l1`, `vize_l2`, `vize_l3`, `vize_l1_to_l2`). L1 has already been
+  mechanically renamed from Sinopia; L3 currently keeps the `vize_impeto`
   package id; remaining art names stay courtesy aliases and, where not yet
   renamed, historical package ids until their own rename PRs land.
-- **S3 scope** → charter #9. DOM + Vapor through S3; SSR thin S2→S4 path
+- **L3 scope** → charter #9. DOM + Vapor through L3; SSR thin L2→L4 path
   reading partition facts. Phase 3 measurements keep veto power.
 - **Incrementality** → charter #10. salsa in the resident tier only; fused
   non-salsa pipeline for one-shot CLI; block content keys as firewall queries.
 - **Fact query API** → charter #8. Static demand declarations + debug-build
   undeclared-access detector.
-- **pug fidelity** → charter #12. First-class S1 dialect.
-- **SFC style coordination** → charter #13. `v-bind()` bindings visible as S2
+- **pug fidelity** → charter #12. First-class L1 dialect.
+- **SFC style coordination** → charter #13. `v-bind()` bindings visible as L2
   ops.
 - **Foreign expression type checking** → charter #14. Projection duty lives in
   the expression-dialect contract; boundary-typed integration is the fallback
@@ -34,7 +34,7 @@
   the wasm playground keeps the embedding; JSON-lines rejected.
 - **Fusion depth for the build path** →
   [P2-12b record](./plan/phase-2-records/p2-12b.md). Source-map-free DOM
-  compiles report one observer-facing S2 build walk. Synthesized and preserving
+  compiles report one observer-facing L2 build walk. Synthesized and preserving
   facts fold before codegen; Vue 2 legacy sugar remains a compatibility pass,
   and SSR/Vapor fusion waits for phase 3.
 
@@ -83,7 +83,7 @@ existing scorer (`vize_croquis_cf/src/rules/complexity.rs`) counts `v-if`s,
 no CFG and sums a whole project.
 
 **Recommendation (phase-4 re-cut, 2026-09-21):** both families, computed per
-component over S2 regions. **Own cyclomatic** = 1 + decisions (each `ui.if`
+component over L2 regions. **Own cyclomatic** = 1 + decisions (each `ui.if`
 branch beyond the first, one more for an `ui.if` without `v-else`, each
 `ui.for`, each `&&`/`||`/`??`/`?:` in a retained expression AST; opaque
 expressions add nothing and are counted as unknown). **Own cognitive** follows
@@ -128,7 +128,7 @@ isolation, corpus-run quotas) and the audit trail format for auto-merged PRs.
 ## JS plugin API shape
 
 **Decided by measurement (P4-16, 2026-09-22)** →
-[P4-16 record](./plan/phase-4-records/p4-16.md): serialized S2 visit batches
+[P4-16 record](./plan/phase-4-records/p4-16.md): serialized L2 visit batches
 over sync napi; fact demands declared as a static list in the plugin
 manifest; content keys over the plugin's version, code fingerprint, batch
 schema and file; the batch doubles as the WASM-tier contract. The measured

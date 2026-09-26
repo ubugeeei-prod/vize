@@ -2,9 +2,9 @@
 
 use super::element::{MarkupElement, MarkupElementInner};
 use super::jsx_names::jsx_element_ref;
-use super::s2::binding::S2Item;
-use super::s2::surface::{SurfaceDirective, attr_span};
-use super::{loc_to_range, s2_range, span_to_range};
+use super::l2::binding::L2Item;
+use super::l2::surface::{SurfaceDirective, attr_span};
+use super::{l2_range, loc_to_range, span_to_range};
 use crate::ir::ByteRange;
 use oxc_ast::ast::JSXAttributeItem;
 
@@ -23,7 +23,7 @@ impl MarkupElement<'_> {
                     }
                 }
             }
-            MarkupElementInner::S2 {
+            MarkupElementInner::L2 {
                 surface: Some(element),
                 doc,
                 op,
@@ -34,7 +34,7 @@ impl MarkupElement<'_> {
                         && SurfaceDirective::parse(attr.name.text)
                             .is_some_and(|directive| directive.name == name)
                     {
-                        visitor(s2_range(span));
+                        visitor(l2_range(span));
                     }
                 }
             }
@@ -49,17 +49,17 @@ impl MarkupElement<'_> {
                         if SurfaceDirective::parse(attr.name.text)
                             .is_some_and(|directive| directive.name == name)
                         {
-                            visitor(s2_range(attr_span(doc.source, attr)));
+                            visitor(l2_range(attr_span(doc.source, attr)));
                         }
                     }
                 }
             }
-            MarkupElementInner::S2Carrier { element, doc, .. } => {
+            MarkupElementInner::L2Carrier { element, doc, .. } => {
                 for attr in &element.open.attrs {
                     if SurfaceDirective::parse(attr.name.text)
                         .is_some_and(|directive| directive.name == name)
                     {
-                        visitor(s2_range(attr_span(doc.source, attr)));
+                        visitor(l2_range(attr_span(doc.source, attr)));
                     }
                 }
             }
@@ -77,7 +77,7 @@ impl MarkupElement<'_> {
     /// includes JSX spread attributes and the structural directives the facade
     /// consumes into scopes (`v-if`, `v-for`, …). Formatting-shaped rules that
     /// only need authored source windows can use this without assigning
-    /// semantic meaning to those items. S2 templates read it off S1.
+    /// semantic meaning to those items. L2 templates read it off L1.
     pub fn walk_opening_item_ranges(&self, visitor: &mut impl FnMut(ByteRange)) {
         match self.inner {
             MarkupElementInner::Relief(node) => {
@@ -98,7 +98,7 @@ impl MarkupElement<'_> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
-            MarkupElementInner::S2 {
+            MarkupElementInner::L2 {
                 surface: Some(element),
                 doc,
                 op,
@@ -106,11 +106,11 @@ impl MarkupElement<'_> {
                 for attr in &element.open.attrs {
                     let span = attr_span(doc.source, attr);
                     // The parser drops the `v-pre` that opens a raw subtree;
-                    // S2 keeps a nested one as a frozen attribute.
+                    // L2 keeps a nested one as a frozen attribute.
                     let opening_v_pre = attr.name.text == "v-pre"
                         && !op.attributes().iter().any(|kept| kept.span == span);
                     if !opening_v_pre {
-                        visitor(s2_range(span));
+                        visitor(l2_range(span));
                     }
                 }
             }
@@ -122,17 +122,17 @@ impl MarkupElement<'_> {
             } => {
                 for attr in &element.open.attrs {
                     if !opens_v_pre || attr.name.text != "v-pre" {
-                        visitor(s2_range(attr_span(doc.source, attr)));
+                        visitor(l2_range(attr_span(doc.source, attr)));
                     }
                 }
             }
-            MarkupElementInner::S2Carrier { element, doc, .. } => {
+            MarkupElementInner::L2Carrier { element, doc, .. } => {
                 for attr in &element.open.attrs {
-                    visitor(s2_range(attr_span(doc.source, attr)));
+                    visitor(l2_range(attr_span(doc.source, attr)));
                 }
             }
-            MarkupElementInner::S2 { surface: None, .. } => {
-                self.walk_s2_items(&mut |item: S2Item<'_>| visitor(s2_range(item.span())));
+            MarkupElementInner::L2 { surface: None, .. } => {
+                self.walk_l2_items(&mut |item: L2Item<'_>| visitor(l2_range(item.span())));
             }
         }
     }

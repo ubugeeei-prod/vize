@@ -3,7 +3,7 @@
 > [!NOTE]
 > Generated; do not edit. Mined from the TS-32 corpus baseline
 > (`tests/_fixtures/davinci-remarks-baseline.folio`) by
-> `crates/vize_s1_to_s2/tests/davinci_remarks_corpus.rs`, which pins this file
+> `crates/vize_l1_to_l2/tests/davinci_remarks_corpus.rs`, which pins this file
 > and rewrites it under `UPDATE_REMARKS_BASELINE=1`. Each item is one missed
 > reason (a remark's arguments after its subject, per
 > [remarks-format.md](./remarks-format.md)), ranked by corpus hits: the

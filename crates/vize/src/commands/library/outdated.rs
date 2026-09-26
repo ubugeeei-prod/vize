@@ -1,7 +1,7 @@
 //! `vize lib outdated`: pulled versions vs. the installed and latest registries.
 
 use serde::Serialize;
-use vize_s0::String;
+use vize_l0::String;
 
 use super::LibContext;
 use super::error::LibResult;

@@ -262,13 +262,13 @@ function* rustFiles(directory: string): Generator<string> {
   }
 }
 
-test("Atelier core migrated compiler slices import S0 storage through the stage alias", () => {
+test("Atelier core migrated compiler slices import L0 storage through the stage alias", () => {
   const rootManifest = readToml("Cargo.toml");
   const coreManifest = readToml("crates", "vize_atelier_core", "Cargo.toml");
   const workspaceDependencies = asRecord(asRecord(rootManifest.workspace).dependencies);
   const coreDependencies = asRecord(coreManifest.dependencies);
-  const workspaceS0 = asRecord(workspaceDependencies.vize_s0);
-  const coreS0 = asRecord(coreDependencies.vize_s0);
+  const workspaceS0 = asRecord(workspaceDependencies.vize_l0);
+  const coreS0 = asRecord(coreDependencies.vize_l0);
 
   assert.equal(workspaceS0.package, "vize_carton");
   assert.equal(workspaceS0.path, "crates/vize_carton");
@@ -281,7 +281,7 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
   assert.ok(cartonPackage);
   assert.ok(corePackage);
   const s0Dependency = corePackage.dependencies.find(
-    (dependency) => dependency.name === "vize_carton" && dependency.rename === "vize_s0",
+    (dependency) => dependency.name === "vize_carton" && dependency.rename === "vize_l0",
   );
   assert.ok(s0Dependency);
   assert.equal(s0Dependency.path, path.join(repoRoot, "crates", "vize_carton"));
@@ -340,11 +340,11 @@ test("Atelier core migrated compiler slices import S0 storage through the stage 
     if (/\bvize_carton::|use vize_carton\b/u.test(source)) {
       offenders.push(path.relative(repoRoot, file));
     }
-    if (/\bvize_s0::|use vize_s0\b/u.test(source)) {
+    if (/\bvize_l0::|use vize_l0\b/u.test(source)) {
       aliasImportCount += 1;
     }
   }
 
   assert.deepEqual(offenders, []);
-  assert.ok(aliasImportCount > 0, "migrated codegen slices should use vize_s0");
+  assert.ok(aliasImportCount > 0, "migrated codegen slices should use vize_l0");
 });

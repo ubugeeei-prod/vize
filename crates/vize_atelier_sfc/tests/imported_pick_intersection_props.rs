@@ -7,7 +7,7 @@
 use std::path::PathBuf;
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 fn temp_project_dir() -> PathBuf {
     let nonce = std::time::SystemTime::now()

@@ -10,7 +10,7 @@
 //! referenced bindings in source order, whether that enumeration is exact,
 //! and whether the expression is constant.
 
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 use super::{AlphaExport, Demand, FactGroup, FactTable, ids};
 use crate::folio::Folio;

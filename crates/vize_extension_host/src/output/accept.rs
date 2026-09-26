@@ -2,10 +2,10 @@
 
 use super::{
     AcceptedEmit, EMIT_DOCUMENT_PAGE_SCHEMA, EmitDocument, EmitError, EmitRequest, Emitted,
-    S3_PAGE_SCHEMA,
+    L3_PAGE_SCHEMA,
 };
 use crate::accept::read_page;
-use crate::contract::{S2_PAGE_SCHEMA, Span};
+use crate::contract::{L2_PAGE_SCHEMA, Span};
 
 /// Accept a guest's emission of `request`.
 ///
@@ -13,8 +13,8 @@ use crate::contract::{S2_PAGE_SCHEMA, Span};
 ///
 /// The first check the answer fails, as an [`EmitError`].
 pub fn accept_emitted(request: &EmitRequest, emitted: Emitted) -> Result<AcceptedEmit, EmitError> {
-    schema("s2-page", S2_PAGE_SCHEMA, request.s2.schema_version)?;
-    schema("s3-page", S3_PAGE_SCHEMA, request.s3.schema_version)?;
+    schema("s2-page", L2_PAGE_SCHEMA, request.s2.schema_version)?;
+    schema("s3-page", L3_PAGE_SCHEMA, request.s3.schema_version)?;
     let document = read_page(
         "emit-document-page",
         EMIT_DOCUMENT_PAGE_SCHEMA,

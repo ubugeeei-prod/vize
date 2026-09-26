@@ -2,7 +2,7 @@
 
 use std::path::Path;
 use vize_glyph::{FormatOptions, FormatResult};
-use vize_s0::profile;
+use vize_l0::profile;
 
 mod plain;
 

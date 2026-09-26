@@ -43,34 +43,34 @@ describe("flameGraph", () => {
   it("stacks stage > pass > block by time, siblings sorted by name", () => {
     expect(flameGraph(PROFILE, LADDER_STEP_KEY).total).toBe(53_000);
     expect(shape(PROFILE)).toEqual([
-      ["s1", 0, 0, 1_000, null],
-      ["s1/parse", 1, 0, 1_000, null],
-      ["s1/parse/template", 2, 0, 1_000, null],
-      ["s2", 0, 1_000, 31_000, null],
-      ["s2/hoist-static", 1, 1_000, 17_000, null],
-      ["s2/hoist-static/template", 2, 1_000, 17_000, null],
-      ["s2/lower", 1, 18_000, 5_000, null],
-      ["s2/lower/template", 2, 18_000, 5_000, null],
-      ["s2/v-slot", 1, 23_000, 9_000, null],
-      ["s2/v-slot/template", 2, 23_000, 9_000, null],
-      ["s3", 0, 32_000, 21_000, null],
-      ["s3/lower", 1, 32_000, 21_000, null],
-      ["s3/lower/template", 2, 32_000, 21_000, null],
+      ["l1", 0, 0, 1_000, null],
+      ["l1/parse", 1, 0, 1_000, null],
+      ["l1/parse/template", 2, 0, 1_000, null],
+      ["l2", 0, 1_000, 31_000, null],
+      ["l2/hoist-static", 1, 1_000, 17_000, null],
+      ["l2/hoist-static/template", 2, 1_000, 17_000, null],
+      ["l2/lower", 1, 18_000, 5_000, null],
+      ["l2/lower/template", 2, 18_000, 5_000, null],
+      ["l2/v-slot", 1, 23_000, 9_000, null],
+      ["l2/v-slot/template", 2, 23_000, 9_000, null],
+      ["l3", 0, 32_000, 21_000, null],
+      ["l3/lower", 1, 32_000, 21_000, null],
+      ["l3/lower/template", 2, 32_000, 21_000, null],
     ]);
   });
 
   it("aggregates repeated calls and keeps unattributed spans visible", () => {
     const flame = flameGraph(
-      run([span("k", "s2", "p", 4_000, 2), span("k", "s2", "p", 6_000, 3), span("k", null, "", 5)]),
+      run([span("k", "l2", "p", 4_000, 2), span("k", "s2", "p", 6_000, 3), span("k", null, "", 5)]),
       "k",
     );
     expect(flame.frames.map(({ path, nanos, count }) => [path.join("/"), nanos, count])).toEqual([
       ["(unattributed)", 5, 1],
       ["(unattributed)/(unattributed)", 5, 1],
       ["(unattributed)/(unattributed)/(unattributed)", 5, 1],
-      ["s2", 10_000, 5],
-      ["s2/p", 10_000, 5],
-      ["s2/p/template", 10_000, 5],
+      ["l2", 10_000, 5],
+      ["l2/p", 10_000, 5],
+      ["l2/p/template", 10_000, 5],
     ]);
   });
 
@@ -87,14 +87,14 @@ describe("flameGraph", () => {
     expect(
       frames.map((frame) => [frame.path.join("/"), frame.baseline, flameTrend(frame)]),
     ).toEqual([
-      ["s1", 2_000, "faster"],
-      ["s1/parse", 2_000, "faster"],
-      ["s2", 21_500, "slower"],
-      ["s2/hoist-static", 8_000, "slower"],
-      ["s2/lower", 5_000, "same"],
-      ["s2/v-slot", 8_500, "same"],
-      ["s3", null, "new"],
-      ["s3/lower", null, "new"],
+      ["l1", 2_000, "faster"],
+      ["l1/parse", 2_000, "faster"],
+      ["l2", 21_500, "slower"],
+      ["l2/hoist-static", 8_000, "slower"],
+      ["l2/lower", 5_000, "same"],
+      ["l2/v-slot", 8_500, "same"],
+      ["l3", null, "new"],
+      ["l3/lower", null, "new"],
     ]);
   });
 });
@@ -110,9 +110,9 @@ describe("FlameView", () => {
     ]);
     const stages = rows[0].findAll(".davinci-flame-frame");
     expect(stages.map((frame) => frame.find(".davinci-flame-name").text())).toEqual([
-      "s1",
-      "s2",
-      "s3",
+      "l1",
+      "l2",
+      "l3",
     ]);
     // Compare through the engine's own CSS serializer (Chromium rounds
     // percentages; happy-dom keeps every digit), so the oracle stays exact.
@@ -121,10 +121,10 @@ describe("FlameView", () => {
     probe.style.width = `${(31_000 / 53_000) * 100}%`;
     const placed = (stages[1].element as HTMLElement).style;
     expect([placed.left, placed.width]).toEqual([probe.style.left, probe.style.width]);
-    expect(stages[1].attributes("title")).toBe("s2: 31 µs, 58% of the run, 3 calls");
-    expect(stages[1].classes()).toEqual(["davinci-flame-frame", "rung-s2"]);
+    expect(stages[1].attributes("title")).toBe("l2: 31 µs, 58% of the run, 3 calls");
+    expect(stages[1].classes()).toEqual(["davinci-flame-frame", "rung-l2"]);
     await rows[1].findAll(".davinci-flame-frame")[1].trigger("click");
-    expect(wrapper.emitted("select")).toEqual([[["s2", "hoist-static"]]]);
+    expect(wrapper.emitted("select")).toEqual([[["l2", "hoist-static"]]]);
     await wrapper.find(".davinci-flame-bar button").trigger("click");
     expect(wrapper.emitted("pin")).toEqual([[]]);
     expect(wrapper.find(".davinci-flame-legend").exists()).toBe(false);
@@ -140,7 +140,7 @@ describe("FlameView", () => {
       "trend-new",
       "trend-new",
     ]);
-    expect(stages[0].attributes("title")).toBe("s1: 1 µs, 2% of the run, 1 call; baseline 2 µs");
+    expect(stages[0].attributes("title")).toBe("l1: 1 µs, 2% of the run, 1 call; baseline 2 µs");
     const buttons = wrapper.findAll(".davinci-flame-bar button");
     expect(buttons.map((button) => button.text())).toEqual([
       "Pin this run instead",
@@ -190,16 +190,16 @@ describe("FlameView", () => {
       "compile.template",
     ]);
     const names = () => wrapper.findAll(".davinci-flame-name").map((name) => name.text());
-    expect(names()).toEqual(["s2", "hoist-static", "v-slot", "template", "template"]);
+    expect(names()).toEqual(["l2", "hoist-static", "v-slot", "template", "template"]);
     // An opened file is not compared with this run's baseline or linked to pages.
     expect(wrapper.find(".davinci-flame-legend").exists()).toBe(false);
     await wrapper.findAll(".davinci-flame-frame")[1].trigger("click");
     expect(wrapper.emitted("select")).toBeUndefined();
 
     await select.setValue("compile.template");
-    expect(names()).toEqual(["s2", "lower", "template"]);
+    expect(names()).toEqual(["l2", "lower", "template"]);
     await wrapper.find(".davinci-flame-bar button").trigger("click");
-    expect(names()[0]).toBe("s1");
+    expect(names()[0]).toBe("l1");
     expect(wrapper.find(".davinci-flame-legend").exists()).toBe(true);
     wrapper.unmount();
   });

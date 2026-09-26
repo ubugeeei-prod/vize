@@ -6,7 +6,7 @@ mod pruning {
     use crate::html_content_model::{
         Skeleton, authored_skeleton, composable_skeleton, compose_with,
     };
-    use vize_s0::Allocator;
+    use vize_l0::Allocator;
 
     /// The class ids composition proves for `parent` rendering `Kv`, with
     /// `falsy` the props the oracle proves falsy when unpassed.

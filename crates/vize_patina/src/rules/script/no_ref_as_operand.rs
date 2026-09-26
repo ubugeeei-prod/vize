@@ -45,7 +45,7 @@ use oxc_ast_visit::{
 use oxc_span::Span;
 use oxc_syntax::operator::UnaryOperator;
 use oxc_syntax::scope::ScopeFlags;
-use vize_s0::{CompactString, FxHashMap};
+use vize_l0::{CompactString, FxHashMap};
 
 mod scope;
 

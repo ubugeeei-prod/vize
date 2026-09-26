@@ -43,7 +43,7 @@ use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_atelier_sfc::{BlockLocation, SfcParseOptions, parse_sfc};
-use vize_s0::{String, cstr, profile};
+use vize_l0::{String, cstr, profile};
 
 pub use options::{SfcElementOrderGroup, SfcElementOrderOptions};
 

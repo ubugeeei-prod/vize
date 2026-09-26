@@ -3,7 +3,7 @@
 use std::{fmt, ops::Range};
 
 use ropey::{Rope, RopeSlice};
-use vize_s0::SmallVec;
+use vize_l0::SmallVec;
 
 /// Editable document text. Only CR, LF and CRLF create LSP lines.
 ///

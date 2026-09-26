@@ -29,7 +29,7 @@
 //! println!("{}", result.code);
 //! ```
 
-extern crate vize_s0 as vize_carton;
+extern crate vize_l0 as vize_carton;
 
 // Core modules - following Vue.js compiler-sfc structure
 pub mod bundler;

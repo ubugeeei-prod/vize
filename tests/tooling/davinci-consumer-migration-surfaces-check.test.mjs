@@ -58,7 +58,7 @@ function createScratchRepo() {
       `[package]\nname = "${crate}"\nversion = "0.0.0"\nedition = "2024"\n`,
     );
   }
-  writeFile(scratch, "crates/vize_atelier_core/src/lib.rs", "use vize_s0::Root;\n");
+  writeFile(scratch, "crates/vize_atelier_core/src/lib.rs", "use vize_l0::Root;\n");
   return scratch;
 }
 
@@ -79,11 +79,11 @@ void test("consumer migration surface check fails on an injected stale artifact"
     const clean = runSurfaceCommand(scratch, "--check");
     assert.equal(clean.status, 0, `${clean.stdout}${clean.stderr}`.trim());
 
-    // The scanned `use vize_s0::Root;` lands in its (consumer, crate) shard
+    // The scanned `use vize_l0::Root;` lands in its (consumer, crate) shard
     // and nowhere else.
     const shard = fs.readFileSync(path.join(scratch, coreShard), "utf8").split("\n");
     assert.deepEqual(shard.slice(1), [
-      "compiler\tCompiler\tsource\tcrates/vize_atelier_core/src/lib.rs\t1\ts0\tS0\tstage\tvize_s0\tpreferred\t1",
+      "compiler\tCompiler\tsource\tcrates/vize_atelier_core/src/lib.rs\t1\tl0\tL0\tstage\tvize_l0\tpreferred\t1",
       "",
     ]);
 

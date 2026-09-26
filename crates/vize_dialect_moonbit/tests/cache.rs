@@ -2,7 +2,7 @@
 
 use vize_dialect_moonbit::cache::CachedMoonc;
 use vize_dialect_moonbit::host::{CheckUnit, HostError, MooncHost, RawCheck};
-use vize_s0::String;
+use vize_l0::String;
 
 #[derive(Debug)]
 struct Counter {
@@ -139,7 +139,7 @@ fn failures_and_inconsistent_toolchain_answers_are_never_cached() {
 fn entry_and_byte_budgets_evict_or_skip_without_changing_answers() {
     let mut cache = cache();
     for i in 0..33 {
-        let source = vize_s0::cstr!("let value = {i}");
+        let source = vize_l0::cstr!("let value = {i}");
         assert_eq!(
             cache
                 .check(&CheckUnit {

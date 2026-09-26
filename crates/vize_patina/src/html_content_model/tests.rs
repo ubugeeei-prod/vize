@@ -6,7 +6,7 @@
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod checker_tests {
     use crate::html_content_model::{Context, NodeKind, authored_skeleton, check, facts};
-    use vize_s0::Allocator;
+    use vize_l0::Allocator;
 
     /// `node class <- evidence` for every proven violation, in node order.
     fn findings(source: &str, context: Context) -> Vec<String> {

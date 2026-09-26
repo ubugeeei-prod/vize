@@ -1,5 +1,5 @@
 use vize_canon::virtual_ts::{TemplateGlobal, VirtualTsOptions};
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 pub(super) fn collect(options: &mut VirtualTsOptions) {
     for (name, type_annotation) in [

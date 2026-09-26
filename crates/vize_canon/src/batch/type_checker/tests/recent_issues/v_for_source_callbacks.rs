@@ -1,7 +1,7 @@
 //! Diagnostics inside v-for source expressions must map back to authored bytes (#3756).
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
-use vize_s0::String;
+use vize_l0::String;
 
 #[test]
 fn v_for_source_callbacks_report_implicit_any_at_the_authored_parameter() {

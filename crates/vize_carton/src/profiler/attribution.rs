@@ -39,7 +39,7 @@ pub struct SpanRange {
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, PartialOrd, Ord)]
 pub struct SpanAttribution {
-    /// Pipeline stage that ran the work (for example `"s1"`).
+    /// Stable wire stage that ran the work (for example `"s1"`).
     pub stage: Option<&'static str>,
     /// Pass name within the stage (for example `"hoist_static"`).
     pub pass: Option<&'static str>,

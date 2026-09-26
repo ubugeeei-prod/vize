@@ -10,7 +10,7 @@ hard old-lane errors. Unrelated invalid end tags stay visible as skip evidence.
 
 The durable witnesses are:
 
-- [`davinci_dom_corpus.rs`](../../../../../crates/vize_s1_to_s2/tests/davinci_dom_corpus.rs)
+- [`davinci_dom_corpus.rs`](../../../../../crates/vize_l1_to_l2/tests/davinci_dom_corpus.rs)
   - asserts nested interactive recoveries are compared, while unrelated invalid
     end tags still block comparison and are reported.
 - [`nested_interactive_recovery.rs`](../../../../../crates/vize_atelier_dom/tests/nested_interactive_recovery.rs)

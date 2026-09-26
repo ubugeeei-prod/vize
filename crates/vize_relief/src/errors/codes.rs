@@ -3,7 +3,7 @@
 //! A diagnostic shows `error[compiler/duplicate-attribute]` and `vize explain`
 //! looks a code up by the same string, so the name is part of the CLI's
 //! surface: it is the variant name in kebab case under `compiler/`, and it
-//! never changes once published. The catalog (`vize_s0::i18n`) keys each
+//! never changes once published. The catalog (`vize_l0::i18n`) keys each
 //! code's `message` and `help` on it in en, ja and zh;
 //! `tests/tooling/davinci-diagnostic-catalog.test.ts` enumerates [`ErrorCode`]
 //! from source and fails on a variant without a name, an entry or an `en`

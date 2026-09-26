@@ -11,7 +11,7 @@
 use core::cell::{Cell, RefCell};
 
 use crate::compile::SsrLane;
-use crate::s4::SsrS4Selection;
+use crate::l4::SsrL4Selection;
 
 std::thread_local! {
     static PINNED_LEGACY: Cell<bool> = const { Cell::new(false) };
@@ -46,7 +46,7 @@ pub(crate) fn production_lane() -> SsrLane {
 }
 
 /// Record a selected-lane verdict while [`record_lanes`] is active.
-pub(crate) fn record_verdict(selection: &SsrS4Selection) {
+pub(crate) fn record_verdict(selection: &SsrL4Selection) {
     VERDICTS.with(|verdicts| {
         if let Some(verdicts) = verdicts.borrow_mut().as_mut() {
             verdicts.push(lane_label(selection));
@@ -56,10 +56,10 @@ pub(crate) fn record_verdict(selection: &SsrS4Selection) {
 
 /// `s4` when the plan emitted, `legacy.<reason>` for a selected legacy
 /// route, `rejected` for a broken plan invariant.
-pub(crate) fn lane_label(selection: &SsrS4Selection) -> &'static str {
+pub(crate) fn lane_label(selection: &SsrL4Selection) -> &'static str {
     match selection {
-        SsrS4Selection::Emitted(_) => "s4",
-        SsrS4Selection::Legacy(reason) => reason.counter_suffix(),
-        SsrS4Selection::Rejected(_) => "rejected",
+        SsrL4Selection::Emitted(_) => "s4",
+        SsrL4Selection::Legacy(reason) => reason.counter_suffix(),
+        SsrL4Selection::Rejected(_) => "rejected",
     }
 }

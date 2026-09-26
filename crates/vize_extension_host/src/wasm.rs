@@ -11,7 +11,7 @@
 
 use std::path::Path;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 use wasmtime::component::{Component, Linker};
 use wasmtime::{Config, Engine, ResourceLimiter, Store, Trap};
 

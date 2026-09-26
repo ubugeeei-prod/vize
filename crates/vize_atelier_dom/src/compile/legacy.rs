@@ -8,21 +8,21 @@
 use vize_atelier_core::codegen::CodegenResult;
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
 use vize_atelier_core::{CompilerError, RootNode};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use super::inner::compile_template_inner_with_sections;
 use super::pipeline::DomCompilePipelineOptions;
 use crate::options::DomCompilerOptions;
 
 /// Compile a Vue template for DOM through the **legacy** lane: parse,
-/// transform, then `vize_atelier_core`'s codegen, with the S2 emitter
+/// transform, then `vize_atelier_core`'s codegen, with the L2 emitter
 /// declined.
 ///
 /// This is the differential lanes' *old* side and has no other caller. The
-/// ordinary entry points above route through S2 wherever
-/// `stage_options::s2_emit_supported` allows it (the P2-11 production
-/// switch), so a comparator built on them compares S2 against itself and
-/// cannot fail — measured: renaming a core helper alias in the S2 emitter
+/// ordinary entry points above route through L2 wherever
+/// `stage_options::l2_emit_supported` allows it (the P2-11 production
+/// switch), so a comparator built on them compares L2 against itself and
+/// cannot fail — measured: renaming a core helper alias in the L2 emitter
 /// left `davinci_dom_corpus` at `divergences=0`.
 ///
 /// Gated so no production build can reach it: the legacy lane is the thing
@@ -39,7 +39,7 @@ pub fn compile_template_legacy_with_options<'a>(
         options,
         TemplateSyntaxMode::Standard,
         None,
-        DomCompilePipelineOptions::deny_s2(
+        DomCompilePipelineOptions::deny_l2(
             CustomElementMatcher::default(),
             CodegenOptions::default(),
         ),

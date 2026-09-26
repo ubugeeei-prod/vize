@@ -5,7 +5,7 @@
 //! projection tests also call the shared Canon generator.
 
 use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 mod collect;
 #[cfg(any(test, feature = "native"))]

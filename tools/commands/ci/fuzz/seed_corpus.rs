@@ -31,7 +31,7 @@ const VUE_GLOBS: &[&str] = &[
 
 const FOLIO_GLOBS: &[&str] = &[
     "crates/vize_davinci/tests/fixtures/**/*.folio",
-    "crates/vize_s2/tests/fixtures/**/*.folio",
+    "crates/vize_l2/tests/fixtures/**/*.folio",
 ];
 
 fn main() -> ExitCode {
@@ -47,8 +47,8 @@ fn run() -> Result<(), String> {
     let expression_dir = reset_corpus(&corpus_root, "js_ts_expression")?;
     let css_dir = reset_corpus(&corpus_root, "css_parse")?;
     let template_dir = reset_corpus(&corpus_root, "template_compile")?;
-    let s1_lowering_dir = reset_corpus(&corpus_root, "s1_lowering")?;
-    let s2_to_s3_lowering_dir = reset_corpus(&corpus_root, "s2_to_s3_lowering")?;
+    let l1_lowering_dir = reset_corpus(&corpus_root, "l1_lowering")?;
+    let l2_to_l3_lowering_dir = reset_corpus(&corpus_root, "l2_to_l3_lowering")?;
     let folio_dir = reset_corpus(&corpus_root, "folio_parse")?;
 
     let mut folio_count = 0usize;
@@ -96,8 +96,8 @@ fn run() -> Result<(), String> {
         if let Some(template) = extract_template_block(&content) {
             write_seed(&template_lexer_dir, template.as_bytes())?;
             write_seed(&template_dir, template.as_bytes())?;
-            write_seed(&s1_lowering_dir, template.as_bytes())?;
-            write_seed(&s2_to_s3_lowering_dir, template.as_bytes())?;
+            write_seed(&l1_lowering_dir, template.as_bytes())?;
+            write_seed(&l2_to_l3_lowering_dir, template.as_bytes())?;
             for capture in interpolation.captures_iter(template) {
                 write_seed(&expression_dir, capture[1].trim().as_bytes())?;
                 expression_count += 1;
@@ -117,7 +117,7 @@ fn run() -> Result<(), String> {
     }
 
     println!(
-        "Seeded {sfc_count} sfc_parse entries, {template_count} template entries (template_lexer/template_compile/s1_lowering/s2_to_s3_lowering), {expression_count} JS/TS expression entries, {style_count} CSS entries, and {folio_count} folio pages from {} fixtures.",
+        "Seeded {sfc_count} sfc_parse entries, {template_count} template entries (template_lexer/template_compile/l1_lowering/l2_to_l3_lowering), {expression_count} JS/TS expression entries, {style_count} CSS entries, and {folio_count} folio pages from {} fixtures.",
         vue_files.len() + folio_count
     );
     Ok(())

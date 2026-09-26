@@ -26,7 +26,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use vize_s0::String;
+use vize_l0::String;
 
 mod compare;
 mod version;

@@ -22,7 +22,7 @@ use vize_davinci::pass::{
     BudgetObserver, Fusability, NoObserver, PassDesc, PassKind, Pipeline, Preserved, Remark,
     RemarkArg, RemarkCollector, RemarkCounter, RemarkKind, RemarkSink, run_pipeline_remarked,
 };
-use vize_s0::{Span, String, cstr};
+use vize_l0::{Span, String, cstr};
 
 const HOIST: PassDesc = PassDesc::new(
     "hoist",

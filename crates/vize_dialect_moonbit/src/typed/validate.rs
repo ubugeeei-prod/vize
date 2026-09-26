@@ -2,7 +2,7 @@
 
 use core::fmt;
 use vize_extension_contract::typed_expression::{TypedBinding, TypedExpressionBatch};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnvironmentError(pub String);

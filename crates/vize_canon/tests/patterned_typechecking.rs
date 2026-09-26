@@ -317,10 +317,10 @@ fn native_scope_matrix_keeps_bindings_and_control_flow() {
     ];
     let project = project();
     for (name, script, template) in cases {
-        let source = vize_s0::cstr!(
+        let source = vize_l0::cstr!(
             "<script setup lang=\"ts\">import type {{ Result }} from './types'; {script}</script>{template}"
         );
-        write(project.path(), &vize_s0::cstr!("src/{name}.vue"), &source);
+        write(project.path(), &vize_l0::cstr!("src/{name}.vue"), &source);
     }
     let mut checker = BatchTypeChecker::new(project.path()).unwrap();
     checker.set_experimental_patterned_template(true);

@@ -6,7 +6,7 @@ use vize_davinci::diagnostic::{
 use vize_davinci::fact::ids;
 use vize_davinci::pass::AnalysisId;
 use vize_davinci::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile};
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 /// Supplies one fact sentence, ahead of the built-in group phrases.
 struct Knows;

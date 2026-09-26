@@ -3,7 +3,7 @@
 //! Provides `DisabledRange`, `SsrMode`, and `ElementContext` which are used
 //! to track rule suppression, SSR linting mode, and element traversal state.
 
-use vize_s0::CompactString;
+use vize_l0::CompactString;
 
 /// Represents a disabled range for a specific rule or all rules.
 #[derive(Debug, Clone)]

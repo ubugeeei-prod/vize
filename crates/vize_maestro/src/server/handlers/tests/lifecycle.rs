@@ -7,7 +7,7 @@ use tower_lsp::{
         TextDocumentItem, VersionedTextDocumentIdentifier,
     },
 };
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 fn quiet_service() -> tower_lsp::LspService<MaestroServer> {
     let (service, _socket) = LspService::new(MaestroServer::new);

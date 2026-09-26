@@ -15,9 +15,9 @@ pub(super) use collect_helpers::collect_hoist_helpers;
 use static_vnode::generate_static_element_to_bytes;
 
 use super::{context::CodegenContext, helpers::escape_js_string};
-use vize_s0::String;
-use vize_s0::ToCompactString;
-use vize_s0::ensure_sufficient_stack;
+use vize_l0::String;
+use vize_l0::ToCompactString;
+use vize_l0::ensure_sufficient_stack;
 
 /// Generate hoisted variable declarations.
 pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> String {
@@ -43,7 +43,7 @@ pub(super) fn generate_hoists(ctx: &CodegenContext, root: &RootNode<'_>) -> Stri
 /// Generate `JsChildNode` to bytes.
 ///
 /// Guarded: serializing a hoisted VNode descends one frame per level of the
-/// subtree it was hoisted from (`vize_s0::recursion`).
+/// subtree it was hoisted from (`vize_l0::recursion`).
 fn generate_js_child_node_to_bytes(ctx: &CodegenContext, node: &JsChildNode<'_>, out: &mut String) {
     ensure_sufficient_stack(|| generate_js_child_node_to_bytes_guarded(ctx, node, out));
 }
@@ -190,7 +190,7 @@ fn generate_props_expression_to_bytes(
             // parser records both nodes so the linter can flag the repeat,
             // so dedupe by key name here before emitting the props object.
             // (#958)
-            let mut seen: vize_s0::FxHashSet<vize_s0::String> = vize_s0::FxHashSet::default();
+            let mut seen: vize_l0::FxHashSet<vize_l0::String> = vize_l0::FxHashSet::default();
             let mut emitted = 0usize;
             for prop in obj.properties.iter() {
                 let key_string = match &prop.key {

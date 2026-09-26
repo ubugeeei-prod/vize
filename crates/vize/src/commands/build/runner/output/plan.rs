@@ -1,6 +1,6 @@
 use std::path::{Component, Path, PathBuf};
 
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 use super::{OutputError, OutputFormat, ScriptExtension};
 

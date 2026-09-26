@@ -4,7 +4,7 @@
 //! JSX/TSX modules while keeping source slices zero-copy.
 
 use vize_atelier_sfc::SfcDescriptor;
-use vize_s0::CompactString;
+use vize_l0::CompactString;
 
 /// Container kind that produced the lint document.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,22 +21,22 @@ pub enum LintDocumentKind {
     SvelteComponent,
 }
 
-/// S1 input dialect a lint container lowers through.
+/// L1 input dialect a lint container lowers through.
 ///
 /// Vue templates and pug are in-tree surfaces. JSX is the oxc-program
-/// dialect: its lossless S1 wrapper is not in this tree, so the lint lane
-/// reads the P2-16 S2 projection. Astro and Svelte have no S1 dialect yet.
+/// dialect: its lossless L1 wrapper is not in this tree, so the lint lane
+/// reads the P2-16 L2 projection. Astro and Svelte have no L1 dialect yet.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum S1InputDialect {
-    /// Vue template surface (`vize_s1::parse`), including HTML fragments.
+pub enum L1InputDialect {
+    /// Vue template surface (`vize_l1::parse`), including HTML fragments.
     VueTemplate,
-    /// Pug surface (`vize_s1::pug`).
+    /// Pug surface (`vize_l1::pug`).
     Pug,
-    /// JSX/TSX, projected to S2 rather than parsed as an S1 script wrapper.
+    /// JSX/TSX, projected to L2 rather than parsed as an L1 script wrapper.
     Jsx,
 }
 
-impl S1InputDialect {
+impl L1InputDialect {
     /// Dialect of an SFC template block from its `lang` attribute.
     ///
     /// `pug` selects the pug surface. Every other lang, including absent,
@@ -51,16 +51,16 @@ impl S1InputDialect {
 }
 
 impl LintDocumentKind {
-    /// The S1 input dialect this container kind lowers through.
+    /// The L1 input dialect this container kind lowers through.
     ///
     /// [`Self::VueSfc`] is the Vue template surface. A `<template lang="pug">`
-    /// block is [`S1InputDialect::Pug`] via
-    /// [`S1InputDialect::from_template_lang`]; the lint lane rewrites that
+    /// block is [`L1InputDialect::Pug`] via
+    /// [`L1InputDialect::from_template_lang`]; the lint lane rewrites that
     /// block to Vue HTML before the template rules run.
-    pub const fn s1_input_dialect(self) -> Option<S1InputDialect> {
+    pub const fn l1_input_dialect(self) -> Option<L1InputDialect> {
         match self {
-            Self::VueSfc | Self::MarkupFragment => Some(S1InputDialect::VueTemplate),
-            Self::ScriptModule => Some(S1InputDialect::Jsx),
+            Self::VueSfc | Self::MarkupFragment => Some(L1InputDialect::VueTemplate),
+            Self::ScriptModule => Some(L1InputDialect::Jsx),
             Self::AstroComponent | Self::SvelteComponent => None,
         }
     }

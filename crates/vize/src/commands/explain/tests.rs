@@ -16,7 +16,7 @@ use super::catalog::LocaleCatalog;
 use super::page;
 use super::subjects::{self, Subject};
 use super::{all_pages, distance, nearest};
-use vize_s0::i18n::Locale;
+use vize_l0::i18n::Locale;
 
 fn snapshot(locale: Locale) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -24,8 +24,8 @@ fn snapshot(locale: Locale) -> PathBuf {
         .join(format!("{}.txt", locale.code()))
 }
 
-fn strip_ansi(text: &str) -> vize_s0::String {
-    let mut out = vize_s0::String::new("");
+fn strip_ansi(text: &str) -> vize_l0::String {
+    let mut out = vize_l0::String::new("");
     let mut chars = text.chars();
     while let Some(ch) = chars.next() {
         if ch == '\u{1b}' {
@@ -147,7 +147,7 @@ fn every_new_producer_page_uses_its_localized_message_and_help() {
     for subject in subjects::all() {
         let key = match subject {
             Subject::Canon(_) | Subject::CrossFile(_) => subject.code().to_owned(),
-            Subject::S3(_) => format!("s3/{}", subject.code()),
+            Subject::L3(_) => format!("s3/{}", subject.code()),
             _ => continue,
         };
         for &locale in Locale::ALL {

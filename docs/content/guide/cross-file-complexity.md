@@ -11,7 +11,7 @@ Playground, and future threshold-based checks.
 The model maps three complexity signals to Vue:
 
 - Template path count: each component's own cyclomatic complexity, computed by
-  Davinci's S2 `template-complexity` analysis. It counts every `v-if` /
+  Davinci's L2 `template-complexity` analysis. It counts every `v-if` /
   `v-else-if` condition, every `v-for`, and every `&&`, `||`, `??` and `?:` in
   the expressions the template evaluates.
 - Nested control flow: each component's own cognitive complexity. Branches and
