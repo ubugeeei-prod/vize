@@ -26,7 +26,11 @@ test. The existing explicit Vapor retained option is preserved.
 
 ## Measurement and adoption
 
-Source I/O and hashing happen before timing. Each timed pass includes SFC
+Source I/O and hashing happen before timing. Fixture ids are actual
+repository-relative paths (`tests/_fixtures/...`), so local imported types
+resolve against the checked-out fixture files. The workflow runs from the
+repository root. Dependency packages are not installed: unavailable external
+types are outside the successful imported-type coverage. Each timed pass includes SFC
 parsing, script/template/style compilation, module assembly, and owned result
 destruction. The profiler is disabled. Each lane has one warmup batch followed
 by nine alternating paired batches, each containing five complete corpus

@@ -5,7 +5,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-use vize_s0::{String, ToCompactString};
+use vize_s0::{String, ToCompactString, cstr};
 
 pub struct Input {
     pub filename: String,
@@ -58,7 +58,7 @@ pub fn load(root: &Path) -> std::io::Result<Vec<Input>> {
             let source = fs::read_to_string(path)?;
             let sha256 = hash(source.as_bytes());
             Ok(Input {
-                filename,
+                filename: cstr!("tests/_fixtures/{filename}"),
                 source: String::from(source),
                 sha256,
             })

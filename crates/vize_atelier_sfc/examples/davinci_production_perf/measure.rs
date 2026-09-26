@@ -106,10 +106,13 @@ fn selector_probe(shape: Shape) -> Result<Value, Box<dyn std::error::Error>> {
     let profiler = global_profiler();
     profiler.clear();
     profiler.enable();
-    let selected = compile_source(&input, shape)?;
+    let selected = compile_source(&input, shape)
+        .map_err(|error| std::io::Error::other(cstr!("selector probe: {}", error.message)))?;
     let selected_lane = lane(&profiler.counter_summary(), shape)?;
     profiler.clear();
-    let legacy = retained(shape, || compile_source(&input, shape))?;
+    let legacy = retained(shape, || compile_source(&input, shape)).map_err(|error| {
+        std::io::Error::other(cstr!("retained selector probe: {}", error.message))
+    })?;
     let retained_lane = lane(&profiler.counter_summary(), shape)?;
     profiler.disable();
     profiler.clear();
@@ -276,6 +279,8 @@ pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::
         };
         observations.push(json!({
             "filename": input.filename, "source_sha256": input.sha256,
+            "has_template": has_template, "compiled": selected.is_ok(),
+            "retained_compiled": legacy.is_ok(),
             "bytes": input.source.len(), "backend": backend.id(),
             "selected_lane": selected_lane, "retained_lane": retained_lane, "cohort": cohort,
             "code_equal": code_equal, "css_equal": css_equal,
