@@ -15,7 +15,7 @@
     "typecheck": true
   },
   "server": "/home/runner/_work/vize/vize/target/ci-opt/vize",
-  "server_binary_mib": 47,
+  "server_binary_mib": 47.2,
   "build": "ci-opt: release, thin LTO, 16 codegen units",
   "sampler": "Linux /proc process-tree summed RSS every 50 ms, from spawn through idle",
   "idle_seconds": 10,
@@ -36,8 +36,8 @@
     "--out",
     "/home/runner/_work/_temp/lsp-resource.json"
   ],
-  "github_run": "https://github.com/ubugeeei-prod/vize/actions/runs/36240385542",
-  "revision": "1fc3a8685c1dcfe3e00448b2ed2fd22a0953aa25",
+  "github_run": "https://github.com/ubugeeei-prod/vize/actions/runs/36242407346",
+  "revision": "1c48702f162bc7f513e1b35e2aa8d495768d0e85",
   "per_run": [
     {
       "run": 1,
@@ -49,8 +49,8 @@
       "metadata_requests": 16,
       "successful_unique_provider_requests": 16,
       "resident_document_witnesses": 10000,
-      "diagnostic_publications": 10140,
-      "initialized_ms": 104.632027,
+      "diagnostic_publications": 10144,
+      "initialized_ms": 99.393034,
       "controlled_edits_scope": "two open files before the bulk residency workload",
       "body_edit_churn": {
         "edits": 32,
@@ -81,7 +81,7 @@
         {
           "edit": "body change",
           "prop_type": "string",
-          "elapsed_ms": 53.27225499999986
+          "elapsed_ms": 51.25014699999997
         },
         {
           "edit": "public prop",
@@ -135,104 +135,104 @@
           "parent_diagnostics_cleared": true
         }
       ],
-      "warming_elapsed_ms": 72572.04775499999,
-      "current_rss_mib": 768.1,
+      "warming_elapsed_ms": 71486.44959599999,
+      "current_rss_mib": 784.8,
       "current_processes": [
         {
-          "pid": 11977,
-          "parent": 11969,
-          "birth_ticks": 12333,
-          "rss_bytes": 566042624,
-          "cpu_seconds": 70.66,
+          "pid": 11885,
+          "parent": 11877,
+          "birth_ticks": 14851,
+          "rss_bytes": 581808128,
+          "cpu_seconds": 69.75,
           "command": "vize"
         },
         {
-          "pid": 12034,
-          "parent": 11977,
-          "birth_ticks": 12336,
-          "rss_bytes": 85458944,
-          "cpu_seconds": 0.26,
+          "pid": 11982,
+          "parent": 11885,
+          "birth_ticks": 14858,
+          "rss_bytes": 169336832,
+          "cpu_seconds": 2.99,
           "command": "tsc"
         },
         {
-          "pid": 12074,
-          "parent": 11977,
-          "birth_ticks": 12340,
-          "rss_bytes": 153903104,
-          "cpu_seconds": 3,
+          "pid": 12078,
+          "parent": 11885,
+          "birth_ticks": 21513,
+          "rss_bytes": 71827456,
+          "cpu_seconds": 0.17,
           "command": "tsc"
         }
       ],
-      "rss_idle_mib": 1005.9,
-      "idle_cpu_pct": 144.85013250282327,
+      "rss_idle_mib": 1028.2,
+      "idle_cpu_pct": 140.151163486176,
       "idle_processes": [
         {
-          "pid": 11977,
-          "parent": 11969,
-          "birth_ticks": 12333,
-          "rss_bytes": 673853440,
-          "cpu_seconds": 77.69,
+          "pid": 11885,
+          "parent": 11877,
+          "birth_ticks": 14851,
+          "rss_bytes": 684142592,
+          "cpu_seconds": 77.74,
           "command": "vize"
         },
         {
-          "pid": 12074,
-          "parent": 11977,
-          "birth_ticks": 12340,
-          "rss_bytes": 242507776,
-          "cpu_seconds": 6.29,
+          "pid": 11982,
+          "parent": 11885,
+          "birth_ticks": 14858,
+          "rss_bytes": 253747200,
+          "cpu_seconds": 6.24,
           "command": "tsc"
         },
         {
-          "pid": 13660,
-          "parent": 11977,
-          "birth_ticks": 20332,
-          "rss_bytes": 138412032,
-          "cpu_seconds": 0.62,
+          "pid": 13628,
+          "parent": 11885,
+          "birth_ticks": 22824,
+          "rss_bytes": 140247040,
+          "cpu_seconds": 0.63,
           "command": "tsc"
         }
       ],
-      "elapsed_ms": 85509.55052799999,
-      "rss_peak_mib": 1118.9,
+      "elapsed_ms": 85473.29702299999,
+      "rss_peak_mib": 1125.9,
       "peak_processes": [
         {
-          "pid": 11977,
-          "parent": 11969,
-          "birth_ticks": 12333,
-          "rss_bytes": 672018432,
-          "cpu_seconds": 77.36,
+          "pid": 11885,
+          "parent": 11877,
+          "birth_ticks": 14851,
+          "rss_bytes": 669433856,
+          "cpu_seconds": 76.59,
           "command": "vize"
         },
         {
-          "pid": 12074,
-          "parent": 11977,
-          "birth_ticks": 12340,
-          "rss_bytes": 242245632,
-          "cpu_seconds": 6.2,
+          "pid": 11982,
+          "parent": 11885,
+          "birth_ticks": 14858,
+          "rss_bytes": 251650048,
+          "cpu_seconds": 5.8,
           "command": "tsc"
         },
         {
-          "pid": 13620,
-          "parent": 11977,
-          "birth_ticks": 20303,
-          "rss_bytes": 136052736,
-          "cpu_seconds": 0.59,
+          "pid": 13421,
+          "parent": 11885,
+          "birth_ticks": 22678,
+          "rss_bytes": 132120576,
+          "cpu_seconds": 0.53,
           "command": "tsc"
         },
         {
-          "pid": 13660,
-          "parent": 11977,
-          "birth_ticks": 20332,
-          "rss_bytes": 122945536,
+          "pid": 13462,
+          "parent": 11885,
+          "birth_ticks": 22706,
+          "rss_bytes": 127401984,
           "cpu_seconds": 0.58,
           "command": "tsc"
         }
       ],
-      "resource_samples": 1707
+      "resource_samples": 1706
     }
   ],
   "metrics": {
-    "rss_peak_mib": 1118.9,
-    "rss_idle_mib": 1005.9,
-    "idle_cpu_pct": 144.85013250282327
+    "rss_peak_mib": 1125.9,
+    "rss_idle_mib": 1028.2,
+    "idle_cpu_pct": 140.151163486176
   }
 }

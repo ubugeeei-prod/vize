@@ -72,21 +72,21 @@ The production job is part of the manually dispatched
 `production-lsp-resource-linux-x64-ci`.
 
 The bounded scope completed in [run
-36240385542](https://github.com/ubugeeei-prod/vize/actions/runs/36240385542/job/108399647897),
-resource `1fc3a8685c1dcfe3e00448b2ed2fd22a0953aa25`, producer
-`ad5c60f710547d3f6431d9a12224616316b4449b`, artifact `10904744181`.
+36242407346](https://github.com/ubugeeei-prod/vize/actions/runs/36242407346/job/108405262666),
+resource `1c48702f162bc7f513e1b35e2aa8d495768d0e85`, producer
+`3fc39e475fe375d36d0bea257ec2679d25b1c30f`, artifact `10905774295`.
 The [complete measurement JSON](./p5-4b-production-lsp-resources.json) is
-retained with this record: one 85.510-second session, 10,000 open buffers and
+retained with this record: one 85.473-second session, 10,000 open buffers and
 10,000 successful residency replies, sixteen metadata provider replies,
 32 body edits, and the controlled public-interface diagnostic oracle.
 
 | Observation                      |  Summed RSS |   Maestro |                Corsa descendants |
 | -------------------------------- | ----------: | --------: | -------------------------------: |
-| Peak                             | 1,118.9 MiB | 640.9 MiB | 478.0 MiB across three processes |
-| End of ten seconds without input | 1,005.9 MiB | 642.6 MiB |   363.3 MiB across two processes |
+| Peak                             | 1,125.9 MiB | 638.4 MiB | 487.5 MiB across three processes |
+| End of ten seconds without input | 1,028.2 MiB | 652.4 MiB |   375.7 MiB across two processes |
 
 The input-idle window still had background work: cumulative sampled tree CPU
-was **144.8501%**, summed across cores and retaining exited children's last
+was **140.1512%**, summed across cores and retaining exited children's last
 observed counters. This is not settled idle. An earlier successful run,
 `36239737301`, used a net live-process CPU difference that undercounted checker
 churn; its CPU result is superseded. Multiple checker children are observed,
@@ -95,7 +95,12 @@ overlap a replacement session with its predecessor during project reload.
 No broader RSS or CPU ceiling is claimed. The prior corrected run
 `36240038670` on producer `049358b20` recorded peak 1,120.8 MiB, input-idle
 1,039.5 MiB, and sampled CPU 143.8348%; those remain historical measurements
-of that exact earlier producer, rather than the final runtime observation.
+of that exact earlier producer. The subsequent [ad5 producer measurement](https://github.com/ubugeeei-prod/vize/actions/runs/36240385542/job/108399647897),
+resource `1fc3a8685c1dcfe3e00448b2ed2fd22a0953aa25`, producer
+`ad5c60f710547d3f6431d9a12224616316b4449b`, artifact `10904744181`,
+recorded 1,118.9 MiB peak, 1,005.9 MiB input-idle RSS and 144.8501% CPU
+in 85.510 seconds. It also remains exact historical evidence; its raw JSON is
+retained in that artifact.
 
 The earlier strict attempt requested a native prop completion after every
 open batch, intending to warm all 10,000 interface providers. [Run
@@ -120,13 +125,17 @@ are measured from the beginning of the measurement step, using log timestamps.
 Doubling 1,024 to 2,048 files took about four times the elapsed time. RSS grew
 roughly linearly over these checkpoints; its allocation owners are unknown.
 
-The same measured runtime producer's unchanged nine-file TS-44 baseline passed
-in [run 36240385542](https://github.com/ubugeeei-prod/vize/actions/runs/36240385542/job/108399647923),
-artifact `10905870609`. Three runs recorded maximum peak **286.4 MiB**,
-maximum idle **277.5 MiB**, maximum idle CPU **0.217%**, and keystroke p95
-**29.9 ms**, within the existing pinned ceilings. Cold-start median was
-5.6 ms and first-diagnostic median 1,116.7 ms. The isolated synthetic resident
-guard also passed, artifact `10905254363`; it retains its separate scope.
+The same final producer's unchanged nine-file TS-44 baseline passed in
+[run 36242407346](https://github.com/ubugeeei-prod/vize/actions/runs/36242407346/job/108405262458),
+artifact `10906391474`. Three runs recorded maximum peak **280.9 MiB**,
+maximum idle **269.2 MiB**, maximum idle CPU **0.167%**, and keystroke p95
+**29.8 ms**, within the existing pinned ceilings. Cold-start median was
+5.8 ms and first-diagnostic median 1,121.6 ms. The isolated synthetic resident
+guard also passed, artifact `10906072544`; it retains its separate scope.
+The earlier ad5 baseline remains in [run 36240385542](https://github.com/ubugeeei-prod/vize/actions/runs/36240385542/job/108399647923),
+artifact `10905870609`: peak 286.4 MiB, idle 277.5 MiB, idle CPU 0.217%,
+keystroke p95 29.9 ms, cold-start median 5.6 ms and first-diagnostic median
+1,116.7 ms. Its synthetic guard passed, artifact `10905254363`.
 
 ## Scaling followup
 
