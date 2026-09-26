@@ -11,6 +11,9 @@ use davinci_production_perf::{corpus, measure, shapes::Shape};
 use serde_json::json;
 use std::{env, fs, path::PathBuf};
 
+#[global_allocator]
+static GLOBAL_ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
     let output = env::args()
@@ -27,6 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "manifest_sha256": corpus::manifest_hash(&corpus),
         "files": corpus.len(),
         "profile": "ci-opt (opt-level=3, thin LTO, 16 codegen units)",
+        "allocator": "mimalloc (same default as native CLI; allocation tracking disabled)",
         "features": "native,davinci-production-bench; no retained-AST differential dual-run",
         "options": "P3-17 shipping adapter shapes; Standard syntax, default codegen, default DOM compiler options, script/style ids=fixture path; scoped styles inferred; inline DOM/Vapor, separate DOM module/SSR",
         "window": "parse_sfc + compile_sfc_for_adapter + result destruction; source I/O excluded; profiler disabled; retained scope changes outside timing",

@@ -97,6 +97,39 @@ fn fingerprint(result: &Result<SfcCompileResult, SfcError>) -> Value {
     }
 }
 
+fn selector_probe(shape: Shape) -> Result<Value, Box<dyn std::error::Error>> {
+    let input = Input {
+        filename: "SelectorProbe.vue".into(),
+        source: "<template><main>probe</main></template>".into(),
+        sha256: hash(b"<template><main>probe</main></template>"),
+    };
+    let profiler = global_profiler();
+    profiler.clear();
+    profiler.enable();
+    let selected = compile_source(&input, shape)?;
+    let selected_lane = lane(&profiler.counter_summary(), shape)?;
+    profiler.clear();
+    let legacy = retained(shape, || compile_source(&input, shape))?;
+    let retained_lane = lane(&profiler.counter_summary(), shape)?;
+    profiler.disable();
+    profiler.clear();
+    let expected = match shape {
+        Shape::DomInline | Shape::DomModule => "legacy.forced",
+        Shape::Ssr => "unrecorded",
+        Shape::Vapor => "legacy.selected",
+    };
+    if selected_lane != "accepted" || retained_lane != expected {
+        return Err(std::io::Error::other(cstr!(
+            "selector probe failed for {}: {selected_lane}/{retained_lane}, expected accepted/{expected}",
+            shape.id()
+        )).into());
+    }
+    Ok(json!({
+        "source": input.source, "selected_lane": selected_lane, "retained_lane": retained_lane,
+        "code_equal": selected.code == legacy.code,
+    }))
+}
+
 fn timed(inputs: &[&Input], shape: Shape) -> u64 {
     let start = Instant::now();
     for _ in 0..5 {
@@ -165,6 +198,7 @@ fn profile(inputs: &[Input], shape: Shape, force_retained: bool) -> Value {
 }
 
 pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::Error>> {
+    let selector_probe = selector_probe(shape)?;
     let profiler = global_profiler();
     let mut observations = Vec::new();
     let mut accepted = Vec::new();
@@ -258,7 +292,8 @@ pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::
         "routed_vapor": samples(&routed_vapor, shape),
     });
     Ok(json!({
-        "shape": shape.id(), "observations": observations, "cohorts": cohorts,
+        "shape": shape.id(), "selector_probe": selector_probe,
+        "observations": observations, "cohorts": cohorts,
         "retained_selector": match shape {
             Shape::DomInline | Shape::DomModule => "DOM legacy.forced; explicit Vapor legacy.selected",
             Shape::Ssr => "SSR LegacyOnly scoped override; it does not emit a selection counter",
