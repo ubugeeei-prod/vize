@@ -66,7 +66,9 @@ fn unproved_transition_shapes_remain_explicit_legacy() {
         r#"<Transition :css="false"><Child /></Transition>"#,
         r#"<Transition :css="false"><p v-if="show">one</p><p v-else>two</p></Transition>"#,
         r#"<Transition :css="false"><div><p v-if="show">nested</p></div></Transition>"#,
-        r#"<Transition :css="false"><div v-if="visible"><span>{{ label }}</span></div></Transition>"#,
+        r#"<Transition :css="false"><div><Child /></div></Transition>"#,
+        r#"<Transition :css="false"><div><input v-model="value" /></div></Transition>"#,
+        r#"<Transition :css="false"><div><span v-html="html" /></div></Transition>"#,
         r#"<Transition :css="false"><p :key="id">keyed</p></Transition>"#,
         r#"<Transition :css="false"><template #default><p>slot</p></template></Transition>"#,
         r#"<Transition :css="false" :[name]="value"><p>computed</p></Transition>"#,
@@ -117,4 +119,68 @@ fn transition_payload_owns_wrapper_identity_and_checks_css_mutation() {
         crate::s3::admit(s3, &retained),
         VaporS3BridgeStatus::Legacy(_)
     ));
+}
+
+#[test]
+fn nested_transition_html_preserves_reviewed_generated_identity() {
+    for source in [
+        r#"<Transition :css="false"><div><span>{{ label }}</span></div></Transition>"#,
+        r#"<main><Transition :css="false" @enter="enter" @leave="leave"><div v-if="show"><button @click="save">{{ label }}</button></div></Transition><i>tail</i></main>"#,
+        r#"<TransitionGroup tag="ul" :css="false"><li v-for="item in items" :key="item.id"><span>{{ item.text }}</span></li></TransitionGroup>"#,
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        assert!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            "{source}: {status:?}"
+        );
+        for prefix_identifiers in [false, true] {
+            let compile = |davinci_retained_lane| {
+                compile_vapor(
+                    &allocator,
+                    source,
+                    VaporCompilerOptions {
+                        prefix_identifiers,
+                        davinci_retained_lane,
+                        ..Default::default()
+                    },
+                )
+            };
+            let native = compile(false);
+            let retained = compile(true);
+            assert_eq!(native.error_messages, retained.error_messages, "{source}");
+            assert!(
+                native.error_messages.is_empty(),
+                "{source}: {:?}",
+                native.error_messages
+            );
+            assert_eq!(
+                crate::tests_generated_identity::normalized(&native.code),
+                crate::tests_generated_identity::normalized(&retained.code),
+                "{source}: prefix={prefix_identifiers}"
+            );
+        }
+    }
+}
+
+#[test]
+fn nested_transition_descendant_depth_has_an_explicit_limit() {
+    for (depth, accepted) in [(16, true), (17, false)] {
+        let mut source = vize_carton::String::from("<Transition :css=\"false\"><div>");
+        for _ in 1..depth {
+            source.push_str("<span>");
+        }
+        source.push('x');
+        for _ in 1..depth {
+            source.push_str("</span>");
+        }
+        source.push_str("</div></Transition>");
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, &source, options());
+        assert_eq!(
+            matches!(status, VaporS3BridgeStatus::Accepted(_)),
+            accepted,
+            "depth={depth}: {status:?}"
+        );
+    }
 }

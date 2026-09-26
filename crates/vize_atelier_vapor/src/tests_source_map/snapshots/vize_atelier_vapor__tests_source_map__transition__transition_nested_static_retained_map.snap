@@ -1,0 +1,10 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/transition.rs
+expression: retained_segments
+---
+[
+    "1:23 \"div><spa\" -> \"div><spa\"",
+    "1:28 \"span> </\" -> \"span>{{ \"",
+    "3:0 \"export f\" -> \"<Transit\"",
+    "9:56 \"_ctx.lab\" -> \"label }}\" [label]",
+]

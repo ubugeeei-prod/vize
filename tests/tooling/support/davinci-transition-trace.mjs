@@ -9,7 +9,19 @@ const chunks = [];
 for await (const chunk of process.stdin) chunks.push(chunk);
 const input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
 assert.equal(vueVaporVersion, "3.6.0-rc.9");
-assert.ok(["single", "cancel", "static", "group", "group-div"].includes(input.scenario));
+assert.ok(
+  [
+    "single",
+    "cancel",
+    "static",
+    "group",
+    "group-div",
+    "nested-static",
+    "nested-single",
+    "nested-cancel",
+    "group-nested",
+  ].includes(input.scenario),
+);
 const compile = (source) =>
   officialCompilerVapor.compile(source, { mode: "module", prefixIdentifiers: true }).code;
 const window = new Window();
@@ -108,7 +120,7 @@ try {
     snapshot();
     await complete("leave");
     snapshot();
-  } else if (input.scenario === "static") {
+  } else if (input.scenario.endsWith("static")) {
     state.label = "B";
     await vue.nextTick();
     host.querySelector("button").click();
@@ -128,7 +140,7 @@ try {
     host.querySelector("button").click();
     await vue.nextTick();
     snapshot();
-    if (input.scenario === "single") {
+    if (input.scenario.endsWith("single")) {
       await complete("enter");
       snapshot();
       state.show = false;
