@@ -269,7 +269,9 @@ whole-workspace resident state.
   watch modes) use the salsa-based resident tier. The one-shot CLI uses the
   fused non-salsa pipeline.
 - **One semantic query API over L2** serves every product
-  ([#6871](https://github.com/ubugeeei-prod/vize/issues/6871)).
+  ([#6871](https://github.com/ubugeeei-prod/vize/issues/6871)). See the
+  [semantic query API design](./2026-09-27-level-restructure-designs.md#semantic-query-api-6871)
+  in the companion record.
 - **LSP state stays coarse**
   ([#6872](https://github.com/ubugeeei-prod/vize/issues/6872)):
   - Queries are per SFC block and per expression embed, not per node.

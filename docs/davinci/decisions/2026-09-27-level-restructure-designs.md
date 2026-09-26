@@ -223,6 +223,39 @@ Decided in the
   ([#6890](https://github.com/ubugeeei-prod/vize/issues/6890)), so an
   "equivalent" verdict also covers runtime values such as falsy children.
 
+## Semantic query API (#6871)
+
+Tracked in [#6871](https://github.com/ubugeeei-prod/vize/issues/6871). The
+detailed design is in the
+[#6871 design comment](https://github.com/ubugeeei-prod/vize/issues/6871#issuecomment-5848405312).
+
+- **The patina markup facade is promoted into `vize_l2::query`** and used by
+  every product (linter, LSP, type checker).
+  - Today it lives in `vize_patina/src/markup/`. It is zero-copy, and it has
+    three backends: S2, Relief and OXC.
+  - 41 rule files use it; 162 still use relief directly.
+  - The Relief and OXC backends are deleted once migration completes.
+- **Two views:**
+  - the L1 syntax view (markup, directive syntax and embeds), for syntax lint
+    rules and the formatter;
+  - the L2 semantic view, `query`.
+- **Products hold typed handles** (for example `ElementRef`, with a `NodeId`
+  inside) and call functions on them. Handles are `Copy` and cheap. L2 op
+  structs are never exposed, so L2 can change without breaking products.
+- **Queries are borrow-based, with no allocation per query.** The
+  span-sorted position index is built lazily, once per artifact.
+- **Cross-file queries take a `ProjectView` trait** for other files'
+  `SfcSummary`. The CLI passes an on-demand implementation, and the LSP
+  passes one backed by the resident-tier cache.
+- **First queries**, all needed for Vue Fes:
+  1. position → node
+  2. name resolution: binding kind, declaration span, and origin (script,
+     props, v-for alias or slot scope)
+  3. component resolution (tag → local import, global or unknown) plus its
+     summary (props, emits, slots)
+  4. expression and directive meaning: reactive reads, constness, the
+     v-model target and event modifiers
+
 ## Type check
 
 Tracked in [#6849](https://github.com/ubugeeei-prod/vize/issues/6849) and [#6879](https://github.com/ubugeeei-prod/vize/issues/6879). The detailed design is in the
