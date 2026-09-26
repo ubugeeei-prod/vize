@@ -125,7 +125,7 @@ are measured from the beginning of the measurement step, using log timestamps.
 Doubling 1,024 to 2,048 files took about four times the elapsed time. RSS grew
 roughly linearly over these checkpoints; its allocation owners are unknown.
 
-The same final producer's unchanged nine-file TS-44 baseline passed in
+The same measured producer's unchanged nine-file TS-44 baseline passed in
 [run 36242407346](https://github.com/ubugeeei-prod/vize/actions/runs/36242407346/job/108405262458),
 artifact `10906391474`. Three runs recorded maximum peak **280.9 MiB**,
 maximum idle **269.2 MiB**, maximum idle CPU **0.167%**, and keystroke p95
