@@ -141,6 +141,10 @@ design is in the
   expressions follow `<script lang>`, and a language mismatch between
   `<script>` and `<script setup>` is a diagnostic.
 
+- Two decisions from the same design comment belong to the next section:
+  the `const` pattern table of `fn` pointers, and parsing each expression
+  once (L4 rewrites from the L2 identifier-resolution table).
+
 ## L1→L2 and L2
 
 Tracked in [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and
@@ -158,15 +162,34 @@ Tracked in [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and
 
 ## L3 is the decision layer
 
-Tracked in [#6839](https://github.com/ubugeeei-prod/vize/issues/6839).
+Tracked in [#6839](https://github.com/ubugeeei-prod/vize/issues/6839). The
+detailed design is in the
+[#6839 design comment](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5847890775).
 
-- L3 holds backend decisions keyed by L2 node ids: the static/dynamic
-  partition, hoist and cache placement, effect grouping and ordering.
-- DOM and SSR read the L2 tree plus L3 decisions. Vapor reads the L3
-  program. This replaces charter row #9's "SSR thin path".
-- DOM stops deciding hoisting in L2 passes; that logic is currently
-  duplicated with L3 `Placement`.
-- **Done-when condition:** the DOM lane is not slower than today.
+- **L3 decides, L4 encodes.**
+  - L3 owns the decisions: the static level of each L2 node, the set of
+    dynamic bindings per element, `Hoist`/`Cache` placement, and control
+    regions (if, for, slot).
+  - L4 owns the encoding: DOM patch flags, `dynamicProps`, `_cache[n]`,
+    stringification and the block tree; Vapor templates and effects; SSR
+    strings.
+- **Target-specific criteria are L3 policies**, one per target:
+  `l3::policy::{dom, vapor, ssr}`.
+- **L3 artifacts are split in two:**
+  - decision tables keyed by L2 `NodeId`, always built;
+  - the flat program, built only on demand (for Vapor).
+- DOM and SSR read the L2 tree plus the L3 decision tables. Vapor reads the
+  L3 program. This replaces charter row #9's "SSR thin path".
+- **The work moves; it does not grow.** The L3 decision computation replaces
+  the DOM `pass/hoist` analysis. Its instruction count must not exceed the
+  current DOM lane
+  ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868)).
+- **Migration:** tests compare the old DOM analysis with the L3 decisions.
+  Once they agree, the old analysis is deleted. The comparison never runs in
+  production.
+- Remarks are recorded only while an observer is active.
+- **Risk:** `_cache[n]` numbering must follow Vue's order. That is an L4
+  encoding concern, not an L3 decision.
 
 ## L4: emission
 
