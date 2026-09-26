@@ -1,8 +1,8 @@
 # Decision Record — Level Restructure (2026-09-27)
 
 > [!NOTE]
-> This record collects the decisions from the maintainer's 2026-09-27 design
-> session. It is the working source of truth for crate layout, naming, level
+> This record and its linked companion pages collect the decisions from
+> the maintainer's 2026-09-27 design session. It is the working source of truth for crate layout, naming, level
 > responsibilities and CI tiers. Where it conflicts with older pages (S0–S4
 > naming, the `vize_davinci` substrate crate, Folio naming, S4 placement,
 > charter rows #1, #5 and #11), this record wins until those pages are
@@ -162,128 +162,23 @@ Tracked in [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and
 
 ## L3 is the decision layer
 
-Tracked in [#6839](https://github.com/ubugeeei-prod/vize/issues/6839). The
-detailed design is in the
-[#6839 design comment](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5847890775).
-
-- **L3 decides, L4 encodes.**
-  - L3 owns the decisions: the static level of each L2 node, the set of
-    dynamic bindings per element, `Hoist`/`Cache` placement, and control
-    regions (if, for, slot).
-  - L4 owns the encoding: DOM patch flags, `dynamicProps`, `_cache[n]`,
-    stringification and the block tree; Vapor templates and effects; SSR
-    strings.
-- **Target-specific criteria are L3 policies**, one per target:
-  `l3::policy::{dom, vapor, ssr}`.
-- **L3 artifacts are split in two:**
-  - decision tables keyed by L2 `NodeId`, always built;
-  - the flat program, built only on demand (for Vapor).
-- DOM and SSR read the L2 tree plus the L3 decision tables. Vapor reads the
-  L3 program. This replaces charter row #9's "SSR thin path".
-- **The work moves; it does not grow.** The L3 decision computation replaces
-  the DOM `pass/hoist` analysis. Its instruction count must not exceed the
-  current DOM lane
-  ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868)).
-- **Migration:** tests compare the old DOM analysis with the L3 decisions.
-  Once they agree, the old analysis is deleted. The comparison never runs in
-  production.
-- Remarks are recorded only while an observer is active.
-- **Risk:** `_cache[n]` numbering must follow Vue's order. That is an L4
-  encoding concern, not an L3 decision.
+See the [l3 is the decision layer decisions](./2026-09-27-level-restructure-designs.md#l3-is-the-decision-layer)
+in the companion record.
 
 ## L4: emission
 
-Tracked in [#6840](https://github.com/ubugeeei-prod/vize/issues/6840). The
-detailed design is in the
-[#6840 design comment](https://github.com/ubugeeei-prod/vize/issues/6840#issuecomment-5847908963).
-
-- One crate, `vize_l4`, laid out as:
-  - `write/`: the writer, built on `EmitDocument` and source maps. Legacy
-    codegen depends on it.
-  - `expr/`: expression rewriting
-  - `runtime/`: the runtime helper vocabulary
-  - `module/`: module assembly
-  - `target/{dom, ssr, vapor}`, later `ts` (the type-check projection) and
-    other frameworks
-- **L4 writes text directly.** There is no JS AST plus codegen step.
-- **One append-only writer serves every target:**
-  - span links cost nothing when not recording;
-  - it handles indentation and tracks the set of used helpers;
-  - the preamble is assembled last, so nothing is `insert_str`-ed into the
-    middle of a string.
-
-  This gives DOM structural source maps and removes DOM's source-map
-  fallback to legacy.
-
-- SSR runs natively, without legacy codegen or Croquis.
-- **Vapor generates JavaScript directly from the L3 program, with no legacy
-  IR.** The port keeps the current emission order. The existing L3→legacy IR
-  adapter stays as the test oracle until parity, then is deleted.
-  Architectural soundness takes priority over reuse, and output stays
-  byte-identical.
-- **Module assembly lives in L4 `module/`.** `vize_atelier_sfc` becomes
-  lane selection only, and the other `vize_atelier_*` crates become thin
-  shells that select a lane and fall back to legacy.
+See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-emission)
+in the companion record.
 
 ## Script side
 
-Tracked in [#6844](https://github.com/ubugeeei-prod/vize/issues/6844). The
-detailed design is in the
-[#6844 design comment](https://github.com/ubugeeei-prod/vize/issues/6844#issuecomment-5847967507).
-
-- **L1** parses each script block with the language provider (oxc AST plus
-  spans).
-- **Macros** (`defineProps`, `defineEmits`, …) go through a pattern table
-  keyed by callee name, the same way directives do.
-- **L2 core** holds scopes, symbols, imports/exports and references.
-- **L2 `framework::vue`** holds binding kinds, the
-  props/emits/model/slots contract and reactivity facts. It feeds the
-  identifier-resolution table that L4 uses.
-- **Scope and symbol analysis is one lightweight, Vue-focused walk** that
-  every product shares. It does not use `oxc_semantic`. When a product needs
-  more, extend that walk instead of adding a second analysis. Instruction
-  counts gate it
-  ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868)).
-- **Setup output is span-level rewriting** in L4 `module/`, following the
-  MagicString model.
-- **Cross-file type resolution is lazy.** Only types referenced by macros
-  are resolved. They are resolved through the project model
-  ([#6874](https://github.com/ubugeeei-prod/vize/issues/6874)) and cached in
-  the resident tier.
+See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side)
+in the companion record.
 
 ## Dialects, languages, frameworks
 
-Tracked in [#6841](https://github.com/ubugeeei-prod/vize/issues/6841),
-[#6842](https://github.com/ubugeeei-prod/vize/issues/6842) and
-[#6843](https://github.com/ubugeeei-prod/vize/issues/6843). The detailed
-layout is in the
-[#6841 design comment](https://github.com/ubugeeei-prod/vize/issues/6841#issuecomment-5847986623).
-
-- **Per-level layout** (each level includes only the parts it needs):
-
-  ```
-  core
-  container/vue
-  markup/{html_core, vue}
-  profile/{document, component}
-  lang/{js, ts}
-  framework/vue/{feature/*, version.rs, quirks.rs}
-  registry.rs
-  ```
-
-- **Versions are const compositions of features** (`framework/vue/feature/*`
-  combined in `version.rs`). They replace `LegacyCaps` and
-  `LegacyDialectCapabilities`.
-- **One registry per level** (`registry.rs`) is the only place that names
-  variants.
-- **Core never references axis modules.** An import-path test in the PR tier
-  (T0) enforces this.
-- **Quirks is a feature set orthogonal to versions** (`quirks.rs`), and
-  `TemplateSyntaxMode` moves there. Vue 0.x and 1.x are implemented on
-  Davinci.
-- petite-vue gets L1/L2 support (document profile plus hooks), and lint and
-  LSP read it. There are no L3/L4 targets for petite-vue.
-- `vize_dialect_moonbit` dissolves into per-level `lang/moonbit` modules.
+See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks)
+in the companion record.
 
 ## Products on the levels
 
@@ -301,51 +196,13 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and
 
 ## Type check
 
-Tracked in [#6849](https://github.com/ubugeeei-prod/vize/issues/6849) and [#6879](https://github.com/ubugeeei-prod/vize/issues/6879). The detailed design is in the
-[#6849 design comment](https://github.com/ubugeeei-prod/vize/issues/6849#issuecomment-5848020063).
-
-- **Parity is measured on diagnostics** (position, message, code), not on
-  the bytes of the virtual TS.
-- **The virtual TS shape may be redesigned, but every requirement from the
-  fix history must still hold.** 271 of the 354 commits that touch
-  `virtual_ts` are fixes. Before the generator is replaced, that history is
-  turned into diagnostic fixtures ([#6879](https://github.com/ubugeeei-prod/vize/issues/6879), Stage 0).
-- **`vize_l4::target::ts` writes the virtual TS through the single writer.**
-  Its span links are the `ProjectionMapping` rows.
-  - Canon's own scope analysis (9.3k lines) is replaced by the L2 scopes and
-    the shared script walk.
-  - Maestro's `virtual_code` is merged into it.
-- **LSP sync to tsgo keeps the layout stable.** Only the ranges of edited
-  blocks and embeds are sent.
-- **The checker host** (tsgo / corsa sessions) lives in `vize_l4` behind a
-  feature (for example `host`) that pulls in std and I/O. Level crates
-  therefore stay `no_std + alloc` for portable builds.
+See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-check)
+in the companion record.
 
 ## Legacy deletion criteria
 
-Tracked in [#6828](https://github.com/ubugeeei-prod/vize/issues/6828) and
-[#6852](https://github.com/ubugeeei-prod/vize/issues/6852)–[#6854](https://github.com/ubugeeei-prod/vize/issues/6854).
-
-1. Every legacy fix adds its input to the differential corpus. The merge
-   queue checks that the Davinci lane matches.
-2. Zero fallbacks across the corpus, every dialect and the real-project
-   corpus.
-3. Rules 1 and 2 hold for a stability period before deletion.
-4. Past fix history becomes fixtures for each product before Davinci
-   replaces that product's legacy path. Rule 1 ([#6852](https://github.com/ubugeeei-prod/vize/issues/6852)) covers fixes from
-   now on; these issues cover the past:
-
-   | Product      | Issue                                                      | Fix commits in history |
-   | ------------ | ---------------------------------------------------------- | ---------------------- |
-   | Type checker | [#6879](https://github.com/ubugeeei-prod/vize/issues/6879) | 271 of 354             |
-   | Compiler     | [#6880](https://github.com/ubugeeei-prod/vize/issues/6880) | 609 of 1152            |
-   | Linter       | [#6881](https://github.com/ubugeeei-prod/vize/issues/6881) | 255 of 499             |
-   | Formatter    | [#6882](https://github.com/ubugeeei-prod/vize/issues/6882) | 56 of 87               |
-   | LSP          | [#6883](https://github.com/ubugeeei-prod/vize/issues/6883) | 238 of 421             |
-
-The criteria apply per product: compiler output, lint diagnostics, formatter
-output, type-check diagnostics and LSP snapshots. Acceptance rates are
-published for native Davinci work only.
+See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria)
+in the companion record.
 
 ## Multi-framework
 
@@ -446,44 +303,5 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 
 ## Order of work
 
-Every issue body carries an `**Order:**` line; this table mirrors those lines. Pick the lowest-stage open issue whose "Start after" issues are all closed. Rows in the same stage with no mutual dependency can run in parallel.
-
-| Stage          | Issues                                                                                                                                                                                                                                                                                                                                                                                                                             | Work                                          | Start after                                                                                                                                                                                                                                    |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0 Foundation   | [#6861](https://github.com/ubugeeei-prod/vize/issues/6861), [#6862](https://github.com/ubugeeei-prod/vize/issues/6862), [#6863](https://github.com/ubugeeei-prod/vize/issues/6863), [#6864](https://github.com/ubugeeei-prod/vize/issues/6864), [#6865](https://github.com/ubugeeei-prod/vize/issues/6865), [#6866](https://github.com/ubugeeei-prod/vize/issues/6866), [#6867](https://github.com/ubugeeei-prod/vize/issues/6867) | CI tiers                                      | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6868](https://github.com/ubugeeei-prod/vize/issues/6868)                                                                                                                                                                                                                                                                                                                                                                         | Merge-queue instruction-count gate            | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6831](https://github.com/ubugeeei-prod/vize/issues/6831)                                                                                                                                                                                                                                                                                                                                                                         | Dependency gate (report mode)                 | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6852](https://github.com/ubugeeei-prod/vize/issues/6852), [#6853](https://github.com/ubugeeei-prod/vize/issues/6853), [#6854](https://github.com/ubugeeei-prod/vize/issues/6854)                                                                                                                                                                                                                                                 | Legacy-deletion gates                         | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6832](https://github.com/ubugeeei-prod/vize/issues/6832)                                                                                                                                                                                                                                                                                                                                                                         | Level rename (maintainer in progress)         | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6845](https://github.com/ubugeeei-prod/vize/issues/6845), [#6846](https://github.com/ubugeeei-prod/vize/issues/6846)                                                                                                                                                                                                                                                                                                             | glyph filter bug, self-closing audit          | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6874](https://github.com/ubugeeei-prod/vize/issues/6874)                                                                                                                                                                                                                                                                                                                                                                         | Shared project model                          | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6879](https://github.com/ubugeeei-prod/vize/issues/6879)                                                                                                                                                                                                                                                                                                                                                                         | Type-check fix history as diagnostic fixtures | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6880](https://github.com/ubugeeei-prod/vize/issues/6880)                                                                                                                                                                                                                                                                                                                                                                         | Compiler fix history as fixtures              | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6881](https://github.com/ubugeeei-prod/vize/issues/6881)                                                                                                                                                                                                                                                                                                                                                                         | Linter fix history as fixtures                | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6882](https://github.com/ubugeeei-prod/vize/issues/6882)                                                                                                                                                                                                                                                                                                                                                                         | Formatter fix history as fixtures             | —                                                                                                                                                                                                                                              |
-| 0 Foundation   | [#6883](https://github.com/ubugeeei-prod/vize/issues/6883)                                                                                                                                                                                                                                                                                                                                                                         | LSP fix history as fixtures                   | —                                                                                                                                                                                                                                              |
-| 1 Structure    | [#6833](https://github.com/ubugeeei-prod/vize/issues/6833)                                                                                                                                                                                                                                                                                                                                                                         | Dissolve `vize_davinci`                       | [#6832](https://github.com/ubugeeei-prod/vize/issues/6832)                                                                                                                                                                                     |
-| 1 Structure    | [#6834](https://github.com/ubugeeei-prod/vize/issues/6834)                                                                                                                                                                                                                                                                                                                                                                         | Carve `vize_l0` out of carton                 | [#6833](https://github.com/ubugeeei-prod/vize/issues/6833)                                                                                                                                                                                     |
-| 1 Structure    | [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6837](https://github.com/ubugeeei-prod/vize/issues/6837), [#6841](https://github.com/ubugeeei-prod/vize/issues/6841)                                                                                                                                                                                                                                                 | L1 markup, L1 container, dialect modules      | [#6832](https://github.com/ubugeeei-prod/vize/issues/6832)                                                                                                                                                                                     |
-| 1 Structure    | [#6869](https://github.com/ubugeeei-prod/vize/issues/6869)                                                                                                                                                                                                                                                                                                                                                                         | Measure `SideTable` density                   | — (anytime)                                                                                                                                                                                                                                    |
-| 1 Structure    | [#6843](https://github.com/ubugeeei-prod/vize/issues/6843)                                                                                                                                                                                                                                                                                                                                                                         | petite-vue                                    | [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6841](https://github.com/ubugeeei-prod/vize/issues/6841)                                                                                                                         |
-| 2 IR contracts | [#6836](https://github.com/ubugeeei-prod/vize/issues/6836)                                                                                                                                                                                                                                                                                                                                                                         | Typed embeds and pattern table                | [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6841](https://github.com/ubugeeei-prod/vize/issues/6841)                                                                                                                         |
-| 2 IR contracts | [#6838](https://github.com/ubugeeei-prod/vize/issues/6838)                                                                                                                                                                                                                                                                                                                                                                         | L2 canonical artifact                         | [#6836](https://github.com/ubugeeei-prod/vize/issues/6836)                                                                                                                                                                                     |
-| 2 IR contracts | [#6871](https://github.com/ubugeeei-prod/vize/issues/6871)                                                                                                                                                                                                                                                                                                                                                                         | Semantic query API                            | [#6838](https://github.com/ubugeeei-prod/vize/issues/6838)                                                                                                                                                                                     |
-| 2 IR contracts | [#6855](https://github.com/ubugeeei-prod/vize/issues/6855), [#6856](https://github.com/ubugeeei-prod/vize/issues/6856), [#6857](https://github.com/ubugeeei-prod/vize/issues/6857)                                                                                                                                                                                                                                                 | Neutral-vocabulary designs                    | — (anytime)                                                                                                                                                                                                                                    |
-| 2 IR contracts | [#6844](https://github.com/ubugeeei-prod/vize/issues/6844)                                                                                                                                                                                                                                                                                                                                                                         | Native script analysis                        | [#6836](https://github.com/ubugeeei-prod/vize/issues/6836), [#6837](https://github.com/ubugeeei-prod/vize/issues/6837)                                                                                                                         |
-| 3 Backends     | [#6839](https://github.com/ubugeeei-prod/vize/issues/6839)                                                                                                                                                                                                                                                                                                                                                                         | L3 decision layer                             | [#6838](https://github.com/ubugeeei-prod/vize/issues/6838), [#6868](https://github.com/ubugeeei-prod/vize/issues/6868)                                                                                                                         |
-| 3 Backends     | [#6842](https://github.com/ubugeeei-prod/vize/issues/6842)                                                                                                                                                                                                                                                                                                                                                                         | Vue 0.x/1.x and quirks                        | [#6841](https://github.com/ubugeeei-prod/vize/issues/6841), [#6836](https://github.com/ubugeeei-prod/vize/issues/6836)                                                                                                                         |
-| 3 Backends     | [#6840](https://github.com/ubugeeei-prod/vize/issues/6840) `write/`, `module/`                                                                                                                                                                                                                                                                                                                                                     | L4 writer and module assembly                 | [#6832](https://github.com/ubugeeei-prod/vize/issues/6832)                                                                                                                                                                                     |
-| 3 Backends     | [#6840](https://github.com/ubugeeei-prod/vize/issues/6840) DOM move                                                                                                                                                                                                                                                                                                                                                                | DOM target                                    | [#6838](https://github.com/ubugeeei-prod/vize/issues/6838)                                                                                                                                                                                     |
-| 3 Backends     | [#6840](https://github.com/ubugeeei-prod/vize/issues/6840) SSR                                                                                                                                                                                                                                                                                                                                                                     | SSR target                                    | [#6838](https://github.com/ubugeeei-prod/vize/issues/6838), [#6839](https://github.com/ubugeeei-prod/vize/issues/6839)                                                                                                                         |
-| 3 Backends     | [#6840](https://github.com/ubugeeei-prod/vize/issues/6840) Vapor                                                                                                                                                                                                                                                                                                                                                                   | Vapor target                                  | [#6839](https://github.com/ubugeeei-prod/vize/issues/6839)                                                                                                                                                                                     |
-| Products       | [#6847](https://github.com/ubugeeei-prod/vize/issues/6847), [#6875](https://github.com/ubugeeei-prod/vize/issues/6875), [#6876](https://github.com/ubugeeei-prod/vize/issues/6876)                                                                                                                                                                                                                                                 | Formatter from L1, Doc IR, span edits         | [#6836](https://github.com/ubugeeei-prod/vize/issues/6836)                                                                                                                                                                                     |
-| Products       | [#6848](https://github.com/ubugeeei-prod/vize/issues/6848)                                                                                                                                                                                                                                                                                                                                                                         | Linter on L1/L2                               | [#6871](https://github.com/ubugeeei-prod/vize/issues/6871)                                                                                                                                                                                     |
-| Products       | [#6850](https://github.com/ubugeeei-prod/vize/issues/6850), [#6872](https://github.com/ubugeeei-prod/vize/issues/6872)                                                                                                                                                                                                                                                                                                             | LSP on level artifacts, LSP state             | [#6838](https://github.com/ubugeeei-prod/vize/issues/6838), [#6871](https://github.com/ubugeeei-prod/vize/issues/6871)                                                                                                                         |
-| Products       | [#6873](https://github.com/ubugeeei-prod/vize/issues/6873)                                                                                                                                                                                                                                                                                                                                                                         | Cancellation                                  | [#6872](https://github.com/ubugeeei-prod/vize/issues/6872)                                                                                                                                                                                     |
-| Products       | [#6849](https://github.com/ubugeeei-prod/vize/issues/6849)                                                                                                                                                                                                                                                                                                                                                                         | Type checker via L4 `ts`                      | [#6840](https://github.com/ubugeeei-prod/vize/issues/6840), [#6879](https://github.com/ubugeeei-prod/vize/issues/6879)                                                                                                                         |
-| Products       | [#6851](https://github.com/ubugeeei-prod/vize/issues/6851)                                                                                                                                                                                                                                                                                                                                                                         | Dependency gate for products                  | [#6847](https://github.com/ubugeeei-prod/vize/issues/6847), [#6848](https://github.com/ubugeeei-prod/vize/issues/6848), [#6849](https://github.com/ubugeeei-prod/vize/issues/6849), [#6850](https://github.com/ubugeeei-prod/vize/issues/6850) |
-| After Vue Fes  | [#6858](https://github.com/ubugeeei-prod/vize/issues/6858)                                                                                                                                                                                                                                                                                                                                                                         | TSRX (nice to have before; not a priority)    | —                                                                                                                                                                                                                                              |
-| After Vue Fes  | [#6859](https://github.com/ubugeeei-prod/vize/issues/6859)                                                                                                                                                                                                                                                                                                                                                                         | Solid                                         | —                                                                                                                                                                                                                                              |
-| After Vue Fes  | [#6860](https://github.com/ubugeeei-prod/vize/issues/6860)                                                                                                                                                                                                                                                                                                                                                                         | Flow                                          | —                                                                                                                                                                                                                                              |
+See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work)
+in the companion record.
