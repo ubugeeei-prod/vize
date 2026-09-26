@@ -78,3 +78,20 @@ fn rejected_text_is_never_admitted_from_a_successful_prefix() {
         }
     }
 }
+
+#[test]
+fn repeated_guard_refusals_keep_their_authored_offsets() {
+    let allocator = Allocator::new();
+    let cache = ExpressionCache::new();
+    let deep = "((((((((((((((((((((((((((((((((((((((((x))))))))))))))))))))))))))))))))))))))))";
+    for span in [Span::new(0, 81), Span::new(100, 181)] {
+        match cache.parse(&allocator, deep, span) {
+            ExprRef::Opaque(opaque) => {
+                assert_eq!(opaque.reason, OpaqueReason::NestingRefused);
+                assert_eq!(opaque.source, deep);
+                assert_eq!(opaque.span, span);
+            }
+            _ => panic!("guard-refused expression was admitted"),
+        }
+    }
+}

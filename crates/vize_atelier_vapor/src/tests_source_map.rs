@@ -17,6 +17,7 @@ use vize_carton::Allocator;
 
 mod component_names;
 mod computed_dom;
+mod expression_reuse;
 mod model_names;
 mod slot_props;
 mod structural_slots;

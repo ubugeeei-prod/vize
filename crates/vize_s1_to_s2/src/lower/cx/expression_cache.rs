@@ -60,7 +60,9 @@ impl<'a> ExpressionCache<'a> {
             #[cfg(feature = "davinci-benchmark-profile")]
             record("davinci.s1_to_s2.expression_cache.admitted");
             let next = self.next.get();
-            self.entries.borrow_mut()[next] = Some(*js);
+            if let Some(slot) = self.entries.borrow_mut().get_mut(next) {
+                *slot = Some(*js);
+            }
             self.next.set((next + 1) % 4);
         }
         parsed
