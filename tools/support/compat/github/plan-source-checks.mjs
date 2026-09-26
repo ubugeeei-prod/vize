@@ -1,7 +1,13 @@
 import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
-export function planSourceChecks(paths) {
+export function planSourceChecks(paths, eventName = "pull_request") {
+  if (!["pull_request", "merge_group"].includes(eventName)) {
+    throw new Error("expected pull_request or merge_group source planning context");
+  }
+  if (eventName === "merge_group") {
+    return { rust: true, js: true, tooling: true, playground: true };
+  }
   // A new source directory must be validated until its dependencies are known.
   // Compiler changes can affect the native JS binding and its package tests.
   const result = { rust: false, js: false, tooling: false, playground: false };
@@ -64,19 +70,21 @@ export function changedPaths(base, head, cwd = process.cwd()) {
 }
 
 if (process.argv[1]?.endsWith("/plan-source-checks.mjs")) {
-  const [base, head] = process.argv.slice(2);
+  const [base, head, eventName = "pull_request"] = process.argv.slice(2);
   if (!/^[0-9a-f]{40}$/.test(base ?? "") || !/^[0-9a-f]{40}$/.test(head ?? "")) {
     throw new Error("expected full base and head commit SHAs");
   }
   // A new branch or an unavailable predecessor gets both gates, never a pass.
   const paths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : changedPaths(base, head);
+  if (!["pull_request", "merge_group"].includes(eventName))
+    throw new Error("invalid source planning context");
   const plan = paths.length
-    ? planSourceChecks(paths)
+    ? planSourceChecks(paths, eventName)
     : { rust: true, js: true, tooling: true, playground: true };
   const output = `rust=${plan.rust}\njs=${plan.js}\ntooling=${plan.tooling}\nplayground=${plan.playground}\n`;
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, output);
   process.stdout.write(
-    `Changed paths: ${paths.length}; Rust: ${plan.rust}; JS packages: ${plan.js}; tooling: ${plan.tooling}; playground: ${plan.playground}\n`,
+    `Scope: ${eventName}; changed paths: ${paths.length}; Rust: ${plan.rust}; JS packages: ${plan.js}; tooling: ${plan.tooling}; playground: ${plan.playground}\n`,
   );
   if (process.env.GITHUB_STEP_SUMMARY) {
     appendFileSync(

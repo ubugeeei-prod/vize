@@ -21,6 +21,12 @@ function reachSection(budgets: string): string {
 test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
+  const recipe = readRepoFile(
+    ".github",
+    "actions",
+    "test-rust-workspace-differential",
+    "action.yml",
+  );
   const manifest = readRepoFile("crates", "vize_atelier_sfc", "Cargo.toml");
   const budgets = readRepoFile("docs/davinci", "plan", "reach-budgets.toml");
   const record = readRepoFile("docs/davinci", "plan", "phase-3-records", "p3-17.md");
@@ -32,7 +38,8 @@ test("the P3-17 production-reach gate is wired, budgeted and recorded", () => {
     "shapes.rs",
   );
 
-  assert.ok(clippyJob.includes(reachCommand), "the reach gate must run in clippy-and-test");
+  assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
+  assert.ok(recipe.includes(reachCommand), "the reach gate must run in clippy-and-test");
   assert.match(
     manifest,
     /^\[\[test\]\]\nname = "davinci_production_reach"\nrequired-features = \["davinci-dom-differential"\]$/mu,

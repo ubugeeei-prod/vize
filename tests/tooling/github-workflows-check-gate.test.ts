@@ -46,7 +46,7 @@ type Job = {
     uses?: string;
     with?: Record<string, string>;
   }>;
-  "timeout-minutes"?: number;
+  "timeout-minutes"?: number | string;
   uses?: string;
 };
 const workflow = parse(readRepoFile(".github", "workflows", "check.yml")) as {
@@ -81,7 +81,7 @@ test("obsolete main validation is cancelled when the branch advances", () => {
   }
 });
 
-test("PR, merge group, and main push stay fast while full checks require schedule or dispatch", () => {
+test("source gates cover PRs and merge groups while extra checks require schedule or dispatch", () => {
   assert.ok(workflow.on?.pull_request);
   assert.deepEqual(workflow.on?.merge_group, {
     types: ["checks_requested"],
@@ -168,7 +168,10 @@ test("PR, merge group, and main push stay fast while full checks require schedul
   assert.match(commands("test-scripts"), /vp run --workspace-root test:scripts/);
   assert.match(commands("test-js-packages"), /vp run --workspace-root test:js/);
   assert.match(commands("clippy-and-test"), /cargo clippy --workspace/);
-  assert.match(commands("clippy-and-test"), /cargo test --workspace/);
+  assert.equal(
+    workflow.jobs?.["clippy-and-test"]?.steps?.find((step) => step.name === "Test")?.uses,
+    "./.github/actions/test-rust-workspace-differential",
+  );
   assert.match(commands("clippy-and-test"), /cargo bench -p vize_l1_to_l2/);
   assert.match(commands("branch-coverage"), /coverage:source:branch/);
   assert.match(commands("playground-test"), /test:browser/);
@@ -187,7 +190,7 @@ test("PR and merge-group source checks are included in the required report", () 
   assert.ok(Object.hasOwn(sourceWorkflow.on ?? {}, "workflow_call"));
   for (const [job, minutes] of [
     ["pr-source-plan", 5],
-    ["pr-rust-source", 35],
+    ["pr-rust-source", "${{ github.event_name == 'merge_group' && 45 || 35 }}"],
     ["pr-js-packages", 35],
     ["pr-tooling-scripts", 35],
     ["pr-playground-test", 60],

@@ -296,12 +296,12 @@ whole-workspace resident state.
 Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 [#6861](https://github.com/ubugeeei-prod/vize/issues/6861)–[#6867](https://github.com/ubugeeei-prod/vize/issues/6867). [First-publish control repair](./2026-09-27-sdk-bootstrap-control.md) is tracked in [#6895](https://github.com/ubugeeei-prod/vize/issues/6895).
 
-| Tier           | Runs              | Target                   | Content                                                                                                                     |
-| -------------- | ----------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| T0 PR          | every push        | p50 ≤ 3 min, p90 ≤ 6 min | fmt, title-policy, clippy and tests for affected crates (nextest archive + shards), input-selected tooling tests            |
-| T1 merge queue | once before merge | —                        | full workspace and tooling tests, differential corpus and acceptance gates, instruction-count performance gates, playground |
-| T2 nightly     | schedule          | —                        | E2E, real-project matrix, fuzz, miri, benchmarks, editor conformance, resource budgets                                      |
-| T3 release     | release           | —                        | everything, semver checks, release preflight                                                                                |
+| Tier           | Runs              | Target                   | Content                                                                                                                                                                            |
+| -------------- | ----------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T0 PR          | every push        | p50 ≤ 3 min, p90 ≤ 6 min | fmt, title-policy, clippy and tests for affected crates (nextest archive + shards), input-selected tooling tests                                                                   |
+| T1 merge queue | once before merge | —                        | full workspace and tooling tests, differential corpus and acceptance gates, instruction-count performance gates, playground ([#6865 execution](./2026-09-27-merge-queue-gates.md)) |
+| T2 nightly     | schedule          | —                        | E2E, real-project matrix, fuzz, miri, benchmarks, editor conformance, resource budgets                                                                                             |
+| T3 release     | release           | —                        | everything, semver checks, release preflight                                                                                                                                       |
 
 - zizmor runs only for external contributors, releases and PRs that touch
   `.github/**`.
