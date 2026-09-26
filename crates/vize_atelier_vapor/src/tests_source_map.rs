@@ -320,3 +320,26 @@ fn select_models_keep_authored_option_maps() {
         insta::assert_debug_snapshot!(format!("select_model_{case}_map"), segments);
     }
 }
+
+#[test]
+fn once_event_handlers_keep_authored_mapping_units() {
+    for (case, source) in [
+        (
+            "reference",
+            r#"<button v-once :title="label" @click="save">{{ label }}</button>"#,
+        ),
+        (
+            "callback",
+            r#"<button v-once @click="(event) => record(event.type)">{{ label }}</button>"#,
+        ),
+    ] {
+        let (code, segments) = mapped_on(source, Lane::Selected);
+        assert_eq!(
+            (code.clone(), segments.clone()),
+            mapped_on(source, Lane::Legacy),
+            "{case}: code and every decoded segment"
+        );
+        insta::assert_snapshot!(format!("once_event_{case}_code"), code);
+        insta::assert_debug_snapshot!(format!("once_event_{case}_map"), segments);
+    }
+}

@@ -53,6 +53,9 @@ fn vapor_legacy_reparse_floor_holds() {
     // the same single-test binary so process-global probes cannot race.
     for source in [
         r#"<slot :name="name"></slot>"#,
+        r#"<button v-once :title="label" @click="save">{{ label }}</button>"#,
+        r#"<main v-once><button @click.stop.prevent="record(label)">{{ label }}</button></main>"#,
+        r#"<main v-once><button @focus.capture="save" @keydown.enter="record(label)">{{ label }}</button></main>"#,
         r#"<slot :name="names[selected]" :value="count"><b>{{ fallback }}</b></slot>"#,
         r#"<slot :name="enabled ? first : second"></slot>"#,
         r#"<slot :name="'prefix-' + selected"></slot>"#,
