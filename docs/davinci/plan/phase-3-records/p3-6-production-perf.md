@@ -36,10 +36,13 @@ measurements describe that profile, not release-profile performance.
 
 Before timing, a separate profiler-enabled pass reads the selected and forced
 retained verdict for every input and enforces one selection counter at most.
-Forced retained must never report native acceptance. Inputs with no template
-or compilation diagnostics are recorded explicitly; successful accepted and
-fallback inputs form separate timing cohorts. Explicit Vapor sources retain
-their actual backend identity in the report. Every report includes all input
+Forced retained must never report native acceptance. The SSR scoped selector
+uses `LegacyOnly`, which emits no selection counter; that absence is recorded,
+not presented as an observed retained verdict. Parse errors, inputs without a
+template, and diagnostics on either lane (including warnings) are recorded
+explicitly. Clean accepted and fallback inputs form separate timing cohorts.
+Explicit Vapor sources retain their actual backend identity and a separate
+`routed_vapor` cohort under requested DOM shapes. Every report includes all input
 paths, source hashes, a deterministic manifest hash, exact head, options,
 raw paired timings, output hashes and diagnostic observations. Native adoption
 can be recomputed from those observations independently of timing cohorts.

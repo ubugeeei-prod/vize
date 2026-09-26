@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "features": "native,davinci-production-bench; no retained-AST differential dual-run",
         "options": "P3-17 shipping adapter shapes; Standard syntax, default codegen, default DOM compiler options, script/style ids=fixture path; scoped styles inferred; inline DOM/Vapor, separate DOM module/SSR",
         "window": "parse_sfc + compile_sfc_for_adapter + result destruction; source I/O excluded; profiler disabled; retained scope changes outside timing",
-        "sampling": "one warmup batch per lane; 9 samples, 5 corpus passes each; lane order alternates each sample; all/accepted/fallback/diagnostic cohorts reported separately",
+        "sampling": "one warmup batch per lane; 9 samples, 5 corpus passes each; lane order alternates each sample; all/accepted/fallback/diagnostic/no-template/parse-error/routed-Vapor cohorts reported separately",
         "scope": "committed fixture SFCs, excluding _git, _git-worktrees and node_modules; this report does not establish universal speed or semantic parity",
         "shapes": shapes,
     });
