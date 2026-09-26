@@ -7,7 +7,7 @@
 
 use alloc::vec::Vec;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::{Fingerprint, digest};
 use crate::fact::ids::{COMPONENT_USAGES, PROVIDE_INJECT};

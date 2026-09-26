@@ -1,5 +1,5 @@
 use vize_canon::CorsaBridgeError;
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::ide::corsa_support::CanonicalProjectOpenError;
 

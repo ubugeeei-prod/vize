@@ -4,13 +4,19 @@
 
 export const PACKAGE = "vize:contracts@0.1.3";
 export const PROTOCOL_VERSION = 1;
-export const S1_PAGE_SCHEMA = 1;
-export const S2_PAGE_SCHEMA = 1;
+export const L1_PAGE_SCHEMA = 1;
+export const L2_PAGE_SCHEMA = 1;
 export const REQUIRED_FEATURES = Object.freeze(["s1-page@1", "s2-page@1"]);
 export const FACTS_PAGE_SCHEMA = 1;
 export const PROJECTION_PAGE_SCHEMA = 1;
 export const EXPRESSION_REQUIRED_FEATURES = Object.freeze(["facts-page@1", "projection-page@1"]);
-export const S3_PAGE_SCHEMA = 1;
+export const L3_PAGE_SCHEMA = 1;
+// Compatibility names for the original SDK constants; wire page names stay stable.
+export {
+  L1_PAGE_SCHEMA as S1_PAGE_SCHEMA,
+  L2_PAGE_SCHEMA as S2_PAGE_SCHEMA,
+  L3_PAGE_SCHEMA as S3_PAGE_SCHEMA,
+};
 export const EMIT_DOCUMENT_PAGE_SCHEMA = 1;
 export const OUTPUT_REQUIRED_FEATURES = Object.freeze([
   "emit-document-page@1",

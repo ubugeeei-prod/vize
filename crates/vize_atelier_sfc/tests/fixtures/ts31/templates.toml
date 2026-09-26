@@ -311,7 +311,7 @@ category = "rewritten-identifier"
 find = "body"
 
 # Single-line native HTML with direct-reference bindings: the Vapor compile is
-# admitted by the native S3 slice, so this fixture measures that emitter.
+# admitted by the native L3 slice, so this fixture measures that emitter.
 [[fixture]]
 name = "native-direct-bindings"
 source = '''

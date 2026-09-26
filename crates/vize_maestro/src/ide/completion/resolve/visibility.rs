@@ -6,7 +6,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::{GetSpan, SourceType};
 use tower_lsp::lsp_types::CompletionItem;
 use vize_canon::{LspPosition, LspRange};
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 use crate::ide::{IdeContext, corsa_support, offset_to_position, position_to_offset};
 

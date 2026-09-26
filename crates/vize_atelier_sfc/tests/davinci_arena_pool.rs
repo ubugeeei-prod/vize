@@ -25,7 +25,7 @@
 use vize_atelier_sfc::{
     SfcCompileOptions, SfcCompileResult, SfcParseOptions, compile_sfc, parse_sfc,
 };
-use vize_s0::{String, pool};
+use vize_l0::{String, pool};
 
 /// How many other files run between populating a cache and reading it back.
 ///

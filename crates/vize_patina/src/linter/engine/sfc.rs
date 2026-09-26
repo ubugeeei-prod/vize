@@ -7,8 +7,8 @@ use super::{
 };
 use crate::linter::config::{LintResult, Linter};
 use vize_armature::Parser;
-use vize_s0::dialect::VueDialect;
-use vize_s0::{Allocator, ToCompactString, profile};
+use vize_l0::dialect::VueDialect;
+use vize_l0::{Allocator, ToCompactString, profile};
 
 impl Linter {
     pub(crate) fn lint_sfc_template_root<'a>(&self, input: SfcTemplateLintInput<'a>) -> LintResult {
@@ -43,7 +43,7 @@ impl Linter {
             return result;
         };
 
-        let profiler = vize_s0::profiler::global_profiler();
+        let profiler = vize_l0::profiler::global_profiler();
         let template_profile = profiler
             .is_enabled()
             .then(|| profiler.global_span("patina.sfc.descriptor.template_lint"));
@@ -212,7 +212,7 @@ impl Linter {
         self.append_sfc_document_rule_diagnostics(source, filename, result)
     }
 
-    /// Template body extracted from an SFC. [`facade::RULES`] run on the S2 facade.
+    /// Template body extracted from an SFC. [`facade::RULES`] run on the L2 facade.
     fn lint_sfc_template_source(&self, source: &str, filename: &str) -> LintResult {
         let capacity = (source.len() * 4).max(self.initial_capacity);
         let allocator = Allocator::with_capacity(capacity);

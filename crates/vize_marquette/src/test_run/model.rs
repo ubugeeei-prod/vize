@@ -1,7 +1,7 @@
 use std::collections::BTreeSet;
 
 use serde::{Deserialize, Serialize};
-use vize_s0::String;
+use vize_l0::String;
 
 /// Serialized `format` marker for test-run evidence records.
 ///

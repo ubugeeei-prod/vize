@@ -50,7 +50,7 @@ fn test_slice_template_parts_matches_line_scanner() {
                 attrs: Default::default(),
             };
             let bindings = BindingMetadata::default();
-            let template_allocator = vize_s0::Allocator::new();
+            let template_allocator = vize_l0::Allocator::new();
             let mut template_options = TemplateCompileOptions::default();
             if !inline {
                 let compiler_options = vize_atelier_dom::DomCompilerOptions {

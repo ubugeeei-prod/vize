@@ -2,10 +2,15 @@
 
 The SDK for Vize extension-contract guests: the canonical `vize:contracts`
 WIT package (`wit/`) and its released surface history (`versions/`),
-its bindings, the capability-handshake constants, writers for the S1 and S2
+its bindings, the capability-handshake constants, writers for the L1 and L2
 pages the host accepts, and the runtime an import-free `no_std`
 `wasm32-wasip2` guest provides itself. It depends on no Vize implementation
 crate.
+
+The canonical layer APIs use `L1_PAGE_SCHEMA`, `L2_PAGE_SCHEMA`,
+`L3_PAGE_SCHEMA` and `pages::{l1, l2, l1_page, l2_page}`. The original `S`
+constants and `pages::{s1, s2, s1_page, s2_page}` remain aliases. Wire page
+names (`s1-page@1`, `s2-page@1`, `s3-page@1`) and WIT fields stay unchanged.
 
 Contract versioning follows
 [the compatibility policy](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/contracts-compat-policy.md).

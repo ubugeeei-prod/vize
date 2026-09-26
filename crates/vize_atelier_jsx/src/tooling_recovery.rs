@@ -6,7 +6,7 @@
 
 use oxc_ast_visit::VisitMut;
 use oxc_span::Span;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use crate::{
     JsxLang, JsxOutputMode, LowerOutput, analyze, finder, lower::Lowerer, parse, span::SpanMapper,

@@ -9,8 +9,8 @@ import type { SpolveroRemark } from "./remarks";
 describe("PassTimeline timings", () => {
   const steps: TimelineStep[] = [
     {
-      key: "s1/parse",
-      rung: "s1",
+      key: "l1/parse",
+      rung: "l1",
       pass: "parse",
       changed: true,
       producer: true,
@@ -19,8 +19,8 @@ describe("PassTimeline timings", () => {
       walk: null,
     },
     {
-      key: "s2/lower",
-      rung: "s2",
+      key: "l2/lower",
+      rung: "l2",
       pass: "lower",
       changed: true,
       producer: true,
@@ -29,8 +29,8 @@ describe("PassTimeline timings", () => {
       walk: null,
     },
     {
-      key: "s2/hoist-static",
-      rung: "s2",
+      key: "l2/hoist-static",
+      rung: "l2",
       pass: "hoist-static",
       changed: false,
       producer: false,
@@ -39,8 +39,8 @@ describe("PassTimeline timings", () => {
       walk: null,
     },
     {
-      key: "s3/lower",
-      rung: "s3",
+      key: "l3/lower",
+      rung: "l3",
       pass: "lower",
       changed: true,
       producer: true,
@@ -51,7 +51,7 @@ describe("PassTimeline timings", () => {
   ];
 
   it("labels each step and splits the strip by measured share", () => {
-    const wrapper = mount(PassTimeline, { props: { steps, walks: [], current: "s2/lower" } });
+    const wrapper = mount(PassTimeline, { props: { steps, walks: [], current: "l2/lower" } });
     expect(wrapper.findAll(".davinci-step-time").map((label) => label.text())).toEqual([
       "5 µs",
       "15 µs",
@@ -99,7 +99,7 @@ describe("RemarksPanel", () => {
   it("lists remarks by kind with their arguments and locates each site", async () => {
     const remarks: SpolveroRemark[] = [
       {
-        stage: "s2",
+        stage: "l2",
         pass: "hoist-static",
         kind: "applied",
         name: "static-subtree",
@@ -107,7 +107,7 @@ describe("RemarksPanel", () => {
         args: [{ key: "tag", value: "h1" }],
       },
       {
-        stage: "s2",
+        stage: "l2",
         pass: "hoist-static",
         kind: "missed",
         name: "static-props",

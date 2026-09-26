@@ -7,7 +7,7 @@ use std::{
     time::Duration,
 };
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 mod executable;
 mod identity;

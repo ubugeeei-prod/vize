@@ -57,7 +57,7 @@ fn refuse(mut out: StdoutLock<'_>, error: GuestError) -> ExitCode {
         GuestError::Instantiate(message)
         | GuestError::Trap(message)
         | GuestError::Transport(message) => message,
-        other => vize_s0::cstr!("{other}"),
+        other => vize_l0::cstr!("{other}"),
     };
     match write_message(&mut out, &Response::LoadError(message)) {
         Ok(()) => ExitCode::from(1),

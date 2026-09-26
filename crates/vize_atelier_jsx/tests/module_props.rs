@@ -12,7 +12,7 @@
 )]
 
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 fn module_code(source: &str, lang: JsxLang) -> std::string::String {
     let bump = Allocator::new();

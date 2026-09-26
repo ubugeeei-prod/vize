@@ -1,11 +1,11 @@
-//! S3V010: placement alternatives and committed choices.
+//! L3V010: placement alternatives and committed choices.
 //!
 //! Each record is re-derived from the canonical graph rather than trusted:
 //! an alternative is accepted only where it preserves meaning, and a
 //! committed choice only where the plan it forms keeps effect order.
 
 use alloc::vec::Vec;
-use vize_s0::{Span, String, cstr};
+use vize_l0::{Span, String, cstr};
 
 use super::{Violation, ViolationCode};
 use crate::op::{Op, OpId, OpKind, Program};

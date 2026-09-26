@@ -2,7 +2,7 @@
 mod for_bindings;
 use vize_croquis::reactivity::ReactiveKind;
 use vize_croquis::{BindingType, Croquis, ScopeBinding, ScopeKind, VForScopeData, VSlotScopeData};
-use vize_s0::{Allocator, Box, CompactString, String, interner::Interner};
+use vize_l0::{Allocator, Box, CompactString, String, interner::Interner};
 
 use crate::errors::{CompilerError, ErrorCode};
 use crate::options::TransformOptions;
@@ -43,8 +43,8 @@ impl<'a> TransformContext<'a> {
             directives: std::vec::Vec::new(),
             #[cfg(feature = "legacy")]
             filters: std::vec::Vec::new(),
-            hoists: vize_s0::Vec::new_in(&allocator),
-            cached: vize_s0::Vec::new_in(&allocator),
+            hoists: vize_l0::Vec::new_in(&allocator),
+            cached: vize_l0::Vec::new_in(&allocator),
             temps: 0,
             scope_chain: vize_croquis::ScopeChain::new(),
             scoped_slots: 0,

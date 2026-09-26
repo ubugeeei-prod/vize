@@ -257,7 +257,7 @@ test("compact-storage probes stay wall-report-only with exact alloc gates", () =
   }
 });
 
-test("P2-11 S2 DOM emit probe gates exact allocations", () => {
+test("P2-11 L2 DOM emit probe gates exact allocations", () => {
   const id = "s1_to_s2_emit_p2_11_dom_surface";
   const reportPath = path.join(
     repoRoot,

@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 pub(super) fn rewrite_global_component_imports_for_virtual_project(
     type_annotation: &str,

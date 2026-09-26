@@ -8,7 +8,7 @@ use crate::commands::{
     check::CheckArgs,
     lint::LintArgs,
 };
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 #[cfg(feature = "glyph")]
 use crate::commands::fmt::FmtArgs;

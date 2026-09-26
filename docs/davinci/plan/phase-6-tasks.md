@@ -11,12 +11,12 @@
 
 **Lane:** A
 
-**Deliverable:** `crates/vize_extension_sdk/wit/input-dialect.wit`: block in → S1 surface tree and S2 page out, as coarse-grained calls (one call per block, canonical-ABI copy cost paid once), plus the `get-capability` handshake — integer protocol version and feature strings (the Swift import) — shared by every world.
+**Deliverable:** `crates/vize_extension_sdk/wit/input-dialect.wit`: block in → L1 surface tree and L2 page out, as coarse-grained calls (one call per block, canonical-ABI copy cost paid once), plus the `get-capability` handshake — integer protocol version and feature strings (the Swift import) — shared by every world.
 
 **Steps:**
 
-- [x] WIT package `vize:contracts@0.1.0` with the handshake interface and the input world; serialized payloads are the S1/S2 folio `Full` forms (schema-versioned per P2-17; the S1 page is new, [folio-format-s1.md](./folio-format-s1.md))
-- [x] A host-side golden exchange: a guest stub echoing a committed S1/S2 payload
+- [x] WIT package `vize:contracts@0.1.0` with the handshake interface and the input world; serialized payloads are the L1/L2 folio `Full` forms (schema-versioned per P2-17; the L1 page is new, [folio-format-s1.md](./folio-format-l1.md))
+- [x] A host-side golden exchange: a guest stub echoing a committed L1/L2 payload
 - [x] Register the TS-48 command in [test-suites.md](./test-suites.md): `cargo test -p vize_extension_host --features extension-host --test wit_golden` (wasmtime stays behind the feature, charter #39)
 
 **Acceptance:** TS-48 for the input world: capability negotiation including rejection of a mismatched version with its exact error, and byte-equal serialized payloads in the golden exchange.
@@ -48,11 +48,11 @@
 
 ## P6-1c — Output-target WIT world
 
-**Start gate:** gated on P3-9 — the world carries the S4 structured emission document.
+**Start gate:** gated on P3-9 — the world carries the L4 structured emission document.
 
 **Lane:** A
 
-**Deliverable:** `crates/vize_extension_sdk/wit/output-target.wit`: canonical S3/S2 in → emitted document (P3-9's span-carrying S4 document) out.
+**Deliverable:** `crates/vize_extension_sdk/wit/output-target.wit`: canonical L3/L2 in → emitted document (P3-9's span-carrying L4 document) out.
 
 **Steps:**
 
@@ -131,13 +131,13 @@
 
 ## P6-4b — MoonBit expression dialect
 
-**Lowering and cache slice 2026-09-26:** S1→S2 constructs foreign payloads
+**Lowering and cache slice 2026-09-26:** L1→L2 constructs foreign payloads
 before projection, preserving dialect-owned scope names without a JS parse.
 A bounded checker cache keys every result by the toolchain version and the
 complete projection inputs. The fixed `moonc` still reproduces both existing
 fixture projections and diagnostic spans. The separate additive typed world
 now checks producer-supplied signatures via generated `.mbti` interfaces and
-exact projection pages. The automatic S2 type producer and full matrix remain
+exact projection pages. The automatic L2 type producer and full matrix remain
 open; see [typed-world evidence](./phase-6-records/p6-4b-typed-world.md) and the
 [lowering/cache record](./phase-6-records/p6-4b-lowering-cache.md).
 
@@ -145,7 +145,7 @@ open; see [typed-world evidence](./phase-6-records/p6-4b-typed-world.md) and the
 
 **Lane:** D
 
-**Deliverable:** charter #28's MoonBit dialect: a generated `.mbti` binding environment from S2 scope facts (props, refs, composables as MoonBit signatures), template expressions projected to `.mbt` bodies, `moonc build-package` check-only, diagnostics span-mapped back, and the `moonc` version inside the fact cache key.
+**Deliverable:** charter #28's MoonBit dialect: a generated `.mbti` binding environment from L2 scope facts (props, refs, composables as MoonBit signatures), template expressions projected to `.mbt` bodies, `moonc build-package` check-only, diagnostics span-mapped back, and the `moonc` version inside the fact cache key.
 
 **Steps:**
 

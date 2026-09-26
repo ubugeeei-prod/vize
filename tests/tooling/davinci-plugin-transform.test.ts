@@ -38,7 +38,7 @@ const plugin = (name = "design-system-transform") => ({
   },
 });
 
-test("native S2 transform compiles real attribute edits and authored source maps", () => {
+test("native L2 transform compiles real attribute edits and authored source maps", () => {
   const transformed = native.compileWithTransformPlugins(source, [plugin()], {
     filename: "src/Design.vue",
     sourceMap: true,
@@ -89,7 +89,7 @@ test("audited native transform cache reuses edits and invalidates changed plugin
   assert.doesNotMatch(fourth.result.code, /_ctx\.label\b/);
 });
 
-test("downstream edit keys include the preceding native S2 artifact", () => {
+test("downstream edit keys include the preceding native L2 artifact", () => {
   const upstream = (value: string) => ({
     ...plugin("upstream-color"),
     cacheInputs: [{ name: "color", value }],

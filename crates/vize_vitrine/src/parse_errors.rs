@@ -9,7 +9,7 @@ use vize_atelier_core::{CompilerError, CompilerErrorWithSource};
     reason = "N-API and wasm-bindgen errors carry std `String`s"
 )]
 pub(crate) fn message(errors: &[CompilerError], source: &str) -> String {
-    vize_s0::cstr!(
+    vize_l0::cstr!(
         "Parse errors: {:?}",
         CompilerErrorWithSource::list(errors, source)
     )

@@ -13,7 +13,7 @@ mod support;
 use vize_dialect_moonbit::host::{CheckUnit, HostError, MooncHost};
 use vize_dialect_moonbit::native::{ARGUMENT_LIMIT, NativeMoonc};
 use vize_dialect_moonbit::render::render;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use support::{FIXTURES, golden, pinned_toolchain, read};
 

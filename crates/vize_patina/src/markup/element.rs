@@ -1,9 +1,9 @@
 //! [`MarkupElement`]: one element / component / fragment / template / slot.
 
 use super::jsx_names::{jsx_element_kind, jsx_element_name, jsx_element_ref, jsx_fragment_ref};
+use super::l2::surface::element_at;
+use super::l2::{L2ElementOp, L2Markup};
 use super::node::MarkupNode;
-use super::s2::surface::element_at;
-use super::s2::{S2ElementOp, S2Markup};
 use super::{MarkupElementKind, relief_scopes, span_to_range};
 use crate::ir::ByteRange;
 use oxc_ast::ast::{JSXElement, JSXFragment};
@@ -13,16 +13,16 @@ use vize_relief::{ElementNode, ElementType};
 mod opening;
 pub(super) mod queries;
 
-use queries::{is_lint_component, s2_template_is_special};
+use queries::{is_lint_component, l2_template_is_special};
 
 #[derive(Clone, Copy)]
 pub(super) enum MarkupElementInner<'a> {
     Relief(&'a ElementNode<'a>),
-    /// Source-shaped S1 view used by authored-tree consumers. This is not an
-    /// unwrapped S2 template carrier: its kind follows the actual tag/attrs.
+    /// Source-shaped L1 view used by authored-tree consumers. This is not an
+    /// unwrapped L2 template carrier: its kind follows the actual tag/attrs.
     Authored {
-        element: &'a vize_s1::Element<'a>,
-        doc: &'a S2Markup<'a>,
+        element: &'a vize_l1::Element<'a>,
+        doc: &'a L2Markup<'a>,
         frozen: bool,
         opens_v_pre: bool,
         ns: vize_relief::Namespace,
@@ -35,19 +35,19 @@ pub(super) enum MarkupElementInner<'a> {
         node: *const JSXFragment<'a>,
         offset: u32,
     },
-    S2 {
-        op: S2ElementOp<'a>,
-        doc: &'a S2Markup<'a>,
-        surface: Option<&'a vize_s1::Element<'a>>,
+    L2 {
+        op: L2ElementOp<'a>,
+        doc: &'a L2Markup<'a>,
+        surface: Option<&'a vize_l1::Element<'a>>,
     },
-    /// An authored `<template>` carrier S2 unwrapped into a `ui.if` branch or
-    /// `ui.for` region: its surface comes from S1, its children from the
+    /// An authored `<template>` carrier L2 unwrapped into a `ui.if` branch or
+    /// `ui.for` region: its surface comes from L1, its children from the
     /// region it was unwrapped into.
-    S2Carrier {
-        element: &'a vize_s1::Element<'a>,
-        doc: &'a S2Markup<'a>,
-        region: &'a [vize_s2::op::Op<'a>],
-        span: vize_s0::Span,
+    L2Carrier {
+        element: &'a vize_l1::Element<'a>,
+        doc: &'a L2Markup<'a>,
+        region: &'a [vize_l2::op::Op<'a>],
+        span: vize_l0::Span,
     },
 }
 
@@ -79,23 +79,23 @@ impl<'a> MarkupElement<'a> {
         Self::from_inner(MarkupElementInner::JsxFragment { node, offset })
     }
 
-    /// Wrap an S2 element-shaped op, locating its authored S1 element when the
+    /// Wrap an L2 element-shaped op, locating its authored L1 element when the
     /// artifact carries a surface tree.
-    pub(super) fn from_s2(op: S2ElementOp<'a>, doc: &'a S2Markup<'a>) -> Self {
+    pub(super) fn from_l2(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>) -> Self {
         let surface = doc
             .surface
             .filter(|_| !op.is_synthesized(doc))
             .and_then(|tree| element_at(tree, op.span().start));
-        Self::from_inner(MarkupElementInner::S2 { op, doc, surface })
+        Self::from_inner(MarkupElementInner::L2 { op, doc, surface })
     }
 
-    pub(super) const fn from_s2_carrier(
-        element: &'a vize_s1::Element<'a>,
-        doc: &'a S2Markup<'a>,
-        region: &'a [vize_s2::op::Op<'a>],
-        span: vize_s0::Span,
+    pub(super) const fn from_l2_carrier(
+        element: &'a vize_l1::Element<'a>,
+        doc: &'a L2Markup<'a>,
+        region: &'a [vize_l2::op::Op<'a>],
+        span: vize_l0::Span,
     ) -> Self {
-        Self::from_inner(MarkupElementInner::S2Carrier {
+        Self::from_inner(MarkupElementInner::L2Carrier {
             element,
             doc,
             region,
@@ -112,8 +112,8 @@ impl<'a> MarkupElement<'a> {
                 jsx_element_name(&jsx_element_ref(node).opening_element.name)
             }
             MarkupElementInner::JsxFragment { .. } => "",
-            MarkupElementInner::S2 { op, .. } => op.tag(),
-            MarkupElementInner::S2Carrier { element, .. } => element.tag(),
+            MarkupElementInner::L2 { op, .. } => op.tag(),
+            MarkupElementInner::L2Carrier { element, .. } => element.tag(),
         }
     }
 
@@ -133,13 +133,13 @@ impl<'a> MarkupElement<'a> {
                 jsx_element_kind(&jsx_element_ref(node).opening_element.name)
             }
             MarkupElementInner::JsxFragment { .. } => MarkupElementKind::Template,
-            MarkupElementInner::S2 { op, surface, .. } => match op {
-                S2ElementOp::Slot(_) => MarkupElementKind::Slot,
-                _ if op.tag() == "template" && s2_template_is_special(op, surface) => {
+            MarkupElementInner::L2 { op, surface, .. } => match op {
+                L2ElementOp::Slot(_) => MarkupElementKind::Slot,
+                _ if op.tag() == "template" && l2_template_is_special(op, surface) => {
                     MarkupElementKind::Template
                 }
                 // A template classifies the way the lint-mode parse does: a
-                // component is a core built-in or a capitalized tag. S2's
+                // component is a core built-in or a capitalized tag. L2's
                 // element/component split is DOM resolution (`is_native_tag`),
                 // which the lint lane's rules and snapshots are not written
                 // against.
@@ -150,10 +150,10 @@ impl<'a> MarkupElement<'a> {
                         MarkupElementKind::Element
                     }
                 }
-                S2ElementOp::Component(_) => MarkupElementKind::Component,
-                S2ElementOp::Element(_) => MarkupElementKind::Element,
+                L2ElementOp::Component(_) => MarkupElementKind::Component,
+                L2ElementOp::Element(_) => MarkupElementKind::Element,
             },
-            MarkupElementInner::S2Carrier { .. } => MarkupElementKind::Template,
+            MarkupElementInner::L2Carrier { .. } => MarkupElementKind::Template,
         }
     }
 
@@ -178,12 +178,12 @@ impl<'a> MarkupElement<'a> {
             // An implicit table owner (`tbody` / `tr`) is zero-width at the
             // tag name of the row or cell that opened it, as the parser's
             // tree construction records it.
-            MarkupElementInner::S2 { op, doc, .. } if op.is_synthesized(doc) => {
+            MarkupElementInner::L2 { op, doc, .. } if op.is_synthesized(doc) => {
                 let at = op.span().start + 1;
                 ByteRange::new(at, at)
             }
-            MarkupElementInner::S2 { op, doc, .. } => doc.open_tag_range(op.span()),
-            MarkupElementInner::S2Carrier { span, doc, .. } => doc.open_tag_range(span),
+            MarkupElementInner::L2 { op, doc, .. } => doc.open_tag_range(op.span()),
+            MarkupElementInner::L2Carrier { span, doc, .. } => doc.open_tag_range(span),
         }
     }
 
@@ -218,11 +218,11 @@ impl<'a> MarkupElement<'a> {
                     visitor(MarkupNode::from_jsx_child(child, offset));
                 }
             }
-            MarkupElementInner::S2 { op, doc, .. } => {
-                super::s2::children::walk_nodes(doc, op.children(), visitor);
+            MarkupElementInner::L2 { op, doc, .. } => {
+                super::l2::children::walk_nodes(doc, op.children(), visitor);
             }
-            MarkupElementInner::S2Carrier { doc, region, .. } => {
-                super::s2::children::walk_nodes(doc, region, visitor);
+            MarkupElementInner::L2Carrier { doc, region, .. } => {
+                super::l2::children::walk_nodes(doc, region, visitor);
             }
         }
     }

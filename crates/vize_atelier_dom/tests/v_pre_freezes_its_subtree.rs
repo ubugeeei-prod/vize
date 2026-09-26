@@ -8,14 +8,14 @@
 //! branch, `v-for` never builds a region, and `{{ x }}` is literal text.
 //! The spelling itself is dropped from the output.
 //!
-//! The S2 lowering carried only the last of those: interpolations went
-//! inert, and everything else compiled as usual. Since P2-11 made the S2
+//! The L2 lowering carried only the last of those: interpolations went
+//! inert, and everything else compiled as usual. Since P2-11 made the L2
 //! lane the shipped one, `v-pre` was effectively unimplemented in
 //! production — `<div v-pre :x="1">` shipped `{ x: 1 }` where Vue emits
 //! `{ ":x": "1" }`, and `<div v-pre><li v-for="i in l">` shipped a real
 //! `renderList`.
 //!
-//! No corpus template caught it: `davinci_s2_transform_corpus`'s sweep
+//! No corpus template caught it: `davinci_l2_transform_corpus`'s sweep
 //! counts **zero** `v-pre` templates across the hydrated corpus, which is
 //! why this needs its own witness. Expectations are `@vue/compiler-dom`
 //! 3.6.0-beta.10's own output, cross-checked against this crate's legacy
@@ -29,7 +29,7 @@
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_legacy_with_options,
 };
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 /// `(name, template)` — every directive kind, on the `v-pre` element
 /// itself and one level under it.
@@ -116,8 +116,8 @@ fn render_body(code: &str) -> String {
 #[test]
 fn a_v_pre_subtree_compiles_exactly_as_the_legacy_lane_does() {
     for (name, source) in CASES {
-        let s2_allocator = Allocator::new();
-        let (_, errors, s2) = compile_template(&s2_allocator, source);
+        let l2_allocator = Allocator::new();
+        let (_, errors, s2) = compile_template(&l2_allocator, source);
         assert!(
             errors.is_empty(),
             "{name}: {source:?} should compile cleanly"
@@ -141,7 +141,7 @@ fn a_v_pre_subtree_compiles_exactly_as_the_legacy_lane_does() {
 
 /// Two shapes where **both** vize lanes differ from Vue, recorded so the
 /// gap is a known one rather than a surprise. Neither is this fix's to
-/// close — the fix is about the S2 lane matching the shipped lane — and
+/// close — the fix is about the L2 lane matching the shipped lane — and
 /// the two lanes do agree with each other on the first.
 ///
 /// - `<MyComp v-pre :x="1">c</MyComp>`: Vue emits

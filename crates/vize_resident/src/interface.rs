@@ -6,7 +6,7 @@
 //! invalidate every export, with lazy refresh before its next consumer read.
 
 use vize_davinci::summary::{AlphaPages, Facet, SfcSummary};
-use vize_s0::{FxHashMap, String, cstr};
+use vize_l0::{FxHashMap, String, cstr};
 
 use crate::{ResidentDocuments, SharedDescriptor, SummaryInput, sfc_summary};
 

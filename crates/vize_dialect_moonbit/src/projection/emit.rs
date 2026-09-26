@@ -1,11 +1,11 @@
-//! The projection emitter: one walk over the S2 op tree writing the
+//! The projection emitter: one walk over the L2 op tree writing the
 //! virtual file, its span links and its positions (see [`super`]).
 
-use vize_s0::{Allocator, SourceBlock, Span, append};
-use vize_s1::SurfaceChild;
-use vize_s2::expr::capability::ExprDialect;
-use vize_s2::expr::{ExprRef, ForeignExpr, OpaqueReason};
-use vize_s2::op::{BindingOp, DynamicName, ForOp, IfOp, Op};
+use vize_l0::{Allocator, SourceBlock, Span, append};
+use vize_l1::SurfaceChild;
+use vize_l2::expr::capability::ExprDialect;
+use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueReason};
+use vize_l2::op::{BindingOp, DynamicName, ForOp, IfOp, Op};
 
 use super::{HELPERS, Position, PositionKind, Projection, Role, SpanLink, Unsupported};
 use crate::dialect::{MoonBitDialect, is_handler_path};
@@ -36,7 +36,7 @@ fn piece(expr: ExprRef<'_>) -> Piece<'_> {
     }
 }
 
-/// Every S1 interpolation's trimmed content, file-absolute, in document
+/// Every L1 interpolation's trimmed content, file-absolute, in document
 /// order.
 pub(super) fn interpolation_parts<'a>(
     children: &[SurfaceChild<'a>],
@@ -89,7 +89,7 @@ impl<'a> Emitter<'a> {
             Op::Text(_) | Op::Comment(_) => {}
             Op::Interpolation(interpolation) => match interpolation.expression {
                 // A merged `{{ a }} text` run: the lowering kept only the
-                // rebuilt text, so the parts come from S1 (P6-5 finding).
+                // rebuilt text, so the parts come from L1 (P6-5 finding).
                 ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound => {
                     let span = interpolation.span;
                     let parts = self.parts.iter().copied();
@@ -239,12 +239,12 @@ impl<'a> Emitter<'a> {
                 dialect: DIALECT,
                 source,
                 span,
-                facts: vize_s0::Vec::new_in(&self.allocator),
+                facts: vize_l0::Vec::new_in(&self.allocator),
             })
         });
         let start = generated_offset(&self.projection.text);
-        // Whole expressions reuse their S2 payload; compound display parts
-        // retain their exact S1 spans. The dialect emits verbatim, which
+        // Whole expressions reuse their L2 payload; compound display parts
+        // retain their exact L1 spans. The dialect emits verbatim, which
         // cannot fail.
         let _ = MoonBitDialect.emit(ExprRef::Foreign(foreign), &mut self.projection.text);
         let end = generated_offset(&self.projection.text);

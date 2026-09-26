@@ -1,7 +1,7 @@
 use clap::Args;
 use std::fs;
 use std::path::PathBuf;
-use vize_s0::{String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 #[derive(Args)]
 pub struct NewArgs {

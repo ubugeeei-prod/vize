@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use crate::{ApplicationContract, CONTRACT_FORMAT_VERSION, EnvironmentConsumer, RuntimeFamily};
 

@@ -1,6 +1,6 @@
 //! Rules that judge Davinci facts rather than walking a syntax tree.
 //!
-//! Each rule reads facts produced by a Davinci analysis (an S2 pass or a
+//! Each rule reads facts produced by a Davinci analysis (an L2 pass or a
 //! fact group) and reports a property of those facts, so its precision is
 //! the precision of the analysis, stated as a tier in its docs.
 

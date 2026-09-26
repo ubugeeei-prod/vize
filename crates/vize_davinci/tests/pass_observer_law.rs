@@ -19,7 +19,7 @@ use vize_davinci::pass::{
     BudgetObserver, Fusability, NoObserver, PassDesc, PassFailure, PassKind, Pipeline, Preserved,
     run_pipeline,
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 const A: PassDesc = PassDesc::new(
     "alpha",

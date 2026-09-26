@@ -210,9 +210,9 @@ vize-patina-tests-d48316dd43a0.art.vue.txt	crates/vize_patina/src/rules/musea/te
 vize-patina-tests-de6c27e7ea09.art.vue.txt	crates/vize_patina/src/rules/opinionated/vue/warn_custom_block/tests.rs
 vize-patina-tests-ea82bac2f963.art.vue.txt	crates/vize_patina/src/rules/opinionated/vue/warn_custom_block/tests.rs
 vize-patina-tests-f71515cf907b.art.vue.txt	crates/vize_patina/src/rules/opinionated/vue/warn_custom_block/tests.rs
-vize-s1-to-s2-chain-keys-700e752b5851.art.vue.txt	crates/vize_s1_to_s2/tests/fixtures/vif/chain-keys.vue
-vize-s1-to-s2-emit-static-hoist-976d7fe7b09d.art.vue.txt	crates/vize_s1_to_s2/tests/emit_static_hoist.rs
-vize-s1-to-s2-holes-36f30750dfe5.art.vue.txt	crates/vize_s1_to_s2/tests/fixtures/vfor/holes.vue
-vize-s1-to-s2-positions-5ca63b20f292.art.vue.txt	crates/vize_s1_to_s2/tests/fixtures/hoist/positions.vue
+vize-s1-to-s2-chain-keys-700e752b5851.art.vue.txt	crates/vize_l1_to_l2/tests/fixtures/vif/chain-keys.vue
+vize-s1-to-s2-emit-static-hoist-976d7fe7b09d.art.vue.txt	crates/vize_l1_to_l2/tests/emit_static_hoist.rs
+vize-s1-to-s2-holes-36f30750dfe5.art.vue.txt	crates/vize_l1_to_l2/tests/fixtures/vfor/holes.vue
+vize-s1-to-s2-positions-5ca63b20f292.art.vue.txt	crates/vize_l1_to_l2/tests/fixtures/hoist/positions.vue
 vize-tests-7d00e633e799.art.vue.txt	crates/vize/src/commands/musea/migrate/emit/tests.rs
 vize-tests-8eca7d358ebc.art.vue.txt	crates/vize/src/commands/musea/migrate/emit/tests.rs

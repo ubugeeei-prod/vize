@@ -1,11 +1,11 @@
 import Impeto.Semantics
 
 /-!
-P3-15 scheduling contract. S3 has no separate effect-grouping pass yet. The
+P3-15 scheduling contract. L3 has no separate effect-grouping pass yet. The
 contract every grouping must meet is the TS-27 phase validator's edge
-contract, so this module re-states its order checks (S3V001 duplicate op ids,
-S3V004 unresolved edge endpoints, S3V007 effect-scoped edges leaving their
-scope, and S3V008 scheduled edges that point backward) independently of the
+contract, so this module re-states its order checks (L3V001 duplicate op ids,
+L3V004 unresolved edge endpoints, L3V007 effect-scoped edges leaving their
+scope, and L3V008 scheduled edges that point backward) independently of the
 Rust code. It then proves that acceptance implies the ordering property in the
 P3-4 small-step semantics, for both backends.
 -/
@@ -17,10 +17,10 @@ def indexOf? : List Nat -> Nat -> Option Nat
   | [], _ => none
   | x :: xs, id => if x = id then some 0 else (indexOf? xs id).map (· + 1)
 
-/-- One S3V001 for every op whose id already occurred earlier. -/
+/-- One L3V001 for every op whose id already occurred earlier. -/
 def duplicateCodes : List Nat -> List Nat -> List String
   | _, [] => []
-  | seen, id :: rest => (if id ∈ seen then ["S3V001"] else []) ++ duplicateCodes (id :: seen) rest
+  | seen, id :: rest => (if id ∈ seen then ["L3V001"] else []) ++ duplicateCodes (id :: seen) rest
 
 def opRegion? (program : Program) (id : Nat) : Option Nat :=
   (program.ops.find? (·.id == id)).map (·.region)
@@ -50,20 +50,20 @@ def scopeCodes (program : Program) (edge : StateEdge) (resolved : Bool) : List S
   | none => []
   | some scope =>
       match program.effects.find? (·.id == scope) with
-      | none => ["S3V007"]
+      | none => ["L3V007"]
       | some effect =>
           if resolved && !(opInside program edge.source effect.region &&
-              opInside program edge.target effect.region) then ["S3V007"] else []
+              opInside program edge.target effect.region) then ["L3V007"] else []
 
 def orderCode : Phase -> Option Nat -> Option Nat -> List String
-  | .scheduled, some i, some j => if i < j then [] else ["S3V008"]
+  | .scheduled, some i, some j => if i < j then [] else ["L3V008"]
   | _, _, _ => []
 
 def edgeCodes (program : Program) (edge : StateEdge) : List String :=
   let ids := program.ops.map (·.id)
   let source := indexOf? ids edge.source
   let target := indexOf? ids edge.target
-  (if source.isSome then [] else ["S3V004"]) ++ (if target.isSome then [] else ["S3V004"]) ++
+  (if source.isSome then [] else ["L3V004"]) ++ (if target.isSome then [] else ["L3V004"]) ++
     scopeCodes program edge (source.isSome && target.isSome) ++
     orderCode program.phase source target
 

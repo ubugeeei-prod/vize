@@ -11,7 +11,7 @@ use vize_atelier_core::{
         CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
     },
 };
-use vize_s0::{Allocator, String, profile};
+use vize_l0::{Allocator, String, profile};
 
 mod p_end;
 mod selector;
@@ -32,23 +32,23 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
     // A refusal here is recorded by the shared pipeline below, which
     // re-derives it from the same inputs; only the fast path's own outcomes
     // are recorded in this function.
-    let use_s2_emit = stage_options::s2_emit_supported(
+    let use_l2_emit = stage_options::l2_emit_supported(
         &options,
         &codegen_opts,
         &custom_elements,
         template_syntax,
         stage_options::unprojectable_croquis(&options),
-        pipeline::S2EmitSelection::RequireSections,
+        pipeline::L2EmitSelection::RequireSections,
         experimental_self_component,
     ) && !stage_options::source_may_contain_patterned_template_syntax(source)
         && !stage_options::source_may_contain_vize_directive_comment(source);
 
     let mut force_compat_sections = false;
-    let fast_path_supported = selector::s2_sfc_fast_path_supported_source(source);
+    let fast_path_supported = selector::l2_sfc_fast_path_supported_source(source);
 
-    if use_s2_emit && fast_path_supported && !codegen_opts.source_map {
-        let binding_table = stage_options::s2_binding_table_for(&options);
-        let s2_options = stage_options::s2_emit_options(
+    if use_l2_emit && fast_path_supported && !codegen_opts.source_map {
+        let binding_table = stage_options::l2_binding_table_for(&options);
+        let l2_options = stage_options::l2_emit_options(
             &options,
             &codegen_opts,
             &custom_elements,
@@ -56,10 +56,10 @@ pub(super) fn compile_template_inner_for_sfc_with_sections<'a>(
             hoisted_scope_id.as_deref(),
             codegen_experimental_options.component_name.as_deref(),
         );
-        if let Some(s2_options) = s2_options
+        if let Some(l2_options) = l2_options
             && let Ok(result) = profile!(
                 "atelier.dom.template.s2_codegen_sfc_fast",
-                stage_options::emit_s2(allocator, source, options.dialect, &s2_options, None, true)
+                stage_options::emit_l2(allocator, source, options.dialect, &l2_options, None, true)
             )
         {
             selection::record(Ok(()));

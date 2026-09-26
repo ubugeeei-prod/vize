@@ -4,8 +4,8 @@
 //! complete per-query accounting (executed / reused, from salsa's own event
 //! stream) and checks every served artifact against the clean path run from
 //! scratch. The fixture has four blocks: `script setup`, the template, and
-//! two styles. Every block runs both per-block queries (`s1_block` answers
-//! `None` outside a template, `s2_page` outside templates and styles), so
+//! two styles. Every block runs both per-block queries (`l1_block` answers
+//! `None` outside a template, `l2_page` outside templates and styles), so
 //! "only the edited block re-executes" is exactly `executed: 1, reused: 3`
 //! on each of them — whichever block was edited.
 //!
@@ -22,11 +22,11 @@
 )]
 #![cfg(not(feature = "seeded-stale-cache"))]
 
+use vize_l0::String;
+use vize_l0::config::VueVersion;
 use vize_resident::{
     Accounting, QueryCounts, ResidentDatabase, SourceFile, StageConfig, compute_file_artifacts,
 };
-use vize_s0::String;
-use vize_s0::config::VueVersion;
 
 const BASE: &str = "<script setup lang=\"ts\">
 const n = 1
@@ -151,7 +151,7 @@ fn a_config_change_reexecutes_only_the_queries_that_read_it() {
         vue_version: VueVersion::V2,
     };
     db.configure(vue2);
-    // The block split and S1 never read the project config; every page does.
+    // The block split and L1 never read the project config; every page does.
     assert_eq!(
         read_and_check(&db, file, BASE, vue2),
         accounting(&[("sfc_blocks", 0, 1), ("s1_block", 0, 4), ("s2_page", 4, 0)])

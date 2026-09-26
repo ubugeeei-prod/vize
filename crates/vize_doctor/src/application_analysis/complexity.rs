@@ -7,7 +7,7 @@
 //! judges own complexity; this finding is the cross-file view.
 
 use vize_croquis_cf::{ComponentComplexity, CrossFileAnalyzer, CrossFileResult};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::{normalize_source_path, relativize_within};
 use crate::{

@@ -1,7 +1,7 @@
 //! `<template lang="pug">` — the Davinci pug dialect (P4-12c) selector.
 //!
-//! The pug S1 surface is desugared into its derived Vue template
-//! (`vize_s1_to_s2::lower::pug`, byte-identical to the pinned `pug`
+//! The pug L1 surface is desugared into its derived Vue template
+//! (`vize_l1_to_l2::lower::pug`, byte-identical to the pinned `pug`
 //! rendering) and every template lane — DOM, Vapor, SSR — compiles that
 //! template exactly as it compiles an authored HTML one. Refused pug
 //! (mixins, includes, JavaScript-executing constructs) fails the compile
@@ -25,10 +25,10 @@ pub(super) fn prepare_pug_template<'d, 's>(
     }) else {
         return Ok(Cow::Borrowed(descriptor));
     };
-    let derived = vize_s1_to_s2::lower::pug::derive_template_source(&template.content);
+    let derived = vize_l1_to_l2::lower::pug::derive_template_source(&template.content);
     if let Some(error) = derived.first_error() {
         let offset = template.loc.start + error.span.start as usize;
-        let mut message = vize_s0::String::from("pug template: ");
+        let mut message = vize_l0::String::from("pug template: ");
         message.push_str(&error.message);
         return Err(SfcError {
             message,

@@ -3,8 +3,8 @@
 //! hatch — an external script. A candidate is interesting when **every**
 //! configured check holds (conjunction), so oracles compose by listing.
 //!
-//! The S2-based checks share one run per candidate: the SFC's inline HTML
-//! template is parsed (S1), lowered, and taken through the S2 transform
+//! The L2-based checks share one run per candidate: the SFC's inline HTML
+//! template is parsed (L1), lowered, and taken through the L2 transform
 //! pipeline under `Pair(BudgetObserver, RemarkCollector)` — the same channel
 //! the TS-32 corpus and the Spolvero feed read, so "the remark the feed
 //! shows" and "the remark the reducer preserves" cannot disagree.
@@ -15,7 +15,8 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_davinci::folio::repro::ReproFolio;
 use vize_davinci::folio::{Folio, FolioMode};
 use vize_davinci::pass::{BudgetObserver, Pair, RemarkCollector, RemarkKind};
-use vize_s0::{Allocator, String, cstr};
+use vize_davinci::stage::pipeline_wire_id;
+use vize_l0::{Allocator, String, cstr};
 
 use crate::commands::davinci_ice::{self, IceFailure};
 
@@ -36,11 +37,11 @@ pub(crate) enum Check {
         kind: RemarkKind,
         name: String,
     },
-    /// The post-transform S2 folio contains this text.
+    /// The post-transform L2 folio contains this text.
     FolioContains(String),
-    /// Some S1→S2 diagnostic's message contains this text.
+    /// Some L1→L2 diagnostic's message contains this text.
     Diagnostic(String),
-    /// The S2 transform pipeline walked the tree more than this many times.
+    /// The L2 transform pipeline walked the tree more than this many times.
     WalksOver(u32),
     /// `sh -c "<command> <file>"` exits 0 with the candidate written to
     /// `file` — the sovereign interestingness script.
@@ -50,15 +51,15 @@ pub(crate) enum Check {
     },
 }
 
-/// One S2 run's observable products.
-struct S2Run {
+/// One L2 run's observable products.
+struct L2Run {
     folio: String,
     remarks: Vec<vize_davinci::pass::observer::RecordedRemark>,
     diagnostics: Vec<String>,
     walks: u32,
 }
 
-fn s2_run(source: &str) -> Option<S2Run> {
+fn l2_run(source: &str) -> Option<L2Run> {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).ok()?;
     let template = descriptor.template.as_ref()?;
     let html = template.lang.as_deref().is_none_or(|lang| lang == "html");
@@ -66,14 +67,14 @@ fn s2_run(source: &str) -> Option<S2Run> {
         return None;
     }
     let allocator = Allocator::default();
-    let (tree, errors) = vize_s1::parse(&allocator, &template.content);
+    let (tree, errors) = vize_l1::parse(&allocator, &template.content);
     let mut lowered =
-        vize_s1_to_s2::lower_with_caps(&allocator, &tree, &errors, vize_s1_to_s2::LegacyCaps::VUE3);
+        vize_l1_to_l2::lower_with_caps(&allocator, &tree, &errors, vize_l1_to_l2::LegacyCaps::VUE3);
     let mut observers = Pair(BudgetObserver::new(), RemarkCollector::new());
-    let _facts = vize_s1_to_s2::pass::run_transform(&mut lowered, &mut observers);
+    let _facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut observers);
     let Pair(budget, remarks) = observers;
-    Some(S2Run {
-        folio: vize_s2::folio::S2Folio::of(&lowered.root.ops).print_to_string(FolioMode::Full),
+    Some(L2Run {
+        folio: vize_l2::folio::L2Folio::of(&lowered.root.ops).print_to_string(FolioMode::Full),
         remarks: remarks.finish(),
         diagnostics: lowered
             .diagnostics
@@ -109,7 +110,7 @@ fn script_holds(command: &str, file: &std::path::Path, candidate: &str) -> bool 
 }
 
 impl Check {
-    fn needs_s2(&self) -> bool {
+    fn needs_l2(&self) -> bool {
         matches!(
             self,
             Self::Remark { .. } | Self::FolioContains(_) | Self::Diagnostic(_) | Self::WalksOver(_)
@@ -121,8 +122,8 @@ impl Check {
 pub(crate) fn interesting(checks: &[Check], candidate: &str) -> bool {
     let s2 = checks
         .iter()
-        .any(Check::needs_s2)
-        .then(|| s2_run(candidate))
+        .any(Check::needs_l2)
+        .then(|| l2_run(candidate))
         .flatten();
     for check in checks {
         let holds = match check {
@@ -137,7 +138,9 @@ pub(crate) fn interesting(checks: &[Check], candidate: &str) -> bool {
                 s2.remarks.iter().any(|remark| {
                     remark.kind == *kind
                         && remark.name == *name
-                        && origin.split_once('.')
+                        && origin
+                            .split_once('.')
+                            .map(|(stage, pass)| (pipeline_wire_id(stage), pass))
                             == Some((remark.stage.as_str(), remark.pass.as_str()))
                 })
             }),

@@ -11,7 +11,7 @@ use super::super::{
     with_workspace_node_modules_override,
 };
 use std::path::Path;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 const HANDLER_BLOCK_INSTANCE_GLOBAL: &str = r#"<script lang="ts">
 import { defineComponent } from 'vue'

@@ -1,0 +1,128 @@
+//! P2-11 dynamic `v-on` key witness: computed event keys and modifiers
+//! compare byte-for-byte against the shipped DOM lane, while non-JS event
+//! names stay typed refusals.
+
+#[expect(
+    dead_code,
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::disallowed_methods,
+    clippy::string_slice,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::panic,
+    reason = "shared test support; each binary uses a subset"
+)]
+mod support;
+
+use vize_l1_to_l2::UnsupportedReason as Reason;
+
+const BATTERY: &[(&str, &str)] = &[
+    ("native_dynamic", r#"<button @[event]="handler"></button>"#),
+    (
+        "native_dynamic_member",
+        r#"<button @[item.event]="handler"></button>"#,
+    ),
+    (
+        "native_dynamic_call",
+        r#"<button @[eventOf()]="handler"></button>"#,
+    ),
+    (
+        "native_dynamic_binary_expression",
+        r#"<button @[prefix+suffix]="handler"></button>"#,
+    ),
+    (
+        "native_dynamic_template_literal",
+        r#"<button @[`save:${id}`]="handler"></button>"#,
+    ),
+    (
+        "native_dynamic_inline",
+        r#"<button @[event]="handler($event)"></button>"#,
+    ),
+    (
+        "native_dynamic_stop",
+        r#"<button @[event].stop="handler"></button>"#,
+    ),
+    (
+        "native_dynamic_enter_stop",
+        r#"<button @[event].enter.stop="handler"></button>"#,
+    ),
+    (
+        "native_dynamic_option_modifiers",
+        r#"<button @[event].once.capture.passive="handler"></button>"#,
+    ),
+    ("component_dynamic", r#"<Foo @[event]="handler" />"#),
+    (
+        "static_then_dynamic",
+        r#"<button @click="onClick" @[event]="handler"></button>"#,
+    ),
+    (
+        "dynamic_then_static",
+        r#"<button @[event]="handler" @click="onClick"></button>"#,
+    ),
+    (
+        "merge_props_dynamic",
+        r#"<button v-bind="bag" @[event]="handler"></button>"#,
+    ),
+    (
+        "object_on_then_dynamic",
+        r#"<button v-on="bag" @[event]="handler"></button>"#,
+    ),
+    (
+        "v_if_dynamic",
+        r#"<button v-if="ok" @[event]="handler">x</button>"#,
+    ),
+    (
+        "v_for_dynamic_local_name",
+        r#"<button v-for="item in items" @[item.event]="item.handler"></button>"#,
+    ),
+    (
+        "text_and_dynamic_event",
+        r#"<button @[event]="handler">{{ msg }}</button>"#,
+    ),
+    (
+        "dynamic_prop_and_dynamic_event",
+        r#"<button :[key]="value" @[event]="handler"></button>"#,
+    ),
+    (
+        "dynamic_slot_and_dynamic_event",
+        r#"<Foo @[event]="handler"><template #[name]>x</template></Foo>"#,
+    ),
+    (
+        "slot_outlet_dynamic_event",
+        r#"<slot @[event]="handler"></slot>"#,
+    ),
+];
+
+const REFUSALS: &[(&str, &str, support::ExpectedRefusal)] = &[
+    (
+        "dynamic_event_name_not_js",
+        r#"<button @[event.]="handler"></button>"#,
+        support::ExpectedRefusal::Unsupported(Reason::OnNameNotJs),
+    ),
+    (
+        "dynamic_event_handler_not_js",
+        r#"<button @[event]="handler."></button>"#,
+        support::ExpectedRefusal::Unsupported(Reason::OnHandlerNotJs),
+    ),
+    (
+        "slot_outlet_dynamic_event_name_not_js",
+        r#"<slot @[event.]="handler"></slot>"#,
+        support::ExpectedRefusal::Unsupported(Reason::OnNameNotJs),
+    ),
+    (
+        "slot_outlet_event_handler_not_js",
+        r#"<slot @pick="handler."></slot>"#,
+        support::ExpectedRefusal::Unsupported(Reason::OnHandlerNotJs),
+    ),
+];
+
+#[test]
+fn l2_dynamic_v_on_keys_match_the_shipped_dom_lane_byte_for_byte() {
+    support::assert_l2_matches_shipped(BATTERY);
+}
+
+#[test]
+fn l2_dynamic_v_on_refusal_boundary_is_typed() {
+    support::assert_l2_refuses(REFUSALS);
+}

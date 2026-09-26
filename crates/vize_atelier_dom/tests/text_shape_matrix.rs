@@ -23,7 +23,7 @@
 use vize_atelier_dom::{
     DomCompilerOptions, compile_template, compile_template_legacy_with_options,
 };
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 /// The children that can sit inside the wrapper, one per kind the text
 /// rules distinguish: two texts (so a merge is observable), two
@@ -60,8 +60,8 @@ fn render_body(code: &str) -> String {
 
 /// Compile `source` through both lanes and require them byte-identical.
 fn assert_lanes_agree(name: &str, source: &str, compared: &mut usize) {
-    let s2_allocator = Allocator::new();
-    let (_, errors, s2) = compile_template(&s2_allocator, source);
+    let l2_allocator = Allocator::new();
+    let (_, errors, s2) = compile_template(&l2_allocator, source);
     assert!(
         errors.is_empty(),
         "{name}: {source:?} should compile cleanly"
@@ -165,9 +165,9 @@ fn the_adjacencies_agree_with_comments_preserved_too() {
         for (b_key, b) in ATOMS {
             for (gap_key, gap) in GAPS {
                 let source = format!("<div>{a}{gap}<!--sep--> {b}</div>");
-                let s2_allocator = Allocator::new();
+                let l2_allocator = Allocator::new();
                 let (_, errors, s2) = vize_atelier_dom::compile_template_with_options(
-                    &s2_allocator,
+                    &l2_allocator,
                     &source,
                     options(),
                 );

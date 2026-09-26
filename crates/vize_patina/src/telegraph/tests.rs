@@ -3,7 +3,7 @@ use super::{
 };
 use crate::diagnostic::LintDiagnostic;
 use crate::output::OutputFormat;
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 #[test]
 fn test_telegraph_with_text() {

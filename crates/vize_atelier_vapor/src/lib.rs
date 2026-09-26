@@ -12,9 +12,9 @@ pub mod compile;
 pub mod generate;
 pub mod generators;
 pub mod ir;
-pub mod lower;
 #[doc(hidden)]
-pub mod s3;
+pub mod l3;
+pub mod lower;
 pub mod steps;
 
 #[cfg(test)]

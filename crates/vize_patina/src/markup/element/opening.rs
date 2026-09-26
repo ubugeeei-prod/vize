@@ -2,7 +2,7 @@
 
 use super::{MarkupElement, MarkupElementInner};
 use crate::markup::jsx_names::{jsx_attribute_directive_kind, jsx_element_ref};
-use crate::markup::s2::binding::{S2Item, walk_items};
+use crate::markup::l2::binding::{L2Item, walk_items};
 use crate::markup::{MarkupAttribute, MarkupBinding, MarkupDirective, relief_scopes};
 use oxc_ast::ast::JSXAttributeItem;
 use vize_relief::PropNode;
@@ -35,15 +35,15 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
-            MarkupElementInner::S2 { .. } | MarkupElementInner::S2Carrier { .. } => self
-                .walk_s2_items(&mut |item| match item {
-                    S2Item::Attribute { attribute, doc } => {
-                        visitor(MarkupAttribute::from_s2(attribute, doc));
+            MarkupElementInner::L2 { .. } | MarkupElementInner::L2Carrier { .. } => self
+                .walk_l2_items(&mut |item| match item {
+                    L2Item::Attribute { attribute, doc } => {
+                        visitor(MarkupAttribute::from_l2(attribute, doc));
                     }
-                    S2Item::Surface { attr, doc } if !item.is_directive() => {
+                    L2Item::Surface { attr, doc } if !item.is_directive() => {
                         visitor(MarkupAttribute::from_surface(attr, doc));
                     }
-                    S2Item::Binding(_) | S2Item::Surface { .. } => {}
+                    L2Item::Binding(_) | L2Item::Surface { .. } => {}
                 }),
         }
     }
@@ -92,13 +92,13 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
-            MarkupElementInner::S2 { .. } | MarkupElementInner::S2Carrier { .. } => self
-                .walk_s2_items(&mut |item| match item {
-                    S2Item::Binding(binding) => visitor(MarkupDirective::from_s2(binding)),
-                    S2Item::Surface { attr, doc } if item.is_directive() => {
+            MarkupElementInner::L2 { .. } | MarkupElementInner::L2Carrier { .. } => self
+                .walk_l2_items(&mut |item| match item {
+                    L2Item::Binding(binding) => visitor(MarkupDirective::from_l2(binding)),
+                    L2Item::Surface { attr, doc } if item.is_directive() => {
                         visitor(MarkupDirective::from_surface(attr, doc));
                     }
-                    S2Item::Attribute { .. } | S2Item::Surface { .. } => {}
+                    L2Item::Attribute { .. } | L2Item::Surface { .. } => {}
                 }),
         }
     }
@@ -150,18 +150,18 @@ impl<'a> MarkupElement<'a> {
                 }
             }
             MarkupElementInner::JsxFragment { .. } => {}
-            MarkupElementInner::S2 { .. } | MarkupElementInner::S2Carrier { .. } => {
-                self.walk_s2_items(&mut |item| visitor(MarkupBinding::from_s2_item(item)));
+            MarkupElementInner::L2 { .. } | MarkupElementInner::L2Carrier { .. } => {
+                self.walk_l2_items(&mut |item| visitor(MarkupBinding::from_l2_item(item)));
             }
         }
     }
 
-    pub(in crate::markup) fn walk_s2_items(&self, visitor: &mut impl FnMut(S2Item<'a>)) {
+    pub(in crate::markup) fn walk_l2_items(&self, visitor: &mut impl FnMut(L2Item<'a>)) {
         match self.inner {
-            MarkupElementInner::S2 { op, doc, surface } => {
+            MarkupElementInner::L2 { op, doc, surface } => {
                 walk_items(doc, op.attributes(), op.bindings(), surface, visitor);
             }
-            MarkupElementInner::S2Carrier { element, doc, .. } => {
+            MarkupElementInner::L2Carrier { element, doc, .. } => {
                 walk_items(doc, &[], &[], Some(element), visitor);
             }
             MarkupElementInner::Authored { .. }

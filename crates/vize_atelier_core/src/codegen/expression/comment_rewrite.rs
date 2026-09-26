@@ -13,7 +13,7 @@ use crate::steps::expression::nesting::scan::{
     keyword_allows_regex_after, skip_identifier, skip_line_comment, skip_number, skip_quoted,
     skip_regex,
 };
-use vize_s0::String;
+use vize_l0::String;
 
 /// Convert `// …` line comments to `/* … */` block comments, copying strings,
 /// template literals, block comments, and regex literals through verbatim.

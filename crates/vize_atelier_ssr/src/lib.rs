@@ -9,8 +9,8 @@ pub mod differential;
 pub mod errors;
 #[cfg(test)]
 mod experimental_tests;
+mod l4;
 pub mod options;
-mod s4;
 #[cfg(test)]
 mod source_map_tests;
 mod stage_options;
@@ -20,7 +20,7 @@ pub use codegen::{SsrCodegenContext, SsrCodegenResult};
 #[expect(deprecated, reason = "kept exported until removal")]
 pub use compile::compile_ssr_with_vue_parser_quirks;
 pub use compile::{
-    compile_s2_to_ssr, compile_ssr, compile_ssr_with_custom_elements_and_template_syntax,
+    compile_l2_to_ssr, compile_ssr, compile_ssr_with_custom_elements_and_template_syntax,
     compile_ssr_with_custom_elements_template_syntax_and_experimental_options,
     compile_ssr_with_options, compile_ssr_with_template_syntax,
     compile_ssr_with_template_syntax_and_experimental_options,
@@ -44,7 +44,7 @@ mod tests {
         SsrCompilerOptions, compile_ssr, compile_ssr_with_options, compile_ssr_with_template_syntax,
     };
     use vize_atelier_core::TemplateSyntaxMode;
-    use vize_s0::Allocator;
+    use vize_l0::Allocator;
 
     #[test]
     fn test_compile_simple_element() {

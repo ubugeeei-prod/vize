@@ -2,7 +2,7 @@
 //! facade: component classification, slot names, attribute facts and the
 //! namespace Vue's compiler assigns.
 
-use vize_s0::{CompactString, Span};
+use vize_l0::{CompactString, Span};
 
 use super::facts::{Attr, Ns};
 use super::skeleton::{BoundaryKind, Element, NodeKind};
@@ -25,9 +25,9 @@ pub(super) const TRANSPARENT_BUILTINS: &[&str] = &[
 /// namespace its tag names.
 pub(super) fn compiler_ns(tag: &str, parent: Option<(Ns, &str, bool)>) -> Ns {
     let Some((parent_ns, parent_tag, encoding_html)) = parent else {
-        return if vize_s0::is_svg_tag(tag) {
+        return if vize_l0::is_svg_tag(tag) {
             Ns::Svg
-        } else if vize_s0::is_math_ml_tag(tag) {
+        } else if vize_l0::is_math_ml_tag(tag) {
             Ns::MathMl
         } else {
             Ns::Html
@@ -65,7 +65,7 @@ const INTRINSIC_MEMBER_COMPONENT_NAMESPACES: &[&str] = &["motion"];
 
 pub(super) fn intrinsic_member_tag(tag: &str) -> Option<&str> {
     let (namespace, member) = tag.split_once('.')?;
-    (INTRINSIC_MEMBER_COMPONENT_NAMESPACES.contains(&namespace) && vize_s0::is_html_tag(member))
+    (INTRINSIC_MEMBER_COMPONENT_NAMESPACES.contains(&namespace) && vize_l0::is_html_tag(member))
         .then_some(member)
 }
 

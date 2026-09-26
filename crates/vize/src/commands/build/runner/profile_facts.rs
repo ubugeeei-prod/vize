@@ -3,9 +3,9 @@
 use std::{path::Path, time::Duration};
 
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_s0::config::VueVersion;
-use vize_s0::profiler::global_profiler;
-use vize_s0::{String, cstr};
+use vize_l0::config::VueVersion;
+use vize_l0::profiler::global_profiler;
+use vize_l0::{String, cstr};
 
 use crate::commands::build::config::FileProfile;
 

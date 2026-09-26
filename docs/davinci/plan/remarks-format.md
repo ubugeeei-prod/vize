@@ -87,11 +87,11 @@ anything else. `davinci-opt --remarks <path>` writes it for a pipeline run.
 
 ## TS-32 — the corpus remarks-diff
 
-`crates/vize_s1_to_s2/tests/davinci_remarks_corpus.rs` (feature
+`crates/vize_l1_to_l2/tests/davinci_remarks_corpus.rs` (feature
 `davinci-differential`, run by the required `clippy-and-test` job) sweeps
 every `.vue` file under `tests/_fixtures` (the `_git` submodules and
 `node_modules` excluded, so every checkout sweeps the same set), lowers each
-inline HTML template and runs the S2 transform pipeline under a
+inline HTML template and runs the L2 transform pipeline under a
 `RemarkCollector`. Spans are shifted to file offsets. The result is a
 `[remarks-corpus]` page — `files`, `entries` (`"path" <entry line>`),
 `explained` — that must equal the committed
@@ -118,7 +118,7 @@ the inspector and `analyzeSfc`). The member is additive to feed v1 —
 every producer emits it (possibly empty), and it is optional in the
 schema so earlier v1 documents stay valid. Producers: the inspector payload
 and wasm `analyzeSfc` (`vize_curator::inspector::template_remarks`, one run
-of lowering + the S2 transform pipeline per inline HTML template) and
+of lowering + the L2 transform pipeline per inline HTML template) and
 `davinci-opt --folio-dir` (the run's own log). This is what the playground's
 decision view renders (C-5).
 
@@ -137,7 +137,7 @@ Every remark name a pass may emit, with its arguments in emission order —
 subject first. Adding a name or an argument key is a registry change in the
 same PR.
 
-### `s2.hoist-static` (`crates/vize_s1_to_s2/src/pass/hoist/remarks.rs`)
+### `s2.hoist-static` (`crates/vize_l1_to_l2/src/pass/hoist/remarks.rs`)
 
 An analysis pass: `applied` means the hoist-licensing fact holds; whether
 DOM realization then hoists is position/option-dependent and not claimed.
@@ -160,7 +160,7 @@ Blockers come from the same functions the facts do
 (`consts::binding_blocker` / `props_blocker`, the region summary), so a
 remark cannot explain a decision the analysis did not make. TS-17 pins the
 full page for the `hoist` fixtures and re-derives every kind from the
-published facts (`crates/vize_s1_to_s2/tests/hoist_pass_remarks.rs`).
+published facts (`crates/vize_l1_to_l2/tests/hoist_pass_remarks.rs`).
 
 ### `s3.extract-placements` (`crates/vize_impeto/src/extract/report.rs`)
 
@@ -181,11 +181,11 @@ when the candidate was measured and committed.
 the trial measured (0 when the candidate was not measured); `budget-left` is
 the component's remaining candidate budget. The remarks mirror the
 `[s3-extraction-folio]` decision rows one for one; TS-17 pins both pages
-(`crates/vize_s2_to_s3/tests/extraction_snapshots.rs`), and a detached run
+(`crates/vize_l2_to_l3/tests/extraction_snapshots.rs`), and a detached run
 must return the identical extraction.
 
-TS-32 gates the corpus too: `crates/vize_s2_to_s3/tests/davinci_s3_remarks_corpus.rs`
-runs the `-O3` pipeline over the same sweep as the S2 gate and compares with
+TS-32 gates the corpus too: `crates/vize_l2_to_l3/tests/davinci_l3_remarks_corpus.rs`
+runs the `-O3` pipeline over the same sweep as the L2 gate and compares with
 `tests/_fixtures/davinci-s3-remarks-baseline.folio` under the same bless and
 explanation rules. The baseline pins 147 remarks over 433 files: 10 `group`
 and 5 `hoist` applied; 124 `cache` and 8 single-node `hoist` missed as

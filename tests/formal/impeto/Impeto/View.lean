@@ -3,7 +3,7 @@ import Lean.Data.Json
 namespace Impeto
 open Lean
 
--- Addresses encode S3 operation ownership and keyed/positional loop scopes.
+-- Addresses encode L3 operation ownership and keyed/positional loop scopes.
 -- They are reference identities, never inferred from generated DOM strings.
 inductive View where
   | text (value : String)

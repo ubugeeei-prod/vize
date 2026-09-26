@@ -32,9 +32,9 @@
 //! [`names`]: https://tc39.es/ecma426/#json-names
 //! [VLQ]: https://en.wikipedia.org/wiki/Variable-length_quantity
 
-use vize_s0::FxHashMap;
-use vize_s0::String;
-use vize_s0::ToCompactString;
+use vize_l0::FxHashMap;
+use vize_l0::String;
+use vize_l0::ToCompactString;
 
 /// A recorded mapping anchor, as raw byte offsets.
 ///

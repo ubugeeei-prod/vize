@@ -59,8 +59,8 @@ jobs:
             js_ts_expression,
             css_parse,
             template_compile,
-            s1_lowering,
-            s2_to_s3_lowering,
+            l1_lowering,
+            l2_to_l3_lowering,
             folio_parse,
           ]
     steps:

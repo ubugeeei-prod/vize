@@ -12,7 +12,7 @@ use std::{
     process::Command,
 };
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[test]
 fn default_check_reports_mixed_tsconfig_program_graph_and_repair() {

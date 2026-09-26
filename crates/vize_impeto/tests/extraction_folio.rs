@@ -1,12 +1,12 @@
-//! TS-16 laws for the S3 extraction page.
+//! TS-16 laws for the L3 extraction page.
 
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_impeto::extract::{
-    Decision, DecisionKind, Delta, FolioDecision, Metric, Reason, S3ExtractionFolio,
+    Decision, DecisionKind, Delta, FolioDecision, L3ExtractionFolio, Metric, Reason,
 };
 use vize_impeto::op::OpId;
 use vize_impeto::placement::Placement;
-use vize_s0::{Span, String, cstr};
+use vize_l0::{Span, String, cstr};
 
 const CANONICAL: &str = "\
 [s3-extraction-folio]
@@ -54,8 +54,8 @@ fn row(
     })
 }
 
-fn page_value() -> S3ExtractionFolio {
-    S3ExtractionFolio {
+fn page_value() -> L3ExtractionFolio {
+    L3ExtractionFolio {
         tier: String::from("O1"),
         candidate_budget: 8,
         budget_left: 5,
@@ -96,7 +96,7 @@ fn page_value() -> S3ExtractionFolio {
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let parsed = S3ExtractionFolio::parse(CANONICAL).expect("canonical text parses");
+    let parsed = L3ExtractionFolio::parse(CANONICAL).expect("canonical text parses");
     assert_eq!(parsed.print_to_string(FolioMode::Full).as_str(), CANONICAL);
     assert_eq!(parsed, page_value());
 }
@@ -120,7 +120,7 @@ fn parse_print_is_structural_identity_for_every_reason() {
         })
         .collect();
     let printed = value.print_to_string(FolioMode::Full);
-    assert_eq!(S3ExtractionFolio::parse(printed.as_str()), Ok(value));
+    assert_eq!(L3ExtractionFolio::parse(printed.as_str()), Ok(value));
 }
 
 #[test]
@@ -132,8 +132,8 @@ fn parse_rejects_malformed_rows_exactly() {
     let valid =
         "op=1 placement=cache kind=missed reason=subsumed span=1:2 size=0 edges=0 path=0 budget=0";
     assert_eq!(
-        S3ExtractionFolio::parse(page(valid).as_str()),
-        Ok(S3ExtractionFolio {
+        L3ExtractionFolio::parse(page(valid).as_str()),
+        Ok(L3ExtractionFolio {
             decisions: vec![row(
                 1,
                 Placement::Cache,
@@ -177,7 +177,7 @@ fn parse_rejects_malformed_rows_exactly() {
     ];
     for (row, message) in cases {
         assert_eq!(
-            S3ExtractionFolio::parse(page(row).as_str()),
+            L3ExtractionFolio::parse(page(row).as_str()),
             Err(FolioError::new(13, cstr!("{message}"))),
             "{row}"
         );

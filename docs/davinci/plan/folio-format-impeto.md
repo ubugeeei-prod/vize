@@ -1,6 +1,6 @@
 # Impeto Folio Format
 
-The S3 stage dump is `vize_impeto::folio::S3Folio`, a derived Folio page named
+The L3 stage dump is `vize_impeto::folio::L3Folio`, a derived Folio page named
 `[s3-folio]`. It is flat rather than tree-shaped: regions, ops, state edges,
 and effect scopes are separate order-bearing sections whose id references are
 validated by the TS-27 phase validator.
@@ -37,31 +37,31 @@ TS-27 (`crates/vize_impeto/tests/phase_validator.rs`) separately pins exact
 rejections for unresolved state edges, malformed region nesting, effect-scope
 leaks, and scheduled-phase back edges.
 
-## S3 Partition Folio
+## L3 Partition Folio
 
-`vize_s2_to_s3::S3PartitionFolio` is the derived page `[s3-partition-folio]`
+`vize_l2_to_l3::L3PartitionFolio` is the derived page `[s3-partition-folio]`
 for the static/dynamic partition facts P3-3 exports beside the program. The
-facts are their own artifact (SSR reads them without S3), so they are not a
+facts are their own artifact (SSR reads them without L3), so they are not a
 column of the graph-only `[s3-folio]`; the page lives in the conversion crate
-that owns `PartitionKind`, which is why `vize_s2_to_s3` depends on the tier-1
+that owns `PartitionKind`, which is why `vize_l2_to_l3` depends on the tier-1
 `vize_davinci` Folio contract.
 
 | section                    | entry grammar                                      |
 | -------------------------- | -------------------------------------------------- |
 | `[s3-partition-folio.ops]` | `op=<n> kind=<static\|dynamic> span=<start>:<end>` |
 
-One record per canonical S3 op, in export order. The TS-17 S2-to-S3 snapshots
-(`crates/vize_s2_to_s3/tests/s3_snapshots.rs`) print this page instead of the
+One record per canonical L3 op, in export order. The TS-17 L2-to-L3 snapshots
+(`crates/vize_l2_to_l3/tests/l3_snapshots.rs`) print this page instead of the
 former test-local `[s3-partition-facts]` helper, and
-`crates/vize_s2_to_s3/tests/partition_folio.rs` pins the TS-16 round-trip laws
+`crates/vize_l2_to_l3/tests/partition_folio.rs` pins the TS-16 round-trip laws
 and the exact rejections. The Spolvero stage ladder feeds it as the
 `s3-partition` page.
 
-## S3 Reactivity Folio
+## L3 Reactivity Folio
 
-P3-2 adds `vize_impeto::lattice::S3ReactivityFolio`, a derived Folio page
+P3-2 adds `vize_impeto::lattice::L3ReactivityFolio`, a derived Folio page
 named `[s3-reactivity-folio]`. It mirrors the first reactivity-lattice fact
-group without depending on the later S2-to-S3 lowering.
+group without depending on the later L2-to-L3 lowering.
 
 Sections:
 
@@ -78,9 +78,9 @@ from the P3-2 effect vocabulary: `freeze`, `capture`, `read-prop`,
 `read-reactive`, `mutate-local`, `mutate-global`, `call-unknown`, and
 `allocate`.
 
-## S3 Placement Folio
+## L3 Placement Folio
 
-P3-10 adds `vize_impeto::placement::S3PlacementFolio`, a derived page named
+P3-10 adds `vize_impeto::placement::L3PlacementFolio`, a derived page named
 `[s3-placement-folio]`. Placements are an overlay, so they print on their own
 page and the graph grammar the Lean reference parses stays unchanged.
 
@@ -92,12 +92,12 @@ page and the graph grammar the Lean reference parses stays unchanged.
 lists placements comma-separated in that order without repeats; parsing
 rejects any other order so printing stays injective. Records appear in program
 op order. Parsing checks syntax only: whether a record is legal for its program
-is `S3V010`'s call. `crates/vize_impeto/tests/placement_folio.rs` pins the
+is `L3V010`'s call. `crates/vize_impeto/tests/placement_folio.rs` pins the
 TS-16 laws and the exact parse errors.
 
-## S3 Extraction Folio
+## L3 Extraction Folio
 
-P3-10 extraction reports on `vize_impeto::extract::S3ExtractionFolio`, a
+P3-10 extraction reports on `vize_impeto::extract::L3ExtractionFolio`, a
 derived page named `[s3-extraction-folio]`. The header carries `tier`,
 `candidate_budget`, `budget_left`, and the before/after value of each metric
 (`emitted_size_*`, `reactive_edges_*`, `update_path_*`).

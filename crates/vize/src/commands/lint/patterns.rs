@@ -19,30 +19,30 @@ pub(super) const LINT_DEFAULT_PATTERNS: &[&str] = &[
 pub(super) const LINT_EXTENSIONS_DISPLAY: &str =
     ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx";
 
-pub(super) fn no_lint_files_message(patterns: &[vize_s0::String]) -> vize_s0::String {
-    vize_s0::cstr!("No {LINT_EXTENSIONS_DISPLAY} files found matching patterns: {patterns:?}")
+pub(super) fn no_lint_files_message(patterns: &[vize_l0::String]) -> vize_l0::String {
+    vize_l0::cstr!("No {LINT_EXTENSIONS_DISPLAY} files found matching patterns: {patterns:?}")
 }
 
-pub(super) fn unmatched_lint_patterns_message(patterns: &[vize_s0::String]) -> vize_s0::String {
-    vize_s0::cstr!(
+pub(super) fn unmatched_lint_patterns_message(patterns: &[vize_l0::String]) -> vize_l0::String {
+    vize_l0::cstr!(
         "Warning: no {LINT_EXTENSIONS_DISPLAY} files found matching patterns: {patterns:?}"
     )
 }
 
-pub(super) fn write_no_files(format: vize_patina::OutputFormat, patterns: &[vize_s0::String]) {
+pub(super) fn write_no_files(format: vize_patina::OutputFormat, patterns: &[vize_l0::String]) {
     eprintln!("{}", no_lint_files_message(patterns));
     if format == vize_patina::OutputFormat::Json {
         super::stdout::write(vize_patina::format_results(&[], &[], format).as_bytes());
     }
 }
 
-pub(super) fn write_unmatched_patterns(patterns: &[vize_s0::String]) {
+pub(super) fn write_unmatched_patterns(patterns: &[vize_l0::String]) {
     eprintln!("{}", unmatched_lint_patterns_message(patterns));
 }
 
 pub(super) fn write_unmatched_explicit_patterns(
-    input_patterns: &[vize_s0::String],
-    unmatched_patterns: &[vize_s0::String],
+    input_patterns: &[vize_l0::String],
+    unmatched_patterns: &[vize_l0::String],
 ) -> usize {
     if !has_explicit_patterns(input_patterns) || unmatched_patterns.is_empty() {
         return 0;
@@ -52,7 +52,7 @@ pub(super) fn write_unmatched_explicit_patterns(
 }
 
 #[inline]
-pub(super) fn has_explicit_patterns(patterns: &[vize_s0::String]) -> bool {
+pub(super) fn has_explicit_patterns(patterns: &[vize_l0::String]) -> bool {
     patterns.len() != LINT_DEFAULT_PATTERNS.len()
         || patterns
             .iter()
@@ -111,11 +111,11 @@ mod tests {
     fn default_lint_patterns_are_not_explicit() {
         let patterns = LINT_DEFAULT_PATTERNS
             .iter()
-            .map(|pattern| vize_s0::String::from(*pattern))
+            .map(|pattern| vize_l0::String::from(*pattern))
             .collect::<Vec<_>>();
 
         assert!(!has_explicit_patterns(&patterns));
-        assert!(has_explicit_patterns(&[vize_s0::String::from(
+        assert!(has_explicit_patterns(&[vize_l0::String::from(
             "src/**/*.vue"
         )]));
     }
@@ -123,8 +123,8 @@ mod tests {
     #[test]
     fn unmatched_pattern_message_lists_every_empty_input() {
         let output = unmatched_lint_patterns_message(&[
-            vize_s0::String::from("src/**/*.{vue,ts}"),
-            vize_s0::String::from("packages/*/missing.vue"),
+            vize_l0::String::from("src/**/*.{vue,ts}"),
+            vize_l0::String::from("packages/*/missing.vue"),
         ]);
 
         assert_eq!(

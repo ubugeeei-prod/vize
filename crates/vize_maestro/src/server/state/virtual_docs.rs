@@ -69,7 +69,7 @@ impl ServerState {
     fn update_standalone_html_virtual_docs(&self, uri: &Url, content: &str) {
         use crate::virtual_code::{VirtualDocuments, project_template_fragment};
 
-        let allocator = vize_s0::Allocator::new();
+        let allocator = vize_l0::Allocator::new();
         let (ast, _errors) = vize_armature::parse(&allocator, content);
         let base_uri = uri.path();
         let template_doc = project_template_fragment(
@@ -78,7 +78,7 @@ impl ServerState {
             0,
             &ast,
             0,
-            vize_s0::cstr!("{base_uri}.__template.ts").to_string(),
+            vize_l0::cstr!("{base_uri}.__template.ts").to_string(),
         );
 
         let mut docs = VirtualDocuments::new();
@@ -114,7 +114,7 @@ impl ServerState {
             ScriptCodeGenerator, VirtualDocuments, project_template_fragment,
         };
 
-        let allocator = vize_s0::Allocator::new();
+        let allocator = vize_l0::Allocator::new();
         let Ok(art_desc) =
             vize_musea::parse_art(&allocator, content, vize_musea::ArtParseOptions::default())
         else {
@@ -139,7 +139,7 @@ impl ServerState {
                 continue;
             }
 
-            let template_allocator = vize_s0::Allocator::new();
+            let template_allocator = vize_l0::Allocator::new();
             let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
 
             let template_ptr = template_content.as_ptr() as usize;
@@ -152,7 +152,7 @@ impl ServerState {
                 script_offset,
                 &ast,
                 block_offset,
-                vize_s0::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string(),
+                vize_l0::cstr!("{base_uri}.art_variant_{index}.template.ts").to_string(),
             );
 
             if variant.is_default || docs.template.is_none() {
@@ -176,13 +176,13 @@ impl ServerState {
                     art_desc.variants.len(),
                     isolate,
                 );
-                script_doc.uri = vize_s0::cstr!("{base_uri}.__script_setup.ts").to_string();
+                script_doc.uri = vize_l0::cstr!("{base_uri}.__script_setup.ts").to_string();
                 docs.script_setup = Some(script_doc);
             }
             if let Some(ref script) = descriptor.script {
                 let mut script_gen = ScriptCodeGenerator::new();
                 let mut script_doc = script_gen.generate(script, false);
-                script_doc.uri = vize_s0::cstr!("{base_uri}.__script.ts").to_string();
+                script_doc.uri = vize_l0::cstr!("{base_uri}.__script.ts").to_string();
                 docs.script = Some(script_doc);
             }
         }

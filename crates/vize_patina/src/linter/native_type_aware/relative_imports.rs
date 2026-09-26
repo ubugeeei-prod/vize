@@ -7,7 +7,7 @@
 
 use std::path::Path;
 
-use vize_s0::String as VizeString;
+use vize_l0::String as VizeString;
 
 use super::document::TypeAwareDocument;
 
@@ -113,7 +113,7 @@ fn display_path(path: &Path) -> VizeString {
 mod tests {
     use vize_canon::virtual_ts::ProjectionMapping;
     use vize_canon::virtual_ts::VizeMapping;
-    use vize_s0::String as VizeString;
+    use vize_l0::String as VizeString;
 
     use super::absolutize_relative_imports;
     use crate::linter::native_type_aware::document::TypeAwareDocument;

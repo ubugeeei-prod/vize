@@ -3,7 +3,7 @@
 use glob::{MatchOptions, Pattern};
 use ignore::{DirEntry, WalkBuilder};
 use std::path::{Path, PathBuf};
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 use super::patterns::{is_lint_extension, is_plain_script_extension, is_standalone_html_extension};
 use crate::config;
@@ -306,7 +306,7 @@ fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: 
     let pattern = Path::new(ignore.pattern.as_str());
     if pattern.is_absolute() {
         return if pattern.exists() {
-            vize_s0::path::canonicalize_non_verbatim(pattern)
+            vize_l0::path::canonicalize_non_verbatim(pattern)
         } else {
             pattern.to_path_buf()
         };
@@ -343,7 +343,7 @@ fn nested_node_modules_ignore(pattern: &Path) -> Option<PathBuf> {
     }
     let prefix = pattern_text.trim_end_matches(suffix).trim_end_matches('/');
     Some(PathBuf::from(
-        vize_s0::cstr!("{prefix}/**/{suffix}").as_str(),
+        vize_l0::cstr!("{prefix}/**/{suffix}").as_str(),
     ))
 }
 

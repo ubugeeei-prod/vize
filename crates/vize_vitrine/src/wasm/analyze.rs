@@ -222,8 +222,8 @@ pub(super) fn analyze_sfc_json_with_clock(
         })
         .collect();
 
-    // The Spolvero feed (P2-18, C-2/C-5) - S1, the S2 lowering and per-pass
-    // pages, the S3 graph/partition/value pages, and (P3-13) the inline HTML
+    // The Spolvero feed (P2-18, C-2/C-5) - L1, the L2 lowering and per-pass
+    // pages, the L3 graph/partition/value pages, and (P3-13) the inline HTML
     // template's optimization remarks in the pages' byte frame - and the same
     // run's step timings as a P0-11 profile document (C-3), from `vize_curator`.
     let spolvero_remarks = descriptor

@@ -75,7 +75,7 @@ pub fn compile(
     shape: Shape,
 ) -> Result<SfcCompileResult, SfcError> {
     let has_scoped = descriptor.styles.iter().any(|style| style.scoped);
-    let filename = vize_s0::String::from(filename);
+    let filename = vize_l0::String::from(filename);
     let options = SfcCompileOptions {
         parse: SfcParseOptions {
             filename: filename.clone(),

@@ -1,7 +1,7 @@
 //! Recovery for Corsa locations inside Canon's external mirror subtree.
 
 use tower_lsp::lsp_types::{Location, Range, Url};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use crate::ide::IdeContext;
 use crate::ide::diagnostics::VirtualTsResult;
@@ -99,7 +99,7 @@ mod tests {
     use std::path::{Component, PathBuf};
 
     use tower_lsp::lsp_types::Url;
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     use super::map_location;
     use crate::{ide::IdeContext, server::ServerState};

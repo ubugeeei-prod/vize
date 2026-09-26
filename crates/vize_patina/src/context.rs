@@ -20,8 +20,8 @@ use memchr::memchr_iter;
 use std::borrow::Cow;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_croquis::Croquis;
-use vize_s0::String;
-use vize_s0::{
+use vize_l0::String;
+use vize_l0::{
     Allocator, CompactString, FxHashMap, FxHashSet,
     dialect::VueDialect,
     directive::DirectiveSeverity,

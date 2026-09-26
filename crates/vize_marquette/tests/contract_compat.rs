@@ -7,12 +7,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
+use vize_l0::{String, cstr};
 use vize_marquette::contracts::wit::{Protocol, surface_from_wit};
 use vize_marquette::{
     CompatibilityChange, CompatibilityChangeKind, ContractSurface, canonical_surface_json,
     check_version_policy, compare_surfaces,
 };
-use vize_s0::{String, cstr};
 
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))

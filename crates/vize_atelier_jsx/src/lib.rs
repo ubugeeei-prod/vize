@@ -1,7 +1,7 @@
 //! Shared JSX/TSX lowering layer for Vize.
 //!
 //! This crate turns OXC-parsed JSX/TSX into Vize's shared template IR and its
-//! Davinci S2 projection exactly once, so the VDOM
+//! Davinci L2 projection exactly once, so the VDOM
 //! ([`vize_atelier_dom`](https://docs.rs/vize_atelier_dom)) and Vapor
 //! (`vize_atelier_vapor`) backends, the type checker, the LSP, and Patina all
 //! consume the same lowered representation instead of forking JSX-only logic.
@@ -20,7 +20,7 @@
 //!
 //! ```
 //! use vize_atelier_jsx::{lower_source, JsxLang};
-//! use vize_s0::Allocator;
+//! use vize_l0::Allocator;
 //!
 //! let allocator = Allocator::new();
 //! let out = lower_source(
@@ -36,11 +36,11 @@
 pub mod compat;
 pub mod compile;
 pub mod diagnostics;
+pub mod l2;
 pub mod lang;
 pub mod lower;
 pub mod mode;
 pub mod parse;
-pub mod s2;
 pub mod scoped;
 pub mod span;
 pub mod ssr;
@@ -58,8 +58,8 @@ pub use analyze::analyze_program as analyze_jsx_program;
 use oxc_semantic::SemanticBuilder;
 use vize_croquis::Croquis;
 use vize_croquis::croquis::BindingMetadata;
+use vize_l0::{Allocator, String};
 use vize_relief::RootNode;
-use vize_s0::{Allocator, String};
 
 pub use compat::JsxCompatMode;
 pub use compile::{
@@ -85,12 +85,12 @@ pub use vdom::{VdomCompileOptions, VdomComponent, VdomOutput, compile_to_vdom};
 /// enclosing function.
 pub struct LoweredRoot<'a> {
     /// The legacy lowered template IR, retained for compatibility consumers
-    /// while P2-16 moves JSX production paths toward [`Self::s2`].
+    /// while P2-16 moves JSX production paths toward [`Self::l2`].
     pub root: RootNode<'a>,
-    /// The neutral S2 representation or the exact family not yet admitted by
-    /// JSX-to-S2 lowering. A refusal is observable input to the migration lane;
-    /// it must not become a silent fallback after the lane selects S2.
-    pub s2: Result<s2::JsxS2Root<'a>, s2::S2Refusal>,
+    /// The neutral L2 representation or the exact family not yet admitted by
+    /// JSX-to-L2 lowering. A refusal is observable input to the migration lane;
+    /// it must not become a silent fallback after the lane selects L2.
+    pub l2: Result<l2::JsxL2Root<'a>, l2::L2Refusal>,
     /// Output mode override from the nearest enclosing component function's
     /// `"use vue:vapor"` / `"use vue:vdom"` directive prologue, if any. `None`
     /// means the configured default applies.

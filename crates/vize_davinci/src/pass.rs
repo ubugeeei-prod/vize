@@ -44,7 +44,7 @@
 //! # What this module does not do yet
 //!
 //! It plans, and it drives a plan; it does not supply pass bodies. There is no
-//! S2 to run over until P2-5a and no catalogue binding a name to an
+//! L2 to run over until P2-5a and no catalogue binding a name to an
 //! implementation until P2-9, so [`Pass`] carries a description and nothing
 //! else, and [`run_pipeline`] takes the body as a callback. Optimization tiers
 //! that scale budgets rather than pass sets are P3-10's.
@@ -134,7 +134,7 @@ const _: () = assert!(size_of::<PassDesc>() == 32);
 /// A pass, identified by its description.
 ///
 /// Deliberately carries no `run` method: there is no stage artifact to run
-/// over until P2-5a lands S2, and inventing the signature now would fix a
+/// over until P2-5a lands L2, and inventing the signature now would fix a
 /// contract against a type that does not exist. The trait exists in P2-2 so
 /// the type-level canonicalization check in [`canonical`] has something to be
 /// generic over.

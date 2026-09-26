@@ -21,13 +21,13 @@
 //! ```
 
 use memchr::memmem;
-use vize_s0::FxHashMap;
-use vize_s0::cstr;
+use vize_l0::FxHashMap;
+use vize_l0::cstr;
 
 use super::{MuseaLintResult, MuseaRuleMeta};
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
-use vize_s0::String;
-use vize_s0::ToCompactString;
+use vize_l0::String;
+use vize_l0::ToCompactString;
 
 static META: MuseaRuleMeta = MuseaRuleMeta {
     name: "musea/prefer-design-tokens",

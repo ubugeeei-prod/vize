@@ -22,7 +22,7 @@ use vize_extension_host::expression::{
 use vize_extension_host::outproc::{OutOfProcessGuest, serve_expression_command};
 use vize_extension_host::wasm::WasmExpressionGuest;
 use vize_extension_host::{GuestError, GuestLimits};
-use vize_s0::String;
+use vize_l0::String;
 
 fn guest() -> &'static Path {
     static GUEST: OnceLock<PathBuf> = OnceLock::new();

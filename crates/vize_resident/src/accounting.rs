@@ -12,7 +12,7 @@ use std::collections::BTreeMap;
 use std::sync::{Mutex, PoisonError};
 
 use salsa::{Event, EventKind, IngredientIndex};
-use vize_s0::String;
+use vize_l0::String;
 
 /// Executions and reuses of one query since the last
 /// [`take_accounting`](crate::ResidentDatabase::take_accounting).

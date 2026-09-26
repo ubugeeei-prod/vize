@@ -37,7 +37,7 @@ const STYLE: Domain = Domain::new(
     "the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand",
 );
 const TEMPLATE_FLOW: Domain = Domain::new(
-    "control flow of HTML SFC templates as lowered to S2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside",
+    "control flow of HTML SFC templates as lowered to L2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside",
 );
 const TYPES: Domain =
     Domain::new("types the Corsa session resolves for the component; unresolved types are outside");

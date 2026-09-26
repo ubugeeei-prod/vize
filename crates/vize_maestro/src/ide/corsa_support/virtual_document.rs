@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use tower_lsp::lsp_types::Url;
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::ide::IdeContext;
 use crate::virtual_code::{VirtualDocument, VirtualDocuments};

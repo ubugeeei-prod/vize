@@ -1,7 +1,7 @@
 //! Structural facts shared by the placement enumerator and the verifier.
 //!
 //! Ids resolve exactly like the phase validator: the first record with an id
-//! wins, so duplicate ids (already S3V001) cannot make two readers disagree.
+//! wins, so duplicate ids (already L3V001) cannot make two readers disagree.
 //! Every walk is bounded by the table it walks, so malformed parent or
 //! effect-order cycles end in a refusal instead of a loop.
 
@@ -311,6 +311,6 @@ pub(crate) fn is_direct_reference(text: &str) -> bool {
         })
 }
 
-pub(crate) const fn contains(owner: vize_s0::Span, child: vize_s0::Span) -> bool {
+pub(crate) const fn contains(owner: vize_l0::Span, child: vize_l0::Span) -> bool {
     owner.start <= child.start && child.end <= owner.end
 }

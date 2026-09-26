@@ -1,4 +1,4 @@
-//! Native S3 `v-bind`/`v-on` objects through the published runtimes. Vue
+//! Native L3 `v-bind`/`v-on` objects through the published runtimes. Vue
 //! merges an element's props in authored order: a later source wins and
 //! `class`/`style` concatenate. Expectations are written out independently of
 //! either compiler.

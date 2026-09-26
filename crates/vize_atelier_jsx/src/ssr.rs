@@ -7,10 +7,10 @@
 use vize_atelier_core::lane::transform_with_source_text;
 use vize_atelier_core::options::TransformOptions;
 use vize_atelier_ssr::{
-    SsrCodegenContext, SsrCodegenResult, SsrCompilerOptions, compile_s2_to_ssr,
+    SsrCodegenContext, SsrCodegenResult, SsrCompilerOptions, compile_l2_to_ssr,
 };
 use vize_croquis::Croquis;
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::forwarded_slots::{SlotsForwardingBackend, reject_forwarded_slots};
@@ -115,7 +115,7 @@ pub(crate) fn compile_lowered_root_to_ssr(
     )
 }
 
-/// Which emitter owns a JSX SSR compile: the S4 string plan (falling back to
+/// Which emitter owns a JSX SSR compile: the L4 string plan (falling back to
 /// the legacy walker for shapes it does not own), or the walker pinned.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum SsrLane {
@@ -137,7 +137,7 @@ fn compile_root_on_lane(
 ) -> SsrComponent {
     let LoweredRoot {
         mut root,
-        s2,
+        l2,
         mode,
         component_name,
         component_setup,
@@ -153,8 +153,8 @@ fn compile_root_on_lane(
         scope_id: scoped_style.as_ref().map(|style| style.scope_id.clone()),
         ..SsrCompilerOptions::default()
     };
-    let planned = match (&s2, lane) {
-        (Ok(s2), SsrLane::Plan) => compile_s2_to_ssr(allocator, s2.source, &s2.root, &ssr_options),
+    let planned = match (&l2, lane) {
+        (Ok(l2), SsrLane::Plan) => compile_l2_to_ssr(allocator, l2.source, &l2.root, &ssr_options),
         _ => None,
     };
     let generated =
@@ -196,5 +196,5 @@ fn legacy_ssr<'a>(
 }
 
 #[cfg(test)]
-#[path = "ssr/s4_differential.rs"]
-mod s4_differential;
+#[path = "ssr/l4_differential.rs"]
+mod l4_differential;

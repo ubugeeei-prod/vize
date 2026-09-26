@@ -78,8 +78,8 @@ pub fn lint_template_wasm(source: &str, options: JsValue) -> Result<JsValue, JsV
 /// Lint Vue SFC file (full SFC including script)
 #[wasm_bindgen(js_name = "lintSfc")]
 pub fn lint_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue> {
+    use vize_l0::i18n::{Locale as L0Locale, t_fmt};
     use vize_patina::{Locale, LspEmitter};
-    use vize_s0::i18n::{Locale as S0Locale, t_fmt};
 
     let filename: String = js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
         .ok()
@@ -93,11 +93,11 @@ pub fn lint_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue>
         .and_then(|s| Locale::parse(&s))
         .unwrap_or_default();
 
-    // Convert to S0 locale for i18n.
-    let s0_locale = match locale {
-        Locale::En => S0Locale::En,
-        Locale::Ja => S0Locale::Ja,
-        Locale::Zh => S0Locale::Zh,
+    // Convert to L0 locale for i18n.
+    let l0_locale = match locale {
+        Locale::En => L0Locale::En,
+        Locale::Ja => L0Locale::Ja,
+        Locale::Zh => L0Locale::Zh,
     };
 
     let linter = create_linter(locale, &options);
@@ -113,7 +113,7 @@ pub fn lint_sfc_wasm(source: &str, options: JsValue) -> Result<JsValue, JsValue>
         .map(|(d, lsp)| {
             // Format message with i18n format string
             let formatted_message = t_fmt(
-                s0_locale,
+                l0_locale,
                 "diagnostic.format",
                 &[("rule", d.rule_name), ("message", d.message.as_ref())],
             );

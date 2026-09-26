@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use vize_extension_host::contract::Page;
 use vize_extension_host::output::EmitRequest;
-use vize_s0::String;
+use vize_l0::String;
 
 fn dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/output")

@@ -32,12 +32,12 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
 use vize_croquis::reactivity::ReactiveKind;
+use vize_l0::FxHashSet;
+use vize_l0::String;
+use vize_l0::ToCompactString;
+use vize_l0::cstr;
 use vize_relief::BindingType;
 use vize_relief::{DirectiveNode, ElementNode, ForNode, PropNode, RootNode, TemplateChildNode};
-use vize_s0::FxHashSet;
-use vize_s0::String;
-use vize_s0::ToCompactString;
-use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-mutating-props",

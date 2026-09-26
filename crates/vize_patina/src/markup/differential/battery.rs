@@ -3,7 +3,7 @@
 //! Four planes, each chosen for a different kind of coverage:
 //!
 //! - [`TEMPLATES`]: hand-written templates that exercise every normalization
-//!   the S1→S2 lowering applies and the facade must read back — `v-if`
+//!   the L1→L2 lowering applies and the facade must read back — `v-if`
 //!   chains with gaps, `v-for` on elements and `<template>` carriers, merged
 //!   text runs, implicit table owners, slot outlets, carrier keys, `v-pre`,
 //!   every binding family and shorthand, and ill-formed spellings.
@@ -278,7 +278,7 @@ fn tally(census: &mut BatteryCensus, comparison: TemplateComparison) {
 
 /// Run the whole battery, failing with the exact divergence on the first
 /// disagreement.
-pub fn run_battery() -> Result<BatteryCensus, vize_s0::String> {
+pub fn run_battery() -> Result<BatteryCensus, vize_l0::String> {
     let mut census = BatteryCensus::default();
     for (name, source) in TEMPLATES {
         tally(&mut census, expect_same(name, compare_template(source))?);
@@ -292,11 +292,11 @@ pub fn run_battery() -> Result<BatteryCensus, vize_s0::String> {
         census.rule_fixtures += 1;
     }
     let entries = std::fs::read_dir(matrix_dir())
-        .map_err(|error| vize_s0::cstr!("the P2-15 construct matrix is committed: {error}"))?;
+        .map_err(|error| vize_l0::cstr!("the P2-15 construct matrix is committed: {error}"))?;
     let mut matrix = std::vec::Vec::new();
     for entry in entries {
         let path = entry
-            .map_err(|error| vize_s0::cstr!("matrix entry: {error}"))?
+            .map_err(|error| vize_l0::cstr!("matrix entry: {error}"))?
             .path();
         if path.extension().is_some_and(|ext| ext == "vue") {
             matrix.push(path);
@@ -304,14 +304,14 @@ pub fn run_battery() -> Result<BatteryCensus, vize_s0::String> {
     }
     matrix.sort();
     for path in &matrix {
-        let name = vize_s0::cstr!("{}", path.display());
+        let name = vize_l0::cstr!("{}", path.display());
         let source = std::fs::read_to_string(path)
-            .map_err(|error| vize_s0::cstr!("{name}: unreadable: {error}"))?;
+            .map_err(|error| vize_l0::cstr!("{name}: unreadable: {error}"))?;
         let descriptor = parse_sfc(&source, SfcParseOptions::default())
-            .map_err(|error| vize_s0::cstr!("{name}: does not parse: {error:?}"))?;
+            .map_err(|error| vize_l0::cstr!("{name}: does not parse: {error:?}"))?;
         let template = descriptor
             .template
-            .ok_or_else(|| vize_s0::cstr!("{name}: has no template"))?;
+            .ok_or_else(|| vize_l0::cstr!("{name}: has no template"))?;
         tally(
             &mut census,
             expect_same(&name, compare_template(&template.content))?,
@@ -327,13 +327,13 @@ pub fn run_battery() -> Result<BatteryCensus, vize_s0::String> {
     Ok(census)
 }
 
-fn expect_same<T>(name: &str, result: Result<T, super::Divergence>) -> Result<T, vize_s0::String> {
+fn expect_same<T>(name: &str, result: Result<T, super::Divergence>) -> Result<T, vize_l0::String> {
     result.map_err(|divergence| {
-        vize_s0::cstr!(
+        vize_l0::cstr!(
             "{name}: markup facade diverged at trace line {}\n  relief: {:?}\n  s2:     {:?}",
             divergence.line,
             divergence.relief,
-            divergence.s2
+            divergence.l2
         )
     })
 }

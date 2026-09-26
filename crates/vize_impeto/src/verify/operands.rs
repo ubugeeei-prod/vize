@@ -1,5 +1,5 @@
 use alloc::vec::Vec;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use crate::op::OpKind;
 use crate::operand::{Operand, OperandRole};

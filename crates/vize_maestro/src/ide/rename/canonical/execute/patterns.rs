@@ -5,7 +5,7 @@ use tower_lsp::lsp_types::{
 };
 use vize_armature::patterns::{MatchPattern, PatternKind};
 use vize_croquis::ScopeData;
-use vize_s0::{FxHashMap, String, cstr};
+use vize_l0::{FxHashMap, String, cstr};
 
 use crate::ide::{IdeContext, corsa_support::CanonicalVirtualDocument};
 

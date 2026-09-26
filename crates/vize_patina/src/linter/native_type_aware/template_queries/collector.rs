@@ -7,11 +7,11 @@ use super::{
 };
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_span::SourceType;
+use vize_l0::profile;
 use vize_relief::{
     DirectiveNode, ExpressionNode, ForNode, IfNode, PropNode, RootNode, TemplateChildNode,
     TextCallContent,
 };
-use vize_s0::profile;
 
 pub(super) fn collect_template_query_sets(
     virtual_ts: &TypeAwareDocument,

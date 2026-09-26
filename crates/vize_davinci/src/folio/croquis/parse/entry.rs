@@ -2,7 +2,7 @@
 
 use alloc::vec::Vec;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::super::{
     BindingGroup, CroquisFolio, ErrorEntry, ExternEntry, MacroEntry, PropEntry, ScopeEntry,

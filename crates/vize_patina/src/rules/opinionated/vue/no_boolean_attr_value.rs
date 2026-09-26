@@ -29,8 +29,8 @@ use crate::diagnostic::Severity;
 use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::html::helpers::BOOLEAN_ATTRIBUTES;
+use vize_l0::is_native_tag;
 use vize_relief::ElementNode;
-use vize_s0::is_native_tag;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-boolean-attr-value",

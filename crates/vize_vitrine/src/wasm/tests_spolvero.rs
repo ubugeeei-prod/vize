@@ -1,5 +1,5 @@
 //! The croquis alias byte-identity pin and the `analyzeSfc` Spolvero feed
-//! (P2-18; the full S1 -> S2 -> S3 stage ladder since C-2/C-5).
+//! (P2-18; the full L1 -> L2 -> L3 stage ladder since C-2/C-5).
 //!
 //! The alias contract (Davinci P0-10): the wasm `analyzeSfc` result carries
 //! the croquis folio text under both the deprecated `vir` key and the
@@ -14,11 +14,11 @@ const SOURCE: &str =
     "<script setup>\nconst msg = 1\n</script>\n\n<template>\n  <div>{{ msg }}</div>\n</template>\n";
 const TEMPLATE: &str = "\n  <div>{{ msg }}</div>\n";
 
-/// The S2 (Disegno) page for [`TEMPLATE`]: after the lowering and, byte for
+/// The L2 (Disegno) page for [`TEMPLATE`]: after the lowering and, byte for
 /// byte, after the two transform passes the artifact selects (`hoist-static`
 /// and `template-complexity` are fact-producing analyses, so the tree they
 /// leave is the lowering's).
-const S2_PAGE: &str = "[disegno]
+const L2_PAGE: &str = "[disegno]
 ops=2
 
 [disegno.ops]
@@ -27,7 +27,7 @@ ui.element div @3:23
 
 ";
 
-const S2_PROVENANCE_PAGE: &str = r#"[s2-provenance-folio]
+const L2_PROVENANCE_PAGE: &str = r#"[s2-provenance-folio]
 
 [s2-provenance-folio.records]
 rule=condense.drop-whitespace node=- before="\n  " after="" @0:3
@@ -38,7 +38,7 @@ rule=pass.hoist-static.fact node=0 before="ui.element" after="level=dynamic-text
 
 "#;
 
-const S3_PAGE: &str = "[s3-folio]
+const L3_PAGE: &str = "[s3-folio]
 phase=built
 
 [s3-folio.regions]
@@ -54,7 +54,7 @@ id=0 owner=1 region=1 span=8:17
 
 ";
 
-const S3_PARTITION_PAGE: &str = "[s3-partition-folio]
+const L3_PARTITION_PAGE: &str = "[s3-partition-folio]
 
 [s3-partition-folio.ops]
 op=0 kind=static span=3:23
@@ -62,7 +62,7 @@ op=1 kind=dynamic span=8:17
 
 ";
 
-const S3_VALUES_PAGE: &str = r#"[s3-values-folio]
+const L3_VALUES_PAGE: &str = r#"[s3-values-folio]
 
 [s3-values-folio.operands]
 operand=[0,"tag",null,null,null,"literal","div","",3,23]
@@ -73,7 +73,7 @@ operand=[1,"text",null,null,null,"js","msg","",11,14]
 
 /// The executed transform plan for [`TEMPLATE`]: the two optional analyses
 /// share one walk.
-const S2_PLAN_PAGE: &str = "[fusion-plan-folio]
+const L2_PLAN_PAGE: &str = "[fusion-plan-folio]
 stage=s2
 walks=1
 
@@ -130,9 +130,9 @@ fn the_croquis_alias_keys_stay_byte_identical() {
 fn the_analyze_result_carries_the_full_stage_ladder_feed() {
     let result = analyze_sfc_json(SOURCE, "src/App.vue").expect("analysis succeeds");
 
-    // The S1 page's text equals the authored template bytes (the TS-19
+    // The L1 page's text equals the authored template bytes (the TS-19
     // fidelity law observed at this consumer), proven through the surface
-    // tree rather than copied from the source. The S2/S3 pages are the real
+    // tree rather than copied from the source. The L2/L3 pages are the real
     // lowerings' canonical folios, in pipeline order. The P3-13 remark
     // explains why the `<div>` is not whole-hoistable; its span is in the
     // template's byte frame (the pages' frame), derived from the template text.
@@ -145,33 +145,33 @@ fn the_analyze_result_carries_the_full_stage_ladder_feed() {
             "command": "analyze-sfc",
             "pages": [
                 { "path": "src/App.vue", "stage": "s1", "pass": "parse", "text": TEMPLATE },
-                { "path": "src/App.vue", "stage": "s2", "pass": "lower", "text": S2_PAGE },
+                { "path": "src/App.vue", "stage": "s2", "pass": "lower", "text": L2_PAGE },
                 {
                     "path": "src/App.vue",
                     "stage": "s2-plan",
                     "pass": "transform",
-                    "text": S2_PLAN_PAGE,
+                    "text": L2_PLAN_PAGE,
                 },
-                { "path": "src/App.vue", "stage": "s2", "pass": "hoist-static", "text": S2_PAGE },
-                { "path": "src/App.vue", "stage": "s2", "pass": "template-complexity", "text": S2_PAGE },
+                { "path": "src/App.vue", "stage": "s2", "pass": "hoist-static", "text": L2_PAGE },
+                { "path": "src/App.vue", "stage": "s2", "pass": "template-complexity", "text": L2_PAGE },
                 {
                     "path": "src/App.vue",
                     "stage": "s2-provenance",
                     "pass": "transform",
-                    "text": S2_PROVENANCE_PAGE,
+                    "text": L2_PROVENANCE_PAGE,
                 },
-                { "path": "src/App.vue", "stage": "s3", "pass": "lower", "text": S3_PAGE },
+                { "path": "src/App.vue", "stage": "s3", "pass": "lower", "text": L3_PAGE },
                 {
                     "path": "src/App.vue",
                     "stage": "s3-partition",
                     "pass": "lower",
-                    "text": S3_PARTITION_PAGE,
+                    "text": L3_PARTITION_PAGE,
                 },
                 {
                     "path": "src/App.vue",
                     "stage": "s3-values",
                     "pass": "lower",
-                    "text": S3_VALUES_PAGE,
+                    "text": L3_VALUES_PAGE,
                 },
             ],
             "remarks": [{

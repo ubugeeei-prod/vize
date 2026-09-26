@@ -10,7 +10,7 @@ sites the shipped DOM lane produces.
 
 The durable witnesses are:
 
-- [`davinci_s2_outlets.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_outlets.rs)
+- [`davinci_s2_outlets.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_outlets.rs)
   - extracts shipped and S2 slot outlet patch sites and compares them per node.
 - [`consumer-migration-surfaces.md`](../../consumer-migration-surfaces.md)
   - records the updated witness inventory.

@@ -10,11 +10,11 @@ of being rejected when the slot carrier also has a key.
 
 The durable witnesses are:
 
-- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_slots.rs)
+- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_slots.rs)
   - compares keyed forwarding against the shipped DOM output.
-- [`emit_create_slots.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_create_slots.rs)
+- [`emit_create_slots.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_create_slots.rs)
   - pins the direct `createSlots` output.
-- [`slots.rs`](../../../../../crates/vize_s1_to_s2/src/emit/slots.rs)
+- [`slots.rs`](../../../../../crates/vize_l1_to_l2/src/emit/slots.rs)
   - owns the slot table emission path.
 
 This installment does not tick P2-11. It closes keyed forwarding, while the

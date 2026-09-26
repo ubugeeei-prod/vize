@@ -2,7 +2,7 @@
 // baseline pins, for every inline `<template lang="pug">` SFC of the
 // registered corpus at its pinned revision, the sha256 of what the pinned
 // `pug@3.0.4` renders for the content `@vue/compiler-sfc` extracts. The Rust
-// corpus lane (`crates/vize_s1_to_s2/tests/davinci_pug_corpus.rs`) holds
+// corpus lane (`crates/vize_l1_to_l2/tests/davinci_pug_corpus.rs`) holds
 // vize's derived template to those hashes and compiles each SFC against its
 // derived-HTML twin in the DOM, SSR and Vapor lanes, so together they are
 // the compile oracle over the corpus. Scope proof: for every hydrated
@@ -132,16 +132,16 @@ test("the real-project matrix runs the pug corpus compile oracle on the hydrated
   // The Rust lane over the hydrated corpus shares the SSR corpus step, before
   // the finalize step dehydrates it, and fails the job on any divergence.
   const steps = readRealProjectMatrixWorkflow().jobs?.["davinci-dom-corpus"]?.steps ?? [];
-  const lane = findStep(steps, "Run S4 SSR and pug S1 differential corpora");
+  const lane = findStep(steps, "Run L4 SSR and pug L1 differential corpora");
   assert.equal(lane["continue-on-error"], undefined);
   const corpus = "VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test";
   assert.equal(
     lane.run,
     `${corpus} -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture && ` +
-      `${corpus} -p vize_s1_to_s2 --features davinci-differential --test davinci_pug_corpus -- --nocapture`,
+      `${corpus} -p vize_l1_to_l2 --features davinci-differential --test davinci_pug_corpus -- --nocapture`,
   );
   assert.ok(
-    steps.indexOf(lane) < steps.indexOf(findStep(steps, "Finalize S2 DOM corpus evidence")),
+    steps.indexOf(lane) < steps.indexOf(findStep(steps, "Finalize L2 DOM corpus evidence")),
     "the pug corpus oracle must run before the corpus is dehydrated",
   );
 });

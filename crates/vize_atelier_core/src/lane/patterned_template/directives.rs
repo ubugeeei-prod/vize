@@ -1,7 +1,7 @@
 use vize_armature::patterns::MatchArm;
 
 use super::super::structural::{MATCH_SCOPE_RAW_NAME, extract_key_prop};
-use vize_s0::{Allocator, Box, String, Vec, cstr};
+use vize_l0::{Allocator, Box, String, Vec, cstr};
 
 use crate::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, SimpleExpressionNode,

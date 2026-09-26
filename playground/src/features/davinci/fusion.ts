@@ -1,4 +1,6 @@
-// The S2 transform plan's walks (C-3), read off the compiler's
+import { layerId } from "../../wasm/types/spolvero";
+
+// The L2 transform plan's walks (C-3), read off the compiler's
 // `[fusion-plan-folio]` page: which passes share one traversal. The pass
 // manager fuses adjacent fusable passes into one walk and times the walk,
 // not its passes, so a timing view needs this page to read the profile
@@ -52,7 +54,7 @@ export function parseFusionPlan(text: string): FusionPlan | null {
       fusability: match[4] as PlanPass["fusability"],
     });
   }
-  return { stage, walks: Number(walks), passes };
+  return { stage: layerId(stage), walks: Number(walks), passes };
 }
 
 /**

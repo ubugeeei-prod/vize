@@ -16,7 +16,7 @@ use std::process::Command;
 use vize_extension_host::outproc::{OutOfProcessGuest, serve_command};
 use vize_extension_host::wasm::WasmGuest;
 use vize_extension_host::{InputDialectGuest, Session, SourceBlock};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -106,9 +106,9 @@ fn build_hello() -> PathBuf {
     target_root.join("target/wasm32-wasip2/release/hello_dialect.wasm")
 }
 
-const S1: &str =
+const L1: &str =
     "[s1]\nbytes=14\n\n[s1.tree]\ntext 0:0:4\ntext 4:4:10\ntext 10:10:11\ntext 11:11:14\n\n";
-const S2: &str = "[disegno]\nops=7\n\n[disegno.ops]\nui.element ul @40:54\n  ui.element li @40:43\n    \
+const L2: &str = "[disegno]\nops=7\n\n[disegno.ops]\nui.element ul @40:54\n  ui.element li @40:43\n    \
                   ui.text \"Hello, Ada!\" @40:43\n  ui.element li @44:49\n    ui.text \"Hello, Grace!\" @44:49\n  \
                   ui.element li @51:54\n    ui.text \"Hello, Lin!\" @51:54\n\n";
 
@@ -141,8 +141,8 @@ fn a_hello_dialect_built_from_the_packed_sdk_runs_in_both_modes() {
         let accepted = session
             .lower_block(&block)
             .unwrap_or_else(|error| panic!("{mode}: {error}"));
-        assert_eq!(accepted.lowered.surface.text, S1, "{mode}");
-        assert_eq!(accepted.lowered.semantic.text, S2, "{mode}");
+        assert_eq!(accepted.lowered.surface.text, L1, "{mode}");
+        assert_eq!(accepted.lowered.semantic.text, L2, "{mode}");
         assert_eq!(accepted.lowered.diagnostics, [], "{mode}");
     }
 }

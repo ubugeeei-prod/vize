@@ -4,7 +4,7 @@ use crate::codegen::expression::generate_event_handler;
 use crate::options::CodegenOptions;
 use crate::{ExpressionNode, JsExpression, SimpleExpressionNode, SourceLocation};
 use oxc_span::{GetSpan, SourceType};
-use vize_s0::{Allocator, Box};
+use vize_l0::{Allocator, Box};
 
 const DECORATOR_CASES: &[(&str, &str)] = &[
     (

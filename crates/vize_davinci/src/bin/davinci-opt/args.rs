@@ -2,7 +2,7 @@
 //! extras, the P3-13 remark export, and every usage rejection. Messages here
 //! are contract - the CLI tests assert them exactly.
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 pub enum Mode {
     Roundtrip(std::path::PathBuf),

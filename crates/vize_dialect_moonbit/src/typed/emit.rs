@@ -3,8 +3,8 @@
 use super::TypedProjection;
 use crate::projection::{Position, PositionKind, Projection, Role, SpanLink};
 use vize_extension_contract::typed_expression::{Demand, TypedExpressionBatch};
-use vize_s0::{Allocator, Span, String, append};
-use vize_s2::expr::ForeignExpr;
+use vize_l0::{Allocator, Span, String, append};
+use vize_l2::expr::ForeignExpr;
 
 pub(super) fn project<'a>(
     allocator: &'a Allocator,
@@ -27,7 +27,7 @@ pub(super) fn project<'a>(
             .join(", ");
         let parameters = scope
             .iter()
-            .map(|b| vize_s0::cstr!("{} : {}", b.name, b.signature))
+            .map(|b| vize_l0::cstr!("{} : {}", b.name, b.signature))
             .collect::<Vec<_>>()
             .join(", ");
         let names = scope
@@ -68,7 +68,7 @@ pub(super) fn project<'a>(
             dialect: crate::sfc::DIALECT,
             source: &expression.source,
             span: expression.span.into(),
-            facts: vize_s0::Vec::new_in(&allocator),
+            facts: vize_l0::Vec::new_in(&allocator),
         });
         projection.positions.push(Position {
             kind,

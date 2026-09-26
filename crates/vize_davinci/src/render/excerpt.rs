@@ -21,7 +21,7 @@ use super::frame::Frame;
 use super::paint::Style;
 use super::row::Row;
 use super::source::SourceFile;
-use vize_s0::String;
+use vize_l0::String;
 
 /// A span to mark in the excerpt, in normalized byte offsets.
 #[derive(Debug, Clone, Copy)]

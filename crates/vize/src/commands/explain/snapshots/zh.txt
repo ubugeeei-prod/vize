@@ -3783,7 +3783,7 @@ vue/max-template-complexity · lint 规则
 限制组件自身模板的复杂度（圈复杂度与认知复杂度）
 
 精度层级: exact
-适用范围: control flow of HTML SFC templates as lowered to S2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
+适用范围: control flow of HTML SFC templates as lowered to L2: branches, loops, scoped slots and the operators of parsed expressions; pug and src templates are outside
 严重级别: 警告
 类别: recommended
 自动修复: 不支持
@@ -6382,62 +6382,62 @@ ts/vue/9006 · 类型检查诊断
 
     // 正确 - 保持ref
     const x = ref(0);
-=== S3V001
-S3V001 · S3 验证
+=== L3V001
+L3V001 · L3 验证
 op、region 或 effect 的 id 重复了。
 
 帮助:
   请为每个 op、region 和 effect 分配不同的 id。
-=== S3V002
-S3V002 · S3 验证
+=== L3V002
+L3V002 · L3 验证
 缺少根 region，或根 region 带有 parent 或 owner。
 
 帮助:
   region r#0 必须存在，且不能指定 parent 或 owner。
-=== S3V003
-S3V003 · S3 验证
+=== L3V003
+L3V003 · L3 验证
 op 指向了不存在的 region。
 
 帮助:
   请让 op 的 region 指向本程序中的 region。
-=== S3V004
-S3V004 · S3 验证
+=== L3V004
+L3V004 · L3 验证
 state edge 的端点无法解析。
 
 帮助:
   state edge 的两端都必须是本程序中的 op。
-=== S3V005
-S3V005 · S3 验证
+=== L3V005
+L3V005 · L3 验证
 region 的 parent 或 owner 无法解析，或非根 region 没有指定它们。
 
 帮助:
   除 r#0 外，每个 region 都必须指定存在的 parent region 和 owner op。
-=== S3V006
-S3V006 · S3 验证
+=== L3V006
+L3V006 · L3 验证
 region、op 或 effect 超出了包含它的 region，或 parent 形成了环。
 
 帮助:
   请把每个 span 保持在 parent 和 owner 之内，不要让 parent 成环。
-=== S3V007
-S3V007 · S3 验证
+=== L3V007
+L3V007 · L3 验证
 effect 指向了不存在的 scope、owner 或 region，或 state edge 离开了 effect scope。
 
 帮助:
   请把 effect 及其 edge 保持在它指定的 region 和 effect scope 之内。
-=== S3V008
-S3V008 · S3 验证
+=== L3V008
+L3V008 · L3 验证
 被调度的 edge 指向了后方或它自己。
 
 帮助:
   请把 edge 调度到更靠后的 op。
-=== S3V009
-S3V009 · S3 验证
+=== L3V009
+L3V009 · L3 验证
 operand 对其 op 无效。
 
 帮助:
   请使用该 op 的验证器接受的 operand。
-=== S3V010
-S3V010 · S3 验证
+=== L3V010
+L3V010 · L3 验证
 placement 的候选或已提交选择不符合 placement 规则。
 
 帮助:

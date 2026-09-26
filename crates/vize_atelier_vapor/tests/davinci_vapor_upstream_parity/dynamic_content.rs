@@ -124,7 +124,7 @@ fn names_switch_scoped_content_and_fallbacks_like_official_vapor() {
         assert_eq!(
             WalkCounts::snapshot().since(before).total_walks(),
             0,
-            "{case}: native S3"
+            "{case}: native L3"
         );
         insta::assert_snapshot!(format!("dynamic_content_{case}"), compiled.code);
         // A dependency change that computes the same name must preserve the
@@ -154,7 +154,7 @@ fn names_switch_scoped_content_and_fallbacks_like_official_vapor() {
                 "components":{"MyComp":{"source":child, "props":["value"]}},
             }),
         );
-        assert_eq!(vize, expected, "{case}: Vize native S3");
+        assert_eq!(vize, expected, "{case}: Vize native L3");
         assert_eq!(upstream, expected, "{case}: official Vapor");
     }
 }

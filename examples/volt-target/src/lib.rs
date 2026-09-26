@@ -1,4 +1,4 @@
-//! Volt-shaped output target (P6-6). One probe's S2 and S3 pages become one
+//! Volt-shaped output target (P6-6). One probe's L2 and L3 pages become one
 //! HEEx module. Any other request traps. This is the exercise guest, not
 //! Volt itself.
 
@@ -20,8 +20,8 @@ use exports::vize::contracts::emission::{EmitRequest, Emitted, Guest as Emission
 use exports::vize::contracts::handshake::{Capability, Guest as Handshake};
 use vize::contracts::types::Page;
 
-const S2: &str = include_str!("../fixtures/probe.s2.folio");
-const S3: &str = include_str!("../fixtures/probe.s3.folio");
+const L2: &str = include_str!("../fixtures/probe.s2.folio");
+const L3: &str = include_str!("../fixtures/probe.s3.folio");
 const DOCUMENT: &str = include_str!("../fixtures/probe.emit.folio");
 
 struct Volt;
@@ -40,7 +40,7 @@ impl Handshake for Volt {
 
 impl Emission for Volt {
     fn emit(request: EmitRequest) -> Emitted {
-        if request.s2.text != S2 || request.s3.text != S3 {
+        if request.s2.text != L2 || request.s3.text != L3 {
             core::arch::wasm32::unreachable()
         }
         Emitted {

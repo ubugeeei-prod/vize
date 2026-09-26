@@ -39,7 +39,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk::walk_call_expression};
 use oxc_span::{GetSpan, Span};
-use vize_s0::{CompactString, FxHashSet};
+use vize_l0::{CompactString, FxHashSet};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/valid-define-props",

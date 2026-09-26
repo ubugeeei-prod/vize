@@ -3,7 +3,7 @@
 use crate::diagnostic::Severity;
 use crate::linter::Linter;
 use crate::linter::engine::offset_result;
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 fn linter() -> Linter {
     let mut linter = Linter {
@@ -131,7 +131,7 @@ impl crate::rule::Rule for FacadeOnly {
 }
 
 #[test]
-fn every_admitted_rule_reaches_only_the_s2_facade() {
+fn every_admitted_rule_reaches_only_the_l2_facade() {
     let mut all = crate::rule::RuleRegistry::with_all();
     all.register_opt_in_rules();
     for name in super::RULES {

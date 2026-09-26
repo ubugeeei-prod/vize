@@ -18,14 +18,14 @@
 
 use std::cell::{Cell, RefCell};
 
+use vize_l0::String;
+use vize_l0::config::VueVersion;
+use vize_l1_to_l2::LegacyCaps;
 use vize_resident::snapshot::cancel::{CancelToken, Cancelled};
 use vize_resident::snapshot::isolate::{FileJob, FileOutcome, update_files_isolated};
 use vize_resident::snapshot::region::{RegionLowering, RegionSyntax, lower_region};
 use vize_resident::snapshot::{JointCounts, SnapshotStats, SnapshotTree, Stages};
 use vize_resident::{BlockSource, StageConfig, SurfaceArtifact, compute_file_artifacts};
-use vize_s0::String;
-use vize_s0::config::VueVersion;
-use vize_s1_to_s2::LegacyCaps;
 
 const BASE: &str = "<script setup>
 const a = 1
@@ -238,7 +238,7 @@ fn a_cancelled_update_stops_between_units_and_keeps_the_previous_tree() {
     assert_eq!(open.artifacts(), before);
 }
 
-/// An S1 stage that panics on one marked file.
+/// An L1 stage that panics on one marked file.
 fn panicking_surface(source: &BlockSource) -> Option<SurfaceArtifact> {
     if source.text.contains("PANIC") {
         panic!("injected stage failure");

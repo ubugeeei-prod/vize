@@ -20,7 +20,7 @@
 //! `any`, trading a false positive for a false negative.
 
 use vize_croquis::Croquis;
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 use crate::virtual_ts::types::VirtualTsOptions;
 
@@ -95,7 +95,7 @@ fn reserved_template_names(options: &VirtualTsOptions) -> FxHashSet<&str> {
 #[cfg(test)]
 mod tests {
     use vize_croquis::Croquis;
-    use vize_s0::{FxHashSet, String};
+    use vize_l0::{FxHashSet, String};
 
     use crate::virtual_ts::types::VirtualTsOptions;
 
@@ -140,7 +140,7 @@ mod tests {
         assert!(collect_with(&[], &["currentUser"]).is_empty());
     }
 
-    fn names(stub: &str) -> Vec<vize_s0::String> {
+    fn names(stub: &str) -> Vec<vize_l0::String> {
         VirtualTsOptions {
             auto_import_stubs: vec![stub.into()],
             ..Default::default()

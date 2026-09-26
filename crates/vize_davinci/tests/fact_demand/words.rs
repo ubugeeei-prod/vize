@@ -81,12 +81,12 @@ impl FactGroup for Leaky {
     const STRATUM: u8 = 1;
     const DEPENDS: Demand = Demand::NONE.with(Lengths::ID);
     type Key = ();
-    type Value = vize_s0::String;
+    type Value = vize_l0::String;
 }
 impl FactProducer<Words> for Leaky {
     fn produce(_: &Words, inputs: &FactView<'_>) -> FactTable<Self> {
         let seen = inputs.get::<Vowels>().map(|table| table.len());
-        [((), vize_s0::cstr!("{seen:?}"))].into_iter().collect()
+        [((), vize_l0::cstr!("{seen:?}"))].into_iter().collect()
     }
 }
 

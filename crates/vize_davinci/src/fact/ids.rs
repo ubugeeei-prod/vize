@@ -21,7 +21,7 @@ pub const UNUSED_BINDINGS: AnalysisId = AnalysisId::new(3);
 pub const COMPONENT_USAGES: AnalysisId = AnalysisId::new(4);
 /// `RenderTree` — the cross-file render-tree edges (P4-3b).
 pub const RENDER_TREE: AnalysisId = AnalysisId::new(5);
-/// `Reactivity` — the S3 reactivity lattice with its verdict axis (P4-3d).
+/// `Reactivity` — the L3 reactivity lattice with its verdict axis (P4-3d).
 pub const REACTIVITY: AnalysisId = AnalysisId::new(6);
 /// `EffectGraph` — effect dependency sets (P4-3e).
 pub const EFFECT_GRAPH: AnalysisId = AnalysisId::new(7);
@@ -36,9 +36,9 @@ pub const HTML_COMPOSED_NESTING: AnalysisId = AnalysisId::new(11);
 /// `ExpressionFacts` — foreign-dialect expression facts over the P6-1b
 /// contract world.
 pub const EXPRESSION_FACTS: AnalysisId = AnalysisId::new(12);
-/// `PartialHoles` — S1 `Unexpected` / `Missing` holes beside a partial page (P5-10).
+/// `PartialHoles` — L1 `Unexpected` / `Missing` holes beside a partial page (P5-10).
 pub const PARTIAL_HOLES: AnalysisId = AnalysisId::new(13);
-/// `PartialRegions` — kept S2 fragments in the well-formed regions (P5-10).
+/// `PartialRegions` — kept L2 fragments in the well-formed regions (P5-10).
 pub const PARTIAL_REGIONS: AnalysisId = AnalysisId::new(14);
 /// `PartialScopes` — scope names of those fragments (P5-10).
 pub const PARTIAL_SCOPES: AnalysisId = AnalysisId::new(15);

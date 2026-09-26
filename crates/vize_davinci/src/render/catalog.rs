@@ -15,7 +15,7 @@
 //! missing from any of en/ja/zh.
 
 use crate::diagnostic::WitnessLink;
-use vize_s0::String;
+use vize_l0::String;
 
 /// A word or phrase the renderer prints around producer text.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

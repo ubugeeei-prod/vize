@@ -11,9 +11,9 @@ Design, Arco and Buefy cases pin the behavior.
 
 The durable witnesses are:
 
-- [`davinci_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_hoist_order.rs)
+- [`davinci_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_hoist_order.rs)
   - compares the corpus-derived component hoist-order cases.
-- [`davinci_s2_template_wrapper_component_props.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_template_wrapper_component_props.rs)
+- [`davinci_s2_template_wrapper_component_props.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_template_wrapper_component_props.rs)
   - keeps wrapper-carried component props inline.
 
 This installment does not tick P2-11. The production-lane switch remains open.

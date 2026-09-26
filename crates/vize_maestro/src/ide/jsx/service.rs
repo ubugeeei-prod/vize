@@ -27,7 +27,7 @@ use tower_lsp::lsp_types::{
     CompletionResponse, GotoDefinitionResponse, Hover, Position, Range, SignatureHelp, Url,
 };
 use vize_canon::CorsaBridge;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::position::{
     source_cursor_to_virtual_position, source_offset_to_virtual_position, virtual_range_to_source,
@@ -49,7 +49,7 @@ impl JsxService {
     /// session. Shared by every type-aware JSX request (hover, completion,
     /// definition, references, rename, diagnostics) so they all key the same
     /// virtual document in the session cache.
-    pub(super) fn request_path(uri: &Url) -> vize_s0::String {
+    pub(super) fn request_path(uri: &Url) -> vize_l0::String {
         cstr!("{}.jsx.ts", uri.path())
     }
 
@@ -64,7 +64,7 @@ impl JsxService {
     pub(super) async fn prepare_request(
         ctx: &IdeContext<'_>,
         bridge: &CorsaBridge,
-    ) -> Option<(JsxVirtualTs, vize_s0::String, u32, u32)> {
+    ) -> Option<(JsxVirtualTs, vize_l0::String, u32, u32)> {
         if !bridge.is_initialized() {
             return None;
         }

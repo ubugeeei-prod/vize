@@ -21,7 +21,7 @@ export default definePlugin({
         const loops = [...ctx.ancestors(bind, "ui.for")];
         const bound = (loop) => scopes.get(loop.id)?.find((entry) => entry.name === name);
         const owner = loops.find(bound);
-        // `(item, i)`: S2 names the second alias `key` (Vue's grammar); on
+        // `(item, i)`: L2 names the second alias `key` (Vue's grammar); on
         // an array it is the index. Only the item itself is stable.
         if (owner && bound(owner).position !== "value") {
           const item = loops[0].alias.value;

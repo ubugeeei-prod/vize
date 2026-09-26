@@ -28,7 +28,7 @@
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_s0::{Span, String, cstr};
+use vize_l0::{Span, String, cstr};
 
 use super::super::feed::push_json_string;
 use super::super::page::{LineEvent, ParseState};

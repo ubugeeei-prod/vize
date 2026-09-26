@@ -23,7 +23,7 @@ structure Runner where
 
 def opOf (address : String) : Except String Nat := do
   let parts <- (<- Json.parse address).getArr?
-  let some last := parts.back? | throw "empty S3 address"
+  let some last := parts.back? | throw "empty L3 address"
   last.getNat?
 
 partial def controlNodes (runner : Runner) :

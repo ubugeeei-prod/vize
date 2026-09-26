@@ -16,7 +16,7 @@ mod typescript;
 
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
-use vize_s0::{Allocator, Box, String, cstr};
+use vize_l0::{Allocator, Box, String, cstr};
 
 use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
 

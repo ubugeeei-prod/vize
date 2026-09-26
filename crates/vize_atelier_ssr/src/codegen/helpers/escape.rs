@@ -1,6 +1,6 @@
 //! HTML escaping for SSR string parts.
 
-use vize_s0::String;
+use vize_l0::String;
 
 /// Escape HTML special characters
 pub(crate) fn escape_html(s: &str) -> String {

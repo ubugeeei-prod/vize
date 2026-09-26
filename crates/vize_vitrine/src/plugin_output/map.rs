@@ -14,7 +14,7 @@ use crate::CompileResult;
 use oxc_sourcemap::SourceMap;
 use serde_json::Value;
 use vize_atelier_core::codegen::document::{EmitDocument, SpanLink};
-use vize_s0::{Span, String as CompactString};
+use vize_l0::{Span, String as CompactString};
 
 pub(super) fn rebase(
     compiled: &CompileResult,

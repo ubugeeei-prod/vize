@@ -1,6 +1,6 @@
 use std::collections::BTreeSet;
 
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 use super::{
     ADAPTER_CAPABILITY_FORMAT_VERSION, AdapterCapabilityDiagnostic,

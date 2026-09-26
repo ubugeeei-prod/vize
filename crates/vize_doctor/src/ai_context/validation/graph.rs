@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::{AiContextError, integrity, runtime_limit};
 use crate::ai_context::{

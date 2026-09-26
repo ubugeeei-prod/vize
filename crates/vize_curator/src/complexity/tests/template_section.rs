@@ -1,5 +1,5 @@
 //! The template section over the real pipeline: SFC parse → Croquis
-//! analysis → cross-file analyzer (S2 facts recorded per file, component
+//! analysis → cross-file analyzer (L2 facts recorded per file, component
 //! edges resolved through imports) → markdown.
 
 use std::path::Path;
@@ -8,7 +8,7 @@ use vize_atelier_core::parser::parse;
 use vize_atelier_sfc::croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileOptions};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use super::render_complexity_markdown;
 

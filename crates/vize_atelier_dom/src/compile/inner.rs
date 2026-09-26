@@ -9,7 +9,7 @@ use vize_atelier_core::{
     walk_probe::WalkCounts,
 };
 use vize_croquis::Croquis;
-use vize_s0::{Allocator, String, profile, profiler::global_profiler};
+use vize_l0::{Allocator, String, profile, profiler::global_profiler};
 
 use super::selection::{self, DomLegacyReason};
 use super::{pipeline::DomCompilePipelineOptions, source_map, stage_options};
@@ -30,7 +30,7 @@ pub(super) fn compile_template_inner<'a>(
         options,
         template_syntax,
         hoisted_scope_id,
-        DomCompilePipelineOptions::allow_s2(custom_elements, codegen_options),
+        DomCompilePipelineOptions::allow_l2(custom_elements, codegen_options),
     );
     (root, errors, codegen_result.into_result())
 }
@@ -47,7 +47,7 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         custom_elements,
         codegen_options,
         codegen_experimental_options,
-        s2_emit_selection,
+        l2_emit_selection,
     } = pipeline_options;
     let parser_opts = stage_options::parser_options(&options);
 
@@ -89,13 +89,13 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     let has_croquis = stage_options::unprojectable_croquis(&options);
     let codegen_opts = stage_options::codegen_options(&options, codegen_options);
     let template_syntax_quirks = template_syntax.is_quirks();
-    let s2_refusal = stage_options::s2_emit_refusal(
+    let l2_refusal = stage_options::l2_emit_refusal(
         &options,
         &codegen_opts,
         &custom_elements,
         template_syntax,
         has_croquis,
-        s2_emit_selection,
+        l2_emit_selection,
         codegen_experimental_options.self_component,
     )
     .or_else(|| {
@@ -106,15 +106,15 @@ pub(super) fn compile_template_inner_with_sections<'a>(
         stage_options::source_may_contain_vize_directive_comment(source)
             .then_some(DomLegacyReason::DirectiveComment)
     });
-    let use_s2_emit = s2_refusal.is_none();
-    let s2_custom_elements = custom_elements.clone();
-    if use_s2_emit && !codegen_opts.source_map {
-        if let Some(result) = stage_options::try_emit_s2(
+    let use_l2_emit = l2_refusal.is_none();
+    let l2_custom_elements = custom_elements.clone();
+    if use_l2_emit && !codegen_opts.source_map {
+        if let Some(result) = stage_options::try_emit_l2(
             allocator,
             source,
             &options,
             &codegen_opts,
-            &s2_custom_elements,
+            &l2_custom_elements,
             hoisted_scope_id.as_deref(),
             codegen_experimental_options.component_name.as_deref(),
             None,
@@ -123,18 +123,18 @@ pub(super) fn compile_template_inner_with_sections<'a>(
             return (root, errors.to_vec(), result);
         }
         selection::record(Err(DomLegacyReason::EmitRefused));
-    } else if let Some(reason) = s2_refusal {
+    } else if let Some(reason) = l2_refusal {
         selection::record(Err(reason));
     }
 
-    let s2_emit_after_transform = (use_s2_emit && codegen_opts.source_map)
+    let l2_emit_after_transform = (use_l2_emit && codegen_opts.source_map)
         .then(|| (options.clone(), hoisted_scope_id.clone()));
     let experimental_component_name = codegen_experimental_options.component_name.clone();
     let transform_opts = stage_options::transform_options(&options);
     // Park the summary on the allocator so it shares the allocator lifetime.
     let analysis: Option<&Croquis> = options.croquis.map(|c| allocator.alloc_owned(*c));
-    let profiling_s2 = use_s2_emit && global_profiler().is_enabled();
-    let template_walk_before = profiling_s2.then(WalkCounts::snapshot);
+    let profiling_l2 = use_l2_emit && global_profiler().is_enabled();
+    let template_walk_before = profiling_l2.then(WalkCounts::snapshot);
     let transform_errors = profile!(
         "atelier.dom.template.transform",
         transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
@@ -155,25 +155,25 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
 
-    let s2_emit = s2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
-        stage_options::try_emit_s2(
+    let l2_emit = l2_emit_after_transform.and_then(|(options, hoisted_scope_id)| {
+        stage_options::try_emit_l2(
             allocator,
             source,
             &options,
             &codegen_opts,
-            &s2_custom_elements,
+            &l2_custom_elements,
             hoisted_scope_id.as_deref(),
             experimental_component_name.as_deref(),
             template_walks,
         )
     });
-    if use_s2_emit && codegen_opts.source_map {
-        selection::record(match s2_emit {
+    if use_l2_emit && codegen_opts.source_map {
+        selection::record(match l2_emit {
             Some(_) => Ok(()),
             None => Err(DomLegacyReason::EmitRefused),
         });
     }
-    let codegen_result = match s2_emit {
+    let codegen_result = match l2_emit {
         Some(result) => source_map::attach_compat_map(&root, &codegen_opts, result),
         None => profile!(
             "atelier.dom.template.codegen_compat",

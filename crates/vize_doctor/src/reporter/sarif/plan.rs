@@ -2,7 +2,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use vize_s0::{String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 use super::source::{IndexedSource, SarifMissingSourcePolicy, validate_path};
 use crate::{
@@ -252,7 +252,7 @@ fn encode_relative_uri(path: &str) -> String {
 mod unit_tests {
     use std::collections::BTreeMap;
 
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     use super::{SarifMissingSourcePolicy, SarifPlan, encode_relative_uri};
     use crate::{

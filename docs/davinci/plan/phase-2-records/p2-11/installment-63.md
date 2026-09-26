@@ -12,9 +12,9 @@ The durable witnesses are:
 
 - [`nested_interactive_recovery.rs`](../../../../../crates/vize_armature/tests/nested_interactive_recovery.rs)
   - asserts same-named ancestors remain open until their authored end tag.
-- [`surface_fidelity.rs`](../../../../../crates/vize_s1/tests/surface_fidelity.rs)
+- [`surface_fidelity.rs`](../../../../../crates/vize_l1/tests/surface_fidelity.rs)
   - pins the S1 close identity surface.
-- [`emit_nested_interactive.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_nested_interactive.rs)
+- [`emit_nested_interactive.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_nested_interactive.rs)
   - compares same-named ancestor nested anchor/button cases against the shipped
     DOM lane.
 

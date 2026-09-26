@@ -28,7 +28,7 @@ pub use key::{WitnessKey, WitnessKeyed};
 
 use crate::fact::FactGroup;
 use crate::pass::AnalysisId;
-use vize_s0::Span;
+use vize_l0::Span;
 
 /// One link of a witness chain: the fact stored under `key` in fact group
 /// `group`, about the source range `span`.

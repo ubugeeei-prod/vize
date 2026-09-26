@@ -19,7 +19,7 @@ use vize_canon::sfc_typecheck::{
     type_check_sfc_with_options_api,
 };
 use vize_canon::virtual_ts::{VizeMapping, mapping::map_generated_range_to_source};
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use crate::ide::{IdeContext, offset_to_position};
 
@@ -169,7 +169,7 @@ pub(in crate::ide) fn rename(
         let text = if let Some(directive) = shorthands.get(&span) {
             span = *directive;
             let original = ctx.content.get(span.0..span.1)?;
-            vize_s0::cstr!("{original}=\"{new_name}\"").into()
+            vize_l0::cstr!("{original}=\"{new_name}\"").into()
         } else {
             edits::render(entry.edit, original, new_name)
         };

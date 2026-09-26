@@ -22,7 +22,7 @@
 use vize_davinci::diagnostic::{
     Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Severity, Stage,
 };
-use vize_s0::{SourceRoot, Span};
+use vize_l0::{SourceRoot, Span};
 
 use crate::diagnostic::LintDiagnostic;
 use crate::rule_contracts::contract_for;

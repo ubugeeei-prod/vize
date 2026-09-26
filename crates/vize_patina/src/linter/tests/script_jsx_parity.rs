@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use super::Linter;
 use crate::LintPreset;
 use vize_atelier_jsx::JsxLang;
-use vize_s0::String as CompactString;
+use vize_l0::String as CompactString;
 
 fn parity_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/parity")

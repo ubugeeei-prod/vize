@@ -1,6 +1,6 @@
 //! The Impeto folio page.
 //!
-//! Unlike S2, S3 is already flat: op ids, region ids, state edges, and effect
+//! Unlike L2, L3 is already flat: op ids, region ids, state edges, and effect
 //! scopes fit the derived-page grammar. The custom line values below keep the
 //! page typed while staying line-atomic.
 
@@ -10,14 +10,15 @@ use core::str::SplitWhitespace;
 
 use vize_davinci::folio::value::FolioValue;
 use vize_davinci::folio::{Folio, FolioError};
-use vize_s0::{Span, String, cstr};
+use vize_l0::{Span, String, cstr};
 
 use crate::op::{EdgeKind, EffectId, OpId, OpKind, Program, RegionId};
 
-/// Flat S3 document model.
+/// Flat L3 document model.
 #[doc(alias = "ImpetoFolio")]
 #[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-pub struct S3Folio {
+#[folio(name = "s3-folio")]
+pub struct L3Folio {
     /// `built`, `partitioned`, or `scheduled`.
     pub phase: String,
     /// Region records in page order.
@@ -30,7 +31,7 @@ pub struct S3Folio {
     pub effects: Vec<FolioEffect>,
 }
 
-impl S3Folio {
+impl L3Folio {
     /// Mirror a live arena program into the owned document model.
     #[must_use]
     pub fn of(program: &Program<'_>) -> Self {
@@ -45,7 +46,7 @@ impl S3Folio {
 }
 
 /// Compatibility alias for the codename spelling.
-pub type ImpetoFolio = S3Folio;
+pub type ImpetoFolio = L3Folio;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FolioRegion {
@@ -300,10 +301,10 @@ fn parse_edge_kind(text: &str, line: usize) -> Result<EdgeKind, FolioError> {
 
 #[cfg(test)]
 mod tests {
-    use super::S3Folio;
+    use super::L3Folio;
     use crate::op::Phase;
     use vize_davinci::folio::{Folio, FolioError, FolioMode};
-    use vize_s0::{String, cstr};
+    use vize_l0::{String, cstr};
 
     #[test]
     fn phase_spellings_are_parseable() {
@@ -324,16 +325,16 @@ id=0 kind=impeto.missing region=0 effect=- span=0:1
 
 ";
         assert_eq!(
-            S3Folio::parse(input).unwrap_err(),
+            L3Folio::parse(input).unwrap_err(),
             FolioError::new(5, cstr!("unknown Impeto op kind `impeto.missing`"))
         );
     }
 
     #[test]
     fn display_mode_has_the_derived_full_text_law() {
-        let folio = S3Folio {
+        let folio = L3Folio {
             phase: String::from("built"),
-            ..S3Folio::default()
+            ..L3Folio::default()
         };
         assert_eq!(
             folio.print_to_string(FolioMode::Display),

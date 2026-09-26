@@ -30,7 +30,7 @@ use napi_derive::napi;
 use vize_atelier_jsx::{
     JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx as jsx_compile,
 };
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 /// Options for [`compile_jsx`].
 #[napi(object)]

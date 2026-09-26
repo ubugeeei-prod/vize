@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 use tower_lsp::lsp_types::Url;
 use vize_atelier_sfc::script::TypeSourceSnapshot;
-use vize_s0::{FxHashMap, FxHashSet};
+use vize_l0::{FxHashMap, FxHashSet};
 
 use crate::document::DocumentStore;
 

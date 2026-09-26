@@ -3,7 +3,7 @@
 //! group's typed key and it.
 
 use crate::id::NodeId;
-use vize_s0::String;
+use vize_l0::String;
 
 /// The key a [`WitnessLink`](super::WitnessLink) names its fact by.
 ///
@@ -14,7 +14,7 @@ use vize_s0::String;
 pub enum WitnessKey {
     /// The one fact of a group keyed by `()` — an artifact-level fact.
     Artifact,
-    /// An S2 node.
+    /// An L2 node.
     Node(NodeId),
     /// A numeric key: a `SymbolId`, a binding ordinal, an index.
     Index(u32),

@@ -31,12 +31,12 @@ function* walkFiles(dir: string): Generator<string> {
   }
 }
 
-test("Doctor depends on the stage-named S0 alias", () => {
+test("Doctor depends on the stage-named L0 alias", () => {
   const cargoToml = fs.readFileSync(path.join(doctorRoot, "Cargo.toml"), "utf8");
   const manifest = parseToml(cargoToml) as CargoManifest;
   const dependencies = manifest.dependencies ?? {};
 
-  assert.deepEqual(dependencies.vize_s0, { workspace: true });
+  assert.deepEqual(dependencies.vize_l0, { workspace: true });
   assert.equal(dependencies.vize_carton, undefined);
 });
 

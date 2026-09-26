@@ -14,8 +14,8 @@
 
 use super::{CompilerError, ErrorCode};
 use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, Exemption, PartKind, Stage};
-use vize_s0::i18n::{Locale, translator};
-use vize_s0::{CompactString, Span, cstr};
+use vize_l0::i18n::{Locale, translator};
+use vize_l0::{CompactString, Span, cstr};
 
 /// The exemption compiler errors report under until the compiler produces
 /// witnesses (P4-6), counted in `docs/davinci/plan/witness-exemptions.tsv`.
@@ -87,8 +87,8 @@ mod tests {
     use super::{COMPILER_ERROR, CompilerError, ErrorCode};
     use crate::SourceLocation;
     use vize_davinci::diagnostic::{Advisory, Diagnostic, DiagnosticPart, PartKind, Stage};
-    use vize_s0::Span;
-    use vize_s0::i18n::Locale;
+    use vize_l0::Span;
+    use vize_l0::i18n::Locale;
 
     #[test]
     fn every_code_speaks_its_own_english_and_translates_in_ja_and_zh() {

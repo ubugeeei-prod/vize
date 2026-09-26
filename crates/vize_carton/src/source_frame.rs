@@ -1,7 +1,7 @@
 //! Validated authored-source frames for Davinci spans.
 //!
 //! A [`Span`] is only meaningful against the source string it was measured
-//! from. SFC lowering parses each block as a slice, but the emitted S0 spans
+//! from. SFC lowering parses each block as a slice, but the emitted L0 spans
 //! still point into the complete authored file. [`SourceRoot`] and
 //! [`SourceBlock`] keep those two facts together without allocating.
 

@@ -3,6 +3,8 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 
+mod unicode;
+
 use vize_davinci::fact::{Demand, FactManager, FactProducer};
 
 use super::batch::{PluginSpec, build_batch, diagnostics};
@@ -34,7 +36,7 @@ fn content_key(source: &str, filename: &str, spec: &PluginSpec<'_>) -> String {
 }
 
 #[test]
-fn the_page_is_flattened_in_s2_id_order() {
+fn the_page_is_flattened_in_l2_id_order() {
     let document = PluginDocument::build(TODOS, "Todos.vue").expect("splits");
     let rows: Vec<_> = document
         .nodes

@@ -7,7 +7,7 @@
 
 use super::TemplateFormatter;
 use crate::template::helpers::byte_at;
-use vize_s0::String;
+use vize_l0::String;
 
 impl TemplateFormatter<'_> {
     /// Render the lines of a formatted interpolation expression at `depth + 1`,

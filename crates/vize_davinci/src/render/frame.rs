@@ -7,7 +7,7 @@
 use super::paint::{Painter, Style};
 use super::row::Row;
 use super::text;
-use vize_s0::String;
+use vize_l0::String;
 
 pub(crate) struct Frame {
     width: usize,

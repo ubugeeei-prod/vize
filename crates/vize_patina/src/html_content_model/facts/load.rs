@@ -1,6 +1,6 @@
 //! Parsing the committed fact table into [`Facts`].
 
-use vize_s0::{FxHashMap, String, cstr};
+use vize_l0::{FxHashMap, String, cstr};
 
 use super::{Attr, Cond, ElemId, Facts, Members, Ns};
 use crate::html_content_model::rows::ROWS;

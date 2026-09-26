@@ -2,18 +2,18 @@
 
 use super::element::{MarkupElement, MarkupElementInner};
 use super::jsx_names::{jsx_element_ref, jsx_fragment_ref};
+use super::l2::walk::{L2Step, scope_region};
+use super::l2::{L2ElementOp, L2Markup, children};
 use super::loc_to_range;
 use super::node::{MarkupNode, MarkupText};
 use super::relief_scopes::{BranchKind, ReliefChain, branch_of, list_of};
-use super::s2::walk::{S2Step, scope_region};
-use super::s2::{S2ElementOp, S2Markup, children};
 use super::scope::{MarkupConditional, MarkupList};
 use super::{MarkupContext, MarkupDocument, MarkupDocumentInner, MarkupRule, jsx_roots};
 use oxc_ast::ast::{JSXChild, JSXElement, JSXFragment, Program};
 use oxc_ast_visit::{Visit, walk::walk_program};
+use vize_l0::profile;
+use vize_l2::op::Op;
 use vize_relief::{ElementNode, TemplateChildNode};
-use vize_s0::profile;
-use vize_s2::op::Op;
 
 /// Projection visitor that drives a [`MarkupRule`] from any backend.
 ///
@@ -46,7 +46,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                 MarkupDocumentInner::Jsx { program, offset } => {
                     self.visit_jsx_program(program, offset)
                 }
-                MarkupDocumentInner::S2(markup) => self.visit_s2_region(markup, &markup.root.ops),
+                MarkupDocumentInner::L2(markup) => self.visit_l2_region(markup, &markup.root.ops),
             }
         });
     }
@@ -116,15 +116,15 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
         self.visit_element(MarkupElement::new(element));
     }
 
-    /// An S2 region, in page order.
-    fn visit_s2_region(&mut self, doc: &'a S2Markup<'a>, ops: &'a [Op<'a>]) {
+    /// An L2 region, in page order.
+    fn visit_l2_region(&mut self, doc: &'a L2Markup<'a>, ops: &'a [Op<'a>]) {
         for op in ops {
             match op {
                 Op::Element(_) | Op::Component(_) | Op::Slot(_) => {
-                    let Some(element) = S2ElementOp::from_op(op) else {
+                    let Some(element) = L2ElementOp::from_op(op) else {
                         continue;
                     };
-                    self.visit_element(MarkupElement::from_s2(element, doc));
+                    self.visit_element(MarkupElement::from_l2(element, doc));
                 }
                 Op::Text(text) => self.text(children::text_node(doc, text)),
                 Op::Interpolation(interpolation) => {
@@ -136,23 +136,23 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                 }
                 Op::Comment(_) => {}
                 Op::If(if_op) => {
-                    self.conditional(MarkupConditional::from_s2(if_op, doc));
+                    self.conditional(MarkupConditional::from_l2(if_op, doc));
                     for branch in if_op.branches.iter() {
-                        self.visit_s2_step(doc, scope_region(doc, branch.span, &branch.region.ops));
+                        self.visit_l2_step(doc, scope_region(doc, branch.span, &branch.region.ops));
                     }
                 }
                 Op::For(for_op) => {
-                    self.list(MarkupList::from_s2(for_op, doc));
-                    self.visit_s2_step(doc, scope_region(doc, for_op.span, &for_op.region.ops));
+                    self.list(MarkupList::from_l2(for_op, doc));
+                    self.visit_l2_step(doc, scope_region(doc, for_op.span, &for_op.region.ops));
                 }
             }
         }
     }
 
-    fn visit_s2_step(&mut self, doc: &'a S2Markup<'a>, step: S2Step<'a>) {
+    fn visit_l2_step(&mut self, doc: &'a L2Markup<'a>, step: L2Step<'a>) {
         match step {
-            S2Step::Element(element, _) => self.visit_element(element),
-            S2Step::Region(region) => self.visit_s2_region(doc, region),
+            L2Step::Element(element, _) => self.visit_element(element),
+            L2Step::Region(region) => self.visit_l2_region(doc, region),
         }
     }
 
@@ -192,9 +192,9 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             MarkupElementInner::JsxFragment { node, offset } => {
                 self.visit_jsx_children(&jsx_fragment_ref(node).children, offset)
             }
-            MarkupElementInner::S2 { op, doc, .. } => self.visit_s2_region(doc, op.children()),
-            MarkupElementInner::S2Carrier { doc, region, .. } => {
-                self.visit_s2_region(doc, region);
+            MarkupElementInner::L2 { op, doc, .. } => self.visit_l2_region(doc, op.children()),
+            MarkupElementInner::L2Carrier { doc, region, .. } => {
+                self.visit_l2_region(doc, region);
             }
         }
 

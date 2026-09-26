@@ -1,5 +1,5 @@
 use serde::Serialize;
-use vize_s0::String;
+use vize_l0::String;
 
 use super::CapabilityInvalidation;
 

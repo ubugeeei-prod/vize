@@ -1,8 +1,8 @@
-use vize_s0::{Allocator, Vec};
+use vize_l0::{Allocator, Vec};
 
 use super::{BindingFact, BindingId, BindingInput, ReactivityClass};
 
-/// Reactivity-lattice facts for one S3 artifact.
+/// Reactivity-lattice facts for one L3 artifact.
 #[derive(Debug)]
 pub struct LatticeFacts<'a> {
     pub bindings: Vec<'a, BindingFact>,

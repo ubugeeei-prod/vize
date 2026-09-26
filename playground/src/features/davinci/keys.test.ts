@@ -4,7 +4,7 @@ import type { TimelineStep } from "./ladder";
 
 const step = (key: string): TimelineStep => ({
   key,
-  rung: "s2",
+  rung: "l2",
   pass: key,
   changed: false,
   producer: false,
@@ -12,7 +12,7 @@ const step = (key: string): TimelineStep => ({
   remarks: 0,
   walk: null,
 });
-const timeline = [step("s1/parse"), step("s2/lower"), step("s3/lower")];
+const timeline = [step("l1/parse"), step("l2/lower"), step("l3/lower")];
 const press = (key: string, target: EventTarget | null = document.body, modifiers = {}) => ({
   key,
   target,
@@ -25,24 +25,24 @@ const press = (key: string, target: EventTarget | null = document.body, modifier
 
 describe("stepKeyAction", () => {
   it("maps 1-4 to stages and arrows to neighbouring steps", () => {
-    expect(stepKeyAction(press("3"), timeline, null)).toEqual({ kind: "stage", stage: "s3" });
-    expect(stepKeyAction(press("4"), timeline, null)).toEqual({ kind: "stage", stage: "s4" });
-    expect(stepKeyAction(press("ArrowRight"), timeline, "s1/parse")).toEqual({
+    expect(stepKeyAction(press("3"), timeline, null)).toEqual({ kind: "stage", stage: "l3" });
+    expect(stepKeyAction(press("4"), timeline, null)).toEqual({ kind: "stage", stage: "l4" });
+    expect(stepKeyAction(press("ArrowRight"), timeline, "l1/parse")).toEqual({
       kind: "step",
       step: timeline[1],
     });
-    expect(stepKeyAction(press("ArrowLeft"), timeline, "s2/lower")).toEqual({
+    expect(stepKeyAction(press("ArrowLeft"), timeline, "l2/lower")).toEqual({
       kind: "step",
       step: timeline[0],
     });
   });
 
   it("clamps at both ends and starts from the end when nothing is current", () => {
-    expect(stepKeyAction(press("ArrowRight"), timeline, "s3/lower")).toEqual({
+    expect(stepKeyAction(press("ArrowRight"), timeline, "l3/lower")).toEqual({
       kind: "step",
       step: timeline[2],
     });
-    expect(stepKeyAction(press("ArrowLeft"), timeline, "s1/parse")).toEqual({
+    expect(stepKeyAction(press("ArrowLeft"), timeline, "l1/parse")).toEqual({
       kind: "step",
       step: timeline[0],
     });

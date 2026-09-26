@@ -18,7 +18,7 @@ pub(super) fn generate_set_event(ctx: &mut GenerateContext, set_event: &SetEvent
     // Handler references and callbacks keep their expression anchors;
     // rewritten inline bodies are emitted unanchored.
     let invoker_body = if let Some(value) = set_event.value.as_deref() {
-        // Keep S3's checked direct-reference path free of expression reparses.
+        // Keep L3's checked direct-reference path free of expression reparses.
         if is_simple_path_expression(value.content.trim()) || is_event_handler_reference_node(value)
         {
             let mut body = EmitDocument::plain("e => ");

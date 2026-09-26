@@ -3,7 +3,7 @@
 use super::{TsconfigInputCache, load_tsconfig_declaration_options, resolve_extended_tsconfig};
 use std::path::{Path, PathBuf};
 use std::{fs, slice};
-use vize_s0::{cstr, path::canonicalize_non_verbatim};
+use vize_l0::{cstr, path::canonicalize_non_verbatim};
 mod allow_js;
 mod codegen;
 mod reference_programs;

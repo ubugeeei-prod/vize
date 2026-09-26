@@ -17,7 +17,7 @@
 use core::time::Duration;
 
 use vize_davinci::pass::TimingObserver;
-use vize_s0::profiler::{ProfileExportBudget, ProfileExportOptions, Profiler, SpanAttribution};
+use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, Profiler, SpanAttribution};
 
 use super::ladder::LadderStep;
 

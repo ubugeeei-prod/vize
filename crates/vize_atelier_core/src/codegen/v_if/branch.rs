@@ -7,7 +7,7 @@ use crate::{
     ElementNode, ElementType, ExpressionNode, ForNode, IfBranchNode, PropNode, RuntimeHelper,
     TemplateChildNode,
 };
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 use super::{
     super::{

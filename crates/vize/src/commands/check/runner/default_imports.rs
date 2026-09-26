@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use super::{
     CollectedRoots,

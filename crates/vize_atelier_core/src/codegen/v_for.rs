@@ -19,8 +19,8 @@ use super::{
 use generate::generate_for_item;
 use helpers::extract_for_params;
 pub(crate) use helpers::{extract_destructure_params, get_element_key, is_numeric_source};
-use vize_s0::String;
-use vize_s0::ToCompactString;
+use vize_l0::String;
+use vize_l0::ToCompactString;
 
 /// Generate for node
 pub fn generate_for(ctx: &mut CodegenContext, for_node: &ForNode<'_>) {

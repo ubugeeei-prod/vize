@@ -21,7 +21,7 @@ use vize_davinci::fact::{
 };
 use vize_davinci::pass::AnalysisId;
 use vize_davinci::witness::{AuditReport, WitnessAudit, WitnessCheck, WitnessChecks, WitnessGroup};
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 use super::class::ViolationClass;
 use super::composed::ComposedFinding;

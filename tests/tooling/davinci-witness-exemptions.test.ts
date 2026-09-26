@@ -120,11 +120,31 @@ test("exemptions are derived from named statics and counted by construction site
   assert.deepEqual(deriveInventory(root, []), {
     rows: [row("producer_a", "kind", 2)],
     issues: [
-      "crates/producer_a/src/lib.rs:4: producer producer_b must be its crate producer_a",
+      "crates/producer_a/src/lib.rs:4: producer producer_b must match producer_a identity producer_a",
       "crates/producer_a/src/lib.rs:8: an Exemption must be declared as one named static",
       "crates/producer_a/src/lib.rs:3: UNUSED is declared but unused",
     ],
   });
+});
+
+test("a renamed crate keeps its historical exemption identity and ratchet", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-witness-renamed-"));
+  write(
+    root,
+    "crates/vize_l1_to_l2/src/lib.rs",
+    [
+      'static OLD: Exemption = Exemption::new("vize_s1_to_s2", "lowering");',
+      'static FORGED: Exemption = Exemption::new("vize_l1_to_l2", "new-code");',
+      "fn a() { Diagnostic::legacy_error(&OLD, ..); }",
+      "fn b() { Diagnostic::legacy_error(&OLD, ..); }",
+    ].join("\n"),
+  );
+  const derived = deriveInventory(root, []);
+  assert.deepEqual(derived.rows, [row("vize_s1_to_s2", "lowering", 2)]);
+  assert.match(derived.issues[0], /identity vize_s1_to_s2/u);
+  assert.deepEqual(ratchetViolations([row("vize_s1_to_s2", "lowering", 1)], derived.rows), [
+    "vize_s1_to_s2/lowering: exempt rose from 1 to 2",
+  ]);
 });
 
 test("a contract table contributes one row per error rule", () => {

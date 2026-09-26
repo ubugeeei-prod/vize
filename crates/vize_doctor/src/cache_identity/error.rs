@@ -1,6 +1,6 @@
 use std::{error::Error, fmt};
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::DOCTOR_CAPABILITY_CACHE_IDENTITY_VERSION;
 

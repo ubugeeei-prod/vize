@@ -1,9 +1,9 @@
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_impeto::folio::S3Folio;
+use vize_impeto::folio::L3Folio;
 use vize_impeto::op::{
     EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
 };
-use vize_s0::{Allocator, Span};
+use vize_l0::{Allocator, Span};
 
 const CANONICAL: &str = "\
 [s3-folio]
@@ -76,15 +76,15 @@ fn program<'a>(allocator: &'a Allocator) -> Program<'a> {
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let folio = S3Folio::parse(CANONICAL).expect("canonical text parses");
+    let folio = L3Folio::parse(CANONICAL).expect("canonical text parses");
     assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
 }
 
 #[test]
 fn parse_print_is_structural_identity() {
     let arena = Allocator::default();
-    let folio = S3Folio::of(&program(&arena));
+    let folio = L3Folio::of(&program(&arena));
     let printed = folio.print_to_string(FolioMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
-    assert_eq!(S3Folio::parse(printed.as_str()).unwrap(), folio);
+    assert_eq!(L3Folio::parse(printed.as_str()).unwrap(), folio);
 }

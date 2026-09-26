@@ -1,7 +1,7 @@
 //! Inspector payload, agent report, and playground URL helpers.
 
 use std::fmt::Write as _;
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 use super::graph::{InspectorGraph, build_graph, line_count};
 use vize_atelier_core::Allocator;
@@ -57,7 +57,7 @@ pub struct InspectorPayload {
     selected_file: Option<String>,
     options: InspectorPayloadOptions,
     files: Vec<InspectorPayloadFile>,
-    /// The Spolvero feed (P2-18): the payload's S1/S2 stage pages as the
+    /// The Spolvero feed (P2-18): the payload's L1/L2 stage pages as the
     /// schema-versioned document `spolvero-feed.schema.json` commits.
     /// Kept as a pre-serialized value so `SpolveroFeed::to_json` stays the
     /// shape's only serializer (the feed's own snake_case keys included).

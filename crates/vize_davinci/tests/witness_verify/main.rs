@@ -24,7 +24,7 @@ use vize_davinci::witness::{
     AuditReport, WitnessAudit, WitnessError, WitnessFailure, unverifiable_witnesses, verify,
     verify_as, verify_chain,
 };
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 /// Words: the@0..3 cat@4..7 saw@8..11 the@12..15 dog@16..19
 /// maybe?@20..26 maybe?@27..33 — the last two are maybes.

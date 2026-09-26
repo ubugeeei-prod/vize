@@ -1,30 +1,30 @@
 consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matched_name	name_kind	sites
-linter	Linter	test/dev	crates/vize/src/commands/lint.rs	35	s0	S0	stage	vize_s0	preferred	3
-linter	Linter	source	crates/vize/src/commands/lint/args.rs	5	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	test/dev	crates/vize/src/commands/lint/collect_tests.rs	157	s0	S0	stage	vize_s0	preferred	5
-linter	Linter	source	crates/vize/src/commands/lint/collect.rs	6	s0	S0	stage	vize_s0	preferred	3
-linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	9	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	test/dev	crates/vize/src/commands/lint.rs	34	l0	L0	stage	vize_l0	preferred	3
+linter	Linter	source	crates/vize/src/commands/lint/args.rs	5	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize/src/commands/lint/collect_tests.rs	157	l0	L0	stage	vize_l0	preferred	5
+linter	Linter	source	crates/vize/src/commands/lint/collect.rs	6	l0	L0	stage	vize_l0	preferred	3
+linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	9	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file.rs	9	croquis	Croquis analysis	old	vize_croquis_cf	legacy	1
-linter	Linter	source	crates/vize/src/commands/lint/cross_file/absent_props.rs	19	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize/src/commands/lint/cross_file/absent_props.rs	19	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file/absent_props.rs	19	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file/absent_props.rs	19	raw_oxc	raw OXC	raw	oxc_ast	raw	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file/absent_props.rs	19	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file/component.rs	14	davinci	Davinci	stage	vize_davinci	preferred	1
-linter	Linter	source	crates/vize/src/commands/lint/cross_file/component.rs	14	s0	S0	stage	vize_s0	preferred	3
+linter	Linter	source	crates/vize/src/commands/lint/cross_file/component.rs	14	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize/src/commands/lint/cross_file/component.rs	14	croquis	Croquis analysis	old	vize_croquis_cf	legacy	2
-linter	Linter	source	crates/vize/src/commands/lint/cross_file/sfc.rs	6	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize/src/commands/lint/cross_file/sfc.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file/sfc.rs	6	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	source	crates/vize/src/commands/lint/cross_file/sfc.rs	6	croquis	Croquis analysis	old	vize_croquis	legacy	1
-linter	Linter	test/dev	crates/vize/src/commands/lint/entry_rules_tests.rs	7	s0	S0	stage	vize_s0	preferred	2
-linter	Linter	source	crates/vize/src/commands/lint/entry_rules.rs	5	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize/src/commands/lint/entry_rules/rule_option_mapping.rs	1	s0	S0	stage	vize_s0	preferred	14
-linter	Linter	source	crates/vize/src/commands/lint/fix.rs	8	s0	S0	stage	vize_s0	preferred	1
-linter	Linter	source	crates/vize/src/commands/lint/patterns.rs	22	s0	S0	stage	vize_s0	preferred	11
-linter	Linter	test/dev	crates/vize/src/commands/lint/patterns.rs	114	s0	S0	stage	vize_s0	preferred	4
+linter	Linter	test/dev	crates/vize/src/commands/lint/entry_rules_tests.rs	6	l0	L0	stage	vize_l0	preferred	2
+linter	Linter	source	crates/vize/src/commands/lint/entry_rules.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize/src/commands/lint/entry_rules/rule_option_mapping.rs	1	l0	L0	stage	vize_l0	preferred	14
+linter	Linter	source	crates/vize/src/commands/lint/fix.rs	7	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize/src/commands/lint/patterns.rs	22	l0	L0	stage	vize_l0	preferred	11
+linter	Linter	test/dev	crates/vize/src/commands/lint/patterns.rs	114	l0	L0	stage	vize_l0	preferred	4
 linter	Linter	source	crates/vize/src/commands/lint/rich.rs	15	davinci	Davinci	stage	vize_davinci	preferred	2
-linter	Linter	source	crates/vize/src/commands/lint/rich.rs	15	s0	S0	stage	vize_s0	preferred	3
-linter	Linter	test/dev	crates/vize/src/commands/lint/rich.rs	224	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize/src/commands/lint/rich.rs	15	l0	L0	stage	vize_l0	preferred	3
+linter	Linter	test/dev	crates/vize/src/commands/lint/rich.rs	222	l0	L0	stage	vize_l0	preferred	2
 linter	Linter	source	crates/vize/src/commands/lint/routes.rs	7	davinci	Davinci	stage	vize_davinci	preferred	1
-linter	Linter	source	crates/vize/src/commands/lint/routes.rs	7	s0	S0	stage	vize_s0	preferred	2
+linter	Linter	source	crates/vize/src/commands/lint/routes.rs	7	l0	L0	stage	vize_l0	preferred	2
 linter	Linter	source	crates/vize/src/commands/lint/routes.rs	7	croquis	Croquis analysis	old	vize_croquis_cf	legacy	2
-linter	Linter	source	crates/vize/src/commands/lint/stdout.rs	4	s0	S0	stage	vize_s0	preferred	1
+linter	Linter	source	crates/vize/src/commands/lint/stdout.rs	3	l0	L0	stage	vize_l0	preferred	1

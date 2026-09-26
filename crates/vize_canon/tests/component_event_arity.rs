@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, SfcTypeCheckOptions, type_check_sfc};
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 #[test]
 fn unresolved_component_events_accept_multi_argument_handlers() {
@@ -222,7 +222,7 @@ fn event_handler_mapping_targets_the_user_operand() {
 "#;
     let template = r#"<button @click="__vize_cb">Click</button>"#;
 
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
 
     let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());

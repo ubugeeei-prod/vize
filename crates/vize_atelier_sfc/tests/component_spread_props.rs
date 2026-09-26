@@ -9,7 +9,7 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
-use vize_s0::String;
+use vize_l0::String;
 
 const NUXT_UI_ICON_SFC: &str = r#"<script setup lang="ts">
 const props = defineProps<{ name: string }>()

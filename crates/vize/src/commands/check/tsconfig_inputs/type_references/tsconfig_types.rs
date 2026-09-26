@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use serde_json::Value;
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use super::super::jsonc::parse_jsonc_value;
 use super::super::loader::{
@@ -23,7 +23,7 @@ fn load_tsconfig_type_packages(
     tsconfig_path: &Path,
     seen: &mut FxHashSet<PathBuf>,
 ) -> Option<Vec<std::string::String>> {
-    let resolved = vize_s0::path::canonicalize_non_verbatim(tsconfig_path);
+    let resolved = vize_l0::path::canonicalize_non_verbatim(tsconfig_path);
     if !seen.insert(resolved.clone()) {
         return None;
     }

@@ -15,7 +15,7 @@ use crate::error::FormatError;
 use crate::options::FormatOptions;
 use std::borrow::Cow;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_s0::{Allocator, FxHashMap, String};
+use vize_l0::{Allocator, FxHashMap, String};
 
 /// Result of formatting a Vue SFC
 #[derive(Debug, Clone)]

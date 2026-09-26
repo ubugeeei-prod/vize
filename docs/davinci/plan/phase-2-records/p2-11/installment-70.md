@@ -10,9 +10,9 @@ moving ahead of the shipped lane's prop order.
 
 The durable witnesses are:
 
-- [`davinci_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_hoist_order.rs)
+- [`davinci_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_hoist_order.rs)
   - covers transition props with forwarded slots and fallback content.
-- [`call_props.rs`](../../../../../crates/vize_s1_to_s2/src/emit/component/call_props.rs)
+- [`call_props.rs`](../../../../../crates/vize_l1_to_l2/src/emit/component/call_props.rs)
   - carries the slot-outlet-sensitive component prop path.
 
 This installment does not tick P2-11. The production-lane switch remains open.

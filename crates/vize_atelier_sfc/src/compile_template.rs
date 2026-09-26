@@ -3,7 +3,7 @@
 //! This module handles compilation of `<template>` blocks,
 //! supporting both DOM mode and Vapor mode.
 
-use vize_s0::{String, ToCompactString, profile};
+use vize_l0::{String, ToCompactString, profile};
 mod extraction;
 mod string_tracking;
 mod vapor;
@@ -20,7 +20,7 @@ pub(crate) use vapor::compile_template_block_vapor;
 
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_atelier_core::{CodegenExperimentalOptions, CodegenOptions};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use vize_atelier_core::CompilerErrorWithSource;
 
@@ -207,7 +207,7 @@ pub(crate) fn compile_template_block(
     }
 
     // SFC assembly consumes diagnostics and emitted render code. The
-    // section-only entry selects S2 where it can preserve the full module,
+    // section-only entry selects L2 where it can preserve the full module,
     // and falls back to the compatibility path for unsupported shapes.
     let (errors, result) = profile!(
         "atelier.sfc.template.dom",

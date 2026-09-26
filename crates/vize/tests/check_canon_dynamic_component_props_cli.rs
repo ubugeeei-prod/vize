@@ -7,7 +7,7 @@ use std::{
     process::Command,
 };
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))

@@ -3,7 +3,7 @@
 //! Split out of [`super::element`] so that module stays inside the per-file
 //! source-length budget.
 
-use vize_s0::Box;
+use vize_l0::Box;
 
 use crate::steps::expression::{process_expression, process_inline_handler};
 use crate::{ElementNode, ExpressionNode, PropNode};

@@ -1,7 +1,7 @@
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use vize_atelier_dom::compile_template;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[test]
 fn dynamic_ref_in_v_for_emits_ref_for() {

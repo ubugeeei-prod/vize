@@ -4,7 +4,7 @@
 use std::path::{Path, PathBuf};
 
 use vize_canon::DeclarationEmitOptions;
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 use crate::commands::check::tsconfig_inputs::{
     TsconfigDeclarationOptions, load_tsconfig_declaration_options,
@@ -52,7 +52,7 @@ pub(super) fn resolve_project_root(
         } else {
             cwd.join(tsconfig)
         };
-        let tsconfig_dir = vize_s0::path::canonicalize_non_verbatim(&tsconfig_path)
+        let tsconfig_dir = vize_l0::path::canonicalize_non_verbatim(&tsconfig_path)
             .parent()
             .map(|parent| parent.to_path_buf())
             .unwrap_or_else(|| cwd.to_path_buf());
@@ -89,7 +89,7 @@ pub(super) fn resolve_tsconfig_path(
         } else {
             cwd.join(tsconfig)
         };
-        return Some(vize_s0::path::canonicalize_non_verbatim(&tsconfig_path));
+        return Some(vize_l0::path::canonicalize_non_verbatim(&tsconfig_path));
     }
 
     let candidate = project_root.join("tsconfig.json");
@@ -111,7 +111,7 @@ pub(super) fn resolve_tsconfig_path(
 }
 
 pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
-    let cwd = vize_s0::path::canonicalize_non_verbatim(cwd);
+    let cwd = vize_l0::path::canonicalize_non_verbatim(cwd);
     if project_root.starts_with(&cwd) {
         cwd
     } else {
@@ -175,11 +175,11 @@ pub(super) fn validate_inputs_in_root(
 }
 
 fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<(), String> {
-    let root = vize_s0::path::canonicalize_non_verbatim(root);
+    let root = vize_l0::path::canonicalize_non_verbatim(root);
     for file in files {
-        let path = vize_s0::path::canonicalize_non_verbatim(file);
+        let path = vize_l0::path::canonicalize_non_verbatim(file);
         if !path.starts_with(&root) {
-            return Err(vize_s0::cstr!(
+            return Err(vize_l0::cstr!(
                 "explicit check input `{}` is outside project root `{}`.",
                 path.display(),
                 root.display()
@@ -250,8 +250,8 @@ fn path_has_component(path: &Path, component: &str) -> bool {
         .any(|part| part.as_os_str().to_str() == Some(component))
 }
 
-pub(super) fn display_path(base: &Path, path: &Path) -> vize_s0::String {
-    use vize_s0::cstr;
+pub(super) fn display_path(base: &Path, path: &Path) -> vize_l0::String {
+    use vize_l0::cstr;
 
     path.strip_prefix(base)
         .map(|relative| cstr!("{}", relative.display()))
@@ -280,7 +280,7 @@ pub(super) fn validate_corsa_server_count(servers: Option<usize>) -> Result<(), 
         return Err("typeChecker.servers must be at least 1.".into());
     }
     if servers > MAX_CORSA_SERVERS {
-        return Err(vize_s0::cstr!(
+        return Err(vize_l0::cstr!(
             "typeChecker.servers={servers} exceeds the supported maximum of {MAX_CORSA_SERVERS}."
         ));
     }

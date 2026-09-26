@@ -40,7 +40,7 @@ fn assert_trace(source: &str, context: Value, steps: Value, slots: Value, expect
     assert_eq!(
         WalkCounts::snapshot().since(before).total_walks(),
         0,
-        "{source}: native S3"
+        "{source}: native L3"
     );
     let native = trace(
         "davinci-mounted-trace.mjs",

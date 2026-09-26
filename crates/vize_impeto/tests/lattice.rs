@@ -3,7 +3,7 @@ use vize_impeto::lattice::{
     BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind, ReactivityClass,
     ReactivityFolio, Verdict, evaluate, evaluate_binding,
 };
-use vize_s0::{Allocator, Span};
+use vize_l0::{Allocator, Span};
 
 const CANONICAL: &str = "\
 [s3-reactivity-folio]

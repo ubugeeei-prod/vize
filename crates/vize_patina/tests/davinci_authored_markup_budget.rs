@@ -1,10 +1,10 @@
 //! P4-7b allocation gates run in one process because the counters are global.
 
 use davinci_harness::alloc::{CountingAllocator, mark_installed, measure, measure_returning};
+use vize_l0::Allocator;
 use vize_patina::ir::TemplateSyntax;
-use vize_patina::markup::{MarkupContext, MarkupDocument, S2Template};
+use vize_patina::markup::{L2Template, MarkupContext, MarkupDocument};
 use vize_patina::{LintContext, RuleRegistry};
-use vize_s0::Allocator;
 
 #[global_allocator]
 static GLOBAL: CountingAllocator = CountingAllocator::mimalloc();
@@ -26,9 +26,9 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
     ] {
         let normal_arena = Allocator::new();
         let authored_arena = Allocator::new();
-        let (_normal, normal) = measure_returning(|| vize_s1::parse(&normal_arena, source));
+        let (_normal, normal) = measure_returning(|| vize_l1::parse(&normal_arena, source));
         let ((_tree, extra, _errors), projected) =
-            measure_returning(|| vize_s1::parse_with_authored(&authored_arena, source));
+            measure_returning(|| vize_l1::parse_with_authored(&authored_arena, source));
         assert!(
             extra.is_none(),
             "ordinary source must reuse its existing tree"
@@ -45,10 +45,10 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
     }
 
     let allocator = Allocator::new();
-    let lowered = S2Template::lower(&allocator, GALLERY);
+    let lowered = L2Template::lower(&allocator, GALLERY);
     assert!(lowered.lowered().diagnostics.is_empty());
     let markup = lowered.markup();
-    let document = MarkupDocument::from_s2(&markup, TemplateSyntax::Vue);
+    let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
     let registry = RuleRegistry::default();
     let mut lint = LintContext::new(&allocator, GALLERY, "budget.vue");
     let mut context = MarkupContext::new(&mut lint, &document);

@@ -12,7 +12,7 @@ mod render_exports;
 mod tests;
 
 use vize_croquis::Croquis;
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 use crate::compat::{JsxCompatMode, unsupported_with_vapor};
 use crate::diagnostics::JsxDiagnostic;

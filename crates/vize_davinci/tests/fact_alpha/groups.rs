@@ -7,7 +7,7 @@ use vize_davinci::fact::{
 };
 use vize_davinci::folio::Folio;
 use vize_davinci::pass::AnalysisId;
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 pub type Words = [&'static str];
 

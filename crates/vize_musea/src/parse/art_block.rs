@@ -1,6 +1,6 @@
-//! The `<art>` custom block as an S1 surface tree.
+//! The `<art>` custom block as an L1 surface tree.
 //!
-//! S0 hands over the block's whole element extent; S1 parses it into one
+//! L0 hands over the block's whole element extent; L1 parses it into one
 //! lossless tree whose root is the `<art>` element. Metadata reads the open
 //! tag's attribute tokens, and variants are the tree's `<variant>` elements
 //! (see [`super::variant`]) — no byte re-scan of the block.
@@ -9,13 +9,13 @@ use super::DefineArtMetadata;
 use super::attrs::{attr_value, has_attr};
 use super::status::{classify_status, is_unknown_status, unknown_status_warning};
 use crate::types::{ArtMetadata, ArtParseError, ArtStatus};
-use vize_s0::Allocator;
-use vize_s1::{Element, OpenTag, SurfaceChild, SurfaceTree};
+use vize_l0::Allocator;
+use vize_l1::{Element, OpenTag, SurfaceChild, SurfaceTree};
 
-/// The `<art>` element at the root of the block's S1 tree.
+/// The `<art>` element at the root of the block's L1 tree.
 ///
-/// The S0 frame starts at `<art`, so the first root child is the element in
-/// every case S1 can build one; a frame S1 reads differently (the splitter's
+/// The L0 frame starts at `<art`, so the first root child is the element in
+/// every case L1 can build one; a frame L1 reads differently (the splitter's
 /// tag-name alphabet is wider than HTML's, e.g. `<art:x>`) has no `<art>`.
 pub(crate) fn art_element<'t, 'a>(tree: &'t SurfaceTree<'a>) -> Option<&'t Element<'a>> {
     match tree.children.first()? {
@@ -31,7 +31,7 @@ pub(crate) fn parse_metadata<'a>(
     open: &OpenTag<'a>,
     define_art: Option<&DefineArtMetadata<'a>>,
     filename: &str,
-) -> Result<(ArtMetadata<'a>, vize_s0::Vec<'a, &'a str>), ArtParseError> {
+) -> Result<(ArtMetadata<'a>, vize_l0::Vec<'a, &'a str>), ArtParseError> {
     let title = attr_value(open, "title")
         .or_else(|| define_art.and_then(|metadata| metadata.title))
         .or_else(|| define_art.and_then(|metadata| metadata.component_name))
@@ -46,7 +46,7 @@ pub(crate) fn parse_metadata<'a>(
         attr_value(open, "category").or_else(|| define_art.and_then(|metadata| metadata.category));
 
     // Tags are comma-separated slices of the attribute value.
-    let mut tags = vize_s0::Vec::new_in(&allocator);
+    let mut tags = vize_l0::Vec::new_in(&allocator);
     if let Some(tags_str) = attr_value(open, "tags") {
         for tag in tags_str.split(',') {
             let trimmed = tag.trim();
@@ -63,7 +63,7 @@ pub(crate) fn parse_metadata<'a>(
         .or_else(|| define_art.and_then(|metadata| metadata.status.map(classify_status)))
         .unwrap_or_default();
 
-    let mut warnings = vize_s0::Vec::new_in(&allocator);
+    let mut warnings = vize_l0::Vec::new_in(&allocator);
     if let Some(value) = attr_value(open, "status").filter(|value| is_unknown_status(value)) {
         warnings.push(unknown_status_warning(allocator, filename, value));
     } else if attr_status.is_none()
@@ -114,19 +114,19 @@ fn parse_status(open: &OpenTag<'_>) -> Option<ArtStatus> {
 mod tests {
     use super::{art_element, parse_metadata, parse_status};
     use crate::types::ArtStatus;
-    use vize_s0::Allocator;
-    use vize_s1::parse;
+    use vize_l0::Allocator;
+    use vize_l1::parse;
 
-    fn with_art<R>(source: &str, check: impl FnOnce(&Allocator, &vize_s1::Element<'_>) -> R) -> R {
+    fn with_art<R>(source: &str, check: impl FnOnce(&Allocator, &vize_l1::Element<'_>) -> R) -> R {
         let allocator = Allocator::new();
         let (tree, _) = parse(&allocator, source);
         let art = art_element(&tree).expect("an <art> root element");
         check(&allocator, art)
     }
 
-    /// The block geometry the pre-S1 snapshot pinned — the open tag's
+    /// The block geometry the pre-L1 snapshot pinned — the open tag's
     /// attribute text, the contents between the tags and their offset —
-    /// now read off the S1 tree's tokens.
+    /// now read off the L1 tree's tokens.
     #[derive(Debug)]
     #[expect(dead_code, reason = "read through the Debug snapshot")]
     struct BlockInfo<'a> {
@@ -141,9 +141,9 @@ mod tests {
         let source = r#"<art title="Test"><variant name="A"></variant></art>"#;
         let (tree, _) = parse(&allocator, source);
         let art = art_element(&tree).expect("art");
-        let frame = vize_s0::SourceRoot::new(source).unwrap().whole_block();
+        let frame = vize_l0::SourceRoot::new(source).unwrap().whole_block();
         let at = |slice: &str| frame.offset_of(slice).unwrap() as usize;
-        let vize_s1::ElementClose::Present(close) = &art.close else {
+        let vize_l1::ElementClose::Present(close) = &art.close else {
             panic!("closed <art>");
         };
         let name_end = at(art.open.lt_name.text) + art.open.lt_name.text.len();

@@ -1,5 +1,5 @@
 use vize_armature::patterns::{MatchPattern, PatternKind, PatternProperty, PatternRest};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::Selector;
 

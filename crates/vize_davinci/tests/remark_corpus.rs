@@ -7,7 +7,7 @@ use vize_davinci::folio::remarks::diff::{ChangeKind, diff_corpus};
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::pass::RemarkKind;
 use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 fn remark(kind: RemarkKind, name: &str, span: (u32, u32), blocker: Option<&str>) -> RecordedRemark {
     RecordedRemark {

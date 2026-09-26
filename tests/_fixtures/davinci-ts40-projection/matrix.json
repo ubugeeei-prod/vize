@@ -8,7 +8,7 @@
     "no timestamps or process-local identifiers"
   ],
   "unproven": [
-    "Davinci or S2 projection parity",
+    "Davinci or L2 projection parity",
     "full-corpus vize check diagnostic parity",
     "all tsgo Content Mapper editor features",
     "static slot-name navigation mappings outside Content Mapper",

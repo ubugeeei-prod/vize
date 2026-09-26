@@ -6,7 +6,7 @@ use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::PropertyId;
 use lightningcss::rules::CssRule as LCssRule;
 use lightningcss::stylesheet::StyleSheet;
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 

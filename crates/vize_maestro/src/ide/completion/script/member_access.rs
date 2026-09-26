@@ -74,7 +74,7 @@ fn reactive_object_key_completions(script_content: &str, name: &str) -> Vec<Comp
 fn reactive_object_initializer<'a>(script_content: &'a str, name: &str) -> Option<&'a str> {
     for callee in ["reactive", "shallowReactive"] {
         for keyword in ["const", "let"] {
-            let needle = vize_s0::cstr!("{keyword} {name} = {callee}(");
+            let needle = vize_l0::cstr!("{keyword} {name} = {callee}(");
             let Some((_, after)) = script_content.split_once(needle.as_str()) else {
                 continue;
             };

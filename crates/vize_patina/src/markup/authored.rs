@@ -1,22 +1,22 @@
-//! Source-shaped S1 projection retained by the S2 markup document.
+//! Source-shaped L1 projection retained by the L2 markup document.
 //!
-//! S2 may introduce table owners and the normal S1 tree may implicitly close
+//! L2 may introduce table owners and the normal L1 tree may implicitly close
 //! nested interactive tags. Content-model consumers instead read the authored
 //! parent/child relation, through the same typed element facade and decoders.
 
 use super::element::queries::is_lint_component;
 use super::element::{MarkupElement, MarkupElementInner};
-use super::s2::S2Markup;
-use super::s2::binding::is_consumed_spelling;
-use super::s2::surface::{SurfaceDirective, offset_in, token_range};
+use super::l2::L2Markup;
+use super::l2::binding::is_consumed_spelling;
+use super::l2::surface::{SurfaceDirective, offset_in, token_range};
 use super::{MarkupAttribute, MarkupElementKind, MarkupNode, MarkupText};
 use crate::ir::ByteRange;
+use vize_l1::{Attribute, Element, SurfaceChild};
 use vize_relief::Namespace;
-use vize_s1::{Attribute, Element, SurfaceChild};
 
 fn wrap<'a>(
     element: &'a Element<'a>,
-    doc: &'a S2Markup<'a>,
+    doc: &'a L2Markup<'a>,
     inherited: bool,
     parent_ns: Namespace,
 ) -> (MarkupElement<'a>, bool, Namespace) {
@@ -27,9 +27,9 @@ fn wrap<'a>(
             .iter()
             .any(|attr| attr.name.text == "v-pre");
     let frozen = inherited || opens_v_pre;
-    let ns = if vize_s0::is_svg_tag(element.tag()) {
+    let ns = if vize_l0::is_svg_tag(element.tag()) {
         Namespace::Svg
-    } else if vize_s0::is_math_ml_tag(element.tag()) {
+    } else if vize_l0::is_math_ml_tag(element.tag()) {
         Namespace::MathMl
     } else {
         parent_ns
@@ -58,7 +58,7 @@ fn children_ns(ns: Namespace, tag: &str) -> Namespace {
 
 pub(super) fn walk_tree<'a>(
     children: &'a [SurfaceChild<'a>],
-    doc: &'a S2Markup<'a>,
+    doc: &'a L2Markup<'a>,
     frozen: bool,
     enter: &mut impl FnMut(MarkupElement<'a>),
     exit: &mut impl FnMut(MarkupElement<'a>),
@@ -68,7 +68,7 @@ pub(super) fn walk_tree<'a>(
 
 fn walk_elements<'a>(
     children: &'a [SurfaceChild<'a>],
-    doc: &'a S2Markup<'a>,
+    doc: &'a L2Markup<'a>,
     frozen: bool,
     ns: Namespace,
     enter: &mut impl FnMut(MarkupElement<'a>),
@@ -78,7 +78,7 @@ fn walk_elements<'a>(
         if let SurfaceChild::Element(element) = child {
             let (node, frozen, ns) = wrap(element, doc, frozen, ns);
             enter(node);
-            vize_s0::ensure_sufficient_stack(|| {
+            vize_l0::ensure_sufficient_stack(|| {
                 walk_elements(
                     &element.children,
                     doc,
@@ -112,7 +112,7 @@ pub(super) fn kind(element: &Element<'_>, frozen: bool) -> MarkupElementKind {
     }
 }
 
-pub(super) fn range(element: &Element<'_>, doc: &S2Markup<'_>) -> ByteRange {
+pub(super) fn range(element: &Element<'_>, doc: &L2Markup<'_>) -> ByteRange {
     let start = offset_in(doc.source, element.open.lt_name.text);
     let end = token_range(doc.source, &element.open.gt).end;
     ByteRange::new(start, end)
@@ -133,7 +133,7 @@ pub(super) fn consumed(attr: &Attribute<'_>, frozen: bool, opens_v_pre: bool) ->
 
 pub(super) fn walk_attributes<'a>(
     element: &'a Element<'a>,
-    doc: &'a S2Markup<'a>,
+    doc: &'a L2Markup<'a>,
     frozen: bool,
     opens_v_pre: bool,
     visitor: &mut impl FnMut(MarkupAttribute<'a>),
@@ -150,7 +150,7 @@ pub(super) fn walk_attributes<'a>(
 
 pub(super) fn walk_children<'a>(
     element: &'a Element<'a>,
-    doc: &'a S2Markup<'a>,
+    doc: &'a L2Markup<'a>,
     frozen: bool,
     ns: Namespace,
     visitor: &mut impl FnMut(MarkupNode<'a>),
@@ -200,7 +200,7 @@ pub(super) fn walk_children<'a>(
 /// Descendant spellings keep their authored names unchanged.
 pub(super) fn frozen_name<'a>(
     attr: &'a Attribute<'a>,
-    doc: &'a S2Markup<'a>,
+    doc: &'a L2Markup<'a>,
     opens_v_pre: bool,
 ) -> &'a str {
     if opens_v_pre {

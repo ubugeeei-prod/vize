@@ -67,15 +67,15 @@ jobs:
       - name: Run P3-15 scheduling contract differential
         working-directory: tests/formal/impeto
         run: lake exe impetoRef --check-schedule-fixtures
-      - name: Run C-23 independent S3 folio checker
+      - name: Run C-23 independent L3 folio checker
         working-directory: tests/formal/impeto
         run: lake exe impetoRef --check-folios
       - name: Check Rust reactivity lattice fact provenance
         run: cargo test -p vize_impeto --test lattice_reference_fixture
-      - name: Check Rust S3 graph and value fixture provenance
-        run: cargo test -p vize_s2_to_s3 --test lean_reference_fixture
+      - name: Check Rust L3 graph and value fixture provenance
+        run: cargo test -p vize_l2_to_l3 --test lean_reference_fixture
       - name: Run TS-28 compiled backend trace
-        run: cargo test -p vize_atelier_vapor --test davinci_s3_compiled_trace
+        run: cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace
       - name: Run TS-30 mounted backend behavior
         run: cargo test -p vize_atelier_vapor --test davinci_mounted_behavior
       - name: Run TS-33 upstream Vapor behavioral parity

@@ -7,7 +7,7 @@ const remark = (
   span: [number, number],
   args: SpolveroRemark["args"] = [],
 ): SpolveroRemark => ({
-  stage: "s2",
+  stage: "l2",
   pass: "hoist-static",
   kind,
   name,

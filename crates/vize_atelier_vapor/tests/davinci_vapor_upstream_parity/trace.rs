@@ -83,7 +83,7 @@ pub(super) fn assert_native_upstream_trace_with_targets(
     assert_eq!(
         WalkCounts::snapshot().since(before).total_walks(),
         0,
-        "{source}: TS-33 must exercise native S3"
+        "{source}: TS-33 must exercise native L3"
     );
     let vize = trace(
         "davinci-mounted-trace.mjs",
@@ -100,7 +100,7 @@ pub(super) fn assert_native_upstream_trace_with_targets(
         "davinci-upstream-vapor-trace.mjs",
         json!({"source": source, "context": context, "steps": steps, "externalTargets": external_targets}),
     );
-    assert_eq!(vize, expected, "{source}: Vize native S3 trace");
+    assert_eq!(vize, expected, "{source}: Vize native L3 trace");
     assert_eq!(
         upstream, expected,
         "{source}: official compiler-vapor trace"

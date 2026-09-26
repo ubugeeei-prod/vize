@@ -9,7 +9,7 @@
 //! TS-53 test asserts for every snapshot.
 
 use crate::diagnostic::Severity;
-use vize_s0::String;
+use vize_l0::String;
 
 /// How a run of output is styled.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -2,8 +2,9 @@ file	spelling
 crates/vize_atelier_core/src/codegen/tests.rs	@click.stop
 crates/vize_atelier_core/src/codegen/tests.rs	@click.once
 crates/vize_atelier_core/src/codegen/tests.rs	@click.capture
-crates/vize_atelier_core/tests/davinci_s2_transform_vue2.rs	@click.native
-crates/vize_atelier_core/tests/davinci_s2_transform_vue2.rs	@keyup.13
+crates/vize_atelier_core/tests/davinci_l2_transform_vue2.rs	@click.native
+crates/vize_atelier_core/tests/davinci_l2_transform_vue2.rs	@keyup.13
+crates/vize_atelier_core/tests/l2_support/battery.rs	@click.stop.prevent
 crates/vize_atelier_core/tests/legacy_event_modifiers.rs	@keyup.13
 crates/vize_atelier_core/tests/legacy_event_modifiers.rs	@keyup.enter
 crates/vize_atelier_core/tests/legacy_event_modifiers.rs	@keyup.{code}
@@ -16,4 +17,3 @@ crates/vize_atelier_core/tests/legacy_event_modifiers.rs	@keyup.enter
 crates/vize_atelier_core/tests/legacy_event_modifiers.rs	@keyup.enter
 crates/vize_atelier_core/tests/legacy_event_modifiers.rs	@click.native
 crates/vize_atelier_core/tests/legacy_event_modifiers.rs	@click.native
-crates/vize_atelier_core/tests/s2_support/battery.rs	@click.stop.prevent

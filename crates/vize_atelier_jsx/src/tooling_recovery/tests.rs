@@ -1,6 +1,6 @@
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use crate::{JsxLang, lower_source, lower_source_for_typecheck};
-use vize_s0::{Allocator, cstr};
+use vize_l0::{Allocator, cstr};
 
 #[test]
 fn incomplete_members_preserve_diagnostics_and_all_authored_root_spans() {

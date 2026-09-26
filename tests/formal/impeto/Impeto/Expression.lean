@@ -2,7 +2,7 @@ import Lean.Data.Json
 
 /-!
 Independent evaluator for the TS-29 expression subset. Template expressions
-reach S3 as raw `js` operand text. This module parses a closed JavaScript
+reach L3 as raw `js` operand text. This module parses a closed JavaScript
 subset and evaluates it over JSON state with JavaScript semantics. The subset
 has literals, lexical names, member reads, `.length`, `!`, unary `-`, `*`,
 `%`, `+`, `-`, relational operators, strict equality, `&&`, `||` and the

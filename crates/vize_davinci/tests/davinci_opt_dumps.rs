@@ -14,7 +14,7 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
-const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio\n";
+const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio\nPipeline selectors: l0..l4, l1-to-l2, l2-to-l3 (legacy s names accepted).\n";
 
 /// A canonical `[budget-observer]` page - the smallest committed-format
 /// artifact a pipeline can run over.
@@ -76,7 +76,7 @@ fn folio_dir_writes_one_page_per_pass() {
     let output = run(
         &[
             "--pipeline",
-            "s2(alpha,beta)",
+            "l2(alpha,beta)",
             "--stage",
             "budget-observer",
             "--folio-dir",
@@ -89,7 +89,7 @@ fn folio_dir_writes_one_page_per_pass() {
     assert_eq!(
         stderr_of(&output),
         format!(
-            "davinci-opt: pipeline s2(alpha,beta): walks=1 passes=2\n\
+            "davinci-opt: pipeline l2(alpha,beta): walks=1 passes=2\n\
              davinci-opt: folio-dir {}: 2 page(s)\n",
             dir.display()
         )
@@ -126,7 +126,7 @@ fn folio_after_change_gates_noop_passes_to_an_empty_directory() {
     assert_eq!(
         stderr_of(&output),
         format!(
-            "davinci-opt: pipeline s2(alpha,beta): walks=1 passes=2\n\
+            "davinci-opt: pipeline l2(alpha,beta): walks=1 passes=2\n\
              davinci-opt: folio-dir {}: 0 page(s)\n",
             dir.display()
         )
@@ -193,7 +193,7 @@ fn timing_json_satisfies_the_p0_11_schema() {
     assert_eq!(stdout_of(&output), BUDGET);
     assert_eq!(
         stderr_of(&output),
-        "davinci-opt: pipeline s2(alpha,beta): walks=1 passes=2\n"
+        "davinci-opt: pipeline l2(alpha,beta): walks=1 passes=2\n"
     );
 
     let text = std::fs::read_to_string(&path).expect("timing export reads");

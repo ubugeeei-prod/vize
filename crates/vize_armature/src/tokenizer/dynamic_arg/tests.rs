@@ -3,8 +3,8 @@ use super::super::{
     tests::{TestCallbacks, TokenEvent},
 };
 use super::scan_argument;
+use vize_l0::cstr;
 use vize_relief::ErrorCode;
-use vize_s0::cstr;
 
 #[test]
 fn emits_one_complete_argument_and_preserves_modifiers() {

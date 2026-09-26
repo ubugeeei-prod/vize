@@ -10,7 +10,7 @@ pub(in crate::wasm) use codegen_options::{
 };
 pub use free_fns::*;
 
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 use wasm_bindgen::prelude::*;
 
 use crate::template_syntax::resolve_template_syntax;
@@ -99,7 +99,7 @@ impl Compiler {
     /// Parse SFC (.vue file)
     #[wasm_bindgen(js_name = "parseSfc")]
     pub fn parse_sfc_method(&self, source: &str, options: JsValue) -> Result<JsValue, JsValue> {
-        let filename: vize_s0::CompactString =
+        let filename: vize_l0::CompactString =
             js_sys::Reflect::get(&options, &JsValue::from_str("filename"))
                 .ok()
                 .and_then(|v| v.as_string())
@@ -152,7 +152,7 @@ impl Compiler {
         let parsed = parse_compiler_options(&options);
         let opts = parsed.options;
 
-        let filename: vize_s0::CompactString = opts
+        let filename: vize_l0::CompactString = opts
             .filename
             .clone()
             .unwrap_or_else(|| "anonymous.vue".to_string())

@@ -1,7 +1,7 @@
 use oxc_ast::ast::Expression;
 use oxc_span::{GetSpan, SourceType, Span};
 use oxc_syntax::identifier::{is_identifier_part, is_identifier_start};
-use vize_s0::{
+use vize_l0::{
     String,
     expression_guard::{expression_is_safe_to_parse, is_expression_trailing_trivia},
 };
@@ -55,7 +55,7 @@ impl PatternParser<'_> {
         if self.eat(token) {
             Ok(())
         } else {
-            Err(self.error(&vize_s0::cstr!("Expected {token} in pattern.")))
+            Err(self.error(&vize_l0::cstr!("Expected {token} in pattern.")))
         }
     }
 
@@ -209,16 +209,16 @@ impl PatternParser<'_> {
         kind: &str,
     ) -> Result<Expression<'a>> {
         if !expression_is_safe_to_parse(source) {
-            return Err(self.error(&vize_s0::cstr!("Unsafe or unbalanced {kind} expression.")));
+            return Err(self.error(&vize_l0::cstr!("Unsafe or unbalanced {kind} expression.")));
         }
         let expression = oxc_parser::Parser::new(&self.js, source, SourceType::ts())
             .parse_expression()
-            .map_err(|_| self.error(&vize_s0::cstr!("Invalid {kind} expression.")))?;
+            .map_err(|_| self.error(&vize_l0::cstr!("Invalid {kind} expression.")))?;
         let trailing = source
             .get(expression.span().end as usize..)
             .unwrap_or_default();
         if !is_expression_trailing_trivia(trailing) {
-            return Err(self.error(&vize_s0::cstr!("Unexpected token after {kind} expression.")));
+            return Err(self.error(&vize_l0::cstr!("Unexpected token after {kind} expression.")));
         }
         Ok(expression)
     }

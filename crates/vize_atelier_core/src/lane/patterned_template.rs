@@ -8,7 +8,7 @@ mod syntax;
 use vize_armature::patterns::{
     MatchArm, PatternKind, attribute_source_offset, parse_match_pattern,
 };
-use vize_s0::{String, Vec, cstr, ensure_sufficient_stack};
+use vize_l0::{String, Vec, cstr, ensure_sufficient_stack};
 
 use crate::{
     DirectiveNode, ElementNode, ErrorCode, PropNode, RootNode, SourceLocation, TemplateChildNode,

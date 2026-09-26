@@ -13,7 +13,7 @@
 use std::path::{Path, PathBuf};
 
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, project_virtual_root};
-use vize_s0::{
+use vize_l0::{
     corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable},
     cstr,
 };

@@ -8,7 +8,7 @@
 //! Vuestic Admin's `VaSelect #content` loop.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
-use vize_s0::String;
+use vize_l0::String;
 
 mod v_for_any;
 

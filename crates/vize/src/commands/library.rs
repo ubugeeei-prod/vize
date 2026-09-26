@@ -30,7 +30,7 @@ use std::path::{Path, PathBuf};
 use std::collections::BTreeMap;
 
 use clap::{Args, Subcommand};
-use vize_s0::String;
+use vize_l0::String;
 
 use self::error::{LibError, LibResult};
 use self::fs_ops::ensure_project_path;
@@ -116,7 +116,7 @@ pub struct KindFilter {
 
 fn parse_source(value: &str) -> Result<Source, String> {
     Source::parse(value)
-        .ok_or_else(|| vize_s0::cstr!("{value:?} is not ui, composable, or an @namespace"))
+        .ok_or_else(|| vize_l0::cstr!("{value:?} is not ui, composable, or an @namespace"))
 }
 
 #[derive(Args, Debug, Clone)]
@@ -211,7 +211,7 @@ impl LibContext {
         let mut namespaces = BTreeMap::new();
         for (name, entry) in &config.registries {
             if !resolve::is_namespace(name) {
-                return Err(LibError::new(vize_s0::cstr!(
+                return Err(LibError::new(vize_l0::cstr!(
                     "lib.registries key {name:?} must be an @namespace"
                 )));
             }

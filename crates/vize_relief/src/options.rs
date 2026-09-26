@@ -1,8 +1,8 @@
 //! Compiler options.
 
 use serde::{Deserialize, Serialize};
-use vize_s0::String;
-use vize_s0::config::VueVersion;
+use vize_l0::String;
+use vize_l0::config::VueVersion;
 
 mod bindings;
 mod custom_elements;
@@ -106,7 +106,7 @@ impl Default for ParserOptions {
             is_native_tag: None,
             is_custom_element: None,
             custom_renderer: false,
-            is_void_tag: vize_s0::is_void_tag,
+            is_void_tag: vize_l0::is_void_tag,
             get_namespace: |_, _| crate::Namespace::Html,
             on_error: None,
             on_warn: None,

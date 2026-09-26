@@ -130,7 +130,7 @@ impl VirtualDocument {
         }
     }
 
-    /// Publish `content` as the S4 emission document. The text is unchanged.
+    /// Publish `content` as the L4 emission document. The text is unchanged.
     /// The mapping stays the one the editor recorded: a generated range that
     /// sits inside the previous row is not folded into a sub-span.
     pub(crate) fn from_emission(

@@ -18,7 +18,7 @@
 //! - **Reach floors.** `docs/davinci/plan/reach-budgets.toml` `[reach]` pins, per
 //!   shape, the accepted-template count on the committed fixtures. Floors
 //!   only rise (the ratchet); a regression fails here.
-//! - **Production parity.** Every DOM template the S2 emitter accepted is
+//! - **Production parity.** Every DOM template the L2 emitter accepted is
 //!   compiled again with the legacy lane forced
 //!   (`vize_atelier_dom::differential::with_legacy_lane`) and the complete
 //!   `compile_sfc` modules — code, CSS, errors, warnings — must be byte
@@ -59,7 +59,7 @@ use davinci_production_reach::parity::parity_failures;
 use davinci_production_reach::shapes::{Shape, compile, explicit_vapor_source};
 use davinci_production_reach::tally::{Lane, Tally, classify, classify_route, floors};
 use vize_atelier_sfc::{SfcCompileResult, SfcParseOptions, parse_sfc};
-use vize_s0::profiler::global_profiler;
+use vize_l0::profiler::global_profiler;
 
 // The production reach and focused parity tests all read the global profiler.
 static PROFILER_TEST_LOCK: Mutex<()> = Mutex::new(());
@@ -455,7 +455,7 @@ fn sweep(root: &Path, files: &[PathBuf]) -> Sweep {
             .to_string_lossy()
             .into_owned();
         let parse_options = SfcParseOptions {
-            filename: vize_s0::String::from(name.as_str()),
+            filename: vize_l0::String::from(name.as_str()),
             ..Default::default()
         };
         let Ok(descriptor) = parse_sfc(&source, parse_options) else {
@@ -527,7 +527,7 @@ fn measure(
 }
 
 /// The Croquis projection the production selector still refuses (perf):
-/// how many refused templates S2 would emit, each held to whole-module
+/// how many refused templates L2 would emit, each held to whole-module
 /// parity with the legacy lane.
 fn measure_projection(
     descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,

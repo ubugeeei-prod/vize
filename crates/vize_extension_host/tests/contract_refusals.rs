@@ -12,7 +12,7 @@ use vize_extension_host::{
     Capability, ContractError, Diagnostic, GuestError, InputDialectGuest, LoweredBlock, Session,
     Severity, SourceBlock, Span, Stage,
 };
-use vize_s0::String;
+use vize_l0::String;
 
 /// A guest that offers `features` at `protocol_version` and answers every
 /// block with the in-tree Vue answer passed through `tamper`.
@@ -57,7 +57,7 @@ impl InputDialectGuest for Stub {
 
 fn handshake(stub: Stub) -> String {
     let error = Session::open(stub).expect_err("the offer must be refused");
-    vize_s0::cstr!("{error}")
+    vize_l0::cstr!("{error}")
 }
 
 #[test]
@@ -120,7 +120,7 @@ fn answer(stub: Stub, lang: Option<&str>) -> Result<(), String> {
     session
         .lower_block(&block)
         .map(|_| ())
-        .map_err(|error| vize_s0::cstr!("{error}"))
+        .map_err(|error| vize_l0::cstr!("{error}"))
 }
 
 #[test]
@@ -237,7 +237,7 @@ fn guest_failures_surface_verbatim() {
         )))
     );
     assert_eq!(
-        vize_s0::cstr!("{error}"),
+        vize_l0::cstr!("{error}"),
         "guest trapped: wasm `unreachable` instruction executed"
     );
 }

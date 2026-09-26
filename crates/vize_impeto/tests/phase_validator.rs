@@ -2,7 +2,7 @@ use vize_impeto::op::{
     EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
 };
 use vize_impeto::verify::verify;
-use vize_s0::{Allocator, Span, String, cstr};
+use vize_l0::{Allocator, Span, String, cstr};
 
 fn base<'a>(allocator: &'a Allocator, phase: Phase) -> Program<'a> {
     let mut program = Program::new(allocator, phase);
@@ -80,8 +80,8 @@ fn unresolved_state_edges_fail_exactly() {
     assert_eq!(
         messages(&program),
         [
-            "S3V004 @0:0 state edge source op#42 does not resolve",
-            "S3V004 @0:0 state edge target op#99 does not resolve",
+            "L3V004 @0:0 state edge source op#42 does not resolve",
+            "L3V004 @0:0 state edge target op#99 does not resolve",
         ]
     );
 }
@@ -100,8 +100,8 @@ fn region_nesting_failures_name_the_parent_or_owner() {
     assert_eq!(
         messages(&program),
         [
-            "S3V006 @80:99 region r#2 escapes parent region r#1",
-            "S3V006 @80:99 region r#2 is owned by op#0, but the owner lives in r#0",
+            "L3V006 @80:99 region r#2 escapes parent region r#1",
+            "L3V006 @80:99 region r#2 is owned by op#0, but the owner lives in r#0",
         ]
     );
 }
@@ -125,7 +125,7 @@ fn effect_scopes_must_contain_their_edges() {
 
     assert_eq!(
         messages(&program),
-        ["S3V007 @20:60 edge op#1 -> op#3 leaves effect scope fx#0"]
+        ["L3V007 @20:60 edge op#1 -> op#3 leaves effect scope fx#0"]
     );
 }
 
@@ -141,6 +141,6 @@ fn scheduled_phase_rejects_back_edges() {
 
     assert_eq!(
         messages(&program),
-        ["S3V008 @0:0 scheduled edge op#2 -> op#1 points backward or to itself"]
+        ["L3V008 @0:0 scheduled edge op#2 -> op#1 points backward or to itself"]
     );
 }

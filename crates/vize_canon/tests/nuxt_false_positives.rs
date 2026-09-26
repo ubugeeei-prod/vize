@@ -1,7 +1,7 @@
 #![expect(clippy::expect_used, clippy::unwrap_used, reason = "tests panic")]
 use std::path::Path;
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait, SfcTypeCheckOptions, type_check_sfc};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 #[test]
 fn enum_ref_template_comparisons_widen_initial_member() {

@@ -28,11 +28,11 @@ fn guard_line_comments_keep_narrowing_and_authored_type_errors() {
                 Some(("missing", 2339)),
             ),
         ] {
-            let source = vize_s0::cstr!(
+            let source = vize_l0::cstr!(
                 "<script setup lang=\"ts\">\nconst state = undefined as string | undefined;\n</script>\n<template v-match=\"state\">\n<p v-when=\"const text if (text !== undefined // guard ){newline}{continuation})\">{{{{ text.{method}() }}}}</p>\n<p v-when=\"_\"/>\n</template>"
             );
-            let name = vize_s0::cstr!("Case{index}{case}.vue");
-            write(project.path(), &vize_s0::cstr!("src/{name}"), &source);
+            let name = vize_l0::cstr!("Case{index}{case}.vue");
+            write(project.path(), &vize_l0::cstr!("src/{name}"), &source);
             if let Some((needle, code)) = diagnostic {
                 let before = &source[..source.find(needle).unwrap()];
                 let before = before

@@ -7,7 +7,7 @@ use crate::{
     RootNode, RuntimeHelper, TemplateChildNode,
     options::{CodegenExperimentalOptions, CodegenOptions},
 };
-use vize_s0::profile;
+use vize_l0::profile;
 
 use super::children::is_directive_comment;
 use super::context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
@@ -34,7 +34,7 @@ pub(super) fn generate_with_sections_and_options(
         experimental_options,
     );
     ctx.source = match source_text {
-        Some(text) => vize_s0::String::new(text),
+        Some(text) => vize_l0::String::new(text),
         None => root.source.into(),
     };
     ctx.static_cache = ctx.options.inline || !root.hoists.is_empty();

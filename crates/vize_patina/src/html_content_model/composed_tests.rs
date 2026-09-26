@@ -5,7 +5,7 @@
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod composition_tests {
     use crate::html_content_model::{NodeKind, Skeleton, authored_skeleton, compose};
-    use vize_s0::Allocator;
+    use vize_l0::Allocator;
 
     /// Compose `files` (name, template) where a component tag resolves to the
     /// file of the same name; render each finding as

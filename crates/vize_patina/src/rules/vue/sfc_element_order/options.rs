@@ -1,4 +1,4 @@
-use vize_s0::{String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 static DEFAULT_HELP_ORDER: &str =
     "Recommended order: <script> and <template> (either order) -> <style>";

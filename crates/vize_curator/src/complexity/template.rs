@@ -1,12 +1,12 @@
 //! The per-component template complexity section: own and rendered scores
-//! from the S2 facts, and where each component's complexity comes from.
+//! from the L2 facts, and where each component's complexity comes from.
 
 use vize_croquis_cf::{
     ComplexityContributor, ComponentComplexity,
     TEMPLATE_COGNITIVE_WARN_ABOVE as COGNITIVE_WARN_ABOVE,
     TEMPLATE_CYCLOMATIC_WARN_ABOVE as CYCLOMATIC_WARN_ABOVE,
 };
-use vize_s0::{String, appendln, appends};
+use vize_l0::{String, appendln, appends};
 
 use super::escape_table_cell;
 

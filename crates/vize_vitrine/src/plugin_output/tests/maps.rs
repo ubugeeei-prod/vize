@@ -31,7 +31,7 @@ fn whitespace_deletion_rebases_following_anchors_exactly() {
     let source = "<div>{{ label }}</div>";
     let mut document = vize_atelier_core::codegen::document::EmitDocument::default();
     document.push_str("const a =   ");
-    document.push_named("label", vize_s0::Span::new(8, 13), "label");
+    document.push_named("label", vize_l0::Span::new(8, 13), "label");
     document.push_str(";\n");
     let mut compiled = simple(document.as_str());
     compiled.map = Some(serde_json::from_str(&document.source_map("Example.vue", source)).unwrap());

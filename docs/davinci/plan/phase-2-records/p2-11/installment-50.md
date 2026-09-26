@@ -10,11 +10,11 @@ resolution, prop and child emission around the wrapper.
 
 The durable witnesses are:
 
-- [`davinci_s2_once.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_once.rs)
+- [`davinci_s2_once.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_once.rs)
   - keeps component `v-once` output byte-identical to the shipped lane.
-- [`once.rs`](../../../../../crates/vize_s1_to_s2/src/emit/once.rs)
+- [`once.rs`](../../../../../crates/vize_l1_to_l2/src/emit/once.rs)
   - owns the cache wrapper emission.
-- [`component.rs`](../../../../../crates/vize_s1_to_s2/src/emit/component.rs)
+- [`component.rs`](../../../../../crates/vize_l1_to_l2/src/emit/component.rs)
   - threads component emission into the once wrapper path.
 
 This installment does not tick P2-11. Component once output is covered; the

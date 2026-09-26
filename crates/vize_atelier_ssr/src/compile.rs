@@ -1,6 +1,6 @@
 use crate::{
     SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions, SsrCompilerOptions,
-    s4::{self, SsrS4Request, SsrS4Selection},
+    l4::{self, SsrL4Request, SsrL4Selection},
 };
 use vize_atelier_core::{
     CompilerError, ErrorCode, Namespace, RootNode,
@@ -8,9 +8,9 @@ use vize_atelier_core::{
     options::{CustomElementMatcher, TemplateSyntaxMode},
     parser::parse_with_options_custom_elements_and_template_syntax,
 };
-use vize_s0::{Allocator, String, profile};
+use vize_l0::{Allocator, String, profile};
 
-pub use crate::s4::compile_s2_to_ssr;
+pub use crate::l4::compile_l2_to_ssr;
 
 /// Compile a Vue template for SSR with default options
 pub fn compile_ssr<'a>(
@@ -154,7 +154,7 @@ fn compile_ssr_inner<'a>(
     )
 }
 
-/// Which emitter owns a compile. Production always asks the S4 selector;
+/// Which emitter owns a compile. Production always asks the L4 selector;
 /// the differential battery pins the legacy walker on the same input.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum SsrLane {
@@ -198,10 +198,10 @@ pub(crate) fn compile_ssr_on_lane<'a>(
     }
 
     let selection = match lane {
-        SsrLane::Selected => s4::select_ssr_lane(
+        SsrLane::Selected => l4::select_ssr_lane(
             allocator,
             source,
-            &SsrS4Request {
+            &SsrL4Request {
                 options: &options,
                 experimental: &experimental_options,
                 template_syntax,
@@ -209,7 +209,7 @@ pub(crate) fn compile_ssr_on_lane<'a>(
             },
         ),
         #[cfg(any(test, feature = "davinci-differential"))]
-        SsrLane::LegacyOnly => SsrS4Selection::Legacy(s4::LegacyReason::Options),
+        SsrLane::LegacyOnly => SsrL4Selection::Legacy(l4::LegacyReason::Options),
     };
     #[cfg(feature = "davinci-differential")]
     if lane == SsrLane::Selected {
@@ -233,9 +233,9 @@ pub(crate) fn compile_ssr_on_lane<'a>(
     let mut errors = errors.to_vec();
     errors.extend(transform_errors);
     let codegen_result = match selection {
-        SsrS4Selection::Emitted(result) => result,
+        SsrL4Selection::Emitted(result) => result,
         other => {
-            if let SsrS4Selection::Rejected(diagnostics) = other {
+            if let SsrL4Selection::Rejected(diagnostics) = other {
                 errors.extend(diagnostics.into_iter().map(|diagnostic| {
                     CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
                 }));
@@ -254,17 +254,17 @@ pub(crate) fn compile_ssr_on_lane<'a>(
 }
 
 pub(crate) fn get_namespace(tag: &str, parent: Option<&str>) -> Namespace {
-    if vize_s0::is_svg_tag(tag) {
+    if vize_l0::is_svg_tag(tag) {
         return Namespace::Svg;
     }
-    if vize_s0::is_math_ml_tag(tag) {
+    if vize_l0::is_math_ml_tag(tag) {
         return Namespace::MathMl;
     }
     if let Some(parent_tag) = parent {
-        if vize_s0::is_svg_tag(parent_tag) && tag != "foreignObject" {
+        if vize_l0::is_svg_tag(parent_tag) && tag != "foreignObject" {
             return Namespace::Svg;
         }
-        if vize_s0::is_math_ml_tag(parent_tag) && tag != "annotation-xml" && tag != "foreignObject"
+        if vize_l0::is_math_ml_tag(parent_tag) && tag != "annotation-xml" && tag != "foreignObject"
         {
             return Namespace::MathMl;
         }

@@ -5,7 +5,7 @@ use sha2::{Digest, Sha256};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 pub(super) fn build(
     moonc: &Path,
@@ -65,7 +65,7 @@ pub(super) fn dependency_key(root: &Path) -> Result<String, HostError> {
     }
     let mut key = String::default();
     for byte in digest.finalize() {
-        vize_s0::append!(key, "{byte:02x}");
+        vize_l0::append!(key, "{byte:02x}");
     }
     Ok(key)
 }
@@ -97,7 +97,7 @@ fn collect(path: &Path, files: &mut Vec<PathBuf>) -> std::io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::dependency_key;
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     #[test]
     fn dependency_identity_tracks_contents_and_relative_names_not_scratch_paths() {

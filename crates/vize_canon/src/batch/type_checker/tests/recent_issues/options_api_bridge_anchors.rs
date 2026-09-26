@@ -18,7 +18,7 @@ use super::super::{
     BatchTypeChecker, create_project_case, relative_path, resolve_test_tsgo_binary,
 };
 use crate::batch::TypeChecker;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 /// A long template above the script block, so an authored offset and the
 /// matching generated offset can never coincide by accident.

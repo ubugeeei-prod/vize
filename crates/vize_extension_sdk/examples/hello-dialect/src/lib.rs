@@ -1,7 +1,7 @@
 //! Hello, dialect: the smallest input dialect built on `vize_extension_sdk`.
 //!
 //! A `lang="hello"` block lists one name per line; the dialect greets each.
-//! S1 records every line as one text token (tiling the block), S2 lowers the
+//! L1 records every line as one text token (tiling the block), L2 lowers the
 //! block to a list:
 //!
 //! ```text
@@ -23,9 +23,9 @@ use alloc::vec::Vec;
 
 use vize_extension_sdk::handshake::{Capability, Guest as Handshake};
 use vize_extension_sdk::input_lowering::{Guest as Lowering, LoweredBlock, SourceBlock};
-use vize_extension_sdk::pages::s1::{Node, SurfacePage, Token};
-use vize_extension_sdk::pages::s2::{Op, SemanticPage};
-use vize_extension_sdk::pages::{s1_page, s2_page};
+use vize_extension_sdk::pages::l1::{Node, SurfacePage, Token};
+use vize_extension_sdk::pages::l2::{Op, SemanticPage};
+use vize_extension_sdk::pages::{l1_page, l2_page};
 use vize_extension_sdk::types::Span;
 
 struct Hello;
@@ -75,8 +75,8 @@ impl Lowering for Hello {
             },
         };
         LoweredBlock {
-            surface: s1_page(SurfacePage { children: tokens }.text()),
-            semantic: s2_page(
+            surface: l1_page(SurfacePage { children: tokens }.text()),
+            semantic: l2_page(
                 SemanticPage {
                     ops: Vec::from([list]),
                 }

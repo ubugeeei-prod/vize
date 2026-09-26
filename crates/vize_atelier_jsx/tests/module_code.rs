@@ -5,7 +5,7 @@
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[test]
 fn module_code_preserves_authored_declarations_and_exports() {

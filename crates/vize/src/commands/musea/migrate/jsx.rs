@@ -10,7 +10,7 @@ use oxc_ast::ast::{
     Expression, JSXAttributeItem, JSXAttributeName, JSXAttributeValue, JSXChild, JSXElement,
     JSXElementName, JSXExpression, JSXFragment, JSXMemberExpression, JSXMemberExpressionObject,
 };
-use vize_s0::{String, append};
+use vize_l0::{String, append};
 
 /// Convert a JSX expression (element or fragment) to Vue template markup.
 ///

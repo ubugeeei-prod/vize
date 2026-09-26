@@ -5,12 +5,12 @@ use super::{
     parse, parse_document, parse_document_with_options, parse_with_options,
     parse_with_options_and_template_syntax,
 };
+use vize_l0::{Allocator, String, ToCompactString};
 use vize_relief::{
     ElementType, ExpressionNode, Namespace, PropNode, TemplateChildNode,
     errors::{CompilerError, ErrorCode},
     options::{ParserOptions, TemplateSyntaxMode, WhitespaceStrategy},
 };
-use vize_s0::{Allocator, String, ToCompactString};
 
 fn recovery_snapshot(src: &str, errors: &[CompilerError]) -> Vec<(ErrorCode, String, String)> {
     errors
@@ -2015,7 +2015,7 @@ fn test_document_mode_with_options() {
 /// Vue 2/3 treat `{{{ x }}}` as a `{{ }}` mustache plus trailing `}` text.
 #[test]
 fn triple_mustache_is_a_braced_mustache_outside_legacy_v1() {
-    use vize_s0::config::VueVersion;
+    use vize_l0::config::VueVersion;
 
     for dialect in [VueVersion::V3, VueVersion::V2] {
         let allocator = Allocator::new();

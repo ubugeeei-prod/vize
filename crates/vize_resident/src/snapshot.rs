@@ -1,5 +1,5 @@
 //! The snapshot tree (P5-5): Lean-style snapshot tasks at an SFC's natural
-//! joints — header → block → S2 region — below the salsa tier's block
+//! joints — header → block → L2 region — below the salsa tier's block
 //! firewall, with one reuse rule: **old syntax ≡ new syntax ⇒ adopt the old
 //! subtree**.
 //!
@@ -8,7 +8,7 @@
 //!   restarts the file: every old task is cancelled, nothing is adopted
 //!   (Lean's "header changed ⇒ restart").
 //! - **Block joint.** A block whose [`BlockSource`] is unchanged is adopted
-//!   whole — its S1 and S2 artifacts are shared, not recomputed — wherever it
+//!   whole — its L1 and L2 artifacts are shared, not recomputed — wherever it
 //!   moved. A changed block's old task is cancelled and a new one computed.
 //! - **Region joint.** A changed template block whose root splits into
 //!   regions ([`region`]) re-lowers only the regions whose syntax changed:
@@ -36,8 +36,8 @@ mod shift;
 )]
 type Shared<T> = std::sync::Arc<T>;
 
-use vize_s0::String;
-use vize_s1_to_s2::LegacyCaps;
+use vize_l0::String;
+use vize_l1_to_l2::LegacyCaps;
 
 use crate::artifact::{
     BlockArtifacts, BlockKind, BlockSource, PageArtifact, StageConfig, SurfaceArtifact,
@@ -50,9 +50,9 @@ use region::{RegionLowering, RegionSyntax, lower_region};
 /// a test substitutes a failing stage to exercise isolation.
 #[derive(Debug, Clone, Copy)]
 pub struct Stages {
-    /// The S1 artifact of a block.
+    /// The L1 artifact of a block.
     pub surface: fn(&BlockSource) -> Option<SurfaceArtifact>,
-    /// The S2 artifact of a block lowered whole.
+    /// The L2 artifact of a block lowered whole.
     pub page: fn(&BlockSource, StageConfig) -> Option<PageArtifact>,
     /// The lowering of one template region.
     pub region: fn(&str, &RegionSyntax, LegacyCaps) -> Option<RegionLowering>,
@@ -85,7 +85,7 @@ pub struct SnapshotStats {
     pub header: JointCounts,
     /// The block joint.
     pub blocks: JointCounts,
-    /// The S2 region joint.
+    /// The L2 region joint.
     pub regions: JointCounts,
 }
 

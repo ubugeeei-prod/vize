@@ -11,7 +11,7 @@
 )]
 
 use std::path::PathBuf;
-use vize_s0::String;
+use vize_l0::String;
 use vize_test_runner::{CompilerMode, run_fixture_tests};
 
 const MIN_VDOM_PASSED: usize = 459;
@@ -266,7 +266,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::{KNOWN_FAILURES, is_known_failure};
-    use vize_s0::FxHashSet;
+    use vize_l0::FxHashSet;
 
     #[test]
     fn tracks_the_current_known_failure_budget() {

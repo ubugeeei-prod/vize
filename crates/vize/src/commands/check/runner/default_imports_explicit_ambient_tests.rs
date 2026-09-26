@@ -1,7 +1,7 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::path::{Path, PathBuf};
 
-use vize_s0::path::canonicalize_non_verbatim;
+use vize_l0::path::canonicalize_non_verbatim;
 
 /// Per-test scratch directory under `target/vize-tests`, unique per process and case.
 fn unique_case_dir(name: &str) -> PathBuf {

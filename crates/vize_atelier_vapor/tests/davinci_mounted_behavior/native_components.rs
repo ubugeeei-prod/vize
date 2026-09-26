@@ -1,4 +1,4 @@
-//! Native S3 components, slot outlets and root fragments through the published
+//! Native L3 components, slot outlets and root fragments through the published
 //! runtimes. Child components are compiled by the parent's backend and lane.
 //! Every expectation is written out independently of either compiler.
 

@@ -45,16 +45,16 @@ the workspace's clippy discipline. Each stage is a concrete typed enum.
 ## Stage model
 
 ```text
-S0  Source model      container + spans + arena
-S1  Surface trees     lossless per-dialect syntax (what the author wrote)
-S2  Semantic IR       normalized, input-neutral UI semantics (what it means)
-S3  Reactivity IR     static/dynamic partition, effects (how it updates)
-S4  Emission          structured emitters per target (what we produce)
+L0  Source model      container + spans + arena
+L1  Surface trees     lossless per-dialect syntax (what the author wrote)
+L2  Semantic IR       normalized, input-neutral UI semantics (what it means)
+L3  Reactivity IR     static/dynamic partition, effects (how it updates)
+L4  Emission          structured emitters per target (what we produce)
 ```
 
-### S0 — Source model
+### L0 — Source model
 
-New Davinci implementation code imports this layer as `vize_s0`; its retained
+New Davinci implementation code imports this layer as `vize_l0`; its retained
 Cargo package id is `vize_carton`. The alias makes the layer position primary
 without breaking published package identity.
 
@@ -77,30 +77,30 @@ arena. `Allocator::reset` therefore has one rule: every retained artifact is
 converted to its owned form before reset, enforced by a debug arena-generation
 counter and a pool-focused Miri/ASan lane.
 
-### S1 — Surface trees (input dialects)
+### L1 — Surface trees (input dialects)
 
 One lossless syntax tree per input dialect: Vue template, oxc program for
 script/JSX, pug. Lossless means the formatter and lint autofixes can be written
-against S1 without a private re-scan — this is what retires the `vize_glyph`
+against L1 without a private re-scan — this is what retires the `vize_glyph`
 byte scanner and the `vize_musea` hand parser. Error tolerance is
 **structural**, SwiftSyntax-style: malformed source becomes typed
 `Unexpected` nodes and absent-but-required tokens become `Missing` tokens, so
-every consumer sees one uniformly-shaped tree with holes and S1→S2 has a
+every consumer sees one uniformly-shaped tree with holes and L1→L2 has a
 single documented hole policy. The debug verifier asserts
 `render(tree) == source` bytes on every construction.
 
-For script/JSX, S1 is an **OXC-backed lossless wrapper**, not raw
+For script/JSX, L1 is an **OXC-backed lossless wrapper**, not raw
 `oxc_ast::Program`: OXC's default parser config discards tokens
 (`ParserReturn` owns them, trivia retention is opt-in) and its error recovery
 yields diagnostics plus a structurally-valid (or, on panic, empty) AST — not
 typed holes. The wrapper enables token/trivia retention, owns the source
 text, and maps OXC recovery outcomes into the `Unexpected`/`Missing` model,
 and only that wrapper carries the lossless/round-trip guarantee the formatter
-and autofixes rely on. Vue 2 is an S1/S2 dialect using
+and autofixes rely on. Vue 2 is an L1/L2 dialect using
 the existing `legacy` capability model (resolve once per file, feature-gated,
 zero cost when off).
 
-### S2 — semantic IR (the pivot; crate `vize_s2`, codename Disegno)
+### L2 — semantic IR (the pivot; crate `vize_l2`, codename Disegno)
 
 The normalized, input-neutral representation of UI semantics, and the **primary
 consumer surface**: element/component/text/interpolation nodes, structured
@@ -121,7 +121,7 @@ underlying semantics exist. Today fails that test: Patina's SFC rule corpus is
 rich (345 rule files) while JSX gets a migrated subset, and the JSX hot path
 deliberately bypasses the JSX→Relief lowering (`MarkupDocument::from_jsx`)
 because Relief is Vue-shaped. Lowering _into a Vue-shaped tree_ is the wrong
-fix; a genuinely neutral S2 is the right one.
+fix; a genuinely neutral L2 is the right one.
 
 **Two-way binding — contract vs realization.** `v-model` is the instructive
 boundary case: it is _not_ sugar for `:value` + `@input` — the runtime
@@ -131,26 +131,26 @@ change-vs-input switch, and select-multiple. So the neutral core carries
 the value-type flow — which is all lint, the lattice, and type projection
 need, and which Svelte's `bind:` lowers to identically), with element kind
 and dialect modifiers riding as attributes. **Realization is never expanded
-in S2**: each S4 target picks it at lowering — VDOM emits runtime directive
+in L2**: each L4 target picks it at lowering — VDOM emits runtime directive
 references (as Vue does today), Vapor calls upstream vapor helpers, SSR
 renders attributes. IME/composition handling is **runtime-owned by
 declaration**; the compiler's obligation is to select the correct realization
 and preserve the contract, never to reimplement composition. Composition
 behavior is pinned by behavioral-tier tests with IME event scripts.
 
-S2 also crosses SFC block boundaries where semantics do: `v-bind()` in CSS
-appears as S2 binding ops, so the linter, the reactivity lattice, and the
+L2 also crosses SFC block boundaries where semantics do: `v-bind()` in CSS
+appears as L2 binding ops, so the linter, the reactivity lattice, and the
 type-check projection see style-block references instead of leaving them a
 descriptor-level blind spot.
 
-Consumers: the linter (Patina's markup facade becomes a zero-copy view over S2,
+Consumers: the linter (Patina's markup facade becomes a zero-copy view over L2,
 and the rule engine targets the neutral core), virtual-language projection for
 type checking, Musea, Doctor, and LSP features.
 
 ### Expression dialects
 
 Because expression languages are themselves pluggable (decision 4 — MoonBit,
-Elixir-hosted expressions), S2 does not hard-wire expressions to oxc:
+Elixir-hosted expressions), L2 does not hard-wire expressions to oxc:
 
 ```rust
 enum ExprRef<'a> {
@@ -168,7 +168,7 @@ spans, and emit for a given target. For JS these are direct oxc AST walks — th
 fast/slow byte-scanner split disappears because the parsed AST is simply kept.
 
 Type checking generalizes the same way: canon's virtual TS becomes the JS
-instance of a general **virtual host-language projection** — an S4 target that
+instance of a general **virtual host-language projection** — an L4 target that
 emits checkable code plus span links for any expression dialect (virtual MoonBit
 for MoonBit expressions, delegated to the host toolchain the way TS is delegated
 to Corsa today). **Decided:** this projection duty is part of the
@@ -182,7 +182,7 @@ Corsa/tsgo API surface (native project sessions), the existing
 host interface), and Maestro's editor features. One mapping model, three
 transports — this is what retires the current canon/maestro mapping split.
 
-### S3 — reactivity IR (alias `vize_s3`, package `vize_impeto`)
+### L3 — reactivity IR (alias `vize_l3`, package `vize_impeto`)
 
 Named for Leonardo's concept of impetus — how motion propagates. The
 generalization of today's Vapor IR: flat, id-based operations
@@ -191,9 +191,9 @@ by dependency set, and hoist/cache decisions as explicit operations rather than
 codegen-time inference. The partition derives from the semantic engine's
 [reactivity lattice](./semantic-engine.md#the-reactivity-lattice--one-analysis-every-backend),
 computed once and serving all three backends. **Decided routing:** DOM and
-Vapor lower through S3 — patch flags and effect grouping are both "reactivity
+Vapor lower through L3 — patch flags and effect grouping are both "reactivity
 decisions" and belong in one place — while SSR, which has no update phase,
-takes a thin S2→S4 path and reads the static partition as semantic-engine
+takes a thin L2→L4 path and reads the static partition as semantic-engine
 facts. Phase 3 measurements retain veto power over this split.
 
 Three design commitments from the literature (see [Prior Art](./prior-art.md)):
@@ -210,7 +210,7 @@ from-scratch render_ — with patch flags and SSR plans derived from operator
 linearity (a keyed `v-for` is a linear operator; non-linear mixes are where
 cache ops belong).
 
-### S4 — Emission (output targets)
+### L4 — Emission (output targets)
 
 A structured emitter layer replaces string-append codegen: targets build a span-
 carrying document, and source maps fall out of emission for **every** target —
@@ -221,13 +221,13 @@ virtual TS / virtual host-language projections, `.d.ts`, and non-JS host targets
 
 ## Stages are contracts, passes are execution plans
 
-The stage model is **logical**. S0–S4 define data contracts, dump formats, and
+The stage model is **logical**. L0–L4 define data contracts, dump formats, and
 consumer surfaces; they do not mandate five traversals. Passes declare
 themselves **fusable** (single-visit, local, synthesized-attribute style) or
 **barrier** (needs whole-tree or fixpoint facts), and the pass manager fuses
 adjacent fusable passes into one walk. Physical plans then differ per product:
 
-- **`vize build` fuses aggressively.** Parsing can emit S2 directly — S1 is a
+- **`vize build` fuses aggressively.** Parsing can emit L2 directly — L1 is a
   _capability_, materialized only when a consumer needs losslessness (the
   formatter, lint autofix). Cheap semantic facts are computed as synthesized
   attributes during lowering; emission runs as the exit action of the final
@@ -236,11 +236,11 @@ adjacent fusable passes into one walk. Physical plans then differ per product:
   parse + transform + hoist + codegen plus 20+ per-expression re-parses, and
   for Vapor an additional discarded transform and re-lower. Multi-stage IR done
   right _reduces_ traversals here; it does not add them.
-- **`vize check`, lint, and the LSP materialize.** They query S2 and fact
+- **`vize check`, lint, and the LSP materialize.** They query L2 and fact
   tables repeatedly and incrementally, so artifact caching (phase 5) dominates,
   not traversal count.
 
-Region-structured control flow in S2 is what makes fusion tractable: today's
+Region-structured control flow in L2 is what makes fusion tractable: today's
 enter/exit sibling-mutation dance (merging `v-else` branches on the parent's
 child list) forces the re-visits that a region-owning `ui.if` op never needs.
 
@@ -304,8 +304,8 @@ Non-negotiable, inherited from "Be Fast Above All":
 
 ## Portability: `no_std` core, WASI as a first-class target
 
-Davinci-owned crates (`vize_davinci`, `vize_s1`, `vize_s2`, `vize_s3` /
-`vize_impeto`, and `vize_s1_to_s2`) are
+Davinci-owned crates (`vize_davinci`, `vize_l1`, `vize_l2`, `vize_l3` /
+`vize_impeto`, and `vize_l1_to_l2`) are
 written `no_std + alloc` from birth: stage data, passes, and emitters depend on
 the arena and core types only, with `std` gated to the edges (filesystem,
 threads/rayon, process spawning, clocks). CI builds the core for
@@ -323,7 +323,7 @@ Three layers share one data model:
 1. **Folio dumps** carry _what_ each stage holds; every op records provenance
    (which pass/rule produced it — by name, so WASM extensions get first-class
    provenance — from which source node, with before/after pairs at lowering
-   decisions). Provenance **survives failure**: partial S2/S3 fragments are
+   decisions). Provenance **survives failure**: partial L2/L3 fragments are
    kept on error, Lean-InfoTree style, so the LSP and DevTool stay live on
    broken SFCs. In the fused CLI walk provenance is off or ring-buffered;
    resident/DevTool mode materializes it fully.
@@ -348,7 +348,7 @@ unattended without lowering the bar.
 ## Fit with workspace culture
 
 New crates start at the `experimental` stability tier and obey the existing
-discipline: `vize_s0` string/collection types (from the `vize_carton` package;
+discipline: `vize_l0` string/collection types (from the `vize_carton` package;
 clippy bans), the 350-line
 source guard (**explicitly reaffirmed for Davinci crates** — charter #22's
 complexity license and file splitting are orthogonal; small files serve

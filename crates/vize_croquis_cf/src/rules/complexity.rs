@@ -1,6 +1,6 @@
 //! Cross-file complexity scoring.
 //!
-//! The template-control-flow dimension is fed by the S2
+//! The template-control-flow dimension is fed by the L2
 //! `template-complexity` facts (Davinci P4-9a/P4-9b, [`template`]): own
 //! cyclomatic and cognitive complexity per component, summed over the
 //! components in scope. Nothing here scans expression text.
@@ -35,9 +35,9 @@ pub(crate) type TemplateFacts = FxHashMap<FileId, TemplateComplexity>;
 #[serde(rename_all = "camelCase")]
 pub struct ComplexityInput {
     pub component_count: usize,
-    /// Σ own template cyclomatic complexity (S2 facts).
+    /// Σ own template cyclomatic complexity (L2 facts).
     pub template_cyclomatic: usize,
-    /// Σ own template cognitive complexity (S2 facts).
+    /// Σ own template cognitive complexity (L2 facts).
     pub template_cognitive: usize,
     /// Evaluated template positions without a retained expression AST.
     pub template_unknown: usize,

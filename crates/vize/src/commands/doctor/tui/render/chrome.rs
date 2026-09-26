@@ -5,7 +5,7 @@ use vize_fresco::{
     SemanticState, TerminalCapabilities,
     terminal::{Color, Style},
 };
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::{profile, tree::DoctorFrameBuilder};
 use crate::commands::doctor::tui::{

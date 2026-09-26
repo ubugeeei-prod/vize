@@ -151,7 +151,7 @@ impl<'a> IdeContext<'a> {
     /// config key wins, otherwise the structural petite-vue detection memoized
     /// on the open document is used (no per-request re-scan).
     #[inline]
-    pub fn dialect(&self) -> vize_s0::dialect::VueDialect {
+    pub fn dialect(&self) -> vize_l0::dialect::VueDialect {
         self.state.document_dialect(self.uri, &self.content)
     }
 
@@ -215,7 +215,7 @@ fn root_match_subject_at(
     else {
         return false;
     };
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, header);
     let Some(TemplateChildNode::Element(element)) = root.children.first() else {
         return false;

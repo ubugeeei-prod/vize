@@ -1,18 +1,18 @@
 //! JSX/TSX markup dispatch (Davinci P4-7b).
 //!
-//! Markup rules run over the P2-16 S2 projection of each render root. Rules
+//! Markup rules run over the P2-16 L2 projection of each render root. Rules
 //! with no markup entry point still walk the lowered Relief root.
 
 use crate::context::LintContext;
 use crate::diagnostic::LintDiagnostic;
 use crate::ir::TemplateSyntax;
 use crate::linter::config::{LintResult, Linter};
-use crate::markup::{MarkupContext, MarkupDocument, S2Markup};
+use crate::markup::{L2Markup, MarkupContext, MarkupDocument};
 use crate::visitor::LintVisitor;
 use vize_croquis::Croquis;
+use vize_l0::dialect::VueDialect;
+use vize_l0::{Allocator, ToCompactString, profile};
 use vize_relief::RootNode;
-use vize_s0::dialect::VueDialect;
-use vize_s0::{Allocator, ToCompactString, profile};
 
 impl Linter {
     /// Script rules on the JSX program, the same registry `<script>` uses.
@@ -24,32 +24,32 @@ impl Linter {
         self.has_active_semantic_template_rules()
     }
 
-    /// Markup rules whose JSX shape is on the S2 projection without a list or
+    /// Markup rules whose JSX shape is on the L2 projection without a list or
     /// branch (`jsx_needs_lowering` is false).
     pub(super) fn lint_jsx_over_ir<'a>(
         &self,
         allocator: &'a Allocator,
         source: &'a str,
         filename: &'a str,
-        markup: &S2Markup<'_>,
+        markup: &L2Markup<'_>,
         analysis: Option<&'a Croquis>,
     ) -> LintResult {
-        self.visit_jsx_s2(allocator, source, filename, markup, analysis, false)
+        self.visit_jsx_l2(allocator, source, filename, markup, analysis, false)
     }
 
-    /// List/branch markup rules over an admitted S2 projection.
-    pub(super) fn lint_jsx_lowered_markup_s2<'a>(
+    /// List/branch markup rules over an admitted L2 projection.
+    pub(super) fn lint_jsx_lowered_markup_l2<'a>(
         &self,
         allocator: &'a Allocator,
         source: &'a str,
         filename: &'a str,
-        markup: &S2Markup<'_>,
+        markup: &L2Markup<'_>,
     ) -> LintResult {
-        self.visit_jsx_s2(allocator, source, filename, markup, None, true)
+        self.visit_jsx_l2(allocator, source, filename, markup, None, true)
     }
 
     /// List/branch markup rules (`jsx_needs_lowering`) over the lowered Relief
-    /// root, when the S2 projection refused that root.
+    /// root, when the L2 projection refused that root.
     pub(super) fn lint_jsx_lowered_markup_root<'a>(
         &self,
         allocator: &'a Allocator,
@@ -102,18 +102,18 @@ impl Linter {
         finish_jsx(filename, ctx)
     }
 
-    fn visit_jsx_s2<'a>(
+    fn visit_jsx_l2<'a>(
         &self,
         allocator: &'a Allocator,
         source: &'a str,
         filename: &'a str,
-        markup: &S2Markup<'_>,
+        markup: &L2Markup<'_>,
         analysis: Option<&'a Croquis>,
         needs_lowering: bool,
     ) -> LintResult {
         let markup = crate::markup::reborrow_markup(markup);
         let mut ctx = self.jsx_context(allocator, source, filename);
-        let mut document = MarkupDocument::from_s2(markup, TemplateSyntax::Vue);
+        let mut document = MarkupDocument::from_l2(markup, TemplateSyntax::Vue);
         if let Some(analysis) = analysis {
             ctx.set_analysis(analysis);
             document = document.with_analysis(analysis);

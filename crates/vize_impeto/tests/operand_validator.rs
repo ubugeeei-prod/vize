@@ -2,7 +2,7 @@
 use vize_impeto::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
 use vize_impeto::operand::{Operand, OperandRole as Role, OperandValue, ValueKind};
 use vize_impeto::verify::{ViolationCode, verify};
-use vize_s0::{Allocator, Span, cstr};
+use vize_l0::{Allocator, Span, cstr};
 
 fn program(arena: &Allocator) -> Program<'_> {
     let mut program = Program::new(arena, Phase::Built);

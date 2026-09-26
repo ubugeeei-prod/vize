@@ -1,4 +1,4 @@
-//! TS-33: S3 Vapor and official compiler-vapor output must have the same
+//! TS-33: L3 Vapor and official compiler-vapor output must have the same
 //! mounted behavior under the same published runtime, including node identity.
 
 #![expect(
@@ -32,7 +32,7 @@ use vize_carton::Allocator;
 use trace::{Fixture, assert_native_upstream_trace, trace};
 
 #[test]
-fn s3_branch_matches_official_vapor_state_and_identity_trace() {
+fn l3_branch_matches_official_vapor_state_and_identity_trace() {
     let fixture: Fixture = serde_json::from_str(include_str!(
         "../../../../tests/_fixtures/davinci-ts33-vapor-branch.json"
     ))
@@ -58,7 +58,7 @@ fn s3_branch_matches_official_vapor_state_and_identity_trace() {
     assert_eq!(
         WalkCounts::snapshot().since(before).total_walks(),
         0,
-        "TS-33 must exercise native S3"
+        "TS-33 must exercise native L3"
     );
 
     let vize = trace(
@@ -79,13 +79,13 @@ fn s3_branch_matches_official_vapor_state_and_identity_trace() {
             "steps": fixture.steps,
         }),
     );
-    assert_eq!(vize, fixture.expected, "Vize native S3 trace");
+    assert_eq!(vize, fixture.expected, "Vize native L3 trace");
     assert_eq!(upstream, fixture.expected, "official compiler-vapor trace");
     assert_eq!(vize, upstream, "TS-33 behavior-level parity");
 }
 
 #[test]
-fn s3_style_merge_matches_official_vapor_in_both_authored_orders() {
+fn l3_style_merge_matches_official_vapor_in_both_authored_orders() {
     let context = json!({
         "theme": {"color": "blue", "backgroundColor": "yellow"},
         "label": "A",
@@ -166,7 +166,7 @@ export function render(_ctx) {{
         assert_eq!(
             WalkCounts::snapshot().since(before).total_walks(),
             0,
-            "{source}: TS-33 must exercise native S3"
+            "{source}: TS-33 must exercise native L3"
         );
         let vize = trace(
             "davinci-mounted-trace.mjs",
@@ -182,7 +182,7 @@ export function render(_ctx) {{
             "davinci-upstream-vapor-trace.mjs",
             json!({"source": source, "context": context.clone(), "steps": steps.clone()}),
         );
-        assert_eq!(vize, expected, "{source}: Vize native S3 trace");
+        assert_eq!(vize, expected, "{source}: Vize native L3 trace");
         assert_eq!(
             upstream, expected,
             "{source}: official compiler-vapor trace"
@@ -192,7 +192,7 @@ export function render(_ctx) {{
 }
 
 #[test]
-fn s3_once_element_freezes_its_bindings_without_freezing_a_sibling() {
+fn l3_once_element_freezes_its_bindings_without_freezing_a_sibling() {
     let source = r#"<main data-id="root"><div v-once data-id="frozen" :title="tip">{{ msg }}</div><span data-id="live">{{ live }}</span></main>"#;
     let view = |live: &str| {
         json!({
@@ -217,7 +217,7 @@ fn s3_once_element_freezes_its_bindings_without_freezing_a_sibling() {
 }
 
 #[test]
-fn s3_once_element_freezes_nested_element_bindings() {
+fn l3_once_element_freezes_nested_element_bindings() {
     let source = r#"<main data-id="root"><div v-once data-id="frozen"><span data-id="nested" :title="tip">{{ msg }}</span></div><i data-id="live">{{ live }}</i></main>"#;
     let view = |live: &str| {
         json!({
@@ -244,7 +244,7 @@ fn s3_once_element_freezes_nested_element_bindings() {
 }
 
 #[test]
-fn s3_cloak_matches_official_vapor_across_branch_recreation() {
+fn l3_cloak_matches_official_vapor_across_branch_recreation() {
     let source = r#"<main data-id="root"><div v-if="open" v-cloak data-id="cloak" :title="tip">{{ label }}</div><p data-id="tail">tail</p></main>"#;
     let cloak = |title: &str, label: &str| json!({"tag": "div", "attributes": {"data-id": "cloak", "title": title}, "children": [label]});
     let tail = json!({"tag": "p", "attributes": {"data-id": "tail"}, "children": ["tail"]});
@@ -283,7 +283,7 @@ fn s3_cloak_matches_official_vapor_across_branch_recreation() {
 }
 
 #[test]
-fn s3_textarea_model_matches_official_vapor_input_and_external_patch() {
+fn l3_textarea_model_matches_official_vapor_input_and_external_patch() {
     let source = r#"<section data-id="root"><textarea data-id="field" v-model="content"></textarea><p data-id="label">{{ content }}</p></section>"#;
     let view = |content: &str| {
         json!({
@@ -316,7 +316,7 @@ fn s3_textarea_model_matches_official_vapor_input_and_external_patch() {
 }
 
 #[test]
-fn s3_phrasing_elements_match_official_vapor_updates_in_place() {
+fn l3_phrasing_elements_match_official_vapor_updates_in_place() {
     let source = r#"<p data-id="root"><code data-id="code" :title="tip">{{ label }}</code><mark data-id="mark">new</mark><time data-id="time" :datetime="date">{{ date }}</time></p>"#;
     let view = |tip: &str, label: &str, date: &str| {
         json!({

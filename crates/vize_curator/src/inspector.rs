@@ -24,6 +24,6 @@ pub use payload::{
 };
 pub use spolvero::{
     LADDER_STEP_KEY, LADDER_WALK_KEY, LadderClock, LadderRun, LadderStep, SpolveroFeed,
-    SpolveroPage, SpolveroRemark, ladder_pages, ladder_profile, ladder_run, s1_page,
+    SpolveroPage, SpolveroRemark, l1_page, ladder_pages, ladder_profile, ladder_run,
     spolvero_value, spolvero_value_with_remarks, template_remarks,
 };

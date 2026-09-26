@@ -24,7 +24,7 @@ const BUDGET: &str =
 fn run_folio_dir(dir: &Path, extra: &[&str]) -> Output {
     let mut args = vec![
         "--pipeline",
-        "s2(alpha,beta)",
+        "l2(alpha,beta)",
         "--stage",
         "budget-observer",
         "--folio-dir",
@@ -213,7 +213,7 @@ fn the_schema_refuses_version_and_shape_mismatches_loudly() {
     );
 
     let mut bad_stage = valid;
-    bad_stage["pages"][0]["stage"] = serde_json::Value::from("S2 disegno");
+    bad_stage["pages"][0]["stage"] = serde_json::Value::from("L2 disegno");
     let error = schema_check::validate(&schema, &bad_stage, "$").expect_err("bad stage must fail");
     assert_eq!(
         error.message().as_str(),
@@ -262,7 +262,7 @@ fn the_feed_carries_remarks_beside_the_pages() {
     use vize_davinci::folio::feed::SpolveroRemark;
     use vize_davinci::pass::RemarkKind;
     use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
-    use vize_s0::{Span, String};
+    use vize_l0::{Span, String};
 
     let arg = |key: &str, value: &str| RecordedArg {
         key: String::from(key),

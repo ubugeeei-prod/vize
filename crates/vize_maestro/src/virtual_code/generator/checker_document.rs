@@ -1,4 +1,4 @@
-//! Template virtual documents are the checker’s S4 virtual TypeScript.
+//! Template virtual documents are the checker’s L4 virtual TypeScript.
 //!
 //! Normal `.vue` files, art variants, and standalone HTML all publish that
 //! document. Mappings are SFC-absolute or fragment-absolute. Nothing here
@@ -10,8 +10,8 @@ use vize_canon::virtual_ts::{
     VirtualTsOptions, generate_virtual_ts_with_offsets, generate_virtual_ts_with_split_offsets,
 };
 use vize_croquis::{Analyzer, AnalyzerOptions};
+use vize_l0::cstr;
 use vize_relief::RootNode;
-use vize_s0::cstr;
 
 use super::super::{VirtualDocument, VirtualLanguage};
 

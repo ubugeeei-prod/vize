@@ -3,10 +3,10 @@
 use std::path::Path;
 use std::sync::atomic::Ordering;
 
-use vize_s0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
+use vize_l0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 
 #[cfg(feature = "glyph")]
-use vize_s0::config::FormatterConfig;
+use vize_l0::config::FormatterConfig;
 
 use super::ServerState;
 use super::features::LspConfigSection;
@@ -59,19 +59,19 @@ impl ServerState {
 
     /// Get a clone of the current per-rule lint options.
     #[inline]
-    pub fn get_linter_rule_options(&self) -> vize_s0::config::ConfigLintRuleOptions {
+    pub fn get_linter_rule_options(&self) -> vize_l0::config::ConfigLintRuleOptions {
         self.linter_rule_options.read().clone()
     }
 
     /// Get the configured Vue dialect override, if any.
     #[inline]
-    pub fn get_dialect_config(&self) -> Option<vize_s0::dialect::VueDialect> {
+    pub fn get_dialect_config(&self) -> Option<vize_l0::dialect::VueDialect> {
         *self.dialect_config.read()
     }
 
     /// Set the Vue dialect override (`None` re-enables structural detection).
     #[inline]
-    pub fn set_dialect_config(&self, dialect: Option<vize_s0::dialect::VueDialect>) {
+    pub fn set_dialect_config(&self, dialect: Option<vize_l0::dialect::VueDialect>) {
         *self.dialect_config.write() = dialect;
     }
 
@@ -93,7 +93,7 @@ impl ServerState {
         tracing::info!("Loaded global types config from {}", source);
     }
 
-    fn apply_config_features(&self, features: vize_s0::config::ConfigFeatureFlags) {
+    fn apply_config_features(&self, features: vize_l0::config::ConfigFeatureFlags) {
         self.experimental_patterned_template
             .store(features.experimental_patterned_template, Ordering::SeqCst);
         *self.type_checker_options_api.write() = features.type_checker_options_api;
@@ -123,7 +123,7 @@ impl ServerState {
 
     /// Effective Vue language version used by every native type-check surface.
     #[cfg(feature = "native")]
-    pub(crate) fn type_checker_vue_version(&self) -> vize_s0::config::VueVersion {
+    pub(crate) fn type_checker_vue_version(&self) -> vize_l0::config::VueVersion {
         *self.type_checker_vue_version.read()
     }
 
@@ -132,8 +132,8 @@ impl ServerState {
     /// [`LspConfigSection`] rather than being applied afterwards so the
     /// `editor` bundle switch still loses to an explicit per-feature toggle.
     fn lsp_config_section_from_file(
-        config: vize_s0::config::LanguageServerConfig,
-        unstable: vize_s0::config::LanguageServerUnstableFlags,
+        config: vize_l0::config::LanguageServerConfig,
+        unstable: vize_l0::config::LanguageServerUnstableFlags,
     ) -> LspConfigSection {
         LspConfigSection::from(config).with_signature_help(unstable.signature_help)
     }
@@ -155,7 +155,7 @@ impl ServerState {
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
     pub fn load_workspace_config(&self, dir: &Path) {
         let (loaded, linter_config) =
-            vize_s0::config::load_config_and_linter_with_features_and_source(Some(dir));
+            vize_l0::config::load_config_and_linter_with_features_and_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
@@ -166,14 +166,14 @@ impl ServerState {
             }
             self.apply_linter_config(linter_config, &source);
             *self.linter_rule_options.write() =
-                vize_s0::config::load_config_lint_rule_options(Some(dir));
+                vize_l0::config::load_config_lint_rule_options(Some(dir));
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_config_features(loaded.features);
             self.apply_lsp_config(
                 Self::lsp_config_section_from_file(
                     config.language_server,
-                    vize_s0::config::load_language_server_unstable_flags(Some(dir)),
+                    vize_l0::config::load_language_server_unstable_flags(Some(dir)),
                 ),
                 &source,
             );
@@ -184,20 +184,20 @@ impl ServerState {
     /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
     pub fn load_lsp_config(&self, dir: &Path) {
         let (loaded, linter_config) =
-            vize_s0::config::load_config_and_linter_with_features_and_source(Some(dir));
+            vize_l0::config::load_config_and_linter_with_features_and_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
             self.apply_linter_config(linter_config, &source);
             *self.linter_rule_options.write() =
-                vize_s0::config::load_config_lint_rule_options(Some(dir));
+                vize_l0::config::load_config_lint_rule_options(Some(dir));
             self.apply_global_types_config(config.global_types, &source);
             self.apply_type_checker_config(config.type_checker, &source);
             self.apply_config_features(loaded.features);
             self.apply_lsp_config(
                 Self::lsp_config_section_from_file(
                     config.language_server,
-                    vize_s0::config::load_language_server_unstable_flags(Some(dir)),
+                    vize_l0::config::load_language_server_unstable_flags(Some(dir)),
                 ),
                 &source,
             );
@@ -215,7 +215,7 @@ impl ServerState {
     /// Load format options from `vize.config.json` in the given directory.
     #[cfg(feature = "glyph")]
     pub fn load_format_config(&self, dir: &Path) {
-        let loaded = vize_s0::config::load_config_with_source(Some(dir));
+        let loaded = vize_l0::config::load_config_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
             *self.format_options.write() = format_options_from_config(&loaded.config.formatter);
             tracing::info!("Loaded format config from {}", source_path.display());
@@ -233,35 +233,35 @@ fn format_options_from_config(config: &FormatterConfig) -> vize_glyph::FormatOpt
         single_quote: config.single_quote,
         jsx_single_quote: config.jsx_single_quote,
         trailing_comma: match config.trailing_comma {
-            vize_s0::config::TrailingComma::None => vize_glyph::TrailingComma::None,
-            vize_s0::config::TrailingComma::Es5 => vize_glyph::TrailingComma::Es5,
-            vize_s0::config::TrailingComma::All => vize_glyph::TrailingComma::All,
+            vize_l0::config::TrailingComma::None => vize_glyph::TrailingComma::None,
+            vize_l0::config::TrailingComma::Es5 => vize_glyph::TrailingComma::Es5,
+            vize_l0::config::TrailingComma::All => vize_glyph::TrailingComma::All,
         },
         bracket_spacing: config.bracket_spacing,
         bracket_same_line: config.bracket_same_line,
         arrow_parens: match config.arrow_parens {
-            vize_s0::config::ArrowParens::Always => vize_glyph::ArrowParens::Always,
-            vize_s0::config::ArrowParens::Avoid => vize_glyph::ArrowParens::Avoid,
+            vize_l0::config::ArrowParens::Always => vize_glyph::ArrowParens::Always,
+            vize_l0::config::ArrowParens::Avoid => vize_glyph::ArrowParens::Avoid,
         },
         end_of_line: match config.end_of_line {
-            vize_s0::config::EndOfLine::Lf => vize_glyph::EndOfLine::Lf,
-            vize_s0::config::EndOfLine::Crlf => vize_glyph::EndOfLine::Crlf,
-            vize_s0::config::EndOfLine::Cr => vize_glyph::EndOfLine::Cr,
-            vize_s0::config::EndOfLine::Auto => vize_glyph::EndOfLine::Auto,
+            vize_l0::config::EndOfLine::Lf => vize_glyph::EndOfLine::Lf,
+            vize_l0::config::EndOfLine::Crlf => vize_glyph::EndOfLine::Crlf,
+            vize_l0::config::EndOfLine::Cr => vize_glyph::EndOfLine::Cr,
+            vize_l0::config::EndOfLine::Auto => vize_glyph::EndOfLine::Auto,
         },
         quote_props: match config.quote_props {
-            vize_s0::config::QuoteProps::AsNeeded => vize_glyph::QuoteProps::AsNeeded,
-            vize_s0::config::QuoteProps::Consistent => vize_glyph::QuoteProps::Consistent,
-            vize_s0::config::QuoteProps::Preserve => vize_glyph::QuoteProps::Preserve,
+            vize_l0::config::QuoteProps::AsNeeded => vize_glyph::QuoteProps::AsNeeded,
+            vize_l0::config::QuoteProps::Consistent => vize_glyph::QuoteProps::Consistent,
+            vize_l0::config::QuoteProps::Preserve => vize_glyph::QuoteProps::Preserve,
         },
         single_attribute_per_line: config.single_attribute_per_line,
         vue_indent_script_and_style: config.vue_indent_script_and_style,
         sort_attributes: config.sort_attributes,
         attribute_sort_order: match config.attribute_sort_order {
-            vize_s0::config::AttributeSortOrder::Alphabetical => {
+            vize_l0::config::AttributeSortOrder::Alphabetical => {
                 vize_glyph::AttributeSortOrder::Alphabetical
             }
-            vize_s0::config::AttributeSortOrder::AsWritten => {
+            vize_l0::config::AttributeSortOrder::AsWritten => {
                 vize_glyph::AttributeSortOrder::AsWritten
             }
         },

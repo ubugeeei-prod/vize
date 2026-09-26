@@ -12,7 +12,7 @@ use std::{
 
 use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
-use vize_s0::String;
+use vize_l0::String;
 
 mod cache;
 use cache::{
@@ -106,7 +106,7 @@ fn wait_for_config_test_barrier(
     if !prepared.is_generated() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::InvalidData,
-            vize_s0::cstr!("{phase} barrier requires a generated Nuxt checker config"),
+            vize_l0::cstr!("{phase} barrier requires a generated Nuxt checker config"),
         ));
     }
     let participant = std::env::var_os("VIZE_TEST_NUXT_CONFIG_PARTICIPANT").ok_or_else(|| {
@@ -127,7 +127,7 @@ fn wait_for_config_test_barrier(
         let mut release = [0_u8; 3];
         fs::OpenOptions::new()
             .read(true)
-            .open(barrier.join(vize_s0::cstr!("release-{}", participant.to_string_lossy())))?
+            .open(barrier.join(vize_l0::cstr!("release-{}", participant.to_string_lossy())))?
             .read_exact(&mut release)?;
         if release != *b"go\n" {
             return Err(std::io::Error::new(
@@ -253,7 +253,7 @@ fn absolute_tsconfig_path(source_base_dir: &Path, target: &str) -> PathBuf {
     let target_path = if target_path.is_absolute() {
         target_path.to_path_buf()
     } else {
-        vize_s0::path::canonicalize_non_verbatim(source_base_dir).join(target_path)
+        vize_l0::path::canonicalize_non_verbatim(source_base_dir).join(target_path)
     };
     normalize_path_lexically(&target_path)
 }

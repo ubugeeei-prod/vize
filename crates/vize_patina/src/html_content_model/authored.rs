@@ -13,8 +13,8 @@
 //! traces is present; anything else is re-read with the non-repairing
 //! `Quirks` syntax.
 
+use vize_l0::Allocator;
 use vize_relief::{RootNode, TemplateChildNode};
-use vize_s0::Allocator;
 
 use super::build::{authored_skeleton, skeleton};
 use super::skeleton::Skeleton;
@@ -81,7 +81,7 @@ fn children_end(children: &[TemplateChildNode<'_>], start: u32, source: &str) ->
                     match end_tag_end(bytes, content_end, tag) {
                         Some(end) => end,
                         None if element.children.is_empty()
-                            && vize_s0::is_void_tag(element.tag) =>
+                            && vize_l0::is_void_tag(element.tag) =>
                         {
                             span.end
                         }

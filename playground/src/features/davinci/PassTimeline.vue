@@ -7,7 +7,7 @@ import StepPill from "./StepPill.vue";
 
 const props = defineProps<{
   steps: TimelineStep[];
-  /** The S2 transform plan's walks, from its plan page. */
+  /** The L2 transform plan's walks, from its plan page. */
   walks: TimelineWalk[];
   /** Key of the page on screen, to mark its step. */
   current: string | null;
@@ -57,7 +57,7 @@ function describe(step: TimelineStep): string {
 
 function walkTitle(walk: TimelineWalk): string {
   const time = walk.nanos === null ? "" : `, ${formatNanos(walk.nanos)}`;
-  return `Walk ${walk.index + 1} over the S2 tree (${describeWalk(walk)}): ${walk.passes.join(", ")}${time}`;
+  return `Walk ${walk.index + 1} over the L2 tree (${describeWalk(walk)}): ${walk.passes.join(", ")}${time}`;
 }
 </script>
 

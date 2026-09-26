@@ -24,7 +24,7 @@
 use core::fmt::{Result as FmtResult, Write};
 
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 /// `ProjectionSpanKind`, in row order of the enum.
 pub const KINDS: &[&str] = &[

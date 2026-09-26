@@ -3,8 +3,8 @@
 //! Provides functions for rendering markdown help text into different
 //! output formats: ANSI terminal codes, plain text, or raw markdown passthrough.
 
-use vize_s0::String;
-use vize_s0::ToCompactString;
+use vize_l0::String;
+use vize_l0::ToCompactString;
 
 // ANSI escape codes
 const ANSI_BOLD: &str = "\x1b[1m";

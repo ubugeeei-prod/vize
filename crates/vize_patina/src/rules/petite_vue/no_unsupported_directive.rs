@@ -36,9 +36,9 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::cstr;
+use vize_l0::{CompactString, ToCompactString};
 use vize_relief::{DirectiveNode, ElementNode};
-use vize_s0::cstr;
-use vize_s0::{CompactString, ToCompactString};
 
 static META: RuleMeta = RuleMeta {
     name: "petite-vue/no-unsupported-directive",

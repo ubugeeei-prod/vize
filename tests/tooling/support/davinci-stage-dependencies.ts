@@ -96,17 +96,17 @@ export function s2DomWitnessFiles(): string[] {
   const testDir = path.join(repoRoot, "crates", "vize_atelier_dom", "tests");
   const witnesses = fs
     .readdirSync(testDir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && /^davinci_s2_.*\.rs$/u.test(entry.name))
+    .filter((entry) => entry.isFile() && /^davinci_l2_.*\.rs$/u.test(entry.name))
     .map((entry) => entry.name)
     .sort();
   assert.ok(
     witnesses.length >= 20,
-    `expected broad S2 DOM witness coverage, found only ${witnesses.length} files`,
+    `expected broad L2 DOM witness coverage, found only ${witnesses.length} files`,
   );
   return [...witnesses, path.join("support", "mod.rs")];
 }
 
-export function assertS0AliasConsumer(options: {
+export function assertL0AliasConsumer(options: {
   packageName: string;
   label: string;
   directory: string;
@@ -119,13 +119,13 @@ export function assertS0AliasConsumer(options: {
       (dependency) =>
         dependency.kind === null &&
         dependency.name === "vize_carton" &&
-        dependency.rename === "vize_s0",
+        dependency.rename === "vize_l0",
     ),
-    `${packageName} must import vize_carton as vize_s0 for S0 storage`,
+    `${packageName} must import vize_carton as vize_l0 for L0 storage`,
   );
   assert.ok(
     dependencies.every(
-      (dependency) => dependency.name !== "vize_carton" || dependency.rename === "vize_s0",
+      (dependency) => dependency.name !== "vize_carton" || dependency.rename === "vize_l0",
     ),
     `${packageName} must not depend on vize_carton through its physical name`,
   );
@@ -138,11 +138,11 @@ export function assertS0AliasConsumer(options: {
     if (/\bvize_carton::|use vize_carton\b/u.test(source)) {
       offenders.push(path.relative(repoRoot, fullPath));
     }
-    if (/\bvize_s0::|use vize_s0\b/u.test(source)) {
+    if (/\bvize_l0::|use vize_l0\b/u.test(source)) {
       aliasImports += 1;
     }
   }
 
-  assert.ok(aliasImports > 0, `${label} should use the vize_s0 alias`);
+  assert.ok(aliasImports > 0, `${label} should use the vize_l0 alias`);
   assert.deepEqual(offenders, []);
 }

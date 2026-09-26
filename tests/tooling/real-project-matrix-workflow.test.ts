@@ -72,7 +72,7 @@ test("real-project workflow schedules every balanced fixture shard", () => {
     options: ["enforce", "record-only", "skip"],
   });
   assert.deepEqual(dispatch.inputs?.davinci_dom_corpus_mode, {
-    description: "Davinci S2 DOM corpus gate handling",
+    description: "Davinci L2 DOM corpus gate handling",
     required: false,
     default: "enforce",
     type: "choice",

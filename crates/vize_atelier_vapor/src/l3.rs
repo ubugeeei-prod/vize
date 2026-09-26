@@ -1,0 +1,295 @@
+//! Production L3 admission and ownership for the native Vapor slice.
+//!
+//! Acceptance carries the complete checked backend payload. Unsupported inputs
+//! select the retained legacy lane explicitly; corrupt invariants never emit.
+
+mod benchmark;
+mod markup;
+mod native;
+mod retained;
+mod templates;
+mod text;
+
+use vize_atelier_core::TemplateSyntaxMode;
+use vize_carton::{Allocator, String, cstr, profile, profiler::global_profiler};
+use vize_l1::SurfaceParseOptions;
+use vize_l2_to_l3::Lowered;
+use vize_l3::verify::verify;
+
+use benchmark::bridge_profile;
+use native::NativeArtifact;
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct VaporL3BridgeOptions {
+    pub(crate) ssr: bool,
+    pub(crate) custom_renderer: bool,
+    pub(crate) experimental_in_tag_comments: bool,
+    pub(crate) experimental_patterned_template: bool,
+    pub(crate) template_syntax: TemplateSyntaxMode,
+    pub(crate) has_custom_elements: bool,
+    pub(crate) prefixed_binding_metadata: bool,
+    pub(crate) retained_lane: bool,
+    pub(crate) inline: bool,
+}
+
+/// A selected legacy route is distinct from a failed compiler invariant.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum LegacyReason {
+    Options,
+    SurfaceSemantics,
+    Operation,
+    Element,
+    Binding,
+    ExpressionOrEncoding,
+    Structure,
+    ControlFlow,
+    Component,
+    Selected,
+}
+
+impl LegacyReason {
+    fn counter(self) -> &'static str {
+        match self {
+            Self::Options => "davinci.s3_vapor.legacy.options",
+            Self::SurfaceSemantics => "davinci.s3_vapor.legacy.surface_semantics",
+            Self::Operation => "davinci.s3_vapor.legacy.operation",
+            Self::Element => "davinci.s3_vapor.legacy.element",
+            Self::Binding => "davinci.s3_vapor.legacy.binding",
+            Self::ExpressionOrEncoding => "davinci.s3_vapor.legacy.expression_or_encoding",
+            Self::Structure => "davinci.s3_vapor.legacy.structure",
+            Self::ControlFlow => "davinci.s3_vapor.legacy.control_flow",
+            Self::Component => "davinci.s3_vapor.legacy.component",
+            Self::Selected => "davinci.s3_vapor.legacy.selected",
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(super) enum AdmissionFailure {
+    Unsupported(LegacyReason),
+    Invalid(&'static str),
+}
+
+impl From<LegacyReason> for AdmissionFailure {
+    fn from(reason: LegacyReason) -> Self {
+        Self::Unsupported(reason)
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum VaporL3BridgeStatus<'a> {
+    Legacy(LegacyReason),
+    Accepted(VaporL3Artifact<'a>),
+    Rejected(std::vec::Vec<String>),
+}
+
+/// Private fields prevent callers from confusing a verified generic graph with
+/// the narrower executable backend contract. There is no boolean acceptance.
+#[derive(Debug)]
+pub(crate) struct VaporL3Artifact<'a>(NativeArtifact<'a>);
+
+impl<'a> VaporL3Artifact<'a> {
+    #[cfg(test)]
+    pub(crate) fn into_ir(
+        self,
+        allocator: &'a Allocator,
+        source: &'a str,
+        scope_id: Option<&str>,
+    ) -> Option<crate::ir::RootIRNode<'a>> {
+        self.into_ir_with_spans(allocator, source, scope_id, false)
+            .map(|(ir, _)| ir)
+    }
+
+    /// [`Self::into_ir`] that also returns the authored anchors when `spans`
+    /// is set (Davinci P3-9). `None` rejects this compile without code.
+    pub(crate) fn into_ir_with_spans(
+        self,
+        allocator: &'a Allocator,
+        source: &'a str,
+        scope_id: Option<&str>,
+        spans: bool,
+    ) -> Option<(
+        crate::ir::RootIRNode<'a>,
+        Option<crate::generate::spans::VaporSourceSpans>,
+    )> {
+        bridge_profile!(
+            "atelier.vapor.bridge.ir_projection",
+            self.0
+                .into_ir_with_spans(allocator, source, scope_id, spans)
+        )
+    }
+}
+
+pub(crate) fn lower_source_for_vapor<'a>(
+    allocator: &'a Allocator,
+    source: &str,
+    options: VaporL3BridgeOptions,
+) -> VaporL3BridgeStatus<'a> {
+    if options.ssr
+        || options.custom_renderer
+        || options.experimental_patterned_template
+        || options.template_syntax != TemplateSyntaxMode::Standard
+        || options.has_custom_elements
+        || options.prefixed_binding_metadata
+        || options.inline
+    {
+        return VaporL3BridgeStatus::Legacy(LegacyReason::Options);
+    }
+    if options.retained_lane {
+        return VaporL3BridgeStatus::Legacy(LegacyReason::Selected);
+    }
+    profile!("atelier.vapor.template.s3_bridge", {
+        // Earlier-stage storage cannot accidentally become an emitter input.
+        // L3 copies its payloads into the output arena before this scope ends.
+        let scratch = Allocator::new();
+        let (tree, errors) = bridge_profile!(
+            "atelier.vapor.bridge.s1_parse",
+            vize_l1::parse_with_options(
+                &scratch,
+                source,
+                SurfaceParseOptions {
+                    experimental_in_tag_comments: options.experimental_in_tag_comments,
+                },
+            )
+        );
+        let s2 = bridge_profile!(
+            "atelier.vapor.bridge.s1_to_s2",
+            vize_l1_to_l2::lower(&scratch, &tree, &errors)
+        );
+        if !s2.diagnostics.is_empty()
+            || s2.provenance.iter().any(|record| {
+                !record.rule.starts_with("lower.")
+                    && !record.rule.starts_with("condense.")
+                    && record.rule != "drop.comment"
+                    && record.rule != "drop.branch-gap"
+                    // HTML content CDATA is a legacy parser diagnostic.
+                    || record.rule == "lower.cdata-text"
+                    // Whitespace between `v-if` branches is dropped as the
+                    // retained lane drops it; a comment there moves the
+                    // surrounding whitespace differently per lane.
+                    || record.rule == "drop.branch-gap"
+                        && (source.as_bytes())
+                            .get(record.span.start as usize..)
+                            .is_none_or(|rest| rest.starts_with(b"<!--"))
+            })
+        {
+            return VaporL3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
+        }
+        let mut s3 = bridge_profile!(
+            "atelier.vapor.bridge.s2_to_s3",
+            vize_l2_to_l3::lower(allocator, &s2.root)
+        );
+        if bridge_profile!(
+            "atelier.vapor.bridge.markup_admission",
+            markup::legacy_diagnosed(allocator, source, &s3.program)
+        ) {
+            return VaporL3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
+        }
+        let mut retained = bridge_profile!(
+            "atelier.vapor.bridge.retained_index",
+            retained::Retained::collect(allocator, &s2.root)
+        );
+        // Template carriers keep their wrapper facts in L2 side tables.
+        let loops = match bridge_profile!(
+            "atelier.vapor.bridge.template_carriers",
+            templates::collect(allocator, source, &s2, &s3.program, &mut retained)
+        ) {
+            Ok(loops) => loops,
+            Err(reason) => return VaporL3BridgeStatus::Legacy(reason),
+        };
+        if let Err(failure) = bridge_profile!(
+            "atelier.vapor.bridge.text_capture",
+            text::capture(allocator, &s2, &mut s3, &mut retained)
+        ) {
+            return match failure {
+                AdmissionFailure::Unsupported(reason) => VaporL3BridgeStatus::Legacy(reason),
+                AdmissionFailure::Invalid(message) => {
+                    VaporL3BridgeStatus::Rejected(std::vec![cstr!(
+                        "Davinci L3 verifier rejected Vapor artifact: {message}"
+                    )])
+                }
+            };
+        }
+        admit_with(s3, &retained, &loops)
+    })
+}
+
+#[cfg(test)]
+fn admit<'a>(s3: Lowered<'a>, retained: &retained::Retained<'_, 'a>) -> VaporL3BridgeStatus<'a> {
+    admit_with(s3, retained, &[])
+}
+
+fn admit_with<'a>(
+    s3: Lowered<'a>,
+    retained: &retained::Retained<'_, 'a>,
+    loops: &[templates::TemplateLoop<'a>],
+) -> VaporL3BridgeStatus<'a> {
+    let violations = bridge_profile!("atelier.vapor.bridge.generic_verify", verify(&s3.program));
+    if !violations.is_empty() {
+        return VaporL3BridgeStatus::Rejected(
+            violations
+                .into_iter()
+                .map(|violation| cstr!("Davinci L3 verifier rejected Vapor artifact: {violation}"))
+                .collect(),
+        );
+    }
+    // Count equality alone admits duplicate, reordered, stale, or incorrectly
+    // classified facts. The producing pass exports one aligned fact per op.
+    if s3.partition.ops.len() != s3.program.ops.len()
+        || s3
+            .partition
+            .ops
+            .iter()
+            .zip(&s3.program.ops)
+            .any(|(fact, op)| {
+                fact.op != op.id
+                    || fact.span != op.span
+                    || fact.kind.is_dynamic() != op.effect.is_some()
+            })
+    {
+        return VaporL3BridgeStatus::Rejected(std::vec![String::from(
+            "Davinci L3 verifier rejected Vapor artifact: partition identity/classification mismatch",
+        )]);
+    }
+    match bridge_profile!(
+        "atelier.vapor.bridge.native_admission",
+        NativeArtifact::admit(&s3, retained, loops)
+    ) {
+        Ok(artifact) => VaporL3BridgeStatus::Accepted(VaporL3Artifact(artifact)),
+        Err(AdmissionFailure::Unsupported(reason)) => VaporL3BridgeStatus::Legacy(reason),
+        Err(AdmissionFailure::Invalid(message)) => VaporL3BridgeStatus::Rejected(std::vec![cstr!(
+            "Davinci L3 verifier rejected Vapor artifact: {message}"
+        )]),
+    }
+}
+
+pub(crate) fn record_selection(status: &VaporL3BridgeStatus<'_>) {
+    record(match status {
+        VaporL3BridgeStatus::Accepted(_) => ACCEPTED,
+        VaporL3BridgeStatus::Legacy(reason) => reason.counter(),
+        VaporL3BridgeStatus::Rejected(_) => REJECTED,
+    });
+}
+
+/// [`record_selection`] for an admitted artifact already moved into emission.
+pub(crate) fn record_accepted() {
+    record(ACCEPTED);
+}
+
+/// A checked payload failed during emission; it never selects a legacy lane.
+pub(crate) fn record_rejected() {
+    record(REJECTED);
+}
+
+const REJECTED: &str = "davinci.s3_vapor.rejected";
+const ACCEPTED: &str = "davinci.s3_vapor.accepted";
+
+fn record(counter: &'static str) {
+    let profiler = global_profiler();
+    if profiler.is_enabled() {
+        profiler.record_counter_enabled(counter, 1);
+    }
+}
+
+#[cfg(test)]
+mod tests;

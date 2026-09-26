@@ -12,8 +12,8 @@
 //! This module lifts the rule API onto a small, typed, **borrow-based** facade
 //! projected from three backends without materializing a synthetic AST:
 //!
-//! - **S2 (Disegno)** — the Davinci semantic IR ([`S2Markup`]): SFC templates
-//!   through the S1→S2 lowering, JSX/TSX through the P2-16 S2 projection. This
+//! - **L2 (Disegno)** — the Davinci semantic IR ([`L2Markup`]): SFC templates
+//!   through the L1→L2 lowering, JSX/TSX through the P2-16 L2 projection. This
 //!   is the backend the lint lanes converge on (Davinci P4-7).
 //! - **Relief** — a `vize_relief` template root (a raw template parse, or a
 //!   JSX root lowered to Relief).
@@ -27,7 +27,7 @@
 //!
 //! # One contract: structured control flow
 //!
-//! The facade presents control flow the way S2 does — as **scopes, not
+//! The facade presents control flow the way L2 does — as **scopes, not
 //! directive attributes**. A `v-if` / `v-else-if` / `v-else` sibling chain
 //! surfaces as one [`MarkupConditional`], a `v-for` as one [`MarkupList`], and
 //! an unslotted `<template v-if>` / `<template v-for>` wrapper is unwrapped
@@ -79,11 +79,11 @@ mod exact;
 mod jsx_child;
 mod jsx_names;
 mod jsx_roots;
+mod l2;
 mod node;
 mod relief_children;
 mod relief_scopes;
 mod rule;
-mod s2;
 mod scope;
 mod source_ranges;
 #[cfg(test)]
@@ -96,9 +96,9 @@ pub use binding::{MarkupBinding, MarkupBindingKind};
 pub use context::MarkupContext;
 pub use directive::MarkupDirective;
 pub use element::MarkupElement;
+pub use l2::{L2Markup, L2Template};
 pub use node::{MarkupNode, MarkupText};
 pub use rule::MarkupRule;
-pub use s2::{S2Markup, S2Template};
 pub use scope::{MarkupConditional, MarkupList};
 pub use visitor::MarkupDocumentVisitor;
 
@@ -122,12 +122,12 @@ enum MarkupDocumentInner<'a> {
         program: &'a Program<'a>,
         offset: u32,
     },
-    S2(&'a S2Markup<'a>),
+    L2(&'a L2Markup<'a>),
 }
 
 /// Document-level markup view.
 ///
-/// Borrows an S2 artifact, a `vize_relief` template root, or an OXC JSX/TSX
+/// Borrows an L2 artifact, a `vize_relief` template root, or an OXC JSX/TSX
 /// program, and optionally a [`Croquis`] for semantic / type-aware rules.
 /// `Copy` so it can be passed by value into the [`MarkupDocumentVisitor`].
 #[derive(Clone, Copy)]
@@ -156,13 +156,13 @@ impl<'a> MarkupDocument<'a> {
         }
     }
 
-    /// Create a markup document viewing an S2 (Disegno) artifact.
+    /// Create a markup document viewing an L2 (Disegno) artifact.
     ///
     /// The view is zero-copy: elements, bindings, text, and scopes borrow the
-    /// S2 op tree and its lowering-published side tables directly.
-    pub const fn from_s2(markup: &'a S2Markup<'a>, syntax: TemplateSyntax) -> Self {
+    /// L2 op tree and its lowering-published side tables directly.
+    pub const fn from_l2(markup: &'a L2Markup<'a>, syntax: TemplateSyntax) -> Self {
         Self {
-            inner: MarkupDocumentInner::S2(markup),
+            inner: MarkupDocumentInner::L2(markup),
             syntax,
             analysis: None,
         }
@@ -190,7 +190,7 @@ impl<'a> MarkupDocument<'a> {
         match self.inner {
             MarkupDocumentInner::Relief(_) => true,
             MarkupDocumentInner::Jsx { .. } => false,
-            MarkupDocumentInner::S2(markup) => markup.is_template(),
+            MarkupDocumentInner::L2(markup) => markup.is_template(),
         }
     }
 
@@ -199,9 +199,9 @@ impl<'a> MarkupDocument<'a> {
         !self.is_template()
     }
 
-    /// Whether this document views an S2 artifact.
-    pub const fn is_s2(&self) -> bool {
-        matches!(self.inner, MarkupDocumentInner::S2(_))
+    /// Whether this document views an L2 artifact.
+    pub const fn is_l2(&self) -> bool {
+        matches!(self.inner, MarkupDocumentInner::L2(_))
     }
 
     /// Template syntax used by this document.
@@ -227,22 +227,22 @@ impl<'a> MarkupDocument<'a> {
             MarkupDocumentInner::Jsx { program, offset } => {
                 jsx_roots::walk_jsx_program(program, offset, enter, exit)
             }
-            MarkupDocumentInner::S2(markup) => s2::walk::walk_tree(markup, enter, exit),
+            MarkupDocumentInner::L2(markup) => l2::walk::walk_tree(markup, enter, exit),
         }
     }
 
-    /// Walk the template's authored S1 element tree, before HTML repairs or
-    /// S2's implicit table owners. Every element keeps its real classification
+    /// Walk the template's authored L1 element tree, before HTML repairs or
+    /// L2's implicit table owners. Every element keeps its real classification
     /// and bindings; JSX/Relief documents use their existing element view.
     ///
     /// Source-shaped rules request this explicitly rather than replacing the
-    /// document's semantic S2 traversal or constructing a synthetic AST.
+    /// document's semantic L2 traversal or constructing a synthetic AST.
     pub fn walk_authored_tree(
         &self,
         enter: &mut impl FnMut(MarkupElement<'a>),
         exit: &mut impl FnMut(MarkupElement<'a>),
     ) {
-        if let MarkupDocumentInner::S2(doc) = self.inner
+        if let MarkupDocumentInner::L2(doc) = self.inner
             && let Some(tree) = doc.authored
         {
             authored::walk_tree(&tree.children, doc, false, enter, exit);
@@ -263,9 +263,9 @@ impl<'a> MarkupDocument<'a> {
     }
 }
 
-/// Reborrow a stack [`S2Markup`] header at a lint context's arena lifetime.
+/// Reborrow a stack [`L2Markup`] header at a lint context's arena lifetime.
 ///
-/// Lowering owns its artifact on the stack (`S2Template`, a JSX
+/// Lowering owns its artifact on the stack (`L2Template`, a JSX
 /// [`vize_atelier_jsx::LowerOutput`]). [`MarkupContext`] ties element borrows
 /// to that arena lifetime, which a local header cannot name. The header's
 /// slices point at arena bytes or the caller's source. The caller keeps the
@@ -276,12 +276,12 @@ impl<'a> MarkupDocument<'a> {
 /// Safe to call only when `markup` stays borrowed for every use of the
 /// returned reference. Extending the lifetime is a lie the type system
 /// cannot see; dropping the header first is undefined.
-pub(crate) fn reborrow_markup<'a>(markup: &S2Markup<'_>) -> &'a S2Markup<'a> {
+pub(crate) fn reborrow_markup<'a>(markup: &L2Markup<'_>) -> &'a L2Markup<'a> {
     // SAFETY: the caller keeps `markup` (and the artifact it views) borrowed
     // for every use of the returned reference. The header is not stored.
     // Lifetimes are erased on pointers, so widening is a transmute; provenance
     // is unchanged.
-    unsafe { std::mem::transmute::<&S2Markup<'_>, &'a S2Markup<'a>>(markup) }
+    unsafe { std::mem::transmute::<&L2Markup<'_>, &'a L2Markup<'a>>(markup) }
 }
 
 #[inline]
@@ -295,6 +295,6 @@ fn loc_to_range(loc: &SourceLocation) -> ByteRange {
 }
 
 #[inline]
-fn s2_range(span: vize_s0::Span) -> ByteRange {
+fn l2_range(span: vize_l0::Span) -> ByteRange {
     ByteRange::new(span.start, span.end)
 }

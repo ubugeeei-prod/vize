@@ -64,7 +64,7 @@ pub(crate) fn width(text: &str) -> usize {
 }
 
 /// Append the display of `text` to `out`.
-pub(crate) fn push_display(out: &mut vize_s0::String, text: &str) {
+pub(crate) fn push_display(out: &mut vize_l0::String, text: &str) {
     for ch in text.chars() {
         match glyph(ch) {
             Glyph::Char(shown, _) => out.push(shown),
@@ -76,7 +76,7 @@ pub(crate) fn push_display(out: &mut vize_s0::String, text: &str) {
 #[cfg(test)]
 mod tests {
     use super::{Glyph, glyph, push_display, width};
-    use vize_s0::String;
+    use vize_l0::String;
 
     #[test]
     fn narrow_wide_and_zero_width_characters_measure_by_terminal_columns() {

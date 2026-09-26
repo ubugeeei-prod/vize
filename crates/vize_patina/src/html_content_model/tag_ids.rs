@@ -3,7 +3,7 @@
 
 use std::sync::LazyLock;
 
-use vize_s0::{CompactString, FxHashMap};
+use vize_l0::{CompactString, FxHashMap};
 
 use super::facts::{ElemId, Ns, facts};
 

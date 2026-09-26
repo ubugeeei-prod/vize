@@ -6,7 +6,7 @@
 
 use crate::error::FormatError;
 use memchr::memmem;
-use vize_s0::String;
+use vize_l0::String;
 
 /// Upper bound for a pathological non-converging lightningcss value.
 const MAX_PASSES: usize = 4;
@@ -237,7 +237,7 @@ mod tests {
     use super::format_to_fixed_point;
     use crate::{options::FormatOptions, style::format_style_content};
     use std::cell::Cell;
-    use vize_s0::ToCompactString;
+    use vize_l0::ToCompactString;
 
     #[test]
     fn ordinary_css_is_parsed_and_printed_once() {

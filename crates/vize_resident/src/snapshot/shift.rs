@@ -4,8 +4,8 @@
 //! break this file loudly, never be left unshifted.
 
 use vize_davinci::diagnostic::Diagnostic;
-use vize_s0::Span;
-use vize_s2::folio::{
+use vize_l0::Span;
+use vize_l2::folio::{
     FolioAttribute, FolioBinding, FolioExpr, FolioForBinding, FolioName, FolioOp,
 };
 

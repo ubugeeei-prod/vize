@@ -71,11 +71,11 @@
 
 **Lane:** H
 
-**Deliverable:** analysis proceeds past errors: S1 `Unexpected`/`Missing` holes feed partial S2 fragments (P2-8 already keeps them) whose facts are computed for the well-formed regions, so LSP features stay live mid-edit (Lean's `PartialTermInfo` pattern).
+**Deliverable:** analysis proceeds past errors: L1 `Unexpected`/`Missing` holes feed partial L2 fragments (P2-8 already keeps them) whose facts are computed for the well-formed regions, so LSP features stay live mid-edit (Lean's `PartialTermInfo` pattern).
 
 **Steps:**
 
-- [x] `crates/vize_s1_to_s2/src/partial.rs` exposes the kept fragments to the fact manager
+- [x] `crates/vize_l1_to_l2/src/partial.rs` exposes the kept fragments to the fact manager
 - [x] TS-47 scenarios in `tests/tooling/lsp-broken-file*`: hover and completion in a file with a parse error elsewhere
 
 **Acceptance:** TS-47 scenarios exact; no diagnostic regression on the well-formed fixtures (TS-9).

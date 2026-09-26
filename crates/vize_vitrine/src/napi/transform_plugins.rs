@@ -1,4 +1,4 @@
-//! Sync JS callbacks over real S2 batches, before canonical compilation.
+//! Sync JS callbacks over real L2 batches, before canonical compilation.
 #![expect(
     clippy::disallowed_types,
     reason = "N-API serialized boundary uses std strings"
@@ -53,7 +53,7 @@ pub struct TransformCompileOutputNapi {
     pub plugins: Vec<TransformPluginCostNapi>,
 }
 
-/// Compile a template using bounded, deterministic edits to the native S2
+/// Compile a template using bounded, deterministic edits to the native L2
 /// artifact. Unsupported edits and incompatible canonical output are errors.
 #[napi(js_name = "compileWithTransformPlugins")]
 pub fn compile_with_transform_plugins(

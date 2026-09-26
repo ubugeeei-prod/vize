@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use serde::Serialize;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::error::{LibError, LibResult};
 use super::fs_ops::join_relative;

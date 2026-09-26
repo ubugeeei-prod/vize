@@ -2,8 +2,8 @@
 //! hook trace.
 //!
 //! Each input is projected twice — through the Relief backend (a raw template
-//! parse, or a JSX root lowered to Relief) and through the S2 backend (the
-//! S1→S2 lowering, or the P2-16 projection of that same JSX root) — and a
+//! parse, or a JSX root lowered to Relief) and through the L2 backend (the
+//! L1→L2 lowering, or the P2-16 projection of that same JSX root) — and a
 //! [`TraceRecorder`] drives both. The traces are compared line for line with
 //! exact string equality: every hook, span, name, value, modifier, child view
 //! and ancestry the facade can answer. A divergence is an investigated bug,
@@ -29,9 +29,9 @@ mod probe;
 
 use crate::context::LintContext;
 use crate::ir::TemplateSyntax;
-use crate::markup::{MarkupContext, MarkupDocument, S2Markup, S2Template};
+use crate::markup::{L2Markup, L2Template, MarkupContext, MarkupDocument};
 use vize_atelier_jsx::JsxLang;
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 /// The first line at which two projections' traces disagree.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -40,8 +40,8 @@ pub struct Divergence {
     pub line: usize,
     /// The Relief projection's line (`None` past its end).
     pub relief: Option<String>,
-    /// The S2 projection's line (`None` past its end).
-    pub s2: Option<String>,
+    /// The L2 projection's line (`None` past its end).
+    pub l2: Option<String>,
 }
 
 /// What a JSX comparison covered.
@@ -49,7 +49,7 @@ pub struct Divergence {
 pub struct JsxComparison {
     /// Render roots the module lowered to.
     pub roots: usize,
-    /// Roots the P2-16 projection refused (typed `S2Refusal`), so no S2
+    /// Roots the P2-16 projection refused (typed `L2Refusal`), so no L2
     /// document exists to compare.
     pub refused: usize,
     /// Trace lines compared over the admitted roots.
@@ -69,15 +69,15 @@ pub fn trace_document(document: &MarkupDocument<'_>, source: &str) -> std::vec::
 }
 
 /// Compare two traces exactly; `Ok` carries the number of lines compared.
-pub fn compare_traces(relief: &[String], s2: &[String]) -> Result<usize, Divergence> {
-    let len = relief.len().max(s2.len());
+pub fn compare_traces(relief: &[String], l2: &[String]) -> Result<usize, Divergence> {
+    let len = relief.len().max(l2.len());
     for line in 0..len {
-        let (left, right) = (relief.get(line), s2.get(line));
+        let (left, right) = (relief.get(line), l2.get(line));
         if left != right {
             return Err(Divergence {
                 line,
                 relief: left.cloned(),
-                s2: right.cloned(),
+                l2: right.cloned(),
             });
         }
     }
@@ -90,16 +90,16 @@ pub enum TemplateComparison {
     /// Trace lines compared, all equal.
     Compared(usize),
     /// The lint parse applied browser tree construction and nests elements
-    /// differently from the authored tree S2 keeps ([`nesting`]); not
+    /// differently from the authored tree L2 keeps ([`nesting`]); not
     /// compared.
     Restructured,
 }
 
-/// Project a Vue template through Relief and through S1→S2, and compare.
+/// Project a Vue template through Relief and through L1→L2, and compare.
 ///
 /// The Relief reference is parsed with the compiler's `<pre>` rule
-/// (`is_pre_tag`), the whitespace configuration the S1→S2 text lowering is
-/// defined against (P2-9 installment 4) and S2 renders: `<pre>` content keeps
+/// (`is_pre_tag`), the whitespace configuration the L1→L2 text lowering is
+/// defined against (P2-9 installment 4) and L2 renders: `<pre>` content keeps
 /// its bytes. The lint lane's own parse condenses inside `<pre>`; its rules
 /// read text only for significance, which condensing never changes.
 pub fn compare_template(source: &str) -> Result<TemplateComparison, Divergence> {
@@ -109,21 +109,21 @@ pub fn compare_template(source: &str) -> Result<TemplateComparison, Divergence> 
         ..vize_relief::ParserOptions::default()
     };
     let (root, _errors) = vize_armature::Parser::with_options(&allocator, source, options).parse();
-    let lowered = S2Template::lower(&allocator, source);
+    let lowered = L2Template::lower(&allocator, source);
     if nesting::is_restructured(&root, lowered.surface()) {
         return Ok(TemplateComparison::Restructured);
     }
     let relief = trace_document(&MarkupDocument::new(&root, TemplateSyntax::Vue), source);
     let markup = lowered.markup();
-    let s2 = trace_document(
-        &MarkupDocument::from_s2(&markup, TemplateSyntax::Vue),
+    let l2 = trace_document(
+        &MarkupDocument::from_l2(&markup, TemplateSyntax::Vue),
         source,
     );
-    compare_traces(&relief, &s2).map(TemplateComparison::Compared)
+    compare_traces(&relief, &l2).map(TemplateComparison::Compared)
 }
 
 /// Project every render root of a JSX/TSX module through its lowered Relief
-/// root and through that root's P2-16 S2 projection, and compare.
+/// root and through that root's P2-16 L2 projection, and compare.
 pub fn compare_jsx(source: &str, lang: JsxLang) -> Result<JsxComparison, Divergence> {
     let allocator = Allocator::with_capacity(source.len() * 4 + 1024);
     let lowered = vize_atelier_jsx::lower_source(&allocator, allocator.as_oxc(), source, lang);
@@ -132,7 +132,7 @@ pub fn compare_jsx(source: &str, lang: JsxLang) -> Result<JsxComparison, Diverge
         ..JsxComparison::default()
     };
     for root in &lowered.roots {
-        let Ok(s2_root) = root.s2.as_ref() else {
+        let Ok(l2_root) = root.l2.as_ref() else {
             comparison.refused += 1;
             continue;
         };
@@ -140,12 +140,12 @@ pub fn compare_jsx(source: &str, lang: JsxLang) -> Result<JsxComparison, Diverge
             &MarkupDocument::new(&root.root, TemplateSyntax::Vue),
             source,
         );
-        let markup = S2Markup::from_projected_root(s2_root);
-        let s2 = trace_document(
-            &MarkupDocument::from_s2(&markup, TemplateSyntax::Vue),
+        let markup = L2Markup::from_projected_root(l2_root);
+        let l2 = trace_document(
+            &MarkupDocument::from_l2(&markup, TemplateSyntax::Vue),
             source,
         );
-        comparison.lines += compare_traces(&relief, &s2)?;
+        comparison.lines += compare_traces(&relief, &l2)?;
     }
     Ok(comparison)
 }

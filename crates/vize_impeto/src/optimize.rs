@@ -1,4 +1,4 @@
-//! The S3 optimization pipeline: `annotate-placements`, then
+//! The L3 optimization pipeline: `annotate-placements`, then
 //! `extract-placements`, driven by the pass manager.
 //!
 //! Running through `run_pipeline_remarked` is what attributes every
@@ -12,14 +12,15 @@ use crate::extract::{EXTRACT, Extraction, OptTier, extract};
 use crate::op::Program;
 use crate::placement::{ANNOTATE, annotate};
 
-/// The stage name S3 pipelines print and remark under.
-pub const S3_STAGE: &str = "s3";
+/// The stage name L3 pipelines print and remark under.
+// Schema-1 attribution remains stable across physical layer renames.
+pub const L3_STAGE: &str = "s3";
 
 /// The optimization passes, in run order.
 pub const OPTIMIZE_PASSES: &[PassDesc] = &[ANNOTATE, EXTRACT];
 
-/// The planned S3 optimization pipeline.
-pub const OPTIMIZE: Pipeline = Pipeline::new(S3_STAGE, OPTIMIZE_PASSES);
+/// The planned L3 optimization pipeline.
+pub const OPTIMIZE: Pipeline = Pipeline::new(L3_STAGE, OPTIMIZE_PASSES);
 
 /// Run [`OPTIMIZE`] over `program` at `tier`, reporting remarks to
 /// `observer`.
@@ -44,12 +45,12 @@ pub fn optimize<O: PassObserver>(
             extraction = Some(result);
         } else {
             return Err(PassFailure::new(
-                "s3 optimization pass has no registered body",
+                "l3 optimization pass has no registered body",
             ));
         }
         Ok(())
     })?;
     extraction.ok_or(PassFailure::new(
-        "s3 optimization pipeline did not run extract-placements",
+        "l3 optimization pipeline did not run extract-placements",
     ))
 }

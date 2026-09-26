@@ -16,13 +16,13 @@ use std::{
     process::{Command, Stdio},
 };
 use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, compile_jsx};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
-fn compile(source: &str) -> vize_s0::String {
+fn compile(source: &str) -> vize_l0::String {
     compile_with_config(source, &JsxCompileConfig::default())
 }
 
-fn compile_with_config(source: &str, config: &JsxCompileConfig) -> vize_s0::String {
+fn compile_with_config(source: &str, config: &JsxCompileConfig) -> vize_l0::String {
     let arena = Allocator::new();
     let out = compile_jsx(&arena, source, JsxLang::Tsx, config);
     assert!(!out.has_errors(), "{:?}", out.diagnostics);

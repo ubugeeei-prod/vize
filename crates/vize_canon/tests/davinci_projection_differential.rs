@@ -1,4 +1,4 @@
-//! TS-25: template-expression anchors from the S4 projection match the
+//! TS-25: template-expression anchors from the L4 projection match the
 //! current virtual-TS generator on the TS-40 matrix.
 //!
 //! Generated text is not compared. A run that compares nothing fails.
@@ -19,7 +19,7 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_canon::projection::project_template_expressions;
 use vize_canon::virtual_ts::generate_virtual_ts;
 use vize_croquis::{Analyzer, AnalyzerOptions};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 /// Measured template-expression anchors on the committed TS-40 matrix.
 const TEMPLATE_ANCHOR_COMPARISONS: usize = 22;
@@ -77,7 +77,7 @@ fn compare_template(id: &str, template: &str) -> usize {
             && contained.iter().any(|range| *range != &authored);
         assert!(
             old_hit || pessimal,
-            "{id}: S4 anchor {authored:?} ({text}) is not an authored range of the current generator"
+            "{id}: L4 anchor {authored:?} ({text}) is not an authored range of the current generator"
         );
         compared += 1;
     }

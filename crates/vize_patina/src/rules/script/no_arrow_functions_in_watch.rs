@@ -54,7 +54,7 @@ use oxc_ast::ast::{
     PropertyKey, Statement,
 };
 use oxc_span::Span;
-use vize_s0::FxHashMap;
+use vize_l0::FxHashMap;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-arrow-functions-in-watch",

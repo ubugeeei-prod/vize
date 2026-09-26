@@ -25,20 +25,20 @@ The realized cases are:
 
 The durable witnesses are:
 
-- [`emit_outlets.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_outlets.rs)
+- [`emit_outlets.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_outlets.rs)
   - exact pins for static and dynamic slot outlet listener props, including
     the shipped duplicate-key shape for duplicate listeners.
-- [`davinci_s2_outlets.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_outlets.rs)
+- [`davinci_s2_outlets.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_outlets.rs)
   - S2-vs-shipped byte fixtures across slot outlet event props, spread order,
     fallback, structural, scoped and Vue 2 cases.
-- [`davinci_s2_dynamic_von_keys.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_dynamic_von_keys.rs)
+- [`davinci_s2_dynamic_von_keys.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_dynamic_von_keys.rs)
   - dynamic slot outlet events move from `SlotOutletPropKind` refusal to the
     byte-for-byte dynamic `v-on` battery, while malformed slot event names and
     handlers keep typed refusals.
-- [`emit_unsupported_census.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_unsupported_census.rs)
+- [`emit_unsupported_census.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_census.rs)
   - the source-level `SlotOutletPropKind` witness retires from the committed
     refusal census.
-- [`emit_unsupported_catalogue.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_unsupported_catalogue.rs)
+- [`emit_unsupported_catalogue.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_catalogue.rs)
   - `SlotOutletPropKind` remains accounted for as a guard-only bucket for
     impossible model-product pieces on slot outlets.
 

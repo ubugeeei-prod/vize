@@ -1,6 +1,6 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 use vize_canon::{SfcTypeCheckOptions, type_check_sfc_with_options_api};
-use vize_s0::String;
+use vize_l0::String;
 
 const LEGACY_OPTIONS_SOURCE: &str = r#"<script>
   export default{

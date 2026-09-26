@@ -1,7 +1,7 @@
 use super::super::super::{
     create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics,
 };
-use vize_s0::String;
+use vize_l0::String;
 
 #[test]
 fn any_v_for_key_matches_vue_tsc_object_fallback() {

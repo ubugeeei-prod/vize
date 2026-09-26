@@ -35,9 +35,9 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "explain.kind.verifier",
-        "S3 verification",
-        "S3 検証",
-        "S3 验证",
+        "L3 verification",
+        "L3 検証",
+        "L3 验证",
     ),
     (
         "explain.kind.cross-file",

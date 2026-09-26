@@ -13,22 +13,22 @@ legacy = ["vize_atelier_core/legacy"]
 
 # Arms the Davinci DOM differential lanes by exposing
 # `compile_template_legacy_with_options` — the shipped parse/transform/codegen
-# lane with the S2 emitter declined. The corpus comparators need it as their
+# lane with the L2 emitter declined. The corpus comparators need it as their
 # *old* side: since the P2-11 production switch the ordinary entry points
-# route through S2, so a differential built on them compares S2 to itself.
+# route through L2, so a differential built on them compares L2 to itself.
 # Adds no dependency and no production code path; off in production builds,
 # exactly like `vize_atelier_core`'s feature of the same name.
 davinci-differential = []
 
 [dependencies]
-vize_s0 = { workspace = true }
+vize_l0 = { workspace = true }
 vize_atelier_core = { workspace = true }
 vize_croquis = { workspace = true }
-# Profiled source-map-free DOM compiles can render through the S2 backend.
+# Profiled source-map-free DOM compiles can render through the L2 backend.
 # TypeScript expression erasure is part of the public DOM option surface, so
 # keep the stage library's opt-in implementation available in the production
 # graph.
-vize_s1_to_s2 = { workspace = true, features = ["typescript"] }
+vize_l1_to_l2 = { workspace = true, features = ["typescript"] }
 
 phf = { workspace = true }
 serde = { workspace = true }
@@ -41,7 +41,7 @@ insta = { workspace = true }
 serde_json = { workspace = true }
 toml = { workspace = true }
 
-# S2 test and benchmark fixtures still use the stage diagnostics/types.
+# L2 test and benchmark fixtures still use the stage diagnostics/types.
 vize_davinci = { workspace = true }
 
 [[bench]]
@@ -49,7 +49,7 @@ name = "davinci"
 harness = false
 
 [[test]]
-name = "davinci_s2_filters"
+name = "davinci_l2_filters"
 required-features = ["legacy"]
 
 # The text-family adjacency matrix needs the differential lane's legacy

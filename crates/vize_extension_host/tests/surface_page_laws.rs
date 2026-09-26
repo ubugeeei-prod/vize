@@ -1,4 +1,4 @@
-//! The S1 page (`s1-page@1`) laws, exact-equality oracles only:
+//! The L1 page (`s1-page@1`) laws, exact-equality oracles only:
 //!
 //! - `parse(print(page)) == page` and `print(parse(text)) == text`;
 //! - the page tiles its source, and `materialize` rebuilds a tree whose
@@ -19,17 +19,17 @@ use vize_davinci::folio::{Folio, FolioError};
 use vize_extension_host::accept::full_text;
 use vize_extension_host::surface_page::{PageNode, PageToken};
 use vize_extension_host::{SurfacePage, TileError};
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
-fn rendered(tree: &vize_s1::SurfaceTree<'_>) -> String {
+fn rendered(tree: &vize_l1::SurfaceTree<'_>) -> String {
     let mut out = String::default();
-    vize_s1::render(tree, &mut |piece| out.push_str(piece));
+    vize_l1::render(tree, &mut |piece| out.push_str(piece));
     out
 }
 
 fn assert_laws(source: &str, context: &str) {
     let allocator = Allocator::new();
-    let (tree, _errors) = vize_s1::parse(&allocator, source);
+    let (tree, _errors) = vize_l1::parse(&allocator, source);
     let page = SurfacePage::of(&tree);
     let text = full_text(&page);
     let parsed = SurfacePage::parse(&text).unwrap_or_else(|error| panic!("{context}: {error}"));
@@ -114,21 +114,21 @@ element
 #[test]
 fn the_reference_page_is_pinned() {
     let allocator = Allocator::new();
-    let (tree, _errors) = vize_s1::parse(&allocator, REFERENCE_SOURCE);
+    let (tree, _errors) = vize_l1::parse(&allocator, REFERENCE_SOURCE);
     assert_eq!(full_text(&SurfacePage::of(&tree)).as_str(), REFERENCE_PAGE);
 }
 
 #[test]
 fn missing_tokens_and_the_empty_page_print_exactly() {
     let allocator = Allocator::new();
-    let (tree, _errors) = vize_s1::parse(&allocator, "<b title=\"x");
+    let (tree, _errors) = vize_l1::parse(&allocator, "<b title=\"x");
     assert_eq!(
         full_text(&SurfacePage::of(&tree)).as_str(),
         "[s1]\nbytes=11\n\n[s1.tree]\nelement\n  lt-name 0:0:2\n  attr\n    name 2:3:8\n    \
          eq 8:8:9\n    open-quote 9:9:10\n    value 10:10:11\n    close-quote 11:11:11 missing\n  \
          gt 11:11:11 missing\n  close missing\n\n"
     );
-    let (empty, _errors) = vize_s1::parse(&allocator, "");
+    let (empty, _errors) = vize_l1::parse(&allocator, "");
     assert_eq!(
         full_text(&SurfacePage::of(&empty)).as_str(),
         "[s1]\nbytes=0\n\n"
@@ -221,7 +221,7 @@ fn malformed_pages_are_refused_exactly() {
 }
 
 fn message(result: Result<(), TileError>) -> Result<(), String> {
-    result.map_err(|error| vize_s0::cstr!("{error}"))
+    result.map_err(|error| vize_l0::cstr!("{error}"))
 }
 
 fn tiles(text: &str, source: &str) -> Result<(), TileError> {

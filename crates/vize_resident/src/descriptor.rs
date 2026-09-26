@@ -12,7 +12,7 @@
 use core::ops::Deref;
 
 use vize_croquis::sfc::{SfcDescriptor, SfcError, SfcParseOptions, parse_sfc};
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 use crate::accounting::Accounting;
 use crate::db::{ResidentDatabase, SourceFile};

@@ -26,7 +26,7 @@ use alloc::vec::Vec;
 use core::fmt;
 use core::str::SplitWhitespace;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::value::FolioValue;
 use super::{Folio, FolioError};

@@ -5,7 +5,7 @@ import { SDK_FINGERPRINT } from "./identity.js";
 export function defineTransformPlugin({ name, version, cacheInputs, transform }) {
   return stage({ name, version, cacheInputs }, transform, (batch, edits) => {
     if (batch.schema !== 1 || batch.stage !== "s2-precanonical-static-attributes") {
-      throw new Error(`${name}: unsupported S2 transform batch`);
+      throw new Error(`${name}: unsupported L2 transform batch`);
     }
     return { schema: 1, edits };
   });

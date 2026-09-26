@@ -8,16 +8,16 @@ import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 // as steps rather than as their own job because `.github/workflows/check.yml`
 // is over the 350-line ratchet and must not grow
 // (docs/davinci/plan/phase-2-records/p2-14.md); this file is what keeps that
-// placement from silently dissolving. S0 (`vize_s0`, package `vize_carton`)
+// placement from silently dissolving. L0 (`vize_l0`, package `vize_carton`)
 // remains the approved `std` foundation recorded in no-std-boundary.md.
 
 const portableStageCrates = [
   ["vize_davinci", "vize_davinci"],
-  ["vize_s1", "vize_s1"],
-  ["vize_s2", "vize_s2"],
+  ["vize_l1", "vize_l1"],
+  ["vize_l2", "vize_l2"],
   ["vize_impeto", "vize_impeto"],
-  ["vize_s1_to_s2", "vize_s1_to_s2"],
-  ["vize_s2_to_s3", "vize_s2_to_s3"],
+  ["vize_l1_to_l2", "vize_l1_to_l2"],
+  ["vize_l2_to_l3", "vize_l2_to_l3"],
 ] as const;
 
 const packageArgs = portableStageCrates.map(([packageName]) => `-p ${packageName}`).join(" ");
@@ -58,14 +58,14 @@ test("TS-24: the wasm32-wasip2 lanes run in scheduled and manual Check", () => {
     job.includes(`        run: ${defaultLane} && ${noDefaultLane}`),
     "TS-24 must build all six stage libraries with and without default features",
   );
-  assert.doesNotMatch(job, /cargo build[^\n]*-p (?:vize_s0|vize_carton)[^\n]*wasm32-wasip2/);
+  assert.doesNotMatch(job, /cargo build[^\n]*-p (?:vize_l0|vize_carton)[^\n]*wasm32-wasip2/);
   assert.match(
     job,
-    /cargo bench -p vize_s1_to_s2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root/u,
+    /cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools\/commands\/davinci\/bench-compare\.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root/u,
   );
 });
 
-test("the no_std claim stays on all six stage libraries and excludes the std S0 foundation", () => {
+test("the no_std claim stays on all six stage libraries and excludes the std L0 foundation", () => {
   // The lane's target carries std (wasm32-wasip2 is not a std-less build), so
   // the `no_std` half of the claim is held by these attributes; the build
   // proves they are honest (a `std::` path in either crate stops compiling).
@@ -80,10 +80,10 @@ test("the no_std claim stays on all six stage libraries and excludes the std S0 
   const workspace = readRepoFile("Cargo.toml");
   assert.match(
     workspace,
-    /^vize_s0 = \{ package = "vize_carton", path = "crates\/vize_carton", version = "=[^"]+" \}$/m,
+    /^vize_l0 = \{ package = "vize_carton", path = "crates\/vize_carton", version = "=[^"]+" \}$/m,
   );
   const carton = readRepoFile("crates", "vize_carton", "src", "lib.rs");
-  assert.doesNotMatch(carton, /^#!\[no_std\]$/m, "S0 is the accepted std host foundation");
+  assert.doesNotMatch(carton, /^#!\[no_std\]$/m, "L0 is the accepted std host foundation");
 
   const davinciManifest = readRepoFile("crates", "vize_davinci", "Cargo.toml");
   assert.match(davinciManifest, /^path = "src\/bin\/davinci-opt\/main\.rs"$/m);

@@ -14,9 +14,9 @@ on:
     paths:
       - "crates/vize_carton/src/hash.rs"
       - "crates/vize_davinci/**"
-      - "crates/vize_s1/**"
-      - "crates/vize_s2/**"
-      - "crates/vize_s1_to_s2/**"
+      - "crates/vize_l1/**"
+      - "crates/vize_l2/**"
+      - "crates/vize_l1_to_l2/**"
       - "crates/vize_resident/**"
       - "crates/vize_croquis/src/sfc/**"
       - "crates/vize_croquis/src/croquis/alpha*"

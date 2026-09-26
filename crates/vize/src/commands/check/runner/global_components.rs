@@ -10,7 +10,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use vize_s0::{FxHashSet, String, cstr};
+use vize_l0::{FxHashSet, String, cstr};
 
 use super::resolve::resolve_from_config_dir;
 use crate::commands::check::tsconfig_inputs::{

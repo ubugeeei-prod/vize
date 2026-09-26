@@ -1,8 +1,8 @@
 //! Temporary template-walk counter (Davinci P2-12a).
 //!
-//! Counts the pre-S2 traversal work of the fused compile path: one **visit**
+//! Counts the pre-L2 traversal work of the fused compile path: one **visit**
 //! per template node a stage's descent dispatches on, and one **walk** per
-//! stage traversal entered. The phase-2 exit gate compares the S2 pass
+//! stage traversal entered. The phase-2 exit gate compares the L2 pass
 //! manager's traversal count against the numbers this probe recorded, so the
 //! quantity has to be pinned before the work that could bias it - the P0-3
 //! precedent ([`crate::expr_parse_probe`]), whose baseline lives in

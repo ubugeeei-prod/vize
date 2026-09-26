@@ -38,10 +38,10 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::naming::{is_pascal_case, to_pascal_case};
 use vize_croquis::{Croquis, Scope, ScopeData, ScopeKind};
+use vize_l0::cstr;
+use vize_l0::{CompactString, String, ToCompactString};
 use vize_relief::BindingType;
 use vize_relief::RootNode;
-use vize_s0::cstr;
-use vize_s0::{CompactString, String, ToCompactString};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unused-components",

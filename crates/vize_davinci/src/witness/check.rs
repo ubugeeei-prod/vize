@@ -5,7 +5,7 @@ use super::WitnessError;
 use crate::diagnostic::{Verdict, WitnessKeyed, WitnessLink};
 use crate::fact::{Demand, FactGroup, FactView};
 use crate::pass::AnalysisId;
-use vize_s0::Span;
+use vize_l0::Span;
 
 /// A fact group a witness link may cite: its key erases to a
 /// [`WitnessKey`](crate::diagnostic::WitnessKey), and every fact states the
@@ -128,7 +128,7 @@ fn check_link<G: WitnessGroup>(
 /// use vize_davinci::fact::{Demand, FactGroup};
 /// use vize_davinci::pass::AnalysisId;
 /// use vize_davinci::witness::{WitnessCheck, WitnessChecks, WitnessGroup};
-/// use vize_s0::Span;
+/// use vize_l0::Span;
 ///
 /// struct Tags;
 /// impl FactGroup for Tags {
@@ -157,7 +157,7 @@ fn check_link<G: WitnessGroup>(
 /// use vize_davinci::fact::{Demand, FactGroup};
 /// use vize_davinci::pass::AnalysisId;
 /// use vize_davinci::witness::{WitnessCheck, WitnessChecks, WitnessGroup};
-/// use vize_s0::Span;
+/// use vize_l0::Span;
 ///
 /// struct Tags;
 /// impl FactGroup for Tags {

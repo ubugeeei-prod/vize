@@ -39,7 +39,7 @@ pub(super) fn add_inline_art_template_virtual_docs(
                 continue;
             }
 
-            let template_allocator = vize_s0::Allocator::new();
+            let template_allocator = vize_l0::Allocator::new();
             let (ast, _errors) = vize_armature::parse(&template_allocator, template_content);
 
             let template_doc = project_template_fragment(
@@ -48,7 +48,7 @@ pub(super) fn add_inline_art_template_virtual_docs(
                 script_offset,
                 &ast,
                 variant.template_start as u32,
-                vize_s0::cstr!("{base_uri}.art_variant_{current_variant_index}.template.ts")
+                vize_l0::cstr!("{base_uri}.art_variant_{current_variant_index}.template.ts")
                     .to_string(),
             );
 
@@ -105,7 +105,7 @@ pub(super) fn generate_art_script_setup_virtual_doc(
     if parts.isolate {
         let count = variant_count.max(1);
         for index in 0..count {
-            vize_s0::append!(content, "function __VIZE_art_variant_{index}_setup() {{\n");
+            vize_l0::append!(content, "function __VIZE_art_variant_{index}_setup() {{\n");
             for chunk in &parts.isolated_body {
                 let generated_start = content.len() as u32;
                 content.push_str(&chunk.text);
@@ -138,7 +138,7 @@ pub(super) fn generate_art_script_setup_virtual_doc(
 
     mappings.sort_by_authored();
     VirtualDocument {
-        uri: vize_s0::cstr!("{base_uri}.__script_setup.ts").to_string(),
+        uri: vize_l0::cstr!("{base_uri}.__script_setup.ts").to_string(),
         content,
         language: VirtualLanguage::ScriptSetup,
         source_map: mappings,

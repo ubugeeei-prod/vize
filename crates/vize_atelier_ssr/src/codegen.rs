@@ -15,7 +15,7 @@ use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_core::{
     RootNode, RuntimeHelper, TemplateChildNode, codegen::document::EmitDocument,
 };
-use vize_s0::{Allocator, FxHashSet, SmallVec, String};
+use vize_l0::{Allocator, FxHashSet, SmallVec, String};
 
 /// SSR codegen result
 #[derive(Debug, Default)]
@@ -143,7 +143,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Open `ssrRender`: the signature and the CSS-variable prelude. Shared
-    /// by the legacy walker and the S4 string-plan emitter. The signature is
+    /// by the legacy walker and the L4 string-plan emitter. The signature is
     /// anchored at `template_start`, the template section's authored start.
     pub(crate) fn begin_render(&mut self, template_start: u32) {
         self.push_mapped(

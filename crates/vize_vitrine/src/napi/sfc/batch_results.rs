@@ -6,7 +6,7 @@ use std::{
     time::Instant,
 };
 use vize_atelier_sfc::module_shape::finalize_module_output_with_map;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::types::ModuleShapeNapi;
 use super::{
@@ -85,7 +85,7 @@ fn compile_sfc_batch_with_results_inner(
         .map(|file| {
             let scope_id =
                 vize_atelier_sfc::generate_bundler_scope_id(&file.path, None, false, None);
-            let filename_cs: vize_s0::CompactString = file.path.as_str().into();
+            let filename_cs: vize_l0::CompactString = file.path.as_str().into();
             let descriptor = match sfc_parse(
                 &file.source,
                 SfcParseOptions {

@@ -5,7 +5,7 @@ use vize_atelier_sfc::{
     croquis::{SfcCroquisAnalysis, SfcCroquisOptions, analyze_sfc_descriptor_with_context},
     parse_sfc, prepare_root_patterned_template,
 };
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 #[cfg(test)]
 mod tests;
 

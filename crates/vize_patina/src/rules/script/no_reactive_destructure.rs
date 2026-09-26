@@ -33,12 +33,12 @@
 //! ```
 
 use memchr::memmem;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use vize_s0::String;
+use vize_l0::String;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/no-reactive-destructure",

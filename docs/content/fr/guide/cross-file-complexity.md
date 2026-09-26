@@ -13,7 +13,7 @@ aval peuvent afficher dans des rapports, dans le Playground et dans de futures v
 Le modèle associe trois signaux de complexité à Vue :
 
 - Nombre de chemins du template : la complexité cyclomatique propre à chaque composant, calculée par
-  l’analyse S2 `template-complexity` de Davinci. Elle compte chaque condition `v-if` / `v-else-if`,
+  l’analyse L2 `template-complexity` de Davinci. Elle compte chaque condition `v-if` / `v-else-if`,
   chaque `v-for`, et chaque `&&`, `||`, `??` et `?:` dans les expressions que le template évalue.
 - Flux de contrôle imbriqué : la complexité cognitive propre à chaque composant. Les branches et les
   boucles coûtent d’autant plus qu’elles sont imbriquées dans des régions `v-if`, `v-for` ou de slot

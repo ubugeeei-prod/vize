@@ -12,7 +12,7 @@ use vize_atelier_sfc::{
 };
 use vize_atelier_ssr::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 use vize_atelier_vapor::{VaporCompilerExperimentalOptions, VaporCompilerOptions};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use super::battery::{Backend, Fixture};
 
@@ -36,7 +36,7 @@ pub fn compile(backend: Backend, fixture: &Fixture) -> Compiled {
     }
 }
 
-fn parse_map(map: Option<vize_s0::String>) -> Option<serde_json::Value> {
+fn parse_map(map: Option<vize_l0::String>) -> Option<serde_json::Value> {
     map.map(|json| serde_json::from_str(json.as_str()).expect("map is valid JSON"))
 }
 

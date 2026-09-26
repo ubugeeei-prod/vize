@@ -5,7 +5,7 @@
 //! (script binding metadata, `is_ts`, the scoped-style id, the component
 //! name). Code, preamble, source map, and diagnostics must be byte-identical;
 //! a broken plan invariant (`rejected`) fails the gate; and the sweep must
-//! actually emit from the S4 plan, so a gate that only ever compares the
+//! actually emit from the L4 plan, so a gate that only ever compares the
 //! legacy walker against itself proves nothing.
 //!
 //! `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>` widens the committed battery to
@@ -104,7 +104,7 @@ impl Report {
     }
 }
 
-fn component_name(path: &str) -> vize_s0::String {
+fn component_name(path: &str) -> vize_l0::String {
     std::path::Path::new(path)
         .file_stem()
         .and_then(|stem| stem.to_str())
@@ -191,7 +191,7 @@ fn record(name: &str, comparison: &SsrLaneComparison, report: &mut Report) {
 fn assert_clean(label: &str, report: &Report) {
     assert!(
         report.rejected.is_empty(),
-        "{label}: broken S4 plan invariants: {:#?}",
+        "{label}: broken L4 plan invariants: {:#?}",
         report.rejected
     );
     assert!(
@@ -202,7 +202,7 @@ fn assert_clean(label: &str, report: &Report) {
     );
     assert!(
         report.emitted() > 0,
-        "{label}: a gate that never emits from the S4 plan proves nothing"
+        "{label}: a gate that never emits from the L4 plan proves nothing"
     );
 }
 

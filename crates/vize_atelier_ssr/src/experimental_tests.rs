@@ -3,7 +3,7 @@ use crate::{
     compile_ssr_with_template_syntax_and_experimental_options,
 };
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[test]
 fn test_experimental_self_component_resolves_current_component() {

@@ -30,7 +30,7 @@ export default {
     const objectStorageUseSSL = ref(meta.objectStorageUseSSL);
     const objectStorageUseProxy = ref(meta.objectStorageUseProxy);
     const objectStorageSetPublicRead = ref(meta.objectStorageSetPublicRead);
-    const objectStorageS3ForcePathStyle = ref(meta.objectStorageS3ForcePathStyle);
+    const objectStorageL3ForcePathStyle = ref(meta.objectStorageL3ForcePathStyle);
     function save() {
       os.apiWithDialog("admin/update-meta", {
         useObjectStorage: useObjectStorage.value,
@@ -45,7 +45,7 @@ export default {
         objectStorageUseSSL: objectStorageUseSSL.value,
         objectStorageUseProxy: objectStorageUseProxy.value,
         objectStorageSetPublicRead: objectStorageSetPublicRead.value,
-        objectStorageS3ForcePathStyle: objectStorageS3ForcePathStyle.value
+        objectStorageL3ForcePathStyle: objectStorageL3ForcePathStyle.value
       }).then(() => {
         fetchInstance(true);
       });
@@ -344,8 +344,8 @@ export default {
               }),
               _createVNode(_component_SearchMarker, null, {
                 default: _withCtx(() => [_createVNode(MkSwitch, {
-                  modelValue: objectStorageS3ForcePathStyle.value,
-                  "onUpdate:modelValue": _cache[11] || (_cache[11] = ($event) => objectStorageS3ForcePathStyle.value = $event)
+                  modelValue: objectStorageL3ForcePathStyle.value,
+                  "onUpdate:modelValue": _cache[11] || (_cache[11] = ($event) => objectStorageL3ForcePathStyle.value = $event)
                 }, {
                   label: _withCtx(() => [_createVNode(_component_SearchLabel, null, {
                     default: _withCtx(() => [_createTextVNode("s3ForcePathStyle")]),

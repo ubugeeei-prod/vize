@@ -157,7 +157,7 @@ pub async fn serve_tcp(port: u16) -> Result<(), Box<dyn std::error::Error + Send
 
     tracing::info!("Starting vize_maestro LSP server on port {}", port);
 
-    let addr = vize_s0::cstr!("127.0.0.1:{port}");
+    let addr = vize_l0::cstr!("127.0.0.1:{port}");
     let listener = TcpListener::bind(addr.as_str())?;
     tracing::info!("Listening on 127.0.0.1:{}", port);
 

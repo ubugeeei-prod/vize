@@ -98,20 +98,20 @@ The highest-leverage single change; everything later depends on it.
 **Exit gate:** corpus compile parity (byte-identical or waivered); compile bench
 holds or improves — this phase should be a measurable win, not a wash.
 
-## Phase 2 — S2 semantic IR and the pass manager
+## Phase 2 — L2 semantic IR and the pass manager
 
-- Introduce the S2 typed dialect and the pass manager (const pipelines, debug
+- Introduce the L2 typed dialect and the pass manager (const pipelines, debug
   verifiers, `profile!` per pass, **fusable/barrier pass declarations with
   fusion of adjacent single-visit passes**).
 - Port the core transform lane: structured control flow replaces in-place
   directive rewriting; the codegen-node universe separates from the surface AST;
   raw `*mut` traversal is replaced by id-based traversal.
-- The **DOM backend** is the first strangler target: it lowers from S2 while SSR
+- The **DOM backend** is the first strangler target: it lowers from L2 while SSR
   and Vapor still run the old lane.
-- New crates (`vize_davinci`, `vize_s2`) are `no_std + alloc` from birth;
+- New crates (`vize_davinci`, `vize_l2`) are `no_std + alloc` from birth;
   `wasm32-wasip2` joins CI. Pass-manager observers (Folio-after-change dumps,
   timing, remark emission) land with the pass manager itself, so the DevTool's
-  data feed exists from the first S2 build.
+  data feed exists from the first L2 build.
 
 **Current execution ledger (2026-09-12):** [22 of 22 tasks are complete](./plan/phase-2.md#current-execution-ledger-2026-09-12), and phase 2 has exited.
 P2-9 is complete: the hydrated corpus run compiled 41,580 files at zero
@@ -119,14 +119,14 @@ divergence and measured the retained-`None` residual at 11.73%. P2-11 is now
 complete through [#5860](https://github.com/ubugeeei-prod/vize/pull/5860), so
 there are no active blocked tasks. P2-16 is complete through
 [#5927](https://github.com/ubugeeei-prod/vize/pull/5927): admitted JSX VDOM
-roots select the S2 emitter first, with Relief retained for Patina and explicit
+roots select the L2 emitter first, with Relief retained for Patina and explicit
 fallback cases. P2-12b is complete through
 [#6056](https://github.com/ubugeeei-prod/vize/pull/6056): source-map-free DOM
-compiles report the exact one-walk S2 build budget, with preserving fact
+compiles report the exact one-walk L2 build budget, with preserving fact
 products folded before codegen and Vue 2 legacy sugar kept on its compatibility
 pass-manager path. P2-17 is complete through
 [#6057](https://github.com/ubugeeei-prod/vize/pull/6057), signing off the
-internal S2 contract checklist with span, schema-version and provenance
+internal L2 contract checklist with span, schema-version and provenance
 witnesses. P2-20 completed the phase-exit evaluation through
 [#6059](https://github.com/ubugeeei-prod/vize/pull/6059), deleting the P2-9
 transform lane flag and recording the DOM compile allocation target miss with a
@@ -140,15 +140,15 @@ self references, inline setup reads, inline root prop hoists, helper order,
 template refs, constant-handler and constant-text decisions, `cache_handlers`
 and printed-order cache slots, then extend that matrix through scoped CSS ids,
 runtime names, option bundles, model/outlet families, the shared DOM battery,
-the source-map-free production selector, S2 DOM section boundaries, in-tag
+the source-map-free production selector, L2 DOM section boundaries, in-tag
 option routing, SFC namespace selection, ordinary comment output and source-map
-requests handled around S2 with a verified compatibility map, experimental
+requests handled around L2 with a verified compatibility map, experimental
 in-tag comments, declarative custom-element patterns, bare static style merges
 and disabled static-hoist routing, HTML re-entry close casing, the explicit
 legacy selection guard, the audited DOM no-op `optimize_imports` selector and
 the DOM legacy lane flag deletion. The
 static custom-element predicate and parser-recovered SFC self-closing selector
-edges now have S2 production witnesses. The
+edges now have L2 production witnesses. The
 earlier increments pin the late directive, patch-site, component, hoist-order
 and residual DOM corpus witnesses. Real Project Matrix run
 `33531193323` recorded canonical hydrated zero-divergence evidence over 146
@@ -158,28 +158,28 @@ phase-exit gates.
 The executable fixture inventory is 146 gitlinks / 142 ecosystem projects;
 fixture checkout hydration is deliberately not a project-count source.
 
-**Exit gate:** DOM corpus parity; Folio dumps for S1/S2 in fixtures; bench
+**Exit gate:** DOM corpus parity; Folio dumps for L1/L2 in fixtures; bench
 budget; **fused compile-path traversal count measured at ≤ the pre-Davinci
 pipeline's**.
 
-## Phase 3 — S3 reactivity IR and backend convergence
+## Phase 3 — L3 reactivity IR and backend convergence
 
-- Generalize the Vapor IR into S3; Vapor lowers S2→S3 with full semantic
+- Generalize the Vapor IR into L3; Vapor lowers L2→L3 with full semantic
   context — deleting the run-then-discard double transform and the duplicated
   directive transforms. Vapor becomes the first consumer of the
   [reactivity lattice](./semantic-engine.md#the-reactivity-lattice--one-analysis-every-backend)
   and effect facts (`EffectGraph` finally reaches a backend); VDOM patch flags
   and SSR static planning derive from the same facts.
-- SSR moves onto its decided thin S2→S4 path, reading the static partition as
+- SSR moves onto its decided thin L2→L4 path, reading the static partition as
   facts (charter #9); phase measurements retain veto power over the split.
-- Structured emitters (S4) replace string-append codegen; **SSR and Vapor gain
+- Structured emitters (L4) replace string-append codegen; **SSR and Vapor gain
   source maps**; SFC-level text-matching map recovery retires.
 
 - Metamorphic test suite: semantics-preserving SFC mutations (attribute
-  reorder, pass-through wrappers, text-node splits) must produce S3 folios
+  reorder, pass-through wrappers, text-node splits) must produce L3 folios
   identical modulo ids; the IVM oracle (incremental update ≡ from-scratch
-  render) runs over S3 fixtures.
-- The **executable S3 reference semantics lands in Lean** (charter #36) as
+  render) runs over L3 fixtures.
+- The **executable L3 reference semantics lands in Lean** (charter #36) as
   the op reference's formal companion — spec, differential oracle against
   both backends, and the substrate for the lattice / effect-grouping /
   IVM-linearity theorems.
@@ -189,21 +189,21 @@ three backends; Vapor compile bench improves (it stops paying for VDOM).
 
 ## Phase 4 — Consumer convergence
 
-- **One virtual-language projection** on S2 replaces the two virtual-TS
+- **One virtual-language projection** on L2 replaces the two virtual-TS
   generators (canon + maestro) and unifies their source-map models; diagnostic
   assembly becomes a single post-pass over finished diagnostics.
-- Patina's markup facade re-bases as a zero-copy S2 view, and the **rule engine
+- Patina's markup facade re-bases as a zero-copy L2 view, and the **rule engine
   re-targets the neutral core through the semantic-engine query API** — one
   rule corpus for SFC and JSX, with per-rule opt-outs only where semantics
   genuinely diverge. Reserved Svelte/Astro variants map to the input-dialect
   contract. Consumers stop reading `Croquis` fields directly; facts become
   demand-driven.
-- Glyph is reimplemented on lossless S1 **with an intentional style redesign**
+- Glyph is reimplemented on lossless L1 **with an intentional style redesign**
   (charter #41): the four corpus properties are the invariant exact gates, a
   written style spec pins every intentional decision as fixtures, and churn
   against old output is reported for review rather than gated. The byte
-  scanner retires; pug arrives as an S1 dialect. Musea's art parser moves
-  onto S0/S1.
+  scanner retires; pug arrives as an L1 dialect. Musea's art parser moves
+  onto L0/L1.
 - The projection's span-link model serves the tsgo/Corsa API, the
   content-mapper protocol, and Maestro from one implementation; deep analysis
   products land on the fact base: complexity over real template CFGs
@@ -211,7 +211,7 @@ three backends; Vapor compile bench improves (it stops paying for VDOM).
   route params, `definePageMeta`), and composed HTML-conformance checks.
 
 **Early re-cut (2026-09-21):** phase 4 was re-cut into full contracts while
-phase 3 is still live, because almost all of it reads only S2; 35 of its 39
+phase 3 is still live, because almost all of it reads only L2; 35 of its 39
 tasks are startable now and 4 are gated on named phase-3 tasks
 ([phase-4.md](./plan/phase-4.md)). The phase still exits after phase 3.
 
@@ -230,7 +230,7 @@ or is demand-gated off**.
   (charter #10): block content keys as the firewall queries, durability layers
   for `node_modules`/config vs open buffers, explicit interning GC and memory
   bounds. One-shot CLI stays on the fused pipeline.
-- Maestro request paths consume cached S1/S2 artifacts instead of re-running
+- Maestro request paths consume cached L1/L2 artifacts instead of re-running
   `parse_sfc` per request (63 sites today); keystroke cost becomes proportional
   to the edited block.
 - **Incremental-vs-clean equivalence runs in CI** over the corpus from the
@@ -257,7 +257,7 @@ smoke suite passes (Neovim headless, Helix, Zed alongside VS Code)**.
   with Volt.
 
 - The **JS plugin tier** (charter #29) GAs alongside: the custom-rule SDK over
-  the S2 neutral-core view and fact query API (napi batched execution,
+  the L2 neutral-core view and fact query API (napi batched execution,
   per-plugin cost attribution, content-keyed caching), validated by real
   user-land rules; spiked earlier during phase 4/5 consumer work.
 

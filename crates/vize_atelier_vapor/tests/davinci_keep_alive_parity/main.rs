@@ -90,7 +90,7 @@ fn cache_policy_reuses_or_evicts_the_same_components_as_official_vapor() {
         assert_eq!(
             WalkCounts::snapshot().since(before).total_walks(),
             0,
-            "{props}: native S3"
+            "{props}: native L3"
         );
         let vize = trace(
             "davinci-mounted-trace.mjs",

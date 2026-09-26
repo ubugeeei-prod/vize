@@ -19,7 +19,7 @@
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use crate::{
     CompileResult, CompilerOptions, template_syntax::resolve_template_syntax,

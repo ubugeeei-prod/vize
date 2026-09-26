@@ -1,6 +1,6 @@
 //! Shared request-parameter builders for the handler guard tests.
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[cfg(feature = "native")]
 use crate::ide::{canonical_request_path, request_file_uri};

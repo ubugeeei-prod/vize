@@ -41,7 +41,7 @@ which strands the central analyses without consumers.
 
 ## Design: facts, demand, one query surface
 
-The semantic engine is the S2 side-table layer of the
+The semantic engine is the L2 side-table layer of the
 [architecture](./architecture.md), promoted to a product:
 
 1. **Facts, not fields.** Each analysis is a fact group keyed by
@@ -120,7 +120,7 @@ cross-file graph × native type information, on one base.
 - **Mode advisories** — Vapor-readiness of a component (which constructs would
   block or degrade Vapor compilation), derived from the same lattice, serving
   migration between non-Vapor and Vapor.
-- **Complexity metrics over the real control flow** — S2 regions give templates
+- **Complexity metrics over the real control flow** — L2 regions give templates
   a genuine CFG, so cyclomatic/cognitive complexity is computed on what the
   component actually does (`v-if`/`v-for`/slots as branches and loops), and the
   cross-file component graph lets complexity **cross file boundaries**: a

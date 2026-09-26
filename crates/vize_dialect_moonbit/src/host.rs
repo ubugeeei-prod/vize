@@ -12,7 +12,7 @@
 
 use core::fmt;
 
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 /// One check request: a single virtual file in one package.
 #[derive(Debug, Clone, Copy)]

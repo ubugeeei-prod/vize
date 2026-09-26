@@ -9,7 +9,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_croquis::builtins::is_global_allowed;
-use vize_s0::{FxHashSet, String, ToCompactString};
+use vize_l0::{FxHashSet, String, ToCompactString};
 
 /// Get slot props expression as raw source (not transformed)
 pub(super) fn get_slot_props(dir: &DirectiveNode<'_>, source: &str) -> Option<String> {

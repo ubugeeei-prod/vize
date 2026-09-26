@@ -14,7 +14,7 @@ upstream exactly (attribute order inside a tag normalized) while the pre-fix
 module threw or rendered different HTML
 (`crates/vize_atelier_ssr/tests/vue_ssr_render.rs`, fixtures in
 `tests/vue_ssr_render/fixtures.rs`, harness
-`tests/tooling/support/ssr-vue-render-diff.mjs`). The S4 plan lane emits the
+`tests/tooling/support/ssr-vue-render-diff.mjs`). The L4 plan lane emits the
 same bytes (`s4/differential_tests/vue_align_fixtures.rs`, four option sets).
 
 ## Open: SSR Vue 3.5 alignment (P3-8, `fix(ssr)!`)

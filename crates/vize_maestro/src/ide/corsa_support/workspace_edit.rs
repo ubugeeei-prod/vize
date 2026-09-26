@@ -157,7 +157,7 @@ mod tests {
         TextDocumentEdit, TextEdit, Url, WorkspaceEdit,
     };
     use vize_canon::{LspLocation, LspPosition, LspRange};
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     use super::map_corsa_workspace_edit;
     use crate::{

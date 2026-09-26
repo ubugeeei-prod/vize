@@ -1,7 +1,7 @@
 //! The virtual MoonBit projection with span links (charter #14).
 //!
-//! The template is lowered through S1 → S2 like every Vue template; each
-//! S2 expression position is admitted directly as `ExprRef::Foreign` of
+//! The template is lowered through L1 → L2 like every Vue template; each
+//! L2 expression position is admitted directly as `ExprRef::Foreign` of
 //! dialect `moonbit`, with exact source spans, and emitted by
 //! [`crate::dialect::MoonBitDialect`] into **one** virtual `.mbt` file:
 //!
@@ -32,9 +32,9 @@
 
 mod emit;
 
-use vize_s0::{Allocator, Span, String, append};
-use vize_s1_to_s2::{ForeignDialect, LegacyCaps, lower_source_block_with_foreign_expressions};
-use vize_s2::expr::ForeignExpr;
+use vize_l0::{Allocator, Span, String, append};
+use vize_l1_to_l2::{ForeignDialect, LegacyCaps, lower_source_block_with_foreign_expressions};
+use vize_l2::expr::ForeignExpr;
 
 use crate::sfc::MoonBitSfc;
 use emit::{Emitter, generated_offset, interpolation_parts};
@@ -103,7 +103,7 @@ pub struct Position<'a> {
 /// A template position the P6-4a projection does not cover.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Unsupported {
-    /// The S2 op mnemonic (`ui.model`, `ui.slot-content`, …).
+    /// The L2 op mnemonic (`ui.model`, `ui.slot-content`, …).
     pub what: &'static str,
     /// The op's authored range.
     pub span: Span,
@@ -155,7 +155,7 @@ pub fn project<'a>(
     sfc: &MoonBitSfc<'a>,
     file_name: &str,
 ) -> Projection<'a> {
-    let (tree, errors) = vize_s1::parse(allocator, sfc.template.source());
+    let (tree, errors) = vize_l1::parse(allocator, sfc.template.source());
     let dialect = moonbit_dialect();
     let lowered = lower_source_block_with_foreign_expressions(
         allocator,
@@ -171,7 +171,7 @@ pub fn project<'a>(
         allocator,
         parts,
         projection: Projection {
-            file_name: vize_s0::cstr!("{file_name}.mbt"),
+            file_name: vize_l0::cstr!("{file_name}.mbt"),
             text: String::default(),
             links: Vec::new(),
             positions: Vec::new(),

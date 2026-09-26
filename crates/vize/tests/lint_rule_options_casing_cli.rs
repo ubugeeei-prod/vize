@@ -5,7 +5,7 @@ use std::{
     process::{Command, Output},
     sync::atomic::{AtomicU64, Ordering},
 };
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 static NEXT_TEMP_PROJECT_ID: AtomicU64 = AtomicU64::new(0);
 
@@ -32,7 +32,7 @@ fn write_project_file(root: &Path, path: &str, content: &str) {
     fs::write(file_path, content).unwrap();
 }
 
-fn output_details(output: &Output) -> vize_s0::String {
+fn output_details(output: &Output) -> vize_l0::String {
     let stdout = std::str::from_utf8(&output.stdout).unwrap_or("<non-utf8 stdout>");
     let stderr = std::str::from_utf8(&output.stderr).unwrap_or("<non-utf8 stderr>");
     cstr!("stdout:\n{}\nstderr:\n{}", stdout, stderr)

@@ -14,7 +14,7 @@
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
 use std::path::Path;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 const CHILD: &str = r#"<script setup lang="ts">
 defineProps<{ label?: string }>()

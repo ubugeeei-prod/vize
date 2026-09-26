@@ -79,11 +79,11 @@ mod usage;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::String;
+use vize_l0::ToCompactString;
+use vize_l0::cstr;
+use vize_l0::{CompactString, FxHashSet};
 use vize_relief::RootNode;
-use vize_s0::String;
-use vize_s0::ToCompactString;
-use vize_s0::cstr;
-use vize_s0::{CompactString, FxHashSet};
 
 use self::usage::{
     PropsAccess, classify_props_access, push_script_references, template_references,
@@ -210,7 +210,7 @@ impl Rule for NoUnusedProperties {
                 .macros
                 .models()
                 .iter()
-                .map(|model| vize_s0::get_modifier_prop_name(model.name.as_str()))
+                .map(|model| vize_l0::get_modifier_prop_name(model.name.as_str()))
                 .collect();
 
             let destructured = analysis.macros.props_destructure();

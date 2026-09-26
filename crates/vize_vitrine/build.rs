@@ -29,7 +29,7 @@ fn main() -> BuildResult {
         .and_then(Path::parent)
         .ok_or("vize_vitrine is not inside the workspace")?;
     let mut hasher = Sha256::new();
-    // The source closure that builds the S2 plugin document and its facts.
+    // The source closure that builds the L2 plugin document and its facts.
     // Watching the files also refreshes this ID for dirty local builds whose
     // Git revision has not changed yet.
     for relative in [
@@ -56,9 +56,9 @@ fn main() -> BuildResult {
         "crates/vize_vitrine/src/plugin_transform",
         "crates/vize_davinci/src",
         "crates/vize_carton/src",
-        "crates/vize_s1/src",
-        "crates/vize_s1_to_s2/src",
-        "crates/vize_s2/src",
+        "crates/vize_l1/src",
+        "crates/vize_l1_to_l2/src",
+        "crates/vize_l2/src",
         "crates/vize_croquis/src",
         "crates/vize_impeto/src",
         "crates/vize_relief/src",

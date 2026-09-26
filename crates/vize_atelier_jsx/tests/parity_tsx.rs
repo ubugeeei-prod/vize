@@ -9,7 +9,7 @@ use vize_atelier_jsx::{
     JsxLang, JsxOutputMode, VaporCompileOptions, VdomCompileOptions, compile_to_vapor,
     compile_to_vdom, lower_source,
 };
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[test]
 fn tsx_vdom_codegen_matrix() {

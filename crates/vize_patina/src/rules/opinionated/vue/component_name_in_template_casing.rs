@@ -22,8 +22,8 @@ use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_croquis::builtins::is_builtin_component;
 use vize_croquis::naming::{is_kebab_case_loose, is_pascal_case};
+use vize_l0::{is_html_tag, is_svg_tag};
 use vize_relief::ElementNode;
-use vize_s0::{is_html_tag, is_svg_tag};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/component-name-in-template-casing",

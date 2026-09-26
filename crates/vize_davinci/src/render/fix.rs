@@ -19,7 +19,7 @@ use super::paint::Style;
 use super::row::Row;
 use super::source::SourceFile;
 use super::text;
-use vize_s0::String;
+use vize_l0::String;
 
 /// One replacement: `[start, end)` becomes `replacement`.
 #[derive(Debug, Clone, Copy)]

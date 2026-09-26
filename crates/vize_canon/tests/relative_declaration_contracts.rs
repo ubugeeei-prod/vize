@@ -1,5 +1,5 @@
 use vize_canon::{BatchTypeChecker, BatchTypeCheckerTrait};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[test]
 fn out_of_root_declarations_enforce_imported_contracts_and_report_removal() {

@@ -11,13 +11,13 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const emitRoot = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit.rs");
-const runPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "run.rs");
-const patchPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "patch.rs");
+const emitRoot = path.join(repoRoot, "crates", "vize_l1_to_l2", "src", "emit.rs");
+const runPath = path.join(repoRoot, "crates", "vize_l1_to_l2", "src", "emit", "run.rs");
+const patchPath = path.join(repoRoot, "crates", "vize_l1_to_l2", "src", "emit", "patch.rs");
 const patchStoragePath = path.join(
   repoRoot,
   "crates",
-  "vize_s1_to_s2",
+  "vize_l1_to_l2",
   "src",
   "emit",
   "patch",
@@ -26,15 +26,15 @@ const patchStoragePath = path.join(
 const patchTestsPath = path.join(
   repoRoot,
   "crates",
-  "vize_s1_to_s2",
+  "vize_l1_to_l2",
   "src",
   "emit",
   "patch",
   "tests.rs",
 );
-const vnodePath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "vnode.rs");
-const componentPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "component.rs");
-const dispatchPath = path.join(repoRoot, "crates", "vize_s1_to_s2", "src", "emit", "dispatch.rs");
+const vnodePath = path.join(repoRoot, "crates", "vize_l1_to_l2", "src", "emit", "vnode.rs");
+const componentPath = path.join(repoRoot, "crates", "vize_l1_to_l2", "src", "emit", "component.rs");
+const dispatchPath = path.join(repoRoot, "crates", "vize_l1_to_l2", "src", "emit", "dispatch.rs");
 
 function read(filePath: string): string {
   return fs.readFileSync(filePath, "utf8");

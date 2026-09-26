@@ -4,7 +4,7 @@
 //! join: this file chooses the origin, effects, escape and verdict a kind
 //! implies, and does not classify on its own.
 
-use vize_s0::Span;
+use vize_l0::Span;
 
 use super::{BindingId, BindingInput, EffectKind, EffectSet, Verdict};
 

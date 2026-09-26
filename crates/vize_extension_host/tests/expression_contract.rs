@@ -15,7 +15,7 @@ use vize_canon::virtual_ts::{
 use vize_davinci::folio::{Folio, FolioError};
 use vize_extension_host::expression::{Analysis, ProjectionPage, accept_analysis};
 use vize_extension_host::{Diagnostic, Page, Severity, Span, Stage};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 fn analysis() -> Analysis {
     Analysis {

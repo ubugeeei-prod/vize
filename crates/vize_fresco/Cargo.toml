@@ -17,7 +17,7 @@ default = []
 napi = ["dep:napi", "dep:napi-derive", "dep:fast-float2"]
 
 [dependencies]
-vize_s0.workspace = true
+vize_l0.workspace = true
 
 # Terminal control
 crossterm.workspace = true

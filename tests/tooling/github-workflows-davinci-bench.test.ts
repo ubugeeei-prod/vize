@@ -36,7 +36,7 @@ test("check workflow uploads Davinci allocation bench reports", () => {
   assert.notEqual(gateIndex, -1);
   assert.match(
     steps[gateIndex].run ?? "",
-    /cargo bench -p vize_s1_to_s2 --bench davinci_storage -- --quick/,
+    /cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick/,
   );
   assert.match(
     steps[gateIndex].run ?? "",

@@ -72,7 +72,7 @@ pub fn is_function_expression_node(node: &SimpleExpressionNode<'_>) -> bool {
 #[cfg(any(test, feature = "davinci-differential"))]
 fn differential_shape_check(raw: &str, retained_result: bool, shape: fn(&Expression<'_>) -> bool) {
     let allocator = oxc_allocator::Allocator::default();
-    let wrapped = vize_s0::cstr!("({raw}\n)");
+    let wrapped = vize_l0::cstr!("({raw}\n)");
     let legacy = Parser::new(
         &allocator,
         &wrapped,

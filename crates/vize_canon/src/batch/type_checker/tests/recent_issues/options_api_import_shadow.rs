@@ -10,7 +10,7 @@ use super::super::{
     with_workspace_node_modules_override,
 };
 use std::path::Path;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 const FORMAT_MODULE: &str = r#"export function format(value: string, pattern: string): string {
   return value + pattern

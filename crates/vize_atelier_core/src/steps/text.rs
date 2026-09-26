@@ -2,7 +2,7 @@
 //!
 //! Transforms text nodes and interpolation nodes.
 
-use vize_s0::{String, Vec};
+use vize_l0::{String, Vec};
 
 use crate::lane::TransformContext;
 use crate::{ExpressionNode, RuntimeHelper, TemplateChildNode};

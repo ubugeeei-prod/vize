@@ -2,9 +2,9 @@
 
 use super::{LintVisitor, element_has_directive};
 use crate::context::LintContext;
+use vize_l0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
+use vize_l0::profile;
 use vize_relief::{ElementNode, RootNode, SourceLocation, TemplateChildNode};
-use vize_s0::directive::{DirectiveKind, parse_level_severity, parse_vize_directive};
-use vize_s0::profile;
 
 impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
     /// Visit the root node and traverse the AST

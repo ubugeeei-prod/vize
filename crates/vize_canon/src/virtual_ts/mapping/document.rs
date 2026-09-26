@@ -1,6 +1,6 @@
-//! Projection rows from the S4 emission document (P3-9, consumed by P4-5b).
+//! Projection rows from the L4 emission document (P3-9, consumed by P4-5b).
 //!
-//! Every S4 target writes an [`EmitDocument`] whose [`SpanLink`]s pair
+//! Every L4 target writes an [`EmitDocument`] whose [`SpanLink`]s pair
 //! generated ranges with authored ranges. The same links serialize as Source
 //! Map v3 segments (in `vize_atelier_core`) and, here, as
 //! [`ProjectionMapping`] rows, so a projection emitted through the document
@@ -12,11 +12,11 @@
 use std::ops::Range;
 
 use vize_atelier_core::codegen::document::{EmitDocument, SpanLink};
-use vize_s0::Span;
+use vize_l0::Span;
 
 use super::{ProjectionMapping, VizeMapping, VizeSubSpan};
 
-/// The checker's virtual TypeScript module as an S4 emission document.
+/// The checker's virtual TypeScript module as an L4 emission document.
 ///
 /// `code` moves into the document unchanged, so snapshots and the
 /// content-mapper protocol keep the generator's bytes. Each non-empty row
@@ -25,7 +25,7 @@ use super::{ProjectionMapping, VizeMapping, VizeSubSpan};
 /// that row. The generator also emits those overlaps as their own rows, so
 /// the checker keeps that mapping and does not replace it with the nested
 /// reading.
-pub fn virtual_ts_document(code: vize_s0::String, spans: &[VizeMapping]) -> EmitDocument {
+pub fn virtual_ts_document(code: vize_l0::String, spans: &[VizeMapping]) -> EmitDocument {
     let mut links = Vec::new();
     for span in spans {
         push_link(&mut links, &span.gen_range, &span.src_range);
@@ -70,7 +70,7 @@ fn push_link(links: &mut Vec<SpanLink>, generated: &Range<usize>, authored: &Ran
 }
 
 impl ProjectionMapping {
-    /// Rows for the range links of an S4 emission document, in emission
+    /// Rows for the range links of an L4 emission document, in emission
     /// order. A link that spans generated and authored bytes becomes a row,
     /// unless it lies inside the preceding row's generated range (a rewritten
     /// identifier inside its expression), in which case it refines that row
@@ -110,7 +110,7 @@ impl ProjectionMapping {
 mod tests {
     use super::{ProjectionMapping, VizeMapping, VizeSubSpan, virtual_ts_document};
     use vize_atelier_core::codegen::document::EmitDocument;
-    use vize_s0::Span;
+    use vize_l0::Span;
 
     #[test]
     fn virtual_ts_document_keeps_the_code_and_the_rows() {
@@ -127,7 +127,7 @@ mod tests {
             },
         ];
         let spans = vec![VizeMapping::new(0..6, 0..6), expression];
-        let document = virtual_ts_document(vize_s0::String::new(code), &spans);
+        let document = virtual_ts_document(vize_l0::String::new(code), &spans);
         assert_eq!(document.as_str(), code);
         assert_eq!(
             ProjectionMapping::from_emit_document(&document).spans(),

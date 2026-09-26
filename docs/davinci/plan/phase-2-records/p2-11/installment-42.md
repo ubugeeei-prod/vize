@@ -14,7 +14,7 @@ report-only until a reference-runner baseline exists.
 
 The durable witnesses are:
 
-- [`davinci_storage.rs`](../../../../../crates/vize_s1_to_s2/benches/davinci_storage.rs)
+- [`davinci_storage.rs`](../../../../../crates/vize_l1_to_l2/benches/davinci_storage.rs)
   - defines the emit-only benchmark window and the synthetic P2-11 DOM surface.
 - [`budgets.toml`](../../budgets.toml)
   - registers `s1_to_s2_emit_p2_11_dom_surface` with `allocs = 60`.

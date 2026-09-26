@@ -5,7 +5,7 @@
 //! stopped on a panic: the pipeline string (P2-2 grammar), the run
 //! configuration a replay needs, the failure the run recorded, and the
 //! last-good stage dump. "Last-good" is literal: it is the artifact as of the
-//! last stage that completed, and today - before any S2 stage runs on the
+//! last stage that completed, and today - before any L2 stage runs on the
 //! compile path - that is the authored source itself, carried under
 //! `artifact-stage=source`.
 //!
@@ -42,7 +42,7 @@
 
 use core::fmt;
 
-use vize_s0::{FxHashMap, String, cstr};
+use vize_l0::{FxHashMap, String, cstr};
 
 use super::page::{PagePrinter, ParseState};
 use super::{Folio, FolioError, FolioMode, page};

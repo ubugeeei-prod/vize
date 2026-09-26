@@ -123,13 +123,19 @@ export interface Emission {
 
 export declare const PACKAGE: "vize:contracts@0.1.3";
 export declare const PROTOCOL_VERSION: 1;
-export declare const S1_PAGE_SCHEMA: 1;
-export declare const S2_PAGE_SCHEMA: 1;
+export declare const L1_PAGE_SCHEMA: 1;
+export declare const L2_PAGE_SCHEMA: 1;
 export declare const REQUIRED_FEATURES: readonly ["s1-page@1", "s2-page@1"];
 export declare const FACTS_PAGE_SCHEMA: 1;
 export declare const PROJECTION_PAGE_SCHEMA: 1;
 export declare const EXPRESSION_REQUIRED_FEATURES: readonly ["facts-page@1", "projection-page@1"];
-export declare const S3_PAGE_SCHEMA: 1;
+export declare const L3_PAGE_SCHEMA: 1;
+/** Compatibility names for the original SDK constants. */
+export {
+  L1_PAGE_SCHEMA as S1_PAGE_SCHEMA,
+  L2_PAGE_SCHEMA as S2_PAGE_SCHEMA,
+  L3_PAGE_SCHEMA as S3_PAGE_SCHEMA,
+};
 export declare const EMIT_DOCUMENT_PAGE_SCHEMA: 1;
 export declare const OUTPUT_REQUIRED_FEATURES: readonly [
   "emit-document-page@1",

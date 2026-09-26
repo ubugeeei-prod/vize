@@ -1,7 +1,7 @@
-//! A changed block's task: S1 whole, S2 by regions when the template splits.
+//! A changed block's task: L1 whole, L2 by regions when the template splits.
 
 use vize_davinci::key::ArtifactKey;
-use vize_s1_to_s2::LegacyCaps;
+use vize_l1_to_l2::LegacyCaps;
 
 use super::cancel::{CancelToken, Cancelled};
 use super::region::{assemble, split_regions};
@@ -9,7 +9,7 @@ use super::shift::shifted;
 use super::{BlockSnapshot, RegionSnapshot, Shared, SnapshotStats, Stages};
 use crate::artifact::{BlockKind, BlockSource, PageArtifact, StageConfig, SurfaceArtifact};
 
-/// A changed block's task: S1 whole, S2 by regions when the template splits.
+/// A changed block's task: L1 whole, L2 by regions when the template splits.
 pub(super) fn compute_block(
     source: BlockSource,
     old: Option<&Shared<BlockSnapshot>>,
@@ -87,7 +87,7 @@ pub(super) fn compute_block(
     Ok((snapshot, tokens))
 }
 
-/// A block lowered whole: no regions, S2 straight from the page stage.
+/// A block lowered whole: no regions, L2 straight from the page stage.
 fn whole_block(
     source: BlockSource,
     surface: Option<SurfaceArtifact>,

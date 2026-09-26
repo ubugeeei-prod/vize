@@ -3,7 +3,7 @@
 //! `parse_art` keeps `ArtDescriptor` field-stable, so these warnings are
 //! collected through a separate entry rather than a new descriptor field.
 
-use vize_s0::{Allocator, Vec};
+use vize_l0::{Allocator, Vec};
 
 /// Return unknown-status warnings for `source`, or an empty list if the Art
 /// block is missing or metadata cannot be parsed.
@@ -18,7 +18,7 @@ pub fn parse_art_status_warnings<'a>(
 #[cfg(test)]
 mod tests {
     use super::parse_art_status_warnings;
-    use vize_s0::Allocator;
+    use vize_l0::Allocator;
 
     #[test]
     fn unknown_status_returns_the_shared_warning() {

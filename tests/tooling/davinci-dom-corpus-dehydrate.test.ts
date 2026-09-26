@@ -6,7 +6,7 @@ import { test } from "node:test";
 
 import { dehydrateCorpus } from "../../tools/support/compat/fixtures/davinci-dom-corpus-workflow.mjs";
 
-test("S2 DOM corpus dehydrate unregisters selected fixture gitlinks", () => {
+test("L2 DOM corpus dehydrate unregisters selected fixture gitlinks", () => {
   const artifact = mkdtempSync(join(tmpdir(), "vize-dom-corpus-"));
   const calls = [];
   const runCommand = (command, args) => {

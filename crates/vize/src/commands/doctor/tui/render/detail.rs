@@ -9,7 +9,7 @@ use vize_fresco::{
     terminal::{Color, Style},
     text::WrapMode,
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::{StyledLine, profile, severity_tone};
 use crate::commands::doctor::{

@@ -19,8 +19,8 @@ test("TS-40 current-projection fixture matrix is explicit and non-vacuous", () =
   validateProjectionMatrix(root, matrix);
   assert.ok(matrix.fixtures.length >= 10, "TS-40 matrix must contain at least 10 fixtures");
   assert.ok(
-    matrix.unproven.some((item) => item.includes("Davinci or S2")),
-    "TS-40 matrix must explicitly leave Davinci or S2 parity unproven",
+    matrix.unproven.some((item) => item.includes("Davinci or L2")),
+    "TS-40 matrix must explicitly leave Davinci or L2 parity unproven",
   );
   assert.ok(
     matrix.normalization.some((item) => item.includes("preserve generation order")),

@@ -1,31 +1,31 @@
-use crate::ir::{LintDocumentKind, S1InputDialect};
+use crate::ir::{L1InputDialect, LintDocumentKind};
 
 #[test]
-fn kind_maps_onto_s1_input_dialects() {
+fn kind_maps_onto_l1_input_dialects() {
     assert_eq!(
-        LintDocumentKind::VueSfc.s1_input_dialect(),
-        Some(S1InputDialect::VueTemplate)
+        LintDocumentKind::VueSfc.l1_input_dialect(),
+        Some(L1InputDialect::VueTemplate)
     );
     assert_eq!(
-        LintDocumentKind::MarkupFragment.s1_input_dialect(),
-        Some(S1InputDialect::VueTemplate)
+        LintDocumentKind::MarkupFragment.l1_input_dialect(),
+        Some(L1InputDialect::VueTemplate)
     );
     assert_eq!(
-        LintDocumentKind::ScriptModule.s1_input_dialect(),
-        Some(S1InputDialect::Jsx)
+        LintDocumentKind::ScriptModule.l1_input_dialect(),
+        Some(L1InputDialect::Jsx)
     );
-    assert_eq!(LintDocumentKind::AstroComponent.s1_input_dialect(), None);
-    assert_eq!(LintDocumentKind::SvelteComponent.s1_input_dialect(), None);
+    assert_eq!(LintDocumentKind::AstroComponent.l1_input_dialect(), None);
+    assert_eq!(LintDocumentKind::SvelteComponent.l1_input_dialect(), None);
     assert_eq!(
-        S1InputDialect::from_template_lang(Some("pug")),
-        S1InputDialect::Pug
-    );
-    assert_eq!(
-        S1InputDialect::from_template_lang(Some(" HTML ")),
-        S1InputDialect::VueTemplate
+        L1InputDialect::from_template_lang(Some("pug")),
+        L1InputDialect::Pug
     );
     assert_eq!(
-        S1InputDialect::from_template_lang(None),
-        S1InputDialect::VueTemplate
+        L1InputDialect::from_template_lang(Some(" HTML ")),
+        L1InputDialect::VueTemplate
+    );
+    assert_eq!(
+        L1InputDialect::from_template_lang(None),
+        L1InputDialect::VueTemplate
     );
 }

@@ -8,8 +8,8 @@ use crate::runtime_helpers::RuntimeHelpers;
 use crate::{Namespace, RuntimeHelper};
 
 use super::document::EmitDocument;
-use vize_s0::FxHashMap;
-use vize_s0::String;
+use vize_l0::FxHashMap;
+use vize_l0::String;
 
 /// Code generation context using a UTF-8 string buffer for performance.
 pub struct CodegenContext {

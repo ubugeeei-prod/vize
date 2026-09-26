@@ -8,7 +8,7 @@
 
 use std::sync::LazyLock;
 
-use vize_s0::{FxHashMap, SmallVec};
+use vize_l0::{FxHashMap, SmallVec};
 
 pub use super::rows::Row;
 use super::tri::Tri;

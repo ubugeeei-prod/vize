@@ -168,10 +168,16 @@ fn reduce_vue(name: &str, checks: &[&str]) -> Output {
 
 #[test]
 fn each_vue_oracle_reduces_to_its_exact_witness() {
-    let cases: [(&str, &[&str], &str, &str); 5] = [
+    let cases: [(&str, &[&str], &str, &str); 6] = [
         (
             "seeded-crash.vue",
             &["--remark", "s2.hoist-static missed static-props"],
+            "<template><section><Swiper><SwiperSlide :key=\"slide.id\"></SwiperSlide></Swiper></section></template>",
+            "reduce: 3733 -> 100 bytes (2.6% of the input), 49 oracle run(s), 1-minimal\n",
+        ),
+        (
+            "seeded-crash.vue",
+            &["--remark", "l2.hoist-static missed static-props"],
             "<template><section><Swiper><SwiperSlide :key=\"slide.id\"></SwiperSlide></Swiper></section></template>",
             "reduce: 3733 -> 100 bytes (2.6% of the input), 49 oracle run(s), 1-minimal\n",
         ),

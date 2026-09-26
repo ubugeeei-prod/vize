@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use ignore::WalkBuilder;
-use vize_s0::{FxHashSet, String, cstr};
+use vize_l0::{FxHashSet, String, cstr};
 
 use super::stubs::{push_stub, tracked_read_to_string};
 

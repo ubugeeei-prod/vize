@@ -1,11 +1,11 @@
 //! Build a render skeleton from a [`MarkupDocument`] — the one projection
 //! Patina's rules read, whichever syntax backs it (Vue template, lowered JSX,
-//! and the S2 facade P4-7 introduces).
+//! and the L2 facade P4-7 introduces).
 
 use std::cell::RefCell;
 
 use vize_armature::{Parser, ParserOptions, TemplateSyntaxMode};
-use vize_s0::{Allocator, CompactString, Span};
+use vize_l0::{Allocator, CompactString, Span};
 
 use super::build_helpers::{
     compiler_ns, component_kind, element_node, intrinsic_member_tag, is_dynamic_is, name_span,
@@ -55,7 +55,7 @@ pub fn skeleton(document: &MarkupDocument<'_>) -> Skeleton {
     build(document, false, false)
 }
 
-/// Build from the retained authored S1 projection of an S2 template document.
+/// Build from the retained authored L1 projection of an L2 template document.
 pub fn authored_document_skeleton(document: &MarkupDocument<'_>) -> Skeleton {
     build(document, false, true)
 }

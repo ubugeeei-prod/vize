@@ -23,7 +23,7 @@ legacy = ["vize_relief/_legacy", "vize_armature/legacy"]
 davinci-differential = []
 
 [dependencies]
-vize_s0 = { workspace = true }
+vize_l0 = { workspace = true }
 vize_croquis = { workspace = true }
 vize_relief = { workspace = true }
 vize_armature = { workspace = true }
@@ -54,27 +54,27 @@ davinci_harness = { workspace = true }
 davinci_test_support = { workspace = true }
 insta = { workspace = true }
 
-# The Davinci S2 lane, test-space only (P2-9): dev-dependencies are stripped
+# The Davinci L2 lane, test-space only (P2-9): dev-dependencies are stripped
 # on publish, so the release graph stays independent until a production lane
 # explicitly selects the published stage crates.
 vize_davinci = { workspace = true }
-vize_s2 = { workspace = true }
-vize_s1_to_s2 = { workspace = true }
-vize_s1 = { workspace = true }
+vize_l2 = { workspace = true }
+vize_l1_to_l2 = { workspace = true }
+vize_l1 = { workspace = true }
 
 # The P2-9 corpus-runnable differential entry (the P1-6/P1-7 lane shape):
 # compiled only when the lane is armed, and its battery pins are mirrored
-# by the plain witness (tests/davinci_s2_transform.rs) so a feature-wiring
+# by the plain witness (tests/davinci_l2_transform.rs) so a feature-wiring
 # regression fails loudly in both lanes.
 [[test]]
-name = "davinci_s2_transform_corpus"
+name = "davinci_l2_transform_corpus"
 required-features = ["davinci-differential"]
 
 # Vue 2 dialect dual-run. The shipped `.sync` / `slot-scope` / filter
 # expansion lives behind `legacy`, so this witness cannot ride the
 # default workspace test; clippy-and-test invokes it explicitly.
 [[test]]
-name = "davinci_s2_transform_vue2"
+name = "davinci_l2_transform_vue2"
 required-features = ["legacy"]
 
 [[bench]]

@@ -143,7 +143,7 @@ Every textual read of the relief \`SourceLocation\` members that
 across \`crates/*/src\`, plus the migration group each consumer moved to as
 relief nodes switched to two-u32 byte spans instead of owned
 \`{ start: Position, end: Position, source: String }\` triples
-([architecture.md](../architecture.md), S0). This was the migration map
+([architecture.md](../architecture.md), L0). This was the migration map
 Davinci P1 executed (P0-9). P1-3 executed group 1 (\`source\` reads off
 \`SourceLocation\`); P1-4 executed groups 2 and 3 (line/column reads to
 offset-derived rendering, the \`Position\` type and its converters deleted).

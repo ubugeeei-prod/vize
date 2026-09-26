@@ -7,7 +7,7 @@ mod corsa_requirement;
 
 use std::{path::Path, process::Command};
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[test]
 fn check_config_entry_ignores_explicit_inputs() {

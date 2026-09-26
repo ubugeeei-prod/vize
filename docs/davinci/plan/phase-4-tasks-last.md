@@ -71,7 +71,7 @@
 
 **Lane:** I
 
-**Deliverable:** the check no per-file tool can do — `<p><MyCard /></p>` where `MyCard`'s root is a `<div>` — from a `ComponentRoots` group (a child's possible root elements from its S2 page: one element, `ui.if` alternatives, fragment children; a `<slot>` pass-through is unknown) joined with the parent's insertion content model. The rule `html/cross-component-nesting` reports with a witness naming the parent element span, the child root span and the resolved component identity; tier `exact` within the declared domain (statically resolved components, no dynamic `:is`); `unknown` produces silence.
+**Deliverable:** the check no per-file tool can do — `<p><MyCard /></p>` where `MyCard`'s root is a `<div>` — from a `ComponentRoots` group (a child's possible root elements from its L2 page: one element, `ui.if` alternatives, fragment children; a `<slot>` pass-through is unknown) joined with the parent's insertion content model. The rule `html/cross-component-nesting` reports with a witness naming the parent element span, the child root span and the resolved component identity; tier `exact` within the declared domain (statically resolved components, no dynamic `:is`); `unknown` produces silence.
 
 **Steps:**
 
@@ -107,32 +107,32 @@
 
 **Landed 2026-09-22:** `style-spec.md` pins S01–S24, each with a fixture pair, and the bijection fails on an injected orphan. Review point open — the maintainer has not signed off the direction (charter #41). See the [P4-12a record](./phase-4-records/p4-12a.md).
 
-## P4-12b — Glyph on S1
+## P4-12b — Glyph on L1
 
 **Start gate:** startable now — P3-independent.
 
 **Lane:** J
 
-**Deliverable:** Glyph's template formatting reimplemented over `vize_s1` trees, deleting the byte scanner `crates/vize_glyph/src/template/formatter.rs` (597 lines) and its `formatter/` submodules; SFC blocks through the `vize_croquis` splitter; script formatting through `oxc_formatter` unchanged.
+**Deliverable:** Glyph's template formatting reimplemented over `vize_l1` trees, deleting the byte scanner `crates/vize_glyph/src/template/formatter.rs` (597 lines) and its `formatter/` submodules; SFC blocks through the `vize_croquis` splitter; script formatting through `oxc_formatter` unchanged.
 
 **Steps:**
 
-- [ ] Rewrite `crates/vize_glyph/src/template*` on S1; `cargo test -p vize_glyph --test style_spec` runs the TS-41 pairs
+- [ ] Rewrite `crates/vize_glyph/src/template*` on L1; `cargo test -p vize_glyph --test style_spec` runs the TS-41 pairs
 - [ ] Attach the churn-vs-old report to the PR (reported, not gated)
 
-**Acceptance:** TS-5 — idempotence, parse-preservation, lint-agreement and pug — with an empty waiver ledger; TS-41 exact; `grep -rn "memchr" crates/vize_glyph/src/template` empty; `davinci-glyph-stage-alias.test.ts` extended for the S1 edge.
+**Acceptance:** TS-5 — idempotence, parse-preservation, lint-agreement and pug — with an empty waiver ledger; TS-41 exact; `grep -rn "memchr" crates/vize_glyph/src/template` empty; `davinci-glyph-stage-alias.test.ts` extended for the L1 edge.
 
 **Deps:** P4-12a.
 
 **Non-goals:** pug formatting (P4-12c); an OXC lossless script wrapper (P4-12d).
 
-## P4-12c — Pug as an S1 dialect
+## P4-12c — Pug as an L1 dialect
 
 **Start gate:** startable now — P3-independent.
 
 **Lane:** K
 
-**Deliverable:** charter #12 made real: a pug parser producing the lossless S1 surface with `Unexpected`/`Missing` holes (`crates/vize_s1/src/pug/`), an S1→S2 lowering (`crates/vize_s1_to_s2/src/lower/pug*`) so compile, lint, format and type-check share the lanes, and pug formatting in Glyph.
+**Deliverable:** charter #12 made real: a pug parser producing the lossless L1 surface with `Unexpected`/`Missing` holes (`crates/vize_l1/src/pug/`), an L1→L2 lowering (`crates/vize_l1_to_l2/src/lower/pug*`) so compile, lint, format and type-check share the lanes, and pug formatting in Glyph.
 
 **Steps:**
 
@@ -148,42 +148,42 @@
 
 _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lint):_ see [P4-12c record](./phase-4-records/p4-12c.md)
 
-## P4-12d — Lossless script and JSX S1
+## P4-12d — Lossless script and JSX L1
 
 **Start gate:** startable now — P3-independent.
 
 **Lane:** P
 
-**Deliverable:** the source-owning OXC-backed JS/TS/JSX/TSX S1 wrapper promised by [the architecture](../architecture.md#s1--surface-trees-input-dialects) and deferred by [P2-7](./phase-2-tasks.md#p2-7--s1-vue-surface-tree), with distinct compiler and formatter parse profiles, structural recovery and S1 consumers. P4-12b and P4-13 do not own this migration.
+**Deliverable:** the source-owning OXC-backed JS/TS/JSX/TSX L1 wrapper promised by [the architecture](../architecture.md#l1--surface-trees-input-dialects) and deferred by [P2-7](./phase-2-tasks.md#p2-7--l1-vue-surface-tree), with distinct compiler and formatter parse profiles, structural recovery and L1 consumers. P4-12b and P4-13 do not own this migration.
 
 **Steps:**
 
-- [ ] Implement `vize_s1::script` against the pinned OXC parser `0.142.0` / `fc702c1fa9f0412d06ec6908b58cd395b826cf7f`: enable `oxc_parser::config::TokensParserConfig` through `Parser::with_config`; retain `Program.comments` (already collected by OXC), the entire source and every gap between tokens. Token collection is opt-in; source gaps and comments must always survive the wrapper.
+- [ ] Implement `vize_l1::script` against the pinned OXC parser `0.142.0` / `fc702c1fa9f0412d06ec6908b58cd395b826cf7f`: enable `oxc_parser::config::TokensParserConfig` through `Parser::with_config`; retain `Program.comments` (already collected by OXC), the entire source and every gap between tokens. Token collection is opt-in; source gaps and comments must always survive the wrapper.
 - [ ] Make profile identity explicit in parsing and cache keys. Preserve the compiler's `preserve_parens: true` and the formatter's `parse_for_format` contract (`preserve_parens: false`, feature-dependent identifier hashing and JSX source-type handling); retain each profile's existing options and never pass a compiler-profile AST to `format_program`.
-- [ ] Represent unexpected source structurally, with original spans and bytes. On `ParserReturn.panicked`, retain the **whole input** as `Unexpected`, including unlexed suffixes; an empty OXC program is not an empty S1 tree. Add zero-width `Missing` nodes with expected kinds only from an actual typed recovery API or adapter at the parser recovery site; never infer kinds from diagnostic strings.
-- [ ] Route script/JSX compile, lint, format and autofix parse consumers through the appropriate S1 profile, coordinating Glyph call-site changes with lane J. Lower JSX to S2 from S1 instead of treating the current OXC → legacy `RootNode` → S2 projection as a lossless S1 implementation; preserve existing compatibility gates and functional S2 behavior.
+- [ ] Represent unexpected source structurally, with original spans and bytes. On `ParserReturn.panicked`, retain the **whole input** as `Unexpected`, including unlexed suffixes; an empty OXC program is not an empty L1 tree. Add zero-width `Missing` nodes with expected kinds only from an actual typed recovery API or adapter at the parser recovery site; never infer kinds from diagnostic strings.
+- [ ] Route script/JSX compile, lint, format and autofix parse consumers through the appropriate L1 profile, coordinating Glyph call-site changes with lane J. Lower JSX to L2 from L1 instead of treating the current OXC → legacy `RootNode` → L2 projection as a lossless L1 implementation; preserve existing compatibility gates and functional L2 behavior.
 - [ ] Extend TS-19 byte-fidelity and TS-20 total-lowering batteries to JS/TS/JSX/TSX, comments, whitespace gaps, Unicode, CRLF and every truncation; include both recoverable malformed input and fatal parses, with typed expected-kind recovery witnesses.
 - [ ] Record exact-head Actions evidence and consumer scope under `phase-4-records/`, including formatter idempotence/parse preservation and compiler byte parity before retiring the corresponding private parsing bridges.
 
-**Acceptance:** TS-19 has `render(parse(src)) == src` for both profiles, including malformed inputs; TS-20 lowering is total and retains unexpected fragments; structural `Missing` fixtures prove typed expected kinds. TS-5 formatting/parse preservation, TS-11 compiler byte parity and TS-13 assertion lint stay green with unchanged waiver ledgers. The wrapper is consumed by the named production paths, and no legacy `RootNode` reconstruction or diagnostic-string guessing satisfies the S1 gate.
+**Acceptance:** TS-19 has `render(parse(src)) == src` for both profiles, including malformed inputs; TS-20 lowering is total and retains unexpected fragments; structural `Missing` fixtures prove typed expected kinds. TS-5 formatting/parse preservation, TS-11 compiler byte parity and TS-13 assertion lint stay green with unchanged waiver ledgers. The wrapper is consumed by the named production paths, and no legacy `RootNode` reconstruction or diagnostic-string guessing satisfies the L1 gate.
 
 **Known blocker:** the pinned public [`ParserReturn`](https://github.com/oxc-project/oxc/blob/fc702c1fa9f0412d06ec6908b58cd395b826cf7f/crates/oxc_parser/src/lib.rs) exposes diagnostics and `panicked`, but no structural recovery events carrying expected kinds. A typed parser recovery API/adapter must be implemented and exercised before this task can be accepted; token retention alone does not close it.
 
 **Deps:** none (phase-2 exit).
 
-**Non-goals:** new script/JSX language features; changing formatter style or compatibility semantics; reopening functional P2-16 S2 support; moving a target, ratchet or waiver to accommodate the migration.
+**Non-goals:** new script/JSX language features; changing formatter style or compatibility semantics; reopening functional P2-16 L2 support; moving a target, ratchet or waiver to accommodate the migration.
 
-## P4-13 — Musea onto S0 and S1
+## P4-13 — Musea onto L0 and L1
 
 **Start gate:** startable now — P3-independent.
 
 **Lane:** L
 
-**Deliverable:** `crates/vize_musea/src/parse.rs` and `parse/` (1,232 lines of `memchr` hand scanning) replaced by the `vize_croquis` SFC block splitter plus S1 template trees for the `<art>`/`<variant>` custom blocks, with `ArtDescriptor` unchanged.
+**Deliverable:** `crates/vize_musea/src/parse.rs` and `parse/` (1,232 lines of `memchr` hand scanning) replaced by the `vize_croquis` SFC block splitter plus L1 template trees for the `<art>`/`<variant>` custom blocks, with `ArtDescriptor` unchanged.
 
 **Steps:**
 
-- [x] Re-implement `parse_art` over the splitter and `vize_s1`; delete the scanner
+- [x] Re-implement `parse_art` over the splitter and `vize_l1`; delete the scanner
 
 **Acceptance:** `cargo test -p vize_musea` snapshots unchanged (TS-1); TS-11 art surface empty; `grep -rn "memchr" crates/vize_musea/src/parse*` empty; the six Musea rules' fixtures unchanged (TS-9).
 
@@ -191,7 +191,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Non-goals:** new Art features; Musea UI.
 
-**Landed 2026-09-22:** `parse_art` on the splitter and S1, the scanner deleted after the differential lane, the corpus frozen as a fingerprint golden — see the [P4-13 record](./phase-4-records/p4-13.md) for the lane results and the divergence ledger.
+**Landed 2026-09-22:** `parse_art` on the splitter and L1, the scanner deleted after the differential lane, the corpus frozen as a fingerprint golden — see the [P4-13 record](./phase-4-records/p4-13.md) for the lane results and the divergence ledger.
 
 ## P4-14a — Structured diagnostic renderer
 
@@ -201,7 +201,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Lane:** M
 
-**Deliverable:** a rustc/Elm-grade renderer over `vize_davinci::Diagnostic` in `crates/vize_davinci/src/render.rs`: `error[code]: message`, `file:line:col`, a source excerpt with primary `^^^` and secondary `---` labels, help/note/suggestion parts with diff-style fixes, color and no-color, line/column derived at render time from the S0 line index (P2-1's contract), messages resolved through a caller-supplied `Catalog` generic (static dispatch; `vize_carton::i18n::Translator` implements it at the CLI edge), exposed as `vize lint --format rich`.
+**Deliverable:** a rustc/Elm-grade renderer over `vize_davinci::Diagnostic` in `crates/vize_davinci/src/render.rs`: `error[code]: message`, `file:line:col`, a source excerpt with primary `^^^` and secondary `---` labels, help/note/suggestion parts with diff-style fixes, color and no-color, line/column derived at render time from the L0 line index (P2-1's contract), messages resolved through a caller-supplied `Catalog` generic (static dispatch; `vize_carton::i18n::Translator` implements it at the CLI edge), exposed as `vize lint --format rich`.
 
 **Steps:**
 
@@ -220,7 +220,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Lane:** M
 
-**Deliverable:** every diagnostic code has en/ja/zh entries — the 56 compiler `ErrorCode`s, all 248 rules (121 lack a `description` today), Canon and croquis_cf codes, S2 verifier codes — with producers routed onto the unified channel (a `CompilerError` → `Diagnostic` adapter) and the catalog moved out of the over-budget JSON files into per-producer tables.
+**Deliverable:** every diagnostic code has en/ja/zh entries — the 56 compiler `ErrorCode`s, all 248 rules (121 lack a `description` today), Canon and croquis_cf codes, L2 verifier codes — with producers routed onto the unified channel (a `CompilerError` → `Diagnostic` adapter) and the catalog moved out of the over-budget JSON files into per-producer tables.
 
 **Steps:**
 
@@ -294,7 +294,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Lane:** O
 
-**Deliverable:** the API-shape decision of [open questions](../open-questions.md#js-plugin-api-shape) — serialized visit batches vs proxies, worker vs sync napi, JS-side demand declaration — proven with one real custom rule over the S2 facade through `vize_vitrine`'s napi lane with batched node visits.
+**Deliverable:** the API-shape decision of [open questions](../open-questions.md#js-plugin-api-shape) — serialized visit batches vs proxies, worker vs sync napi, JS-side demand declaration — proven with one real custom rule over the L2 facade through `vize_vitrine`'s napi lane with batched node visits.
 
 **Steps:**
 
@@ -303,7 +303,7 @@ _Slices 2026-09-22 (surface, lowering, compile lanes; corpus compile oracle; lin
 
 **Acceptance:** the spike rule's output byte-identical across two runs and its time attributed per plugin in lint output, in a node test; decision recorded; the spike code kept with tests or deleted, and the PR says which (GA is P6-7).
 
-**Landed 2026-09-22:** serialized S2 visit batches over sync napi with static manifest demands, measured against a proxy handle and a worker; one team-convention rule (`no-index-key`) through `lintWithPlugins` with per-plugin cost and content keys; spike code kept with tests — see the [P4-16 record](./phase-4-records/p4-16.md).
+**Landed 2026-09-22:** serialized L2 visit batches over sync napi with static manifest demands, measured against a proxy handle and a worker; one team-convention rule (`no-index-key`) through `lintWithPlugins` with per-plugin cost and content keys; spike code kept with tests — see the [P4-16 record](./phase-4-records/p4-16.md).
 
 **Deps:** P4-1a, P4-7a.
 

@@ -6,12 +6,12 @@
 //! `ExprRef` capability contract. This crate proves the hosting model end
 //! to end on the contracts that exist today:
 //!
-//! 1. [`sfc::split`] — S0: a file is a MoonBit file when its script block
+//! 1. [`sfc::split`] — L0: a file is a MoonBit file when its script block
 //!    says `lang="moonbit"`; the dialect resolves once per file.
-//! 2. [`projection::project`] — S1 → S2 lowering as for any Vue template,
+//! 2. [`projection::project`] — L1 → L2 lowering as for any Vue template,
 //!    every expression position lowered as `ExprRef::Foreign` and emitted
 //!    by [`dialect::MoonBitDialect`] (the first
-//!    `vize_s2::expr::capability::ExprDialect` implementor) into one
+//!    `vize_l2::expr::capability::ExprDialect` implementor) into one
 //!    virtual `.mbt` file with span links — charter #14's virtual
 //!    host-language projection.
 //! 3. [`host::MooncHost`] — the toolchain boundary. The `moonc` feature
@@ -38,7 +38,7 @@ pub mod typed;
 
 use core::fmt;
 
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 use crate::diagnostic::{Mapped, ParseError, map_all};
 use crate::host::{CheckUnit, HostError, MooncHost};

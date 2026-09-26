@@ -1,7 +1,7 @@
 #![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
+use vize_l0::Allocator;
 use vize_musea::{ArtParseOptions, ArtStatus, parse_art};
-use vize_s0::Allocator;
 
 fn parse<'a>(
     allocator: &'a Allocator,

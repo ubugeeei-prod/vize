@@ -5,7 +5,7 @@
 //! artifact says, so a reducer could delete the whole artifact and still
 //! "reproduce" — a vacuous oracle. `inject-when=<tag>` makes the seeded
 //! crash **content-dependent**: the injected pass panics only while the
-//! artifact's S1 surface tree still contains an element named `<tag>`, the
+//! artifact's L1 surface tree still contains an element named `<tag>`, the
 //! shape of a real construct-triggered compiler bug. It is a test seed, like
 //! `inject-panic` itself, and is only ever read from a repro's config.
 
@@ -13,7 +13,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use vize_davinci::folio::repro::ReproFolio;
 use vize_davinci::pass::parse_pipelines;
-use vize_s0::{Allocator, String, cstr};
+use vize_l0::{Allocator, String, cstr};
 
 use super::{
     ARTIFACT_STAGE_SOURCE, CONFIG_INJECT, CONFIG_MODE, IceFailure, mode_flags, panic_reason,
@@ -24,19 +24,19 @@ use super::{
 /// tag of the element whose presence triggers it (P3-14's seeded crash).
 pub(crate) const CONFIG_INJECT_WHEN: &str = "inject-when";
 
-/// Whether `source`'s S1 surface tree holds an element named `tag`,
+/// Whether `source`'s L1 surface tree holds an element named `tag`,
 /// anywhere (SFC blocks parse as markup, so this sees template content).
 pub(crate) fn has_element(source: &str, tag: &str) -> bool {
-    fn walk(children: &[vize_s1::SurfaceChild<'_>], tag: &str) -> bool {
+    fn walk(children: &[vize_l1::SurfaceChild<'_>], tag: &str) -> bool {
         children.iter().any(|child| match child {
-            vize_s1::SurfaceChild::Element(element) => {
+            vize_l1::SurfaceChild::Element(element) => {
                 element.tag() == tag || walk(&element.children, tag)
             }
             _ => false,
         })
     }
     let allocator = Allocator::default();
-    let (tree, _errors) = vize_s1::parse(&allocator, source);
+    let (tree, _errors) = vize_l1::parse(&allocator, source);
     walk(&tree.children, tag)
 }
 
@@ -64,7 +64,9 @@ pub(crate) fn replay(folio: &ReproFolio) -> Result<Option<IceFailure>, String> {
     silence_panics();
     let segments = parse_pipelines(folio.pipeline.as_str())
         .map_err(|error| cstr!("invalid repro pipeline: {error:?}"))?;
-    let stage = segments.first().map_or("", |segment| segment.stage);
+    let stage = segments.first().map_or("", |segment| {
+        vize_davinci::stage::pipeline_wire_id(segment.stage)
+    });
     match catch_unwind(AssertUnwindSafe(|| {
         compile_source(folio.artifact.as_str(), ssr, vapor);
     })) {

@@ -137,7 +137,7 @@ impl CallHierarchyService {
             };
             item.data = Some(serde_json::json!({
                 RAW_CALL_HIERARCHY_ITEM_DATA_KEY: raw_item,
-                "vizeCallHierarchySourceHash": vize_s0::hash::hash_str(&source).to_string(),
+                "vizeCallHierarchySourceHash": vize_l0::hash::hash_str(&source).to_string(),
             }));
         }
 

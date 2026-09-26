@@ -4,7 +4,7 @@
 
 use super::SsrCodegenContext;
 use vize_atelier_core::RuntimeHelper;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 impl SsrCodegenContext<'_> {
     /// A fresh `_tempN` binding, declared at the top of `ssrRender`.

@@ -2,7 +2,7 @@
 
 use std::{collections::BTreeMap, error::Error, fmt};
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::{DoctorReporter, ReporterContractError, ReporterDescriptor};
 

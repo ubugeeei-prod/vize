@@ -1,4 +1,4 @@
-//! The S2 region joint: a template block's root children split into regions
+//! The L2 region joint: a template block's root children split into regions
 //! that lower independently, and the lowering of one region.
 //!
 //! A template is **decomposable** when its root children are elements
@@ -13,10 +13,10 @@
 //! every step (`EquivalenceReport` runs the snapshot path too).
 
 use vize_davinci::diagnostic::{Diagnostic, Stage};
-use vize_s0::{Allocator, SourceRoot, String};
-use vize_s1::{SurfaceChild, Token};
-use vize_s1_to_s2::{LegacyCaps, lower_source_block_with_caps};
-use vize_s2::folio::{FolioOp, S2Folio};
+use vize_l0::{Allocator, SourceRoot, String};
+use vize_l1::{SurfaceChild, Token};
+use vize_l1_to_l2::{LegacyCaps, lower_source_block_with_caps};
+use vize_l2::folio::{FolioOp, L2Folio};
 
 /// One region's syntax: its bytes and block-relative start.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -42,7 +42,7 @@ pub struct RegionLowering {
 #[must_use]
 pub fn split_regions(block: &str) -> Option<Vec<RegionSyntax>> {
     let allocator = Allocator::default();
-    let (tree, _) = vize_s1::parse(&allocator, block);
+    let (tree, _) = vize_l1::parse(&allocator, block);
     let base = block.as_ptr() as usize;
     let starts: Vec<usize> = tree
         .children
@@ -86,7 +86,7 @@ pub fn lower_region(
     let start = region.start as usize;
     let slice = block.get(start..start + region.text.len())?;
     let allocator = Allocator::default();
-    let (tree, errors) = vize_s1::parse(&allocator, slice);
+    let (tree, errors) = vize_l1::parse(&allocator, slice);
     let frame = SourceRoot::new(block)
         .and_then(|root| root.block(slice, region.start))
         .ok()?;
@@ -96,7 +96,7 @@ pub fn lower_region(
         .into_iter()
         .partition(|diagnostic| diagnostic.stage == Stage::Surface);
     Some(RegionLowering {
-        ops: S2Folio::of(&lowered.root.ops).ops,
+        ops: L2Folio::of(&lowered.root.ops).ops,
         surface,
         semantic,
     })
@@ -108,7 +108,7 @@ pub fn lower_region(
 #[must_use]
 pub fn assemble<'r>(
     regions: impl Iterator<Item = &'r RegionLowering> + Clone,
-) -> (S2Folio, Vec<Diagnostic>) {
+) -> (L2Folio, Vec<Diagnostic>) {
     let ops = regions
         .clone()
         .flat_map(|region| region.ops.iter().cloned())
@@ -118,7 +118,7 @@ pub fn assemble<'r>(
         .flat_map(|region| region.surface.iter().cloned())
         .chain(regions.flat_map(|region| region.semantic.iter().cloned()))
         .collect();
-    (S2Folio { ops }, diagnostics)
+    (L2Folio { ops }, diagnostics)
 }
 
 fn first_token<'a>(child: &SurfaceChild<'a>) -> Token<'a> {

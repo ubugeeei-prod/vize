@@ -13,7 +13,7 @@ to `FULL_PROPS`, named component `v-model` dynamic-prop arrays, and component
 
 The durable current witness is:
 
-- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs)
+- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_patch_flags.rs)
   — S2-vs-shipped byte-for-byte coverage plus explicit patch-site extraction.
 
 This installment does not tick P2-11. Malformed slot-region guards, the

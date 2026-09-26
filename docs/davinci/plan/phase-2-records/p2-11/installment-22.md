@@ -15,9 +15,9 @@ sites are pinned together.
 
 The durable current witnesses are:
 
-- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs)
+- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_patch_flags.rs)
   — S2-vs-shipped byte-for-byte coverage for Vue 2 filter patch sites.
-- [`emit_filters.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_filters.rs)
+- [`emit_filters.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_filters.rs)
   — direct S2 emission snapshots for filter assets and wrapped calls.
 
 This installment does not tick P2-11. Malformed slot-region guards, the

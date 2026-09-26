@@ -1,10 +1,10 @@
-use super::s2_emit_supported;
+use super::l2_emit_supported;
 use crate::DomCompilerOptions;
 use vize_atelier_core::options::{CodegenOptions, CustomElementMatcher, TemplateSyntaxMode};
-use vize_s0::config::VueVersion;
+use vize_l0::config::VueVersion;
 
 #[test]
-fn supported_vue3_standard_dom_options_enter_s2() {
+fn supported_vue3_standard_dom_options_enter_l2() {
     assert!(supported(DomCompilerOptions::default()));
 }
 
@@ -21,8 +21,8 @@ fn legacy_dialects_stay_on_the_compatibility_lane() {
 }
 
 #[test]
-fn optimize_imports_codegen_option_does_not_disarm_s2() {
-    assert!(s2_emit_supported(
+fn optimize_imports_codegen_option_does_not_disarm_l2() {
+    assert!(l2_emit_supported(
         &DomCompilerOptions::default(),
         &CodegenOptions {
             optimize_imports: true,
@@ -31,32 +31,32 @@ fn optimize_imports_codegen_option_does_not_disarm_s2() {
         &CustomElementMatcher::default(),
         TemplateSyntaxMode::Standard,
         false,
-        super::S2EmitSelection::Allowed,
+        super::L2EmitSelection::Allowed,
         false,
     ));
 }
 
 #[test]
-fn opaque_custom_element_predicates_enter_the_s2_lane() {
-    assert!(s2_emit_supported(
+fn opaque_custom_element_predicates_enter_the_l2_lane() {
+    assert!(l2_emit_supported(
         &DomCompilerOptions::default(),
         &CodegenOptions::default(),
         &CustomElementMatcher::from_static_predicate(is_custom_element),
         TemplateSyntaxMode::Standard,
         false,
-        super::S2EmitSelection::Allowed,
+        super::L2EmitSelection::Allowed,
         false,
     ));
 }
 
 fn supported(options: DomCompilerOptions) -> bool {
-    s2_emit_supported(
+    l2_emit_supported(
         &options,
         &CodegenOptions::default(),
         &CustomElementMatcher::default(),
         TemplateSyntaxMode::Standard,
         false,
-        super::S2EmitSelection::Allowed,
+        super::L2EmitSelection::Allowed,
         false,
     )
 }

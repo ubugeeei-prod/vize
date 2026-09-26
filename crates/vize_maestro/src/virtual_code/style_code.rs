@@ -10,7 +10,7 @@
 use vize_atelier_sfc::SfcStyleBlock;
 
 use super::{ProjectionMapping, SourceRange, VirtualDocument, VirtualLanguage, VizeMapping};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 /// Style code generator.
 pub struct StyleCodeGenerator {

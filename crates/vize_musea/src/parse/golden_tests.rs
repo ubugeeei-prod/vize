@@ -1,9 +1,9 @@
 //! The P4-13 corpus lane after the scanner's deletion: every committed Musea
 //! fixture's full fingerprint, pinned.
 //!
-//! Slice 1 compared the S0/S1 reader with the retired hand scanner over this
+//! Slice 1 compared the L0/L1 reader with the retired hand scanner over this
 //! corpus (209 of 217 identical, 8 ledgered divergences pinned in
-//! `divergence_tests.rs`); slice 2 deleted the scanner and froze the S0/S1
+//! `divergence_tests.rs`); slice 2 deleted the scanner and froze the L0/L1
 //! fingerprints here, so the corpus stays a TS-1 regression suite of the
 //! reader it validated.
 //!
@@ -26,7 +26,7 @@ use crate::docs::{CatalogEntry, DocOptions, generate_component_doc};
 use crate::palette::{PaletteOptions, generate_palette};
 use crate::types::{ArtParseOptions, ArtParseResult};
 use crate::{transform_to_csf, transform_to_vue};
-use vize_s0::{Allocator, String, append};
+use vize_l0::{Allocator, String, append};
 
 /// Committed corpus size (`tests/fixtures/differential`, excluding the
 /// manifests). Changing the corpus means changing this number.

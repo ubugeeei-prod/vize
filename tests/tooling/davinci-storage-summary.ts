@@ -23,9 +23,9 @@ export const STORAGE_SUMMARY_REGEN =
 export const storageTypeNames: Record<StorageKind, string> = {
   allocVec: "alloc::vec::Vec",
   allocString: "alloc::string::String",
-  s0String: "vize_s0::String",
-  arenaVec: "vize_s0::Vec",
-  smallVec: "vize_s0::SmallVec",
+  l0String: "vize_l0::String",
+  arenaVec: "vize_l0::Vec",
+  smallVec: "vize_l0::SmallVec",
 };
 
 function counts(summary: StorageSummary): string[] {

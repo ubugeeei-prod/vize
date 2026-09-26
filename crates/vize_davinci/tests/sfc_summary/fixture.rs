@@ -1,7 +1,7 @@
 //! The `Button` interface the summary tests share, and the canonical pages.
 
 use vize_davinci::summary::{AlphaEntry, AlphaPages, Facet, SfcSummary, Signature, Usage};
-use vize_s0::String;
+use vize_l0::String;
 
 pub const BARE: &str = "\
 [sfc-summary]

@@ -33,12 +33,12 @@ const emit = defineEmits<{
     </template>
     <button
       type="button"
-      :class="['davinci-station', { active: selected === 's4' }]"
-      :aria-pressed="selected === 's4'"
-      data-stage="s4"
-      @click="() => emit('select', 's4')"
+      :class="['davinci-station', { active: selected === 'l4' }]"
+      :aria-pressed="selected === 'l4'"
+      data-stage="l4"
+      @click="() => emit('select', 'l4')"
     >
-      <span class="davinci-station-ordinal">S4</span>
+      <span class="davinci-station-ordinal">L4</span>
       <span class="davinci-station-name">Output</span>
       <span class="davinci-station-facts">DOM, Vapor, SSR</span>
     </button>

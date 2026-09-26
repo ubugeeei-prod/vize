@@ -195,7 +195,7 @@ pub const LONG_SPAN: Case = Case {
         let block = |nth: usize| {
             let open = super::nth(LONG_SOURCE, "<style scoped>", nth);
             let close = super::nth(LONG_SOURCE, "</style>", nth);
-            vize_s0::Span::new(open.start, close.end)
+            vize_l0::Span::new(open.start, close.end)
         };
         let message = tr(
             locale,

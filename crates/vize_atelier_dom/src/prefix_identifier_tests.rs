@@ -3,7 +3,7 @@
 
 use super::{DomCompilerOptions, compile_template_with_options};
 use vize_atelier_core::options::{BindingMetadata, BindingType, CodegenMode};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 /// SFC / module-mode compile sets `DomCompilerOptions.prefix_identifiers`, but
 /// codegen used to keep the default `false`. Compound dynamic keys then
@@ -68,7 +68,7 @@ fn v_for_attribute_template_literal_preserves_non_ascii_after_prefixing() {
 
 #[test]
 fn v_for_script_setup_template_literal_preserves_non_ascii_after_prefixing() {
-    use vize_s0::FxHashMap;
+    use vize_l0::FxHashMap;
 
     let allocator = Allocator::new();
     let mut bindings = FxHashMap::default();

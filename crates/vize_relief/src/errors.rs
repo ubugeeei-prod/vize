@@ -8,7 +8,7 @@ mod render;
 use crate::SourceLocation;
 pub use render::CompilerErrorWithSource;
 use thiserror::Error;
-use vize_s0::{CompactString, ToCompactString};
+use vize_l0::{CompactString, ToCompactString};
 /// Compiler error
 #[derive(Debug, Clone, Error)]
 #[error("{message}")]

@@ -7,7 +7,7 @@
 # Consumer migration surfaces
 
 This inventory records where the user-facing consumers that must eventually
-sit on Davinci/S0/S1/S2 still name stage crates, legacy AST/parser/Croquis
+sit on Davinci/L0/L1/L2 still name stage crates, legacy AST/parser/Croquis
 crates, or raw OXC crates directly on current `origin/main`. It is an
 observational guard for planning only. It does not change rollout state.
 
@@ -19,7 +19,7 @@ observational guard for planning only. It does not change rollout state.
   means "this file directly names this surface", not necessarily that every
   mention is a runtime dependency edge.
 - Stage names are split into preferred physical names and compatibility
-  code-name aliases so S0/S1/S2 migration work is measurable without changing
+  code-name aliases so L0/L1/L2 migration work is measurable without changing
   rollout state.
 - `source/manifest` includes production Rust files plus crate manifests.
   `test/dev` includes crate `tests`, `benches`, `tests.rs`,
@@ -32,10 +32,10 @@ observational guard for planning only. It does not change rollout state.
 | surface          | group | matched name classes                                                                                                                               |
 | ---------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Davinci          | stage | preferred: `vize_davinci`                                                                                                                          |
-| S0               | stage | preferred: `vize_s0`<br>compat/code-name: `vize_carton`                                                                                            |
-| S1               | stage | preferred: `vize_s1`<br>compat/code-name: `vize_sinopia`                                                                                           |
-| S2               | stage | preferred: `vize_s2`<br>compat/code-name: `vize_disegno`                                                                                           |
-| S1->S2           | stage | preferred: `vize_s1_to_s2`<br>compat/code-name: `vize_ricalco`                                                                                     |
+| L0               | stage | preferred: `vize_l0`<br>compat/code-name: `vize_carton`                                                                                            |
+| L1               | stage | preferred: `vize_l1`<br>compat/code-name: `vize_sinopia`                                                                                           |
+| L2               | stage | preferred: `vize_l2`<br>compat/code-name: `vize_disegno`                                                                                           |
+| L1->L2           | stage | preferred: `vize_l1_to_l2`<br>compat/code-name: `vize_ricalco`                                                                                     |
 | old AST/parser   | old   | legacy: `vize_relief`, `vize_armature`                                                                                                             |
 | Croquis analysis | old   | legacy: `vize_croquis`, `vize_croquis_cf`                                                                                                          |
 | raw OXC          | raw   | raw: `oxc_allocator`, `oxc_ast`, `oxc_ast_visit`, `oxc_codegen`, `oxc_formatter`, `oxc_formatter_core`, `oxc_parser`, `oxc_semantic`, `oxc_syntax` |
@@ -91,7 +91,7 @@ byte-compares this page, every shard, and the shard set itself.
    drift test. It makes the current dependency shape reviewable without
    changing command routing or defaults.
 2. `refactor(compiler): introduce stage-named compiler boundary adapters` -
-   add S0/S1/S2 adapter entrypoints inside the atelier crates while continuing
+   add L0/L1/L2 adapter entrypoints inside the atelier crates while continuing
    to feed the existing Relief/Croquis pipeline. Guard with compiler fixture
    parity and keep the `vize build` path unchanged.
 3. `refactor(linter): add template analysis facade` - move rule code toward
@@ -99,7 +99,7 @@ byte-compares this page, every shard, and the shard set itself.
    Relief/Croquis. Guard with lint divergence and rule fixture snapshots; no
    default linter backend switch.
 4. `refactor(typechecker): add virtual document boundary` - introduce a
-   narrow S0/S1 input contract for virtual TS generation and adapt current
+   narrow L0/L1 input contract for virtual TS generation and adapt current
    callers into it. Guard with the existing typecheck fixture matrix and
    real-project rows.
 5. `test(content-mapper): pin stage-neutral mapping protocol fixtures` -
@@ -115,8 +115,8 @@ byte-compares this page, every shard, and the shard set itself.
    implementation delegates to the current Armature/Croquis/Canon stack. Guard
    hover, definition, diagnostics, semantic tokens, and formatting with
    existing LSP e2e tests.
-8. `refactor(davinci): align physical layer names with s0/s1/s2` - migrate
-   public internal module/crate references toward S0/S1/S2 naming in small
+8. `refactor(davinci): align physical layer names with l0/l1/l2` - migrate
+   public internal module/crate references toward L0/L1/L2 naming in small
    aliasing steps. Keep code names only as compatibility aliases until all
    consumers have moved.
 

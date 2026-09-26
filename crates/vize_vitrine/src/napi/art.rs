@@ -13,7 +13,7 @@
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IndexedParallelIterator, IntoParallelRefIterator, ParallelIterator};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 // ============================================================================
 // Art file types

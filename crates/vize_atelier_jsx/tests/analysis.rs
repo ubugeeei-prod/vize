@@ -6,8 +6,8 @@ mod common;
 
 use vize_atelier_jsx::{JsxLang, analyze_jsx_program, lower_source, parse_module};
 use vize_croquis::BindingMetadata;
+use vize_l0::Allocator;
 use vize_relief::BindingType;
-use vize_s0::Allocator;
 
 fn sorted_binding_entries(bindings: &BindingMetadata) -> Vec<(String, BindingType)> {
     let mut entries: Vec<_> = bindings

@@ -43,8 +43,8 @@ test("the incrementality workflow triggers on the resident tier and its keyers",
   for (const required of [
     "crates/vize_resident/**",
     "crates/vize_davinci/**",
-    "crates/vize_s2/**",
-    "crates/vize_s1_to_s2/**",
+    "crates/vize_l2/**",
+    "crates/vize_l1_to_l2/**",
     "tools/commands/davinci/incremental-equivalence/**",
     ".github/workflows/davinci-incremental.yml",
   ]) {

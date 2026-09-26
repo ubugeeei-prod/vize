@@ -194,8 +194,8 @@ fn rejects_invalid_and_unsupported_pattern_grammar() {
 #[test]
 fn guard_line_comments_require_an_authored_terminator_before_the_delimiter() {
     for newline in ["\n", "\r", "\r\n", "\u{2028}", "\u{2029}"] {
-        let guard = vize_s0::cstr!("value > 0 // guard ){newline}");
-        let source = vize_s0::cstr!("const value if ({guard})");
+        let guard = vize_l0::cstr!("value > 0 // guard ){newline}");
+        let source = vize_l0::cstr!("const value if ({guard})");
         let parsed = parse_match_pattern(&source).unwrap();
         let parsed_guard = parsed.guard.unwrap();
         assert_eq!(parsed_guard.text, guard);
@@ -264,12 +264,12 @@ fn unicode_binding_spans_and_keyword_boundaries_are_exact() {
 
 #[test]
 fn nesting_is_bounded_without_limiting_wide_patterns() {
-    let deep = vize_s0::cstr!("{}0{}", "[".repeat(10000), "]".repeat(10000));
+    let deep = vize_l0::cstr!("{}0{}", "[".repeat(10000), "]".repeat(10000));
     assert_eq!(
         parse_match_pattern(&deep).unwrap_err().message,
         "Pattern nesting exceeds the supported limit of 128."
     );
-    let wide = vize_s0::cstr!("[{}]", vec!["_"; 10000].join(","));
+    let wide = vize_l0::cstr!("[{}]", vec!["_"; 10000].join(","));
     let PatternKind::Array { elements, rest } = parse_match_pattern(&wide).unwrap().pattern.kind
     else {
         panic!()

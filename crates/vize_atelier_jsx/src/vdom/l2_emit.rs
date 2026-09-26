@@ -1,0 +1,341 @@
+//! JSX VDOM bridge for the P2-16 L2 re-targeting slice.
+
+use vize_davinci::pass::NoObserver;
+use vize_l0::{Allocator, String};
+use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
+use vize_l1_to_l2::{
+    DomEmitMode, DomEmitOptions, LegacyCaps, Lowered as L2Lowered, emit_dom_with_options,
+};
+use vize_l2::expr::ExprRef;
+use vize_l2::op::{
+    BindingOp, ComponentOp, DynamicName, ElementOp, ModelOp, Op, Region, VueDirectiveOp,
+};
+
+use crate::l2::{JsxL2Root, L2Refusal};
+
+use super::{VdomCompatOptions, VdomCompileOptions};
+use slots::{has_slot_content, slot_template_is_supported};
+
+pub(super) struct L2VdomEmit {
+    pub code: String,
+    pub preamble: String,
+}
+
+pub(super) fn try_emit_l2_vdom<'a>(
+    allocator: &'a Allocator,
+    l2: Result<JsxL2Root<'a>, L2Refusal>,
+    is_ts: bool,
+    component_name: Option<&str>,
+    scope_id: Option<&str>,
+    options: &VdomCompileOptions,
+    compat: &VdomCompatOptions<'_>,
+) -> Option<L2VdomEmit> {
+    if !compat.is_native_l2_surface()
+        || options.source_map
+        || options.hoist_static
+        || options.cache_handlers
+    {
+        return None;
+    }
+
+    let l2 = l2.ok()?;
+    if !root_is_supported(&l2) {
+        return None;
+    }
+
+    let mut lowered = L2Lowered {
+        allocator,
+        source: l2.source,
+        root: l2.root,
+        op_count: l2.op_count,
+        diagnostics: Default::default(),
+        provenance: Default::default(),
+        scopes: l2.scopes,
+        texts: Default::default(),
+        if_facts: Default::default(),
+        for_facts: Default::default(),
+        wrappers: Default::default(),
+        for_wrappers: Default::default(),
+        features: l2.features,
+        caps: LegacyCaps::VUE3,
+    };
+    let mut observer = NoObserver;
+    let facts = run_transform_with_profile(
+        &mut lowered,
+        &mut observer,
+        TransformProfile::DEFAULT
+            .without_static_analysis()
+            .without_complexity_analysis(),
+    );
+    let emit = emit_dom_with_options(
+        &lowered,
+        &facts,
+        &DomEmitOptions {
+            mode: DomEmitMode::Module,
+            runtime_module_name: "vue",
+            runtime_global_name: "Vue",
+            prefix_identifiers: false,
+            hoist_static: false,
+            inline: false,
+            component_name,
+            cache_handlers: false,
+            hoisted_scope_id: None,
+            scope_id,
+            is_ts,
+            comments: false,
+            experimental_in_tag_comments: false,
+            custom_element_patterns: &[],
+            custom_element_predicate: None,
+            bindings: None,
+        },
+    )
+    .ok()?;
+
+    Some(L2VdomEmit {
+        code: emit.code,
+        preamble: emit.preamble,
+    })
+}
+
+impl VdomCompatOptions<'_> {
+    fn is_native_l2_surface(&self) -> bool {
+        self.transform_on_helper.is_none()
+            && self.object_slots_helpers.is_none()
+            && self.vnode_factory.is_none()
+            && self.merge_props
+            && !self.allow_static_v_model_arg_on_element
+            && self.custom_element_spans.is_empty()
+    }
+}
+
+fn root_is_supported(root: &JsxL2Root<'_>) -> bool {
+    region_is_supported(&root.root)
+}
+
+fn region_is_supported(region: &Region<'_>) -> bool {
+    region.ops.iter().all(op_is_supported)
+}
+
+fn op_is_supported(op: &Op<'_>) -> bool {
+    match op {
+        Op::Text(_) | Op::Interpolation(_) => true,
+        Op::Element(element) => {
+            if element.tag == "template" && has_slot_content(&element.bindings) {
+                return slot_template_is_supported(element);
+            }
+            element_bindings_are_supported(element) && region_is_supported(&element.children)
+        }
+        Op::Component(component) => component_is_supported(component),
+        Op::If(if_op) => control_flow::if_is_supported(if_op),
+        Op::For(for_op) => control_flow::for_is_supported(for_op),
+        Op::Comment(_) | Op::Slot(_) => false,
+    }
+}
+
+fn element_bindings_are_supported(element: &ElementOp<'_>) -> bool {
+    element
+        .bindings
+        .iter()
+        .all(|binding| element_binding_is_supported(element, binding))
+}
+
+fn element_binding_is_supported(element: &ElementOp<'_>, binding: &BindingOp<'_>) -> bool {
+    match binding {
+        BindingOp::Bind(_)
+        | BindingOp::On(_)
+        | BindingOp::VueShow(_)
+        | BindingOp::VueHtml(_)
+        | BindingOp::VueText(_) => true,
+        BindingOp::Model(model) => native_model_is_supported(element, model),
+        _ => false,
+    }
+}
+
+fn native_model_is_supported(element: &ElementOp<'_>, model: &ModelOp<'_>) -> bool {
+    matches!(element.tag, "input" | "select" | "textarea")
+        && model.argument.is_none()
+        && model_is_bare_native_element(element, model)
+        && model.contract.read.source() == model.contract.write.source()
+        && model.contract.read.span() == model.contract.write.span()
+        && matches!(model.contract.read, ExprRef::Js(_))
+        && matches!(model.contract.write, ExprRef::Js(_))
+        && (element.tag != "input" || input_type_is_supported(element))
+}
+
+fn input_type_is_supported(element: &ElementOp<'_>) -> bool {
+    let mut static_type = None;
+    for attribute in &element.attributes {
+        if attribute.name != "type" {
+            continue;
+        }
+        let Some(value) = attribute.value else {
+            return false;
+        };
+        if !input_type_value_is_supported(value) || static_type.is_some_and(|seen| seen != value) {
+            return false;
+        }
+        static_type = Some(value);
+    }
+
+    element
+        .bindings
+        .iter()
+        .all(|binding| !bind_may_set_type(binding))
+}
+
+fn input_type_value_is_supported(value: &str) -> bool {
+    matches!(value, "checkbox" | "radio" | "text")
+}
+
+fn model_is_bare_native_element(element: &ElementOp<'_>, model: &ModelOp<'_>) -> bool {
+    model
+        .attributes
+        .iter()
+        .any(|attribute| attribute.name == "element-kind" && attribute.value == Some(element.tag))
+        && model.attributes.iter().all(|attribute| {
+            if attribute.name == "element-kind" {
+                attribute.value == Some(element.tag)
+            } else {
+                attribute.value.is_none() && native_model_modifier_is_supported(attribute.name)
+            }
+        })
+}
+
+fn native_model_modifier_is_supported(modifier: &str) -> bool {
+    matches!(modifier, "lazy" | "number" | "trim")
+}
+
+fn bind_may_set_type(binding: &BindingOp<'_>) -> bool {
+    match binding {
+        BindingOp::Bind(bind) => match bind.name {
+            None | Some(DynamicName::Dynamic(_)) => true,
+            Some(DynamicName::Static("type")) => true,
+            Some(DynamicName::Static(_)) => false,
+        },
+        _ => false,
+    }
+}
+
+fn component_is_supported(component: &ComponentOp<'_>) -> bool {
+    let dynamic_component = component_is_dynamic(component);
+    region_is_supported(&component.children)
+        && (dynamic_component || !component_name_needs_component_semantics(component.name))
+        && component
+            .bindings
+            .iter()
+            .all(|binding| component_binding_is_supported(binding, dynamic_component))
+}
+
+fn component_is_dynamic(component: &ComponentOp<'_>) -> bool {
+    matches!(component.name, "component" | "Component")
+        && (component.attributes.iter().any(|attr| attr.name == "is")
+            || component.bindings.iter().any(binding_is_is))
+}
+
+fn component_name_needs_component_semantics(name: &str) -> bool {
+    matches!(
+        name,
+        "component"
+            | "Component"
+            | "Teleport"
+            | "teleport"
+            | "Suspense"
+            | "suspense"
+            | "KeepAlive"
+            | "keep-alive"
+            | "BaseTransition"
+            | "base-transition"
+            | "Transition"
+            | "transition"
+            | "TransitionGroup"
+            | "transition-group"
+    ) || name.contains('.')
+}
+
+fn binding_is_is(binding: &BindingOp<'_>) -> bool {
+    matches!(
+        binding,
+        BindingOp::Bind(bind) if matches!(bind.name, Some(DynamicName::Static("is")))
+    )
+}
+
+fn component_binding_is_supported(binding: &BindingOp<'_>, dynamic_component: bool) -> bool {
+    match binding {
+        BindingOp::Bind(bind) if bind.name.is_none() => {
+            bind.value.is_some() && bind.modifiers.is_empty()
+        }
+        BindingOp::Bind(bind) if binding_is_is(binding) => {
+            dynamic_component && bind.value.is_some() && bind.modifiers.is_empty()
+        }
+        BindingOp::Bind(bind) => {
+            bind.value.is_some()
+                && bind.modifiers.is_empty()
+                && matches!(
+                    bind.name,
+                    Some(DynamicName::Static(name))
+                        if !matches!(name, "is" | "key" | "ref")
+                )
+        }
+        BindingOp::On(on) => {
+            on.handler.is_some()
+                && event_option_modifiers_are_supported(&on.modifiers)
+                && matches!(on.name, Some(DynamicName::Static(_)))
+        }
+        BindingOp::Model(model) => component_model_is_supported(model),
+        BindingOp::VueShow(_) => true,
+        BindingOp::VueDirective(directive) => component_slots_spread_is_supported(directive),
+        _ => false,
+    }
+}
+
+fn component_slots_spread_is_supported(directive: &VueDirectiveOp<'_>) -> bool {
+    directive.name == "slots"
+        && directive.argument.is_none()
+        && directive.modifiers.is_empty()
+        && matches!(directive.value, Some(ExprRef::Js(_)))
+}
+
+fn component_model_is_supported(model: &ModelOp<'_>) -> bool {
+    let has_component_kind = model
+        .attributes
+        .iter()
+        .any(|attribute| attribute.name == "element-kind" && attribute.value == Some("component"));
+    has_component_kind
+        && model.attributes.iter().all(|attribute| {
+            if attribute.name == "element-kind" {
+                attribute.value == Some("component")
+            } else {
+                attribute.value.is_none()
+            }
+        })
+        && model.contract.read.source() == model.contract.write.source()
+        && model.contract.read.span() == model.contract.write.span()
+        && matches!(model.contract.read, ExprRef::Js(_))
+        && matches!(model.contract.write, ExprRef::Js(_))
+        && matches!(model.argument, None | Some(DynamicName::Static(_)))
+}
+
+fn event_option_modifiers_are_supported(modifiers: &[&str]) -> bool {
+    modifiers
+        .iter()
+        .all(|modifier| matches!(*modifier, "capture" | "once" | "passive"))
+}
+
+#[cfg(test)]
+mod compat_tests;
+mod control_flow;
+#[cfg(test)]
+mod events_tests;
+#[cfg(test)]
+mod model_tests;
+#[cfg(test)]
+mod native_model_tests;
+#[cfg(test)]
+mod options_tests;
+#[cfg(test)]
+mod scoped_tests;
+mod slots;
+#[cfg(test)]
+mod tests;
+#[cfg(test)]
+mod vue_directives_tests;

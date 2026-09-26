@@ -3,7 +3,7 @@ use crate::ir::TemplateSyntax;
 use crate::markup::{MarkupContext, MarkupDocument, MarkupRule};
 use crate::rules::a11y::NoAriaHiddenOnFocusable;
 use vize_atelier_jsx::JsxLang;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 fn run_over_jsx_lowered<R: MarkupRule>(rule: &R, source: &str) -> usize {
     let allocator = Allocator::with_capacity(source.len() * 4 + 1024);

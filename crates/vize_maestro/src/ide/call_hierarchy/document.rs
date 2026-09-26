@@ -45,7 +45,7 @@ pub(super) async fn refresh_item(
         .as_ref()?
         .get("vizeCallHierarchySourceHash")?
         .as_str()?;
-    if expected != vize_s0::hash::hash_str(&ctx.content).to_string() {
+    if expected != vize_l0::hash::hash_str(&ctx.content).to_string() {
         return None;
     }
     let (line, character) =

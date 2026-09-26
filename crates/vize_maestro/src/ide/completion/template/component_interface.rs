@@ -33,7 +33,7 @@ pub(super) fn export_component_interface_with_sources(
     legacy_vue2: bool,
     sources: &vize_atelier_sfc::script::TypeSourceSnapshot,
 ) -> Option<AlphaPages> {
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let root = descriptor
         .template
         .as_ref()
@@ -109,13 +109,13 @@ pub(super) fn component_metadata_from_interface(
             _ => {}
         }
     }
-    let prop_order: vize_s0::FxHashMap<_, _> = signature
+    let prop_order: vize_l0::FxHashMap<_, _> = signature
         .prop_order
         .iter()
         .enumerate()
         .map(|(ordinal, name)| (name.as_str(), ordinal))
         .collect();
-    let slot_order: vize_s0::FxHashMap<_, _> = signature
+    let slot_order: vize_l0::FxHashMap<_, _> = signature
         .slot_order
         .iter()
         .enumerate()

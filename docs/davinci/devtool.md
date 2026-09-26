@@ -9,14 +9,14 @@
 
 The pipeline as a navigable object, not a black box:
 
-- **Stage ladder** — the same source viewed as S1 surface tree, S2 Disegno, S3
-  Impeto, and S4 output, side by side, with span-linked highlighting: select a
+- **Stage ladder** — the same source viewed as L1 surface tree, L2 Disegno, L3
+  Impeto, and L4 output, side by side, with span-linked highlighting: select a
   template expression and see it in every stage and in the emitted JS /
   virtual TS.
 - **Pass timeline** — every pass that ran, in order, with per-pass Folio diffs
   ("what did `hoist_static` actually change?"), timing from the profiler, and
   fusion boundaries made visible (which passes ran fused in one walk).
-- **Provenance** — every S2/S3 op records which pass produced it from which
+- **Provenance** — every L2/L3 op records which pass produced it from which
   source span; the inverse index answers "why does the output contain this?"
 - **Fact browser** — the semantic engine's fact groups for the current file and
   project: bindings on the reactivity lattice, effect dependency sets, the

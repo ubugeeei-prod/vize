@@ -6,7 +6,7 @@ use std::{path::Path, str::FromStr};
 use corsa_lsp::LspClient;
 use lsp_types::{FileChangeType, FileEvent, Uri};
 use serde_json::{Value, json};
-use vize_s0::String as CompactString;
+use vize_l0::String as CompactString;
 
 mod component_oracles;
 mod declaration_workspace;

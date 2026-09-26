@@ -1,32 +1,32 @@
 //! Scope views: [`MarkupConditional`] and [`MarkupList`].
 //!
-//! Every backend answers the same scope questions: S2 `ui.if` / `ui.for`
+//! Every backend answers the same scope questions: L2 `ui.if` / `ui.for`
 //! regions, the `IfNode` / `ForNode` a lowered JSX Relief root carries, and
 //! the chains [`super::relief_scopes`] synthesizes over a raw template parse.
 
 use super::element::MarkupElement;
+use super::l2::children::if_range;
+use super::l2::walk::{L2Step, scope_region};
+use super::l2::{L2ElementOp, L2Markup};
 use super::loc_to_range;
 use super::relief_scopes::ReliefChain;
-use super::s2::children::if_range;
-use super::s2::walk::{S2Step, scope_region};
-use super::s2::{S2ElementOp, S2Markup};
 use crate::ir::ByteRange;
+use vize_l2::expr::{ExprRef, OpaqueReason};
+use vize_l2::op::{ForOp, IfOp};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, ForNode, IfNode, TemplateChildNode};
-use vize_s2::expr::{ExprRef, OpaqueReason};
-use vize_s2::op::{ForOp, IfOp};
 
 #[derive(Clone, Copy)]
 enum MarkupConditionalInner<'a> {
     Relief(&'a IfNode<'a>),
     ReliefChain(ReliefChain<'a>),
-    S2 {
+    L2 {
         op: &'a IfOp<'a>,
-        doc: &'a S2Markup<'a>,
+        doc: &'a L2Markup<'a>,
     },
 }
 
 /// A conditional scope: a Vue `v-if` / `v-else-if` / `v-else` chain, a
-/// lowered JSX `cond && <x/>` / ternary, or an S2 `ui.if`.
+/// lowered JSX `cond && <x/>` / ternary, or an L2 `ui.if`.
 #[derive(Clone, Copy)]
 pub struct MarkupConditional<'a> {
     inner: MarkupConditionalInner<'a>,
@@ -45,9 +45,9 @@ impl<'a> MarkupConditional<'a> {
         }
     }
 
-    pub(super) const fn from_s2(op: &'a IfOp<'a>, doc: &'a S2Markup<'a>) -> Self {
+    pub(super) const fn from_l2(op: &'a IfOp<'a>, doc: &'a L2Markup<'a>) -> Self {
         Self {
-            inner: MarkupConditionalInner::S2 { op, doc },
+            inner: MarkupConditionalInner::L2 { op, doc },
         }
     }
 
@@ -57,7 +57,7 @@ impl<'a> MarkupConditional<'a> {
         match self.inner {
             MarkupConditionalInner::Relief(node) => node.branches.len(),
             MarkupConditionalInner::ReliefChain(chain) => chain.branch_count(),
-            MarkupConditionalInner::S2 { op, .. } => op.branches.len(),
+            MarkupConditionalInner::L2 { op, .. } => op.branches.len(),
         }
     }
 
@@ -69,7 +69,7 @@ impl<'a> MarkupConditional<'a> {
                 .iter()
                 .any(|branch| branch.condition.is_none()),
             MarkupConditionalInner::ReliefChain(chain) => chain.has_else(),
-            MarkupConditionalInner::S2 { op, .. } => {
+            MarkupConditionalInner::L2 { op, .. } => {
                 op.branches.iter().any(|branch| branch.condition.is_none())
             }
         }
@@ -80,7 +80,7 @@ impl<'a> MarkupConditional<'a> {
         match self.inner {
             MarkupConditionalInner::Relief(node) => loc_to_range(&node.loc),
             MarkupConditionalInner::ReliefChain(chain) => chain.range(),
-            MarkupConditionalInner::S2 { op, doc } => if_range(doc, op),
+            MarkupConditionalInner::L2 { op, doc } => if_range(doc, op),
         }
     }
 }
@@ -92,13 +92,13 @@ enum MarkupListInner<'a> {
         element: &'a ElementNode<'a>,
         directive: &'a DirectiveNode<'a>,
     },
-    S2 {
+    L2 {
         op: &'a ForOp<'a>,
-        doc: &'a S2Markup<'a>,
+        doc: &'a L2Markup<'a>,
     },
 }
 
-/// A list scope: a Vue `v-for`, a lowered JSX `items.map(...)`, or an S2
+/// A list scope: a Vue `v-for`, a lowered JSX `items.map(...)`, or an L2
 /// `ui.for`.
 ///
 /// The repeated element is still visited as a normal [`MarkupElement`]; the
@@ -125,9 +125,9 @@ impl<'a> MarkupList<'a> {
         }
     }
 
-    pub(super) const fn from_s2(op: &'a ForOp<'a>, doc: &'a S2Markup<'a>) -> Self {
+    pub(super) const fn from_l2(op: &'a ForOp<'a>, doc: &'a L2Markup<'a>) -> Self {
         Self {
-            inner: MarkupListInner::S2 { op, doc },
+            inner: MarkupListInner::L2 { op, doc },
         }
     }
 
@@ -138,7 +138,7 @@ impl<'a> MarkupList<'a> {
             MarkupListInner::ReliefDirective { directive, .. } => {
                 split_directive(directive).map(|(_, source)| source)
             }
-            MarkupListInner::S2 { op, .. } => admitted_text(&op.binding.source),
+            MarkupListInner::L2 { op, .. } => admitted_text(&op.binding.source),
         }
     }
 
@@ -149,7 +149,7 @@ impl<'a> MarkupList<'a> {
             MarkupListInner::ReliefDirective { directive, .. } => {
                 split_directive(directive).and_then(|(value, _)| value)
             }
-            MarkupListInner::S2 { op, .. } => admitted_text(&op.binding.value),
+            MarkupListInner::L2 { op, .. } => admitted_text(&op.binding.value),
         }
     }
 
@@ -167,12 +167,12 @@ impl<'a> MarkupList<'a> {
             MarkupListInner::ReliefDirective { element, .. } => {
                 visitor(MarkupElement::new(element));
             }
-            MarkupListInner::S2 { op, doc } => match scope_region(doc, op.span, &op.region.ops) {
-                S2Step::Element(element, _) => visitor(element),
-                S2Step::Region(region) => {
+            MarkupListInner::L2 { op, doc } => match scope_region(doc, op.span, &op.region.ops) {
+                L2Step::Element(element, _) => visitor(element),
+                L2Step::Region(region) => {
                     for op in region {
-                        if let Some(element) = S2ElementOp::from_op(op) {
-                            visitor(MarkupElement::from_s2(element, doc));
+                        if let Some(element) = L2ElementOp::from_op(op) {
+                            visitor(MarkupElement::from_l2(element, doc));
                         }
                     }
                 }
@@ -185,7 +185,7 @@ impl<'a> MarkupList<'a> {
         match self.inner {
             MarkupListInner::Relief(node) => loc_to_range(&node.loc),
             MarkupListInner::ReliefDirective { element, .. } => loc_to_range(&element.loc),
-            MarkupListInner::S2 { op, doc } => doc.open_tag_range(op.span),
+            MarkupListInner::L2 { op, doc } => doc.open_tag_range(op.span),
         }
     }
 
@@ -194,7 +194,7 @@ impl<'a> MarkupList<'a> {
     pub fn has_authored_directive(&self) -> bool {
         match self.inner {
             MarkupListInner::ReliefDirective { .. } => true,
-            MarkupListInner::S2 { doc, .. } => doc.surface.is_some(),
+            MarkupListInner::L2 { doc, .. } => doc.surface.is_some(),
             MarkupListInner::Relief(_) => false,
         }
     }
@@ -206,7 +206,7 @@ fn split_directive<'a>(directive: &'a DirectiveNode<'a>) -> Option<(Option<&'a s
     let Some(ExpressionNode::Simple(value)) = directive.exp.as_ref() else {
         return None;
     };
-    let (alias, source) = vize_s1_to_s2::lower::split_v_for_value(value.content)?;
+    let (alias, source) = vize_l1_to_l2::lower::split_v_for_value(value.content)?;
     let alias = alias.map(str::trim).filter(|text| !text.is_empty());
     Some(source.trim())
         .filter(|text| !text.is_empty())
@@ -222,7 +222,7 @@ fn simple_text<'a>(expression: Option<&'a ExpressionNode<'a>>) -> Option<&'a str
     }
 }
 
-/// An S2 `ui.for` position's text, unless it is the undecomposable escape
+/// An L2 `ui.for` position's text, unless it is the undecomposable escape
 /// (`OpaqueReason::ForValue`) or an unauthored hole.
 fn admitted_text<'a>(expression: &ExprRef<'a>) -> Option<&'a str> {
     if let ExprRef::Opaque(opaque) = expression

@@ -2,7 +2,7 @@
 //!
 //! Wall-clock ratios are too noisy on shared CI hosts, so the gate pins what
 //! is deterministic: allocation calls per compile of every `vapor_native_pair`
-//! fixture on the native S3 lane, exactly at the committed ceiling. The
+//! fixture on the native L3 lane, exactly at the committed ceiling. The
 //! retained lane's calls print beside them; interleaved timings live in the
 //! P3-6 evidence record. Improvements ratchet a ceiling down; nothing raises
 //! one.
@@ -23,7 +23,7 @@ static GLOBAL: CountingAllocator = CountingAllocator::mimalloc();
 /// `(fixture, source, native allocation ceiling)`: the bench fixtures. The
 /// retained lane measured 78, 81, 138, 141, 155, 122 and 180 calls when the
 /// ceilings were set; the native surplus on text, events and templates is the
-/// shared S1-to-S2 lowering's heap tables.
+/// shared L1-to-L2 lowering's heap tables.
 const FIXTURES: [(&str, &str, u64); 7] = [
     (
         "text_runs",

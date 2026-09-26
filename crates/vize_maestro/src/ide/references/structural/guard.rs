@@ -3,7 +3,7 @@
 use oxc_ast::AstKind;
 use oxc_semantic::Semantic;
 use oxc_syntax::symbol::SymbolId;
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 pub(super) fn rename_is_safe(
     semantic: &Semantic<'_>,

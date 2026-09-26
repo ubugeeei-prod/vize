@@ -17,7 +17,7 @@ mod fixture;
 use fixture::{BARE, BUTTON, button_pages, entry, replace_once, signature, summarize, users};
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::summary::{AlphaPages, DeclarationId, Facet, SfcSummary, SummaryError, Usage};
-use vize_s0::String;
+use vize_l0::String;
 
 const INLINE_BODY: &str = "const doubled = count.value * 2";
 const CACHED_BODY: &str = "const doubled = computed(() => count.value * 2)";

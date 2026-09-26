@@ -12,7 +12,7 @@ use core::num::NonZeroU32;
 /// # Why `NonZeroU32` rather than a reserved sentinel
 ///
 /// Both give `Option<NodeId>` a 4-byte layout, which is the requirement (an
-/// S2 op holding several optional child references pays 4 bytes per slot, not
+/// L2 op holding several optional child references pays 4 bytes per slot, not
 /// 8). `NonZeroU32` is chosen because it makes "no such node" **unrepresentable
 /// inside `NodeId` itself**: with a reserved-sentinel `u32` every consumer must
 /// remember that `NodeId(0)` is not a node, and nothing stops one from
@@ -118,7 +118,7 @@ impl fmt::Display for NodeId {
 #[cfg(test)]
 mod tests {
     use super::NodeId;
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     #[test]
     fn index_round_trips_through_the_niche() {

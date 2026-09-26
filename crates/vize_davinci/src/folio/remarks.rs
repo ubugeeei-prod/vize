@@ -34,7 +34,7 @@ mod parse;
 use alloc::vec::Vec;
 use core::fmt::{self, Write as _};
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::feed::push_json_string;
 use super::page::{LineEvent, ParseState};

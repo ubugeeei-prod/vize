@@ -1,11 +1,11 @@
 use tower_lsp::lsp_types::Url;
+use vize_l0::{
+    String,
+    config::{ConfigLintRuleOptions, LintRuleSeverity, LinterConfig},
+};
 use vize_patina::{
     Severity,
     rules::musea::{MuseaLintResult, MuseaLinter, PreferDesignTokensConfig},
-};
-use vize_s0::{
-    String,
-    config::{ConfigLintRuleOptions, LintRuleSeverity, LinterConfig},
 };
 
 const MUSEA_PREFER_DESIGN_TOKENS: &str = "musea/prefer-design-tokens";
@@ -126,7 +126,7 @@ pub(super) fn musea_linter_for_uri(
 
 pub(super) fn apply_rule_options(
     mut linter: vize_patina::Linter,
-    options: &vize_s0::config::ConfigLintRuleOptions,
+    options: &vize_l0::config::ConfigLintRuleOptions,
 ) -> vize_patina::Linter {
     if let Some(casing) = options.component_name_in_template_casing() {
         linter = linter.with_component_name_in_template_casing(component_casing(casing));
@@ -180,33 +180,33 @@ fn severity_overrides(entries: Vec<(String, LintRuleSeverity)>) -> Vec<(String, 
 }
 
 fn component_casing(
-    casing: vize_s0::config::TemplateComponentNameCasing,
+    casing: vize_l0::config::TemplateComponentNameCasing,
 ) -> vize_patina::rules::ComponentCasing {
     match casing {
-        vize_s0::config::TemplateComponentNameCasing::PascalCase => {
+        vize_l0::config::TemplateComponentNameCasing::PascalCase => {
             vize_patina::rules::ComponentCasing::PascalCase
         }
-        vize_s0::config::TemplateComponentNameCasing::KebabCase => {
+        vize_l0::config::TemplateComponentNameCasing::KebabCase => {
             vize_patina::rules::ComponentCasing::KebabCase
         }
     }
 }
 
 fn event_name_casing(
-    casing: vize_s0::config::CustomEventNameCasing,
+    casing: vize_l0::config::CustomEventNameCasing,
 ) -> vize_patina::rules::script::EventNameCasing {
     match casing {
-        vize_s0::config::CustomEventNameCasing::CamelCase => {
+        vize_l0::config::CustomEventNameCasing::CamelCase => {
             vize_patina::rules::script::EventNameCasing::CamelCase
         }
-        vize_s0::config::CustomEventNameCasing::KebabCase => {
+        vize_l0::config::CustomEventNameCasing::KebabCase => {
             vize_patina::rules::script::EventNameCasing::KebabCase
         }
     }
 }
 
 fn no_mutating_props_options(
-    options: vize_s0::config::NoMutatingPropsOptions,
+    options: vize_l0::config::NoMutatingPropsOptions,
 ) -> vize_patina::rules::NoMutatingPropsOptions {
     vize_patina::rules::NoMutatingPropsOptions {
         shallow_only: options.shallow_only,
@@ -214,7 +214,7 @@ fn no_mutating_props_options(
 }
 
 fn sfc_element_order_options(
-    options: vize_s0::config::SfcElementOrderOptions,
+    options: vize_l0::config::SfcElementOrderOptions,
 ) -> vize_patina::rules::SfcElementOrderOptions {
     vize_patina::rules::SfcElementOrderOptions {
         order: options
@@ -226,7 +226,7 @@ fn sfc_element_order_options(
 }
 
 fn html_self_closing_options(
-    options: vize_s0::config::HtmlSelfClosingOptions,
+    options: vize_l0::config::HtmlSelfClosingOptions,
 ) -> vize_patina::rules::HtmlSelfClosingOptions {
     vize_patina::rules::HtmlSelfClosingOptions {
         html: vize_patina::rules::HtmlSelfClosingHtmlOptions {
@@ -240,37 +240,37 @@ fn html_self_closing_options(
 }
 
 fn html_self_closing_style(
-    style: vize_s0::config::HtmlSelfClosingStyle,
+    style: vize_l0::config::HtmlSelfClosingStyle,
 ) -> vize_patina::rules::HtmlSelfClosingStyle {
     match style {
-        vize_s0::config::HtmlSelfClosingStyle::Always => {
+        vize_l0::config::HtmlSelfClosingStyle::Always => {
             vize_patina::rules::HtmlSelfClosingStyle::Always
         }
-        vize_s0::config::HtmlSelfClosingStyle::Never => {
+        vize_l0::config::HtmlSelfClosingStyle::Never => {
             vize_patina::rules::HtmlSelfClosingStyle::Never
         }
-        vize_s0::config::HtmlSelfClosingStyle::Any => vize_patina::rules::HtmlSelfClosingStyle::Any,
+        vize_l0::config::HtmlSelfClosingStyle::Any => vize_patina::rules::HtmlSelfClosingStyle::Any,
     }
 }
 
 fn v_on_event_hyphenation_style(
-    style: vize_s0::config::HyphenationStyle,
+    style: vize_l0::config::HyphenationStyle,
 ) -> vize_patina::rules::VOnEventHyphenationStyle {
     match style {
-        vize_s0::config::HyphenationStyle::Always => {
+        vize_l0::config::HyphenationStyle::Always => {
             vize_patina::rules::VOnEventHyphenationStyle::Always
         }
-        vize_s0::config::HyphenationStyle::Never => {
+        vize_l0::config::HyphenationStyle::Never => {
             vize_patina::rules::VOnEventHyphenationStyle::Never
         }
     }
 }
 
 fn attribute_hyphenation_style(
-    style: vize_s0::config::HyphenationStyle,
+    style: vize_l0::config::HyphenationStyle,
 ) -> vize_patina::rules::HyphenationStyle {
     match style {
-        vize_s0::config::HyphenationStyle::Always => vize_patina::rules::HyphenationStyle::Always,
-        vize_s0::config::HyphenationStyle::Never => vize_patina::rules::HyphenationStyle::Never,
+        vize_l0::config::HyphenationStyle::Always => vize_patina::rules::HyphenationStyle::Always,
+        vize_l0::config::HyphenationStyle::Never => vize_patina::rules::HyphenationStyle::Never,
     }
 }

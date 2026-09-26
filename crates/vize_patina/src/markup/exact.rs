@@ -6,7 +6,7 @@ use super::element::{MarkupElement, MarkupElementInner};
 use super::jsx_names::{
     jsx_attribute_arg_name, jsx_attribute_binding_kind, jsx_attribute_ref, jsx_element_ref,
 };
-use super::s2::binding::kind_of_directive;
+use super::l2::binding::kind_of_directive;
 use oxc_ast::ast::{JSXAttributeName, JSXElementName};
 use vize_relief::ExpressionNode;
 
@@ -31,8 +31,8 @@ impl<'a> MarkupElement<'a> {
             }
             MarkupElementInner::JsxFragment { .. } => false,
             MarkupElementInner::Authored { .. }
-            | MarkupElementInner::S2 { .. }
-            | MarkupElementInner::S2Carrier { .. } => self.tag() == expected,
+            | MarkupElementInner::L2 { .. }
+            | MarkupElementInner::L2Carrier { .. } => self.tag() == expected,
         }
     }
 }
@@ -115,10 +115,10 @@ impl<'a> MarkupBinding<'a> {
                     }
                 }
             }
-            MarkupBindingInner::S2Attribute { attribute, .. } => {
+            MarkupBindingInner::L2Attribute { attribute, .. } => {
                 mode.matches(attribute.name, true, expected)
             }
-            MarkupBindingInner::S2Binding(binding) => {
+            MarkupBindingInner::L2Binding(binding) => {
                 let name = binding.name();
                 match kind_of_directive(name) {
                     MarkupBindingKind::Custom => mode.matches(name, true, expected),

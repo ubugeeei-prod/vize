@@ -1,7 +1,7 @@
 import Impeto.Iteration
 
 /-!
-Native `v-model` reference semantics for P3-4 (`ui.model` in S3). A model
+Native `v-model` reference semantics for P3-4 (`ui.model` in L3). A model
 binding is a `set-prop` whose binding kind is `model`. It carries identical
 `model-read`/`model-write` paths and `model-attribute` rows for the element kind
 and the `lazy`/`trim`/`number` modifiers. This module is written from Vue's

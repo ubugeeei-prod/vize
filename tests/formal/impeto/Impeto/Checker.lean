@@ -1,7 +1,7 @@
 import Impeto.Schedule
 
 /-!
-C-23: independent S3 Folio checker (Lean4Lean discipline). It re-checks the
+C-23: independent L3 Folio checker (Lean4Lean discipline). It re-checks the
 graph invariants that the TS-27 phase validator enforces from the committed
 Folio text alone and shares no code with the compiler. Each invariant is a
 decidable proposition. `WellFormed` is their conjunction, and
@@ -31,21 +31,21 @@ def forward (program : Program) (edge : StateEdge) : Bool :=
   | some i, some j => i < j
   | _, _ => false
 
-/-- S3V001: op, region and effect ids are unique. -/
+/-- L3V001: op, region and effect ids are unique. -/
 def UniqueIds (p : Program) : Prop :=
   (ids p).Nodup ∧ (p.regions.map (·.id)).Nodup ∧ (p.effects.map (·.id)).Nodup
 
-/-- S3V002: region 0 exists and is the parentless, ownerless root. -/
+/-- L3V002: region 0 exists and is the parentless, ownerless root. -/
 def Rooted (p : Program) : Prop :=
   ∃ r ∈ p.regions, r.id = 0 ∧ r.parent = none ∧ r.owner = none
 
-/-- S3V005: every other region names a resolvable parent and an owner op in it. -/
+/-- L3V005: every other region names a resolvable parent and an owner op in it. -/
 def Resolved (p : Program) : Prop :=
   ∀ r ∈ p.regions, r.id ≠ 0 ->
     (∃ q ∈ p.regions, r.parent = some q.id) ∧
     (∃ o ∈ p.ops, r.owner = some o.id ∧ r.parent = some o.region)
 
-/-- S3V006: spans nest (region ⊆ parent, region ⊆ owner, op ⊆ region) and every
+/-- L3V006: spans nest (region ⊆ parent, region ⊆ owner, op ⊆ region) and every
 parent chain is finite. -/
 def Nested (p : Program) : Prop :=
   (∀ r ∈ p.regions, ∀ q ∈ p.regions, r.parent = some q.id -> contains q.span r.span = true) ∧
@@ -53,24 +53,24 @@ def Nested (p : Program) : Prop :=
   (∀ o ∈ p.ops, ∀ r ∈ p.regions, r.id = o.region -> contains r.span o.span = true) ∧
   (∀ r ∈ p.regions, reachesTop p (p.regions.length + 1) r.id = true)
 
-/-- S3V003: ops live in existing regions. -/
+/-- L3V003: ops live in existing regions. -/
 def OpsResolved (p : Program) : Prop :=
   ∀ o ∈ p.ops, ∃ r ∈ p.regions, r.id = o.region
 
-/-- S3V007: ops name existing effects; an effect's owner lives in its region (or
+/-- L3V007: ops name existing effects; an effect's owner lives in its region (or
 below) and its span nests in that region. -/
 def Scoped (p : Program) : Prop :=
   (∀ o ∈ p.ops, ∀ e ∈ o.effect.toList, ∃ s ∈ p.effects, s.id = e) ∧
   ∀ s ∈ p.effects, (∃ o ∈ p.ops, o.id = s.owner ∧ isOrDescendant p o.region s.region = true) ∧
     (∃ r ∈ p.regions, r.id = s.region ∧ contains r.span s.span = true)
 
-/-- S3V004 / S3V007: edges resolve and effect-scoped edges stay in scope. -/
+/-- L3V004 / L3V007: edges resolve and effect-scoped edges stay in scope. -/
 def EdgesResolved (p : Program) : Prop :=
   ∀ e ∈ p.edges, (e.source ∈ ids p) ∧ (e.target ∈ ids p) ∧
     ∀ sc ∈ e.effect.toList, ∃ s ∈ p.effects, s.id = sc ∧
       opInside p e.source s.region = true ∧ opInside p e.target s.region = true
 
-/-- S3V008: in the scheduled phase every edge points strictly forward. -/
+/-- L3V008: in the scheduled phase every edge points strictly forward. -/
 def Ordered (p : Program) : Prop :=
   p.phase = .scheduled -> ∀ e ∈ p.edges, forward p e = true
 
@@ -91,9 +91,9 @@ def code (holds : Bool) (name : String) : List String := if holds then [] else [
 
 /-- The executable checker: one code per violated invariant, in validator order. -/
 def violations (p : Program) : List String :=
-  code (decide (UniqueIds p)) "S3V001" ++ code (decide (Rooted p)) "S3V002" ++
-    code (decide (Resolved p)) "S3V005" ++ code (decide (Nested p)) "S3V006" ++
-    code (decide (OpsResolved p)) "S3V003" ++ code (decide (Scoped p)) "S3V007" ++
-    code (decide (EdgesResolved p)) "S3V004" ++ code (decide (Ordered p)) "S3V008"
+  code (decide (UniqueIds p)) "L3V001" ++ code (decide (Rooted p)) "L3V002" ++
+    code (decide (Resolved p)) "L3V005" ++ code (decide (Nested p)) "L3V006" ++
+    code (decide (OpsResolved p)) "L3V003" ++ code (decide (Scoped p)) "L3V007" ++
+    code (decide (EdgesResolved p)) "L3V004" ++ code (decide (Ordered p)) "L3V008"
 
 end Impeto.Checker

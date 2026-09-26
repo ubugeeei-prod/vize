@@ -1,0 +1,89 @@
+use vize_l0::ensure_sufficient_stack;
+use vize_l2::op::Op;
+
+use super::super::{EmitCx, EmitError, UnsupportedReason as Reason};
+
+pub(in crate::emit) fn emit_array_child(
+    cx: &mut EmitCx<'_>,
+    op: &Op<'_>,
+    hoist_static_children: bool,
+    cache_static_children: bool,
+) -> Result<(), EmitError> {
+    let hoist_static_children = hoist_static_children || cx.hoist_static_vnodes;
+    if hoist_static_children
+        && cx.hoist_static
+        && let Op::Element(element) = op
+        && super::super::hoist::is_hoistable(element, cx.is_ts)
+    {
+        return super::super::hoist::emit_hoisted_element(cx, element);
+    }
+    if cache_static_children
+        && let Op::Element(element) = op
+        && super::super::hoist::is_hoistable(element, cx.is_ts)
+    {
+        return super::super::hoist::emit_cached_element(cx, element);
+    }
+    let id = cx.walk.mint();
+    cx.with_static_vnode_hoist(hoist_static_children, |cx| {
+        ensure_sufficient_stack(|| match op {
+            Op::Element(element) if super::super::slots::is_slot_template(element) => {
+                cx.walk.skip(element.bindings.len());
+                super::super::tpl::emit_inline(cx, &element.children.ops)
+            }
+            Op::Element(element) => {
+                cx.walk.skip(element.bindings.len());
+                if super::super::once::emit_hoisted_child(cx, element)? {
+                    return Ok(());
+                }
+                super::emit_nested(cx, element, id)
+            }
+            Op::Component(component) => {
+                cx.walk.skip(component.bindings.len());
+                if cx.template_for_item_single_root {
+                    let previous_root = cx.template_for_item_root_id;
+                    cx.template_for_item_single_root = false;
+                    cx.template_for_item_root_id = id;
+                    let result = super::super::component::emit_nested(cx, component, id);
+                    cx.template_for_item_root_id = previous_root;
+                    cx.template_for_item_single_root = true;
+                    result
+                } else {
+                    super::super::component::emit_nested(cx, component, id)
+                }
+            }
+            Op::If(if_op) => super::super::emit_if_op(cx, if_op, id),
+            Op::For(for_op) => super::super::emit_for_op(cx, for_op, id, None),
+            Op::Slot(slot) => {
+                cx.walk.skip(slot.bindings.len());
+                super::super::outlet::emit_outlet(cx, slot, None, false)
+            }
+            Op::Comment(comment) => {
+                super::super::children::emit_comment_vnode(cx, comment);
+                Ok(())
+            }
+            Op::Text(_) | Op::Interpolation(_) => {
+                Err(EmitError::unsupported_op(Reason::ArrayChildTextRun, op))
+            }
+        })
+    })
+}
+
+/// A conditional slot entry's branch-root element (`if_branch_root`): the
+/// shipped hoist walk leaves the element itself inline and hoists only its
+/// children (P3-17).
+pub(in crate::emit) fn emit_branch_root_element(
+    cx: &mut EmitCx<'_>,
+    element: &vize_l2::op::ElementOp<'_>,
+) -> Result<(), EmitError> {
+    let id = cx.walk.mint();
+    cx.with_static_vnode_hoist(true, |cx| {
+        cx.walk.skip(element.bindings.len());
+        if super::super::once::emit_hoisted_child(cx, element)? {
+            return Ok(());
+        }
+        cx.slot_if_branch_root = true;
+        let emitted = super::emit_nested(cx, element, id);
+        cx.slot_if_branch_root = false;
+        emitted
+    })
+}

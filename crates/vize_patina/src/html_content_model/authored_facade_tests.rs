@@ -1,15 +1,15 @@
-//! The authored S1 view must produce the same complete skeleton as Quirks.
+//! The authored L1 view must produce the same complete skeleton as Quirks.
 
 use super::{authored_document_skeleton, authored_skeleton};
 use crate::ir::TemplateSyntax;
-use crate::markup::{MarkupDocument, S2Template};
-use vize_s0::{Allocator, cstr};
+use crate::markup::{L2Template, MarkupDocument};
+use vize_l0::{Allocator, cstr};
 
 fn compare(source: &str) {
     let allocator = Allocator::new();
-    let lowered = S2Template::lower(&allocator, source);
+    let lowered = L2Template::lower(&allocator, source);
     let markup = lowered.markup();
-    let document = MarkupDocument::from_s2(&markup, TemplateSyntax::Vue);
+    let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
     assert_eq!(
         authored_document_skeleton(&document),
         authored_skeleton(&allocator, source),
@@ -93,7 +93,7 @@ fn authored_facade_preserves_semantic_boundaries_and_attribute_facts() {
     }
 }
 
-fn element_trace(document: &MarkupDocument<'_>, authored: bool) -> Vec<vize_s0::CompactString> {
+fn element_trace(document: &MarkupDocument<'_>, authored: bool) -> Vec<vize_l0::CompactString> {
     let mut rows = Vec::new();
     let mut enter = |element: crate::markup::MarkupElement<'_>| {
         rows.push(cstr!(
@@ -164,9 +164,9 @@ fn authored_element_queries_match_the_non_repairing_template_facade() {
         )
         .parse();
         let reference = MarkupDocument::new(&root, TemplateSyntax::Vue);
-        let lowered = S2Template::lower(&allocator, source);
+        let lowered = L2Template::lower(&allocator, source);
         let markup = lowered.markup();
-        let document = MarkupDocument::from_s2(&markup, TemplateSyntax::Vue);
+        let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
         assert_eq!(
             element_trace(&document, true),
             element_trace(&reference, false),

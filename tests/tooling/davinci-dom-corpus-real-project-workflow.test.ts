@@ -22,7 +22,7 @@ import { findStep, readRealProjectMatrixWorkflow } from "./support/real-project-
 
 const helperSource = readFileSync("tools/commands/fixtures/davinci-dom-corpus-workflow.rs", "utf8");
 
-test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
+test("real-project workflow carries a full-canonical L2 DOM corpus job", () => {
   const workflow = readRealProjectMatrixWorkflow();
   const job = workflow.jobs?.["davinci-dom-corpus"];
   assert.ok(job, "missing davinci-dom-corpus job");
@@ -63,7 +63,7 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
     assert.match(helperSource, pattern);
   }
 
-  const corpus = findStep(steps, "Run S2 DOM differential corpus");
+  const corpus = findStep(steps, "Run L2 DOM differential corpus");
   assert.equal(corpus.id, "davinci_dom_corpus");
   assert.equal(corpus["continue-on-error"], true);
   assert.equal(
@@ -72,12 +72,12 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   );
   assert.match(helperSource, /VIZE_DAVINCI_DIFFERENTIAL_CORPUS", CORPUS_ROOT/);
   assert.match(helperSource, /Command::new\("cargo"\)/);
-  assert.match(helperSource, /"test",\s+"-p",\s+"vize_s1_to_s2"/);
+  assert.match(helperSource, /"test",\s+"-p",\s+"vize_l1_to_l2"/);
   assert.match(helperSource, /"davinci-differential"/);
   assert.match(helperSource, /"davinci_dom_corpus"/);
   assert.match(helperSource, /dom-corpus\.log/);
 
-  const finalize = findStep(steps, "Finalize S2 DOM corpus evidence");
+  const finalize = findStep(steps, "Finalize L2 DOM corpus evidence");
   assert.equal(finalize.if, "${{ always() }}");
   assert.deepEqual(finalize.env, {
     VIZE_DAVINCI_DOM_CORPUS_OUTCOME: "${{ steps.davinci_dom_corpus.outcome }}",
@@ -98,13 +98,13 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   assert.match(helperSource, /line\.contains\("davinci-differential corpus scope"\)/);
   assert.match(helperSource, /line\.contains\("davinci DOM corpus sweep"\)/);
   assert.match(helperSource, /davinci DOM corpus old-lane error reasons/);
-  assert.match(helperSource, /Davinci S2 DOM corpus failed/);
+  assert.match(helperSource, /Davinci L2 DOM corpus failed/);
   assert.match(helperSource, /fn finalize_and_dehydrate_corpus/);
   assert.match(helperSource, /fn dehydrate_corpus/);
   assert.match(helperSource, /selected-gitlinks\.txt/);
   assert.match(helperSource, /"submodule", "deinit", "--force", "--"/);
 
-  const upload = findStep(steps, "Upload S2 DOM corpus evidence");
+  const upload = findStep(steps, "Upload L2 DOM corpus evidence");
   assert.equal(upload.if, "${{ always() }}");
   assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
   assert.deepEqual(upload.with, {
@@ -115,7 +115,7 @@ test("real-project workflow carries a full-canonical S2 DOM corpus job", () => {
   });
 });
 
-test("S2 DOM corpus workflow helper extracts canonical evidence", () => {
+test("L2 DOM corpus workflow helper extracts canonical evidence", () => {
   assert.deepEqual(
     parseFixtureGitlinks(
       [
@@ -146,7 +146,7 @@ test("S2 DOM corpus workflow helper extracts canonical evidence", () => {
   });
 });
 
-test("S2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", () => {
+test("L2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", () => {
   const log = [
     "davinci-differential corpus scope: root=tests/_fixtures/_git scope=canonical closure_evidence=true submodules=146",
     "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 patch_fact_entries=1 old_error_skips=2 s2_refusals=0 divergences=0",
@@ -154,7 +154,7 @@ test("S2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", (
     '/repo/tests/_fixtures/_git/a.vue: 2 old-lane blocking errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: None }, CompilerError { code: MissingEndTag, message: "Element is missing end tag.", loc: None }]',
     '/repo/tests/_fixtures/_git/b.vue: 1 old-lane blocking errors: [CompilerError { code: DuplicateAttribute, message: "Duplicate attribute.", loc: None }]',
     "",
-    "corpus S2 refusals (0) by reason {}:",
+    "corpus L2 refusals (0) by reason {}:",
   ].join("\n");
 
   assert.deepEqual(parseOldErrorReasons(log), {
@@ -169,7 +169,7 @@ test("S2 DOM corpus workflow extracts old-lane skip reasons from corpus logs", (
   });
 });
 
-test("S2 DOM corpus workflow prefers explicit old-lane reason counts", () => {
+test("L2 DOM corpus workflow prefers explicit old-lane reason counts", () => {
   const log = [
     "davinci DOM corpus sweep: files=3 unreadable=0 parsed=3 templates=3 compared=1 patch_fact_entries=1 old_error_skips=2 s2_refusals=0 divergences=0",
     'davinci DOM corpus old-lane error reasons: {"InvalidEndTag": 2, "VIfSameKey": 1}',
@@ -185,7 +185,7 @@ test("S2 DOM corpus workflow prefers explicit old-lane reason counts", () => {
   });
 });
 
-test("S2 DOM corpus workflow gitlink constant matches the checkout index", () => {
+test("L2 DOM corpus workflow gitlink constant matches the checkout index", () => {
   const indexed = parseFixtureGitlinks(
     execFileSync("git", ["ls-files", "--stage", "--", "tests/_fixtures/_git"], {
       encoding: "utf8",
@@ -195,7 +195,7 @@ test("S2 DOM corpus workflow gitlink constant matches the checkout index", () =>
   assert.equal(indexed.length, expectedGitlinks);
 });
 
-test("S2 DOM corpus hydrate falls back from bulk shallow failures", () => {
+test("L2 DOM corpus hydrate falls back from bulk shallow failures", () => {
   const artifact = mkdtempSync(join(tmpdir(), "vize-dom-corpus-"));
   const fixturePaths = Array.from(
     { length: expectedGitlinks },
@@ -253,7 +253,7 @@ test("S2 DOM corpus hydrate falls back from bulk shallow failures", () => {
   }
 });
 
-test("S2 DOM corpus workflow validates closure evidence artifacts", () => {
+test("L2 DOM corpus workflow validates closure evidence artifacts", () => {
   const artifact = mkdtempSync(join(tmpdir(), "vize-dom-corpus-"));
   try {
     writeFileSync(
@@ -306,7 +306,7 @@ test("S2 DOM corpus workflow validates closure evidence artifacts", () => {
   }
 });
 
-test("S2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
+test("L2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
   const artifact = mkdtempSync(join(tmpdir(), "vize-dom-corpus-"));
   try {
     writeFileSync(
@@ -325,7 +325,7 @@ test("S2 DOM corpus workflow rejects stale or dirty evidence artifacts", () => {
         '/repo/tests/_fixtures/_git/a.vue: 1 old-lane blocking errors: [CompilerError { code: InvalidEndTag, message: "Invalid end tag.", loc: None }]',
         '/repo/tests/_fixtures/_git/b.vue: 1 old-lane blocking errors: [CompilerError { code: VIfSameKey, message: "v-if/v-else-if branches must use unique keys.", loc: None }]',
         "",
-        "corpus S2 refusals (1) by reason {}:",
+        "corpus L2 refusals (1) by reason {}:",
       ].join("\n"),
     );
 

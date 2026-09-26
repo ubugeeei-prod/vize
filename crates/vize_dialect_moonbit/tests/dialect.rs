@@ -4,18 +4,18 @@
 #![expect(clippy::unwrap_used, reason = "tests assert by panicking")]
 
 use vize_dialect_moonbit::dialect::{MoonBitDialect, is_handler_path};
-use vize_s0::{Allocator, Span};
-use vize_s2::expr::capability::ExprDialect;
-use vize_s2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason};
+use vize_l0::{Allocator, Span};
+use vize_l2::expr::capability::ExprDialect;
+use vize_l2::expr::{ExprRef, ForeignExpr, OpaqueExpr, OpaqueReason};
 
-fn answers(source: &str, dialect: &str) -> (Vec<vize_s0::String>, bool, bool) {
+fn answers(source: &str, dialect: &str) -> (Vec<vize_l0::String>, bool, bool) {
     let allocator = Allocator::new();
     let arena = &allocator;
     let expr = allocator.alloc(ForeignExpr {
         dialect,
         source,
         span: Span::new(10, 10 + u32::try_from(source.len()).unwrap()),
-        facts: vize_s0::Vec::new_in(&arena),
+        facts: vize_l0::Vec::new_in(&arena),
     });
     let expr = ExprRef::Foreign(expr);
     let mut names = Vec::new();
@@ -74,7 +74,7 @@ fn spans_map_offset_for_offset_and_emission_is_verbatim_or_refused() {
         dialect: "moonbit",
         source: "a.val",
         span: Span::new(40, 45),
-        facts: vize_s0::Vec::new_in(&arena),
+        facts: vize_l0::Vec::new_in(&arena),
     });
     let expr = ExprRef::Foreign(foreign);
     assert_eq!(
@@ -85,7 +85,7 @@ fn spans_map_offset_for_offset_and_emission_is_verbatim_or_refused() {
         MoonBitDialect.map_span(expr, Span::new(2, 9)),
         Span::new(40, 45)
     );
-    let mut out = vize_s0::String::default();
+    let mut out = vize_l0::String::default();
     MoonBitDialect.emit(expr, &mut out).unwrap();
     assert_eq!(out, "a.val");
     let opaque = allocator.alloc(OpaqueExpr {
@@ -93,7 +93,7 @@ fn spans_map_offset_for_offset_and_emission_is_verbatim_or_refused() {
         source: "{{ a }} b",
         span: Span::new(0, 9),
     });
-    let mut out = vize_s0::String::default();
+    let mut out = vize_l0::String::default();
     MoonBitDialect
         .emit(ExprRef::Opaque(opaque), &mut out)
         .unwrap();
@@ -101,7 +101,7 @@ fn spans_map_offset_for_offset_and_emission_is_verbatim_or_refused() {
     let js = ExprRef::parse_js_in(&allocator, "a + 1", Span::new(0, 5));
     assert!(
         MoonBitDialect
-            .emit(js, &mut vize_s0::String::default())
+            .emit(js, &mut vize_l0::String::default())
             .is_err()
     );
     assert!(!MoonBitDialect.bindings_are_exact(js));
@@ -125,7 +125,7 @@ fn a_span_inside_a_utf8_codepoint_falls_back_to_the_whole_expression() {
         dialect: "moonbit",
         source: "\"é\"",
         span: Span::new(40, 44),
-        facts: vize_s0::Vec::new_in(&arena),
+        facts: vize_l0::Vec::new_in(&arena),
     });
     let expr = ExprRef::Foreign(foreign);
     assert_eq!(

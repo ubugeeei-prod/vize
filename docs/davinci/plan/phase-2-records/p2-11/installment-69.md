@@ -11,9 +11,9 @@ lane's prop order.
 
 The durable witnesses are:
 
-- [`davinci_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_hoist_order.rs)
+- [`davinci_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_hoist_order.rs)
   - pins the scoped-slot component prop order against shipped output.
-- [`component.rs`](../../../../../crates/vize_s1_to_s2/src/emit/component.rs)
+- [`component.rs`](../../../../../crates/vize_l1_to_l2/src/emit/component.rs)
   - owns the inline-vs-hoisted component prop decision.
 
 This installment does not tick P2-11. The production-lane switch remains open.

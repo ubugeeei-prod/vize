@@ -2,8 +2,8 @@
 
 use oxc_ast::ast::{JSXExpression, JSXExpressionContainer};
 use oxc_span::{GetSpan, Span};
+use vize_l0::Box;
 use vize_relief::{ExpressionNode, SimpleExpressionNode};
-use vize_s0::Box;
 
 use super::Lowerer;
 

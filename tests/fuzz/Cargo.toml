@@ -28,12 +28,12 @@ vize_atelier_sfc = { path = "../../crates/vize_atelier_sfc", default-features = 
 ] }
 vize_atelier_dom = { path = "../../crates/vize_atelier_dom" }
 vize_davinci = { path = "../../crates/vize_davinci" }
-vize_s0 = { package = "vize_carton", path = "../../crates/vize_carton" }
-vize_s1 = { path = "../../crates/vize_s1" }
-vize_s1_to_s2 = { path = "../../crates/vize_s1_to_s2" }
-vize_s2 = { path = "../../crates/vize_s2" }
-vize_s2_to_s3 = { path = "../../crates/vize_s2_to_s3" }
-vize_s3 = { package = "vize_impeto", path = "../../crates/vize_impeto" }
+vize_l0 = { package = "vize_carton", path = "../../crates/vize_carton" }
+vize_l1 = { path = "../../crates/vize_l1" }
+vize_l1_to_l2 = { path = "../../crates/vize_l1_to_l2" }
+vize_l2 = { path = "../../crates/vize_l2" }
+vize_l2_to_l3 = { path = "../../crates/vize_l2_to_l3" }
+vize_l3 = { package = "vize_impeto", path = "../../crates/vize_impeto" }
 
 [[bin]]
 name = "sfc_parse"
@@ -71,15 +71,15 @@ doc = false
 bench = false
 
 [[bin]]
-name = "s1_lowering"
-path = "fuzz_targets/s1_lowering.rs"
+name = "l1_lowering"
+path = "fuzz_targets/l1_lowering.rs"
 test = false
 doc = false
 bench = false
 
 [[bin]]
-name = "s2_to_s3_lowering"
-path = "fuzz_targets/s2_to_s3_lowering.rs"
+name = "l2_to_l3_lowering"
+path = "fuzz_targets/l2_to_l3_lowering.rs"
 test = false
 doc = false
 bench = false

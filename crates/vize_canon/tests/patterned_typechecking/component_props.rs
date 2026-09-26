@@ -37,8 +37,8 @@ fn component_props_in_match_scopes_reject_wrong_types_and_recover() {
             };
             write(
                 project.path(),
-                &vize_s0::cstr!("src/{name}.vue"),
-                &vize_s0::cstr!(
+                &vize_l0::cstr!("src/{name}.vue"),
+                &vize_l0::cstr!(
                     "<script setup lang=\"ts\">\nimport type {{ Result }} from './types';\nimport Child from './Child.vue';\nconst result = {{}} as Result<number>;\nconst Host = {{}} as {{ readonly __vizeSlots?: {{ default: (props: {{ result: Result<number> }}) => unknown }} }};\n</script>\n{template}"
                 ),
             );

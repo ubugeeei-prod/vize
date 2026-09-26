@@ -6,7 +6,7 @@ mod properties;
 use std::collections::BTreeMap;
 
 use serde::{Serialize, Serializer, ser::SerializeSeq};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::plan::{SarifPlan, SarifRegion};
 use crate::{DoctorFinding, EvidenceKind, FindingEvidence, FindingSeverity, SourceLocation};
@@ -210,7 +210,7 @@ impl<'finding> SarifResult<'finding> {
 #[derive(Serialize)]
 struct SarifPartialFingerprints {
     #[serde(rename = "vizeBaselineKey/v1")]
-    baseline_key: vize_s0::String,
+    baseline_key: vize_l0::String,
 }
 
 #[derive(Serialize)]
@@ -259,7 +259,7 @@ struct SarifPhysicalLocation {
 
 #[derive(Serialize)]
 struct SarifArtifactLocation {
-    uri: vize_s0::String,
+    uri: vize_l0::String,
 }
 
 #[derive(Serialize)]
@@ -267,7 +267,7 @@ struct SarifLocationProperties<'finding> {
     #[serde(rename = "vizeEvidenceKind")]
     evidence_kind: EvidenceKind,
     #[serde(rename = "vizeEvidenceDetails")]
-    evidence_details: &'finding BTreeMap<vize_s0::String, vize_s0::String>,
+    evidence_details: &'finding BTreeMap<vize_l0::String, vize_l0::String>,
 }
 
 #[derive(Serialize)]
@@ -277,7 +277,7 @@ struct SarifMessage<'text> {
 
 enum SarifMessageText<'text> {
     Borrowed(&'text str),
-    Owned(vize_s0::String),
+    Owned(vize_l0::String),
 }
 
 impl Serialize for SarifMessageText<'_> {
@@ -299,7 +299,7 @@ impl<'text> SarifMessage<'text> {
         }
     }
 
-    fn owned(text: vize_s0::String) -> Self {
+    fn owned(text: vize_l0::String) -> Self {
         Self {
             text: SarifMessageText::Owned(text),
         }

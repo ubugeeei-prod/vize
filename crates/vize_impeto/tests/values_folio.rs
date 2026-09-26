@@ -3,8 +3,8 @@ use vize_davinci::folio::value::FolioValue;
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_impeto::op::{OpId, Phase, Program, RegionId};
 use vize_impeto::operand::{Operand, OperandRole, OperandValue, ValueKind};
-use vize_impeto::values_folio::{FolioOperand, OperandRow, S3ValuesFolio};
-use vize_s0::{Allocator, Span, String, cstr};
+use vize_impeto::values_folio::{FolioOperand, L3ValuesFolio, OperandRow};
+use vize_l0::{Allocator, Span, String, cstr};
 
 fn parse_row(json: &str, line: usize) -> Result<FolioOperand, FolioError> {
     FolioOperand::parse_value(&cstr!("operand={json}"), line)
@@ -40,10 +40,10 @@ fn every_role_and_value_kind_round_trips_without_losing_escaped_text() {
             });
         }
     }
-    let folio = S3ValuesFolio::of(&program);
+    let folio = L3ValuesFolio::of(&program);
     assert_eq!(folio.operands.len(), 108);
     let printed = folio.print_to_string(FolioMode::Full);
-    let reparsed = S3ValuesFolio::parse(printed.as_str()).unwrap();
+    let reparsed = L3ValuesFolio::parse(printed.as_str()).unwrap();
     assert_eq!(reparsed, folio);
     assert_eq!(reparsed.print_to_string(FolioMode::Full), printed);
     for operand in folio.operands {

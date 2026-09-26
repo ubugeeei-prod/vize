@@ -1,7 +1,7 @@
 //! Long sessions keep exact counts without retaining every event.
 use super::{QueryCounts, Recorder, tally};
 use salsa::{Database as _, Setter as _};
-use vize_s0::String;
+use vize_l0::String;
 
 #[salsa::db]
 #[derive(Clone)]

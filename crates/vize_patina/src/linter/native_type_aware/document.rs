@@ -1,6 +1,6 @@
 //! Type-aware probes read the checker’s virtual TypeScript document.
 //!
-//! The text is the S4 emission document Canon returns. Markers are inserted
+//! The text is the L4 emission document Canon returns. Markers are inserted
 //! at the setup close that document writes, `// Invoke setup to verify types`.
 
 use vize_atelier_sfc::SfcDescriptor;
@@ -9,8 +9,8 @@ use vize_canon::virtual_ts::{
     ProjectionMapping, VirtualTsOptions, generate_virtual_ts_with_offsets,
     generate_virtual_ts_with_offsets_options_api,
 };
+use vize_l0::String;
 use vize_relief::RootNode;
-use vize_s0::String;
 
 pub(super) struct TypeAwareDocument {
     pub content: String,
@@ -112,7 +112,7 @@ mod tests {
             vize_atelier_sfc::parse_sfc(source, vize_atelier_sfc::SfcParseOptions::default())
                 .expect("sfc");
         let template = descriptor.template.as_ref().expect("template");
-        let allocator = vize_s0::Allocator::new();
+        let allocator = vize_l0::Allocator::new();
         let (root, _) = vize_armature::parse(&allocator, template.content.as_ref());
         let script = descriptor.script_setup.as_ref().expect("script");
         let document = project_type_aware(
@@ -135,7 +135,7 @@ mod tests {
             vize_atelier_sfc::parse_sfc(source, vize_atelier_sfc::SfcParseOptions::default())
                 .expect("sfc");
         let template = descriptor.template.as_ref().expect("template");
-        let allocator = vize_s0::Allocator::new();
+        let allocator = vize_l0::Allocator::new();
         let (root, _) = vize_armature::parse(&allocator, template.content.as_ref());
         let script = descriptor.script_setup.as_ref().expect("script");
         let document = project_type_aware(

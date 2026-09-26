@@ -2,7 +2,7 @@
 
 use std::fs;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::fixture::{Item, Project, ui_v1, ui_v2, write_registry_as};
 use super::{ID_TS, lockfile};
@@ -308,7 +308,7 @@ fn fake_tool(project: &Project, name: &str, body: &str) -> String {
     use std::os::unix::fs::PermissionsExt;
     let path = project.registry(name);
     fs::create_dir_all(path.parent().unwrap()).unwrap();
-    fs::write(&path, vize_s0::cstr!("#!/bin/sh\n{body}").as_str()).unwrap();
+    fs::write(&path, vize_l0::cstr!("#!/bin/sh\n{body}").as_str()).unwrap();
     fs::set_permissions(&path, fs::Permissions::from_mode(0o755)).unwrap();
     String::from(path.to_str().unwrap())
 }
@@ -322,7 +322,7 @@ fn pulls_from_npm_and_https_namespaces_with_verified_hashes() {
     let npm = fake_tool(
         &project,
         "fake-npm.sh",
-        &vize_s0::cstr!(
+        &vize_l0::cstr!(
             "if [ \"$1\" = view ]; then echo 1.1.0; exit 0; fi\ntar -czf \"$4/acme-ui-1.0.0.tgz\" -C '{}' package\n",
             project.registry("packed").display()
         ),
@@ -332,7 +332,7 @@ fn pulls_from_npm_and_https_namespaces_with_verified_hashes() {
     let curl = fake_tool(
         &project,
         "fake-curl.sh",
-        &vize_s0::cstr!(
+        &vize_l0::cstr!(
             "case \" $* \" in *\" --proto-redir =https \"*) ;; *) exit 97 ;; esac\nfor a; do last=\"$a\"; done\nwhile [ \"$1\" != --output ]; do shift; done\ncp \"{}/${{last#https://acme.test/r/}}\" \"$2\"\n",
             served.display()
         ),

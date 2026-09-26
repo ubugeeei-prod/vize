@@ -93,11 +93,11 @@ impl AmbientInput {
 /// Every cached artifact, with its declared ambient inputs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum CachedArtifact {
-    /// An S0 source block (the SFC split).
+    /// An L0 source block (the SFC split).
     SourceBlock,
-    /// An S1 surface page.
+    /// An L1 surface page.
     SurfacePage,
-    /// An S2 page.
+    /// An L2 page.
     SemanticPage,
     /// A block's virtual TypeScript projection segment (P5-7).
     VirtualTsProjection,
@@ -132,8 +132,8 @@ impl CachedArtifact {
     }
 
     /// The stages whose [`ArtifactKey`](crate::key::ArtifactKey)s may be this artifact's content key:
-    /// a projection segment is keyed by its script block's S0 key or its
-    /// template's S2 page key; a Corsa session has no content key and is
+    /// a projection segment is keyed by its script block's L0 key or its
+    /// template's L2 page key; a Corsa session has no content key and is
     /// keyed by its manifest alone ([`KeyManifest::fingerprint`]).
     #[must_use]
     pub const fn content_stages(self) -> &'static [Stage] {
