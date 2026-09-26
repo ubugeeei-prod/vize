@@ -1,5 +1,40 @@
 use super::*;
 
+pub fn validate_release_commit(
+    tag_sha: &str,
+    workflow_sha: &str,
+    main_sha: &str,
+    is_on_first_parent: bool,
+) -> Result<(), String> {
+    if !is_full_sha(tag_sha) || !is_full_sha(workflow_sha) || !is_full_sha(main_sha) {
+        return Err("The release tag and origin/main must resolve to full commit SHAs".to_string());
+    }
+    if workflow_sha != main_sha {
+        return Err(format!(
+            "Repository dispatch SHA {workflow_sha} must exactly match current origin/main {main_sha}"
+        ));
+    }
+    if !is_on_first_parent {
+        return Err(format!(
+            "Release commit {tag_sha} is not on the first-parent history of current origin/main {main_sha}"
+        ));
+    }
+    Ok(())
+}
+
+pub fn validate_release_control_version(
+    release_version: &str,
+    main_cargo_toml: &str,
+) -> Result<(), String> {
+    let main_version = workspace_version_from_cargo_toml(main_cargo_toml)?;
+    if main_version != release_version {
+        return Err(format!(
+            "Current origin/main owns release {main_version}, not requested {release_version}"
+        ));
+    }
+    Ok(())
+}
+
 pub fn validate_release_run(
     run: &Value,
     release_run_id: &str,
@@ -8,8 +43,8 @@ pub fn validate_release_run(
     tag_sha: &str,
 ) -> Result<(), String> {
     let candidate = run.get("event").and_then(Value::as_str) == Some("workflow_dispatch");
+    let title = value_string(run.get("display_title"));
     if candidate {
-        let title = value_string(run.get("display_title"));
         let prefix = format!("Release {tag_name} PR #");
         let suffix = format!(" @ {tag_sha}");
         let number = title
@@ -42,7 +77,14 @@ pub fn validate_release_run(
         ),
         ("head_sha", tag_sha.to_string()),
         ("id", release_run_id.to_string()),
-        ("name", "Release".to_string()),
+        (
+            "name",
+            if candidate && value_string(run.get("name")) == title {
+                title
+            } else {
+                "Release".to_string()
+            },
+        ),
         ("path", ".github/workflows/release.yml".to_string()),
         ("repository", repository.to_string()),
         ("status", "completed".to_string()),

@@ -1,6 +1,7 @@
 import {
   assertReleaseCommitIsOnMainFirstParent,
   assertReleaseMetadata,
+  workspaceVersionFromCargoToml,
 } from "./release-preflight-core.mjs";
 import { githubApiPages, githubApiRequest } from "./release-preflight-github.mjs";
 
@@ -86,12 +87,21 @@ export function validateReleaseCommit({ tagSha, workflowSha, mainSha, isOnFirstP
   ) {
     throw new Error("The release tag and origin/main must resolve to full commit SHAs");
   }
-  if (tagSha !== workflowSha) {
+  if (workflowSha !== mainSha) {
     throw new Error(
-      `Release tag commit ${tagSha} must exactly match repository dispatch SHA ${workflowSha}`,
+      `Repository dispatch SHA ${workflowSha} must exactly match current origin/main ${mainSha}`,
     );
   }
   assertReleaseCommitIsOnMainFirstParent(tagSha, mainSha, isOnFirstParent);
+}
+
+export function validateReleaseControlVersion({ releaseVersion, mainCargoToml }) {
+  const mainVersion = workspaceVersionFromCargoToml(mainCargoToml);
+  if (mainVersion !== releaseVersion) {
+    throw new Error(
+      `Current origin/main owns release ${mainVersion}, not requested ${releaseVersion}`,
+    );
+  }
 }
 
 function exactJob(jobs, name) {
@@ -104,10 +114,10 @@ function exactJob(jobs, name) {
 
 export function validateReleaseRun({ run, releaseRunId, repository, tagName, tagSha }) {
   const candidate = run?.event === "workflow_dispatch";
+  const title = run?.display_title ?? "";
   if (candidate) {
     const prefix = `Release ${tagName} PR #`;
     const suffix = ` @ ${tagSha}`;
-    const title = run?.display_title ?? "";
     const number =
       title.startsWith(prefix) && title.endsWith(suffix)
         ? title.slice(prefix.length, -suffix.length)
@@ -124,7 +134,7 @@ export function validateReleaseRun({ run, releaseRunId, repository, tagName, tag
     head_branch: candidate ? `release/${tagName}` : tagName,
     head_sha: tagSha,
     id: releaseRunId,
-    name: "Release",
+    name: candidate && run?.name === title ? title : "Release",
     path: ".github/workflows/release.yml",
     repository,
     status: "completed",

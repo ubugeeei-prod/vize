@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { spawnSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { repoRoot } from "./_helpers/moonbit.ts";
 
@@ -21,6 +22,13 @@ import {
   tagName,
   tagSha,
 } from "./support/npm-bootstrap.ts";
+
+const sdkCandidateRun = JSON.parse(
+  readFileSync(
+    new URL("../_fixtures/release/npm-bootstrap-sdk-candidate.json", import.meta.url),
+    "utf8",
+  ),
+);
 
 test("npm bootstrap accepts only the exact completed failed tag Release run", () => {
   assert.doesNotThrow(() =>
@@ -97,15 +105,13 @@ test("npm bootstrap requires one unexpired artifact bound to the Release run", (
   assert.throws(() => validate([]), /exactly one/);
   assert.throws(() => validate([releaseArtifact(), releaseArtifact()]), /found 2/);
   assert.throws(() => validate([releaseArtifact({ expired: true })]), /has expired/);
-  assert.throws(
-    () =>
-      validate([
-        releaseArtifact({
-          workflow_run: { id: 1, head_branch: tagName, head_sha: tagSha },
-        }),
-      ]),
-    /not bound/,
-  );
+  for (const workflow_run of [
+    { id: 1, head_branch: tagName, head_sha: tagSha },
+    { id: Number(releaseRunId), head_branch: "main", head_sha: tagSha },
+    { id: Number(releaseRunId), head_branch: tagName, head_sha: "c".repeat(40) },
+  ]) {
+    assert.throws(() => validate([releaseArtifact({ workflow_run })]), /not bound/);
+  }
 });
 
 test("npm bootstrap verifies run, jobs, and artifact through the GitHub API", async () => {
@@ -222,13 +228,15 @@ test("npm bootstrap recovers a promoted PR run only after all candidate gates pa
   );
 });
 
-test("Rust recovery accepts the exact promoted candidate and rejects stale identity", () => {
+test("Rust and JS recovery accept the actual API-shaped SDK candidate and reject stale identity", () => {
   const command = path.join(repoRoot, "tools/commands/ci/github/npm-bootstrap-preflight.rs");
-  const run = releaseRun({
-    event: "workflow_dispatch",
-    head_branch: `release/${tagName}`,
-    display_title: `Release ${tagName} PR #42 @ ${tagSha}`,
-  });
+  const run = sdkCandidateRun;
+  const expected = {
+    releaseRunId: String(run.id),
+    repository,
+    tagName: "v0.429.0",
+    tagSha: run.head_sha,
+  };
   const invoke = (candidate: typeof run) =>
     spawnSync(
       "rust-script",
@@ -237,27 +245,33 @@ test("Rust recovery accepts the exact promoted candidate and rejects stale ident
         command,
         "__contract",
         "release-run",
-        JSON.stringify({ run: candidate, releaseRunId, repository, tagName, tagSha }),
+        JSON.stringify({ run: candidate, ...expected }),
       ],
       { encoding: "utf8" },
     );
-  const valid = invoke(run);
-  assert.equal(valid.status, 0, `${valid.error ?? ""}\n${valid.stderr}`);
+  for (const name of ["Release", run.display_title]) {
+    assert.doesNotThrow(() => validateReleaseRun({ run: { ...run, name }, ...expected }));
+    const valid = invoke({ ...run, name });
+    assert.equal(valid.status, 0, `${valid.error ?? ""}\n${valid.stderr}`);
+  }
+  assert.throws(() => validateReleaseRun({ run, ...expected, tagName: "v0.430.0" }));
+  assert.throws(() => validateReleaseRun({ run, ...expected, tagSha: "c".repeat(40) }));
   for (const changed of [
+    { name: "Check" },
+    { name: run.display_title.replace("#6894", "#6895") },
+    { path: ".github/workflows/check.yml" },
     { head_sha: "d".repeat(40) },
     { head_branch: "main" },
+    { head_repository: { full_name: "someone/fork" } },
     { display_title: "manual handoff" },
     ...["0", "0042", "+42", "42x", "４２"].map((number) => ({
-      display_title: `Release ${tagName} PR #${number} @ ${tagSha}`,
+      display_title: `Release ${expected.tagName} PR #${number} @ ${expected.tagSha}`,
     })),
   ]) {
     assert.throws(() =>
       validateReleaseRun({
         run: { ...run, ...changed },
-        releaseRunId,
-        repository,
-        tagName,
-        tagSha,
+        ...expected,
       }),
     );
     assert.notEqual(invoke({ ...run, ...changed }).status, 0, JSON.stringify(changed));

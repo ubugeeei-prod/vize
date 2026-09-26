@@ -9,6 +9,7 @@ import {
   validateBootstrapRequest,
   validateDownloadedArtifact,
   validateReleaseCommit,
+  validateReleaseControlVersion,
   verifyReleaseRunEvidence,
 } from "./npm-bootstrap-contract.mjs";
 
@@ -87,6 +88,10 @@ async function runPreflight(env = process.env) {
     tagSha,
     cargoToml: readTaggedFile(tagSha, "Cargo.toml"),
     packageManifest,
+  });
+  validateReleaseControlVersion({
+    releaseVersion: version,
+    mainCargoToml: readTaggedFile(mainSha, "Cargo.toml"),
   });
   await verifyReleaseRunEvidence({
     apiUrl: env.GITHUB_API_URL ?? "https://api.github.com",

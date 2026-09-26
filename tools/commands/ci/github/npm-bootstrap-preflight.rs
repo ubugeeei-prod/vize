@@ -111,6 +111,16 @@ fn contract(args: &[String]) -> Result<(), String> {
             )?;
             println!("{version}");
         }
+        "control-version" => npm_bootstrap::validate_release_control_version(
+            value
+                .get("releaseVersion")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or(""),
+            value
+                .get("mainCargoToml")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or(""),
+        )?,
         "release-commit" => npm_bootstrap::validate_release_commit(
             value
                 .get("tagSha")

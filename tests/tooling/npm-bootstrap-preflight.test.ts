@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import path from "node:path";
 import { test } from "node:test";
+import { repoRoot } from "./_helpers/moonbit.ts";
 
 import {
   assertPackageIsUnpublished,
@@ -9,6 +12,7 @@ import {
   validateDownloadedArtifact,
   validateRegistryResponse,
   validateReleaseCommit,
+  validateReleaseControlVersion,
 } from "../../tools/support/compat/github/npm-bootstrap-contract.mjs";
 import {
   artifactName,
@@ -44,7 +48,7 @@ test("npm bootstrap allowlist binds each approved package path to one Release ar
     packagePath,
     releaseRunId,
     tagName,
-    workflowSha: tagSha,
+    workflowSha: mainSha,
   });
 });
 
@@ -132,22 +136,34 @@ test("npm bootstrap binds tag, workspace, and public package metadata to one ver
   );
 });
 
-test("npm bootstrap requires the tag to equal dispatch SHA on main first-parent", () => {
+test("npm bootstrap binds controls to current main and the immutable tag to first-parent history", () => {
   assert.doesNotThrow(() =>
-    validateReleaseCommit({ tagSha, workflowSha: tagSha, mainSha, isOnFirstParent: true }),
+    validateReleaseCommit({ tagSha, workflowSha: mainSha, mainSha, isOnFirstParent: true }),
   );
-  assert.throws(
-    () =>
-      validateReleaseCommit({
-        tagSha,
-        workflowSha: "c".repeat(40),
-        mainSha,
-        isOnFirstParent: true,
-      }),
-    /exactly match repository dispatch SHA/,
+  assert.doesNotThrow(() =>
+    validateReleaseCommit({ tagSha, workflowSha: tagSha, mainSha: tagSha, isOnFirstParent: true }),
   );
+  for (const workflowSha of [tagSha, "c".repeat(40)]) {
+    assert.throws(
+      () => validateReleaseCommit({ tagSha, workflowSha, mainSha, isOnFirstParent: true }),
+      /exactly match current origin\/main/,
+    );
+  }
+  for (const field of ["tagSha", "workflowSha", "mainSha"]) {
+    assert.throws(
+      () =>
+        validateReleaseCommit({
+          tagSha,
+          workflowSha: mainSha,
+          mainSha,
+          isOnFirstParent: true,
+          [field]: "main",
+        }),
+      /full commit SHAs/,
+    );
+  }
   assert.throws(
-    () => validateReleaseCommit({ tagSha, workflowSha: tagSha, mainSha, isOnFirstParent: false }),
+    () => validateReleaseCommit({ tagSha, workflowSha: mainSha, mainSha, isOnFirstParent: false }),
     /not on the first-parent history/,
   );
 });
@@ -178,6 +194,43 @@ test("npm bootstrap binds the downloaded package manifest to preflight outputs",
       }),
     /invalid package\.json/,
   );
+});
+
+test("Rust and JS bootstrap controls require current main and the same tagged release version", () => {
+  const invoke = (mode: string, payload: Record<string, unknown>) =>
+    spawnSync(
+      "rust-script",
+      [
+        path.join(repoRoot, "tools/commands/ci/github/npm-bootstrap-preflight.rs"),
+        "__contract",
+        mode,
+        JSON.stringify(payload),
+      ],
+      { encoding: "utf8" },
+    );
+  const commit = { tagSha, workflowSha: mainSha, mainSha, isOnFirstParent: true };
+  assert.equal(invoke("release-commit", commit).status, 0);
+  for (const changed of [
+    { workflowSha: tagSha },
+    { mainSha: "c".repeat(40) },
+    { isOnFirstParent: false },
+    { tagSha: "main" },
+    { workflowSha: "main" },
+    { mainSha: "main" },
+  ]) {
+    assert.notEqual(invoke("release-commit", { ...commit, ...changed }).status, 0);
+  }
+  const ownership = {
+    releaseVersion: "0.429.0",
+    mainCargoToml: '[workspace.package]\nversion = "0.429.0"\n',
+  };
+  assert.doesNotThrow(() => validateReleaseControlVersion(ownership));
+  const accepted = invoke("control-version", ownership);
+  assert.equal(accepted.status, 0, accepted.stderr);
+  for (const mainCargoToml of ['[workspace.package]\nversion = "0.430.0"\n', "[workspace]\n"]) {
+    assert.throws(() => validateReleaseControlVersion({ ...ownership, mainCargoToml }));
+    assert.notEqual(invoke("control-version", { ...ownership, mainCargoToml }).status, 0);
+  }
 });
 
 test("npm bootstrap proceeds only on an authoritative registry 404", async () => {

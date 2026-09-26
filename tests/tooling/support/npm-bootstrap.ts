@@ -26,7 +26,7 @@ export function request(overrides: Record<string, string> = {}) {
     packagePath,
     releaseRunId,
     workflowRef: "refs/heads/main",
-    workflowSha: tagSha,
+    workflowSha: mainSha,
     ...overrides,
   });
 }

@@ -157,28 +157,6 @@ pub fn validate_bootstrap_manifest(
     Ok(version)
 }
 
-pub fn validate_release_commit(
-    tag_sha: &str,
-    workflow_sha: &str,
-    main_sha: &str,
-    is_on_first_parent: bool,
-) -> Result<(), String> {
-    if !is_full_sha(tag_sha) || !is_full_sha(workflow_sha) || !is_full_sha(main_sha) {
-        return Err("The release tag and origin/main must resolve to full commit SHAs".to_string());
-    }
-    if tag_sha != workflow_sha {
-        return Err(format!(
-            "Release tag commit {tag_sha} must exactly match repository dispatch SHA {workflow_sha}"
-        ));
-    }
-    if !is_on_first_parent {
-        return Err(format!(
-            "Release commit {tag_sha} is not on the first-parent history of current origin/main {main_sha}"
-        ));
-    }
-    Ok(())
-}
-
 pub fn verify_release_run_evidence(
     api_url: &str,
     repository: &str,
@@ -923,6 +901,7 @@ pub fn run_preflight(env: &BTreeMap<String, String>) -> Result<(), String> {
         &read_tagged_file(&tag_sha, "Cargo.toml")?,
         &package_manifest,
     )?;
+    validate_release_control_version(&version, &read_tagged_file(&main_sha, "Cargo.toml")?)?;
     verify_release_run_evidence(
         env.get("GITHUB_API_URL")
             .map(String::as_str)

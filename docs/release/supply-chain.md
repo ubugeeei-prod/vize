@@ -89,11 +89,11 @@ validated Release workflow reach a terminal failure at the new package's OIDC pu
 job. Record that Release run ID, then send the fixed `npm-bootstrap` repository
 dispatch:
 
-Freeze `main` from the release PR's atomic promotion (which creates its tag) until GitHub has accepted the
-repository dispatch and the bootstrap run has started. Disable PR auto-merge
-and allow neither direct pushes nor other merges during that window. If the
-bootstrap reports that the tag and repository-dispatch SHA differ, stop and
-investigate; do not create replacement tags merely to chase a moving `main`.
+Freeze `main` after any required bootstrap-control repair until the bootstrap
+preflight has validated its dispatch SHA against current `origin/main`.
+Disable PR auto-merge and allow neither direct pushes nor other merges during
+that window. Keep the production tag immutable; do not create replacement tags
+to chase `main`.
 
 ```bash
 FRESH_TAG=vX.Y.Z
@@ -106,12 +106,15 @@ gh api repos/ubugeeei-prod/vize/dispatches \
 ```
 
 GitHub executes the workflow definition from the default branch. The bootstrap
-requires the tag commit to equal that repository-dispatch SHA and to be on
-`origin/main`'s first-parent history. It also binds the tag, workspace, and
-package versions, and queries the supplied Release run before any credential is
+requires the repository-dispatch SHA to equal current `origin/main`, whose
+workspace version must equal the tagged release version. The immutable tag
+must remain on main's first-parent history; control repairs can have a newer
+SHA within that same release version. It binds tagged workspace/package versions
+and queries the supplied Release run before any credential is
 available. The run must be the completed failed `.github/workflows/release.yml`
 candidate `workflow_dispatch` run initiated for that release PR and exact SHA,
-with title `Release vX.Y.Z PR #N @ SHA`; promotion creates the tag inside that
+with title `Release vX.Y.Z PR #N @ SHA` and name `Release` or that exact validated
+title; promotion creates the tag inside that
 same run. Its package build, candidate authorization, preflight, promotion and tarball smoke
 jobs must be successful, while only the target package publish job is required
 to have failed. The exact package artifact from that run is downloaded,

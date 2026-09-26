@@ -294,7 +294,7 @@ whole-workspace resident state.
 ## CI tiers
 
 Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
-[#6861](https://github.com/ubugeeei-prod/vize/issues/6861)–[#6867](https://github.com/ubugeeei-prod/vize/issues/6867).
+[#6861](https://github.com/ubugeeei-prod/vize/issues/6861)–[#6867](https://github.com/ubugeeei-prod/vize/issues/6867). [First-publish control repair](./2026-09-27-sdk-bootstrap-control.md) is tracked in [#6895](https://github.com/ubugeeei-prod/vize/issues/6895).
 
 | Tier           | Runs              | Target                   | Content                                                                                                                     |
 | -------------- | ----------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
