@@ -171,6 +171,8 @@ pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::
     let mut fallback = Vec::new();
     let mut diagnostics = Vec::new();
     let mut no_template = Vec::new();
+    let mut parse_errors = Vec::new();
+    let mut routed_vapor = Vec::new();
     for input in inputs {
         let descriptor = parse_sfc(&input.source, SfcParseOptions::default());
         let has_template = descriptor.as_ref().is_ok_and(|d| d.template.is_some());
@@ -214,15 +216,23 @@ pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::
             ))
             .into());
         }
-        let diagnostic = selected
-            .as_ref()
-            .map_or(true, |result| !result.errors.is_empty());
-        let cohort = if !has_template {
-            no_template.push(input);
-            "no_template"
-        } else if diagnostic {
+        let clean = |result: &Result<SfcCompileResult, SfcError>| {
+            result
+                .as_ref()
+                .is_ok_and(|result| result.errors.is_empty() && result.warnings.is_empty())
+        };
+        let cohort = if descriptor.is_err() {
+            parse_errors.push(input);
+            "parse_error"
+        } else if !clean(&selected) || !clean(&legacy) {
             diagnostics.push(input);
             "diagnostic"
+        } else if !has_template {
+            no_template.push(input);
+            "no_template"
+        } else if backend != shape {
+            routed_vapor.push(input);
+            "routed_vapor"
         } else if selected_lane == "accepted" {
             accepted.push(input);
             "accepted"
@@ -244,10 +254,16 @@ pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::
     let cohorts = json!({
         "all": samples(&all, shape), "accepted": samples(&accepted, shape),
         "fallback": samples(&fallback, shape), "diagnostic": samples(&diagnostics, shape),
-        "no_template": samples(&no_template, shape),
+        "no_template": samples(&no_template, shape), "parse_error": samples(&parse_errors, shape),
+        "routed_vapor": samples(&routed_vapor, shape),
     });
     Ok(json!({
         "shape": shape.id(), "observations": observations, "cohorts": cohorts,
+        "retained_selector": match shape {
+            Shape::DomInline | Shape::DomModule => "DOM legacy.forced; explicit Vapor legacy.selected",
+            Shape::Ssr => "SSR LegacyOnly scoped override; it does not emit a selection counter",
+            Shape::Vapor => "Vapor legacy.selected scoped override",
+        },
         "selected_profile": profile(inputs, shape, false),
         "retained_profile": profile(inputs, shape, true),
     }))
