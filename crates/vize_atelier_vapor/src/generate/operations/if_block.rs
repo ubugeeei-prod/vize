@@ -30,6 +30,12 @@ fn generate_if_inner(
     head.push_spanned(&ctx.if_head(if_node));
     ctx.push_line_spanned(&head);
 
+    let slot_root = ctx.transition_slot
+        && if_node.parent.is_none()
+        && if_node.negative.is_none()
+        && matches!(if_node.positive.returns.as_slice(), [id] if element_template_map.contains_key(id));
+    let previous_transition = ctx.transition_slot;
+    ctx.transition_slot = false;
     let was_fragment = ctx.is_fragment;
     ctx.is_fragment = true;
     ctx.indent();
@@ -61,8 +67,9 @@ fn generate_if_inner(
             }
         }
     } else {
-        ctx.push_line("})");
+        ctx.push_line(if slot_root { "}, null, 129)" } else { "})" });
     }
+    ctx.transition_slot = previous_transition;
     ctx.is_fragment = was_fragment;
 }
 

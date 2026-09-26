@@ -132,6 +132,16 @@ pub(super) fn generate_create_component(
             ctx.use_helper("createComponent");
             ("_Suspense".to_compact_string(), "createComponent")
         }
+        ComponentKind::Transition | ComponentKind::TransitionGroup => {
+            let helper = if kind == ComponentKind::Transition {
+                "VaporTransition"
+            } else {
+                "VaporTransitionGroup"
+            };
+            ctx.use_helper(helper);
+            ctx.use_helper("createComponent");
+            (cstr!("_{helper}"), "createComponent")
+        }
         ComponentKind::Regular => {
             ctx.use_helper("createComponentWithFallback");
             let comp_var = component_resolution_var(tag);

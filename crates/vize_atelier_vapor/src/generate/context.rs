@@ -41,6 +41,8 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) keep_alive_slot: bool,
     /// Structural slot bodies keep authored inline handler wrapper anchors.
     pub(crate) structural_slot_spans: bool,
+    /// A Transition/TransitionGroup slot root owns its runtime boundary flags.
+    pub(crate) transition_slot: bool,
     /// For-loop scope stack
     pub(crate) for_scopes: std::vec::Vec<ForScope>,
     /// Slot scope stack for scoped slots
@@ -87,6 +89,7 @@ impl<'a> GenerateContext<'a> {
             is_fragment: false,
             keep_alive_slot: false,
             structural_slot_spans: false,
+            transition_slot: false,
             for_scopes: std::vec::Vec::new(),
             slot_scopes: std::vec::Vec::new(),
             slot_scope_count: 0,

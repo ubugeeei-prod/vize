@@ -21,6 +21,7 @@ mod model_names;
 mod slot_props;
 mod structural_slots;
 mod suspense;
+mod transition;
 
 mod support;
 use support::{Lane, mapped, mapped_on};

@@ -8,6 +8,7 @@ mod computed_dom;
 mod keep_alive;
 mod slot_props;
 mod suspense;
+mod transition;
 use vize_atelier_core::TemplateSyntaxMode;
 use vize_carton::Allocator;
 use vize_s3::{

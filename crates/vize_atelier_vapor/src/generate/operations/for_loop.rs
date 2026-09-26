@@ -61,6 +61,12 @@ pub(super) fn generate_for(
     };
     ctx.for_scopes.push(scope);
 
+    let slot_root = ctx.transition_slot
+        && for_node.parent.is_none()
+        && for_node.key_prop.is_some()
+        && matches!(for_node.render.returns.as_slice(), [id] if element_template_map.contains_key(id));
+    let previous_transition = ctx.transition_slot;
+    ctx.transition_slot = false;
     let was_fragment = ctx.is_fragment;
     ctx.is_fragment = true;
 
@@ -85,7 +91,11 @@ pub(super) fn generate_for(
     let is_range = for_node.source.content.parse::<f64>().is_ok();
 
     // Determine memo flag: 4 = range, 1 = only child of parent (nested v-for)
-    let memo_flag = if is_range {
+    let memo_flag = if slot_root && is_range {
+        Some("44")
+    } else if slot_root {
+        Some("40")
+    } else if is_range {
         Some("4")
     } else if for_node.only_child && was_fragment {
         // only_child flag is for nested v-for inside another element
@@ -104,6 +114,7 @@ pub(super) fn generate_for(
         ctx.push_line("})");
     }
 
+    ctx.transition_slot = previous_transition;
     ctx.is_fragment = was_fragment;
     ctx.for_scopes.pop();
 }

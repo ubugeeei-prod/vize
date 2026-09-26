@@ -268,6 +268,10 @@ pub enum ComponentKind {
     KeepAlive,
     /// Suspense: renderer primitive + createComponent, using ordinary Vapor slots
     Suspense,
+    /// Transition: published VaporTransition.
+    Transition,
+    /// TransitionGroup: published VaporTransitionGroup.
+    TransitionGroup,
     /// Dynamic component: createDynamicComponent
     Dynamic,
 }

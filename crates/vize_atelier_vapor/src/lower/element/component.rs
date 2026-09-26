@@ -30,6 +30,8 @@ pub(super) fn transform_component<'a>(
         "Teleport" => ComponentKind::Teleport,
         "KeepAlive" => ComponentKind::KeepAlive,
         "Suspense" => ComponentKind::Suspense,
+        "Transition" => ComponentKind::Transition,
+        "TransitionGroup" => ComponentKind::TransitionGroup,
         "component" => ComponentKind::Dynamic,
         _ => ComponentKind::Regular,
     };
