@@ -3,8 +3,14 @@
 //! Wires together parsing, the core transform lane, Vapor IR lowering, and
 //! code generation behind the public `compile_vapor*` functions.
 
+#[cfg(feature = "davinci-benchmark")]
+#[doc(hidden)]
+pub mod benchmark;
 mod entry;
 pub(crate) mod native;
+mod result;
+
+pub use result::VaporCompileResult;
 
 use crate::generate::spans::VaporSourceSpans;
 use crate::lower as vapor_lower;
@@ -70,19 +76,6 @@ pub struct VaporCompilerExperimentalOptions {
     pub source_map_filename: Option<String>,
 }
 
-/// Vapor compilation result
-#[derive(Debug)]
-pub struct VaporCompileResult {
-    /// Generated code
-    pub code: String,
-    /// Template strings for static parts
-    pub templates: Vec<String>,
-    /// Source Map v3 JSON for the generated render code.
-    pub map: Option<String>,
-    /// Error messages during compilation
-    pub error_messages: Vec<String>,
-}
-
 fn compile_vapor_inner<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -133,6 +126,8 @@ fn compile_vapor_inner_with_stack<'a>(
     experimental_options: VaporCompilerExperimentalOptions,
     scope_id: Option<&str>,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
+    #[cfg(feature = "davinci-benchmark")]
+    let options = benchmark::apply(options);
     // The native lane parses the source through S1 itself. It admits only
     // sources the legacy parser reports nothing for (S1 keeps the tokenizer's
     // codes and S2 refuses every recovery rule; `s3/tests/parser_agreement.rs`
