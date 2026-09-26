@@ -1,8 +1,8 @@
-//! Element objects: a `v-bind` object merges the element's static attributes
+//! Ordered DOM props: a `v-bind` object or computed name merges static attributes
 //! and `:prop`s in authored order (upstream's `setDynamicProps` sources), and
 //! a `v-on` object binds its listeners with `setDynamicEvents`.
 //!
-//! Beside an object, only plain `:prop`s and static attributes are admitted.
+//! These groups admit only ordinary props and static attributes.
 //! Named listeners interleave with an object's listeners in an order the
 //! Vapor and VDOM runtimes do not agree on, and directives (`v-show`,
 //! `v-model`, content directives) keep their own runtime contracts.
@@ -17,7 +17,12 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
             continue;
         };
         let object = |kind| node.bindings.iter().any(|binding| binding.kind == kind);
-        let (spread, handlers) = (object(BindingKind::Spread), object(BindingKind::Handlers));
+        let spread = object(BindingKind::Spread)
+            || node
+                .bindings
+                .iter()
+                .any(|binding| binding.kind == BindingKind::Prop && binding.dynamic_name.is_some());
+        let handlers = object(BindingKind::Handlers);
         if (spread || handlers)
             && (tag == "template"
                 || spread && handlers

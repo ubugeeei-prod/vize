@@ -16,6 +16,7 @@ use super::{VaporCompilerOptions, compile_vapor};
 use vize_carton::Allocator;
 
 mod component_names;
+mod computed_dom;
 
 mod support;
 use support::{Lane, mapped, mapped_on};

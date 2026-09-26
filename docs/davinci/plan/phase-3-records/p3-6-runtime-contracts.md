@@ -5,6 +5,7 @@ retained runtime route. Each appendix records its accepted shapes, mutation
 witnesses, code/maps, parse/walk floor and mounted official-runtime comparisons.
 P3-6's complete surface and performance acceptance remain open.
 
+- [Computed DOM prop names](p3-6-computed-dom-props.md)
 - [Computed DOM event names](p3-6-computed-events.md)
 - [Computed component prop and event names](p3-6-component-names.md)
 - [Flat select models and raw option values](p3-6-select-models.md)

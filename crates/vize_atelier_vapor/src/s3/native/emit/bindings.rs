@@ -18,7 +18,9 @@ impl<'a> Emitter<'a, '_> {
         let Some(node) = self.artifact.nodes.get(index) else {
             return self.invariant_broken();
         };
-        if node.bindings.iter().any(|b| b.kind == BindingKind::Spread) {
+        if node.bindings.iter().any(|b| {
+            b.kind == BindingKind::Spread || b.kind == BindingKind::Prop && b.dynamic_name.is_some()
+        }) {
             return self.merged_props(index, element, block);
         }
         for binding in 0..node.bindings.len() {

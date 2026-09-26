@@ -1,5 +1,5 @@
 //! `setDynamicProps` over upstream's ordered sources: for an element with a
-//! `v-bind` object, every prop authored around the object lands in a literal
+//! `v-bind` object or computed key, every prop lands in a literal
 //! group so the runtime merges them in authored order (later sources win,
 //! `class`/`style` concatenate), exactly as `@vue/compiler-vapor` emits it.
 
@@ -33,7 +33,11 @@ pub(crate) fn merged_props_call(
                         group.push_str(", ");
                     }
                     let key = prop.key.content;
-                    if simple_identifier(key) {
+                    if !prop.key.is_static {
+                        group.push('[');
+                        group.push_str(&ctx.resolve_expression_node(&prop.key));
+                        group.push(']');
+                    } else if simple_identifier(key) {
                         group.push_str(key);
                     } else {
                         group.push_str(&cstr!("\"{}\"", escape_js_string_literal(key)));

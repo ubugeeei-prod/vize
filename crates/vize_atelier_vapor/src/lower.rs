@@ -6,6 +6,7 @@ mod context;
 mod control;
 mod directive;
 mod element;
+mod merged_props;
 mod text;
 
 use vize_carton::{Allocator, String, Vec, ensure_sufficient_stack};

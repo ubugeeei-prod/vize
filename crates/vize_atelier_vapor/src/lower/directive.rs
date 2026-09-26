@@ -23,9 +23,12 @@ pub(crate) fn transform_directive<'a>(
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
+    if dir.name == "bind" && super::merged_props::uses_computed_props(el) {
+        super::merged_props::transform(ctx, dir, element_id, el, block);
+        return;
+    }
     match dir.name {
         "bind" => {
-            // Skip :key - handled by v-for key function
             if let Some(ref arg) = dir.arg
                 && let ExpressionNode::Simple(key_exp) = arg
                 && key_exp.content == "key"
@@ -33,7 +36,6 @@ pub(crate) fn transform_directive<'a>(
                 return;
             }
 
-            // Check modifiers
             let has_camel = dir.modifiers.iter().any(|m| m.content == "camel");
             let has_prop = dir.modifiers.iter().any(|m| m.content == "prop");
 
@@ -77,7 +79,6 @@ pub(crate) fn transform_directive<'a>(
                         return;
                     }
 
-                    // Apply .camel modifier: camelize the key
                     let key_content = if has_camel {
                         ctx.interner.intern(&camelize(key_exp.content))
                     } else {
@@ -100,7 +101,6 @@ pub(crate) fn transform_directive<'a>(
                         Vec::new_in(&ctx.allocator)
                     };
 
-                    // Check for static class attribute to merge
                     let final_values = if key_exp.content == "class" {
                         merge_static_class(ctx, el, values)
                     } else {
@@ -115,7 +115,6 @@ pub(crate) fn transform_directive<'a>(
                         prop_modifier: has_prop,
                     };
 
-                    // Reactive prop - add to effects
                     ctx.push_dynamic_operation(block, OperationNode::SetProp(set_prop));
                 }
             } else {
