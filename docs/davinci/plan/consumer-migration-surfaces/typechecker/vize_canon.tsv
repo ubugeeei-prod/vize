@@ -284,7 +284,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/script_documen
 typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/script_document.rs	159	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/types.rs	14	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs	5	s0	S0	stage	vize_carton	compat	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs	235	s0	S0	stage	vize_carton	compat	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context.rs	237	s0	S0	stage	vize_carton	compat	1
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/build.rs	5	s0	S0	stage	vize_carton	compat	6
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs	7	s0	S0	stage	vize_carton	compat	12
 typechecker	Typechecker	source	crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache/fingerprint.rs	5	s0	S0	stage	vize_carton	compat	1

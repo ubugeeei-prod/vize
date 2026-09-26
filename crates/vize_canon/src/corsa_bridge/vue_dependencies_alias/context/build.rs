@@ -10,12 +10,16 @@ use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 use crate::corsa_bridge::types::CorsaBridgeError;
 
+pub(super) struct SourceRevision<'a> {
+    pub requested_sources: &'a [(PathBuf, &'a str)],
+    pub overlay_identity: u64,
+}
+
 pub(super) fn build(
     source_path: &Path,
     content: &str,
     overlays: &FxHashMap<PathBuf, &str>,
-    requested_sources: &[(PathBuf, &str)],
-    overlay_identity: u64,
+    revision: SourceRevision<'_>,
     resolver: &mut crate::PackageRouteResolver,
     options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
     environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
@@ -99,7 +103,7 @@ pub(super) fn build(
     let live_sources = environment
         .editor_session
         .cache()
-        .project_sources_to_refresh(project.virtual_root(), overlay_identity);
+        .project_sources_to_refresh(project.virtual_root(), revision.overlay_identity);
     for path in live_sources {
         if path != source_path
             && let Some(source) = overlays.get(&path)
@@ -109,7 +113,7 @@ pub(super) fn build(
                 .map_err(bridge_error)?;
         }
     }
-    for (path, source) in requested_sources {
+    for (path, source) in revision.requested_sources {
         let path = vize_carton::path::canonicalize_non_verbatim(path);
         if path == source_path {
             continue;

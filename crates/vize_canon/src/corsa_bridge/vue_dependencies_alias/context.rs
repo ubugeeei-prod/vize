@@ -62,8 +62,10 @@ impl AliasContext {
             source_path,
             content,
             overlays,
-            &[],
-            0,
+            build::SourceRevision {
+                requested_sources: &[],
+                overlay_identity: 0,
+            },
             &mut crate::PackageRouteResolver::default(),
             Default::default(),
             super::super::vue_document::CorsaProjectEnvironment {

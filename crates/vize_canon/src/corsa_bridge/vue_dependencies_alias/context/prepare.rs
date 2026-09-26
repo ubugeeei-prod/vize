@@ -52,8 +52,10 @@ impl AliasContext {
             source_path,
             content,
             overlays,
-            requested_sources,
-            fingerprint.overlay_identity(),
+            build::SourceRevision {
+                requested_sources,
+                overlay_identity: fingerprint.overlay_identity(),
+            },
             &mut resolver,
             options,
             environment,
