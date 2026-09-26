@@ -104,7 +104,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
   assert.equal(
     expectResolvedId(resolved),
-    `${source}?vue=&type=style&index=0&lang=css.css`,
+    `${source}.__vize_style_0.css?vue=&type=style&index=0&lang=css&vize-file=${encodeURIComponent(source)}`,
     "Dependency Vue style queries should stay CSS-visible when dependency SFC compilation is disabled",
   );
 
@@ -118,7 +118,7 @@ function expectResolvedId(resolved: Awaited<ReturnType<typeof resolveIdHook>>): 
 
   assert.equal(
     expectResolvedId(fsResolved),
-    `${source}?vue=&type=style&index=0&lang=css.css`,
+    `${source}.__vize_style_0.css?vue=&type=style&index=0&lang=css&vize-file=${encodeURIComponent(source)}`,
     "Dependency Vue style queries from /@fs requests should normalize into the CSS pipeline",
   );
 }
