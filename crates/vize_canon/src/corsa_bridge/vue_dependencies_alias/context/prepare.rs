@@ -53,6 +53,7 @@ impl AliasContext {
             content,
             overlays,
             requested_sources,
+            fingerprint.overlay_identity(),
             &mut resolver,
             options,
             environment,

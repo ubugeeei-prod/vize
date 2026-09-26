@@ -15,6 +15,7 @@ pub(super) fn build(
     content: &str,
     overlays: &FxHashMap<PathBuf, &str>,
     requested_sources: &[(PathBuf, &str)],
+    overlay_identity: u64,
     resolver: &mut crate::PackageRouteResolver,
     options: crate::corsa_bridge::vue_document::CorsaVueVirtualDocumentOptions,
     environment: crate::corsa_bridge::vue_document::CorsaProjectEnvironment<'_>,
@@ -98,7 +99,7 @@ pub(super) fn build(
     let live_sources = environment
         .editor_session
         .cache()
-        .project_source_paths(project.virtual_root());
+        .project_sources_to_refresh(project.virtual_root(), overlay_identity);
     for path in live_sources {
         if path != source_path
             && let Some(source) = overlays.get(&path)

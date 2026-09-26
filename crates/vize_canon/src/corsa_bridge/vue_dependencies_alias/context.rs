@@ -7,18 +7,13 @@ use vize_carton::{FxHashMap, String as CompactString};
 use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 
-#[path = "context/build.rs"]
 mod build;
-#[path = "context/cache.rs"]
 mod cache;
 pub(in crate::corsa_bridge) use cache::SessionCache;
 pub(in crate::corsa_bridge) use cache::recover_lock;
 use cache::{ContextFingerprint, ProjectMember};
-#[path = "context/namespace.rs"]
 mod namespace;
-#[path = "context/prepare.rs"]
 mod prepare;
-#[path = "context/routes.rs"]
 mod routes;
 
 // Project snapshots are shared by independent semantic requests in the
@@ -68,6 +63,7 @@ impl AliasContext {
             content,
             overlays,
             &[],
+            0,
             &mut crate::PackageRouteResolver::default(),
             Default::default(),
             super::super::vue_document::CorsaProjectEnvironment {
