@@ -139,6 +139,13 @@ pub(super) fn bindings<'a>(
                 prop(props, binding, position, fresh, true)?;
                 continue;
             }
+            Content::Outlet { .. }
+                if binding.kind == BindingKind::Prop
+                    && binding.dynamic_name.is_none()
+                    && binding.name == "name" =>
+            {
+                return Err(LegacyReason::Component.into());
+            }
             Content::Outlet { props, .. } => {
                 prop(props, binding, position, fresh, false)?;
                 continue;
@@ -231,9 +238,8 @@ fn prop<'a>(
         BindingKind::Event if component && binding.modifiers.is_empty() => true,
         _ => return Err(LegacyReason::Component.into()),
     };
-    if !component && binding.dynamic_name.is_some()
-        || !handler && binding.dynamic_name.is_none() && !component_prop(binding.name)
-        || !fresh && !matches!(binding.name, "class" | "style")
+    if !handler && binding.dynamic_name.is_none() && !component_prop(binding.name)
+        || !fresh && (binding.dynamic_name.is_some() || !matches!(binding.name, "class" | "style"))
     {
         return Err(LegacyReason::Component.into());
     }

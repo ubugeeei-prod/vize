@@ -55,7 +55,7 @@ fn computed_component_names_match_retained_generation() {
 fn unproved_computed_name_surfaces_remain_legacy() {
     for source in [
         r#"<button :[name].camel="value">text</button>"#,
-        r#"<slot :[name]="value" />"#,
+        r#"<slot :[name].camel="value" />"#,
         r#"<Child @[event].stop="save" />"#,
         r#"<Child :[name].camel="value" />"#,
     ] {

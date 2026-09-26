@@ -1,3 +1,5 @@
+mod props;
+
 use crate::ir::SlotOutletIRNode;
 use vize_carton::{String, cstr};
 
@@ -59,6 +61,10 @@ pub(super) fn generate_slot_outlet(ctx: &mut GenerateContext, slot: &SlotOutletI
 fn build_slot_props(ctx: &GenerateContext, slot: &SlotOutletIRNode<'_>) -> Option<String> {
     if slot.props.is_empty() {
         return None;
+    }
+
+    if props::needs_structured_props(&slot.props) {
+        return Some(props::ordered_props(ctx, &slot.props));
     }
 
     let mut entries = Vec::new();

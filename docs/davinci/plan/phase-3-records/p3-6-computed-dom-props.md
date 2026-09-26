@@ -35,8 +35,9 @@ updates, removal, stable node identity and unmount. Retained code equality is
 proved separately by the source and map fixtures.
 
 Computed prop modifiers, named or object event listeners beside these groups,
-model/content/show directives, once subtrees, slot outlet props and computed
-props on built-in components remain explicit legacy surfaces. This bounded
+model/content/show directives, once subtrees and computed props on built-in
+components remain explicit legacy surfaces. Computed slot outlet props have
+their own [contract](p3-6-slot-props.md). This bounded
 contract does not close P3-6's complete surface or performance acceptance.
 
 Contract: [P3-6](p3-6.md).

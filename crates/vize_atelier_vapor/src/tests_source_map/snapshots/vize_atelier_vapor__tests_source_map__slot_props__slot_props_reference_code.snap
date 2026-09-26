@@ -1,0 +1,14 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/slot_props.rs
+expression: code
+---
+import { createSlot as _createSlot, template as _template } from 'vue';
+const t0 = _template("<b>fallback</b>")
+
+export function render(_ctx) {
+  const n0 = _createSlot("default", { title: "fixed", $: [() => ({ [(_ctx.name)]: _ctx.value })] }, () => {
+    const n1 = t0()
+    return n1
+  })
+  return n0
+}

@@ -53,6 +53,15 @@ fn vapor_legacy_reparse_floor_holds() {
     // the same single-test binary so process-global probes cannot race.
     for source in [
         r#"<slot :name="name"></slot>"#,
+        r#"<slot :[name]="value" />"#,
+        r#"<slot :name="selected" :[name]="value" />"#,
+        r#"<slot data-id="fixed" :[names[index]]="value" :extra="extra" />"#,
+        r#"<slot :['data-'+suffix]="value" :[name.toLowerCase()]="other" />"#,
+        r#"<slot class="base" :class="classes" style="color:red" :style="styles" :[name]="value" />"#,
+        r#"<Child v-slot="{ item }"><slot :[item.name]="item.value" /></Child>"#,
+        r#"<slot data-id="fixed" disabled />"#,
+        r#"<slot class="base" :class="classes" style="color:red" :style="styles" />"#,
+        r#"<slot class :class="classes" />"#,
         r#"<div title="fixed" :[name]="value"></div>"#,
         r#"<div title="fixed" :[title]="value"></div>"#,
         r#"<div class="base" :class="classes" style="color:red" :style="styles" :[keys[index]]="value"></div>"#,

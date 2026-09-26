@@ -1,0 +1,9 @@
+---
+source: crates/vize_atelier_vapor/src/tests_source_map/slot_props.rs
+expression: segments
+---
+[
+    "1:23 \"b>fallba\" -> \"b>fallba\"",
+    "1:25 \"fallback\" -> \"fallback\"",
+    "3:0 \"export f\" -> \"<slot ti\"",
+]
