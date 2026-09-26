@@ -4192,6 +4192,7 @@ dependencies = [
  "insta",
  "lightningcss",
  "memchr",
+ "mimalloc",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",

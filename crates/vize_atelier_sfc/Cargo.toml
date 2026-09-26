@@ -72,6 +72,7 @@ toml = { workspace = true }
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 davinci_harness = { workspace = true }
 criterion = { workspace = true }
+mimalloc = { workspace = true }
 
 [[bench]]
 name = "sfc_parse"

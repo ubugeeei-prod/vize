@@ -32,13 +32,17 @@ destruction. The profiler is disabled. Each lane has one warmup batch followed
 by nine alternating paired batches, each containing five complete corpus
 passes. The retained scope is entered outside its timing window. The runner
 build uses `ci-opt`: optimization level 3, thin LTO, 16 codegen units. These
-measurements describe that profile, not release-profile performance.
+measurements describe that profile, not release-profile performance. The example
+uses mimalloc, like the default native CLI, without allocation tracking.
 
 Before timing, a separate profiler-enabled pass reads the selected and forced
 retained verdict for every input and enforces one selection counter at most.
 Forced retained must never report native acceptance. The SSR scoped selector
 uses `LegacyOnly`, which emits no selection counter; that absence is recorded,
-not presented as an observed retained verdict. Parse errors, inputs without a
+not presented as an observed retained verdict. A separate known-admitted
+selector probe requires native acceptance before forcing and the backend's
+expected retained accounting afterwards (no S4 selection counter for SSR).
+Parse errors, inputs without a
 template, and diagnostics on either lane (including warnings) are recorded
 explicitly. Clean accepted and fallback inputs form separate timing cohorts.
 Explicit Vapor sources retain their actual backend identity and a separate
