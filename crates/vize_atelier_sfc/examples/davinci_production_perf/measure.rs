@@ -200,6 +200,13 @@ fn profile(inputs: &[Input], shape: Shape, force_retained: bool) -> Value {
     json!(report)
 }
 
+pub fn attribution(inputs: &[Input], shape: Shape) -> Value {
+    json!({
+        "shape": shape.id(), "selected_profile": profile(inputs, shape, false),
+        "retained_profile": profile(inputs, shape, true),
+    })
+}
+
 pub fn run(inputs: &[Input], shape: Shape) -> Result<Value, Box<dyn std::error::Error>> {
     let selector_probe = selector_probe(shape)?;
     let profiler = global_profiler();

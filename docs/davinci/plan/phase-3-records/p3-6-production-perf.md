@@ -62,6 +62,14 @@ runtime and source-map gates remain required. Two additional full-corpus
 profiler-enabled passes export attribution for each lane **after** the timed
 samples. Attribution times are diagnostic data, not acceptance medians.
 
+A separate `davinci-production-profile` executable records detailed Vapor
+bridge stages on runner 1. Its extra `davinci-benchmark-profile` spans are
+absent both from ordinary production builds and from the timed-pair executable.
+This executable accepts only `--attribution-only`; it cannot emit acceptance
+timings. The artifact records S1 parsing, S1-to-S2 and S2-to-S3 lowering,
+markup admission, retained-expression indexing, template carriers, text capture,
+generic verification, native admission, and IR projection separately.
+
 ## Acceptance limits
 
 The corpus excludes hydrated `_git` projects, `_git-worktrees`, and

@@ -3,6 +3,7 @@
 //! Acceptance carries the complete checked backend payload. Unsupported inputs
 //! select the retained legacy lane explicitly; corrupt invariants never emit.
 
+mod benchmark;
 mod markup;
 mod native;
 mod retained;
@@ -15,6 +16,7 @@ use vize_s1::SurfaceParseOptions;
 use vize_s2_to_s3::Lowered;
 use vize_s3::verify::verify;
 
+use benchmark::bridge_profile;
 use native::NativeArtifact;
 
 #[derive(Debug, Clone, Copy)]
@@ -110,8 +112,11 @@ impl<'a> VaporS3Artifact<'a> {
         crate::ir::RootIRNode<'a>,
         Option<crate::generate::spans::VaporSourceSpans>,
     )> {
-        self.0
-            .into_ir_with_spans(allocator, source, scope_id, spans)
+        bridge_profile!(
+            "atelier.vapor.bridge.ir_projection",
+            self.0
+                .into_ir_with_spans(allocator, source, scope_id, spans)
+        )
     }
 }
 
@@ -137,14 +142,20 @@ pub(crate) fn lower_source_for_vapor<'a>(
         // Earlier-stage storage cannot accidentally become an emitter input.
         // S3 copies its payloads into the output arena before this scope ends.
         let scratch = Allocator::new();
-        let (tree, errors) = vize_s1::parse_with_options(
-            &scratch,
-            source,
-            SurfaceParseOptions {
-                experimental_in_tag_comments: options.experimental_in_tag_comments,
-            },
+        let (tree, errors) = bridge_profile!(
+            "atelier.vapor.bridge.s1_parse",
+            vize_s1::parse_with_options(
+                &scratch,
+                source,
+                SurfaceParseOptions {
+                    experimental_in_tag_comments: options.experimental_in_tag_comments,
+                },
+            )
         );
-        let s2 = vize_s1_to_s2::lower(&scratch, &tree, &errors);
+        let s2 = bridge_profile!(
+            "atelier.vapor.bridge.s1_to_s2",
+            vize_s1_to_s2::lower(&scratch, &tree, &errors)
+        );
         if !s2.diagnostics.is_empty()
             || s2.provenance.iter().any(|record| {
                 !record.rule.starts_with("lower.")
@@ -164,17 +175,32 @@ pub(crate) fn lower_source_for_vapor<'a>(
         {
             return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
         }
-        let mut s3 = vize_s2_to_s3::lower(allocator, &s2.root);
-        if markup::legacy_diagnosed(allocator, source, &s3.program) {
+        let mut s3 = bridge_profile!(
+            "atelier.vapor.bridge.s2_to_s3",
+            vize_s2_to_s3::lower(allocator, &s2.root)
+        );
+        if bridge_profile!(
+            "atelier.vapor.bridge.markup_admission",
+            markup::legacy_diagnosed(allocator, source, &s3.program)
+        ) {
             return VaporS3BridgeStatus::Legacy(LegacyReason::SurfaceSemantics);
         }
-        let mut retained = retained::Retained::collect(allocator, &s2.root);
+        let mut retained = bridge_profile!(
+            "atelier.vapor.bridge.retained_index",
+            retained::Retained::collect(allocator, &s2.root)
+        );
         // Template carriers keep their wrapper facts in S2 side tables.
-        let loops = match templates::collect(allocator, source, &s2, &s3.program, &mut retained) {
+        let loops = match bridge_profile!(
+            "atelier.vapor.bridge.template_carriers",
+            templates::collect(allocator, source, &s2, &s3.program, &mut retained)
+        ) {
             Ok(loops) => loops,
             Err(reason) => return VaporS3BridgeStatus::Legacy(reason),
         };
-        if let Err(failure) = text::capture(allocator, &s2, &mut s3, &mut retained) {
+        if let Err(failure) = bridge_profile!(
+            "atelier.vapor.bridge.text_capture",
+            text::capture(allocator, &s2, &mut s3, &mut retained)
+        ) {
             return match failure {
                 AdmissionFailure::Unsupported(reason) => VaporS3BridgeStatus::Legacy(reason),
                 AdmissionFailure::Invalid(message) => {
@@ -198,7 +224,7 @@ fn admit_with<'a>(
     retained: &retained::Retained<'_, 'a>,
     loops: &[templates::TemplateLoop<'a>],
 ) -> VaporS3BridgeStatus<'a> {
-    let violations = verify(&s3.program);
+    let violations = bridge_profile!("atelier.vapor.bridge.generic_verify", verify(&s3.program));
     if !violations.is_empty() {
         return VaporS3BridgeStatus::Rejected(
             violations
@@ -225,7 +251,10 @@ fn admit_with<'a>(
             "Davinci S3 verifier rejected Vapor artifact: partition identity/classification mismatch",
         )]);
     }
-    match NativeArtifact::admit(&s3, retained, loops) {
+    match bridge_profile!(
+        "atelier.vapor.bridge.native_admission",
+        NativeArtifact::admit(&s3, retained, loops)
+    ) {
         Ok(artifact) => VaporS3BridgeStatus::Accepted(VaporS3Artifact(artifact)),
         Err(AdmissionFailure::Unsupported(reason)) => VaporS3BridgeStatus::Legacy(reason),
         Err(AdmissionFailure::Invalid(message)) => VaporS3BridgeStatus::Rejected(std::vec![cstr!(
