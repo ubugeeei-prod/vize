@@ -84,7 +84,7 @@ fn incremental_equals_clean_on_every_committed_project_fixture() {
             report.comparisons,
             report.blocks_compared,
         ),
-        (67, 402, 2020, 258, 2489, 5390)
+        (68, 408, 2050, 262, 2526, 5464)
     );
     // The snapshot path (P5-5) ran beside the database on every state and
     // matched too; its adoption accounting over the plane is pinned exactly.
@@ -96,9 +96,9 @@ fn incremental_equals_clean_on_every_committed_project_fixture() {
     assert_eq!(
         report.snapshot,
         SnapshotStats {
-            header: joint(1953, 201, 134),
-            blocks: joint(2476, 2194, 1762),
-            regions: joint(156, 1524, 1158),
+            header: joint(1982, 204, 136),
+            blocks: joint(2508, 2226, 1788),
+            regions: joint(158, 1546, 1175),
         }
     );
 }
@@ -110,9 +110,9 @@ fn the_seeded_stale_cache_is_caught() {
     println!("{}", report.summary());
     // Only length-preserving edits slip past the weakened equality; each one
     // leaves the stale block's S0 key (and every artifact behind it) served —
-    // by the database (347 states) and by the snapshot tree, whose block
-    // joint compares the same `BlockSource` (280 more).
-    assert_eq!(report.mismatches.len(), 627);
+    // by the database (353 states) and by the snapshot tree, whose block
+    // joint compares the same `BlockSource` (285 more).
+    assert_eq!(report.mismatches.len(), 638);
     assert_eq!(
         report.mismatches[0],
         vize_resident::equivalence::Mismatch {
