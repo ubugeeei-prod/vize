@@ -85,3 +85,41 @@ P0-3 retained transform/lower/generate ladder remains a separate baseline;
 its historical numeric baseline is not inferred from this whole-SFC harness.
 P3-6 and P3-16 remain open until their semantic, runtime, map, adoption and
 fixed performance acceptance conditions are actually met.
+
+## Final Transition control observation
+
+[Run 36241061949](https://github.com/ubugeeei-prod/vize/actions/runs/36241061949)
+completed successfully on benchmark head
+`43179ebfd0b77a72b625dcd8efafd17e5fe82e29`, whose production parent is
+`d424f46d0401575a591e34272aae2c28298d4901` (the Transition stack layer).
+The manifest contains 442 SFCs and hashes to
+`673fc2d888d7f22d3fc19c2da64103d273bdc4a27bbf8e4356c9c58169c96a70`.
+All three `davinci-production-perf-*` artifacts retain raw paired samples,
+input observations and runner provenance; runner 1 also retains separate
+detailed bridge attribution. `davinci-production-summary` validates and
+aggregates those reports.
+
+Ratios below are selected divided by retained. Each row retains the three
+independent runner ratios; the center is their median. Clean accepted cohorts
+exclude diagnostics on either lane. These controlled observations show slower
+selected compiles in every requested shape and **do not satisfy P3-6 performance
+acceptance**. No budget or acceptance condition was changed.
+
+| Shape      | Clean accepted files | Median ratio | Three runner ratios    | All-input median |
+| ---------- | -------------------: | -----------: | ---------------------- | ---------------: |
+| DOM inline |                  335 |       1.0298 | 1.0298, 1.0308, 1.0249 |           1.0698 |
+| DOM module |                  335 |       1.0295 | 1.0302, 1.0295, 1.0211 |           1.0629 |
+| SSR        |                  335 |       1.3345 | 1.3357, 1.3345, 1.3258 |           1.3242 |
+| Vapor      |                  207 |       1.0654 | 1.0699, 1.0654, 1.0567 |           1.1470 |
+
+The 128 clean Vapor fallback inputs have median ratio 1.1962, with runner
+ratios 1.2043, 1.1962 and 1.1930. This cohort remains separate from admitted
+native work when choosing a bounded optimization trial.
+
+There are 351 compiled templates in each shape. Observed native acceptance
+counts are 347 DOM inline, 347 DOM module, 349 SSR and 208 Vapor; the remaining
+counts are 4, 4, 2 and 143 respectively. These observations preserve the fixed
+P3-17 floor rather than replacing its gate. No diagnostic-message differences
+were observed. Clean accepted DOM/SSR pairs have no code differences; 23 Vapor
+pairs have different code. This comparison uses default maps disabled and
+does not establish TS-31 source-map or TS-33 runtime parity.
