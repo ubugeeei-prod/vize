@@ -48,7 +48,7 @@ fn operation_has_template_refs(op: &OperationNode<'_>) -> bool {
         OperationNode::CreateComponent(component) => component
             .slots
             .iter()
-            .any(|slot| block_has_template_refs(&slot.block)),
+            .any(|slot| slot.blocks().any(block_has_template_refs)),
         _ => false,
     }
 }
@@ -95,7 +95,9 @@ fn collect_custom_directives_from_component(
     directives: &mut FxHashSet<String>,
 ) {
     for slot in component.slots.iter() {
-        collect_custom_directives_from_block(&slot.block, directives);
+        for block in slot.blocks() {
+            collect_custom_directives_from_block(block, directives);
+        }
     }
 }
 

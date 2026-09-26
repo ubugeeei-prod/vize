@@ -7,6 +7,7 @@ use super::{
     component_props::generate_component_props_str,
     component_slots::generate_slot_fn,
     insertion::emit_insertion_state,
+    structural_slots::{declare_slot_caches, generate_dynamic_slot},
 };
 
 pub(super) fn component_resolution_var(tag: &str) -> String {
@@ -146,14 +147,7 @@ pub(super) fn generate_create_component(
     let has_slots = !component.slots.is_empty();
     // Keep each computed slot's function stable when only its name getter
     // re-evaluates. A new function would remount content at an unchanged name.
-    for (index, _) in component
-        .slots
-        .iter()
-        .filter(|slot| !slot.name.is_static)
-        .enumerate()
-    {
-        ctx.push_line(&cstr!("let _slot{}_{}", component.id, index));
-    }
+    declare_slot_caches(ctx, component);
 
     emit_insertion_state(ctx, component.parent, component.anchor);
 
@@ -187,7 +181,7 @@ pub(super) fn generate_create_component(
         let mut static_slots: std::vec::Vec<&IRSlot<'_>> = std::vec::Vec::new();
         let mut dynamic_slots: std::vec::Vec<&IRSlot<'_>> = std::vec::Vec::new();
         for slot in component.slots.iter() {
-            if slot.name.is_static {
+            if !slot.dynamic() {
                 static_slots.push(slot);
             } else {
                 dynamic_slots.push(slot);
@@ -213,26 +207,7 @@ pub(super) fn generate_create_component(
             ctx.push_line("$: [");
             ctx.indent();
             for (i, slot) in dynamic_slots.iter().enumerate() {
-                ctx.push_indent();
-                ctx.push("() => ({\n");
-                ctx.indent();
-                let mut name = EmitDocument::plain("name: ");
-                name.push_spanned(&ctx.spanned_expression_node(&slot.name));
-                name.push_str(",");
-                ctx.push_line_spanned(&name);
-                ctx.push_indent();
-                ctx.push(&cstr!(
-                    "fn: _slot{}_{} || (_slot{}_{} =",
-                    component.id,
-                    i,
-                    component.id,
-                    i
-                ));
-                generate_slot_fn(ctx, slot, element_template_map, ComponentKind::Regular);
-                ctx.push(")\n");
-                ctx.deindent();
-                ctx.push_indent();
-                ctx.push("})");
+                generate_dynamic_slot(ctx, slot, element_template_map, component.id, i);
                 if i < dynamic_slots.len() - 1 {
                     ctx.push(",");
                 }

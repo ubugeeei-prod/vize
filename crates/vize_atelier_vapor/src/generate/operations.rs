@@ -7,6 +7,7 @@ mod component_props;
 mod component_slots;
 mod directives;
 mod dom;
+mod structural_slots;
 pub(crate) use dom::{set_prop_call, set_text_call};
 mod events;
 mod for_loop;

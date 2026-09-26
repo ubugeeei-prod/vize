@@ -3,9 +3,11 @@ mod constructors;
 mod control_flow;
 mod events;
 mod props;
+mod slots;
 
 pub use control_flow::{ForIRNode, IfIRNode, NegativeBranch};
 pub use props::{IRProp, PropValueKind};
+pub use slots::{IRSlot, IRSlotControl, IRSlotLoop};
 
 use serde::{Deserialize, Serialize};
 use vize_atelier_core::{Namespace, RootNode, SimpleExpressionNode, TemplateChildNode};
@@ -288,14 +290,6 @@ pub struct CreateComponentIRNode<'a> {
     pub v_show: Option<Box<'a, SimpleExpressionNode<'a>>>,
     pub parent: Option<usize>,
     pub anchor: Option<InsertionAnchor>,
-}
-
-/// IR slot
-#[derive(Debug)]
-pub struct IRSlot<'a> {
-    pub name: Box<'a, SimpleExpressionNode<'a>>,
-    pub fn_exp: Option<Box<'a, SimpleExpressionNode<'a>>>,
-    pub block: BlockIRNode<'a>,
 }
 
 /// Slot outlet operation

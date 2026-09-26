@@ -88,7 +88,11 @@ fn admitted_sources_are_clean_for_the_legacy_parser() {
             disagreements.push(String::from(source));
         }
     };
-    for source in corpus() {
+    for source in corpus().into_iter().chain(
+        super::structural_slots::SOURCES
+            .iter()
+            .map(|source| String::from(*source)),
+    ) {
         check(&source);
         for (at, c) in source.char_indices() {
             check(&source[..at]);

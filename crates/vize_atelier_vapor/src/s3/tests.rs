@@ -318,5 +318,6 @@ mod parser_agreement;
 mod select;
 mod slots;
 mod spreads;
+mod structural_slots;
 mod teleport;
 mod templates;

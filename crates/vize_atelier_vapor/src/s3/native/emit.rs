@@ -14,6 +14,7 @@ mod control;
 mod element;
 mod spans;
 mod spread;
+mod structural_slots;
 mod text;
 
 use vize_atelier_core::{

@@ -19,6 +19,7 @@ mod component_names;
 mod computed_dom;
 mod model_names;
 mod slot_props;
+mod structural_slots;
 mod suspense;
 
 mod support;

@@ -1,13 +1,14 @@
 //! Component, slot outlet, dynamic component, and v-model lowering.
 
 use super::{
-    BlockIRNode, Box, ComponentKind, CreateComponentIRNode, ElementNode, ElementType,
-    ExpressionNode, IRProp, IRSlot, OperationNode, PropNode, SimpleExpressionNode, SourceLocation,
-    String, TemplateChildNode, TransformContext, Vec, transform_children,
+    BlockIRNode, Box, ComponentKind, CreateComponentIRNode, ElementNode, ExpressionNode, IRProp,
+    IRSlot, OperationNode, PropNode, SimpleExpressionNode, SourceLocation, String,
+    TransformContext, Vec, transform_children,
 };
 
 mod model;
 mod slots;
+mod structural_slots;
 use model::transform_component_v_model;
 
 /// Transform a component element into a `CreateComponent` operation.
@@ -201,61 +202,16 @@ pub(super) fn transform_component<'a>(
         slots.push(IRSlot {
             name: Box::new_in(own_slot_name, &ctx.allocator),
             fn_exp,
+            control: None,
             block: slot_block,
         });
     } else if !el.children.is_empty() {
-        let has_named_slots = el.children.iter().any(|c| {
-            if let TemplateChildNode::Element(child_el) = c {
-                child_el.tag_type == ElementType::Template
-                    && child_el
-                        .props
-                        .iter()
-                        .any(|p| matches!(p, PropNode::Directive(d) if d.name == "slot"))
-            } else {
-                false
-            }
-        });
-
+        let has_named_slots = el.children.iter().any(structural_slots::is_slot);
         if has_named_slots {
-            for child in el.children.iter() {
-                if let TemplateChildNode::Element(child_el) = child
-                    && child_el.tag_type == ElementType::Template
-                {
-                    for prop in child_el.props.iter() {
-                        if let PropNode::Directive(dir) = prop
-                            && dir.name == "slot"
-                        {
-                            let (slot_name, is_static_name) = slots::resolve_named_slot(dir);
-                            if !is_static_name {
-                                has_dynamic_slot = true;
-                            }
-                            let fn_exp = dir.exp.as_ref().and_then(|exp| match exp {
-                                ExpressionNode::Simple(s) => {
-                                    let node = SimpleExpressionNode::new(
-                                        s.content,
-                                        false,
-                                        SourceLocation::STUB,
-                                    );
-                                    Some(Box::new_in(node, &ctx.allocator))
-                                }
-                                _ => None,
-                            });
-                            let slot_block = transform_children(ctx, &child_el.children);
-                            let _template_id = ctx.next_id(); // consume ID for template wrapper
-                            let n = ctx.allocator.alloc_str(&slot_name);
-                            // The name keeps the authored `v-slot` argument span.
-                            let name_loc = dir
-                                .arg
-                                .as_ref()
-                                .map_or(SourceLocation::STUB, |a| a.loc().clone());
-                            let name_exp = SimpleExpressionNode::new(n, is_static_name, name_loc);
-                            slots.push(IRSlot {
-                                name: Box::new_in(name_exp, &ctx.allocator),
-                                fn_exp,
-                                block: slot_block,
-                            });
-                        }
-                    }
+            for child in &el.children {
+                if let Some(slot) = structural_slots::lower(ctx, child) {
+                    has_dynamic_slot |= slot.dynamic();
+                    slots.push(slot);
                 }
             }
         } else {
@@ -264,6 +220,7 @@ pub(super) fn transform_component<'a>(
             slots.push(IRSlot {
                 name: Box::new_in(name_exp, &ctx.allocator),
                 fn_exp: None,
+                control: None,
                 block: slot_block,
             });
         }

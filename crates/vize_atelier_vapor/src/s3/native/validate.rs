@@ -17,6 +17,7 @@ mod order;
 mod select;
 mod slots;
 mod spread;
+mod structural_slots;
 mod suspense;
 mod teleport;
 mod tree;

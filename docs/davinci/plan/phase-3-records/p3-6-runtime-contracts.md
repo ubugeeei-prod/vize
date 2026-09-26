@@ -15,6 +15,7 @@ P3-6's complete surface and performance acceptance remain open.
 - [Teleport targets and cleanup](p3-6-teleport.md)
 - [KeepAlive cache lifetimes](p3-6-keep-alive.md)
 - [Asynchronous Suspense lifetimes](p3-6-suspense.md)
+- [Conditional and looped slot content](p3-6-structural-slots.md)
 - [Retained custom directive payloads](p3-6-custom-directives.md)
 
 Computed prop names on Teleport, KeepAlive and Suspense remain unproved. Their checked

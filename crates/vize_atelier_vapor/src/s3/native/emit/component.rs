@@ -48,29 +48,25 @@ impl<'a> Emitter<'a, '_> {
         // unless the component's own `v-slot` names it.
         let mut slots = Vec::new_in(&self.allocator);
         let own = self.artifact.nodes.get(index).and_then(slot_of);
-        let named = (children.first())
-            .is_some_and(|child| self.artifact.nodes.get(*child).and_then(slot_of).is_some());
+        let named = children.iter().any(|child| {
+            self.artifact.nodes.get(*child).is_some_and(|node| {
+                slot_of(node).is_some()
+                    || matches!(node.content, Content::If { .. } | Content::For(_))
+            })
+        });
         if named {
             for child in children {
-                // Admission checked that every named child is a slot template.
-                let Some(node) = self.artifact.nodes.get_mut(child) else {
+                if let Some(slot) = self.component_slot(child) {
+                    slots.push(slot);
+                } else {
                     self.invariant_broken();
-                    continue;
-                };
-                let Some(slot) = slot_of(node) else {
-                    self.invariant_broken();
-                    continue;
-                };
-                let content = take(self.allocator, &mut node.children);
-                let block = self.block(&content);
-                self.id();
-                slots.push(self.slot(child, Some(slot), block));
+                }
             }
         } else if own.is_some() || !children.is_empty() {
             let block = self.block(&children);
             slots.push(self.slot(index, own, block));
         }
-        let dynamic_slots = slots.iter().any(|slot| !slot.name.is_static);
+        let dynamic_slots = slots.iter().any(IRSlot::dynamic);
         let id = existing.unwrap_or_else(|| self.id());
         let props = self.props(&props, true);
         block
@@ -141,7 +137,7 @@ impl<'a> Emitter<'a, '_> {
 
     /// One slot function: its checked name, parameter pattern and block.
     /// A `<template #name>` keeps `name`'s authored span; other slots stay stubs.
-    fn slot(
+    pub(super) fn slot(
         &mut self,
         carrier: usize,
         slot: Option<Slot<'a>>,
@@ -155,6 +151,7 @@ impl<'a> Emitter<'a, '_> {
             name: self.spanned(name, !dynamic, name_span),
             fn_exp: (!params.is_empty()).then(|| self.expression(Expr::plain(params), false)),
             block,
+            control: None,
         }
     }
 
@@ -200,13 +197,13 @@ impl<'a> Emitter<'a, '_> {
 
 /// The slot a template or component binds: its name and parameter pattern.
 #[derive(Clone, Copy)]
-struct Slot<'a> {
+pub(super) struct Slot<'a> {
     name: Expr<'a>,
     dynamic: bool,
     params: &'a str,
 }
 
-fn slot_of<'a>(node: &Node<'a>) -> Option<Slot<'a>> {
+pub(super) fn slot_of<'a>(node: &Node<'a>) -> Option<Slot<'a>> {
     node.bindings
         .iter()
         .find(|binding| binding.kind == BindingKind::Slot)

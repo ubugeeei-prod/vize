@@ -80,7 +80,7 @@ function assertLeanWorkflow(workflow: Workflow): void {
       [".", "cargo test -p vize_atelier_vapor --test davinci_mounted_behavior"],
       [
         ".",
-        "cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity --test davinci_keep_alive_parity --test davinci_suspense_parity",
+        "cargo test -p vize_atelier_vapor --test davinci_vapor_upstream_parity --test davinci_keep_alive_parity --test davinci_suspense_parity --test davinci_structural_slots_parity",
       ],
       ["tests", "vize-ci-apt-retry vp exec playwright install --with-deps chromium"],
       [

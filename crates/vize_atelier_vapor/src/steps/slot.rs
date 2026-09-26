@@ -130,6 +130,7 @@ pub fn collect_component_slots<'a>(
                     slots.push(IRSlot {
                         name,
                         fn_exp,
+                        control: None,
                         block,
                     });
                 }
@@ -153,6 +154,7 @@ pub fn collect_component_slots<'a>(
         slots.push(IRSlot {
             name: Box::new_in(default_name, &allocator),
             fn_exp: None,
+            control: None,
             block: default_block,
         });
     }

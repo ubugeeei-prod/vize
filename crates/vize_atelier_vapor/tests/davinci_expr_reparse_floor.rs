@@ -113,6 +113,11 @@ fn vapor_legacy_reparse_floor_holds() {
         r#"<select multiple v-model="selected"><option :value="first">{{ label }}</option><option :value="second">B</option></select>"#,
         r#"<select v-model.number="form.selected"><option value="1">One</option><option value="2">Two</option></select>"#,
         r#"<select v-model="values[key]"><option value="a">A</option><option value="b">B</option></select>"#,
+        r#"<Child><template #one v-if="enabled">A</template><template #two v-else>B</template></Child>"#,
+        r#"<Child><template #[names[selected]] v-if="enabled">A</template><template #two v-else-if="second">B</template><template #one v-else>C</template></Child>"#,
+        r#"<Child><template v-for="item in items" #[item.name]><b>{{item.label}}</b></template></Child>"#,
+        r#"<Child><template v-for="(item, key, index) in items" #[item.name]="{ value }"><button @click="record(item.label)">{{item.label}}:{{key}}:{{index}}:{{value}}</button></template></Child>"#,
+        r#"<Child><template v-for="item in items" #[item.name]="item"><b>{{item.x}}</b></template></Child>"#,
     ] {
         for prefix_identifiers in [false, true] {
             let allocator = Allocator::new();

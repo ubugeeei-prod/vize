@@ -9,7 +9,7 @@ use vize_s3::{
     operand::{Operand, OperandRole as Role, ValueKind},
 };
 
-use super::super::{Binding, BindingKind, Content, Expr, Node};
+use super::super::{Binding, BindingKind, Expr, Node};
 use super::{
     Result,
     component::component_prop,
@@ -94,7 +94,7 @@ fn has_repeat<T: PartialEq>(items: &[T]) -> bool {
 }
 
 /// The slot binding's name, when `node` carries one.
-fn slot_name<'a>(node: &Node<'a>) -> Option<&'a str> {
+pub(super) fn slot_name<'a>(node: &Node<'a>) -> Option<&'a str> {
     node.bindings
         .iter()
         .find(|binding| binding.kind == BindingKind::Slot)
@@ -102,49 +102,13 @@ fn slot_name<'a>(node: &Node<'a>) -> Option<&'a str> {
         .map(|binding| binding.name)
 }
 
-fn has_slot(node: &Node<'_>) -> bool {
+pub(super) fn has_slot(node: &Node<'_>) -> bool {
     node.bindings
         .iter()
         .any(|binding| binding.kind == BindingKind::Slot)
 }
 
-/// A `<template>` is slot content only, directly under a component. A
-/// component takes either its own `v-slot` or named templates, never both,
-/// never implicit content beside templates, and no slot name twice.
+/// Direct named templates and checked control carriers belong to a component.
 pub(super) fn check(nodes: &[Node<'_>], parents: &[Option<usize>]) -> Result<()> {
-    for (index, node) in nodes.iter().enumerate() {
-        match node.content {
-            Content::Element {
-                tag: "template", ..
-            } => {
-                let parent = (parents.get(index).copied().flatten())
-                    .and_then(|parent| nodes.get(parent))
-                    .map(|parent| &parent.content);
-                if !has_slot(node) || !matches!(parent, Some(Content::Component { .. })) {
-                    return Err(LegacyReason::Element.into());
-                }
-            }
-            Content::Component { .. } => {
-                let named: std::vec::Vec<_> = node
-                    .children
-                    .iter()
-                    .filter_map(|child| nodes.get(*child).and_then(slot_name))
-                    .collect();
-                let mixed = node
-                    .children
-                    .iter()
-                    .any(|child| nodes.get(*child).is_some_and(has_slot))
-                    && (has_slot(node)
-                        || node
-                            .children
-                            .iter()
-                            .any(|child| nodes.get(*child).is_none_or(|node| !has_slot(node))));
-                if mixed || has_repeat(&named) {
-                    return Err(LegacyReason::Component.into());
-                }
-            }
-            _ => {}
-        }
-    }
-    Ok(())
+    super::structural_slots::check(nodes, parents)
 }
