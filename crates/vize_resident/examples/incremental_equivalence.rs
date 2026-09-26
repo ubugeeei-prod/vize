@@ -13,8 +13,8 @@
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
+use vize_l0::String;
 use vize_resident::equivalence::{EditScript, EquivalenceReport, parse_script};
-use vize_s0::String;
 
 fn main() -> ExitCode {
     match run() {
@@ -123,6 +123,6 @@ fn collect_vue_files(dir: &Path, files: &mut Vec<PathBuf>) -> Result<(), String>
 fn io_error(path: &Path, error: &std::io::Error) -> String {
     let mut message = String::from(path.to_string_lossy().as_ref());
     message.push_str(": ");
-    message.push_str(&vize_s0::ToCompactString::to_compact_string(error));
+    message.push_str(&vize_l0::ToCompactString::to_compact_string(error));
     message
 }

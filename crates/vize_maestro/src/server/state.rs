@@ -39,8 +39,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use dashmap::DashMap;
 use parking_lot::{Mutex, RwLock};
 use tower_lsp::lsp_types::Url;
-use vize_s0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
-use vize_s0::dialect::VueDialect;
+use vize_l0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
+use vize_l0::dialect::VueDialect;
 
 #[cfg(feature = "native")]
 use futures::lock::Mutex as AsyncMutex;
@@ -103,7 +103,7 @@ pub struct ServerState {
     type_checker_options_api: RwLock<bool>,
     /// Vue 2.7 / Nuxt 2 type checker compatibility flag from config.
     type_checker_legacy_vue2: RwLock<bool>,
-    type_checker_vue_version: RwLock<vize_s0::config::VueVersion>,
+    type_checker_vue_version: RwLock<vize_l0::config::VueVersion>,
     /// Opt-in type-aware LSP features for `.jsx`/`.tsx` Vue components (#1498).
     /// Default off: a repository may contain React `.tsx` files that must not
     /// be type-checked as Vue JSX. Set via `typeChecker.jsxTypecheck`.
@@ -113,7 +113,7 @@ pub struct ServerState {
     linter_config: RwLock<LinterConfig>,
     /// Typed per-rule lint options (`linter.ruleOptions`) for configurable
     /// script rules; loaded alongside `linter_config` (#1891).
-    linter_rule_options: RwLock<vize_s0::config::ConfigLintRuleOptions>,
+    linter_rule_options: RwLock<vize_l0::config::ConfigLintRuleOptions>,
     /// Explicit Vue dialect from config (`dialect` key). `None` means the
     /// dialect is detected structurally per document.
     dialect_config: RwLock<Option<VueDialect>>,
@@ -200,12 +200,12 @@ impl ServerState {
             // Options API matches vue-tsc by default; config may opt out.
             type_checker_options_api: RwLock::new(true),
             type_checker_legacy_vue2: RwLock::new(false),
-            type_checker_vue_version: RwLock::new(vize_s0::config::VueVersion::default()),
+            type_checker_vue_version: RwLock::new(vize_l0::config::VueVersion::default()),
             // JSX/TSX stays off so React sources remain untouched (#1498).
             type_checker_jsx_typecheck: RwLock::new(false),
             experimental_patterned_template: AtomicBool::new(false),
             linter_config: RwLock::new(LinterConfig::default()),
-            linter_rule_options: RwLock::new(vize_s0::config::ConfigLintRuleOptions::default()),
+            linter_rule_options: RwLock::new(vize_l0::config::ConfigLintRuleOptions::default()),
             dialect_config: RwLock::new(None),
             workspace_folder_configs: RwLock::new(Vec::new()),
             #[cfg(feature = "glyph")]
@@ -312,7 +312,7 @@ impl ServerState {
         match self.documents.get(uri) {
             Some(document) if document.petite_vue_detected() => VueDialect::PetiteVue,
             Some(_) => VueDialect::Vue,
-            None => vize_s0::dialect::standalone_html_dialect(None, content),
+            None => vize_l0::dialect::standalone_html_dialect(None, content),
         }
     }
 

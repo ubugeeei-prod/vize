@@ -2,7 +2,7 @@
 
 use vize_impeto::placement::Placement::{Cache, Group, Hoist, Inline};
 use vize_impeto::placement::annotate;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use super::fixture::{Build, JS, LIT, fixture, messages};
 
@@ -13,7 +13,7 @@ fn records_must_resolve() {
     build.record(42, &[Inline, Cache], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @0:0 placement for op#42 does not resolve"]
+        ["L3V010 @0:0 placement for op#42 does not resolve"]
     );
 }
 
@@ -25,7 +25,7 @@ fn records_follow_op_order_once_per_op() {
     build.program.placements.swap(0, 1);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @5:15 placement for op#1 is not in op order"]
+        ["L3V010 @5:15 placement for op#1 is not in op order"]
     );
 
     let mut build = fixture(&arena, (LIT, "hi"));
@@ -33,7 +33,7 @@ fn records_follow_op_order_once_per_op() {
     build.record(1, &[Inline, Cache], None);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @5:15 placement for op#1 is not in op order"]
+        ["L3V010 @5:15 placement for op#1 is not in op order"]
     );
 }
 
@@ -46,8 +46,8 @@ fn records_list_inline_and_another_alternative() {
     assert_eq!(
         messages(&build.program),
         [
-            "S3V010 @5:15 placement for op#1 must list inline and another alternative",
-            "S3V010 @16:25 placement for op#2 must list inline and another alternative",
+            "L3V010 @5:15 placement for op#1 must list inline and another alternative",
+            "L3V010 @16:25 placement for op#2 must list inline and another alternative",
         ]
     );
 }
@@ -60,7 +60,7 @@ fn choices_come_from_the_alternatives() {
     build.choose(1, Hoist);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @5:15 placement for op#1 chooses hoist outside its alternatives"]
+        ["L3V010 @5:15 placement for op#1 chooses hoist outside its alternatives"]
     );
 }
 
@@ -73,8 +73,8 @@ fn leaders_accompany_exactly_the_group_alternative() {
     assert_eq!(
         messages(&build.program),
         [
-            "S3V010 @5:15 placement for op#1 names leader op#2 without the group alternative",
-            "S3V010 @30:40 placement for op#3 lists group without a leader",
+            "L3V010 @5:15 placement for op#1 names leader op#2 without the group alternative",
+            "L3V010 @30:40 placement for op#3 lists group without a leader",
         ]
     );
 }
@@ -90,7 +90,7 @@ fn a_chosen_group_is_contiguous_with_its_committed_unit() {
     build.choose(2, Group);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @20:30 chosen group for op#2 is not contiguous with committed leader op#0"]
+        ["L3V010 @20:30 chosen group for op#2 is not contiguous with committed leader op#0"]
     );
 }
 
@@ -107,7 +107,7 @@ fn a_chosen_hoist_is_never_nested_in_another() {
     build.choose(5, Hoist);
     assert_eq!(
         messages(&build.program),
-        ["S3V010 @60:70 chosen hoist for op#8 is nested inside hoisted op#5"]
+        ["L3V010 @60:70 chosen hoist for op#8 is nested inside hoisted op#5"]
     );
 }
 
@@ -121,8 +121,8 @@ fn every_defect_is_reported_once_in_record_order() {
     assert_eq!(
         messages(&build.program),
         [
-            "S3V010 @30:40 group leader op#1 for op#3 is not a dynamic direct-reference leaf update",
-            "S3V010 @50:70 hoist for op#6 requires an insert-node",
+            "L3V010 @30:40 group leader op#1 for op#3 is not a dynamic direct-reference leaf update",
+            "L3V010 @50:70 hoist for op#6 requires an insert-node",
         ]
     );
 }

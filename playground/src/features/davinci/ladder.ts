@@ -1,14 +1,14 @@
-// The Spolvero feed as a stage ladder: rungs (S1 Surface, S2 Disegno,
-// S3 Impeto), their pages, a few counts read off the canonical pages, and the
+// The Spolvero feed as a stage ladder: rungs (L1 Surface, L2 Disegno,
+// L3 Impeto), their pages, a few counts read off the canonical pages, and the
 // pass timeline in feed order. Pure data shaping over the negotiated feed -
 // every fact shown comes from a page the compiler printed.
 
-import type { SpolveroFeed, SpolveroPage } from "../../wasm/types/spolvero";
+import { layerId, type SpolveroFeed, type SpolveroPage } from "../../wasm/types/spolvero";
 import type { PageKind } from "./folioLines";
 import type { SpolveroRemark } from "./remarks";
 import { parseFusionPlan, planWalks, type TimelineWalk } from "./fusion";
 
-export type RungId = "s1" | "s2" | "s3";
+export type RungId = "l1" | "l2" | "l3";
 
 export interface LadderPage {
   /** Stable key: `stage/pass`, unique within one template's pages. */
@@ -50,30 +50,30 @@ export interface TimelineStep {
 export interface StageLadder {
   rungs: Rung[];
   timeline: TimelineStep[];
-  /** The S1 page text: the authored template every span indexes. */
+  /** The L1 page text: the authored template every span indexes. */
   template: string;
   /** Stage names the view does not know how to place, kept visible. */
   unplaced: string[];
   /** The passes' optimization remarks for this file, in canonical order. */
   remarks: SpolveroRemark[];
-  /** The S2 transform plan's walks, in run order (empty without a plan page). */
+  /** The L2 transform plan's walks, in run order (empty without a plan page). */
   walks: TimelineWalk[];
 }
 
 const PAGE_KINDS: Record<string, { rung: RungId; kind: PageKind; label: string }> = {
-  s1: { rung: "s1", kind: "surface", label: "Surface" },
-  s2: { rung: "s2", kind: "disegno", label: "" },
-  "s2-plan": { rung: "s2", kind: "plan", label: "Plan" },
-  "s2-provenance": { rung: "s2", kind: "provenance", label: "Provenance" },
-  s3: { rung: "s3", kind: "impeto", label: "Graph" },
-  "s3-partition": { rung: "s3", kind: "partition", label: "Partition" },
-  "s3-values": { rung: "s3", kind: "values", label: "Values" },
+  l1: { rung: "l1", kind: "surface", label: "Surface" },
+  l2: { rung: "l2", kind: "disegno", label: "" },
+  "l2-plan": { rung: "l2", kind: "plan", label: "Plan" },
+  "l2-provenance": { rung: "l2", kind: "provenance", label: "Provenance" },
+  l3: { rung: "l3", kind: "impeto", label: "Graph" },
+  "l3-partition": { rung: "l3", kind: "partition", label: "Partition" },
+  "l3-values": { rung: "l3", kind: "values", label: "Values" },
 };
 
 const RUNG_NAMES: Record<RungId, { ordinal: string; name: string }> = {
-  s1: { ordinal: "S1", name: "Surface" },
-  s2: { ordinal: "S2", name: "Disegno" },
-  s3: { ordinal: "S3", name: "Impeto" },
+  l1: { ordinal: "L1", name: "Surface" },
+  l2: { ordinal: "L2", name: "Disegno" },
+  l3: { ordinal: "L3", name: "Impeto" },
 };
 
 function plural(count: number, noun: string): string {
@@ -92,18 +92,18 @@ function sectionLines(text: string, section: string): string[] {
 function rungFacts(id: RungId, pages: LadderPage[]): string[] {
   const byKind = (kind: PageKind) => pages.find((page) => page.kind === kind);
   switch (id) {
-    case "s1": {
+    case "l1": {
       const text = byKind("surface")?.text ?? "";
       const lines = text.endsWith("\n") ? text.split("\n").length - 1 : text.split("\n").length;
       return [plural(lines, "line")];
     }
-    case "s2": {
+    case "l2": {
       const trees = pages.filter((page) => page.kind === "disegno");
       const ops = /^ops=(\d+)$/m.exec(trees[0]?.text ?? "");
       const passes = Math.max(trees.length - 1, 0);
       return [plural(Number(ops?.[1] ?? 0), "op"), plural(passes, "pass")];
     }
-    case "s3": {
+    case "l3": {
       const graph = byKind("impeto")?.text ?? "";
       const partition = byKind("partition")?.text ?? "";
       const kinds = sectionLines(partition, "s3-partition-folio.ops");
@@ -115,7 +115,7 @@ function rungFacts(id: RungId, pages: LadderPage[]): string[] {
 
 function pageLabel(stage: string, pass: string): string {
   const known = PAGE_KINDS[stage];
-  if (stage === "s2") return pass === "lower" ? "Lowered" : pass;
+  if (stage === "l2") return pass === "lower" ? "Lowered" : pass;
   return known?.label || `${stage}/${pass}`;
 }
 
@@ -130,14 +130,21 @@ export function buildLadder(
   timings: ReadonlyMap<string, number> = new Map(),
   walkTimings: ReadonlyMap<string, number> = new Map(),
 ): StageLadder {
-  const pages: SpolveroPage[] = feed.pages.filter(
-    (page) => path === undefined || page.path === path,
-  );
-  const grouped: Record<RungId, LadderPage[]> = { s1: [], s2: [], s3: [] };
+  const pages: SpolveroPage[] = feed.pages
+    .filter((page) => path === undefined || page.path === path)
+    .map((page) => ({ ...page, stage: layerId(page.stage) }));
+  const grouped: Record<RungId, LadderPage[]> = { l1: [], l2: [], l3: [] };
   const unplaced: string[] = [];
   const remarks: SpolveroRemark[] = (feed.remarks ?? [])
     .filter((remark) => path === undefined || remark.path === path)
-    .map(({ stage, pass, kind, name, span, args }) => ({ stage, pass, kind, name, span, args }));
+    .map(({ stage, pass, kind, name, span, args }) => ({
+      stage: layerId(stage),
+      pass,
+      kind,
+      name,
+      span,
+      args,
+    }));
   for (const page of pages) {
     const placement = PAGE_KINDS[page.stage];
     if (!placement) {
@@ -161,7 +168,7 @@ export function buildLadder(
     facts: grouped[id].length > 0 ? rungFacts(id, grouped[id]) : [],
   }));
 
-  const planPage = grouped.s2.find((page) => page.kind === "plan");
+  const planPage = grouped.l2.find((page) => page.kind === "plan");
   const plan = planPage ? parseFusionPlan(planPage.text) : null;
   const walkOf = new Map(plan?.passes.map(({ pass, walk }) => [pass, walk] as const));
 
@@ -169,8 +176,8 @@ export function buildLadder(
   const previous: Partial<Record<RungId, string>> = {};
   for (const rung of rungs) {
     for (const page of rung.pages) {
-      // The S3 partition and value pages come from the same lowering step as
-      // the graph; the plan and provenance pages describe S2's steps rather
+      // The L3 partition and value pages come from the same lowering step as
+      // the graph; the plan and provenance pages describe L2's steps rather
       // than being one. The timeline shows steps, not pages.
       if (["partition", "values", "provenance", "plan"].includes(page.kind)) continue;
       const producer = page.pass === "lower" || page.pass === "parse";
@@ -191,7 +198,7 @@ export function buildLadder(
   return {
     rungs,
     timeline,
-    template: grouped.s1[0]?.text ?? "",
+    template: grouped.l1[0]?.text ?? "",
     unplaced,
     remarks,
     walks: plan ? planWalks(plan, walkTimings) : [],

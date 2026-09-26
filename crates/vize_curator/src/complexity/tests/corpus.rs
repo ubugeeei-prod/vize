@@ -11,7 +11,7 @@
 use std::path::{Path, PathBuf};
 
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileOptions, FileId, TemplateScores};
-use vize_s0::FxHashMap;
+use vize_l0::FxHashMap;
 
 use super::template_section::add;
 

@@ -1,7 +1,7 @@
 use super::comparable_path;
 use std::path::{Path, PathBuf};
 use vize_canon::{PackageRouteResolver, PackageSourceOptions};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 const SCRIPT_EXTENSIONS: &[&str] = &["vue", "ts", "tsx", "js", "jsx", "mts", "cts", "mjs", "cjs"];
 

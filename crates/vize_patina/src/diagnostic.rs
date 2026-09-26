@@ -15,7 +15,7 @@ pub use types::{Fix, HelpLevel, LintDiagnostic, LintSummary, Severity, TextEdit}
 #[cfg(test)]
 mod tests {
     use super::{HelpLevel, HelpRenderTarget, compact_help, formatting, render_help};
-    use vize_s0::ToCompactString;
+    use vize_l0::ToCompactString;
 
     #[test]
     fn test_help_level_full() {

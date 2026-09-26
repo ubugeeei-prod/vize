@@ -6,7 +6,7 @@
 //! `markup::tests::differential_tests`, so a feature-wiring regression fails
 //! loudly in both lanes), then, with `VIZE_DAVINCI_DIFFERENTIAL_CORPUS=<dir>`,
 //! sweeps every `.vue` file under `<dir>`: each SFC's `<template>` block is
-//! projected through Relief and through S1→S2 and the facade's full hook
+//! projected through Relief and through L1→L2 and the facade's full hook
 //! traces must be identical. Every file is readable and parses; it then
 //! compares, is counted as restructured, or has no template. An unreadable
 //! file or an SFC parse error fails the sweep at that path — a parse error is
@@ -79,7 +79,7 @@ fn markup_facade_observes_one_document() {
                 file.display(),
                 divergence.line,
                 divergence.relief,
-                divergence.s2
+                divergence.l2
             ),
         }
     }

@@ -22,10 +22,10 @@
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::String;
+use vize_l0::ToCompactString;
+use vize_l0::cstr;
 use vize_relief::{DirectiveNode, ElementNode};
-use vize_s0::String;
-use vize_s0::ToCompactString;
-use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-bind-style",

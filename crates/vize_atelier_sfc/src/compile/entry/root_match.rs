@@ -11,7 +11,7 @@ use vize_atelier_core::{
     parser::parse_with_options_and_template_syntax,
 };
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
-use vize_s0::String;
+use vize_l0::String;
 
 pub(super) fn compile_sfc_inner(
     descriptor: &SfcDescriptor,

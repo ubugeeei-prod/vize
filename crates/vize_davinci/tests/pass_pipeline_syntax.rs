@@ -14,10 +14,12 @@
 
 use vize_davinci::pass::pipeline::{PipelineSpec, PipelineSyntaxError};
 use vize_davinci::pass::{parse_pipelines, print_pipelines};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 /// Canonical strings, each of which must survive `print(parse(s)) == s`.
-const CANONICAL: [&str; 8] = [
+const CANONICAL: [&str; 10] = [
+    "l2()",
+    "l2(normalize,fold),l2-to-l3(lower)",
     "s2()",
     "s2(normalize)",
     "s2(normalize,fold)",
@@ -126,12 +128,12 @@ fn malformed_input_yields_the_exact_documented_error() {
             "expected `,` or end of input after `)` at offset 5",
         ),
         (
-            "S2(a)",
+            "L2(a)",
             PipelineSyntaxError::UnexpectedCharacter {
                 offset: 0,
-                character: 'S',
+                character: 'L',
             },
-            "unexpected character `S` at offset 0",
+            "unexpected character `L` at offset 0",
         ),
         (
             "s2(a),",

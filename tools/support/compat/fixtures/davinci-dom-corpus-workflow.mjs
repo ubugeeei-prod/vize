@@ -85,7 +85,7 @@ export function parseOldErrorReasons(logText) {
     }
   }
   const block =
-    /corpus old-lane error skips \(\d+\)(?: by reason \{.*\})?:\n([\s\S]*?)\n\ncorpus S2 refusals/.exec(
+    /corpus old-lane error skips \(\d+\)(?: by reason \{.*\})?:\n([\s\S]*?)\n\ncorpus L2 refusals/.exec(
       stripAnsi(logText),
     );
   if (!block) return {};
@@ -306,7 +306,7 @@ export async function runCorpus() {
     [
       "test",
       "-p",
-      "vize_s1_to_s2",
+      "vize_l1_to_l2",
       "--features",
       "davinci-differential",
       "--test",
@@ -359,9 +359,9 @@ export async function finalizeCorpus(environment = process.env) {
   await appendCorpusSummary(mode, outcome, verdict, environment.GITHUB_STEP_SUMMARY);
   if (verdict !== "success") {
     for (const failure of validation.failures) {
-      console.error(`::error title=Invalid Davinci S2 DOM corpus evidence::${failure}`);
+      console.error(`::error title=Invalid Davinci L2 DOM corpus evidence::${failure}`);
     }
-    console.error(`::error title=Davinci S2 DOM corpus failed::mode=${mode} verdict=${verdict}`);
+    console.error(`::error title=Davinci L2 DOM corpus failed::mode=${mode} verdict=${verdict}`);
     return 1;
   }
   return 0;
@@ -375,7 +375,7 @@ async function appendCorpusSummary(mode, outcome, verdict, summaryPath) {
   await appendFile(
     summaryPath,
     [
-      "## Davinci S2 DOM Corpus",
+      "## Davinci L2 DOM Corpus",
       "",
       `- mode: \`${mode}\``,
       `- outcome: \`${outcome}\``,

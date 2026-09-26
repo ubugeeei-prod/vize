@@ -27,7 +27,7 @@ use std::{
         atomic::{AtomicBool, Ordering},
     },
 };
-use vize_s0::{FxHashMap, FxHashSet, String, cstr};
+use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 
 mod call_hierarchy;
 mod client;

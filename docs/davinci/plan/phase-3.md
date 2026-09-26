@@ -8,13 +8,13 @@
 
 - [x] P3-1 `vize_impeto` crate + phase validator
 - [x] P3-2 Reactivity lattice fact group v1
-- [x] P3-3 S2→S3 lowering + shared partition
+- [x] P3-3 L2→L3 lowering + shared partition
 - [x] P3-4 Lean reference semantics + differential runner
 - [x] P3-5 Impeto op reference doc (before optional passes)
-- [ ] P3-6 Vapor backend on S3
+- [ ] P3-6 Vapor backend on L3
 - [x] P3-7 VDOM patch flags from lattice facts _(owner-keyed table and hydrated DOM corpus gate; see [record](./phase-3-records/p3-7.md))_
 - [x] P3-8 SSR thin path
-- [x] P3-9 S4 structured emitter + universal source maps _(slice 1 pins TS-31 source-map budgets before emitter migration; see [record](./phase-3-records/p3-9.md))_
+- [x] P3-9 L4 structured emitter + universal source maps _(slice 1 pins TS-31 source-map budgets before emitter migration; see [record](./phase-3-records/p3-9.md))_
 - [x] P3-10 Try-measure-commit extraction _(slice 1 pins optimization budgets before extraction; see [record](./phase-3-records/p3-10.md))_
 - [x] P3-11 IVM oracle
 - [x] P3-12 Behavioral (sprout) runner incl. IME scripts
@@ -46,37 +46,37 @@ only on proven values per the assurance doctrine. _Accept:_ declarative rule spe
 (TS-34 pattern); lattice folio page. _Landed 2026-09-12:_ see
 [P3-2 record](./phase-3-records/p3-2.md).
 
-**P3-3 S2→S3 lowering.** Total, no-rollback; static/dynamic partition
-computed once here and exported as facts (SSR reads them without S3).
-**Exported partition facts describe canonical S3 only**: optional passes
+**P3-3 L2→L3 lowering.** Total, no-rollback; static/dynamic partition
+computed once here and exported as facts (SSR reads them without L3).
+**Exported partition facts describe canonical L3 only**: optional passes
 (P3-10 extraction) either provably preserve the partition (verifier-checked)
 or trigger fact revalidation before anything downstream reads them — stale
 exports are a verifier failure, not a footgun. ANF-ish
 discipline: pure expressions vs effectful ops separated. _Accept:_ TS-17
-pass snapshots; TS-20 totality fuzz extended to S2→S3.
+pass snapshots; TS-20 totality fuzz extended to L2→L3.
 _First slice 2026-09-12:_ see
-[P3-3 record](./phase-3-records/p3-3.md) for the `vize_s2_to_s3` crate,
+[P3-3 record](./phase-3-records/p3-3.md) for the `vize_l2_to_l3` crate,
 total lowering skeleton, and exported partition fact contract. _Closed
-2026-09-12:_ TS-17 S3 Folio snapshots and TS-20 S2→S3 fuzz coverage were added
+2026-09-12:_ TS-17 L3 Folio snapshots and TS-20 L2→L3 fuzz coverage were added
 to the same record.
 
 **P3-4 Lean reference + differential.** `tests/formal/impeto/` Lean package
-(CI-lenient lane per charter #39): executable small-step semantics for S3 ops
+(CI-lenient lane per charter #39): executable small-step semantics for L3 ops
 under both Vapor and VDOM interpretations; runner compares compiled-output
-behavior traces vs reference on S3 fixtures (TS-28). _Accept:_ runner in CI
+behavior traces vs reference on L3 fixtures (TS-28). _Accept:_ runner in CI
 on the fixture ladder. The 2026-09-15 compiled-runtime slice evaluates emitted
 DOM/Vapor render functions under a deterministic JS host trace runner in TS-28;
 P3-4 still exits only once the mounted behavior runner uses the same reference
 contract.
 _First slice 2026-09-12:_ see
 [P3-4 record](./phase-3-records/p3-4.md) for the pinned Lean package, the
-initial S3 Folio parser, executable reference traces, and CI-lenient TS-28
+initial L3 Folio parser, executable reference traces, and CI-lenient TS-28
 workflow. _Third slice 2026-09-15:_ backend-specific `.vdom.trace` and
 `.vapor.trace` artifacts are now checked by the Lean runner and mirrored by the
-Rust S2→S3 fixture bridge. _Fifth slice 2026-09-15:_ compiled DOM/Vapor render
+Rust L2→L3 fixture bridge. _Fifth slice 2026-09-15:_ compiled DOM/Vapor render
 functions are now executed by the TS-28 cargo gate through the shared JS runtime
 trace runner. _Stateful slice 2026-09-16:_ the dynamic-button fixture now feeds
-Rust-owned S3 values into independent Lean semantics and compares the same full
+Rust-owned L3 values into independent Lean semantics and compares the same full
 JSON observations against both mounted Vue runtimes, including patches, clicks
 and unmount. _Control/slot slice 2026-09-18:_ both Rust-lowered template fixtures
 now share full stateful observations, including boolean condition changes and
@@ -95,7 +95,7 @@ concrete syntax. _Accept:_ review point — signed off; doc cross-linked from
 rustdoc. _Landed 2026-09-12:_ see
 [P3-5 record](./phase-3-records/p3-5.md).
 
-**P3-6 Vapor on S3.** `vize_atelier_vapor` lowers S2→S3→generate with full
+**P3-6 Vapor on L3.** `vize_atelier_vapor` lowers L2→L3→generate with full
 semantic context; deletes the run-then-discard double transform
 (`compile.rs`) and the duplicated directive transforms
 (`transforms/{v_if,v_for,v_on,v_bind,v_model,v_show,transform_slot,transform_text}.rs`);
@@ -103,25 +103,25 @@ calls upstream `@vue/runtime-vapor` APIs only (charter #38). In-phase flag
 for fallback. _Accept:_ TS-33 behavioral parity; TS-30 traces; vapor bench
 improvement (the P0-3 double-transform number is the floor to beat).
 _First slice 2026-09-12:_ see
-[P3-6 record](./phase-3-records/p3-6.md) for the production-path S3 bridge,
+[P3-6 record](./phase-3-records/p3-6.md) for the production-path L3 bridge,
 verified artifact guard, and profiler counters. _Native generation slice
-2026-09-20:_ a private checked S3 payload now reaches the shared emitter for
+2026-09-20:_ a private checked L3 payload now reaches the shared emitter for
 ordinary native HTML with direct-reference prop/text/click bindings, bypassing
 legacy transform/lowering. Unsupported surfaces explicitly retain the legacy
 lane. Graph-payload mutations, zero legacy-walk probes, and mounted identity/event
 traces enforce that boundary; full parity and benchmark promotion remain open.
 _Text/event expansion 2026-09-21:_ validated compound-text parts now survive into
-S3 generation with coalesced DOM addresses and stable following siblings. Static
+L3 generation with coalesced DOM addresses and stable following siblings. Static
 events share modifier/delegation semantics with legacy lowering; mounted traces
 cover key/DOM guard composition and combined listener options. The remaining
 P3-6 semantic, corpus and benchmark gates are unchanged.
-_Control-flow slice 2026-09-21:_ S3 `If`/`For` project natively: branch chains
+_Control-flow slice 2026-09-21:_ L3 `If`/`For` project natively: branch chains
 and element-carried keyed/unkeyed loops with identifier aliases, nested inside
 admitted elements or at the root. Template wrappers, destructuring and nested
 bodies count as `legacy.control_flow`. Mounted identity traces fixed a shared
 fast-removal defect in both lanes; fixture parity holds at 116/117.
 _Expression slice 2026-09-22:_ compound props, text, handlers, conditions,
-sources and keys consume S2's retained ASTs (moved, not reparsed); `v-show`,
+sources and keys consume L2's retained ASTs (moved, not reparsed); `v-show`,
 `v-html`, `v-text`, static-class merging and unprefixed binding metadata (the
 SFC path) are native, with zero legacy walks and reparses.
 _Component slice 2026-09-22:_ ordinary components with props, listeners and
@@ -138,33 +138,33 @@ _Carriers through gaps 2026-09-22:_ carriers, named/scoped slots, input models,
 objects merge element props in VDOM order; whitespace-only `v-if` gaps are native.
 
 **P3-7 VDOM patch flags from facts.** `patch_flag.rs` inference replaced by
-lattice-fact consumption; flags become explicit S3 decisions (or S2→S4
-annotations if S3 detour measures badly — decide by TS-22). _Accept:_ corpus
+lattice-fact consumption; flags become explicit L3 decisions (or L2→L4
+annotations if L3 detour measures badly — decide by TS-22). _Accept:_ corpus
 DOM byte-parity (TS-11 empty); patch-flag equivalence fixtures.
 _First slice 2026-09-13:_ see
-[P3-7 record](./phase-3-records/p3-7.md) for the S2→S4 annotation boundary and
+[P3-7 record](./phase-3-records/p3-7.md) for the L2→L4 annotation boundary and
 the initial `PatchFacts` split.
 _Second slice 2026-09-13:_ `PatchFactsTable` is now owner-keyed by
 `ui.element` / `ui.component` `NodeId` and read by the VNode writers before
 printing patch flags or dynamic-props arguments. Subsequent slices integrate
 binding metadata through the reactivity lattice and gate the DOM corpus.
-_Sixth slice 2026-09-16:_ the S2 DOM corpus runner now emits
+_Sixth slice 2026-09-16:_ the L2 DOM corpus runner now emits
 `patch_fact_entries` evidence and the Real Project Matrix artifact validator
 rejects a clean byte-parity run that never materialized owner-keyed patch facts.
 _Closed 2026-09-16:_ [Real Project Matrix run 35055720056](https://github.com/ubugeeei-prod/vize/actions/runs/35055720056)
 is terminal green on `0e6985a4cb846e393daa1fad705b069e09bf85fa` with 42,279
-comparisons, 390,264 patch-fact entries, zero S2 refusals, and zero divergences.
+comparisons, 390,264 patch-fact entries, zero L2 refusals, and zero divergences.
 The [record](./phase-3-records/p3-7.md) preserves the corpus scope and exclusions.
 
-**P3-8 SSR thin path.** S2→S4 string-plan lowering reading partition facts;
+**P3-8 SSR thin path.** L2→L4 string-plan lowering reading partition facts;
 `vize_atelier_ssr` codegen re-targets. _Accept:_ SSR corpus byte-parity
 (TS-11 empty for ssr).
 _First slice 2026-09-13:_ see
-[P3-8 record](./phase-3-records/p3-8.md) for the production-path S4 bridge,
+[P3-8 record](./phase-3-records/p3-8.md) for the production-path L4 bridge,
 partition-fact string-plan witness, and byte-parity guard.
 _Third slice 2026-09-21:_ the production selector emits plain-element SSR
 (elements, static and bound attributes, text, interpolation, fallthrough
-roots) from the S4 plan, holds byte parity on the snapshot suite and a
+roots) from the L4 plan, holds byte parity on the snapshot suite and a
 two-emitter differential battery, and counts `accepted` / `legacy.<reason>`.
 _Fourth slice 2026-09-21:_ `v-if` chains, `v-for` loops, `v-show`, `v-html`,
 `v-text`, and native `v-model` also emit from the plan (region boundary
@@ -197,7 +197,7 @@ entry point on both lanes; production reach is 112 of 722 checkout and 171 of
 1,279 vendor templates (0 divergences), bounded by `legacy.croquis` on every
 `<script setup>` SFC until Croquis-informed rewrites land in the shared
 transform door.
-_JSX SSR 2026-09-22:_ JSX/TSX SSR enters the same plan lane from its S2
+_JSX SSR 2026-09-22:_ JSX/TSX SSR enters the same plan lane from its L2
 projection (`compile_s2_to_ssr`), byte-identical to the walker on every JSX
 SSR snapshot and a 34-case differential; only `v-once` / `v-memo` on a JSX
 element still use the walker. _Vue 3.5 alignment (`fix(ssr)!`):_ legacy
@@ -206,7 +206,7 @@ directives, binds, spreads, and dynamic keys match `@vue/compiler-ssr` 3.5
 smoke 764 of 779, vendor 1,279 of 1,279). _Closed 2026-09-23:_ the checkout
 corpus emits from the plan with empty divergence ([record](./phase-3-records/p3-8-croquis.md)).
 
-**P3-9 S4 emitter + source maps.** Structured span-carrying emission document
+**P3-9 L4 emitter + source maps.** Structured span-carrying emission document
 replaces `CodegenContext.code` string appends across dom/vapor/ssr; one
 `SourceMapBuilder`; **SSR and Vapor emit source maps**; delete
 `crates/vize_atelier_sfc/src/source_map.rs` text-matching recovery.
@@ -224,7 +224,7 @@ the legacy battery and 19/19 on rewritten statements. _Closed 2026-09-23:_
 the text-matching recovery is deleted; the frozen legacy row stays the floor.
 
 **P3-10 Try-measure-commit.** Placement alternatives (hoist/cache/inline/
-group) kept explicit on S3 nodes; extraction pass performs candidates,
+group) kept explicit on L3 nodes; extraction pass performs candidates,
 locally simplifies with fact approximations in scope, measures (emitted
 size, reactive-edge count, update-path length), commits under an explicit
 multi-metric rule — **no metric may regress beyond a per-metric ε and at
@@ -238,7 +238,7 @@ _First slice 2026-09-13:_ see
 [P3-10 record](./phase-3-records/p3-10.md) for the task-start budget pin,
 zero-epsilon metric policy, and `-O0` through `-O3` candidate budgets.
 _Placement slice 2026-09-21:_ hoist/cache/group alternatives are an explicit,
-`S3V010`-verified overlay on S3 ops with a companion Folio page; the graph and
+`L3V010`-verified overlay on L3 ops with a companion Folio page; the graph and
 exported partition stay canonical. _Extraction slice 2026-09-21:_ the
 try-measure-commit pass commits under the pinned rule and per-component budget,
 with `-O` tiers synced to `budgets.toml`, TS-17 decision snapshots, and one
@@ -293,7 +293,7 @@ acceptance items hold; emitters for decisions made outside the pass manager
 are follow-ups in the record.
 
 **P3-14 `folio-reduce`.** Interestingness-script driver (llvm-reduce model)
-with S1-subtree deletion vocabulary; oracles composable from diagnostics /
+with L1-subtree deletion vocabulary; oracles composable from diagnostics /
 remarks / folio content / budget breaches. _Accept:_ reduces a seeded crash
 fixture to ≤ 20% size while preserving the oracle. **Landed 2026-09-22:**
 `vize reduce` (see [P3-14 record](./phase-3-records/p3-14.md)) reduces the
@@ -303,7 +303,7 @@ reduced repro still replays through `vize repro`.
 **P3-15 Lean theorems.** Lattice laws (classification monotonicity, join),
 effect-grouping preserves dependency edges, keyed-`v-for` IVM linearity —
 proved against the P3-4 semantics as they stabilize. _Accept:_ theorems in
-CI-lenient lane; failures block S3-semantics changes, not unrelated PRs.
+CI-lenient lane; failures block L3-semantics changes, not unrelated PRs.
 
 _Lattice slice 2026-09-21:_ the [P3-15 record](./phase-3-records/p3-15.md)
 proves the lattice order, least-upper-bound join, declarative-spec minimality
@@ -331,7 +331,7 @@ that oracle. _First slice 2026-09-22:_ see
 templates on both DOM shapes, 29/342 SSR, 3/342 Vapor (44 and 151 after #6337 / #6308) on the committed
 fixtures. _Projection slice 2026-09-22:_ Croquis reactivity facts ride the shared `BindingTable`;
 290/342 fixture templates were parity-ready. _Closed 2026-09-23:_ projectable
-Croquis selects S2 (296/351 `dom_inline`, parity empty). Module mode stays legacy.
+Croquis selects L2 (296/351 `dom_inline`, parity empty). Module mode stays legacy.
 
 **P3-16 Phase exit.**
 
@@ -347,4 +347,4 @@ that still describe a completed Phase 3 task as unfinished.
 - [ ] Production reach: `[reach]` floors held and raised, production-path DOM parity oracle empty, no DOM shape refused for its Croquis summary (P3-17)
 - [ ] Vapor compile bench beats the pinned double-transform floor
 - [ ] TS-32 remarks-diff clean; old vapor/ssr lanes + flags deleted
-- [ ] TS-27/TS-28/TS-29/TS-30 all mandatory-green; TS-20 totality fuzz extended to S2→S3 green
+- [ ] TS-27/TS-28/TS-29/TS-30 all mandatory-green; TS-20 totality fuzz extended to L2→L3 green

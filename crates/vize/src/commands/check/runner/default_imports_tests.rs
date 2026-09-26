@@ -1,7 +1,7 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::path::{Path, PathBuf};
 
-use vize_s0::path::canonicalize_non_verbatim;
+use vize_l0::path::canonicalize_non_verbatim;
 
 #[path = "default_imports_explicit_ambient_tests.rs"]
 mod explicit_ambient;

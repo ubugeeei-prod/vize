@@ -1,7 +1,7 @@
 //! Script setup extraction for Storybook CSF output.
 
 use vize_croquis::script_parser::parse_script_setup;
-use vize_s0::String;
+use vize_l0::String;
 
 #[derive(Debug, Default)]
 pub(super) struct ScriptSetupCsf {

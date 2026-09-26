@@ -122,7 +122,7 @@ impl TypeDefinitionService {
         bridge: &CorsaBridge,
         document: &VirtualDocument,
         generated_offset: usize,
-        request_path: vize_s0::String,
+        request_path: vize_l0::String,
     ) -> Option<GotoDefinitionResponse> {
         let (line, character) = super::offset_to_position(&document.content, generated_offset);
         let uri = bridge

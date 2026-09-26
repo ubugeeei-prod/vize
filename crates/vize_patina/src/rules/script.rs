@@ -75,7 +75,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
-use vize_s0::profile;
+use vize_l0::profile;
 
 pub use exports::*;
 pub use sfc_context::SfcScriptContext;

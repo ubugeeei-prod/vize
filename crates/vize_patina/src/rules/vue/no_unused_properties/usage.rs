@@ -31,8 +31,8 @@ use oxc_ast::ast::{IdentifierReference, StaticMemberExpression};
 use oxc_ast_visit::{Visit, walk::walk_static_member_expression};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_l0::{CompactString, FxHashSet};
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
-use vize_s0::{CompactString, FxHashSet};
 
 /// How the `defineProps(...)` return value is consumed.
 pub(super) enum PropsAccess {

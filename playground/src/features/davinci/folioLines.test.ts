@@ -4,7 +4,7 @@ import { folioLines, folioTokens, lineSpan, linesCovering, surfaceTokens } from 
 // Page texts as the compiler prints them (pinned byte-for-byte by the Rust
 // TS-52 `spolvero_ladder` suite for this template).
 const TEMPLATE = '\n  <div :class="cls">{{ msg }}</div>\n';
-const S2 = `[disegno]
+const L2 = `[disegno]
 ops=3
 
 [disegno.ops]
@@ -15,7 +15,7 @@ ui.element div @3:36
 `;
 
 describe("folioTokens", () => {
-  it("colors an S2 op line by role, keeping every byte", () => {
+  it("colors an L2 op line by role, keeping every byte", () => {
     const line = '  ui.bind name="class" value=js("cls" @16:19) @8:20';
     const tokens = folioTokens(line);
     expect(tokens.map((token) => token.text).join("")).toBe(line);
@@ -65,7 +65,7 @@ describe("folioTokens", () => {
     });
   });
 
-  it("colors authored markup on the S1 page", () => {
+  it("colors authored markup on the L1 page", () => {
     expect(surfaceTokens('<div :class="cls">{{ msg }}</div>')).toEqual([
       { type: "tag", text: "<div" },
       { type: "text", text: " " },
@@ -95,14 +95,14 @@ describe("spans", () => {
     });
   });
 
-  it("gives each S1 line its own byte range in the template", () => {
+  it("gives each L1 line its own byte range in the template", () => {
     const lines = folioLines("surface", TEMPLATE);
     expect(lines.map((line) => line.span)).toEqual([null, { start: 1, end: 36 }]);
     expect(TEMPLATE.slice(3, 36)).toBe('<div :class="cls">{{ msg }}</div>');
   });
 
   it("answers the reverse query narrowest-first", () => {
-    const lines = folioLines("disegno", S2);
+    const lines = folioLines("disegno", L2);
     expect(lines.map((line) => line.depth)).toEqual([0, 0, 0, 0, 0, 1, 1, 0]);
     // Byte 25 sits inside `msg`: the interpolation, then its element.
     expect(linesCovering(lines, 25)).toEqual([6, 4]);

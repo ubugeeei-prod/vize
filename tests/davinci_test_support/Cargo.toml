@@ -12,7 +12,7 @@ publish = false
 regex-lite = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-vize_s0 = { workspace = true }
+vize_l0 = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }

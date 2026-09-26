@@ -90,7 +90,7 @@ fn diagnostics(table: &vize_croquis::facts::FactTable<UnusedBindings>) -> Vec<Li
         .map(|(name, fact)| {
             LintDiagnostic::warn(
                 META.name,
-                vize_s0::cstr!("Setup binding '{name}' is never read"),
+                vize_l0::cstr!("Setup binding '{name}' is never read"),
                 fact.span.0,
                 fact.span.1,
             )

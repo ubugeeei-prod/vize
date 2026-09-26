@@ -10,7 +10,7 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 
 use crate::sfc_typecheck::{SfcTypeCheckOptions, type_check_sfc};
-use vize_s0::String;
+use vize_l0::String;
 
 const OPTIONS_TYPE_HEAD: &str = "type __VizeVueComponentOptions = {\n";
 const INDEX_SIGNATURE: &str = "  [key: string]: any;\n";

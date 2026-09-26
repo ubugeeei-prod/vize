@@ -8,8 +8,8 @@ use vize_davinci::render::{Catalog, EnglishCatalog, Phrase};
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
 };
-use vize_s0::String;
-use vize_s0::i18n::{Locale, Translator, translator};
+use vize_l0::String;
+use vize_l0::i18n::{Locale, Translator, translator};
 
 /// Parse `--locale`, exiting with usage on an unknown locale.
 pub(crate) fn parse_locale(locale: &str) -> Locale {

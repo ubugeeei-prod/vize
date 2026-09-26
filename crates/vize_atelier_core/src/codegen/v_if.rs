@@ -14,7 +14,7 @@ use crate::{IfBranchNode, IfNode, PropNode, RuntimeHelper};
 use super::{context::CodegenContext, expression::generate_expression, helpers::escape_js_string};
 
 use branch::generate_if_branch;
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 /// Generate if node.
 pub fn generate_if(ctx: &mut CodegenContext, if_node: &IfNode<'_>) {

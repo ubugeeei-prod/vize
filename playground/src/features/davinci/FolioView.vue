@@ -9,7 +9,7 @@ const props = defineProps<{
   selected: number | null;
   /** Lines covering the source cursor (reverse provenance). */
   linked: number[];
-  /** Per-line gutter marks (the S3 partition kind of an op line). */
+  /** Per-line gutter marks (the L3 partition kind of an op line). */
   marks?: Map<number, string>;
 }>();
 

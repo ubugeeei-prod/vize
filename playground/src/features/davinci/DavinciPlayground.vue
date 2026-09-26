@@ -58,7 +58,7 @@ const {
 } = useDavinciLadder(() => props.compiler ?? getWasm());
 
 const showTabs = computed(
-  () => rung.value !== null && (rung.value.pages.length > 1 || rung.value.id !== "s1"),
+  () => rung.value !== null && (rung.value.pages.length > 1 || rung.value.id !== "l1"),
 );
 
 function toggleView(view: "diff" | "remarks" | "flame") {
@@ -188,7 +188,7 @@ function snippet(text: string): string {
         </div>
 
         <div class="davinci-body">
-          <OutputView v-if="stage === 's4'" v-model:target="outputTarget" :outputs :theme />
+          <OutputView v-if="stage === 'l4'" v-model:target="outputTarget" :outputs :theme />
           <RemarksPanel v-else-if="pageView === 'remarks'" :remarks @locate="locateRemark" />
           <FlameView
             v-else-if="pageView === 'flame'"
@@ -241,7 +241,7 @@ function snippet(text: string): string {
               >{{ remark.kind }} {{ remark.name }}</span
             >
           </template>
-          <span v-else-if="stage !== 's4'" class="davinci-hint"
+          <span v-else-if="stage !== 'l4'" class="davinci-hint"
             >Point at a line to see the authored source it came from</span
           >
           <span v-else class="davinci-hint"

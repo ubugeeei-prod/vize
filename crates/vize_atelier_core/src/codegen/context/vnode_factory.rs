@@ -1,4 +1,4 @@
-use vize_s0::{FxHashMap, String, ToCompactString};
+use vize_l0::{FxHashMap, String, ToCompactString};
 
 use crate::codegen::document::EmitDocument;
 use crate::codegen::helpers::default_helper_alias;

@@ -8,7 +8,7 @@
 //! unsupported scalar type fails to compile in the deriving crate rather
 //! than silently formatting as something).
 
-use syn::{Data, DeriveInput, Error, Fields, Ident, Type};
+use syn::{Data, DeriveInput, Error, Fields, Ident, LitStr, Type};
 
 /// How one field lands on the page.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -33,7 +33,7 @@ pub struct PageField {
 /// Everything codegen needs to know about the deriving type.
 pub struct PageModel {
     pub ident: Ident,
-    /// The page header name: kebab-case of the type name.
+    /// The page header name: an explicit wire name or kebab-case type name.
     pub page: String,
     pub fields: Vec<PageField>,
 }
@@ -90,11 +90,45 @@ impl PageModel {
         }
 
         Ok(Self {
-            page: kebab_case(&unraw(&input.ident)),
+            page: page_name(input)?,
             ident: input.ident.clone(),
             fields,
         })
     }
+}
+
+/// An explicit stable wire header, or the mechanical type-derived default.
+fn page_name(input: &DeriveInput) -> Result<String, Error> {
+    let mut name = None;
+    for attr in input
+        .attrs
+        .iter()
+        .filter(|attr| attr.path().is_ident("folio"))
+    {
+        attr.parse_nested_meta(|meta| {
+            if !meta.path.is_ident("name") {
+                return Err(meta.error("unsupported folio attribute; expected name"));
+            }
+            if name.is_some() {
+                return Err(meta.error("duplicate folio name"));
+            }
+            let value: LitStr = meta.value()?.parse()?;
+            let text = value.value();
+            if text.is_empty()
+                || !text
+                    .bytes()
+                    .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
+            {
+                return Err(Error::new_spanned(
+                    value,
+                    "folio name must be a non-empty lowercase page identifier",
+                ));
+            }
+            name = Some(text);
+            Ok(())
+        })?;
+    }
+    Ok(name.unwrap_or_else(|| kebab_case(&unraw(&input.ident))))
 }
 
 /// The identifier's text with any `r#` raw prefix stripped.
@@ -153,7 +187,7 @@ mod tests {
     #[test]
     fn kebab_case_is_mechanical() {
         assert_eq!(kebab_case("BudgetObserver"), "budget-observer");
-        assert_eq!(kebab_case("S2Folio"), "s2-folio");
+        assert_eq!(kebab_case("L2Folio"), "l2-folio");
         assert_eq!(kebab_case("Sample"), "sample");
     }
 
@@ -179,6 +213,24 @@ mod tests {
                 FieldKind::Map
             ]
         );
+    }
+
+    #[test]
+    fn explicit_page_names_preserve_headers_after_type_renames() {
+        let model = model_of(parse_quote! {
+            #[folio(name = "s3-folio")]
+            struct L3Folio { phase: String }
+        })
+        .expect("a stable wire header derives");
+        assert_eq!(model.page, "s3-folio");
+        for input in [
+            parse_quote! { #[folio(name = "bad.name")] struct Sample { x: u32 } },
+            parse_quote! { #[folio(name = "")] struct Sample { x: u32 } },
+            parse_quote! { #[folio(name = "one", name = "two")] struct Sample { x: u32 } },
+            parse_quote! { #[folio(other = "one")] struct Sample { x: u32 } },
+        ] {
+            let _ = error_of(input);
+        }
     }
 
     #[test]

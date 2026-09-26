@@ -1,10 +1,10 @@
-//! S0 block splitting for Art files (Davinci P4-13).
+//! L0 block splitting for Art files (Davinci P4-13).
 //!
 //! An `.art.vue` file is an SFC: `<art>` is a custom block beside the
 //! ordinary `<script>` / `<style>` blocks. The split is the shared SFC
 //! container scan (`vize_croquis::sfc::parse_sfc`, the same one compile,
 //! lint and the LSP read), never a private substring search, and every
-//! block this module hands on is an S0 [`SourceBlock`] frame over the
+//! block this module hands on is an L0 [`SourceBlock`] frame over the
 //! complete authored file, so each later slice keeps a file-absolute
 //! offset by construction.
 
@@ -14,7 +14,7 @@ use vize_croquis::sfc::{
     BlockLocation, SfcError, SfcParseOptions, SfcScriptBlock, SfcStyleBlock,
     parse_sfc_without_css_vars,
 };
-use vize_s0::{Allocator, SourceBlock, SourceRoot, ToCompactString, Vec};
+use vize_l0::{Allocator, SourceBlock, SourceRoot, ToCompactString, Vec};
 
 use super::calculate_location_fast;
 use crate::types::{ArtParseError, ArtScriptBlock, ArtStyleBlock};
@@ -22,7 +22,7 @@ use crate::types::{ArtParseError, ArtScriptBlock, ArtStyleBlock};
 /// The custom-block name that carries the gallery definition.
 const ART_BLOCK: &str = "art";
 
-/// The blocks an Art file consumer reads, split at S0.
+/// The blocks an Art file consumer reads, split at L0.
 pub(crate) struct ArtBlocks<'a> {
     /// The first `<art>` custom block's whole element extent
     /// (`<art …>` through `</art>`), framed against the full source.
@@ -103,7 +103,7 @@ fn opens_art_block(source: &str, at: usize) -> bool {
             .is_some_and(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
 }
 
-/// The S0 frame over a block's whole element extent.
+/// The L0 frame over a block's whole element extent.
 fn element_frame<'a>(
     root: SourceRoot<'a>,
     source: &'a str,

@@ -34,7 +34,7 @@ test("the natural committed v-on corpus fits the two-entry inline buckets", () =
   const sources = trackedNaturalSources();
   const spellings = sources.flatMap(({ source }) => modifiedOnSpellings(source));
   const dynamicEntryFixture = sources.find(
-    ({ file }) => file === "crates/vize_s1_to_s2/tests/emit_create_slots/dynamic_entries.rs",
+    ({ file }) => file === "crates/vize_l1_to_l2/tests/emit_create_slots/dynamic_entries.rs",
   );
   const maxima = spellings.map(classify).reduce<Buckets>(
     (max, buckets) => ({

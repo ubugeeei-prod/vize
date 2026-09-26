@@ -30,7 +30,7 @@ fn design_system(batch: String) -> Result<String> {
 }
 
 #[test]
-fn real_s2_edits_compile_with_original_source_maps_and_hoists() {
+fn real_l2_edits_compile_with_original_source_maps_and_hoists() {
     let source = "<main><button class=\"legacy-btn\" :title=\"label\">é {{ label }}</button><span class=\"legacy-btn\">OK</span></main>";
     let plugins = [identity("design-system")];
     for hoist_static in [false, true] {
@@ -232,9 +232,9 @@ fn audited_cache_hits_and_declared_identity_changes_are_misses() {
 
 #[test]
 fn invalid_late_edit_does_not_mutate_the_native_artifact() {
-    let allocator = vize_s0::Allocator::new();
-    let (tree, errors) = vize_s1::parse(&allocator, "<button class=\"legacy-btn\"></button>");
-    let mut lowered = vize_s1_to_s2::lower(&allocator, &tree, &errors);
+    let allocator = vize_l0::Allocator::new();
+    let (tree, errors) = vize_l1::parse(&allocator, "<button class=\"legacy-btn\"></button>");
+    let mut lowered = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let reply = edits::decode(r#"{"schema":1,"edits":[{"kind":"replace-static-attribute","node":0,"name":"class","value":"changed"},{"kind":"replace-static-attribute","node":0,"name":"missing","value":"x"}]}"#).expect("typed reply");
     let nodes = walk::nodes(&mut lowered.root);
     assert!(edits::validate(&reply, &nodes).is_err());

@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 use crate::{ApplicationContract, RenderingMode, Target};
 

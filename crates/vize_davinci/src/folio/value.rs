@@ -13,7 +13,7 @@
 
 use core::fmt;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::FolioError;
 

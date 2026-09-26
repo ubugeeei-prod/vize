@@ -65,7 +65,7 @@ impl DiagnosticService {
                     continue;
                 }
 
-                let template_allocator = vize_s0::Allocator::new();
+                let template_allocator = vize_l0::Allocator::new();
                 let (template_ast, _) = vize_armature::parse(&template_allocator, template_content);
                 let analysis = vize_atelier_sfc::croquis::analyze_sfc_descriptor_resolved(
                     descriptor,

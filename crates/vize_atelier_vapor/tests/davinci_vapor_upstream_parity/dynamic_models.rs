@@ -93,7 +93,7 @@ fn component_switches_preserve_model_updates_like_official_vapor() {
         assert_eq!(
             WalkCounts::snapshot().since(walks).total_walks(),
             0,
-            "{case}: native S3"
+            "{case}: native L3"
         );
         insta::assert_snapshot!(format!("dynamic_component_model_{case}"), compiled.code);
         let vize = trace(
@@ -116,7 +116,7 @@ fn component_switches_preserve_model_updates_like_official_vapor() {
                 },
             }),
         );
-        assert_eq!(vize, expected, "{case}: Vize native S3");
+        assert_eq!(vize, expected, "{case}: Vize native L3");
         assert_eq!(upstream, expected, "{case}: official Vapor");
     }
 }
@@ -167,7 +167,7 @@ fn computed_native_model_targets_follow_key_changes_like_official_vapor() {
 }
 
 #[test]
-fn s3_component_models_match_official_vapor_updates() {
+fn l3_component_models_match_official_vapor_updates() {
     for (model, prop) in [("v-model", "modelValue"), ("v-model:title.trim", "title")] {
         let source = format!(
             r#"<main data-id="root"><MyComp {model}="value" /><span data-id="mirror">{{{{ value }}}}</span></main>"#
@@ -194,7 +194,7 @@ fn s3_component_models_match_official_vapor_updates() {
         assert_eq!(
             WalkCounts::snapshot().since(before).total_walks(),
             0,
-            "{source}: parent must exercise native S3"
+            "{source}: parent must exercise native L3"
         );
         let child_code = compile_vapor(
             &allocator,

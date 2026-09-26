@@ -17,7 +17,7 @@
 //! `--folio-after-change` hash gate. The feed is a *serialization* of that
 //! collection - [`SpolveroFeed::of_dump`] copies the dump's pages verbatim
 //! and never re-decides gating or ordering. Surfaces without a pass pipeline
-//! (the inspector's S1 pages, produced by a parse rather than a pass) push
+//! (the inspector's L1 pages, produced by a parse rather than a pass) push
 //! [`SpolveroPage`]s directly, with `pass` naming the producing step.
 //!
 //! Like the dump, the feed is deliberately IO-free (`no_std + alloc`) and
@@ -29,7 +29,7 @@
 use alloc::vec::Vec;
 use core::fmt::Write as _;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::folio::dump::FolioDump;
 use crate::folio::remarks::push_remark_fields;
@@ -58,10 +58,10 @@ pub struct SpolveroPage {
     /// Stage that produced the page (`s1`, `s2`, `croquis`, ...).
     pub stage: String,
     /// Producing step: the pass name for a pipeline dump, or the
-    /// non-pass step that made the page (`parse` for the S1 surface tree).
+    /// non-pass step that made the page (`parse` for the L1 surface tree).
     pub pass: String,
     /// The page text: the artifact's canonical `Full`-mode folio text, or
-    /// for S1 the byte-faithful surface render.
+    /// for L1 the byte-faithful surface render.
     pub text: String,
 }
 

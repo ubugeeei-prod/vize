@@ -1,7 +1,7 @@
 //! Expand Vue same-name bindings while preserving the public prop and modifiers.
 
+use vize_l0::FxHashMap;
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
-use vize_s0::FxHashMap;
 
 use crate::ide::IdeContext;
 
@@ -13,7 +13,7 @@ pub(super) fn shorthands(ctx: &IdeContext<'_>) -> Option<Spans> {
     let Some(template) = descriptor.template.as_ref() else {
         return Some(spans);
     };
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, &template.content);
     if errors.iter().any(|error| !error.is_recoverable()) {
         return None;

@@ -1,6 +1,6 @@
 //! P5-13: one manifest-checked content key for in-process and disk reuse.
 //!
-//! The full SFC is the conservative S0 key. Cached diagnostics contain
+//! The full SFC is the conservative L0 key. Cached diagnostics contain
 //! file-absolute spans, so a shift above the template must invalidate them.
 //! The plugin's other batch inputs are the exactly declared P5-1b manifest.
 
@@ -81,7 +81,7 @@ pub fn validate_cache_inputs(
     Ok(())
 }
 
-/// The S0 content key with every non-content batch input declared and folded.
+/// The L0 content key with every non-content batch input declared and folded.
 /// `None` means the result cannot be keyed and must not be cached.
 #[must_use]
 pub fn content_key(

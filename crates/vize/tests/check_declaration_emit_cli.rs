@@ -10,7 +10,7 @@ mod workspace_package_vue_exports;
 
 use std::{path::Path, process::Command};
 
-use vize_s0::{String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 #[path = "support/vue_stub.rs"]
 mod vue_stub;

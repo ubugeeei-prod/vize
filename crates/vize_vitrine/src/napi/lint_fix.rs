@@ -1,7 +1,7 @@
 //! Lint text-edit application for the native API.
 
 use std::{fs, path::Path};
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 const LINT_EXTENSIONS: &[&str] = &[
     "vue", "html", "htm", "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx",

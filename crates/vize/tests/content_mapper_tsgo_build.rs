@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use serde_json::json;
-use vize_s0::{String as CompactString, cstr};
+use vize_l0::{String as CompactString, cstr};
 
 mod content_mapper_declaration_map_support;
 use content_mapper_declaration_map_support::{

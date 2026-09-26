@@ -9,7 +9,7 @@
 //!
 //! The observer takes any [`Folio`] artifact and a sink to print into, so it
 //! works with the hand-written [`Folio`] impls that exist today (P0-10's
-//! `CroquisFolio`). What P2-4 adds is `#[derive(Folio)]`, so every S2 type
+//! `CroquisFolio`). What P2-4 adds is `#[derive(Folio)]`, so every L2 type
 //! gets its page for free, and `davinci-opt --pipeline`, which is this
 //! observer wired to a CLI. Neither changes this type's shape.
 

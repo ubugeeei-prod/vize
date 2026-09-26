@@ -46,9 +46,9 @@ fn ambient_global_component_array_callbacks_are_contextually_typed() {
         // vue-tsc 3.3.4 with TypeScript 6.0.3, on the byte-identical fixture:
         // src/App.vue(3,38): error TS2339: Property 'missing' does not exist on type 'string'.
         Some(vec![(
-            vize_s0::String::from("src/App.vue"),
+            vize_l0::String::from("src/App.vue"),
             Some(2339),
-            vize_s0::String::from("3:38:error Property 'missing' does not exist on type 'string'.",),
+            vize_l0::String::from("3:38:error Property 'missing' does not exist on type 'string'.",),
         )]),
     );
 }
@@ -78,9 +78,9 @@ fn ambient_global_component_event_callbacks_are_contextually_typed() {
     assert_eq!(
         snapshot,
         Some(vec![(
-            vize_s0::String::from("src/App.vue"),
+            vize_l0::String::from("src/App.vue"),
             Some(2339),
-            vize_s0::String::from(
+            vize_l0::String::from(
                 "3:45:error Property 'missing' does not exist on type '{ file: string; }'.",
             ),
         )]),
@@ -111,9 +111,9 @@ fn unknown_global_component_array_callbacks_remain_implicit_any() {
         // vue-tsc 3.3.4 with TypeScript 6.0.3, on the byte-identical fixture:
         // src/App.vue(2,27): error TS7006: Parameter 'value' implicitly has an 'any' type.
         Some(vec![(
-            vize_s0::String::from("src/App.vue"),
+            vize_l0::String::from("src/App.vue"),
             Some(7006),
-            vize_s0::String::from("2:27:error Parameter 'value' implicitly has an 'any' type.",),
+            vize_l0::String::from("2:27:error Parameter 'value' implicitly has an 'any' type.",),
         )]),
     );
 }
@@ -143,9 +143,9 @@ fn ambient_global_component_unresolved_event_callbacks_remain_implicit_any() {
     assert_eq!(
         snapshot,
         Some(vec![(
-            vize_s0::String::from("src/App.vue"),
+            vize_l0::String::from("src/App.vue"),
             Some(7006),
-            vize_s0::String::from("2:55:error Parameter 'result' implicitly has an 'any' type."),
+            vize_l0::String::from("2:55:error Parameter 'result' implicitly has an 'any' type."),
         )]),
     );
 }

@@ -1,6 +1,6 @@
 //! Deterministic syntax and f32 rounding boundaries, independent of the candidate.
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 pub(super) fn values() -> Vec<String> {
     let mut values: Vec<String> = [

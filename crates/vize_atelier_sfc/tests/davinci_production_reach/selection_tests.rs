@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_s0::profiler::{CounterEntry, CounterSummary, global_profiler};
+use vize_l0::profiler::{CounterEntry, CounterSummary, global_profiler};
 
 use super::parity::parity_failures;
 use super::shapes::{Shape, compile, explicit_vapor_source};

@@ -3,7 +3,7 @@
 use oxc_ast::ast::{BindingIdentifier, IdentifierReference};
 use oxc_ast_visit::Visit;
 use vize_armature::patterns::{MatchPattern, PatternKind, parse_match_pattern};
-use vize_s0::{String, ensure_sufficient_stack};
+use vize_l0::{String, ensure_sufficient_stack};
 
 use super::syntax::expression_source;
 use crate::{PropNode, RootNode, TemplateChildNode, TransformContext};

@@ -13,7 +13,7 @@ use corsa::{
     },
     runtime::block_on,
 };
-use vize_s0::{String, ToCompactString, corsa_api_mode::uses_async_json_rpc_api, profile};
+use vize_l0::{String, ToCompactString, corsa_api_mode::uses_async_json_rpc_api, profile};
 
 impl CorsaTypeAwareSession {
     pub(in crate::linter) fn new_with_corsa_path(

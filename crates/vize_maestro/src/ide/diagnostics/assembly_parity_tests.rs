@@ -11,7 +11,7 @@ use super::editor_typecheck_fixture::{
 use super::{DiagnosticService, sources};
 use tower_lsp::lsp_types::{DiagnosticSeverity, NumberOrString, Url};
 use vize_canon::BatchTypeCheckerTrait;
-use vize_s0::String;
+use vize_l0::String;
 
 /// The last three script lines are the keyof-indexed assignment Corsa reports
 /// as a false-positive `TS2322`; before P4-5a only `vize check` dropped it.

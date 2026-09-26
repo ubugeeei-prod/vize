@@ -3,7 +3,7 @@
 //! Only CSS number tokens are changed. Strings, comments and URL bodies can
 //! contain text such as `.5` that must remain byte-for-byte unchanged.
 
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 pub(super) fn add_leading_zero_to_fractional_numbers(source: &str) -> String {
     let bytes = source.as_bytes();

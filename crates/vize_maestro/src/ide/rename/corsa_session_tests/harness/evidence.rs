@@ -1,6 +1,6 @@
 use std::fs;
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::RealCorsaRenameSession;
 

@@ -23,7 +23,7 @@ fn native_binary() -> Option<PathBuf> {
     let binary = std::env::var_os("CORSA_PATH")
         .map(PathBuf::from)
         .filter(|path| path.is_file())
-        .or_else(|| vize_s0::corsa_resolver::discover_corsa_in_ancestors(workspace));
+        .or_else(|| vize_l0::corsa_resolver::discover_corsa_in_ancestors(workspace));
     assert!(
         binary.is_some() || std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
         "VIZE_TEST_REQUIRE_TSGO requires the native catalog provider oracle"

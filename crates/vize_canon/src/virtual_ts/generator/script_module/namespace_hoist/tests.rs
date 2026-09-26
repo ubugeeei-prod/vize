@@ -1,7 +1,7 @@
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 use super::super::plain_exports::{PlainScriptExport, PlainScriptExportKind};
 use super::NamespaceHoistPlan;
-use vize_s0::{CompactString, String as VizeString};
+use vize_l0::{CompactString, String as VizeString};
 
 fn plan(script: &str) -> NamespaceHoistPlan {
     NamespaceHoistPlan::collect(Some(script), false, true)

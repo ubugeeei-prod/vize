@@ -17,7 +17,7 @@
 use alloc::vec::Vec;
 use core::cmp::Reverse;
 
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 use super::{PassEvent, PassObserver, Remark, RemarkKind, RemarkValue};
 

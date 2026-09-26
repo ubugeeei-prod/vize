@@ -43,7 +43,7 @@ const fn malformed(
     }
 }
 
-/// Hole-free templates: every construct S1 models, zero holes expected.
+/// Hole-free templates: every construct L1 models, zero holes expected.
 pub const WELL_FORMED: &[Fixture] = &[
     well_formed(
         "kitchen_sink",

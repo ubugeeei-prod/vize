@@ -3,8 +3,8 @@
 //! Handles event modifiers and key modifiers.
 
 use vize_atelier_core::DirectiveNode;
-use vize_s0::String;
-use vize_s0::cstr;
+use vize_l0::String;
+use vize_l0::cstr;
 
 /// Parsed event modifiers
 #[derive(Debug, Default, Clone)]
@@ -209,7 +209,7 @@ pub fn generate_key_guard(keys: &[String]) -> String {
         .map(|key| {
             let resolved = resolve_key_alias(key.as_str())
                 .map(String::from)
-                .unwrap_or_else(|| vize_s0::capitalize(key.as_str()));
+                .unwrap_or_else(|| vize_l0::capitalize(key.as_str()));
             cstr!("$event.key !== \"{resolved}\"")
         })
         .collect();
@@ -221,7 +221,7 @@ pub fn generate_key_guard(keys: &[String]) -> String {
 #[expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 mod tests {
     use super::{EventModifiers, generate_key_guard, generate_modifier_guard, resolve_key_alias};
-    use vize_s0::String;
+    use vize_l0::String;
 
     #[test]
     fn test_parse_modifiers() {

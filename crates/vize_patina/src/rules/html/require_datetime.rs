@@ -29,7 +29,7 @@ use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
 use super::helpers::is_valid_datetime;
-use vize_s0::String;
+use vize_l0::String;
 
 static META: RuleMeta = RuleMeta {
     name: "html/require-datetime",

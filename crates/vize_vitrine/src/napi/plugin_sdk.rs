@@ -3,7 +3,7 @@
 //! The decided shape (record: `docs/davinci/plan/phase-4-records/p4-16.md`):
 //!
 //! - **Serialized visit batches, not proxies.** Per plugin per document the
-//!   host builds one JSON batch of the S2 page (only the node kinds the
+//!   host builds one JSON batch of the L2 page (only the node kinds the
 //!   manifest visits, the dense parent array, only the demanded facts) and
 //!   makes one call. The proxy arm ([`PluginDocumentHandle`]) is kept only
 //!   as the measured alternative: every property read is a napi crossing.
@@ -14,7 +14,7 @@
 //!   resolved against the fact registry before anything runs; the batch
 //!   carries only declared groups.
 //! - **Cost attribution and content keys.** Every plugin's time is in the
-//!   lint output; every result has an S0 content key and a P5-1b manifest
+//!   lint output; every result has an L0 content key and a P5-1b manifest
 //!   covering the plugin's version, code, visit and demand sets, and file.
 //!
 //! P5-13 adds cross-process disk reuse. GA (all four hook families and the

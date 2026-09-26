@@ -64,12 +64,12 @@ mod i18n_croquis_last;
 mod i18n_croquis_more;
 mod i18n_croquis_rest;
 mod i18n_explain;
+mod i18n_l3;
 mod i18n_render;
 mod i18n_rules_ecosystem;
 mod i18n_rules_markup;
 mod i18n_rules_script;
 mod i18n_rules_script_more;
-mod i18n_s3;
 mod i18n_supplemental;
 mod i18n_supplemental_extra;
 mod i18n_supplemental_extra2;
@@ -118,7 +118,7 @@ pub use rustc_hash::{FxHashMap, FxHashSet};
 // Re-export phf for compile-time perfect hash functions
 pub use phf::{Map as PhfMap, Set as PhfSet, phf_map, phf_set};
 
-// Re-export the Davinci source model types (S0 coordinates)
+// Re-export the Davinci source model types (L0 coordinates)
 pub use source_frame::{SourceBlock, SourceFrameError, SourceRoot};
 pub use span::Span;
 

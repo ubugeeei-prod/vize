@@ -21,8 +21,8 @@ mod tests;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::ensure_sufficient_stack;
 use vize_relief::{ElementNode, PropNode, RootNode, SourceLocation, TemplateChildNode};
-use vize_s0::ensure_sufficient_stack;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-multiple-template-root",

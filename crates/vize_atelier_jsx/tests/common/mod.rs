@@ -15,11 +15,11 @@ use vize_atelier_jsx::{
     JsxLang, LowerOutput, VaporCompileOptions, VdomCompileOptions, compile_to_vapor,
     compile_to_vdom, lower_source,
 };
+use vize_l0::Allocator;
 use vize_relief::{
     AttributeNode, DirectiveNode, ElementNode, ExpressionNode, PropNode, TemplateChildNode,
     TextNode,
 };
-use vize_s0::Allocator;
 
 /// Lower JSX source, asserting a single error-free render root, and return it.
 pub fn lower_one<'a>(allocator: &'a Allocator, source: &'a str) -> vize_relief::RootNode<'a> {
@@ -62,7 +62,7 @@ pub fn lower_all<'a>(allocator: &'a Allocator, source: &'a str) -> LowerOutput<'
 }
 
 /// Compile one component to VDOM render code.
-pub fn vdom_code(source: &str, lang: JsxLang) -> vize_s0::String {
+pub fn vdom_code(source: &str, lang: JsxLang) -> vize_l0::String {
     let bump = Allocator::new();
     let out = compile_to_vdom(&bump, source, lang, VdomCompileOptions::default());
     assert!(
@@ -75,7 +75,7 @@ pub fn vdom_code(source: &str, lang: JsxLang) -> vize_s0::String {
 }
 
 /// Compile one component to Vapor render code.
-pub fn vapor_code(source: &str, lang: JsxLang, ssr: bool) -> vize_s0::String {
+pub fn vapor_code(source: &str, lang: JsxLang, ssr: bool) -> vize_l0::String {
     let bump = Allocator::new();
     let out = compile_to_vapor(&bump, source, lang, VaporCompileOptions { ssr });
     assert!(
@@ -102,7 +102,7 @@ pub fn snapshot_text(source: &str) -> std::string::String {
 /// Render a named case matrix into a single deterministic snapshot body.
 pub fn snapshot_cases(
     cases: &[(&str, &str)],
-    mut compile: impl FnMut(&str) -> vize_s0::String,
+    mut compile: impl FnMut(&str) -> vize_l0::String,
 ) -> std::string::String {
     let mut snapshot = std::string::String::new();
     for (index, (name, source)) in cases.iter().enumerate() {
@@ -121,7 +121,7 @@ pub fn snapshot_cases(
 /// Render a named, language-aware case matrix into a snapshot body.
 pub fn snapshot_lang_cases(
     cases: &[(&str, JsxLang, &str)],
-    mut compile: impl FnMut(&str, JsxLang) -> vize_s0::String,
+    mut compile: impl FnMut(&str, JsxLang) -> vize_l0::String,
 ) -> std::string::String {
     let mut snapshot = std::string::String::new();
     for (index, (name, lang, source)) in cases.iter().enumerate() {

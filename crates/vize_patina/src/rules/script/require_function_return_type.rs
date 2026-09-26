@@ -36,12 +36,12 @@
 //! - Arrow functions without block body (e.g., `x => x + 1`)
 
 use memchr::memmem;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-function-return-type",

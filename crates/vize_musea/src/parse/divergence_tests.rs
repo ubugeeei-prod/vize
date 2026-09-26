@@ -3,11 +3,11 @@
 //! ledgered (the P4-13 record lists them); the rest are scanner bugs no
 //! committed fixture happened to exercise. Every case is a place where the
 //! substring scanner read something other than what the SFC/HTML syntax
-//! says — the S0/S1 reading is the authored structure.
+//! says — the L0/L1 reading is the authored structure.
 
 use super::parse_art;
 use crate::types::{ArtDescriptor, ArtParseError, ArtParseOptions};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 fn parse<'a>(
     allocator: &'a Allocator,
@@ -151,7 +151,7 @@ fn attribute_values_follow_html_syntax() {
     );
 }
 
-/// Inherited S0 limitation (recorded in the P4-13 record): the shared SFC
+/// Inherited L0 limitation (recorded in the P4-13 record): the shared SFC
 /// splitter ends an unquoted block-tag value at `/`, so an `<art>` open tag
 /// with `component=./Button.vue` is a malformed block — `NoArtBlock`. The
 /// scanner read the value as `"."`. Quoted values (every fixture) are

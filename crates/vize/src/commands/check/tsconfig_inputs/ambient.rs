@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use super::NODE_MODULES_DIR;
 use super::collect_default_check_files_inner;
@@ -261,7 +261,7 @@ fn reference_path_attribute(line: &str) -> Option<&str> {
 }
 
 fn attribute_value<'a>(line: &'a str, name: &str) -> Option<&'a str> {
-    let needle = vize_s0::cstr!("{name}=");
+    let needle = vize_l0::cstr!("{name}=");
     let start = line.find(needle.as_str())? + needle.len();
     let quote = line.get(start..).unwrap_or_default().chars().next()?;
     if quote != '"' && quote != '\'' {

@@ -10,7 +10,7 @@ use core::fmt;
 
 use alloc::vec::Vec;
 
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::{Declaration, Facet, SfcSummary, finish, folio_error, insert, schema};
 use crate::folio::page::{self, LineEvent, ParseState};

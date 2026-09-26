@@ -11,7 +11,7 @@ use super::{
     prefix_context::{prefix_identifiers_in_scope, prefix_node_in_scope},
     scope_prefix::{contains_slot_param_scope_prefix, strip_scope_prefixes_for_slot_params},
 };
-use vize_s0::String;
+use vize_l0::String;
 
 /// Check if a string is a member-expression style handler reference.
 /// This includes forms like `_ctx.foo`, `$setup.bar`, and `_unref(store).save`.
@@ -149,7 +149,7 @@ mod tests {
     use crate::codegen::expression::{generate_event_handler, generate_simple_expression};
     use crate::options::{BindingMetadata, BindingType, CodegenOptions};
     use crate::{ExpressionNode, SimpleExpressionNode, SourceLocation};
-    use vize_s0::{Allocator, FxHashMap, String};
+    use vize_l0::{Allocator, FxHashMap, String};
 
     fn generate_simple_expression_with_prefix(ctx: &CodegenContext, content: &str) -> String {
         prefix_identifiers_in_scope(content, ctx, false)
@@ -273,7 +273,7 @@ mod tests {
 
         let allocator = Allocator::new();
         let mut ctx = CodegenContext::new(options);
-        let exp = ExpressionNode::Simple(vize_s0::Box::new_in(
+        let exp = ExpressionNode::Simple(vize_l0::Box::new_in(
             SimpleExpressionNode {
                 content: "$event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id))",
                 is_static: false,

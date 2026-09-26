@@ -3,31 +3,31 @@ import { test } from "node:test";
 
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
 
-const s1ToS2LoweringCorpusCommand =
-  "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_lowering_corpus -- --nocapture";
-const s1ToS2DomCorpusCommand =
-  "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_dom_corpus -- --nocapture";
-const ssrS4CorpusCommand =
+const s1ToL2LoweringCorpusCommand =
+  "cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_lowering_corpus -- --nocapture";
+const s1ToL2DomCorpusCommand =
+  "cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_dom_corpus -- --nocapture";
+const ssrL4CorpusCommand =
   'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture';
-const s1ToS2PugCorpusCommand =
-  "cargo test -p vize_s1_to_s2 --features davinci-differential --test davinci_pug_corpus -- --nocapture";
-const jsxS2VdomParityCommand =
-  "cargo test -p vize_atelier_jsx --features davinci-differential --lib vdom::s2_differential::s2_vdom_admitted_cases_match_relief_codegen -- --exact";
+const s1ToL2PugCorpusCommand =
+  "cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_pug_corpus -- --nocapture";
+const jsxL2VdomParityCommand =
+  "cargo test -p vize_atelier_jsx --features davinci-differential --lib vdom::l2_differential::l2_vdom_admitted_cases_match_relief_codegen -- --exact";
 const patinaMarkupDifferentialCommand =
   'VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential -- --nocapture';
 
-test("feature-gated S1-to-S2 corpus lanes run in scheduled and manual Check", () => {
+test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
   const testReportJob = workflowJobBody(workflow, "test-report");
-  const manifest = readRepoFile("crates", "vize_s1_to_s2", "Cargo.toml");
+  const manifest = readRepoFile("crates", "vize_l1_to_l2", "Cargo.toml");
   const suites = readRepoFile("docs/davinci", "plan", "test-suites.md");
 
   assert.match(
     suites,
-    /\| TS-20 \| Lowering totality fuzz\s+\| `cargo test -p vize_s1_to_s2` \/ `cargo test -p vize_s2_to_s3`/u,
+    /\| TS-20 \| Lowering totality fuzz\s+\| `cargo test -p vize_l1_to_l2` \/ `cargo test -p vize_l2_to_l3`/u,
   );
-  assert.match(suites, /`s2_to_s3_lowering`/u);
+  assert.match(suites, /`l2_to_l3_lowering`/u);
   for (const name of ["davinci_lowering_corpus", "davinci_dom_corpus", "davinci_pug_corpus"]) {
     assert.match(
       manifest,
@@ -46,15 +46,15 @@ test("feature-gated S1-to-S2 corpus lanes run in scheduled and manual Check", ()
   assert.doesNotMatch(testReportJob, /- clippy-and-test\b/);
   assert.match(clippyJob, /run: cargo test --workspace && /);
   assert.ok(
-    clippyJob.includes(s1ToS2LoweringCorpusCommand),
+    clippyJob.includes(s1ToL2LoweringCorpusCommand),
     "the feature-gated lowering corpus entry must run explicitly after cargo test --workspace",
   );
   assert.ok(
-    clippyJob.includes(s1ToS2DomCorpusCommand),
+    clippyJob.includes(s1ToL2DomCorpusCommand),
     "the feature-gated DOM corpus entry must run explicitly after cargo test --workspace",
   );
   assert.ok(
-    clippyJob.includes(s1ToS2PugCorpusCommand),
+    clippyJob.includes(s1ToL2PugCorpusCommand),
     "the feature-gated pug corpus entry (P4-12c baseline scope) must run in full Check",
   );
   assert.match(
@@ -62,16 +62,16 @@ test("feature-gated S1-to-S2 corpus lanes run in scheduled and manual Check", ()
     /^\[\[test\]\]\nname = "davinci_ssr_corpus"\nrequired-features = \["davinci-differential"\]$/m,
   );
   assert.ok(
-    clippyJob.includes(ssrS4CorpusCommand),
-    "the feature-gated SSR S4 corpus gate must sweep the checkout after cargo test --workspace",
+    clippyJob.includes(ssrL4CorpusCommand),
+    "the feature-gated SSR L4 corpus gate must sweep the checkout after cargo test --workspace",
   );
   assert.match(
     readRepoFile("crates", "vize_atelier_jsx", "Cargo.toml"),
     /^davinci-differential = \[\]$/m,
   );
   assert.ok(
-    clippyJob.includes(jsxS2VdomParityCommand),
-    "the feature-gated JSX S2 VDOM parity entry must run explicitly after cargo test --workspace",
+    clippyJob.includes(jsxL2VdomParityCommand),
+    "the feature-gated JSX L2 VDOM parity entry must run explicitly after cargo test --workspace",
   );
   assert.match(
     readRepoFile("crates", "vize_patina", "Cargo.toml"),

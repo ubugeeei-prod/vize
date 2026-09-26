@@ -1,6 +1,6 @@
 //! Lowercase hexadecimal rendering of SHA-256 digests.
 
-use vize_s0::String;
+use vize_l0::String;
 
 /// `bytes` as lowercase hexadecimal, two characters per byte.
 pub(crate) fn lower_hex(bytes: &[u8]) -> String {

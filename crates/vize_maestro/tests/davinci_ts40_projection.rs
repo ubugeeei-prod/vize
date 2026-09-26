@@ -2,7 +2,7 @@
 //!
 //! The Maestro lane's template document is the checker virtual TypeScript.
 //! Canon and the content mapper keep their own producers. This is not evidence
-//! that S2 owns the projection.
+//! that L2 owns the projection.
 
 #![expect(
     clippy::expect_used,
@@ -15,7 +15,7 @@
 mod davinci_ts40_projection_support;
 
 use davinci_ts40_projection_support::{Drift, capture_fixture, load_matrix, verify_exact};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 #[test]
 #[expect(

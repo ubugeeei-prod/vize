@@ -1,6 +1,6 @@
 //! Branch-key comparison helpers for structural directives.
 
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::{ExpressionNode, PropNode};
 

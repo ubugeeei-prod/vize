@@ -82,7 +82,7 @@ fn model_names_replace_old_listeners_and_restore_static_props_like_official_vapo
         assert_eq!(
             WalkCounts::snapshot().since(before).total_walks(),
             0,
-            "{case}: native S3"
+            "{case}: native L3"
         );
         insta::assert_snapshot!(format!("component_model_name_{case}"), compiled.code);
         let props = ["title", "label", "titleModifiers", "labelModifiers"];

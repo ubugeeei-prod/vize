@@ -2,9 +2,9 @@
 
 use std::path::{Path, PathBuf};
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_s0::String;
-use vize_s0::config::{ConfigExperimentalVueFlags, ConfigFeatureFlags, VueVersion};
-use vize_s0::hash::hash_bytes;
+use vize_l0::String;
+use vize_l0::config::{ConfigExperimentalVueFlags, ConfigFeatureFlags, VueVersion};
+use vize_l0::hash::hash_bytes;
 
 use crate::commands::build::{BuildArgs, ScriptExtension};
 use crate::commands::davinci_ice;
@@ -70,7 +70,7 @@ pub(super) struct DavinciBuildSettings {
     pub(super) plan_string: String,
     /// P2-3 budget observer output for the selected plan. This is named
     /// "planned groups" at reporting sites because the real compile path still
-    /// runs legacy stages until the S2 backend becomes a production dependency.
+    /// runs legacy stages until the L2 backend becomes a production dependency.
     pub(super) planned_groups: u32,
     /// Pass entries described by the selected plan.
     pub(super) planned_passes: u32,

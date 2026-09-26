@@ -183,7 +183,7 @@ fn run_corpus() -> Result<u8, String> {
         .args([
             "test",
             "-p",
-            "vize_s1_to_s2",
+            "vize_l1_to_l2",
             "--features",
             "davinci-differential",
             "--test",
@@ -242,9 +242,9 @@ fn finalize_corpus(artifact: &str) -> Result<u8, String> {
     append_corpus_summary(artifact, &mode, &outcome, &verdict)?;
     if verdict != "success" {
         for failure in &validation.failures {
-            eprintln!("::error title=Invalid Davinci S2 DOM corpus evidence::{failure}");
+            eprintln!("::error title=Invalid Davinci L2 DOM corpus evidence::{failure}");
         }
-        eprintln!("::error title=Davinci S2 DOM corpus failed::mode={mode} verdict={verdict}");
+        eprintln!("::error title=Davinci L2 DOM corpus failed::mode={mode} verdict={verdict}");
         return Ok(1);
     }
     Ok(0)
@@ -453,7 +453,7 @@ fn parse_old_error_reasons(log_text: &str) -> BTreeMap<String, usize> {
         );
     }
     let block = Regex::new(
-        r"(?s)corpus old-lane error skips \(\d+\)(?: by reason \{.*\})?:\n(.*?)\n\ncorpus S2 refusals",
+        r"(?s)corpus old-lane error skips \(\d+\)(?: by reason \{.*\})?:\n(.*?)\n\ncorpus L2 refusals",
     )
     .unwrap();
     let Some(captures) = block.captures(&stripped) else {
@@ -520,7 +520,7 @@ fn append_corpus_summary(
     common::append_text(
         summary_path,
         &format!(
-            "## Davinci S2 DOM Corpus\n\n- mode: `{mode}`\n- outcome: `{outcome}`\n- verdict: `{verdict}`\n- manifest DOM-output comparisons: `{}`\n- gitlinks: `{}`\n- submodule status rows: `{}`\n- compared templates: `{}`\n- patch-fact entries: `{}`\n- old-lane error reasons: `{}`\n\n{}\n",
+            "## Davinci L2 DOM Corpus\n\n- mode: `{mode}`\n- outcome: `{outcome}`\n- verdict: `{verdict}`\n- manifest DOM-output comparisons: `{}`\n- gitlinks: `{}`\n- submodule status rows: `{}`\n- compared templates: `{}`\n- patch-fact entries: `{}`\n- old-lane error reasons: `{}`\n\n{}\n",
             validation.manifest_dom_output_comparisons,
             validation.selected_gitlinks,
             validation.submodule_status_rows,

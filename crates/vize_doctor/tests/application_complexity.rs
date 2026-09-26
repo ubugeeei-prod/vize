@@ -11,7 +11,7 @@ use vize_doctor::application_analysis::{
     RENDERED_COGNITIVE_HOTSPOT_ABOVE, TEMPLATE_COMPLEXITY_HOTSPOT, findings_from_application_graph,
 };
 use vize_doctor::{DoctorCategory, FindingSeverity};
-use vize_s0::{Allocator, cstr};
+use vize_l0::{Allocator, cstr};
 
 /// Cognitive 15, cyclomatic 6: three nested `v-if`s (+1, +2, +3), a
 /// nested `v-for` (+4) and a `?:` inside it (+5).

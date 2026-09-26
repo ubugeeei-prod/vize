@@ -1,7 +1,7 @@
 use vize_atelier_core::{
     CodegenOptions, CodegenResult, TransformOptions, generate, parse, transform,
 };
-use vize_s0::String;
+use vize_l0::String;
 
 fn result_output(result: &CodegenResult) -> String {
     let mut output = String::with_capacity(result.preamble.len() + result.code.len() + 1);
@@ -12,7 +12,7 @@ fn result_output(result: &CodegenResult) -> String {
 }
 
 fn compile(source: &str, prefix_identifiers: bool) -> String {
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (mut root, errors) = parse(&allocator, source);
     assert!(errors.is_empty(), "Parse errors: {errors:?}");
     transform(

@@ -1,6 +1,6 @@
-use vize_s0::cstr;
+use vize_l0::cstr;
 
-use vize_s0::line_index::LineBreaks;
+use vize_l0::line_index::LineBreaks;
 
 // The editor decodes Corsa positions and renders assembled ranges through
 // `LineBreaks::Lsp` (UTF-16 code units).
@@ -336,6 +336,6 @@ const speakerOptions = computed(() =>
             return Some(sibling_cache);
         }
 
-        vize_s0::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+        vize_l0::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
     }
 }

@@ -9,7 +9,7 @@ use vize_atelier_core::{
         CodegenExperimentalOptions, CodegenOptions, CustomElementMatcher, TemplateSyntaxMode,
     },
 };
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 mod croquis_facts;
 mod inner;
@@ -133,7 +133,7 @@ pub fn compile_template_with_template_syntax_codegen_and_experimental_options<'a
         options,
         template_syntax,
         None,
-        DomCompilePipelineOptions::allow_s2_with_experimental_options(
+        DomCompilePipelineOptions::allow_l2_with_experimental_options(
             CustomElementMatcher::default(),
             codegen_options,
             codegen_experimental_options,
@@ -217,7 +217,7 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections<
         options,
         template_syntax,
         hoisted_scope_id,
-        DomCompilePipelineOptions::allow_s2(
+        DomCompilePipelineOptions::allow_l2(
             CustomElementMatcher::default(),
             CodegenOptions::default(),
         ),
@@ -243,6 +243,6 @@ pub fn compile_template_with_template_syntax_and_hoisted_scope_id_with_sections_
         options,
         template_syntax,
         hoisted_scope_id,
-        DomCompilePipelineOptions::allow_s2(CustomElementMatcher::default(), codegen_options),
+        DomCompilePipelineOptions::allow_l2(CustomElementMatcher::default(), codegen_options),
     )
 }

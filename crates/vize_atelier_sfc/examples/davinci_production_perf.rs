@@ -18,8 +18,8 @@ static GLOBAL_ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 #[global_allocator]
 #[cfg(feature = "davinci-production-profile")]
-static GLOBAL_ALLOCATOR: vize_s0::profiler::ProfilingAllocator<mimalloc::MiMalloc> =
-    vize_s0::profiler::ProfilingAllocator::from_allocator(mimalloc::MiMalloc);
+static GLOBAL_ALLOCATOR: vize_l0::profiler::ProfilingAllocator<mimalloc::MiMalloc> =
+    vize_l0::profiler::ProfilingAllocator::from_allocator(mimalloc::MiMalloc);
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");

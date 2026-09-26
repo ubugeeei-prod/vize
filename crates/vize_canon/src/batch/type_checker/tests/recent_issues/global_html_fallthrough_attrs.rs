@@ -18,7 +18,7 @@ use super::super::super::{
     snapshot_project_diagnostics, write_test_vue_stub,
 };
 use crate::batch::runtime_deps::VUE_RUNTIME_DOM_STUB_TYPES;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 /// The isolated stub's `NativeElements` is a `Record<string, …>`, whose key
 /// union is `string` — a table like that legitimately opens the whole strict

@@ -1,9 +1,9 @@
-//! `<variant>` elements of the `<art>` S1 tree.
+//! `<variant>` elements of the `<art>` L1 tree.
 //!
-//! A variant is an S1 element named `variant` anywhere under `<art>` —
+//! A variant is an L1 element named `variant` anywhere under `<art>` —
 //! never inside another variant, a comment or raw text, because those are
 //! not elements in the tree. Its template is the authored bytes between
-//! its open tag's `>` and its end tag, and every offset comes from the S0
+//! its open tag's `>` and its end tag, and every offset comes from the L0
 //! frame the tree was parsed in.
 
 mod values;
@@ -12,8 +12,8 @@ use super::attrs::{attr_value, has_attr};
 use super::{calculate_location_fast, line_of};
 use crate::types::{ArtParseError, ArtVariant};
 use values::{parse_args_json, parse_viewport};
-use vize_s0::{Allocator, SourceBlock, ToCompactString};
-use vize_s1::{Element, ElementClose, SurfaceChild};
+use vize_l0::{Allocator, SourceBlock, ToCompactString};
+use vize_l1::{Element, ElementClose, SurfaceChild};
 
 /// Collect every `<variant>` element under `children` (the `<art>`
 /// element's contents), in document order.
@@ -102,14 +102,14 @@ fn parse_single_variant<'a>(
     })
 }
 
-/// File-absolute offset of an S1 token slice.
+/// File-absolute offset of an L1 token slice.
 fn offset_in(frame: SourceBlock<'_>, slice: &str) -> u32 {
     let offset = frame.offset_of(slice);
-    debug_assert!(offset.is_some(), "S1 tokens are slices of the parsed frame");
+    debug_assert!(offset.is_some(), "L1 tokens are slices of the parsed frame");
     offset.unwrap_or_else(|| frame.start())
 }
 
-/// File-absolute offset just past an S1 token slice.
+/// File-absolute offset just past an L1 token slice.
 fn end_in(frame: SourceBlock<'_>, slice: &str) -> u32 {
     offset_in(frame, slice) + slice.len() as u32
 }
@@ -122,8 +122,8 @@ fn end_in(frame: SourceBlock<'_>, slice: &str) -> u32 {
 mod tests {
     use super::parse_variants;
     use crate::types::{ArtParseError, ArtVariant};
-    use vize_s0::{Allocator, SourceRoot};
-    use vize_s1::parse;
+    use vize_l0::{Allocator, SourceRoot};
+    use vize_l1::parse;
 
     /// Parse `content` as the `<art>` block's contents, framed at offset 0.
     fn variants_of<'a>(

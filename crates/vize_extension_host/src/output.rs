@@ -1,6 +1,6 @@
 //! The output-target world's host half (P6-1c).
 //!
-//! A guest receives one template's S2 and S3 pages and answers with an
+//! A guest receives one template's L2 and L3 pages and answers with an
 //! `emit-document-page@1` folio (P3-9's span-carrying document) and
 //! diagnostics. The host accepts the answer as untrusted input:
 //!
@@ -24,8 +24,10 @@ pub use accept::accept_emitted;
 pub use document::{EmitDocument, EmitLink};
 pub use session::{OutputError, OutputSession};
 
-/// The S3 page schema version this host reads.
-pub const S3_PAGE_SCHEMA: u32 = 1;
+/// The L3 page schema version this host reads.
+pub const L3_PAGE_SCHEMA: u32 = 1;
+/// Compatibility name for the original output schema constant.
+pub use self::L3_PAGE_SCHEMA as S3_PAGE_SCHEMA;
 /// The emit-document page schema version this host reads.
 pub const EMIT_DOCUMENT_PAGE_SCHEMA: u32 = 1;
 /// Features the output-target world requires, sorted.

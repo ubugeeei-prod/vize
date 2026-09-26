@@ -10,9 +10,9 @@ direct-text props inline and narrows `createSlots`/`vShow` helper ordering.
 
 The durable witnesses are:
 
-- [`davinci_s2_format_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_format_residuals.rs)
+- [`davinci_s2_format_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_format_residuals.rs)
   - captures reduced format residuals.
-- [`emit_outlets.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_outlets.rs)
+- [`emit_outlets.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_outlets.rs)
   - pins slot outlet emission.
 
 This installment does not tick P2-11. The production-lane switch remains open.

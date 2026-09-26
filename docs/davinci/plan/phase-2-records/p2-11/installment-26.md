@@ -14,7 +14,7 @@ before `v-model` keeps `onUpdate:modelValue` first.
 
 The durable current witness is:
 
-- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_patch_flags.rs)
+- [`davinci_s2_patch_flags.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_patch_flags.rs)
   — S2-vs-shipped byte-for-byte coverage plus explicit patch-site extraction.
 - [`support/mod.rs`](../../../../../crates/vize_atelier_dom/tests/support/mod.rs)
   — shared patch-site extraction used by the DOM-lane differential harness.

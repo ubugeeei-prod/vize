@@ -1,10 +1,10 @@
-//! The plugin document: one SFC template lowered to S2 and flattened into
+//! The plugin document: one SFC template lowered to L2 and flattened into
 //! page-order node records (P4-16 spike).
 //!
-//! Every op line of the S2 page — ops and attached bindings — becomes one
-//! [`PluginNode`] whose `id` is its S2 `NodeId` (dense page order,
+//! Every op line of the L2 page — ops and attached bindings — becomes one
+//! [`PluginNode`] whose `id` is its L2 `NodeId` (dense page order,
 //! `folio-format.md` "Node numbering"), so a JS report names a node the way
-//! the S2 side tables key it. The records are owned: the document outlives
+//! the L2 side tables key it. The records are owned: the document outlives
 //! the lowering arena, which both crossing shapes the spike measures need
 //! (a serialized batch and a proxy handle).
 
@@ -20,22 +20,22 @@
 use serde::Serialize;
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
 use vize_davinci::id::NodeId;
-use vize_s0::{Allocator, SourceRoot, Span};
-use vize_s1_to_s2::lower_source_block;
-use vize_s2::expr::ExprRef;
-use vize_s2::op::{BindingOp, DynamicName, Op, Region};
+use vize_l0::{Allocator, SourceRoot, Span};
+use vize_l1_to_l2::lower_source_block;
+use vize_l2::expr::ExprRef;
+use vize_l2::op::{BindingOp, DynamicName, Op, Region};
 
 use super::error::HostError;
 
-/// One S2 op line.
+/// One L2 op line.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct PluginNode {
-    /// The S2 `NodeId` (page order).
+    /// The L2 `NodeId` (page order).
     pub id: u32,
     /// The owning op (a binding's element, a region's op).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parent: Option<u32>,
-    /// The S2 mnemonic (`ui.element`, `ui.for`, `ui.bind`, ...).
+    /// The L2 mnemonic (`ui.element`, `ui.for`, `ui.bind`, ...).
     pub kind: &'static str,
     /// File-absolute byte range. Host-side only: reports anchor on it, so
     /// it never crosses (a plugin cannot report a range the file lacks).
@@ -80,7 +80,7 @@ pub struct PluginDocument {
 
 impl PluginDocument {
     /// Split `source` with the shared SFC splitter, lower its template
-    /// through S1→S2, and flatten the page. No template → no nodes.
+    /// through L1→L2, and flatten the page. No template → no nodes.
     ///
     /// # Errors
     ///
@@ -113,7 +113,7 @@ impl PluginDocument {
             .block(content, start as u32)
             .map_err(|_| HostError::Split("template is not a source slice".into()))?;
         let allocator = Allocator::new();
-        let (tree, errors) = vize_s1::parse(&allocator, content);
+        let (tree, errors) = vize_l1::parse(&allocator, content);
         let lowered = lower_source_block(&allocator, &tree, &errors, block);
         let mut walk = Walk::default();
         walk.region(&lowered.root, None);
@@ -262,9 +262,9 @@ fn static_name(name: Option<&DynamicName<'_>>) -> Option<String> {
     }
 }
 
-fn attrs(attributes: &[vize_s2::op::Attribute<'_>]) -> Vec<(String, Option<String>)> {
+fn attrs(attributes: &[vize_l2::op::Attribute<'_>]) -> Vec<(String, Option<String>)> {
     let own =
-        |attr: &vize_s2::op::Attribute<'_>| (attr.name.to_owned(), attr.value.map(str::to_owned));
+        |attr: &vize_l2::op::Attribute<'_>| (attr.name.to_owned(), attr.value.map(str::to_owned));
     attributes.iter().map(own).collect()
 }
 

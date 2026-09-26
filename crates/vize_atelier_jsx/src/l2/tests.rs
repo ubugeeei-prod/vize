@@ -1,0 +1,344 @@
+use vize_davinci::id::NodeId;
+use vize_l0::Allocator;
+use vize_l2::op::{BindingOp, DynamicName, Op};
+use vize_l2::scope::ScopeOrigin;
+
+use crate::{JsxLang, lower_source};
+
+use super::L2Refusal;
+
+#[test]
+fn lower_source_attaches_static_intrinsic_l2_root() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <div id=\"x\">hello {name}<span hidden /></div>";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let l2 = root.l2.as_ref().expect("static intrinsic L2 root");
+    assert_eq!(l2.source, source);
+    assert_eq!(l2.op_count, 4);
+    assert!(!l2.features.has_if_ops());
+    assert!(!l2.features.has_for_ops());
+    assert!(!l2.features.has_slot_carriers());
+    assert!(!l2.features.has_text_compounds());
+    assert!(!l2.features.has_model_bindings());
+    let Op::Element(element) = &l2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    assert_eq!(element.tag, "div");
+    assert_eq!(element.attributes[0].name, "id");
+    assert_eq!(element.attributes[0].value, Some("x"));
+    let Op::Interpolation(interpolation) = &element.children.ops[1] else {
+        panic!("second child is interpolation");
+    };
+    assert_eq!(interpolation.expression.source(), "name");
+    assert_eq!(
+        interpolation.expression.span().start,
+        source.find("name").unwrap() as u32
+    );
+}
+
+#[test]
+fn lower_source_attaches_component_l2_root() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <Panel title=\"x\" />";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let l2 = root.l2.as_ref().expect("component L2 root");
+    assert!(l2.features.has_slot_carriers());
+    assert!(!l2.features.has_if_ops());
+    assert!(!l2.features.has_for_ops());
+    assert!(!l2.features.has_text_compounds());
+    assert!(!l2.features.has_model_bindings());
+    let Op::Component(component) = &l2.root.ops[0] else {
+        panic!("root is a component");
+    };
+    assert_eq!(component.name, "Panel");
+    assert_eq!(component.attributes[0].name, "title");
+}
+
+#[test]
+fn paramless_static_slots_project_to_l2_slot_content() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <Comp>{{ header: () => <h1>Hi</h1> }}</Comp>;";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let l2 = root.l2.as_ref().expect("paramless slot projects to L2");
+    assert!(l2.features.has_slot_carriers());
+    let Op::Component(component) = &l2.root.ops[0] else {
+        panic!("root is a component");
+    };
+    let Op::Element(template) = &component.children.ops[0] else {
+        panic!("slot carrier is a template element");
+    };
+    assert_eq!(template.tag, "template");
+    let BindingOp::SlotContent(content) = &template.bindings[0] else {
+        panic!("binding is ui.slot-content");
+    };
+    assert!(content.params.is_none());
+    assert!(content.modifiers.is_empty());
+    assert!(matches!(content.name, Some(DynamicName::Static("header"))));
+    assert!(template.span.start <= content.span.start);
+    assert!(template.span.end >= content.span.end);
+}
+
+#[test]
+fn scoped_slots_project_to_l2_slot_content_scope() {
+    let allocator = Allocator::new();
+    let lowered = lower_source(
+        &allocator,
+        allocator.as_oxc(),
+        "const App = () => <Comp>{{ item: (row) => <span>{row}</span> }}</Comp>;",
+        JsxLang::Jsx,
+    );
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let l2 = root.l2.as_ref().expect("scoped slot projects to L2");
+    assert_eq!(l2.op_count, 5);
+    let Op::Component(component) = &l2.root.ops[0] else {
+        panic!("root is a component");
+    };
+    let Op::Element(template) = &component.children.ops[0] else {
+        panic!("slot carrier is a template element");
+    };
+    let BindingOp::SlotContent(content) = &template.bindings[0] else {
+        panic!("binding is ui.slot-content");
+    };
+    let params = content.params.as_ref().expect("slot params are kept");
+    assert_eq!(params.source(), "row");
+    let scope_id = NodeId::from_index(2).expect("slot-content binding has an id");
+    let scope = l2.scopes.get(scope_id).expect("slot params record a scope");
+    assert_eq!(scope.tag.index(), 0);
+    assert_eq!(scope.bindings.len(), 1);
+    assert_eq!(scope.bindings[0].name, "row");
+    assert_eq!(
+        scope.bindings[0].origin,
+        ScopeOrigin::Authored {
+            span: params.span()
+        }
+    );
+}
+
+#[test]
+fn v_show_directive_projects_to_l2_vue_show() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <div v-show={visible} />";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let l2 = root.l2.as_ref().expect("v-show projects to L2");
+    assert_eq!(l2.op_count, 2);
+    let Op::Element(element) = &l2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    assert_eq!(element.bindings.len(), 1);
+    let BindingOp::VueShow(show) = &element.bindings[0] else {
+        panic!("binding is vue.show");
+    };
+    assert_eq!(show.value.source(), "visible");
+    assert_eq!(
+        show.value.span().start,
+        source.find("visible").unwrap() as u32
+    );
+    assert_eq!(
+        show.span.start,
+        source.find("v-show={visible}").unwrap() as u32
+    );
+}
+
+#[test]
+fn v_html_directive_projects_to_l2_vue_html() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <div v-html={raw} />";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let l2 = root.l2.as_ref().expect("v-html projects to L2");
+    let Op::Element(element) = &l2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    let BindingOp::VueHtml(html) = &element.bindings[0] else {
+        panic!("binding is vue.html");
+    };
+    assert_eq!(html.value.as_ref().map(|value| value.source()), Some("raw"));
+    assert_eq!(html.span.start, source.find("v-html={raw}").unwrap() as u32);
+}
+
+#[test]
+fn v_text_directive_projects_to_l2_vue_text() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <div v-text={msg} />";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let l2 = root.l2.as_ref().expect("v-text projects to L2");
+    let Op::Element(element) = &l2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    let BindingOp::VueText(text) = &element.bindings[0] else {
+        panic!("binding is vue.text");
+    };
+    assert_eq!(text.value.as_ref().map(|value| value.source()), Some("msg"));
+    assert_eq!(text.span.start, source.find("v-text={msg}").unwrap() as u32);
+}
+
+#[test]
+fn component_v_model_projects_to_l2_model() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <Input v-model={value} />";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let l2 = root.l2.as_ref().expect("component v-model projects to L2");
+    assert!(l2.features.has_model_bindings());
+    let Op::Component(component) = &l2.root.ops[0] else {
+        panic!("root is a component");
+    };
+    let BindingOp::Model(model) = &component.bindings[0] else {
+        panic!("binding is ui.model");
+    };
+    assert_eq!(model.contract.read.source(), "value");
+    assert_eq!(model.contract.write.source(), "value");
+    assert!(model.argument.is_none());
+    assert_eq!(model.attributes[0].name, "element-kind");
+    assert_eq!(model.attributes[0].value, Some("component"));
+}
+
+#[test]
+fn component_v_model_static_arg_modifiers_project_to_l2_model() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <Input v-model={[value, \"foo\", [\"trim\"]]} />";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let root = lowered.roots.first().expect("one JSX root");
+
+    let l2 = root.l2.as_ref().expect("component v-model projects to L2");
+    assert!(l2.features.has_model_bindings());
+    let Op::Component(component) = &l2.root.ops[0] else {
+        panic!("root is a component");
+    };
+    let BindingOp::Model(model) = &component.bindings[0] else {
+        panic!("binding is ui.model");
+    };
+    assert_eq!(model.contract.read.source(), "value");
+    assert!(matches!(model.argument, Some(DynamicName::Static("foo"))));
+    assert_eq!(model.attributes[0].value, Some("component"));
+    assert_eq!(model.attributes[1].name, "trim");
+    assert!(model.attributes[1].value.is_none());
+}
+
+#[test]
+fn v_show_without_value_stays_on_directive_refusal_path() {
+    let allocator = Allocator::new();
+    let lowered = lower_source(
+        &allocator,
+        allocator.as_oxc(),
+        "const App = () => <div v-show />",
+        JsxLang::Jsx,
+    );
+    let root = lowered.roots.first().expect("one JSX root");
+
+    assert!(matches!(root.l2, Err(L2Refusal::Directive)));
+}
+
+#[test]
+fn non_input_element_v_model_stays_on_directive_refusal_path() {
+    let allocator = Allocator::new();
+    let lowered = lower_source(
+        &allocator,
+        allocator.as_oxc(),
+        "const App = () => <div v-model={value} />",
+        JsxLang::Jsx,
+    );
+    let root = lowered.roots.first().expect("one JSX root");
+
+    assert!(matches!(root.l2, Err(L2Refusal::Directive)));
+}
+
+#[test]
+fn v_html_without_value_stays_on_directive_refusal_path() {
+    let allocator = Allocator::new();
+    let lowered = lower_source(
+        &allocator,
+        allocator.as_oxc(),
+        "const App = () => <div v-html />",
+        JsxLang::Jsx,
+    );
+    let root = lowered.roots.first().expect("one JSX root");
+
+    assert!(matches!(root.l2, Err(L2Refusal::Directive)));
+}
+
+#[test]
+fn component_v_html_stays_on_directive_refusal_path() {
+    let allocator = Allocator::new();
+    let lowered = lower_source(
+        &allocator,
+        allocator.as_oxc(),
+        "const App = () => <Panel v-html={raw} />",
+        JsxLang::Jsx,
+    );
+    let root = lowered.roots.first().expect("one JSX root");
+
+    assert!(matches!(root.l2, Err(L2Refusal::Directive)));
+}
+
+#[test]
+fn v_show_with_argument_stays_on_directive_refusal_path() {
+    let allocator = Allocator::new();
+    let lowered = lower_source(
+        &allocator,
+        allocator.as_oxc(),
+        "const App = () => <div v-show:display={visible} />",
+        JsxLang::Jsx,
+    );
+    let root = lowered.roots.first().expect("one JSX root");
+
+    assert!(matches!(root.l2, Err(L2Refusal::Directive)));
+}
+
+#[test]
+fn lowercase_component_with_is_projects_as_a_dynamic_component() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <div><component is={view} /><component>x</component></div>";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let l2 = lowered.roots[0].l2.as_ref().expect("L2 root");
+    let Op::Element(root) = &l2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    let Op::Component(dynamic) = &root.children.ops[0] else {
+        panic!("`<component is>` is a component op");
+    };
+    assert_eq!(dynamic.name, "component");
+    // Without `is` there is no dynamic component to resolve.
+    assert!(matches!(&root.children.ops[1], Op::Element(element) if element.tag == "component"));
+}
+
+#[test]
+fn custom_directive_projects_with_its_argument_and_value() {
+    let allocator = Allocator::new();
+    let source = "const App = () => <p v-focus:top={x} v-once>t</p>";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    // `v-once` keeps the directive refusal; the custom directive alone projects.
+    assert!(matches!(lowered.roots[0].l2, Err(L2Refusal::Directive)));
+    let source = "const App = () => <p v-focus:top={x}>t</p>";
+    let lowered = lower_source(&allocator, allocator.as_oxc(), source, JsxLang::Jsx);
+    let l2 = lowered.roots[0].l2.as_ref().expect("L2 root");
+    let Op::Element(element) = &l2.root.ops[0] else {
+        panic!("root is an element");
+    };
+    let BindingOp::VueDirective(directive) = &element.bindings[0] else {
+        panic!("custom directive binding");
+    };
+    assert_eq!(directive.name, "focus");
+    assert!(matches!(
+        directive.argument,
+        Some(DynamicName::Static("top"))
+    ));
+    assert!(directive.modifiers.is_empty());
+    assert_eq!(
+        directive.value.as_ref().map(|value| value.source()),
+        Some("x")
+    );
+}

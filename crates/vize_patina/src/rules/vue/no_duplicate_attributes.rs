@@ -19,11 +19,11 @@
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::FxHashSet;
+use vize_l0::String;
+use vize_l0::ToCompactString;
+use vize_l0::cstr;
 use vize_relief::{ElementNode, PropNode};
-use vize_s0::FxHashSet;
-use vize_s0::String;
-use vize_s0::ToCompactString;
-use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-duplicate-attributes",

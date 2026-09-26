@@ -12,7 +12,7 @@
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::corpus::CorpusRemark;
 use crate::pass::observer::{RecordedRemark, RemarkKind};

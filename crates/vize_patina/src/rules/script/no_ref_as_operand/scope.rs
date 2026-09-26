@@ -1,5 +1,5 @@
 use oxc_ast::ast::{BindingPattern, Expression, Statement, VariableDeclaration};
-use vize_s0::{CompactString, FxHashMap};
+use vize_l0::{CompactString, FxHashMap};
 
 /// The ref factories whose direct call result is a single ref object that must
 /// be unwrapped with `.value`. Mirrors eslint-plugin-vue's tracked composables;

@@ -22,14 +22,14 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::scope::ScopeFlags;
-use vize_s0::String;
+use vize_l0::String;
 
 use self::signature::{destructured_prop_names, formal_parameters_range, type_parameters_range};
 
 use crate::diagnostics::JsxDiagnostic;
 use crate::lower::{Lowerer, ScopedStyleExpr};
 use crate::mode::{DirectiveKind, JsxOutputMode, classify_directive};
-use crate::{ComponentSetupSpan, LoweredRoot, StyleExprSpan, s2};
+use crate::{ComponentSetupSpan, LoweredRoot, StyleExprSpan, l2};
 
 /// Lower every outermost JSX root in `program` into a [`LoweredRoot`].
 pub(crate) fn lower_program_roots<'a>(
@@ -179,7 +179,7 @@ impl RootLowerer<'_, '_, '_, '_> {
                         // statement (which includes the trailing `;`).
                         let loc = self.lowerer.mapper().location(directive.expression.span);
                         self.lowerer.report(JsxDiagnostic::error_at(
-                            vize_s0::cstr!(
+                            vize_l0::cstr!(
                                 "conflicting JSX mode directives: \"{}\" follows \"{}\" in the \
                                  same component; a component can select only one output mode",
                                 mode.directive(),
@@ -193,7 +193,7 @@ impl RootLowerer<'_, '_, '_, '_> {
                 DirectiveKind::MalformedVue => {
                     let loc = self.lowerer.mapper().location(directive.expression.span);
                     self.lowerer.report(JsxDiagnostic::error_at(
-                        vize_s0::cstr!(
+                        vize_l0::cstr!(
                             "unknown JSX mode directive \"{raw}\": expected \"{}\" or \"{}\"",
                             JsxOutputMode::Vdom.directive(),
                             JsxOutputMode::Vapor.directive()
@@ -289,11 +289,11 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         self.lowerer
             .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_element_root(element);
-        let s2 = s2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
+        let l2 = l2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
         let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
         self.roots.push(LoweredRoot {
             root,
-            s2,
+            l2,
             mode,
             component_name: self.current_name(),
             component_setup: self.current_setup_for_span(element.span),
@@ -307,11 +307,11 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
         self.lowerer
             .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_fragment_root(fragment);
-        let s2 = s2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
+        let l2 = l2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
         let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
         self.roots.push(LoweredRoot {
             root,
-            s2,
+            l2,
             mode,
             component_name: self.current_name(),
             component_setup: self.current_setup_for_span(fragment.span),

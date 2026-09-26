@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
 use std::path::Path;
 
-use vize_s0::{String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 use wit_parser::{Handle, PackageId, Resolve, Type, TypeDefKind, TypeId, TypeOwner, WorldItem};
 
 use super::{

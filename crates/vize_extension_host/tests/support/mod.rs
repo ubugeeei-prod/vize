@@ -21,7 +21,7 @@ use std::process::Command;
 use vize_extension_host::{
     Diagnostic, LoweredBlock, PartKind, Severity, SourceBlock, Stage, Witness,
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 /// Set to rewrite the committed golden pages from the in-tree Vue dialect.
 pub const BLESS_ENV: &str = "VIZE_EXTENSION_GOLDEN_BLESS";

@@ -4,7 +4,7 @@
 mod common;
 
 use common::{find_directive, lower_one, root_element, simple_content};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[test]
 fn v_model_directive() {

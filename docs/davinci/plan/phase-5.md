@@ -1,7 +1,7 @@
 # Phase 5 — Incrementality Substrate
 
 > [!NOTE]
-> **Early re-cut 2026-09-21, while phases 3 and 4 are still live**, under the plan README's [early re-cut rule](./README.md#task-format) and in the same shape as [phase 4](./phase-4.md). The maintainer's completion target (**2026-09-23**) does not leave room to wait for the phase-4 exit, and a large part of this phase — stage keys, the salsa skeleton, the Maestro request-path waves, Corsa session reuse, the resource baselines and multi-client conformance — reads only S0–S2 artifacts that already exist. Every task states its **start gate**: _startable now_ (no open earlier-phase dependency) or _gated on_ a named phase-4 task. The exit gate is unchanged and still follows the phase-4 exit (P5-14 depends on P4-17). The date orders work; it relaxes no gate or ratchet.
+> **Early re-cut 2026-09-21, while phases 3 and 4 are still live**, under the plan README's [early re-cut rule](./README.md#task-format) and in the same shape as [phase 4](./phase-4.md). The maintainer's completion target (**2026-09-23**) does not leave room to wait for the phase-4 exit, and a large part of this phase — stage keys, the salsa skeleton, the Maestro request-path waves, Corsa session reuse, the resource baselines and multi-client conformance — reads only L0–L2 artifacts that already exist. Every task states its **start gate**: _startable now_ (no open earlier-phase dependency) or _gated on_ a named phase-4 task. The exit gate is unchanged and still follows the phase-4 exit (P5-14 depends on P4-17). The date orders work; it relaxes no gate or ratchet.
 
 **The per-task contracts live in [phase-5-tasks.md](./phase-5-tasks.md) (P5-1a…P5-6c) and [phase-5-tasks-later.md](./phase-5-tasks-later.md) (P5-7…P5-14)** — Start gate / Lane / Deliverable / Steps / Acceptance / Deps / Non-goals for all 19 tasks. [`davinci-phase5-contract-status.test.ts`](../../../tests/tooling/davinci-phase5-contract-status.test.ts) enforces the structure through the shared re-cut checker.
 
@@ -28,7 +28,7 @@ Phase 4 was re-cut the same day; nothing has landed yet. These P4 tasks gate thi
 | P4-5a        | P5-6b               | The Maestro diagnostics wave consumes the single diagnostic post-pass.              |
 | P4-5c        | P5-7                | Block-level reuse (#698) applies to the single projection, not the three old ones.  |
 | P4-10a       | P5-6c               | Maestro's ecosystem services move onto providers before the last wave touches them. |
-| P4-1a        | P5-10               | Partial S2 fragments produce facts through the fact API.                            |
+| P4-1a        | P5-10               | Partial L2 fragments produce facts through the fact API.                            |
 | P4-16        | P5-13               | Plugin caching needs the spike's API shape.                                         |
 | P4-17        | P5-14               | Phase order.                                                                        |
 
@@ -47,7 +47,7 @@ Lanes own disjoint paths within this phase. Cross-phase: lane D must not edit ph
 | E    | P5-7                | `crates/vize_canon/src/projection/reuse*`                                                      |
 | F    | P5-8                | `crates/vize_canon/src/corsa_session_cache*`, `crates/vize/src/commands/check_server*`         |
 | G    | P5-9                | `tools/commands/davinci/incremental-equivalence*`, `.github/workflows/davinci-incremental.yml` |
-| H    | P5-10               | `crates/vize_s1_to_s2/src/partial*`, `tests/tooling/lsp-broken-file*`                          |
+| H    | P5-10               | `crates/vize_l1_to_l2/src/partial*`, `tests/tooling/lsp-broken-file*`                          |
 | I    | P5-11a, P5-11b      | `tools/commands/davinci/resource-budgets*`, `tests/tooling/davinci-resource-budgets*`          |
 | J    | P5-12               | `tests/editor-conformance/`, `tests/tooling/editor-conformance*`                               |
 | K    | P5-13               | `crates/vize_vitrine/src/napi/plugin_cache*`                                                   |

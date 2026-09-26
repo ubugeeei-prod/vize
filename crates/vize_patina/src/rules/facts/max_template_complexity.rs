@@ -5,8 +5,8 @@
 //! or cognitive complexity above 16, the full-corpus p95 recorded in
 //! `docs/davinci/plan/complexity-metrics.md`.
 //!
-//! The facts come from the S2 `template-complexity` fact group
-//! (`vize_s1_to_s2::pass::cfg`, read under this rule's declared demand)
+//! The facts come from the L2 `template-complexity` fact group
+//! (`vize_l1_to_l2::pass::cfg`, read under this rule's declared demand)
 //! over the lowered template — `v-if` /
 //! `v-else-if` / `v-else` branches, `v-for` loops, scoped-slot nesting and
 //! the logical and conditional operators of every evaluated expression —
@@ -44,7 +44,7 @@
 //! ```
 
 use vize_davinci::fact::{Demand, FactConsumer, FactGroup};
-use vize_s1_to_s2::pass::cfg::{
+use vize_l1_to_l2::pass::cfg::{
     COGNITIVE_WARN_ABOVE, CYCLOMATIC_WARN_ABOVE, Contribution, TemplateComplexityGroup,
     template_facts,
 };
@@ -83,7 +83,7 @@ impl Rule for MaxTemplateComplexity {
         let Some(template) = ctx.sfc_descriptor().and_then(|sfc| sfc.template.as_ref()) else {
             return;
         };
-        // A foreign template dialect or an external `src` has no S1 tree
+        // A foreign template dialect or an external `src` has no L1 tree
         // here; the rule stays silent rather than guess.
         if template.src.is_some() || template.lang.as_deref().is_some_and(|lang| lang != "html") {
             return;
@@ -104,7 +104,7 @@ impl Rule for MaxTemplateComplexity {
 
         let mut diagnostic = LintDiagnostic::warn(
             META.name,
-            vize_s0::cstr!(
+            vize_l0::cstr!(
                 "Template complexity is too high: cyclomatic {} (limit {CYCLOMATIC_WARN_ABOVE}), cognitive {} (limit {COGNITIVE_WARN_ABOVE})",
                 facts.cyclomatic,
                 facts.cognitive,
@@ -142,13 +142,13 @@ fn top_contributors(rows: &[Contribution]) -> impl Iterator<Item = &Contribution
     ranked.into_iter()
 }
 
-fn label(row: &Contribution) -> vize_s0::String {
+fn label(row: &Contribution) -> vize_l0::String {
     let nesting = if row.nesting == 0 {
-        vize_s0::String::default()
+        vize_l0::String::default()
     } else {
-        vize_s0::cstr!(" at nesting {}", row.nesting)
+        vize_l0::cstr!(" at nesting {}", row.nesting)
     };
-    vize_s0::cstr!(
+    vize_l0::cstr!(
         "{}{nesting}: +{} cognitive, +{} cyclomatic",
         row.kind.as_str(),
         row.cognitive,

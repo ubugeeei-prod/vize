@@ -35,7 +35,7 @@ const output = native.lintWithPlugins(source, [rule], {
 const fixed = applyFixes(source, output.fixes);
 ```
 
-A report names a visited S2 node. Rust assigns its authored UTF-8 byte range;
+A report names a visited L2 node. Rust assigns its authored UTF-8 byte range;
 a fix replaces that whole range. `applyFixes` preserves other source,
 deduplicates identical suggestions and refuses conflicting edits atomically.
 Apply suggestions deliberately, then rerun the compiler and linter.
@@ -134,7 +134,7 @@ const transformed = native.compileWithTransformPlugins(template, [design], {
 });
 ```
 
-The hook runs at the native pre-canonical S2 point. It can replace existing
+The hook runs at the native pre-canonical L2 point. It can replace existing
 static HTML attributes from the host's allowed set; dynamic attributes,
 structural edits, template carriers and foreign namespaces refuse. Values are
 semantic text, not entity spelling. Unknown targets or duplicate edits refuse

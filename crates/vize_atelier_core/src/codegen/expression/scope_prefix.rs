@@ -1,7 +1,7 @@
 //! Generated scope-prefix cleanup for template locals.
 
 use super::super::context::CodegenContext;
-use vize_s0::String;
+use vize_l0::String;
 
 const SLOT_PARAM_SCOPE_PREFIXES: [&str; 6] = [
     "_ctx.",
@@ -67,7 +67,7 @@ pub(crate) fn strip_scope_prefixes_for_slot_params(ctx: &CodegenContext, content
 mod tests {
     use super::strip_scope_prefixes_for_slot_params;
     use crate::{codegen::CodegenContext, options::CodegenOptions};
-    use vize_s0::String;
+    use vize_l0::String;
 
     #[test]
     fn preserves_utf8_while_stripping_scope_prefixes() {

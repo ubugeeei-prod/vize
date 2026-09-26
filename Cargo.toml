@@ -22,11 +22,11 @@ members = [
   "crates/vize_curator",
   "crates/vize_davinci",
   "crates/vize_davinci_derive",
-  "crates/vize_s2",
+  "crates/vize_l2",
   "crates/vize_impeto",
-  "crates/vize_s1_to_s2",
-  "crates/vize_s2_to_s3",
-  "crates/vize_s1",
+  "crates/vize_l1_to_l2",
+  "crates/vize_l2_to_l3",
+  "crates/vize_l1",
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",
@@ -88,14 +88,14 @@ vize_davinci_derive = { path = "crates/vize_davinci_derive", version = "=0.428.1
 vize_impeto = { path = "crates/vize_impeto", version = "=0.428.1" }
 
 # Davinci stage aliases. These are the preferred implementation names for new
-# code; S0 still aliases the published Carton package until a compatibility
+# code; L0 still aliases the published Carton package until a compatibility
 # change can move it to a physical stage name.
-vize_s0 = { package = "vize_carton", path = "crates/vize_carton", version = "=0.428.1" }
-vize_s1 = { path = "crates/vize_s1", version = "=0.428.1" }
-vize_s2 = { path = "crates/vize_s2", version = "=0.428.1" }
-vize_s3 = { package = "vize_impeto", path = "crates/vize_impeto", version = "=0.428.1" }
-vize_s1_to_s2 = { path = "crates/vize_s1_to_s2", version = "=0.428.1" }
-vize_s2_to_s3 = { path = "crates/vize_s2_to_s3", version = "=0.428.1" }
+vize_l0 = { package = "vize_carton", path = "crates/vize_carton", version = "=0.428.1" }
+vize_l1 = { path = "crates/vize_l1", version = "=0.428.1" }
+vize_l2 = { path = "crates/vize_l2", version = "=0.428.1" }
+vize_l3 = { package = "vize_impeto", path = "crates/vize_impeto", version = "=0.428.1" }
+vize_l1_to_l2 = { path = "crates/vize_l1_to_l2", version = "=0.428.1" }
+vize_l2_to_l3 = { path = "crates/vize_l2_to_l3", version = "=0.428.1" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)
 oxc_parser = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }

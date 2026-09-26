@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use tower_lsp::lsp_types::{DocumentChangeOperation, DocumentChanges, OneOf, WorkspaceEdit};
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 use crate::ide::IdeContext;
 use crate::ide::corsa_support::{CanonicalSemanticPosition, CanonicalVirtualDocument};
@@ -29,7 +29,7 @@ pub(super) fn usage_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
     let Some(template_source) = source.get(template.loc.start..template.loc.end) else {
         return Vec::new();
     };
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template_source);
     let mut drawer = Drawer::with_options(DrawerOptions {
         analyze_template_scopes: true,
@@ -191,7 +191,7 @@ fn virtual_result<'a>(
     document: &'a CanonicalVirtualDocument,
     uri: &str,
 ) -> Option<(
-    &'a vize_s0::String,
+    &'a vize_l0::String,
     &'a tower_lsp::lsp_types::Url,
     &'a str,
     &'a crate::ide::diagnostics::VirtualTsResult,

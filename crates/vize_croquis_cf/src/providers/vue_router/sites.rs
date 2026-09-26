@@ -25,7 +25,7 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, Span};
-use vize_s1::{SurfaceChild, SurfaceTree};
+use vize_l1::{SurfaceChild, SurfaceTree};
 
 use super::RouterTree;
 use super::records::VUE_ROUTER;
@@ -236,7 +236,7 @@ fn template_sites(
         return;
     }
     let allocator = vize_carton::Allocator::default();
-    let (tree, _) = vize_s1::parse(&allocator, text);
+    let (tree, _) = vize_l1::parse(&allocator, text);
     let mut walker = TemplateSites {
         tree: &tree,
         module,

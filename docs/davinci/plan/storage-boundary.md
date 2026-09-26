@@ -1,22 +1,22 @@
 # Davinci storage boundary
 
-S0 (`vize_s0`, retained package id `vize_carton`) is the storage vocabulary for
+L0 (`vize_l0`, retained package id `vize_carton`) is the storage vocabulary for
 Davinci stage code. This keeps representation decisions visible at one layer
-instead of letting each S1/S2/S3 consumer select a different standard-library
+instead of letting each L1/L2/L3 consumer select a different standard-library
 type.
 
 | Need                     | Type                              | Rule                                                                                         |
 | ------------------------ | --------------------------------- | -------------------------------------------------------------------------------------------- |
-| owned text               | `vize_s0::String`                 | This is `CompactString`; do not name `std::string::String` in stage libraries.               |
-| arena-owned sequence     | `vize_s0::Vec`                    | Use for Drop-free IR data allocated with S0.                                                 |
-| small scratch sequence   | `vize_s0::SmallVec`               | Use when a measured or grammatical inline bound exists; test both inline and spill behavior. |
+| owned text               | `vize_l0::String`                 | This is `CompactString`; do not name `std::string::String` in stage libraries.               |
+| arena-owned sequence     | `vize_l0::Vec`                    | Use for Drop-free IR data allocated with L0.                                                 |
+| small scratch sequence   | `vize_l0::SmallVec`               | Use when a measured or grammatical inline bound exists; test both inline and spill behavior. |
 | unbounded owned sequence | `alloc::vec::Vec`                 | Retain only in the exact reviewed inventory below; new or removed sites update the ledger.   |
-| hash collection          | `vize_s0::{FxHashMap, FxHashSet}` | Do not name a `std::collections` hash type in stage libraries.                               |
+| hash collection          | `vize_l0::{FxHashMap, FxHashSet}` | Do not name a `std::collections` hash type in stage libraries.                               |
 
 The `davinci-opt` files under `crates/vize_davinci/src/bin/davinci-opt/` are an
 explicit host edge. They may use `std` for paths, environment, filesystem, I/O,
 and exit codes. That exception does not extend to `vize_davinci` library code
-or to S1, S2, S3, and S1-to-S2 libraries. Importing or aliasing the `std`, `vec`,
+or to L1, L2, L3, and L1-to-L2 libraries. Importing or aliasing the `std`, `vec`,
 or `collections` modules does not bypass the boundary.
 
 ## Retained `alloc::vec::Vec` inventory
@@ -33,7 +33,7 @@ by hand; the regenerated page shows the aggregate movement of every change.
 
 | Category | Reason                                                                                                                    |
 | -------- | ------------------------------------------------------------------------------------------------------------------------- |
-| contract | Owned Folio, S2/S3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.          |
+| contract | Owned Folio, L2/L3 serialization data, and stage dumps have input-defined cardinality and form stable contracts.          |
 | analysis | Diagnostics, side tables, fact tables, filters, and verifier results grow with the input; no inline bound is established. |
 | lower    | Lowering worklists and owned results grow with source-tree shape. Bounded substructures may migrate independently.        |
 | pass     | Facts, provenance, and traversal worklists grow with the number of operations.                                            |
@@ -47,14 +47,14 @@ Mechanical conversion of source-sized buffers is not a goal because it can
 move large payloads onto the stack or add spill bookkeeping without reducing
 allocations.
 
-The S2 provenance page (`folio/provenance.rs`) and the S2-to-S3 partition
+The L2 provenance page (`folio/provenance.rs`) and the L2-to-L3 partition
 page (`partition/folio.rs`) each retain one source-sized `Vec` of owned
 records: the same contract storage as the other derived Folio pages, while
 the live provenance records and the arena-owned `PartitionFacts` stay with
 their stages.
 
-S3 value payloads use an arena-owned operand sequence. The separate owned
-`values_folio.rs` page retains a source-sized `Vec` for serialization and S0
+L3 value payloads use an arena-owned operand sequence. The separate owned
+`values_folio.rs` page retains a source-sized `Vec` for serialization and L0
 strings for tuple fields; `verify/operands.rs` appends input-sized diagnostics
 to the existing verifier buffer. These are contract and analysis storage,
 respectively, not additional owned IR sequences.
@@ -69,7 +69,7 @@ The per-scope counts for every owned-storage type are part of the generated
 [storage summary](./storage-summary.md), derived from the per-file
 [`storage-inventory.tsv`](./storage-inventory.tsv) ratchet. Zero rows matter:
 in particular, any production `alloc::string::String` path creates a new file
-or count and fails the gate instead of becoming a `no_std` escape from S0.
+or count and fails the gate instead of becoming a `no_std` escape from L0.
 
 `tests/tooling/davinci-storage-policy.test.ts` masks comments, literals, and
 `#[cfg(test)]` items; resolves root, self, group, module, and raw aliases; and

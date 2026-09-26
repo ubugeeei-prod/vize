@@ -69,7 +69,7 @@ fn line_content_end(text: RopeSlice<'_>) -> usize {
 /// string content instead of a reusable rope.
 pub fn offset_to_position_str(content: &str, offset: usize) -> Position {
     let (line, character) =
-        vize_s0::line_index::LineBreaks::Lsp.offset_to_position(content, offset);
+        vize_l0::line_index::LineBreaks::Lsp.offset_to_position(content, offset);
     Position { line, character }
 }
 
@@ -93,7 +93,7 @@ pub fn make_range(start_line: u32, start_char: u32, end_line: u32, end_char: u32
 /// For better performance with repeated conversions, use the Rope-based version.
 #[inline]
 pub fn position_to_offset_str(content: &str, line: u32, character: u32) -> usize {
-    let start = vize_s0::line_index::LineBreaks::Lsp
+    let start = vize_l0::line_index::LineBreaks::Lsp
         .line_starts(content)
         .nth(line as usize)
         .unwrap_or(content.len());

@@ -8,7 +8,7 @@ pub(super) fn log_preview(text: &str, max_bytes: usize) -> &str {
 #[cfg(test)]
 mod tests {
     use super::log_preview;
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     #[test]
     fn preserves_short_empty_and_exact_boundary_text() {

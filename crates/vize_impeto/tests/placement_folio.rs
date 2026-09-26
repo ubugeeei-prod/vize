@@ -1,11 +1,11 @@
-//! TS-16 laws for the S3 placement page.
+//! TS-16 laws for the L3 placement page.
 
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_impeto::op::OpId;
 use vize_impeto::placement::{
-    FolioPlacement, Placement, PlacementRecord, PlacementSet, S3PlacementFolio,
+    FolioPlacement, L3PlacementFolio, Placement, PlacementRecord, PlacementSet,
 };
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 const CANONICAL: &str = "\
 [s3-placement-folio]
@@ -17,7 +17,7 @@ op=5 alternatives=inline,hoist leader=- chosen=hoist
 
 ";
 
-fn folio() -> S3PlacementFolio {
+fn folio() -> L3PlacementFolio {
     let row = |op, alternative, leader: Option<u32>, chosen| {
         FolioPlacement(
             PlacementRecord::new(
@@ -28,7 +28,7 @@ fn folio() -> S3PlacementFolio {
             .with_chosen(chosen),
         )
     };
-    S3PlacementFolio {
+    L3PlacementFolio {
         placements: vec![
             row(1, Placement::Cache, None, Placement::Cache),
             row(3, Placement::Group, Some(2), Placement::Inline),
@@ -39,7 +39,7 @@ fn folio() -> S3PlacementFolio {
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let parsed = S3PlacementFolio::parse(CANONICAL).expect("canonical text parses");
+    let parsed = L3PlacementFolio::parse(CANONICAL).expect("canonical text parses");
     assert_eq!(parsed.print_to_string(FolioMode::Full).as_str(), CANONICAL);
     assert_eq!(parsed, folio());
 }
@@ -48,7 +48,7 @@ fn full_print_is_identity_on_canonical_text() {
 fn parse_print_is_structural_identity() {
     let printed = folio().print_to_string(FolioMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
-    assert_eq!(S3PlacementFolio::parse(printed.as_str()), Ok(folio()));
+    assert_eq!(L3PlacementFolio::parse(printed.as_str()), Ok(folio()));
     assert_eq!(
         folio().print_to_string(FolioMode::Display),
         folio().print_to_string(FolioMode::Full)
@@ -59,7 +59,7 @@ fn parse_print_is_structural_identity() {
 fn every_set_round_trips_including_the_empty_one() {
     for bits in 0..16u8 {
         let set = PlacementSet::from_bits(bits).expect("known bits");
-        let page = S3PlacementFolio {
+        let page = L3PlacementFolio {
             placements: vec![FolioPlacement(PlacementRecord::new(
                 OpId::new(bits.into()),
                 set,
@@ -67,7 +67,7 @@ fn every_set_round_trips_including_the_empty_one() {
             ))],
         };
         let printed = page.print_to_string(FolioMode::Full);
-        assert_eq!(S3PlacementFolio::parse(printed.as_str()), Ok(page));
+        assert_eq!(L3PlacementFolio::parse(printed.as_str()), Ok(page));
     }
     assert_eq!(PlacementSet::from_bits(16), None);
 }
@@ -108,7 +108,7 @@ fn parse_rejects_malformed_rows_exactly() {
     ];
     for (row, message) in cases {
         assert_eq!(
-            S3PlacementFolio::parse(page(row).as_str()),
+            L3PlacementFolio::parse(page(row).as_str()),
             Err(FolioError::new(4, cstr!("{message}"))),
             "{row}"
         );

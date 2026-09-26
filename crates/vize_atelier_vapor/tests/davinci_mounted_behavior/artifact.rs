@@ -1,4 +1,4 @@
-//! Native S3 generation shares the same mounted observer as the reference and
+//! Native L3 generation shares the same mounted observer as the reference and
 //! legacy routes, with independent expected DOM identities and event delivery.
 
 use crate::mounted_trace_with_identity;

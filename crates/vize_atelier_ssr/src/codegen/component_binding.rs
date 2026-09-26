@@ -1,6 +1,6 @@
 use super::SsrCodegenContext;
 use vize_atelier_core::{BindingType, RuntimeHelper};
-use vize_s0::{String, ToCompactString, camelize, capitalize};
+use vize_l0::{String, ToCompactString, camelize, capitalize};
 
 struct ComponentBinding {
     name: String,

@@ -10,7 +10,7 @@ cannot hide a flag-program drift.
 
 The durable witnesses are:
 
-- [`davinci_s2_once.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_once.rs)
+- [`davinci_s2_once.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_once.rs)
   - compares S2 and shipped DOM output and extracts the once patch sites.
 - [`consumer-migration-surfaces.md`](../../consumer-migration-surfaces.md)
   - records the updated witness inventory.

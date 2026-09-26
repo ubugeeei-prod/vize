@@ -24,7 +24,7 @@ pub mod expr_parse_probe;
 // legacy re-parse sites at P1-8/P1-9.
 #[doc(hidden)]
 pub mod retained;
-// Davinci P2-12a pre-S2 traversal baseline; deleted when P2-12b's observer
+// Davinci P2-12a pre-L2 traversal baseline; deleted when P2-12b's observer
 // counts walks through the pass manager instead.
 #[doc(hidden)]
 pub mod walk_probe;
@@ -94,4 +94,4 @@ pub use steps::{
 };
 
 /// Re-export allocator types for convenience
-pub use vize_s0::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};
+pub use vize_l0::{Allocator, Box as AllocBox, CloneIn, Vec as AllocVec};

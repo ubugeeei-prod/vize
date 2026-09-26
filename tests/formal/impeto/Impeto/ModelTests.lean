@@ -4,7 +4,7 @@ import Impeto.BehaviorTests
 
 /-!
 Fail-closed witnesses for the native `v-model` reference. Each damages one
-committed model case (scenario, state or S3 operands) so that it leaves the
+committed model case (scenario, state or L3 operands) so that it leaves the
 modelled contract, and requires a reference error rather than a guess.
 -/
 

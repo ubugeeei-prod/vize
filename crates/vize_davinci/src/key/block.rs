@@ -1,4 +1,4 @@
-//! S0 source-block keys: the content identity of one SFC block before any
+//! L0 source-block keys: the content identity of one SFC block before any
 //! stage has parsed it — the key a resident firewall compares first.
 //!
 //! A block is its kind (`template`, `script`, `style`, or a custom block
@@ -6,7 +6,7 @@
 //! a **set**: `<script setup lang="ts">` and `<script lang="ts" setup>` are
 //! the same block, so the attributes are fed in sorted order (identity
 //! excludes presentation). The block's position is not an input at all — it
-//! lives in the S0 side table beside the key.
+//! lives in the L0 side table beside the key.
 
 use super::{ArtifactKey, KeySink, schema};
 use crate::stage::Stage;

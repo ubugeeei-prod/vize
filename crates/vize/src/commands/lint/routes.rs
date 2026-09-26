@@ -7,8 +7,8 @@
 use vize_croquis_cf::providers::ProjectSources;
 use vize_croquis_cf::providers::vue_router::typing::{self, RouteDiagnostic};
 use vize_davinci::diagnostic::{PartKind, Severity};
+use vize_l0::CompactString;
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
-use vize_s0::CompactString;
 
 use super::cross_file::{CliLintFileResult, apply_sfc_cross_file_lint, merge_lint_result};
 
@@ -18,7 +18,7 @@ pub(super) fn apply_cross_file_lint(
     results: &mut [CliLintFileResult],
     help_level: HelpLevel,
     args: &super::LintArgs,
-) -> Option<vize_s0::String> {
+) -> Option<vize_l0::String> {
     let (tree, complexity) = (args.cross_file_tree, args.cross_file_complexity);
     let report = apply_sfc_cross_file_lint(results, help_level, tree, complexity);
     apply_route_typing(results, help_level);

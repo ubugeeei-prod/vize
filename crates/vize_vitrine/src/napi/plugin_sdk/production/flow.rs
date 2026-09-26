@@ -5,7 +5,7 @@ use vize_croquis::facts::{ProvideInjectFact, ProvideInjectKey};
 use vize_croquis::provide::{InjectPattern, ProvideKey};
 use vize_croquis::race::{RaceConditionRisk, RaceConditionRiskKind};
 
-fn strings(values: &[vize_s0::String]) -> Vec<&str> {
+fn strings(values: &[vize_l0::String]) -> Vec<&str> {
     values.iter().map(|value| value.as_str()).collect()
 }
 fn key(value: &ProvideKey) -> Value {

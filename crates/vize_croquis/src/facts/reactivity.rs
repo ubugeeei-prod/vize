@@ -29,7 +29,7 @@ pub enum ReactivityKey {
 /// One lattice row, or one unchanged loss.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ReactivityFact {
-    /// A reactive source classified by the S3 lattice.
+    /// A reactive source classified by the L3 lattice.
     Source(SourceFact),
     /// A reactivity loss, in the tracker's order.
     Loss(ReactivityLoss),

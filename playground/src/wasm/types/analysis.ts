@@ -187,7 +187,7 @@ export interface CrossFileComplexityContributor {
   cognitive: number;
 }
 
-/** One component's own and rendered template complexity (S2 facts). */
+/** One component's own and rendered template complexity (L2 facts). */
 export interface CrossFileComponentComplexity {
   fileId: number;
   fileName: string;

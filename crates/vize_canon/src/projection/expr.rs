@@ -1,4 +1,4 @@
-//! Template-expression projection through the S4 emission document (P4-5b).
+//! Template-expression projection through the L4 emission document (P4-5b).
 //!
 //! Template value expressions are emitted by the JS [`ExprDialect`]
 //! into one [`EmitDocument`]. The document's links are the [`ProjectionMapping`]
@@ -12,9 +12,9 @@ use oxc_ast_visit::walk::{walk_arrow_function_expression, walk_class, walk_funct
 use oxc_syntax::scope::ScopeFlags;
 use vize_atelier_core::codegen::document::EmitDocument;
 use vize_carton::{Allocator, Span, String};
-use vize_s1_to_s2::lower;
-use vize_s2::expr::{ExprDialect, ExprRef};
-use vize_s2::op::{DynamicName, Op, Region};
+use vize_l1_to_l2::lower;
+use vize_l2::expr::{ExprDialect, ExprRef};
+use vize_l2::op::{DynamicName, Op, Region};
 
 mod bindings;
 use bindings::project_bindings;
@@ -24,15 +24,15 @@ use crate::virtual_ts::ProjectionMapping;
 /// Project `source`'s template expressions into mapping rows.
 pub fn project_template_expressions(source: &str) -> ProjectionMapping {
     let allocator = Allocator::new();
-    let (tree, errors) = vize_s1::parse(&allocator, source);
+    let (tree, errors) = vize_l1::parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
     let document = project_template_expression_document(&lowered.root);
     ProjectionMapping::from_emit_document(&document)
 }
 
-/// Emit expression text and authored links from an already lowered S2 region.
+/// Emit expression text and authored links from an already lowered L2 region.
 ///
-/// Callers that own the S2 tree can reuse it instead of parsing and lowering
+/// Callers that own the L2 tree can reuse it instead of parsing and lowering
 /// the template again. The document contains expression projections only;
 /// it is not yet the checker's complete virtual TypeScript module.
 pub fn project_template_expression_document(region: &Region<'_>) -> EmitDocument {

@@ -1,6 +1,6 @@
 //! Directive disable ranges and suppression pragma handling.
 
-use vize_s0::{CompactString, directive::DirectiveSeverity};
+use vize_l0::{CompactString, directive::DirectiveSeverity};
 
 use super::{DisabledRange, LintContext, eslint_directive::parse_eslint_disable_comment};
 

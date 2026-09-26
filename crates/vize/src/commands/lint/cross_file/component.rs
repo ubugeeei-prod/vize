@@ -12,6 +12,8 @@ use std::path::{Path, PathBuf};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_croquis_cf::{CrossFileAnalyzer, FileId};
+use vize_l0::i18n::{Locale, t, t_fmt};
+use vize_l0::{Allocator, CompactString, FxHashMap, FxHashSet, cstr, line_index::LineIndex};
 use vize_patina::html_content_model::witness::{
     self, CrossComponentNesting, NestingEvidence, witnessed,
 };
@@ -19,8 +21,6 @@ use vize_patina::html_content_model::{
     ComposedFinding, Family, NodeKind, Skeleton, composable_skeleton, compose_with,
 };
 use vize_patina::{HelpLevel, LintDiagnostic, LintResult};
-use vize_s0::i18n::{Locale, t, t_fmt};
-use vize_s0::{Allocator, CompactString, FxHashMap, FxHashSet, cstr, line_index::LineIndex};
 
 use super::absent_props::absent_falsy_props;
 
@@ -103,7 +103,7 @@ pub(super) fn apply<S: AsRef<str>>(
     // TS-36: a finding is reported only when its witness chain verifies
     // against the fact base (P4-6b), never on the composer's word alone.
     let evidence = NestingEvidence::new(&skeletons, &findings);
-    let proofs = witnessed(&evidence, |_| vize_s0::String::default());
+    let proofs = witnessed(&evidence, |_| vize_l0::String::default());
     let verified: Vec<bool> = match witness::facts(&evidence) {
         Ok(manager) => {
             let view = manager.view::<CrossComponentNesting>();

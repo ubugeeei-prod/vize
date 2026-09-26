@@ -10,7 +10,7 @@
 //! twice — the batch never carries an undeclared group, and the SDK's
 //! `ctx.facts(name)` throws on one (the TS-35 rule, on the JS side).
 //!
-//! `templateScopes` comes from S2. The production boundary separately serves
+//! `templateScopes` comes from L2. The production boundary separately serves
 //! registered Croquis β groups and its six authoritative α interface pages.
 //! This fixture registry never shares a manager with production groups
 //! (`fact::ids`); an α-only demand does not compute any β registry group.

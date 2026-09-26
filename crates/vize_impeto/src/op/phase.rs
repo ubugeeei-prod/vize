@@ -1,7 +1,7 @@
 /// The named phase an Impeto artifact currently satisfies.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Phase {
-    /// S2 has lowered into flat S3 ops; partition and schedule are not fixed.
+    /// L2 has lowered into flat L3 ops; partition and schedule are not fixed.
     Built,
     /// Static/dynamic partition facts have been attached.
     Partitioned,

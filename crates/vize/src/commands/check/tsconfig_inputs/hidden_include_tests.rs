@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::TsconfigInputCache;
 

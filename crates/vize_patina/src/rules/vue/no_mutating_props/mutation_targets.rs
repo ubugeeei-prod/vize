@@ -4,7 +4,7 @@
 //! `user.name`, `count`), never a whole expression, so matching a prefix here
 //! cannot pick up an unrelated occurrence elsewhere in the expression.
 
-use vize_s0::FxHashSet;
+use vize_l0::FxHashSet;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum MutationTargetKind {
@@ -126,7 +126,7 @@ fn member_suffix_kind(suffix: &str) -> MutationTargetKind {
 #[cfg(test)]
 mod tests {
     use super::{MutationTargetKind, is_prop_mutation_target, prop_mutation_target_kind};
-    use vize_s0::FxHashSet;
+    use vize_l0::FxHashSet;
 
     #[test]
     fn prop_mutation_target_matches_member_roots() {

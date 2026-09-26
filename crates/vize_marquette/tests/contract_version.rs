@@ -6,13 +6,13 @@
 
 use std::collections::BTreeMap;
 
+use vize_l0::{String, cstr};
 use vize_marquette::contracts::{InterfaceSurface, TypeShape};
 use vize_marquette::{
     CONTRACT_SURFACE_FORMAT, CONTRACT_SURFACE_FORMAT_VERSION, CompatibilityChangeKind,
     ContractSurface, ContractVersion, canonical_surface_json, check_version_policy,
     compare_surfaces, surface_fingerprint,
 };
-use vize_s0::{String, cstr};
 
 fn surface(version: &str, protocol_version: u32, severity: &[&str]) -> ContractSurface {
     let mut types = BTreeMap::new();

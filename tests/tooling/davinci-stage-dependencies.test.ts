@@ -4,7 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import {
-  assertS0AliasConsumer,
+  assertL0AliasConsumer,
   dependency,
   metadata,
   readRepoFile,
@@ -16,31 +16,31 @@ import {
 } from "./support/davinci-stage-dependencies.ts";
 
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
-  ["vize_davinci", [["vize_carton", "vize_s0"]]],
-  ["vize_s1", [["vize_carton", "vize_s0"]]],
-  ["vize_s2", [["vize_carton", "vize_s0"]]],
+  ["vize_davinci", [["vize_carton", "vize_l0"]]],
+  ["vize_l1", [["vize_carton", "vize_l0"]]],
+  ["vize_l2", [["vize_carton", "vize_l0"]]],
   [
     "vize_impeto",
     [
-      ["vize_carton", "vize_s0"],
+      ["vize_carton", "vize_l0"],
       ["vize_davinci", null],
     ],
   ],
   [
-    "vize_s1_to_s2",
+    "vize_l1_to_l2",
     [
-      ["vize_carton", "vize_s0"],
-      ["vize_s1", null],
+      ["vize_carton", "vize_l0"],
+      ["vize_l1", null],
       ["vize_impeto", null],
-      ["vize_s2", null],
+      ["vize_l2", null],
     ],
   ],
   [
-    "vize_s2_to_s3",
+    "vize_l2_to_l3",
     [
-      ["vize_carton", "vize_s0"],
-      ["vize_s2", null],
-      ["vize_impeto", "vize_s3"],
+      ["vize_carton", "vize_l0"],
+      ["vize_l2", null],
+      ["vize_impeto", "vize_l3"],
     ],
   ],
 ]);
@@ -48,11 +48,11 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
 const publishedDavinciStages = new Set([
   "vize_davinci_derive",
   "vize_davinci",
-  "vize_s1",
-  "vize_s2",
+  "vize_l1",
+  "vize_l2",
   "vize_impeto",
-  "vize_s1_to_s2",
-  "vize_s2_to_s3",
+  "vize_l1_to_l2",
+  "vize_l2_to_l3",
 ]);
 
 test("Davinci crates import retained packages through stage aliases", () => {
@@ -76,20 +76,20 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
   const tiers = new Map<string, number>([
     ["vize_carton", 0],
     ["vize_davinci", 1],
-    ["vize_s1", 1],
-    ["vize_s2", 2],
+    ["vize_l1", 1],
+    ["vize_l2", 2],
     ["vize_impeto", 3],
-    ["vize_s1_to_s2", 4],
-    ["vize_s2_to_s3", 4],
+    ["vize_l1_to_l2", 4],
+    ["vize_l2_to_l3", 4],
   ]);
   const expectedEdges = new Map<string, string[]>([
     ["vize_carton", []],
     ["vize_davinci", ["vize_carton"]],
-    ["vize_s1", ["vize_carton"]],
-    ["vize_s2", ["vize_carton", "vize_davinci"]],
+    ["vize_l1", ["vize_carton"]],
+    ["vize_l2", ["vize_carton", "vize_davinci"]],
     ["vize_impeto", ["vize_carton", "vize_davinci"]],
-    ["vize_s1_to_s2", ["vize_carton", "vize_davinci", "vize_impeto", "vize_s1", "vize_s2"]],
-    ["vize_s2_to_s3", ["vize_carton", "vize_davinci", "vize_impeto", "vize_s2"]],
+    ["vize_l1_to_l2", ["vize_carton", "vize_davinci", "vize_impeto", "vize_l1", "vize_l2"]],
+    ["vize_l2_to_l3", ["vize_carton", "vize_davinci", "vize_impeto", "vize_l2"]],
   ]);
 
   for (const [packageName, packageTier] of tiers) {
@@ -137,21 +137,21 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
   const manifest = readRepoFile("tests", "fuzz", "Cargo.toml");
   assert.match(
     manifest,
-    /^vize_s0 = \{ package = "vize_carton", path = "\.\.\/\.\.\/crates\/vize_carton" \}$/m,
+    /^vize_l0 = \{ package = "vize_carton", path = "\.\.\/\.\.\/crates\/vize_carton" \}$/m,
   );
-  assert.match(manifest, /^vize_s1_to_s2 = \{ path = "\.\.\/\.\.\/crates\/vize_s1_to_s2" \}$/m);
-  assert.match(manifest, /^vize_s2 = \{ path = "\.\.\/\.\.\/crates\/vize_s2" \}$/m);
-  assert.match(manifest, /^vize_s2_to_s3 = \{ path = "\.\.\/\.\.\/crates\/vize_s2_to_s3" \}$/m);
+  assert.match(manifest, /^vize_l1_to_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l1_to_l2" \}$/m);
+  assert.match(manifest, /^vize_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l2" \}$/m);
+  assert.match(manifest, /^vize_l2_to_l3 = \{ path = "\.\.\/\.\.\/crates\/vize_l2_to_l3" \}$/m);
   assert.match(
     manifest,
-    /^vize_s3 = \{ package = "vize_impeto", path = "\.\.\/\.\.\/crates\/vize_impeto" \}$/m,
+    /^vize_l3 = \{ package = "vize_impeto", path = "\.\.\/\.\.\/crates\/vize_impeto" \}$/m,
   );
   assert.doesNotMatch(manifest, /^vize_(?:carton|disegno|ricalco) = /m);
 
   for (const target of [
     "folio_parse.rs",
-    "s1_lowering.rs",
-    "s2_to_s3_lowering.rs",
+    "l1_lowering.rs",
+    "l2_to_l3_lowering.rs",
     "template_compile.rs",
   ]) {
     const source = readRepoFile("tests", "fuzz", "fuzz_targets", target);
@@ -159,90 +159,90 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
   }
 });
 
-test("Davinci S2 uses the physical crate directory", () => {
+test("Davinci L2 uses the physical crate directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"crates\/vize_s2",$/m);
-  assert.deepEqual(workspaceDependencyDeclaration("vize_s2"), {
-    path: "crates/vize_s2",
-    version: `=${workspacePackage(metadata, "vize_s2").version}`,
+  assert.match(workspaceManifest, /^\s*"crates\/vize_l2",$/m);
+  assert.deepEqual(workspaceDependencyDeclaration("vize_l2"), {
+    path: "crates/vize_l2",
+    version: `=${workspacePackage(metadata, "vize_l2").version}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_disegno/u);
 });
 
-test("Davinci S1-to-S2 uses the physical crate package and directory", () => {
+test("Davinci L1-to-L2 uses the physical crate package and directory", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
-  assert.match(workspaceManifest, /^\s*"crates\/vize_s1_to_s2",$/m);
-  assert.deepEqual(workspaceDependencyDeclaration("vize_s1_to_s2"), {
-    path: "crates/vize_s1_to_s2",
-    version: `=${workspacePackage(metadata, "vize_s1_to_s2").version}`,
+  assert.match(workspaceManifest, /^\s*"crates\/vize_l1_to_l2",$/m);
+  assert.deepEqual(workspaceDependencyDeclaration("vize_l1_to_l2"), {
+    path: "crates/vize_l1_to_l2",
+    version: `=${workspacePackage(metadata, "vize_l1_to_l2").version}`,
   });
   assert.doesNotMatch(workspaceManifest, /crates\/vize_ricalco/u);
   assert.doesNotMatch(workspaceManifest, /^vize_ricalco = /m);
   assert.doesNotMatch(workspaceManifest, /package = "vize_ricalco"/u);
 
-  const loweringManifest = readRepoFile("crates", "vize_s1_to_s2", "Cargo.toml");
-  assert.match(loweringManifest, /^name = "vize_s1_to_s2"$/m);
+  const loweringManifest = readRepoFile("crates", "vize_l1_to_l2", "Cargo.toml");
+  assert.match(loweringManifest, /^name = "vize_l1_to_l2"$/m);
 
   const lockfile = readRepoFile("Cargo.lock");
-  assert.match(lockfile, /^name = "vize_s1_to_s2"$/m);
+  assert.match(lockfile, /^name = "vize_l1_to_l2"$/m);
   assert.doesNotMatch(lockfile, /\bvize_ricalco\b/u);
 });
 
-test("Davinci S3 uses the Impeto package through the stage alias", () => {
+test("Davinci L3 uses the Impeto package through the stage alias", () => {
   const workspaceManifest = readRepoFile("Cargo.toml");
   assert.match(workspaceManifest, /^\s*"crates\/vize_impeto",$/m);
-  assert.deepEqual(workspaceDependencyDeclaration("vize_s3"), {
+  assert.deepEqual(workspaceDependencyDeclaration("vize_l3"), {
     path: "crates/vize_impeto",
     version: `=${workspacePackage(metadata, "vize_impeto").version}`,
   });
-  assert.doesNotMatch(workspaceManifest, /^vize_s3 = \{ path = "crates\/vize_s3"/m);
+  assert.doesNotMatch(workspaceManifest, /^vize_l3 = \{ path = "crates\/vize_l3"/m);
 
   const impetoManifest = readRepoFile("crates", "vize_impeto", "Cargo.toml");
   assert.match(impetoManifest, /^name = "vize_impeto"$/m);
 });
 
-test("Davinci S1-to-S2 source paths use the physical S2 folio type", () => {
-  const sourceDir = path.join(repoRoot, "crates", "vize_s1_to_s2", "src");
+test("Davinci L1-to-L2 source paths use the physical L2 folio type", () => {
+  const sourceDir = path.join(repoRoot, "crates", "vize_l1_to_l2", "src");
   for (const fullPath of walkRustFiles(sourceDir)) {
     const source = fs.readFileSync(fullPath, "utf8");
     assert.doesNotMatch(
       source,
       /\bDisegnoFolio\b/u,
-      `${path.relative(sourceDir, fullPath)} must use S2Folio`,
+      `${path.relative(sourceDir, fullPath)} must use L2Folio`,
     );
   }
 });
 
-test("Davinci DOM production imports lowering through the physical S1-to-S2 package", () => {
-  const lowering = dependency(metadata, "vize_atelier_dom", "vize_s1_to_s2", null);
+test("Davinci DOM production imports lowering through the physical L1-to-L2 package", () => {
+  const lowering = dependency(metadata, "vize_atelier_dom", "vize_l1_to_l2", null);
   assert.equal(lowering.rename, null);
   const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
   assert.ok(
     dependencies.every(
       (dependency) =>
-        dependency.name !== "vize_s1_to_s2" ||
+        dependency.name !== "vize_l1_to_l2" ||
         (dependency.kind === null && dependency.rename === null),
     ),
-    "vize_atelier_dom must use the physical vize_s1_to_s2 package name in production",
+    "vize_atelier_dom must use the physical vize_l1_to_l2 package name in production",
   );
 
   for (const file of s2DomWitnessFiles()) {
     const source = readRepoFile("crates", "vize_atelier_dom", "tests", file);
-    assert.doesNotMatch(source, /\bvize_ricalco::/u, `${file} must use vize_s1_to_s2`);
+    assert.doesNotMatch(source, /\bvize_ricalco::/u, `${file} must use vize_l1_to_l2`);
   }
 });
 
-test("Atelier core S2 witnesses import lowering through the physical S1-to-S2 package", () => {
-  const lowering = dependency(metadata, "vize_atelier_core", "vize_s1_to_s2", "dev");
+test("Atelier core L2 witnesses import lowering through the physical L1-to-L2 package", () => {
+  const lowering = dependency(metadata, "vize_atelier_core", "vize_l1_to_l2", "dev");
   assert.equal(lowering.rename, null);
   const dependencies = workspacePackage(metadata, "vize_atelier_core").dependencies;
   assert.ok(
     dependencies.every(
       (dependency) =>
-        dependency.name !== "vize_s1_to_s2" ||
+        dependency.name !== "vize_l1_to_l2" ||
         (dependency.kind === "dev" && dependency.rename === null),
     ),
-    "vize_atelier_core must use the physical vize_s1_to_s2 package name",
+    "vize_atelier_core must use the physical vize_l1_to_l2 package name",
   );
 
   const testDir = path.join(repoRoot, "crates", "vize_atelier_core", "tests");
@@ -251,18 +251,18 @@ test("Atelier core S2 witnesses import lowering through the physical S1-to-S2 pa
     assert.doesNotMatch(
       source,
       /\bvize_ricalco::/u,
-      `${path.relative(testDir, fullPath)} must use vize_s1_to_s2`,
+      `${path.relative(testDir, fullPath)} must use vize_l1_to_l2`,
     );
   }
 });
 
-test("Davinci Vapor compile path imports the verified S3 bridge", () => {
+test("Davinci Vapor compile path imports the verified L3 bridge", () => {
   const vapor = workspacePackage(metadata, "vize_atelier_vapor");
   for (const [dependencyName, rename] of [
-    ["vize_s1", null],
-    ["vize_s1_to_s2", null],
-    ["vize_s2_to_s3", null],
-    ["vize_impeto", "vize_s3"],
+    ["vize_l1", null],
+    ["vize_l1_to_l2", null],
+    ["vize_l2_to_l3", null],
+    ["vize_impeto", "vize_l3"],
   ] as const) {
     const dep = dependency(metadata, "vize_atelier_vapor", dependencyName, null);
     assert.equal(dep.rename, rename);
@@ -270,13 +270,13 @@ test("Davinci Vapor compile path imports the verified S3 bridge", () => {
   }
 
   const compile = readRepoFile("crates", "vize_atelier_vapor", "src", "compile.rs");
-  const bridge = readRepoFile("crates", "vize_atelier_vapor", "src", "s3.rs");
+  const bridge = readRepoFile("crates", "vize_atelier_vapor", "src", "l3.rs");
   assert.match(compile, /lower_source_for_vapor/u);
-  assert.match(bridge, /vize_s1::parse_with_options/u);
-  assert.match(bridge, /vize_s1_to_s2::lower/u);
-  assert.match(bridge, /vize_s2_to_s3::lower/u);
-  assert.match(bridge, /vize_s3::verify::verify/u);
-  assert.ok(vapor.dependencies.some((dep) => dep.name === "vize_s2_to_s3"));
+  assert.match(bridge, /vize_l1::parse_with_options/u);
+  assert.match(bridge, /vize_l1_to_l2::lower/u);
+  assert.match(bridge, /vize_l2_to_l3::lower/u);
+  assert.match(bridge, /vize_l3::verify::verify/u);
+  assert.ok(vapor.dependencies.some((dep) => dep.name === "vize_l2_to_l3"));
 });
 
 const s0AliasConsumers = [
@@ -296,16 +296,16 @@ const s0AliasConsumers = [
 ] as const;
 
 for (const [packageName, label, parts] of s0AliasConsumers) {
-  test(`${label} imports S0 storage through the stage alias`, () => {
-    assertS0AliasConsumer({ packageName, label, directory: path.join(repoRoot, ...parts) });
+  test(`${label} imports L0 storage through the stage alias`, () => {
+    assertL0AliasConsumer({ packageName, label, directory: path.join(repoRoot, ...parts) });
   });
 }
 
-test("Canon content-mapper imports S0 storage through the stage alias", () => {
+test("Canon content-mapper imports L0 storage through the stage alias", () => {
   const manifest = readRepoFile("crates", "vize_canon", "Cargo.toml");
-  assert.match(manifest, /^vize_s0\.workspace = true$/m);
+  assert.match(manifest, /^vize_l0\.workspace = true$/m);
   assert.doesNotMatch(manifest, /^vize_carton\.workspace = true$/m);
-  assertS0AliasConsumer({
+  assertL0AliasConsumer({
     packageName: "vize_canon",
     label: "Canon content-mapper",
     directory: path.join(repoRoot, "crates", "vize_canon", "src", "batch", "virtual_project"),
@@ -313,11 +313,11 @@ test("Canon content-mapper imports S0 storage through the stage alias", () => {
   });
 });
 
-test("Atelier core compiler macros import S0 storage through the stage alias", () => {
+test("Atelier core compiler macros import L0 storage through the stage alias", () => {
   const manifest = readRepoFile("crates", "vize_atelier_core", "Cargo.toml");
-  assert.match(manifest, /^vize_s0 = \{ workspace = true \}$/m);
+  assert.match(manifest, /^vize_l0 = \{ workspace = true \}$/m);
   assert.doesNotMatch(manifest, /^vize_carton\.workspace = true$/m);
-  assertS0AliasConsumer({
+  assertL0AliasConsumer({
     packageName: "vize_atelier_core",
     label: "Atelier core compiler",
     directory: path.join(repoRoot, "crates", "vize_atelier_core", "src"),
@@ -325,6 +325,6 @@ test("Atelier core compiler macros import S0 storage through the stage alias", (
 
   for (const relative of ["lib.rs", "test_macros.rs"]) {
     const source = readRepoFile("crates", "vize_atelier_core", "src", relative);
-    assert.doesNotMatch(source, /\bvize_carton\b/u, `${relative} must use vize_s0 or $crate`);
+    assert.doesNotMatch(source, /\bvize_carton\b/u, `${relative} must use vize_l0 or $crate`);
   }
 });

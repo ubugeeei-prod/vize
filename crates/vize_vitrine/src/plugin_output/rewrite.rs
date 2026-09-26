@@ -10,7 +10,7 @@ use oxc_codegen::{Codegen, CodegenOptions};
 use oxc_parser::{ParseOptions, Parser};
 use oxc_span::SourceType;
 use serde::Deserialize;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]

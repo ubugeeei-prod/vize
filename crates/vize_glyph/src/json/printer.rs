@@ -1,7 +1,7 @@
 //! Pretty-printer for the [`super::ast`] value tree.
 
 use super::ast::{Comment, Node};
-use vize_s0::String;
+use vize_l0::String;
 
 pub(super) struct Printer<'a> {
     pub(super) indent: &'a str,

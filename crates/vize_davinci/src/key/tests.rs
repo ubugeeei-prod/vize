@@ -1,6 +1,6 @@
 use core::fmt::{self, Write as _};
 
-use vize_s0::Span;
+use vize_l0::Span;
 
 use super::{ArtifactKey, KeySink, KeyedArtifact, rebase, schema, source_block_key};
 use crate::stage::Stage;

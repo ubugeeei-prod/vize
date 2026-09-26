@@ -10,7 +10,7 @@ use std::io::{self, BufRead, Write};
 
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use crate::contract::{Capability, GuestError, InputDialectGuest, LoweredBlock, SourceBlock};
 use crate::expression::{Analysis, ExpressionBatch, ExpressionDialectGuest};

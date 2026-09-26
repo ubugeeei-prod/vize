@@ -1,5 +1,5 @@
 // Davinci P4-12c — the pinned `pug` package as the independent oracle for
-// the pug S1 dialect. The committed `.html` of every matrix fixture must be
+// the pug L1 dialect. The committed `.html` of every matrix fixture must be
 // byte-identical to what `pug@3.0.4` renders for the fixture's
 // `<template lang="pug">` content exactly as `@vue/compiler-sfc` hands it
 // over (dedented, `doctype: "html"`, `pretty: false`); the Rust suites then

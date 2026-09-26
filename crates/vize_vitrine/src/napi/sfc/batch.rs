@@ -3,7 +3,7 @@ use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
 use rayon::prelude::{IntoParallelRefIterator, ParallelIterator};
 use std::time::Instant;
-use vize_s0::FxHashMap;
+use vize_l0::FxHashMap;
 
 use super::{
     batch_helpers::{
@@ -95,7 +95,7 @@ fn compile_sfc_batch_inner(
     );
     let read_inputs: Vec<_> = files
         .par_iter()
-        .map(|path| match vize_s0::source_io::read_to_string(path) {
+        .map(|path| match vize_l0::source_io::read_to_string(path) {
             Ok(source) => Ok((path.clone(), source)),
             Err(_) => Err(()),
         })
@@ -136,7 +136,7 @@ fn compile_sfc_batch_inner(
         .par_iter()
         .map(|job| {
             let source_len = job.input_bytes;
-            let filename: vize_s0::CompactString = job.path.to_string_lossy().as_ref().into();
+            let filename: vize_l0::CompactString = job.path.to_string_lossy().as_ref().into();
             let parse_opts = SfcParseOptions {
                 filename: filename.clone(),
                 ..Default::default()

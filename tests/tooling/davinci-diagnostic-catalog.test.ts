@@ -25,7 +25,7 @@ import {
   croquisProblems,
   parseCanonCodes,
   parseCroquisCodes,
-  parseS3Codes,
+  parseL3Codes,
   s3Problems,
 } from "./davinci-diagnostic-catalog-producers.ts";
 
@@ -112,13 +112,13 @@ test("TS-53: every croquis cross-file code is catalogued in en, ja and zh", () =
   ]);
 });
 
-test("TS-53: every S3 verifier code is catalogued in en, ja and zh", () => {
-  const codes = parseS3Codes();
+test("TS-53: every L3 verifier code is catalogued in en, ja and zh", () => {
+  const codes = parseL3Codes();
   assert.equal(codes.size, 10, "the parser reads every ViolationCode arm");
   const entries = catalogEntries();
   assert.deepEqual(s3Problems(codes, entries), []);
-  const dropped = entries.filter(([key]) => key !== "s3/S3V001.message");
-  assert.deepEqual(s3Problems(codes, dropped), ["`s3/S3V001.message` is not catalogued"]);
+  const dropped = entries.filter(([key]) => key !== "s3/L3V001.message");
+  assert.deepEqual(s3Problems(codes, dropped), ["`s3/L3V001.message` is not catalogued"]);
 });
 
 test("TS-53: the catalog check fails on a removed, emptied or drifted entry", () => {
@@ -210,7 +210,7 @@ test("TS-53: vize explain has one generated page per diagnostic producer code", 
     ...[...parseCompilerCodes().codes.values()].sort(),
     ...[...parseRules().keys()].sort(),
     ...[...parseCanonCodes().help.values()].map((key) => key.replace(/\.help$/u, "")).sort(),
-    ...[...parseS3Codes().values()].sort(),
+    ...[...parseL3Codes().values()].sort(),
     ...parseCroquisCodes(),
   ];
   const en = explainCodes("en");

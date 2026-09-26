@@ -3,7 +3,7 @@
 use std::{path::PathBuf, str::FromStr};
 
 use lsp_types::{DidChangeWatchedFilesParams, FileChangeType, FileEvent, Uri};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::EditorLspSession;
 

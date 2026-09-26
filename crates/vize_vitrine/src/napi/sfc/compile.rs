@@ -1,7 +1,7 @@
 use napi::{Result, Status};
 use napi_derive::napi;
 use vize_atelier_sfc::module_shape::finalize_module_output_with_map;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::types::ModuleShapeNapi;
 use super::{
@@ -27,7 +27,7 @@ pub fn compile_sfc(
     };
 
     let opts = options.unwrap_or_default();
-    let filename: vize_s0::CompactString =
+    let filename: vize_l0::CompactString =
         opts.filename.as_deref().unwrap_or("anonymous.vue").into();
     let parse_opts = SfcParseOptions {
         filename: filename.clone(),
@@ -73,7 +73,7 @@ pub fn compile_sfc(
     let custom_elements = vize_atelier_core::options::CustomElementMatcher::from_patterns(
         crate::types::custom_element_patterns(opts.custom_elements.as_deref()),
     );
-    let external_scope_id: Option<vize_s0::CompactString> = opts
+    let external_scope_id: Option<vize_l0::CompactString> = opts
         .scope_id
         .as_ref()
         .map(|sid| sid.strip_prefix("data-v-").unwrap_or(sid).into());

@@ -1,8 +1,8 @@
 //! TS-52 for the Spolvero stage ladder (C-2/C-3/C-5): `ladder_pages` feeds
-//! every rung the Davinci pipeline has today - S1, the S2 lowering, the
-//! transform plan's walks, one page per executed transform pass, and the S3
+//! every rung the Davinci pipeline has today - L1, the L2 lowering, the
+//! transform plan's walks, one page per executed transform pass, and the L3
 //! graph / partition / value pages - from the real stages. The feed validates against the committed schema, every
-//! page is pinned by exact equality, and the S2/S3 spans index the S1 page
+//! page is pinned by exact equality, and the L2/L3 spans index the L1 page
 //! (the provenance property the playground's source highlighting relies on).
 
 #![expect(
@@ -18,7 +18,7 @@ use vize_curator::inspector::{SpolveroPage, ladder_pages, spolvero_value};
 
 const TEMPLATE: &str = "\n  <div :class=\"cls\">{{ msg }}</div>\n  <Comp v-model=\"x\"><template #a>hi</template></Comp>\n";
 
-const S2_PAGE: &str = r#"[disegno]
+const L2_PAGE: &str = r#"[disegno]
 ops=8
 
 [disegno.ops]
@@ -36,7 +36,7 @@ ui.component Comp @39:90
 
 /// The executed transform plan: the two mandatory barriers own a walk each,
 /// and the two optional analyses share the third.
-const S2_PLAN_PAGE: &str = "[fusion-plan-folio]
+const L2_PLAN_PAGE: &str = "[fusion-plan-folio]
 stage=s2
 walks=3
 
@@ -48,7 +48,7 @@ walk=2 pass=template-complexity kind=optional fusability=fusable
 
 ";
 
-const S2_PROVENANCE_PAGE: &str = r##"[s2-provenance-folio]
+const L2_PROVENANCE_PAGE: &str = r##"[s2-provenance-folio]
 
 [s2-provenance-folio.records]
 rule=condense.drop-whitespace node=- before="\n  " after="" @0:3
@@ -69,7 +69,7 @@ rule=pass.hoist-static.fact node=3 before="ui.component" after="level=not-static
 
 "##;
 
-const S3_PAGE: &str = "[s3-folio]
+const L3_PAGE: &str = "[s3-folio]
 phase=built
 
 [s3-folio.regions]
@@ -108,7 +108,7 @@ id=6 owner=7 region=3 span=70:72
 
 ";
 
-const S3_PARTITION_PAGE: &str = "[s3-partition-folio]
+const L3_PARTITION_PAGE: &str = "[s3-partition-folio]
 
 [s3-partition-folio.ops]
 op=0 kind=static span=3:36
@@ -122,7 +122,7 @@ op=7 kind=dynamic span=70:72
 
 ";
 
-const S3_VALUES_PAGE: &str = r#"[s3-values-folio]
+const L3_VALUES_PAGE: &str = r#"[s3-values-folio]
 
 [s3-values-folio.operands]
 operand=[0,"tag",null,null,null,"literal","div","",3,36]
@@ -171,22 +171,22 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
     let feed = spolvero_value("analyze-sfc", pages.clone());
     assert_eq!(schema_check::validate(&load_schema(), &feed, "$"), Ok(()));
 
-    // The artifact-selected S2 plan: slot carriers and a model binding keep
+    // The artifact-selected L2 plan: slot carriers and a model binding keep
     // both mandatory barriers, the default profile keeps the optional static
     // and complexity analyses. Every Vue 3 pass preserves the tree, so its page is the
     // lowering's page byte for byte - "which pass changed the folio" is none.
     let expected = [
         ("s1", "parse", TEMPLATE),
-        ("s2", "lower", S2_PAGE),
-        ("s2-plan", "transform", S2_PLAN_PAGE),
-        ("s2", "v-slot", S2_PAGE),
-        ("s2", "v-model", S2_PAGE),
-        ("s2", "hoist-static", S2_PAGE),
-        ("s2", "template-complexity", S2_PAGE),
-        ("s2-provenance", "transform", S2_PROVENANCE_PAGE),
-        ("s3", "lower", S3_PAGE),
-        ("s3-partition", "lower", S3_PARTITION_PAGE),
-        ("s3-values", "lower", S3_VALUES_PAGE),
+        ("s2", "lower", L2_PAGE),
+        ("s2-plan", "transform", L2_PLAN_PAGE),
+        ("s2", "v-slot", L2_PAGE),
+        ("s2", "v-model", L2_PAGE),
+        ("s2", "hoist-static", L2_PAGE),
+        ("s2", "template-complexity", L2_PAGE),
+        ("s2-provenance", "transform", L2_PROVENANCE_PAGE),
+        ("s3", "lower", L3_PAGE),
+        ("s3-partition", "lower", L3_PARTITION_PAGE),
+        ("s3-values", "lower", L3_VALUES_PAGE),
     ];
     let expected_pages: Vec<serde_json::Value> = expected
         .iter()
@@ -206,7 +206,7 @@ fn the_ladder_validates_and_pins_every_rung_exactly() {
 }
 
 #[test]
-fn the_s2_pass_pages_follow_the_artifact_selected_plan() {
+fn the_l2_pass_pages_follow_the_artifact_selected_plan() {
     // No slot carrier, no model: only the optional analyses run.
     let plain = ladder_pages("src/Plain.vue", "<p>{{ a }}</p>");
     assert_eq!(
@@ -237,9 +237,9 @@ fn the_s2_pass_pages_follow_the_artifact_selected_plan() {
 }
 
 #[test]
-fn stage_spans_index_the_s1_page() {
-    // The S2/S3 `@start:end` / `span=start:end` offsets are byte offsets into
-    // the S1 page text - the authored template - which is what lets a viewer
+fn stage_spans_index_the_l1_page() {
+    // The L2/L3 `@start:end` / `span=start:end` offsets are byte offsets into
+    // the L1 page text - the authored template - which is what lets a viewer
     // map a selected op back to its source without re-deriving anything.
     let pages = ladder_pages("src/App.vue", TEMPLATE);
     let s1 = pages[0].text.as_str();
@@ -255,8 +255,8 @@ fn stage_spans_index_the_s1_page() {
 
 #[test]
 fn a_malformed_template_still_climbs_every_rung() {
-    // Every stage is total: typed holes in S1, kept fragments in S2, and an
-    // S3 graph over whatever S2 kept. The S1 page is still the authored bytes.
+    // Every stage is total: typed holes in L1, kept fragments in L2, and an
+    // L3 graph over whatever L2 kept. The L1 page is still the authored bytes.
     let template = "\n<div class=\"open>{{ msg }\n";
     let pages = ladder_pages("src/Broken.vue", template);
     let s2 = "[disegno]\nops=1\n\n[disegno.ops]\nui.element div @1:27\n  attr class=\"open>{{ msg }\\n\" @6:27\n\n";

@@ -13,7 +13,7 @@ use std::{
 };
 
 use vize_croquis_cf::{CrossFileAnalyzer, CrossFileDiagnostic, CrossFileResult, FileId};
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use crate::{
     AnalysisProvenance, DoctorFinding, DoctorReport, FindingEvidence, FindingFix, FixSafety,

@@ -5,11 +5,11 @@ import { metadata, workspacePackage, type Package } from "./support/davinci-stag
 
 const publishedDavinciStages = new Set([
   "vize_davinci",
-  "vize_s1",
-  "vize_s2",
+  "vize_l1",
+  "vize_l2",
   "vize_impeto",
-  "vize_s1_to_s2",
-  "vize_s2_to_s3",
+  "vize_l1_to_l2",
+  "vize_l2_to_l3",
 ]);
 
 function isPublishable(pkg: Package): boolean {
@@ -38,7 +38,7 @@ test("Feature values resolve unpublished stages through dependency keys", () => 
   const pkg: FeatureOwner = {
     dependencies: [
       {
-        name: "vize_s1_to_s2",
+        name: "vize_l1_to_l2",
         features: [],
         rename: "stage_alias",
         kind: null,
@@ -48,9 +48,9 @@ test("Feature values resolve unpublished stages through dependency keys", () => 
     ],
   };
 
-  assert.equal(referencedWorkspaceFeaturePackage(pkg, "dep:stage_alias"), "vize_s1_to_s2");
-  assert.equal(referencedWorkspaceFeaturePackage(pkg, "stage_alias?/legacy"), "vize_s1_to_s2");
-  assert.equal(referencedWorkspaceFeaturePackage(pkg, "vize_s1"), null);
+  assert.equal(referencedWorkspaceFeaturePackage(pkg, "dep:stage_alias"), "vize_l1_to_l2");
+  assert.equal(referencedWorkspaceFeaturePackage(pkg, "stage_alias?/legacy"), "vize_l1_to_l2");
+  assert.equal(referencedWorkspaceFeaturePackage(pkg, "vize_l1"), null);
   assert.equal(referencedWorkspaceFeaturePackage(pkg, "local_feature"), null);
 });
 
@@ -63,7 +63,7 @@ test("Davinci stage crates are published before a production feature can select 
   }
 });
 
-test("DOM production keeps the published S2 renderer available for profiling", () => {
+test("DOM production keeps the published L2 renderer available for profiling", () => {
   const dom = workspacePackage(metadata, "vize_atelier_dom");
   assert.deepEqual(dom.features, {
     legacy: ["vize_atelier_core/legacy"],
@@ -102,9 +102,9 @@ test("DOM production keeps the published S2 renderer available for profiling", (
       features: [],
     },
     {
-      name: "vize_s1_to_s2",
+      name: "vize_l1_to_l2",
       kind: null,
-      req: versionRequirement("vize_s1_to_s2"),
+      req: versionRequirement("vize_l1_to_l2"),
       rename: null,
       optional: false,
       // TypeScript templates are part of the public DOM compiler contract, so
@@ -114,7 +114,7 @@ test("DOM production keeps the published S2 renderer available for profiling", (
   ]);
 });
 
-test("Vapor production selects only published stages for the S3 bridge", () => {
+test("Vapor production selects only published stages for the L3 bridge", () => {
   const stageEdges = workspacePackage(metadata, "vize_atelier_vapor")
     .dependencies.filter(
       (dependency) => dependency.kind === null && publishedDavinciStages.has(dependency.name),
@@ -132,35 +132,35 @@ test("Vapor production selects only published stages for the S3 bridge", () => {
     {
       name: "vize_impeto",
       req: versionRequirement("vize_impeto"),
-      rename: "vize_s3",
+      rename: "vize_l3",
       optional: false,
       features: [],
     },
     {
-      name: "vize_s1",
-      req: versionRequirement("vize_s1"),
+      name: "vize_l1",
+      req: versionRequirement("vize_l1"),
       rename: null,
       optional: false,
       features: [],
     },
     {
-      name: "vize_s1_to_s2",
-      req: versionRequirement("vize_s1_to_s2"),
+      name: "vize_l1_to_l2",
+      req: versionRequirement("vize_l1_to_l2"),
       rename: null,
       optional: false,
       features: [],
     },
-    // Retained S2 expression ASTs move into the Vapor output arena.
+    // Retained L2 expression ASTs move into the Vapor output arena.
     {
-      name: "vize_s2",
-      req: versionRequirement("vize_s2"),
+      name: "vize_l2",
+      req: versionRequirement("vize_l2"),
       rename: null,
       optional: false,
       features: [],
     },
     {
-      name: "vize_s2_to_s3",
-      req: versionRequirement("vize_s2_to_s3"),
+      name: "vize_l2_to_l3",
+      req: versionRequirement("vize_l2_to_l3"),
       rename: null,
       optional: false,
       features: [],
@@ -168,7 +168,7 @@ test("Vapor production selects only published stages for the S3 bridge", () => {
   ]);
 });
 
-test("SSR production selects only published stages for the S4 bridge", () => {
+test("SSR production selects only published stages for the L4 bridge", () => {
   const stageEdges = workspacePackage(metadata, "vize_atelier_ssr")
     .dependencies.filter(
       (dependency) => dependency.kind === null && publishedDavinciStages.has(dependency.name),
@@ -182,9 +182,9 @@ test("SSR production selects only published stages for the S4 bridge", () => {
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
 
-  // P3-8 emits from the S4 plan: S2 side tables are keyed by `vize_davinci`
+  // P3-8 emits from the L4 plan: L2 side tables are keyed by `vize_davinci`
   // node ids, and the transform expression rewrite erases TypeScript exactly
-  // like the S2 DOM lane.
+  // like the L2 DOM lane.
   assert.deepEqual(stageEdges, [
     {
       name: "vize_davinci",
@@ -196,34 +196,34 @@ test("SSR production selects only published stages for the S4 bridge", () => {
     {
       name: "vize_impeto",
       req: versionRequirement("vize_impeto"),
-      rename: "vize_s3",
+      rename: "vize_l3",
       optional: false,
       features: [],
     },
     {
-      name: "vize_s1",
-      req: versionRequirement("vize_s1"),
+      name: "vize_l1",
+      req: versionRequirement("vize_l1"),
       rename: null,
       optional: false,
       features: [],
     },
     {
-      name: "vize_s1_to_s2",
-      req: versionRequirement("vize_s1_to_s2"),
+      name: "vize_l1_to_l2",
+      req: versionRequirement("vize_l1_to_l2"),
       rename: null,
       optional: false,
       features: ["typescript"],
     },
     {
-      name: "vize_s2",
-      req: versionRequirement("vize_s2"),
+      name: "vize_l2",
+      req: versionRequirement("vize_l2"),
       rename: null,
       optional: false,
       features: [],
     },
     {
-      name: "vize_s2_to_s3",
-      req: versionRequirement("vize_s2_to_s3"),
+      name: "vize_l2_to_l3",
+      req: versionRequirement("vize_l2_to_l3"),
       rename: null,
       optional: false,
       features: [],

@@ -1,10 +1,10 @@
-//! Own template complexity per component: the S2 `template-complexity`
+//! Own template complexity per component: the L2 `template-complexity`
 //! facts (Davinci P4-9a), owned, with line/column positions so reports can
 //! say where the complexity comes from without re-reading the file.
 
 use vize_croquis::sfc::{SfcParseOptions, parse_sfc};
 use vize_davinci::fact::{Demand, FactConsumer, FactGroup};
-use vize_s1_to_s2::pass::cfg::{self, ComplexityFacts, DecisionKind, TemplateComplexityGroup};
+use vize_l1_to_l2::pass::cfg::{self, ComplexityFacts, DecisionKind, TemplateComplexityGroup};
 
 /// The cross-file analyzer as a fact consumer: it reads the template
 /// complexity group and nothing else (TS-35).

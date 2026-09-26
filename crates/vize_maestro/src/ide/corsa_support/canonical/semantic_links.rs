@@ -1,7 +1,7 @@
 use tower_lsp::lsp_types::{Location, Url};
 use vize_canon::virtual_ts::VizeSemanticLinkKind;
 use vize_canon::{LspPosition, LspRange};
-use vize_s0::{FxHashMap, FxHashSet, String};
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 use super::{CanonicalVirtualDocument, location_matches_uri};
 use crate::ide::diagnostics::VirtualTsResult;
@@ -114,8 +114,8 @@ fn same_authored_uri(left: &tower_lsp::lsp_types::Url, right: &tower_lsp::lsp_ty
     }
     match (left.to_file_path(), right.to_file_path()) {
         (Ok(left), Ok(right)) => {
-            vize_s0::path::canonicalize_non_verbatim(&left)
-                == vize_s0::path::canonicalize_non_verbatim(&right)
+            vize_l0::path::canonicalize_non_verbatim(&left)
+                == vize_l0::path::canonicalize_non_verbatim(&right)
         }
         _ => false,
     }

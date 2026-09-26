@@ -252,7 +252,7 @@ impl PassFailure {
 
 /// Run `pipeline`'s plan, firing `observer`'s hooks around each pass.
 ///
-/// `step` is the pass body. P2-2's non-goal stands — there is no S2 to run
+/// `step` is the pass body. P2-2's non-goal stands — there is no L2 to run
 /// over until P2-5a, and no catalogue binding a name to an implementation
 /// until P2-9 — so the *plan* is executed here and the bodies are the
 /// caller's. That is also what makes the zero-cost claim measurable before any

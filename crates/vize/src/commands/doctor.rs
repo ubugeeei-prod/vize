@@ -20,7 +20,7 @@ use vize_doctor::{
     DoctorCategory, DoctorFilterError, DoctorReport, FindingConfidence, FindingSeverity,
     ReporterFailure, SarifSourceError, application_analysis::ApplicationAnalysisError,
 };
-use vize_s0::String;
+use vize_l0::String;
 
 use self::{
     analysis::analyze_application,

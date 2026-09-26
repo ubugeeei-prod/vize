@@ -166,7 +166,7 @@ export function classify(spelling) {
   return buckets;
 }
 
-// Shard key: the first two directories of the path (`crates/vize_s2`,
+// Shard key: the first two directories of the path (`crates/vize_l2`,
 // `playground/src`), or the directory itself for shallower files.
 function areaOf(file) {
   const dirs = file.split("/").slice(0, -1);

@@ -1,7 +1,7 @@
 //! `vize lib list | search | info` and item spec resolution.
 
 use serde::Serialize;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::LibContext;
 use super::error::{LibError, LibResult};

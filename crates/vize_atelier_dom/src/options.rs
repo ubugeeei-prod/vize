@@ -3,8 +3,8 @@
 use serde::{Deserialize, Serialize};
 use vize_atelier_core::options::{BindingMetadata, CodegenMode};
 use vize_croquis::Croquis;
-use vize_s0::String;
-use vize_s0::config::VueVersion;
+use vize_l0::String;
+use vize_l0::config::VueVersion;
 
 /// VDOM compiler options
 #[derive(Debug, Serialize, Deserialize)]

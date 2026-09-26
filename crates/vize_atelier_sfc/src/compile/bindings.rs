@@ -7,7 +7,7 @@ use oxc_ast::ast::{
     BindingPattern, Declaration, Expression, ImportDeclarationSpecifier, Statement,
     VariableDeclaration, VariableDeclarationKind,
 };
-use vize_s0::{ToCompactString, profile};
+use vize_l0::{ToCompactString, profile};
 
 use crate::types::{BindingMetadata, BindingType};
 

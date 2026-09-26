@@ -15,9 +15,9 @@ use vize_dialect_moonbit::host::Replay;
 use vize_dialect_moonbit::projection::{Role, project};
 use vize_dialect_moonbit::render::render;
 use vize_dialect_moonbit::sfc::{SfcError, split};
-use vize_s0::{Allocator, Span};
-use vize_s2::expr::ExprRef;
-use vize_s2::expr::capability::ExprDialect;
+use vize_l0::{Allocator, Span};
+use vize_l2::expr::ExprRef;
+use vize_l2::expr::capability::ExprDialect;
 
 use support::{FIXTURES, golden, pinned_toolchain, read};
 
@@ -59,12 +59,12 @@ fn capability_answers_are_pinned_per_position() {
         let source = read(name, ".vue");
         let allocator = Allocator::new();
         let projection = project(&allocator, &split(&source).unwrap(), "App.vue");
-        let mut facts = vize_s0::String::default();
+        let mut facts = vize_l0::String::default();
         for position in &projection.positions {
             let expr = ExprRef::Foreign(position.expr);
             let mut names = Vec::new();
             MoonBitDialect
-                .enumerate_bindings(expr, &mut |name| names.push(vize_s0::String::from(name)));
+                .enumerate_bindings(expr, &mut |name| names.push(vize_l0::String::from(name)));
             let span = expr.span();
             let _ = writeln!(
                 facts,

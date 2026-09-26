@@ -159,8 +159,8 @@ fn the_text_output_shows_where_the_complexity_comes_from() {
     let output = format_results(
         &[result],
         &[(
-            vize_s0::String::from("Dashboard.vue"),
-            vize_s0::String::from(COMPLEX),
+            vize_l0::String::from("Dashboard.vue"),
+            vize_l0::String::from(COMPLEX),
         )],
         OutputFormat::Text,
     );

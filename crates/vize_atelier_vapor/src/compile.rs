@@ -13,8 +13,8 @@ mod result;
 pub use result::VaporCompileResult;
 
 use crate::generate::spans::VaporSourceSpans;
+use crate::l3::{self, VaporL3BridgeOptions, VaporL3BridgeStatus};
 use crate::lower as vapor_lower;
-use crate::s3::{self, VaporS3BridgeOptions, VaporS3BridgeStatus};
 use vize_atelier_core::{
     CompilerError, Namespace,
     lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
@@ -56,7 +56,7 @@ pub struct VaporCompilerOptions {
     /// Enable experimental `v-match` / `v-when` patterned template desugaring.
     pub experimental_patterned_template: bool,
     /// Davinci A/B and baseline instrumentation: always select the retained
-    /// (pre-S3) lane. Not a user option; production callers leave it unset.
+    /// (pre-L3) lane. Not a user option; production callers leave it unset.
     #[doc(hidden)]
     pub davinci_retained_lane: bool,
 }
@@ -128,15 +128,15 @@ fn compile_vapor_inner_with_stack<'a>(
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     #[cfg(feature = "davinci-benchmark")]
     let options = benchmark::apply(options);
-    // The native lane parses the source through S1 itself. It admits only
-    // sources the legacy parser reports nothing for (S1 keeps the tokenizer's
-    // codes and S2 refuses every recovery rule; `s3/tests/parser_agreement.rs`
+    // The native lane parses the source through L1 itself. It admits only
+    // sources the legacy parser reports nothing for (L1 keeps the tokenizer's
+    // codes and L2 refuses every recovery rule; `s3/tests/parser_agreement.rs`
     // pins this over the fixture corpus and its malformed variants), so an
     // admitted source never builds the legacy tree it would discard.
-    let s3_bridge_status = s3::lower_source_for_vapor(
+    let l3_bridge_status = l3::lower_source_for_vapor(
         allocator,
         source,
-        VaporS3BridgeOptions {
+        VaporL3BridgeOptions {
             ssr: options.ssr,
             custom_renderer: options.custom_renderer,
             experimental_in_tag_comments: options.experimental_in_tag_comments,
@@ -147,7 +147,7 @@ fn compile_vapor_inner_with_stack<'a>(
             // authored and binding metadata only steers the shared generator.
             prefixed_binding_metadata: options.binding_metadata.is_some()
                 && options.prefix_identifiers,
-            // S3 lowering currently implements only Vue's default condense
+            // L3 lowering currently implements only Vue's default condense
             // mode; preserve must use the parser-backed retained lane.
             retained_lane: options.davinci_retained_lane
                 || vize_atelier_core::parser::current_whitespace_strategy(
@@ -163,7 +163,7 @@ fn compile_vapor_inner_with_stack<'a>(
     let emit = |ir: &crate::ir::RootIRNode<'a>, errors, spans: Option<&VaporSourceSpans>| {
         generate(ir, &options, &experimental_options, errors, spans)
     };
-    if let VaporS3BridgeStatus::Accepted(artifact) = s3_bridge_status {
+    if let VaporL3BridgeStatus::Accepted(artifact) = l3_bridge_status {
         debug_assert!(
             parse_with_options_custom_elements_and_template_syntax(
                 allocator,
@@ -212,16 +212,16 @@ fn compile_vapor_inner_with_stack<'a>(
     }
 
     // A diagnosed source keeps the legacy lane whatever the bridge concluded.
-    let s3_bridge_status = if parser_diagnostics.is_empty() {
-        s3_bridge_status
+    let l3_bridge_status = if parser_diagnostics.is_empty() {
+        l3_bridge_status
     } else {
-        VaporS3BridgeStatus::Legacy(s3::LegacyReason::SurfaceSemantics)
+        VaporL3BridgeStatus::Legacy(l3::LegacyReason::SurfaceSemantics)
     };
-    s3::record_selection(&s3_bridge_status);
-    match s3_bridge_status {
+    l3::record_selection(&l3_bridge_status);
+    match l3_bridge_status {
         // Every accepted artifact returned above, including emission failures.
-        VaporS3BridgeStatus::Accepted(_) => {}
-        VaporS3BridgeStatus::Rejected(error_messages) => {
+        VaporL3BridgeStatus::Accepted(_) => {}
+        VaporL3BridgeStatus::Rejected(error_messages) => {
             return (
                 VaporCompileResult {
                     code: String::default(),
@@ -232,7 +232,7 @@ fn compile_vapor_inner_with_stack<'a>(
                 parser_diagnostics,
             );
         }
-        VaporS3BridgeStatus::Legacy(_) => {}
+        VaporL3BridgeStatus::Legacy(_) => {}
     }
 
     // The explicitly selected legacy route retains its complete transforms.

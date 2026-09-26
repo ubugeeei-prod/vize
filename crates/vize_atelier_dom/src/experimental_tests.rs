@@ -4,7 +4,7 @@ use super::{
     compile_template_with_template_syntax_codegen_and_experimental_options,
 };
 use vize_atelier_core::{CodegenExperimentalOptions, CodegenOptions, TemplateSyntaxMode};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[test]
 fn test_compile_experimental_patterned_template_when_branches() {

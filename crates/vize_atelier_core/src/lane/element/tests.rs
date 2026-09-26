@@ -3,7 +3,7 @@
 // `#[cfg(test)] mod` bodies under `src/`, keeps covering these tests.
 #[cfg(test)]
 mod element_transform_tests {
-    use vize_s0::Allocator;
+    use vize_l0::Allocator;
 
     use super::super::transform_element;
     use crate::{

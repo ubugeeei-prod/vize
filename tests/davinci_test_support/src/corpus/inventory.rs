@@ -9,7 +9,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use thiserror::Error;
-use vize_s0::CompactString;
+use vize_l0::CompactString;
 
 /// A deterministic reason the corpus inventory is not closure evidence.
 #[derive(Debug, Error, PartialEq, Eq)]

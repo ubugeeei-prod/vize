@@ -17,11 +17,11 @@
 
 use oxc_ast::ast::Expression;
 use vize_armature::parse;
+use vize_l0::profiler::global_profiler;
+use vize_l0::{Allocator, String};
 use vize_relief::{
     ExpressionNode, JsExpression, PropNode, SimpleExpressionNode, TemplateChildNode,
 };
-use vize_s0::profiler::global_profiler;
-use vize_s0::{Allocator, String};
 
 /// Nine distinct non-static expression nodes, exercising every retained-parse
 /// shape: an entity-decoded value (arena-copy `raw`), a dynamic argument, a

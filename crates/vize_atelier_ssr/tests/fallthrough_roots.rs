@@ -10,7 +10,7 @@
 )]
 
 use vize_atelier_ssr::{SsrCompilerOptions, compile_ssr, compile_ssr_with_options};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 fn render_body(code: &str) -> &str {
     let start = code.find("_attrs) {\n").expect("ssrRender signature") + "_attrs) {\n".len();
@@ -35,7 +35,7 @@ fn a_template_branch_root_inherits_attrs() {
 #[test]
 fn transparent_builtins_render_their_child_as_the_root() {
     for builtin in ["Transition", "KeepAlive", "keep-alive", "BaseTransition"] {
-        let source = vize_s0::cstr!(r#"<{builtin}><p v-if="ok">a</p></{builtin}>"#);
+        let source = vize_l0::cstr!(r#"<{builtin}><p v-if="ok">a</p></{builtin}>"#);
         assert_eq!(
             compile(&source),
             "  if (_ctx.ok) {\n    _push(`<p${_ssrRenderAttrs(_attrs)}>a</p>`)\n  } else {\n    _push(`<!---->`)\n  }",

@@ -24,7 +24,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use vize_s0::CompactString;
+use vize_l0::CompactString;
 
 /// The canonical corpus root, relative to the workspace root.
 pub const CANONICAL_CORPUS_RELATIVE: &str = "tests/_fixtures/_git";

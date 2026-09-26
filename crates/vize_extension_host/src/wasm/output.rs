@@ -3,7 +3,7 @@
 
 use std::path::Path;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::{Sandbox, diagnostic, instantiate_error, page};
 use crate::contract::{Capability, GuestError, GuestLimits};

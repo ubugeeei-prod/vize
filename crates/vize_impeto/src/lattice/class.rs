@@ -1,4 +1,4 @@
-/// Value axis of the S3 reactivity lattice.
+/// Value axis of the L3 reactivity lattice.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u8)]
 pub enum ReactivityClass {

@@ -6,8 +6,8 @@
 
 use crate::diagnostic::LintDiagnostic;
 use crate::ir::ByteRange;
+use vize_l0::CompactString;
 use vize_relief::{BindingType, SourceLocation};
-use vize_s0::CompactString;
 
 use super::{LintContext, state::ElementContext};
 

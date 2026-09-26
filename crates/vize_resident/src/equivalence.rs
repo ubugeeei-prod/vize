@@ -4,7 +4,7 @@
 //! [`EquivalenceReport::check_file`] opens a file in one long-lived
 //! [`ResidentDatabase`] and runs every edit script against it. After the
 //! open and after **every** step it reads every artifact the tier serves —
-//! S0 keys, block positions, S1 keys and tokenizer findings, S2 pages and
+//! L0 keys, block positions, L1 keys and tokenizer findings, L2 pages and
 //! their diagnostics — and compares them, exactly, with
 //! [`compute_file_artifacts`] run from scratch on the same text and config.
 //!
@@ -14,7 +14,7 @@
 
 use core::fmt::Write as _;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::artifact::{BlockArtifacts, StageConfig, compute_file_artifacts};
 use crate::db::{ResidentDatabase, SourceFile};
@@ -234,11 +234,11 @@ fn describe(served: &[BlockArtifacts], clean: &[BlockArtifacts]) -> String {
         } else if served.start != clean.start {
             "start"
         } else if served.source_key != clean.source_key {
-            "s0-key"
+            "l0-key"
         } else if served.surface != clean.surface {
-            "s1"
+            "l1"
         } else if served.page != clean.page {
-            "s2"
+            "l2"
         } else {
             continue;
         };

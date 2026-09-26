@@ -4,16 +4,16 @@ use super::jsx_names::{
     jsx_attribute_arg_name, jsx_attribute_binding_kind, jsx_attribute_name, jsx_attribute_ref,
     jsx_static_value, jsx_value_is_dynamic,
 };
-use super::s2::S2Markup;
-use super::s2::binding::{S2Item, kind_of_directive, surface_expression};
-use super::s2::bound::S2Bound;
-use super::s2::surface::{SurfaceDirective, attr_span, attr_value};
-use super::{loc_to_range, s2_range, span_to_range};
+use super::l2::L2Markup;
+use super::l2::binding::{L2Item, kind_of_directive, surface_expression};
+use super::l2::bound::L2Bound;
+use super::l2::surface::{SurfaceDirective, attr_span, attr_value};
+use super::{l2_range, loc_to_range, span_to_range};
 use crate::ir::ByteRange;
 use oxc_ast::ast::JSXAttribute;
 use std::marker::PhantomData;
+use vize_l2::op::Attribute;
 use vize_relief::{AttributeNode, DirectiveNode, ExpressionNode};
-use vize_s2::op::Attribute;
 
 mod argument;
 
@@ -22,7 +22,7 @@ mod argument;
 ///
 /// This is the cross-backend vocabulary rules reason in:
 ///
-/// | Vue template      | JSX/TSX                | S2          | kind        |
+/// | Vue template      | JSX/TSX                | L2          | kind        |
 /// |-------------------|------------------------|-------------|-------------|
 /// | `id="x"`          | `id="x"`               | attribute   | [`Attribute`](Self::Attribute) |
 /// | `:key`, `v-bind`  | `key={…}`, `class={…}` | `ui.bind`   | [`Bind`](Self::Bind) |
@@ -52,14 +52,14 @@ pub(super) enum MarkupBindingInner<'a> {
         node: *const JSXAttribute<'a>,
         offset: u32,
     },
-    S2Attribute {
+    L2Attribute {
         attribute: &'a Attribute<'a>,
-        doc: &'a S2Markup<'a>,
+        doc: &'a L2Markup<'a>,
     },
-    S2Binding(S2Bound<'a>),
+    L2Binding(L2Bound<'a>),
     Surface {
-        attr: &'a vize_s1::Attribute<'a>,
-        doc: &'a S2Markup<'a>,
+        attr: &'a vize_l1::Attribute<'a>,
+        doc: &'a L2Markup<'a>,
         static_name: Option<&'a str>,
     },
 }
@@ -98,13 +98,13 @@ impl<'a> MarkupBinding<'a> {
         Self::from_inner(MarkupBindingInner::Jsx { node, offset })
     }
 
-    pub(super) const fn from_s2_item(item: S2Item<'a>) -> Self {
+    pub(super) const fn from_l2_item(item: L2Item<'a>) -> Self {
         Self::from_inner(match item {
-            S2Item::Attribute { attribute, doc } => {
-                MarkupBindingInner::S2Attribute { attribute, doc }
+            L2Item::Attribute { attribute, doc } => {
+                MarkupBindingInner::L2Attribute { attribute, doc }
             }
-            S2Item::Binding(binding) => MarkupBindingInner::S2Binding(binding),
-            S2Item::Surface { attr, doc } => MarkupBindingInner::Surface {
+            L2Item::Binding(binding) => MarkupBindingInner::L2Binding(binding),
+            L2Item::Surface { attr, doc } => MarkupBindingInner::Surface {
                 attr,
                 doc,
                 static_name: None,
@@ -113,8 +113,8 @@ impl<'a> MarkupBinding<'a> {
     }
 
     pub(super) const fn from_surface(
-        attr: &'a vize_s1::Attribute<'a>,
-        doc: &'a S2Markup<'a>,
+        attr: &'a vize_l1::Attribute<'a>,
+        doc: &'a L2Markup<'a>,
         static_name: Option<&'a str>,
     ) -> Self {
         Self::from_inner(MarkupBindingInner::Surface {
@@ -127,14 +127,14 @@ impl<'a> MarkupBinding<'a> {
     /// The normalized class of this binding.
     pub fn kind(&self) -> MarkupBindingKind {
         match self.inner {
-            MarkupBindingInner::ReliefAttribute(_) | MarkupBindingInner::S2Attribute { .. } => {
+            MarkupBindingInner::ReliefAttribute(_) | MarkupBindingInner::L2Attribute { .. } => {
                 MarkupBindingKind::Attribute
             }
             MarkupBindingInner::ReliefDirective(node) => kind_of_directive(node.name),
             MarkupBindingInner::Jsx { node, .. } => {
                 jsx_attribute_binding_kind(jsx_attribute_ref(node))
             }
-            MarkupBindingInner::S2Binding(binding) => kind_of_directive(binding.name()),
+            MarkupBindingInner::L2Binding(binding) => kind_of_directive(binding.name()),
             MarkupBindingInner::Surface {
                 attr, static_name, ..
             } => surface_directive(attr, static_name)
@@ -168,8 +168,8 @@ impl<'a> MarkupBinding<'a> {
                     _ => Some(jsx_attribute_name(&attr.name)),
                 }
             }
-            MarkupBindingInner::S2Attribute { attribute, .. } => Some(attribute.name),
-            MarkupBindingInner::S2Binding(binding) => {
+            MarkupBindingInner::L2Attribute { attribute, .. } => Some(attribute.name),
+            MarkupBindingInner::L2Binding(binding) => {
                 let name = binding.name();
                 match kind_of_directive(name) {
                     MarkupBindingKind::Custom => Some(name),
@@ -207,10 +207,10 @@ impl<'a> MarkupBinding<'a> {
     /// plain attributes are static.
     pub fn is_dynamic(&self) -> bool {
         match self.inner {
-            MarkupBindingInner::ReliefAttribute(_) | MarkupBindingInner::S2Attribute { .. } => {
+            MarkupBindingInner::ReliefAttribute(_) | MarkupBindingInner::L2Attribute { .. } => {
                 false
             }
-            MarkupBindingInner::ReliefDirective(_) | MarkupBindingInner::S2Binding(_) => true,
+            MarkupBindingInner::ReliefDirective(_) | MarkupBindingInner::L2Binding(_) => true,
             MarkupBindingInner::Jsx { node, .. } => {
                 jsx_value_is_dynamic(jsx_attribute_ref(node).value.as_ref())
             }
@@ -227,9 +227,9 @@ impl<'a> MarkupBinding<'a> {
             MarkupBindingInner::ReliefAttribute(node) => {
                 node.value.as_ref().map(|value| value.content)
             }
-            MarkupBindingInner::ReliefDirective(_) | MarkupBindingInner::S2Binding(_) => None,
+            MarkupBindingInner::ReliefDirective(_) | MarkupBindingInner::L2Binding(_) => None,
             MarkupBindingInner::Jsx { node, .. } => jsx_static_value(jsx_attribute_ref(node)),
-            MarkupBindingInner::S2Attribute { attribute, doc } => {
+            MarkupBindingInner::L2Attribute { attribute, doc } => {
                 attribute.value.map(|value| doc.decode_attribute(value))
             }
             MarkupBindingInner::Surface {
@@ -255,10 +255,10 @@ impl<'a> MarkupBinding<'a> {
     pub fn expression(&self) -> Option<&'a str> {
         match self.inner {
             MarkupBindingInner::ReliefAttribute(_)
-            | MarkupBindingInner::S2Attribute { .. }
+            | MarkupBindingInner::L2Attribute { .. }
             | MarkupBindingInner::Jsx { .. } => None,
             MarkupBindingInner::ReliefDirective(node) => relief_expression(node),
-            MarkupBindingInner::S2Binding(binding) => binding.expression(),
+            MarkupBindingInner::L2Binding(binding) => binding.expression(),
             MarkupBindingInner::Surface {
                 attr, static_name, ..
             } => surface_directive(attr, static_name)
@@ -276,7 +276,7 @@ impl<'a> MarkupBinding<'a> {
                     visitor(modifier.content);
                 }
             }
-            MarkupBindingInner::S2Binding(binding) => binding.walk_modifiers(visitor),
+            MarkupBindingInner::L2Binding(binding) => binding.walk_modifiers(visitor),
             MarkupBindingInner::Surface {
                 attr, static_name, ..
             } => {
@@ -285,7 +285,7 @@ impl<'a> MarkupBinding<'a> {
                 }
             }
             MarkupBindingInner::ReliefAttribute(_)
-            | MarkupBindingInner::S2Attribute { .. }
+            | MarkupBindingInner::L2Attribute { .. }
             | MarkupBindingInner::Jsx { .. } => {}
         }
     }
@@ -309,9 +309,9 @@ impl<'a> MarkupBinding<'a> {
             MarkupBindingInner::Jsx { node, offset } => {
                 span_to_range(jsx_attribute_ref(node).span, offset)
             }
-            MarkupBindingInner::S2Attribute { attribute, .. } => s2_range(attribute.span),
-            MarkupBindingInner::S2Binding(binding) => s2_range(binding.span()),
-            MarkupBindingInner::Surface { attr, doc, .. } => s2_range(attr_span(doc.source, attr)),
+            MarkupBindingInner::L2Attribute { attribute, .. } => l2_range(attribute.span),
+            MarkupBindingInner::L2Binding(binding) => l2_range(binding.span()),
+            MarkupBindingInner::Surface { attr, doc, .. } => l2_range(attr_span(doc.source, attr)),
         }
     }
 }
@@ -329,7 +329,7 @@ pub(super) fn relief_expression<'a>(node: &'a DirectiveNode<'a>) -> Option<&'a s
 
 /// In a v-pre subtree every authored spelling is a static attribute.
 pub(super) fn surface_directive<'a>(
-    attr: &vize_s1::Attribute<'a>,
+    attr: &vize_l1::Attribute<'a>,
     static_name: Option<&'a str>,
 ) -> Option<SurfaceDirective<'a>> {
     static_name

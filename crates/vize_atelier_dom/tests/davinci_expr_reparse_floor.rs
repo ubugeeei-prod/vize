@@ -4,7 +4,7 @@
 //! expression re-parses via the P0-3 probe — the same sweep that produced
 //! `docs/davinci/plan/expr-reparse-baseline.md`, pinned exactly at the
 //! post-P1-7 floor (the pre-P1-7 counts are the baseline doc's table). Any
-//! change means a retained-consumption gate, S2 selector, or legacy site moved:
+//! change means a retained-consumption gate, L2 selector, or legacy site moved:
 //! re-derive the floor deliberately and update the baseline doc's post-P1-7
 //! section with it.
 //!
@@ -17,7 +17,7 @@
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_atelier_core::expr_parse_probe;
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 /// fixture name → surviving legacy re-parses per fused DOM compile.
 const FLOOR: [(&str, u64); 6] = [

@@ -84,10 +84,10 @@ def validateElementBindings (program : Program) (rows : List Operand) (op : Op)
           throw "unsupported event binding"
 
 def validate (program : Program) (rows : List Operand) : Except String Unit := do
-  if program.phase != .built then throw "stateful reference requires built S3"
+  if program.phase != .built then throw "stateful reference requires built L3"
   if (program.ops.map (·.id)).eraseDups.length != program.ops.length ||
       (program.regions.map (·.id)).eraseDups.length != program.regions.length then
-    throw "duplicate S3 identity"
+    throw "duplicate L3 identity"
   if (program.regions.filter (fun r => r.parent.isNone)).map (·.id) != [0] then
     throw "expected one root region #0"
   for region in program.regions do
@@ -205,7 +205,7 @@ def renderRegion (program : Program) (rows : List Operand) (context : Json)
     (fuel : Nat) (regionId : Nat) (scope : List Json := []) (slots : Json := .null) :
     Except String Rendered := do
   match fuel with
-  | 0 => throw "cyclic S3 region graph"
+  | 0 => throw "cyclic L3 region graph"
   | fuel + 1 =>
       let mut nodes := []
       let mut buttons := []

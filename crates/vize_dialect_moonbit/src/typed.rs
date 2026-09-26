@@ -13,9 +13,9 @@ use vize_extension_contract::expression::{Analysis, ProjectionPage, ProjectionRo
 use vize_extension_contract::typed_expression::{
     REQUIRED_FEATURES, TypedExpressionBatch, TypedExpressionGuest,
 };
-use vize_s0::{Allocator, String, cstr};
-use vize_s2::expr::capability::ExprDialect;
-use vize_s2::expr::{ExprRef, ForeignExpr};
+use vize_l0::{Allocator, String, cstr};
+use vize_l2::expr::capability::ExprDialect;
+use vize_l2::expr::{ExprRef, ForeignExpr};
 
 use crate::diagnostic::{Level, map_all};
 use crate::host::{CheckUnit, MooncHost};
@@ -114,7 +114,7 @@ impl<H: MooncHost> TypedExpressionGuest for MoonBitTypedGuest<H> {
                     dialect: crate::sfc::DIALECT,
                     source: &expression.source,
                     span: expression.span.into(),
-                    facts: vize_s0::Vec::new_in(&&allocator),
+                    facts: vize_l0::Vec::new_in(&&allocator),
                 };
                 let reference = ExprRef::Foreign(&expr);
                 let dialect = crate::dialect::MoonBitDialect;

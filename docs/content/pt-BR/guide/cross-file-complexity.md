@@ -13,7 +13,7 @@ posteriores podem mostrar em relatórios, no Playground e em futuras verificaç�
 O modelo mapeia três sinais de complexidade para o Vue:
 
 - Contagem de caminhos do template: a complexidade ciclomática própria de cada componente, calculada
-  pela análise S2 `template-complexity` da Davinci. Ela conta cada condição `v-if` / `v-else-if`, cada
+  pela análise L2 `template-complexity` da Davinci. Ela conta cada condição `v-if` / `v-else-if`, cada
   `v-for` e cada `&&`, `||`, `??` e `?:` nas expressões que o template avalia.
 - Fluxo de controle aninhado: a complexidade cognitiva própria de cada componente. Ramos e laços
   custam mais quanto mais fundo estão aninhados em regiões `v-if`, `v-for` e de slots com escopo.

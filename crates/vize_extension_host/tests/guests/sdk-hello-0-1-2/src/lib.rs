@@ -1,7 +1,7 @@
 //! Hello, dialect: the smallest input dialect built on `vize_extension_sdk`.
 //!
 //! A `lang="hello"` block lists one name per line; the dialect greets each.
-//! S1 records every line as one text token (tiling the block), S2 lowers the
+//! L1 records every line as one text token (tiling the block), L2 lowers the
 //! block to a list:
 //!
 //! ```text

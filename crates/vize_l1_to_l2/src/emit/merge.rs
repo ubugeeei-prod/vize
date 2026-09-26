@@ -1,0 +1,345 @@
+//! Object-spread `v-bind` (`ui.bind` with no name) and object `v-on`
+//! (`ui.on` with no name): `normalizeProps` / `guardReactiveProps` when
+//! a bind spread is alone, `toHandlers(...)` for component event objects,
+//! `toHandlers(..., true)` for native element event objects, and `mergeProps`
+//! when a spread sits beside other props or the two spread kinds mix.
+
+mod args;
+
+use alloc::vec::Vec as StdVec;
+
+use vize_l0::{Span, String};
+use vize_l2::expr::ExprRef;
+use vize_l2::op::{Attribute, BindOp, BindingOp, OnOp};
+
+use super::EmitCx;
+use super::EmitError;
+use super::UnsupportedReason as Reason;
+use super::buf::Buf;
+use super::on::{event_key_for, needs_hydration};
+use super::patch::PatchFacts;
+use super::prefix::Site;
+use super::props::{
+    BindName, PropsObjectOptions, StaticBindKeyCasing, bind_name, bind_value,
+    bind_value_is_static_patchless, emit_props_object, has_prop_modifier, is_emitted_key_bind,
+    static_bind_key,
+};
+use args::{Arg, force_multiline_object_arg, key_and_bind_spread, lone_kind_spread, merge_args};
+
+pub(super) fn has_object_spread(bindings: &[BindingOp<'_>]) -> bool {
+    bindings.iter().any(|binding| match binding {
+        BindingOp::Bind(bind) if bind.name.is_none() => true,
+        BindingOp::On(on) if on.name.is_none() => true,
+        _ => false,
+    })
+}
+
+pub(super) fn admit_object(bind: &BindOp<'_>) -> Result<(), EmitError> {
+    bind_value(bind).map(|_| ())
+}
+
+pub(super) fn admit_object_on(on: &OnOp<'_>) -> Result<(), EmitError> {
+    match on.handler {
+        Some(ExprRef::Js(_)) => Ok(()),
+        Some(expr) if super::js::expr_source(&expr, false).is_some() => Ok(()),
+        Some(expr) => Err(EmitError::unsupported_at(
+            Reason::ObjectOnHandlerNotJs,
+            expr.span(),
+        )),
+        None => Err(EmitError::unsupported_at(
+            Reason::ObjectOnHandlerNotJs,
+            on.span,
+        )),
+    }
+}
+
+#[expect(clippy::too_many_arguments, reason = "forwarded patch-flag inputs")]
+pub(super) fn object_patch<'a>(
+    bindings: &[BindingOp<'a>],
+    is_component: bool,
+    if_key: Option<&str>,
+    for_item: bool,
+    is_ts: bool,
+    constant_handler: &dyn Fn(&str) -> bool,
+    handler_is_cached: &dyn Fn(&OnOp<'a>) -> bool,
+    caches_handlers: bool,
+) -> PatchFacts {
+    let mut dynamic_props = StdVec::new();
+    let mut flag = 16i32;
+    for binding in bindings.iter() {
+        match binding {
+            BindingOp::Bind(bind) if bind.name.is_none() => {}
+            BindingOp::On(on) if on.name.is_none() => {}
+            BindingOp::Bind(bind) => match bind_name(bind) {
+                _ if is_emitted_key_bind(bind, if_key) => {
+                    if for_item && has_prop_modifier(bind) {
+                        flag |= 32;
+                    }
+                }
+                Ok(BindName::Static(raw_name)) => {
+                    if raw_name == "ref" {
+                        flag |= 512;
+                        continue;
+                    }
+                    if raw_name == "key"
+                        || (!is_component && matches!(raw_name, "class" | "style"))
+                        || bind_value_is_static_patchless(bind, is_ts)
+                    {
+                        continue;
+                    }
+                    let Ok(key) = static_bind_key(bind, StaticBindKeyCasing::Preserve) else {
+                        continue;
+                    };
+                    let owned = String::from(key.as_str());
+                    if !dynamic_props.contains(&owned) {
+                        dynamic_props.push(owned);
+                    }
+                    if has_prop_modifier(bind) {
+                        flag |= 32;
+                    }
+                }
+                Ok(BindName::Dynamic(_)) => {
+                    if has_prop_modifier(bind) {
+                        flag |= 32;
+                    }
+                }
+                Ok(BindName::Spread) | Err(_) => {}
+            },
+            BindingOp::On(on) => {
+                let Ok(key) = event_key_for(on, !is_component) else {
+                    continue;
+                };
+                // `is_const_handler` reads the same on the merged path: the
+                // shipped lane runs one per-prop loop whether or not the
+                // element ends up in `mergeProps`.
+                if !super::props::handler_is_constant(on, constant_handler)
+                    && !handler_is_cached(on)
+                    && !dynamic_props.contains(&key)
+                {
+                    dynamic_props.push(key.clone());
+                }
+                if !is_component && needs_hydration(key.as_str(), on) {
+                    flag |= 32;
+                }
+            }
+            BindingOp::Model(model) => {
+                super::model::patch_keys(model, is_component, &mut dynamic_props, caches_handlers);
+            }
+            BindingOp::VueHtml(_) => {
+                let key = String::from("innerHTML");
+                if !dynamic_props.contains(&key) {
+                    dynamic_props.push(key);
+                }
+            }
+            BindingOp::VueText(_) => {
+                let key = String::from("textContent");
+                if !dynamic_props.contains(&key) {
+                    dynamic_props.push(key);
+                }
+            }
+            _ => {}
+        }
+    }
+    PatchFacts {
+        flag,
+        dynamic_props,
+    }
+}
+
+pub(super) fn emit_spread_props(
+    cx: &mut EmitCx<'_>,
+    attributes: &[Attribute<'_>],
+    bindings: &[BindingOp<'_>],
+    if_key: Option<&str>,
+    skip_is: bool,
+    for_item: bool,
+    is_plain_element: bool,
+) -> Result<(), EmitError> {
+    let args = merge_args(
+        attributes,
+        bindings,
+        if_key,
+        skip_is,
+        cx.suppress_template_for_child_key,
+    )?;
+    let scope_id = cx.scope_id_here();
+    if let Some(lone) = lone_kind_spread(&args) {
+        // A scope id turns the lone spread into a merge: the shipped lane
+        // writes `_mergeProps(_normalizeProps(_guardReactiveProps(obj)),
+        // { "data-v-x": "" })` rather than the bare wrapper.
+        if scope_id.is_some() {
+            cx.buf.use_merge_props();
+            cx.buf.push(Buf::merge_props_alias());
+            cx.buf.push("(");
+        }
+        match lone {
+            Arg::BindSpread(bind) => emit_normalize_guard(cx, bind)?,
+            Arg::OnSpread(on) => emit_to_handlers(cx, on, is_plain_element)?,
+            Arg::Object { .. } => {
+                return Err(EmitError::unsupported(Reason::LoneObjectArgument));
+            }
+        }
+        if let Some(sid) = scope_id {
+            cx.buf.push(", ");
+            push_scope_object(cx, sid);
+            cx.buf.push(")");
+        }
+        return Ok(());
+    }
+    let normalize_keyed_bind_spread = !for_item && key_and_bind_spread(&args);
+    if normalize_keyed_bind_spread {
+        cx.buf.use_normalize_props();
+        cx.buf.use_guard_reactive_props();
+        cx.buf.push(Buf::normalize_props_alias());
+        cx.buf.push("(");
+    }
+    cx.buf.use_merge_props();
+    cx.buf.push(Buf::merge_props_alias());
+    cx.buf.push("(");
+    // `skip_scope_id`: the pair rides one trailing argument, never each
+    // segment.
+    let previous_skip = cx.skip_scope_id;
+    cx.skip_scope_id = true;
+    for (i, arg) in args.iter().enumerate() {
+        if i > 0 {
+            cx.buf.push(", ");
+        }
+        match arg {
+            Arg::BindSpread(bind) => bind_value(bind)?.emit_authored(cx, bind)?,
+            Arg::OnSpread(on) => emit_to_handlers(cx, on, is_plain_element)?,
+            Arg::Object { if_key, pieces, .. } => {
+                let force_multiline = force_multiline_object_arg(&args, i, pieces, for_item);
+                emit_props_object(
+                    cx,
+                    pieces,
+                    PropsObjectOptions {
+                        if_key: *if_key,
+                        skip_normalize: true,
+                        empty_key_multiline: for_item,
+                        is_plain_element,
+                        for_item,
+                        suppress_once_cache_dynamic: false,
+                        force_multiline,
+                    },
+                )?;
+            }
+        }
+    }
+    cx.skip_scope_id = previous_skip;
+    if let Some(sid) = scope_id {
+        cx.buf.push(", ");
+        push_scope_object(cx, sid);
+    }
+    cx.buf.push(")");
+    if normalize_keyed_bind_spread {
+        cx.buf.push(")");
+    }
+    Ok(())
+}
+
+/// The trailing `{ "data-v-x": "" }` argument a scoped SFC merges in.
+fn push_scope_object(cx: &mut EmitCx<'_>, scope_id: &str) {
+    cx.buf.push("{ \"");
+    cx.buf.push(scope_id);
+    cx.buf.push("\": \"\" }");
+}
+
+fn emit_normalize_guard(cx: &mut EmitCx<'_>, bind: &BindOp<'_>) -> Result<(), EmitError> {
+    let value = bind_value(bind)?;
+    cx.buf.use_normalize_props();
+    cx.buf.use_guard_reactive_props();
+    cx.buf.push(Buf::normalize_props_alias());
+    cx.buf.push("(");
+    cx.buf.push(Buf::guard_reactive_props_alias());
+    cx.buf.push("(");
+    value.emit_authored(cx, bind)?;
+    cx.buf.push("))");
+    Ok(())
+}
+
+fn emit_to_handlers(
+    cx: &mut EmitCx<'_>,
+    on: &OnOp<'_>,
+    is_plain_element: bool,
+) -> Result<(), EmitError> {
+    let source = match on.handler {
+        Some(expr) => super::js::expr_source(&expr, false)
+            .ok_or_else(|| EmitError::unsupported_at(Reason::ObjectOnHandlerNotJs, expr.span()))?,
+        None => {
+            return Err(EmitError::unsupported_at(
+                Reason::ObjectOnHandlerNotJs,
+                on.span,
+            ));
+        }
+    };
+    cx.buf.use_to_handlers();
+    cx.buf.push(Buf::to_handlers_alias());
+    cx.buf.push("(");
+    if cx.prefixing() {
+        if let Some(expr) = on.handler {
+            cx.push_prefixed_expr(&expr, Site::Expression)?;
+        }
+        if is_plain_element {
+            cx.buf.push(", true");
+        }
+        cx.buf.push(")");
+        return Ok(());
+    }
+    if let Some((leading, trailing)) = authored_object_on_padding(
+        cx.source,
+        on.span,
+        source.as_str(),
+        on.handler.map(|expr| expr.span()).unwrap_or(on.span),
+    ) {
+        cx.buf.push(leading);
+        cx.buf.push(source.as_str());
+        cx.buf.push(trailing);
+    } else {
+        cx.buf.push(source.as_str());
+    }
+    if is_plain_element {
+        cx.buf.push(", true");
+    }
+    cx.buf.push(")");
+    Ok(())
+}
+
+fn authored_object_on_padding<'a>(
+    source: &'a str,
+    on_span: Span,
+    value: &str,
+    value_span: Span,
+) -> Option<(&'a str, &'a str)> {
+    let attr_start = usize::try_from(on_span.start).ok()?;
+    let attr_end = usize::try_from(on_span.end).ok()?;
+    let value_start = usize::try_from(value_span.start).ok()?;
+    let value_end = usize::try_from(value_span.end).ok()?;
+    if attr_start > value_start
+        || value_start > value_end
+        || value_end > attr_end
+        || attr_end > source.len()
+        || source.get(value_start..value_end)? != value
+    {
+        return None;
+    }
+    let before = source.get(attr_start..value_start)?;
+    let (quote_pos, &quote) = before
+        .as_bytes()
+        .iter()
+        .enumerate()
+        .rfind(|(_, byte)| matches!(**byte, b'\'' | b'"'))?;
+    let leading = before.get(quote_pos + 1..)?;
+    let after = source.get(value_end..attr_end)?;
+    let trailing_end = after
+        .as_bytes()
+        .iter()
+        .position(|byte| *byte == quote)
+        .unwrap_or(after.len());
+    let trailing = after.get(..trailing_end)?;
+    if leading.is_empty() && trailing.is_empty() {
+        return None;
+    }
+    (leading.bytes().all(|byte| byte.is_ascii_whitespace())
+        && trailing.bytes().all(|byte| byte.is_ascii_whitespace()))
+    .then_some((leading, trailing))
+}

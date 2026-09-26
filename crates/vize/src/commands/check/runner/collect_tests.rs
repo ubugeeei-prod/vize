@@ -9,7 +9,7 @@ use crate::commands::check::{
 };
 use std::fs;
 use std::path::{Path, PathBuf};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[path = "collect_tests/allow_js.rs"]
 mod allow_js;

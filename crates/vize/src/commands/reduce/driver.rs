@@ -2,7 +2,7 @@
 //! loop over an IR-aware deletion vocabulary, with a sovereign
 //! interestingness predicate deciding every step.
 //!
-//! Each round enumerates the current artifact's S1 candidates (pre-order,
+//! Each round enumerates the current artifact's L1 candidates (pre-order,
 //! largest first) and runs ddmin-style chunking over them: try deleting a
 //! chunk of `size` consecutive candidates; keep the deletion when the
 //! predicate still holds (and re-enumerate, since every range moved);
@@ -15,7 +15,7 @@
 
 use std::ops::Range;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::vocabulary::{candidates, delete};
 

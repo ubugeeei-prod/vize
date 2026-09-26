@@ -1,4 +1,4 @@
-//! The S1 page printer: the canonical `Full` text.
+//! The L1 page printer: the canonical `Full` text.
 
 use core::fmt::{Result, Write};
 

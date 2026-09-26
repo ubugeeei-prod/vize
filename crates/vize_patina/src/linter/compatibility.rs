@@ -1,5 +1,5 @@
 use super::config::Linter;
-use vize_s0::{String, config::VueVersion};
+use vize_l0::{String, config::VueVersion};
 
 impl Linter {
     /// Apply project-wide Vue dialect compatibility to lint rules.

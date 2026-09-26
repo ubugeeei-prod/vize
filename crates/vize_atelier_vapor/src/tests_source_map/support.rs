@@ -10,10 +10,10 @@ const BASE64: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 /// Which Vapor lane a test compile must take.
 #[derive(Clone, Copy)]
 pub(super) enum Lane {
-    /// Whatever the compile selects (the native S3 lane when it admits the
+    /// Whatever the compile selects (the native L3 lane when it admits the
     /// template).
     Selected,
-    /// The legacy lowering lane: binding metadata keeps the S3 bridge out.
+    /// The legacy lowering lane: binding metadata keeps the L3 bridge out.
     Legacy,
 }
 

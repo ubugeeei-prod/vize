@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://vize.dev/schemas/spolvero-feed.schema.json",
   "title": "Davinci Spolvero feed",
-  "description": "The observer's folio output as one consumable document (P2-18): the pages a run emitted, in emission order, under the schema_version Spolvero negotiates on (devtool.md data layer - a consumer refuses a mismatch loudly instead of misrendering). Producers: `davinci-opt --folio-dir` writes it as `spolvero.json` beside the pages (SpolveroFeed::of_dump over the same FolioDump, so directory and feed cannot disagree; a page's file name derives as `{seq:03}-{stage}.{pass}.folio` from its array index and fields), the inspector payload embeds it under `spolvero`, and the wasm `analyzeSfc` result carries the full S1 -> S2 -> S3 stage ladder next to the croquis alias. Transport is deliberately unspecified here - that decision is P2-19.",
+  "description": "The observer's folio output as one consumable document (P2-18): the pages a run emitted, in emission order, under the schema_version Spolvero negotiates on (devtool.md data layer - a consumer refuses a mismatch loudly instead of misrendering). Producers: `davinci-opt --folio-dir` writes it as `spolvero.json` beside the pages (SpolveroFeed::of_dump over the same FolioDump, so directory and feed cannot disagree; a page's file name derives as `{seq:03}-{stage}.{pass}.folio` from its array index and fields), the inspector payload embeds it under `spolvero`, and the wasm `analyzeSfc` result carries the full L1 -> L2 -> L3 stage ladder next to the croquis alias. Transport is deliberately unspecified here - that decision is P2-19.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "command", "pages"],
@@ -40,11 +40,11 @@
             "type": "string",
             "minLength": 1,
             "pattern": "^[A-Za-z0-9._-]+$",
-            "description": "Producing step: the pass name for a pipeline dump, or the non-pass step that made the page (`parse` for the S1 surface tree)."
+            "description": "Producing step: the pass name for a pipeline dump, or the non-pass step that made the page (`parse` for the L1 surface tree)."
           },
           "text": {
             "type": "string",
-            "description": "The page text: canonical Full-mode folio text, or for S1 the byte-faithful surface render."
+            "description": "The page text: canonical Full-mode folio text, or for L1 the byte-faithful surface render."
           }
         }
       }

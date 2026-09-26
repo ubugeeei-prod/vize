@@ -8,7 +8,7 @@
 use super::lsp_process::{LspProcess, file_uri};
 use serde_json::{Value, json};
 use std::path::Path;
-use vize_s0::corsa_resolver::discover_corsa_in_ancestors;
+use vize_l0::corsa_resolver::discover_corsa_in_ancestors;
 
 pub struct Fixture {
     _project: tempfile::TempDir,

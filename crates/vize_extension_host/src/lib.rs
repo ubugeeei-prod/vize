@@ -18,13 +18,13 @@
 //! 2. [`Session::lower_block`] sends one whole block (coarse-grained: the
 //!    canonical ABI copies once per block, never per node) and accepts the
 //!    answer ([`accept`]): both pages at a schema version this host reads,
-//!    both pages canonical (`print(parse(text)) == text`), the S1 page's
+//!    both pages canonical (`print(parse(text)) == text`), the L1 page's
 //!    tokens tiling the block source exactly (TS-19's fidelity law, now
 //!    enforced at the boundary), and every diagnostic span inside the block.
 //!
-//! The S1 page ([`surface_page`]) is the lossless surface tree as a folio
-//! page of block-relative token offsets; the S2 page is the existing
-//! disegno page ([`vize_s2::folio::S2Folio`]). Hosting modes live beside
+//! The L1 page ([`surface_page`]) is the lossless surface tree as a folio
+//! page of block-relative token offsets; the L2 page is the existing
+//! disegno page ([`vize_l2::folio::L2Folio`]). Hosting modes live beside
 //! the contract: [`outproc`] runs a guest in a child process over the
 //! [`wire`] protocol, and the `extension-host` feature adds `wasm`, the
 //! wasmtime component host the child process uses.

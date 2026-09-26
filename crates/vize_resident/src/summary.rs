@@ -1,12 +1,12 @@
 //! Resident per-SFC interface firewalls. The α producer supplies
-//! [`AlphaPages`]; no body or S3 code shape can enter that input. Reading the
+//! [`AlphaPages`]; no body or L3 code shape can enter that input. Reading the
 //! source revision is deliberate: a body edit rechecks the interface, then
 //! salsa backdates an unchanged summary and its declaration fingerprints.
 
 use salsa::{Durability, Setter as _};
 use vize_davinci::summary::{AlphaPages, Facet, Fingerprint, SfcSummary, SummaryError};
-use vize_s0::hash::StableHasher128;
-use vize_s0::{String, cstr};
+use vize_l0::hash::StableHasher128;
+use vize_l0::{String, cstr};
 
 use crate::db::{ResidentDatabase, SourceFile};
 

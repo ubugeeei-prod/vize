@@ -16,7 +16,7 @@
 use core::fmt;
 
 use crate::relief::SourceLocation;
-use vize_s0::line_index::LineIndex;
+use vize_l0::line_index::LineIndex;
 
 use super::CompilerError;
 
@@ -118,7 +118,7 @@ mod tests {
 
     use super::super::{CompilerError, ErrorCode};
     use super::CompilerErrorWithSource;
-    use vize_s0::String;
+    use vize_l0::String;
 
     fn render_debug(value: impl core::fmt::Debug) -> String {
         let mut rendered = String::new("");

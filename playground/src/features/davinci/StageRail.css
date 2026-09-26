@@ -128,15 +128,15 @@
   opacity: 1;
 }
 
-.davinci-time-segment.rung-s1 {
+.davinci-time-segment.rung-l1 {
   background: var(--hl-tag);
 }
 
-.davinci-time-segment.rung-s2 {
+.davinci-time-segment.rung-l2 {
   background: var(--hl-directive);
 }
 
-.davinci-time-segment.rung-s3 {
+.davinci-time-segment.rung-l3 {
   background: var(--color-notice);
 }
 

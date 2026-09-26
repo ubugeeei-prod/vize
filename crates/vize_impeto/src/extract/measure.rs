@@ -1,6 +1,6 @@
 //! The extraction cost model: three metrics over one placement plan.
 //!
-//! The S3 update model runs every effect unit when any key it reads changes,
+//! The L3 update model runs every effect unit when any key it reads changes,
 //! and re-renders every op under an `if` or `for` when that op's keys change.
 //! A key is one distinct reactive-read operand (kind plus source text), the
 //! fact approximation extraction measures with: identical text is one

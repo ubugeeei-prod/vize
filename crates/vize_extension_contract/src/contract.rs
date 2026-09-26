@@ -11,8 +11,8 @@ use core::fmt;
 use serde::{Deserialize, Serialize};
 use vize_davinci::diagnostic as davinci;
 use vize_davinci::diagnostic::Exemption;
-use vize_s0::{String, cstr};
-use vize_s1_to_s2::exemptions;
+use vize_l0::{String, cstr};
+use vize_l1_to_l2::exemptions;
 
 /// An error a guest reports without a witness the host can re-check against
 /// its fact base, or under an exemption the host does not declare: exempt
@@ -39,16 +39,21 @@ fn declared_exemption(name: &str) -> Option<&'static Exemption> {
 pub const PACKAGE: &str = "vize:contracts@0.1.3";
 /// The integer protocol version this host speaks.
 pub const PROTOCOL_VERSION: u32 = 1;
-/// The S1 page schema version this host reads and writes.
-pub const S1_PAGE_SCHEMA: u32 = 1;
-/// The S2 page schema version this host reads and writes.
-pub const S2_PAGE_SCHEMA: u32 = 1;
-/// The feature naming the S1 page schema a guest writes.
-pub const S1_PAGE_FEATURE: &str = "s1-page@1";
-/// The feature naming the S2 page schema a guest writes.
-pub const S2_PAGE_FEATURE: &str = "s2-page@1";
+/// The L1 page schema version this host reads and writes.
+pub const L1_PAGE_SCHEMA: u32 = 1;
+/// The L2 page schema version this host reads and writes.
+pub const L2_PAGE_SCHEMA: u32 = 1;
+/// The feature naming the L1 page schema a guest writes.
+pub const L1_PAGE_FEATURE: &str = "s1-page@1";
+/// The feature naming the L2 page schema a guest writes.
+pub const L2_PAGE_FEATURE: &str = "s2-page@1";
+/// Compatibility names for the original contract constants.
+pub use self::{
+    L1_PAGE_FEATURE as S1_PAGE_FEATURE, L1_PAGE_SCHEMA as S1_PAGE_SCHEMA,
+    L2_PAGE_FEATURE as S2_PAGE_FEATURE, L2_PAGE_SCHEMA as S2_PAGE_SCHEMA,
+};
 /// Features the input-dialect world requires, sorted.
-pub const REQUIRED_FEATURES: &[&str] = &[S1_PAGE_FEATURE, S2_PAGE_FEATURE];
+pub const REQUIRED_FEATURES: &[&str] = &[L1_PAGE_FEATURE, L2_PAGE_FEATURE];
 /// Prefix of the optional features declaring a `lang` value a guest lowers.
 pub const LANG_FEATURE_PREFIX: &str = "lang:";
 
@@ -228,8 +233,8 @@ impl<G: InputDialectGuest + ?Sized> InputDialectGuest for Box<G> {
     }
 }
 
-impl From<vize_s0::Span> for Span {
-    fn from(span: vize_s0::Span) -> Self {
+impl From<vize_l0::Span> for Span {
+    fn from(span: vize_l0::Span) -> Self {
         Self {
             start: span.start,
             end: span.end,
@@ -237,9 +242,9 @@ impl From<vize_s0::Span> for Span {
     }
 }
 
-impl From<Span> for vize_s0::Span {
+impl From<Span> for vize_l0::Span {
     fn from(span: Span) -> Self {
-        vize_s0::Span::new(span.start, span.end)
+        vize_l0::Span::new(span.start, span.end)
     }
 }
 

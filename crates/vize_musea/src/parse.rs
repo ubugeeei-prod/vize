@@ -1,17 +1,17 @@
-//! Parser for Art files (*.art.vue), on the Davinci S0/S1 stages (P4-13).
+//! Parser for Art files (*.art.vue), on the Davinci L0/L1 stages (P4-13).
 //!
 //! An Art file is an SFC whose gallery definition is the `<art>` custom
 //! block:
 //!
-//! 1. **S0 block splitting** ([`blocks`]) — the shared SFC container scan
+//! 1. **L0 block splitting** ([`blocks`]) — the shared SFC container scan
 //!    yields `<script>` / `<style>` blocks and the `<art>` custom block as
-//!    S0 [`SourceBlock`](vize_s0::SourceBlock) frames over the authored file.
-//! 2. **S1 tree** ([`art_block`]) — the `<art>` block parses into one
-//!    lossless S1 surface tree; metadata comes from its open tag's attribute
+//!    L0 [`SourceBlock`](vize_l0::SourceBlock) frames over the authored file.
+//! 2. **L1 tree** ([`art_block`]) — the `<art>` block parses into one
+//!    lossless L1 surface tree; metadata comes from its open tag's attribute
 //!    tokens and variants are its `<variant>` elements ([`variant`]).
 //!
 //! Every string in the descriptor is still a slice of the source (or an
-//! arena string); offsets are file-absolute through the S0 frame.
+//! arena string); offsets are file-absolute through the L0 frame.
 
 mod art_block;
 mod attrs;
@@ -25,7 +25,7 @@ mod divergence_tests;
 mod golden_tests;
 
 use crate::types::{ArtDescriptor, ArtParseError, ArtParseOptions, ArtParseResult, SourceLocation};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 /// Parse an Art file (*.art.vue) into an ArtDescriptor.
 ///
@@ -35,7 +35,7 @@ use vize_s0::Allocator;
 /// # Example
 ///
 /// ```
-/// use vize_s0::Allocator;
+/// use vize_l0::Allocator;
 /// use vize_musea::parse::parse_art;
 /// use vize_musea::types::ArtParseOptions;
 ///
@@ -63,12 +63,12 @@ pub fn parse_art<'a>(
         allocator.alloc_str(&options.filename)
     };
 
-    // S0: split the SFC container.
+    // L0: split the SFC container.
     let blocks = blocks::split_blocks(allocator, source)?;
     let frame = blocks.art.ok_or(ArtParseError::NoArtBlock)?;
 
-    // S1: the `<art>` block as a lossless surface tree.
-    let (tree, _surface_errors) = vize_s1::parse(allocator, frame.source());
+    // L1: the `<art>` block as a lossless surface tree.
+    let (tree, _surface_errors) = vize_l1::parse(allocator, frame.source());
     let art = art_block::art_element(&tree).ok_or(ArtParseError::NoArtBlock)?;
 
     let define_art = blocks
@@ -99,15 +99,15 @@ pub(crate) fn art_status_warnings<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     filename: &str,
-) -> vize_s0::Vec<'a, &'a str> {
-    let empty = || vize_s0::Vec::new_in(&allocator);
+) -> vize_l0::Vec<'a, &'a str> {
+    let empty = || vize_l0::Vec::new_in(&allocator);
     let Some(frame) = blocks::split_blocks(allocator, source)
         .ok()
         .and_then(|blocks| blocks.art)
     else {
         return empty();
     };
-    let (tree, _surface_errors) = vize_s1::parse(allocator, frame.source());
+    let (tree, _surface_errors) = vize_l1::parse(allocator, frame.source());
     let Some(art) = art_block::art_element(&tree) else {
         return empty();
     };
@@ -124,7 +124,7 @@ pub(crate) struct DefineArtMetadata<'a> {
     pub title: Option<&'a str>,
     pub description: Option<&'a str>,
     pub category: Option<&'a str>,
-    pub tags: vize_s0::Vec<'a, &'a str>,
+    pub tags: vize_l0::Vec<'a, &'a str>,
     pub status: Option<&'a str>,
     pub order: Option<u32>,
 }
@@ -137,7 +137,7 @@ impl<'a> DefineArtMetadata<'a> {
             title: None,
             description: None,
             category: None,
-            tags: vize_s0::Vec::new_in(&allocator),
+            tags: vize_l0::Vec::new_in(&allocator),
             status: None,
             order: None,
         }

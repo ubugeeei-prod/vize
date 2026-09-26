@@ -1,6 +1,6 @@
 use oxc_sourcemap::SourceMap;
 use vize_atelier_core::codegen::source_map::SourceMapBuilder;
-use vize_s0::String;
+use vize_l0::String;
 
 use super::{JsxComponent, JsxDiagnostic, error};
 

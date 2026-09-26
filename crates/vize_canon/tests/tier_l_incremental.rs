@@ -8,7 +8,7 @@ use serde::Deserialize;
 use vize_canon::{
     BatchTypeChecker, BatchTypeCheckerOptions, BatchTypeCheckerTrait, IncrementalCheckMetrics,
 };
-use vize_s0::{
+use vize_l0::{
     String,
     corsa_resolver::{CorsaResolveRequest, resolve_corsa_executable},
 };

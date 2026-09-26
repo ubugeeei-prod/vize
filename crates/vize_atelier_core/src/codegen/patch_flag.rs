@@ -6,7 +6,7 @@ use self::static_literal::{is_static_literal, is_static_object_or_array_literal_
 use super::helpers::camelize;
 use crate::options::{BindingMetadata, BindingType};
 use crate::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
-use vize_s0::{FxHashSet, String, ToCompactString, is_builtin_directive};
+use vize_l0::{FxHashSet, String, ToCompactString, is_builtin_directive};
 
 /// Check whether an interpolation only references bindings constant at runtime.
 fn is_constant_interpolation(

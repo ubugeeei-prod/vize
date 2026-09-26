@@ -4,7 +4,7 @@
 //! and utility predicates for v-for rendering.
 
 use crate::{ElementNode, ExpressionNode, PropNode};
-use vize_s0::{SmallVec, String, ToCompactString};
+use vize_l0::{SmallVec, String, ToCompactString};
 
 /// Extract parameter names from a v-for callback expression.
 /// Handles simple identifiers ("item"), destructuring patterns ("{ id, name }"),
@@ -247,7 +247,7 @@ pub(crate) fn should_skip_prop(p: &PropNode<'_>) -> bool {
 #[cfg(test)]
 mod tests {
     use super::{extract_destructure_params, is_numeric_content, split_top_level};
-    use vize_s0::String;
+    use vize_l0::String;
 
     /// Test numeric source detection for v-for range expressions.
     #[test]

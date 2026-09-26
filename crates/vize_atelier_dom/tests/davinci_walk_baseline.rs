@@ -1,11 +1,11 @@
-//! P2-12a pre-S2 traversal baseline and the DOM production-selector floor.
+//! P2-12a pre-L2 traversal baseline and the DOM production-selector floor.
 //!
 //! One fused compile per ladder fixture, diffing
 //! `vize_atelier_core::walk_probe` around it: the template-node visits and
-//! stage tree-walks the shipped pipeline makes. `BASELINE` is the pre-S2
+//! stage tree-walks the shipped pipeline makes. `BASELINE` is the pre-L2
 //! sweep that produced `docs/davinci/plan/walk-baseline.md` and filled
 //! `budgets.toml [traversal]`; it stays fixed as the "before" budget.
-//! `PRODUCTION_FLOOR` pins the source-map-free DOM selector after the S2
+//! `PRODUCTION_FLOOR` pins the source-map-free DOM selector after the L2
 //! switch. Any increase means a stage started walking the legacy tree again
 //! and must be re-derived deliberately (`--nocapture` prints every row and
 //! its per-stage breakdown).
@@ -25,7 +25,7 @@ use std::fmt::Write as _;
 use vize_atelier_core::walk_probe::{WALK_STAGES, WalkCounts};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
 use vize_davinci::legacy_plan;
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 /// fixture name -> (stage tree-walks, template-node visits) per fused compile.
 const BASELINE: [(&str, u64, u64); 6] = [
@@ -38,7 +38,7 @@ const BASELINE: [(&str, u64, u64); 6] = [
 ];
 
 /// fixture name -> (stage tree-walks, template-node visits) after the
-/// source-map-free DOM production selector routes supported compiles through S2.
+/// source-map-free DOM production selector routes supported compiles through L2.
 const PRODUCTION_FLOOR: [(&str, u64, u64); 6] = [
     ("small", 0, 0),
     ("medium", 0, 0),
@@ -81,7 +81,7 @@ fn dom_walk_baseline_holds() {
             breakdown
         );
 
-        // The pre-S2 plan is now the upper bound for the production selector.
+        // The pre-L2 plan is now the upper bound for the production selector.
         assert!(
             delta.total_walks() as usize <= legacy_plan::DOM.group_count(),
             "dom {}: the measured walks exceed legacy_plan::DOM",
@@ -95,15 +95,15 @@ fn dom_walk_baseline_holds() {
 
     assert_eq!(
         measured, expected,
-        "dom: the S2 production traversal floor moved from its pin"
+        "dom: the L2 production traversal floor moved from its pin"
     );
-    let baseline = rows_for_ladder(&BASELINE, "pre-S2 baseline");
+    let baseline = rows_for_ladder(&BASELINE, "pre-L2 baseline");
     for ((fixture, walks, visits), (_, baseline_walks, baseline_visits)) in
         measured.iter().zip(baseline.iter())
     {
         assert!(
             walks <= baseline_walks && visits <= baseline_visits,
-            "dom {fixture}: production traversal exceeded the pre-S2 baseline"
+            "dom {fixture}: production traversal exceeded the pre-L2 baseline"
         );
     }
 }

@@ -4,7 +4,7 @@
 mod reuse_tests {
     use crate::html_content_model::{authored_skeleton, built_as_authored, template_skeleton};
     use vize_armature::Parser;
-    use vize_s0::Allocator;
+    use vize_l0::Allocator;
 
     fn reused(source: &str) -> bool {
         let allocator = Allocator::with_capacity(source.len() * 8 + 4096);

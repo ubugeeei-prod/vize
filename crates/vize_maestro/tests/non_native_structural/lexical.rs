@@ -1,8 +1,8 @@
 use tower_lsp::lsp_types::Url;
+use vize_l0::String;
 use vize_maestro::ide::IdeContext;
 use vize_maestro::ide::references::ReferencesService;
 use vize_maestro::server::ServerState;
-use vize_s0::String;
 
 fn references(source: &str, query: usize, declaration: bool) -> Option<Vec<(usize, usize)>> {
     let state = ServerState::new();

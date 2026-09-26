@@ -14,7 +14,7 @@ use vize_davinci::fact::{
 };
 use vize_davinci::pass::AnalysisId;
 use vize_davinci::witness::{WitnessCheck, WitnessChecks, WitnessGroup};
-use vize_s0::{Span, String, cstr};
+use vize_l0::{Span, String, cstr};
 
 /// One word: where it is, and whether it is a proof (a trailing `?` makes
 /// the word a maybe).

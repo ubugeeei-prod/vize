@@ -5,7 +5,7 @@ use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 use super::super::dts::rewrite_relative_specifier;
 use super::detect_nuxt_auto_imports;
@@ -170,7 +170,7 @@ export {}
             options
                 .auto_import_stubs
                 .iter()
-                .any(|stub| stub.contains(vize_s0::cstr!("declare const {name}:").as_str())),
+                .any(|stub| stub.contains(vize_l0::cstr!("declare const {name}:").as_str())),
             "expected {name} stub, got: {:#?}",
             options.auto_import_stubs
         );

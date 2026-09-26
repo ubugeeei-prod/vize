@@ -15,7 +15,7 @@ export interface RemarkArg {
 }
 
 export interface SpolveroRemark {
-  /** The emitting pipeline's stage (`s2`). */
+  /** The emitting pipeline's layer (`l2`). */
   stage: string;
   /** The emitting pass, as the pass manager attributed it (`hoist-static`). */
   pass: string;

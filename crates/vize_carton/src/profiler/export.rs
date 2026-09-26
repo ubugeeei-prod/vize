@@ -80,7 +80,7 @@ pub struct ProfileExportSpanRange {
 /// means the span is a plain dotted-key aggregate.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct ProfileExportAttribution {
-    /// Pipeline stage name.
+    /// Stable wire stage name, independent of physical layer naming.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stage: Option<&'static str>,
     /// Pass name within the stage.

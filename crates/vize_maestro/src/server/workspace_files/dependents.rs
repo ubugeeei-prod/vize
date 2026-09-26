@@ -129,7 +129,7 @@ fn is_vue_file(path: &Path) -> bool {
 mod tests {
 
     use tower_lsp::lsp_types::Url;
-    use vize_s0::cstr;
+    use vize_l0::cstr;
 
     use super::{
         ServerState, affected_vue_source_paths, include_open_typecheck_documents,

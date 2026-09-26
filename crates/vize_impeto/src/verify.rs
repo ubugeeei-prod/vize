@@ -1,12 +1,12 @@
 //! The Impeto phase validator.
 //!
-//! The validator is whole-artifact rather than local: S3 is a graph, so edge
+//! The validator is whole-artifact rather than local: L3 is a graph, so edge
 //! resolution and effect scopes are artifact invariants. It still does no
-//! inference and no repair. Invalid S3 is rejected exactly where it stands.
+//! inference and no repair. Invalid L3 is rejected exactly where it stands.
 
 use alloc::vec::Vec;
 
-use vize_s0::{Span, cstr};
+use vize_l0::{Span, cstr};
 
 use crate::op::{Phase, Program, RegionId};
 use lookup::{

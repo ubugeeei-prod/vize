@@ -6,7 +6,7 @@ use std::{
 };
 
 use serde_json::Value;
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 use crate::commands::check::tsconfig_inputs::{
     parse_jsonc_value, read_extends_entries, resolve_extended_tsconfig,
@@ -28,7 +28,7 @@ fn collect_explicit_virtual_module_aliases_inner(
     aliases: &mut FxHashSet<String>,
     seen: &mut FxHashSet<PathBuf>,
 ) {
-    let resolved = vize_s0::path::canonicalize_non_verbatim(tsconfig_path);
+    let resolved = vize_l0::path::canonicalize_non_verbatim(tsconfig_path);
     if !seen.insert(resolved.clone()) {
         return;
     }
@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn collects_virtual_module_aliases_from_tsconfig_extends_chain() {
-        let root = std::env::temp_dir().join(vize_s0::cstr!(
+        let root = std::env::temp_dir().join(vize_l0::cstr!(
             "vize-nuxt-tsconfig-aliases-{}",
             std::process::id()
         ));

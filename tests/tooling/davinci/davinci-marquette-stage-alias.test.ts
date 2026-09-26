@@ -19,10 +19,10 @@ function* walkFiles(dir: string): Generator<string> {
   }
 }
 
-test("Marquette depends on the stage-named S0 alias", () => {
+test("Marquette depends on the stage-named L0 alias", () => {
   const cargoToml = fs.readFileSync(path.join(marquetteRoot, "Cargo.toml"), "utf8");
 
-  assert.match(cargoToml, /^vize_s0\.workspace = true$/m);
+  assert.match(cargoToml, /^vize_l0\.workspace = true$/m);
   assert.doesNotMatch(cargoToml, /^vize_carton\.workspace = true$/m);
 });
 

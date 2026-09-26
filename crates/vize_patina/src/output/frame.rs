@@ -8,12 +8,12 @@
 //! *template's* start, so squiggles landed on innocent template text.
 //!
 //! [`ScriptFrame`] is the one conversion from croquis' script-analysis frame
-//! to the file, validated through the S0 frame ([`SourceRoot`] /
+//! to the file, validated through the L0 frame ([`SourceRoot`] /
 //! [`SourceBlock`]) that the Davinci stages key their spans on: a range that
 //! is not inside the block it claims is refused, never guessed.
 
 use vize_atelier_sfc::SfcDescriptor;
-use vize_s0::{SourceBlock, SourceRoot, Span};
+use vize_l0::{SourceBlock, SourceRoot, Span};
 
 use crate::diagnostic::LintDiagnostic;
 

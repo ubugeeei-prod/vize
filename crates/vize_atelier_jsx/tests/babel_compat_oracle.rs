@@ -33,7 +33,7 @@
 //! `tests/tooling/babel-jsx-oracle.test.ts`.
 #![expect(clippy::disallowed_macros, reason = "insta and fixtures use format!")]
 // The oracle fixtures deserialize into plain `serde` structs, so std `String`
-// is intentional here rather than the workspace `vize_s0::String`.
+// is intentional here rather than the workspace `vize_l0::String`.
 #![expect(clippy::disallowed_types, reason = "serde derives into std String")]
 
 mod babel_compat;

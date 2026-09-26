@@ -2,7 +2,7 @@
 //! package and file names belong to the key because they affect diagnostics.
 
 use crate::host::{CheckUnit, HostError, MooncHost, RawCheck};
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 const ENTRY_LIMIT: usize = 32;
 const BYTE_LIMIT: usize = 4 * 1024 * 1024;

@@ -1,6 +1,6 @@
 use super::{EmitDocument, SpanLink, expression_links};
 use crate::codegen::source_map::SourceMapBuilder;
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 fn link(generated: (u32, u32), authored: (u32, u32), name: Option<&str>) -> SpanLink {
     SpanLink {

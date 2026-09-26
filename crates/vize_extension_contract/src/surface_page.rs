@@ -1,7 +1,7 @@
-//! The S1 page (`s1-page@1`): the lossless surface tree as a folio page.
+//! The L1 page (`s1-page@1`): the lossless surface tree as a folio page.
 //!
-//! Every S1 string is a slice of the block source, and in canonical render
-//! order the slices tile the source exactly (the S1 fidelity law). The page
+//! Every L1 string is a slice of the block source, and in canonical render
+//! order the slices tile the source exactly (the L1 fidelity law). The page
 //! therefore records **structure and offsets only**: each token is three
 //! block-relative offsets `start:text:end`, where `start..text` is the
 //! token's verbatim `leading` gap and `text..end` its own bytes. A reader
@@ -9,7 +9,7 @@
 //! after checking that the tokens tile it ([`SurfacePage::check_tiles`]), so
 //! a guest can neither drop nor invent a byte.
 //!
-//! The grammar is documented in `docs/davinci/plan/folio-format.md` ("S1
+//! The grammar is documented in `docs/davinci/plan/folio-format.md` ("L1
 //! page"). `Display` prints the same text as `Full`: nothing is elidable
 //! from a page that is only offsets.
 
@@ -79,7 +79,7 @@ pub struct PageAttrValue {
     pub close_quote: Option<PageToken>,
 }
 
-/// How an element's extent ended (`vize_s1::ElementClose`).
+/// How an element's extent ended (`vize_l1::ElementClose`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PageClose {
     Tag {
@@ -91,7 +91,7 @@ pub enum PageClose {
     NotExpected,
 }
 
-/// Document model of one S1 surface tree.
+/// Document model of one L1 surface tree.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct SurfacePage {
     /// The root children level.

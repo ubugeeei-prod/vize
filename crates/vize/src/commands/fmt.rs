@@ -11,8 +11,8 @@ use vize_glyph::{
     Allocator, FormatOptions, FormatResult, format_script_with_source_type,
     format_sfc_with_allocator,
 };
-use vize_s0::source_io as fs;
-use vize_s0::{cstr, profile, profiler::global_profiler};
+use vize_l0::source_io as fs;
+use vize_l0::{cstr, profile, profiler::global_profiler};
 
 use super::atomic_write::atomic_write;
 use crate::{config, profile_support};
@@ -392,7 +392,7 @@ fn process_file(
         }
         Err(error) => {
             global_profiler().record_fs_read_to_string_failure();
-            return Err(vize_s0::cstr!("Failed to read file: {}", error).into());
+            return Err(vize_l0::cstr!("Failed to read file: {}", error).into());
         }
     };
     let read_time = read_start
@@ -401,7 +401,7 @@ fn process_file(
 
     let format_start = profile.then(Instant::now);
     let result = format_file_source(path, &source, options, allocator)
-        .map_err(|e| vize_s0::cstr!("Format error: {}", e))?;
+        .map_err(|e| vize_l0::cstr!("Format error: {}", e))?;
     let format_time = format_start
         .map(|start| start.elapsed())
         .unwrap_or(Duration::ZERO);
@@ -420,7 +420,7 @@ fn process_file(
                 atomic_write(path, result.code.as_bytes())
             ) {
                 global_profiler().record_fs_write_failure(bytes);
-                return Err(vize_s0::cstr!("Failed to write file: {}", error).into());
+                return Err(vize_l0::cstr!("Failed to write file: {}", error).into());
             }
             global_profiler().record_fs_write(bytes);
             eprintln!("Reformatted: {}", path.display());

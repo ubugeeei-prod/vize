@@ -1,7 +1,7 @@
 //! [`KeySink`] — the one place a key's bytes are encoded.
 //!
 //! Every key starts with the same domain prefix — a fixed tag, the stage's
-//! physical id and the recipe version — so keys of different stages or
+//! stable wire id and the recipe version — so keys of different stages or
 //! versions can never collide even on equal pages. After the prefix a
 //! keyer feeds either raw page text (the [`fmt::Write`] impl, for a folio
 //! `Full` print) or typed fields (length-prefixed strings, little-endian
@@ -9,8 +9,8 @@
 
 use core::fmt;
 
-use vize_s0::Span;
-use vize_s0::hash::StableHasher128;
+use vize_l0::Span;
+use vize_l0::hash::StableHasher128;
 
 use super::{ArtifactKey, rebase};
 use crate::stage::Stage;
@@ -54,7 +54,7 @@ impl KeySink {
     ) -> Self {
         let mut hasher = StableHasher128::new();
         hasher.update(domain);
-        let id = stage.physical_id().as_bytes();
+        let id = stage.wire_id().as_bytes();
         hasher.update(&(id.len() as u32).to_le_bytes());
         hasher.update(id);
         hasher.update(&schema_version.to_le_bytes());

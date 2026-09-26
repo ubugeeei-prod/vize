@@ -10,8 +10,8 @@ mod tests;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use vize_s0::profiler::{AllocationSnapshot, CounterSummary, ProfileSummary};
-use vize_s0::{String, appendln, appends};
+use vize_l0::profiler::{AllocationSnapshot, CounterSummary, ProfileSummary};
+use vize_l0::{String, appendln, appends};
 
 use self::audit::{render_allocation_table, render_strict_audit};
 use self::format::{write_duration, write_throughput};
@@ -101,7 +101,7 @@ pub fn render_profile_report(report: &ProfileReport<'_>) -> String {
     );
     render_counter_table(&mut out, report, "Source facts", "source.");
     render_counter_table(&mut out, report, "Davinci plan", "davinci.build.");
-    render_counter_table(&mut out, report, "S2 DOM traversal", "davinci.s2_dom.");
+    render_counter_table(&mut out, report, "L2 DOM traversal", "davinci.s2_dom.");
     render_counter_table(&mut out, report, "Product lanes", "lane.");
     render_counter_table(&mut out, report, "Vue dialects", "dialect.");
     render_counter_table(&mut out, report, "Template syntax", "template_syntax.");

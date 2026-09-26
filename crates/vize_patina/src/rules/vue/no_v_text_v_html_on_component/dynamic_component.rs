@@ -1,6 +1,6 @@
 use crate::context::LintContext;
+use vize_l0::is_native_tag;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
-use vize_s0::is_native_tag;
 
 /// Whether the element compiles through `resolveDynamicComponent`.
 ///

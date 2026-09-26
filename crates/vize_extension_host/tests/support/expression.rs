@@ -9,7 +9,7 @@ use vize_extension_host::Span;
 use vize_extension_host::expression::{
     Binding, Expression, ExpressionBatch, ProjectionPage, ProjectionRow, Range,
 };
-use vize_s0::String;
+use vize_l0::String;
 
 /// Set to rewrite the committed expression goldens from [`facts`] and
 /// [`projection`].

@@ -20,7 +20,7 @@
 //! - **Headline** — the severity word (from the [`Catalog`]), the code when
 //!   the caller has one, and the producer's message.
 //! - **Location** — the primary span's start, line and column derived here
-//!   from the S0 line index (P2-1: diagnostics carry byte spans only).
+//!   from the L0 line index (P2-1: diagnostics carry byte spans only).
 //! - **Excerpt** — every [`PartKind::Primary`] and [`PartKind::Secondary`]
 //!   part plus the diagnostic's own span, which is marked as primary unless a
 //!   primary part already covers exactly it. See [`excerpt`] for the layout.
@@ -64,7 +64,7 @@ use fix::{Edit, Fix};
 use frame::Frame;
 use paint::{Painter, Style};
 pub use source::SourceFile;
-use vize_s0::String;
+use vize_l0::String;
 
 /// Renders diagnostics with one catalog's vocabulary.
 #[derive(Debug, Clone, Copy)]

@@ -11,8 +11,8 @@
 //! model name it writes, camelized; a spread (`v-bind="obj"`, `v-on="obj"`)
 //! or a dynamic argument makes the usage opaque — every prop may be passed.
 
+use vize_l0::CompactString;
 use vize_relief::{ExpressionNode, PropNode};
-use vize_s0::CompactString;
 
 use super::skeleton::{PropFacts, Skeleton, component_usage_name};
 use crate::markup::MarkupElement;

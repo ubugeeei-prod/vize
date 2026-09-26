@@ -1,4 +1,4 @@
-use vize_s0::String;
+use vize_l0::String;
 
 use super::source_map::SourceMapBuilder;
 

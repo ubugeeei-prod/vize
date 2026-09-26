@@ -40,8 +40,8 @@ pub(super) fn kind(semantic: &Semantic<'_>, node: NodeId) -> Kind {
 pub(super) fn render(kind: Kind, original: &str, new: &str) -> std::string::String {
     match kind {
         Kind::Identifier => new.into(),
-        Kind::ObjectShorthand => vize_s0::cstr!("{original}: {new}").into(),
-        Kind::ImportShorthand => vize_s0::cstr!("{original} as {new}").into(),
-        Kind::ExportShorthand => vize_s0::cstr!("{new} as {original}").into(),
+        Kind::ObjectShorthand => vize_l0::cstr!("{original}: {new}").into(),
+        Kind::ImportShorthand => vize_l0::cstr!("{original} as {new}").into(),
+        Kind::ExportShorthand => vize_l0::cstr!("{new} as {original}").into(),
     }
 }

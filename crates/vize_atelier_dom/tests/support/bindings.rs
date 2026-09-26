@@ -3,8 +3,8 @@
 //! it, from one `(name, kind)` list.
 
 use vize_atelier_core::options::{BindingMetadata, BindingType};
-use vize_s0::FxHashMap;
-use vize_s1_to_s2::{BindingKind, BindingTable};
+use vize_l0::FxHashMap;
+use vize_l1_to_l2::{BindingKind, BindingTable};
 
 /// A `<script setup>` metadata block over `entries`.
 pub fn script_setup_metadata(entries: &[(&str, BindingType)]) -> BindingMetadata {
@@ -19,7 +19,7 @@ pub fn script_setup_metadata(entries: &[(&str, BindingType)]) -> BindingMetadata
     }
 }
 
-/// The S2 emitter's neutral mirror of `metadata`.
+/// The L2 emitter's neutral mirror of `metadata`.
 pub fn binding_table(metadata: &BindingMetadata) -> BindingTable {
     BindingTable::new(
         metadata

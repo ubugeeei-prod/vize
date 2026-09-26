@@ -204,7 +204,7 @@ detection.
 - Existing VIR consumers' tests pass untouched
 - `wasm32-wasip2` target compiles for `vize_davinci` (`cargo build -p vize_davinci --target wasm32-wasip2`)
 
-**Deps:** none. **Non-goals:** S1/S2 folios; pipeline running in `davinci-opt` (P2).
+**Deps:** none. **Non-goals:** L1/L2 folios; pipeline running in `davinci-opt` (P2).
 
 ## P0-11 — Profiler source-level attribution + stable export
 

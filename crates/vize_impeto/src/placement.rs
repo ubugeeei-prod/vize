@@ -1,4 +1,4 @@
-//! Explicit placement alternatives for S3 ops (P3-10).
+//! Explicit placement alternatives for L3 ops (P3-10).
 //!
 //! Impeto keeps the choice of *where* an op's work runs as data on the op
 //! instead of deciding it while emitting, the aegraph discipline recorded in
@@ -19,9 +19,9 @@
 //!   the effect unit of the first op in that contiguous run.
 //!
 //! Placements are an overlay: ops, regions, edges, effect scopes, and operands
-//! stay canonical, so exported partition facts keep describing canonical S3.
-//! The TS-27 verifier (`S3V010`) re-derives every recorded alternative and
-//! every committed choice; `S3PlacementFolio` is the companion Folio page.
+//! stay canonical, so exported partition facts keep describing canonical L3.
+//! The TS-27 verifier (`L3V010`) re-derives every recorded alternative and
+//! every committed choice; `L3PlacementFolio` is the companion Folio page.
 
 mod annotate;
 pub(crate) mod facts;
@@ -30,7 +30,7 @@ mod kind;
 mod record;
 
 pub use annotate::annotate;
-pub use folio::{FolioPlacement, S3PlacementFolio};
+pub use folio::{FolioPlacement, L3PlacementFolio};
 pub use kind::{Placement, PlacementSet};
 pub use record::PlacementRecord;
 

@@ -74,7 +74,7 @@ impl HoverService {
         }
 
         if let Some(type_info) = super::backend::heuristic_type_at(ctx) {
-            let signature = vize_s0::cstr!("{word}: {}", type_info.display);
+            let signature = vize_l0::cstr!("{word}: {}", type_info.display);
             let mut builder = HoverBuilder::new()
                 .title(&word)
                 .meta("Template expression type")
@@ -234,7 +234,7 @@ impl HoverService {
 
         // Analyze template if present
         if let Some(ref template) = descriptor.template {
-            let allocator = vize_s0::Allocator::new();
+            let allocator = vize_l0::Allocator::new();
             let (root, _) = vize_armature::parse(&allocator, &template.content);
             drawer.analyze_template(&root);
         }
@@ -271,7 +271,7 @@ impl HoverService {
             "The binding is resolved from `<script>` analysis."
         };
 
-        let signature = vize_s0::cstr!("{word}: {inferred_type}");
+        let signature = vize_l0::cstr!("{word}: {inferred_type}");
 
         Some(
             HoverBuilder::new()

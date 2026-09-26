@@ -3,7 +3,7 @@ use crate::rules::script::{ScriptLintResult, SfcScriptContext, script_source_typ
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
-use vize_s0::profile;
+use vize_l0::profile;
 
 mod html_scripts;
 mod prefilter;

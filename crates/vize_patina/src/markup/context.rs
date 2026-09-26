@@ -5,7 +5,7 @@ use super::element::MarkupElement;
 use crate::context::LintContext;
 use crate::ir::TemplateSyntax;
 use vize_croquis::Croquis;
-use vize_s0::SmallVec;
+use vize_l0::SmallVec;
 
 /// Context handed to [`MarkupRule`](super::MarkupRule) callbacks.
 ///

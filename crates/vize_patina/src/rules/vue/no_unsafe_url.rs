@@ -49,8 +49,8 @@ use oxc_allocator::Allocator;
 use oxc_ast::ast::Expression;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
+use vize_l0::is_native_tag;
 use vize_relief::{DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode};
-use vize_s0::is_native_tag;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-unsafe-url",

@@ -27,8 +27,8 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use dynamic_component::{dynamic_component_may_render_component, is_dynamic_component};
+use vize_l0::is_html_tag;
 use vize_relief::{DirectiveNode, ElementNode, ElementType};
-use vize_s0::is_html_tag;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-v-text-v-html-on-component",

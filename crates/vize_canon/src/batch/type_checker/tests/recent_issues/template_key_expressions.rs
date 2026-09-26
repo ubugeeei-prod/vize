@@ -20,7 +20,7 @@ use super::super::{
 };
 use crate::batch::runtime_deps::VUE_RUNTIME_DOM_STUB_TYPES;
 use std::path::PathBuf;
-use vize_s0::String;
+use vize_l0::String;
 
 mod dialect_baselines;
 

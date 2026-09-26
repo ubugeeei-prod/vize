@@ -6,7 +6,7 @@
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::Mutex;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::cancel::{CancelToken, Cancelled};
 use super::{SnapshotStats, SnapshotTree, Stages};

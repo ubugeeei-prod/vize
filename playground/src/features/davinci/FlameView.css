@@ -82,15 +82,15 @@
   z-index: 1;
 }
 
-.davinci-flame-frame.rung-s1 {
+.davinci-flame-frame.rung-l1 {
   background: color-mix(in srgb, var(--hl-tag) 28%, var(--bg-primary));
 }
 
-.davinci-flame-frame.rung-s2 {
+.davinci-flame-frame.rung-l2 {
   background: color-mix(in srgb, var(--hl-directive) 28%, var(--bg-primary));
 }
 
-.davinci-flame-frame.rung-s3 {
+.davinci-flame-frame.rung-l3 {
   background: color-mix(in srgb, var(--dv-ochre) 28%, var(--bg-primary));
 }
 

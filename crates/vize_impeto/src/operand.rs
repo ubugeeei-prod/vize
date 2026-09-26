@@ -1,10 +1,10 @@
 //! Value operands stored beside the compact operation graph.
 //!
-//! Text belongs to the S3 arena, not to an earlier stage's scratch arena.
+//! Text belongs to the L3 arena, not to an earlier stage's scratch arena.
 //! Opaque and foreign values retain their classification and must not be
 //! interpreted as JavaScript merely because their source text looks familiar.
 
-use vize_s0::Span;
+use vize_l0::Span;
 
 use crate::op::{OpId, RegionId};
 

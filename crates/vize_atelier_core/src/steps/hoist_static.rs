@@ -15,7 +15,7 @@ use props::{
 pub use static_type::{StaticType, get_static_type, is_static_node};
 use static_type::{has_only_native_element_descendants, has_only_static_nested_children};
 
-use vize_s0::{Allocator, Box, String, Vec, ensure_sufficient_stack};
+use vize_l0::{Allocator, Box, String, Vec, ensure_sufficient_stack};
 
 use crate::lane::TransformContext;
 use crate::{

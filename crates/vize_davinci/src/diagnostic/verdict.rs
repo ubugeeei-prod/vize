@@ -2,7 +2,7 @@
 //!
 //! `assurance.md`: "Every semantic fact is `proven / refuted / unknown` …
 //! error-severity diagnostics fire only on `proven`". P3-2 introduced the
-//! axis for the S3 reactivity lattice in `vize_impeto`; P4-6a moves it here so
+//! axis for the L3 reactivity lattice in `vize_impeto`; P4-6a moves it here so
 //! the lattice, every later fact group and the witness verifier share **one**
 //! type instead of each growing its own. `vize_impeto::lattice::Verdict`
 //! re-exports this one, spellings unchanged.

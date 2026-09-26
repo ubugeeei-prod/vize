@@ -10,10 +10,10 @@ use oxc_span::Span;
     reason = "required by the oxc_diagnostics API"
 )]
 use std::sync::Arc;
-use vize_s0::FxHashMap;
-use vize_s0::String;
-use vize_s0::ToCompactString;
-use vize_s0::cstr;
+use vize_l0::FxHashMap;
+use vize_l0::String;
+use vize_l0::ToCompactString;
+use vize_l0::cstr;
 
 /// Format lint results as rich terminal output
 pub fn format_text(results: &[LintResult], sources: &[(String, String)]) -> String {

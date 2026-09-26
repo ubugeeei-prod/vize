@@ -1,7 +1,7 @@
 //! Runtime helper registration and lookup.
 
 use crate::RuntimeHelper;
-use vize_s0::FxHashMap;
+use vize_l0::FxHashMap;
 
 /// Runtime helper set for tracking used helpers
 #[derive(Debug, Default)]

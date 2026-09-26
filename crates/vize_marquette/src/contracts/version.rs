@@ -76,7 +76,7 @@ pub enum VersionPolicyViolation {
     /// A version is not `MAJOR.MINOR.PATCH`.
     Unparsable {
         which: &'static str,
-        version: vize_s0::String,
+        version: vize_l0::String,
     },
     /// The surface changed but the version did not.
     Unchanged { version: ContractVersion },
@@ -140,7 +140,7 @@ pub fn check_version_policy(
     next: &ContractSurface,
     report: &ContractSurfaceReport,
 ) -> Vec<VersionPolicyViolation> {
-    let parse = |which, version: &vize_s0::String| {
+    let parse = |which, version: &vize_l0::String| {
         ContractVersion::parse(version).ok_or_else(|| VersionPolicyViolation::Unparsable {
             which,
             version: version.clone(),

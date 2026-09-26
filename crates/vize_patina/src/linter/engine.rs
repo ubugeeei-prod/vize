@@ -25,12 +25,12 @@ use crate::{context::LintContext, diagnostic::LintSummary, preset::LintPreset};
 use vize_armature::Parser;
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_croquis::{Croquis, Drawer};
+use vize_l0::Allocator;
+use vize_l0::String;
+use vize_l0::ToCompactString;
+use vize_l0::dialect::{VueDialect, standalone_html_dialect};
+use vize_l0::profile;
 use vize_relief::RootNode;
-use vize_s0::Allocator;
-use vize_s0::String;
-use vize_s0::ToCompactString;
-use vize_s0::dialect::{VueDialect, standalone_html_dialect};
-use vize_s0::profile;
 
 use super::config::{LintResult, Linter};
 
@@ -62,7 +62,7 @@ pub(crate) struct SfcTemplateLintInput<'a> {
 pub(crate) struct TemplateRuleEnv<'a> {
     pub sfc_descriptor: Option<&'a vize_atelier_sfc::SfcDescriptor<'a>>,
     pub dialect: VueDialect,
-    /// Markup rules `lint_sfc` runs on the S2 facade instead of the visitor.
+    /// Markup rules `lint_sfc` runs on the L2 facade instead of the visitor.
     /// Empty on the raw-template and standalone-HTML lanes.
     pub facade_rules: &'static [&'static str],
 }
@@ -317,7 +317,7 @@ impl Linter {
     /// Lint JSX/TSX source.
     ///
     /// Markup rules ([`Rule::as_markup_rule`](crate::rule::Rule::as_markup_rule))
-    /// run over the S2 facade, the P2-16 projection of each render root.
+    /// run over the L2 facade, the P2-16 projection of each render root.
     /// [`Rule::jsx_needs_lowering`](crate::rule::Rule::jsx_needs_lowering) only
     /// partitions that walk so each rule runs once. A root the projection
     /// refuses keeps the lowered Relief document. Rules with no markup entry
@@ -332,7 +332,7 @@ impl Linter {
         let allocator = Allocator::with_capacity(capacity);
 
         // Partition the active rules into three disjoint groups so each rule runs
-        // exactly once (no double-report). Both markup groups walk the S2
+        // exactly once (no double-report). Both markup groups walk the L2
         // projection; `jsx_needs_lowering` only selects which pass owns the rule.
         //
         //   ir       — markup-capable, no list/branch shape required.
@@ -356,7 +356,7 @@ impl Linter {
             })
             .collect();
         let any_legacy = legacy_keep_mask.iter().any(|keep| *keep);
-        let needs_s2 = any_ir || any_lowered_markup;
+        let needs_l2 = any_ir || any_lowered_markup;
 
         let oxc_allocator = oxc_allocator::Allocator::default();
         let parsed = profile!(
@@ -365,7 +365,7 @@ impl Linter {
         );
         let mut result = Self::jsx_diagnostics_lint_result(filename, &parsed.diagnostics);
 
-        if needs_s2 || any_legacy {
+        if needs_l2 || any_legacy {
             let lowered = profile!(
                 "patina.jsx.lower",
                 vize_atelier_jsx::lower_source(&allocator, &oxc_allocator, source, lang)
@@ -374,7 +374,7 @@ impl Linter {
             // Lowering diagnostics are a superset of the parse. Merge them only
             // when this lane lowered before P4-7b (a list-shaped markup rule or
             // a legacy rule). An element-shaped rule now lowers only to build
-            // the S2 view; its parse diagnostics stay the OXC set.
+            // the L2 view; its parse diagnostics stay the OXC set.
             if any_lowered_markup || any_legacy {
                 let mut lower_diags =
                     Self::jsx_diagnostics_lint_result(filename, &lowered.diagnostics);
@@ -383,8 +383,8 @@ impl Linter {
             }
 
             for lowered_root in &lowered.roots {
-                if let Ok(projected) = lowered_root.s2.as_ref() {
-                    let markup = crate::markup::S2Markup::from_projected_root(projected);
+                if let Ok(projected) = lowered_root.l2.as_ref() {
+                    let markup = crate::markup::L2Markup::from_projected_root(projected);
                     if any_ir {
                         let ir_result =
                             self.lint_jsx_over_ir(&allocator, source, filename, &markup, analysis);
@@ -392,7 +392,7 @@ impl Linter {
                     }
                     if any_lowered_markup {
                         let lowered_markup =
-                            self.lint_jsx_lowered_markup_s2(&allocator, source, filename, &markup);
+                            self.lint_jsx_lowered_markup_l2(&allocator, source, filename, &markup);
                         result = Self::merge_lint_results(result, lowered_markup);
                     }
                 } else {

@@ -22,7 +22,7 @@ def parserTests : Except String Unit := do
       let qualifier := if ["opaque", "foreign"].contains kind then "dialect" else ""
       let row <- parseRow #[0, .str role, target, region, name, .str kind, .str text, .str qualifier, 0, 20]
       if row.role != role || row.kind != kind || row.text != text || row.qualifier != qualifier then
-        throw "S3 operand parsing lost authored payload"
+        throw "L3 operand parsing lost authored payload"
   let valid : Array Json := #[0, .str "text", .null, .null, .null, .str "literal", .str "hello", .str "", 0, 5]
   for (index, value) in [
     (0, .num (-1)), (0, 4294967296), (1, .str "unknown"), (2, 1), (3, 1),

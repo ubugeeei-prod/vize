@@ -14,7 +14,7 @@
 //!
 //! ```
 //! use vize_davinci::diagnostic::{Advisory, Diagnostic, Exemption, Severity, Stage};
-//! use vize_s0::Span;
+//! use vize_l0::Span;
 //!
 //! static UNTERMINATED: Exemption = Exemption::new("doc_producer", "unterminated");
 //!

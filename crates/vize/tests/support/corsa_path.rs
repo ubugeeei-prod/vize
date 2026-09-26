@@ -2,7 +2,7 @@
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use std::path::Path;
 
-use vize_s0::corsa_resolver::discover_corsa_in_ancestors;
+use vize_l0::corsa_resolver::discover_corsa_in_ancestors;
 
 pub(crate) fn resolve(workspace_root: &Path) -> Option<String> {
     if let Some(path) = std::env::var_os("CORSA_PATH").filter(|path| Path::new(path).is_file()) {

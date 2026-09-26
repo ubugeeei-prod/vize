@@ -28,8 +28,8 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::ir::{ByteRange, TemplateSyntax};
 use crate::markup::{MarkupContext, MarkupDocument, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::cstr;
 use vize_relief::RootNode;
-use vize_s0::cstr;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/heading-levels",

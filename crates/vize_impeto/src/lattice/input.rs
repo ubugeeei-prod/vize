@@ -1,4 +1,4 @@
-use vize_s0::Span;
+use vize_l0::Span;
 
 use super::{BindingId, EffectSet, ReactivityClass};
 

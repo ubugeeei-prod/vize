@@ -32,7 +32,7 @@ pub(super) fn cached_component_metadata(
         legacy_vue2,
     ))
     .ok()?;
-    let configuration_hash = vize_s0::hash::hash_str(&configuration);
+    let configuration_hash = vize_l0::hash::hash_str(&configuration);
     let open = open_component(ctx, resolved);
     let (content, len, modified, version, hash) = if let Some((content, len, version, hash)) = open
     {
@@ -120,7 +120,7 @@ fn open_component(ctx: &IdeContext<'_>, resolved: &Path) -> Option<(String, u64,
 
 fn open_stamp(document: &crate::document::Document) -> (String, u64, i32, u64) {
     let content = document.text();
-    let hash = vize_s0::hash::hash_str(&content);
+    let hash = vize_l0::hash::hash_str(&content);
     (
         content,
         document.content.len_bytes() as u64,

@@ -1,4 +1,4 @@
-//! Native S3 events must preserve delivery, modifier composition and options.
+//! Native L3 events must preserve delivery, modifier composition and options.
 
 use serde_json::json;
 

@@ -5,14 +5,14 @@
 import type { TimelineStep } from "./ladder";
 
 export type KeyAction =
-  | { kind: "stage"; stage: "s1" | "s2" | "s3" | "s4" }
+  | { kind: "stage"; stage: "l1" | "l2" | "l3" | "l4" }
   | { kind: "step"; step: TimelineStep };
 
-const STAGE_KEYS: Record<string, "s1" | "s2" | "s3" | "s4"> = {
-  "1": "s1",
-  "2": "s2",
-  "3": "s3",
-  "4": "s4",
+const STAGE_KEYS: Record<string, "l1" | "l2" | "l3" | "l4"> = {
+  "1": "l1",
+  "2": "l2",
+  "3": "l3",
+  "4": "l4",
 };
 
 function isTyping(target: EventTarget | null): boolean {

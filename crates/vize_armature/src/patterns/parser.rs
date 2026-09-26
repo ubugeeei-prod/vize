@@ -1,6 +1,6 @@
 use oxc_ast::ast::Expression;
 use oxc_span::Span;
-use vize_s0::{FxHashSet, String, cstr};
+use vize_l0::{FxHashSet, String, cstr};
 
 use super::{
     MatchArm, MatchPattern, PatternBinding, PatternExpression, PatternKind, PatternSyntaxError,

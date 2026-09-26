@@ -22,8 +22,8 @@ use exports::vize::contracts::emission::{EmitRequest, Emitted, Guest as Emission
 use exports::vize::contracts::handshake::{Capability, Guest as Handshake};
 use vize::contracts::types::Page;
 
-const S2: &str = include_str!("../../../fixtures/output/probe.s2.folio");
-const S3: &str = include_str!("../../../fixtures/output/probe.s3.folio");
+const L2: &str = include_str!("../../../fixtures/output/probe.s2.folio");
+const L3: &str = include_str!("../../../fixtures/output/probe.s3.folio");
 const DOCUMENT: &str = include_str!("../../../fixtures/output/probe.emit.folio");
 
 struct Echo;
@@ -42,7 +42,7 @@ impl Handshake for Echo {
 
 impl Emission for Echo {
     fn emit(request: EmitRequest) -> Emitted {
-        if request.s2.text != S2 || request.s3.text != S3 {
+        if request.s2.text != L2 || request.s3.text != L3 {
             core::arch::wasm32::unreachable()
         }
         Emitted {

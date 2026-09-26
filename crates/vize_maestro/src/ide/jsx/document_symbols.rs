@@ -26,7 +26,7 @@
 
 use tower_lsp::lsp_types::{DocumentSymbol, Position, Range, SymbolKind, Url};
 use vize_atelier_jsx::{JsxLang, lower_source};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 use crate::ide::offset_to_position;
 

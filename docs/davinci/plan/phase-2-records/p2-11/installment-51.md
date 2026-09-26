@@ -11,9 +11,9 @@ refusals and byte divergences against the shipped DOM lane.
 
 The durable witnesses are:
 
-- [`davinci_dom_corpus.rs`](../../../../../crates/vize_s1_to_s2/tests/davinci_dom_corpus.rs)
+- [`davinci_dom_corpus.rs`](../../../../../crates/vize_l1_to_l2/tests/davinci_dom_corpus.rs)
   - implements the committed battery plus env-widened corpus sweep.
-- [`Cargo.toml`](../../../../../crates/vize_s1_to_s2/Cargo.toml)
+- [`Cargo.toml`](../../../../../crates/vize_l1_to_l2/Cargo.toml)
   - registers the feature-gated test entry.
 - [`corpus.rs`](../../../../../tests/davinci_test_support/src/corpus.rs)
   - supplies the fail-closed canonical corpus scope proof.

@@ -1,4 +1,4 @@
-use vize_s0::String;
+use vize_l0::String;
 
 /// Hardcoded `any`-typed value stubs. Skipped whenever the project ships a
 /// generated `.nuxt` import manifest, which covers all of these names with

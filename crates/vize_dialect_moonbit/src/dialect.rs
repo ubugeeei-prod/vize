@@ -1,7 +1,7 @@
-//! The MoonBit answers to the S2 expression capability contract.
+//! The MoonBit answers to the L2 expression capability contract.
 //!
 //! [`MoonBitDialect`] is the first implementor of
-//! [`vize_s2::expr::capability::ExprDialect`] (charter #28: the trait had
+//! [`vize_l2::expr::capability::ExprDialect`] (charter #28: the trait had
 //! none until phase 6). It answers for `ExprRef::Foreign` payloads of
 //! dialect [`crate::sfc::DIALECT`]; every other variant gets the pessimal
 //! answers the contract prescribes. The answers come from a lexical scan
@@ -13,9 +13,9 @@
 
 use core::fmt;
 
-use vize_s0::Span;
-use vize_s2::expr::ExprRef;
-use vize_s2::expr::capability::ExprDialect;
+use vize_l0::Span;
+use vize_l2::expr::ExprRef;
+use vize_l2::expr::capability::ExprDialect;
 
 use crate::sfc::DIALECT;
 use scan::{Tok, scan};

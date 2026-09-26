@@ -7,7 +7,7 @@ use vize_dialect_moonbit::host::{CheckUnit, MooncHost};
 use vize_dialect_moonbit::native::NativeMoonc;
 use vize_dialect_moonbit::typed::{MoonBitTypedGuest, project};
 use vize_extension_contract::typed_expression::TypedExpressionSession;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[expect(
     clippy::unwrap_used,
@@ -95,5 +95,5 @@ fn unsupported_custom_types_fail_in_the_interface_without_guessing() {
     batch.environment.first_mut().unwrap().signature = "UnknownCustomType".into();
     let mut session = TypedExpressionSession::open(MoonBitTypedGuest::new(host())).unwrap();
     let error = session.analyze(&batch).unwrap_err();
-    support::golden("typed-unknown", ".host-error", &vize_s0::cstr!("{error}"));
+    support::golden("typed-unknown", ".host-error", &vize_l0::cstr!("{error}"));
 }

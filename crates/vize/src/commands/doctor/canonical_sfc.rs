@@ -6,7 +6,7 @@ use vize_doctor::{
     FindingConfidence, FindingEvidence, FindingFix, FindingImpact, FindingSeverity, HealthPenalty,
     RuleCost, SourceLocation, SuppressionPolicy,
 };
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 pub(super) const RULE_CODE: &str = "VIZE_DOCTOR_SFC_EXPLICIT_SECTIONS";
 
@@ -133,7 +133,7 @@ fn bounded_offset(offset: usize) -> u32 {
 mod tests {
     use super::*;
     use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-    use vize_s0::String;
+    use vize_l0::String;
 
     #[test]
     fn accepts_semantic_attribute_order_and_companion_script() {

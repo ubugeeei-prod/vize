@@ -1,4 +1,4 @@
-//! Native S3 expressions, handlers and content directives through the published
+//! Native L3 expressions, handlers and content directives through the published
 //! runtimes. Expectations are written out independently of either compiler.
 
 use super::native_control::element;

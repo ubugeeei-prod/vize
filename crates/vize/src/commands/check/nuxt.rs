@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use vize_canon::virtual_ts::VirtualTsOptions;
-use vize_s0::{FxHashSet, String, ToCompactString, config::VueVersion};
+use vize_l0::{FxHashSet, String, ToCompactString, config::VueVersion};
 
 mod fallback;
 mod generated;
@@ -175,7 +175,7 @@ fn missing_generated_types_warning(
 ) -> Option<String> {
     (!has_generated_imports).then(|| {
         if legacy_vue2 {
-            return vize_s0::cstr!(
+            return vize_l0::cstr!(
                 "vize check: no generated `{}` types found; Nuxt auto-imports fall back to `any` \
                  stubs and some type errors will be missed. For Nuxt 2/Bridge, run the project's \
                  Nuxt type-generation step or build once so the generated type directory exists.",
@@ -183,7 +183,7 @@ fn missing_generated_types_warning(
             );
         }
 
-        vize_s0::cstr!(
+        vize_l0::cstr!(
             "vize check: no generated `{}` types found; Nuxt auto-imports fall back to `any` \
              stubs and some type errors will be missed. Run `nuxi prepare` to generate them.",
             generated_dir.display()

@@ -70,7 +70,7 @@ const fn severity_name(severity: Severity) -> &'static str {
 /// Get available lint rules
 #[wasm_bindgen(js_name = "getLintRules")]
 pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
-    use vize_s0::FxHashSet;
+    use vize_l0::FxHashSet;
     let template_rule_registries = [
         RuleRegistry::with_preset(LintPreset::Opinionated),
         RuleRegistry::with_ecosystem(),
@@ -147,7 +147,7 @@ pub fn get_lint_rules_wasm() -> Result<JsValue, JsValue> {
     to_json_js_value(&rules)
 }
 
-fn rule_name_set(registry: RuleRegistry) -> vize_s0::FxHashSet<&'static str> {
+fn rule_name_set(registry: RuleRegistry) -> vize_l0::FxHashSet<&'static str> {
     registry
         .rules()
         .iter()

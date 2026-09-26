@@ -1,29 +1,29 @@
-//! S0: split a MoonBit SFC into its script and template frames.
+//! L0: split a MoonBit SFC into its script and template frames.
 //!
 //! The split is the shared SFC container scan
 //! (`vize_croquis::sfc::parse_sfc_without_css_vars`, the one compile, lint
 //! and the LSP read), never a private substring search. Every frame is an
-//! S0 [`SourceBlock`] over the complete authored file, so each span the
+//! L0 [`SourceBlock`] over the complete authored file, so each span the
 //! dialect hands on is file-absolute by construction.
 //!
 //! **Dialect selection is per file** (the capability contract's rule,
-//! `vize_s2::expr::capability`): a file's template expressions are MoonBit
+//! `vize_l2::expr::capability`): a file's template expressions are MoonBit
 //! exactly when its script block says `lang="moonbit"` (or `lang="mbt"`),
 //! the way `lang="ts"` makes them TypeScript today.
 
 use core::fmt;
 
 use vize_croquis::sfc::{BlockLocation, SfcParseOptions, parse_sfc_without_css_vars};
-use vize_s0::{SourceBlock, SourceRoot, String, ToCompactString};
+use vize_l0::{SourceBlock, SourceRoot, String, ToCompactString};
 
-/// The dialect id carried by every [`vize_s2::expr::ForeignExpr`] this
+/// The dialect id carried by every [`vize_l2::expr::ForeignExpr`] this
 /// crate builds.
 pub const DIALECT: &str = "moonbit";
 
 /// The script `lang` values that select the MoonBit expression dialect.
 pub const LANGS: [&str; 2] = ["moonbit", "mbt"];
 
-/// A MoonBit SFC, split at S0.
+/// A MoonBit SFC, split at L0.
 #[derive(Debug, Clone, Copy)]
 pub struct MoonBitSfc<'a> {
     /// The whole authored file.
@@ -104,7 +104,7 @@ pub fn split(source: &str) -> Result<MoonBitSfc<'_>, SfcError> {
     })
 }
 
-/// The block's content as an S0 frame over the whole file.
+/// The block's content as an L0 frame over the whole file.
 fn frame<'a>(root: SourceRoot<'a>, loc: &BlockLocation) -> Result<SourceBlock<'a>, SfcError> {
     let content = root
         .source()

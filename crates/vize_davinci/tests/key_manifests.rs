@@ -18,7 +18,7 @@ use vize_davinci::key::{
     source_block_key,
 };
 use vize_davinci::stage::Stage;
-use vize_s0::String;
+use vize_l0::String;
 
 const DOC: &str = include_str!("../../../docs/davinci/plan/key-manifests.md");
 
@@ -140,7 +140,7 @@ fn a_content_key_folds_only_into_its_own_artifact() {
             CachedArtifact::SourceBlock,
             &full_manifest(CachedArtifact::SourceBlock),
         )
-        .expect("an S0 key folds into the source-block manifest");
+        .expect("an L0 key folds into the source-block manifest");
     assert_eq!(
         (folded.stage(), folded.schema_version()),
         (s0.stage(), s0.schema_version())

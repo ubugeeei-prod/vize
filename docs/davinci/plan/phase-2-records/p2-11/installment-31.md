@@ -22,10 +22,10 @@ The realized cases are:
 
 The durable witnesses are:
 
-- [`emit_slot_template_carriers.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_slot_template_carriers.rs)
+- [`emit_slot_template_carriers.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_slot_template_carriers.rs)
   - exact direct S2 emitter output for interpolation, multi-child, native-child
     and createSlots carrier cases.
-- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_slots.rs)
+- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_slots.rs)
   - S2-vs-shipped byte fixtures for nested, stray, slot-outlet fallback and
     dynamic-name-hole cases.
 - [`croquis-consumption.md`](../../croquis-consumption.md)

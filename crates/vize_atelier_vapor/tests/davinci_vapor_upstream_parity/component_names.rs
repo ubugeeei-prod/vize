@@ -73,7 +73,7 @@ fn computed_names_remove_old_handlers_and_restore_static_props() {
         assert_eq!(
             WalkCounts::snapshot().since(before).total_walks(),
             0,
-            "{source}: native S3"
+            "{source}: native L3"
         );
         let vize = trace(
             "davinci-mounted-trace.mjs",

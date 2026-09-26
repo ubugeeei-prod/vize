@@ -1,3 +1,5 @@
+import { layerId } from "../../wasm/types/spolvero";
+
 // The flame view (C-4): profiler spans, pass x stage x block, as a flame
 // graph - and the same graph against a pinned baseline run. Frames come
 // straight from the P0-11 export's attributed totals; nothing is re-timed.
@@ -50,7 +52,8 @@ function fold(profile: ProfileExport, key: string): Node {
     if (span.key !== key) continue;
     let at = root;
     for (const level of LEVELS) {
-      const name = span.attribution?.[level] ?? "(unattributed)";
+      const value = span.attribution?.[level] ?? "(unattributed)";
+      const name = level === "stage" ? layerId(value) : value;
       const child = at.children.get(name) ?? node();
       at.children.set(name, child);
       child.nanos += span.wall_ns.total;

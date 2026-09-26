@@ -11,7 +11,7 @@ import {
   workspacePackage,
 } from "./support/davinci-stage-dependencies.ts";
 
-const domStageDeps = new Set(["vize_davinci", "vize_s1_to_s2", "vize_s2"]);
+const domStageDeps = new Set(["vize_davinci", "vize_l1_to_l2", "vize_l2"]);
 const compilerOptionsProjectedToS2 = [
   "mode",
   "prefix_identifiers",
@@ -67,13 +67,13 @@ const codegenOptionsProjectedToS2 = ["runtime_module_name", "runtime_global_name
 const codegenOptionsHandledAroundS2 = ["filename"];
 const codegenOptionsNoopForDomS2 = ["optimize_imports"];
 
-test("DOM compiler keeps the published S2 renderer available for profiling", () => {
+test("DOM compiler keeps the published L2 renderer available for profiling", () => {
   const dependencies = workspacePackage(metadata, "vize_atelier_dom").dependencies;
   const productionStageDeps = dependencies
     .filter((dependency) => dependency.kind === null && domStageDeps.has(dependency.name))
     .map((dependency) => dependency.name)
     .sort();
-  assert.deepEqual(productionStageDeps, ["vize_s1_to_s2"]);
+  assert.deepEqual(productionStageDeps, ["vize_l1_to_l2"]);
 
   const witnessDeps = dependencies
     .filter((dependency) => dependency.kind === "dev" && domStageDeps.has(dependency.name))
@@ -82,7 +82,7 @@ test("DOM compiler keeps the published S2 renderer available for profiling", () 
   assert.deepEqual(witnessDeps, ["vize_davinci"]);
 });
 
-test("source-map-disabled DOM compile records the S2 profiling counter", () => {
+test("source-map-disabled DOM compile records the L2 profiling counter", () => {
   const tmpDir = path.join(repoRoot, "target", "vize-tests", "tmp");
   fs.mkdirSync(tmpDir, { recursive: true });
 
@@ -93,8 +93,8 @@ test("source-map-disabled DOM compile records the S2 profiling counter", () => {
       "-p",
       "vize_atelier_dom",
       "--test",
-      "davinci_s2_profile",
-      "profile_reports_real_s2_dom_walks",
+      "davinci_l2_profile",
+      "profile_reports_real_l2_dom_walks",
       "--",
       "--exact",
     ],
@@ -107,10 +107,10 @@ test("source-map-disabled DOM compile records the S2 profiling counter", () => {
   );
 
   assert.equal(result.status, 0, result.stderr || result.stdout);
-  assert.match(result.stdout, /profile_reports_real_s2_dom_walks \.\.\. ok/u);
+  assert.match(result.stdout, /profile_reports_real_l2_dom_walks \.\.\. ok/u);
 });
 
-test("DOM S2 production switch classifies every compiler option", () => {
+test("DOM L2 production switch classifies every compiler option", () => {
   const fields = publicStructFieldNames(
     readRepoFile("crates", "vize_atelier_dom", "src", "options.rs"),
     "DomCompilerOptions",
@@ -149,11 +149,11 @@ test("DOM S2 production switch classifies every compiler option", () => {
   );
 });
 
-test("DOM S2 emit options stay scoped to the supported switch surface", () => {
+test("DOM L2 emit options stay scoped to the supported switch surface", () => {
   assert.deepEqual(
     [
       ...publicStructFieldNames(
-        readRepoFile("crates", "vize_s1_to_s2", "src", "emit", "options.rs"),
+        readRepoFile("crates", "vize_l1_to_l2", "src", "emit", "options.rs"),
         "DomEmitOptions",
       ),
     ].sort(),
@@ -161,7 +161,7 @@ test("DOM S2 emit options stay scoped to the supported switch surface", () => {
   );
 });
 
-test("DOM S2 production switch classifies every adapter codegen option", () => {
+test("DOM L2 production switch classifies every adapter codegen option", () => {
   const fields = publicStructFieldNames(
     readRepoFile("crates", "vize_relief", "src", "options.rs"),
     "CodegenOptions",
@@ -187,8 +187,8 @@ test("DOM production selector has no live env lane override", () => {
     ["crates", "vize_atelier_dom", "src", "compile.rs"],
     ["crates", "vize_atelier_dom", "src", "compile", "sfc.rs"],
     ["crates", "vize_atelier_dom", "src", "compile", "stage_options.rs"],
-    ["crates", "vize_s1_to_s2", "src", "emit.rs"],
-    ["crates", "vize_s1_to_s2", "src", "lib.rs"],
+    ["crates", "vize_l1_to_l2", "src", "emit.rs"],
+    ["crates", "vize_l1_to_l2", "src", "lib.rs"],
   ] as const;
 
   for (const sourcePath of liveSources) {
@@ -207,13 +207,13 @@ test("DOM SFC parser-backed sections do not force legacy codegen", () => {
 
   assert.match(
     source,
-    /if use_s2_emit && fast_path_supported && !codegen_opts\.source_map/u,
+    /if use_l2_emit && fast_path_supported && !codegen_opts\.source_map/u,
     "the direct SFC fast path guard must stay explicit",
   );
   assert.doesNotMatch(
     source,
-    /else\s+if\s+use_s2_emit\s*&&\s*!\s*fast_path_supported/u,
-    "parser-backed SFC sections must stay eligible for S2 after recovery",
+    /else\s+if\s+use_l2_emit\s*&&\s*!\s*fast_path_supported/u,
+    "parser-backed SFC sections must stay eligible for L2 after recovery",
   );
 });
 

@@ -21,7 +21,7 @@
 )]
 
 use vize_atelier_jsx::{JsxCompatMode, JsxCompileConfig, JsxLang, JsxOutputMode, compile_jsx};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 /// The diagnostic every non-slots-object `v-slots` value produces.
 fn not_a_slots_object(value: &str) -> String {

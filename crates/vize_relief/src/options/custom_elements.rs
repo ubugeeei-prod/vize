@@ -1,7 +1,7 @@
 //! Declarative custom-element tag matching.
 
 use std::vec::Vec;
-use vize_s0::String;
+use vize_l0::String;
 
 /// Declarative matcher for tags that should compile as custom elements.
 ///
@@ -129,7 +129,7 @@ fn tag_pattern_matches(pattern: &str, tag: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::CustomElementMatcher;
-    use vize_s0::String;
+    use vize_l0::String;
 
     fn is_tres(tag: &str) -> bool {
         tag.starts_with("Tres")

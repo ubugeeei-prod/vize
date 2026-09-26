@@ -29,7 +29,7 @@ use vize_extension_host::{
     ContractError, Diagnostic, DiagnosticPart, GuestError, HandshakeError, InputDialectGuest,
     PartKind, Session, Severity, SourceBlock, Span, Stage, Witness,
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use support::{CASES, Case, build_echo_guest, diagnostics_text, golden_texts};
 
@@ -204,9 +204,9 @@ fn probe_diagnostics() -> Vec<Diagnostic> {
     };
     vec![
         every_part,
-        plain(Severity::Warning, Stage::Source, "a warning from S0"),
-        plain(Severity::Info, Stage::Semantic, "information from S2"),
-        plain(Severity::Hint, Stage::Lowered, "a hint from S3"),
+        plain(Severity::Warning, Stage::Source, "a warning from L0"),
+        plain(Severity::Info, Stage::Semantic, "information from L2"),
+        plain(Severity::Hint, Stage::Lowered, "a hint from L3"),
         plain(
             Severity::Error,
             Stage::Emit,

@@ -14,10 +14,10 @@ render back exactly — _including malformed input_: broken source becomes
 first-class `unexpected` nodes and required-but-absent tokens become `missing`
 tokens, so every consumer sees one uniformly-shaped tree with holes
 ([SwiftParser](https://github.com/swiftlang/swift-syntax/blob/main/Sources/SwiftParser/SwiftParser.docc/SwiftParser.md)).
-_Import:_ S1 encodes `Unexpected`/`Missing` as typed node kinds — no per-
-consumer error special-casing, one documented hole policy for S1→S2; and the
+_Import:_ L1 encodes `Unexpected`/`Missing` as typed node kinds — no per-
+consumer error special-casing, one documented hole policy for L1→L2; and the
 cheapest high-yield verifier in the survey: debug-assert
-`render(tree) == source` bytes on every S1 construction.
+`render(tree) == source` bytes on every L1 construction.
 _Anti-lesson:_ don't copy the persistent value-semantic tree implementation
 (arena + single writer is right for us), and don't build incremental reparse
 until LSP profiling demands it — Swift's exists and is barely used.
@@ -58,10 +58,10 @@ is classified **mandatory-diagnostic / mandatory-lowering / optional-
 optimization**; raw→canonical is a type-level transition per stage; mandatory
 passes are unfusable barriers that run at every opt level and define where
 diagnostics attach (dataflow-hungry lint rules become mandatory-diagnostic
-passes over canonical S2/S3 — structurally ending the two-path diagnostic
+passes over canonical L2/L3 — structurally ending the two-path diagnostic
 assembly problem). Only optional passes participate in fusion and the
 traversal budget.
-_Anti-lesson:_ OSSA took ~8 years to retrofit — S3's state edges are
+_Anti-lesson:_ OSSA took ~8 years to retrofit — L3's state edges are
 verifier-first from birth.
 
 ## GHC
@@ -70,12 +70,12 @@ verifier-first from birth.
 because binders carry types, re-typechecking is linear and local, and
 `-dcore-lint` runs it between every pass ("checks GHC's sanity, not yours"),
 with sibling lints at every later IR.
-_Import:_ the design property, not the tool — S2/S3 nodes carry enough
+_Import:_ the design property, not the tool — L2/L3 nodes carry enough
 redundant typing/shape information that verification is **local** (a node +
 its operands' declared facts), no global inference; verifiers run between
 passes (after each fused group minimum) so failures name the offending pass.
 _Anti-lesson:_ type-well-formedness won't capture reactivity semantics the way
-System FC's types capture Haskell's — S3's verifier needs explicit semantic
+System FC's types capture Haskell's — L3's verifier needs explicit semantic
 invariants (state-edge liveness, extraction preserves the edge set) beyond
 "it type-checks"; budget for it.
 
@@ -89,7 +89,7 @@ _Import:_ per-declaration fingerprints + record-what-you-used becomes the
 per-SFC summary invalidation rule; the **orphan equivalent is named now** —
 app-global facts (global components, app-level provide/inject, dialect-wide
 directives) get a dedicated global summary with its own fingerprint instead of
-pretending to be per-file; and a hard rule: **S3 code-shape decisions never
+pretending to be per-file; and a hard rule: **L3 code-shape decisions never
 enter the interface summary** — a summary describes the contract, never the
 chosen optimization, or hot-path tuning ripples recompilation project-wide.
 IDE artifacts (HIE-like: positions, types-at-locations) are a separate
@@ -117,7 +117,7 @@ measured benefit**, under a decrementing budget
 compiler fork is link-incompatible — a whole ecosystem manages the split.
 _Import:_
 
-- **Try-measure-commit for S3 extraction**: candidate placements (hoist /
+- **Try-measure-commit for L3 extraction**: candidate placements (hoist /
   cache / inline / group) are performed, locally simplified with fact-engine
   approximations in scope, measured (emitted size, reactive-edge count,
   update-path length), and committed only on positive benefit under a
@@ -146,7 +146,7 @@ syntax, with before/after pairs for macro expansion, replayable context
 snapshots — **and partial results are kept when elaboration fails**, so hover
 works in broken code. All LSP features walk this one tree.
 _Import:_ Davinci provenance records carry `(rule name, input node,
-before/after, context)` at every lowering decision; partial S2/S3 fragments
+before/after, context)` at every lowering decision; partial L2/L3 fragments
 survive errors so the LSP and DevTool stay live on broken SFCs; one structure
 feeds the DevTool ladder, remarks, and hover.
 _Anti-lesson:_ InfoTree is memory-heavy — provenance is ring-buffered/off in
@@ -160,7 +160,7 @@ rule (old syntax ≡ new syntax ⇒ adopt old subtree), cascade-cancellation
 tokens, and a watchdog/per-file-worker server.
 _Import:_ a **third incrementality mode layered under salsa** — salsa at
 file/summary granularity, snapshot-adoption inside an SFC at natural joints
-(header → block → S2 region), covering most keystroke traffic without pushing
+(header → block → L2 region), covering most keystroke traffic without pushing
 salsa finer. Cancellation tokens through every stage task; worker isolation by
 threads + catch-unwind (not per-file processes — Lean's file sizes afford
 those, ours don't); "header changed ⇒ restart" maps to the per-SFC summary firewall.
@@ -207,26 +207,26 @@ no notation extensibility, rigid MLIR-style syntax keeps the oracle trivial.
 **Metaprogramming anti-lesson.** Lean's arbitrary in-process syntax
 extensibility forces environment-dependent parsing, dynamic dispatch, and
 process isolation for non-halting user code. Davinci's inversion is
-validated: dialects are a closed enum at S1; WASM extensions contribute facts
+validated: dialects are a closed enum at L1; WASM extensions contribute facts
 and rules, never grammar. One structural import: dialect lowerings that
 synthesize identifiers (slot props, `v-for` scopes) need hygiene-style scope
 tagging so synthesized names can't capture user bindings.
 
 ## Recent literature (2022–2026)
 
-**Region IRs validated — S2 as designed.** V8 abandoned sea-of-nodes for a CFG
+**Region IRs validated — L2 as designed.** V8 abandoned sea-of-nodes for a CFG
 IR in 2025 with compile time halved
 ([Land ahoy](https://v8.dev/blog/leaving-the-sea-of-nodes)): graph IRs pay off
 only when operations are pure and reorderable, and JS is effect-dominated. UI
 templates are effect-dominated _and_ structured by construction, so
-region-structured S2 is what the field converged to — and Davinci skips
+region-structured L2 is what the field converged to — and Davinci skips
 RVSDG's expensive restructuring step because templates have no gotos
 ([RVSDG, TECS 2020](https://dl.acm.org/doi/10.1145/3391902)). One RVSDG
-mechanism imported: **state edges** — S3 encodes DOM/effect ordering as
+mechanism imported: **state edges** — L3 encodes DOM/effect ordering as
 explicit dependencies, not implicit walk order, making partition and grouping
 local graph queries. _Import now._
 
-**Rendering as incremental view maintenance — the S3 theory.**
+**Rendering as incremental view maintenance — the L3 theory.**
 [DBSP (VLDB 2023 best paper)](https://docs.feldera.com/vldb23.pdf): every
 operator has an incremental form; linear operators incrementalize for free,
 non-linear ones need memoization. Mapping: a keyed `v-for` is a linear
@@ -266,14 +266,14 @@ small and mostly confluent — full eqsat solves phase-ordering problems we don'
 have, and binder-heavy terms (`v-for` scopes) are where e-graphs still hurt
 ([slotted e-graphs, PLDI 2025](https://dl.acm.org/doi/10.1145/3729326)). The
 transferable shape is Cranelift's aegraph discipline: **keep placement
-alternatives explicit in S3 (hoisted/cached/inline/grouped) and defer the
+alternatives explicit in L3 (hoisted/cached/inline/grouped) and defer the
 choice to one cost-driven extraction point** instead of committing during the
 walk. _Deferred-extraction: prototype later if greedy decisions pessimize._
 
 **Testing.** [MetaMut (ASPLOS 2024)](https://connglli.github.io/pdfs/metamut_asplos24.pdf) /
 WhiteFox (OOPSLA 2024): Folio dumps make Davinci a metamorphic-testing
 goldmine — semantics-preserving SFC mutations (attribute reorder, pass-through
-wrappers, text-node splits) must yield S3 folios identical modulo ids; an
+wrappers, text-node splits) must yield L3 folios identical modulo ids; an
 LLM-guided loop that reads an optimization pass and synthesizes exercising
 templates layers onto the corpus harness cheaply. Alive2-style full SMT
 translation validation is overkill; per-stage reference semantics +

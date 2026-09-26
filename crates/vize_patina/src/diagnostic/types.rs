@@ -7,10 +7,10 @@
 use oxc_diagnostics::OxcDiagnostic;
 use oxc_span::Span;
 use serde::Serialize;
-use vize_s0::CompactString;
-use vize_s0::String;
-use vize_s0::ToCompactString;
-use vize_s0::cstr;
+use vize_l0::CompactString;
+use vize_l0::String;
+use vize_l0::ToCompactString;
+use vize_l0::cstr;
 
 use super::formatting::{HelpRenderTarget, render_help};
 

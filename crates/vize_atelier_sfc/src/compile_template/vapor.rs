@@ -5,7 +5,7 @@ use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomEleme
 use vize_atelier_vapor::{
     VaporCompilerExperimentalOptions, VaporCompilerOptions, compile_vapor_with_sfc_context,
 };
-use vize_s0::{Allocator, String, ToCompactString};
+use vize_l0::{Allocator, String, ToCompactString};
 
 use crate::{
     compile_template::{
@@ -52,7 +52,7 @@ pub(crate) fn compile_template_block_vapor(
         ..VaporCompilerExperimentalOptions::default()
     };
 
-    let scope_attr = has_scoped.then(|| vize_s0::cstr!("data-v-{scope_id}"));
+    let scope_attr = has_scoped.then(|| vize_l0::cstr!("data-v-{scope_id}"));
 
     // Compile template with Vapor
     let (result, diagnostics) = compile_vapor_with_sfc_context(
@@ -93,13 +93,13 @@ pub(crate) fn compile_template_block_vapor(
 
 fn rewrite_vapor_import(line: &str, runtime_module_name: &str) -> String {
     let (source, replacement) = if line.contains("'vue/vapor'") {
-        ("'vue/vapor'", vize_s0::cstr!("'{runtime_module_name}'"))
+        ("'vue/vapor'", vize_l0::cstr!("'{runtime_module_name}'"))
     } else if line.contains("\"vue/vapor\"") {
-        ("\"vue/vapor\"", vize_s0::cstr!("\"{runtime_module_name}\""))
+        ("\"vue/vapor\"", vize_l0::cstr!("\"{runtime_module_name}\""))
     } else if line.contains("'vue'") {
-        ("'vue'", vize_s0::cstr!("'{runtime_module_name}'"))
+        ("'vue'", vize_l0::cstr!("'{runtime_module_name}'"))
     } else if line.contains("\"vue\"") {
-        ("\"vue\"", vize_s0::cstr!("\"{runtime_module_name}\""))
+        ("\"vue\"", vize_l0::cstr!("\"{runtime_module_name}\""))
     } else {
         return line.to_compact_string();
     };

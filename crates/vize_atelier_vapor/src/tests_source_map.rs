@@ -2,7 +2,7 @@
 //!
 //! Every test pins the full generated code and every decoded segment, rendered
 //! as `generated text -> authored text [name]`, for both the legacy lowering
-//! lane and the native S3 lane. The decoder is local on purpose: it must not
+//! lane and the native L3 lane. The decoder is local on purpose: it must not
 //! share code with the encoder it checks.
 
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
@@ -43,7 +43,7 @@ fn source_map_disabled_by_default_yields_none() {
 fn both_lanes_map_templates_branches_and_loops_byte_exactly() {
     let source =
         "<ul>\n<li v-if=\"ok\">Y</li><li v-else>N</li><i v-for=\"x in xs\">{{ x }}</i>\n</ul>";
-    // The native S3 lane admits this template; binding metadata forces the
+    // The native L3 lane admits this template; binding metadata forces the
     // legacy lane. Both must emit the same code with the same map.
     let (code, segments) = mapped(source);
     assert_eq!(

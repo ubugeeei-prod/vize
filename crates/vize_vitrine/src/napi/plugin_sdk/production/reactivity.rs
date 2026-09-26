@@ -4,7 +4,7 @@ use serde_json::{Value, json};
 use vize_croquis::facts::{ReactivityFact, ReactivityKey};
 use vize_croquis::reactivity::{ReactiveKind, ReactivityLossKind};
 use vize_impeto::lattice::EffectKind;
-fn strings(values: &[vize_s0::String]) -> Vec<&str> {
+fn strings(values: &[vize_l0::String]) -> Vec<&str> {
     values.iter().map(|value| value.as_str()).collect()
 }
 pub fn project((key, value): (&ReactivityKey, &ReactivityFact)) -> Value {

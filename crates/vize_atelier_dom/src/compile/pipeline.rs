@@ -3,12 +3,12 @@ use vize_atelier_core::options::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum S2EmitSelection {
+pub(super) enum L2EmitSelection {
     Allowed,
     RequireSections,
-    /// The entry point declines S2 (compatibility entries, differential old side).
+    /// The entry point declines L2 (compatibility entries, differential old side).
     Disabled,
-    /// S2 was already attempted for this compile and refused it.
+    /// L2 was already attempted for this compile and refused it.
     Refused,
 }
 
@@ -16,11 +16,11 @@ pub(super) struct DomCompilePipelineOptions {
     pub(super) custom_elements: CustomElementMatcher,
     pub(super) codegen_options: CodegenOptions,
     pub(super) codegen_experimental_options: CodegenExperimentalOptions,
-    pub(super) s2_emit_selection: S2EmitSelection,
+    pub(super) l2_emit_selection: L2EmitSelection,
 }
 
 impl DomCompilePipelineOptions {
-    pub(super) fn allow_s2(
+    pub(super) fn allow_l2(
         custom_elements: CustomElementMatcher,
         codegen_options: CodegenOptions,
     ) -> Self {
@@ -28,11 +28,11 @@ impl DomCompilePipelineOptions {
             custom_elements,
             codegen_options,
             codegen_experimental_options: CodegenExperimentalOptions::default(),
-            s2_emit_selection: S2EmitSelection::Allowed,
+            l2_emit_selection: L2EmitSelection::Allowed,
         }
     }
 
-    pub(super) fn allow_s2_with_experimental_options(
+    pub(super) fn allow_l2_with_experimental_options(
         custom_elements: CustomElementMatcher,
         codegen_options: CodegenOptions,
         codegen_experimental_options: CodegenExperimentalOptions,
@@ -41,7 +41,7 @@ impl DomCompilePipelineOptions {
             custom_elements,
             codegen_options,
             codegen_experimental_options,
-            s2_emit_selection: S2EmitSelection::Allowed,
+            l2_emit_selection: L2EmitSelection::Allowed,
         }
     }
 
@@ -53,7 +53,7 @@ impl DomCompilePipelineOptions {
             custom_elements,
             codegen_options,
             codegen_experimental_options: CodegenExperimentalOptions::default(),
-            s2_emit_selection: S2EmitSelection::RequireSections,
+            l2_emit_selection: L2EmitSelection::RequireSections,
         }
     }
 
@@ -66,13 +66,13 @@ impl DomCompilePipelineOptions {
             custom_elements,
             codegen_options,
             codegen_experimental_options,
-            s2_emit_selection: S2EmitSelection::RequireSections,
+            l2_emit_selection: L2EmitSelection::RequireSections,
         }
     }
 
-    /// The legacy lane, S2 declined — the differential lanes' old side.
+    /// The legacy lane, L2 declined — the differential lanes' old side.
     #[cfg(feature = "davinci-differential")]
-    pub(super) fn deny_s2(
+    pub(super) fn deny_l2(
         custom_elements: CustomElementMatcher,
         codegen_options: CodegenOptions,
     ) -> Self {
@@ -80,11 +80,11 @@ impl DomCompilePipelineOptions {
             custom_elements,
             codegen_options,
             codegen_experimental_options: CodegenExperimentalOptions::default(),
-            s2_emit_selection: S2EmitSelection::Disabled,
+            l2_emit_selection: L2EmitSelection::Disabled,
         }
     }
 
-    /// The legacy lane after the SFC fast path's S2 attempt refused the
+    /// The legacy lane after the SFC fast path's L2 attempt refused the
     /// template: sections still come from compatibility codegen, and the
     /// selection accounting names the refusal rather than the entry.
     pub(super) fn after_refusal_with_experimental_options(
@@ -96,7 +96,7 @@ impl DomCompilePipelineOptions {
             custom_elements,
             codegen_options,
             codegen_experimental_options,
-            s2_emit_selection: S2EmitSelection::Refused,
+            l2_emit_selection: L2EmitSelection::Refused,
         }
     }
 
@@ -109,7 +109,7 @@ impl DomCompilePipelineOptions {
             custom_elements,
             codegen_options,
             codegen_experimental_options,
-            s2_emit_selection: S2EmitSelection::Disabled,
+            l2_emit_selection: L2EmitSelection::Disabled,
         }
     }
 }

@@ -1,14 +1,14 @@
 //! Batch resolution of declaration-ordered `entries[].linter.rules`.
 
 use std::path::{Path, PathBuf};
-use vize_patina::{HelpLevel, LintPreset, Linter, Locale, Severity};
-use vize_s0::{
+use vize_l0::{
     FxHashMap, String,
     config::{
         ConfigLintRuleOptions, LintRuleSeverity, LinterConfigPlanWithConfigRuleOptions,
         LinterFeatureFlags,
     },
 };
+use vize_patina::{HelpLevel, LintPreset, Linter, Locale, Severity};
 
 mod rule_option_mapping;
 

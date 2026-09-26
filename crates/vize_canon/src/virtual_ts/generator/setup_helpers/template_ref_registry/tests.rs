@@ -1,11 +1,11 @@
 use vize_croquis::Croquis;
+use vize_l0::{CompactString, FxHashSet};
 use vize_relief::BindingType;
-use vize_s0::{CompactString, FxHashSet};
 
 use super::super::super::template_record::TemplateRecord;
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions};
 
-fn registry_of(template: &str) -> Option<vize_s0::String> {
+fn registry_of(template: &str) -> Option<vize_l0::String> {
     registry_for("const box = useTemplateRef('box')", template).map(|registry| registry.body)
 }
 
@@ -41,7 +41,7 @@ fn registry_checked(
     (summary, options): (&Croquis, &VirtualTsOptions),
     checked: (VirtualTsCheckOptions, &TemplateRecord),
 ) -> Option<super::TemplateRefRegistry> {
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
     super::template_ref_registry(
         summary,

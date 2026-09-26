@@ -1,6 +1,6 @@
 use corsa::runtime::block_on;
 use serde_json::Value;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::{EditorLspSession, requests::RawTypeDefinitionRequest};
 

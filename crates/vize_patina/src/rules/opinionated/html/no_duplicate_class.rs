@@ -26,8 +26,8 @@ use crate::diagnostic::Severity;
 use crate::ir::ByteRange;
 use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use vize_l0::FxHashSet;
 use vize_relief::ElementNode;
-use vize_s0::FxHashSet;
 
 static META: RuleMeta = RuleMeta {
     name: "html/no-duplicate-class",

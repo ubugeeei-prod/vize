@@ -1,11 +1,11 @@
-# Pre-S2 traversal baseline (P2-12a)
+# Pre-L2 traversal baseline (P2-12a)
 
 > [!NOTE]
 > The phase-2 "before". Each number is the delta of
 > `vize_atelier_core::walk_probe` around **one** fused compile of the fixture
 > on that backend — the template-node **visits** and stage tree-**walks**
 > today's still-live pipeline makes. Phase 2 replaces the stage-per-tree
-> pipeline with S2 and a pass manager, and its exit gate compares the result
+> pipeline with L2 and a pass manager, and its exit gate compares the result
 > against this table, so the table is recorded at phase start, before the work
 > that could bias it. This is the P0-3 convention
 > ([`expr-reparse-baseline.md`](./expr-reparse-baseline.md)) applied to
@@ -150,12 +150,12 @@ neither is in scope.
   default `cargo test --workspace` lane rather than a feature-gated one (the
   P1-5/P1-7 counter-law shape).
 
-## Native Vapor S3 selection (2026-09-20)
+## Native Vapor L3 selection (2026-09-20)
 
 The table above remains the legacy-plan baseline. `davinci_walk_baseline` now
 selects that route explicitly with empty binding metadata so its exact visit
 counts stay meaningful. `davinci_vapor_artifact` independently pins zero legacy
-core-transform/Vapor-lower walks and zero expression reparses for admitted S3
+core-transform/Vapor-lower walks and zero expression reparses for admitted L3
 native artifacts, and two legacy walks for unsupported shapes. This does not
-claim that the parser preflight or S1/S2/S3 conversion performs no traversal, or
+claim that the parser preflight or L1/L2/L3 conversion performs no traversal, or
 that the full Vapor lane has migrated. See the [P3-6 contract](./phase-3-records/p3-6.md).

@@ -4,7 +4,7 @@
 //! was exercised only by fixtures it defined itself. Here the three shipped
 //! backends' template traversals are declared as [`Pipeline`] const data, so
 //! the pass manager is the authority on what the compiler walks **today** —
-//! before any pass body has moved onto S2, and therefore before there is
+//! before any pass body has moved onto L2, and therefore before there is
 //! anything to compare a migration against.
 //!
 //! # Why this lives in `vize_davinci` and not in `vize_atelier_core`
@@ -17,7 +17,7 @@
 //! and it is not a packaging detail — **no published crate can consume any
 //! Davinci crate until the program decides to publish them**, which is a
 //! question P2-11 has to answer before the DOM backend can actually run on
-//! S2, not after.
+//! L2, not after.
 //!
 //! So the plans live here and the backends read them from their
 //! **dev-dependencies**, which is the same shape `davinci_harness` already
@@ -51,14 +51,14 @@
 //!
 //! Phase 2's DOM target (`budgets.toml`'s `[target.phase-2]`,
 //! `dom_walks_max = 1`) is exactly the claim that [`DOM`] below becomes one
-//! group once P2-11 moves the DOM backend onto S2. That is measurable against
+//! group once P2-11 moves the DOM backend onto L2. That is measurable against
 //! this declaration rather than against prose.
 
 use crate::pass::{Fusability, PassDesc, PassKind, Pipeline, Preserved};
 
 /// The template stage every plan here runs over.
 ///
-/// Named for what it is today rather than for S2: these passes read and mutate
+/// Named for what it is today rather than for L2: these passes read and mutate
 /// the `vize_relief` template AST, and calling that `s2` would make the folio
 /// pages and profile attributions lie about which IR was walked.
 pub const TEMPLATE_STAGE: &str = "template";

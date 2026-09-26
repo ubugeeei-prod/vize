@@ -23,7 +23,7 @@ metadata.vize.stability = "alpha-supported"
 _legacy = []
 
 [dependencies]
-vize_s0 = { workspace = true }
+vize_l0 = { workspace = true }
 # The unified diagnostic channel compiler errors adapt onto (P4-14b).
 vize_davinci = { workspace = true }
 

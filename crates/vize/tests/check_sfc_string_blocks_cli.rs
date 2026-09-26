@@ -7,7 +7,7 @@ use std::{
     process::Command,
 };
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[test]
 fn check_ignores_sfc_blocks_inside_script_string_literals() {

@@ -123,9 +123,9 @@ pub use ir::{
 pub use linter::script_rules::{BuiltinScriptRuleMeta, builtin_script_rules};
 pub use linter::{LintResult, Linter};
 pub use markup::{
-    MarkupAttribute, MarkupBinding, MarkupBindingKind, MarkupConditional, MarkupContext,
-    MarkupDirective, MarkupDocument, MarkupDocumentVisitor, MarkupElement, MarkupElementKind,
-    MarkupList, MarkupNode, MarkupRule, MarkupText, S2Markup, S2Template,
+    L2Markup, L2Template, MarkupAttribute, MarkupBinding, MarkupBindingKind, MarkupConditional,
+    MarkupContext, MarkupDirective, MarkupDocument, MarkupDocumentVisitor, MarkupElement,
+    MarkupElementKind, MarkupList, MarkupNode, MarkupRule, MarkupText,
 };
 pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
 pub use preset::LintPreset;
@@ -137,7 +137,7 @@ pub use telegraph::{
     TextEmitter,
 };
 pub use vize_atelier_jsx::JsxLang;
-pub use vize_s0::i18n::Locale;
+pub use vize_l0::i18n::Locale;
 
 /// Lint a Vue template source with default rules
 ///

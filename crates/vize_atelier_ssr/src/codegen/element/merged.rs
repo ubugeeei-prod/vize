@@ -20,7 +20,7 @@ use super::{
     TemplateChildNode, ToCompactString, VNodePropEntry, cstr,
 };
 use vize_atelier_core::codegen::document::EmitDocument;
-use vize_s0::{camelize, is_builtin_directive};
+use vize_l0::{camelize, is_builtin_directive};
 
 /// The merged attributes of one element and the content a temp owns.
 pub(super) struct MergedAttrs {

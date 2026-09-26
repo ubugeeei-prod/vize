@@ -1,6 +1,6 @@
-//! P3-2 reactivity lattice facts for S3.
+//! P3-2 reactivity lattice facts for L3.
 //!
-//! The production S2-to-S3 lowering will feed this module from retained AST
+//! The production L2-to-L3 lowering will feed this module from retained AST
 //! summaries. The first slice keeps that boundary explicit: callers provide a
 //! compact effect/escape summary per binding, and the naive evaluator publishes
 //! a typed fact group plus a folio page.

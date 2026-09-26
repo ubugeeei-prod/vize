@@ -17,10 +17,10 @@ use vize_davinci::render::{Catalog, EnglishCatalog, Phrase, Renderer, SourceFile
 use vize_fresco::{
     ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
 };
+use vize_l0::i18n::{Locale, Translator, translator};
+use vize_l0::{FxHashMap, SourceRoot, String, cstr};
 use vize_patina::output::unified::{UnifiedError, to_unified};
 use vize_patina::{HelpRenderTarget, LintDiagnostic, LintResult, OutputFormat, render_help};
-use vize_s0::i18n::{Locale, Translator, translator};
-use vize_s0::{FxHashMap, SourceRoot, String, cstr};
 
 /// The `--format` value selecting this renderer.
 const RICH: &str = "rich";
@@ -183,7 +183,7 @@ fn refused(out: &mut String, catalog: &LocaleCatalog, lint: &LintDiagnostic) {
 pub(crate) fn unify(lint: &LintDiagnostic, source: &str) -> Result<Diagnostic, UnifiedError> {
     let root = SourceRoot::new(source).map_err(|_| UnifiedError::SpanOutsideSource {
         rule: lint.rule_name,
-        span: vize_s0::Span::new(lint.start, lint.end),
+        span: vize_l0::Span::new(lint.start, lint.end),
     })?;
     let mut diagnostic = to_unified(lint, root)?;
     let parts = core::mem::take(&mut diagnostic.parts);
@@ -219,10 +219,10 @@ pub(crate) fn unify(lint: &LintDiagnostic, source: &str) -> Result<Diagnostic, U
 #[cfg(test)]
 mod tests {
     use super::{LocaleCatalog, refused, unify};
+    use vize_l0::i18n::Locale;
+    use vize_l0::{Span, String};
     use vize_patina::LintDiagnostic;
     use vize_patina::output::unified::UnifiedError;
-    use vize_s0::i18n::Locale;
-    use vize_s0::{Span, String};
 
     #[test]
     fn a_range_outside_the_file_is_refused_yet_still_reported() {

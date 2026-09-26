@@ -16,11 +16,11 @@ import { hasStorage, scanStorage, storageKinds, type FileStorage } from "./davin
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const libraryRoots = [
   "crates/vize_davinci/src",
-  "crates/vize_s1/src",
-  "crates/vize_s2/src",
+  "crates/vize_l1/src",
+  "crates/vize_l2/src",
   "crates/vize_impeto/src",
-  "crates/vize_s1_to_s2/src",
-  "crates/vize_s2_to_s3/src",
+  "crates/vize_l1_to_l2/src",
+  "crates/vize_l2_to_l3/src",
 ];
 const inventoryPath = path.join(repoRoot, "docs/davinci/plan/storage-inventory.tsv");
 const davinciOptRoot = "crates/vize_davinci/src/bin/davinci-opt/";
@@ -41,11 +41,11 @@ function isDavinciOptHostEdge(relative: string): boolean {
 
 function scopeFor(file: string): StorageScope {
   if (file.startsWith("crates/vize_davinci/")) return "infra";
-  if (file.startsWith("crates/vize_s1/")) return "s1";
-  if (file.startsWith("crates/vize_s2/")) return "s2";
-  if (file.startsWith("crates/vize_impeto/")) return "s3";
-  if (file.startsWith("crates/vize_s1_to_s2/")) return "s1_to_s2";
-  if (file.startsWith("crates/vize_s2_to_s3/")) return "s2_to_s3";
+  if (file.startsWith("crates/vize_l1/")) return "l1";
+  if (file.startsWith("crates/vize_l2/")) return "l2";
+  if (file.startsWith("crates/vize_impeto/")) return "l3";
+  if (file.startsWith("crates/vize_l1_to_l2/")) return "l1_to_l2";
+  if (file.startsWith("crates/vize_l2_to_l3/")) return "l2_to_l3";
   throw new Error(`unknown storage scope: ${file}`);
 }
 
@@ -125,7 +125,7 @@ test("all owned storage equals the reviewed per-file inventory", () => {
 
 test("production inventory excludes cfg(test) size evidence", () => {
   const byFile = new Map(expectedRows.map((row) => [row.file, row]));
-  assert.deepEqual(byFile.get("crates/vize_s1_to_s2/src/emit/on.rs")?.storage.allocVec, {
+  assert.deepEqual(byFile.get("crates/vize_l1_to_l2/src/emit/on.rs")?.storage.allocVec, {
     directPaths: 0,
     boundUses: 0,
   });

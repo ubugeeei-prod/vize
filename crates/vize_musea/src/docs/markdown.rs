@@ -7,7 +7,7 @@
 
 use super::{DocOptions, DocOutput};
 use crate::types::{ArtDescriptor, ArtStatus, ArtVariant};
-use vize_s0::{String, ToCompactString, append, cstr};
+use vize_l0::{String, ToCompactString, append, cstr};
 
 /// Generate Markdown documentation for a single Art component.
 ///

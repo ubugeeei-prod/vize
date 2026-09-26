@@ -17,7 +17,7 @@ use vize_extension_host::wasm::WasmGuest;
 use vize_extension_host::{
     ContractError, GuestError, GuestLimits, InputDialectGuest, Session, SourceBlock,
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use support::{CASES, build_echo_guest, golden_texts};
 

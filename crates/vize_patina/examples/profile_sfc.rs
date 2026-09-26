@@ -3,8 +3,8 @@
 //! `cargo run --profile ci-opt -p vize_patina --example profile_sfc -- <directory> 100`
 //! enables wall timing; set `VIZE_LINT_PROFILE=1` for per-pass attribution.
 use std::{fs, hint::black_box, time::Instant};
+use vize_l0::profiler::global_profiler;
 use vize_patina::Linter;
-use vize_s0::profiler::global_profiler;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let directory = std::env::args()

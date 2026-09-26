@@ -8,10 +8,10 @@
 
 use vize_davinci::diagnostic::Severity as Claim;
 use vize_davinci::render::{Catalog, Phrase};
+use vize_l0::i18n::Locale;
+use vize_l0::{String, cstr};
 use vize_patina::{HelpRenderTarget, render_help, rule_docs_path};
 use vize_relief::CompilerError;
-use vize_s0::i18n::Locale;
-use vize_s0::{String, cstr};
 
 use super::catalog::LocaleCatalog;
 use super::examples;
@@ -85,7 +85,7 @@ pub(crate) fn page(subject: &Subject, catalog: &LocaleCatalog, color: bool) -> S
             }
         }
         Subject::Rule(rule) => rule_page(&mut out, paint, catalog, rule, color),
-        Subject::Canon(_) | Subject::S3(_) | Subject::CrossFile(_) => {
+        Subject::Canon(_) | Subject::L3(_) | Subject::CrossFile(_) => {
             producer_page(&mut out, paint, catalog, subject, color)
         }
     }
@@ -101,7 +101,7 @@ fn producer_page(
 ) {
     let (kind, key) = match subject {
         Subject::Canon(_) => ("explain.kind.type", String::from(subject.code())),
-        Subject::S3(_) => ("explain.kind.verifier", cstr!("s3/{}", subject.code())),
+        Subject::L3(_) => ("explain.kind.verifier", cstr!("s3/{}", subject.code())),
         Subject::CrossFile(_) => ("explain.kind.cross-file", String::from(subject.code())),
         _ => return,
     };

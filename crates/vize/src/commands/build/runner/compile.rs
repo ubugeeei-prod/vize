@@ -4,7 +4,7 @@
 //!
 //! The batch is file-parallel over rayon and every compile allocates from an
 //! arena, which is no longer built per file: the compiler takes it from
-//! `vize_s0::pool`, a per-worker free list, and returns it — reset, not
+//! `vize_l0::pool`, a per-worker free list, and returns it — reset, not
 //! freed — when the compile ends. Rayon worker threads outlive the batch, so
 //! one arena serves every file a worker takes, and the next file bumps into
 //! memory that is already mapped.
@@ -19,7 +19,7 @@
 //!   [`CompileError`], [`FileProfile`], the stats cache entries — so nothing
 //!   here borrows an arena, and the resident cache in `super::cache` keeps
 //!   data that outlives the arena that produced it;
-//! - `vize_s0::pool::checked_out()` is asserted to be zero once a file's
+//! - `vize_l0::pool::checked_out()` is asserted to be zero once a file's
 //!   artifacts are in hand, here and in `super::compile_stats`. That is the
 //!   runtime half of the contract: a pool guard parked anywhere it must not be
 //!   would keep an arena pinned across files.
@@ -37,10 +37,10 @@ use vize_atelier_sfc::{
     StyleCompileOptions, TemplateCompileOptions,
     compile_sfc_with_custom_elements_template_syntax_codegen_and_experimental_options, parse_sfc,
 };
-use vize_s0::cstr;
-use vize_s0::profile;
-use vize_s0::profiler::global_profiler;
-use vize_s0::{String, ToCompactString};
+use vize_l0::cstr;
+use vize_l0::profile;
+use vize_l0::profiler::global_profiler;
+use vize_l0::{String, ToCompactString};
 
 use crate::commands::build::ScriptExtension;
 use crate::commands::build::config::{
@@ -68,7 +68,7 @@ pub(super) fn compile_file_with_profile(
 ) -> Result<(CompileOutput, FileProfile), CompileError> {
     if let Some(injection) = settings.davinci.injection_for(path)
         && (injection.when.is_none()
-            || injection.fires_on(&vize_s0::source_io::read_to_string(path).unwrap_or_default()))
+            || injection.fires_on(&vize_l0::source_io::read_to_string(path).unwrap_or_default()))
     {
         // The injected pass was validated to be in the plan; should it not run,
         // the file compiles normally.
@@ -105,7 +105,7 @@ fn ice_error(
     failure: &davinci_ice::IceFailure,
     inject: Option<&davinci_ice::Injection>,
 ) -> CompileError {
-    let source = vize_s0::source_io::read_to_string(path).unwrap_or_default();
+    let source = vize_l0::source_io::read_to_string(path).unwrap_or_default();
     let folio = davinci_ice::source_repro(
         settings.davinci.plan_string.as_str(),
         settings.davinci.mode,
@@ -145,7 +145,7 @@ fn compile_file_inner(
     // Read file
     let source = match profile!(
         "cli.build.file.read",
-        vize_s0::source_io::read_to_string(path)
+        vize_l0::source_io::read_to_string(path)
     ) {
         Ok(source) => {
             global_profiler().record_fs_read_to_string(source.len());
@@ -284,7 +284,7 @@ fn compile_file_inner(
     // so this worker must be holding no arena. A non-zero count means a pool
     // guard was parked somewhere it outlives one file.
     debug_assert_eq!(
-        vize_s0::pool::checked_out(),
+        vize_l0::pool::checked_out(),
         0,
         "a pooled arena is still checked out after compiling {}",
         path.display()

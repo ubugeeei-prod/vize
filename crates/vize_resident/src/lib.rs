@@ -5,12 +5,12 @@
 //!
 //! **Experimental:** the API may change in any alpha release.
 //!
-//! - [`artifact`] — the owned per-block artifacts (S0 source block, S1
-//!   surface, S2 page) and the pure stage functions that compute them. They
+//! - [`artifact`] — the owned per-block artifacts (L0 source block, L1
+//!   surface, L2 page) and the pure stage functions that compute them. They
 //!   are the clean path TS-42 compares the tier with.
 //! - [`db`] — [`ResidentDatabase`]: file texts and project config as inputs,
 //!   [`Block`](db::Block) as the firewall (content and position as separate
-//!   tracked fields), and the `sfc_blocks` → `s1_block` / `s2_page` queries.
+//!   tracked fields), and the `sfc_blocks` → `l1_block` / `l2_page` queries.
 //! - [`descriptor`] — [`ResidentDocuments`]: the SFC descriptor as a
 //!   memoized query, one parse per buffer revision for Maestro's request
 //!   paths (P5-6a). A rejected parse is kept in the same memo (P5-6b).

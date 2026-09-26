@@ -2,7 +2,7 @@
 //
 // The scan is intentionally observational: it records where the compiler,
 // linter, typechecker, typechecker content-mapper, formatter, and LSP still
-// name Davinci/S0/S1/S2, legacy AST/parser/Croquis crates, or raw OXC crates.
+// name Davinci/L0/L1/L2, legacy AST/parser/Croquis crates, or raw OXC crates.
 // It does not change runtime wiring and is safe to merge before any rollout.
 //
 // The committed inventory is sharded so parallel PRs stop conflicting on it:

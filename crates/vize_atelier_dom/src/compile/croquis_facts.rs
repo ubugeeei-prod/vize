@@ -1,4 +1,4 @@
-//! The Croquis summary projected onto the S2 binding table (P3-17).
+//! The Croquis summary projected onto the L2 binding table (P3-17).
 //!
 //! The legacy transform lane consumes an attached Croquis summary in exactly
 //! two places (`vize_atelier_core::lane::context`):
@@ -6,11 +6,11 @@
 //! - `get_reactive_kind` — the reactivity tracker's `lookup(name)` — decides
 //!   the inline-mode `.value` / `_unref` reads in the identifier collector and
 //!   the simple-identifier fallback. That is projected as
-//!   [`ReactiveRead`] facts, name for name, onto the table the S2 transform
+//!   [`ReactiveRead`] facts, name for name, onto the table the L2 transform
 //!   rewrite reads.
 //! - `is_component_registered` — Croquis `used_components` or a Croquis
 //!   `SetupConst` binding — promotes a lowercase non-native tag to a
-//!   component. The S2 lane resolves components from the binding metadata
+//!   component. The L2 lane resolves components from the binding metadata
 //!   alone, so the projection is exact only when the summary registers
 //!   nothing the metadata lacks; otherwise the compile stays on the legacy
 //!   lane under the `croquis` reason.
@@ -22,11 +22,11 @@
 use vize_atelier_core::options::{BindingMetadata, BindingType};
 use vize_croquis::Croquis;
 use vize_croquis::facts::{Bindings, BindingsTable, CroquisFacts, Demand, FactConsumer, FactGroup};
-use vize_s1_to_s2::{BindingTable, ReactiveRead};
+use vize_l1_to_l2::{BindingTable, ReactiveRead};
 
 use crate::options::DomCompilerOptions;
 
-/// Whether `options` carries a Croquis summary the S2 lane cannot
+/// Whether `options` carries a Croquis summary the L2 lane cannot
 /// reproduce from binding metadata (P3-17). A projectable summary is
 /// admitted: non-inline DOM reads the metadata table plus the summary's
 /// reactivity facts, and the production-path oracle holds those compiles
@@ -38,12 +38,12 @@ pub(in crate::compile) fn unprojectable_croquis(options: &DomCompilerOptions) ->
         .is_some_and(|croquis| !projectable(croquis, options.binding_metadata.as_ref()))
 }
 
-/// The binding table the S2 emitter reads: the script's binding metadata
+/// The binding table the L2 emitter reads: the script's binding metadata
 /// plus, when a Croquis summary is attached, its reactivity facts.
-pub(in crate::compile) fn s2_binding_table_for(
+pub(in crate::compile) fn l2_binding_table_for(
     options: &DomCompilerOptions,
 ) -> Option<BindingTable> {
-    let table = super::stage_options::s2_binding_table(options.binding_metadata.as_ref())?;
+    let table = super::stage_options::l2_binding_table(options.binding_metadata.as_ref())?;
     Some(match options.croquis.as_deref() {
         Some(croquis) => with_reactive_reads(table, croquis),
         None => table,
@@ -97,7 +97,7 @@ mod tests {
     use vize_atelier_core::options::{BindingMetadata, BindingType};
     use vize_croquis::Croquis;
     use vize_croquis::reactivity::ReactiveKind;
-    use vize_s1_to_s2::{BindingTable, ReactiveRead};
+    use vize_l1_to_l2::{BindingTable, ReactiveRead};
 
     #[test]
     fn reactive_reads_follow_the_trackers_last_registration() {

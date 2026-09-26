@@ -30,7 +30,7 @@ use super::facts::{demanded_facts, resolve_demands};
 /// The batch wire format's version; part of every content key.
 pub const BATCH_SCHEMA: u32 = 1;
 
-/// Every S2 mnemonic a manifest may visit.
+/// Every L2 mnemonic a manifest may visit.
 pub const NODE_KINDS: &[&str] = &[
     "ui.element",
     "ui.component",

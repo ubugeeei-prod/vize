@@ -1,7 +1,7 @@
 // Offset arithmetic between the compiler's coordinates and the editor's.
 //
 // Every Davinci stage span is a UTF-8 byte offset into the template content
-// (the S1 page text, by the TS-19 fidelity law). Monaco and JavaScript strings
+// (the L1 page text, by the TS-19 fidelity law). Monaco and JavaScript strings
 // count UTF-16 code units. These helpers convert exactly in both directions
 // without re-deriving anything from the compiler.
 

@@ -70,7 +70,7 @@ calls in its script frame (`<script>` content, `\n`, `<script setup>`
 content when both exist), and the rules reported those offsets through the
 template frame. `vize_patina::output::frame::ScriptFrame` now maps the
 script-analysis frame to the file block by block, validated through
-`vize_s0::{SourceRoot, SourceBlock}`, and both the rule path
+`vize_l0::{SourceRoot, SourceBlock}`, and both the rule path
 (`LintContext::report_in_script`) and the native type-aware static warnings
 report through it; a range no block contains is refused, never guessed.
 

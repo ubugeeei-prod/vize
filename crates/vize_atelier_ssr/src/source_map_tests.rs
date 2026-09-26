@@ -16,7 +16,7 @@ use crate::{
     compile_ssr_with_template_syntax_and_experimental_options,
 };
 use vize_atelier_core::TemplateSyntaxMode;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 const BASE64: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 

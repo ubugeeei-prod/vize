@@ -9,13 +9,13 @@ use vize_atelier_core::options::{
     TemplateSyntaxMode, TransformOptions, WhitespaceStrategy,
 };
 use vize_atelier_core::walk_probe::WalkCounts;
-use vize_s0::profiler::global_profiler;
-use vize_s0::{Allocator, profile};
-use vize_s1_to_s2::{
+use vize_l0::profiler::global_profiler;
+use vize_l0::{Allocator, profile};
+use vize_l1_to_l2::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, DomEmitSections, EmitError, LegacyCaps,
 };
 
-use super::pipeline::S2EmitSelection;
+use super::pipeline::L2EmitSelection;
 use super::selection::DomLegacyReason;
 use crate::namespace::get_namespace;
 use crate::options::DomCompilerOptions;
@@ -23,8 +23,8 @@ use crate::options::DomCompilerOptions;
 /// Parser options with DOM-specific settings.
 pub(super) fn parser_options(options: &DomCompilerOptions) -> ParserOptions {
     ParserOptions {
-        is_void_tag: vize_s0::is_void_tag,
-        is_native_tag: Some(vize_s0::is_native_tag),
+        is_void_tag: vize_l0::is_void_tag,
+        is_native_tag: Some(vize_l0::is_native_tag),
         custom_renderer: options.custom_renderer,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
@@ -78,51 +78,51 @@ pub(super) fn codegen_options(
     }
 }
 
-pub(super) fn s2_emit_supported(
+pub(super) fn l2_emit_supported(
     options: &DomCompilerOptions,
     codegen: &CodegenOptions,
     custom_elements: &CustomElementMatcher,
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
-    s2_emit_selection: S2EmitSelection,
+    l2_emit_selection: L2EmitSelection,
     experimental_self_component: bool,
 ) -> bool {
-    s2_emit_refusal(
+    l2_emit_refusal(
         options,
         codegen,
         custom_elements,
         template_syntax,
         has_croquis,
-        s2_emit_selection,
+        l2_emit_selection,
         experimental_self_component,
     )
     .is_none()
 }
 
-/// The first gate that keeps this compile off the S2 emitter, if any.
-pub(super) fn s2_emit_refusal(
+/// The first gate that keeps this compile off the L2 emitter, if any.
+pub(super) fn l2_emit_refusal(
     options: &DomCompilerOptions,
     _codegen: &CodegenOptions,
     _custom_elements: &CustomElementMatcher,
     template_syntax: TemplateSyntaxMode,
     has_croquis: bool,
-    s2_emit_selection: S2EmitSelection,
+    l2_emit_selection: L2EmitSelection,
     experimental_self_component: bool,
 ) -> Option<DomLegacyReason> {
     #[cfg(feature = "davinci-differential")]
     if super::selection::differential::legacy_forced() {
         return Some(DomLegacyReason::Forced);
     }
-    let reason = match s2_emit_selection {
-        S2EmitSelection::Disabled => DomLegacyReason::Entry,
-        S2EmitSelection::Refused => DomLegacyReason::EmitRefused,
-        S2EmitSelection::Allowed | S2EmitSelection::RequireSections if options.ssr => {
+    let reason = match l2_emit_selection {
+        L2EmitSelection::Disabled => DomLegacyReason::Entry,
+        L2EmitSelection::Refused => DomLegacyReason::EmitRefused,
+        L2EmitSelection::Allowed | L2EmitSelection::RequireSections if options.ssr => {
             DomLegacyReason::Ssr
         }
         _ if options.experimental_patterned_template => DomLegacyReason::PatternedTemplate,
         _ if experimental_self_component => DomLegacyReason::SelfComponent,
         _ if options.custom_renderer => DomLegacyReason::CustomRenderer,
-        // S2 lowering currently implements only the default condense mode.
+        // L2 lowering currently implements only the default condense mode.
         _ if vize_atelier_core::parser::current_whitespace_strategy(
             WhitespaceStrategy::Condense,
         ) != WhitespaceStrategy::Condense
@@ -130,7 +130,7 @@ pub(super) fn s2_emit_refusal(
         {
             DomLegacyReason::Whitespace
         }
-        _ if options.dialect != vize_s0::config::VueVersion::V3 => DomLegacyReason::Dialect,
+        _ if options.dialect != vize_l0::config::VueVersion::V3 => DomLegacyReason::Dialect,
         _ if template_syntax != TemplateSyntaxMode::Standard => DomLegacyReason::TemplateSyntax,
         _ if has_croquis => DomLegacyReason::Croquis,
         _ => return None,
@@ -145,21 +145,21 @@ pub(super) fn source_may_contain_patterned_template_syntax(source: &str) -> bool
 /// Whether the source may carry an `@vize:` directive comment. The shipped
 /// parser keeps those comments as children even with `comments` off (codegen
 /// and the linter read them), so an element holding one keeps its children
-/// slot (`createElementBlock("div", null, null)`); the S2 lowering drops them.
+/// slot (`createElementBlock("div", null, null)`); the L2 lowering drops them.
 /// A cheap superset scan keeps such templates on the lane that owns them
 /// (P3-17, found by the SFC snapshot oracle).
 pub(super) fn source_may_contain_vize_directive_comment(source: &str) -> bool {
     source.contains("@vize:")
 }
 
-/// The published DOM option surface projected onto the S2 emitter.
+/// The published DOM option surface projected onto the L2 emitter.
 ///
 /// Keep this conversion beside the legacy parse/transform wiring: the public
-/// compiler still returns its AST and diagnostics, while S2 owns the supported
+/// compiler still returns its AST and diagnostics, while L2 owns the supported
 /// traversal surface. Source-map requests attach a verified compatibility map
 /// in `compile::source_map`; a field missing here must stay on the compatibility
-/// path rather than becoming an accidental S2 default.
-pub(super) fn s2_emit_options<'a>(
+/// path rather than becoming an accidental L2 default.
+pub(super) fn l2_emit_options<'a>(
     options: &'a DomCompilerOptions,
     codegen: &'a CodegenOptions,
     custom_elements: &'a CustomElementMatcher,
@@ -193,15 +193,15 @@ pub(super) fn s2_emit_options<'a>(
     })
 }
 
-pub(super) use super::croquis_facts::{s2_binding_table_for, unprojectable_croquis};
+pub(super) use super::croquis_facts::{l2_binding_table_for, unprojectable_croquis};
 
-pub(super) fn s2_binding_table(metadata: Option<&BindingMetadata>) -> Option<BindingTable> {
+pub(super) fn l2_binding_table(metadata: Option<&BindingMetadata>) -> Option<BindingTable> {
     metadata.map(|metadata| {
         BindingTable::new(
             metadata
                 .bindings
                 .iter()
-                .map(|(name, kind)| (name.as_str(), s2_binding_kind(*kind))),
+                .map(|(name, kind)| (name.as_str(), l2_binding_kind(*kind))),
             metadata
                 .props_aliases
                 .iter()
@@ -212,7 +212,7 @@ pub(super) fn s2_binding_table(metadata: Option<&BindingMetadata>) -> Option<Bin
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent compile inputs")]
-pub(super) fn try_emit_s2(
+pub(super) fn try_emit_l2(
     allocator: &Allocator,
     source: &str,
     options: &DomCompilerOptions,
@@ -222,8 +222,8 @@ pub(super) fn try_emit_s2(
     experimental_component_name: Option<&str>,
     pre_s2_walks: Option<WalkCounts>,
 ) -> Option<CodegenResultWithSections> {
-    let binding_table = s2_binding_table_for(options);
-    let emit_options = s2_emit_options(
+    let binding_table = l2_binding_table_for(options);
+    let emit_options = l2_emit_options(
         options,
         codegen,
         custom_elements,
@@ -233,7 +233,7 @@ pub(super) fn try_emit_s2(
     )?;
     profile!(
         "atelier.dom.template.s2_codegen",
-        emit_s2(
+        emit_l2(
             allocator,
             source,
             options.dialect,
@@ -245,11 +245,11 @@ pub(super) fn try_emit_s2(
     .ok()
 }
 
-/// Emit one DOM module through S2, with the SFC-only slot check when requested.
-pub(super) fn emit_s2(
+/// Emit one DOM module through L2, with the SFC-only slot check when requested.
+pub(super) fn emit_l2(
     allocator: &Allocator,
     source: &str,
-    dialect: vize_s0::config::VueVersion,
+    dialect: vize_l0::config::VueVersion,
     options: &DomEmitOptions<'_>,
     pre_s2_walks: Option<WalkCounts>,
     strict_slot_params: bool,
@@ -258,11 +258,11 @@ pub(super) fn emit_s2(
     let profiler = global_profiler();
     let emit = if profiler.is_enabled() {
         let observed = if strict_slot_params {
-            vize_s1_to_s2::emit_dom_source_sfc_observed_with_options(
+            vize_l1_to_l2::emit_dom_source_sfc_observed_with_options(
                 allocator, source, caps, options,
             )?
         } else {
-            vize_s1_to_s2::emit_dom_source_observed_with_options(allocator, source, caps, options)?
+            vize_l1_to_l2::emit_dom_source_observed_with_options(allocator, source, caps, options)?
         };
         let budget = observed.budget;
         // P2-12b observes the compiler path that actually produced this DOM
@@ -296,9 +296,9 @@ pub(super) fn emit_s2(
         observed.emit
     } else {
         if strict_slot_params {
-            vize_s1_to_s2::emit_dom_source_sfc_with_options(allocator, source, caps, options)?
+            vize_l1_to_l2::emit_dom_source_sfc_with_options(allocator, source, caps, options)?
         } else {
-            vize_s1_to_s2::emit_dom_source_with_options(allocator, source, caps, options)?
+            vize_l1_to_l2::emit_dom_source_with_options(allocator, source, caps, options)?
         }
     };
     Ok(CodegenResultWithSections {
@@ -307,13 +307,13 @@ pub(super) fn emit_s2(
             preamble: emit.preamble,
             map: None,
         },
-        // S2 records the same structural render-module boundaries as the
+        // L2 records the same structural render-module boundaries as the
         // shipped emitter so SFC assembly can slice either lane identically.
-        sections: Some(s2_codegen_sections(emit.sections)),
+        sections: Some(l2_codegen_sections(emit.sections)),
     })
 }
 
-const fn s2_codegen_sections(sections: DomEmitSections) -> CodegenSections {
+const fn l2_codegen_sections(sections: DomEmitSections) -> CodegenSections {
     CodegenSections {
         imports_len: sections.imports_len,
         assets_start: sections.assets_start,
@@ -323,7 +323,7 @@ const fn s2_codegen_sections(sections: DomEmitSections) -> CodegenSections {
     }
 }
 
-const fn s2_binding_kind(kind: BindingType) -> BindingKind {
+const fn l2_binding_kind(kind: BindingType) -> BindingKind {
     match kind {
         BindingType::SetupLet => BindingKind::SetupLet,
         BindingType::SetupMaybeRef => BindingKind::SetupMaybeRef,

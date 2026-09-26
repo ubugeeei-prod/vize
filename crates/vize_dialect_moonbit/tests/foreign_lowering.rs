@@ -1,10 +1,10 @@
 //! The semantic lowering carries the chosen language before projection.
 
 use vize_dialect_moonbit::{dialect::MoonBitDialect, sfc::split};
-use vize_s0::Allocator;
-use vize_s1_to_s2::{ForeignDialect, LegacyCaps, lower_source_block_with_foreign_expressions};
-use vize_s2::expr::ExprRef;
-use vize_s2::op::{BindingOp, DynamicName, Op};
+use vize_l0::Allocator;
+use vize_l1_to_l2::{ForeignDialect, LegacyCaps, lower_source_block_with_foreign_expressions};
+use vize_l2::expr::ExprRef;
+use vize_l2::op::{BindingOp, DynamicName, Op};
 
 fn binding_expressions<'a>(bindings: &[BindingOp<'a>], out: &mut Vec<ExprRef<'a>>) {
     for binding in bindings {
@@ -66,7 +66,7 @@ fn every_expression_is_foreign_and_scopes_keep_exact_authored_names() {
     let source = r#"<script setup lang="moonbit">let x = 1</script><template><section><button :[name]="x" @[event]="x.val += 1" v-show="show.val">{{ if show.val { x.val } else { 0 } }}</button><p v-for="(item, i) in items">{{ item }}</p><Comp v-slot="props" :title><slot :name /></Comp></section></template>"#;
     let allocator = Allocator::new();
     let sfc = split(source).unwrap();
-    let (tree, errors) = vize_s1::parse(&allocator, sfc.template.source());
+    let (tree, errors) = vize_l1::parse(&allocator, sfc.template.source());
     let dialect = ForeignDialect::new::<MoonBitDialect>("moonbit").unwrap();
     let lowered = lower_source_block_with_foreign_expressions(
         &allocator,

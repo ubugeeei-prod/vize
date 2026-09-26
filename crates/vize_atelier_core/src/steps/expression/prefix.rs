@@ -5,7 +5,7 @@
 
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use vize_s0::{FxHashSet, String};
+use vize_l0::{FxHashSet, String};
 
 use super::is_template_global;
 

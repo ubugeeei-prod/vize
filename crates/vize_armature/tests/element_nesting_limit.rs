@@ -17,11 +17,11 @@
 )]
 
 use vize_armature::parse;
+use vize_l0::Allocator;
 use vize_relief::{
     TemplateChildNode,
     errors::{CompilerError, ErrorCode},
 };
-use vize_s0::Allocator;
 
 /// Mirrors `MAX_ELEMENT_NESTING_DEPTH` in `parser::element::nesting`.
 const NESTING_LIMIT: usize = 4096;

@@ -2,7 +2,7 @@
 //! SFC linting.
 //!
 //! The pug block is swapped for its derived Vue template
-//! (`vize_s1_to_s2::lower::pug::PugBlockView`), the SFC lints through the
+//! (`vize_l1_to_l2::lower::pug::PugBlockView`), the SFC lints through the
 //! one template lane exactly as an HTML template would, and every range
 //! maps back onto the authored pug. Autofixes computed on the derived
 //! template have no pug spelling, so a fix that edits the block is dropped
@@ -10,7 +10,7 @@
 //! pre-dialect behaviour; its compile reports the refusal.
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_s1_to_s2::lower::pug::PugBlockView;
+use vize_l1_to_l2::lower::pug::PugBlockView;
 
 use crate::linter::config::{LintResult, Linter};
 

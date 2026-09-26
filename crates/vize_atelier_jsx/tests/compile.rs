@@ -11,7 +11,7 @@ use vize_atelier_jsx::{
     JsxCompileConfig, JsxCompileOutput, JsxComponent, JsxLang, JsxOutputMode, compile_jsx,
     resolve_mode,
 };
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 fn compile(src: &str, config: &JsxCompileConfig) -> JsxCompileOutput {
     let bump = Allocator::new();

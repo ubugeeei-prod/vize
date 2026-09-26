@@ -16,7 +16,7 @@ The storage ratchet was reduced in the same PR for the reviewed
 
 The durable current witness is:
 
-- [`davinci_s2_outlets.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_outlets.rs)
+- [`davinci_s2_outlets.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_outlets.rs)
   — S2-vs-shipped byte-for-byte coverage for slot outlet name and prop shapes.
 
 This installment does not tick P2-11. Malformed slot-region guards, the

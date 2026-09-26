@@ -75,7 +75,7 @@ fn auto_close_tag(ctx: &IdeContext<'_>, selection: usize) -> Option<String> {
     }
     let (name, tag_start) = start_tag_before(&ctx.content, region, end)?;
     if ctx.content.get(tag_start..end)?.trim_end().ends_with('/')
-        || vize_s0::is_void_tag(name)
+        || vize_l0::is_void_tag(name)
         || already_has_close_tag(&ctx.content, selection, name)
     {
         return None;
@@ -197,7 +197,7 @@ fn nearest_unclosed_tag(content: &str, region: (usize, usize), before: usize) ->
                 stack.truncate(index);
             }
         } else if !name.is_empty()
-            && !vize_s0::is_void_tag(name)
+            && !vize_l0::is_void_tag(name)
             && content
                 .get(cursor..tag_end)
                 .is_some_and(|tag| !tag.trim_end_matches('>').trim_end().ends_with('/'))

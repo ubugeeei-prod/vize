@@ -9,9 +9,9 @@ use oxc_ast_visit::{
     walk::{walk_assignment_expression, walk_object_property, walk_update_expression},
 };
 use oxc_syntax::scope::ScopeFlags;
+use vize_l0::FxHashSet;
+use vize_l0::String;
 use vize_relief::ExpressionScope;
-use vize_s0::FxHashSet;
-use vize_s0::String;
 
 use super::is_template_global;
 

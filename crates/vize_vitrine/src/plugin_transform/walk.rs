@@ -1,13 +1,13 @@
-//! Page-order numbering includes attached bindings, exactly as S2 lowering.
+//! Page-order numbering includes attached bindings, exactly as L2 lowering.
 use super::schema::{Attribute as WireAttribute, Node};
-use vize_s2::op::{Attribute, Namespace, Op, Region};
+use vize_l2::op::{Attribute, Namespace, Op, Region};
 
 pub(super) fn visit<'a>(
     region: &mut Region<'a>,
     next: &mut u32,
     visitor: &mut impl FnMut(u32, &mut Op<'a>),
 ) {
-    vize_s0::ensure_sufficient_stack(|| visit_guarded(region, next, visitor));
+    vize_l0::ensure_sufficient_stack(|| visit_guarded(region, next, visitor));
 }
 
 fn visit_guarded<'a>(
@@ -69,6 +69,6 @@ fn attribute(attr: &Attribute<'_>) -> WireAttribute {
         name: attr.name.to_owned(),
         value: attr
             .value
-            .map(|value| vize_s1_to_s2::emit::decode_html_attribute_entities(value).to_string()),
+            .map(|value| vize_l1_to_l2::emit::decode_html_attribute_entities(value).to_string()),
     }
 }

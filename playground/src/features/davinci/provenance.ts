@@ -1,7 +1,7 @@
-// The S2 provenance page (`[s2-provenance-folio]`) read back into records:
+// The L2 provenance page (`[s2-provenance-folio]`) read back into records:
 // which rule produced an op, from which authored bytes - the answer to "why
 // is this here?" - plus the records of what was dropped and the facts passes
-// attached. The grammar is `vize_s2::folio::provenance`'s; nothing is
+// attached. The grammar is `vize_l2::folio::provenance`'s; nothing is
 // inferred beyond it.
 
 import type { Range } from "./offsets";

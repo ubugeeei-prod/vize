@@ -135,15 +135,15 @@ function typechecker() {
   return consumer;
 }
 
-void test("Canon recent issue tests import S0 through the preferred name", () => {
+void test("Canon recent issue tests import L0 through the preferred name", () => {
   const rows = typechecker().fileRows;
 
   for (const [relPath, mode, sites] of recentIssueRows) {
     const row = rows.find((candidate) => candidate.relPath === relPath && candidate.mode === mode);
     assert.ok(row, `${relPath} (${mode})`);
-    assert.equal(row.surfaceCounts.s0, sites, relPath);
-    assert.equal(row.surfaceNameCounts.s0.vize_s0, sites, relPath);
-    assert.equal(row.surfaceNameCounts.s0.vize_carton ?? 0, 0, relPath);
+    assert.equal(row.surfaceCounts.l0, sites, relPath);
+    assert.equal(row.surfaceNameCounts.l0.vize_l0, sites, relPath);
+    assert.equal(row.surfaceNameCounts.l0.vize_carton ?? 0, 0, relPath);
 
     const source = fs.readFileSync(path.join(repoRoot, relPath), "utf8");
     assert.doesNotMatch(source, /\bvize_carton\b/u, relPath);
@@ -152,7 +152,7 @@ void test("Canon recent issue tests import S0 through the preferred name", () =>
   const migratedPaths = new Set(recentIssueRows.map(([relPath]) => relPath));
   const compatRows = rows
     .filter((row) => migratedPaths.has(row.relPath))
-    .filter((row) => (row.surfaceNameCounts.s0.vize_carton ?? 0) > 0)
+    .filter((row) => (row.surfaceNameCounts.l0.vize_carton ?? 0) > 0)
     .map((row) => `${row.relPath}:${row.mode}`);
   assert.deepEqual(compatRows, []);
 });

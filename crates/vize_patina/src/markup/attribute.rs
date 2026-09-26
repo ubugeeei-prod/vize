@@ -3,14 +3,14 @@
 use super::jsx_names::{
     jsx_attribute_name, jsx_attribute_ref, jsx_static_value, jsx_value_is_dynamic,
 };
-use super::s2::S2Markup;
-use super::s2::surface::{attr_span, attr_value};
-use super::{loc_to_range, s2_range, span_to_range};
+use super::l2::L2Markup;
+use super::l2::surface::{attr_span, attr_value};
+use super::{l2_range, loc_to_range, span_to_range};
 use crate::ir::ByteRange;
 use oxc_ast::ast::JSXAttribute;
 use std::marker::PhantomData;
+use vize_l2::op::Attribute;
 use vize_relief::AttributeNode;
-use vize_s2::op::Attribute;
 
 #[derive(Clone, Copy)]
 enum MarkupAttributeInner<'a> {
@@ -19,13 +19,13 @@ enum MarkupAttributeInner<'a> {
         node: *const JSXAttribute<'a>,
         offset: u32,
     },
-    S2 {
+    L2 {
         attribute: &'a Attribute<'a>,
-        doc: &'a S2Markup<'a>,
+        doc: &'a L2Markup<'a>,
     },
     Surface {
-        attr: &'a vize_s1::Attribute<'a>,
-        doc: &'a S2Markup<'a>,
+        attr: &'a vize_l1::Attribute<'a>,
+        doc: &'a L2Markup<'a>,
         name: &'a str,
     },
 }
@@ -53,13 +53,13 @@ impl<'a> MarkupAttribute<'a> {
         Self::from_inner(MarkupAttributeInner::Jsx { node, offset })
     }
 
-    pub(super) const fn from_s2(attribute: &'a Attribute<'a>, doc: &'a S2Markup<'a>) -> Self {
-        Self::from_inner(MarkupAttributeInner::S2 { attribute, doc })
+    pub(super) const fn from_l2(attribute: &'a Attribute<'a>, doc: &'a L2Markup<'a>) -> Self {
+        Self::from_inner(MarkupAttributeInner::L2 { attribute, doc })
     }
 
     pub(super) const fn from_surface(
-        attr: &'a vize_s1::Attribute<'a>,
-        doc: &'a S2Markup<'a>,
+        attr: &'a vize_l1::Attribute<'a>,
+        doc: &'a L2Markup<'a>,
     ) -> Self {
         Self::from_inner(MarkupAttributeInner::Surface {
             attr,
@@ -69,8 +69,8 @@ impl<'a> MarkupAttribute<'a> {
     }
 
     pub(super) const fn from_authored(
-        attr: &'a vize_s1::Attribute<'a>,
-        doc: &'a S2Markup<'a>,
+        attr: &'a vize_l1::Attribute<'a>,
+        doc: &'a L2Markup<'a>,
         name: &'a str,
     ) -> Self {
         Self::from_inner(MarkupAttributeInner::Surface { attr, doc, name })
@@ -83,7 +83,7 @@ impl<'a> MarkupAttribute<'a> {
             MarkupAttributeInner::Jsx { node, .. } => {
                 jsx_attribute_name(&jsx_attribute_ref(node).name)
             }
-            MarkupAttributeInner::S2 { attribute, .. } => attribute.name,
+            MarkupAttributeInner::L2 { attribute, .. } => attribute.name,
             MarkupAttributeInner::Surface { name, .. } => name,
         }
     }
@@ -98,7 +98,7 @@ impl<'a> MarkupAttribute<'a> {
         match self.inner {
             MarkupAttributeInner::Relief(node) => node.value.as_ref().map(|value| value.content),
             MarkupAttributeInner::Jsx { node, .. } => jsx_static_value(jsx_attribute_ref(node)),
-            MarkupAttributeInner::S2 { attribute, doc } => {
+            MarkupAttributeInner::L2 { attribute, doc } => {
                 attribute.value.map(|value| doc.decode_attribute(value))
             }
             MarkupAttributeInner::Surface { attr, doc, .. } => {
@@ -114,7 +114,7 @@ impl<'a> MarkupAttribute<'a> {
                 jsx_value_is_dynamic(jsx_attribute_ref(node).value.as_ref())
             }
             MarkupAttributeInner::Relief(_)
-            | MarkupAttributeInner::S2 { .. }
+            | MarkupAttributeInner::L2 { .. }
             | MarkupAttributeInner::Surface { .. } => false,
         }
     }
@@ -126,9 +126,9 @@ impl<'a> MarkupAttribute<'a> {
             MarkupAttributeInner::Jsx { node, offset } => {
                 span_to_range(jsx_attribute_ref(node).span, offset)
             }
-            MarkupAttributeInner::S2 { attribute, .. } => s2_range(attribute.span),
+            MarkupAttributeInner::L2 { attribute, .. } => l2_range(attribute.span),
             MarkupAttributeInner::Surface { attr, doc, .. } => {
-                s2_range(attr_span(doc.source, attr))
+                l2_range(attr_span(doc.source, attr))
             }
         }
     }

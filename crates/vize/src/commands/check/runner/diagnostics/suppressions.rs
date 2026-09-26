@@ -145,9 +145,9 @@ fn source_declares_recursive_array_target(
         return false;
     };
 
-    let alias = vize_s0::cstr!("type {array_element} =");
-    let array_property = vize_s0::cstr!("{recursive_property}: {array_element}[]");
-    let generic_property = vize_s0::cstr!("{recursive_property}: Array<{array_element}>");
+    let alias = vize_l0::cstr!("type {array_element} =");
+    let array_property = vize_l0::cstr!("{recursive_property}: {array_element}[]");
+    let generic_property = vize_l0::cstr!("{recursive_property}: Array<{array_element}>");
     source.contains(alias.as_str())
         && (source.contains(array_property.as_str()) || source.contains(generic_property.as_str()))
 }

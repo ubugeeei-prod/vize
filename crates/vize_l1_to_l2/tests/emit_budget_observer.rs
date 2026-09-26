@@ -1,0 +1,292 @@
+//! P2-12b groundwork: L2 DOM emission exposes a walk budget without
+//! changing the shipped-compatible render output.
+
+#![expect(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "tests assert by panicking"
+)]
+#![expect(
+    clippy::disallowed_macros,
+    reason = "test fixtures and insta snapshots use std strings and format"
+)]
+
+use std::path::Path;
+
+use davinci_harness::fixtures::{LADDER, template_block};
+use vize_l0::Allocator;
+use vize_l1_to_l2::{
+    DomEmitOptions, emit_dom_source, emit_dom_source_observed,
+    emit_dom_source_observed_with_options, emit_dom_source_with_options,
+};
+
+#[derive(Debug, Clone, Copy)]
+struct TraversalBudget {
+    walks: u32,
+    visits: u32,
+}
+
+/// One fixture's pinned L2 DOM counts.
+#[derive(Debug, Clone, Copy)]
+struct EmitCount {
+    walks: u32,
+    visits: u32,
+    transform_walks: u32,
+}
+
+/// fixture name -> current L2 DOM emit-only walks and op visits, plus the
+/// pass-manager transform walks the artifact still pays before codegen.
+///
+/// On the Vue 3 DOM path the preserving products (`v-slot`, `v-model`, and
+/// `hoist-static`) are folded before the code-producing walk rather than
+/// reported as separate transform walks. Vue 2 legacy sugar remains the
+/// compatibility exception because it mutates the lowered L2 surface.
+const L2_DOM_EMIT_COUNTS: [(&str, u32, u32, u32); 6] = [
+    ("small", 1, 5, 0),
+    ("medium", 1, 33, 0),
+    ("large", 1, 54, 0),
+    ("stress-deep", 1, 72, 0),
+    ("stress-wide", 1, 2, 0),
+    ("stress-interp", 1, 201, 0),
+];
+
+#[test]
+fn observed_dom_emit_keeps_output_and_walk_budget() {
+    let fused_walk_target = phase_2_dom_walk_target();
+    assert_l2_dom_emit_counts_cover_ladder();
+    for fixture in &LADDER {
+        let template =
+            template_block(fixture.source).expect("every ladder fixture has a template block");
+        let observed_allocator = Allocator::new();
+        let plain_allocator = Allocator::new();
+        let observed = emit_dom_source_observed(&observed_allocator, template)
+            .unwrap_or_else(|error| panic!("{} observed emit failed: {error:?}", fixture.name));
+        let plain = emit_dom_source(&plain_allocator, template)
+            .unwrap_or_else(|error| panic!("{} plain emit failed: {error:?}", fixture.name));
+        let baseline = traversal_budget(fixture.name);
+        let expected = s2_dom_emit_count(fixture.name);
+
+        assert_eq!(
+            observed.emit.assembled(),
+            plain.assembled(),
+            "{} observed emit must not change render output",
+            fixture.name
+        );
+        assert_eq!(
+            observed.budget.transform.walks, expected.transform_walks,
+            "{} transform walks",
+            fixture.name
+        );
+        assert_eq!(
+            observed.budget.transform.passes, expected.transform_walks,
+            "{} transform passes",
+            fixture.name
+        );
+        assert_eq!(
+            observed.budget.transform.pipelines, 0,
+            "{} transform pipelines",
+            fixture.name
+        );
+        assert_eq!(
+            observed.budget.transform.failures, 0,
+            "{} transform failures",
+            fixture.name
+        );
+        assert_eq!(
+            observed.budget.emit_walks, expected.walks,
+            "{} L2 DOM emit walks",
+            fixture.name
+        );
+        assert_eq!(
+            observed.budget.emit_visits, expected.visits,
+            "{} L2 DOM emit visits",
+            fixture.name
+        );
+        assert!(
+            observed.budget.emit_visits > 0,
+            "{} emit must visit at least one op",
+            fixture.name
+        );
+        assert!(
+            observed.budget.emit_walks <= baseline.walks,
+            "{} emit walks {} exceed P2-12a baseline {}",
+            fixture.name,
+            observed.budget.emit_walks,
+            baseline.walks
+        );
+        assert!(
+            observed.budget.emit_visits <= baseline.visits,
+            "{} emit visits {} exceed P2-12a baseline {}",
+            fixture.name,
+            observed.budget.emit_visits,
+            baseline.visits
+        );
+        assert_eq!(
+            observed.budget.total_walks(),
+            fused_walk_target,
+            "{} total walks must meet the phase-2 fused DOM target",
+            fixture.name,
+        );
+        println!(
+            "davinci.s2_dom.walk {} emit_walks={} emit_visits={} transform_walks={} transform_passes={} total_walks={} fused_walk_target={} baseline_walks={} baseline_visits={}",
+            fixture.name,
+            observed.budget.emit_walks,
+            observed.budget.emit_visits,
+            observed.budget.transform.walks,
+            observed.budget.transform.passes,
+            observed.budget.total_walks(),
+            fused_walk_target,
+            baseline.walks,
+            baseline.visits
+        );
+    }
+}
+
+#[test]
+fn model_bindings_keep_the_model_diagnostic_pass_in_the_emit_budget() {
+    let observed_allocator = Allocator::new();
+    let plain_allocator = Allocator::new();
+    let source = r#"<input v-model="msg">"#;
+    let observed = emit_dom_source_observed(&observed_allocator, source)
+        .expect("observed model emit succeeds");
+    let plain = emit_dom_source(&plain_allocator, source).expect("plain model emit succeeds");
+
+    assert_eq!(
+        observed.emit.assembled(),
+        plain.assembled(),
+        "the profiling observer must not change model output"
+    );
+    // `v-model` diagnostics are preserved without buying an observer-visible
+    // transform walk on the Vue 3 DOM path.
+    assert_eq!(observed.budget.transform.walks, 0);
+    assert_eq!(observed.budget.transform.passes, 0);
+    assert_eq!(observed.budget.emit_walks, 1);
+    assert_eq!(observed.budget.total_walks(), 1);
+}
+
+#[test]
+fn disabled_static_hoist_skips_the_optional_analysis_walk() {
+    let source = r#"<section><span class="label">Static</span></section>"#;
+    let options = DomEmitOptions {
+        hoist_static: false,
+        ..DomEmitOptions::DEFAULT
+    };
+    let observed_allocator = Allocator::new();
+    let plain_allocator = Allocator::new();
+    let observed = emit_dom_source_observed_with_options(
+        &observed_allocator,
+        source,
+        vize_l1_to_l2::LegacyCaps::VUE3,
+        &options,
+    )
+    .expect("observed emit succeeds without static hoist");
+    let plain = emit_dom_source_with_options(
+        &plain_allocator,
+        source,
+        vize_l1_to_l2::LegacyCaps::VUE3,
+        &options,
+    )
+    .expect("plain emit succeeds without static hoist");
+
+    assert_eq!(observed.emit.assembled(), plain.assembled());
+    assert_eq!(
+        observed.emit.sections.imports_len,
+        observed.emit.preamble.len(),
+        "static-hoist-disabled preamble must not append hoist declarations"
+    );
+    // No structural family, no model, no analysis, no compound text: no
+    // transform pass is planned.
+    assert_eq!(observed.budget.transform.walks, 0);
+    assert_eq!(observed.budget.transform.passes, 0);
+    assert_eq!(observed.budget.emit_walks, 1);
+    assert_eq!(observed.budget.total_walks(), 1);
+}
+
+#[test]
+fn disabled_static_hoist_keeps_model_diagnostics_when_models_exist() {
+    let source = r#"<input v-model="msg">"#;
+    let options = DomEmitOptions {
+        hoist_static: false,
+        ..DomEmitOptions::DEFAULT
+    };
+    let observed_allocator = Allocator::new();
+    let observed = emit_dom_source_observed_with_options(
+        &observed_allocator,
+        source,
+        vize_l1_to_l2::LegacyCaps::VUE3,
+        &options,
+    )
+    .expect("observed model emit succeeds without static hoist");
+
+    // The analysis is declined by the option, and model diagnostics are still
+    // produced by the folded DOM fact path.
+    assert_eq!(observed.budget.transform.walks, 0);
+    assert_eq!(observed.budget.transform.passes, 0);
+    assert_eq!(observed.budget.emit_walks, 1);
+    assert_eq!(observed.budget.total_walks(), 1);
+}
+
+fn assert_l2_dom_emit_counts_cover_ladder() {
+    let pinned: Vec<&str> = L2_DOM_EMIT_COUNTS.iter().map(|(name, ..)| *name).collect();
+    let ladder: Vec<&str> = LADDER.iter().map(|fixture| fixture.name).collect();
+    assert_eq!(
+        pinned, ladder,
+        "L2 DOM emit budget pins must match the ladder exactly, in order"
+    );
+}
+
+fn s2_dom_emit_count(fixture: &str) -> EmitCount {
+    L2_DOM_EMIT_COUNTS
+        .iter()
+        .find(|(name, ..)| *name == fixture)
+        .map(|(_, walks, visits, transform_walks)| EmitCount {
+            walks: *walks,
+            visits: *visits,
+            transform_walks: *transform_walks,
+        })
+        .unwrap_or_else(|| panic!("{fixture} has no pinned L2 DOM emit count"))
+}
+
+fn traversal_budget(fixture: &str) -> TraversalBudget {
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("crate directory")
+        .parent()
+        .expect("repo root");
+    let text = std::fs::read_to_string(repo.join("docs/davinci/plan/budgets.toml"))
+        .expect("budgets.toml reads");
+    let value: toml::Value = toml::from_str(&text).expect("budgets.toml parses");
+    let id = format!("dom_{fixture}");
+    let entry = value
+        .get("traversal")
+        .and_then(|traversal| traversal.get(&id))
+        .unwrap_or_else(|| panic!("budgets.toml [traversal] is missing {id}"));
+    TraversalBudget {
+        walks: required_u32(entry, &id, "walks"),
+        visits: required_u32(entry, &id, "visits"),
+    }
+}
+
+fn phase_2_dom_walk_target() -> u32 {
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .expect("crate directory")
+        .parent()
+        .expect("repo root");
+    let text = std::fs::read_to_string(repo.join("docs/davinci/plan/budgets.toml"))
+        .expect("budgets.toml reads");
+    let value: toml::Value = toml::from_str(&text).expect("budgets.toml parses");
+    let entry = value
+        .get("target")
+        .and_then(|target| target.get("phase-2"))
+        .expect("budgets.toml has [target.phase-2]");
+    required_u32(entry, "target.phase-2", "dom_walks_max")
+}
+
+fn required_u32(entry: &toml::Value, id: &str, field: &str) -> u32 {
+    entry
+        .get(field)
+        .and_then(toml::Value::as_integer)
+        .and_then(|value| u32::try_from(value).ok())
+        .unwrap_or_else(|| panic!("budgets.toml [traversal.{id}] has no u32 {field}"))
+}

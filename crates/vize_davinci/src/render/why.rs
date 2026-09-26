@@ -15,7 +15,7 @@ use super::source::SourceFile;
 use crate::diagnostic::{Diagnostic, WitnessKey, WitnessLink};
 use crate::fact::ids;
 use crate::pass::AnalysisId;
-use vize_s0::String;
+use vize_l0::String;
 
 /// Characters of a fact's source text quoted in a note before it is cut.
 const SUBJECT_LIMIT: usize = 40;

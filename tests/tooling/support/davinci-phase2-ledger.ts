@@ -218,7 +218,7 @@ export function assertP2_17P2_20ExitBlockers(
 
   assert.match(p2_17, /\*\*Landed 2026-09-12\*\*/);
   assert.match(p2_17, /mechanical half is machine-checked and must land as tests/);
-  assert.match(p2_17, /every S2 op's span resolves into its authored SFC/);
+  assert.match(p2_17, /every L2 op's span resolves into its authored SFC/);
   assert.match(p2_17, /`schema_version` is present and negotiated/);
   assert.match(p2_20, /a line is ticked only when it is satisfied/);
   assert.match(p2_20, /an unticked line names its blocker/);
@@ -276,7 +276,7 @@ function assertP2_17MechanicalWitnesses(): void {
   assert.match(signoffRecord, /Provenance survives failure/);
 
   const spanWitness = fs.readFileSync(
-    new URL("../../../crates/vize_s1_to_s2/tests/ir_contract_spans.rs", import.meta.url),
+    new URL("../../../crates/vize_l1_to_l2/tests/ir_contract_spans.rs", import.meta.url),
     "utf8",
   );
   assert.match(spanWitness, /P2-17 mechanical span gate/);

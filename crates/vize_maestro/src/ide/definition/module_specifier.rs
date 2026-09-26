@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
 use vize_canon::{PackageRouteResolver, PackageSourceOptions};
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 #[cfg(feature = "native")]
 use vize_canon::CorsaBridge;

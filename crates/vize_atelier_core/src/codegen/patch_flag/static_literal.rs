@@ -11,8 +11,8 @@
 use oxc_ast::ast as oxc_ast_types;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use vize_l0::String;
 use vize_relief::SimpleExpressionNode;
-use vize_s0::String;
 
 pub(super) fn is_static_literal(content: &str) -> bool {
     matches!(content, "true" | "false" | "null")

@@ -2,16 +2,16 @@
 //!
 //! Every DOM template compile that reaches codegen records exactly one
 //! selection counter while the global profiler is enabled: `accepted` when
-//! the S2 emitter produced the module, or one `legacy.<reason>` naming the
+//! the L2 emitter produced the module, or one `legacy.<reason>` naming the
 //! first gate that kept the compile on the legacy transform lane. The
 //! production-reach gate (`vize_atelier_sfc/tests/davinci_production_reach.rs`)
 //! reads these counters around real `compile_sfc` calls, so a reason added
 //! here must keep that one-counter-per-compile law. Nothing is recorded while
 //! the profiler is disabled (the P2-12b no-observer cost law).
 
-use vize_s0::profiler::global_profiler;
+use vize_l0::profiler::global_profiler;
 
-/// The counter an S2-emitted DOM compile records.
+/// The counter an L2-emitted DOM compile records.
 pub(super) const ACCEPTED_COUNTER: &str = "davinci.s2_dom.accepted";
 
 /// Why one DOM compile stayed on the legacy transform lane.
@@ -20,11 +20,11 @@ pub(super) enum DomLegacyReason {
     /// The shipped parser reported a fatal error: the compile ends with
     /// diagnostics and no module, before either lane runs.
     ParseError,
-    /// The entry point declined S2: the compatibility entries (module-mode
+    /// The entry point declined L2: the compatibility entries (module-mode
     /// static hoisting outside the sections route) and the legacy lane of
     /// the differential runners.
     Entry,
-    /// S2 was attempted and refused the template (an unsupported surface or
+    /// L2 was attempted and refused the template (an unsupported surface or
     /// a diagnostic the shipped lane must report).
     EmitRefused,
     /// SSR options reached the DOM compiler.
@@ -35,7 +35,7 @@ pub(super) enum DomLegacyReason {
     SelfComponent,
     /// A custom renderer target.
     CustomRenderer,
-    /// The requested whitespace strategy is not implemented by S2 lowering.
+    /// The requested whitespace strategy is not implemented by L2 lowering.
     Whitespace,
     /// A Vue 2 / 2.7 dialect.
     Dialect,

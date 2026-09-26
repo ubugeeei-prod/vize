@@ -4,7 +4,7 @@
 
 use core::fmt;
 use serde::{Deserialize, Serialize};
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::contract::{Capability, GuestError, Span};
 use crate::expression::{

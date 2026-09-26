@@ -23,6 +23,9 @@ const name = /^[a-z0-9_./-]+$/u;
 const declaration =
   /^\s*(?:pub(?:\([^)]*\))?\s+)?static\s+(?<ident>[A-Z][A-Z0-9_]*)\s*:\s*Exemption\s*=\s*Exemption::new\("(?<producer>[^"]*)",\s*"(?<code>[^"]*)"\);\s*$/u;
 
+// Exemption producer names are persistent ratchet identities, independent of crate paths.
+const historicalProducers: Readonly<Record<string, string>> = { vize_l1_to_l2: "vize_s1_to_s2" };
+
 const key = (row: { producer: string; code: string }): string => `${row.producer}\t${row.code}`;
 
 /**
@@ -150,8 +153,11 @@ export function deriveInventory(
           continue;
         }
         const { ident, producer, code } = match.groups!;
-        if (producer !== crate) {
-          issues.push(`${at}: producer ${producer} must be its crate ${crate}`);
+        const expectedProducer = historicalProducers[crate] ?? crate;
+        if (producer !== expectedProducer) {
+          issues.push(
+            `${at}: producer ${producer} must match ${crate} identity ${expectedProducer}`,
+          );
           continue;
         }
         declared.push({ ident, producer, code, exempt: 0, at });

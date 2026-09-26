@@ -6,7 +6,7 @@ import {
   type RustToken,
 } from "./davinci-storage-rust-syntax.ts";
 
-export type StorageKind = "allocVec" | "allocString" | "s0String" | "arenaVec" | "smallVec";
+export type StorageKind = "allocVec" | "allocString" | "l0String" | "arenaVec" | "smallVec";
 export type StorageMeasurement = { directPaths: number; boundUses: number };
 export type FileStorage = Record<StorageKind, StorageMeasurement>;
 
@@ -15,7 +15,7 @@ type UseImport = { path: string[]; alias: string; start: number; end: number; gl
 export const storageKinds: StorageKind[] = [
   "allocVec",
   "allocString",
-  "s0String",
+  "l0String",
   "arenaVec",
   "smallVec",
 ];
@@ -111,17 +111,17 @@ function targetKind(path: string[]): StorageKind | undefined {
   if (joined === "alloc::string::String" || joined.startsWith("alloc::string::String::")) {
     return "allocString";
   }
-  if (joined === "vize_s0::String" || joined.startsWith("vize_s0::String::")) return "s0String";
-  if (joined === "vize_s0::Vec" || joined.startsWith("vize_s0::Vec::")) return "arenaVec";
-  if (joined === "vize_s0::SmallVec" || joined.startsWith("vize_s0::SmallVec::")) {
+  if (joined === "vize_l0::String" || joined.startsWith("vize_l0::String::")) return "l0String";
+  if (joined === "vize_l0::Vec" || joined.startsWith("vize_l0::Vec::")) return "arenaVec";
+  if (joined === "vize_l0::SmallVec" || joined.startsWith("vize_l0::SmallVec::")) {
     return "smallVec";
   }
   return undefined;
 }
 
-function literalRoot(path: string[]): "alloc" | "vize_s0" | undefined {
+function literalRoot(path: string[]): "alloc" | "vize_l0" | undefined {
   const first = path[0] === "crate" || path[0] === "self" ? path[1] : path[0];
-  return first === "alloc" || first === "vize_s0" ? first : undefined;
+  return first === "alloc" || first === "vize_l0" ? first : undefined;
 }
 
 function canonical(path: string[], bindings: ReadonlyMap<string, string[]>): string[] | undefined {
@@ -129,7 +129,7 @@ function canonical(path: string[], bindings: ReadonlyMap<string, string[]>): str
   if ((normalized[0] === "crate" || normalized[0] === "self") && normalized.length > 1) {
     normalized = normalized.slice(1);
   }
-  if (normalized[0] === "alloc" || normalized[0] === "std" || normalized[0] === "vize_s0") {
+  if (normalized[0] === "alloc" || normalized[0] === "std" || normalized[0] === "vize_l0") {
     return normalized;
   }
   const prefix = bindings.get(normalized[0]);
@@ -159,7 +159,7 @@ export function scanStorage(source: string): ScanResult {
   const bindings = new Map<string, string[]>([
     ["alloc", ["alloc"]],
     ["std", ["std"]],
-    ["vize_s0", ["vize_s0"]],
+    ["vize_l0", ["vize_l0"]],
   ]);
   const externPattern =
     /\bextern\s+crate\s+(?:r#)?(alloc|std)(?:\s+as\s+(?:r#)?([A-Za-z_]\w*))?\s*;/gu;
@@ -187,7 +187,7 @@ export function scanStorage(source: string): ScanResult {
   for (const imported of imports) {
     const resolved = canonical(imported.path, bindings);
     const mentionsStorageRoot =
-      imported.path.some((part) => part === "alloc" || part === "std" || part === "vize_s0") ||
+      imported.path.some((part) => part === "alloc" || part === "std" || part === "vize_l0") ||
       bindings.has(imported.path[0]);
     if (mentionsStorageRoot && (!resolved || imported.glob)) {
       issues.push(`unresolved or glob storage import: ${imported.path.join("::")}`);

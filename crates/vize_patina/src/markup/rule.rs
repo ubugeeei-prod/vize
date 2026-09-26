@@ -60,7 +60,7 @@ pub trait MarkupRule {
     }
 
     /// Called on entering a conditional scope (a `v-if` chain, a lowered JSX
-    /// conditional, an S2 `ui.if`).
+    /// conditional, an L2 `ui.if`).
     fn enter_conditional<'a>(
         &self,
         _ctx: &mut MarkupContext<'_, 'a>,
@@ -69,7 +69,7 @@ pub trait MarkupRule {
     }
 
     /// Called on entering a list scope (a `v-for`, a lowered JSX `.map()`, an
-    /// S2 `ui.for`).
+    /// L2 `ui.for`).
     fn enter_list<'a>(&self, _ctx: &mut MarkupContext<'_, 'a>, _list: &MarkupList<'a>) {}
 
     /// Called for each text node.

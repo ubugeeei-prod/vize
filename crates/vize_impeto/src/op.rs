@@ -1,7 +1,7 @@
 //! The Impeto op family: flat, id-addressed operations plus explicit state
 //! edges.
 //!
-//! S3 deliberately does not reuse Vapor's nested block IR. Regions name
+//! L3 deliberately does not reuse Vapor's nested block IR. Regions name
 //! containment, effects name update scopes, and state edges name ordering.
 //! Later lowering can therefore ask graph questions without trusting an
 //! incidental traversal order.

@@ -1,16 +1,16 @@
-//! Attribute reads over S1 open tags.
+//! Attribute reads over L1 open tags.
 //!
-//! Names and values are the authored S1 tokens: names compare exactly
+//! Names and values are the authored L1 tokens: names compare exactly
 //! (Art attributes are case-sensitive, as before), values are the verbatim
 //! bytes between the quotes (entities undecoded — `args` / `viewport`
 //! decode their own payloads).
 
-use vize_s1::{Attribute, OpenTag};
+use vize_l1::{Attribute, OpenTag};
 
 /// The value of the first attribute named `name` that carries one.
 ///
 /// A valueless occurrence (`title`) or an announced-but-absent value
-/// (`title= >`, an S1 `Missing` hole) does not answer; a later valued
+/// (`title= >`, an L1 `Missing` hole) does not answer; a later valued
 /// duplicate still can.
 pub(crate) fn attr_value<'a>(open: &OpenTag<'a>, name: &str) -> Option<&'a str> {
     open.attrs
@@ -32,8 +32,8 @@ fn present_value<'a>(attr: &Attribute<'a>) -> Option<&'a str> {
 #[cfg(test)]
 mod tests {
     use super::{attr_value, has_attr};
-    use vize_s0::Allocator;
-    use vize_s1::{OpenTag, SurfaceChild, parse};
+    use vize_l0::Allocator;
+    use vize_l1::{OpenTag, SurfaceChild, parse};
 
     fn with_open_tag(source: &str, check: impl FnOnce(&OpenTag<'_>)) {
         let allocator = Allocator::new();

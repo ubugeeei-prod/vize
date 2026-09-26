@@ -95,7 +95,7 @@ test("the one-shot vize binary has no salsa in its build graph", () => {
   );
   // Scope proof: the tree is the real graph (the binary and its compiler
   // stack), not an empty or failed listing.
-  for (const name of ["vize", "vize_atelier_sfc", "vize_s1_to_s2"]) {
+  for (const name of ["vize", "vize_atelier_sfc", "vize_l1_to_l2"]) {
     assert.ok(packages.has(name), `cargo tree must list ${name}`);
   }
   assert.deepEqual(

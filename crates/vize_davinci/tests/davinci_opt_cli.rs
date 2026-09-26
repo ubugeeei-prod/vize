@@ -22,7 +22,7 @@ use std::process::{Command, Output, Stdio};
 
 use vize_davinci::folio::{Folio, FolioMode, croquis::CroquisFolio};
 
-const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio\n";
+const USAGE: &str = "usage: davinci-opt --roundtrip <file> [--stage croquis]\n       davinci-opt --pipeline \"<syntax>\" [--stage <stage>] [--folio-dir <dir> [--folio-after-change]] [--timing-json <path>] [--remarks <path>] < folio\nPipeline selectors: l0..l4, l1-to-l2, l2-to-l3 (legacy s names accepted).\n";
 
 fn run(args: &[&str], stdin: Option<&str>) -> Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_davinci-opt"));
@@ -196,25 +196,30 @@ fn a_pipeline_streams_the_normalized_folio_and_reports_the_plan() {
     let text = std::fs::read_to_string(&folio).expect("committed folio reads");
     // Committed folios are canonical and the no-op passes change nothing,
     // so stdout is the input byte-for-byte.
-    let output = run(&["--pipeline", "s2(alpha,beta)"], Some(&text));
-    assert_eq!(output.status.code(), Some(0));
-    assert_eq!(stdout_of(&output), text);
-    assert_eq!(
-        stderr_of(&output),
-        "davinci-opt: pipeline s2(alpha,beta): walks=1 passes=2\n"
-    );
+    for selector in ["l2", "s2"] {
+        let syntax = format!("{selector}(alpha,beta)");
+        let output = run(&["--pipeline", &syntax], Some(&text));
+        assert_eq!(output.status.code(), Some(0));
+        assert_eq!(stdout_of(&output), text);
+        assert_eq!(
+            stderr_of(&output),
+            "davinci-opt: pipeline l2(alpha,beta): walks=1 passes=2\n"
+        );
+    }
     // Segments run as separate plans: one walk each here (no-op passes are
     // fusable, so each segment's passes share one walk).
-    let output = run(
-        &["--pipeline", "s2(alpha),s2-to-s3(beta,gamma)"],
-        Some(&text),
-    );
-    assert_eq!(output.status.code(), Some(0));
-    assert_eq!(stdout_of(&output), text);
-    assert_eq!(
-        stderr_of(&output),
-        "davinci-opt: pipeline s2(alpha),s2-to-s3(beta,gamma): walks=2 passes=3\n"
-    );
+    for syntax in [
+        "l2(alpha),l2-to-l3(beta,gamma)",
+        "s2(alpha),s2-to-s3(beta,gamma)",
+    ] {
+        let output = run(&["--pipeline", syntax], Some(&text));
+        assert_eq!(output.status.code(), Some(0));
+        assert_eq!(stdout_of(&output), text);
+        assert_eq!(
+            stderr_of(&output),
+            "davinci-opt: pipeline l2(alpha),l2-to-l3(beta,gamma): walks=2 passes=3\n"
+        );
+    }
     // An empty pass list is legal (`s2()` runs nothing) - the bisection
     // property the pipeline grammar documents.
     let output = run(&["--pipeline", "s2()"], Some(&text));
@@ -222,7 +227,7 @@ fn a_pipeline_streams_the_normalized_folio_and_reports_the_plan() {
     assert_eq!(stdout_of(&output), text);
     assert_eq!(
         stderr_of(&output),
-        "davinci-opt: pipeline s2(): walks=0 passes=0\n"
+        "davinci-opt: pipeline l2(): walks=0 passes=0\n"
     );
 }
 
@@ -237,7 +242,7 @@ fn a_pipeline_parses_the_selected_stage() {
     assert_eq!(stdout_of(&output), budget);
     assert_eq!(
         stderr_of(&output),
-        "davinci-opt: pipeline s2(alpha): walks=1 passes=1\n"
+        "davinci-opt: pipeline l2(alpha): walks=1 passes=1\n"
     );
 }
 
@@ -247,7 +252,7 @@ fn malformed_pipeline_strings_are_usage_errors_with_the_documented_messages() {
         ("", "empty pipeline string at offset 0"),
         ("s2", "expected `(` after stage name at offset 2"),
         ("s2(a", "unterminated pass list, expected `)` at offset 4"),
-        ("S2(a)", "unexpected character `S` at offset 0"),
+        ("L2(a)", "unexpected character `L` at offset 0"),
         ("s2-(a)", "identifier must not end with `-` at offset 2"),
     ] {
         let output = run(&["--pipeline", syntax], Some(""));

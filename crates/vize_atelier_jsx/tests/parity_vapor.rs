@@ -6,7 +6,7 @@ mod common;
 
 use common::{snapshot_cases, vapor_code};
 use vize_atelier_jsx::{JsxLang, VaporCompileOptions, compile_to_vapor};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[test]
 fn vapor_parity_matrix_snapshot() {

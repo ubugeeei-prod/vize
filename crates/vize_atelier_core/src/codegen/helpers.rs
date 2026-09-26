@@ -4,7 +4,7 @@ mod constant_expression;
 
 pub use self::constant_expression::is_constant_simple_expression;
 use crate::RuntimeHelper;
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 /// Decode HTML numeric character references in hex or decimal form.
 pub fn decode_html_entities(s: &str) -> String {
@@ -244,8 +244,8 @@ pub fn default_helper_alias(helper: RuntimeHelper) -> &'static str {
     }
 }
 
-// Re-export from S0 for convenience.
-pub use vize_s0::{String, camelize, capitalize};
+// Re-export from L0 for convenience.
+pub use vize_l0::{String, camelize, capitalize};
 
 /// Capitalize first letter of a string (alias for capitalize)
 #[inline]
@@ -275,9 +275,9 @@ mod escape_tests {
     /// Reference implementation of the JS-string escape that always runs the
     /// full char-by-char pass (no fast path). `escape_js_string`'s fast path
     /// must reproduce this exactly for every input.
-    fn reference_escape(s: &str) -> vize_s0::String {
+    fn reference_escape(s: &str) -> vize_l0::String {
         let decoded = decode_html_entities(s);
-        let mut out = vize_s0::String::default();
+        let mut out = vize_l0::String::default();
         for c in decoded.chars() {
             match c {
                 '\\' => out.push_str("\\\\"),

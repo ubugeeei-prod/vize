@@ -190,7 +190,7 @@ pub(crate) fn analyzed_template_binding_completions(
 fn petite_vue_scope_binding_completions(ctx: &IdeContext) -> Vec<CompletionItem> {
     use vize_croquis::{Drawer, DrawerOptions};
 
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (root, _errors) = vize_armature::parse_document(&allocator, &ctx.content);
 
     let mut drawer = Drawer::with_options(DrawerOptions::full());

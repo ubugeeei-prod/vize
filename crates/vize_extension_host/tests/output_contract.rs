@@ -5,7 +5,7 @@ use vize_extension_host::contract::{Page, Span};
 use vize_extension_host::output::{
     EmitDocument, EmitError, EmitLink, EmitRequest, Emitted, accept_emitted,
 };
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 fn request() -> EmitRequest {
     EmitRequest {

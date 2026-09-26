@@ -1,7 +1,7 @@
 //! Palette type definitions.
 
 use serde::{Deserialize, Serialize};
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 /// Control type for a prop.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

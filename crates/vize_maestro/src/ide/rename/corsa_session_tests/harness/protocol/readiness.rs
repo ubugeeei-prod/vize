@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 pub(super) fn assert_generation_order(
     path: &Path,

@@ -14,7 +14,16 @@ SEMVER_ARGS=()
 if printf '%s\n' "$SEMVER_CHANGE_MARKER" | grep -Eq '^[[:alnum:]_-]+(\([^)]+\))?!:|^BREAKING CHANGE:'; then
   SEMVER_ARGS+=(--release-type major)
 fi
+semver_baseline_dir="$(mktemp -d "$RUNNER_TEMP/semver-baseline.XXXXXX")"
+trap 'rm -rf "$semver_baseline_dir"' EXIT
 if [ -n "$BASELINE_REV" ]; then
+  semver_baseline_root="$(rust-script tools/commands/ci/github/semver-baseline.rs "$1" "$semver_baseline_dir" "$BASELINE_REV")"
+else
+  semver_baseline_root="$(rust-script tools/commands/ci/github/semver-baseline.rs "$1" "$semver_baseline_dir")"
+fi
+if [ -n "$semver_baseline_root" ]; then
+  cargo semver-checks check-release --package "$1" --baseline-root "$semver_baseline_root" "${SEMVER_ARGS[@]}"
+elif [ -n "$BASELINE_REV" ]; then
   cargo semver-checks check-release --package "$1" --baseline-rev "$BASELINE_REV" "${SEMVER_ARGS[@]}"
 else
   cargo semver-checks check-release --package "$1" "${SEMVER_ARGS[@]}"

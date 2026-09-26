@@ -4,7 +4,7 @@ use super::compile;
 use oxc_ast_visit::Visit;
 use oxc_span::GetSpan;
 use vize_atelier_jsx::{JsxCompileConfig, JsxLang, compile_jsx};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[test]
 fn lexical_component_bindings_respect_shadowing_and_leave_unbound_globals() {

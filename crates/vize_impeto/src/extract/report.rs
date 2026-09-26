@@ -10,7 +10,7 @@ use alloc::vec::Vec;
 use core::fmt;
 
 use vize_davinci::pass::{Remark, RemarkArg, RemarkSink};
-use vize_s0::Span;
+use vize_l0::Span;
 
 use super::measure::{Metric, Metrics};
 use super::tier::OptTier;

@@ -12,7 +12,7 @@ use vize_curator::inspector::{
     InspectorOptions, InspectorSourceFile, InspectorTarget, InspectorTemplateSyntax, build_payload,
     serialize_payload,
 };
-use vize_s0::cstr;
+use vize_l0::cstr;
 
 /// Load the committed schema relative to this crate's manifest.
 fn load_schema() -> serde_json::Value {
@@ -40,8 +40,8 @@ fn payload_json(files: Vec<InspectorSourceFile>) -> serde_json::Value {
 }
 
 #[test]
-fn the_payload_feed_validates_and_carries_the_s1_page_exactly() {
-    // The S1 page's text must equal the authored template bytes - the TS-19
+fn the_payload_feed_validates_and_carries_the_l1_page_exactly() {
+    // The L1 page's text must equal the authored template bytes - the TS-19
     // byte-fidelity law observed at the consumer - proven through the
     // surface tree rather than copied from the source.
     let template = "\n  <div :class=\"cls\">{{ msg }}</div>\n  <br>\n";
@@ -127,7 +127,7 @@ fn files_without_a_renderable_template_contribute_no_page() {
 
 #[test]
 fn a_malformed_template_still_feeds_its_bytes_faithfully() {
-    // S1 is total over malformed input (typed holes, never dropped bytes),
+    // L1 is total over malformed input (typed holes, never dropped bytes),
     // so a broken template still produces its page and the text is still
     // the authored bytes.
     let template = "\n<div class=\"open>{{ msg }\n";

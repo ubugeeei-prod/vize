@@ -1,10 +1,10 @@
 //! Interface facets and the errors of building or recording a summary.
 //!
-//! A facet is one α group. An S3 code shape is not a facet, and
+//! A facet is one α group. An L3 code shape is not a facet, and
 //! [`Facet::from_alpha_group`] refuses any group that is not one of these
 //! six, so a body cannot be named as a summary entry.
 
-use vize_s0::String;
+use vize_l0::String;
 
 /// α schema versions the summary reads. Bump one when that page's meaning
 /// changes; the bump moves every fingerprint of that facet and refuses a
@@ -26,7 +26,7 @@ pub mod schema {
     pub const COMPONENTS: u16 = 1;
 }
 
-/// One interface α group. Not an S3 code shape — there is no such variant.
+/// One interface α group. Not an L3 code shape — there is no such variant.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(u8)]
 pub enum Facet {
@@ -92,7 +92,7 @@ impl Facet {
     /// # Errors
     ///
     /// [`SummaryError::NotInterface`] when `group` is not an interface α
-    /// group (expression bodies and S3 code shapes land here), and
+    /// group (expression bodies and L3 code shapes land here), and
     /// [`SummaryError::Schema`] when the group's schema is not the one this
     /// summary reads.
     pub fn from_alpha_group(group: &str, schema: u16) -> Result<Self, SummaryError> {

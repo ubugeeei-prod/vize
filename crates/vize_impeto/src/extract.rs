@@ -20,7 +20,7 @@ mod report;
 mod rule;
 mod tier;
 
-pub use folio::{FolioDecision, S3ExtractionFolio};
+pub use folio::{FolioDecision, L3ExtractionFolio};
 pub use measure::{CACHE_BYTES, EFFECT_UNIT_BYTES, HOIST_BYTES, Metric, Metrics};
 pub use report::{Decision, DecisionKind, Delta, EXTRACT_PASS, Extraction, Reason};
 pub use rule::{Rejection, epsilon_pct, judge};
@@ -46,7 +46,7 @@ pub const EXTRACT: PassDesc = PassDesc::new(
 /// Choose placements for `program` at `tier`, starting from the all-inline
 /// plan, and commit the winners into `program.placements`.
 ///
-/// Expects placements that `annotate` recorded or that `S3V010` accepts;
+/// Expects placements that `annotate` recorded or that `L3V010` accepts;
 /// records whose op does not resolve are left alone.
 pub fn extract(program: &mut Program<'_>, tier: OptTier) -> Extraction {
     let (chosen, extraction) = plan(&Index::new(program), tier);

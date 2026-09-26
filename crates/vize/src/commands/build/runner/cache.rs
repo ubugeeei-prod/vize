@@ -8,7 +8,7 @@
 
 use std::sync::Mutex;
 
-use vize_s0::{FxHashMap, String};
+use vize_l0::{FxHashMap, String};
 
 use crate::commands::build::config::ErrorPhase;
 

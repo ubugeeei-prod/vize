@@ -1,8 +1,8 @@
-use vize_s0::Span;
+use vize_l0::Span;
 
 use super::{OpId, RegionId};
 
-/// Region metadata for the flat S3 graph.
+/// Region metadata for the flat L3 graph.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Region {
     pub id: RegionId,

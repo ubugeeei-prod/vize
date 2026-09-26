@@ -148,8 +148,8 @@ defineSlots<{
                 .materialized_sources
                 .iter()
                 .find(|source| {
-                    vize_s0::path::canonicalize_non_verbatim(&source.source_path)
-                        == vize_s0::path::canonicalize_non_verbatim(&host_path)
+                    vize_l0::path::canonicalize_non_verbatim(&source.source_path)
+                        == vize_l0::path::canonicalize_non_verbatim(&host_path)
                 })
                 .expect("host must be materialized beside its sibling dependencies");
             assert_eq!(
@@ -175,7 +175,7 @@ defineSlots<{
                         .unwrap()
                         .to_file_path()
                         .unwrap();
-                    vize_s0::cstr!(
+                    vize_l0::cstr!(
                         "import {name} from \"{}\";",
                         path.to_string_lossy().replace('\\', "/")
                     )
@@ -234,5 +234,5 @@ fn resolve_test_tsgo_binary() -> Option<std::path::PathBuf> {
         return Some(sibling_cache);
     }
 
-    vize_s0::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
+    vize_l0::corsa_resolver::discover_corsa_in_ancestors(workspace_root)
 }

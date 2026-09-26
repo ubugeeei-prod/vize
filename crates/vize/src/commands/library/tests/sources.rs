@@ -118,7 +118,7 @@ fn packs_an_explicit_version_with_npm_when_not_installed() {
     let script = project.registry("fake-npm.sh");
     fs::write(
         &script,
-        vize_s0::cstr!(
+        vize_l0::cstr!(
             "#!/bin/sh\necho \"$2\" >> '{}'\ntar -czf \"$4/vizejs-ui-2.0.0.tgz\" -C '{}' package\n",
             log.display(),
             project.registry("packed").display()

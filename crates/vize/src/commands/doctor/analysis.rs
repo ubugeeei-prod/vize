@@ -16,7 +16,7 @@ use vize_doctor::{
     ContentFingerprint, DoctorFinding, DoctorReport,
     application_analysis::report_from_application_graph,
 };
-use vize_s0::{Allocator, FxHashMap, String, ToCompactString};
+use vize_l0::{Allocator, FxHashMap, String, ToCompactString};
 
 use super::{DoctorError, DoctorSource, canonical_sfc};
 

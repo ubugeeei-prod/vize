@@ -9,7 +9,7 @@
 
 use alloc::vec::Vec;
 
-use vize_s0::{Span, String, cstr};
+use vize_l0::{Span, String, cstr};
 
 use crate::folio::FolioError;
 use crate::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue, RemarkKind};

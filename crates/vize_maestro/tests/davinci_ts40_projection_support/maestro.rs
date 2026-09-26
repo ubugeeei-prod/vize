@@ -1,7 +1,7 @@
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
+use vize_l0::{SmallVec, String, append, cstr};
 use vize_maestro::VirtualCodeGenerator;
 use vize_maestro::virtual_code::{ProjectionFeatures, ProjectionRow, ProjectionSpanKind};
-use vize_s0::{SmallVec, String, append, cstr};
 
 use super::matrix::Fixture;
 use super::normalize::{ordered_lines, sha256};

@@ -5,7 +5,7 @@ pub(crate) mod matcher;
 use matcher::{LintPlanScope, absolute_path, normalize_path};
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, path::Path};
-use vize_s0::{String, config::LintRuleSeverity};
+use vize_l0::{String, config::LintRuleSeverity};
 
 /// Serializable ordered plan accepted by the inspector surface.
 #[derive(Debug, Clone, Default, Deserialize)]

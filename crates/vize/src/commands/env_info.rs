@@ -1,5 +1,5 @@
 use std::process::Command;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 pub fn run() {
     println!("{}", collect().join("\n"));

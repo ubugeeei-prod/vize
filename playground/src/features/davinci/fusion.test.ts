@@ -21,7 +21,7 @@ walk=2 pass=tidy kind=optional fusability=fusable
 describe("parseFusionPlan", () => {
   it("reads every pass with its walk, kind and fusability", () => {
     expect(parseFusionPlan(PLAN)).toEqual({
-      stage: "s2",
+      stage: "l2",
       walks: 3,
       passes: [
         { walk: 0, pass: "normalize", kind: "optional", fusability: "fusable" },
@@ -31,7 +31,7 @@ describe("parseFusionPlan", () => {
       ],
     });
     expect(parseFusionPlan("[fusion-plan-folio]\nstage=s2\nwalks=0\n\n")).toEqual({
-      stage: "s2",
+      stage: "l2",
       walks: 0,
       passes: [],
     });
@@ -49,10 +49,10 @@ describe("planWalks", () => {
     const walks = planWalks(
       parseFusionPlan(PLAN)!,
       new Map([
-        ["s2/normalize", 7_000],
-        ["s2/check", 2_000],
+        ["l2/normalize", 7_000],
+        ["l2/check", 2_000],
         // A pass that does not lead a walk has no walk span of its own.
-        ["s2/fold", 1],
+        ["l2/fold", 1],
       ]),
     );
     expect(walks).toEqual([
@@ -66,8 +66,8 @@ describe("planWalks", () => {
 
 describe("PassTimeline walks", () => {
   const step = (pass: string, walk: number | null, producer = false): TimelineStep => ({
-    key: `s2/${pass}`,
-    rung: "s2",
+    key: `l2/${pass}`,
+    rung: "l2",
     pass,
     changed: producer,
     producer,
@@ -103,7 +103,7 @@ describe("PassTimeline walks", () => {
       ["walk 2", "barrier"],
     ]);
     expect(groups[0].find(".davinci-walk-steps").attributes("aria-label")).toBe(
-      "Walk 1 over the S2 tree (2 passes fused): normalize, fold, 7 µs",
+      "Walk 1 over the L2 tree (2 passes fused): normalize, fold, 7 µs",
     );
     expect(wrapper.find(".davinci-timeline-summary").text()).toBe(
       "0 of 3 passes changed the folio in 2 walks",

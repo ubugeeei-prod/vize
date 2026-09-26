@@ -1,5 +1,10 @@
 //! Identical public Doctor filter probe compiled against exact base and head.
 
+#![expect(
+    clippy::disallowed_macros,
+    reason = "the identical public API probe crosses dependency alias migrations"
+)]
+
 mod fixtures;
 
 use std::{hint::black_box, io, time::Instant};
@@ -47,7 +52,7 @@ fn main() -> io::Result<()> {
                 ));
             }
             rows.push(serde_json::json!({
-                "id": vize_s0::cstr!("{kind}/{patterns}"), "kind": kind,
+                "id": format!("{kind}/{patterns}"), "kind": kind,
                 "patterns": patterns, "candidates": findings.len(), "iterations": iterations,
                 "matched": matched, "verdicts": verdicts, "elapsed_ns": elapsed_ns,
                 "compile_ns": compile_ns,

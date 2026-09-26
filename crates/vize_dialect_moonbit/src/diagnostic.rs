@@ -17,7 +17,7 @@
 use core::fmt;
 
 use serde_json::Value;
-use vize_s0::{Span, String, ToCompactString, cstr};
+use vize_l0::{Span, String, ToCompactString, cstr};
 
 use crate::lines::{LineCol, Lines};
 use crate::projection::{Projection, Role, SpanLink};

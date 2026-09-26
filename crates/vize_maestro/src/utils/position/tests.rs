@@ -8,7 +8,7 @@ use tower_lsp::lsp_types::Position;
 #[test]
 fn rope_positions_reject_line_terminators_and_use_utf16_ranges() {
     for ending in ["\n", "\r", "\r\n"] {
-        let source = vize_s0::cstr!("a😀{ending}b");
+        let source = vize_l0::cstr!("a😀{ending}b");
         let rope = DocumentText::new(&source);
         assert_eq!(position_to_offset(&rope, Position::new(0, 3)), Some(5));
         assert_eq!(position_to_offset(&rope, Position::new(0, 2)), None);
@@ -26,7 +26,7 @@ fn rope_positions_reject_line_terminators_and_use_utf16_ranges() {
 
 #[test]
 fn rope_utf16_tree_measures_cross_many_chunks() {
-    let source = vize_s0::cstr!("prefix\n{}x\n", "a😀".repeat(8192));
+    let source = vize_l0::cstr!("prefix\n{}x\n", "a😀".repeat(8192));
     let rope = DocumentText::new(&source);
     let end = source.len() - 1;
     assert_eq!(

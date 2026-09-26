@@ -1,7 +1,7 @@
 //! Validated deserialization for the reporter descriptor wire shape.
 
 use serde::{Deserialize, Deserializer, de};
-use vize_s0::String;
+use vize_l0::String;
 
 use super::{ReporterAudience, ReporterCapability, ReporterDescriptor, ReporterTransport};
 

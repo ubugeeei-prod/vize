@@ -7,31 +7,31 @@ import { folioLines } from "./folioLines";
 import type { Rung, TimelineStep } from "./ladder";
 
 const rungs: Rung[] = [
-  { id: "s1", ordinal: "S1", name: "Surface", facts: ["2 lines"], pages: [] },
-  { id: "s2", ordinal: "S2", name: "Disegno", facts: ["2 ops", "1 pass"], pages: [] },
-  { id: "s3", ordinal: "S3", name: "Impeto", facts: [], pages: [] },
+  { id: "l1", ordinal: "L1", name: "Surface", facts: ["2 lines"], pages: [] },
+  { id: "l2", ordinal: "L2", name: "Disegno", facts: ["2 ops", "1 pass"], pages: [] },
+  { id: "l3", ordinal: "L3", name: "Impeto", facts: [], pages: [] },
 ];
 
 describe("StageRail", () => {
   it("shows every stage with its facts and reports the chosen one", async () => {
-    const wrapper = mount(StageRail, { props: { rungs, selected: "s2" } });
+    const wrapper = mount(StageRail, { props: { rungs, selected: "l2" } });
     const stations = wrapper.findAll(".davinci-station");
     expect(stations.map((station) => station.attributes("data-stage"))).toEqual([
-      "s1",
-      "s2",
-      "s3",
-      "s4",
+      "l1",
+      "l2",
+      "l3",
+      "l4",
     ]);
     expect(stations.map((station) => station.text())).toEqual([
-      "S1Surface2 lines",
-      "S2Disegno2 ops, 1 pass",
-      "S3Impetono page",
-      "S4OutputDOM, Vapor, SSR",
+      "L1Surface2 lines",
+      "L2Disegno2 ops, 1 pass",
+      "L3Impetono page",
+      "L4OutputDOM, Vapor, SSR",
     ]);
     expect(stations[1].attributes("aria-pressed")).toBe("true");
     expect(wrapper.findAll(".davinci-pounce")).toHaveLength(3);
     await stations[3].trigger("click");
-    expect(wrapper.emitted("select")).toEqual([["s4"]]);
+    expect(wrapper.emitted("select")).toEqual([["l4"]]);
     wrapper.unmount();
   });
 });
@@ -39,8 +39,8 @@ describe("StageRail", () => {
 describe("PassTimeline", () => {
   const steps: TimelineStep[] = [
     {
-      key: "s2/lower",
-      rung: "s2",
+      key: "l2/lower",
+      rung: "l2",
       pass: "lower",
       changed: true,
       producer: true,
@@ -49,8 +49,8 @@ describe("PassTimeline", () => {
       walk: null,
     },
     {
-      key: "s2/v-slot",
-      rung: "s2",
+      key: "l2/v-slot",
+      rung: "l2",
       pass: "v-slot",
       changed: false,
       producer: false,
@@ -59,8 +59,8 @@ describe("PassTimeline", () => {
       walk: null,
     },
     {
-      key: "s2/legacy",
-      rung: "s2",
+      key: "l2/legacy",
+      rung: "l2",
       pass: "legacy",
       changed: true,
       producer: false,
@@ -71,15 +71,15 @@ describe("PassTimeline", () => {
   ];
 
   it("marks producers and changed passes and summarizes them", async () => {
-    const wrapper = mount(PassTimeline, { props: { steps, walks: [], current: "s2/v-slot" } });
+    const wrapper = mount(PassTimeline, { props: { steps, walks: [], current: "l2/v-slot" } });
     const buttons = wrapper.findAll(".davinci-step");
     expect(buttons.map((button) => button.classes().filter((c) => c !== "davinci-step"))).toEqual([
-      ["rung-s2", "producer", "changed"],
-      ["rung-s2", "current"],
-      ["rung-s2", "changed"],
+      ["rung-l2", "producer", "changed"],
+      ["rung-l2", "current"],
+      ["rung-l2", "changed"],
     ]);
     expect(buttons[1].attributes("title")).toBe(
-      "v-slot left the S2 folio unchanged (its product is facts)",
+      "v-slot left the L2 folio unchanged (its product is facts)",
     );
     expect(wrapper.find(".davinci-timeline-summary").text()).toBe(
       "1 of 2 passes changed the folio",

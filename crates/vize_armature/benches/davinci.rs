@@ -18,7 +18,7 @@
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::{LADDER, template_block};
 use vize_armature::{Callbacks, ErrorCode, Parser, QuoteType, Tokenizer};
-use vize_s0::{Allocator, cstr};
+use vize_l0::{Allocator, cstr};
 
 /// No-op tokenizer sink: every callback discards its span, so the measured
 /// cost is the tokenizer state machine alone.

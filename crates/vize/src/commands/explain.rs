@@ -1,7 +1,7 @@
 //! `vize explain <code>` (P4-14c): the page behind a diagnostic code, in
 //! English, Japanese or Chinese.
 //!
-//! Every lint rule, compiler code, Canon type code, S3 invariant and cross-file
+//! Every lint rule, compiler code, Canon type code, L3 invariant and cross-file
 //! code has a page, generated
 //! from the producer's own metadata, its [`RuleContract`](vize_davinci::diagnostic::RuleContract)
 //! and the diagnostic catalogue. The page list is that generation — never a
@@ -18,7 +18,7 @@ mod tests;
 use std::io::Write as _;
 
 use clap::Args;
-use vize_s0::String;
+use vize_l0::String;
 
 use catalog::{LocaleCatalog, color_enabled, parse_locale};
 

@@ -4,7 +4,7 @@
 //! Maestro session both hand it the checker's finished diagnostics for one
 //! authored file together with the [`crate::virtual_ts::ProjectionMapping`] of
 //! every projected document, and render what it returns.
-//! [`expr`] projects template expressions through the S4 emission document
+//! [`expr`] projects template expressions through the L4 emission document
 //! into those same rows (P4-5b).
 
 pub mod assemble;

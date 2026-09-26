@@ -3,7 +3,7 @@
 use std::fmt::Write as _;
 
 use serde::Serialize;
-use vize_s0::{String, cstr};
+use vize_l0::{String, cstr};
 
 use super::error::{LibError, LibResult};
 use super::plan::{FileAction, ItemPlan};

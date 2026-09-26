@@ -12,8 +12,8 @@ import { LspSession } from "./support/lsp/session.ts";
  * whose template has a parse hole elsewhere. `typecheck` and `lint` are off,
  * so the answer is Maestro's own template analysis.
  *
- * The stray `</stray>` is an S1 `Unexpected` hole. The unclosed `<div` in the
- * second file is an S1 `Missing` `>` (EOF in tag). Neither may blank the
+ * The stray `</stray>` is an L1 `Unexpected` hole. The unclosed `<div` in the
+ * second file is an L1 `Missing` `>` (EOF in tag). Neither may blank the
  * other region's `v-for` alias or the script binding.
  */
 

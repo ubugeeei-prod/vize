@@ -2,7 +2,7 @@
 
 use super::config::Linter;
 use crate::rules::musea::PreferDesignTokensConfig;
-use vize_s0::String;
+use vize_l0::String;
 
 impl Linter {
     /// Configure design tokens for `musea/prefer-design-tokens`.

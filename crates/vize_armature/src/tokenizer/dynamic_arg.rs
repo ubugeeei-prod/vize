@@ -1,7 +1,7 @@
 //! Lexical boundaries for bracketed directive arguments, without reparsing JS.
 
+use vize_l0::SmallVec;
 use vize_relief::ErrorCode;
-use vize_s0::SmallVec;
 
 use super::{Callbacks, State, Tokenizer, types::is_end_of_tag_section};
 

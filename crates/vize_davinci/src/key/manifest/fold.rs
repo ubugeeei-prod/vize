@@ -4,7 +4,7 @@
 //! per ambient input (a value is hashed when set — a tsconfig's content can
 //! be large, its identity is not), and input sets are a bitset.
 
-use vize_s0::hash::StableHasher128;
+use vize_l0::hash::StableHasher128;
 
 use super::{AmbientInput, CachedArtifact};
 use crate::key::sink::MANIFEST_DOMAIN;

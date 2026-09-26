@@ -1,4 +1,4 @@
-//! Native S3 branches and loops, observed through the published runtimes.
+//! Native L3 branches and loops, observed through the published runtimes.
 //! Every expectation is written out independently of either compiler: DOM
 //! trees, delivered events, and element identities per step.
 

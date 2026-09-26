@@ -6,7 +6,7 @@ use vize_dialect_moonbit::host::Replay;
 use vize_dialect_moonbit::typed::{EnvironmentError, MoonBitTypedGuest, project};
 use vize_extension_contract::typed_expression::{TypedExpressionGuest, TypedExpressionSession};
 use vize_extension_host::wire::{Request, read_message, write_message};
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[test]
 fn typed_environment_projection_and_facts_are_exact() {

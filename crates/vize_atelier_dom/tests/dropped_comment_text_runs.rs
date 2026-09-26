@@ -28,7 +28,7 @@
 )]
 
 use vize_atelier_dom::compile_template;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 /// `(name, template, the children argument Vue emits)`.
 const CASES: &[(&str, &str, &str)] = &[

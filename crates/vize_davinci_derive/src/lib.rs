@@ -21,7 +21,8 @@
 //! # The generated page
 //!
 //! For a struct `BudgetObserver` the page is headed `[budget-observer]`
-//! (kebab-case of the type name). Scalar fields print as `name=value` lines
+//! (kebab-case of the type name). `#[folio(name = "stable-page")]` retains
+//! a wire header across Rust type renames. Scalar fields print as `name=value` lines
 //! in declaration order inside the header section; `Vec<T>` fields print as
 //! `[page.field]` sections of one entry per line, order preserved; and
 //! `FxHashMap<K, V>` fields print as `[page.field]` sections of `key=value`
@@ -61,7 +62,7 @@ use syn::{DeriveInput, parse_macro_input};
 /// `docs/davinci/plan/folio-format.md` for the normalization contract the
 /// generated pair upholds (TS-16: `print(parse(t)) == t` byte-exact in
 /// `Full` mode, `parse(print(v)) == v` structurally).
-#[proc_macro_derive(Folio)]
+#[proc_macro_derive(Folio, attributes(folio))]
 pub fn derive_folio(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match model::PageModel::from_input(&input) {

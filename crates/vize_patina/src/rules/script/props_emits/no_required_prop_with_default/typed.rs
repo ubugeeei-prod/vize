@@ -101,7 +101,7 @@ fn check_default(
     result.add_diagnostic(
         LintDiagnostic::error(
             META.name,
-            vize_s0::cstr!("Prop '{name}' is required but also declares a default"),
+            vize_l0::cstr!("Prop '{name}' is required but also declares a default"),
             base + key.start,
             base + key.end,
         )

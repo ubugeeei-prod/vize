@@ -12,10 +12,10 @@ metadata.vize.stability = "experimental"
 [dependencies]
 serde = { workspace = true }
 vize_davinci = { workspace = true }
-vize_s0 = { workspace = true }
-vize_s1 = { workspace = true }
-vize_s1_to_s2 = { workspace = true }
-vize_s2 = { workspace = true }
+vize_l0 = { workspace = true }
+vize_l1 = { workspace = true }
+vize_l1_to_l2 = { workspace = true }
+vize_l2 = { workspace = true }
 
 [lints]
 workspace = true

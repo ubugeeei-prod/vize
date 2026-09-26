@@ -22,7 +22,7 @@
 //!
 //! ```compile_fail,E0308
 //! use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
-//! use vize_s0::Span;
+//! use vize_l0::Span;
 //!
 //! let unproven = Diagnostic::new(Severity::Error, Stage::Semantic, Span::new(0, 1), "maybe");
 //! ```
@@ -33,7 +33,7 @@
 //!
 //! ```
 //! use vize_davinci::diagnostic::{Advisory, Diagnostic, Stage};
-//! use vize_s0::Span;
+//! use vize_l0::Span;
 //!
 //! let unproven = Diagnostic::new(Advisory::Warning, Stage::Semantic, Span::new(0, 1), "maybe");
 //! ```
@@ -43,7 +43,7 @@
 //!
 //! ```compile_fail,E0451
 //! use vize_davinci::diagnostic::{Diagnostic, Severity, Stage};
-//! use vize_s0::Span;
+//! use vize_l0::Span;
 //!
 //! let forged = Diagnostic {
 //!     severity: Severity::Error,
@@ -65,12 +65,12 @@
 //!
 //! # Coordinates
 //!
-//! A diagnostic keys on [`vize_s0::Span`] — two byte offsets — and nothing
+//! A diagnostic keys on [`vize_l0::Span`] — two byte offsets — and nothing
 //! else. `Position` does not exist: P1-4 retired line/column tracking after
 //! measuring the parser's to be degenerate by construction, and P1-3 shrank
 //! `SourceLocation` from 48 bytes to 8 by making it span-only. Line and column
 //! are **derived at rendering time** from the authored text, via
-//! `vize_s0::line_index::LineIndex`.
+//! `vize_l0::line_index::LineIndex`.
 //!
 //! # Ownership: why the text is owned
 //!
@@ -97,7 +97,7 @@ pub use crate::stage::Stage;
 pub use severity::{Advisory, Severity};
 pub use tier::{Domain, RuleContract, Tier};
 pub use verdict::Verdict;
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 pub use witness::{Exemption, Witness, WitnessChain, WitnessKey, WitnessKeyed, WitnessLink};
 
 /// What a structured part of a diagnostic is doing.

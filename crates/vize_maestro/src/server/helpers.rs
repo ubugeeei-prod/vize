@@ -16,7 +16,7 @@ use tower_lsp::lsp_types::{
 use crate::ide::DiagnosticService;
 
 use super::MaestroServer;
-use vize_s0::append;
+use vize_l0::append;
 
 #[cfg(test)]
 mod supersession_tests;

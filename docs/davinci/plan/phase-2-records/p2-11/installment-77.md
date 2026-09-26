@@ -10,9 +10,9 @@ keys emitted inside the slot function, matching Koel and Nuxt UI fixture output.
 
 The durable witnesses are:
 
-- [`emit_create_slots.rs`](../../../../../crates/vize_s1_to_s2/tests/emit_create_slots.rs)
+- [`emit_create_slots.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_create_slots.rs)
   - pins nested conditional slot branch keys.
-- [`vif_pass_keys.rs`](../../../../../crates/vize_s1_to_s2/tests/vif_pass_keys.rs)
+- [`vif_pass_keys.rs`](../../../../../crates/vize_l1_to_l2/tests/vif_pass_keys.rs)
   - covers the branch-key reservation law.
 
 This installment does not tick P2-11. The production-lane switch remains open.

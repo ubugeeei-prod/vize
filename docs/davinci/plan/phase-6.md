@@ -9,7 +9,7 @@
 
 Measured on `origin/main` (2026-09-21):
 
-1. **Nothing of the contract layer exists yet**: no `contracts/` directory, no WIT files, no `wasmtime` or `wit-bindgen` in the workspace. P6-1 therefore **splits by world**: the input-dialect world needs only S1/S2 (startable now); the expression world needs the fact API and the mapping model (gated on P4-5a); the output-target world needs P3-9's structured emission document (gated on P3-9).
+1. **Nothing of the contract layer exists yet**: no `contracts/` directory, no WIT files, no `wasmtime` or `wit-bindgen` in the workspace. P6-1 therefore **splits by world**: the input-dialect world needs only L1/L2 (startable now); the expression world needs the fact API and the mapping model (gated on P4-5a); the output-target world needs P3-9's structured emission document (gated on P3-9).
 2. **Marquette already classifies compatibility** (`crates/vize_marquette/src/compatibility*`, `canonical.rs`), so P6-8 extends its canonical serialization and additive/breaking classification to contract payloads instead of inventing a second classifier.
 3. **The repository already builds MoonBit tooling** (`tools/moon/cmd/*`, with a MoonBit toolchain cached in CI), which makes the P6-4 hosting spike cheap to start now: whether a pinned `moonc` wasm runs under wasmtime with wasm-gc, or needs a Node sidecar behind the same capability boundary. **P6-4 splits**: spike (P6-4a, startable now) and dialect (P6-4b, gated on P4-5b's projection).
 4. **The v1 go/no-go document exists** (`docs/release/v1-alpha-go-no-go.md`), so P6-11 wires evidence into its checklist rather than creating one.
@@ -20,7 +20,7 @@ Measured on `origin/main` (2026-09-21):
 | Earlier task | Phase-6 tasks gated | Why                                                                  |
 | ------------ | ------------------- | -------------------------------------------------------------------- |
 | P4-5a        | P6-1b               | The expression world exports facts and projection mapping rows.      |
-| P3-9         | P6-1c               | The output-target world carries the S4 structured emission document. |
+| P3-9         | P6-1c               | The output-target world carries the L4 structured emission document. |
 | P4-5b        | P6-4b               | MoonBit's projection is an instance of the single projection.        |
 | P5-13        | P6-7                | GA hardens the cached plugin path.                                   |
 | P5-14        | P6-10, P6-13        | Metrics are reviewed against the finished incrementality substrate.  |

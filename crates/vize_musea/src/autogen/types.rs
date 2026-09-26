@@ -6,7 +6,7 @@
 )]
 
 use serde::{Deserialize, Serialize};
-use vize_s0::String;
+use vize_l0::String;
 
 /// Configuration for variant auto-generation.
 #[derive(Debug, Clone, Serialize, Deserialize)]

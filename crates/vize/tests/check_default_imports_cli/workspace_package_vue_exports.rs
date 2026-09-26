@@ -244,7 +244,7 @@ void props
     let _ = std::fs::remove_dir_all(case_root);
 }
 
-fn component_source(import: Option<&str>, invalid: bool) -> vize_s0::String {
+fn component_source(import: Option<&str>, invalid: bool) -> vize_l0::String {
     let import = import
         .map(|specifier| cstr!("import Nested from '{specifier}'\nvoid Nested\n"))
         .unwrap_or_default();

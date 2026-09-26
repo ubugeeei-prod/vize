@@ -15,7 +15,7 @@ The durable witnesses are:
   - pins the parser-side retention behavior.
 - [`expression_guard.rs`](../../../../../crates/vize_carton/tests/expression_guard.rs)
   - keeps the guard decision aligned with retained expressions.
-- [`davinci_s2_dom_namespace.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_s2_dom_namespace.rs)
+- [`davinci_s2_dom_namespace.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_dom_namespace.rs)
   - proves the DOM-facing witness no longer trips on this expression edge.
 
 This installment does not tick P2-11. It closes a shared expression admission

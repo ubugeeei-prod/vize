@@ -11,7 +11,7 @@
 //!   `legacy`-enabled build.
 #![cfg(feature = "legacy")]
 // Integration test: plain `std::string::String` / `{out}` formatting is fine
-// here (the crate's internal `vize_s0::String` rule does not apply to an
+// here (the crate's internal `vize_l0::String` rule does not apply to an
 // out-of-crate test harness).
 #![expect(
     clippy::disallowed_types,
@@ -19,10 +19,10 @@
 )]
 
 use vize_atelier_core::{CodegenOptions, TransformOptions, codegen, lane, parser};
-use vize_s0::config::VueVersion;
+use vize_l0::config::VueVersion;
 
 fn compile(input: &str, dialect: VueVersion) -> String {
-    let allocator = vize_s0::Allocator::new();
+    let allocator = vize_l0::Allocator::new();
     let (mut root, errors) = parser::parse(&allocator, input);
     assert!(errors.is_empty(), "parse errors: {errors:?}");
 

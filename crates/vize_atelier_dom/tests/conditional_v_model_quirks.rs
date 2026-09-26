@@ -1,6 +1,6 @@
 use vize_atelier_core::{ErrorCode, TemplateSyntaxMode};
 use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
-use vize_s0::{Allocator, String};
+use vize_l0::{Allocator, String};
 
 fn compile(source: &str, mode: TemplateSyntaxMode) -> (Vec<ErrorCode>, String) {
     let allocator = Allocator::new();

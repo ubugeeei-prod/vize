@@ -26,7 +26,7 @@ def roles : List String := [
 
 def u32 (value : Json) : Except String Nat := do
   let n <- value.getNat?
-  if n > 4294967295 then throw "S3 integer exceeds u32"
+  if n > 4294967295 then throw "L3 integer exceeds u32"
   pure n
 
 def optional {α : Type} (parse : Json -> Except String α) (value : Json) : Except String (Option α) :=
@@ -35,7 +35,7 @@ def optional {α : Type} (parse : Json -> Except String α) (value : Json) : Exc
 def parseOperand (text : String) : Except String Operand := do
   let row <- Json.parse (<- Folio.parseField 0 "operand" text)
   let fields <- row.getArr?
-  if fields.size != 10 then throw "expected 10 S3 operand fields"
+  if fields.size != 10 then throw "expected 10 L3 operand fields"
   let op <- u32 (<- row.getArrVal? 0)
   let role <- (<- row.getArrVal? 1).getStr?
   let target <- optional u32 (<- row.getArrVal? 2)
@@ -46,19 +46,19 @@ def parseOperand (text : String) : Except String Operand := do
   let qualifier <- (<- row.getArrVal? 7).getStr?
   let start <- u32 (<- row.getArrVal? 8)
   let stop <- u32 (<- row.getArrVal? 9)
-  if !roles.contains role then throw "unknown S3 operand role"
+  if !roles.contains role then throw "unknown L3 operand role"
   if !["absent", "literal", "js", "opaque", "foreign", "vue.filter"].contains kind then
-    throw "unknown S3 value kind"
+    throw "unknown L3 value kind"
   if start > stop || (kind == "absent" && !value.isEmpty) ||
       (["opaque", "foreign"].contains kind == qualifier.isEmpty) then
-    throw "malformed S3 operand value"
+    throw "malformed L3 operand value"
   let requiresTarget := ["binding-kind", "value", "modifier", "model-read",
     "model-write", "model-attribute", "params"].contains role
   if (!target.isSome && requiresTarget) ||
       (target.isSome && !requiresTarget && !["tag", "name"].contains role) ||
       (name.isSome != ["attribute", "model-attribute"].contains role) ||
       (region.isSome != (role == "condition")) then
-    throw "malformed S3 operand references"
+    throw "malformed L3 operand references"
   pure { op, role, target, region, name, kind, text := value, qualifier, span := { start, stop } }
 
 def parse (text : String) : Except String (List Operand) := do
@@ -73,8 +73,8 @@ def parse (text : String) : Except String (List Operand) := do
       match parseOperand line with
       | .ok row => rows := row :: rows
       | .error message => throw s!"line {index + 1}: {message}"
-    else throw s!"line {index + 1}: expected S3 value section"
-  if current != 2 then throw "missing S3 value sections"
+    else throw s!"line {index + 1}: expected L3 value section"
+  if current != 2 then throw "missing L3 value sections"
   pure rows.reverse
 
 def forOp (rows : List Operand) (id : Nat) : List Operand :=

@@ -1,4 +1,4 @@
-//! Forward each hook in registry order during one S2 walk.
+//! Forward each hook in registry order during one L2 walk.
 
 use crate::ir::ByteRange;
 use crate::markup::{

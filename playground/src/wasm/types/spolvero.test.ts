@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { SPOLVERO_FEED_SCHEMA_VERSION, negotiateSpolveroFeed } from "./spolvero";
+import { SPOLVERO_FEED_SCHEMA_VERSION, layerId, negotiateSpolveroFeed } from "./spolvero";
 
 const page = { path: "Component.vue", stage: "s1", pass: "parse", text: "<p />" };
 
@@ -60,5 +60,18 @@ describe("negotiateSpolveroFeed", () => {
       ok: false,
       error: "Spolvero feed remark 0 does not match the schema.",
     });
+  });
+});
+
+describe("layerId", () => {
+  it("maps display layers without modifying negotiated wire records", () => {
+    expect(
+      ["s0", "s1", "s2-plan", "s3-values", "s4", "s2-to-s3", "custom", "custom-s2", "l2"].map(
+        layerId,
+      ),
+    ).toEqual(["l0", "l1", "l2-plan", "l3-values", "l4", "l2-to-l3", "custom", "custom-s2", "l2"]);
+    const raw = { schema_version: 1, command: "analyze-sfc", pages: [page] };
+    negotiateSpolveroFeed(raw);
+    expect(raw.pages[0].stage).toBe("s1");
   });
 });

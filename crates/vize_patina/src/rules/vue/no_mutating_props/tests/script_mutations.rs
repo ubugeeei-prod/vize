@@ -1,6 +1,6 @@
 use super::{NoMutatingProps, NoMutatingPropsOptions, findings, lint_sfc, lint_sfc_with_rule};
 use crate::{LintPreset, Linter, Severity};
-use vize_s0::String;
+use vize_l0::String;
 
 fn expected_script_finding<'a>(
     sfc: &'a str,

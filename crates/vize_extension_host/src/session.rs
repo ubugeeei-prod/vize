@@ -2,7 +2,7 @@
 
 use core::fmt;
 
-use vize_s0::String;
+use vize_l0::String;
 
 use crate::accept::{AcceptError, Accepted, accept};
 use crate::contract::{GuestError, InputDialectGuest, LANG_FEATURE_PREFIX, SourceBlock};

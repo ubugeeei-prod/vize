@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use vize_s0::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 pub(super) fn rewrite_relative_import_types(type_annotation: &str, source_dir: &Path) -> String {
     rewrite_import_type_specifiers(type_annotation, |specifier| {

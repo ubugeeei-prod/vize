@@ -1,5 +1,5 @@
 use vize_armature::parse;
-use vize_s0::{Allocator, profiler::global_profiler};
+use vize_l0::{Allocator, profiler::global_profiler};
 
 #[test]
 fn nested_directive_arguments_keep_the_parse_once_contract() {

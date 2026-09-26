@@ -10,7 +10,7 @@ use vize_atelier_sfc::{
     parse_sfc,
 };
 use vize_croquis::Croquis;
-use vize_s0::Allocator;
+use vize_l0::Allocator;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub(super) struct CrossFileSourceOffsets {

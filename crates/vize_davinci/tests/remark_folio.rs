@@ -13,7 +13,7 @@ use vize_davinci::folio::remarks::{RemarkLog, RemarksSchemaMismatch};
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::pass::RemarkKind;
 use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
-use vize_s0::{Span, String};
+use vize_l0::{Span, String};
 
 fn arg(key: &str, value: RemarkArgValue) -> RecordedArg {
     RecordedArg {
@@ -115,7 +115,7 @@ fn a_unicode_escape_normalizes_on_the_first_print() {
 }
 
 fn reject(entry: &str) -> FolioError {
-    let input = vize_s0::cstr!("[remarks]\n\n[remarks.entries]\n{entry}\n");
+    let input = vize_l0::cstr!("[remarks]\n\n[remarks.entries]\n{entry}\n");
     RemarkLog::parse(input.as_str()).expect_err("malformed entry must fail")
 }
 
@@ -127,8 +127,8 @@ fn every_malformed_entry_is_rejected_with_its_line_and_reason() {
             "remark origin `hoist` is not `stage.pass`",
         ),
         (
-            "S2.p applied n @1:2",
-            "stage `S2` is not a lowercase kebab-case identifier",
+            "L2.p applied n @1:2",
+            "stage `L2` is not a lowercase kebab-case identifier",
         ),
         (
             "s2.p- applied n @1:2",

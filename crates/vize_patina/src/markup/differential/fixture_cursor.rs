@@ -3,7 +3,7 @@
 //! Strings, raw strings, comments, and nested brackets are real tokens, so a
 //! comma inside `make_rule(a, b)` does not end an argument.
 
-use vize_s0::String;
+use vize_l0::String;
 
 use super::fixture_escape::{
     decode_ascii_escape, decode_unicode_escape, hash_prefix, is_ident_continue, is_ident_start,

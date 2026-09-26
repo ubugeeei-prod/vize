@@ -1,10 +1,10 @@
 use super::DocumentText;
 use crate::utils::position::{line_range, offset_to_position, position_to_offset};
 use tower_lsp::lsp_types::Position;
-use vize_s0::line_index::LineBreaks;
+use vize_l0::line_index::LineBreaks;
 
 fn assert_matches_lsp(text: &DocumentText, source: &str) {
-    assert_eq!(vize_s0::cstr!("{text}"), source);
+    assert_eq!(vize_l0::cstr!("{text}"), source);
     let starts: Vec<_> = LineBreaks::Lsp.line_starts(source).collect();
     assert_eq!(text.len_lines(), starts.len());
     assert_eq!(text.line_to_byte(text.len_lines()), source.len());
@@ -12,7 +12,7 @@ fn assert_matches_lsp(text: &DocumentText, source: &str) {
         assert_eq!(text.line_to_byte(line), start);
         let end = starts.get(line + 1).copied().unwrap_or(source.len());
         let rope_line = text.line(line);
-        assert_eq!(vize_s0::cstr!("{rope_line}"), &source[start..end]);
+        assert_eq!(vize_l0::cstr!("{rope_line}"), &source[start..end]);
         let content = source[start..end].trim_end_matches(['\r', '\n']);
         let units = content.encode_utf16().count() as u32;
         assert_eq!(
@@ -46,7 +46,7 @@ fn rope_and_string_coordinates_agree_for_all_line_break_conventions() {
     ];
     for left in pieces {
         for right in pieces {
-            let source = vize_s0::cstr!("{left}{right}é");
+            let source = vize_l0::cstr!("{left}{right}é");
             assert_matches_lsp(&DocumentText::new(&source), &source);
         }
     }
@@ -66,7 +66,7 @@ fn replacements_keep_exceptional_boundaries_attached_to_the_text() {
             for inserted in ["", "X", "\r", "\n", "\u{2028}Q\u{85}"] {
                 let mut text = original.clone();
                 text.replace(start..end, inserted);
-                let expected = vize_s0::cstr!(
+                let expected = vize_l0::cstr!(
                     "{}{}{}",
                     &source[..boundaries[start]],
                     inserted,
@@ -94,7 +94,7 @@ fn joining_and_splitting_crlf_recomputes_the_exceptional_lines() {
 #[test]
 fn lsp_lines_can_span_several_rope_chunks() {
     let prefix = "x".repeat(4096);
-    let source = vize_s0::cstr!("{prefix}\u{2028}{prefix}\u{85}😀\r\nlast");
+    let source = vize_l0::cstr!("{prefix}\u{2028}{prefix}\u{85}😀\r\nlast");
     let text = DocumentText::new(&source);
     assert_eq!(text.len_lines(), 2);
     assert_eq!(
@@ -121,12 +121,12 @@ fn ordinary_documents_need_no_exceptional_boundary_allocation() {
 #[test]
 fn snapshot_comparisons_follow_edits_without_flattening_the_rope() {
     let prefix = "x".repeat(4096);
-    let source = vize_s0::cstr!("{prefix}\u{2028}😀\r\nlast");
+    let source = vize_l0::cstr!("{prefix}\u{2028}😀\r\nlast");
     let mut text = DocumentText::new(&source);
     assert!(text == source.as_str());
     assert!(text != &source[..4096]);
     text.replace(4097..4098, "😃");
     assert!(text != source.as_str());
-    let edited = vize_s0::cstr!("{prefix}\u{2028}😃\r\nlast");
+    let edited = vize_l0::cstr!("{prefix}\u{2028}😃\r\nlast");
     assert!(text == edited.as_str());
 }

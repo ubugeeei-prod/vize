@@ -25,7 +25,7 @@ use oxc_ast::ast::{
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_atelier_sfc::{SfcDescriptor, SfcScriptBlock};
-use vize_s0::{CompactString, FxHashMap, FxHashSet};
+use vize_l0::{CompactString, FxHashMap, FxHashSet};
 
 /// The template identifiers that name a prop whose unpassed value is proven
 /// falsy; empty when anything is outside the understood forms.

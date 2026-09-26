@@ -1,4 +1,4 @@
-//! Span-carrying Vapor emission (Davinci P3-9, S4).
+//! Span-carrying Vapor emission (Davinci P3-9, L4).
 //!
 //! Vapor code is generated from IR, which keeps expression nodes (with their
 //! authored spans) but not the elements that carried them. For a
@@ -37,7 +37,7 @@ pub(crate) struct VaporSourceSpans {
 pub(crate) type TemplateSpans = FxHashMap<usize, std::vec::Vec<SpanLink>>;
 
 impl VaporSourceSpans {
-    /// Spans for a native S3 compile: its template anchors, each unit keyed
+    /// Spans for a native L3 compile: its template anchors, each unit keyed
     /// by the authored start of the expression the IR keeps (condition, loop
     /// source, slot name) as the legacy walk keys them, and the tag-name
     /// start of the first component authoring each tag.

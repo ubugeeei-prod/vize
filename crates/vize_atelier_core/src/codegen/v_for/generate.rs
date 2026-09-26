@@ -31,7 +31,7 @@ use super::item_props::{
     unwrap_template_single_element,
 };
 use super::slot_outlet::generate_for_slot_outlet;
-use vize_s0::ToCompactString;
+use vize_l0::ToCompactString;
 
 /// Generate item for v-for (as block, not regular vnode)
 pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>, is_stable: bool) {
@@ -654,7 +654,7 @@ fn generate_for_item_props_merged(
     ctx: &mut CodegenContext,
     el: &ElementNode<'_>,
     key_exp: Option<&ExpressionNode<'_>>,
-    scope_id: &Option<vize_s0::String>,
+    scope_id: &Option<vize_l0::String>,
     has_vbind_spread: bool,
     has_von_spread: bool,
     skip_is_prop: bool,
@@ -724,7 +724,7 @@ fn flush_for_item_props_segment(
     ctx: &mut CodegenContext,
     props: &[PropNode<'_>],
     key_exp: Option<&ExpressionNode<'_>>,
-    scope_id: &Option<vize_s0::String>,
+    scope_id: &Option<vize_l0::String>,
     include_extra: bool,
     first_merge_arg: &mut bool,
     skip_is_prop: bool,

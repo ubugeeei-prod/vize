@@ -10,7 +10,7 @@ pub(super) fn dedup_paths_sorted(paths: &mut Vec<PathBuf>) {
 }
 
 fn dedup_paths_merged(paths: &mut Vec<PathBuf>) {
-    let mut seen = vize_s0::FxHashSet::default();
+    let mut seen = vize_l0::FxHashSet::default();
     paths.retain(|path| seen.insert(path.clone()));
     paths.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
 }
@@ -87,7 +87,7 @@ mod tests {
     ) -> PackageRouteBinding {
         PackageRouteBinding {
             importer_path: PathBuf::from("/workspace/src/app.ts"),
-            specifier: vize_s0::String::from("pkg"),
+            specifier: vize_l0::String::from("pkg"),
             occurrence_mode: mode,
             context: PackageResolutionContext::new(Some("bundler"), mode, ["import"]),
             route: None,
