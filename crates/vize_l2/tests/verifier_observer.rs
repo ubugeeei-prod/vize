@@ -14,14 +14,14 @@
 #[cfg(debug_assertions)]
 use std::panic::{AssertUnwindSafe, catch_unwind};
 
-use vize_davinci::folio::Folio;
+use vize_davinci::dump::Dump;
 use vize_davinci::id::NodeId;
 use vize_davinci::pass::{
     Fusability, Pair, PassDesc, PassEvent, PassKind, Pipeline, Preserved, run_pipeline,
 };
 use vize_davinci::side_table::SideTable;
 use vize_l0::Allocator;
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 #[cfg(debug_assertions)]
 use vize_l2::verify::Rigor;
 use vize_l2::verify::VerifyObserver;
@@ -65,8 +65,8 @@ fn event_for(pipeline: &Pipeline, pass_index: usize) -> PassEvent<'_> {
 /// A grammar-valid page whose `ui.if` owns no branch: structurally sound,
 /// canonically invalid.
 #[cfg(debug_assertions)]
-fn empty_if_page() -> DisegnoFolio {
-    DisegnoFolio::parse("[disegno]\nops=1\n\n[disegno.ops]\nui.if @0:10\n\n")
+fn empty_if_page() -> L2Page {
+    L2Page::parse("[disegno]\nops=1\n\n[disegno.ops]\nui.if @0:10\n\n")
         .expect("the page is grammar-valid")
 }
 
@@ -119,7 +119,7 @@ fn a_holding_artifact_passes_every_check_without_panicking() {
             .join("reference.folio"),
     )
     .expect("committed reference page reads");
-    let folio = DisegnoFolio::parse(&text).expect("the reference page parses");
+    let folio = L2Page::parse(&text).expect("the reference page parses");
 
     let mut verifier = VerifyObserver::new();
     verifier.note(&event);
@@ -175,7 +175,7 @@ fn check_at_raw_rigor_accepts_what_canonical_rigor_rejects() {
 fn check_table_panics_with_the_exact_report_on_a_dangling_id() {
     let pipeline = Pipeline::new("s2", &[DIAGNOSE]);
     let event = event_for(&pipeline, 0);
-    let folio = DisegnoFolio::parse(
+    let folio = L2Page::parse(
         "[disegno]\nops=2\n\n[disegno.ops]\nui.element div @0:10\n  ui.text \"x\" @2:8\n\n",
     )
     .expect("the page is grammar-valid");

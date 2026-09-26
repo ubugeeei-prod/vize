@@ -1,4 +1,4 @@
-//! The runtime half of `#[derive(Folio)]`: the derived-page printer and the
+//! The runtime half of `#[derive(Dump)]`: the derived-page printer and the
 //! parse driver the generated code calls into.
 //!
 //! The derived page format is documented in
@@ -21,8 +21,8 @@ use alloc::vec::Vec;
 
 use vize_l0::{FxHashMap, String, cstr};
 
-use super::FolioError;
-use super::value::FolioValue;
+use crate::dump::Error as DumpError;
+use crate::dump::value::DumpValue;
 
 // --- printing ---------------------------------------------------------------
 
@@ -48,7 +48,7 @@ impl<'w, W: fmt::Write> PagePrinter<'w, W> {
     }
 
     /// Write one `name=value` scalar line.
-    pub fn scalar<T: FolioValue>(&mut self, name: &str, value: &T) -> fmt::Result {
+    pub fn scalar<T: DumpValue>(&mut self, name: &str, value: &T) -> fmt::Result {
         write!(self.w, "{name}=")?;
         value.print_value(self.w)?;
         self.w.write_char('\n')
@@ -61,7 +61,7 @@ impl<'w, W: fmt::Write> PagePrinter<'w, W> {
 
     /// Write a `[page.name]` list section, one entry per line in order.
     /// An empty list is omitted entirely.
-    pub fn list<T: FolioValue>(&mut self, name: &str, items: &[T]) -> fmt::Result {
+    pub fn list<T: DumpValue>(&mut self, name: &str, items: &[T]) -> fmt::Result {
         if items.is_empty() {
             return Ok(());
         }
@@ -76,7 +76,7 @@ impl<'w, W: fmt::Write> PagePrinter<'w, W> {
     /// Write a `[page.name]` map section, `key=value` per line, sorted by
     /// printed key (lexicographic, byte order - normalization rule 1). An
     /// empty map is omitted entirely.
-    pub fn map<K: FolioValue, V: FolioValue>(
+    pub fn map<K: DumpValue, V: DumpValue>(
         &mut self,
         name: &str,
         map: &FxHashMap<K, V>,
@@ -158,7 +158,7 @@ impl ParseState {
         &mut self,
         line: &'a str,
         line_no: usize,
-    ) -> Result<LineEvent<'a>, FolioError> {
+    ) -> Result<LineEvent<'a>, DumpError> {
         if let Some(name) = line
             .strip_prefix('[')
             .and_then(|rest| rest.strip_suffix(']'))
@@ -168,13 +168,13 @@ impl ParseState {
                     self.cursor = Cursor::Header;
                     return Ok(LineEvent::Skip);
                 }
-                return Err(FolioError::new(
+                return Err(DumpError::new(
                     line_no,
                     cstr!("first section must be [{}]", self.page),
                 ));
             }
             if name == self.page {
-                return Err(FolioError::new(
+                return Err(DumpError::new(
                     line_no,
                     cstr!("duplicate section [{}]", self.page),
                 ));
@@ -185,13 +185,13 @@ impl ParseState {
             {
                 return Ok(LineEvent::Section(sub));
             }
-            return Err(FolioError::new(line_no, cstr!("unknown section [{name}]")));
+            return Err(DumpError::new(line_no, cstr!("unknown section [{name}]")));
         }
         if line.is_empty() {
             return Ok(LineEvent::Skip);
         }
         match self.cursor {
-            Cursor::BeforeHeader => Err(FolioError::new(
+            Cursor::BeforeHeader => Err(DumpError::new(
                 line_no,
                 cstr!("content before the [{}] header", self.page),
             )),
@@ -212,10 +212,10 @@ impl ParseState {
         index: usize,
         name: &str,
         line_no: usize,
-    ) -> Result<(), FolioError> {
+    ) -> Result<(), DumpError> {
         let bit = 1u64 << index;
         if self.seen & bit != 0 {
-            return Err(FolioError::new(
+            return Err(DumpError::new(
                 line_no,
                 cstr!("duplicate section [{}.{name}]", self.page),
             ));
@@ -227,8 +227,8 @@ impl ParseState {
 
     /// The rejection for a `[page.<name>]` the type does not declare.
     #[must_use]
-    pub fn unknown_section(&self, name: &str, line_no: usize) -> FolioError {
-        FolioError::new(line_no, cstr!("unknown section [{}.{name}]", self.page))
+    pub fn unknown_section(&self, name: &str, line_no: usize) -> DumpError {
+        DumpError::new(line_no, cstr!("unknown section [{}.{name}]", self.page))
     }
 
     /// Reject the whole input when the `[page]` header never appeared.
@@ -236,9 +236,9 @@ impl ParseState {
     /// # Errors
     ///
     /// Returns `missing [page] header` attributed to no line.
-    pub fn require_header(&self) -> Result<(), FolioError> {
+    pub fn require_header(&self) -> Result<(), DumpError> {
         if self.cursor == Cursor::BeforeHeader {
-            return Err(FolioError::new(0, cstr!("missing [{}] header", self.page)));
+            return Err(DumpError::new(0, cstr!("missing [{}] header", self.page)));
         }
         Ok(())
     }
@@ -251,9 +251,9 @@ impl ParseState {
 /// # Errors
 ///
 /// Rejects a line with no `=` at all.
-pub fn split_field(line: &str, line_no: usize) -> Result<(&str, &str), FolioError> {
+pub fn split_field(line: &str, line_no: usize) -> Result<(&str, &str), DumpError> {
     line.split_once('=')
-        .ok_or_else(|| FolioError::new(line_no, cstr!("field line is missing `=`")))
+        .ok_or_else(|| DumpError::new(line_no, cstr!("field line is missing `=`")))
 }
 
 /// Store a parsed scalar into its slot, rejecting a second occurrence.
@@ -261,14 +261,14 @@ pub fn split_field(line: &str, line_no: usize) -> Result<(&str, &str), FolioErro
 /// # Errors
 ///
 /// Returns `duplicate field` for a repeat, or the value's own parse error.
-pub fn set_scalar<T: FolioValue>(
+pub fn set_scalar<T: DumpValue>(
     slot: &mut Option<T>,
     name: &str,
     value: &str,
     line_no: usize,
-) -> Result<(), FolioError> {
+) -> Result<(), DumpError> {
     if slot.is_some() {
-        return Err(FolioError::new(line_no, cstr!("duplicate field `{name}`")));
+        return Err(DumpError::new(line_no, cstr!("duplicate field `{name}`")));
     }
     *slot = Some(T::parse_value(value, line_no)?);
     Ok(())
@@ -276,8 +276,8 @@ pub fn set_scalar<T: FolioValue>(
 
 /// The rejection for a header line naming a field the type does not have.
 #[must_use]
-pub fn unknown_field(name: &str, line_no: usize) -> FolioError {
-    FolioError::new(line_no, cstr!("unknown field `{name}`"))
+pub fn unknown_field(name: &str, line_no: usize) -> DumpError {
+    DumpError::new(line_no, cstr!("unknown field `{name}`"))
 }
 
 /// Unwrap a required scalar after the scan, rejecting an absent one.
@@ -285,8 +285,8 @@ pub fn unknown_field(name: &str, line_no: usize) -> FolioError {
 /// # Errors
 ///
 /// Returns `missing field` attributed to no line.
-pub fn require_scalar<T>(slot: Option<T>, name: &str) -> Result<T, FolioError> {
-    slot.ok_or_else(|| FolioError::new(0, cstr!("missing field `{name}`")))
+pub fn require_scalar<T>(slot: Option<T>, name: &str) -> Result<T, DumpError> {
+    slot.ok_or_else(|| DumpError::new(0, cstr!("missing field `{name}`")))
 }
 
 /// Parse one `key=value` map entry line and insert it, rejecting a
@@ -300,20 +300,20 @@ pub fn map_insert<K, V>(
     map: &mut FxHashMap<K, V>,
     line: &str,
     line_no: usize,
-) -> Result<(), FolioError>
+) -> Result<(), DumpError>
 where
-    K: FolioValue + Eq + Hash,
-    V: FolioValue,
+    K: DumpValue + Eq + Hash,
+    V: DumpValue,
 {
     let Some((key_text, value_text)) = line.split_once('=') else {
-        return Err(FolioError::new(
+        return Err(DumpError::new(
             line_no,
             cstr!("map entry line is missing `=`"),
         ));
     };
     let key = K::parse_value(key_text, line_no)?;
     if map.contains_key(&key) {
-        return Err(FolioError::new(
+        return Err(DumpError::new(
             line_no,
             cstr!("duplicate map key `{key_text}`"),
         ));

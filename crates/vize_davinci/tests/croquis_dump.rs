@@ -2,7 +2,7 @@
 //!
 //! Every `tests/fixtures/croquis/*.vue` input is analyzed with the
 //! inspector's croquis recipe, rendered through the live
-//! `Croquis::to_vir()` renderer, parsed as a [`CroquisFolio`], and printed
+//! `Croquis::to_vir()` renderer, parsed as a [`CroquisPage`], and printed
 //! canonically. The committed `*.folio` next to each input is that
 //! canonical text; `davinci-opt --roundtrip` must be identity on it.
 //!
@@ -20,7 +20,8 @@ use vize_atelier_core::Allocator;
 use vize_atelier_sfc::{
     SfcParseOptions, croquis::SfcCroquisOptions, croquis::analyze_sfc_descriptor, parse_sfc,
 };
-use vize_davinci::folio::{Folio, FolioMode, croquis::CroquisFolio};
+use vize_davinci::dump::croquis::Page as CroquisPage;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::String;
 
 /// Render the croquis VIR dump for an SFC source, mirroring the curator
@@ -74,14 +75,14 @@ fn committed_folios_are_canonical_renderer_output() {
         let vir = vir_of(&source);
 
         // The parser must accept everything the live renderer emits.
-        let folio = match CroquisFolio::parse(vir.as_str()) {
+        let folio = match CroquisPage::parse(vir.as_str()) {
             Ok(folio) => folio,
             Err(error) => panic!(
                 "{}: renderer output did not parse: {error}\n--- renderer output ---\n{vir}",
                 input.display()
             ),
         };
-        let canonical = folio.print_to_string(FolioMode::Full);
+        let canonical = folio.print_to_string(DumpMode::Full);
 
         let folio_path = input.with_extension("folio");
         if update {
@@ -97,9 +98,9 @@ fn committed_folios_are_canonical_renderer_output() {
         );
 
         // Round-trip laws on the canonical text (the davinci-opt gate).
-        let reparsed = CroquisFolio::parse(canonical.as_str()).expect("canonical text parses");
+        let reparsed = CroquisPage::parse(canonical.as_str()).expect("canonical text parses");
         assert_eq!(
-            reparsed.print_to_string(FolioMode::Full).as_str(),
+            reparsed.print_to_string(DumpMode::Full).as_str(),
             canonical.as_str(),
             "{}: print(parse(t)) must be identity on canonical text",
             folio_path.display()

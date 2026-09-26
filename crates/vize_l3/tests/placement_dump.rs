@@ -1,11 +1,10 @@
 //! TS-16 laws for the L3 placement page.
 
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::cstr;
 use vize_l3::op::OpId;
-use vize_l3::placement::{
-    FolioPlacement, L3PlacementFolio, Placement, PlacementRecord, PlacementSet,
-};
+use vize_l3::placement::dump::{Page as PlacementPage, Record as DumpPlacement};
+use vize_l3::placement::{Placement, PlacementRecord, PlacementSet};
 
 const CANONICAL: &str = "\
 [s3-placement-folio]
@@ -17,9 +16,9 @@ op=5 alternatives=inline,hoist leader=- chosen=hoist
 
 ";
 
-fn folio() -> L3PlacementFolio {
+fn folio() -> PlacementPage {
     let row = |op, alternative, leader: Option<u32>, chosen| {
-        FolioPlacement(
+        DumpPlacement(
             PlacementRecord::new(
                 OpId::new(op),
                 PlacementSet::INLINE.with(alternative),
@@ -28,7 +27,7 @@ fn folio() -> L3PlacementFolio {
             .with_chosen(chosen),
         )
     };
-    L3PlacementFolio {
+    PlacementPage {
         placements: vec![
             row(1, Placement::Cache, None, Placement::Cache),
             row(3, Placement::Group, Some(2), Placement::Inline),
@@ -39,19 +38,19 @@ fn folio() -> L3PlacementFolio {
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let parsed = L3PlacementFolio::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(parsed.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    let parsed = PlacementPage::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(parsed.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(parsed, folio());
 }
 
 #[test]
 fn parse_print_is_structural_identity() {
-    let printed = folio().print_to_string(FolioMode::Full);
+    let printed = folio().print_to_string(DumpMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
-    assert_eq!(L3PlacementFolio::parse(printed.as_str()), Ok(folio()));
+    assert_eq!(PlacementPage::parse(printed.as_str()), Ok(folio()));
     assert_eq!(
-        folio().print_to_string(FolioMode::Display),
-        folio().print_to_string(FolioMode::Full)
+        folio().print_to_string(DumpMode::Display),
+        folio().print_to_string(DumpMode::Full)
     );
 }
 
@@ -59,15 +58,15 @@ fn parse_print_is_structural_identity() {
 fn every_set_round_trips_including_the_empty_one() {
     for bits in 0..16u8 {
         let set = PlacementSet::from_bits(bits).expect("known bits");
-        let page = L3PlacementFolio {
-            placements: vec![FolioPlacement(PlacementRecord::new(
+        let page = PlacementPage {
+            placements: vec![DumpPlacement(PlacementRecord::new(
                 OpId::new(bits.into()),
                 set,
                 None,
             ))],
         };
-        let printed = page.print_to_string(FolioMode::Full);
-        assert_eq!(L3PlacementFolio::parse(printed.as_str()), Ok(page));
+        let printed = page.print_to_string(DumpMode::Full);
+        assert_eq!(PlacementPage::parse(printed.as_str()), Ok(page));
     }
     assert_eq!(PlacementSet::from_bits(16), None);
 }
@@ -108,8 +107,8 @@ fn parse_rejects_malformed_rows_exactly() {
     ];
     for (row, message) in cases {
         assert_eq!(
-            L3PlacementFolio::parse(page(row).as_str()),
-            Err(FolioError::new(4, cstr!("{message}"))),
+            PlacementPage::parse(page(row).as_str()),
+            Err(DumpError::new(4, cstr!("{message}"))),
             "{row}"
         );
     }

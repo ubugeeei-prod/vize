@@ -6,15 +6,16 @@
 //! leave the graph page byte-identical, keep the exported partition current,
 //! verify, and match a detached run exactly.
 
-use vize_davinci::folio::remarks::RemarkLog;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::remarks::RemarkLog;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::{NoObserver, RemarkCollector};
 use vize_l0::{Allocator, String};
 use vize_l2_to_l3::lower;
-use vize_l3::extract::{L3ExtractionFolio, OptTier};
-use vize_l3::folio::L3Folio;
+use vize_l3::dump::Page as L3Page;
+use vize_l3::extract::OptTier;
+use vize_l3::extract::dump::Page as ExtractionPage;
 use vize_l3::optimize::optimize;
-use vize_l3::placement::L3PlacementFolio;
+use vize_l3::placement::dump::Page as PlacementPage;
 use vize_l3::verify::verify;
 
 macro_rules! assert_extraction_snapshot {
@@ -31,7 +32,7 @@ fn decisions(source: &str, tier: OptTier) -> String {
     let (tree, errors) = vize_l1::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let mut lowered = lower(&allocator, &s2.root);
-    let graph = L3Folio::of(&lowered.program).print_to_string(FolioMode::Full);
+    let graph = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
 
     let detached = {
         let mut copy = lower(&allocator, &s2.root);
@@ -45,18 +46,18 @@ fn decisions(source: &str, tier: OptTier) -> String {
     assert_eq!(verify(&lowered.program), []);
     assert_eq!(lowered.partition.stale(&lowered.program), None);
     assert_eq!(
-        L3Folio::of(&lowered.program).print_to_string(FolioMode::Full),
+        L3Page::of(&lowered.program).print_to_string(DumpMode::Full),
         graph
     );
-    let mut output = L3PlacementFolio::of(&lowered.program).print_to_string(FolioMode::Full);
+    let mut output = PlacementPage::of(&lowered.program).print_to_string(DumpMode::Full);
     output.push_str(
-        L3ExtractionFolio::of(&extraction)
-            .print_to_string(FolioMode::Full)
+        ExtractionPage::of(&extraction)
+            .print_to_string(DumpMode::Full)
             .as_str(),
     );
     output.push_str(
         RemarkLog::new(collector.finish())
-            .print_to_string(FolioMode::Full)
+            .print_to_string(DumpMode::Full)
             .as_str(),
     );
     output

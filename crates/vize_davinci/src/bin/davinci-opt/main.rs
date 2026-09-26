@@ -45,7 +45,7 @@
 //! absent (the `--folio-after-change` precedent).
 //!
 //! Stages: `croquis` (default, the P0-10 page), `budget-observer` (the
-//! first `#[derive(Folio)]` page, P2-4) and `remarks` (the P3-13 remark
+//! first `#[derive(Dump)]` page, P2-4) and `remarks` (the P3-13 remark
 //! page). The binary is host-side and may use `std`; the `vize_davinci`
 //! library stays `no_std + alloc`.
 
@@ -56,9 +56,10 @@ use std::process::ExitCode;
 
 use args::{Args, Mode, parse_args};
 
-use vize_davinci::folio::dump::FolioDump;
-use vize_davinci::folio::remarks::RemarkLog;
-use vize_davinci::folio::{Folio, FolioMode, croquis::CroquisFolio};
+use crate::dump::collector::Collector;
+use crate::dump::croquis::Page as CroquisPage;
+use crate::dump::remarks::RemarkLog;
+use crate::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, RemarkCollector,
     TimingObserver, parse_pipelines, pipeline::PipelineSpec, print_pipelines, run_pipeline,
@@ -87,19 +88,19 @@ fn first_divergent_line(input: &str, printed: &str) -> usize {
 
 /// Why a stage could not reprint the input.
 enum StageError {
-    Parse(vize_davinci::folio::FolioError),
+    Parse(crate::dump::Error),
     UnknownStage,
 }
 
 /// Parse `input` with `stage`'s folio and print it back canonically.
 fn stage_reprint(stage: &str, input: &str) -> Result<String, StageError> {
-    fn reprint<T: Folio>(input: &str) -> Result<String, StageError> {
+    fn reprint<T: Dump>(input: &str) -> Result<String, StageError> {
         T::parse(input)
-            .map(|folio| folio.print_to_string(FolioMode::Full))
+            .map(|folio| folio.print_to_string(DumpMode::Full))
             .map_err(StageError::Parse)
     }
     match stage {
-        "croquis" => reprint::<CroquisFolio>(input),
+        "croquis" => reprint::<CroquisPage>(input),
         "budget-observer" => reprint::<BudgetObserver>(input),
         "remarks" => reprint::<RemarkLog>(input),
         _ => Err(StageError::UnknownStage),
@@ -215,7 +216,7 @@ fn run_pipeline_mode(syntax: &str, args: &Args) -> ExitCode {
     let mut dump = args
         .folio_dir
         .as_ref()
-        .map(|_| FolioDump::new(args.folio_after_change));
+        .map(|_| Collector::new(args.folio_after_change));
     if let Some(dump) = dump.as_mut() {
         dump.seed(printed.as_str());
     }

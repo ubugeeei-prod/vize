@@ -23,12 +23,12 @@ mod authored;
 mod folio_spans;
 
 use vize_davinci::diagnostic::Diagnostic;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::side_table::SideTable;
 use vize_l0::{Allocator, String};
 use vize_l1::parse;
 use vize_l1_to_l2::{LegacyCaps, Lowered, lower_with_caps};
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 use vize_l2::provenance::ProvenanceRecord;
 use vize_l2::scope::ScopeFacts;
 use vize_l2::verify::{Rigor, Violation, verify, verify_table};
@@ -59,7 +59,7 @@ pub fn artifact(source: &str) -> Artifact {
 /// [`artifact`] under an explicit Vue dialect.
 pub fn artifact_caps(source: &str, caps: LegacyCaps) -> Artifact {
     with_lowered_caps(source, caps, |lowered, folio| Artifact {
-        folio: folio.print_to_string(FolioMode::Full),
+        folio: folio.print_to_string(DumpMode::Full),
         op_count: lowered.op_count,
         diagnostics: lowered.diagnostics.clone(),
         provenance: lowered.provenance.clone(),
@@ -74,7 +74,7 @@ pub fn artifact_caps(source: &str, caps: LegacyCaps) -> Artifact {
 
 /// Parse + lower `source` and hand the artifact (with its owned folio
 /// mirror) to `f`.
-pub fn with_lowered<R>(source: &str, f: impl FnOnce(&Lowered<'_>, &DisegnoFolio) -> R) -> R {
+pub fn with_lowered<R>(source: &str, f: impl FnOnce(&Lowered<'_>, &L2Page) -> R) -> R {
     with_lowered_caps(source, LegacyCaps::VUE3, f)
 }
 
@@ -82,12 +82,12 @@ pub fn with_lowered<R>(source: &str, f: impl FnOnce(&Lowered<'_>, &DisegnoFolio)
 pub fn with_lowered_caps<R>(
     source: &str,
     caps: LegacyCaps,
-    f: impl FnOnce(&Lowered<'_>, &DisegnoFolio) -> R,
+    f: impl FnOnce(&Lowered<'_>, &L2Page) -> R,
 ) -> R {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower_with_caps(&allocator, &tree, &errors, caps);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
     f(&lowered, &folio)
 }
 
@@ -97,7 +97,7 @@ pub fn with_transformed<R>(
     source: &str,
     f: impl FnOnce(
         &Lowered<'_>,
-        &DisegnoFolio,
+        &L2Page,
         &vize_l1_to_l2::pass::L2Facts,
         &vize_davinci::pass::BudgetObserver,
     ) -> R,
@@ -122,7 +122,7 @@ pub fn with_transformed_caps<R>(
     caps: LegacyCaps,
     f: impl FnOnce(
         &Lowered<'_>,
-        &DisegnoFolio,
+        &L2Page,
         &vize_l1_to_l2::pass::L2Facts,
         &vize_davinci::pass::BudgetObserver,
     ) -> R,
@@ -132,7 +132,7 @@ pub fn with_transformed_caps<R>(
     let mut lowered = lower_with_caps(&allocator, &tree, &errors, caps);
     let mut budget = vize_davinci::pass::BudgetObserver::new();
     let facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut budget);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
     f(&lowered, &folio, &facts, &budget)
 }
 
@@ -198,8 +198,8 @@ pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &s
             Vec::<Violation>::new(),
             "a static-facts key dangles: {context}"
         );
-        let printed = folio.print_to_string(FolioMode::Full);
-        let reparsed = DisegnoFolio::parse(printed.as_str()).unwrap_or_else(|error| {
+        let printed = folio.print_to_string(DumpMode::Full);
+        let reparsed = L2Page::parse(printed.as_str()).unwrap_or_else(|error| {
             panic!("post-pass folio re-parse failed ({context}): {error:?}")
         });
         assert_eq!(
@@ -217,7 +217,7 @@ pub fn assert_transformed_sound_caps(source: &str, caps: LegacyCaps, context: &s
 ///    canonical `ui.if` shapes from birth and every span nests.
 /// 3. **Side tables resolve** — every lowering side-table key and every
 ///    provenance node id names an op the artifact numbers.
-/// 4. **Folio round-trip** — `parse(print(v)) == v` structurally and the
+/// 4. **Dump round-trip** — `parse(print(v)) == v` structurally and the
 ///    re-print is byte-identical (TS-16 applied to lowered output).
 pub fn assert_sound(source: &str, context: &str) {
     assert_sound_caps(source, LegacyCaps::VUE3, context);
@@ -268,11 +268,11 @@ pub fn assert_sound_caps(source: &str, caps: LegacyCaps, context: &str) {
             Vec::<Violation>::new(),
             "a provenance node dangles: {context}"
         );
-        let printed = folio.print_to_string(FolioMode::Full);
-        let reparsed = DisegnoFolio::parse(printed.as_str())
+        let printed = folio.print_to_string(DumpMode::Full);
+        let reparsed = L2Page::parse(printed.as_str())
             .unwrap_or_else(|error| panic!("folio re-parse failed ({context}): {error:?}"));
         assert_eq!(&reparsed, folio, "folio round-trip diverged: {context}");
-        let reprinted = reparsed.print_to_string(FolioMode::Full);
+        let reprinted = reparsed.print_to_string(DumpMode::Full);
         assert_eq!(reprinted, printed, "folio re-print diverged: {context}");
     });
 }

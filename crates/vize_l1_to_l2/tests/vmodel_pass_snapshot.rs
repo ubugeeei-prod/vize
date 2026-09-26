@@ -12,8 +12,8 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_folio_snapshot;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::assert_dump_snapshot;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::pass::{ModelFault, vmodel, vslot};
 
 use support::{assert_transformed_sound, with_transformed};
@@ -37,14 +37,14 @@ fn the_bindings_fixture_snapshots_the_post_pass_folio() {
         // modifier, the valueless `:model-value` its camelized same-name
         // value, the outlet its props surface, and the two `ui.model`
         // contracts stand unexpanded.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
 
         // Supplements: the model pass and the slot carriers' pass are
         // both bought by this fixture; `v-if` and `v-for` are not, so the
         // plan is three walks: two barriers plus the fused analysis
         // group (four passes).
         assert_eq!(
-            budget.print_to_string(FolioMode::Full).as_str(),
+            budget.print_to_string(DumpMode::Full).as_str(),
             "[budget-observer]\nwalks=3\npasses=4\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // Both models are valid: the fault table is empty, and the only
@@ -62,7 +62,7 @@ fn the_invalid_fixture_snapshots_the_post_pass_folio() {
         // The folio keeps every op — the L2 lane never removes an
         // invalid model (the fault table is the legacy removal's
         // preserving twin) — while the errors ride the channel.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
 
         let messages: Vec<&str> = lowered
             .diagnostics

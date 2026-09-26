@@ -1,11 +1,11 @@
-//! Owned value page paired with the graph-only `L3Folio` view.
+//! Owned value page paired with the graph-only `L3Page` view.
 //! JSON tuples keep arbitrary authored strings line-atomic without inventing
 //! another quoting grammar. Tuple equality is document equality only.
 
 use alloc::vec::Vec;
 use core::fmt;
-use vize_davinci::folio::value::FolioValue;
-use vize_davinci::folio::{Folio, FolioError};
+use vize_davinci::dump::value::DumpValue;
+use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, String, cstr};
 
 use crate::op::Program;
@@ -26,15 +26,15 @@ pub type OperandRow = (
 );
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioOperand(pub OperandRow);
+pub struct Operand(pub OperandRow);
 
-#[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-#[folio(name = "s3-values-folio")]
-pub struct L3ValuesFolio {
-    pub operands: Vec<FolioOperand>,
+#[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
+#[dump(name = "s3-values-folio")]
+pub struct Page {
+    pub operands: Vec<Operand>,
 }
 
-impl L3ValuesFolio {
+impl Page {
     #[must_use]
     pub fn of(program: &Program<'_>) -> Self {
         Self {
@@ -42,7 +42,7 @@ impl L3ValuesFolio {
                 .operands
                 .iter()
                 .map(|operand| {
-                    FolioOperand((
+                    Operand((
                         operand.op.index(),
                         String::from(operand.role.as_str()),
                         operand.target.map(|id| id.index()),
@@ -60,23 +60,23 @@ impl L3ValuesFolio {
     }
 }
 
-impl FolioValue for FolioOperand {
+impl DumpValue for Operand {
     fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
         let text = serde_json::to_string(&self.0).map_err(|_| fmt::Error)?;
         w.write_str("operand=")?;
         w.write_str(&text)
     }
 
-    fn parse_value(text: &str, line: usize) -> Result<Self, FolioError> {
+    fn parse_value(text: &str, line: usize) -> Result<Self, DumpError> {
         let text = text
             .strip_prefix("operand=")
-            .ok_or_else(|| FolioError::new(line, cstr!("L3 value row must start with operand=")))?;
+            .ok_or_else(|| DumpError::new(line, cstr!("L3 value row must start with operand=")))?;
         let row: OperandRow = serde_json::from_str(text)
-            .map_err(|error| FolioError::new(line, cstr!("invalid L3 operand: {error}")))?;
+            .map_err(|error| DumpError::new(line, cstr!("invalid L3 operand: {error}")))?;
         let role = OperandRole::parse(&row.1)
-            .ok_or_else(|| FolioError::new(line, cstr!("unknown L3 operand role")))?;
+            .ok_or_else(|| DumpError::new(line, cstr!("unknown L3 operand role")))?;
         let kind = ValueKind::parse(&row.5)
-            .ok_or_else(|| FolioError::new(line, cstr!("unknown L3 value kind")))?;
+            .ok_or_else(|| DumpError::new(line, cstr!("unknown L3 value kind")))?;
         let value = OperandValue {
             kind,
             text: &row.6,
@@ -84,7 +84,7 @@ impl FolioValue for FolioOperand {
             span: Span::new(row.8, row.9),
         };
         if !value.is_well_formed() {
-            return Err(FolioError::new(line, cstr!("malformed L3 operand value")));
+            return Err(DumpError::new(line, cstr!("malformed L3 operand value")));
         }
         if !role.accepts_target(row.2.is_some())
             || row.4.is_some()
@@ -92,7 +92,7 @@ impl FolioValue for FolioOperand {
             || row.3.is_some() != (role == OperandRole::Condition)
             || (row.3.is_some() && row.2.is_some())
         {
-            return Err(FolioError::new(
+            return Err(DumpError::new(
                 line,
                 cstr!("malformed L3 operand references"),
             ));

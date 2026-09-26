@@ -1,8 +1,9 @@
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Span};
+use vize_l3::lattice::dump::Page as ReactivityPage;
 use vize_l3::lattice::{
     BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind, ReactivityClass,
-    ReactivityFolio, Verdict, evaluate, evaluate_binding,
+    Verdict, evaluate, evaluate_binding,
 };
 
 const CANONICAL: &str = "\
@@ -124,8 +125,8 @@ fn fact_group_lookup_keeps_binding_ids_exact() {
 
 #[test]
 fn reactivity_folio_roundtrips_canonical_text() {
-    let folio = ReactivityFolio::parse(CANONICAL).expect("canonical lattice folio parses");
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    let folio = ReactivityPage::parse(CANONICAL).expect("canonical lattice folio parses");
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
 }
 
 #[test]
@@ -145,8 +146,8 @@ fn fact_group_print_is_structural_identity() {
                 .with_escape(EscapeKind::Stored),
         ],
     );
-    let folio = ReactivityFolio::of(&facts);
-    let printed = folio.print_to_string(FolioMode::Full);
+    let folio = ReactivityPage::of(&facts);
+    let printed = folio.print_to_string(DumpMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
-    assert_eq!(ReactivityFolio::parse(printed.as_str()).unwrap(), folio);
+    assert_eq!(ReactivityPage::parse(printed.as_str()).unwrap(), folio);
 }

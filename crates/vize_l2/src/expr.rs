@@ -59,7 +59,7 @@ use vize_l0::{Allocator, Span};
 /// compile arena, so two positions may name the same payload (`ui.model`'s
 /// `read`/`write` typically do), and the enum stays two words. Nothing
 /// here survives `Allocator::reset` - the folio carries the owned form
-/// (P1-11's contract; see `crate::folio`).
+/// (P1-11's contract; see `crate::dump`).
 #[derive(Debug, Clone, Copy)]
 pub enum ExprRef<'a> {
     /// The retained oxc AST with its exact source text and authored span.

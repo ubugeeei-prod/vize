@@ -12,9 +12,8 @@
 extern crate alloc;
 
 mod lower;
-mod partition;
+pub mod partition;
 
+pub use crate::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
+pub use crate::partition::{PartitionFact, PartitionFacts, PartitionKind};
 pub use lower::{Lowered, lower};
-pub use partition::{
-    FolioPartitionFact, L3PartitionFolio, PartitionFact, PartitionFacts, PartitionKind,
-};

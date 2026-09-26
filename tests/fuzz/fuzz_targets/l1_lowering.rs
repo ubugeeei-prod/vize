@@ -17,12 +17,12 @@
 // The corpus is seeded from the `<template>` blocks of repository .vue
 // fixtures by `tools/commands/ci/fuzz/seed_corpus.rs`.
 use libfuzzer_sys::fuzz_target;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::side_table::SideTable;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::parse;
 use vize_l1_to_l2::{Lowered, lower};
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 use vize_l2::verify::{Rigor, verify, verify_table};
 
 fuzz_target!(|data: &[u8]| {
@@ -38,7 +38,7 @@ fuzz_target!(|data: &[u8]| {
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
     assert_fact_spans_resolve(source, &lowered);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(verify(&folio, Rigor::Canonical), vec![]);
     assert_eq!(verify_table(&folio, &lowered.scopes), vec![]);
@@ -51,8 +51,8 @@ fuzz_target!(|data: &[u8]| {
         .filter_map(|record| record.node.map(|node| (node, ())))
         .collect();
     assert_eq!(verify_table(&folio, &provenance_ids), vec![]);
-    let printed = folio.print_to_string(FolioMode::Full);
-    let reparsed = DisegnoFolio::parse(printed.as_str()).expect("canonical print must re-parse");
+    let printed = folio.print_to_string(DumpMode::Full);
+    let reparsed = L2Page::parse(printed.as_str()).expect("canonical print must re-parse");
     assert_eq!(reparsed, folio);
 });
 

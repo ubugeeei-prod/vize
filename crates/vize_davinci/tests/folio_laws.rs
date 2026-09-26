@@ -1,4 +1,4 @@
-//! Folio trait laws on hand-written croquis folio texts.
+//! Dump trait laws on hand-written croquis folio texts.
 //!
 //! The mode-explicit contract under test (see `crates/vize_davinci/src/folio.rs`
 //! and `docs/davinci/plan/folio-format.md`):
@@ -10,9 +10,9 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::assert_folio_snapshot;
-use vize_davinci::folio::croquis::CroquisFolio;
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::assert_dump_snapshot;
+use vize_davinci::dump::croquis::Page as CroquisPage;
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{String, cstr};
 
 /// A canonical text exercising every section of the croquis folio.
@@ -70,15 +70,15 @@ rows=Const@197:237
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let folio = CroquisFolio::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    let folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
 }
 
 #[test]
 fn parse_print_is_structural_identity() {
-    let folio = CroquisFolio::parse(CANONICAL).expect("canonical text parses");
-    let printed = folio.print_to_string(FolioMode::Full);
-    let reparsed = CroquisFolio::parse(printed.as_str()).expect("printed text parses");
+    let folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
+    let printed = folio.print_to_string(DumpMode::Full);
+    let reparsed = CroquisPage::parse(printed.as_str()).expect("printed text parses");
     assert_eq!(reparsed, folio);
 }
 
@@ -137,17 +137,17 @@ vue^
 [errors]
 rows=Const@197:237
 ";
-    let folio = CroquisFolio::parse(scrambled).expect("non-canonical text parses");
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    let folio = CroquisPage::parse(scrambled).expect("non-canonical text parses");
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     // And the canonical parse is the same value (normalization happened at
     // parse time, not only in print).
-    let canonical = CroquisFolio::parse(CANONICAL).expect("canonical text parses");
+    let canonical = CroquisPage::parse(CANONICAL).expect("canonical text parses");
     assert_eq!(folio, canonical);
 }
 
 #[test]
 fn display_mode_elides_spans_and_defaults() {
-    let folio = CroquisFolio::parse(CANONICAL).expect("canonical text parses");
+    let folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
     let expected = "\
 [vir]
 script_setup=true
@@ -198,7 +198,7 @@ st:count
 rows=Const
 
 ";
-    assert_eq!(folio.print_to_string(FolioMode::Display).as_str(), expected);
+    assert_eq!(folio.print_to_string(DumpMode::Display).as_str(), expected);
 }
 
 #[test]
@@ -217,7 +217,7 @@ bindings=0
 }>> @14:98
 
 ";
-    let folio = CroquisFolio::parse(text).expect("multi-line macro parses");
+    let folio = CroquisPage::parse(text).expect("multi-line macro parses");
     assert_eq!(folio.macros.len(), 1);
     assert_eq!(
         folio.macros[0]
@@ -227,7 +227,7 @@ bindings=0
             .as_str(),
         "<{\n  change: [value: string];\n\n  update: [id: number, value: string];\n}>"
     );
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), text);
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), text);
 }
 
 #[test]
@@ -239,84 +239,84 @@ scopes=0
 bindings=0
 
 ";
-    let folio = CroquisFolio::parse(text).expect("header-only text parses");
-    assert_eq!(folio, CroquisFolio::default());
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), text);
+    let folio = CroquisPage::parse(text).expect("header-only text parses");
+    assert_eq!(folio, CroquisPage::default());
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), text);
 }
 
-fn parse_err(input: &str) -> FolioError {
-    CroquisFolio::parse(input).expect_err("input must not parse")
+fn parse_err(input: &str) -> DumpError {
+    CroquisPage::parse(input).expect_err("input must not parse")
 }
 
 #[test]
 fn parse_errors_carry_line_numbers() {
     assert_eq!(
         parse_err("x\n"),
-        FolioError::new(1, cstr!("content before the [vir] header"))
+        DumpError::new(1, cstr!("content before the [vir] header"))
     );
     assert_eq!(
         parse_err("[scopes]\n"),
-        FolioError::new(1, cstr!("first section must be [vir]"))
+        DumpError::new(1, cstr!("first section must be [vir]"))
     );
     assert_eq!(
         parse_err("[vir]\nscript_setup=true\nscopes=0\nbindings=0\n\n[macros]\n\n[macros]\n"),
-        FolioError::new(8, cstr!("duplicate section [macros]"))
+        DumpError::new(8, cstr!("duplicate section [macros]"))
     );
     assert_eq!(
         parse_err("[vir]\nscript_setup=true\n"),
-        FolioError::new(0, cstr!("incomplete [vir] header"))
+        DumpError::new(0, cstr!("incomplete [vir] header"))
     );
     assert_eq!(
         parse_err("[vir]\nscript_setup=yes\n"),
-        FolioError::new(2, cstr!("script_setup must be true or false"))
+        DumpError::new(2, cstr!("script_setup must be true or false"))
     );
     assert_eq!(
         parse_err("[vir]\nscript_setup=true\nscopes=0\nbindings=0\n\n[scopes]\n~0 mod @x:y\n"),
-        FolioError::new(7, cstr!("malformed scope span"))
+        DumpError::new(7, cstr!("malformed scope span"))
     );
     assert_eq!(
         parse_err("[vir]\nscript_setup=true\nscopes=1\nbindings=0\n\n[scopes]\n~0 mod @0:1 < ~9\n"),
-        FolioError::new(0, cstr!("unresolved scope reference ~9"))
+        DumpError::new(0, cstr!("unresolved scope reference ~9"))
     );
     assert_eq!(
         parse_err(
             "[vir]\nscript_setup=true\nscopes=2\nbindings=0\n\n[scopes]\n~0 mod @0:1\n~0 fn @0:1\n"
         ),
-        FolioError::new(0, cstr!("duplicate scope id ~0"))
+        DumpError::new(0, cstr!("duplicate scope id ~0"))
     );
     assert_eq!(
         parse_err("[vir]\nscript_setup=true\nscopes=0\nbindings=0\n\n[macros]\n@defineProps<{\n"),
-        FolioError::new(7, cstr!("macro line is missing a span"))
+        DumpError::new(7, cstr!("macro line is missing a span"))
     );
     assert_eq!(
         parse_err("[vir]\nscript_setup=true\nscopes=0\nbindings=0\n\n[surface.props]\nnodefault\n"),
-        FolioError::new(7, cstr!("prop line is missing a !/? marker"))
+        DumpError::new(7, cstr!("prop line is missing a !/? marker"))
     );
 }
 
 #[test]
 fn hand_built_normalized_value_round_trips() {
-    let mut folio = CroquisFolio::parse(CANONICAL).expect("canonical text parses");
+    let mut folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
     // Perturb into a non-normalized equivalent, then normalize by hand.
     folio.bindings[0].names.reverse();
     folio.scopes[1].bindings.reverse();
     folio.normalize();
 
-    let printed = folio.print_to_string(FolioMode::Full);
+    let printed = folio.print_to_string(DumpMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
-    let reparsed = CroquisFolio::parse(printed.as_str()).expect("printed text parses");
+    let reparsed = CroquisPage::parse(printed.as_str()).expect("printed text parses");
     assert_eq!(reparsed, folio);
 }
 
 #[test]
 fn folio_snapshot_macro_uses_the_normalized_full_printer() {
-    let folio = CroquisFolio::parse(CANONICAL).expect("canonical text parses");
-    assert_folio_snapshot!(folio);
+    let folio = CroquisPage::parse(CANONICAL).expect("canonical text parses");
+    assert_dump_snapshot!(folio);
 }
 
 #[test]
 fn folio_error_displays_line_information() {
-    let error = FolioError::new(3, String::from("boom"));
+    let error = DumpError::new(3, String::from("boom"));
     let mut rendered = String::default();
     use core::fmt::Write as _;
     write!(rendered, "{error}").expect("write to string");

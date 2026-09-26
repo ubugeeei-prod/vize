@@ -1,14 +1,15 @@
 //! TS-17 snapshots of the canonical placement alternatives (P3-10).
 //!
-//! Each snapshot is the full graph Folio plus the placement page after
+//! Each snapshot is the full graph Dump plus the placement page after
 //! `annotate`. Annotation is an overlay: the graph page and the exported
 //! partition facts must be byte-identical before and after it.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String};
 use vize_l2_to_l3::lower;
-use vize_l3::folio::L3Folio;
-use vize_l3::placement::{L3PlacementFolio, annotate};
+use vize_l3::dump::Page as L3Page;
+use vize_l3::placement::annotate;
+use vize_l3::placement::dump::Page as PlacementPage;
 use vize_l3::verify::verify;
 
 macro_rules! assert_placement_snapshot {
@@ -30,21 +31,21 @@ fn placements(source: &str, graph_page: bool) -> String {
     let (tree, errors) = vize_l1::parse(&allocator, source);
     let s2 = vize_l1_to_l2::lower(&allocator, &tree, &errors);
     let mut lowered = lower(&allocator, &s2.root);
-    let graph = L3Folio::of(&lowered.program).print_to_string(FolioMode::Full);
+    let graph = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
     let partition = lowered.partition.ops.to_vec();
 
     annotate(&mut lowered.program);
 
     assert_eq!(verify(&lowered.program), []);
     assert_eq!(
-        L3Folio::of(&lowered.program).print_to_string(FolioMode::Full),
+        L3Page::of(&lowered.program).print_to_string(DumpMode::Full),
         graph
     );
     assert_eq!(lowered.partition.ops.to_vec(), partition);
     let mut output = if graph_page { graph } else { String::default() };
     output.push_str(
-        L3PlacementFolio::of(&lowered.program)
-            .print_to_string(FolioMode::Full)
+        PlacementPage::of(&lowered.program)
+            .print_to_string(DumpMode::Full)
             .as_str(),
     );
     output

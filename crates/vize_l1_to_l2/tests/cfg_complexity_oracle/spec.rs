@@ -1,7 +1,7 @@
 //! The naive evaluator: `complexity-metrics.md` read a second time, over a
 //! different representation, with different algorithms.
 //!
-//! - Input is the **owned folio** (`L2Folio`), not the arena tree, and
+//! - Input is the **owned folio** (`L2Page`), not the arena tree, and
 //!   every expression is **re-parsed** from its folio text into a fresh
 //!   arena, not read from the retained AST.
 //! - Cyclomatic complexity is `E − N + 2` of an **explicit control-flow
@@ -12,7 +12,10 @@
 //!   regions, parent links for AST nodes), and an operator tree's runs come
 //!   from sorting its nodes by operator position — no inherited counters.
 
-use vize_l2::folio::{FolioBinding, FolioExpr, FolioIf, FolioName, FolioOp, L2Folio};
+use vize_l2::dump::{
+    Binding as DumpBinding, Expr as DumpExpr, If as DumpIf, Name as DumpName, Op as DumpOp,
+    Page as L2Page,
+};
 
 use super::ast::expression_facts;
 use super::graph::Graph;
@@ -54,7 +57,7 @@ struct Eval {
 }
 
 /// Evaluate the metric over one template's folio.
-pub fn evaluate(folio: &L2Folio) -> Naive {
+pub fn evaluate(folio: &L2Page) -> Naive {
     let mut eval = Eval {
         graph: Graph::default(),
         frames: Vec::new(),
@@ -107,7 +110,7 @@ impl Eval {
         });
     }
 
-    fn region(&mut self, ops: &[FolioOp], mut cur: u32) -> u32 {
+    fn region(&mut self, ops: &[DumpOp], mut cur: u32) -> u32 {
         for op in ops {
             self.max_nesting = self.max_nesting.max(self.nesting());
             cur = self.op(op, cur);
@@ -115,30 +118,30 @@ impl Eval {
         cur
     }
 
-    fn inside(&mut self, frame: Frame, ops: &[FolioOp], cur: u32) -> u32 {
+    fn inside(&mut self, frame: Frame, ops: &[DumpOp], cur: u32) -> u32 {
         self.frames.push(frame);
         let end = self.region(ops, cur);
         self.frames.pop();
         end
     }
 
-    fn op(&mut self, op: &FolioOp, cur: u32) -> u32 {
+    fn op(&mut self, op: &DumpOp, cur: u32) -> u32 {
         let id = self.mint();
         let line = self.graph.node();
         self.graph.edge(cur, line);
         match op {
-            FolioOp::Element(element) => {
+            DumpOp::Element(element) => {
                 let (cur, scoped) = self.owner(&element.bindings, line);
                 self.children(&element.children, scoped, cur)
             }
-            FolioOp::Component(component) => {
+            DumpOp::Component(component) => {
                 let (cur, scoped) = self.owner(&component.bindings, line);
                 self.children(&component.children, scoped, cur)
             }
-            FolioOp::Text(_) | FolioOp::Comment(_) => line,
-            FolioOp::Interpolation(interpolation) => self.expr(&interpolation.expression, id, line),
-            FolioOp::If(if_op) => self.if_chain(if_op, id, line),
-            FolioOp::For(for_op) => {
+            DumpOp::Text(_) | DumpOp::Comment(_) => line,
+            DumpOp::Interpolation(interpolation) => self.expr(&interpolation.expression, id, line),
+            DumpOp::If(if_op) => self.if_chain(if_op, id, line),
+            DumpOp::For(for_op) => {
                 let source = &for_op.binding.source;
                 let n = self.nesting();
                 self.row("v-for", span_of(source), id, n, 1, 1 + n);
@@ -153,7 +156,7 @@ impl Eval {
                 self.graph.edge(header, exit);
                 exit
             }
-            FolioOp::Slot(slot) => {
+            DumpOp::Slot(slot) => {
                 let cur = self.name(&slot.name, id, line);
                 let (cur, _) = self.owner(&slot.bindings, cur);
                 self.region(&slot.fallback, cur)
@@ -161,7 +164,7 @@ impl Eval {
         }
     }
 
-    fn children(&mut self, children: &[FolioOp], scoped: bool, cur: u32) -> u32 {
+    fn children(&mut self, children: &[DumpOp], scoped: bool, cur: u32) -> u32 {
         if scoped {
             self.inside(Frame::ScopedBody, children, cur)
         } else {
@@ -169,7 +172,7 @@ impl Eval {
         }
     }
 
-    fn if_chain(&mut self, if_op: &FolioIf, id: u32, mut cur: u32) -> u32 {
+    fn if_chain(&mut self, if_op: &DumpIf, id: u32, mut cur: u32) -> u32 {
         let join = self.graph.node();
         let mut closed = false;
         for (index, branch) in if_op.branches.iter().enumerate() {
@@ -207,25 +210,25 @@ impl Eval {
         join
     }
 
-    fn owner(&mut self, bindings: &[FolioBinding], mut cur: u32) -> (u32, bool) {
+    fn owner(&mut self, bindings: &[DumpBinding], mut cur: u32) -> (u32, bool) {
         let mut scoped = false;
         for binding in bindings {
             let id = self.mint();
             let n = self.nesting();
             match binding {
-                FolioBinding::Bind(bind) => {
+                DumpBinding::Bind(bind) => {
                     cur = self.opt_name(bind.name.as_ref(), id, cur);
                     cur = self.opt_expr(bind.value.as_ref(), id, cur);
                 }
-                FolioBinding::On(on) => {
+                DumpBinding::On(on) => {
                     cur = self.opt_name(on.name.as_ref(), id, cur);
                     cur = self.opt_expr(on.handler.as_ref(), id, cur);
                 }
-                FolioBinding::Model(model) => {
+                DumpBinding::Model(model) => {
                     cur = self.opt_name(model.argument.as_ref(), id, cur);
                     cur = self.expr(&model.contract.read, id, cur);
                 }
-                FolioBinding::SlotContent(content) => {
+                DumpBinding::SlotContent(content) => {
                     cur = self.opt_name(content.name.as_ref(), id, cur);
                     if content.params.is_some() {
                         self.row(
@@ -239,7 +242,7 @@ impl Eval {
                         scoped = true;
                     }
                 }
-                FolioBinding::VueSlotScope(scope) => {
+                DumpBinding::VueSlotScope(scope) => {
                     if scope.params.is_some() {
                         self.row(
                             "scoped-slot",
@@ -252,41 +255,40 @@ impl Eval {
                         scoped = true;
                     }
                 }
-                FolioBinding::VueDirective(directive) => {
+                DumpBinding::VueDirective(directive) => {
                     cur = self.opt_name(directive.argument.as_ref(), id, cur);
                     cur = self.opt_expr(directive.value.as_ref(), id, cur);
                 }
-                FolioBinding::VueSync(sync) => cur = self.expr(&sync.value, id, cur),
-                FolioBinding::VueMemo(memo) => cur = self.expr(&memo.value, id, cur),
-                FolioBinding::VueShow(show) => cur = self.expr(&show.value, id, cur),
-                FolioBinding::VueHtml(html) => cur = self.opt_expr(html.value.as_ref(), id, cur),
-                FolioBinding::VueText(text) => cur = self.opt_expr(text.value.as_ref(), id, cur),
-                FolioBinding::VueCssBind(_)
-                | FolioBinding::VueOnce(_)
-                | FolioBinding::VueCloak(_) => {}
+                DumpBinding::VueSync(sync) => cur = self.expr(&sync.value, id, cur),
+                DumpBinding::VueMemo(memo) => cur = self.expr(&memo.value, id, cur),
+                DumpBinding::VueShow(show) => cur = self.expr(&show.value, id, cur),
+                DumpBinding::VueHtml(html) => cur = self.opt_expr(html.value.as_ref(), id, cur),
+                DumpBinding::VueText(text) => cur = self.opt_expr(text.value.as_ref(), id, cur),
+                DumpBinding::VueCssBind(_) | DumpBinding::VueOnce(_) | DumpBinding::VueCloak(_) => {
+                }
             }
         }
         (cur, scoped)
     }
 
-    fn name(&mut self, name: &FolioName, id: u32, cur: u32) -> u32 {
+    fn name(&mut self, name: &DumpName, id: u32, cur: u32) -> u32 {
         match name {
-            FolioName::Static(_) => cur,
-            FolioName::Dynamic(expr) => self.expr(expr, id, cur),
+            DumpName::Static(_) => cur,
+            DumpName::Dynamic(expr) => self.expr(expr, id, cur),
         }
     }
 
-    fn opt_name(&mut self, name: Option<&FolioName>, id: u32, cur: u32) -> u32 {
+    fn opt_name(&mut self, name: Option<&DumpName>, id: u32, cur: u32) -> u32 {
         name.map_or(cur, |name| self.name(name, id, cur))
     }
 
-    fn opt_expr(&mut self, expr: Option<&FolioExpr>, id: u32, cur: u32) -> u32 {
+    fn opt_expr(&mut self, expr: Option<&DumpExpr>, id: u32, cur: u32) -> u32 {
         expr.map_or(cur, |expr| self.expr(expr, id, cur))
     }
 
-    fn expr(&mut self, expr: &FolioExpr, id: u32, mut cur: u32) -> u32 {
+    fn expr(&mut self, expr: &DumpExpr, id: u32, mut cur: u32) -> u32 {
         let n = self.nesting();
-        let FolioExpr::Js { source, span } = expr else {
+        let DumpExpr::Js { source, span } = expr else {
             self.row("unknown", span_of(expr), id, n, 0, 0);
             return cur;
         };
@@ -307,12 +309,12 @@ impl Eval {
     }
 }
 
-fn span_of(expr: &FolioExpr) -> (u32, u32) {
+fn span_of(expr: &DumpExpr) -> (u32, u32) {
     let span = match expr {
-        FolioExpr::Js { span, .. }
-        | FolioExpr::Foreign { span, .. }
-        | FolioExpr::Opaque { span, .. }
-        | FolioExpr::Filter { span, .. } => span,
+        DumpExpr::Js { span, .. }
+        | DumpExpr::Foreign { span, .. }
+        | DumpExpr::Opaque { span, .. }
+        | DumpExpr::Filter { span, .. } => span,
     };
     (span.start, span.end)
 }

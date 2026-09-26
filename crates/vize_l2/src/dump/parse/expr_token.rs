@@ -9,20 +9,20 @@
 //! contract, the same documented-edges rule the quoted-string grammar
 //! uses).
 
-use vize_davinci::folio::FolioError;
+use vize_davinci::dump::Error as DumpError;
 use vize_l0::{Span, String, cstr};
 
-use super::super::owned::FolioExpr;
-use super::line::{err, final_span, take_quoted};
+use crate::dump::owned::Expr;
+use crate::dump::parse::line::{err, final_span, take_quoted};
 use crate::expr::OpaqueReason;
 
 /// Parse one expression payload starting at `rest[0]`; returns the owned
 /// payload and the remainder after the closing `)`.
-pub(super) fn take_expr(rest: &str, line_no: usize) -> Result<(FolioExpr, &str), FolioError> {
+pub(super) fn take_expr(rest: &str, line_no: usize) -> Result<(Expr, &str), DumpError> {
     if let Some(tail) = rest.strip_prefix("js(") {
         let (source, tail) = take_quoted(tail, line_no)?;
         let (span, tail) = close_span(tail, line_no)?;
-        return Ok((FolioExpr::Js { source, span }, tail));
+        return Ok((Expr::Js { source, span }, tail));
     }
     if let Some(tail) = rest.strip_prefix("opaque(") {
         let Some((word, tail)) = tail.split_once(' ') else {
@@ -34,7 +34,7 @@ pub(super) fn take_expr(rest: &str, line_no: usize) -> Result<(FolioExpr, &str),
         let (source, tail) = take_quoted(tail, line_no)?;
         let (span, tail) = close_span(tail, line_no)?;
         return Ok((
-            FolioExpr::Opaque {
+            Expr::Opaque {
                 reason,
                 source,
                 span,
@@ -52,7 +52,7 @@ pub(super) fn take_expr(rest: &str, line_no: usize) -> Result<(FolioExpr, &str),
         let (source, tail) = take_quoted(tail, line_no)?;
         let (span, tail) = close_span(tail, line_no)?;
         return Ok((
-            FolioExpr::Foreign {
+            Expr::Foreign {
                 dialect: String::from(dialect),
                 source,
                 span,
@@ -63,14 +63,14 @@ pub(super) fn take_expr(rest: &str, line_no: usize) -> Result<(FolioExpr, &str),
     if let Some(tail) = rest.strip_prefix("vue.filter(") {
         let (source, tail) = take_quoted(tail, line_no)?;
         let (span, tail) = close_span(tail, line_no)?;
-        return Ok((FolioExpr::Filter { source, span }, tail));
+        return Ok((Expr::Filter { source, span }, tail));
     }
     Err(err(line_no, cstr!("expected an expression payload")))
 }
 
 /// Parse the ` @s:e)` that closes an expression payload; returns the span
 /// and the remainder after `)`.
-fn close_span(tail: &str, line_no: usize) -> Result<(Span, &str), FolioError> {
+fn close_span(tail: &str, line_no: usize) -> Result<(Span, &str), DumpError> {
     let Some(tail) = tail.strip_prefix(' ') else {
         return Err(err(line_no, cstr!("missing span")));
     };

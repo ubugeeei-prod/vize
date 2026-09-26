@@ -1,24 +1,23 @@
 //! Attached-binding line grammar: `ui.bind`, `ui.on`, `ui.model`,
 //! `ui.slot-content`, `vue.directive`, `vue.css-bind` — split from
-//! [`line`](super::line)
+//! [`line`](crate::dump::parse::line)
 //! along the op-family boundary (region-op lines there, binding lines
 //! here) so each file stays within the source budget.
 
 use alloc::vec::Vec;
 
-use vize_davinci::folio::FolioError;
+use vize_davinci::dump::Error as DumpError;
 use vize_l0::{String, cstr};
 
-use super::super::owned::{
-    FolioBind, FolioContract, FolioExpr, FolioModel, FolioName, FolioOn, FolioSlotContent,
-    FolioVueCloak, FolioVueCssBind, FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce,
-    FolioVueShow, FolioVueSlotScope, FolioVueSync, FolioVueText,
+use crate::dump::owned::{
+    Bind, Contract, Expr, Model, Name, On, SlotContent, VueCloak, VueCssBind, VueDirective,
+    VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
 };
-use super::expr_token::take_expr;
-use super::line::{Item, err, final_span, name_value, tail_span, take_quoted};
+use crate::dump::parse::expr_token::take_expr;
+use crate::dump::parse::line::{Item, err, final_span, name_value, tail_span, take_quoted};
 
 /// Parse a legacy `"a,b"` or canonical `["a","b"]` modifier payload into owned names.
-fn take_mods(rest: &str, line_no: usize) -> Result<(Vec<String>, &str), FolioError> {
+fn take_mods(rest: &str, line_no: usize) -> Result<(Vec<String>, &str), DumpError> {
     if let Some(mut tail) = rest.strip_prefix('[') {
         let mut modifiers = Vec::new();
         loop {
@@ -54,9 +53,9 @@ fn take_mods(rest: &str, line_no: usize) -> Result<(Vec<String>, &str), FolioErr
 /// `name=` / `mods=` / one trailing expression field (`params=`,
 /// `value=`, `handler=`), then the span.
 struct OptionalFields {
-    name: Option<FolioName>,
+    name: Option<Name>,
     modifiers: Vec<String>,
-    expr: Option<FolioExpr>,
+    expr: Option<Expr>,
     span: vize_l0::Span,
 }
 
@@ -64,7 +63,7 @@ fn optional_fields(
     rest: &str,
     expr_key: &str,
     line_no: usize,
-) -> Result<OptionalFields, FolioError> {
+) -> Result<OptionalFields, DumpError> {
     let mut rest = rest;
     let mut any_field = false;
     let field = |rest: &'_ str, key: &str, any_field: bool| -> Option<usize> {
@@ -110,9 +109,9 @@ fn optional_fields(
     })
 }
 
-pub(super) fn slot_content(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn slot_content(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let fields = optional_fields(rest, "params=", line_no)?;
-    Ok(Item::SlotContent(FolioSlotContent {
+    Ok(Item::SlotContent(SlotContent {
         name: fields.name,
         modifiers: fields.modifiers,
         params: fields.expr,
@@ -120,9 +119,9 @@ pub(super) fn slot_content(rest: &str, line_no: usize) -> Result<Item, FolioErro
     }))
 }
 
-pub(super) fn bind(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn bind(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let fields = optional_fields(rest, "value=", line_no)?;
-    Ok(Item::Bind(FolioBind {
+    Ok(Item::Bind(Bind {
         name: fields.name,
         modifiers: fields.modifiers,
         value: fields.expr,
@@ -130,9 +129,9 @@ pub(super) fn bind(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     }))
 }
 
-pub(super) fn on(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn on(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let fields = optional_fields(rest, "handler=", line_no)?;
-    Ok(Item::On(FolioOn {
+    Ok(Item::On(On {
         name: fields.name,
         modifiers: fields.modifiers,
         handler: fields.expr,
@@ -140,7 +139,7 @@ pub(super) fn on(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     }))
 }
 
-pub(super) fn model(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn model(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let mut rest = rest;
     let mut argument = None;
     if let Some(after) = rest.strip_prefix("name=") {
@@ -159,15 +158,15 @@ pub(super) fn model(rest: &str, line_no: usize) -> Result<Item, FolioError> {
         return Err(err(line_no, cstr!("expected `write=`")));
     };
     let (write, tail) = take_expr(rest, line_no)?;
-    Ok(Item::Model(FolioModel {
-        contract: FolioContract { read, write },
+    Ok(Item::Model(Model {
+        contract: Contract { read, write },
         argument,
         attributes: Vec::new(),
         span: tail_span(tail, line_no)?,
     }))
 }
 
-pub(super) fn directive(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn directive(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let (name, mut rest) = take_quoted(rest, line_no)?;
     let mut argument = None;
     if let Some(after) = rest.strip_prefix(" arg=") {
@@ -187,7 +186,7 @@ pub(super) fn directive(rest: &str, line_no: usize) -> Result<Item, FolioError> 
         value = Some(expr);
         rest = tail;
     }
-    Ok(Item::Directive(FolioVueDirective {
+    Ok(Item::Directive(VueDirective {
         name,
         argument,
         modifiers,
@@ -196,18 +195,18 @@ pub(super) fn directive(rest: &str, line_no: usize) -> Result<Item, FolioError> 
     }))
 }
 
-pub(super) fn css_bind(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn css_bind(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let Some(rest) = rest.strip_prefix("value=") else {
         return Err(err(line_no, cstr!("expected `value=`")));
     };
     let (value, rest) = take_expr(rest, line_no)?;
-    Ok(Item::CssBind(FolioVueCssBind {
+    Ok(Item::CssBind(VueCssBind {
         value,
         span: tail_span(rest, line_no)?,
     }))
 }
 
-pub(super) fn sync(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn sync(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let Some(rest) = rest.strip_prefix("name=") else {
         return Err(err(line_no, cstr!("expected `name=`")));
     };
@@ -223,7 +222,7 @@ pub(super) fn sync(rest: &str, line_no: usize) -> Result<Item, FolioError> {
         return Err(err(line_no, cstr!("expected `value=`")));
     };
     let (value, rest) = take_expr(rest, line_no)?;
-    Ok(Item::Sync(FolioVueSync {
+    Ok(Item::Sync(VueSync {
         name,
         modifiers,
         value,
@@ -231,7 +230,7 @@ pub(super) fn sync(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     }))
 }
 
-pub(super) fn slot_scope(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn slot_scope(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let mut rest = rest;
     let mut any_field = false;
     let mut name = None;
@@ -258,67 +257,67 @@ pub(super) fn slot_scope(rest: &str, line_no: usize) -> Result<Item, FolioError>
     } else {
         final_span(rest, line_no)?
     };
-    Ok(Item::SlotScope(FolioVueSlotScope { name, params, span }))
+    Ok(Item::SlotScope(VueSlotScope { name, params, span }))
 }
 
-pub(super) fn once(rest: &str, line_no: usize) -> Result<Item, FolioError> {
-    Ok(Item::Once(FolioVueOnce {
+pub(super) fn once(rest: &str, line_no: usize) -> Result<Item, DumpError> {
+    Ok(Item::Once(VueOnce {
         span: final_span(rest, line_no)?,
     }))
 }
 
-pub(super) fn memo(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn memo(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let Some(rest) = rest.strip_prefix("value=") else {
         return Err(err(line_no, cstr!("expected `value=`")));
     };
     let (value, rest) = take_expr(rest, line_no)?;
-    Ok(Item::Memo(FolioVueMemo {
+    Ok(Item::Memo(VueMemo {
         value,
         span: tail_span(rest, line_no)?,
     }))
 }
 
-pub(super) fn show(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn show(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let Some(rest) = rest.strip_prefix("value=") else {
         return Err(err(line_no, cstr!("expected `value=`")));
     };
     let (value, rest) = take_expr(rest, line_no)?;
-    Ok(Item::Show(FolioVueShow {
+    Ok(Item::Show(VueShow {
         value,
         span: tail_span(rest, line_no)?,
     }))
 }
 
-pub(super) fn html(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn html(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let Some(rest) = rest.strip_prefix("value=") else {
-        return Ok(Item::Html(FolioVueHtml {
+        return Ok(Item::Html(VueHtml {
             value: None,
             span: final_span(rest, line_no)?,
         }));
     };
     let (value, rest) = take_expr(rest, line_no)?;
-    Ok(Item::Html(FolioVueHtml {
+    Ok(Item::Html(VueHtml {
         value: Some(value),
         span: tail_span(rest, line_no)?,
     }))
 }
 
-pub(super) fn text(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(super) fn text(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let Some(rest) = rest.strip_prefix("value=") else {
-        return Ok(Item::VueText(FolioVueText {
+        return Ok(Item::VueText(VueText {
             value: None,
             span: final_span(rest, line_no)?,
         }));
     };
     let (value, rest) = take_expr(rest, line_no)?;
-    Ok(Item::VueText(FolioVueText {
+    Ok(Item::VueText(VueText {
         value: Some(value),
         span: tail_span(rest, line_no)?,
     }))
 }
 
-pub(super) fn cloak(rest: &str, line_no: usize) -> Result<Item, FolioError> {
-    Ok(Item::Cloak(FolioVueCloak {
+pub(super) fn cloak(rest: &str, line_no: usize) -> Result<Item, DumpError> {
+    Ok(Item::Cloak(VueCloak {
         span: final_span(rest, line_no)?,
     }))
 }

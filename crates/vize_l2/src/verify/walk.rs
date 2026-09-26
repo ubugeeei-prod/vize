@@ -18,12 +18,14 @@ use alloc::vec::Vec;
 use vize_l0::{Span, cstr};
 
 use super::{Rigor, Violation, ViolationCode};
-use crate::folio::{FolioAttribute, FolioBinding, FolioIf, FolioOp, L2Folio};
+use crate::dump::{
+    Attribute as DumpAttribute, Binding as DumpBinding, If as DumpIf, Op as DumpOp, Page as L2Page,
+};
 
 /// The immediate owner of a nested line: its keyword and its span.
 type Owner = Option<(&'static str, Span)>;
 
-pub(super) fn walk(folio: &L2Folio, rigor: Rigor, out: &mut Vec<Violation>) {
+pub(super) fn walk(folio: &L2Page, rigor: Rigor, out: &mut Vec<Violation>) {
     for op in &folio.ops {
         visit_op(op, None, rigor, out);
     }
@@ -31,30 +33,30 @@ pub(super) fn walk(folio: &L2Folio, rigor: Rigor, out: &mut Vec<Violation>) {
 
 /// The keyword an op's folio line starts with — the owned twin of
 /// `Op::mnemonic`.
-fn keyword(op: &FolioOp) -> &'static str {
+fn keyword(op: &DumpOp) -> &'static str {
     match op {
-        FolioOp::Element(_) => "ui.element",
-        FolioOp::Component(_) => "ui.component",
-        FolioOp::Text(_) => "ui.text",
-        FolioOp::Interpolation(_) => "ui.interpolation",
-        FolioOp::Comment(_) => "ui.comment",
-        FolioOp::If(_) => "ui.if",
-        FolioOp::For(_) => "ui.for",
-        FolioOp::Slot(_) => "ui.slot",
+        DumpOp::Element(_) => "ui.element",
+        DumpOp::Component(_) => "ui.component",
+        DumpOp::Text(_) => "ui.text",
+        DumpOp::Interpolation(_) => "ui.interpolation",
+        DumpOp::Comment(_) => "ui.comment",
+        DumpOp::If(_) => "ui.if",
+        DumpOp::For(_) => "ui.for",
+        DumpOp::Slot(_) => "ui.slot",
     }
 }
 
 /// The op's own span, whichever variant carries it.
-fn op_span(op: &FolioOp) -> Span {
+fn op_span(op: &DumpOp) -> Span {
     match op {
-        FolioOp::Element(element) => element.span,
-        FolioOp::Component(component) => component.span,
-        FolioOp::Text(text) => text.span,
-        FolioOp::Interpolation(interpolation) => interpolation.span,
-        FolioOp::Comment(comment) => comment.span,
-        FolioOp::If(if_op) => if_op.span,
-        FolioOp::For(for_op) => for_op.span,
-        FolioOp::Slot(slot) => slot.span,
+        DumpOp::Element(element) => element.span,
+        DumpOp::Component(component) => component.span,
+        DumpOp::Text(text) => text.span,
+        DumpOp::Interpolation(interpolation) => interpolation.span,
+        DumpOp::Comment(comment) => comment.span,
+        DumpOp::If(if_op) => if_op.span,
+        DumpOp::For(for_op) => for_op.span,
+        DumpOp::Slot(slot) => slot.span,
     }
 }
 
@@ -84,12 +86,12 @@ fn line_checks(kw: &'static str, span: Span, owner: Owner, out: &mut Vec<Violati
     }
 }
 
-fn visit_op(op: &FolioOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) {
+fn visit_op(op: &DumpOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) {
     let kw = keyword(op);
     let span = op_span(op);
     line_checks(kw, span, owner, out);
     match op {
-        FolioOp::Element(element) => body(
+        DumpOp::Element(element) => body(
             kw,
             span,
             &element.attributes,
@@ -98,7 +100,7 @@ fn visit_op(op: &FolioOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) 
             rigor,
             out,
         ),
-        FolioOp::Component(component) => body(
+        DumpOp::Component(component) => body(
             kw,
             span,
             &component.attributes,
@@ -107,14 +109,14 @@ fn visit_op(op: &FolioOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) 
             rigor,
             out,
         ),
-        FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {}
-        FolioOp::If(if_op) => visit_if(if_op, rigor, out),
-        FolioOp::For(for_op) => {
+        DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => {}
+        DumpOp::If(if_op) => visit_if(if_op, rigor, out),
+        DumpOp::For(for_op) => {
             for child in &for_op.ops {
                 visit_op(child, Some((kw, span)), rigor, out);
             }
         }
-        FolioOp::Slot(slot) => body(
+        DumpOp::Slot(slot) => body(
             kw,
             span,
             &slot.attributes,
@@ -132,9 +134,9 @@ fn visit_op(op: &FolioOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) 
 fn body(
     owner_kw: &'static str,
     owner_span: Span,
-    attributes: &[FolioAttribute],
-    bindings: &[FolioBinding],
-    children: &[FolioOp],
+    attributes: &[DumpAttribute],
+    bindings: &[DumpBinding],
+    children: &[DumpOp],
     rigor: Rigor,
     out: &mut Vec<Violation>,
 ) {
@@ -144,49 +146,49 @@ fn body(
     }
     for binding in bindings {
         match binding {
-            FolioBinding::Bind(bind) => {
+            DumpBinding::Bind(bind) => {
                 line_checks("ui.bind", bind.span, owner, out);
             }
-            FolioBinding::On(on) => {
+            DumpBinding::On(on) => {
                 line_checks("ui.on", on.span, owner, out);
             }
-            FolioBinding::Model(model) => {
+            DumpBinding::Model(model) => {
                 line_checks("ui.model", model.span, owner, out);
                 for attribute in &model.attributes {
                     line_checks("attr", attribute.span, Some(("ui.model", model.span)), out);
                 }
             }
-            FolioBinding::SlotContent(content) => {
+            DumpBinding::SlotContent(content) => {
                 line_checks("ui.slot-content", content.span, owner, out);
             }
-            FolioBinding::VueDirective(directive) => {
+            DumpBinding::VueDirective(directive) => {
                 line_checks("vue.directive", directive.span, owner, out);
             }
-            FolioBinding::VueCssBind(bind) => {
+            DumpBinding::VueCssBind(bind) => {
                 line_checks("vue.css-bind", bind.span, owner, out);
             }
-            FolioBinding::VueSync(sync) => {
+            DumpBinding::VueSync(sync) => {
                 line_checks("vue.sync", sync.span, owner, out);
             }
-            FolioBinding::VueSlotScope(scope) => {
+            DumpBinding::VueSlotScope(scope) => {
                 line_checks("vue.slot-scope", scope.span, owner, out);
             }
-            FolioBinding::VueOnce(once) => {
+            DumpBinding::VueOnce(once) => {
                 line_checks("vue.once", once.span, owner, out);
             }
-            FolioBinding::VueMemo(memo) => {
+            DumpBinding::VueMemo(memo) => {
                 line_checks("vue.memo", memo.span, owner, out);
             }
-            FolioBinding::VueShow(show) => {
+            DumpBinding::VueShow(show) => {
                 line_checks("vue.show", show.span, owner, out);
             }
-            FolioBinding::VueHtml(html) => {
+            DumpBinding::VueHtml(html) => {
                 line_checks("vue.html", html.span, owner, out);
             }
-            FolioBinding::VueText(text) => {
+            DumpBinding::VueText(text) => {
                 line_checks("vue.text", text.span, owner, out);
             }
-            FolioBinding::VueCloak(cloak) => {
+            DumpBinding::VueCloak(cloak) => {
                 line_checks("vue.cloak", cloak.span, owner, out);
             }
         }
@@ -199,7 +201,7 @@ fn body(
 /// `ui.if`, with the canonical-form checks the type deliberately does not
 /// encode (`op/control.rs`): at least one branch, a conditional leading
 /// branch, unconditional only in trailing position.
-fn visit_if(if_op: &FolioIf, rigor: Rigor, out: &mut Vec<Violation>) {
+fn visit_if(if_op: &DumpIf, rigor: Rigor, out: &mut Vec<Violation>) {
     let canonical = rigor == Rigor::Canonical;
     if canonical && if_op.branches.is_empty() {
         out.push(Violation {

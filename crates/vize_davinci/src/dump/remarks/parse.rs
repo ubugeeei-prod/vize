@@ -11,12 +11,12 @@ use alloc::vec::Vec;
 
 use vize_l0::{Span, String, cstr};
 
-use crate::folio::FolioError;
+use crate::dump::Error as DumpError;
 use crate::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue, RemarkKind};
 
 /// Parse one entry line.
-pub(super) fn entry(line: &str, line_no: usize) -> Result<RecordedRemark, FolioError> {
-    let fail = |message: String| FolioError::new(line_no, message);
+pub(super) fn entry(line: &str, line_no: usize) -> Result<RecordedRemark, DumpError> {
+    let fail = |message: String| DumpError::new(line_no, message);
     let (head, rest) = take_token(line);
     let (stage, pass) = head
         .split_once('.')
@@ -70,7 +70,7 @@ fn take_token(text: &str) -> (&str, &str) {
 }
 
 /// Reject anything but the pipeline grammar's `ident`.
-fn ident(text: &str, what: &str, line_no: usize) -> Result<(), FolioError> {
+fn ident(text: &str, what: &str, line_no: usize) -> Result<(), DumpError> {
     let bytes = text.as_bytes();
     let well_formed = !bytes.is_empty()
         && bytes
@@ -81,7 +81,7 @@ fn ident(text: &str, what: &str, line_no: usize) -> Result<(), FolioError> {
     if well_formed {
         Ok(())
     } else {
-        Err(FolioError::new(
+        Err(DumpError::new(
             line_no,
             cstr!("{what} `{text}` is not a lowercase kebab-case identifier"),
         ))
@@ -104,14 +104,14 @@ fn parse_u32(text: &str) -> Option<u32> {
 }
 
 /// Parse one value; returns it plus the text after its separating space.
-fn parse_value(text: &str, line_no: usize) -> Result<(RemarkArgValue, &str), FolioError> {
+fn parse_value(text: &str, line_no: usize) -> Result<(RemarkArgValue, &str), DumpError> {
     if text.starts_with('"') {
         let (value, consumed) = parse_string(text, line_no)?;
         let rest = text.get(consumed..).unwrap_or_default();
         return match rest.strip_prefix(' ') {
             Some(after) => Ok((RemarkArgValue::Str(value), after)),
             None if rest.is_empty() => Ok((RemarkArgValue::Str(value), rest)),
-            None => Err(FolioError::new(
+            None => Err(DumpError::new(
                 line_no,
                 cstr!("unexpected `{rest}` after a string value"),
             )),
@@ -129,7 +129,7 @@ fn parse_value(text: &str, line_no: usize) -> Result<(RemarkArgValue, &str), Fol
                 && number != "-0";
             let parsed = canonical.then(|| number.parse::<i64>().ok()).flatten();
             RemarkArgValue::Int(parsed.ok_or_else(|| {
-                FolioError::new(
+                DumpError::new(
                     line_no,
                     cstr!("remark value `{number}` is not a string, integer, or boolean"),
                 )
@@ -141,8 +141,8 @@ fn parse_value(text: &str, line_no: usize) -> Result<(RemarkArgValue, &str), Fol
 
 /// Parse a JSON string literal at the start of `text`; returns the decoded
 /// value and the byte length consumed (quotes included).
-pub(super) fn parse_string(text: &str, line_no: usize) -> Result<(String, usize), FolioError> {
-    let fail = |message: &str| FolioError::new(line_no, String::from(message));
+pub(super) fn parse_string(text: &str, line_no: usize) -> Result<(String, usize), DumpError> {
+    let fail = |message: &str| DumpError::new(line_no, String::from(message));
     let mut out = String::default();
     let mut chars = text.char_indices().skip(1);
     while let Some((index, character)) = chars.next() {

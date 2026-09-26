@@ -13,10 +13,12 @@
 //! then re-parse the retained payload into a second pooled arena.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, Vec as ArenaVec, pool};
+use vize_l2::dump::{
+    Expr as DumpExpr, Interpolation as DumpInterpolation, Op as DumpOp, Page as L2Page,
+};
 use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
-use vize_l2::folio::{DisegnoFolio, FolioExpr, FolioInterpolation, FolioOp};
 use vize_l2::op::{InterpolationOp, Op};
 
 /// Build the replay tree in `allocator`: one admitted `js` payload and
@@ -70,8 +72,8 @@ fn a_printed_folio_replays_across_an_arena_reset() {
         let ops = arena_built(&guard);
         // (`&guard` deref-coerces to `&Allocator`; the guard owns the
         // arena for this block.)
-        let mirrored = DisegnoFolio::of(&ops);
-        (mirrored.print_to_string(FolioMode::Full), mirrored)
+        let mirrored = L2Page::of(&ops);
+        (mirrored.print_to_string(DumpMode::Full), mirrored)
         // `guard` drops here: the arena resets and every `ExprRef` above -
         // including the retained oxc AST - is gone. Only the owned folio
         // and its printed text survive, which is the P1-11 contract this
@@ -80,14 +82,14 @@ fn a_printed_folio_replays_across_an_arena_reset() {
     assert_eq!(printed.as_str(), CANONICAL);
 
     // -- parse after the reset --------------------------------------------
-    let replayed = DisegnoFolio::parse(printed.as_str()).expect("printed text parses");
+    let replayed = L2Page::parse(printed.as_str()).expect("printed text parses");
     assert_eq!(replayed, mirrored);
 
     // -- re-parse the retained payload into a fresh arena on load ---------
     let guard = pool::acquire();
     let allocator: &Allocator = &guard;
-    let FolioOp::Interpolation(FolioInterpolation {
-        expression: FolioExpr::Js { source, span },
+    let DumpOp::Interpolation(DumpInterpolation {
+        expression: DumpExpr::Js { source, span },
         ..
     }) = &replayed.ops[0]
     else {
@@ -125,9 +127,7 @@ fn a_printed_folio_replays_across_an_arena_reset() {
         &allocator,
     );
     assert_eq!(
-        DisegnoFolio::of(&ops)
-            .print_to_string(FolioMode::Full)
-            .as_str(),
+        L2Page::of(&ops).print_to_string(DumpMode::Full).as_str(),
         CANONICAL
     );
 }

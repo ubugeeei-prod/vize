@@ -1,13 +1,13 @@
 use serde_json::json;
-use vize_davinci::folio::value::FolioValue;
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::value::DumpValue;
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l3::op::{OpId, Phase, Program, RegionId};
 use vize_l3::operand::{Operand, OperandRole, OperandValue, ValueKind};
-use vize_l3::values_folio::{FolioOperand, L3ValuesFolio, OperandRow};
+use vize_l3::values_dump::{Operand as DumpOperand, OperandRow, Page as ValuesPage};
 
-fn parse_row(json: &str, line: usize) -> Result<FolioOperand, FolioError> {
-    FolioOperand::parse_value(&cstr!("operand={json}"), line)
+fn parse_row(json: &str, line: usize) -> Result<DumpOperand, DumpError> {
+    DumpOperand::parse_value(&cstr!("operand={json}"), line)
 }
 
 #[test]
@@ -40,12 +40,12 @@ fn every_role_and_value_kind_round_trips_without_losing_escaped_text() {
             });
         }
     }
-    let folio = L3ValuesFolio::of(&program);
+    let folio = ValuesPage::of(&program);
     assert_eq!(folio.operands.len(), 108);
-    let printed = folio.print_to_string(FolioMode::Full);
-    let reparsed = L3ValuesFolio::parse(printed.as_str()).unwrap();
+    let printed = folio.print_to_string(DumpMode::Full);
+    let reparsed = ValuesPage::parse(printed.as_str()).unwrap();
     assert_eq!(reparsed, folio);
-    assert_eq!(reparsed.print_to_string(FolioMode::Full), printed);
+    assert_eq!(reparsed.print_to_string(DumpMode::Full), printed);
     for operand in folio.operands {
         let mut text = String::default();
         operand.print_value(&mut text).unwrap();

@@ -7,16 +7,16 @@
 //!
 //! # What this lands, and what P2-4 adds
 //!
-//! The observer takes any [`Folio`] artifact and a sink to print into, so it
-//! works with the hand-written [`Folio`] impls that exist today (P0-10's
-//! `CroquisFolio`). What P2-4 adds is `#[derive(Folio)]`, so every L2 type
+//! The observer takes any [`Dump`] artifact and a sink to print into, so it
+//! works with the hand-written [`Dump`] impls that exist today (P0-10's
+//! `CroquisPage`). What P2-4 adds is `#[derive(Dump)]`, so every L2 type
 //! gets its page for free, and `davinci-opt --pipeline`, which is this
 //! observer wired to a CLI. Neither changes this type's shape.
 
 use core::fmt::Write;
 
 use super::{PassEvent, PassObserver, Pipeline};
-use crate::folio::{Folio, FolioMode};
+use crate::dump::{Dump, Mode as DumpMode};
 
 /// Prints `artifact` after every pass into a caller-supplied sink.
 ///
@@ -24,30 +24,30 @@ use crate::folio::{Folio, FolioMode};
 /// outlives any one stage value and holding it would tie the observer's
 /// lifetime to the artifact's for no benefit.
 #[derive(Debug)]
-pub struct FolioObserver<W> {
+pub struct DumpObserver<W> {
     /// Where pages go.
     pub sink: W,
     /// Which form to print. `Full` is the parseable one and the only one
     /// carrying a round-trip law; `Display` is for reading.
-    pub mode: FolioMode,
+    pub mode: DumpMode,
     /// Pages written.
     pub pages: u32,
 }
 
-impl<W: Write> FolioObserver<W> {
+impl<W: Write> DumpObserver<W> {
     /// A folio observer printing `Full`-mode pages into `sink`.
     #[must_use]
     pub const fn new(sink: W) -> Self {
         Self {
             sink,
-            mode: FolioMode::Full,
+            mode: DumpMode::Full,
             pages: 0,
         }
     }
 
     /// A folio observer printing `mode` pages into `sink`.
     #[must_use]
-    pub const fn with_mode(sink: W, mode: FolioMode) -> Self {
+    pub const fn with_mode(sink: W, mode: DumpMode) -> Self {
         Self {
             sink,
             mode,
@@ -63,7 +63,7 @@ impl<W: Write> FolioObserver<W> {
     /// # Errors
     ///
     /// Propagates the sink's write failure.
-    pub fn page<A: Folio>(
+    pub fn page<A: Dump>(
         &mut self,
         event: &PassEvent<'_>,
         artifact: &A,
@@ -82,9 +82,9 @@ impl<W: Write> FolioObserver<W> {
 }
 
 /// The observer half is deliberately empty: printing needs the artifact, which
-/// the hooks do not carry, so [`FolioObserver::page`] is called by whoever has
+/// the hooks do not carry, so [`DumpObserver::page`] is called by whoever has
 /// it. Implementing the trait anyway means a folio observer composes with the
 /// others through [`Pair`](super::Pair) instead of being a special case.
-impl<W> PassObserver for FolioObserver<W> {
+impl<W> PassObserver for DumpObserver<W> {
     fn before_pipeline(&mut self, _pipeline: &Pipeline) {}
 }

@@ -7,7 +7,7 @@
 //! strict: the section order is fixed because there are exactly two
 //! sections, the grouping under an element (attributes, bindings,
 //! children) is part of the grammar, and a line that does not match is a
-//! [`FolioError`] with a 1-based line number.
+//! [`DumpError`] with a 1-based line number.
 //!
 //! Tree structure is driven by indentation (two spaces per level) over a
 //! frame stack: container ops open a frame, a shallower line closes every
@@ -16,11 +16,11 @@
 
 use alloc::vec::Vec;
 
-use vize_davinci::folio::FolioError;
+use vize_davinci::dump::Error as DumpError;
 use vize_l0::cstr;
 
-use super::L2Folio;
-use super::owned::{FolioBinding, FolioOp};
+use crate::dump::Page;
+use crate::dump::owned::{Binding, Op};
 
 mod binding_line;
 mod expr_token;
@@ -35,12 +35,12 @@ use line::{Item, err};
 pub(super) fn take_quoted_value(
     rest: &str,
     line: usize,
-) -> Result<(vize_l0::String, &str), FolioError> {
+) -> Result<(vize_l0::String, &str), DumpError> {
     line::take_quoted(rest, line)
 }
 
 /// The page's ` @start:end` line tail, for sibling pages.
-pub(super) fn tail_span_value(rest: &str, line: usize) -> Result<vize_l0::Span, FolioError> {
+pub(super) fn tail_span_value(rest: &str, line: usize) -> Result<vize_l0::Span, DumpError> {
     line::tail_span(rest, line)
 }
 
@@ -53,14 +53,14 @@ enum Section {
 }
 
 struct Parser {
-    root: Vec<FolioOp>,
+    root: Vec<Op>,
     stack: Vec<Frame>,
     section: Section,
     seen_ops_section: bool,
     seen_ops_field: bool,
 }
 
-pub(super) fn parse(input: &str) -> Result<L2Folio, FolioError> {
+pub(super) fn parse(input: &str) -> Result<Page, DumpError> {
     let mut parser = Parser {
         root: Vec::new(),
         stack: Vec::new(),
@@ -75,7 +75,7 @@ pub(super) fn parse(input: &str) -> Result<L2Folio, FolioError> {
 }
 
 impl Parser {
-    fn line(&mut self, line: &str, line_no: usize) -> Result<(), FolioError> {
+    fn line(&mut self, line: &str, line_no: usize) -> Result<(), DumpError> {
         if let Some(name) = line.strip_prefix('[').and_then(|r| r.strip_suffix(']')) {
             return self.enter(name, line_no);
         }
@@ -91,7 +91,7 @@ impl Parser {
         }
     }
 
-    fn enter(&mut self, name: &str, line_no: usize) -> Result<(), FolioError> {
+    fn enter(&mut self, name: &str, line_no: usize) -> Result<(), DumpError> {
         if self.section == Section::BeforeHeader {
             if name == "disegno" {
                 self.section = Section::Header;
@@ -113,7 +113,7 @@ impl Parser {
         }
     }
 
-    fn field_line(&mut self, line: &str, line_no: usize) -> Result<(), FolioError> {
+    fn field_line(&mut self, line: &str, line_no: usize) -> Result<(), DumpError> {
         let Some((name, value)) = line.split_once('=') else {
             return Err(err(line_no, cstr!("field line is missing `=`")));
         };
@@ -132,7 +132,7 @@ impl Parser {
         Ok(())
     }
 
-    fn ops_line(&mut self, line: &str, line_no: usize) -> Result<(), FolioError> {
+    fn ops_line(&mut self, line: &str, line_no: usize) -> Result<(), DumpError> {
         let content = line.trim_start_matches(' ');
         let spaces = line.len() - content.len();
         if !spaces.is_multiple_of(2) {
@@ -154,55 +154,55 @@ impl Parser {
             }
             Item::Bind(bind) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::Bind(bind), line_no)
+                self.push_leaf_binding(Binding::Bind(bind), line_no)
             }
             Item::On(on) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::On(on), line_no)
+                self.push_leaf_binding(Binding::On(on), line_no)
             }
             Item::SlotContent(content) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::SlotContent(content), line_no)
+                self.push_leaf_binding(Binding::SlotContent(content), line_no)
             }
             Item::Directive(directive) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueDirective(directive), line_no)
+                self.push_leaf_binding(Binding::VueDirective(directive), line_no)
             }
             Item::CssBind(bind) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueCssBind(bind), line_no)
+                self.push_leaf_binding(Binding::VueCssBind(bind), line_no)
             }
             Item::Sync(sync) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueSync(sync), line_no)
+                self.push_leaf_binding(Binding::VueSync(sync), line_no)
             }
             Item::SlotScope(scope) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueSlotScope(scope), line_no)
+                self.push_leaf_binding(Binding::VueSlotScope(scope), line_no)
             }
             Item::Once(once) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueOnce(once), line_no)
+                self.push_leaf_binding(Binding::VueOnce(once), line_no)
             }
             Item::Memo(memo) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueMemo(memo), line_no)
+                self.push_leaf_binding(Binding::VueMemo(memo), line_no)
             }
             Item::Show(show) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueShow(show), line_no)
+                self.push_leaf_binding(Binding::VueShow(show), line_no)
             }
             Item::Html(html) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueHtml(html), line_no)
+                self.push_leaf_binding(Binding::VueHtml(html), line_no)
             }
             Item::VueText(text) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueText(text), line_no)
+                self.push_leaf_binding(Binding::VueText(text), line_no)
             }
             Item::Cloak(cloak) => {
                 self.guard_binding(line_no)?;
-                self.push_leaf_binding(FolioBinding::VueCloak(cloak), line_no)
+                self.push_leaf_binding(Binding::VueCloak(cloak), line_no)
             }
             Item::Branch(branch) => match self.stack.last() {
                 Some(Frame::If(_)) => {
@@ -222,16 +222,16 @@ impl Parser {
             Item::Op(op) => {
                 self.guard_child(line_no)?;
                 match op {
-                    FolioOp::Element(element) => {
+                    Op::Element(element) => {
                         self.stack.push(Frame::Element(element, Phase::Attrs));
                     }
-                    FolioOp::Component(component) => {
+                    Op::Component(component) => {
                         self.stack.push(Frame::Component(component, Phase::Attrs));
                     }
-                    FolioOp::If(if_op) => self.stack.push(Frame::If(if_op)),
-                    FolioOp::For(for_op) => self.stack.push(Frame::For(for_op)),
-                    FolioOp::Slot(slot) => self.stack.push(Frame::Slot(slot, Phase::Attrs)),
-                    FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {
+                    Op::If(if_op) => self.stack.push(Frame::If(if_op)),
+                    Op::For(for_op) => self.stack.push(Frame::For(for_op)),
+                    Op::Slot(slot) => self.stack.push(Frame::Slot(slot, Phase::Attrs)),
+                    Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => {
                         return self.attach_op(op, line_no);
                     }
                 }
@@ -240,7 +240,7 @@ impl Parser {
         }
     }
 
-    fn finish(mut self) -> Result<L2Folio, FolioError> {
+    fn finish(mut self) -> Result<Page, DumpError> {
         if self.section == Section::BeforeHeader {
             return Err(err(0, cstr!("missing [disegno] header")));
         }
@@ -250,6 +250,6 @@ impl Parser {
         while !self.stack.is_empty() {
             self.close_top(0)?;
         }
-        Ok(L2Folio { ops: self.root })
+        Ok(Page { ops: self.root })
     }
 }

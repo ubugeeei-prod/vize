@@ -1,13 +1,14 @@
 //! TS-17 L2 to L3 pass snapshots.
 //!
-//! These are full normalized L3 Folio snapshots plus the exported partition
+//! These are full normalized L3 Dump snapshots plus the exported partition
 //! facts. Targeted structural tests can miss a stale pass decision; the
 //! snapshot is the oracle for the whole lowered artifact.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String};
-use vize_l2_to_l3::{L3PartitionFolio, lower};
-use vize_l3::folio::L3Folio;
+use vize_l2_to_l3::lower;
+use vize_l2_to_l3::partition::dump::Page as PartitionPage;
+use vize_l3::dump::Page as L3Page;
 use vize_l3::verify::verify;
 
 macro_rules! assert_l3_snapshot {
@@ -26,10 +27,10 @@ fn snapshot(source: &str) -> String {
     let lowered = lower(&allocator, &s2.root);
     assert_eq!(verify(&lowered.program), []);
 
-    let mut output = L3Folio::of(&lowered.program).print_to_string(FolioMode::Full);
+    let mut output = L3Page::of(&lowered.program).print_to_string(DumpMode::Full);
     output.push_str(
-        L3PartitionFolio::of(&lowered.partition)
-            .print_to_string(FolioMode::Full)
+        PartitionPage::of(&lowered.partition)
+            .print_to_string(DumpMode::Full)
             .as_str(),
     );
     output

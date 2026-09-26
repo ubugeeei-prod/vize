@@ -1,6 +1,6 @@
 //! Host acceptance of the output-target document, without a guest.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_extension_host::contract::{Page, Span};
 use vize_extension_host::output::{
     EmitDocument, EmitError, EmitLink, EmitRequest, Emitted, accept_emitted,
@@ -35,7 +35,7 @@ fn document() -> EmitDocument {
 fn page_of(document: &EmitDocument) -> Page {
     Page {
         schema_version: 1,
-        text: document.print_to_string(FolioMode::Full),
+        text: document.print_to_string(DumpMode::Full),
     }
 }
 
@@ -43,7 +43,7 @@ fn page_of(document: &EmitDocument) -> Page {
 fn the_committed_document_is_canonical() {
     let text = include_str!("fixtures/output/probe.emit.folio");
     let parsed = EmitDocument::parse(text).expect("parses");
-    assert_eq!(parsed.print_to_string(FolioMode::Full), text);
+    assert_eq!(parsed.print_to_string(DumpMode::Full), text);
     let accepted = accept_emitted(
         &request(),
         Emitted {

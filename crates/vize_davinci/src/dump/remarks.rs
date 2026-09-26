@@ -36,9 +36,9 @@ use core::fmt::{self, Write as _};
 
 use vize_l0::String;
 
-use super::feed::push_json_string;
-use super::page::{LineEvent, ParseState};
-use super::{Folio, FolioError, FolioMode};
+use crate::dump::feed::push_json_string;
+use crate::dump::page::{LineEvent, ParseState};
+use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use crate::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue, RemarkKind};
 
 /// The remark JSON document's format version. Incompatible shape changes
@@ -164,7 +164,7 @@ pub(crate) fn push_remark_fields(out: &mut String, remark: &RecordedRemark) {
 pub fn entry_line(remark: &RecordedRemark) -> String {
     let mut out = String::default();
     // Writing into a growable string cannot fail.
-    let _ = print_entry(&mut out, remark, FolioMode::Full);
+    let _ = print_entry(&mut out, remark, DumpMode::Full);
     out
 }
 
@@ -173,12 +173,12 @@ pub fn entry_line(remark: &RecordedRemark) -> String {
 /// # Errors
 ///
 /// The page parser's entry rejections, verbatim.
-pub fn parse_entry_line(line: &str, line_no: usize) -> Result<RecordedRemark, FolioError> {
+pub fn parse_entry_line(line: &str, line_no: usize) -> Result<RecordedRemark, DumpError> {
     parse::entry(line, line_no)
 }
 
 /// Print one entry line (without its newline).
-fn print_entry<W: fmt::Write>(w: &mut W, remark: &RecordedRemark, mode: FolioMode) -> fmt::Result {
+fn print_entry<W: fmt::Write>(w: &mut W, remark: &RecordedRemark, mode: DumpMode) -> fmt::Result {
     write!(
         w,
         "{}.{} {} {}",
@@ -187,7 +187,7 @@ fn print_entry<W: fmt::Write>(w: &mut W, remark: &RecordedRemark, mode: FolioMod
         remark.kind.as_str(),
         remark.name
     )?;
-    if mode == FolioMode::Full {
+    if mode == DumpMode::Full {
         write!(w, " @{}:{}", remark.span.start, remark.span.end)?;
     }
     print_args(w, &remark.args)
@@ -226,8 +226,8 @@ pub fn args_text(args: &[RecordedArg]) -> String {
 /// The one section the page declares.
 const SECTION_ENTRIES: usize = 0;
 
-impl Folio for RemarkLog {
-    fn print<W: fmt::Write>(&self, w: &mut W, mode: FolioMode) -> fmt::Result {
+impl Dump for RemarkLog {
+    fn print<W: fmt::Write>(&self, w: &mut W, mode: DumpMode) -> fmt::Result {
         w.write_str("[remarks]\n\n")?;
         if self.remarks.is_empty() {
             return Ok(());
@@ -240,7 +240,7 @@ impl Folio for RemarkLog {
         w.write_char('\n')
     }
 
-    fn parse(input: &str) -> Result<Self, FolioError> {
+    fn parse(input: &str) -> Result<Self, DumpError> {
         let mut state = ParseState::new("remarks");
         let mut remarks = Vec::new();
         for (index, line) in input.lines().enumerate() {
@@ -249,7 +249,7 @@ impl Folio for RemarkLog {
                 LineEvent::Skip => {}
                 LineEvent::Field => {
                     let name = line.split_once('=').map_or(line, |(name, _)| name);
-                    return Err(super::page::unknown_field(name, line_no));
+                    return Err(crate::dump::page::unknown_field(name, line_no));
                 }
                 LineEvent::Section("entries") => {
                     state.enter_section(SECTION_ENTRIES, "entries", line_no)?;

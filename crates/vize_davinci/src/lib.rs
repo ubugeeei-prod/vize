@@ -24,7 +24,7 @@
 //!   fused at build time.
 //! - [`legacy_plan`] — the shipped backends' template traversals, declared as
 //!   plans so a migration has something to be measured against.
-//! - [`folio`] — the textual stage-dump contract (`trait Folio`).
+//! - [`folio`] — the textual stage-dump contract (`trait Dump`).
 //! - [`key`] — [`ArtifactKey`](key::ArtifactKey), the span-relative content
 //!   identity every cache of a stage artifact keys on (P5-1a).
 //! - [`summary`] — [`SfcSummary`](summary::SfcSummary), the per-SFC interface
@@ -45,14 +45,14 @@
 
 extern crate alloc;
 
-// `#[derive(Folio)]` expands to `::vize_davinci::...` paths so the same
+// `#[derive(Dump)]` expands to `::vize_davinci::...` paths so the same
 // expansion works in every consumer; this alias makes those paths resolve
 // inside the crate itself.
 extern crate self as vize_davinci;
 
 pub mod diagnostic;
+pub mod dump;
 pub mod fact;
-pub mod folio;
 pub mod id;
 pub mod key;
 pub mod legacy_plan;

@@ -13,8 +13,8 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_folio_snapshot;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::assert_dump_snapshot;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 
 use support::{assert_transformed_sound, with_transformed};
 
@@ -37,13 +37,13 @@ fn the_merge_fixture_snapshots_the_post_pass_folio() {
         // interior run condensed, and the comment-punched `<p>` keeps
         // its two units — "a" alone, then the compound — because a
         // comment is a run boundary.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
 
         // Supplements: the planned walk accounting. Text facts are
         // lowering-published, so the fixture pays only the fused
         // analysis walk (two passes).
         assert_eq!(
-            budget.print_to_string(FolioMode::Full).as_str(),
+            budget.print_to_string(DumpMode::Full).as_str(),
             "[budget-observer]\nwalks=1\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // Two compounds, five and two parts, all validated and published.
@@ -76,7 +76,7 @@ fn the_condense_fixture_snapshots_the_post_pass_folio() {
         // gone; the div's mixed text collapsed and merged with its
         // interpolation; the `<pre>` content merged **uncondensed**
         // (the shipped `is_pre_tag` exemption).
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
         assert_eq!(facts.text_facts.len(), 2);
         // The pre compound keeps its bytes verbatim in every part.
         let entries = facts.text_facts.sorted_entries();

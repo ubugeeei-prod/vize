@@ -212,5 +212,5 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
   );
   const bridge = readRepoFile("crates", "vize_l3", "tests", "lattice_reference_fixture.rs");
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/reactivity-lattice\.folio/u);
-  assert.match(bridge, /ReactivityFolio::of\(&facts\)\.print_to_string\(FolioMode::Full\)/u);
+  assert.match(bridge, /ReactivityPage::of\(&facts\)\.print_to_string\(DumpMode::Full\)/u);
 });

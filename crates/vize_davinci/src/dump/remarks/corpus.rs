@@ -30,10 +30,10 @@ use core::fmt;
 
 use vize_l0::{Span, String, cstr};
 
-use super::super::feed::push_json_string;
-use super::super::page::{LineEvent, ParseState};
-use super::super::{Folio, FolioError, FolioMode};
 use super::{entry_line, parse::parse_string, parse_entry_line};
+use crate::dump::feed::push_json_string;
+use crate::dump::page::{LineEvent, ParseState};
+use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use crate::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue, RemarkKind};
 
 /// One remark in its file.
@@ -91,9 +91,9 @@ fn quoted(path: &str) -> String {
     out
 }
 
-impl Folio for RemarkCorpus {
+impl Dump for RemarkCorpus {
     /// Both modes print the canonical text: a baseline is never elided.
-    fn print<W: fmt::Write>(&self, w: &mut W, _mode: FolioMode) -> fmt::Result {
+    fn print<W: fmt::Write>(&self, w: &mut W, _mode: DumpMode) -> fmt::Result {
         w.write_str("[remarks-corpus]\n\n")?;
         if !self.files.is_empty() {
             w.write_str("[remarks-corpus.files]\n")?;
@@ -130,7 +130,7 @@ impl Folio for RemarkCorpus {
         Ok(())
     }
 
-    fn parse(input: &str) -> Result<Self, FolioError> {
+    fn parse(input: &str) -> Result<Self, DumpError> {
         const FILES: usize = 0;
         const ENTRIES: usize = 1;
         const EXPLAINED: usize = 2;
@@ -142,7 +142,7 @@ impl Folio for RemarkCorpus {
                 LineEvent::Skip => {}
                 LineEvent::Field => {
                     let name = line.split_once('=').map_or(line, |(name, _)| name);
-                    return Err(super::super::page::unknown_field(name, line_no));
+                    return Err(crate::dump::page::unknown_field(name, line_no));
                 }
                 LineEvent::Section(name) => {
                     let index = match name {
@@ -156,7 +156,7 @@ impl Folio for RemarkCorpus {
                 LineEvent::Entry(FILES) => {
                     let (path, rest) = path_prefix(line, line_no)?;
                     if !rest.is_empty() {
-                        return Err(FolioError::new(
+                        return Err(DumpError::new(
                             line_no,
                             cstr!("unexpected `{rest}` after a file path"),
                         ));
@@ -180,9 +180,9 @@ impl Folio for RemarkCorpus {
 }
 
 /// Split a line into its quoted path and the text after one space.
-fn path_prefix(line: &str, line_no: usize) -> Result<(String, &str), FolioError> {
+fn path_prefix(line: &str, line_no: usize) -> Result<(String, &str), DumpError> {
     if !line.starts_with('"') {
-        return Err(FolioError::new(
+        return Err(DumpError::new(
             line_no,
             cstr!("corpus line `{line}` does not start with a quoted path"),
         ));
@@ -192,7 +192,7 @@ fn path_prefix(line: &str, line_no: usize) -> Result<(String, &str), FolioError>
     Ok((path, rest.strip_prefix(' ').unwrap_or(rest)))
 }
 
-fn explained(path: String, rest: &str, line_no: usize) -> Result<ExplainedRegression, FolioError> {
+fn explained(path: String, rest: &str, line_no: usize) -> Result<ExplainedRegression, DumpError> {
     let remark = parse_entry_line(rest, line_no)?;
     let reason = match remark.args.as_slice() {
         [
@@ -202,7 +202,7 @@ fn explained(path: String, rest: &str, line_no: usize) -> Result<ExplainedRegres
             },
         ] if key.as_str() == "reason" && remark.kind == RemarkKind::Missed => reason.clone(),
         _ => {
-            return Err(FolioError::new(
+            return Err(DumpError::new(
                 line_no,
                 cstr!("an explained regression is a missed entry with exactly `reason=\"...\"`"),
             ));

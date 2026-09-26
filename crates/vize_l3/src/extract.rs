@@ -14,13 +14,13 @@
 //! for the canonical program remain exact. [`EXTRACT`] states that as
 //! `Preserved::ALL`.
 
-mod folio;
+pub mod dump;
 mod measure;
 mod report;
 mod rule;
 mod tier;
 
-pub use folio::{FolioDecision, L3ExtractionFolio};
+pub use crate::extract::dump::{Page as ExtractionPage, Record as DumpDecision};
 pub use measure::{CACHE_BYTES, EFFECT_UNIT_BYTES, HOIST_BYTES, Metric, Metrics};
 pub use report::{Decision, DecisionKind, Delta, EXTRACT_PASS, Extraction, Reason};
 pub use rule::{Rejection, epsilon_pct, judge};

@@ -4,14 +4,14 @@ use alloc::vec::Vec;
 
 use vize_l0::{String, cstr};
 
-use super::super::{
-    BindingGroup, CroquisFolio, ErrorEntry, ExternEntry, MacroEntry, PropEntry, ScopeEntry,
-    ScopeRef, SurfaceEntry, TypeEntry, TypeExportMark,
+use crate::dump::Error as DumpError;
+use crate::dump::croquis::{
+    BindingGroup, ErrorEntry, ExternEntry, MacroEntry, Page, PropEntry, ScopeEntry, ScopeRef,
+    SurfaceEntry, TypeEntry, TypeExportMark,
 };
-use crate::folio::FolioError;
 
-pub(super) fn err(line: usize, message: String) -> FolioError {
-    FolioError::new(line, message)
+pub(super) fn err(line: usize, message: String) -> DumpError {
+    DumpError::new(line, message)
 }
 
 fn parse_u32(s: &str) -> Option<u32> {
@@ -56,7 +56,7 @@ fn parse_ref(s: &str) -> Option<ScopeRef> {
 
 /// Comma-separated names with no surrounding whitespace; every name
 /// non-empty.
-fn parse_name_list(s: &str, line: usize) -> Result<Vec<String>, FolioError> {
+fn parse_name_list(s: &str, line: usize) -> Result<Vec<String>, DumpError> {
     s.split(',')
         .map(|name| {
             if name.is_empty() {
@@ -72,9 +72,9 @@ fn parse_name_list(s: &str, line: usize) -> Result<Vec<String>, FolioError> {
 pub(super) fn parse_header(
     line: &str,
     line_no: usize,
-    folio: &mut CroquisFolio,
+    folio: &mut Page,
     header_seen: &mut u8,
-) -> Result<(), FolioError> {
+) -> Result<(), DumpError> {
     let (key, value) = line
         .split_once('=')
         .ok_or_else(|| err(line_no, cstr!("expected key=value in [vir]")))?;
@@ -107,7 +107,7 @@ pub(super) fn parse_header(
 }
 
 /// `{name}{!|?}[:{type}][=]`
-pub(super) fn parse_prop(line: &str, line_no: usize) -> Result<PropEntry, FolioError> {
+pub(super) fn parse_prop(line: &str, line_no: usize) -> Result<PropEntry, DumpError> {
     let (pos, req) = line
         .char_indices()
         .find(|(_, c)| matches!(c, '!' | '?'))
@@ -150,7 +150,7 @@ pub(super) fn parse_surface_entry(line: &str) -> SurfaceEntry {
 
 /// `@{name}[<{type_args}>] @{start}:{end}` - `text` may span physical
 /// lines; the driver guarantees it ends with the span tail.
-pub(super) fn parse_macro(text: &str, line_no: usize) -> Result<MacroEntry, FolioError> {
+pub(super) fn parse_macro(text: &str, line_no: usize) -> Result<MacroEntry, DumpError> {
     let body = text
         .strip_prefix('@')
         .ok_or_else(|| err(line_no, cstr!("macro line must start with @")))?;
@@ -180,7 +180,7 @@ pub(super) fn parse_macro(text: &str, line_no: usize) -> Result<MacroEntry, Foli
 }
 
 /// `{source}[^][ {{a,b}}]`
-pub(super) fn parse_extern(line: &str, line_no: usize) -> Result<ExternEntry, FolioError> {
+pub(super) fn parse_extern(line: &str, line_no: usize) -> Result<ExternEntry, DumpError> {
     let (head, bindings) = match line.strip_suffix('}') {
         Some(rest) => {
             let (head, names) = rest
@@ -205,7 +205,7 @@ pub(super) fn parse_extern(line: &str, line_no: usize) -> Result<ExternEntry, Fo
 }
 
 /// `{name}[^]{t|i}@{start}:{end}`
-pub(super) fn parse_type(line: &str, line_no: usize) -> Result<TypeEntry, FolioError> {
+pub(super) fn parse_type(line: &str, line_no: usize) -> Result<TypeEntry, DumpError> {
     let (head, span) = line
         .rsplit_once('@')
         .ok_or_else(|| err(line_no, cstr!("type line is missing a span")))?;
@@ -235,7 +235,7 @@ pub(super) fn parse_type(line: &str, line_no: usize) -> Result<TypeEntry, FolioE
 }
 
 /// `{code}:{name,name,...}`
-pub(super) fn parse_binding_group(line: &str, line_no: usize) -> Result<BindingGroup, FolioError> {
+pub(super) fn parse_binding_group(line: &str, line_no: usize) -> Result<BindingGroup, DumpError> {
     let (code, names) = line
         .split_once(':')
         .ok_or_else(|| err(line_no, cstr!("binding group is missing a : separator")))?;
@@ -249,7 +249,7 @@ pub(super) fn parse_binding_group(line: &str, line_no: usize) -> Result<BindingG
 }
 
 /// `{id} {name} @{start}:{end}[ [a,b]][ < p, q]`
-pub(super) fn parse_scope(line: &str, line_no: usize) -> Result<ScopeEntry, FolioError> {
+pub(super) fn parse_scope(line: &str, line_no: usize) -> Result<ScopeEntry, DumpError> {
     let mut rest = line;
 
     let mut parents = Vec::new();
@@ -296,7 +296,7 @@ pub(super) fn parse_scope(line: &str, line_no: usize) -> Result<ScopeEntry, Foli
 }
 
 /// `{name}={kind}@{start}:{end}`
-pub(super) fn parse_error(line: &str, line_no: usize) -> Result<ErrorEntry, FolioError> {
+pub(super) fn parse_error(line: &str, line_no: usize) -> Result<ErrorEntry, DumpError> {
     let (name, rest) = line
         .split_once('=')
         .ok_or_else(|| err(line_no, cstr!("error line is missing a = separator")))?;

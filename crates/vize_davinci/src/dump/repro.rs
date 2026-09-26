@@ -31,12 +31,12 @@
 //! Scalar order and config-entry order normalize by the first print (header
 //! fields in declaration order, config sorted by key - rule 1). The artifact
 //! is verbatim except for one thing: canonical text is LF-terminated, so a
-//! missing final newline is added by the first print, and [`ReproFolio::
+//! missing final newline is added by the first print, and [`Page::
 //! normalize`] applies the same to hand-built values so the structural
-//! round-trip law quantifies over normalized values (the `CroquisFolio::
+//! round-trip law quantifies over normalized values (the `CroquisPage::
 //! normalize` precedent).
 //!
-//! Scalar values are line-atomic (the [`FolioValue`](super::value::FolioValue)
+//! Scalar values are line-atomic (the [`DumpValue`](crate::dump::value::DumpValue)
 //! contract): a writer embedding a panic payload must normalize newlines out
 //! of `reason` before constructing the page.
 
@@ -44,8 +44,8 @@ use core::fmt;
 
 use vize_l0::{FxHashMap, String, cstr};
 
-use super::page::{PagePrinter, ParseState};
-use super::{Folio, FolioError, FolioMode, page};
+use crate::dump::page::{PagePrinter, ParseState};
+use crate::dump::{Dump, Error as DumpError, Mode as DumpMode, page};
 use crate::pass::parse_pipelines;
 
 /// Render a failure identity as one line: `{stage}.{pass}: {reason}`, with
@@ -66,7 +66,7 @@ pub fn failure_text(stage: &str, pass: &str, reason: &str) -> String {
 /// The `[repro]` page: pipeline string, run config, recorded failure, and
 /// the last-good stage dump.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct ReproFolio {
+pub struct Page {
     /// The pipeline the failed run executed, in the P2-2 pipeline grammar.
     /// Parse validates it against that grammar, so a repro never carries a
     /// pipeline a replay cannot parse.
@@ -86,7 +86,7 @@ pub struct ReproFolio {
     pub artifact: String,
 }
 
-impl ReproFolio {
+impl Page {
     /// The recorded failure as [`failure_text`] renders it.
     #[must_use]
     pub fn failure(&self) -> String {
@@ -110,10 +110,10 @@ impl ReproFolio {
 const SECTION_CONFIG: usize = 0;
 const SECTION_ARTIFACT: usize = 1;
 
-impl Folio for ReproFolio {
+impl Dump for Page {
     /// Both modes print the same canonical text: nothing on this page is a
     /// span or a default, so there is nothing for `Display` to elide.
-    fn print<W: fmt::Write>(&self, w: &mut W, _mode: FolioMode) -> fmt::Result {
+    fn print<W: fmt::Write>(&self, w: &mut W, _mode: DumpMode) -> fmt::Result {
         {
             let mut printer = PagePrinter::new(w, "repro");
             printer.open()?;
@@ -135,7 +135,7 @@ impl Folio for ReproFolio {
         Ok(())
     }
 
-    fn parse(input: &str) -> Result<Self, FolioError> {
+    fn parse(input: &str) -> Result<Self, DumpError> {
         let mut state = ParseState::new("repro");
         let mut pipeline = None;
         let mut failed_stage = None;
@@ -189,7 +189,7 @@ impl Folio for ReproFolio {
                 // The artifact section ends the scan above, so no other
                 // section yields entry lines.
                 page::LineEvent::Entry(_) => {
-                    return Err(FolioError::new(
+                    return Err(DumpError::new(
                         line_no,
                         cstr!("entry line outside the [config] section"),
                     ));
@@ -201,7 +201,7 @@ impl Folio for ReproFolio {
 
         let pipeline: String = page::require_scalar(pipeline, "pipeline")?;
         if let Err(error) = parse_pipelines(pipeline.as_str()) {
-            return Err(FolioError::new(
+            return Err(DumpError::new(
                 0,
                 cstr!("invalid pipeline `{pipeline}`: {error}"),
             ));

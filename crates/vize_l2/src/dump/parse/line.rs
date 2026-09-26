@@ -2,49 +2,47 @@
 //! in, one parsed item out.
 //!
 //! Expression positions hold the payload tokens of
-//! [`expr_token`](super::expr_token) - `js(...)`, `opaque(...)`,
+//! [`expr_token`](crate::dump::parse::expr_token) - `js(...)`, `opaque(...)`,
 //! `foreign(...)`. Quoted strings escape `\\`, `\"`, `\n`, `\r`,
 //! `\t`; values embedding other control characters, attribute names
 //! containing `=`, ` ` or `"` are outside the contract (the
 //! derived-page "documented edges" rule).
 
-use vize_davinci::folio::FolioError;
+use vize_davinci::dump::Error as DumpError;
 use vize_l0::{Span, String, cstr};
 
-use super::super::owned::{
-    FolioAttribute, FolioBind, FolioBranch, FolioComment, FolioComponent, FolioElement, FolioFor,
-    FolioForBinding, FolioIf, FolioInterpolation, FolioModel, FolioName, FolioOn, FolioOp,
-    FolioSlot, FolioSlotContent, FolioText, FolioVueCloak, FolioVueCssBind, FolioVueDirective,
-    FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope, FolioVueSync,
-    FolioVueText,
+use crate::dump::owned::{
+    Attribute, Bind, Branch, Comment, Component, Element, For, ForBinding, If, Interpolation,
+    Model, Name, On, Op, Slot, SlotContent, Text, VueCloak, VueCssBind, VueDirective, VueHtml,
+    VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
 };
-use super::expr_token::take_expr;
+use crate::dump::parse::expr_token::take_expr;
 use crate::op::Namespace;
 
 /// One classified ops-section line.
-pub(in super::super) enum Item {
-    Attr(FolioAttribute),
-    Bind(FolioBind),
-    On(FolioOn),
-    Model(FolioModel),
-    SlotContent(FolioSlotContent),
-    Directive(FolioVueDirective),
-    CssBind(FolioVueCssBind),
-    Sync(FolioVueSync),
-    SlotScope(FolioVueSlotScope),
-    Once(FolioVueOnce),
-    Memo(FolioVueMemo),
-    Show(FolioVueShow),
-    Html(FolioVueHtml),
-    VueText(FolioVueText),
-    Cloak(FolioVueCloak),
-    Branch(FolioBranch),
-    Op(FolioOp),
+pub(in crate::dump) enum Item {
+    Attr(Attribute),
+    Bind(Bind),
+    On(On),
+    Model(Model),
+    SlotContent(SlotContent),
+    Directive(VueDirective),
+    CssBind(VueCssBind),
+    Sync(VueSync),
+    SlotScope(VueSlotScope),
+    Once(VueOnce),
+    Memo(VueMemo),
+    Show(VueShow),
+    Html(VueHtml),
+    VueText(VueText),
+    Cloak(VueCloak),
+    Branch(Branch),
+    Op(Op),
 }
 
-/// Build a [`FolioError`] attributed to `line_no`.
-pub(in super::super) fn err(line_no: usize, message: String) -> FolioError {
-    FolioError::new(line_no, message)
+/// Build a [`DumpError`] attributed to `line_no`.
+pub(in crate::dump) fn err(line_no: usize, message: String) -> DumpError {
+    DumpError::new(line_no, message)
 }
 
 fn split_word(text: &str) -> (&str, &str) {
@@ -53,7 +51,7 @@ fn split_word(text: &str) -> (&str, &str) {
 
 /// Parse a quoted string starting at `rest[0]`; returns the content and
 /// the remainder after the closing quote.
-pub(super) fn take_quoted(rest: &str, line_no: usize) -> Result<(String, &str), FolioError> {
+pub(super) fn take_quoted(rest: &str, line_no: usize) -> Result<(String, &str), DumpError> {
     let Some(body) = rest.strip_prefix('"') else {
         return Err(err(line_no, cstr!("expected quoted string")));
     };
@@ -80,7 +78,7 @@ pub(super) fn take_quoted(rest: &str, line_no: usize) -> Result<(String, &str), 
 }
 
 /// Parse `@start:end` making up the whole remainder.
-pub(super) fn final_span(rest: &str, line_no: usize) -> Result<Span, FolioError> {
+pub(super) fn final_span(rest: &str, line_no: usize) -> Result<Span, DumpError> {
     if rest.is_empty() {
         return Err(err(line_no, cstr!("missing span")));
     }
@@ -92,7 +90,7 @@ pub(super) fn final_span(rest: &str, line_no: usize) -> Result<Span, FolioError>
 }
 
 /// Parse the ` @start:end` tail after a completed component.
-pub(super) fn tail_span(rest: &str, line_no: usize) -> Result<Span, FolioError> {
+pub(super) fn tail_span(rest: &str, line_no: usize) -> Result<Span, DumpError> {
     match rest.strip_prefix(' ') {
         Some(tail) => final_span(tail, line_no),
         None if rest.is_empty() => Err(err(line_no, cstr!("missing span"))),
@@ -101,7 +99,7 @@ pub(super) fn tail_span(rest: &str, line_no: usize) -> Result<Span, FolioError> 
 }
 
 /// Classify and parse one non-blank, dedented ops-section line.
-pub(in super::super) fn parse_item(content: &str, line_no: usize) -> Result<Item, FolioError> {
+pub(in crate::dump) fn parse_item(content: &str, line_no: usize) -> Result<Item, DumpError> {
     let (keyword, rest) = split_word(content);
     match keyword {
         "attr" => attr(rest, line_no),
@@ -111,31 +109,31 @@ pub(in super::super) fn parse_item(content: &str, line_no: usize) -> Result<Item
         "ui.text" => text(rest, line_no),
         "ui.interpolation" => interpolation(rest, line_no),
         "ui.comment" => comment(rest, line_no),
-        "ui.if" => Ok(Item::Op(FolioOp::If(FolioIf {
+        "ui.if" => Ok(Item::Op(Op::If(If {
             branches: alloc::vec::Vec::new(),
             span: final_span(rest, line_no)?,
         }))),
         "ui.for" => for_op(rest, line_no),
         "ui.slot" => slot(rest, line_no),
-        "ui.bind" => super::binding_line::bind(rest, line_no),
-        "ui.on" => super::binding_line::on(rest, line_no),
-        "ui.slot-content" => super::binding_line::slot_content(rest, line_no),
-        "ui.model" => super::binding_line::model(rest, line_no),
-        "vue.directive" => super::binding_line::directive(rest, line_no),
-        "vue.css-bind" => super::binding_line::css_bind(rest, line_no),
-        "vue.sync" => super::binding_line::sync(rest, line_no),
-        "vue.slot-scope" => super::binding_line::slot_scope(rest, line_no),
-        "vue.once" => super::binding_line::once(rest, line_no),
-        "vue.memo" => super::binding_line::memo(rest, line_no),
-        "vue.show" => super::binding_line::show(rest, line_no),
-        "vue.html" => super::binding_line::html(rest, line_no),
-        "vue.text" => super::binding_line::text(rest, line_no),
-        "vue.cloak" => super::binding_line::cloak(rest, line_no),
+        "ui.bind" => crate::dump::parse::binding_line::bind(rest, line_no),
+        "ui.on" => crate::dump::parse::binding_line::on(rest, line_no),
+        "ui.slot-content" => crate::dump::parse::binding_line::slot_content(rest, line_no),
+        "ui.model" => crate::dump::parse::binding_line::model(rest, line_no),
+        "vue.directive" => crate::dump::parse::binding_line::directive(rest, line_no),
+        "vue.css-bind" => crate::dump::parse::binding_line::css_bind(rest, line_no),
+        "vue.sync" => crate::dump::parse::binding_line::sync(rest, line_no),
+        "vue.slot-scope" => crate::dump::parse::binding_line::slot_scope(rest, line_no),
+        "vue.once" => crate::dump::parse::binding_line::once(rest, line_no),
+        "vue.memo" => crate::dump::parse::binding_line::memo(rest, line_no),
+        "vue.show" => crate::dump::parse::binding_line::show(rest, line_no),
+        "vue.html" => crate::dump::parse::binding_line::html(rest, line_no),
+        "vue.text" => crate::dump::parse::binding_line::text(rest, line_no),
+        "vue.cloak" => crate::dump::parse::binding_line::cloak(rest, line_no),
         other => Err(err(line_no, cstr!("unknown op `{other}`"))),
     }
 }
 
-fn attr(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+fn attr(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let name_end = rest.find(['=', ' ']).unwrap_or(rest.len());
     let (name, after) = rest.split_at(name_end);
     if name.is_empty() {
@@ -147,28 +145,28 @@ fn attr(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     } else {
         (None, tail_span(after, line_no)?)
     };
-    Ok(Item::Attr(FolioAttribute {
+    Ok(Item::Attr(Attribute {
         name: String::from(name),
         value,
         span,
     }))
 }
 
-fn branch(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+fn branch(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let (condition, span) = if rest.is_empty() || rest.starts_with('@') {
         (None, final_span(rest, line_no)?)
     } else {
         let (condition, tail) = take_expr(rest, line_no)?;
         (Some(condition), tail_span(tail, line_no)?)
     };
-    Ok(Item::Branch(FolioBranch {
+    Ok(Item::Branch(Branch {
         condition,
         ops: alloc::vec::Vec::new(),
         span,
     }))
 }
 
-fn element(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+fn element(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let (tag, rest) = split_word(rest);
     if tag.is_empty() {
         return Err(err(line_no, cstr!("missing tag")));
@@ -184,7 +182,7 @@ fn element(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     } else {
         (Namespace::Html, rest)
     };
-    Ok(Item::Op(FolioOp::Element(FolioElement {
+    Ok(Item::Op(Op::Element(Element {
         tag: String::from(tag),
         namespace,
         attributes: alloc::vec::Vec::new(),
@@ -194,12 +192,12 @@ fn element(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     })))
 }
 
-fn component(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+fn component(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let (name, rest) = split_word(rest);
     if name.is_empty() {
         return Err(err(line_no, cstr!("missing component name")));
     }
-    Ok(Item::Op(FolioOp::Component(FolioComponent {
+    Ok(Item::Op(Op::Component(Component {
         name: String::from(name),
         attributes: alloc::vec::Vec::new(),
         bindings: alloc::vec::Vec::new(),
@@ -208,31 +206,31 @@ fn component(rest: &str, line_no: usize) -> Result<Item, FolioError> {
     })))
 }
 
-fn text(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+fn text(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let (content, tail) = take_quoted(rest, line_no)?;
-    Ok(Item::Op(FolioOp::Text(FolioText {
+    Ok(Item::Op(Op::Text(Text {
         content,
         span: tail_span(tail, line_no)?,
     })))
 }
 
-fn interpolation(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+fn interpolation(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let (expression, tail) = take_expr(rest, line_no)?;
-    Ok(Item::Op(FolioOp::Interpolation(FolioInterpolation {
+    Ok(Item::Op(Op::Interpolation(Interpolation {
         expression,
         span: tail_span(tail, line_no)?,
     })))
 }
 
-fn comment(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+fn comment(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let (content, tail) = take_quoted(rest, line_no)?;
-    Ok(Item::Op(FolioOp::Comment(FolioComment {
+    Ok(Item::Op(Op::Comment(Comment {
         content,
         span: tail_span(tail, line_no)?,
     })))
 }
 
-fn for_op(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+fn for_op(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let Some(rest) = rest.strip_prefix("source=") else {
         return Err(err(line_no, cstr!("expected `source=`")));
     };
@@ -253,8 +251,8 @@ fn for_op(rest: &str, line_no: usize) -> Result<Item, FolioError> {
         index = Some(expr);
         rest = tail;
     }
-    Ok(Item::Op(FolioOp::For(FolioFor {
-        binding: FolioForBinding {
+    Ok(Item::Op(Op::For(For {
+        binding: ForBinding {
             source,
             value,
             key,
@@ -266,17 +264,17 @@ fn for_op(rest: &str, line_no: usize) -> Result<Item, FolioError> {
 }
 
 /// Parse a `name=` value: a quoted static name or an expression payload.
-pub(super) fn name_value(rest: &str, line_no: usize) -> Result<(FolioName, &str), FolioError> {
+pub(super) fn name_value(rest: &str, line_no: usize) -> Result<(Name, &str), DumpError> {
     if rest.starts_with('"') {
         let (name, tail) = take_quoted(rest, line_no)?;
-        return Ok((FolioName::Static(name), tail));
+        return Ok((Name::Static(name), tail));
     }
     if ["js(", "opaque(", "foreign(", "vue.filter("]
         .iter()
         .any(|head| rest.starts_with(head))
     {
         let (expr, tail) = take_expr(rest, line_no)?;
-        return Ok((FolioName::Dynamic(expr), tail));
+        return Ok((Name::Dynamic(expr), tail));
     }
     Err(err(
         line_no,
@@ -284,12 +282,12 @@ pub(super) fn name_value(rest: &str, line_no: usize) -> Result<(FolioName, &str)
     ))
 }
 
-fn slot(rest: &str, line_no: usize) -> Result<Item, FolioError> {
+fn slot(rest: &str, line_no: usize) -> Result<Item, DumpError> {
     let Some(rest) = rest.strip_prefix("name=") else {
         return Err(err(line_no, cstr!("expected `name=`")));
     };
     let (name, tail) = name_value(rest, line_no)?;
-    Ok(Item::Op(FolioOp::Slot(FolioSlot {
+    Ok(Item::Op(Op::Slot(Slot {
         name,
         attributes: alloc::vec::Vec::new(),
         bindings: alloc::vec::Vec::new(),

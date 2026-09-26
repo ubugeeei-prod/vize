@@ -21,16 +21,16 @@
 //! Placements are an overlay: ops, regions, edges, effect scopes, and operands
 //! stay canonical, so exported partition facts keep describing canonical L3.
 //! The TS-27 verifier (`L3V010`) re-derives every recorded alternative and
-//! every committed choice; `L3PlacementFolio` is the companion Folio page.
+//! every committed choice; `PlacementPage` is the companion Dump page.
 
 mod annotate;
+pub mod dump;
 pub(crate) mod facts;
-pub(crate) mod folio;
 mod kind;
 mod record;
 
+pub use crate::placement::dump::{Page as PlacementPage, Record as DumpPlacement};
 pub use annotate::annotate;
-pub use folio::{FolioPlacement, L3PlacementFolio};
 pub use kind::{Placement, PlacementSet};
 pub use record::PlacementRecord;
 

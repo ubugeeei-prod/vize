@@ -10,25 +10,25 @@ mod support;
 
 use vize_davinci::id::NodeId;
 use vize_l1_to_l2::pass::vfor::{ForFacts, ForName};
-use vize_l2::folio::{FolioAttribute, FolioOp};
+use vize_l2::dump::{Attribute as DumpAttribute, Op as DumpOp};
 use vize_l2::scope::ScopeOrigin;
 
 use support::{assert_transformed_sound, with_lowered, with_transformed};
 
 /// Every `ui.for` in `ops`, counted recursively.
-fn count_fors(ops: &[FolioOp]) -> usize {
+fn count_fors(ops: &[DumpOp]) -> usize {
     ops.iter()
         .map(|op| match op {
-            FolioOp::Element(element) => count_fors(&element.children),
-            FolioOp::Component(component) => count_fors(&component.children),
-            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => 0,
-            FolioOp::If(if_op) => if_op
+            DumpOp::Element(element) => count_fors(&element.children),
+            DumpOp::Component(component) => count_fors(&component.children),
+            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => 0,
+            DumpOp::If(if_op) => if_op
                 .branches
                 .iter()
                 .map(|branch| count_fors(&branch.ops))
                 .sum(),
-            FolioOp::For(for_op) => 1 + count_fors(&for_op.ops),
-            FolioOp::Slot(slot) => count_fors(&slot.fallback),
+            DumpOp::For(for_op) => 1 + count_fors(&for_op.ops),
+            DumpOp::Slot(slot) => count_fors(&slot.fallback),
         })
         .sum()
 }
@@ -165,16 +165,16 @@ fn the_iterated_elements_key_stays_on_its_attribute_surface() {
     // The pass must leave the surface untouched.
     let source = r#"<li v-for="item in items" key="row">{{ item }}</li>"#;
     with_transformed(source, |_, folio, facts, _| {
-        let FolioOp::For(for_op) = &folio.ops[0] else {
+        let DumpOp::For(for_op) = &folio.ops[0] else {
             panic!("root op is not ui.for");
         };
-        let [FolioOp::Element(element)] = &for_op.ops[..] else {
+        let [DumpOp::Element(element)] = &for_op.ops[..] else {
             panic!("for region root is not one element");
         };
         assert_eq!(element.attributes.len(), 1);
         assert_eq!(
             element.attributes[0],
-            FolioAttribute {
+            DumpAttribute {
                 name: "key".into(),
                 value: Some("row".into()),
                 span: element.attributes[0].span,

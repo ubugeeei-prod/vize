@@ -38,7 +38,7 @@ use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_davinci::key::{ArtifactKey, source_block_key};
 use vize_l0::{Allocator, SourceRoot, String};
 use vize_l1_to_l2::key::SurfacePage;
-use vize_l2::folio::L2Folio;
+use vize_l2::dump::Page as L2Page;
 
 type Keys = BTreeMap<String, ArtifactKey>;
 
@@ -84,7 +84,7 @@ fn template_keys(source: &str, block: &str, start: u32) -> (ArtifactKey, Artifac
         .and_then(|root| root.block(block, start))
         .expect("template block frame");
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, frame);
-    let s2 = ArtifactKey::of(&L2Folio::of(&lowered.root.ops), start);
+    let s2 = ArtifactKey::of(&L2Page::of(&lowered.root.ops), start);
     (s1, s2)
 }
 

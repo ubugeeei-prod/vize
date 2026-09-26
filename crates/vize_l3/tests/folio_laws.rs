@@ -1,6 +1,6 @@
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Span};
-use vize_l3::folio::L3Folio;
+use vize_l3::dump::Page as L3Page;
 use vize_l3::op::{
     EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
 };
@@ -76,15 +76,15 @@ fn program<'a>(allocator: &'a Allocator) -> Program<'a> {
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let folio = L3Folio::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    let folio = L3Page::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
 }
 
 #[test]
 fn parse_print_is_structural_identity() {
     let arena = Allocator::default();
-    let folio = L3Folio::of(&program(&arena));
-    let printed = folio.print_to_string(FolioMode::Full);
+    let folio = L3Page::of(&program(&arena));
+    let printed = folio.print_to_string(DumpMode::Full);
     assert_eq!(printed.as_str(), CANONICAL);
-    assert_eq!(L3Folio::parse(printed.as_str()).unwrap(), folio);
+    assert_eq!(L3Page::parse(printed.as_str()).unwrap(), folio);
 }

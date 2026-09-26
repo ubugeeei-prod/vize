@@ -7,7 +7,7 @@ mod support;
 use vize_l0::{Allocator, Span, String};
 use vize_l1::SurfaceChild;
 use vize_l1_to_l2::{Lowered, lower, lower_preserving_comments};
-use vize_l2::folio::{DisegnoFolio, FolioExpr, FolioOp};
+use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp, Page as L2Page};
 
 fn assert_comments(lowered: &Lowered<'_>, source: &str, comments: &[&str], preserved: bool) {
     let mut records = lowered
@@ -49,7 +49,7 @@ fn comment_only_runs_keep_one_authored_decision_per_comment() {
     }
     source.push_str("</div>");
     support::with_lowered(source.as_str(), |lowered, folio| {
-        let [FolioOp::Element(element)] = folio.ops.as_slice() else {
+        let [DumpOp::Element(element)] = folio.ops.as_slice() else {
             panic!("expected the div root");
         };
         assert!(element.children.is_empty());
@@ -72,19 +72,17 @@ fn comment_only_runs_keep_one_authored_decision_per_comment() {
 fn comment_only_runs_stop_before_elements_and_interpolations() {
     let source = "<div><!--a--><!--b--><i/><!--c--><!--d-->{{ value }}<!--e--><!--f--></div>";
     support::with_lowered(source, |lowered, folio| {
-        let [FolioOp::Element(root)] = folio.ops.as_slice() else {
+        let [DumpOp::Element(root)] = folio.ops.as_slice() else {
             panic!("expected the div root");
         };
-        let [
-            FolioOp::Element(child),
-            FolioOp::Interpolation(interpolation),
-        ] = root.children.as_slice()
+        let [DumpOp::Element(child), DumpOp::Interpolation(interpolation)] =
+            root.children.as_slice()
         else {
             panic!("comments must not consume the following element or interpolation");
         };
         assert_eq!(child.tag, "i");
         assert!(
-            matches!(&interpolation.expression, FolioExpr::Js { source, .. } if source == "value")
+            matches!(&interpolation.expression, DumpExpr::Js { source, .. } if source == "value")
         );
         assert_comments(
             lowered,
@@ -103,12 +101,10 @@ fn comment_only_runs_stop_before_elements_and_interpolations() {
 fn comments_before_text_remain_in_the_whitespace_group() {
     let source = "<div><!--a--><!--b-->\n  x<!--c--><!--d-->\n y</div>";
     support::with_lowered(source, |lowered, folio| {
-        let [FolioOp::Element(root)] = folio.ops.as_slice() else {
+        let [DumpOp::Element(root)] = folio.ops.as_slice() else {
             panic!("expected the div root");
         };
-        assert!(
-            matches!(root.children.as_slice(), [FolioOp::Text(text)] if text.content == " x y")
-        );
+        assert!(matches!(root.children.as_slice(), [DumpOp::Text(text)] if text.content == " x y"));
         assert_comments(
             lowered,
             source,
@@ -126,16 +122,16 @@ fn preserved_comments_remain_distinct_children_in_authored_order() {
     let (tree, errors) = vize_l1::parse(&allocator, source);
     assert!(errors.is_empty());
     let lowered = lower_preserving_comments(&allocator, &tree, &errors);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
-    let [FolioOp::Element(root)] = folio.ops.as_slice() else {
+    let folio = L2Page::of(&lowered.root.ops);
+    let [DumpOp::Element(root)] = folio.ops.as_slice() else {
         panic!("expected the div root");
     };
     let [
-        FolioOp::Comment(a),
-        FolioOp::Comment(b),
-        FolioOp::Element(element),
-        FolioOp::Comment(c),
-        FolioOp::Comment(d),
+        DumpOp::Comment(a),
+        DumpOp::Comment(b),
+        DumpOp::Element(element),
+        DumpOp::Comment(c),
+        DumpOp::Comment(d),
     ] = root.children.as_slice()
     else {
         panic!("preserved comments must remain separate children");
@@ -181,11 +177,11 @@ fn recovered_leading_bytes_still_break_comment_text_groups() {
     comment.leading = gap.text;
     assert_eq!(vize_l1::check_fidelity(&tree), Ok(()));
     let lowered = lower(&allocator, &tree, &errors);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
-    let [FolioOp::Element(root)] = folio.ops.as_slice() else {
+    let folio = L2Page::of(&lowered.root.ops);
+    let [DumpOp::Element(root)] = folio.ops.as_slice() else {
         panic!("expected the div root");
     };
-    let [FolioOp::Text(first), FolioOp::Text(last)] = root.children.as_slice() else {
+    let [DumpOp::Text(first), DumpOp::Text(last)] = root.children.as_slice() else {
         panic!("text across recovered bytes must not merge");
     };
     assert_eq!((first.content.as_str(), last.content.as_str()), ("a", " b"));

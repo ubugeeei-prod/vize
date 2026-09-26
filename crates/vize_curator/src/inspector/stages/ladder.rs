@@ -11,7 +11,7 @@
 //! | `s2-plan` / `transform`        | the executed transform plan's walks                  |
 //! |                                | (`[fusion-plan-folio]`: which passes share a walk)   |
 //! | `s2` / *each executed pass*    | the artifact-selected L2 transform plan, via the      |
-//! |                                | pass manager and a P2-13 `FolioDump` (ungated: one   |
+//! |                                | pass manager and a P2-13 `Collector` (ungated: one   |
 //! |                                | page per pass, so "did it change?" is a byte compare) |
 //! | `s2-provenance` / `transform`  | every lowering and pass decision record after the    |
 //! |                                | transform (`[s2-provenance-folio]`)                  |
@@ -36,16 +36,17 @@
 
 use core::cell::Cell;
 
-use vize_davinci::folio::dump::FolioDump;
-use vize_davinci::folio::plan::FusionPlanFolio;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::collector::Collector;
+use vize_davinci::dump::plan::Page as PlanPage;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::{PassEvent, PassObserver, Pipeline};
 use vize_l0::{Allocator, String};
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_pass_hook};
-use vize_l2::folio::{L2Folio, L2ProvenanceFolio};
-use vize_l2_to_l3::L3PartitionFolio;
-use vize_l3::folio::L3Folio;
-use vize_l3::values_folio::L3ValuesFolio;
+use vize_l2::dump::Page as L2Page;
+use vize_l2::dump::provenance::Page as ProvenancePage;
+use vize_l2_to_l3::partition::dump::Page as PartitionPage;
+use vize_l3::dump::Page as L3Page;
+use vize_l3::values_dump::Page as ValuesPage;
 
 use super::StagePage;
 
@@ -165,7 +166,7 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
     steps.push(step("s2", "lower", started, clock()));
     pages.push(page("s2", "lower", l2_text(&lowered.root.ops)));
 
-    let mut dump = FolioDump::new(false);
+    let mut dump = Collector::new(false);
     let mut walks = Vec::new();
     let windows = PassWindows::default();
     let mut observer = PassStart {
@@ -185,11 +186,11 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
         },
     );
     if let Some(pipeline) = observer.pipeline {
-        let plan = FusionPlanFolio::of(&pipeline);
+        let plan = PlanPage::of(&pipeline);
         pages.push(page(
             "s2-plan",
             "transform",
-            plan.print_to_string(FolioMode::Full),
+            plan.print_to_string(DumpMode::Full),
         ));
     }
     pages.extend(dump.pages.into_iter().map(|dumped| StagePage {
@@ -200,33 +201,29 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
     }));
     // Every lowering and pass decision so far, in decision order: the
     // records answer "why is this op here" (and what was dropped).
-    let provenance = L2ProvenanceFolio::of(&lowered.provenance);
+    let provenance = ProvenancePage::of(&lowered.provenance);
     pages.push(page(
         "s2-provenance",
         "transform",
-        provenance.print_to_string(FolioMode::Full),
+        provenance.print_to_string(DumpMode::Full),
     ));
 
     let started = clock();
     let s3 = vize_l2_to_l3::lower(&allocator, &lowered.root);
     steps.push(step("s3", "lower", started, clock()));
-    let program = L3Folio::of(&s3.program);
-    pages.push(page(
-        "s3",
-        "lower",
-        program.print_to_string(FolioMode::Full),
-    ));
-    let partition = L3PartitionFolio::of(&s3.partition);
+    let program = L3Page::of(&s3.program);
+    pages.push(page("s3", "lower", program.print_to_string(DumpMode::Full)));
+    let partition = PartitionPage::of(&s3.partition);
     pages.push(page(
         "s3-partition",
         "lower",
-        partition.print_to_string(FolioMode::Full),
+        partition.print_to_string(DumpMode::Full),
     ));
-    let values = L3ValuesFolio::of(&s3.program);
+    let values = ValuesPage::of(&s3.program);
     pages.push(page(
         "s3-values",
         "lower",
-        values.print_to_string(FolioMode::Full),
+        values.print_to_string(DumpMode::Full),
     ));
     LadderRun {
         pages,
@@ -236,7 +233,7 @@ pub fn ladder_run(path: &str, template: &str, clock: LadderClock<'_>) -> LadderR
 }
 
 fn l2_text(ops: &[vize_l2::op::Op<'_>]) -> String {
-    L2Folio::of(ops).print_to_string(FolioMode::Full)
+    L2Page::of(ops).print_to_string(DumpMode::Full)
 }
 
 #[cfg(test)]

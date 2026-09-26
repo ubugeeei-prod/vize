@@ -16,7 +16,7 @@ use vize_davinci::diagnostic::{Diagnostic, Stage};
 use vize_l0::{Allocator, SourceRoot, String};
 use vize_l1::{SurfaceChild, Token};
 use vize_l1_to_l2::{LegacyCaps, lower_source_block_with_caps};
-use vize_l2::folio::{FolioOp, L2Folio};
+use vize_l2::dump::{Op as DumpOp, Page as L2Page};
 
 /// One region's syntax: its bytes and block-relative start.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -31,7 +31,7 @@ pub struct RegionSyntax {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RegionLowering {
     /// The region's root ops.
-    pub ops: Vec<FolioOp>,
+    pub ops: Vec<DumpOp>,
     /// Tokenizer findings (`Stage::Surface`), in report order.
     pub surface: Vec<Diagnostic>,
     /// The lowering's own diagnostics, in decision order.
@@ -96,7 +96,7 @@ pub fn lower_region(
         .into_iter()
         .partition(|diagnostic| diagnostic.stage == Stage::Surface);
     Some(RegionLowering {
-        ops: L2Folio::of(&lowered.root.ops).ops,
+        ops: L2Page::of(&lowered.root.ops).ops,
         surface,
         semantic,
     })
@@ -108,7 +108,7 @@ pub fn lower_region(
 #[must_use]
 pub fn assemble<'r>(
     regions: impl Iterator<Item = &'r RegionLowering> + Clone,
-) -> (L2Folio, Vec<Diagnostic>) {
+) -> (L2Page, Vec<Diagnostic>) {
     let ops = regions
         .clone()
         .flat_map(|region| region.ops.iter().cloned())
@@ -118,7 +118,7 @@ pub fn assemble<'r>(
         .flat_map(|region| region.surface.iter().cloned())
         .chain(regions.flat_map(|region| region.semantic.iter().cloned()))
         .collect();
-    (L2Folio { ops }, diagnostics)
+    (L2Page { ops }, diagnostics)
 }
 
 fn first_token<'a>(child: &SurfaceChild<'a>) -> Token<'a> {

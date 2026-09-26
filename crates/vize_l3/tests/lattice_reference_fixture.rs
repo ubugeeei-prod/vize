@@ -15,11 +15,12 @@
 
 use std::path::Path;
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Span};
+use vize_l3::lattice::dump::Page as ReactivityPage;
 use vize_l3::lattice::{
     BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind, ReactivityClass,
-    ReactivityFolio, Verdict, evaluate,
+    Verdict, evaluate,
 };
 
 const EFFECTS: [EffectKind; 8] = [
@@ -90,7 +91,7 @@ fn rust_lattice_fact_page_matches_lean_reference_fixture() {
     let allocator = Allocator::default();
     let facts = evaluate(&allocator, inputs());
     assert_eq!(facts.bindings.len(), 256 + 4 * 4 * 9);
-    let printed = ReactivityFolio::of(&facts).print_to_string(FolioMode::Full);
+    let printed = ReactivityPage::of(&facts).print_to_string(DumpMode::Full);
     let mut expected = printed.trim_end().as_bytes().to_vec();
     expected.push(b'\n');
 

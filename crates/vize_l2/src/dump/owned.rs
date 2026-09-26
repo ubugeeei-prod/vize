@@ -4,7 +4,7 @@
 //! One mirror type per lifetime-carrying op type; the lifetime-free op
 //! types ([`Span`], [`Namespace`], [`OpaqueReason`](crate::expr::OpaqueReason))
 //! are reused directly, and the expression mirrors live in [`expr`].
-//! [`L2Folio::of`] is the bridge, and its matches are exhaustive
+//! [`Page::of`] is the bridge, and its matches are exhaustive
 //! with no `_` arm on purpose: a new op variant must break this file
 //! loudly (the same staleness discipline the canary test enforces).
 
@@ -12,56 +12,55 @@ use alloc::vec::Vec;
 
 use vize_l0::{Span, String, ensure_sufficient_stack};
 
-use super::L2Folio;
-use crate::op::{Attribute, DynamicName, Namespace, Op, Region};
+use crate::dump::Page;
+use crate::op::{Attribute as IrAttribute, DynamicName, Namespace, Op as IrOp, Region};
 
 mod binding;
 mod expr;
 
-pub use binding::{
-    FolioBind, FolioBinding, FolioModel, FolioOn, FolioSlotContent, FolioVueCloak, FolioVueCssBind,
-    FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow, FolioVueSlotScope,
-    FolioVueSync, FolioVueText,
+pub use crate::dump::owned::binding::{
+    Bind, Binding, Model, On, SlotContent, VueCloak, VueCssBind, VueDirective, VueHtml, VueMemo,
+    VueOnce, VueShow, VueSlotScope, VueSync, VueText,
 };
-pub use expr::{FolioContract, FolioExpr, FolioForBinding};
+pub use crate::dump::owned::expr::{Contract, Expr, ForBinding};
 
 use binding::own_binding;
 use expr::own_expr;
 
-/// Mirror of [`Op`]: one region op.
+/// Mirror of [`IrOp`]: one region op.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FolioOp {
+pub enum Op {
     /// `ui.element`.
-    Element(FolioElement),
+    Element(Element),
     /// `ui.component`.
-    Component(FolioComponent),
+    Component(Component),
     /// `ui.text`.
-    Text(FolioText),
+    Text(Text),
     /// `ui.interpolation`.
-    Interpolation(FolioInterpolation),
+    Interpolation(Interpolation),
     /// `ui.comment`.
-    Comment(FolioComment),
+    Comment(Comment),
     /// `ui.if`.
-    If(FolioIf),
+    If(If),
     /// `ui.for`.
-    For(FolioFor),
+    For(For),
     /// `ui.slot`.
-    Slot(FolioSlot),
+    Slot(Slot),
 }
 
 /// Mirror of [`DynamicName`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FolioName {
+pub enum Name {
     /// A literal name.
     Static(String),
     /// A computed name.
-    Dynamic(FolioExpr),
+    Dynamic(Expr),
 }
 
-/// Mirror of [`Attribute`].
+/// Mirror of [`IrAttribute`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioAttribute {
-    /// Attribute name.
+pub struct Attribute {
+    /// IrAttribute name.
     pub name: String,
     /// The value; `None` for a bare boolean attribute.
     pub value: Option<String>,
@@ -71,39 +70,39 @@ pub struct FolioAttribute {
 
 /// Mirror of [`crate::op::ElementOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioElement {
+pub struct Element {
     /// Tag name.
     pub tag: String,
     /// Markup namespace.
     pub namespace: Namespace,
     /// Static attributes, in order.
-    pub attributes: Vec<FolioAttribute>,
+    pub attributes: Vec<Attribute>,
     /// Attached bindings, in order.
-    pub bindings: Vec<FolioBinding>,
+    pub bindings: Vec<Binding>,
     /// The owned children region.
-    pub children: Vec<FolioOp>,
+    pub children: Vec<Op>,
     /// Source range.
     pub span: Span,
 }
 
 /// Mirror of [`crate::op::ComponentOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioComponent {
+pub struct Component {
     /// Component name.
     pub name: String,
     /// Static attributes, in order.
-    pub attributes: Vec<FolioAttribute>,
+    pub attributes: Vec<Attribute>,
     /// Attached bindings, in order.
-    pub bindings: Vec<FolioBinding>,
+    pub bindings: Vec<Binding>,
     /// The owned children region.
-    pub children: Vec<FolioOp>,
+    pub children: Vec<Op>,
     /// Source range.
     pub span: Span,
 }
 
 /// Mirror of [`crate::op::TextOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioText {
+pub struct Text {
     /// The text content.
     pub content: String,
     /// Source range.
@@ -112,16 +111,16 @@ pub struct FolioText {
 
 /// Mirror of [`crate::op::InterpolationOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioInterpolation {
+pub struct Interpolation {
     /// The rendered expression.
-    pub expression: FolioExpr,
+    pub expression: Expr,
     /// Source range.
     pub span: Span,
 }
 
 /// Mirror of [`crate::op::CommentOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioComment {
+pub struct Comment {
     /// The comment body.
     pub content: String,
     /// Source range.
@@ -130,54 +129,54 @@ pub struct FolioComment {
 
 /// Mirror of [`crate::op::IfOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioIf {
+pub struct If {
     /// The branches, in order.
-    pub branches: Vec<FolioBranch>,
+    pub branches: Vec<Branch>,
     /// Source range.
     pub span: Span,
 }
 
 /// Mirror of [`crate::op::IfBranch`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioBranch {
+pub struct Branch {
     /// The condition; `None` for the unconditional branch.
-    pub condition: Option<FolioExpr>,
+    pub condition: Option<Expr>,
     /// The branch's owned region.
-    pub ops: Vec<FolioOp>,
+    pub ops: Vec<Op>,
     /// Source range.
     pub span: Span,
 }
 
 /// Mirror of [`crate::op::ForOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioFor {
+pub struct For {
     /// The iteration binding.
-    pub binding: FolioForBinding,
+    pub binding: ForBinding,
     /// The repeated region.
-    pub ops: Vec<FolioOp>,
+    pub ops: Vec<Op>,
     /// Source range.
     pub span: Span,
 }
 
 /// Mirror of [`crate::op::SlotOp`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioSlot {
+pub struct Slot {
     /// The outlet name.
-    pub name: FolioName,
+    pub name: Name,
     /// Static slot props, in order.
-    pub attributes: Vec<FolioAttribute>,
+    pub attributes: Vec<Attribute>,
     /// Attached bindings, in order.
-    pub bindings: Vec<FolioBinding>,
+    pub bindings: Vec<Binding>,
     /// The fallback region.
-    pub fallback: Vec<FolioOp>,
+    pub fallback: Vec<Op>,
     /// Source range.
     pub span: Span,
 }
 
-impl L2Folio {
+impl Page {
     /// Mirror a live arena tree into the owned document model.
     #[must_use]
-    pub fn of(ops: &[Op<'_>]) -> Self {
+    pub fn of(ops: &[IrOp<'_>]) -> Self {
         ensure_sufficient_stack(|| Self { ops: own_ops(ops) })
     }
 
@@ -189,23 +188,23 @@ impl L2Folio {
     }
 }
 
-fn own_ops(ops: &[Op<'_>]) -> Vec<FolioOp> {
+fn own_ops(ops: &[IrOp<'_>]) -> Vec<Op> {
     ops.iter()
         .map(|op| ensure_sufficient_stack(|| own_op(op)))
         .collect()
 }
 
-fn own_region(region: &Region<'_>) -> Vec<FolioOp> {
+fn own_region(region: &Region<'_>) -> Vec<Op> {
     ensure_sufficient_stack(|| own_ops(&region.ops))
 }
 
-fn own_op(op: &Op<'_>) -> FolioOp {
+fn own_op(op: &IrOp<'_>) -> Op {
     ensure_sufficient_stack(|| own_op_guarded(op))
 }
 
-fn own_op_guarded(op: &Op<'_>) -> FolioOp {
+fn own_op_guarded(op: &IrOp<'_>) -> Op {
     match op {
-        Op::Element(element) => FolioOp::Element(FolioElement {
+        IrOp::Element(element) => Op::Element(Element {
             tag: String::from(element.tag),
             namespace: element.namespace,
             attributes: element.attributes.iter().map(own_attribute).collect(),
@@ -213,30 +212,30 @@ fn own_op_guarded(op: &Op<'_>) -> FolioOp {
             children: own_region(&element.children),
             span: element.span,
         }),
-        Op::Component(component) => FolioOp::Component(FolioComponent {
+        IrOp::Component(component) => Op::Component(Component {
             name: String::from(component.name),
             attributes: component.attributes.iter().map(own_attribute).collect(),
             bindings: component.bindings.iter().map(own_binding).collect(),
             children: own_region(&component.children),
             span: component.span,
         }),
-        Op::Text(text) => FolioOp::Text(FolioText {
+        IrOp::Text(text) => Op::Text(Text {
             content: String::from(text.content),
             span: text.span,
         }),
-        Op::Interpolation(interpolation) => FolioOp::Interpolation(FolioInterpolation {
+        IrOp::Interpolation(interpolation) => Op::Interpolation(Interpolation {
             expression: own_expr(&interpolation.expression),
             span: interpolation.span,
         }),
-        Op::Comment(comment) => FolioOp::Comment(FolioComment {
+        IrOp::Comment(comment) => Op::Comment(Comment {
             content: String::from(comment.content),
             span: comment.span,
         }),
-        Op::If(if_op) => FolioOp::If(FolioIf {
+        IrOp::If(if_op) => Op::If(If {
             branches: if_op
                 .branches
                 .iter()
-                .map(|branch| FolioBranch {
+                .map(|branch| Branch {
                     condition: branch.condition.as_ref().map(own_expr),
                     ops: own_region(&branch.region),
                     span: branch.span,
@@ -244,8 +243,8 @@ fn own_op_guarded(op: &Op<'_>) -> FolioOp {
                 .collect(),
             span: if_op.span,
         }),
-        Op::For(for_op) => FolioOp::For(FolioFor {
-            binding: FolioForBinding {
+        IrOp::For(for_op) => Op::For(For {
+            binding: ForBinding {
                 source: own_expr(&for_op.binding.source),
                 value: own_expr(&for_op.binding.value),
                 key: for_op.binding.key.as_ref().map(own_expr),
@@ -254,7 +253,7 @@ fn own_op_guarded(op: &Op<'_>) -> FolioOp {
             ops: own_region(&for_op.region),
             span: for_op.span,
         }),
-        Op::Slot(slot) => FolioOp::Slot(FolioSlot {
+        IrOp::Slot(slot) => Op::Slot(Slot {
             name: own_name(&slot.name),
             attributes: slot.attributes.iter().map(own_attribute).collect(),
             bindings: slot.bindings.iter().map(own_binding).collect(),
@@ -264,36 +263,36 @@ fn own_op_guarded(op: &Op<'_>) -> FolioOp {
     }
 }
 
-pub(super) fn own_name(name: &DynamicName<'_>) -> FolioName {
+pub(super) fn own_name(name: &DynamicName<'_>) -> Name {
     match name {
-        DynamicName::Static(text) => FolioName::Static(String::from(*text)),
-        DynamicName::Dynamic(expr) => FolioName::Dynamic(own_expr(expr)),
+        DynamicName::Static(text) => Name::Static(String::from(*text)),
+        DynamicName::Dynamic(expr) => Name::Dynamic(own_expr(expr)),
     }
 }
 
-pub(super) fn own_attribute(attribute: &Attribute<'_>) -> FolioAttribute {
-    FolioAttribute {
+pub(super) fn own_attribute(attribute: &IrAttribute<'_>) -> Attribute {
+    Attribute {
         name: String::from(attribute.name),
         value: attribute.value.map(String::from),
         span: attribute.span,
     }
 }
 
-fn count_op(op: &FolioOp) -> u64 {
+fn count_op(op: &Op) -> u64 {
     ensure_sufficient_stack(|| count_op_guarded(op))
 }
 
-fn count_op_guarded(op: &FolioOp) -> u64 {
+fn count_op_guarded(op: &Op) -> u64 {
     match op {
-        FolioOp::Element(element) => {
+        Op::Element(element) => {
             1 + element.bindings.len() as u64 + element.children.iter().map(count_op).sum::<u64>()
         }
-        FolioOp::Component(component) => {
+        Op::Component(component) => {
             1 + component.bindings.len() as u64
                 + component.children.iter().map(count_op).sum::<u64>()
         }
-        FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => 1,
-        FolioOp::If(if_op) => {
+        Op::Text(_) | Op::Interpolation(_) | Op::Comment(_) => 1,
+        Op::If(if_op) => {
             1 + if_op
                 .branches
                 .iter()
@@ -301,8 +300,8 @@ fn count_op_guarded(op: &FolioOp) -> u64 {
                 .map(count_op)
                 .sum::<u64>()
         }
-        FolioOp::For(for_op) => 1 + for_op.ops.iter().map(count_op).sum::<u64>(),
-        FolioOp::Slot(slot) => {
+        Op::For(for_op) => 1 + for_op.ops.iter().map(count_op).sum::<u64>(),
+        Op::Slot(slot) => {
             1 + slot.bindings.len() as u64 + slot.fallback.iter().map(count_op).sum::<u64>()
         }
     }

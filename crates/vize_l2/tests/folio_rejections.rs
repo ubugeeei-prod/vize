@@ -5,9 +5,9 @@
 //! `P` puts the body's first line at line 5.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::folio::{Folio, FolioError};
+use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_l0::String;
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 
 /// Valid page prefix: `[disegno]` header, `ops=0`, blank, `[disegno.ops]`.
 const P: &str = "[disegno]\nops=0\n\n[disegno.ops]\n";
@@ -247,10 +247,10 @@ const OPS_REJECTIONS: &[(&str, usize, &str)] = &[
 ];
 
 fn assert_rejected(input: &str, line: usize, message: &str) {
-    let error = DisegnoFolio::parse(input).expect_err("input must be rejected");
+    let error = L2Page::parse(input).expect_err("input must be rejected");
     assert_eq!(
         error,
-        FolioError::new(line, String::from(message)),
+        DumpError::new(line, String::from(message)),
         "input: {input:?}"
     );
 }

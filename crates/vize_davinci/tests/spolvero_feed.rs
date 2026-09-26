@@ -12,8 +12,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
 use davinci_test_support::schema as schema_check;
-use vize_davinci::folio::dump::FolioDump;
-use vize_davinci::folio::feed::{StageFeed, StageFeedSchemaMismatch};
+use vize_davinci::dump::collector::Collector;
+use vize_davinci::dump::feed::{StageFeed, StageFeedSchemaMismatch};
 use vize_davinci::pass::{Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved};
 
 /// A canonical `[budget-observer]` page - the smallest committed-format
@@ -154,7 +154,7 @@ fn the_feed_escapes_page_text_into_valid_json_exactly() {
     // Every escape class: quote, backslash, the three named controls, an
     // unnamed control, and multi-byte UTF-8.
     let nasty = "a\"b\\c\nd\re\tf\u{1}g\u{3042}\n";
-    let mut dump = FolioDump::new(false);
+    let mut dump = Collector::new(false);
     dump.after_pass(&event, nasty);
     let feed = StageFeed::of_dump("davinci-opt", &dump);
 
@@ -257,7 +257,7 @@ fn consumers_negotiate_schema_version_before_reading_pages() {
 
 #[test]
 fn the_feed_carries_remarks_beside_the_pages() {
-    use vize_davinci::folio::feed::StageRemark;
+    use vize_davinci::dump::feed::StageRemark;
     use vize_davinci::pass::RemarkKind;
     use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
     use vize_l0::{Span, String};

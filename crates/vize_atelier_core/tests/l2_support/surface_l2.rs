@@ -11,31 +11,34 @@
 
 use vize_davinci::id::NodeId;
 use vize_l0::String;
-use vize_l2::folio::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
+use vize_l2::dump::{
+    Attribute as DumpAttribute, Binding as DumpBinding, Expr as DumpExpr, Name as DumpName,
+    Op as DumpOp,
+};
 
 use super::l2_lane::{L2Projection, Tables};
 use super::surface::{PBind, PDirective, PModel, PName, PSurface, is_simple_ident};
 
-fn expr_text(expr: &FolioExpr) -> String {
+fn expr_text(expr: &DumpExpr) -> String {
     match expr {
-        FolioExpr::Js { source, .. }
-        | FolioExpr::Foreign { source, .. }
-        | FolioExpr::Opaque { source, .. }
-        | FolioExpr::Filter { source, .. } => String::from(source.trim()),
+        DumpExpr::Js { source, .. }
+        | DumpExpr::Foreign { source, .. }
+        | DumpExpr::Opaque { source, .. }
+        | DumpExpr::Filter { source, .. } => String::from(source.trim()),
     }
 }
 
 /// Whether an owner's first params-bearing `ui.slot-content` opens a
 /// destructuring-params scope over its children (the shared predicate;
 /// the L2 twin of the legacy `enter_v_slot_scope_if_needed` mirror).
-pub fn opens_pattern_scope(bindings: &[FolioBinding], children: &[FolioOp]) -> bool {
+pub fn opens_pattern_scope(bindings: &[DumpBinding], children: &[DumpOp]) -> bool {
     if children.is_empty() {
         return false;
     }
     bindings
         .iter()
         .find_map(|binding| match binding {
-            FolioBinding::SlotContent(content) => content.params.as_ref().map(|params| {
+            DumpBinding::SlotContent(content) => content.params.as_ref().map(|params| {
                 let text = expr_text(params);
                 !text.is_empty() && !is_simple_ident(text.as_str())
             }),
@@ -47,8 +50,8 @@ pub fn opens_pattern_scope(bindings: &[FolioBinding], children: &[FolioOp]) -> b
 /// One owner's surface from its attribute and binding lists.
 #[expect(clippy::too_many_arguments, reason = "independent surface inputs")]
 pub fn surface_of(
-    attributes: &[FolioAttribute],
-    bindings: &[FolioBinding],
+    attributes: &[DumpAttribute],
+    bindings: &[DumpBinding],
     owner_index: u32,
     tables: &Tables<'_>,
     pattern_scoped: bool,
@@ -72,7 +75,7 @@ pub fn surface_of(
         }
         let id = NodeId::from_index(owner_index + 1 + u32::try_from(index).expect("fits"));
         match binding {
-            FolioBinding::Bind(bind) => surface.binds.push(PBind {
+            DumpBinding::Bind(bind) => surface.binds.push(PBind {
                 name: match &bind.name {
                     None => PName::Spread,
                     Some(name) => p_name(name),
@@ -80,7 +83,7 @@ pub fn surface_of(
                 mods: bind.modifiers.iter().map(|m| m.as_str().into()).collect(),
                 value: bind.value.as_ref().map(|value| Some(expr_text(value))),
             }),
-            FolioBinding::On(on) => surface.ons.push(PBind {
+            DumpBinding::On(on) => surface.ons.push(PBind {
                 name: match &on.name {
                     None => PName::Spread,
                     Some(name) => p_name(name),
@@ -88,7 +91,7 @@ pub fn surface_of(
                 mods: on.modifiers.iter().map(|m| m.as_str().into()).collect(),
                 value: on.handler.as_ref().map(|handler| Some(expr_text(handler))),
             }),
-            FolioBinding::Model(model) => {
+            DumpBinding::Model(model) => {
                 if id.is_some_and(|id| tables.model_faults.get(id).is_some()) {
                     out.models_invalid += 1;
                     continue;
@@ -116,8 +119,8 @@ pub fn surface_of(
                     component,
                 });
             }
-            FolioBinding::SlotContent(_) => {}
-            FolioBinding::VueDirective(directive) => surface.directives.push(PDirective {
+            DumpBinding::SlotContent(_) => {}
+            DumpBinding::VueDirective(directive) => surface.directives.push(PDirective {
                 name: directive.name.as_str().into(),
                 arg: directive.argument.as_ref().map(p_name),
                 mods: directive
@@ -127,25 +130,25 @@ pub fn surface_of(
                     .collect(),
                 value: directive.value.as_ref().map(|value| Some(expr_text(value))),
             }),
-            FolioBinding::VueCssBind(_) => {}
+            DumpBinding::VueCssBind(_) => {}
             // Codegen-only dialect bindings: represented on L2, not part of
             // the bind/on/model/directive surface this projection
             // compares. Legacy still counts them under builtins_excluded.
-            FolioBinding::VueOnce(_)
-            | FolioBinding::VueMemo(_)
-            | FolioBinding::VueShow(_)
-            | FolioBinding::VueHtml(_)
-            | FolioBinding::VueText(_)
-            | FolioBinding::VueCloak(_) => {}
+            DumpBinding::VueOnce(_)
+            | DumpBinding::VueMemo(_)
+            | DumpBinding::VueShow(_)
+            | DumpBinding::VueHtml(_)
+            | DumpBinding::VueText(_)
+            | DumpBinding::VueCloak(_) => {}
             // Pre-pass only: the legacy pass desugars these before the
             // comparator runs. Arms exist so a missed desugar is a
             // surface mismatch, never a compile-time silence.
-            FolioBinding::VueSync(sync) => surface.binds.push(PBind {
+            DumpBinding::VueSync(sync) => surface.binds.push(PBind {
                 name: PName::Static(sync.name.as_str().into()),
                 mods: sync.modifiers.iter().map(|m| m.as_str().into()).collect(),
                 value: Some(Some(expr_text(&sync.value))),
             }),
-            FolioBinding::VueSlotScope(_) => {}
+            DumpBinding::VueSlotScope(_) => {}
         }
     }
     fold_sync_products(&mut surface);
@@ -200,9 +203,9 @@ fn fold_sync_products(surface: &mut PSurface) {
     }
 }
 
-pub fn p_name(name: &FolioName) -> PName {
+pub fn p_name(name: &DumpName) -> PName {
     match name {
-        FolioName::Static(text) => PName::Static(text.as_str().into()),
-        FolioName::Dynamic(expr) => PName::Dynamic(Some(expr_text(expr))),
+        DumpName::Static(text) => PName::Static(text.as_str().into()),
+        DumpName::Dynamic(expr) => PName::Dynamic(Some(expr_text(expr))),
     }
 }

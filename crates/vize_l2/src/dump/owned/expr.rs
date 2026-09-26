@@ -17,7 +17,7 @@ use crate::expr::{ExprRef, OpaqueReason};
 
 /// Mirror of [`ExprRef`]: one expression payload as the folio carries it.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum FolioExpr {
+pub enum Expr {
     /// `js(...)` - re-parses into the arena on load.
     Js {
         /// The exact text the retained AST was parsed from.
@@ -57,47 +57,47 @@ pub enum FolioExpr {
 
 /// Mirror of [`crate::op::ForBinding`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioForBinding {
+pub struct ForBinding {
     /// The iterated collection, object, or range.
-    pub source: FolioExpr,
+    pub source: Expr,
     /// The per-iteration value binding.
-    pub value: FolioExpr,
+    pub value: Expr,
     /// The second binding position (object key), when authored.
-    pub key: Option<FolioExpr>,
+    pub key: Option<Expr>,
     /// The third binding position (index), when authored.
-    pub index: Option<FolioExpr>,
+    pub index: Option<Expr>,
 }
 
 /// Mirror of [`crate::op::BindingContract`].
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioContract {
+pub struct Contract {
     /// What the view reads.
-    pub read: FolioExpr,
+    pub read: Expr,
     /// What updates write into.
-    pub write: FolioExpr,
+    pub write: Expr,
 }
 
 /// Bridge one live expression reference into the owned model.
 ///
 /// Exhaustive with no `_` arm on purpose (the staleness discipline of
 /// [`super`]): a new `ExprRef` variant must break this file loudly.
-pub(in crate::folio) fn own_expr(expr: &ExprRef<'_>) -> FolioExpr {
+pub(in crate::dump) fn own_expr(expr: &ExprRef<'_>) -> Expr {
     match expr {
-        ExprRef::Js(js) => FolioExpr::Js {
+        ExprRef::Js(js) => Expr::Js {
             source: String::from(js.source),
             span: js.span,
         },
-        ExprRef::Foreign(foreign) => FolioExpr::Foreign {
+        ExprRef::Foreign(foreign) => Expr::Foreign {
             dialect: String::from(foreign.dialect),
             source: String::from(foreign.source),
             span: foreign.span,
         },
-        ExprRef::Opaque(opaque) => FolioExpr::Opaque {
+        ExprRef::Opaque(opaque) => Expr::Opaque {
             reason: opaque.reason,
             source: String::from(opaque.source),
             span: opaque.span,
         },
-        ExprRef::Filter(filter) => FolioExpr::Filter {
+        ExprRef::Filter(filter) => Expr::Filter {
             source: String::from(filter.source),
             span: filter.span,
         },

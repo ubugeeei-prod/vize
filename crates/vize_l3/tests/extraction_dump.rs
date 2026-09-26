@@ -1,10 +1,9 @@
 //! TS-16 laws for the L3 extraction page.
 
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Span, String, cstr};
-use vize_l3::extract::{
-    Decision, DecisionKind, Delta, FolioDecision, L3ExtractionFolio, Metric, Reason,
-};
+use vize_l3::extract::dump::{Page as ExtractionPage, Record as DumpDecision};
+use vize_l3::extract::{Decision, DecisionKind, Delta, Metric, Reason};
 use vize_l3::op::OpId;
 use vize_l3::placement::Placement;
 
@@ -34,8 +33,8 @@ fn row(
     span: (u32, u32),
     delta: [i64; 3],
     budget: u32,
-) -> FolioDecision {
-    FolioDecision(Decision {
+) -> DumpDecision {
+    DumpDecision(Decision {
         op: OpId::new(op),
         span: Span::new(span.0, span.1),
         placement,
@@ -54,8 +53,8 @@ fn row(
     })
 }
 
-fn page_value() -> L3ExtractionFolio {
-    L3ExtractionFolio {
+fn page_value() -> ExtractionPage {
+    ExtractionPage {
         tier: String::from("O1"),
         candidate_budget: 8,
         budget_left: 5,
@@ -96,8 +95,8 @@ fn page_value() -> L3ExtractionFolio {
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let parsed = L3ExtractionFolio::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(parsed.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    let parsed = ExtractionPage::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(parsed.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(parsed, page_value());
 }
 
@@ -119,8 +118,8 @@ fn parse_print_is_structural_identity_for_every_reason() {
             )
         })
         .collect();
-    let printed = value.print_to_string(FolioMode::Full);
-    assert_eq!(L3ExtractionFolio::parse(printed.as_str()), Ok(value));
+    let printed = value.print_to_string(DumpMode::Full);
+    assert_eq!(ExtractionPage::parse(printed.as_str()), Ok(value));
 }
 
 #[test]
@@ -132,8 +131,8 @@ fn parse_rejects_malformed_rows_exactly() {
     let valid =
         "op=1 placement=cache kind=missed reason=subsumed span=1:2 size=0 edges=0 path=0 budget=0";
     assert_eq!(
-        L3ExtractionFolio::parse(page(valid).as_str()),
-        Ok(L3ExtractionFolio {
+        ExtractionPage::parse(page(valid).as_str()),
+        Ok(ExtractionPage {
             decisions: vec![row(
                 1,
                 Placement::Cache,
@@ -177,8 +176,8 @@ fn parse_rejects_malformed_rows_exactly() {
     ];
     for (row, message) in cases {
         assert_eq!(
-            L3ExtractionFolio::parse(page(row).as_str()),
-            Err(FolioError::new(13, cstr!("{message}"))),
+            ExtractionPage::parse(page(row).as_str()),
+            Err(DumpError::new(13, cstr!("{message}"))),
             "{row}"
         );
     }

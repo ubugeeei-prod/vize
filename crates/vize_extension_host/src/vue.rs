@@ -10,7 +10,7 @@
 
 use vize_l0::{Allocator, SourceRoot, String, cstr};
 use vize_l1_to_l2::{LegacyCaps, lower_source_block_with_caps};
-use vize_l2::folio::L2Folio;
+use vize_l2::dump::Page as L2Page;
 
 use crate::accept::full_text;
 use crate::contract::{
@@ -104,7 +104,7 @@ pub fn lower_block(block: &SourceBlock, caps: LegacyCaps) -> Result<LoweredBlock
         },
         semantic: Page {
             schema_version: L2_PAGE_SCHEMA,
-            text: full_text(&L2Folio::of(&lowered.root.ops)),
+            text: full_text(&L2Page::of(&lowered.root.ops)),
         },
         diagnostics: lowered.diagnostics.iter().map(Diagnostic::from).collect(),
     })

@@ -1,9 +1,9 @@
 //! The croquis folio: the croquis "VIR" dump absorbed as the first folio
 //! page.
 //!
-//! [`CroquisFolio`] is a document model of the text
+//! [`Page`] is a document model of the text
 //! `vize_croquis::Croquis::to_vir()` emits (the `[vir]` format). Printing
-//! in [`FolioMode::Full`](super::FolioMode) reproduces that format
+//! in [`DumpMode::Full`](crate::dump::Mode) reproduces that format
 //! byte-for-byte for canonical content; parsing is the inverse. The live
 //! renderer stays in `crates/vize_croquis/src/croquis/vir.rs`; this module
 //! owns the format contract (see `docs/davinci/plan/folio-format.md`).
@@ -16,7 +16,7 @@ use alloc::vec::Vec;
 
 use vize_l0::String;
 
-use super::{Folio, FolioError, FolioMode};
+use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
 
 mod parse;
 mod print;
@@ -142,7 +142,7 @@ pub struct ErrorEntry {
 /// the renderer. `emits`, `models`, and `reactivity` lines carry no spans
 /// or map-ordered content, so they are stored verbatim.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct CroquisFolio {
+pub struct Page {
     /// `[vir] script_setup=` header value.
     pub script_setup: bool,
     /// `[vir] scopes=` header count, carried as printed.
@@ -166,7 +166,7 @@ pub struct CroquisFolio {
     pub errors: Vec<ErrorEntry>,
 }
 
-impl CroquisFolio {
+impl Page {
     /// Normalize in place: sort every map-derived name list and renumber
     /// scope ids sequentially per prefix in entry order (remapping parent
     /// references).
@@ -194,12 +194,12 @@ impl CroquisFolio {
     }
 }
 
-impl Folio for CroquisFolio {
-    fn print<W: core::fmt::Write>(&self, w: &mut W, mode: FolioMode) -> core::fmt::Result {
+impl Dump for Page {
+    fn print<W: core::fmt::Write>(&self, w: &mut W, mode: DumpMode) -> core::fmt::Result {
         print::print(self, w, mode)
     }
 
-    fn parse(input: &str) -> Result<Self, FolioError> {
+    fn parse(input: &str) -> Result<Self, DumpError> {
         let mut folio = parse::parse(input)?;
         folio.normalize();
         Ok(folio)

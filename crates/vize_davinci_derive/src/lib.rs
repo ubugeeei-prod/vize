@@ -1,11 +1,11 @@
-//! `#[derive(Folio)]` - the mechanical half of the Davinci stage-dump
+//! `#[derive(Dump)]` - the mechanical half of the Davinci stage-dump
 //! contract.
 //!
 //! **Experimental:** generated format and macro API may change in any alpha
 //! release; record intentional breaking changes in the release notes.
 //!
-//! The derive generates `vize_davinci::folio::Folio`'s exact shape -
-//! `print(&self, w, mode)` and `parse(input) -> Result<Self, FolioError>` -
+//! The derive generates `vize_davinci::dump::Dump`'s exact shape -
+//! `print(&self, w, mode)` and `parse(input) -> Result<Self, DumpError>` -
 //! for an owned document struct, following the normalization rules written
 //! in `docs/davinci/plan/folio-format.md` ("Derived pages"): stable field
 //! order from the type shape, fixed section order, sorted map iteration,
@@ -15,19 +15,19 @@
 //! anything carrying a semantic decision - what `Display` elides, what a
 //! section means - stays hand-written. A derived page therefore prints the
 //! same canonical text in both modes: eliding is a decision, and the derive
-//! refuses to make decisions. `CroquisFolio` keeps its hand impl for exactly
+//! refuses to make decisions. `CroquisPage` keeps its hand impl for exactly
 //! this reason (its grammar is nothing but decisions).
 //!
 //! # The generated page
 //!
 //! For a struct `BudgetObserver` the page is headed `[budget-observer]`
-//! (kebab-case of the type name). `#[folio(name = "stable-page")]` retains
+//! (kebab-case of the type name). `#[dump(name = "stable-page")]` retains
 //! a wire header across Rust type renames. Scalar fields print as `name=value` lines
 //! in declaration order inside the header section; `Vec<T>` fields print as
 //! `[page.field]` sections of one entry per line, order preserved; and
 //! `FxHashMap<K, V>` fields print as `[page.field]` sections of `key=value`
 //! lines sorted by printed key (byte order). Field values go through
-//! `vize_davinci::folio::value::FolioValue`, so an unsupported field type is
+//! `vize_davinci::dump::value::DumpValue`, so an unsupported field type is
 //! a missing-impl compile error in the deriving crate, not a silent format.
 //!
 //! # Host build dependency
@@ -56,14 +56,14 @@ mod model;
 use proc_macro::TokenStream;
 use syn::{DeriveInput, parse_macro_input};
 
-/// Derive `vize_davinci::folio::Folio` for an owned document struct.
+/// Derive `vize_davinci::dump::Dump` for an owned document struct.
 ///
 /// See the crate docs for the generated page format, and
 /// `docs/davinci/plan/folio-format.md` for the normalization contract the
 /// generated pair upholds (TS-16: `print(parse(t)) == t` byte-exact in
 /// `Full` mode, `parse(print(v)) == v` structurally).
-#[proc_macro_derive(Folio, attributes(folio))]
-pub fn derive_folio(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(Dump, attributes(dump))]
+pub fn derive_dump(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     match model::PageModel::from_input(&input) {
         Ok(model) => codegen::expand(&model).into(),

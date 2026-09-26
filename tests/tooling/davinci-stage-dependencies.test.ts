@@ -204,8 +204,8 @@ test("Davinci L1-to-L2 source paths use the physical L2 folio type", () => {
     const source = fs.readFileSync(fullPath, "utf8");
     assert.doesNotMatch(
       source,
-      /\bDisegnoFolio\b/u,
-      `${path.relative(sourceDir, fullPath)} must use L2Folio`,
+      /\b(?:DisegnoFolio|L2Folio)\b/u,
+      `${path.relative(sourceDir, fullPath)} must use vize_l2::dump::Page`,
     );
   }
 });

@@ -3,7 +3,7 @@
 //! L1 cannot name `vize_davinci` (the stage-dependency table keeps it on
 //! L0 alone), so its [`KeyedArtifact`] view lives in this conversion crate,
 //! the one place that already joins L1 and the shared infrastructure. The
-//! L2 page keys itself (`impl KeyedArtifact for L2Folio` in `vize_l2`).
+//! L2 page keys itself (`impl KeyedArtifact for L2Page` in `vize_l2`).
 //!
 //! L1's page is its lossless render: every token slice in canonical order,
 //! `Missing` holes included as empty pieces. Each piece is fed

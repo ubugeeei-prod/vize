@@ -6,8 +6,8 @@
 //! (5 edges), and update path 1 + 1 + 1 + (1 + 2 re-rendered) + 1 = 7.
 
 use super::fixture::{Build, JS, LIT, fixture};
-use vize_davinci::folio::remarks::RemarkLog;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::remarks::RemarkLog;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::{
     Fusability, NoObserver, PassKind, Preserved, RemarkCollector, RemarkCounter,
 };
@@ -217,7 +217,7 @@ fn the_pipeline_attributes_one_structured_remark_per_decision() {
     let mut collector = RemarkCollector::new();
     let extraction =
         optimize(&mut build.program, OptTier::O1, &mut collector).expect("closed pipeline");
-    let page = RemarkLog::new(collector.finish()).print_to_string(FolioMode::Full);
+    let page = RemarkLog::new(collector.finish()).print_to_string(DumpMode::Full);
     assert_eq!(page.as_str(), REMARKS);
 
     let mut detached = fixture(&arena, (LIT, "hi"));

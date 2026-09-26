@@ -5,18 +5,18 @@ use alloc::vec::Vec;
 use core::fmt;
 use core::str::FromStr;
 
-use vize_davinci::folio::value::FolioValue;
-use vize_davinci::folio::{Folio, FolioError};
+use vize_davinci::dump::value::DumpValue;
+use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, String, cstr};
 
 use super::report::{Decision, DecisionKind, Delta, Extraction, Reason};
 use crate::op::OpId;
-use crate::placement::folio::{field, parse_placement, parse_u32};
+use crate::placement::dump::{field, parse_placement, parse_u32};
 
 /// One extraction, printed as `[s3-extraction-folio]`.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-#[folio(name = "s3-extraction-folio")]
-pub struct L3ExtractionFolio {
+#[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
+#[dump(name = "s3-extraction-folio")]
+pub struct Page {
     pub tier: String,
     pub candidate_budget: u32,
     pub budget_left: u32,
@@ -26,10 +26,10 @@ pub struct L3ExtractionFolio {
     pub reactive_edges_after: u64,
     pub update_path_before: u64,
     pub update_path_after: u64,
-    pub decisions: Vec<FolioDecision>,
+    pub decisions: Vec<Record>,
 }
 
-impl L3ExtractionFolio {
+impl Page {
     /// Mirror one extraction into the owned document model.
     #[must_use]
     pub fn of(extraction: &Extraction) -> Self {
@@ -44,12 +44,7 @@ impl L3ExtractionFolio {
             reactive_edges_after: after.reactive_edges,
             update_path_before: before.update_path,
             update_path_after: after.update_path,
-            decisions: extraction
-                .decisions
-                .iter()
-                .copied()
-                .map(FolioDecision)
-                .collect(),
+            decisions: extraction.decisions.iter().copied().map(Record).collect(),
         }
     }
 }
@@ -57,9 +52,9 @@ impl L3ExtractionFolio {
 /// One decision row:
 /// `op=<n> placement=<p> kind=<k> reason=<r> span=<s>:<e> size=<d> edges=<d> path=<d> budget=<n>`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct FolioDecision(pub Decision);
+pub struct Record(pub Decision);
 
-impl FolioValue for FolioDecision {
+impl DumpValue for Record {
     fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
         let decision = self.0;
         write!(
@@ -78,7 +73,7 @@ impl FolioValue for FolioDecision {
         )
     }
 
-    fn parse_value(text: &str, line: usize) -> Result<Self, FolioError> {
+    fn parse_value(text: &str, line: usize) -> Result<Self, DumpError> {
         let mut fields = text.split_whitespace();
         let op = OpId::new(parse_u32(field(&mut fields, "op", line)?, "op", line)?);
         let placement = parse_placement(field(&mut fields, "placement", line)?, line)?;
@@ -86,7 +81,7 @@ impl FolioValue for FolioDecision {
             "applied" => DecisionKind::Applied,
             "missed" => DecisionKind::Missed,
             other => {
-                return Err(FolioError::new(
+                return Err(DumpError::new(
                     line,
                     cstr!("unknown decision kind `{other}`"),
                 ));
@@ -94,10 +89,10 @@ impl FolioValue for FolioDecision {
         };
         let reason_text = field(&mut fields, "reason", line)?;
         let reason = Reason::parse(reason_text).ok_or_else(|| {
-            FolioError::new(line, cstr!("unknown decision reason `{reason_text}`"))
+            DumpError::new(line, cstr!("unknown decision reason `{reason_text}`"))
         })?;
         if (kind == DecisionKind::Applied) != (reason == Reason::Committed) {
-            return Err(FolioError::new(
+            return Err(DumpError::new(
                 line,
                 cstr!(
                     "decision kind `{}` contradicts reason `{reason}`",
@@ -108,7 +103,7 @@ impl FolioValue for FolioDecision {
         let span_text = field(&mut fields, "span", line)?;
         let (start, end) = span_text
             .split_once(':')
-            .ok_or_else(|| FolioError::new(line, cstr!("invalid span `{span_text}`")))?;
+            .ok_or_else(|| DumpError::new(line, cstr!("invalid span `{span_text}`")))?;
         let span = Span::new(
             parse_u32(start, "span.start", line)?,
             parse_u32(end, "span.end", line)?,
@@ -120,7 +115,7 @@ impl FolioValue for FolioDecision {
         };
         let budget_left = parse_u32(field(&mut fields, "budget", line)?, "budget", line)?;
         if let Some(extra) = fields.next() {
-            return Err(FolioError::new(line, cstr!("unexpected field `{extra}`")));
+            return Err(DumpError::new(line, cstr!("unexpected field `{extra}`")));
         }
         Ok(Self(Decision {
             op,
@@ -134,7 +129,7 @@ impl FolioValue for FolioDecision {
     }
 }
 
-fn parse_int<T: FromStr>(text: &str, name: &str, line: usize) -> Result<T, FolioError> {
+fn parse_int<T: FromStr>(text: &str, name: &str, line: usize) -> Result<T, DumpError> {
     text.parse()
-        .map_err(|_| FolioError::new(line, cstr!("invalid `{name}` integer `{text}`")))
+        .map_err(|_| DumpError::new(line, cstr!("invalid `{name}` integer `{text}`")))
 }

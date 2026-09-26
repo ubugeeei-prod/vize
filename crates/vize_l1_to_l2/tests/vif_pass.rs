@@ -22,18 +22,20 @@ use vize_l1_to_l2::exemptions;
 use vize_l1_to_l2::pass::{BranchKey, BranchKeyKind, vif};
 
 use support::{assert_transformed_sound, with_lowered, with_transformed};
-use vize_l2::folio::{DisegnoFolio, FolioAttribute, FolioElement, FolioOp};
+use vize_l2::dump::{
+    Attribute as DumpAttribute, Element as DumpElement, Op as DumpOp, Page as L2Page,
+};
 
 /// The single root element of branch `index` of the `chain`-th root op,
 /// reached through a `ui.for` wrap when the branch carries one.
-fn branch_root(folio: &DisegnoFolio, chain: usize, index: usize) -> &FolioElement {
-    let FolioOp::If(if_op) = &folio.ops[chain] else {
+fn branch_root(folio: &L2Page, chain: usize, index: usize) -> &DumpElement {
+    let DumpOp::If(if_op) = &folio.ops[chain] else {
         panic!("root op {chain} is not ui.if");
     };
     match &if_op.branches[index].ops[..] {
-        [FolioOp::Element(element)] => element,
-        [FolioOp::For(for_op)] => match &for_op.ops[..] {
-            [FolioOp::Element(element)] => element,
+        [DumpOp::Element(element)] => element,
+        [DumpOp::For(for_op)] => match &for_op.ops[..] {
+            [DumpOp::Element(element)] => element,
             other => panic!("for region root is not one element: {other:?}"),
         },
         other => panic!("branch root is not one element: {other:?}"),
@@ -168,7 +170,7 @@ fn a_for_wrapped_branch_keeps_its_key_with_the_iteration() {
         // The iterated element keeps exactly its key (exact oracle).
         assert_eq!(
             branch_root(folio, 0, 0).attributes,
-            vec![FolioAttribute {
+            vec![DumpAttribute {
                 name: "key".into(),
                 value: Some("k".into()),
                 span: span_of(source, r#"key="k""#, 0),
@@ -190,7 +192,7 @@ fn an_unwrapped_single_child_keeps_its_own_key() {
         // The inner element keeps exactly its own key (exact oracle).
         assert_eq!(
             branch_root(folio, 0, 0).attributes,
-            vec![FolioAttribute {
+            vec![DumpAttribute {
                 name: "key".into(),
                 value: Some("z".into()),
                 span: span_of(source, r#"key="z""#, 0),
@@ -207,11 +209,8 @@ fn the_pipeline_reports_one_walk_per_barrier_pass() {
     // plan is only the fused analysis group: two passes, one walk.
     with_transformed(r#"<div v-if="a">x</div>"#, |_, _, _, budget| {
         assert_eq!(
-            vize_davinci::folio::Folio::print_to_string(
-                budget,
-                vize_davinci::folio::FolioMode::Full
-            )
-            .as_str(),
+            vize_davinci::dump::Dump::print_to_string(budget, vize_davinci::dump::Mode::Full)
+                .as_str(),
             "[budget-observer]\nwalks=1\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
     });

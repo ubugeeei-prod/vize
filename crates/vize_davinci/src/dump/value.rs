@@ -1,7 +1,7 @@
-//! [`FolioValue`] - how a single field value prints and parses on a derived
+//! [`DumpValue`] - how a single field value prints and parses on a derived
 //! page.
 //!
-//! `#[derive(Folio)]` routes every scalar line, list entry, map key and map
+//! `#[derive(Dump)]` routes every scalar line, list entry, map key and map
 //! value through this trait, so the set of impls below *is* the set of
 //! supported field value types. An unsupported type is a missing-impl
 //! compile error in the deriving crate - never a silent guess at a format.
@@ -15,7 +15,7 @@ use core::fmt;
 
 use vize_l0::{String, cstr};
 
-use super::FolioError;
+use crate::dump::Error as DumpError;
 
 /// One field value on a derived folio page.
 ///
@@ -23,7 +23,7 @@ use super::FolioError;
 /// `parse_value(print_value(v)) == v` must hold; `parse_value` may be
 /// lenient toward non-canonical spellings (e.g. `007`), which the first
 /// print then normalizes - the same leniency contract the page level has.
-pub trait FolioValue: Sized {
+pub trait DumpValue: Sized {
     /// Write the canonical text of this value.
     ///
     /// # Errors
@@ -36,44 +36,44 @@ pub trait FolioValue: Sized {
     ///
     /// # Errors
     ///
-    /// Returns a [`FolioError`] naming the offending text and line.
-    fn parse_value(text: &str, line: usize) -> Result<Self, FolioError>;
+    /// Returns a [`DumpError`] naming the offending text and line.
+    fn parse_value(text: &str, line: usize) -> Result<Self, DumpError>;
 }
 
-impl FolioValue for bool {
+impl DumpValue for bool {
     fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
         write!(w, "{self}")
     }
 
-    fn parse_value(text: &str, line: usize) -> Result<Self, FolioError> {
+    fn parse_value(text: &str, line: usize) -> Result<Self, DumpError> {
         match text {
             "true" => Ok(true),
             "false" => Ok(false),
-            _ => Err(FolioError::new(line, cstr!("invalid bool `{text}`"))),
+            _ => Err(DumpError::new(line, cstr!("invalid bool `{text}`"))),
         }
     }
 }
 
-impl FolioValue for String {
+impl DumpValue for String {
     fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
         w.write_str(self.as_str())
     }
 
-    fn parse_value(text: &str, _line: usize) -> Result<Self, FolioError> {
+    fn parse_value(text: &str, _line: usize) -> Result<Self, DumpError> {
         Ok(String::from(text))
     }
 }
 
 macro_rules! impl_folio_value_for_int {
     ($($int:ty),* $(,)?) => {$(
-        impl FolioValue for $int {
+        impl DumpValue for $int {
             fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
                 write!(w, "{self}")
             }
 
-            fn parse_value(text: &str, line: usize) -> Result<Self, FolioError> {
+            fn parse_value(text: &str, line: usize) -> Result<Self, DumpError> {
                 text.parse::<$int>()
-                    .map_err(|_| FolioError::new(line, cstr!("invalid integer `{text}`")))
+                    .map_err(|_| DumpError::new(line, cstr!("invalid integer `{text}`")))
             }
         }
     )*};

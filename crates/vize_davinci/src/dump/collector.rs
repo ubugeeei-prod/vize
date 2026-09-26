@@ -1,9 +1,9 @@
 //! Per-pass folio dumping with the `--folio-after-change` hash gate (P2-13).
 //!
-//! [`FolioDump`] collects the pages a `--folio-dir` run writes: one page per
+//! [`Collector`] collects the pages a `--folio-dir` run writes: one page per
 //! executed pass, or - hash-gated - only the passes whose artifact actually
 //! changed. It works on the artifact's **canonical `Full`-mode text** rather
-//! than on a typed artifact, because the Folio equality laws make the two
+//! than on a typed artifact, because the Dump equality laws make the two
 //! interchangeable: canonical text is injective over values, so hashing the
 //! text is hashing the artifact, and the driver holding the artifact prints
 //! once and feeds every consumer the same bytes.
@@ -26,7 +26,7 @@ use crate::pass::PassEvent;
 /// One page a dump run produced: the file name to write and its text,
 /// plus the stage/pass provenance the Spolvero feed (P2-18) serializes.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct DumpPage {
+pub struct Page {
     /// `{seq:03}-{stage}.{pass}.folio`, emission-ordered. Derived from
     /// (`seq`, [`stage`](Self::stage), [`pass`](Self::pass)) once, at
     /// emission - the one place the sequence number is known - and cached
@@ -42,7 +42,7 @@ pub struct DumpPage {
 
 /// Collects per-pass folio pages, optionally hash-gated.
 #[derive(Debug, Default)]
-pub struct FolioDump {
+pub struct Collector {
     /// When set, a pass emits a page only if the artifact's hash changed
     /// across it (`--folio-after-change`). A no-op pass emits nothing.
     pub after_change_only: bool,
@@ -51,10 +51,10 @@ pub struct FolioDump {
     /// first page unconditionally.
     last_hash: Option<u64>,
     /// The pages emitted so far, in emission order.
-    pub pages: Vec<DumpPage>,
+    pub pages: Vec<Page>,
 }
 
-impl FolioDump {
+impl Collector {
     /// A dump collector; `after_change_only` is the hash gate.
     #[must_use]
     pub const fn new(after_change_only: bool) -> Self {
@@ -82,7 +82,7 @@ impl FolioDump {
             return;
         }
         self.last_hash = Some(hash);
-        self.pages.push(DumpPage {
+        self.pages.push(Page {
             name: cstr!(
                 "{:03}-{}.{}.folio",
                 self.pages.len(),

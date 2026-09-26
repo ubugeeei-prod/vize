@@ -13,12 +13,12 @@ use alloc::vec::Vec;
 use vize_l0::{String, cstr};
 
 use super::{Declaration, Facet, SfcSummary, finish, folio_error, insert, schema};
-use crate::folio::page::{self, LineEvent, ParseState};
-use crate::folio::value::FolioValue;
-use crate::folio::{Folio, FolioError, FolioMode};
+use crate::dump::page::{self, LineEvent, ParseState};
+use crate::dump::value::DumpValue;
+use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
 
-impl Folio for SfcSummary {
-    fn print<W: fmt::Write>(&self, w: &mut W, _mode: FolioMode) -> fmt::Result {
+impl Dump for SfcSummary {
+    fn print<W: fmt::Write>(&self, w: &mut W, _mode: DumpMode) -> fmt::Result {
         writeln!(w, "[sfc-summary]")?;
         writeln!(w, "schema_version={}", schema::SUMMARY)?;
         for facet in Facet::ALL {
@@ -31,7 +31,7 @@ impl Folio for SfcSummary {
         Ok(())
     }
 
-    fn parse(input: &str) -> Result<Self, FolioError> {
+    fn parse(input: &str) -> Result<Self, DumpError> {
         parse_summary(input)
     }
 }
@@ -64,7 +64,7 @@ fn write_entry<W: fmt::Write>(w: &mut W, row: &Declaration) -> fmt::Result {
     writeln!(w, "{}={}", row.name, row.contract)
 }
 
-fn parse_summary(input: &str) -> Result<SfcSummary, FolioError> {
+fn parse_summary(input: &str) -> Result<SfcSummary, DumpError> {
     let mut state = ParseState::new("sfc-summary");
     let mut seen_schema = 0u8;
     let mut signature_name: Option<String> = None;
@@ -84,7 +84,7 @@ fn parse_summary(input: &str) -> Result<SfcSummary, FolioError> {
             }
             LineEvent::Entry(index) => {
                 let Some(facet) = Facet::ALL.get(index).copied() else {
-                    return Err(FolioError::new(line_no, cstr!("unknown section index")));
+                    return Err(DumpError::new(line_no, cstr!("unknown section index")));
                 };
                 if facet == Facet::Signature {
                     signature_field(line, line_no, &mut signature_name, &mut signature_params)?;
@@ -109,7 +109,7 @@ fn parse_summary(input: &str) -> Result<SfcSummary, FolioError> {
     Ok(finish(declarations))
 }
 
-fn header_field(line: &str, line_no: usize, seen: &mut u8) -> Result<(), FolioError> {
+fn header_field(line: &str, line_no: usize, seen: &mut u8) -> Result<(), DumpError> {
     let (name, value) = page::split_field(line, line_no)?;
     let (bit, expected) = if name == "schema_version" {
         (0u8, schema::SUMMARY)
@@ -120,11 +120,11 @@ fn header_field(line: &str, line_no: usize, seen: &mut u8) -> Result<(), FolioEr
     };
     let mask = 1u8 << bit;
     if *seen & mask != 0 {
-        return Err(FolioError::new(line_no, cstr!("duplicate field `{name}`")));
+        return Err(DumpError::new(line_no, cstr!("duplicate field `{name}`")));
     }
     let parsed = u16::parse_value(value, line_no)?;
     if parsed != expected {
-        return Err(FolioError::new(
+        return Err(DumpError::new(
             line_no,
             cstr!("expected `{name}={expected}`, found `{line}`"),
         ));
@@ -133,13 +133,13 @@ fn header_field(line: &str, line_no: usize, seen: &mut u8) -> Result<(), FolioEr
     Ok(())
 }
 
-fn require_schemas(seen: u8) -> Result<(), FolioError> {
+fn require_schemas(seen: u8) -> Result<(), DumpError> {
     if seen & 1 == 0 {
-        return Err(FolioError::new(0, cstr!("missing field `schema_version`")));
+        return Err(DumpError::new(0, cstr!("missing field `schema_version`")));
     }
     for facet in Facet::ALL {
         if seen & (1u8 << (facet as u8 + 1)) == 0 {
-            return Err(FolioError::new(
+            return Err(DumpError::new(
                 0,
                 cstr!("missing field `{}`", facet.group()),
             ));
@@ -153,7 +153,7 @@ fn signature_field(
     line_no: usize,
     name_slot: &mut Option<String>,
     params_slot: &mut Option<String>,
-) -> Result<(), FolioError> {
+) -> Result<(), DumpError> {
     let (key, value) = page::split_field(line, line_no)?;
     match key {
         "name" => {

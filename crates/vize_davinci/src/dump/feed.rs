@@ -10,9 +10,9 @@
 //! the strict TS-15 subset validator - one producer here, one validator in
 //! the tree.
 //!
-//! # Relation to [`FolioDump`] (build on, not duplicate)
+//! # Relation to [`Collector`] (build on, not duplicate)
 //!
-//! P2-13's `FolioDump` already collects everything the feed carries: which
+//! P2-13's `Collector` already collects everything the feed carries: which
 //! passes emitted a page, in what order, with what canonical text, under the
 //! `--folio-after-change` hash gate. The feed is a *serialization* of that
 //! collection - [`StageFeed::of_dump`] copies the dump's pages verbatim
@@ -31,8 +31,8 @@ use core::fmt::Write as _;
 
 use vize_l0::String;
 
-use crate::folio::dump::FolioDump;
-use crate::folio::remarks::push_remark_fields;
+use crate::dump::collector::Collector;
+use crate::dump::remarks::push_remark_fields;
 use crate::pass::observer::RecordedRemark;
 
 /// The feed format version. Incompatible shape changes bump this **and**
@@ -119,11 +119,11 @@ impl StageFeed {
         }
     }
 
-    /// The feed of a [`FolioDump`]: the dump's pages, verbatim and in
+    /// The feed of a [`Collector`]: the dump's pages, verbatim and in
     /// emission order. An empty (fully hash-gated) dump becomes a feed
     /// with zero pages - "the gate emitted nothing" stays observable.
     #[must_use]
-    pub fn of_dump(command: &str, dump: &FolioDump) -> Self {
+    pub fn of_dump(command: &str, dump: &Collector) -> Self {
         Self {
             command: String::from(command),
             pages: dump

@@ -6,17 +6,16 @@
 
 use core::fmt::{Result, Write};
 
-use super::super::owned::{
-    FolioAttribute, FolioBind, FolioBinding, FolioOn, FolioSlotContent, FolioVueCloak,
-    FolioVueCssBind, FolioVueDirective, FolioVueHtml, FolioVueMemo, FolioVueOnce, FolioVueShow,
-    FolioVueSlotScope, FolioVueSync, FolioVueText,
-};
 use super::{Style, end_line, indent, print_expr, print_name, quoted};
+use crate::dump::owned::{
+    Attribute, Bind, Binding, On, SlotContent, VueCloak, VueCssBind, VueDirective, VueHtml,
+    VueMemo, VueOnce, VueShow, VueSlotScope, VueSync, VueText,
+};
 use vize_l0::String;
 
 pub(super) fn print_attribute<W: Write>(
     w: &mut W,
-    attribute: &FolioAttribute,
+    attribute: &Attribute,
     depth: usize,
     mode: Style,
 ) -> Result {
@@ -31,14 +30,14 @@ pub(super) fn print_attribute<W: Write>(
 
 pub(super) fn print_binding<W: Write>(
     w: &mut W,
-    binding: &FolioBinding,
+    binding: &Binding,
     depth: usize,
     mode: Style,
 ) -> Result {
     match binding {
-        FolioBinding::Bind(bind) => print_bind(w, bind, depth, mode),
-        FolioBinding::On(on) => print_on(w, on, depth, mode),
-        FolioBinding::Model(model) => {
+        Binding::Bind(bind) => print_bind(w, bind, depth, mode),
+        Binding::On(on) => print_on(w, on, depth, mode),
+        Binding::Model(model) => {
             indent(w, depth)?;
             w.write_str("ui.model")?;
             if let Some(argument) = &model.argument {
@@ -55,17 +54,17 @@ pub(super) fn print_binding<W: Write>(
             }
             Ok(())
         }
-        FolioBinding::SlotContent(content) => print_slot_content(w, content, depth, mode),
-        FolioBinding::VueDirective(directive) => print_directive(w, directive, depth, mode),
-        FolioBinding::VueCssBind(bind) => print_css_bind(w, bind, depth, mode),
-        FolioBinding::VueSync(sync) => print_sync(w, sync, depth, mode),
-        FolioBinding::VueSlotScope(scope) => print_slot_scope(w, scope, depth, mode),
-        FolioBinding::VueOnce(once) => print_once(w, once, depth, mode),
-        FolioBinding::VueMemo(memo) => print_memo(w, memo, depth, mode),
-        FolioBinding::VueShow(show) => print_show(w, show, depth, mode),
-        FolioBinding::VueHtml(html) => print_html(w, html, depth, mode),
-        FolioBinding::VueText(text) => print_vue_text(w, text, depth, mode),
-        FolioBinding::VueCloak(cloak) => print_cloak(w, cloak, depth, mode),
+        Binding::SlotContent(content) => print_slot_content(w, content, depth, mode),
+        Binding::VueDirective(directive) => print_directive(w, directive, depth, mode),
+        Binding::VueCssBind(bind) => print_css_bind(w, bind, depth, mode),
+        Binding::VueSync(sync) => print_sync(w, sync, depth, mode),
+        Binding::VueSlotScope(scope) => print_slot_scope(w, scope, depth, mode),
+        Binding::VueOnce(once) => print_once(w, once, depth, mode),
+        Binding::VueMemo(memo) => print_memo(w, memo, depth, mode),
+        Binding::VueShow(show) => print_show(w, show, depth, mode),
+        Binding::VueHtml(html) => print_html(w, html, depth, mode),
+        Binding::VueText(text) => print_vue_text(w, text, depth, mode),
+        Binding::VueCloak(cloak) => print_cloak(w, cloak, depth, mode),
     }
 }
 
@@ -96,7 +95,7 @@ fn print_mods<W: Write>(w: &mut W, modifiers: &[String]) -> Result {
     w.write_char(']')
 }
 
-fn print_bind<W: Write>(w: &mut W, bind: &FolioBind, depth: usize, mode: Style) -> Result {
+fn print_bind<W: Write>(w: &mut W, bind: &Bind, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("ui.bind")?;
     if let Some(name) = &bind.name {
@@ -111,7 +110,7 @@ fn print_bind<W: Write>(w: &mut W, bind: &FolioBind, depth: usize, mode: Style) 
     end_line(w, bind.span, mode)
 }
 
-fn print_on<W: Write>(w: &mut W, on: &FolioOn, depth: usize, mode: Style) -> Result {
+fn print_on<W: Write>(w: &mut W, on: &On, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("ui.on")?;
     if let Some(name) = &on.name {
@@ -128,7 +127,7 @@ fn print_on<W: Write>(w: &mut W, on: &FolioOn, depth: usize, mode: Style) -> Res
 
 fn print_slot_content<W: Write>(
     w: &mut W,
-    content: &FolioSlotContent,
+    content: &SlotContent,
     depth: usize,
     mode: Style,
 ) -> Result {
@@ -148,7 +147,7 @@ fn print_slot_content<W: Write>(
 
 fn print_directive<W: Write>(
     w: &mut W,
-    directive: &FolioVueDirective,
+    directive: &VueDirective,
     depth: usize,
     mode: Style,
 ) -> Result {
@@ -167,19 +166,14 @@ fn print_directive<W: Write>(
     end_line(w, directive.span, mode)
 }
 
-fn print_css_bind<W: Write>(
-    w: &mut W,
-    bind: &FolioVueCssBind,
-    depth: usize,
-    mode: Style,
-) -> Result {
+fn print_css_bind<W: Write>(w: &mut W, bind: &VueCssBind, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.css-bind value=")?;
     print_expr(w, &bind.value, mode)?;
     end_line(w, bind.span, mode)
 }
 
-fn print_sync<W: Write>(w: &mut W, sync: &FolioVueSync, depth: usize, mode: Style) -> Result {
+fn print_sync<W: Write>(w: &mut W, sync: &VueSync, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.sync name=")?;
     quoted(w, sync.name.as_str())?;
@@ -191,7 +185,7 @@ fn print_sync<W: Write>(w: &mut W, sync: &FolioVueSync, depth: usize, mode: Styl
 
 fn print_slot_scope<W: Write>(
     w: &mut W,
-    scope: &FolioVueSlotScope,
+    scope: &VueSlotScope,
     depth: usize,
     mode: Style,
 ) -> Result {
@@ -208,27 +202,27 @@ fn print_slot_scope<W: Write>(
     end_line(w, scope.span, mode)
 }
 
-fn print_once<W: Write>(w: &mut W, once: &FolioVueOnce, depth: usize, mode: Style) -> Result {
+fn print_once<W: Write>(w: &mut W, once: &VueOnce, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.once")?;
     end_line(w, once.span, mode)
 }
 
-fn print_memo<W: Write>(w: &mut W, memo: &FolioVueMemo, depth: usize, mode: Style) -> Result {
+fn print_memo<W: Write>(w: &mut W, memo: &VueMemo, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.memo value=")?;
     print_expr(w, &memo.value, mode)?;
     end_line(w, memo.span, mode)
 }
 
-fn print_show<W: Write>(w: &mut W, show: &FolioVueShow, depth: usize, mode: Style) -> Result {
+fn print_show<W: Write>(w: &mut W, show: &VueShow, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.show value=")?;
     print_expr(w, &show.value, mode)?;
     end_line(w, show.span, mode)
 }
 
-fn print_html<W: Write>(w: &mut W, html: &FolioVueHtml, depth: usize, mode: Style) -> Result {
+fn print_html<W: Write>(w: &mut W, html: &VueHtml, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.html")?;
     if let Some(value) = &html.value {
@@ -238,7 +232,7 @@ fn print_html<W: Write>(w: &mut W, html: &FolioVueHtml, depth: usize, mode: Styl
     end_line(w, html.span, mode)
 }
 
-fn print_vue_text<W: Write>(w: &mut W, text: &FolioVueText, depth: usize, mode: Style) -> Result {
+fn print_vue_text<W: Write>(w: &mut W, text: &VueText, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.text")?;
     if let Some(value) = &text.value {
@@ -248,7 +242,7 @@ fn print_vue_text<W: Write>(w: &mut W, text: &FolioVueText, depth: usize, mode: 
     end_line(w, text.span, mode)
 }
 
-fn print_cloak<W: Write>(w: &mut W, cloak: &FolioVueCloak, depth: usize, mode: Style) -> Result {
+fn print_cloak<W: Write>(w: &mut W, cloak: &VueCloak, depth: usize, mode: Style) -> Result {
     indent(w, depth)?;
     w.write_str("vue.cloak")?;
     end_line(w, cloak.span, mode)

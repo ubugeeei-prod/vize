@@ -2,11 +2,11 @@
 //!
 //! The folio parser accepts the same attached-binding group for elements,
 //! components, and slot outlets. `ui.model` used the same admission path as
-//! leaf bindings but did not close back into `FolioSlot::bindings`, so malformed
+//! leaf bindings but did not close back into `DumpSlot::bindings`, so malformed
 //! fuzz input could panic when indentation closed a slot-owned model frame.
 
-use vize_davinci::folio::{Folio, FolioMode};
-use vize_l2::folio::DisegnoFolio;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
+use vize_l2::dump::Page as L2Page;
 
 const SLOT_MODEL: &str = "\
 [disegno]
@@ -21,6 +21,6 @@ ui.slot name=\"head\" @21:40
 
 #[test]
 fn slot_owned_model_bindings_round_trip_without_panicking() {
-    let parsed = DisegnoFolio::parse(SLOT_MODEL).expect("slot-owned model binding parses");
-    assert_eq!(parsed.print_to_string(FolioMode::Full), SLOT_MODEL);
+    let parsed = L2Page::parse(SLOT_MODEL).expect("slot-owned model binding parses");
+    assert_eq!(parsed.print_to_string(DumpMode::Full), SLOT_MODEL);
 }

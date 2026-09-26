@@ -1,11 +1,11 @@
 //! Fixture groups with α forms over a word list: a keyed number table, a
 //! keyed text table and a single scalar.
 
+use vize_davinci::dump::Dump;
 use vize_davinci::fact::{
     AlphaExport, Demand, FactConsumer, FactGroup, FactProducer, FactRegistry, FactTable, FactView,
     ProducerEntry,
 };
-use vize_davinci::folio::Folio;
 use vize_davinci::pass::AnalysisId;
 use vize_l0::{FxHashMap, String};
 
@@ -29,7 +29,7 @@ impl FactProducer<Words> for Lengths {
 }
 
 /// The α page of `lengths`: word index → length.
-#[derive(Debug, Default, PartialEq, Folio)]
+#[derive(Debug, Default, PartialEq, Dump)]
 pub struct LengthsAlpha {
     pub lengths: FxHashMap<u32, u32>,
 }
@@ -65,7 +65,7 @@ impl FactProducer<Words> for Words2 {
 }
 
 /// The α page of `words`: word index → the word.
-#[derive(Debug, Default, PartialEq, Folio)]
+#[derive(Debug, Default, PartialEq, Dump)]
 pub struct WordsAlpha {
     pub words: FxHashMap<u32, String>,
 }
@@ -104,7 +104,7 @@ impl FactProducer<Words> for Longest {
 }
 
 /// The α page of `longest`: the index of the longest word, when any.
-#[derive(Debug, Default, PartialEq, Folio)]
+#[derive(Debug, Default, PartialEq, Dump)]
 pub struct LongestAlpha {
     pub present: bool,
     pub index: u32,

@@ -9,11 +9,11 @@
 mod groups;
 
 use groups::{Lengths, Longest, REGISTRY, Summary, Words, Words2};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_davinci::fact::{
     ALPHA_GROUPS, AlphaDesc, AlphaDocError, AlphaDocument, AlphaExport, FactGroup, FactManager,
     FactTable, check_alpha_schema_doc, ids,
 };
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
 use vize_davinci::pass::AnalysisId;
 use vize_l0::String;
 
@@ -25,9 +25,9 @@ const ARTIFACTS: [&Words; 3] = [&["alpha", "be", "gamma", "δelta"], &["one"], &
 /// the page text survives byte-for-byte.
 fn round_trip<G: AlphaExport>(table: &FactTable<G>) -> String {
     let document = AlphaDocument::<G>::export(table);
-    let text = document.print_to_string(FolioMode::Full);
+    let text = document.print_to_string(DumpMode::Full);
     let parsed = AlphaDocument::<G>::parse(&text).expect("canonical α text parses");
-    assert_eq!(parsed.print_to_string(FolioMode::Full), text);
+    assert_eq!(parsed.print_to_string(DumpMode::Full), text);
     assert!(parsed == document, "parse(print(v)) == v for {}", G::NAME);
     let imported = parsed.import();
     assert!(&imported == table, "import(export(t)) == t for {}", G::NAME);
@@ -70,7 +70,7 @@ fn a_page_under_another_version_or_group_is_refused_exactly() {
     let text = "[fact-alpha]\ngroup=words\nschema_version=2\n\n[words-alpha]\n\n";
     assert_eq!(
         AlphaDocument::<Words2>::parse(text).map(|_| ()),
-        Err(FolioError::new(
+        Err(DumpError::new(
             3,
             String::from("expected `schema_version=3`, found `schema_version=2`")
         ))
@@ -78,14 +78,14 @@ fn a_page_under_another_version_or_group_is_refused_exactly() {
     let text = "[fact-alpha]\ngroup=lengths\nschema_version=3\n\n[words-alpha]\n\n";
     assert_eq!(
         AlphaDocument::<Words2>::parse(text).map(|_| ()),
-        Err(FolioError::new(
+        Err(DumpError::new(
             2,
             String::from("expected `group=words`, found `group=lengths`")
         ))
     );
     assert_eq!(
         AlphaDocument::<Words2>::parse("[fact-alpha]\n").map(|_| ()),
-        Err(FolioError::new(
+        Err(DumpError::new(
             2,
             String::from("expected `group=words`, found ``")
         ))
@@ -97,7 +97,7 @@ fn a_body_error_is_reported_at_its_document_line() {
     let text = "[fact-alpha]\ngroup=longest\nschema_version=1\n\n[longest-alpha]\npresent=maybe\n";
     assert_eq!(
         AlphaDocument::<Longest>::parse(text).map(|_| ()),
-        Err(FolioError::new(6, String::from("invalid bool `maybe`")))
+        Err(DumpError::new(6, String::from("invalid bool `maybe`")))
     );
 }
 

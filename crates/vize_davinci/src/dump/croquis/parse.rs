@@ -3,7 +3,7 @@
 //! Accepts canonical output byte-for-byte and is lenient exactly where the
 //! printer normalizes: section order, blank-line placement, unsorted name
 //! lists, and non-sequential scope ids. Everything else is strict - a line
-//! that does not match its section's grammar is a [`FolioError`] with a
+//! that does not match its section's grammar is a [`DumpError`] with a
 //! 1-based line number.
 //!
 //! The format is line-oriented, but source-derived fields can embed
@@ -17,8 +17,8 @@ use alloc::vec::Vec;
 
 use vize_l0::{FxHashSet, String, cstr};
 
-use super::{CroquisFolio, SurfaceEntry};
-use crate::folio::FolioError;
+use crate::dump::Error as DumpError;
+use crate::dump::croquis::{Page, SurfaceEntry};
 
 mod entry;
 
@@ -75,7 +75,7 @@ impl Section {
 }
 
 struct Parser {
-    folio: CroquisFolio,
+    folio: Page,
     current: Option<Section>,
     seen: u16,
     /// Bits: 1 = script_setup, 2 = scopes, 4 = bindings.
@@ -86,9 +86,9 @@ struct Parser {
     verbatim: Vec<String>,
 }
 
-pub(super) fn parse(input: &str) -> Result<CroquisFolio, FolioError> {
+pub(super) fn parse(input: &str) -> Result<Page, DumpError> {
     let mut parser = Parser {
-        folio: CroquisFolio::default(),
+        folio: Page::default(),
         current: None,
         seen: 0,
         header_seen: 0,
@@ -103,7 +103,7 @@ pub(super) fn parse(input: &str) -> Result<CroquisFolio, FolioError> {
 }
 
 impl Parser {
-    fn line(&mut self, line: &str, line_no: usize) -> Result<(), FolioError> {
+    fn line(&mut self, line: &str, line_no: usize) -> Result<(), DumpError> {
         if let Some(name) = line.strip_prefix('[').and_then(|r| r.strip_suffix(']'))
             && let Some(section) = Section::from_name(name)
         {
@@ -131,7 +131,7 @@ impl Parser {
         }
     }
 
-    fn enter(&mut self, section: Section, name: &str, line_no: usize) -> Result<(), FolioError> {
+    fn enter(&mut self, section: Section, name: &str, line_no: usize) -> Result<(), DumpError> {
         self.flush()?;
         if self.seen == 0 && section != Section::Vir {
             return Err(err(line_no, cstr!("first section must be [vir]")));
@@ -144,7 +144,7 @@ impl Parser {
         Ok(())
     }
 
-    fn macro_line(&mut self, line: &str, line_no: usize) -> Result<(), FolioError> {
+    fn macro_line(&mut self, line: &str, line_no: usize) -> Result<(), DumpError> {
         match self.pending_macro.take() {
             None => {
                 if line.is_empty() {
@@ -171,7 +171,7 @@ impl Parser {
         Ok(())
     }
 
-    fn entry_line(&mut self, section: Section, line: &str, no: usize) -> Result<(), FolioError> {
+    fn entry_line(&mut self, section: Section, line: &str, no: usize) -> Result<(), DumpError> {
         let folio = &mut self.folio;
         match section {
             Section::Vir => return entry::parse_header(line, no, folio, &mut self.header_seen),
@@ -201,7 +201,7 @@ impl Parser {
     /// Close the active section: reject an unterminated `[macros]` entry
     /// and move the verbatim buffer (minus its trailing-blank separator)
     /// into the folio.
-    fn flush(&mut self) -> Result<(), FolioError> {
+    fn flush(&mut self) -> Result<(), DumpError> {
         if let Some((_, start_line)) = self.pending_macro.take() {
             return Err(err(start_line, cstr!("macro line is missing a span")));
         }
@@ -236,7 +236,7 @@ impl Parser {
         Ok(())
     }
 
-    fn finish(mut self) -> Result<CroquisFolio, FolioError> {
+    fn finish(mut self) -> Result<Page, DumpError> {
         self.flush()?;
         if self.seen & Section::Vir.bit() == 0 {
             return Err(err(0, cstr!("missing [vir] header")));
@@ -251,7 +251,7 @@ impl Parser {
 
 /// Scope entry ids must be unique and every parent reference must resolve
 /// to an entry.
-fn validate_scopes(folio: &CroquisFolio) -> Result<(), FolioError> {
+fn validate_scopes(folio: &Page) -> Result<(), DumpError> {
     let mut ids: FxHashSet<(char, u64)> = FxHashSet::default();
     for scope in &folio.scopes {
         if !ids.insert((scope.id.prefix, scope.id.index)) {

@@ -9,8 +9,8 @@
 use std::path::Path;
 
 use davinci_test_support::schema as schema_check;
-use vize_davinci::folio::remarks::{RemarkLog, RemarksSchemaMismatch};
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::remarks::{RemarkLog, RemarksSchemaMismatch};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_davinci::pass::RemarkKind;
 use vize_davinci::pass::observer::{RecordedArg, RecordedRemark, RemarkArgValue};
 use vize_l0::{Span, String};
@@ -73,12 +73,12 @@ s3.partition analysis region-size @7:7 ops=-3 static=false label=\"a \\\"b\\\" c
 #[test]
 fn the_page_prints_canonically_and_round_trips() {
     let log = sample();
-    let printed = log.print_to_string(FolioMode::Full);
+    let printed = log.print_to_string(DumpMode::Full);
     assert_eq!(printed.as_str(), SAMPLE_FULL);
     assert_eq!(RemarkLog::parse(SAMPLE_FULL), Ok(log));
     let reparsed = RemarkLog::parse(SAMPLE_FULL).expect("canonical text parses");
     assert_eq!(
-        reparsed.print_to_string(FolioMode::Full).as_str(),
+        reparsed.print_to_string(DumpMode::Full).as_str(),
         SAMPLE_FULL
     );
 }
@@ -87,7 +87,7 @@ fn the_page_prints_canonically_and_round_trips() {
 fn an_empty_log_is_the_bare_header() {
     let empty = RemarkLog::default();
     assert_eq!(
-        empty.print_to_string(FolioMode::Full).as_str(),
+        empty.print_to_string(DumpMode::Full).as_str(),
         "[remarks]\n\n"
     );
     assert_eq!(RemarkLog::parse("[remarks]\n\n"), Ok(empty));
@@ -96,7 +96,7 @@ fn an_empty_log_is_the_bare_header() {
 #[test]
 fn display_elides_spans_only() {
     assert_eq!(
-        sample().print_to_string(FolioMode::Display).as_str(),
+        sample().print_to_string(DumpMode::Display).as_str(),
         "[remarks]\n\n[remarks.entries]\n\
          s2.hoist-static missed static-subtree tag=\"section\" blocker=\"child\" op=\"ui.component\"\n\
          s2.hoist-static applied static-props tag=\"section\"\n\
@@ -109,12 +109,12 @@ fn a_unicode_escape_normalizes_on_the_first_print() {
     let input = "[remarks]\n\n[remarks.entries]\ns2.p applied n @1:2 k=\"\\u0041\\u3042\"\n\n";
     let log = RemarkLog::parse(input).expect("escaped text parses");
     assert_eq!(
-        log.print_to_string(FolioMode::Full).as_str(),
+        log.print_to_string(DumpMode::Full).as_str(),
         "[remarks]\n\n[remarks.entries]\ns2.p applied n @1:2 k=\"A\u{3042}\"\n\n"
     );
 }
 
-fn reject(entry: &str) -> FolioError {
+fn reject(entry: &str) -> DumpError {
     let input = vize_l0::cstr!("[remarks]\n\n[remarks.entries]\n{entry}\n");
     RemarkLog::parse(input.as_str()).expect_err("malformed entry must fail")
 }
@@ -179,24 +179,24 @@ fn every_malformed_entry_is_rejected_with_its_line_and_reason() {
     for (entry, message) in cases {
         assert_eq!(
             reject(entry),
-            FolioError::new(4, String::from(message)),
+            DumpError::new(4, String::from(message)),
             "{entry}"
         );
     }
     assert_eq!(
         RemarkLog::parse("[remarks]\ncount=1\n"),
-        Err(FolioError::new(2, String::from("unknown field `count`")))
+        Err(DumpError::new(2, String::from("unknown field `count`")))
     );
     assert_eq!(
         RemarkLog::parse("[remarks]\n\n[remarks.notes]\n"),
-        Err(FolioError::new(
+        Err(DumpError::new(
             3,
             String::from("unknown section [remarks.notes]")
         ))
     );
     assert_eq!(
         RemarkLog::parse(""),
-        Err(FolioError::new(0, String::from("missing [remarks] header")))
+        Err(DumpError::new(0, String::from("missing [remarks] header")))
     );
 }
 

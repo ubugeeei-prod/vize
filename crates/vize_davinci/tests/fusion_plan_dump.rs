@@ -6,8 +6,8 @@
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::folio::plan::{FolioPlanPass, FusionPlanFolio};
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::plan::{Page as PlanPage, Pass as PlanPass};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_davinci::pass::{
     BudgetObserver, Fusability, PassDesc, PassEvent, PassKind, PassObserver, Pipeline, Preserved,
     run_pipeline,
@@ -55,12 +55,12 @@ walk=2 pass=sweep kind=optional fusability=fusable
 
 #[test]
 fn the_plan_of_a_pipeline_prints_exactly() {
-    let folio = FusionPlanFolio::of(&PLAN);
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    let folio = PlanPage::of(&PLAN);
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     // A derived page prints the same canonical text in both modes.
     assert_eq!(
-        folio.print_to_string(FolioMode::Display),
-        folio.print_to_string(FolioMode::Full)
+        folio.print_to_string(DumpMode::Display),
+        folio.print_to_string(DumpMode::Full)
     );
 }
 
@@ -84,7 +84,7 @@ fn the_page_names_the_walks_the_pass_manager_runs() {
     let mut budget = BudgetObserver::new();
     run_pipeline(&PLAN, &mut budget, |_| Ok(())).expect("no-op bodies cannot fail");
 
-    let folio = FusionPlanFolio::of(&PLAN);
+    let folio = PlanPage::of(&PLAN);
     let paged: Vec<(u32, &str)> = folio
         .passes
         .iter()
@@ -102,35 +102,35 @@ fn the_page_names_the_walks_the_pass_manager_runs() {
 
 #[test]
 fn an_empty_plan_costs_no_walk() {
-    let folio = FusionPlanFolio::of(&Pipeline::new("s2", &[]));
+    let folio = PlanPage::of(&Pipeline::new("s2", &[]));
     assert_eq!(
-        folio.print_to_string(FolioMode::Full).as_str(),
+        folio.print_to_string(DumpMode::Full).as_str(),
         "[fusion-plan-folio]\nstage=s2\nwalks=0\n\n"
     );
     assert_eq!(
-        FusionPlanFolio::parse("[fusion-plan-folio]\nstage=s2\nwalks=0\n\n"),
+        PlanPage::parse("[fusion-plan-folio]\nstage=s2\nwalks=0\n\n"),
         Ok(folio)
     );
 }
 
 #[test]
 fn full_print_is_identity_on_canonical_text_and_values_round_trip() {
-    let parsed = FusionPlanFolio::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(parsed.print_to_string(FolioMode::Full).as_str(), CANONICAL);
-    assert_eq!(parsed, FusionPlanFolio::of(&PLAN));
+    let parsed = PlanPage::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(parsed.print_to_string(DumpMode::Full).as_str(), CANONICAL);
+    assert_eq!(parsed, PlanPage::of(&PLAN));
 
-    let value = FusionPlanFolio {
+    let value = PlanPage {
         stage: String::from("s2-to-s3"),
         walks: 1,
-        passes: vec![FolioPlanPass {
+        passes: vec![PlanPass {
             walk: 0,
             pass: String::from("lower"),
             kind: PassKind::MandatoryLowering,
             fusability: Fusability::Barrier,
         }],
     };
-    let printed = value.print_to_string(FolioMode::Full);
-    assert_eq!(FusionPlanFolio::parse(printed.as_str()), Ok(value));
+    let printed = value.print_to_string(DumpMode::Full);
+    assert_eq!(PlanPage::parse(printed.as_str()), Ok(value));
 }
 
 #[test]
@@ -138,33 +138,33 @@ fn malformed_records_are_refused_with_their_line() {
     let page = |record: &str| {
         cstr!("[fusion-plan-folio]\nstage=s2\nwalks=1\n\n[fusion-plan-folio.passes]\n{record}\n\n")
     };
-    let refused = |record: &str| FusionPlanFolio::parse(page(record).as_str()).unwrap_err();
+    let refused = |record: &str| PlanPage::parse(page(record).as_str()).unwrap_err();
     assert_eq!(
         refused("walk=x pass=a kind=optional fusability=fusable"),
-        FolioError::new(6, cstr!("invalid `walk` integer `x`"))
+        DumpError::new(6, cstr!("invalid `walk` integer `x`"))
     );
     assert_eq!(
         refused("walk=0 pass= kind=optional fusability=fusable"),
-        FolioError::new(6, cstr!("empty pass name"))
+        DumpError::new(6, cstr!("empty pass name"))
     );
     assert_eq!(
         refused("walk=0 pass=a kind=fast fusability=fusable"),
-        FolioError::new(6, cstr!("unknown pass kind `fast`"))
+        DumpError::new(6, cstr!("unknown pass kind `fast`"))
     );
     assert_eq!(
         refused("walk=0 pass=a kind=optional fusability=fused"),
-        FolioError::new(6, cstr!("unknown fusability `fused`"))
+        DumpError::new(6, cstr!("unknown fusability `fused`"))
     );
     assert_eq!(
         refused("walk=0 pass=a kind=optional"),
-        FolioError::new(6, cstr!("missing `fusability` field"))
+        DumpError::new(6, cstr!("missing `fusability` field"))
     );
     assert_eq!(
         refused("walk=0 name=a kind=optional fusability=fusable"),
-        FolioError::new(6, cstr!("expected `pass=...`, got `name=a`"))
+        DumpError::new(6, cstr!("expected `pass=...`, got `name=a`"))
     );
     assert_eq!(
         refused("walk=0 pass=a kind=optional fusability=fusable x=1"),
-        FolioError::new(6, cstr!("unexpected field `x=1`"))
+        DumpError::new(6, cstr!("unexpected field `x=1`"))
     );
 }

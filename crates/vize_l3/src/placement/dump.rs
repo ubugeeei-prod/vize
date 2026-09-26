@@ -1,4 +1,4 @@
-//! The placement page paired with the graph-only `L3Folio`.
+//! The placement page paired with the graph-only `L3Page`.
 //!
 //! The graph page keeps the grammar the Lean reference parses; placements are
 //! an overlay, so they print on their own derived page. Parsing checks syntax
@@ -8,21 +8,21 @@ use alloc::vec::Vec;
 use core::fmt;
 use core::str::SplitWhitespace;
 
-use vize_davinci::folio::value::FolioValue;
-use vize_davinci::folio::{Folio, FolioError};
+use vize_davinci::dump::value::DumpValue;
+use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_l0::cstr;
 
 use super::{Placement, PlacementRecord, PlacementSet};
 use crate::op::{OpId, Program};
 
 /// Placement records in program order.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-#[folio(name = "s3-placement-folio")]
-pub struct L3PlacementFolio {
-    pub placements: Vec<FolioPlacement>,
+#[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
+#[dump(name = "s3-placement-folio")]
+pub struct Page {
+    pub placements: Vec<Record>,
 }
 
-impl L3PlacementFolio {
+impl Page {
     /// Mirror the live placement overlay into the owned document model.
     #[must_use]
     pub fn of(program: &Program<'_>) -> Self {
@@ -30,7 +30,7 @@ impl L3PlacementFolio {
             placements: program
                 .placements
                 .iter()
-                .map(|record| FolioPlacement(*record))
+                .map(|record| Record(*record))
                 .collect(),
         }
     }
@@ -38,9 +38,9 @@ impl L3PlacementFolio {
 
 /// One placement row: `op=<n> alternatives=<list> leader=<n|-> chosen=<p>`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct FolioPlacement(pub PlacementRecord);
+pub struct Record(pub PlacementRecord);
 
-impl FolioValue for FolioPlacement {
+impl DumpValue for Record {
     fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
         let record = self.0;
         write!(
@@ -56,7 +56,7 @@ impl FolioValue for FolioPlacement {
         write!(w, " chosen={}", record.chosen)
     }
 
-    fn parse_value(text: &str, line: usize) -> Result<Self, FolioError> {
+    fn parse_value(text: &str, line: usize) -> Result<Self, DumpError> {
         let mut fields = text.split_whitespace();
         let op = parse_u32(field(&mut fields, "op", line)?, "op", line)?;
         let alternatives = parse_set(field(&mut fields, "alternatives", line)?, line)?;
@@ -66,7 +66,7 @@ impl FolioValue for FolioPlacement {
         };
         let chosen = parse_placement(field(&mut fields, "chosen", line)?, line)?;
         if let Some(extra) = fields.next() {
-            return Err(FolioError::new(line, cstr!("unexpected field `{extra}`")));
+            return Err(DumpError::new(line, cstr!("unexpected field `{extra}`")));
         }
         Ok(Self(PlacementRecord {
             op: OpId::new(op),
@@ -81,27 +81,27 @@ pub(crate) fn field<'a>(
     fields: &mut SplitWhitespace<'a>,
     name: &str,
     line: usize,
-) -> Result<&'a str, FolioError> {
+) -> Result<&'a str, DumpError> {
     let Some(raw) = fields.next() else {
-        return Err(FolioError::new(line, cstr!("missing `{name}` field")));
+        return Err(DumpError::new(line, cstr!("missing `{name}` field")));
     };
     raw.strip_prefix(name)
         .and_then(|rest| rest.strip_prefix('='))
-        .ok_or_else(|| FolioError::new(line, cstr!("expected `{name}=...`, got `{raw}`")))
+        .ok_or_else(|| DumpError::new(line, cstr!("expected `{name}=...`, got `{raw}`")))
 }
 
-pub(crate) fn parse_u32(text: &str, name: &str, line: usize) -> Result<u32, FolioError> {
+pub(crate) fn parse_u32(text: &str, name: &str, line: usize) -> Result<u32, DumpError> {
     text.parse()
-        .map_err(|_| FolioError::new(line, cstr!("invalid `{name}` integer `{text}`")))
+        .map_err(|_| DumpError::new(line, cstr!("invalid `{name}` integer `{text}`")))
 }
 
-pub(crate) fn parse_placement(text: &str, line: usize) -> Result<Placement, FolioError> {
+pub(crate) fn parse_placement(text: &str, line: usize) -> Result<Placement, DumpError> {
     Placement::from_str(text)
-        .ok_or_else(|| FolioError::new(line, cstr!("unknown placement `{text}`")))
+        .ok_or_else(|| DumpError::new(line, cstr!("unknown placement `{text}`")))
 }
 
 /// `-` or a list in canonical order, so print is injective on parse.
-fn parse_set(text: &str, line: usize) -> Result<PlacementSet, FolioError> {
+fn parse_set(text: &str, line: usize) -> Result<PlacementSet, DumpError> {
     let mut set = PlacementSet::EMPTY;
     if text == "-" {
         return Ok(set);
@@ -110,7 +110,7 @@ fn parse_set(text: &str, line: usize) -> Result<PlacementSet, FolioError> {
     for name in text.split(',') {
         let placement = parse_placement(name, line)?;
         if previous.is_some_and(|previous| previous >= placement) {
-            return Err(FolioError::new(
+            return Err(DumpError::new(
                 line,
                 cstr!("placement alternatives `{text}` are not in canonical order"),
             ));

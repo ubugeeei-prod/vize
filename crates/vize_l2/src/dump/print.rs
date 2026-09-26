@@ -1,4 +1,4 @@
-//! Canonical printer for [`L2Folio`].
+//! Canonical printer for [`Page`].
 //!
 //! `Full` mode is the injective, parseable form; `Display` elides every
 //! ` @start:end` span - line tails and the spans inside expression
@@ -11,10 +11,10 @@ use core::fmt::{Result, Write};
 
 use vize_l0::{Span, ensure_sufficient_stack};
 
-use super::L2Folio;
-use super::owned::{FolioAttribute, FolioBinding, FolioExpr, FolioName, FolioOp};
+use crate::dump::Page;
+use crate::dump::owned::{Attribute, Binding, Expr, Name, Op};
 use crate::op::Namespace;
-use vize_davinci::folio::FolioMode;
+use vize_davinci::dump::Mode as DumpMode;
 use vize_davinci::key::rebase;
 
 mod binding;
@@ -22,30 +22,30 @@ mod binding;
 use binding::{print_attribute, print_binding};
 
 /// How a page prints: the folio mode, plus the offset spans are rebased
-/// to. The public [`Folio`](vize_davinci::folio::Folio) print always uses
+/// to. The public [`Dump`](vize_davinci::dump::Dump) print always uses
 /// base `0` (spans verbatim); only the P5-1a key feed passes a block start.
 #[derive(Debug, Clone, Copy)]
 pub(super) struct Style {
-    mode: FolioMode,
+    mode: DumpMode,
     base: u32,
 }
 
 impl Style {
     /// The folio print: spans verbatim.
-    pub(super) const fn folio(mode: FolioMode) -> Self {
+    pub(super) const fn folio(mode: DumpMode) -> Self {
         Self { mode, base: 0 }
     }
 
     /// The key feed: the `Full` form with spans rebased to `block_start`.
     pub(super) const fn keyed(block_start: u32) -> Self {
         Self {
-            mode: FolioMode::Full,
+            mode: DumpMode::Full,
             base: block_start,
         }
     }
 }
 
-pub(super) fn print<W: Write>(folio: &L2Folio, w: &mut W, mode: Style) -> Result {
+pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: Style) -> Result {
     writeln!(w, "[disegno]")?;
     writeln!(w, "ops={}", folio.op_count())?;
     writeln!(w)?;
@@ -79,7 +79,7 @@ pub(super) fn end_line<W: Write>(w: &mut W, span: Span, mode: Style) -> Result {
 /// well-formed page, and impossible at base `0`) prints absolute as
 /// ` @^start:end`, so the key feed stays injective instead of saturating.
 fn span_tail<W: Write>(w: &mut W, span: Span, mode: Style) -> Result {
-    if mode.mode != FolioMode::Full {
+    if mode.mode != DumpMode::Full {
         return Ok(());
     }
     match rebase(span, mode.base) {
@@ -107,13 +107,13 @@ pub(super) fn quoted<W: Write>(w: &mut W, text: &str) -> Result {
 /// Write one expression payload: `js("…" @s:e)` / `opaque(reason "…" @s:e)`
 /// / `foreign(dialect "…" @s:e)`; `Display` elides the inner span tail
 /// exactly as it elides line tails.
-pub(super) fn print_expr<W: Write>(w: &mut W, expr: &FolioExpr, mode: Style) -> Result {
+pub(super) fn print_expr<W: Write>(w: &mut W, expr: &Expr, mode: Style) -> Result {
     let (head, source, span) = match expr {
-        FolioExpr::Js { source, span } => {
+        Expr::Js { source, span } => {
             w.write_str("js(")?;
             ("", source, span)
         }
-        FolioExpr::Opaque {
+        Expr::Opaque {
             reason,
             source,
             span,
@@ -121,7 +121,7 @@ pub(super) fn print_expr<W: Write>(w: &mut W, expr: &FolioExpr, mode: Style) -> 
             w.write_str("opaque(")?;
             (reason.mnemonic(), source, span)
         }
-        FolioExpr::Foreign {
+        Expr::Foreign {
             dialect,
             source,
             span,
@@ -129,7 +129,7 @@ pub(super) fn print_expr<W: Write>(w: &mut W, expr: &FolioExpr, mode: Style) -> 
             w.write_str("foreign(")?;
             (dialect.as_str(), source, span)
         }
-        FolioExpr::Filter { source, span } => {
+        Expr::Filter { source, span } => {
             w.write_str("vue.filter(")?;
             ("", source, span)
         }
@@ -143,20 +143,20 @@ pub(super) fn print_expr<W: Write>(w: &mut W, expr: &FolioExpr, mode: Style) -> 
     w.write_char(')')
 }
 
-pub(super) fn print_name<W: Write>(w: &mut W, name: &FolioName, mode: Style) -> Result {
+pub(super) fn print_name<W: Write>(w: &mut W, name: &Name, mode: Style) -> Result {
     match name {
-        FolioName::Static(text) => quoted(w, text.as_str()),
-        FolioName::Dynamic(expr) => print_expr(w, expr, mode),
+        Name::Static(text) => quoted(w, text.as_str()),
+        Name::Dynamic(expr) => print_expr(w, expr, mode),
     }
 }
 
-fn print_op<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Style) -> Result {
+fn print_op<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> Result {
     ensure_sufficient_stack(|| print_op_guarded(w, op, depth, mode))
 }
 
-fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Style) -> Result {
+fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> Result {
     match op {
-        FolioOp::Element(element) => {
+        Op::Element(element) => {
             indent(w, depth)?;
             write!(w, "ui.element {}", element.tag)?;
             match element.namespace {
@@ -174,7 +174,7 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Style
                 mode,
             )
         }
-        FolioOp::Component(component) => {
+        Op::Component(component) => {
             indent(w, depth)?;
             write!(w, "ui.component {}", component.name)?;
             end_line(w, component.span, mode)?;
@@ -187,25 +187,25 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Style
                 mode,
             )
         }
-        FolioOp::Text(text) => {
+        Op::Text(text) => {
             indent(w, depth)?;
             w.write_str("ui.text ")?;
             quoted(w, text.content.as_str())?;
             end_line(w, text.span, mode)
         }
-        FolioOp::Interpolation(interpolation) => {
+        Op::Interpolation(interpolation) => {
             indent(w, depth)?;
             w.write_str("ui.interpolation ")?;
             print_expr(w, &interpolation.expression, mode)?;
             end_line(w, interpolation.span, mode)
         }
-        FolioOp::Comment(comment) => {
+        Op::Comment(comment) => {
             indent(w, depth)?;
             w.write_str("ui.comment ")?;
             quoted(w, comment.content.as_str())?;
             end_line(w, comment.span, mode)
         }
-        FolioOp::If(if_op) => {
+        Op::If(if_op) => {
             indent(w, depth)?;
             w.write_str("ui.if")?;
             end_line(w, if_op.span, mode)?;
@@ -223,7 +223,7 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Style
             }
             Ok(())
         }
-        FolioOp::For(for_op) => {
+        Op::For(for_op) => {
             indent(w, depth)?;
             w.write_str("ui.for source=")?;
             print_expr(w, &for_op.binding.source, mode)?;
@@ -243,7 +243,7 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Style
             }
             Ok(())
         }
-        FolioOp::Slot(slot) => {
+        Op::Slot(slot) => {
             indent(w, depth)?;
             w.write_str("ui.slot name=")?;
             print_name(w, &slot.name, mode)?;
@@ -262,9 +262,9 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &FolioOp, depth: usize, mode: Style
 
 fn print_owner_body<W: Write>(
     w: &mut W,
-    attributes: &[FolioAttribute],
-    bindings: &[FolioBinding],
-    children: &[FolioOp],
+    attributes: &[Attribute],
+    bindings: &[Binding],
+    children: &[Op],
     depth: usize,
     mode: Style,
 ) -> Result {

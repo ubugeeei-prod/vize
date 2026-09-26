@@ -161,9 +161,9 @@ pub fn run_transform_with_profile<'a, O: PassObserver>(
 
 /// [`run_transform_with_profile`] with an artifact hook after every pass.
 ///
-/// Observer hooks carry no artifact (`FolioObserver`'s contract: whoever
+/// Observer hooks carry no artifact (`DumpObserver`'s contract: whoever
 /// holds the artifact prints it), so a consumer that pages the L2 tree
-/// per pass - a `FolioDump`, the Spolvero stage ladder - receives each
+/// per pass - a `Collector`, the Spolvero stage ladder - receives each
 /// [`PassEvent`] here together with the post-pass lowering, after the pass
 /// body and (debug builds) the between-pass verifier ran. The hook only
 /// observes: the plan, the pass bodies and the returned facts are those of
@@ -213,7 +213,7 @@ where
         #[cfg(debug_assertions)]
         {
             verify.note(event);
-            let folio = vize_l2::folio::L2Folio::of(&lowered.root.ops);
+            let folio = vize_l2::dump::Page::of(&lowered.root.ops);
             verify.check(event, &folio);
             verify.check_table(event, &folio, &lowered.scopes);
             verify.check_table(event, &folio, &lowered.texts);

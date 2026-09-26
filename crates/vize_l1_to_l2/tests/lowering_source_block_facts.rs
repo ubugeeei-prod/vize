@@ -10,11 +10,11 @@
 mod support;
 
 use support::{Artifact, assert_authored_artifact};
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 use vize_l2::provenance::ProvenanceRecord;
 use vize_l2::scope::{ScopeBinding, ScopeFacts, ScopeOrigin, ScopeTag};
 use vize_l2::verify::{Rigor, Violation, verify, verify_table};
@@ -47,7 +47,7 @@ fn source_block_artifact(source: &str, block_source: &str, block_start: usize) -
         .block(block_source, block_start as u32)
         .expect("block is an exact root slice");
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
 
     assert_authored_artifact(source, &lowered);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
@@ -67,7 +67,7 @@ fn source_block_artifact(source: &str, block_source: &str, block_start: usize) -
     );
 
     Artifact {
-        folio: folio.print_to_string(FolioMode::Full),
+        folio: folio.print_to_string(DumpMode::Full),
         op_count: lowered.op_count,
         diagnostics: lowered.diagnostics.clone(),
         provenance: lowered.provenance.clone(),

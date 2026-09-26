@@ -41,7 +41,7 @@ mod profile;
 
 pub use ladder::{LadderClock, LadderRun, LadderStep, ladder_pages, ladder_run};
 pub use profile::{LADDER_STEP_KEY, LADDER_WALK_KEY, ladder_profile};
-pub use vize_davinci::folio::feed::{StageFeed, StagePage, StageRemark};
+pub use vize_davinci::dump::feed::{StageFeed, StagePage, StageRemark};
 use vize_davinci::pass::RemarkCollector;
 use vize_l0::{Allocator, String, cstr};
 

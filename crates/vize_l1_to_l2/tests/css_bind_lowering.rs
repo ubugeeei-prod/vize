@@ -3,16 +3,18 @@
 
 #![expect(clippy::string_slice, reason = "tests assert by panicking")]
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, SourceFrameError, SourceRoot};
 use vize_l1_to_l2::{lower_style_block, lower_style_block_in};
-use vize_l2::folio::{DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp};
+use vize_l2::dump::{
+    Binding as DumpBinding, Element as DumpElement, Expr as DumpExpr, Op as DumpOp, Page as L2Page,
+};
 use vize_l2::op::Op;
 
-fn folio(css: &str, block_start: u32) -> DisegnoFolio {
+fn folio(css: &str, block_start: u32) -> L2Page {
     let arena = Allocator::default();
     let op = lower_style_block(&arena, css, block_start);
-    DisegnoFolio::of(core::slice::from_ref(&op))
+    L2Page::of(core::slice::from_ref(&op))
 }
 
 #[test]
@@ -21,7 +23,7 @@ fn two_calls_round_trip_on_the_carrier() {
     let value = folio(css, 0);
     assert_eq!(value.op_count(), 3);
     assert_eq!(
-        value.print_to_string(FolioMode::Full).as_str(),
+        value.print_to_string(DumpMode::Full).as_str(),
         "\
 [disegno]
 ops=3
@@ -40,7 +42,7 @@ fn block_start_produces_file_absolute_spans() {
     let css = ".foo { color: v-bind(color); }";
     let shifted = folio(css, 90);
     assert_eq!(
-        shifted.print_to_string(FolioMode::Full).as_str(),
+        shifted.print_to_string(DumpMode::Full).as_str(),
         "\
 [disegno]
 ops=2
@@ -51,16 +53,16 @@ ui.element style @90:120
 
 "
     );
-    let FolioOp::Element(FolioElement { bindings, span, .. }) = &folio(css, 90).ops[0] else {
+    let DumpOp::Element(DumpElement { bindings, span, .. }) = &folio(css, 90).ops[0] else {
         panic!("carrier is ui.element");
     };
     assert_eq!(span.start, 90);
-    let FolioBinding::VueCssBind(bind) = &bindings[0] else {
+    let DumpBinding::VueCssBind(bind) = &bindings[0] else {
         panic!("first binding is vue.css-bind");
     };
     assert_eq!(bind.span.start, 104);
     assert_eq!(bind.span.end, 117);
-    let FolioExpr::Js { span, source } = &bind.value else {
+    let DumpExpr::Js { span, source } = &bind.value else {
         panic!("color is admitted js");
     };
     assert_eq!(source.as_str(), "color");
@@ -72,7 +74,7 @@ fn shifted_block_start_offsets_every_css_bind_span() {
     let css = ".foo { color: v-bind(color); margin: v-bind(size + 'px'); }";
     let block_start = 32;
     let value = folio(css, block_start);
-    let FolioOp::Element(FolioElement { bindings, span, .. }) = &value.ops[0] else {
+    let DumpOp::Element(DumpElement { bindings, span, .. }) = &value.ops[0] else {
         panic!("carrier is ui.element");
     };
     assert_eq!(
@@ -88,7 +90,7 @@ fn shifted_block_start_offsets_every_css_bind_span() {
     for (index, (call, expr)) in expected.iter().enumerate() {
         let call_start = css.find(call).expect("call appears in CSS") as u32;
         let expr_start = call_start + call.find(expr).expect("expr appears in call") as u32;
-        let FolioBinding::VueCssBind(bind) = &bindings[index] else {
+        let DumpBinding::VueCssBind(bind) = &bindings[index] else {
             panic!("binding is vue.css-bind");
         };
         assert_eq!(
@@ -98,7 +100,7 @@ fn shifted_block_start_offsets_every_css_bind_span() {
                 block_start + call_start + call.len() as u32
             ),
         );
-        let FolioExpr::Js { span, source } = &bind.value else {
+        let DumpExpr::Js { span, source } = &bind.value else {
             panic!("expression is admitted js");
         };
         assert_eq!(source.as_str(), *expr);
@@ -135,17 +137,17 @@ fn validated_blocks_keep_equal_style_blocks_distinct() {
 
     let arena = Allocator::default();
     let op = lower_style_block_in(&arena, second_block);
-    let FolioOp::Element(FolioElement { bindings, span, .. }) =
-        &DisegnoFolio::of(core::slice::from_ref(&op)).ops[0]
+    let DumpOp::Element(DumpElement { bindings, span, .. }) =
+        &L2Page::of(core::slice::from_ref(&op)).ops[0]
     else {
         panic!("carrier is ui.element");
     };
     assert_eq!(span.start, second_start as u32);
-    let FolioBinding::VueCssBind(bind) = &bindings[0] else {
+    let DumpBinding::VueCssBind(bind) = &bindings[0] else {
         panic!("first binding is vue.css-bind");
     };
     assert_eq!(bind.span.start, second_start as u32 + 11);
-    let FolioExpr::Js { span, source } = &bind.value else {
+    let DumpExpr::Js { span, source } = &bind.value else {
         panic!("color is admitted js");
     };
     assert_eq!(source.as_str(), "color");
@@ -167,15 +169,15 @@ fn strings_comments_and_prefixed_names_are_not_calls() {
 .label { background: 'v-bind(bg)'; }
 .foo { transition: my-v-bind(x); animation: -webkit-v-bind(y); }
 "#;
-    let FolioOp::Element(FolioElement { bindings, .. }) = &folio(css, 0).ops[0] else {
+    let DumpOp::Element(DumpElement { bindings, .. }) = &folio(css, 0).ops[0] else {
         panic!("carrier is ui.element");
     };
     assert_eq!(bindings.len(), 1);
-    let FolioBinding::VueCssBind(bind) = &bindings[0] else {
+    let DumpBinding::VueCssBind(bind) = &bindings[0] else {
         panic!("only real v-bind(color)");
     };
     // Shipped extractor keeps the comment in the var text.
-    let FolioExpr::Opaque { reason, source, .. } = &bind.value else {
+    let DumpExpr::Opaque { reason, source, .. } = &bind.value else {
         panic!("comment-bearing argument is not one JS expression");
     };
     assert_eq!(source.as_str(), "color /* keep ) inside comments */");
@@ -186,7 +188,7 @@ fn strings_comments_and_prefixed_names_are_not_calls() {
 fn quoted_expressions_keep_inner_parentheses() {
     let css = r#".header { background: v-bind("parentBg ?? 'var(--bg)'"); }"#;
     assert_eq!(
-        folio(css, 0).print_to_string(FolioMode::Full).as_str(),
+        folio(css, 0).print_to_string(DumpMode::Full).as_str(),
         "\
 [disegno]
 ops=2
@@ -207,5 +209,5 @@ fn an_empty_block_is_a_carrier_with_no_binds() {
         panic!("carrier");
     };
     assert!(element.bindings.is_empty());
-    assert_eq!(DisegnoFolio::of(core::slice::from_ref(&op)).op_count(), 1);
+    assert_eq!(L2Page::of(core::slice::from_ref(&op)).op_count(), 1);
 }

@@ -19,35 +19,35 @@
 use alloc::vec::Vec;
 use core::fmt;
 
-use vize_davinci::folio::value::FolioValue;
-use vize_davinci::folio::{Folio, FolioError};
+use vize_davinci::dump::value::DumpValue;
+use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, String, cstr};
 
-use super::parse::{tail_span_value, take_quoted_value};
-use super::print::quoted;
+use crate::dump::parse::{tail_span_value, take_quoted_value};
+use crate::dump::print::quoted;
 use crate::provenance::ProvenanceRecord;
 
 /// Owned page of provenance records, in decision order.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-#[folio(name = "s2-provenance-folio")]
-pub struct L2ProvenanceFolio {
+#[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
+#[dump(name = "s2-provenance-folio")]
+pub struct Page {
     /// One record per lowering or pass decision.
-    pub records: Vec<FolioProvenance>,
+    pub records: Vec<Record>,
 }
 
-impl L2ProvenanceFolio {
+impl Page {
     /// Mirror live records into the owned page.
     #[must_use]
     pub fn of(records: &[ProvenanceRecord]) -> Self {
         Self {
-            records: records.iter().map(FolioProvenance::from).collect(),
+            records: records.iter().map(Record::from).collect(),
         }
     }
 }
 
 /// One `rule=… node=… before="…" after="…" @s:e` record.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct FolioProvenance {
+pub struct Record {
     /// The deciding rule.
     pub rule: String,
     /// The produced op's dense page-order id, or `None` when nothing was
@@ -61,7 +61,7 @@ pub struct FolioProvenance {
     pub span: Span,
 }
 
-impl From<&ProvenanceRecord> for FolioProvenance {
+impl From<&ProvenanceRecord> for Record {
     fn from(record: &ProvenanceRecord) -> Self {
         Self {
             rule: record.rule.clone(),
@@ -73,7 +73,7 @@ impl From<&ProvenanceRecord> for FolioProvenance {
     }
 }
 
-impl FolioValue for FolioProvenance {
+impl DumpValue for Record {
     fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
         write!(w, "rule={} node=", self.rule)?;
         match self.node {
@@ -87,21 +87,21 @@ impl FolioValue for FolioProvenance {
         write!(w, " @{}:{}", self.span.start, self.span.end)
     }
 
-    fn parse_value(text: &str, line: usize) -> Result<Self, FolioError> {
+    fn parse_value(text: &str, line: usize) -> Result<Self, DumpError> {
         let rest = expect(text, "rule=", line)?;
         let (rule, rest) = rest
             .split_once(' ')
             .filter(|(rule, _)| !rule.is_empty())
-            .ok_or_else(|| FolioError::new(line, cstr!("expected `rule=<name> `")))?;
+            .ok_or_else(|| DumpError::new(line, cstr!("expected `rule=<name> `")))?;
         let rest = expect(rest, "node=", line)?;
         let (node, rest) = rest
             .split_once(' ')
-            .ok_or_else(|| FolioError::new(line, cstr!("expected `node=<id|-> `")))?;
+            .ok_or_else(|| DumpError::new(line, cstr!("expected `node=<id|-> `")))?;
         let node = match node {
             "-" => None,
             id => Some(
                 id.parse()
-                    .map_err(|_| FolioError::new(line, cstr!("invalid node id `{id}`")))?,
+                    .map_err(|_| DumpError::new(line, cstr!("invalid node id `{id}`")))?,
             ),
         };
         let (before, rest) = take_quoted_value(expect(rest, "before=", line)?, line)?;
@@ -117,7 +117,7 @@ impl FolioValue for FolioProvenance {
     }
 }
 
-fn expect<'a>(text: &'a str, prefix: &str, line: usize) -> Result<&'a str, FolioError> {
+fn expect<'a>(text: &'a str, prefix: &str, line: usize) -> Result<&'a str, DumpError> {
     text.strip_prefix(prefix)
-        .ok_or_else(|| FolioError::new(line, cstr!("expected `{prefix}`")))
+        .ok_or_else(|| DumpError::new(line, cstr!("expected `{prefix}`")))
 }

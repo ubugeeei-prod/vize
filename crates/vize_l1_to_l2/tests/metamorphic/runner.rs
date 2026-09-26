@@ -10,11 +10,11 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, String, append, cstr};
 use vize_l1::parse;
 use vize_l1_to_l2::lower;
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 
 use super::mutators::{Mutant, apply, merge_text};
 use super::normalize::{Normalization, normalized_display};
@@ -148,11 +148,11 @@ fn rules_for(kind: Kind) -> Normalization {
     }
 }
 
-fn folio_of_source(source: &str) -> DisegnoFolio {
+fn folio_of_source(source: &str) -> L2Page {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, source);
     let lowered = lower(&allocator, &tree, &errors);
-    DisegnoFolio::of(&lowered.root.ops)
+    L2Page::of(&lowered.root.ops)
 }
 
 /// Run every mutator over one source, accumulating into `report`.
@@ -183,13 +183,7 @@ pub fn run_source(source: &str, context: &str, report: &mut Report) {
     }
 }
 
-fn check_site(
-    source: &str,
-    context: &str,
-    site: &Site,
-    original: &DisegnoFolio,
-    report: &mut Report,
-) {
+fn check_site(source: &str, context: &str, site: &Site, original: &L2Page, report: &mut Report) {
     let rules = rules_for(site.kind);
     let allocator = Allocator::new();
     let (mut tree, errors) = parse(&allocator, source);
@@ -197,7 +191,7 @@ fn check_site(
         Mutant::Source(mutant_source) => folio_of_source(mutant_source.as_str()),
         Mutant::InPlace => {
             let lowered = lower(&allocator, &tree, &errors);
-            DisegnoFolio::of(&lowered.root.ops)
+            L2Page::of(&lowered.root.ops)
         }
     };
     let expected = normalized_display(original, rules);
@@ -216,9 +210,9 @@ fn check_site(
         // `Full`-mode folio byte-for-byte (no normalization at all).
         merge_text(&mut tree, &site.path);
         let lowered = lower(&allocator, &tree, &errors);
-        let remerged = DisegnoFolio::of(&lowered.root.ops);
-        let expected_full = original.print_to_string(FolioMode::Full);
-        let actual_full = remerged.print_to_string(FolioMode::Full);
+        let remerged = L2Page::of(&lowered.root.ops);
+        let expected_full = original.print_to_string(DumpMode::Full);
+        let actual_full = remerged.print_to_string(DumpMode::Full);
         if expected_full != actual_full {
             report.failures.push(divergence(
                 context,

@@ -28,9 +28,11 @@
 //! never invent one; the sensitivity pins in `main.rs` prove the
 //! remaining quotient does not collapse real differences.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::String;
-use vize_l2::folio::{DisegnoFolio, FolioAttribute, FolioBinding, FolioOp};
+use vize_l2::dump::{
+    Attribute as DumpAttribute, Binding as DumpBinding, Op as DumpOp, Page as L2Page,
+};
 
 /// Which structural rules a comparison applies (spans always elide).
 #[derive(Debug, Clone, Copy, Default)]
@@ -47,34 +49,34 @@ impl Normalization {
 }
 
 /// The full normalized artifact: apply `rules`, print `Display`.
-pub fn normalized_display(folio: &DisegnoFolio, rules: Normalization) -> String {
+pub fn normalized_display(folio: &L2Page, rules: Normalization) -> String {
     let mut folio = folio.clone();
     if rules.sort_attrs {
         walk_region(&mut folio.ops);
     }
-    folio.print_to_string(FolioMode::Display)
+    folio.print_to_string(DumpMode::Display)
 }
 
-fn walk_region(ops: &mut [FolioOp]) {
+fn walk_region(ops: &mut [DumpOp]) {
     for op in ops.iter_mut() {
         match op {
-            FolioOp::Element(element) => {
+            DumpOp::Element(element) => {
                 sort_attrs(&mut element.attributes);
                 sort_binding_attrs(&mut element.bindings);
                 walk_region(&mut element.children);
             }
-            FolioOp::Component(component) => {
+            DumpOp::Component(component) => {
                 sort_attrs(&mut component.attributes);
                 sort_binding_attrs(&mut component.bindings);
                 walk_region(&mut component.children);
             }
-            FolioOp::If(if_op) => {
+            DumpOp::If(if_op) => {
                 for branch in &mut if_op.branches {
                     walk_region(&mut branch.ops);
                 }
             }
-            FolioOp::For(for_op) => walk_region(&mut for_op.ops),
-            FolioOp::Slot(slot) => {
+            DumpOp::For(for_op) => walk_region(&mut for_op.ops),
+            DumpOp::Slot(slot) => {
                 // The outlet's props surface (P2-9 series 5): static
                 // slot props sort under the same reorder quotient as
                 // element attributes.
@@ -82,20 +84,20 @@ fn walk_region(ops: &mut [FolioOp]) {
                 sort_binding_attrs(&mut slot.bindings);
                 walk_region(&mut slot.fallback);
             }
-            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {}
+            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => {}
         }
     }
 }
 
-fn sort_attrs(attrs: &mut [FolioAttribute]) {
+fn sort_attrs(attrs: &mut [DumpAttribute]) {
     attrs.sort_by(|a, b| {
         (a.name.as_str(), a.value.as_deref()).cmp(&(b.name.as_str(), b.value.as_deref()))
     });
 }
 
-fn sort_binding_attrs(bindings: &mut [FolioBinding]) {
+fn sort_binding_attrs(bindings: &mut [DumpBinding]) {
     for binding in bindings {
-        if let FolioBinding::Model(model) = binding {
+        if let DumpBinding::Model(model) = binding {
             sort_attrs(&mut model.attributes);
         }
     }

@@ -2,8 +2,8 @@ use alloc::vec::Vec;
 use core::fmt;
 use core::str::SplitWhitespace;
 
-use vize_davinci::folio::value::FolioValue;
-use vize_davinci::folio::{Folio, FolioError};
+use vize_davinci::dump::value::DumpValue;
+use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_l0::{Span, cstr};
 
 use super::{
@@ -12,29 +12,26 @@ use super::{
 };
 
 /// Owned folio page for the L3 reactivity lattice.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Folio)]
-#[folio(name = "s3-reactivity-folio")]
-pub struct L3ReactivityFolio {
+#[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
+#[dump(name = "s3-reactivity-folio")]
+pub struct Page {
     /// Binding facts in binding-id order.
-    pub bindings: Vec<FolioBinding>,
+    pub bindings: Vec<Binding>,
 }
 
-/// Compatibility alias for the shorter feature name.
-pub type ReactivityFolio = L3ReactivityFolio;
-
-impl L3ReactivityFolio {
+impl Page {
     /// Mirror live arena facts into the owned folio page.
     #[must_use]
     pub fn of(facts: &LatticeFacts<'_>) -> Self {
         Self {
-            bindings: facts.bindings.iter().map(FolioBinding::from).collect(),
+            bindings: facts.bindings.iter().map(Binding::from).collect(),
         }
     }
 }
 
 /// One lattice fact line.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct FolioBinding {
+pub struct Binding {
     pub id: u32,
     pub class: ReactivityClass,
     pub verdict: Verdict,
@@ -44,7 +41,7 @@ pub struct FolioBinding {
     pub span: Span,
 }
 
-impl From<&BindingFact> for FolioBinding {
+impl From<&BindingFact> for Binding {
     fn from(fact: &BindingFact) -> Self {
         Self {
             id: fact.id.index(),
@@ -58,7 +55,7 @@ impl From<&BindingFact> for FolioBinding {
     }
 }
 
-impl FolioValue for FolioBinding {
+impl DumpValue for Binding {
     fn print_value<W: fmt::Write>(&self, w: &mut W) -> fmt::Result {
         write!(
             w,
@@ -78,7 +75,7 @@ impl FolioValue for FolioBinding {
         )
     }
 
-    fn parse_value(text: &str, line: usize) -> Result<Self, FolioError> {
+    fn parse_value(text: &str, line: usize) -> Result<Self, DumpError> {
         let mut fields = text.split_whitespace();
         let id = parse_u32(next(&mut fields, "id", line)?, "id", line)?;
         let class = parse_class(next(&mut fields, "class", line)?, line)?;
@@ -100,8 +97,8 @@ impl FolioValue for FolioBinding {
     }
 }
 
-impl From<FolioBinding> for BindingFact {
-    fn from(binding: FolioBinding) -> Self {
+impl From<Binding> for BindingFact {
+    fn from(binding: Binding) -> Self {
         Self {
             id: BindingId::new(binding.id),
             class: binding.class,
@@ -118,46 +115,46 @@ fn next<'a>(
     fields: &mut SplitWhitespace<'a>,
     name: &str,
     line: usize,
-) -> Result<&'a str, FolioError> {
+) -> Result<&'a str, DumpError> {
     let Some(raw) = fields.next() else {
-        return Err(FolioError::new(line, cstr!("missing `{name}` field")));
+        return Err(DumpError::new(line, cstr!("missing `{name}` field")));
     };
     raw.strip_prefix(name)
         .and_then(|rest| rest.strip_prefix('='))
-        .ok_or_else(|| FolioError::new(line, cstr!("expected `{name}=...`, got `{raw}`")))
+        .ok_or_else(|| DumpError::new(line, cstr!("expected `{name}=...`, got `{raw}`")))
 }
 
-fn parse_u32(raw: &str, name: &str, line: usize) -> Result<u32, FolioError> {
+fn parse_u32(raw: &str, name: &str, line: usize) -> Result<u32, DumpError> {
     raw.parse()
-        .map_err(|_| FolioError::new(line, cstr!("invalid `{name}` value `{raw}`")))
+        .map_err(|_| DumpError::new(line, cstr!("invalid `{name}` value `{raw}`")))
 }
 
-fn parse_class(raw: &str, line: usize) -> Result<ReactivityClass, FolioError> {
+fn parse_class(raw: &str, line: usize) -> Result<ReactivityClass, DumpError> {
     ReactivityClass::from_str(raw)
-        .ok_or_else(|| FolioError::new(line, cstr!("unknown reactivity class `{raw}`")))
+        .ok_or_else(|| DumpError::new(line, cstr!("unknown reactivity class `{raw}`")))
 }
 
-fn parse_verdict(raw: &str, line: usize) -> Result<Verdict, FolioError> {
-    Verdict::from_str(raw).ok_or_else(|| FolioError::new(line, cstr!("unknown verdict `{raw}`")))
+fn parse_verdict(raw: &str, line: usize) -> Result<Verdict, DumpError> {
+    Verdict::from_str(raw).ok_or_else(|| DumpError::new(line, cstr!("unknown verdict `{raw}`")))
 }
 
-fn parse_origin(raw: &str, line: usize) -> Result<BindingOrigin, FolioError> {
+fn parse_origin(raw: &str, line: usize) -> Result<BindingOrigin, DumpError> {
     BindingOrigin::from_str(raw)
-        .ok_or_else(|| FolioError::new(line, cstr!("unknown binding origin `{raw}`")))
+        .ok_or_else(|| DumpError::new(line, cstr!("unknown binding origin `{raw}`")))
 }
 
-fn parse_effects(raw: &str, line: usize) -> Result<EffectSet, FolioError> {
-    EffectSet::parse(raw).ok_or_else(|| FolioError::new(line, cstr!("unknown effect set `{raw}`")))
+fn parse_effects(raw: &str, line: usize) -> Result<EffectSet, DumpError> {
+    EffectSet::parse(raw).ok_or_else(|| DumpError::new(line, cstr!("unknown effect set `{raw}`")))
 }
 
-fn parse_escape(raw: &str, line: usize) -> Result<EscapeKind, FolioError> {
+fn parse_escape(raw: &str, line: usize) -> Result<EscapeKind, DumpError> {
     EscapeKind::from_str(raw)
-        .ok_or_else(|| FolioError::new(line, cstr!("unknown escape kind `{raw}`")))
+        .ok_or_else(|| DumpError::new(line, cstr!("unknown escape kind `{raw}`")))
 }
 
-fn parse_span(raw: &str, line: usize) -> Result<Span, FolioError> {
+fn parse_span(raw: &str, line: usize) -> Result<Span, DumpError> {
     let Some((start, end)) = raw.split_once(':') else {
-        return Err(FolioError::new(line, cstr!("invalid span `{raw}`")));
+        return Err(DumpError::new(line, cstr!("invalid span `{raw}`")));
     };
     Ok(Span::new(
         parse_u32(start, "span start", line)?,
@@ -165,9 +162,9 @@ fn parse_span(raw: &str, line: usize) -> Result<Span, FolioError> {
     ))
 }
 
-fn expect_end(mut fields: SplitWhitespace<'_>, line: usize) -> Result<(), FolioError> {
+fn expect_end(mut fields: SplitWhitespace<'_>, line: usize) -> Result<(), DumpError> {
     match fields.next() {
-        Some(extra) => Err(FolioError::new(line, cstr!("unexpected field `{extra}`"))),
+        Some(extra) => Err(DumpError::new(line, cstr!("unexpected field `{extra}`"))),
         None => Ok(()),
     }
 }

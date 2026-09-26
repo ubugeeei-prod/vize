@@ -3,9 +3,9 @@
 //! round-trip holds for produced and dropped records, and malformed lines
 //! are refused with their line number.
 
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Span, String, cstr};
-use vize_l2::folio::{FolioProvenance, L2ProvenanceFolio};
+use vize_l2::dump::provenance::{Page as ProvenancePage, Record as DumpProvenance};
 
 const CANONICAL: &str = r#"[s2-provenance-folio]
 
@@ -22,8 +22,8 @@ fn record(
     before: &str,
     after: &str,
     span: (u32, u32),
-) -> FolioProvenance {
-    FolioProvenance {
+) -> DumpProvenance {
+    DumpProvenance {
         rule: String::from(rule),
         node,
         before: String::from(before),
@@ -34,8 +34,8 @@ fn record(
 
 #[test]
 fn full_print_is_identity_on_canonical_text() {
-    let folio = L2ProvenanceFolio::parse(CANONICAL).expect("canonical text parses");
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    let folio = ProvenancePage::parse(CANONICAL).expect("canonical text parses");
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
         folio.records,
         vec![
@@ -60,7 +60,7 @@ fn full_print_is_identity_on_canonical_text() {
 
 #[test]
 fn structural_round_trip_keeps_quotes_backslashes_and_tabs() {
-    let folio = L2ProvenanceFolio {
+    let folio = ProvenancePage {
         records: vec![record(
             "lower.text",
             Some(7),
@@ -69,8 +69,8 @@ fn structural_round_trip_keeps_quotes_backslashes_and_tabs() {
             (0, 6),
         )],
     };
-    let printed = folio.print_to_string(FolioMode::Full);
-    assert_eq!(L2ProvenanceFolio::parse(printed.as_str()), Ok(folio));
+    let printed = folio.print_to_string(DumpMode::Full);
+    assert_eq!(ProvenancePage::parse(printed.as_str()), Ok(folio));
 }
 
 #[test]
@@ -95,8 +95,8 @@ fn malformed_records_are_refused_with_their_line() {
     ];
     for (line, message) in cases {
         assert_eq!(
-            L2ProvenanceFolio::parse(page(line).as_str()).unwrap_err(),
-            FolioError::new(4, cstr!("{message}")),
+            ProvenancePage::parse(page(line).as_str()).unwrap_err(),
+            DumpError::new(4, cstr!("{message}")),
             "{line}"
         );
     }

@@ -1,10 +1,13 @@
 //! TS-16 for `vue.text` (P2-11): Vue's `v-text` text-content surface as a
 //! dialect binding, parseable and mirrorable like the other L2 ops.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, String, Vec as ArenaVec};
+use vize_l2::dump::{
+    Binding as DumpBinding, Element as DumpElement, Expr as DumpExpr, Op as DumpOp, Page as L2Page,
+    VueText as DumpVueText,
+};
 use vize_l2::expr::{ExprRef, JsExpr};
-use vize_l2::folio::{DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp, FolioVueText};
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueTextOp};
 
 const CANONICAL: &str = "\
@@ -27,14 +30,14 @@ ui.element div @0:16
 
 ";
 
-fn hand_built() -> DisegnoFolio {
-    DisegnoFolio {
-        ops: vec![FolioOp::Element(FolioElement {
+fn hand_built() -> L2Page {
+    L2Page {
+        ops: vec![DumpOp::Element(DumpElement {
             tag: String::from("div"),
             namespace: Namespace::Html,
             attributes: vec![],
-            bindings: vec![FolioBinding::VueText(FolioVueText {
-                value: Some(FolioExpr::Js {
+            bindings: vec![DumpBinding::VueText(DumpVueText {
+                value: Some(DumpExpr::Js {
                     source: String::from("raw"),
                     span: Span::new(13, 16),
                 }),
@@ -46,13 +49,13 @@ fn hand_built() -> DisegnoFolio {
     }
 }
 
-fn hand_built_value_less() -> DisegnoFolio {
-    DisegnoFolio {
-        ops: vec![FolioOp::Element(FolioElement {
+fn hand_built_value_less() -> L2Page {
+    L2Page {
+        ops: vec![DumpOp::Element(DumpElement {
             tag: String::from("div"),
             namespace: Namespace::Html,
             attributes: vec![],
-            bindings: vec![FolioBinding::VueText(FolioVueText {
+            bindings: vec![DumpBinding::VueText(DumpVueText {
                 value: None,
                 span: Span::new(5, 11),
             })],
@@ -66,9 +69,9 @@ fn hand_built_value_less() -> DisegnoFolio {
 fn the_text_op_round_trips() {
     let value = hand_built();
     assert_eq!(value.op_count(), 2);
-    assert_eq!(value.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    assert_eq!(value.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
-        DisegnoFolio::parse(CANONICAL).expect("canonical text parses"),
+        L2Page::parse(CANONICAL).expect("canonical text parses"),
         value
     );
 }
@@ -77,9 +80,9 @@ fn the_text_op_round_trips() {
 fn the_value_less_text_op_round_trips() {
     let value = hand_built_value_less();
     assert_eq!(value.op_count(), 2);
-    assert_eq!(value.print_to_string(FolioMode::Full).as_str(), VALUE_LESS);
+    assert_eq!(value.print_to_string(DumpMode::Full).as_str(), VALUE_LESS);
     assert_eq!(
-        DisegnoFolio::parse(VALUE_LESS).expect("value-less text parses"),
+        L2Page::parse(VALUE_LESS).expect("value-less text parses"),
         value
     );
 }
@@ -115,9 +118,7 @@ fn an_arena_tree_mirrors_the_text_op() {
         &allocator,
     );
     assert_eq!(
-        DisegnoFolio::of(&ops)
-            .print_to_string(FolioMode::Full)
-            .as_str(),
+        L2Page::of(&ops).print_to_string(DumpMode::Full).as_str(),
         CANONICAL
     );
 }

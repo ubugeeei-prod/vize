@@ -1,9 +1,9 @@
 //! C-13's first version: the missed-remarks backlog, rendered from the
-//! TS-32 corpus by `vize_davinci::folio::remarks::backlog::mine_missed` and
+//! TS-32 corpus by `vize_davinci::dump::remarks::backlog::mine_missed` and
 //! pinned as `docs/davinci/plan/remarks-backlog.md`.
 
-use vize_davinci::folio::remarks::backlog::mine_missed;
-use vize_davinci::folio::remarks::corpus::RemarkCorpus;
+use vize_davinci::dump::remarks::backlog::mine_missed;
+use vize_davinci::dump::remarks::corpus::RemarkCorpus;
 use vize_davinci::pass::RemarkKind;
 use vize_l0::{String, cstr};
 

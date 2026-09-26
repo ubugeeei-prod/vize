@@ -24,7 +24,7 @@ impl Placement {
     /// Every placement in canonical print order.
     pub const ALL: [Self; 4] = [Self::Inline, Self::Hoist, Self::Cache, Self::Group];
 
-    /// Stable Folio spelling.
+    /// Stable Dump spelling.
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {
@@ -35,7 +35,7 @@ impl Placement {
         }
     }
 
-    /// Parse the stable Folio spelling.
+    /// Parse the stable Dump spelling.
     #[must_use]
     pub const fn from_str(value: &str) -> Option<Self> {
         match value.as_bytes() {

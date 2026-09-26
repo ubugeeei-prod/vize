@@ -24,7 +24,7 @@
 //!
 //! The L1 page ([`surface_page`]) is the lossless surface tree as a folio
 //! page of block-relative token offsets; the L2 page is the existing
-//! disegno page ([`vize_l2::folio::L2Folio`]). Hosting modes live beside
+//! disegno page ([`vize_l2::dump::Page`]). Hosting modes live beside
 //! the contract: [`outproc`] runs a guest in a child process over the
 //! [`wire`] protocol, and the `extension-host` feature adds `wasm`, the
 //! wasmtime component host the child process uses.

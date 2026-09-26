@@ -1,4 +1,4 @@
-//! Canonical printer for [`CroquisFolio`].
+//! Canonical printer for [`Page`].
 //!
 //! `Full` mode reproduces `Croquis::to_vir()` byte-for-byte for canonical
 //! content; `Display` mode elides spans and default markers. Both modes
@@ -11,8 +11,8 @@ use alloc::vec::Vec;
 
 use vize_l0::FxHashMap;
 
-use super::{CroquisFolio, ScopeEntry, ScopeRef, SurfaceEntry};
-use crate::folio::FolioMode;
+use crate::dump::Mode as DumpMode;
+use crate::dump::croquis::{Page, ScopeEntry, ScopeRef, SurfaceEntry};
 
 /// Compute the sequential-per-prefix renumbering for scope entries, keyed
 /// by `(prefix, old index)`.
@@ -55,8 +55,8 @@ fn write_joined<W: Write>(w: &mut W, items: &[&str], sep: &str) -> Result {
     Ok(())
 }
 
-pub(super) fn print<W: Write>(folio: &CroquisFolio, w: &mut W, mode: FolioMode) -> Result {
-    let full = mode == FolioMode::Full;
+pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: DumpMode) -> Result {
+    let full = mode == DumpMode::Full;
 
     writeln!(w, "[vir]")?;
     writeln!(w, "script_setup={}", folio.script_setup)?;

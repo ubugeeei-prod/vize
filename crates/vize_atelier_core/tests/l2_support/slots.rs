@@ -42,7 +42,7 @@ use vize_davinci::side_table::SideTable;
 use vize_l0::String;
 use vize_l1_to_l2::pass::SlotFacts;
 use vize_l1_to_l2::pass::vslot::{SlotName, SlotParams};
-use vize_l2::folio::{FolioBinding, FolioName, FolioOp};
+use vize_l2::dump::{Binding as DumpBinding, Name as DumpName, Op as DumpOp};
 
 /// The slot half of the comparator's accounting.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
@@ -119,17 +119,17 @@ fn trimmed(text: &str) -> String {
 
 // ------------------------------------------------------------------- L2
 
-pub(super) fn has_slot_content(bindings: &[FolioBinding]) -> bool {
+pub(super) fn has_slot_content(bindings: &[DumpBinding]) -> bool {
     bindings
         .iter()
-        .any(|binding| matches!(binding, FolioBinding::SlotContent(_)))
+        .any(|binding| matches!(binding, DumpBinding::SlotContent(_)))
 }
 
 /// Whether a folio component is slot-active (the shared unit rule).
-pub fn l2_slot_active(bindings: &[FolioBinding], children: &[FolioOp]) -> bool {
+pub fn l2_slot_active(bindings: &[DumpBinding], children: &[DumpOp]) -> bool {
     has_slot_content(bindings)
         || children.iter().any(|child| {
-            matches!(child, FolioOp::Element(el) if el.tag.as_str() == "template" && has_slot_content(&el.bindings))
+            matches!(child, DumpOp::Element(el) if el.tag.as_str() == "template" && has_slot_content(&el.bindings))
         })
 }
 
@@ -166,16 +166,16 @@ pub fn l2_unit(id: Option<NodeId>, facts: &SideTable<SlotFacts>) -> PUnit {
 }
 
 /// Project one L2 outlet name.
-pub fn l2_outlet(name: &FolioName) -> POutlet {
+pub fn l2_outlet(name: &DumpName) -> POutlet {
     POutlet {
         name: match name {
-            FolioName::Static(text) => PName::Static(String::from(text.as_str())),
-            FolioName::Dynamic(expr) => {
+            DumpName::Static(text) => PName::Static(String::from(text.as_str())),
+            DumpName::Dynamic(expr) => {
                 let source = match expr {
-                    vize_l2::folio::FolioExpr::Js { source, .. }
-                    | vize_l2::folio::FolioExpr::Foreign { source, .. }
-                    | vize_l2::folio::FolioExpr::Opaque { source, .. }
-                    | vize_l2::folio::FolioExpr::Filter { source, .. } => source,
+                    vize_l2::dump::Expr::Js { source, .. }
+                    | vize_l2::dump::Expr::Foreign { source, .. }
+                    | vize_l2::dump::Expr::Opaque { source, .. }
+                    | vize_l2::dump::Expr::Filter { source, .. } => source,
                 };
                 PName::Dynamic(trimmed(source.as_str()))
             }

@@ -26,13 +26,13 @@
 
 extern crate alloc;
 
+pub mod dump;
 pub mod extract;
-pub mod folio;
 pub mod lattice;
 pub mod op;
 pub mod operand;
 pub mod optimize;
 pub mod placement;
 pub mod trace;
-pub mod values_folio;
+pub mod values_dump;
 pub mod verify;
