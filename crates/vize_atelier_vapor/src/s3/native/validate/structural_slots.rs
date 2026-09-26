@@ -22,17 +22,32 @@ fn carrier(nodes: &[Node<'_>], index: usize) -> bool {
     })
 }
 
+/// A direct carrier retains its authored element; unwrapped template controls
+/// have a condition before the nested slot or a different loop-carrier start.
+fn span(nodes: &[Node<'_>], index: usize) -> Option<(u32, u32)> {
+    match nodes.get(index).map(|node| &node.content) {
+        Some(Content::Element { tag_span, .. }) => Some(*tag_span),
+        _ => None,
+    }
+}
+
 fn structural(nodes: &[Node<'_>], index: usize) -> bool {
     match nodes.get(index).map(|node| &node.content) {
         Some(Content::If { branches }) => {
             branches.len() <= 64
-                && branches.iter().all(
-                    |branch| matches!(branch.roots.as_slice(), [child] if carrier(nodes, *child)),
-                )
+                && branches.iter().all(|branch| {
+                    matches!(branch.roots.as_slice(), [child] if carrier(nodes, *child)
+                    && span(nodes, *child).is_some_and(|(start, end)| {
+                        if branch.condition.is_some() {
+                            start <= branch.span.0 && branch.span.1 <= end
+                        } else { start == branch.span.0 }
+                    }))
+                })
         }
         Some(Content::For(body)) if body.key_prop.is_none() => matches!(
             nodes.get(index).map(|node| node.children.as_slice()),
             Some([child]) if carrier(nodes, *child)
+                && span(nodes, *child).is_some_and(|(start, _)| start == body.carrier_start)
         ),
         _ => false,
     }

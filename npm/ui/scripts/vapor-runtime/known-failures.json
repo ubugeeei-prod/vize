@@ -158,7 +158,6 @@
     "popconfirm-root": "vapor-codegen: provide/inject context lost after an earlier render failure",
     "popconfirm-trigger": "vapor-codegen: provide/inject context lost after an earlier render failure",
     "popover-arrow": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
-    "primitive": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "progress-bar": "vapor-hydration: codegen does not use the Vue 3.6 insertion-state hydration model",
     "pull-to-refresh": "unclassified: TypeError: Cannot read properties of undefined (reading 'nodes')",
     "pull-to-refresh-trigger": "unclassified: TypeError: Cannot read properties of undefined (reading 'nodes')",
