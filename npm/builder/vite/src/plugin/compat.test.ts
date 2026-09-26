@@ -139,7 +139,7 @@ const msg = 'hello'
   );
   assert.match(
     result.code,
-    /import "\/docs\/Page\.md\?vue=&type=style&index=0&lang=css\.css";/,
+    /import "\/docs\/Page\.md\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=%2Fdocs%2FPage.md";/,
     "Virtual SFC styles should use Vite CSS imports in development",
   );
   assert.doesNotMatch(result.code, /__vize_css__/, "Virtual SFC CSS must not bypass Vite");
@@ -239,7 +239,7 @@ const msg = 'hello'
   );
   assert.match(
     result.code,
-    /import "\/virtual\/Card\.setup\.ts\?vue=&type=style&index=0&lang=css\.css";/,
+    /import "\/virtual\/Card\.setup\.ts\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=%2Fvirtual%2FCard.setup.ts";/,
     "Production virtual SFC transforms should emit Vite-visible plain CSS imports",
   );
   assert.doesNotMatch(
@@ -254,7 +254,7 @@ const msg = 'hello'
   );
   assert.match(
     result.code,
-    /import ".*Card\.setup\.ts\?vue=&type=style&index=0&lang=css\.css";/,
+    /import ".*Card\.setup\.ts\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=[^"\n]+";/,
     "Production virtual SFC transforms should emit a virtual style import",
   );
 }

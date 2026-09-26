@@ -7,6 +7,7 @@ import {
   rewriteDefaultExportToSfcMain,
 } from "./module-output.ts";
 import { MappedModule, parseSourceMap, type SourceMapV3 } from "./source-map.ts";
+import { createStyleVirtualId } from "../plugin/style-request.ts";
 
 // Re-export CSS utilities for backward compatibility
 export { resolveCssImports, type CssAliasRule } from "./css.ts";
@@ -29,17 +30,8 @@ function needsCssPipeline(block: StyleBlockInfo): boolean {
   return block.content.includes("@apply");
 }
 
-function styleVirtualSuffix(block: StyleBlockInfo): string {
-  const lang = block.lang ?? "css";
-  return block.module !== false ? `.module.${lang}` : `.${lang}`;
-}
-
-function createStyleImportUrl(
-  filePath: string,
-  params: URLSearchParams,
-  block: StyleBlockInfo,
-): string {
-  return `${filePath}?${params.toString()}${styleVirtualSuffix(block)}`;
+function createStyleImportUrl(filePath: string, params: URLSearchParams): string {
+  return createStyleVirtualId(`${filePath}?${params.toString()}`);
 }
 
 /**
@@ -260,18 +252,18 @@ export function generateOutputWithMap(
         }
         params.set("inline", "");
         const bindingName = `_style_${block.index}`;
-        const importUrl = createStyleImportUrl(filePath, params, block);
+        const importUrl = createStyleImportUrl(filePath, params);
         styleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
         customElementStyleBindings.push(bindingName);
       } else if (isCssModule(block)) {
         // CSS Modules: import as a named binding
         const bindingName = typeof block.module === "string" ? block.module : "$style";
         params.set("module", typeof block.module === "string" ? block.module : "");
-        const importUrl = createStyleImportUrl(filePath, params, block);
+        const importUrl = createStyleImportUrl(filePath, params);
         cssModuleImports.push(`import ${bindingName} from ${JSON.stringify(importUrl)};`);
       } else {
         // Side-effect import: Vite will inject the CSS
-        const importUrl = createStyleImportUrl(filePath, params, block);
+        const importUrl = createStyleImportUrl(filePath, params);
         styleImports.push(`import ${JSON.stringify(importUrl)};`);
       }
     }

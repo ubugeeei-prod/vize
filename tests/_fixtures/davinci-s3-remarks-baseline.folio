@@ -32,6 +32,7 @@
 "tests/_fixtures/_projects/nuxt-parity/components/TheGreeting.vue"
 "tests/_fixtures/_projects/nuxt-parity/pages/broken.vue"
 "tests/_fixtures/_projects/nuxt-parity/pages/index.vue"
+"tests/_fixtures/_projects/nuxt-scoped-style-build/app/app.vue"
 "tests/_fixtures/_projects/nuxt-template-globals/pages/index.vue"
 "tests/_fixtures/_projects/nuxt-template-globals/pages/undeclared-global.vue"
 "tests/_fixtures/_projects/nuxt-template-globals/pages/wrong-argument.vue"

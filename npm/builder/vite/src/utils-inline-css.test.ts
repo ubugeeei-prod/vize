@@ -144,7 +144,7 @@ void test("development styles use Vite imports and metadata-free CSS keeps the f
   assert.equal(embedsInlineCss(withImport, options), false);
   assert.match(
     generateOutput(withImport, options),
-    /import "\/src\/Marker\.vue\?vue=&type=style&index=0&lang=css\.css";/,
+    /import "\/src\/Marker\.vue\.__vize_style_0\.css\?vue=&type=style&index=0&lang=css&vize-file=%2Fsrc%2FMarker.vue";/,
   );
   const metadataFree = { ...withImport, styles: [] };
   assert.equal(embedsInlineCss(metadataFree, options), true);

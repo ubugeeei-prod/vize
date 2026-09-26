@@ -17,6 +17,7 @@ import { scopeCssForPipeline } from "../utils/css.ts";
 import { applyDefineReplacements } from "../transform.ts";
 import { transformVirtualTypeScript } from "./vite-transform.ts";
 import { PLUGIN_VUE_COMPAT_VERSION } from "./plugin-vue-options.ts";
+import { normalizeStyleVirtualId as normalizeVirtualStyleId } from "./style-request.ts";
 
 type FilterPatterns = string | RegExp | (string | RegExp)[];
 type VueCompatTemplateCompilerOptions = {
@@ -93,14 +94,7 @@ export function createVueCompatPlugin(state: VizePluginState, options: VizeOptio
   };
 }
 
-export function normalizeVirtualStyleId(id: string): string {
-  const withoutPrefix = id.startsWith("\0") ? id.slice(1) : id;
-  if (!withoutPrefix.includes("?vue")) {
-    return id;
-  }
-
-  return withoutPrefix.replace(/\.module\.\w+$/, "").replace(/\.\w+$/, "");
-}
+export { normalizeVirtualStyleId };
 
 /**
  * String pre-gate for {@link transformScopedPreprocessorCss} (#3427).
@@ -110,8 +104,8 @@ export function normalizeVirtualStyleId(id: string): string {
  * not a style query. The native `isVueStyleQuery` is
  * `query.contains("vue&type=style") || query.contains("vue=&type=style")`, both
  * of which contain `type=style`; the query is a substring of the id, and
- * `normalizeVirtualStyleId` only ever deletes characters, so a normalized id
- * that classifies as a style query implies `type=style` in the raw id.
+ * `normalizeVirtualStyleId` preserves the query, so a normalized style id
+ * implies `type=style` in the raw id.
  */
 function mayBeVueStyleQuery(id: string): boolean {
   return id.includes("type=style");

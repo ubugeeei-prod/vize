@@ -1,5 +1,6 @@
 import type { ModuleNode, ViteDevServer } from "vite";
 import path from "node:path";
+import { createStyleVirtualId } from "./style-request.ts";
 
 import {
   fromPluginVisibleVirtualId,
@@ -37,7 +38,7 @@ export function getVueModuleFileCandidates(vueFile: string): string[] {
 }
 
 export function getStyleModuleFileCandidates(styleId: string): string[] {
-  return unique([styleId, `${styleId}.css`]);
+  return unique([styleId, `${styleId}.css`, createStyleVirtualId(styleId)]);
 }
 
 export async function collectModulesByFile(

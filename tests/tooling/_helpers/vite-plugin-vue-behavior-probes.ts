@@ -102,7 +102,7 @@ async function loadResolvedVueModule(plugin: Plugin, id: string): Promise<string
 
 async function loadResolvedStyleModule(plugin: Plugin, id: string): Promise<string> {
   const code = await loadResolvedVueModule(plugin, id);
-  const styleId = `${id}?vue=&type=style&index=0&lang=css.css`;
+  const styleId = `${id}.__vize_style_0.css?vue=&type=style&index=0&lang=css&${new URLSearchParams({ "vize-file": id }).toString()}`;
   assert.ok(
     code.includes(`import ${JSON.stringify(styleId)};`),
     `${id} must hand its CSS to Vite through a style import`,
@@ -178,7 +178,7 @@ function assertCustomElementStyleOutput(code: string, fileName: string): void {
   assert.match(
     code,
     new RegExp(
-      `import _style_0 from ".*${escapeRegExp(fileName)}\\.vue\\?vue=&type=style&index=0&lang=css&inline=`,
+      `import _style_0 from ".*${escapeRegExp(fileName)}\\.vue\\.__vize_style_0\\.css\\?vue=&type=style&index=0&lang=css&inline=&vize-file=[^"]+${escapeRegExp(fileName)}\\.vue";`,
     ),
   );
   assert.match(code, /_sfc_main\.styles = \[_style_0\];/);
@@ -218,10 +218,11 @@ async function probeHotUpdateStyleOnly(): Promise<void> {
   const root = createFixture({ "Comp.vue": withStyle });
   const file = path.join(root, "Comp.vue");
   const plugin = await bootPlugin(root);
-  await loadResolvedVueModule(plugin, file);
+  const code = await loadResolvedVueModule(plugin, file);
 
   const sent: Array<{ data?: { css?: string; type?: string }; event?: string }> = [];
-  const styleId = `${file}?vue=&type=style&index=0&lang=css.css`;
+  const styleId = code.match(/import "([^"\n]+\?vue=&type=style[^"\n]*)";/)?.[1];
+  assert.ok(styleId, "style HMR must target the actual emitted Vite CSS module");
   const styleModule = { url: styleId };
   const server = {
     moduleGraph: {
