@@ -4,8 +4,9 @@
 S3 payload, including member, conditional and call expressions. The shared
 emitter registers them through `onBinding` in a render effect, preserving
 listener options and modifier guards. Static listeners retain their existing
-delegation policy. Component events with computed names and event-bearing
-`v-once` subtrees still select explicit legacy reasons.
+delegation policy. Computed component names have a separate
+[contract](p3-6-component-names.md). Computed events in `v-once` subtrees still
+select an explicit legacy reason.
 
 The exact code and decoded source-map snapshots cover references, indexed
 members, conditional names and calls. Computed names and reference handlers

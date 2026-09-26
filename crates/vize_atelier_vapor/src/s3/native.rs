@@ -69,6 +69,7 @@ enum Content<'a> {
 #[derive(Debug, Clone, Copy)]
 struct Prop<'a> {
     key: &'a str,
+    dynamic_name: Option<Expr<'a>>,
     value: Option<Expr<'a>>,
     value_kind: crate::ir::PropValueKind,
     dynamic: bool,

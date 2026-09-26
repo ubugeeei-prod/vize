@@ -161,7 +161,11 @@ impl<'a> Emitter<'a, '_> {
     fn props(&self, props: &[Prop<'a>], component: bool) -> Vec<'a, IRProp<'a>> {
         let mut out = Vec::new_in(&self.allocator);
         for prop in props {
-            let key = if prop.key == "$" {
+            let key = if let Some(name) = prop.dynamic_name {
+                let mut node = self.expression(name, false);
+                node.is_handler_key = prop.handler;
+                node
+            } else if prop.key == "$" {
                 // A `v-bind`/`v-on` object source; `v-on` normalizes handlers.
                 let mut node = SimpleExpressionNode::new("$", true, SourceLocation::STUB);
                 node.is_handler_key = prop.handler;

@@ -27,11 +27,18 @@ pub(super) fn bindings<'a>(
         match &node.content {
             Content::Element { attributes, .. } => {
                 names.extend(
-                    (attributes.iter()).map(|(name, ..)| (index, BindingKind::Prop, *name)),
+                    (attributes.iter()).map(|(name, ..)| (index, BindingKind::Prop, *name, false)),
                 );
             }
             Content::Component { props, .. } | Content::Outlet { props, .. } => {
-                names.extend((props.iter()).map(|prop| (index, BindingKind::Prop, prop.key)));
+                names.extend((props.iter()).map(|prop| {
+                    (
+                        index,
+                        BindingKind::Prop,
+                        prop.key,
+                        prop.dynamic_name.is_some(),
+                    )
+                }));
             }
             _ => {}
         }
@@ -55,7 +62,12 @@ pub(super) fn bindings<'a>(
                 "binding target is outside its native region",
             ));
         }
-        let fresh = names.insert((index, binding.kind, binding.name));
+        let fresh = names.insert((
+            index,
+            binding.kind,
+            binding.name,
+            binding.dynamic_name.is_some(),
+        ));
         // Slot content binds to its `<template>` or to its component (only
         // its named slot there); the structure is checked once attached.
         if binding.kind == BindingKind::Slot {
@@ -80,7 +92,10 @@ pub(super) fn bindings<'a>(
                 tag: "component",
                 is,
                 ..
-            } if binding.kind == BindingKind::Prop && binding.name == "is" => {
+            } if binding.kind == BindingKind::Prop
+                && binding.name == "is"
+                && binding.dynamic_name.is_none() =>
+            {
                 if is.replace(binding.value).is_some() {
                     return Err(LegacyReason::Component.into());
                 }
@@ -94,6 +109,7 @@ pub(super) fn bindings<'a>(
                 }
                 props.push(Prop {
                     key: "$",
+                    dynamic_name: None,
                     value: Some(binding.value),
                     value_kind: crate::ir::PropValueKind::Expression,
                     dynamic: true,
@@ -129,6 +145,11 @@ pub(super) fn bindings<'a>(
                     "binding target is outside its native region",
                 ));
             }
+        }
+        // Computed prop names have a component contract. DOM setter selection
+        // and outlet prop normalization remain separate unproved surfaces.
+        if binding.kind == BindingKind::Prop && binding.dynamic_name.is_some() {
+            return Err(LegacyReason::Binding.into());
         }
         if !fresh && *at(&spreads, index)? {
             // Only a `:class`/`:style` beside its static attribute repeats.
@@ -197,7 +218,7 @@ fn component_model<'a>(
     props: &mut Vec<'a, Prop<'a>>,
     binding: &Binding<'a>,
     position: u32,
-    names: &mut HashSet<'_, (usize, BindingKind, &'a str)>,
+    names: &mut HashSet<'_, (usize, BindingKind, &'a str, bool)>,
     index: usize,
     alloc: &'a Allocator,
 ) -> Result<()> {
@@ -210,14 +231,15 @@ fn component_model<'a>(
     } else {
         Some(alloc.alloc_str(&cstr!("{prop}Modifiers")))
     };
-    if !names.insert((index, BindingKind::Prop, prop))
-        || !names.insert((index, BindingKind::Event, event))
-        || modifiers.is_some_and(|name| !names.insert((index, BindingKind::Prop, name)))
+    if !names.insert((index, BindingKind::Prop, prop, false))
+        || !names.insert((index, BindingKind::Event, event, false))
+        || modifiers.is_some_and(|name| !names.insert((index, BindingKind::Prop, name, false)))
     {
         return Err(LegacyReason::Component.into());
     }
     props.push(Prop {
         key: prop,
+        dynamic_name: None,
         value: Some(binding.value),
         value_kind: crate::ir::PropValueKind::Expression,
         dynamic: true,
@@ -226,6 +248,7 @@ fn component_model<'a>(
     });
     props.push(Prop {
         key: event,
+        dynamic_name: None,
         value: Some(binding.value),
         value_kind: crate::ir::PropValueKind::ModelUpdate,
         dynamic: true,
@@ -245,6 +268,7 @@ fn component_model<'a>(
         object.push_str(" }");
         props.push(Prop {
             key: name,
+            dynamic_name: None,
             value: Some(Expr::plain(alloc.alloc_str(&object))),
             value_kind: crate::ir::PropValueKind::ModelModifiers,
             dynamic: true,
@@ -266,20 +290,18 @@ fn prop<'a>(
 ) -> Result<()> {
     let handler = match binding.kind {
         BindingKind::Prop => false,
-        BindingKind::Event
-            if component && binding.dynamic_name.is_none() && binding.modifiers.is_empty() =>
-        {
-            true
-        }
+        BindingKind::Event if component && binding.modifiers.is_empty() => true,
         _ => return Err(LegacyReason::Component.into()),
     };
-    if !handler && !component_prop(binding.name)
+    if !component && binding.dynamic_name.is_some()
+        || !handler && binding.dynamic_name.is_none() && !component_prop(binding.name)
         || !fresh && !matches!(binding.name, "class" | "style")
     {
         return Err(LegacyReason::Component.into());
     }
     props.push(Prop {
         key: binding.name,
+        dynamic_name: binding.dynamic_name,
         value: Some(binding.value),
         value_kind: crate::ir::PropValueKind::Expression,
         dynamic: true,

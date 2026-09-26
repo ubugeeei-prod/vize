@@ -66,10 +66,10 @@ fn computed_event_name_is_owned_by_the_checked_graph() {
 }
 
 #[test]
-fn computed_component_events_and_once_events_remain_explicitly_unsupported() {
+fn computed_component_modifiers_and_once_events_remain_explicitly_unsupported() {
     for source in [
-        r#"<MyComp @[name]="save" />"#,
-        r#"<component :is="component" @[name]="save" />"#,
+        r#"<MyComp @[name].stop="save" />"#,
+        r#"<component :is="component" @[name].stop="save" />"#,
         r#"<button v-once @[name]="save">go</button>"#,
     ] {
         let allocator = Allocator::new();
