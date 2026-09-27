@@ -4,8 +4,9 @@
 [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) at main `73e8f079`.
 The full queue passed 12,808 Rust tests and 5,272 tooling cases (5,260 passes,
 12 known skips, no failures or cancellations). Trusted registry/Git, direct
-JS, playground and tooling targets have actual save receipts; later restore and
-the full main dispatch remain pending. The paired issue comment is below.
+JS, playground and tooling targets have actual save receipts. Full main dispatch
+36327090288 succeeded; later restoration and nested target saving remain
+pending. The paired issue comment is below.
 
 ## Decision
 
@@ -75,8 +76,11 @@ cache-list API reports zero entries; the latter is not proof of backend absence.
 Full Check 36327090288's source-coverage target uploaded 41,705,863,669 bytes,
 then cache finalization rejected it at the backend's 25 GB entry limit.
 Coverage validation passed and the stable provider post completed, but that
-Actions target was not saved. Bounding large role entries is a separate TODO;
-this repair neither deletes caches nor changes artifact paths or test commands.
+Actions target was not saved. Its target post took 886.677 seconds. The same
+full Check's clippy/test target uploaded 27,734,456,109 bytes and was rejected
+by the same limit; its target post took 670.762 seconds after tests passed.
+Bounding these impossible uploads is a separate TODO; this repair neither
+deletes caches nor changes artifact paths or test commands.
 
 The current full Check has trusted target writers for `test-scripts`,
 `test-js-packages`, `playground-test` and `clippy-test`. PR-only `nextest-ci`
