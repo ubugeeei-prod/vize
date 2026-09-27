@@ -82,6 +82,9 @@ jobs:
             cp target/rust-test-archive/receipt.json "$timing_dir/archive-receipt.json"
           fi
           exit "$phase_exit"
+      - name: List full workspace archive tests
+        if: ${{ inputs.run-rust }}
+        run: cargo nextest list --archive-file target/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile full --message-format json > "$RUNNER_TEMP/rust-test-timings/workspace-tests.json"
       - name: Run Rust workspace doctests
         id: rust-test-run
         if: ${{ inputs.run-rust }}

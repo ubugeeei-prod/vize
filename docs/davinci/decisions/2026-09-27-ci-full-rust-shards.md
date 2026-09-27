@@ -7,7 +7,10 @@ infrastructure in #6918; it does not change product pipeline stages.
 
 The successful source job [108585919965](https://github.com/ubugeeei-prod/vize/actions/runs/36307142073/job/108585919965)
 compiled its full workspace tests in 153 seconds, then spent 1150 seconds in
-workspace execution and doctests. Cargo's completed binary receipts identify
+workspace execution and doctests. The separate main queue job
+108589803932 later observed 1108 seconds for that combined phase; its 12781
+passed/43 ignored total mixes ordinary tests and doctests and is not a nextest
+workspace count. Cargo's completed binary receipts identify
 240.60 seconds for 60 mounted-behavior cases, 141.41 seconds for 36 upstream
 Vapor cases, 96.24 seconds for 20 Vapor runtime contracts, 89.80 seconds for one
 transition case, and 78.28 seconds for 24 patterned-template cases. These are
@@ -35,7 +38,10 @@ Extension-host guest builds remain serialized within each isolated worker.
 The Rust aggregate requires both the full builder and all four shard results;
 missing, failed, cancelled or skipped selected jobs fail it. The builder timing
 receipt now measures archive construction and doctests separately. Each worker
-uploads its actual JUnit and elapsed-time receipt. The full daily/manual Cargo
+uploads its actual JUnit and elapsed-time receipt. The builder also retains
+the full archive's named JSON test inventory in its existing timing artifact.
+Compare ordinary selected and declared-ignored identities against the four
+JUnit files; compare doctests and feature-command results separately. The full daily/manual Cargo
 recipe remains intact for independent parity checks.
 
 ## Validation still required
