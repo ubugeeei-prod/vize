@@ -26,6 +26,7 @@
 
 extern crate alloc;
 
+pub mod decision;
 pub mod extract;
 pub mod folio;
 pub mod lattice;

@@ -11,9 +11,11 @@
 
 extern crate alloc;
 
+pub mod decision;
 mod lower;
 mod partition;
 
+pub use decision::build_decisions;
 pub use lower::{Lowered, lower};
 pub use partition::{
     FolioPartitionFact, L3PartitionFolio, PartitionFact, PartitionFacts, PartitionKind,
