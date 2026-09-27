@@ -23,6 +23,12 @@ compatibility users, so no aliases or fallback readers are added.
 - **CLI.** `vize dump --level l1|l2|l3 --roundtrip FILE` checks byte identity of
   a parse/print roundtrip. Exit 0 identity, 1 failure, 2 usage.
 
+Instruction ceilings: the renames moved the process memory map, and
+`stacker`'s first-use stack probe parses `/proc/self/maps` inside the measured
+window. The harness now takes that probe before any window (the v-for lowering
+probe drops from ~150k to ~21k instructions). The patina markup visit also
+reads its rule name once and pre-sizes the content-model fact maps.
+
 Dropped from the stack: one-shot rename/replay scripts under
 `tools/support/levels/` and their tests, and the per-slice evidence records.
 Legacy products stay byte-exact. Remaining #6832 work: formal/Lean namespaces,
