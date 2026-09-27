@@ -38,6 +38,7 @@ mod no_textarea_mustache_tests;
 mod permitted_contents_tests;
 mod placeholder_label_option_tests;
 mod require_datetime_tests;
+mod static_binding_items;
 mod use_list_tests;
 
 #[cfg(test)]

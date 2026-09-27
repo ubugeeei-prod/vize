@@ -64,6 +64,26 @@ pub(in crate::markup) fn walk_items<'a>(
     surface: Option<&'a vize_l1::Element<'a>>,
     visitor: &mut dyn FnMut(L2Item<'a>),
 ) {
+    // Static-only owners need neither an empty binding lookup for each L1
+    // attribute nor the span merge used by JSX owners with attached ops.
+    if bindings.is_empty() {
+        if let Some(element) = surface {
+            for attr in &element.open.attrs {
+                let span = attr_span(doc.source, attr);
+                if let Some(attribute) = attributes.iter().find(|attribute| attribute.span == span)
+                {
+                    visitor(L2Item::Attribute { attribute, doc });
+                } else if !is_consumed_spelling(attr) {
+                    visitor(L2Item::Surface { attr, doc });
+                }
+            }
+        } else {
+            for attribute in attributes {
+                visitor(L2Item::Attribute { attribute, doc });
+            }
+        }
+        return;
+    }
     if let Some(element) = surface {
         for attr in &element.open.attrs {
             let span = attr_span(doc.source, attr);
