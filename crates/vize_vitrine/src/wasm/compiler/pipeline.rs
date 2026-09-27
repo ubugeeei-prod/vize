@@ -52,7 +52,6 @@ fn compile_internal_scoped(
             ..Default::default()
         };
         let ssr_experimental_opts = SsrCompilerExperimentalOptions {
-            slotted: None,
             component_name: self_component_name(opts).map(Into::into),
             self_component: experimental_self_component,
             source_map: opts.source_map.unwrap_or(false),
