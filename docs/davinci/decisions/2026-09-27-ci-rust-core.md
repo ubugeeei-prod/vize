@@ -127,4 +127,4 @@ projects require T1 metadata and complete unfiltered real-TSGO runtime execution
 
 The reserved-expression child extends the exact Canon group only with the
 present `reserved_prop_shapes_preserve_literal_and_member_diagnostics` test.
-Both projects require T1 metadata and unchanged full Cargo runtime execution.
+Both projects require T1 metadata and complete unfiltered real-TSGO runtime execution.
