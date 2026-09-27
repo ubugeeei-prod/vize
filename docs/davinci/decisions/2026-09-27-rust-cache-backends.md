@@ -7,11 +7,14 @@ remain pending. The same issue comment is drafted below for paired publication.
 ## Decision
 
 PRs, merge groups and every nondefault-branch checkout use the existing pinned
-Actions cache action. Only push, schedule or manual dispatch on the actual
+Actions restore-only action; they cannot save into any branch namespace. Only push, schedule or manual dispatch on the actual
 repository default branch may use the existing stable Blacksmith namespaces.
 The checked-out commit must equal the event SHA; a manual dispatch that checks
 out another commit uses Actions cache. GitHub-hosted runners use Actions cache.
-Unknown events and malformed repository/ref/SHA metadata fail before any mount.
+Only that trusted context can save Actions entries, including on GitHub-hosted
+runners. Pull-request-target, workflow-run and repository-dispatch contexts are
+restore-only even if their event ref names the default branch. Unknown events
+and malformed repository/ref/SHA metadata fail before any mount.
 
 The compatibility prefix input remains accepted, but no per-PR-number or
 per-candidate-SHA Blacksmith key is created. Stable provider registry, Git and
@@ -59,7 +62,7 @@ deletion or billing configuration changes are part of this preparation.
 TODO: after the existing merge backlog and source review, publish the paired
 issue comment; verify a trusted default-branch seed followed by a PR restore
 and all fresh runtime/source reports. No CI p50/p90 or wall-time gain is claimed.
-Actions cache's branch isolation and eviction apply independently of the
+Actions cache's restoration scope and eviction apply independently of the
 provider disk limit; initial cache misses still build and test normally.
 
 The current full Check has trusted target writers for `test-scripts`,
@@ -73,7 +76,7 @@ a mounted target alone does not establish a warm archive build.
 ## Issue #6830 comment draft
 
 The private cache preparation bounds future provider names by routing PRs,
-merge groups and nondefault branches to Actions cache. Only an exact trusted
+merge groups and nondefault branches to restore-only Actions cache. Only an exact trusted
 default-branch checkout writes existing stable Blacksmith keys, and those
 clones seed Actions without a second restore into their mounted paths. Failed
 mounts fall back per path. All validation remains required; external cleanup

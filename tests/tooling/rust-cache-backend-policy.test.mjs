@@ -116,7 +116,10 @@ test("actual backend children miss safely for many PRs, queues and nondefault di
         assert.equal(result.trace.filter((row) => row.kind === "sticky").length, 0);
         const caches = result.trace.filter((row) => row.kind === "cache");
         assert.equal(caches.length, 3);
-        assert.ok(caches.every((row) => row.hit === false && row.lookup === false));
+        assert.ok(
+          caches.every((row) => row.hit === false && row.lookup === false && row.restoreOnly),
+        );
+        assert.equal(result.trace.filter((row) => row.kind === "cache-post").length, 0);
         const workload = result.trace.filter((row) => row.kind === "workload");
         assert.equal(workload.length, 1);
         assert.equal(workload[0].before, null);
@@ -127,6 +130,36 @@ test("actual backend children miss safely for many PRs, queues and nondefault di
         );
       });
   }
+});
+
+test("untrusted default-branch event types never register a cache save", () => {
+  for (const event of ["pull_request_target", "workflow_run", "repository_dispatch"]) {
+    cacheFixture((fixture) => {
+      const result = executeCacheAction(fixture, fixture.context(event), { hit: true });
+      assert.equal(result.status, 0);
+      assert.equal(result.outputs["cache-policy"].trusted, "false");
+      assert.equal(
+        result.trace.filter((row) => row.kind === "sticky" || row.kind === "cache-post").length,
+        0,
+      );
+      assert.ok(result.trace.filter((row) => row.kind === "cache").every((row) => row.restoreOnly));
+    });
+  }
+});
+
+test("a trusted GitHub-hosted miss seeds Actions without mounting a provider", () => {
+  cacheFixture((fixture) => {
+    const context = { ...fixture.context(), runnerEnvironment: "github-hosted" };
+    const result = executeCacheAction(fixture, context);
+    assert.equal(result.status, 0);
+    assert.equal(result.trace.filter((row) => row.kind === "sticky").length, 0);
+    assert.ok(
+      result.trace
+        .filter((row) => row.kind === "cache")
+        .every((row) => !row.restoreOnly && !row.lookup),
+    );
+    assert.equal(result.trace.filter((row) => row.kind === "cache-post").length, 3);
+  });
 });
 
 test("a trusted seed includes the fresh artifact and is saved before unmount", () => {

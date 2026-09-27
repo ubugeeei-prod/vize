@@ -123,8 +123,8 @@ function value(expression, inputs, outputs) {
   const expr = expression.replace(/^\s*\$\{\{\s*|\s*\}\}\s*$/g, "").trim();
   if (expr.includes(" && "))
     return expr.split(" && ").every((part) => value(part, inputs, outputs));
-  const equality = expr.match(/^(.*) == 'true'$/);
-  if (equality) return value(equality[1], inputs, outputs) === "true";
+  const equality = expr.match(/^(.*) == '(true|false)'$/);
+  if (equality) return value(equality[1], inputs, outputs) === equality[2];
   const step = expr.match(/^steps\.([\w-]+)\.outputs\.([\w-]+)$/);
   if (step) return outputs[step[1]]?.[step[2]] ?? "";
   const input = expr.match(/^inputs\.([\w-]+)$/);
@@ -221,10 +221,21 @@ export function executeCacheAction(fixture, context, { mountFailures = [], hit =
         const request = { name, key: args.key, path, fail: mountFailures.includes(name) };
         child({ kind: "sticky", ...request });
         posts.push({ kind: "sticky-post", ...request });
-      } else if (step.uses.startsWith("actions/cache@")) {
-        const request = { name, key: args.key, path, lookup: args["lookup-only"], hit };
+      } else if (
+        step.uses.startsWith("actions/cache@") ||
+        step.uses.startsWith("actions/cache/restore@")
+      ) {
+        const restoreOnly = step.uses.startsWith("actions/cache/restore@");
+        const request = {
+          name,
+          key: args.key,
+          path,
+          lookup: args["lookup-only"] ?? false,
+          hit,
+          restoreOnly,
+        };
         child({ kind: "cache", ...request });
-        posts.push({ kind: "cache-post", ...request });
+        if (!restoreOnly) posts.push({ kind: "cache-post", ...request });
       } else throw new Error(`Unexpected cache action: ${step.uses}`);
     }
   }

@@ -89,6 +89,7 @@ export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } =
   const base = `rust-cache-v1-${repository}-${runnerOs}-${runnerArch}-${suffix}-${fingerprint(cwd)}`;
   const target = `${base}-${role}-target-`;
   const output = {
+    trusted: String(trusted),
     sticky: String(sticky),
     "registry-key": `${base}-registry`,
     "git-key": `${base}-git`,
