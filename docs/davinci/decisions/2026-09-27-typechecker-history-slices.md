@@ -7,3 +7,4 @@
 | [Event handlers](./2026-09-27-typechecker-fix-history.md)                    | Three #4996 inputs, every batch row without filtering or normalization             | Whole bundled patch, shared/native comparison and #6849 replacement |
 | [Definite assignment](./2026-09-27-template-definite-assignment-fixtures.md) | 18 original SFCs and one TSX SFC; all seven diagnostics and an empty project       | Whole bundled patch, full-range and native equivalence              |
 | [Required props](./2026-09-27-required-props-diagnostic-fixtures.md)         | All 24 original identities, full messages/order; actual astral-prefix UTF16 column | Whole bundled patch, full-range and native equivalence              |
+| [Unicode values](./2026-09-27-unicode-value-diagnostic-fixtures.md) | Japanese/emoji literal diagnostics; production byte-corruption fault fails | Broader template/comment paths, full-range and native equivalence |

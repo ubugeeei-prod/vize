@@ -54,7 +54,7 @@ struct Pack {
     version: u32,
     issue: u32,
     regression_commit: String,
-    historical_issue: u32,
+    historical_issue: Option<u32>,
     source_revision: String,
     diagnostic_contract: Contract,
     cases: Vec<Case>,
@@ -65,7 +65,7 @@ fn inline_event_assignments_preserve_exact_diagnostics() {
     check_pack(
         "event-handler-narrowing",
         "613ce3a5a31d22ec0dfd42feab25772e63fc54bf",
-        4996,
+        Some(4996),
         &[
             "component-sibling-valid",
             "native-sibling-valid",
@@ -79,7 +79,7 @@ fn deferred_template_reads_preserve_script_diagnostics() {
     check_pack(
         "template-definite-assignment",
         "39bf60c0614c888ba82f962b944160ce839cf035",
-        4239,
+        Some(4239),
         &["vue3-complete-project", "tsx-deferred-template"],
     );
 }
@@ -89,12 +89,22 @@ fn required_props_keep_exact_unicode_diagnostics() {
     check_pack(
         "required-props-edges",
         "f3a26b0e30c98b135a9e897c3584526eb0a2b96d",
-        3581,
+        Some(3581),
         &["complete-attribute-boundaries"],
     );
 }
 
-fn check_pack(name: &str, regression: &str, historical_issue: u32, case_ids: &[&str]) {
+#[test]
+fn unicode_reserved_props_preserve_value_diagnostics() {
+    check_pack(
+        "unicode-reserved-props",
+        "13e5ec2a9752c5d8d41a9510f54e7096a583bb78",
+        None,
+        &["literal-values-valid", "literal-values-invalid"],
+    );
+}
+
+fn check_pack(name: &str, regression: &str, historical_issue: Option<u32>, case_ids: &[&str]) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let fixtures = root
         .join("tests/_fixtures/differential/typechecker")
