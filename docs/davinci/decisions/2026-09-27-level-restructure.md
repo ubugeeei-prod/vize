@@ -185,6 +185,9 @@ Vize follows language-toolchain practice, not compiler-only practice. It stays l
 - **The formatter keeps its Doc IR separate from its printer** ([#6875](https://github.com/ubugeeei-prod/vize/issues/6875)).
 - **Edits have one representation.** Diagnostic fixes, code actions and lint autofixes are all L1 span edits tagged with a document version ([#6876](https://github.com/ubugeeei-prod/vize/issues/6876)).
 
+[Inspector comparison transport](./2026-09-27-inspector-compare-transport.md)
+preserves authoritative child failures when Node exits before input delivery.
+
 ## CI tiers
 
 Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861](https://github.com/ubugeeei-prod/vize/issues/6861)–[#6867](https://github.com/ubugeeei-prod/vize/issues/6867). [First-publish control repair](./2026-09-27-sdk-bootstrap-control.md) is tracked in [#6895](https://github.com/ubugeeei-prod/vize/issues/6895).
@@ -216,9 +219,6 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 [Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records Cargo corpus,
 Moon/benchmark dependencies and the immutable queue source-length base for #6863.
-
-[Inspector comparison transport](./2026-09-27-inspector-compare-transport.md)
-preserves authoritative child failures when Node exits before input delivery.
 
 ## Order of work
 
