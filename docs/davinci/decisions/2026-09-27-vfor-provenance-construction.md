@@ -208,3 +208,16 @@ executes each of the twelve named controls successfully, plus
 This is actual typed default-workspace evidence for the added controls, not
 eleven-feature differential acceptance. The primary Rust Test remains running;
 the failed instruction ceilings and Markdown formatting failure remain intact.
+
+The primary Rust job `108631662424` subsequently completes successfully on the
+same frozen source. Its workspace run executes all twelve controls and the
+small-stack test; the unchanged eleven feature-enabled recipes also complete.
+Their feature phase records 117 passes, zero failures and one existing ignored
+Vitrine typecheck doctest. The first lowering/DOM/Pug/production recipes retain
+their existing committed-battery/fixture scope when the external corpus variable
+is unset; SSR and Patina retain their external-corpus environment. This accepts
+the actual recipe's scope, without claiming every repository file was admitted.
+The raw Rust log has SHA-256
+`707e1a2bf1a33223c4dbf49dc48a7810de0ff4170fe6e85126f4cf03cb1cedb6`.
+Full Check still fails Markdown formatting, and the seventeen instruction
+ceilings still fail. No public replay, new dispatch or native acceptance follows.
