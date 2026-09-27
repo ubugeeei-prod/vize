@@ -111,6 +111,10 @@ complete SFC Result fixtures, SSR snapshot normalization limits and the next
 target-specific capture gaps. Whole-history coverage and native acceptance
 remain unfinished; fresh Actions execution is required before merge.
 
+The same compiler record adds the measured complete diagnostic Result for
+#1416 and separates eight fix-linked profiles from two feature controls in
+the earlier ten-profile archive. Feature controls receive no fix-history credit.
+
 ## Script side
 
 See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side) in the companion record.
