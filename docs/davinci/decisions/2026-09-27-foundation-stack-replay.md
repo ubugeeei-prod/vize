@@ -98,6 +98,12 @@ composition of old CI `de61316b9`, original #6907 `9a0d6219` and repaired CI
 are preserved. Central decision details moved verbatim to this companion;
 current main's Nuxt, SSR and CI records remain intact.
 
+Final formatting found Markdown column alignment left by the shorter L3
+name in the original stability correction. Formatting changes table padding
+and separator widths only; parsed table cells and every other line remain
+identical. Cargo formatting passed. Changed-file formatting covers 113 files,
+and source line/whitespace ratchets remain enforced.
+
 TODO: publish the three layers after CI priority is resolved, mirror their
 decisions on #6831/#6832 and validate fresh exact-head Actions and actual
 merge-group results. No local full production build, browser/WASM run or
