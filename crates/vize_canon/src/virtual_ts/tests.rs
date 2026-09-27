@@ -20,6 +20,7 @@ mod options_api_setup_spread;
 mod options_api_this_bridge;
 mod slot_component_bindings;
 mod slot_outlet_spread;
+mod slot_outlet_union;
 mod template_ref_unwrap;
 mod unused_refs;
 mod vif_chain;
