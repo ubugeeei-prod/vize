@@ -62,3 +62,25 @@ The existing optimizer debug binary stays available. Its Croquis, budget,
 remarks and pipeline migration, shared production capture and playground
 generator remain unfinished. #6832 stays open; #6833 remains blocked until
 #6832 is complete.
+
+## Replay after repaired CI and canonical Dump APIs
+
+This locally prepared layer follows `9672e648a`. The CLI source patch has the
+same stable patch id as its original (`67a4b3d9c1d29427e107def7cbffdffcc6e2c2e8`
+for `crates/vize`); the only conflict preserves all links in the central
+record. Observation and final oracle patches retain their complete stable
+patch ids `2cfa60e25281c218fc9323689dc78e68254d59a4` and
+`e5fe8906128687e85b42cbba2e9f7c09dcf7dbdc`.
+
+At the prepared composition, 34 existing focused dependency, workflow,
+module, storage, stability and Dump-boundary contracts pass. Locked/offline
+metadata has 38 workspace packages and 783 targets and registers exactly one
+`dump_roundtrip_cli` integration test with no required feature. Cargo format,
+Markdown format, whitespace and changed-source 350-line checks pass. Neither
+the source-built CLI tests nor fresh Actions were run on this composition;
+the earlier historical binary and output captures remain separate evidence.
+
+The pipeline/all-level CLI and shared production capture are active follow-up
+slices. Their current native availability must be reported explicitly;
+roundtrip success does not certify native product completion. These decisions
+are mirrored in the [#6832 record](https://github.com/ubugeeei-prod/vize/issues/6832#issuecomment-5854158632).
