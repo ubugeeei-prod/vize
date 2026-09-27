@@ -24,3 +24,10 @@ this adds neither a second receipt nor another workflow or build stage.
 This closes an evidence identity gap, not a native product acceptance gap.
 Full runtime fixture Actions must still execute with the bound current binary;
 PR T0 deferrals, unhydrated corpus limitations and required T1 work remain.
+
+A controlled VP task-route check imports the actual root configuration and
+keeps its cached-script setting and unchanged `test:scripts` task definition.
+All five Node test workers receive both binding variables and execute the fresh
+receipted fixture binary. Removing its receipt makes every worker fail despite
+a runnable older debug binary. The source-built fixture dispatches still need
+their own exact-head runtime proof; this route check supplies no product credit.
