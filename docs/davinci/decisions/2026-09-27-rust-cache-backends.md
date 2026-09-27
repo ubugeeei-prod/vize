@@ -72,6 +72,11 @@ Actions cache's restoration scope and eviction apply independently of the
 provider disk limit; initial cache misses still build and test normally.
 The runner-served cache logs report real saved/read keys while the GitHub
 cache-list API reports zero entries; the latter is not proof of backend absence.
+Full Check 36327090288's source-coverage target uploaded 41,705,863,669 bytes,
+then cache finalization rejected it at the backend's 25 GB entry limit.
+Coverage validation passed and the stable provider post completed, but that
+Actions target was not saved. Bounding large role entries is a separate TODO;
+this repair neither deletes caches nor changes artifact paths or test commands.
 
 The current full Check has trusted target writers for `test-scripts`,
 `test-js-packages`, `playground-test` and `clippy-test`. PR-only `nextest-ci`
@@ -99,12 +104,13 @@ The observed runner is 2.337.0; its [composite handler](https://github.com/actio
 sets the composite inputs during post too. The [pinned cache save code](https://github.com/actions/cache/blob/27d5ce7f107fe9357f9df03efb73ab90386fccae/src/saveImpl.ts)
 reads path again, even when its primary key was retained in action state.
 
-The private repair passes the same immutable target inputs to trusted saves
+The reviewed repair passes the same immutable target inputs to trusted saves
 and untrusted restores. The pinned cache SDK 5.0.5 hashes the literal path
 strings into its cache version without normalization; relative writers and
 absolute readers would miss despite identical keys. Its exact package and
 integrity are recorded in the [pinned action lockfile](https://github.com/actions/cache/blob/27d5ce7f107fe9357f9df03efb73ab90386fccae/package-lock.json).
-Existing absolute-path target seeds therefore miss once after this repair;
+Current callers use relative inputs; their old absolute-path target versions
+therefore miss once after this repair;
 nextest and other unseeded roles still build normally. Registry/Git use the
 same literal paths and retain their existing versions. No entries are deleted.
 The policy still validates those paths inside the workspace before any child

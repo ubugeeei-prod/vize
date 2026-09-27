@@ -280,7 +280,7 @@ with the formatter's always-upload corpus evidence without changing build setup.
 [Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records Cargo corpus,
 Moon/benchmark dependencies and the immutable queue source-length base for #6863.
 
-[Rust cache backends](./2026-09-27-rust-cache-backends.md) records #6830's bounded provider namespaces and actual partial trusted seed receipts; [nested post paths](./2026-09-27-rust-cache-backends.md#nested-cache-post-paths) records the private missing-target repair. Full dispatch and later restore proof remain pending.
+[Rust cache backends](./2026-09-27-rust-cache-backends.md) records #6830's bounded provider namespaces and actual partial trusted seed receipts; [nested post paths](./2026-09-27-rust-cache-backends.md#nested-cache-post-paths) records the reviewed missing-target repair. Full dispatch and later restore proof remain pending.
 
 ## Order of work
 
