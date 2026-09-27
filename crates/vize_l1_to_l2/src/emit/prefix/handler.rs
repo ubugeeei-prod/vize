@@ -10,7 +10,7 @@ use super::globals::is_simple_identifier;
 use super::rewrite::{Retained, RewriteResult, rewrite_expression};
 use super::scope::PrefixScope;
 use super::shape::{
-    is_event_handler_reference_expression, is_event_handler_reference_node, is_function_expression,
+    function_and_reference, is_event_handler_reference_node, is_function_expression,
     is_function_expression_node,
 };
 use super::strip::strip_scope_prefixes_for_slot_params;
@@ -116,12 +116,11 @@ pub(super) fn finish_event_handler(
     } else {
         processed
     };
-    if is_function_expression(processed.as_str()) {
+    let (is_function, is_reference) = handler_shape(processed.as_str());
+    if is_function {
         return processed;
     }
-    if is_simple_identifier(processed.as_str())
-        || is_event_handler_reference_expression(processed.as_str())
-    {
+    if is_reference {
         // A cached reference is guarded and forwarded, so the slot holds
         // a stable closure rather than whatever the name held on the
         // first render.
@@ -147,4 +146,92 @@ pub(super) fn finish_event_handler(
         code.push(')');
     }
     code
+}
+
+/// Prefixes the rewrite writes before a simple identifier. None of them is
+/// a reserved word, so `<prefix><name>(.<name>)*` is a static member chain.
+const MEMBER_ROOTS: [&str; 6] = [
+    "_ctx.",
+    "$setup.",
+    "$props.",
+    "__props.",
+    "$data.",
+    "$options.",
+];
+
+/// `(is_function_expression, is_simple_identifier ||
+/// is_event_handler_reference_expression)` over processed handler text,
+/// from at most one parse.
+///
+/// A bare identifier is never a function expression, and an ASCII name
+/// chain under a rewrite prefix is always a static member expression, so
+/// neither needs the parser. Anything else reads both shapes off the one
+/// whole-expression parse the two string checks used to repeat.
+fn handler_shape(processed: &str) -> (bool, bool) {
+    if is_simple_identifier(processed) || is_prefixed_member_chain(processed) {
+        return (false, true);
+    }
+    function_and_reference(processed)
+}
+
+/// Whether `text` is `<rewrite prefix><name>(.<name>)*` over ASCII names.
+pub(super) fn is_prefixed_member_chain(text: &str) -> bool {
+    let Some(rest) = MEMBER_ROOTS.iter().find_map(|root| text.strip_prefix(root)) else {
+        return false;
+    };
+    rest.split('.').all(|name| {
+        let mut bytes = name.bytes();
+        bytes
+            .next()
+            .is_some_and(|b| b.is_ascii_alphabetic() || b == b'_' || b == b'$')
+            && bytes.all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'$')
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::globals::is_simple_identifier;
+    use super::super::shape::{is_event_handler_reference_expression, is_function_expression};
+    use super::{handler_shape, is_prefixed_member_chain};
+
+    #[test]
+    fn the_shortcut_shapes_match_the_parsed_shapes() {
+        for text in [
+            "h",
+            "true",
+            "async",
+            "_ctx.h",
+            "$setup.h.value",
+            "$props.a.b",
+            "__props.class",
+            "_ctx.h()",
+            "_ctx.h(1).x",
+            "_ctx.a + 1",
+            "() => _ctx.h()",
+            "function () {}",
+            "_ctx.a?.b",
+            "_ctx.",
+            "_ctx..a",
+            "_ctx.1a",
+            "_ctx.a // c",
+            "_ctx.count += 1",
+            "_ctx.a; _ctx.b",
+        ] {
+            let parsed = (
+                is_function_expression(text),
+                is_simple_identifier(text) || is_event_handler_reference_expression(text),
+            );
+            assert_eq!(handler_shape(text), parsed, "{text}");
+        }
+    }
+
+    #[test]
+    fn only_ascii_name_chains_under_a_rewrite_prefix_skip_the_parser() {
+        assert!(is_prefixed_member_chain("_ctx.onClick"));
+        assert!(is_prefixed_member_chain("$setup.a.value"));
+        assert!(!is_prefixed_member_chain("ctx.onClick"));
+        assert!(!is_prefixed_member_chain("_ctx."));
+        assert!(!is_prefixed_member_chain("_ctx.a-b"));
+        assert!(!is_prefixed_member_chain("_ctx.é"));
+    }
 }

@@ -32,6 +32,15 @@ pub(super) fn is_event_handler_reference_expression(content: &str) -> bool {
     with_whole_expression(content, is_handler_reference_shape).unwrap_or(false)
 }
 
+/// `(is_function_expression, is_event_handler_reference_expression)` from
+/// one whole-expression parse.
+pub(super) fn function_and_reference(content: &str) -> (bool, bool) {
+    with_whole_expression(content, |expr| {
+        (is_function_shape(expr), is_handler_reference_shape(expr))
+    })
+    .unwrap_or((false, false))
+}
+
 /// `is_function_expression` (string entry).
 pub(super) fn is_function_expression(content: &str) -> bool {
     with_whole_expression(content, is_function_shape).unwrap_or(false)

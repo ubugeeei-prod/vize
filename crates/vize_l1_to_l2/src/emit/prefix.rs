@@ -252,7 +252,11 @@ pub(super) fn prefix_inline_handler(
 /// Whether processed handler text is already a function or a callable
 /// reference (the codegen passes such text through unwrapped).
 pub(super) fn handler_text_is_callable(text: &str) -> bool {
-    shape::is_function_expression(text) || shape::is_event_handler_reference_expression(text)
+    if handler::is_prefixed_member_chain(text) {
+        return true;
+    }
+    let (is_function, is_reference) = shape::function_and_reference(text);
+    is_function || is_reference
 }
 
 /// `emit_dynamic_directive_arg` under `prefix_identifiers`.
