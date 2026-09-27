@@ -79,6 +79,7 @@ jobs:
           printf '{"phase":"build","elapsed_seconds":%d,"exit_code":%d}\n' "$((SECONDS - phase_started))" "$phase_exit" > "$timing_dir/build.json"
           if [[ "$phase_exit" == 0 ]]; then
             node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-test-archive/tests.tar.zst target/rust-test-archive/receipt.json
+            cp target/rust-test-archive/receipt.json "$timing_dir/archive-receipt.json"
           fi
           exit "$phase_exit"
       - name: Run Rust workspace doctests

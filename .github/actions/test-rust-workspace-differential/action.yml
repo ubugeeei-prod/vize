@@ -2,7 +2,7 @@ name: Test Rust workspace and differential corpora
 description: Reuse the full Check Rust test recipe in manual checks and the merge queue
 inputs:
   workspace-already-tested:
-    description: The calling Rust job already completed its full workspace test step
+    description: The caller supplies completed workspace tests or a required archive-shard tier
     required: false
     default: "false"
 runs:
