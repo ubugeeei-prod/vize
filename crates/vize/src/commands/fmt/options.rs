@@ -8,12 +8,12 @@ use vize_glyph::VueVersion;
 #[inline]
 pub(super) fn build_format_options(args: &FmtArgs) -> (FormatOptions, VueVersion) {
     // Load config file as base (zero-cost if no file exists)
-    let cfg = if args.no_config {
-        config::VizeConfig::default()
+    let loaded = if args.no_config {
+        config::LoadedConfigWithFeatures::default()
     } else {
-        config::load_config(args.config.as_deref())
+        config::load_config_with_features_and_source(args.config.as_deref())
     };
-    let mut opts = config::to_glyph_format_options(&cfg.formatter);
+    let mut opts = config::to_glyph_format_options(&loaded.config.formatter);
 
     // CLI flags override config values
     if let Some(v) = args.print_width {
@@ -44,5 +44,5 @@ pub(super) fn build_format_options(args: &FmtArgs) -> (FormatOptions, VueVersion
         opts.normalize_directive_shorthands = v;
     }
     opts.skip_script_stabilization = !args.write;
-    (opts, cfg.vue_version.unwrap_or_default())
+    (opts, loaded.features.vue_version.unwrap_or_default())
 }
