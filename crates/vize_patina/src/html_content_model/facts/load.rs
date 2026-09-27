@@ -8,6 +8,8 @@ use super::{Attr, Cond, ElemId, Facts, Members, Ns};
 use crate::html_content_model::rows::ROWS;
 
 #[cfg(test)]
+mod capacity_tests;
+#[cfg(test)]
 mod tests;
 
 impl Facts {
@@ -33,6 +35,7 @@ impl Facts {
         };
         let mut seen = [false; ROWS.len()];
         let mut categories: FxHashMap<&'static str, Members> = FxHashMap::default();
+        let mut initial_capacity_reserved = false;
         for line in tsv
             .lines()
             .filter(|line| !line.is_empty() && !line.starts_with('#'))
@@ -48,6 +51,17 @@ impl Facts {
                 defects.push(cstr!("malformed row `{line}`"));
                 continue;
             };
+            if !initial_capacity_reserved {
+                // The first parsed row supplies a bounded hint, not identities.
+                let capacity = members
+                    .split(' ')
+                    .filter(|member| *member != "#text" && !member.starts_with('@'))
+                    .take(256)
+                    .count();
+                facts.names.reserve(capacity);
+                facts.ids.reserve(capacity);
+                initial_capacity_reserved = true;
+            }
             let mut row = Members {
                 anchor,
                 ..Members::default()
