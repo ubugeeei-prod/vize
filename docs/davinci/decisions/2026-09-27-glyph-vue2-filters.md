@@ -39,9 +39,14 @@ directly against the coordinated narrow target's exact dependency fingerprints,
 with all output written outside that target. All three tests passed, including
 full bytes and `changed` over three passes. Twelve differential runner contract
 checks passed, including mutated config hashes, selectors, runtime paths and
-invocation evidence. These are public API/contract results; Actions CLI, LSP and
-binding validation remain pending. The two old CLI captures remain untouched.
-Native formatter acceptance and paired comparisons remain zero.
+invocation evidence. [Actions run 36310533270](https://github.com/ubugeeei-prod/vize/actions/runs/36310533270)
+passed at `c953521e42ffa8ea07ec8eaaae2c4d4fbe130a7c`: the actual CLI config/no-config
+and exact corpus checks, LSP document/range/on-type requests, native JS selector
+and real browser WASM selector tests all executed successfully. The binding
+checks cover Vue 2/2.7, default/explicit Vue 3, invalid selectors and complete
+fixed-point outputs. The two old CLI captures remain untouched. Native formatter
+acceptance and paired comparisons remain zero. Main promotion and merge queue
+proof are tracked on [#6952](https://github.com/ubugeeei-prod/vize/pull/6952).
 
 TODO [#6836](https://github.com/ubugeeei-prod/vize/issues/6836): consume the native
 FilterChain payload when the formatter migration is allowed by #6882.
