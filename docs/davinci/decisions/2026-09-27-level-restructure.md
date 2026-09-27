@@ -328,3 +328,8 @@ the earlier ten-profile archive. Feature controls receive no fix-history credit.
 [SSR and Vapor history witness audit](./2026-09-27-compiler-target-history-audit.md)
 records 19 SSR and 20 Vapor inspected fixes, exact-output gaps and original
 option boundaries. Preserve shape/runtime checks alongside future raw byte pins.
+
+[Complete SSR fix-history capture](./2026-09-27-ssr-fix-history-captures.md)
+records nine actual repeated full outputs for #990, #3701 and #2487, with
+source/executable identity and exact options. Fresh Actions and complete
+history/native acceptance remain pending; original behavior witnesses stay.
