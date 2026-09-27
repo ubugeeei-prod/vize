@@ -24,6 +24,7 @@ jobs:
       CARGO_BUILD_JOBS: "12"
       RUST_TEST_THREADS: "4"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
+      VIZE_TEST_REQUIRE_TSGO: "1"
     steps:
       - name: Explain documentation-only skip
         if: ${{ !inputs.run-rust }}
@@ -34,6 +35,7 @@ jobs:
         if: ${{ inputs.run-rust }}
         with:
           components: clippy
+          toolchain: "1.98.0"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ inputs.run-rust }}
         with:
@@ -58,6 +60,10 @@ jobs:
       - name: Install Pkl CLI
         if: ${{ inputs.run-rust }}
         run: npm install --global @pkl-community/pkl@0.27.2
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        if: ${{ inputs.run-rust }}
+        with:
+          tool: cargo-nextest@0.9.146
       - name: Build Rust workspace tests
         id: rust-test-build
         if: ${{ inputs.run-rust }}
@@ -68,18 +74,30 @@ jobs:
           rm -f target/cargo-timings/cargo-timing.html
           touch "$timing_dir/build-started"
           phase_started=$SECONDS
-          if cargo test --workspace --no-run --timings; then phase_exit=0; else phase_exit=$?; fi
+          mkdir -p target/rust-test-archive
+          if cargo nextest archive --workspace --cargo-profile ci --timings --archive-file target/rust-test-archive/tests.tar.zst; then phase_exit=0; else phase_exit=$?; fi
           printf '{"phase":"build","elapsed_seconds":%d,"exit_code":%d}\n' "$((SECONDS - phase_started))" "$phase_exit" > "$timing_dir/build.json"
+          if [[ "$phase_exit" == 0 ]]; then
+            node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-test-archive/tests.tar.zst target/rust-test-archive/receipt.json
+          fi
           exit "$phase_exit"
-      - name: Run Rust workspace tests
+      - name: Run Rust workspace doctests
         id: rust-test-run
         if: ${{ inputs.run-rust }}
         env: { VIZE_TEST_REQUIRE_TSGO: "1" }
         run: |
           phase_started=$SECONDS
-          if cargo test --workspace; then phase_exit=0; else phase_exit=$?; fi
-          printf '{"phase":"execution-and-doctests","elapsed_seconds":%d,"exit_code":%d}\n' "$((SECONDS - phase_started))" "$phase_exit" > "$RUNNER_TEMP/rust-test-timings/run.json"
+          if cargo test --workspace --profile ci --doc; then phase_exit=0; else phase_exit=$?; fi
+          printf '{"phase":"doctests","elapsed_seconds":%d,"exit_code":%d}\n' "$((SECONDS - phase_started))" "$phase_exit" > "$RUNNER_TEMP/rust-test-timings/run.json"
           exit "$phase_exit"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ inputs.run-rust }}
+        with:
+          name: rust-test-archive-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/rust-test-archive/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
       - name: Test merge queue differential corpora
         if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
         uses: ./.github/actions/test-rust-workspace-differential
@@ -93,6 +111,10 @@ jobs:
         env:
           BUILD_OUTCOME: ${{ steps.rust-test-build.outcome }}
           RUN_OUTCOME: ${{ steps.rust-test-run.outcome }}
+          BUILD_COMMAND: cargo nextest archive --workspace --cargo-profile ci --timings --archive-file target/rust-test-archive/tests.tar.zst
+          RUN_COMMAND: cargo test --workspace --profile ci --doc
+          RUN_PHASE: doctests
+          CARGO_TEST_PROFILE: ci
           SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
           CACHE_NAMESPACE: ${{ github.repository }}-${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}clippy-test-target-${{ runner.os }}-${{ runner.arch }}
         run: node tools/support/compat/github/rust-test-timings.mjs
@@ -113,12 +135,14 @@ jobs:
     env:
       CARGO_BUILD_JOBS: "12"
       VIZE_TEST_DISABLE_TSGO: "1"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
       RUST_PLAN_JSON: ${{ inputs.rust-plan }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         with:
           components: clippy
+          toolchain: "1.98.0"
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -152,8 +176,8 @@ jobs:
 
   pr-rust-shard:
     name: Rust tests (${{ matrix.shard }}/4)
-    if: ${{ github.event_name == 'pull_request' && inputs.run-rust }}
-    needs: pr-rust-build
+    if: ${{ always() && !cancelled() && inputs.run-rust && (github.event_name == 'pull_request' && needs.pr-rust-build.result == 'success' || github.event_name == 'merge_group' && needs.merge-rust-source.result == 'success') }}
+    needs: [pr-rust-build, merge-rust-source]
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 20
     strategy:
@@ -163,11 +187,16 @@ jobs:
     env:
       CARGO_BUILD_JOBS: "12"
       VIZE_NUXT_CONFIG_ITERATIONS: "100"
-      VIZE_TEST_DISABLE_TSGO: "1"
+      VIZE_TEST_DISABLE_TSGO: ${{ github.event_name == 'pull_request' && '1' || '' }}
+      VIZE_TEST_REQUIRE_TSGO: ${{ github.event_name == 'merge_group' && '1' || '' }}
+      RUST_TEST_THREADS: "4"
+      NEXTEST_PROFILE: ${{ github.event_name == 'merge_group' && 'full' || 'pr' }}
       SHARD: ${{ matrix.shard }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          toolchain: "1.98.0"
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
@@ -192,13 +221,16 @@ jobs:
           # Cargo creates this baked CARGO_TARGET_TMPDIR even when it is empty.
           # Archive transfer preserves files, so restore the directory here.
           mkdir -p target/tmp
-          cargo nextest run --archive-file .artifacts/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile pr --partition "hash:$SHARD/4" --no-tests=pass
+          phase_started=$SECONDS
+          if cargo nextest run --archive-file .artifacts/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile "$NEXTEST_PROFILE" --partition "hash:$SHARD/4" --no-tests=pass; then phase_exit=0; else phase_exit=$?; fi
+          printf '{"phase":"workspace-shard","shard":%s,"elapsed_seconds":%d,"exit_code":%d}\n' "$SHARD" "$((SECONDS - phase_started))" "$phase_exit" > "target/nextest/$NEXTEST_PROFILE/timing.json"
+          exit "$phase_exit"
       - name: Upload Rust shard results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rust-test-shard-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: target/nextest/pr/junit.xml
+          path: target/nextest/${{ env.NEXTEST_PROFILE }}/
           if-no-files-found: error
           retention-days: 7
 

@@ -27,3 +27,19 @@ contract-guests = { max-threads = 1 }
 [[profile.pr.overrides]]
 filter = 'package(=vize_extension_host)'
 test-group = "contract-guests"
+
+# Full T1 has no default-filter: every ordinary workspace case remains selected.
+[profile.full]
+fail-fast = false
+retries = 0
+test-threads = 16
+slow-timeout = "60s"
+
+[profile.full.junit]
+path = "junit.xml"
+store-success-output = false
+store-failure-output = true
+
+[[profile.full.overrides]]
+filter = 'package(=vize_extension_host)'
+test-group = "contract-guests"

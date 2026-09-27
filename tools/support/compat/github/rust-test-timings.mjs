@@ -12,6 +12,7 @@ import path from "node:path";
 const directory = path.join(process.env.RUNNER_TEMP, "rust-test-timings");
 mkdirSync(directory, { recursive: true });
 const errors = [];
+const runPhase = process.env.RUN_PHASE || "execution-and-doctests";
 const phases = [
   ["build", process.env.BUILD_OUTCOME],
   ["run", process.env.RUN_OUTCOME],
@@ -28,7 +29,7 @@ const phases = [
   try {
     const record = JSON.parse(readFileSync(file, "utf8"));
     if (
-      record.phase !== (phase === "build" ? "build" : "execution-and-doctests") ||
+      record.phase !== (phase === "build" ? "build" : runPhase) ||
       !Number.isInteger(record.elapsed_seconds) ||
       record.elapsed_seconds < 0 ||
       !Number.isInteger(record.exit_code) ||
@@ -52,11 +53,11 @@ const identity = {
   attempt: process.env.GITHUB_RUN_ATTEMPT,
   event_head_sha: process.env.SOURCE_SHA,
   cache_namespace: process.env.CACHE_NAMESPACE,
-  profile: "test",
+  profile: process.env.CARGO_TEST_PROFILE || "test",
   cargo_build_jobs: 12,
   rust_test_threads: 4,
-  build: "cargo test --workspace --no-run --timings",
-  run: "cargo test --workspace",
+  build: process.env.BUILD_COMMAND || "cargo test --workspace --no-run --timings",
+  run: process.env.RUN_COMMAND || "cargo test --workspace",
 };
 writeFileSync(path.join(directory, "identity.json"), `${JSON.stringify(identity, null, 2)}\n`);
 for (const [file, command, args] of [
@@ -70,7 +71,7 @@ const summary = `${JSON.stringify(phases, null, 2)}\n`;
 writeFileSync(path.join(directory, "summary.json"), summary);
 appendFileSync(
   process.env.GITHUB_STEP_SUMMARY,
-  `### Rust test phase measurements\n\nExecution includes doctests and residual compilation.\n\n\`\`\`json\n${summary}\`\`\`\n`,
+  `### Rust test phase measurements\n\n${runPhase === "doctests" ? "Workspace execution is measured independently in four shard JUnit/timing artifacts. This phase contains full doctests." : "Execution includes doctests and residual compilation."}\n\n\`\`\`json\n${summary}\`\`\`\n`,
 );
 
 const html = "target/cargo-timings/cargo-timing.html";

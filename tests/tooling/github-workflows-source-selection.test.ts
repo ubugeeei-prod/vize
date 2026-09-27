@@ -54,7 +54,7 @@ test("source planning installs declared runtimes before affected Rust metadata",
 
 test("the Rust report waits for the builder and all four independently executing shards", () => {
   const shard = rust.jobs["pr-rust-shard"];
-  assert.equal(shard.needs, "pr-rust-build");
+  assert.deepEqual(shard.needs, ["pr-rust-build", "merge-rust-source"]);
   assert.equal(shard.strategy?.["fail-fast"], false);
   assert.deepEqual(shard.strategy?.matrix.shard, [1, 2, 3, 4]);
   const steps = shard.steps ?? [];

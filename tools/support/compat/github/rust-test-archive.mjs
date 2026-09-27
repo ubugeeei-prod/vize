@@ -19,13 +19,30 @@ function checkout(cwd) {
   };
 }
 
-export async function createArchiveReceipt(archive, { cwd, nextestVersion }) {
+export async function createArchiveReceipt(
+  archive,
+  { cwd, nextestVersion, rustcVersion, env = process.env },
+) {
+  const requireTsgo = env.VIZE_TEST_REQUIRE_TSGO || "";
+  const disableTsgo = env.VIZE_TEST_DISABLE_TSGO || "";
+  if (
+    !rustcVersion?.startsWith("rustc 1.98.0 ") ||
+    !nextestVersion?.includes("0.9.146") ||
+    !((requireTsgo === "1" && disableTsgo === "") || (requireTsgo === "" && disableTsgo === "1")) ||
+    env.VIZE_NUXT_CONFIG_ITERATIONS !== "100"
+  )
+    throw new Error("Rust archive requires the pinned CI toolchain and TSGO runtime envelope");
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     ...checkout(cwd),
     platform: process.platform,
     arch: process.arch,
     nextestVersion,
+    rustcVersion,
+    cargoProfile: "ci",
+    requireTsgo,
+    disableTsgo,
+    nuxtIterations: env.VIZE_NUXT_CONFIG_ITERATIONS || "",
     archiveSha256: await digest(archive),
   };
 }
@@ -44,6 +61,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   }
   const context = {
     cwd: process.cwd(),
+    rustcVersion: execFileSync("rustc", ["-Vv"], { encoding: "utf8" }).trim(),
     nextestVersion: execFileSync("cargo", ["nextest", "--version"], { encoding: "utf8" }).trim(),
   };
   if (operation === "stamp") {

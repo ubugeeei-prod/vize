@@ -341,3 +341,8 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 in the companion record.
 
 [Nuxt critical CSS module identity](./2026-09-27-nuxt-critical-css.md) records [#6897](https://github.com/ubugeeei-prod/vize/issues/6897); compiler migration and SSR slot scope remain separate.
+
+- **Full queue Rust execution (#6830, #6861):** reuse one bound workspace
+  archive and four unfiltered workers; keep required TSGO, doctests and all 11
+  feature recipes. Runtime evidence and acceptance conditions are in
+  [the full Rust shard decision](./2026-09-27-ci-full-rust-shards.md).

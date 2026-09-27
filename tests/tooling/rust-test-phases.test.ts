@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -25,9 +25,18 @@ const phase = (name: string) => {
   return step;
 };
 const build = phase("Build Rust workspace tests");
-const run = phase("Run Rust workspace tests");
-const buildArgs = ["test", "--workspace", "--no-run", "--timings"];
-const runArgs = ["test", "--workspace"];
+const run = phase("Run Rust workspace doctests");
+const buildArgs = [
+  "nextest",
+  "archive",
+  "--workspace",
+  "--cargo-profile",
+  "ci",
+  "--timings",
+  "--archive-file",
+  "target/rust-test-archive/tests.tar.zst",
+];
+const runArgs = ["test", "--workspace", "--profile", "ci", "--doc"];
 
 function fixture() {
   const cwd = mkdtempSync(join(tmpdir(), "vize-rust-phases-"));
@@ -39,6 +48,9 @@ function fixture() {
   git("init", "-q");
   git("config", "user.name", "CI Test");
   git("config", "user.email", "ci@example.invalid");
+  const helper = "tools/support/compat/github/rust-test-archive.mjs";
+  mkdirSync(join(cwd, "tools/support/compat/github"), { recursive: true });
+  copyFileSync(join(root, helper), join(cwd, helper));
   writeFileSync(join(cwd, "source"), "fixture\n");
   git("add", "source");
   git("commit", "-qm", "fixture");
@@ -54,13 +66,15 @@ printf '%s\\0' "$@" >> "$FAKE_CARGO_ARGV"
 printf '\\n' >> "$FAKE_CARGO_ARGV"
 case "$*" in
   -V) printf 'cargo 1.98.0 (phase-test fixture)\\n'; exit 0;;
-  'test --workspace --no-run --timings')
+  'nextest --version') printf 'cargo-nextest 0.9.146\\n'; exit 0;;
+  'nextest archive --workspace --cargo-profile ci --timings --archive-file target/rust-test-archive/tests.tar.zst')
     test ! -f target/cargo-timings/cargo-timing.html || exit 90
+    printf 'fixture archive' > target/rust-test-archive/tests.tar.zst
     if [[ "$FAKE_CARGO_EXIT" == 0 && "$FAKE_CARGO_HTML" == present ]]; then
       mkdir -p target/cargo-timings
       printf '%s' "$FAKE_CARGO_HTML_BYTES" > target/cargo-timings/cargo-timing.html
     fi;;
-  'test --workspace') ;;
+  'test --workspace --profile ci --doc') ;;
   *) exit 91;;
 esac
 printf '%s\\n' "$VIZE_TEST_REQUIRE_TSGO" >> "$FAKE_CARGO_ENV"
@@ -69,7 +83,7 @@ exit "$FAKE_CARGO_EXIT"
 `,
     { mode: 0o755 },
   );
-  writeFileSync(join(bin, "rustc"), "#!/bin/sh\nprintf 'rustc phase-test fixture\\n'\n", {
+  writeFileSync(join(bin, "rustc"), "#!/bin/sh\nprintf 'rustc 1.98.0 (phase-test fixture)\\n'\n", {
     mode: 0o755,
   });
   const env = {
@@ -85,6 +99,8 @@ exit "$FAKE_CARGO_EXIT"
     GITHUB_RUN_ATTEMPT: "2",
     SOURCE_SHA: sha,
     CACHE_NAMESPACE: "phase-test-cache",
+    VIZE_NUXT_CONFIG_ITERATIONS: "100",
+    VIZE_TEST_DISABLE_TSGO: "",
   };
   const execute = (step: Step, exit = 0, timingHtml = "present") =>
     spawnSync("/bin/bash", ["--noprofile", "--norc", "-eo", "pipefail", "-c", step.run!], {
@@ -108,7 +124,14 @@ exit "$FAKE_CARGO_EXIT"
     spawnSync(process.execPath, [join(root, "tools/support/compat/github/rust-test-timings.mjs")], {
       cwd,
       encoding: "utf8",
-      env: { ...env, BUILD_OUTCOME: buildOutcome, RUN_OUTCOME: runOutcome },
+      env: {
+        ...env,
+        ...measured.steps?.find((step) => step.name === "Summarize Rust test timing evidence")?.env,
+        BUILD_OUTCOME: buildOutcome,
+        RUN_OUTCOME: runOutcome,
+        SOURCE_SHA: sha,
+        CACHE_NAMESPACE: "phase-test-cache",
+      },
     });
   return {
     cwd,
@@ -141,15 +164,15 @@ test("the actual Rust build and run scripts execute Cargo and emit complete timi
     assert.equal(compiled.status, 0, compiled.stderr);
     const executed = f.execute(run);
     assert.equal(executed.status, 0, executed.stderr);
-    assert.deepEqual(f.calls(), [buildArgs, runArgs]);
+    assert.deepEqual(f.calls(), [buildArgs, ["nextest", "--version"], runArgs]);
     assert.equal(readFileSync(f.environments, "utf8"), "1\n1\n");
     const buildRecord = f.receipt("build");
     const runRecord = f.receipt("run");
     assertReceipt(buildRecord, "build", 0);
-    assertReceipt(runRecord, "execution-and-doctests", 0);
+    assertReceipt(runRecord, "doctests", 0);
     const summary = f.summarize("success", "success");
     assert.equal(summary.status, 0, summary.stderr);
-    assert.deepEqual(f.calls(), [buildArgs, runArgs, ["-V"]]);
+    assert.deepEqual(f.calls(), [buildArgs, ["nextest", "--version"], runArgs, ["-V"]]);
     const evidence = join(f.temporary, "rust-test-timings");
     assert.deepEqual(JSON.parse(readFileSync(join(evidence, "summary.json"), "utf8")), [
       { ...buildRecord, outcome: "success" },
@@ -161,8 +184,8 @@ test("the actual Rust build and run scripts execute Cargo and emit complete timi
     assert.equal(identity.run_id, "phase-test-run");
     assert.equal(identity.attempt, "2");
     assert.equal(identity.cache_namespace, "phase-test-cache");
-    assert.equal(identity.build, "cargo test --workspace --no-run --timings");
-    assert.equal(identity.run, "cargo test --workspace");
+    assert.equal(identity.build, buildArgs.join(" ").replace("nextest", "cargo nextest"));
+    assert.equal(identity.run, "cargo test --workspace --profile ci --doc");
     assert.equal(readFileSync(join(evidence, "checked-out-sha.txt"), "utf8").trim(), f.sha);
     assert.equal(readFileSync(join(evidence, "cargo-timing.html"), "utf8"), f.generatedHtml);
   } finally {
@@ -188,9 +211,9 @@ test("a nonzero execution records and propagates failure after a successful buil
     assert.equal(f.execute(build).status, 0);
     const result = f.execute(run, 43);
     assert.equal(result.status, 43, result.stderr);
-    assert.deepEqual(f.calls(), [buildArgs, runArgs]);
+    assert.deepEqual(f.calls(), [buildArgs, ["nextest", "--version"], runArgs]);
     assertReceipt(f.receipt("build"), "build", 0);
-    assertReceipt(f.receipt("run"), "execution-and-doctests", 43);
+    assertReceipt(f.receipt("run"), "doctests", 43);
   } finally {
     f.cleanup();
   }

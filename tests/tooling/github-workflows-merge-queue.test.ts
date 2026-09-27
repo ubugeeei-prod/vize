@@ -88,12 +88,12 @@ test("queue scope reaches the planner and every full source lane remains require
   assert.equal(vrtFailure?.run, "exit 1");
 });
 
-test("queue Rust retains prerequisites and executes the shared feature tail after the workspace", () => {
+test("queue Rust retains full doctests and the unchanged feature tail beside required workspace shards", () => {
   assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");
   const steps = rust.jobs["merge-rust-source"].steps ?? [];
   const pkl = steps.findIndex((step) => step.name === "Install Pkl CLI");
   const workspace = steps.findIndex((step) =>
-    /cargo test --workspace(?:;|$)/m.test(step.run ?? ""),
+    /cargo test --workspace --profile ci --doc(?:;|$)/m.test(step.run ?? ""),
   );
   const tail = steps.findIndex((step) => step.uses === actionPath);
   const coverage = steps.findIndex((step) => step.name === "Check fixture coverage");

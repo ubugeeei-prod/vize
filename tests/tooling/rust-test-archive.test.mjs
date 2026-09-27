@@ -23,7 +23,12 @@ void test("Rust archives reject different source, baked paths, runner, nextest, 
     git("commit", "-qm", "fixture");
     const archive = join(cwd, "tests.tar.zst");
     writeFileSync(archive, "archive bytes");
-    const context = { cwd, nextestVersion: "cargo-nextest 0.9.146" };
+    const context = {
+      cwd,
+      nextestVersion: "cargo-nextest 0.9.146",
+      rustcVersion: "rustc 1.98.0 (fixture)",
+      env: { VIZE_TEST_REQUIRE_TSGO: "1", VIZE_NUXT_CONFIG_ITERATIONS: "100" },
+    };
     const receipt = await createArchiveReceipt(archive, context);
     await verifyArchiveReceipt(receipt, archive, context);
     for (const key of [
@@ -34,11 +39,36 @@ void test("Rust archives reject different source, baked paths, runner, nextest, 
       "platform",
       "arch",
       "nextestVersion",
+      "rustcVersion",
+      "cargoProfile",
+      "requireTsgo",
+      "disableTsgo",
+      "nuxtIterations",
       "archiveSha256",
     ]) {
       await assert.rejects(
         verifyArchiveReceipt({ ...receipt, [key]: "different" }, archive, context),
         { message: `Rust test archive ${key} mismatch` },
+      );
+    }
+    await assert.rejects(
+      verifyArchiveReceipt(receipt, archive, {
+        ...context,
+        env: { VIZE_TEST_DISABLE_TSGO: "1", VIZE_NUXT_CONFIG_ITERATIONS: "100" },
+      }),
+      { message: "Rust test archive requireTsgo mismatch" },
+    );
+    for (const env of [
+      {},
+      {
+        VIZE_TEST_REQUIRE_TSGO: "1",
+        VIZE_TEST_DISABLE_TSGO: "1",
+        VIZE_NUXT_CONFIG_ITERATIONS: "100",
+      },
+    ]) {
+      await assert.rejects(
+        createArchiveReceipt(archive, { ...context, env }),
+        /pinned CI toolchain and TSGO runtime envelope/,
       );
     }
     writeFileSync(archive, "corrupted bytes");
@@ -64,19 +94,20 @@ void test("Rust tier gate rejects failed, cancelled, absent, and skipped require
     "pr-rust-shard": success,
   };
   assert.equal(requireRustTier("pull_request", "true", needs).exitCode, 0);
-  for (const job of ["pr-rust-build", "pr-rust-shard"]) {
-    for (const result of ["failure", "cancelled", "skipped"]) {
-      assert.equal(
-        requireRustTier("pull_request", "true", { ...needs, [job]: { result } }).exitCode,
-        1,
-      );
+  for (const [event, jobs] of [
+    ["pull_request", ["pr-rust-build", "pr-rust-shard"]],
+    ["merge_group", ["merge-rust-source", "pr-rust-shard"]],
+  ])
+    for (const job of jobs) {
+      for (const result of ["failure", "cancelled", "skipped"]) {
+        assert.equal(requireRustTier(event, "true", { ...needs, [job]: { result } }).exitCode, 1);
+      }
+      const absent = { ...needs };
+      delete absent[job];
+      assert.throws(() => requireRustTier(event, "true", absent), {
+        message: `Missing Rust tier job: ${job}`,
+      });
     }
-    const absent = { ...needs };
-    delete absent[job];
-    assert.throws(() => requireRustTier("pull_request", "true", absent), {
-      message: `Missing Rust tier job: ${job}`,
-    });
-  }
   assert.equal(
     requireRustTier("merge_group", "true", { ...needs, "merge-rust-source": { result: "skipped" } })
       .exitCode,

@@ -38,7 +38,14 @@ test("only the three audited real-TSGO cases leave the PR default filter", () =>
   }
   assert.ok(source.includes("real-Corsa isolation coverage cannot be skipped"));
   const merge = workflow.jobs["merge-rust-source"].steps;
-  assert.ok(merge.some((step) => step.name === "Run Rust workspace tests"));
+  assert.ok(merge.some((step) => step.name === "Run Rust workspace doctests"));
+  const full = (
+    parseToml(readRepoFile(".config", "nextest.toml")) as {
+      profile: { full: Record<string, unknown> };
+    }
+  ).profile.full;
+  assert.equal(full["default-filter"], undefined);
+  assert.equal(full.retries, 0);
   assert.equal(
     merge.some((step) => step.run?.includes("--profile pr")),
     false,
@@ -54,7 +61,7 @@ test("the actual shard shell restores Cargo's temporary directory before archive
     writeFileSync(
       join(bin, "cargo"),
       `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if(!args.includes("--extract-overwrite"))process.exit(91);fs.writeFileSync("target/tmp/observation","writable");fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
+exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||process.env.VIZE_TEST_DISABLE_TSGO!==""||process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(92);if(!args.includes("--extract-overwrite"))process.exit(91);fs.writeFileSync("target/tmp/observation","writable");fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
 `,
       { mode: 0o755 },
     );
@@ -74,6 +81,10 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
           PATH: `${bin}:${process.env.PATH ?? ""}`,
           GITHUB_WORKSPACE: cwd,
           SHARD: "2",
+          NEXTEST_PROFILE: "full",
+          VIZE_TEST_REQUIRE_TSGO: "1",
+          VIZE_TEST_DISABLE_TSGO: "",
+          VIZE_NUXT_CONFIG_ITERATIONS: "100",
           ARGV: argv,
         },
       },
@@ -91,7 +102,7 @@ exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if
       "--workspace-remap",
       cwd,
       "--profile",
-      "pr",
+      "full",
       "--partition",
       "hash:2/4",
       "--no-tests=pass",
