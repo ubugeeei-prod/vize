@@ -28,5 +28,12 @@ for (const { file, job } of callers) {
     );
     assert.notEqual(steps[build]["continue-on-error"], true);
     assert.notEqual(steps[tests]["continue-on-error"], true);
+    if (file === "pr-source-checks.yml") {
+      const selected = steps.findIndex((step) =>
+        /vp run --workspace-root test:scripts:pr/.test(step.run ?? ""),
+      );
+      assert.ok(selected > build);
+      assert.notEqual(steps[selected]["continue-on-error"], true);
+    }
   });
 }

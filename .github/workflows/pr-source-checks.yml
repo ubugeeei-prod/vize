@@ -20,7 +20,7 @@ jobs:
       rust: ${{ steps.plan.outputs.rust }}
       rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
-      tooling: ${{ steps.plan.outputs.tooling }}
+      tooling: ${{ steps.tooling-plan.outputs.tooling }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -55,6 +55,13 @@ jobs:
         env:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
         run: node tools/support/compat/github/plan-affected-rust.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$RUNNER_TEMP/rust-plan.json"
+
+      - name: Plan tooling test inputs
+        id: tooling-plan
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+          TOOLING_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
+        run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json" --github-output
 
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
@@ -150,6 +157,13 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+      - name: Regenerate PR tooling plan
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        env:
+          BASE_SHA: ${{ needs.pr-source-plan.outputs.comparison-base }}
+        run: |
+          if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags --depth=1 origin "$BASE_SHA"; fi
+          node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
       - name: Install fixture and JS dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
@@ -159,8 +173,13 @@ jobs:
       - name: Prepare the pinned plugin isolation runtime
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
+      - name: Test selected PR tooling scripts
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        env:
+          VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+        run: vp run --workspace-root test:scripts:pr
       - name: Test tooling scripts
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
         run: vp run --workspace-root test:scripts
 
   pr-playground-test:
@@ -237,12 +256,12 @@ jobs:
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         run: vp run --filter './playground' test:browser
       - name: Run VRT
-        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}
         run: vp run --filter './playground' test:vrt
         continue-on-error: true
         id: vrt
       - name: Upload VRT report
-        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-playground-vrt-report
@@ -250,14 +269,14 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Upload VRT diff artifacts
-        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-vrt-diff
           path: playground/e2e/vrt/test-results/
           retention-days: 7
       - name: Fail if VRT failed
-        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         run: exit 1
 
   source-report:
