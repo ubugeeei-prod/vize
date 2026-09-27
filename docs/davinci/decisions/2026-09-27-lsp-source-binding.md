@@ -44,6 +44,7 @@ the required variables on the full tooling test step and preserving its plain
 VP command. Earlier build and preparation steps retain their environment.
 Keep the uploader after that command when the queued formatter changes merge;
 do not import its unmerged files into the binding repair. Neutral YAML map and
-comment compaction keeps the grandfathered Check workflow's line count fixed.
+comment compaction keeps the grandfathered Check workflow from growing even
+after composing both sets of changes.
 Verify parsed semantics, the actual configured VP worker route and clean merges
 against both actual main and the formatter queue prefix before republication.
