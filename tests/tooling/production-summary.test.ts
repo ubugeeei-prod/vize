@@ -85,15 +85,45 @@ test("accepted emitter selections never become native-only acceptance", (t) => {
   const { result, output } = summarize(t);
   assert.equal(result.status, 0, result.stderr);
   const summary = readFileSync(output, "utf8");
-  assert.match(summary, /Native-only acceptance is not measured by these reports\./u);
-  assert.match(summary, /Croquis-backed binding and reactivity facts/u);
-  assert.match(summary, /Emitter selected for requested backend/u);
-  assert.doesNotMatch(summary, /Native for requested backend/u);
   // Diagnosed selections remain emitter observations; errors and absent
   // templates never enter the compiled-template denominator.
-  assert.ok(summary.includes("| dom_inline | 4 | 2 | 1 | 1 | 0 | 0 |"));
-  assert.ok(summary.includes("| ssr | 4 | 2 | 0 | 2 | 0 | 0 |"));
-  assert.ok(summary.includes("| dom_inline | all | 6 | 0.5000 |"));
+  assert.equal(
+    summary,
+    [
+      "# Davinci production comparison",
+      "",
+      "Exact head: `aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`.",
+      "",
+      "Input manifest: `bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` (6 committed SFCs).",
+      "",
+      "Profile: release; allocator: system.",
+      "",
+      "Ratios are selected / retained; below 1 is faster. The center is the median of three independent runner ratios, each derived from nine alternating paired batch samples. Ranges retain all three observations. These report-only results change no budget.",
+      "",
+      "| Requested shape | Cohort | Files | Median ratio | Runner range | Three runner ratios |",
+      "| --- | --- | ---: | ---: | --- | --- |",
+      "| dom_inline | all | 6 | 0.5000 | 0.5000–0.5000 | 0.5000, 0.5000, 0.5000 |",
+      "| dom_module | all | 6 | 0.5000 | 0.5000–0.5000 | 0.5000, 0.5000, 0.5000 |",
+      "| ssr | all | 6 | 0.5000 | 0.5000–0.5000 | 0.5000, 0.5000, 0.5000 |",
+      "| vapor | all | 6 | 0.5000 | 0.5000–0.5000 | 0.5000, 0.5000, 0.5000 |",
+      "",
+      "## Backend-selection observations",
+      "",
+      "Counts include diagnosed inputs if the backend actually recorded acceptance; clean accepted timing cohorts exclude warnings/errors and routed Vapor. Requested DOM shapes keep explicit Vapor routes separate. This table does not replace the P3-17 fixed reach-floor gate.",
+      "",
+      "Native-only acceptance is not measured by these reports. An accepted selection proves which emitter ran; it does not prove that its facts were produced without legacy code. The DOM emitter can consume Croquis-backed binding and reactivity facts. These counts do not satisfy #6853 native-only acceptance or #6854 zero-fallback deletion criteria.",
+      "",
+      "| Requested shape | Compiled templates | Emitter selected for requested backend | Routed Vapor accepted | Fallback/rejected/unrecorded templates | Code differences on clean accepted pairs | Diagnostic-message differences |",
+      "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+      "| dom_inline | 4 | 2 | 1 | 1 | 0 | 0 |",
+      "| dom_module | 4 | 2 | 1 | 1 | 0 | 0 |",
+      "| ssr | 4 | 2 | 0 | 2 | 0 | 0 |",
+      "| vapor | 4 | 2 | 0 | 2 | 0 | 0 |",
+      "",
+      "The profiler is disabled for all timed samples. Separate enabled attribution exports follow timing. Input I/O is excluded; SFC parsing, script/template/style compilation, assembly and result destruction are included. Maps are default/off. Vapor output equality is an observation; TS-33 runtime and source-map gates remain required. The historical P0-3 numeric baseline and broader hydrated project corpus are outside this measurement.",
+      "",
+    ].join("\n"),
+  );
 });
 
 for (const invalid of ["duplicate", "missing", "unknown"] as const) {

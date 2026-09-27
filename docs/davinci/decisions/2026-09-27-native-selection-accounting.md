@@ -42,7 +42,12 @@ Seven Node CLI tests execute the actual summary program with independent
 synthetic reports. They verify accepted/diagnosed/fallback/routed/error
 accounting, unchanged timing ratios, rejection of missing/duplicate/unknown
 shapes, a malformed second runner, differing admission observations and
-differing heads. All seven pass locally with no skips.
+differing heads. The positive case compares the entire published Markdown
+output. All seven pass locally with no skips. The repository assertion lint
+scans Rust only; its successful run does not supply coverage for this
+TypeScript test. No oracle exemption is added.
+The original main summary fails this same full-output oracle with exit 1,
+including its false native column; the corrected summary passes.
 
 This private change has not run in Actions or merged. It does not establish
 a native-only numerator, the corpus/dialect denominator, a stability
