@@ -10,7 +10,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 
@@ -21,14 +21,20 @@ const action = parse(readFileSync(join(actionDir, "action.yml"), "utf8"));
 
 const backend = `import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 const request = JSON.parse(process.argv[2]);
 const root = process.env.VIZE_FAKE_CACHE_ROOT;
 const trace = row => appendFileSync(join(root, "trace.jsonl"), JSON.stringify({ ...row, pid: process.pid }) + "\\n");
 const marker = join(root, "markers", request.name ?? "unknown");
 mkdirSync(join(root, "markers"), {recursive:true});
 if (request.kind === "sticky") {
-  if (!request.fail) writeFileSync(marker, "sticky clone");
+  if (!request.fail) {
+    writeFileSync(marker, "sticky clone");
+    if (["target", "secondary"].includes(request.name)) {
+      mkdirSync(request.path, { recursive: true });
+      writeFileSync(join(request.path, "cache-artifact.txt"), "sticky clone");
+    }
+  }
   trace({...request, mounted: !request.fail});
 } else if (request.kind === "cache") {
   if (request.lookup) {
@@ -40,12 +46,20 @@ if (request.kind === "sticky") {
   const source = readFileSync(join(root,"source.txt"),"utf8");
   const artifact = createHash("sha256").update(source).digest("hex");
   writeFileSync(join(root,"artifact.txt"),artifact);
+  mkdirSync(request.path, {recursive:true});
+  writeFileSync(join(request.path,"cache-artifact.txt"),"compiled:"+artifact);
   if(readFileSync(join(root,"artifact.txt"),"utf8") !== artifact) throw Error("bad artifact");
   writeFileSync(marker,"compiled:"+artifact);
   trace({...request,before,artifact});
 } else if (request.kind === "cache-post") {
-  const saved = request.hit !== true && existsSync(marker) ? readFileSync(marker,"utf8") : null;
-  trace({...request,saved});
+  if (request.hit !== true && !request.path) {
+    trace({...request,saved:null,warning:"Input required and not supplied: path"});
+  } else {
+    const artifactPath = ["target", "secondary"].includes(request.name)
+      ? join(resolve(root, request.path), "cache-artifact.txt") : marker;
+    const saved = request.hit !== true && existsSync(artifactPath) ? readFileSync(artifactPath,"utf8") : null;
+    trace({...request,saved});
+  }
 } else if (request.kind === "sticky-post") {
   if (!request.fail) rmSync(marker,{force:true});
   trace(request);
@@ -90,7 +104,7 @@ export function cacheFixture(callback) {
     const probe = join(cwd, "bin/mountpoint");
     writeFileSync(
       probe,
-      `#!${process.execPath}\nimport { spawnSync } from "node:child_process";\nimport { basename } from "node:path";\nconst path=process.argv[3]; const name=basename(path)==="registry"?"registry":basename(path)==="git"?"git":basename(path)==="secondary"?"secondary":"target";\nconst result=spawnSync(process.execPath,[process.env.VIZE_FAKE_CACHE_ROOT+"/backend.mjs",JSON.stringify({kind:"probe",name,path})],{stdio:"inherit"});process.exit(result.status??1);\n`,
+      `#!${process.execPath}\nimport { spawnSync } from "node:child_process";\nimport { basename } from "node:path";\nconst path=process.argv[3]; const name=basename(path)==="registry"?"registry":basename(path)==="git"?"git":path===process.env.VIZE_FAKE_SECONDARY_PATH?"secondary":"target";\nconst result=spawnSync(process.execPath,[process.env.VIZE_FAKE_CACHE_ROOT+"/backend.mjs",JSON.stringify({kind:"probe",name,path})],{stdio:"inherit"});process.exit(result.status??1);\n`,
     );
     chmodSync(probe, 0o755);
     const context = (eventName = "push", ref = "refs/heads/main") => ({
@@ -136,7 +150,11 @@ function value(expression, inputs, outputs) {
   throw new Error(`Unsupported fixture expression: ${expr}`);
 }
 
-export function executeCacheAction(fixture, context, { mountFailures = [], hit = false } = {}) {
+export function executeCacheAction(
+  fixture,
+  context,
+  { mountFailures = [], hit = false, nestedPost = false, steps = action.runs.steps } = {},
+) {
   const { cwd } = fixture;
   const inputs = {
     key: context.role,
@@ -163,6 +181,7 @@ export function executeCacheAction(fixture, context, { mountFailures = [], hit =
     GITHUB_WORKSPACE: cwd,
     VIZE_CACHE_SOURCE_ROOT: cwd,
     VIZE_FAKE_CACHE_ROOT: cwd,
+    VIZE_FAKE_SECONDARY_PATH: context.secondaryPath ? resolve(cwd, context.secondaryPath) : "",
   };
   const child = (request) => {
     const result = execute(
@@ -175,7 +194,7 @@ export function executeCacheAction(fixture, context, { mountFailures = [], hit =
   };
   let status = 0;
   const posts = [];
-  for (const step of action.runs.steps) {
+  for (const step of steps) {
     if (step.if && !value(step.if, inputs, outputs)) continue;
     if (step.run) {
       const file = join(cwd, `output-${step.id}.txt`);
@@ -214,7 +233,7 @@ export function executeCacheAction(fixture, context, { mountFailures = [], hit =
         ? "registry"
         : path.endsWith("git")
           ? "git"
-          : path.endsWith("secondary")
+          : resolve(cwd, path) === outputs["cache-policy"]["secondary-path"]
             ? "secondary"
             : "target";
       if (step.uses.startsWith("useblacksmith/stickydisk@")) {
@@ -235,13 +254,20 @@ export function executeCacheAction(fixture, context, { mountFailures = [], hit =
           restoreOnly,
         };
         child({ kind: "cache", ...request });
-        if (!restoreOnly) posts.push({ kind: "cache-post", ...request });
+        if (!restoreOnly)
+          posts.push({ kind: "cache-post", ...request, pathExpression: step.with.path });
       } else throw new Error(`Unexpected cache action: ${step.uses}`);
     }
   }
   if (status === 0) {
-    child({ kind: "workload", name: "target" });
-    for (const request of posts.reverse()) child(request);
+    child({ kind: "workload", name: "target", path: outputs["cache-policy"]["target-path"] });
+    for (const request of posts.reverse()) {
+      if (request.kind === "cache-post") {
+        request.path = value(request.pathExpression, inputs, nestedPost ? {} : outputs);
+        delete request.pathExpression;
+      }
+      child(request);
+    }
   }
   const traceFile = join(cwd, "trace.jsonl");
   const trace = existsSync(traceFile)

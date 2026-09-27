@@ -105,7 +105,9 @@ runs:
       if: ${{ steps.cache-policy.outputs.trusted == 'true' }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
-        path: ${{ steps.cache-policy.outputs.target-path }}
+        # Nested post steps retain inputs, but not this action's step outputs.
+        # The policy has already validated this path inside the workspace.
+        path: ${{ inputs.target-path }}
         key: ${{ steps.cache-policy.outputs.target-key }}
         restore-keys: ${{ steps.cache-policy.outputs.target-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.target == 'true' }}
@@ -113,7 +115,7 @@ runs:
       if: ${{ steps.cache-policy.outputs.trusted == 'true' && steps.cache-policy.outputs.secondary == 'true' }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
-        path: ${{ steps.cache-policy.outputs.secondary-path }}
+        path: ${{ inputs.secondary-target-path }}
         key: ${{ steps.cache-policy.outputs.secondary-key }}
         restore-keys: ${{ steps.cache-policy.outputs.secondary-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.secondary == 'true' }}
