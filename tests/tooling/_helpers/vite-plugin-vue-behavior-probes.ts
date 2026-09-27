@@ -98,11 +98,22 @@ async function loadResolvedVueModule(plugin: Plugin, id: string): Promise<string
 
 async function loadResolvedStyleModule(plugin: Plugin, id: string): Promise<string> {
   const code = await loadResolvedVueModule(plugin, id);
-  const styleId = `${id}.__vize_style_0.css?vue=&type=style&index=0&lang=css&${new URLSearchParams({ "vize-file": id }).toString()}`;
-  assert.ok(
-    code.includes(`import ${JSON.stringify(styleId)};`),
-    `${id} must hand its CSS to Vite through a style import`,
+  const imports = [...code.matchAll(/import "([^"\n]+)";/g)];
+  assert.equal(imports.length, 1, `${id} must import its style module exactly once`);
+  const styleId = imports[0][1];
+  const [stylePath, query] = styleId.split("?", 2);
+  assert.equal(stylePath, `${id}.__vize_style_0.css`);
+  assert.deepEqual(
+    [...new URLSearchParams(query)],
+    [
+      ["vue", ""],
+      ["type", "style"],
+      ["index", "0"],
+      ["lang", "css"],
+      ["vize-file", id],
+    ],
   );
+  assert.match(styleId, /\.css\?[^.]+$/);
   return loadVueModule(plugin, styleId);
 }
 
