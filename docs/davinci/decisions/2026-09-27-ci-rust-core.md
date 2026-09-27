@@ -68,3 +68,13 @@ Schema, source-map and reach budgets there are runtime test inputs as well.
 Keep the entire directory conservative for Rust, JS, tooling and playground
 validation so a new contract or renamed dependency cannot become prose-only.
 Source-witness tests confirm the actual include paths and both planner results.
+
+The exact `npm/cli/schemas/vize.config.schema.json` path is also a shared Rust
+input: `crates/vize/src/config.rs` compiles it into `VIZE_CONFIG_SCHEMA`, which
+CLI command paths write to projects. A real Git mutation verifies both planners
+select Rust for that schema; unrelated npm schemas keep their existing scope.
+This changes selection only, with no product output or pipeline stage change.
+
+Restack on parent `afde2f3c2` after preserving successful complete PR proofs for
+`806cb00f3` and `123484db5`. Drop merged selector snapshots, preserve every
+decision and capture link, and retain the parent's queue replay deduplication.

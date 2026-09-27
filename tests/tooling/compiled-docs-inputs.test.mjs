@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { planSourceChecks } from "../../tools/support/compat/github/plan-source-checks.mjs";
+import {
+  changedPaths,
+  planSourceChecks,
+} from "../../tools/support/compat/github/plan-source-checks.mjs";
 import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -63,5 +68,39 @@ void test("plan contracts remain conservative across renames while ordinary pros
   for (const path of ["docs/guide/example.md", "docs/davinci/decisions/change.md"]) {
     assert.equal(planSourceChecks([path]).rust, false, path);
     assert.equal(planAffectedRust(metadata, [path]).scope, "none", path);
+  }
+});
+
+void test("mutating the compiled CLI schema selects Rust while unrelated package schemas stay narrow", () => {
+  const path = "npm/cli/schemas/vize.config.schema.json";
+  const source = readFileSync(resolve(root, "crates/vize/src/config.rs"), "utf8");
+  assert.ok(source.includes(`include_str!("../../../${path}")`));
+  assert.ok(source.includes("fs::write(&schema_path, VIZE_CONFIG_SCHEMA)"));
+  const cwd = mkdtempSync(join(tmpdir(), "vize-compiled-schema-"));
+  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  try {
+    git("init", "-q");
+    git("config", "user.name", "CI Test");
+    git("config", "user.email", "ci@example.invalid");
+    mkdirSync(dirname(join(cwd, path)), { recursive: true });
+    writeFileSync(join(cwd, path), '{"type":"object"}\n');
+    git("add", ".");
+    git("commit", "-qm", "initial schema");
+    const base = git("rev-parse", "HEAD");
+    writeFileSync(join(cwd, path), '{"type":"object","required":["compiler"]}\n');
+    git("commit", "-qam", "mutated schema");
+    const paths = changedPaths(base, git("rev-parse", "HEAD"), cwd);
+    assert.deepEqual(paths, [path]);
+    assert.deepEqual(planSourceChecks(paths), {
+      rust: true,
+      js: true,
+      tooling: true,
+      playground: true,
+    });
+    assert.equal(planAffectedRust(metadata, paths).scope, "workspace");
+    assert.deepEqual(planAffectedRust(metadata, paths).packages, ["compiler", "unrelated"]);
+    assert.equal(planSourceChecks(["npm/cli/schemas/unrelated.schema.json"]).rust, false);
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
   }
 });

@@ -3,8 +3,10 @@ import { appendFileSync } from "node:fs";
 
 // These authored plans are compiled or read by Rust tests and compiler gates.
 // Keep the whole directory conservative as new contracts are added.
-export function isRustDocumentationInput(path) {
-  return path.startsWith("docs/davinci/plan/");
+export function isSharedRustInput(path) {
+  return (
+    path.startsWith("docs/davinci/plan/") || path === "npm/cli/schemas/vize.config.schema.json"
+  );
 }
 
 export function planSourceChecks(paths, eventName = "pull_request") {
@@ -18,10 +20,12 @@ export function planSourceChecks(paths, eventName = "pull_request") {
   // Compiler changes can affect the native JS binding and its package tests.
   const result = { rust: false, js: false, tooling: false, playground: false };
   for (const path of paths) {
+    if (isSharedRustInput(path)) {
+      result.rust = result.js = result.tooling = result.playground = true;
+      continue;
+    }
     if (
-      (/^(docs\/|\.changeset\/)/.test(path) &&
-        /\.(md|mdx)$/.test(path) &&
-        !isRustDocumentationInput(path)) ||
+      (/^(docs\/|\.changeset\/)/.test(path) && /\.(md|mdx)$/.test(path)) ||
       /(^|\/)README\.md$/.test(path)
     )
       continue;
