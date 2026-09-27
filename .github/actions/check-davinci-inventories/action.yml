@@ -1,0 +1,21 @@
+name: Check Davinci inventories
+description: Validate committed source witnesses and publish generated run ledgers
+runs:
+  using: composite
+  steps:
+    - name: Check Davinci source inventories
+      shell: bash
+      run: |
+        node tools/support/compat/davinci/croquis-consumers.mjs --check
+        node tools/support/compat/davinci/consumer-migration-surfaces.mjs --check
+        node --test tests/tooling/davinci-storage-policy.test.ts
+        node tools/support/compat/davinci/generated-ledgers.mjs --write
+        node tools/support/compat/davinci/generated-ledgers.mjs --check
+    - name: Upload generated Davinci ledgers
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: davinci-generated-ledgers
+        path: artifacts/davinci-ledgers/
+        if-no-files-found: error
+        retention-days: 14

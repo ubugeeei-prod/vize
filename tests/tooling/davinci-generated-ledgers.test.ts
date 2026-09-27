@@ -30,7 +30,10 @@ test("the run bundle preserves authored guides and rejects edited or extra artif
   try {
     const write = run("--write");
     assert.equal(write.status, 0, `${write.stdout}${write.stderr}`);
-    assert.deepEqual(fs.readdirSync(scratch).sort(), names);
+    assert.deepEqual(
+      fs.readdirSync(scratch).sort((left, right) => (left < right ? -1 : left > right ? 1 : 0)),
+      names,
+    );
     const clean = run("--check");
     assert.equal(clean.status, 0, `${clean.stdout}${clean.stderr}`);
     fs.appendFileSync(path.join(scratch, "rule-parity.md"), "<!-- injected edit -->\n");

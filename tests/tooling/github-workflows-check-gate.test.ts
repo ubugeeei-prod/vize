@@ -133,8 +133,18 @@ test("PR, merge group, and main push stay fast while full checks require schedul
     inventory.if,
     "${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}",
   );
+  assert.equal(inventory.uses, "./.github/actions/check-davinci-inventories");
+  const inventoryAction = parse(
+    readRepoFile(".github", "actions", "check-davinci-inventories", "action.yml"),
+  ) as {
+    runs: { using: string; steps: NonNullable<Job["steps"]> };
+  };
+  assert.equal(inventoryAction.runs.using, "composite");
+  const validate = inventoryAction.runs.steps.find(
+    (step) => step.name === "Check Davinci source inventories",
+  );
   assert.deepEqual(
-    inventory.run
+    validate?.run
       ?.trim()
       .split("\n")
       .map((line) => line.trim()),
@@ -142,7 +152,8 @@ test("PR, merge group, and main push stay fast while full checks require schedul
       "node tools/support/compat/davinci/croquis-consumers.mjs --check",
       "node tools/support/compat/davinci/consumer-migration-surfaces.mjs --check",
       "node --test tests/tooling/davinci-storage-policy.test.ts",
-      "node tools/support/compat/davinci/storage-summary.mjs --check",
+      "node tools/support/compat/davinci/generated-ledgers.mjs --write",
+      "node tools/support/compat/davinci/generated-ledgers.mjs --check",
     ],
   );
   assert.ok(
@@ -150,6 +161,14 @@ test("PR, merge group, and main push stay fast while full checks require schedul
       checkSteps.findIndex((step) => step.uses === "./.github/actions/setup-js-check-runtime"),
     "inventory checks must fail before the heavy JS check setup",
   );
+  const ledgerUpload = inventoryAction.runs.steps.find(
+    (step) => step.name === "Upload generated Davinci ledgers",
+  );
+  assert.equal(ledgerUpload?.with?.name, "davinci-generated-ledgers");
+  assert.equal(ledgerUpload?.with?.path, "artifacts/davinci-ledgers/");
+  assert.equal(ledgerUpload?.with?.["if-no-files-found"], "error");
+  assert.equal(ledgerUpload?.with?.["retention-days"], 14);
+  assert.equal(ledgerUpload?.if, "${{ always() }}");
   assert.match(commands("check-js"), /vp run --workspace-root check:repo/);
   assert.match(commands("check-js"), /vp run --workspace-root check:ci/);
   const appSteps = workflow.jobs?.["check-vize-apps"]?.steps ?? [];

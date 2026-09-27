@@ -4,8 +4,8 @@ Issue: [#6867](https://github.com/ubugeeei-prod/vize/issues/6867).
 
 ## Decision
 
-Current whole-repository count tables are run artifacts. Full CI and release
-generate the bundle from the checkout being validated and publish it as
+Current whole-repository count tables are run artifacts. CI inventory validation
+generates the bundle from the checkout being validated and publishes it as
 `davinci-generated-ledgers`. Source contracts and reviewed compatibility inputs
 remain blocking checks. PRs no longer rewrite the generated rule inventory or
 storage aggregate tables, so independent changes do not conflict on their totals.
@@ -35,3 +35,10 @@ This issue changes where observational count reports live. It does not establish
 production fact adoption, change compatibility waivers or complete a product
 migration. The generated artifact always describes its own validated checkout;
 dated counts in records remain dated evidence.
+
+The `check-davinci-inventories` composite action keeps all source witness
+commands in the owning Check job, generates and checks the bundle, and uploads
+it even when a later inventory command fails. The inventory step retains its
+current pull-request, push and merge-group condition. Moving generation to the
+full merge-queue, nightly and release tiers is tracked separately in #6864;
+this artifact change does not remove current PR inventory coverage.
