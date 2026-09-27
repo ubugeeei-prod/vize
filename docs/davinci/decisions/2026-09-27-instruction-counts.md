@@ -283,9 +283,12 @@ those runs succeed.
 The full PR tooling suite exposed the source-length ratchet: adding the
 queue dependency grew `check.yml`, and adding the queue assertion crossed
 the existing workflow test's 350-line limit. Queue assertions live in a
-separate level-named test. Integration follows the independently queued
-CI source-inventory extraction in [#6917](https://github.com/ubugeeei-prod/vize/pull/6917)
-so the shortened Check layout can carry this gate without a duplicate
-helper. The exact required `test-report` job name, inventory artifact and
-final dependency verification remain unchanged. No source-length exemption
+separate level-named test. Integration follows the merged CI source-inventory
+extraction in [#6917](https://github.com/ubugeeei-prod/vize/pull/6917) and reuses
+its neutral action rename. The ratchet compares the actual new event base,
+so inheriting that shorter layout alone still cannot permit additional
+growth. The distinct test-inventory collection/upload is therefore extracted
+to `report-test-inventory`, preserving the exact required `test-report` job
+name, inventory artifact and final dependency verification. Both oversized
+files stay at or below their event-base lengths. No source-length exemption
 or change to instruction ceilings is introduced.

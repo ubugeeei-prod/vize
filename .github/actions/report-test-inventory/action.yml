@@ -1,0 +1,14 @@
+name: Report test inventory
+description: Collect and upload the test inventory before aggregate verification
+runs:
+  using: composite
+  steps:
+    - name: Collect test inventory
+      shell: bash
+      run: node tools/benchmarks/scripts/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"
+    - name: Upload test inventory
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: test-inventory
+        path: test-inventory.json
+        retention-days: 14

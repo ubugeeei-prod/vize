@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
 
+import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.mjs";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type Job = {
@@ -48,4 +49,27 @@ test("merge queue instruction ceilings are enforced through the required aggrega
     assert.equal(step.if, "env.MEASURE == 'true'");
     assert.doesNotMatch(step.run ?? "", /hashFiles|continue-on-error/);
   }
+});
+
+test("required aggregate rejects failed, cancelled and skipped instruction checks", () => {
+  for (const result of ["failure", "cancelled", "skipped"]) {
+    const decision = aggregateNeedsResults({ "instruction-counts": { result } });
+    assert.equal(decision.exitCode, 1);
+    assert.match(decision.message, new RegExp(`instruction-counts: ${result}`));
+  }
+});
+
+test("required report keeps inventory and final dependency verification in the same job", () => {
+  const report = workflow.jobs?.["test-report"];
+  assert.equal(report?.steps?.[1]?.uses, "./.github/actions/report-test-inventory");
+  assert.equal(
+    report?.steps?.at(-1)?.run,
+    "node tools/support/compat/github/require-needs-success.mjs",
+  );
+  const action = parse(
+    readRepoFile(".github", "actions", "report-test-inventory", "action.yml"),
+  ) as { runs: { using: string; steps: NonNullable<Job["steps"]> } };
+  assert.equal(action.runs.using, "composite");
+  assert.match(action.runs.steps[0]?.run ?? "", /test-inventory\.mjs --json test-inventory\.json/);
+  assert.match(action.runs.steps[1]?.uses ?? "", /^actions\/upload-artifact@/);
 });

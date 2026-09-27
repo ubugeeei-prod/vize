@@ -37,7 +37,6 @@ const FULL_SUITE_JOBS = [
 ];
 
 type Job = {
-  env?: Record<string, string>;
   if?: string;
   needs?: string[] | string;
   steps?: Array<{
@@ -59,6 +58,7 @@ const sourceWorkflow = parse(readRepoFile(".github", "workflows", "pr-source-che
   on?: Record<string, unknown>;
   jobs?: Record<string, Job>;
 };
+
 function needs(results: Record<string, string> = {}): Record<string, { result: string }> {
   return Object.fromEntries(PR_JOBS.map((job) => [job, { result: results[job] ?? "success" }]));
 }
@@ -291,9 +291,6 @@ test("report fails closed when any PR check fails or skips", () => {
     const decision = aggregateNeedsResults(needs({ "check-js": result }));
     assert.equal(decision.exitCode, 1);
     assert.match(decision.message, new RegExp(`check-js: ${result}`));
-    const instructionDecision = aggregateNeedsResults(needs({ "instruction-counts": result }));
-    assert.equal(instructionDecision.exitCode, 1);
-    assert.match(instructionDecision.message, new RegExp(`instruction-counts: ${result}`));
     const sourceDecision = aggregateNeedsResults(needs({ "pr-source-checks": result }));
     assert.equal(sourceDecision.exitCode, 1);
     assert.match(sourceDecision.message, new RegExp(`pr-source-checks: ${result}`));
