@@ -34,6 +34,8 @@ array order and null-versus-array behavior. Only the whole temporary workspace
 URI token is materialized, using its canonical directory. No actual result is
 projected or sorted. Readiness requires a publishDiagnostics on the exact entry
 URI with a present matching version 1; absent or stale versions cannot pass.
+Both the fixture and actual response must contain exactly the original three
+active links, so an emptied expectation cannot accept an empty server response.
 
 The expectation is derived from the original authored string ranges and ordered
 targets, independently of a new product implementation. A focused actual stdio

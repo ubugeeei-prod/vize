@@ -161,6 +161,8 @@ test("vize lsp documentLink handles multiline imports and ignores inactive speci
     return bytes;
   };
   const expected = JSON.parse(checkedBytes(fixture.expected).toString("utf8")) as DocumentLink[];
+  assert.ok(Array.isArray(expected), "inactive-import response fixture must be an array");
+  assert.equal(expected.length, 3, "inactive-import fixture must retain all three active links");
   const testRootDir = path.join(testOutputRoot, "lsp-document-link-script-comments");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
@@ -195,6 +197,8 @@ test("vize lsp documentLink handles multiline imports and ignores inactive speci
     const links = await session.request(fixture.method, {
       textDocument: { uri },
     });
+    assert.ok(Array.isArray(links), "documentLink must return the complete link array");
+    assert.equal(links.length, 3, "documentLink must preserve all three active links");
 
     const workspaceUri = pathToFileURL(fs.realpathSync(workspaceDir)).href;
     assert.deepEqual(
