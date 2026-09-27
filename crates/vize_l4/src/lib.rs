@@ -21,7 +21,7 @@
 //! Dependencies are level crates only (L0, L2, L3). Legacy codegen depends on
 //! this crate, never the reverse.
 
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 
 extern crate alloc;
 

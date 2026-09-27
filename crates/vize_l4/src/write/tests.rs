@@ -1,6 +1,6 @@
 use vize_l0::Span;
 
-use super::{NoLinks, Writer};
+use super::{EmitDocument, NoLinks, Recorded, Writer};
 use crate::runtime::Helper;
 
 #[test]
@@ -67,4 +67,39 @@ fn append_merges_fragment_helpers_once() {
     outer.append(inner);
     assert_eq!(outer.as_str(), "x");
     assert_eq!(outer.helpers().in_use_order(), &[helper]);
+}
+
+#[test]
+fn recorded_writer_matches_emit_document() {
+    let mut expected = EmitDocument::new(true);
+    expected.push_str("head;");
+    expected.anchor(2);
+    expected.push_linked("_ctx.a", Span::new(2, 3));
+    expected.push_named("b", Span::new(4, 5), "b");
+
+    let mut preamble = Writer::<Recorded>::default();
+    preamble.push("head;");
+    let mut body = Writer::<Recorded>::default();
+    body.anchor(2);
+    body.push_linked("_ctx.a", Span::new(2, 3));
+    let mut fragment = Writer::<Recorded>::default();
+    fragment.push_named("b", Span::new(4, 5), "b");
+    body.append(fragment);
+
+    let document = body.finish_with_preamble(preamble).into_document();
+    assert_eq!(document, expected);
+    assert_eq!(
+        document.source_map("a.vue", "0123456"),
+        expected.source_map("a.vue", "0123456")
+    );
+}
+
+#[test]
+fn unrecorded_writer_finishes_without_links() {
+    let mut writer = Writer::<NoLinks>::default();
+    writer.push_linked("x", Span::new(0, 1));
+    let document = writer.finish().into_document();
+    assert!(!document.is_recording());
+    assert!(document.links().is_empty());
+    assert_eq!(document.as_str(), "x");
 }

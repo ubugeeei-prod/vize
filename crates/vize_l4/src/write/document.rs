@@ -13,6 +13,8 @@
 //! their final position is known, always record; appending a fragment rebases
 //! its links onto the offset where it lands.
 
+use alloc::vec::Vec;
+
 use vize_l0::{Span, String};
 
 use super::rewrite_spans::rewritten_identifier_spans;
@@ -83,6 +85,15 @@ impl EmitDocument {
             text: String::with_capacity(capacity),
             links: Vec::new(),
             recording,
+        }
+    }
+
+    /// A non-recording document holding `text`.
+    pub fn unrecorded(text: String) -> Self {
+        Self {
+            text,
+            links: Vec::new(),
+            recording: false,
         }
     }
 

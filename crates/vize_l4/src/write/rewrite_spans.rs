@@ -18,6 +18,9 @@
 //! renames — makes the decomposition fail and yields no identifier spans; the
 //! expression keeps its whole-expression anchor.
 
+use alloc::vec;
+use alloc::vec::Vec;
+
 /// Accessor prefixes the rewrite inserts before an identifier reference.
 const PREFIXES: [&str; 7] = [
     "_ctx.",

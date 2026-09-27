@@ -32,6 +32,8 @@
 //! [`names`]: https://tc39.es/ecma426/#json-names
 //! [VLQ]: https://en.wikipedia.org/wiki/Variable-length_quantity
 
+use alloc::vec::Vec;
+
 use vize_l0::FxHashMap;
 use vize_l0::String;
 use vize_l0::ToCompactString;
@@ -146,7 +148,7 @@ impl SourceMapBuilder {
         // Use serde_json to build the document so `filename`/source content and
         // the `names` entries are correctly JSON-escaped (quotes, control chars,
         // unicode).
-        let names: std::vec::Vec<&str> = self.names.iter().map(String::as_str).collect();
+        let names: Vec<&str> = self.names.iter().map(String::as_str).collect();
         let doc = serde_json::json!({
             "version": 3,
             "file": filename,

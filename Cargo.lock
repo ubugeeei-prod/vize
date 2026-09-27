@@ -4291,6 +4291,7 @@ dependencies = [
  "vize_l1",
  "vize_l1_to_l2",
  "vize_l2",
+ "vize_l4",
  "vize_relief",
 ]
 
@@ -4834,6 +4835,7 @@ dependencies = [
 name = "vize_l4"
 version = "0.429.1"
 dependencies = [
+ "serde_json",
  "vize_carton",
  "vize_l2",
  "vize_l3",

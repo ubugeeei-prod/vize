@@ -6,7 +6,8 @@
 # Design: https://github.com/ubugeeei-prod/vize/issues/6840#issuecomment-5847908963
 #
 # Level crates never depend on legacy crates; legacy codegen depends on this
-# crate instead. Until a product selects it, nothing outside tests uses it.
+# crate instead (it re-exports `write::{document, source_map, rewrite_spans}`).
+# The writer, targets and module assembly are not selected by any product yet.
 [package]
 name = "vize_l4"
 version.workspace = true
@@ -16,12 +17,13 @@ license.workspace = true
 repository.workspace = true
 description = "L4 - the Davinci emission level (codename Stesura): writer, expression rewriting, module assembly and targets"
 metadata.vize.stability = "experimental"
-publish = false
+readme = "README.md"
 
 [dependencies]
 vize_l0 = { workspace = true }
 vize_l2 = { workspace = true }
 vize_l3 = { workspace = true }
+serde_json = { workspace = true }
 
 [lints]
 workspace = true
