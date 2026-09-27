@@ -1,0 +1,107 @@
+name: Rust source checks
+on:
+  workflow_call:
+    inputs:
+      run-rust:
+        type: boolean
+        required: true
+      rust-plan:
+        type: string
+        required: true
+permissions:
+  contents: read
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  merge-rust-source:
+    name: PR Rust Clippy, tests, and fixtures
+    if: ${{ github.event_name == 'merge_group' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: ${{ github.event_name == 'merge_group' && 45 || 35 }}
+    env:
+      CARGO_BUILD_JOBS: "12"
+      RUST_TEST_THREADS: "4"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+    steps:
+      - name: Explain documentation-only skip
+        if: ${{ !inputs.run-rust }}
+        run: echo 'Rust Clippy and tests skipped because this PR changes no Rust or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ inputs.run-rust }}
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        if: ${{ inputs.run-rust }}
+        with:
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ inputs.run-rust }}
+        with:
+          wild-version: "0.9.0"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        if: ${{ inputs.run-rust }}
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ inputs.run-rust }}
+        with:
+          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+        if: ${{ inputs.run-rust }}
+      - name: Clippy
+        if: ${{ inputs.run-rust }}
+        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
+      - name: Install Pkl CLI
+        if: ${{ inputs.run-rust }}
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - name: Build Rust workspace tests
+        id: rust-test-build
+        if: ${{ inputs.run-rust }}
+        env: { VIZE_TEST_REQUIRE_TSGO: "1" }
+        run: |
+          timing_dir="$RUNNER_TEMP/rust-test-timings"
+          mkdir -p "$timing_dir"
+          rm -f target/cargo-timings/cargo-timing.html
+          touch "$timing_dir/build-started"
+          phase_started=$SECONDS
+          if cargo test --workspace --no-run --timings; then phase_exit=0; else phase_exit=$?; fi
+          printf '{"phase":"build","elapsed_seconds":%d,"exit_code":%d}\n' "$((SECONDS - phase_started))" "$phase_exit" > "$timing_dir/build.json"
+          exit "$phase_exit"
+      - name: Run Rust workspace tests
+        id: rust-test-run
+        if: ${{ inputs.run-rust }}
+        env: { VIZE_TEST_REQUIRE_TSGO: "1" }
+        run: |
+          phase_started=$SECONDS
+          if cargo test --workspace; then phase_exit=0; else phase_exit=$?; fi
+          printf '{"phase":"execution-and-doctests","elapsed_seconds":%d,"exit_code":%d}\n' "$((SECONDS - phase_started))" "$phase_exit" > "$RUNNER_TEMP/rust-test-timings/run.json"
+          exit "$phase_exit"
+      - name: Test merge queue differential corpora
+        if: ${{ github.event_name == 'merge_group' && inputs.run-rust }}
+        uses: ./.github/actions/test-rust-workspace-differential
+        with:
+          workspace-already-tested: "true"
+      - name: Check fixture coverage
+        if: ${{ inputs.run-rust }}
+        run: rust-script tools/commands/ci/github/write-coverage-summary.rs
+      - name: Summarize Rust test timing evidence
+        if: ${{ always() && inputs.run-rust }}
+        env:
+          BUILD_OUTCOME: ${{ steps.rust-test-build.outcome }}
+          RUN_OUTCOME: ${{ steps.rust-test-run.outcome }}
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
+          CACHE_NAMESPACE: ${{ github.repository }}-${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}clippy-test-target-${{ runner.os }}-${{ runner.arch }}
+        run: node tools/support/compat/github/rust-test-timings.mjs
+      - name: Upload Rust test timing evidence
+        if: ${{ always() && inputs.run-rust }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-test-timings-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: ${{ runner.temp }}/rust-test-timings/
+          if-no-files-found: error
+          retention-days: 14
+
