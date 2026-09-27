@@ -25,6 +25,10 @@ const canonDeferred = [
     name: "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
     pack: "reserved-expression-shapes",
   },
+  {
+    name: "component_event_tuples_preserve_all_argument_diagnostics",
+    pack: "component-event-tuples",
+  },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {

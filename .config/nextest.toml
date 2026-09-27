@@ -13,7 +13,8 @@ default-filter = '''not ((package(=vize_maestro) & (
   test(=deferred_template_reads_preserve_script_diagnostics) |
   test(=required_props_keep_exact_unicode_diagnostics) |
   test(=unicode_reserved_props_preserve_value_diagnostics) |
-  test(=reserved_prop_shapes_preserve_literal_and_member_diagnostics)
+  test(=reserved_prop_shapes_preserve_literal_and_member_diagnostics) |
+  test(=component_event_tuples_preserve_all_argument_diagnostics)
 )))'''
 fail-fast = false
 retries = 0
