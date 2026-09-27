@@ -58,6 +58,9 @@ const sourceWorkflow = parse(readRepoFile(".github", "workflows", "pr-source-che
   on?: Record<string, unknown>;
   jobs?: Record<string, Job>;
 };
+const rustWorkflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
+  jobs?: Record<string, Job>;
+};
 
 function needs(results: Record<string, string> = {}): Record<string, { result: string }> {
   return Object.fromEntries(PR_JOBS.map((job) => [job, { result: results[job] ?? "success" }]));
@@ -209,7 +212,6 @@ test("PR and merge-group source checks are included in the required report", () 
   assert.ok(Object.hasOwn(sourceWorkflow.on ?? {}, "workflow_call"));
   for (const [job, minutes] of [
     ["pr-source-plan", 5],
-    ["pr-rust-source", "${{ github.event_name == 'merge_group' && 45 || 35 }}"],
     ["pr-js-packages", 35],
     ["pr-tooling-scripts", 35],
     ["pr-playground-test", 60],
@@ -223,7 +225,9 @@ test("PR and merge-group source checks are included in the required report", () 
       "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
     );
   }
-  for (const job of SOURCE_PR_JOBS.filter((name) => name !== "pr-source-plan")) {
+  for (const job of SOURCE_PR_JOBS.filter(
+    (name) => !["pr-source-plan", "pr-rust-source"].includes(name),
+  )) {
     const steps = sourceWorkflow.jobs?.[job]?.steps ?? [];
     assert.ok(steps.length > 0, `${job} needs a skip explanation or validation steps`);
     assert.ok(
@@ -237,10 +241,19 @@ test("PR and merge-group source checks are included in the required report", () 
   assert.deepEqual(sourceWorkflow.jobs?.["pr-playground-test"]?.needs, "pr-source-plan");
   const commands = (job: string) =>
     (sourceWorkflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
-  assert.match(commands("pr-rust-source"), /cargo clippy --workspace/);
-  assert.match(commands("pr-rust-source"), /cargo test --workspace/);
-  assert.match(commands("pr-rust-source"), /write-coverage-summary\.rs/);
-  const rustSteps = sourceWorkflow.jobs?.["pr-rust-source"]?.steps ?? [];
+  assert.equal(
+    sourceWorkflow.jobs?.["pr-rust-source"]?.uses,
+    "./.github/workflows/pr-rust-checks.yml",
+  );
+  const rustCommands = (job: string) =>
+    (rustWorkflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
+  assert.match(rustCommands("merge-rust-source"), /cargo clippy --workspace/);
+  assert.match(rustCommands("merge-rust-source"), /cargo test --workspace/);
+  assert.match(rustCommands("merge-rust-source"), /write-coverage-summary\.rs/);
+  assert.match(rustCommands("pr-rust-build"), /cargo nextest archive @packages@/);
+  assert.match(rustCommands("pr-rust-build"), /cargo test @packages@ --profile ci --doc/);
+  assert.match(rustCommands("pr-rust-shard"), /cargo nextest run --archive-file/);
+  const rustSteps = rustWorkflow.jobs?.["merge-rust-source"]?.steps ?? [];
   const pklIndex = rustSteps.findIndex((step) => step.name === "Install Pkl CLI");
   const buildIndex = rustSteps.findIndex((step) => step.name === "Build Rust workspace tests");
   const runIndex = rustSteps.findIndex((step) => step.name === "Run Rust workspace tests");
@@ -270,11 +283,22 @@ test("untrusted source checks cannot write trusted sticky disks", () => {
   assert.equal(action.inputs?.["cache-key-prefix"]?.default, "");
   const prefix =
     "${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}";
-  for (const job of SOURCE_PR_JOBS.filter((name) => name !== "pr-source-plan")) {
+  for (const job of SOURCE_PR_JOBS.filter(
+    (name) => !["pr-source-plan", "pr-rust-source"].includes(name),
+  )) {
     const cacheStep = sourceWorkflow.jobs?.[job]?.steps?.find(
       (step) => step.uses === "./.github/actions/setup-rust-sticky-cache",
     );
     assert.equal(cacheStep?.with?.["cache-key-prefix"], prefix, `${job} must isolate its cache`);
+  }
+  for (const job of ["merge-rust-source", "pr-rust-build"]) {
+    const cacheStep = rustWorkflow.jobs?.[job]?.steps?.find(
+      (step) => step.uses === "./.github/actions/setup-rust-sticky-cache",
+    );
+    assert.ok(
+      cacheStep?.with?.["cache-key-prefix"]?.includes("pr-{0}-"),
+      `${job} must isolate its cache`,
+    );
   }
   const mounts = action.runs?.steps?.filter((step) =>
     step.uses?.startsWith("useblacksmith/stickydisk@"),

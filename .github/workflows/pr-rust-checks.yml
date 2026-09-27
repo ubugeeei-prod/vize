@@ -105,3 +105,108 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  pr-rust-build:
+    name: Build affected Rust tests
+    if: ${{ github.event_name == 'pull_request' && inputs.run-rust }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_TEST_DISABLE_TSGO: "1"
+      RUST_PLAN_JSON: ${{ inputs.rust-plan }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        with:
+          components: clippy
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: ${{ format('pr-{0}-', github.event.pull_request.number) }}
+          key: nextest-ci
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-nextest@0.9.146
+      - name: Materialize affected Rust plan
+        run: node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
+      - name: Clippy affected crates
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
+      - name: Build and archive affected Rust tests once
+        run: |
+          mkdir -p target/rust-test-archive
+          node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo nextest archive @packages@ --cargo-profile ci --archive-file target/rust-test-archive/tests.tar.zst
+          node tools/support/compat/github/rust-test-archive.mjs stamp target/rust-test-archive/tests.tar.zst target/rust-test-archive/receipt.json
+      - name: Run affected Rust doctests
+        run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-test-archive-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/rust-test-archive/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
+  pr-rust-shard:
+    name: Rust tests (${{ matrix.shard }}/4)
+    if: ${{ github.event_name == 'pull_request' && inputs.run-rust }}
+    needs: pr-rust-build
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+      VIZE_TEST_DISABLE_TSGO: "1"
+      SHARD: ${{ matrix.shard }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with:
+          tool: cargo-nextest@0.9.146
+      - name: Install Pkl CLI
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: rust-test-archive-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .artifacts/rust-test-archive
+      - name: Verify Rust archive identity
+        run: node tools/support/compat/github/rust-test-archive.mjs verify .artifacts/rust-test-archive/tests.tar.zst .artifacts/rust-test-archive/receipt.json
+      - name: Run Rust test shard without rebuilding
+        # Baked env! paths still occur in tests. Extract to the original workspace
+        # (checked by the receipt), preserving target/ci and CARGO_BIN_EXE paths.
+        # Empty partitions are valid for packages with fewer than four tests.
+        run: cargo nextest run --archive-file .artifacts/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --workspace-remap "$GITHUB_WORKSPACE" --profile pr --partition "hash:$SHARD/4" --no-tests=pass
+      - name: Upload Rust shard results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: rust-test-shard-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/nextest/pr/junit.xml
+          if-no-files-found: error
+          retention-days: 7
+
+  rust-source-report:
+    name: Rust source report
+    if: ${{ always() }}
+    needs: [merge-rust-source, pr-rust-build, pr-rust-shard]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Require the complete Rust tier
+        env:
+          RUN_RUST: ${{ inputs.run-rust }}
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: node tools/support/compat/github/require-rust-tier.mjs

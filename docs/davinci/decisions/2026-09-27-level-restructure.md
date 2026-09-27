@@ -317,6 +317,8 @@ shared task inputs, explicit T1 runtime inventory and conservative T0 fallback
 for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864).
 
 [Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base.
+[Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md)
+records #6862's runner, doctest, resource and archive identity decisions.
 
 ## Order of work
 

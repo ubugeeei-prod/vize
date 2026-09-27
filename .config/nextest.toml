@@ -1,0 +1,22 @@
+# CI uses the same pinned nextest on the archive builder and every shard.
+nextest-version = "0.9.146"
+
+[profile.pr]
+fail-fast = false
+retries = 0
+test-threads = 16
+slow-timeout = "60s"
+
+[profile.pr.junit]
+path = "junit.xml"
+store-success-output = false
+store-failure-output = true
+
+[test-groups]
+# Guest builders share target/contract-guests. Their OnceLocks are process-local,
+# so nextest must limit the guest builds across test processes on each runner.
+contract-guests = { max-threads = 1 }
+
+[[profile.pr.overrides]]
+filter = 'package(=vize_extension_host)'
+test-group = "contract-guests"
