@@ -131,6 +131,16 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
 See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-check) in the companion record.
 
+### Type-checker history fixture slices
+
+For [#6879](https://github.com/ubugeeei-prod/vize/issues/6879), retain the
+271 directory fix requirements separately from diagnostic fixture acceptance.
+The [first slice](./2026-09-27-typechecker-fix-history.md) checks all returned
+batch diagnostic rows for three #4996 event-handler inputs, without code/file
+filtering, sorting or message normalization. Start-only batch records expose
+their missing end/related/raw fields; whole-history coverage, shared native
+comparison, Actions verification and #6849 replacement remain unfinished.
+
 ## Legacy deletion criteria
 
 See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria) in the companion record.
