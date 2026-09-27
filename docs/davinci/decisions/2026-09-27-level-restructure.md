@@ -184,6 +184,10 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
 See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-check) in the companion record.
 
+[Type-checker history slices](./2026-09-27-typechecker-history-slices.md) record
+focused required T1 diagnostics, including Unicode values, for #6879;
+whole-history and native admission remain unfinished.
+
 ## Legacy deletion criteria
 
 See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria)
@@ -227,6 +231,7 @@ The toolchain aims to be extremely fast. The layering must not add pipelines or 
 - The [instruction-count gate record](./2026-09-27-instruction-counts.md) defines measured-only ceilings and immutable-base ratchets for #6868. Independent clean Actions builds (run 36307058591, attempts 1 and 2) match all 100 probes in three executions each under the fixed guest method. Required `test-report` aggregates queue measurement and strict ceilings. Separate queue tests and test-inventory collection preserve its check name and satisfy the source-length ratchet. Exact queue verification is pending.
 - The private [fixed v-for provenance candidate](./2026-09-27-vfor-provenance-construction.md) preserves complete bytes and stack safety. Its first measurement failed 13 instruction ceilings, with the iteration 1042 over; six new controls passed separately in instrumented workspace tests. The reviewed [ASCII word safety path](./2026-09-27-ascii-expression-safety.md) retains OXC admission. The private verification inherits actual merged main `c681035`: iteration `147642 <= 148047`, Linux allocations `11/1499`, all twelve controls and the unchanged eleven feature recipes pass, but seventeen unchanged instruction ceilings fail. Existing ignored/scope limits remain explicit; MacOS is unknown ([#6868 source record](https://github.com/ubugeeei-prod/vize/issues/6868#issuecomment-5856053395)).
 - [Indentation append cost](./2026-09-27-indentation-chunks.md) records the failed composed measurement and bounded chunking candidate; complete runtime proof remains pending.
+- [Binding traversal cost](./2026-09-27-binding-traversal-cost.md) records the #6868 protected numeric failures and bounded static-item optimization; Linux proof remains pending.
 - The private [newline prefix append](./2026-09-27-newline-prefix.md) combines the newline and first chunk after the next 17-ceiling failure; whole output/state and fixed caps remain required, with savings unverified.
 - Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is decided after measuring table density and lookup cost ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).
 
@@ -294,4 +299,5 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 
 - **Full queue Rust execution (#6830, #6861):** reuse one bound workspace archive and four unfiltered workers; keep required TSGO, doctests and all 11 feature recipes. Runtime evidence and acceptance conditions are in [the full Rust shard decision](./2026-09-27-ci-full-rust-shards.md).
 
-- [Binding traversal cost](./2026-09-27-binding-traversal-cost.md) records the #6868 protected numeric failures and bounded static-item optimization; Linux proof remains pending.
+[Options API computed regressions](./2026-09-27-options-computed-regressions.md)
+record #6921 owner history, shared parse facts, setter guards and registered typechecker fixtures for #6879.

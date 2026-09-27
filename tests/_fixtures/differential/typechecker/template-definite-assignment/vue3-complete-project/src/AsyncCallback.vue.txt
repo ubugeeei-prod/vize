@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { fetchTags } from './support'
+let followedTags: string[]
+onMounted(async () => {
+  followedTags = await fetchTags()
+})
+</script>
+
+<template>
+  <div>{{ followedTags.length }}</div>
+</template>

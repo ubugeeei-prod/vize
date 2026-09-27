@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { fetchTags } from './support'
+let followedTags: string[]
+followedTags = await fetchTags()
+</script>
+
+<template>
+  <div>{{ followedTags.length }}</div>
+</template>

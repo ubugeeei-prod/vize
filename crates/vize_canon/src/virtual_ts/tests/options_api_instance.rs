@@ -7,6 +7,7 @@ use crate::virtual_ts::{
 };
 
 mod data_assignment;
+mod writable_computed;
 
 #[test]
 fn test_options_api_template_bindings_use_default_instance_type() {

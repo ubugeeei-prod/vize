@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "f3a26b0e30c98b135a9e897c3584526eb0a2b96d",
+  "historicalIssue": 3581,
+  "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "complete-attribute-boundaries",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "complete-attribute-boundaries/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "complete-attribute-boundaries/src/Child.vue.txt"
+        },
+        {
+          "file": "src/Optional.vue",
+          "source": "complete-attribute-boundaries/src/Optional.vue.txt"
+        },
+        {
+          "file": "src/UnionChild.vue",
+          "source": "complete-attribute-boundaries/src/UnionChild.vue.txt"
+        },
+        {
+          "file": "src/EventChild.vue",
+          "source": "complete-attribute-boundaries/src/EventChild.vue.txt"
+        },
+        {
+          "file": "src/global.d.ts",
+          "source": "complete-attribute-boundaries/src/global.d.ts.txt"
+        },
+        {
+          "file": "src/components.ts",
+          "source": "complete-attribute-boundaries/src/components.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "complete-attribute-boundaries/src/Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 18,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ count: number; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 19,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 23,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ dataId: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<__UnionChild_CheckProps_3, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ dataId: string; }' is not assignable to type '{ readonly kind: \"count\"; readonly count: number; } & __VizePublicComponentAttrs & Record<string, unknown>'.\nType '{ dataId: string; }' is missing the following properties from type '{ readonly kind: \"count\"; readonly count: number; }': kind, count"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 27,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ count: number; style: { color: string; }; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; style: { color: string; }; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 28,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ count: string; label: string; class: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ count: string; label: string; class: string; }' is not assignable to type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'.\nTypes of property 'count' are incompatible.\nType 'string' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 36,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ ref_for: true; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ ref_for: true; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 37,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ ref_key: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ ref_key: string; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 38,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onVnodeMounted: () => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ onVnodeMounted: () => void; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 39,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__EventChild_CheckProps_13, __VizePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{ onSave: (_value: string) => void; }' but required in type '{ readonly count: number; readonly onSave?: ((value: string) => any) | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 40,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ globalToken: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ globalToken: string; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 41,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onVnodeMounted: () => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_15, Record<string, unknown>>'.\nType '{ onVnodeMounted: () => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 42,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_16, Record<string, unknown>>'.\nType '{ onSave: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 43,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ globalToken: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_17, Record<string, unknown>>'.\nType '{ globalToken: string; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 44,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onCancel: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_18, Record<string, unknown>>'.\nType '{ onCancel: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 45,
+          "column": 26,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'Function'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 46,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onXML: (_value: string) => void; }' is not assignable to parameter of type '__VizeComponentCheckProps<__ExternalEventChild_CheckProps_20, Record<string, unknown>>'.\nType '{ onXML: (_value: string) => void; }' is missing the following properties from type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 12 more ...; readonly onXML?: ((_value: string) => any) | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 49,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ kind: \"text\"; }' is not assignable to parameter of type '__VizeComponentCheckProps<__UnionChild_CheckProps_22, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{ kind: \"text\"; }' is not assignable to type '{ readonly kind: \"text\"; readonly text: string; } & __VizePublicComponentAttrs & Record<string, unknown>'.\nProperty 'text' is missing in type '{ kind: \"text\"; }' but required in type '{ readonly kind: \"text\"; readonly text: string; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 50,
+          "column": 15,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"wrong\"' is not assignable to type '\"count\" | \"text\"'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 54,
+          "column": 24,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ count: number; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 57,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ count: number; class: string; dataId: string; }' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ count: number; class: string; dataId: string; }' but required in type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 64,
+          "column": 22,
+          "severity": 1,
+          "code": 1117,
+          "message": "An object literal cannot have multiple properties with the same name."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 31,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 32,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 33,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '__VizeComponentCheckProps<Props, __VizePublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+        }
+      ]
+    }
+  ]
+}

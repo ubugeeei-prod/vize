@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { ref } from "vue";
+const state = ref<"a" | "b" | "closed">("closed");
+</script>
+<template>
+  <div>
+    <button :disabled="state !== 'closed'" @click="state = 'b'">x</button>
+    <span v-if="state === 'a'">a</span>
+  </div>
+</template>
