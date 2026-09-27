@@ -23,7 +23,7 @@ input declarations and current semantic payloads remain unchanged.
 
 - α/SFC/global fact schemas remain 1. Summary dump grammar remains unchanged.
 - L1 remains lossless syntax without a new owned Page; L2 Full dump still uses
-  its current `[disegno-folio]` grammar. L3 dump grammar is unchanged.
+  its current `[disegno]`/`[disegno.ops]` grammar. L3 dump grammar is unchanged.
 - CLI pipeline labels/maps, Stage diagnostic strings, StageFeed, counters,
   profile hashes, DOM receipts and production captures keep their own contracts.
 - Doctor capability cache, resident source/config hashes and batch compile
