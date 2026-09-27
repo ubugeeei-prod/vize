@@ -64,5 +64,6 @@ recursion control must pass. All 100 probes must satisfy existing ceilings.
 No numeric acceptance, public-eight restack or gate exception follows from these
 local checks. Further optimization, if needed, requires a separate reviewed change.
 
-The paired issue record is on #6868; its URL is recorded after posting the source
-candidate. The central Performance section links this companion.
+The source candidate is `01dff5012`. Its paired [#6868 issue record](https://github.com/ubugeeei-prod/vize/issues/6868#issuecomment-5856053395)
+states the private/unpushed scope and pending runtime/numeric evidence. The central
+Performance section links this companion.
