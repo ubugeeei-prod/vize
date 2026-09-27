@@ -58,3 +58,8 @@ has 258 fix-title candidates, alongside non-fix behavior changes and
 merge resolutions; it remains separate from this later capture parent.
 No whole historical commit is accepted by this selected pack. Native
 handling and native comparison counts remain zero; #6881 stays open.
+
+The published replay refreshes only the existing linter surface witness
+shard: the official generator adds one `test/dev` L0 row for
+`report_history.rs` line 11. Its complete 19-artifact check passes; no
+aggregate report is recommitted. Latest-head Actions proof remains pending.
