@@ -32,12 +32,12 @@ actually queries its unchanged bytes again. A panic, count mismatch, missing
 case or snapshot mismatch fails. A second complete observation must equal
 the first before it can match the frozen golden.
 
-| Historical commit | Selected scope | Control |
-| --- | --- | --- |
-| `cba6fd5bbb7519696059416fd77aa1ba3192cba3` | Typed and untyped `ref(null)` text inside strings, paired with static template ref names | A real typed `ref()` call with the same template name reports |
-| `731cce813a41207950923d89099ac2c87047c0b6` | `v-for="items"` through the public template entry | A valid `item in items` expression remains clean |
+| Historical commit                          | Selected scope                                                                                                        | Control                                                         |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `cba6fd5bbb7519696059416fd77aa1ba3192cba3` | Typed and untyped `ref(null)` text inside strings, paired with static template ref names                              | A real typed `ref()` call with the same template name reports   |
+| `731cce813a41207950923d89099ac2c87047c0b6` | `v-for="items"` through the public template entry                                                                     | A valid `item in items` expression remains clean                |
 | `f9fa82f7867e3a9373a8d0ee30162c6947c7c113` | Explicitly enabled slot/shorthand rules respect Vue 2 compatibility; explicitly enabled nextTick respects Vapor false | Vue 3 slot/shorthand and unspecified Vapor report real findings |
-| `634f636969b451c805ad4874c0567d64c8e8f850` | Empty static-class expression; genuine fix with a Japanese/emoji/CRLF prefix | Complete applied source and subsequent full lint result |
+| `634f636969b451c805ad4874c0567d64c8e8f850` | Empty static-class expression; genuine fix with a Japanese/emoji/CRLF prefix                                          | Complete applied source and subsequent full lint result         |
 
 The string cases preserve the historical text and additionally supply an SFC
 template name, because the current rule requires template pairing. They are
@@ -72,6 +72,9 @@ also compares two complete observations per case. No test or case was ignored.
 The [capture receipt](./2026-09-27-lint-history-current-api-receipt.json)
 binds the parent, prepared source, exact UTF8 inputs, executable, Cargo target /
 profile / features and raw local build/execution logs by full SHA256.
+Its [original receipt bytes](./2026-09-27-lint-history-current-api-receipt.json.txt)
+remain immutable; the JSON is a formatted view of the same payload. A later
+import-only formatting commit does not claim a rebuild of the captured binary.
 
 **The static-class control exposed an existing autofix bug.** Its real offer
 replaces the SFC binding through one byte beyond the closing quote, consuming

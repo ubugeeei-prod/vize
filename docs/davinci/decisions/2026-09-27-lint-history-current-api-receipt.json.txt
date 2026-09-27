@@ -31,8 +31,12 @@
     "stdoutSha256": "5c69fc1f9f54b5939d4ab24ee26511e072429469b57f7da7385db0068ed1eea0",
     "stderrSha256": "34815c3b69a2b8a8fa0202cdff92ccf44edf41ba6a043c238dfc67d4451bd16d",
     "target": {
-      "kind": ["test"],
-      "crate_types": ["bin"],
+      "kind": [
+        "test"
+      ],
+      "crate_types": [
+        "bin"
+      ],
       "name": "lint_history",
       "src_path": "/private/tmp/vize-lint-history-fixtures-20260927/crates/vize_patina/tests/lint_history.rs",
       "edition": "2024",
