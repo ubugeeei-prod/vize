@@ -8,6 +8,10 @@ import { changedPaths } from "./plan-source-checks.mjs";
 const packageName = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 const contexts = new Set(["pull_request", "merge_group"]);
 
+function compareStrings(left, right) {
+  return left < right ? -1 : left > right ? 1 : 0;
+}
+
 function repositoryPath(root, absolutePath) {
   if (!isAbsolute(absolutePath)) throw new Error("Cargo metadata paths must be absolute");
   const path = relative(root, absolutePath).split(sep).join("/");
@@ -50,7 +54,7 @@ export function workspaceGraph(metadata) {
       if (target) reverse.get(target.name).add(pkg.name);
     }
   }
-  return { names: [...names].sort(), roots: [...roots.values()], reverse };
+  return { names: [...names].sort(compareStrings), roots: [...roots.values()], reverse };
 }
 
 function validChangedPath(path) {
@@ -109,15 +113,15 @@ export function planAffectedRust(metadata, paths, eventName = "pull_request") {
       }
     }
   }
-  const packages = full ? graph.names : [...affected].sort();
+  const packages = full ? graph.names : [...affected].sort(compareStrings);
   return {
     schemaVersion: 1,
     scope: full ? "workspace" : packages.length ? "affected" : "none",
     packages,
     cargoArgs: packages.flatMap((name) => ["--package", name]),
-    changedPackages: [...changed].sort(),
-    reasons: [...reasons].sort(),
-    excludedPaths: excludedPaths.sort(),
+    changedPackages: [...changed].sort(compareStrings),
+    reasons: [...reasons].sort(compareStrings),
+    excludedPaths: excludedPaths.sort(compareStrings),
   };
 }
 
