@@ -53,3 +53,33 @@ separate binary-crate import resolution. Root-only malformed `Page` imports and
 binary `crate::dump` imports must be rejected by source validation. Regression
 fixtures cover both cases. The 33 reviewed storage inventory paths follow the
 move manifest; all category/count fields and row order remain unchanged.
+
+## Replay after CI and foundation repairs
+
+The prepared parent is foundation stage head `f888b9ec4`, followed by the
+registry correction `37197d6f6`. The 45-path move remains a separate R100
+commit. Registry, move, Rust-scope correction and historical replay-pin patches
+retain their original stable patch ids. The API patch differs only in the
+central record link, which retains both registry and dump decisions. The DOM
+target correction retains the parent's explicit `tests/l2_filters.rs` path,
+renames its private test target to `l2_filters`, and keeps the `legacy` feature.
+
+The existing replay driver now accepts `--base` for the clean pre-move source
+revision. Verify this prepared tree with `--base 37197d6f6 --verify`; it checks
+184 rewritten Rust files and the storage path inventory without writes. This
+retains current main's public SSR compatibility changes rather than comparing
+or overwriting them from the old immutable parent. The default historical
+parent remains available for reproducing earlier proofs.
+
+Existing Node contracts passed 69 tests, including the wrapper's ten Python
+namespace/literal boundary cases and actual locked/offline Cargo target
+registration. Croquis consumption, consumer migration, rule parity and storage
+summary checks all pass without regeneration. Production Rust compilation,
+real CLI execution, WASM/browser behavior and new exact-head Actions remain
+unverified; prior captured outputs do not certify this new composition.
+
+The remaining named paths, serialized concern headers, versioned counter
+producer migration and the real shared CLI/playground production generator
+are still open. The roundtrip-only CLI candidate does not replace the legacy
+optimizer. The existing substrate dissolution remains #6833's separate scope;
+this naming slice does not claim it has completed.

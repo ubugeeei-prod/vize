@@ -259,10 +259,12 @@ def migrate_storage(source):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--repo', type=Path, default=Path.cwd())
+    parser.add_argument('--base', default=names.BASE,
+                        help='clean pre-move source revision used for this replay')
     parser.add_argument('--verify', action='store_true')
     parser.add_argument('--moves', action='store_true')
     args = parser.parse_args()
-    source_paths = git(args.repo, 'ls-tree', '-r', '--name-only', names.BASE).splitlines()
+    source_paths = git(args.repo, 'ls-tree', '-r', '--name-only', args.base).splitlines()
     if args.moves:
         if args.verify or git(args.repo, 'status', '--porcelain', '--untracked-files=no').strip():
             raise ValueError('move mode requires a clean tracked checkout')
@@ -280,7 +282,7 @@ def main():
         print(json.dumps({'moves': len(moves), 'contentEdits': 0}))
         return
     selected = [path for path in source_paths if path.endswith('.rs') and not PROTECTED.intersection(Path(path).parts)]
-    payload = ''.join(names.BASE + ':' + path + '\n' for path in selected)
+    payload = ''.join(args.base + ':' + path + '\n' for path in selected)
     process = subprocess.run(['git', '-C', str(args.repo), 'cat-file', '--batch'], input=payload.encode(), stdout=subprocess.PIPE, check=True)
     sources = {}
     offset = 0
@@ -313,7 +315,7 @@ def main():
                 if canonical(actual) != canonical(formatted):
                     raise ValueError('refusing changed consumer: ' + str(target))
     ledger = 'docs/davinci/plan/storage-inventory.tsv'
-    original = git(args.repo, 'show', names.BASE + ':' + ledger)
+    original = git(args.repo, 'show', args.base + ':' + ledger)
     expected = migrate_storage(original)
     actual = (args.repo / ledger).read_text()
     if args.verify:
@@ -325,7 +327,7 @@ def main():
         raise ValueError('refusing changed storage inventory')
     for target, expected in writes:
         target.write_text(expected)
-    print(json.dumps({'base': names.BASE, 'rewrittenRustFiles': len(changed), 'verified': args.verify, 'writes': len(writes)}))
+    print(json.dumps({'base': args.base, 'rewrittenRustFiles': len(changed), 'verified': args.verify, 'writes': len(writes)}))
 
 
 if __name__ == '__main__':
