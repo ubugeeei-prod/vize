@@ -136,13 +136,13 @@ runs:
       if: ${{ steps.cache-policy.outputs.trusted == 'false' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
-        path: ${{ steps.cache-policy.outputs.target-path }}
+        path: ${{ inputs.target-path }}
         key: ${{ steps.cache-policy.outputs.target-key }}
         restore-keys: ${{ steps.cache-policy.outputs.target-restore }}
     - name: Restore a trusted secondary target for an untrusted checkout
       if: ${{ steps.cache-policy.outputs.trusted == 'false' && steps.cache-policy.outputs.secondary == 'true' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
-        path: ${{ steps.cache-policy.outputs.secondary-path }}
+        path: ${{ inputs.secondary-target-path }}
         key: ${{ steps.cache-policy.outputs.secondary-key }}
         restore-keys: ${{ steps.cache-policy.outputs.secondary-restore }}

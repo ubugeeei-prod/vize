@@ -3,8 +3,8 @@
 [PR #6970](https://github.com/ubugeeei-prod/vize/pull/6970) merged for
 [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) at main `73e8f079`.
 The full queue passed 12,808 Rust tests and 5,272 tooling cases (5,260 passes,
-12 known skips, no failures or cancellations). Trusted registry/Git and two
-direct target seeds have actual save receipts; later untrusted restore and
+12 known skips, no failures or cancellations). Trusted registry/Git, direct
+JS, playground and tooling targets have actual save receipts; later restore and
 the full main dispatch remain pending. The paired issue comment is below.
 
 ## Decision
@@ -99,14 +99,25 @@ The observed runner is 2.337.0; its [composite handler](https://github.com/actio
 sets the composite inputs during post too. The [pinned cache save code](https://github.com/actions/cache/blob/27d5ce7f107fe9357f9df03efb73ab90386fccae/src/saveImpl.ts)
 reads path again, even when its primary key was retained in action state.
 
-The private repair passes the immutable target inputs to trusted cache steps.
+The private repair passes the same immutable target inputs to trusted saves
+and untrusted restores. The pinned cache SDK 5.0.5 hashes the literal path
+strings into its cache version without normalization; relative writers and
+absolute readers would miss despite identical keys. Its exact package and
+integrity are recorded in the [pinned action lockfile](https://github.com/actions/cache/blob/27d5ce7f107fe9357f9df03efb73ab90386fccae/package-lock.json).
+Existing absolute-path target seeds therefore miss once after this repair;
+nextest and other unseeded roles still build normally. Registry/Git use the
+same literal paths and retain their existing versions. No entries are deleted.
 The policy still validates those paths inside the workspace before any child
 executes; keys, trust boundaries, per-path mount probes and save/unmount order
 stay unchanged. Backend subprocess tests remove step outputs in post, save
 the freshly built target artifact and separate secondary clone, and reproduce
 the missing-path error when the old expression is restored. They also retain
-the untrusted restore-only case. Actual nested post saving after publication
-remains required; these local controls do not establish a live cache hit.
+the untrusted restore-only case. A persisted fake cache hashes those actual
+path strings: both target seeds restore in a new PR and failed-mount fallback,
+while the mixed absolute reader misses. Malformed target inputs stop before
+any cache child and preserve the stored entries. Actual nested post saving
+and restoration after publication remain required; these local controls do
+not establish a live cache hit.
 
 Issue #6830 paired follow-up draft: the first real trusted run exposed the
 nested target gap, so use validated stable inputs during cache post. Existing

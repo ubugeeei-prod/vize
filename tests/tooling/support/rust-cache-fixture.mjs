@@ -26,9 +26,18 @@ const request = JSON.parse(process.argv[2]);
 const root = process.env.VIZE_FAKE_CACHE_ROOT;
 const trace = row => appendFileSync(join(root, "trace.jsonl"), JSON.stringify({ ...row, pid: process.pid }) + "\\n");
 const marker = join(root, "markers", request.name ?? "unknown");
+const mountedMarker = join(root, "mounts", request.name ?? "unknown");
+const storeFile = join(root, "stored-cache.json");
+const entries = existsSync(storeFile) ? JSON.parse(readFileSync(storeFile,"utf8")) : [];
+// Pinned @actions/cache 5.0.5 hashes path literals, compression and salt.
+if (request.kind.startsWith("cache"))
+  request.version=createHash("sha256").update([request.path,"zstd","1.0"].join("|")).digest("hex");
 mkdirSync(join(root, "markers"), {recursive:true});
+mkdirSync(join(root, "mounts"), {recursive:true});
 if (request.kind === "sticky") {
+  rmSync(mountedMarker, {force:true});
   if (!request.fail) {
+    writeFileSync(mountedMarker,"mounted");
     writeFileSync(marker, "sticky clone");
     if (["target", "secondary"].includes(request.name)) {
       mkdirSync(request.path, { recursive: true });
@@ -37,10 +46,22 @@ if (request.kind === "sticky") {
   }
   trace({...request, mounted: !request.fail});
 } else if (request.kind === "cache") {
+  const match = request.storedCache && entries.find(entry => entry.version===request.version &&
+    (entry.key===request.key || (request.restorePrefix && entry.key.startsWith(request.restorePrefix))));
+  if (request.storedCache) {
+    request.hit=match ? match.key===request.key || "partial" : false;
+    request.matchedKey=match?.key;
+  }
   if (request.lookup) {
     if (readFileSync(marker, "utf8") !== "sticky clone") throw Error("mounted clone was overwritten");
-  } else if (request.hit) writeFileSync(marker, "Actions restore");
-  trace({...request, hit: request.hit ?? false});
+  } else if (request.hit) {
+    writeFileSync(marker, "Actions restore");
+    if (match && ["target","secondary"].includes(request.name)) {
+      mkdirSync(resolve(root,request.path), {recursive:true});
+      writeFileSync(join(resolve(root,request.path),"cache-artifact.txt"),match.saved);
+    }
+  }
+  trace({...request, hit: request.hit ?? false, restoredArtifact: request.lookup ? undefined : match?.saved});
 } else if (request.kind === "workload") {
   const before = existsSync(marker) ? readFileSync(marker,"utf8") : null;
   const source = readFileSync(join(root,"source.txt"),"utf8");
@@ -52,20 +73,29 @@ if (request.kind === "sticky") {
   writeFileSync(marker,"compiled:"+artifact);
   trace({...request,before,artifact});
 } else if (request.kind === "cache-post") {
+  if (request.storedCache)
+    request.hit=entries.some(entry=>entry.key===request.key && entry.version===request.version);
   if (request.hit !== true && !request.path) {
     trace({...request,saved:null,warning:"Input required and not supplied: path"});
   } else {
     const artifactPath = ["target", "secondary"].includes(request.name)
       ? join(resolve(root, request.path), "cache-artifact.txt") : marker;
     const saved = request.hit !== true && existsSync(artifactPath) ? readFileSync(artifactPath,"utf8") : null;
+    if (request.storedCache && saved !== null) {
+      entries.push({key:request.key,version:request.version,saved});
+      writeFileSync(storeFile,JSON.stringify(entries));
+    }
     trace({...request,saved});
   }
 } else if (request.kind === "sticky-post") {
-  if (!request.fail) rmSync(marker,{force:true});
+  if (!request.fail) {
+    rmSync(marker,{force:true});
+    rmSync(mountedMarker,{force:true});
+  }
   trace(request);
 } else if (request.kind === "probe") {
   trace(request);
-  process.exit(existsSync(marker) ? 0 : 1);
+  process.exit(existsSync(mountedMarker) ? 0 : 1);
 } else throw Error("unrecognized fake backend");
 `;
 
@@ -153,9 +183,19 @@ function value(expression, inputs, outputs) {
 export function executeCacheAction(
   fixture,
   context,
-  { mountFailures = [], hit = false, nestedPost = false, steps = action.runs.steps } = {},
+  {
+    mountFailures = [],
+    hit = false,
+    nestedPost = false,
+    storedCache = false,
+    steps = action.runs.steps,
+  } = {},
 ) {
   const { cwd } = fixture;
+  const traceFile = join(cwd, "trace.jsonl");
+  const traceStart = existsSync(traceFile)
+    ? readFileSync(traceFile, "utf8").trim().split("\n").length
+    : 0;
   const inputs = {
     key: context.role,
     "cache-key-suffix": context.suffix,
@@ -252,6 +292,8 @@ export function executeCacheAction(
           lookup: args["lookup-only"] ?? false,
           hit,
           restoreOnly,
+          storedCache,
+          restorePrefix: args["restore-keys"],
         };
         child({ kind: "cache", ...request });
         if (!restoreOnly)
@@ -269,12 +311,12 @@ export function executeCacheAction(
       child(request);
     }
   }
-  const traceFile = join(cwd, "trace.jsonl");
   const trace = existsSync(traceFile)
     ? readFileSync(traceFile, "utf8")
         .trim()
         .split("\n")
         .map((line) => JSON.parse(line))
+        .slice(traceStart)
     : [];
   return { status, outputs, trace };
 }
