@@ -307,11 +307,7 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
   `.github/**`.
 - VRT, tsgo-required tests and ledger checks leave the PR tier.
 - Whole-repo generated ledgers stop being committed.
-
-The [generated-ledger decision](./2026-09-27-generated-ledgers.md) records
-[#6867](https://github.com/ubugeeei-prod/vize/issues/6867): current rule/storage
-tables and cross-crate summaries are CI/release artifacts; authored guides,
-per-crate evidence, corpus scope witnesses and reviewed ratchets stay committed.
+  [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867.
 
 [Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the
 fail-closed dependency plan and shell-free package execution for #6862.
