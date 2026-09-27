@@ -114,6 +114,22 @@ export const mergeOnlyToolingTests = [
 // Unlisted tests retain the broad tooling inputs until separately audited.
 export const toolingTestScopes = [
   {
+    input: "toolingRustCorpus",
+    tests: [
+      "tests/tooling/davinci-fact-spec-corpus.test.ts",
+      "tests/tooling/davinci-complexity-corpus.test.ts",
+      "tests/tooling/davinci-metamorphic-corpus.test.ts",
+    ],
+  },
+  {
+    input: "toolingMoonBuild",
+    tests: ["tests/tooling/moonbit-warnings.test.ts"],
+  },
+  {
+    input: "toolingBenchCompare",
+    tests: ["tests/tooling/davinci-bench-compare.test.ts"],
+  },
+  {
     input: "toolingPlans",
     tests: [
       "tests/tooling/davinci-phase2-contract-status.test.ts",

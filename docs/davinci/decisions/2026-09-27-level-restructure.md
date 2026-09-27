@@ -214,6 +214,9 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 [Tooling tier wiring](./2026-09-27-ci-tooling-tier-core.md) records the shared comparison base, queue-only VRT and preserved complete tooling task.
 
+[Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records Cargo corpus,
+Moon module and benchmark fixture dependencies for #6863.
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work) in the companion record.
