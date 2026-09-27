@@ -105,3 +105,9 @@ source-job declaration in the split workflow test; each stack prefix must
 merge into main without relying on a later member's conflict resolution.
 Preserve the previous successful heads and replay only each descendant's
 reviewed changes before fresh current-head Actions and the atomic queue.
+
+The first #6879 child adds exactly `vize_canon / fix_history_diagnostics /
+inline_event_assignments_preserve_exact_diagnostics` to the T0 deferral after that test
+exists. Its fixture declares required T1 execution; the body unconditionally
+runs the production checker. Source and metadata assertions reject nonexistent
+names. The full Cargo T1 lane and all three Corsa tests remain unchanged.

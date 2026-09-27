@@ -8,35 +8,50 @@ import { parse as parseToml } from "@iarna/toml";
 import { parse } from "yaml";
 import { readRepoFile } from "./support/github-workflows.ts";
 
-const deferred = [
+const corsaDeferred = [
   "ide::rename::corsa_session_tests::concurrent_real_corsa_rename_sessions_are_isolated",
   "ide::rename::corsa_session_tests::direct_first::dependency_change_rearms_the_shared_editor_transport_once",
   "ide::rename::corsa_session_tests::direct_first::direct_first_renames_survive_twenty_session_shutdown_overlap",
+];
+const canonDeferred = [
+  { name: "inline_event_assignments_preserve_exact_diagnostics", pack: "event-handler-narrowing" },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs: Record<string, { steps: Step[]; env: Record<string, string> }>;
 };
 
-test("only the three audited real-TSGO cases leave the PR default filter", () => {
+test("only the present audited real-TSGO cases leave the PR default filter", () => {
   const config = parseToml(readRepoFile(".config", "nextest.toml")) as {
     profile: { pr: { "default-filter": string }; default?: { "default-filter"?: string } };
   };
   assert.equal(
     config.profile.pr["default-filter"].replace(/\s/g, ""),
-    `not(package(=vize_maestro)&(${deferred.map((name) => `test(=${name})`).join("|")}))`,
+    `not((package(=vize_maestro)&(${corsaDeferred.map((name) => `test(=${name})`).join("|")}))|(package(=vize_canon)&binary(=fix_history_diagnostics)&(${canonDeferred.map(({ name }) => `test(=${name})`).join("|")})))`,
   );
   assert.equal(config.profile.default?.["default-filter"], undefined);
   const source = readRepoFile("crates/vize_maestro/src/ide/rename/corsa_session_tests.rs");
   const direct = readRepoFile(
     "crates/vize_maestro/src/ide/rename/corsa_session_tests/direct_first.rs",
   );
-  for (const name of deferred) {
+  for (const name of corsaDeferred) {
     const functionName = name.split("::").at(-1);
     const body = name.includes("::direct_first::") ? direct : source;
     assert.ok(body.includes(`fn ${functionName}()`), `${name} must exist`);
   }
   assert.ok(source.includes("real-Corsa isolation coverage cannot be skipped"));
+  const canon = readRepoFile("crates/vize_canon/tests/fix_history_diagnostics.rs");
+  assert.ok(readRepoFile("crates/vize_canon/Cargo.toml").includes('name = "vize_canon"'));
+  assert.equal(new Set(canonDeferred.map(({ name }) => name)).size, canonDeferred.length);
+  for (const { name, pack } of canonDeferred) {
+    assert.ok(canon.includes(`fn ${name}()`), `${name} must exist in this test binary`);
+    const fixture = JSON.parse(
+      readRepoFile(`tests/_fixtures/differential/typechecker/${pack}/cases.json`),
+    );
+    assert.equal(fixture.diagnosticContract.requiredTier, "T1");
+  }
+  assert.ok(canon.includes('assert_eq!(pack.diagnostic_contract.required_tier, "T1")'));
+
   const merge = workflow.jobs["merge-rust-source"].steps;
   assert.ok(merge.some((step) => step.name === "Run Rust workspace doctests"));
   const full = (

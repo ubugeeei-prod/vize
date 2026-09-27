@@ -133,13 +133,11 @@ See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-ch
 
 ### Type-checker history fixture slices
 
-For [#6879](https://github.com/ubugeeei-prod/vize/issues/6879), retain the
-271 directory fix requirements separately from diagnostic fixture acceptance.
-The [first slice](./2026-09-27-typechecker-fix-history.md) checks all returned
-required T1 batch diagnostic rows for three #4996 event-handler inputs, without code/file
-filtering, sorting or message normalization. Start-only batch records expose
-their missing end/related/raw fields; whole-history coverage, shared native
-comparison, Actions verification and #6849 replacement remain unfinished.
+[#6879](https://github.com/ubugeeei-prod/vize/issues/6879) retains 271 directory fix requirements; native/full-range admission and Actions/full T1 proof remain open.
+
+| Slice                                                     | Required T1 diagnostic contract                                        | Remaining scope                                                     |
+| --------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [Event handlers](./2026-09-27-typechecker-fix-history.md) | Three #4996 inputs, every batch row without filtering or normalization | Whole bundled patch, shared/native comparison and #6849 replacement |
 
 ## Legacy deletion criteria
 

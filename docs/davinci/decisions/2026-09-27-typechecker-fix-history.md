@@ -73,3 +73,13 @@ also failed. Every mutation was restored before the repeat passed.
 - Integrate the pack through the shared #6891 result/accounting contract when
   the type-checker adapter is reviewed. End/related payload and native L4 parity
   remain open. #6879 stays open; #6849 replacement is still blocked.
+
+## Exact T0 deferral
+
+The stable CI parent is #6919 at `07ac185bac5ce8b6a99191be10c24a1dac854a78`.
+This child defers only package `vize_canon`, test binary
+`fix_history_diagnostics`, exact test
+`inline_event_assignments_preserve_exact_diagnostics`. Tooling checks its source existence
+and required T1 fixture metadata. The three existing Corsa deferrals stay exact;
+full Cargo T1 remains unchanged and must execute real TSGO. Draft PR Actions
+and parent main/queue proof are pending; this decision admits no native credit.
