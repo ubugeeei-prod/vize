@@ -23,7 +23,11 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
     };
     let project_root = create_cli_project();
     if !project_root.join("node_modules/vue").exists() {
-        eprintln!("skipping: the workspace has no node_modules/vue for the fixture project");
+        assert!(
+            std::env::var_os("VIZE_TEST_REQUIRE_TSGO").is_none(),
+            "required slot regression corpus has no workspace Vue runtime"
+        );
+        eprintln!("skipping optional local slot corpus: no workspace Vue runtime");
         let _ = std::fs::remove_dir_all(&project_root);
         return;
     }
@@ -59,41 +63,79 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
         })
         .collect::<Vec<_>>();
 
-    // `Parent.vue`: `side` and `item` are passed by every outlet (a literal on
-    // one of them, one outlet inside a `v-for`) and satisfy a required
-    // `'pc' | 'sp'` prop; `panel` is passed by one outlet only, so it is
-    // optional and the same required prop reports it. `Wrong.vue` forwards a
-    // merged payload into a `number` prop: the merge must still type the
-    // payload, not erase it to `any`.
+    let mut actual = diagnostics
+        .iter()
+        .map(|diagnostic| {
+            let (file, diagnostic) = diagnostic.split_once(": error:").unwrap();
+            let (location, message) = diagnostic.split_once(" [TS").unwrap();
+            let line = location.split(':').next().unwrap().parse::<u32>().unwrap();
+            let code = message.split(']').next().unwrap().parse::<u32>().unwrap();
+            (file.replace('\\', "/"), line, code)
+        })
+        .collect::<Vec<_>>();
+    actual.sort();
     let mut expected = vec![
-        (
-            "src/Parent.vue",
-            "[TS2322]",
-            "'undefined' is not assignable",
-        ),
-        (
-            "src/Wrong.vue",
-            "[TS2322]",
-            "not assignable to type 'number'",
-        ),
+        ("src/Parent.vue".to_owned(), 4, 2322),
+        ("src/Wrong.vue".to_owned(), 4, 2322),
+        ("src/ManyWrong.ts".to_owned(), 5, 2322),
+        ("src/ManyWrong.ts".to_owned(), 6, 2322),
+        ("src/ManyWrong.ts".to_owned(), 7, 2322),
+        ("src/ManyWrong.ts".to_owned(), 8, 2322),
+        ("src/ManyWrong.ts".to_owned(), 9, 2322),
+        ("src/ManyWrong.ts".to_owned(), 10, 2322),
+        ("src/OptionalControl.ts".to_owned(), 6, 2322),
+        ("src/SingleControl.ts".to_owned(), 4, 2322),
     ];
-    for diagnostic in &diagnostics {
-        let index = expected
-            .iter()
-            .position(|(file, code, text)| {
-                diagnostic.contains(file) && diagnostic.contains(code) && diagnostic.contains(text)
-            })
-            .unwrap_or_else(|| {
-                panic!(
-                    "unexpected diagnostic {diagnostic:?}; got {diagnostics:?}\nstdout:\n{stdout}\nstderr:\n{stderr}"
-                )
-            });
-        expected.remove(index);
-    }
-    assert!(
-        expected.is_empty(),
-        "missing diagnostics {expected:?}; got {diagnostics:?}\nstdout:\n{stdout}\nstderr:\n{stderr}"
+    expected.sort();
+    assert_eq!(actual, expected, "stdout:\n{stdout}\nstderr:\n{stderr}");
+    let mut complete = diagnostics
+        .iter()
+        .filter_map(|diagnostic| {
+            let (file, diagnostic) = diagnostic.split_once(": error:").unwrap();
+            if !file.ends_with(".ts") {
+                return None;
+            }
+            let (location, diagnostic) = diagnostic.split_once(" [TS").unwrap();
+            let (line, column) = location.split_once(':').unwrap();
+            let (code, message) = diagnostic.split_once("] ").unwrap();
+            Some((
+                file.replace('\\', "/"),
+                line.parse::<u32>().unwrap(),
+                column.parse::<u32>().unwrap(),
+                code.parse::<u32>().unwrap(),
+                message.to_owned(),
+            ))
+        })
+        .collect::<Vec<_>>();
+    complete.sort();
+    let oracle: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            workspace_root()
+                .join("tests/fixtures/typechecker/slot-outlet-union/typescript-oracle.json"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let mut expected_complete = oracle["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|diagnostic| {
+            (
+                diagnostic["file"].as_str().unwrap().to_owned(),
+                diagnostic["line"].as_u64().unwrap() as u32,
+                diagnostic["column"].as_u64().unwrap() as u32,
+                diagnostic["code"].as_u64().unwrap() as u32,
+                diagnostic["message"].as_str().unwrap().to_owned(),
+            )
+        })
+        .collect::<Vec<_>>();
+    expected_complete.sort();
+    assert_eq!(
+        complete, expected_complete,
+        "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
+
     assert!(
         output.status.code() == Some(1),
         "stdout:\n{stdout}\nstderr:\n{stderr}"
@@ -111,7 +153,9 @@ fn create_cli_project() -> PathBuf {
         .join(format!("slot-outlet-union-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&project_root);
     std::fs::create_dir_all(project_root.join("src")).unwrap();
-    link_workspace_node_modules(&project_root);
+    if workspace_vue_package().is_some() {
+        link_workspace_vue(&project_root).unwrap();
+    }
     std::fs::write(
         project_root.join("tsconfig.json"),
         r#"{
@@ -133,7 +177,7 @@ fn create_cli_project() -> PathBuf {
     let sources = manifest["sources"].as_array().unwrap();
     assert_eq!(
         sources.len(),
-        5,
+        12,
         "the registered regression corpus must not shrink"
     );
     for source in sources {
@@ -152,13 +196,57 @@ fn workspace_root() -> PathBuf {
         .to_path_buf()
 }
 
-/// Expose the workspace `node_modules` to the fixture project so `vue`
-/// resolves without an install.
-fn link_workspace_node_modules(project_root: &Path) {
-    let source = workspace_root().join("node_modules");
-    if source.exists() {
-        symlink_path(&source, &project_root.join("node_modules")).unwrap();
+fn workspace_vue_package() -> Option<PathBuf> {
+    let root = workspace_root();
+    [
+        root.join("node_modules/vue"),
+        root.join("tests/node_modules/vue"),
+        root.join("playground/node_modules/vue"),
+        root.join("examples/vite-musea/node_modules/vue"),
+        root.join("examples/jsx-tsx/node_modules/vue"),
+        root.join("npm/framework/nuxt/node_modules/vue"),
+    ]
+    .into_iter()
+    .find(|candidate| candidate.exists())
+}
+
+fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
+    if target.is_symlink() || target.is_file() {
+        std::fs::remove_file(target)?;
+    } else if target.exists() {
+        std::fs::remove_dir_all(target)?;
     }
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(source, target)
+    }
+    #[cfg(windows)]
+    {
+        std::os::windows::fs::symlink_dir(source, target)
+    }
+}
+
+fn link_workspace_vue(project_root: &Path) -> std::io::Result<()> {
+    let Some(vue_package) = workspace_vue_package() else {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "workspace Vue package missing",
+        ));
+    };
+    let workspace_node_modules = vue_package.parent().ok_or_else(|| {
+        std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "workspace Vue package has no node_modules parent",
+        )
+    })?;
+    let target = project_root.join("node_modules");
+    std::fs::create_dir_all(&target)?;
+    symlink_path(&vue_package, &target.join("vue"))?;
+    let vue_namespace = workspace_node_modules.join("@vue");
+    if vue_namespace.exists() {
+        symlink_path(&vue_namespace, &target.join("@vue"))?;
+    }
+    Ok(())
 }
 
 /// The Corsa binary to check with: `CORSA_PATH` when set, else the workspace
@@ -176,16 +264,4 @@ fn resolve_test_corsa_path() -> Option<String> {
         .into_iter()
         .find(|candidate| candidate.exists())
         .map(|candidate| candidate.display().to_string())
-}
-
-/// Create a directory symlink on either platform.
-fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
-    #[cfg(unix)]
-    {
-        std::os::unix::fs::symlink(source, target)
-    }
-    #[cfg(windows)]
-    {
-        std::os::windows::fs::symlink_dir(source, target)
-    }
 }

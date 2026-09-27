@@ -11,6 +11,7 @@ export const mergeOnlyToolingTests = [
   "tests/tooling/canon-own-slot-contracts.test.ts",
   "tests/tooling/canon-script-syntax-ownership.test.ts",
   "tests/tooling/canon-self-component-contracts.test.ts",
+  "tests/tooling/canon-slot-outlet-union-semantics.test.ts",
   "tests/tooling/canon-template-directives.test.ts",
   "tests/tooling/canon-vfor-scope-contracts.test.ts",
   "tests/tooling/check-bench-gate.test.ts",

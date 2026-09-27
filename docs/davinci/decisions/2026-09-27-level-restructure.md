@@ -344,5 +344,6 @@ unsupported; this first legacy path receives zero native acceptance credit.
 [#6922](https://github.com/ubugeeei-prod/vize/pull/6922) preserves single-outlet
 string widening while retaining discriminants for repeated static names.
 The [repair decision and corpus](./2026-09-27-canon-slot-outlet-union.md) record
-move-only test organization, pending Actions, absent native comparison and the
-proven seventeen-overload truncation that still needs a correct carrier design.
+move-only test organization, direct payload unions without an inferred-outlet
+signature bound, preserved external authored fallback, complete added diagnostic
+oracles and required fresh Actions. Native comparison remains unavailable.
