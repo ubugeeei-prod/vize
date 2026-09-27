@@ -172,6 +172,16 @@ pub const L1_TO_L2: ConversionCrate = ConversionCrate {
     role: "Vue surface-to-semantic lowering",
 };
 
+/// L2→L3: lowering from semantic UI IR into backend scheduling IR.
+pub const L2_TO_L3: ConversionCrate = ConversionCrate {
+    id: "l2_to_l3",
+    crate_alias: "vize_l2_to_l3",
+    package: "vize_l2_to_l3",
+    from: L2.id,
+    to: L3.id,
+    role: "semantic-to-backend scheduling lowering",
+};
+
 /// Davinci layer crates that exist in the workspace today.
 pub const LAYERS: &[LayerCrate] = &[L0, L1, L2, L3];
 
@@ -181,7 +191,7 @@ pub const LAYERS: &[LayerCrate] = &[L0, L1, L2, L3];
 pub const ARTIFACT_STAGES: &[StageCrate] = &[L1, L2, L3];
 
 /// Conversion crates that exist in the workspace today.
-pub const CONVERSIONS: &[ConversionCrate] = &[L1_TO_L2];
+pub const CONVERSIONS: &[ConversionCrate] = &[L1_TO_L2, L2_TO_L3];
 
 #[cfg(test)]
 mod tests {
@@ -249,10 +259,44 @@ mod tests {
     }
 
     #[test]
-    fn conversion_names_its_stage_edges() {
-        assert_eq!((L1_TO_L2.from, L1_TO_L2.to), (L1.id, L2.id));
+    fn conversions_cover_each_artifact_stage_edge_once() {
         assert_eq!(LAYERS.len(), 4);
-        assert_eq!(CONVERSIONS.len(), 1);
+        for edge in ARTIFACT_STAGES.windows(2) {
+            assert_eq!(
+                CONVERSIONS
+                    .iter()
+                    .filter(
+                        |conversion| (conversion.from, conversion.to) == (edge[0].id, edge[1].id)
+                    )
+                    .count(),
+                1,
+                "each adjacent artifact stage must have exactly one conversion",
+            );
+        }
+        for (index, conversion) in CONVERSIONS.iter().enumerate() {
+            assert!(
+                ARTIFACT_STAGES
+                    .windows(2)
+                    .any(|edge| { (conversion.from, conversion.to) == (edge[0].id, edge[1].id) })
+            );
+            assert_eq!(
+                conversion
+                    .id
+                    .strip_prefix(conversion.from)
+                    .and_then(|rest| rest.strip_prefix("_to_")),
+                Some(conversion.to),
+            );
+            assert_eq!(
+                conversion.package.strip_prefix("vize_"),
+                Some(conversion.id)
+            );
+            assert_eq!(conversion.crate_alias, conversion.package);
+            assert!(
+                CONVERSIONS[..index]
+                    .iter()
+                    .all(|previous| previous.id != conversion.id)
+            );
+        }
     }
 
     #[test]
