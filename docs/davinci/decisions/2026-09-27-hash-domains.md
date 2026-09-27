@@ -158,3 +158,14 @@ After restacking the earliest repairs, rerun the exact-head PR source check and
 TS-43 push/manual job. The actual transform-store test still needs the Vitrine
 test build on Actions; source lint is not runtime cache/native acceptance. This
 preparation is committed without push, PR mutation or issue comments.
+
+## Fresh Actions lint repair
+
+The transported #6946 and inherited #6947 `check-js` jobs rejected the three
+new top-level `node:test` registrations as floating promises. Their replay
+assertions had passed, but the earlier source-only controls did not run the
+strict type-aware JS warning gate. Each registration now explicitly ignores
+the `node:test` scheduling promise with `void`, retaining every assertion and
+test body. No lint rule, allowlist, source workflow, captured hash or budget
+changes. TODO: fresh exact-head functional Actions and protected queue proof
+remain required after this bounded repair and coherent L2 suffix replay.

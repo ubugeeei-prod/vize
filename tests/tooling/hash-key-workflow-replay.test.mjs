@@ -30,7 +30,7 @@ jobs:
     steps: [{run: echo preserve-me}]
 `;
 
-test("hash replay preserves current events, runners, caches and unrelated jobs", () => {
+void test("hash replay preserves current events, runners, caches and unrelated jobs", () => {
   const expected = parse(source);
   expected.jobs["key-stability"].steps[1].run = currentCommand;
   const after = extendHashKeyWorkflow(source);
@@ -38,7 +38,7 @@ test("hash replay preserves current events, runners, caches and unrelated jobs",
   assert.equal(extendHashKeyWorkflow(after), after);
 });
 
-test("hash replay refuses a stale PR-trigger workflow", () => {
+void test("hash replay refuses a stale PR-trigger workflow", () => {
   assert.throws(
     () =>
       extendHashKeyWorkflow(
@@ -48,7 +48,7 @@ test("hash replay refuses a stale PR-trigger workflow", () => {
   );
 });
 
-test("hash replay refuses an unknown command rather than replacing current source", () => {
+void test("hash replay refuses an unknown command rather than replacing current source", () => {
   assert.throws(
     () => extendHashKeyWorkflow(source.replace(originalCommand, "cargo test current-custom")),
     /unrecognized current key-stability command/,

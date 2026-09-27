@@ -62,7 +62,7 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 - **Croquis counts as legacy.** Script analysis is rebuilt natively in the levels ([#6844](https://github.com/ubugeeei-prod/vize/issues/6844)). No adapter presents legacy output as Davinci facts.
 - A `cargo metadata` gate enforces the rule. It starts with a shrinking allowlist and later covers product crates too.
 - The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate)
-  records shrinking #6831 permissions, enforcement and remaining scope.
+  records shrinking #6831 permissions, enforcement and remaining scope. The [hash replay registration repair](./2026-09-27-hash-domains.md#fresh-actions-lint-repair) awaits fresh functional Actions.
 
 ## L1: what the text _is_
 
