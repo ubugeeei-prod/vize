@@ -153,9 +153,12 @@ NUL-separated Git paths keep that guard valid for non-ASCII filenames.
 Missing rows, wrong APIs/options, artifact/source mismatch, output drift,
 broken pass chains and invented native credit fail closed.
 
-One actual six-case local execution and three adversarial validator tests
-passed in 4.47 seconds. Strict Clippy passed. The original proof remains at
-`/tmp/vize-formatter-api-observer-proof-20260927`; no Actions success is claimed.
+The initial actual execution and three validator tests passed in 4.47 seconds;
+the source-guard and T1 selection follow-up passed all six execution/contract
+tests and 26 focused tooling checks. Strict Clippy passed. The original proof
+remains at `/tmp/vize-formatter-api-observer-proof-20260927`; the restacked
+source-built replay is `/tmp/vize-formatter-api-observer-proof-publish-20260927`.
+No Actions success is claimed.
 Registration for all other historical cases and actual CLI check observations
 remains TODO. Native handled/equivalent/paired comparisons remain zero.
 
@@ -187,6 +190,6 @@ and test-source hashes. Shared registration and Actions remain pending.
 - Verify full Actions checks and the merge-queue corpus before closing #6882
   or replacing the legacy formatter path.
 
-Prepared comparisons receive no shared corpus or native acceptance
+Other prepared comparisons receive no shared corpus or native acceptance
 credit yet. Native formatter support is unavailable; handled, equivalent and
 paired native comparisons remain zero. #6882 remains open.
