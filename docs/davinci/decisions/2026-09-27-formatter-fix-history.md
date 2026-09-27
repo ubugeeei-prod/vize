@@ -131,6 +131,28 @@ Six tests passed capture, updates-disabled/frozen replay and strict Clippy.
 The already complete two-arm template literal witness is not duplicated.
 Shared registration and Actions remain pending.
 
+## Shared public API execution
+
+The `formatter-public-api-v1` observer executes the first six manifest cases
+through real public APIs and the shared byte comparator. Four default cases
+require three matching outputs and real fixed points. Two internal single-pass
+cases remain separately counted legacy observations; they do not prescribe a
+native mechanism or count as CLI check-verdict coverage.
+
+The shared tooling execution test builds the narrow observer from the actual
+checkout, records Cargo's selected artifact/profile/features, freezes its
+executable, probes complete actual options and compares raw stdout/stderr.
+SFC changed verdicts are retained separately from formatted bytes. CI uses its
+existing `ci` profile and target cache; local capture uses an isolated `dev`
+target. Missing rows, wrong APIs/options, artifact/source mismatch, output drift,
+broken pass chains and invented native credit fail closed.
+
+One actual six-case local execution and three adversarial validator tests
+passed in 4.47 seconds. Strict Clippy passed. The original proof remains at
+`/tmp/vize-formatter-api-observer-proof-20260927`; no Actions success is claimed.
+Registration for all other historical cases and actual CLI check observations
+remains TODO. Native handled/equivalent/paired comparisons remain zero.
+
 ## Remaining work
 
 Fresh Actions also required the two touched glyph consumer/v-on inventories

@@ -8,7 +8,7 @@
     "cargoLockSha256": "be4568371f14f946452111a604efb3d2b6c1ebd10632b1f227f44ae69dca6df9"
   },
   "execution": "measured-local; Actions pending",
-  "commonCorpusRegistration": "pending",
+  "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
   "nativeHandled": 0,
   "cases": [
     {
@@ -30,7 +30,7 @@
         "function": "script_function_signature_return_type_is_idempotent"
       },
       "reference": "current-public-api-output",
-      "commonCorpusRegistration": "pending",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
       "native": "unsupported",
       "options": {
         "base": "FormatOptions::default()",
@@ -56,7 +56,7 @@
         "function": "script_chained_zod_regex_call_is_idempotent"
       },
       "reference": "current-public-api-output",
-      "commonCorpusRegistration": "pending",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
       "native": "unsupported",
       "options": {
         "base": "FormatOptions::default()",
@@ -82,7 +82,7 @@
         "function": "sfc_script_function_signature_return_type_is_idempotent"
       },
       "reference": "current-public-api-output",
-      "commonCorpusRegistration": "pending",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
       "native": "unsupported",
       "options": {
         "base": "FormatOptions::default()",
@@ -108,7 +108,7 @@
         "function": "sfc_script_chained_zod_regex_call_is_idempotent"
       },
       "reference": "current-public-api-output",
-      "commonCorpusRegistration": "pending",
+      "commonCorpusRegistration": "formatter-public-api-v1; Actions pending",
       "native": "unsupported",
       "options": {
         "base": "FormatOptions::default()",
@@ -134,7 +134,7 @@
         "function": "script_check_mode_still_detects_non_fixed_point_output"
       },
       "reference": "current-public-api-output",
-      "commonCorpusRegistration": "pending",
+      "commonCorpusRegistration": "registered-observation-only",
       "native": "unsupported",
       "options": {
         "base": "FormatOptions::default()",
@@ -162,7 +162,7 @@
         "function": "check_mode_still_flags_script_needing_second_stabilization_pass"
       },
       "reference": "current-public-api-output",
-      "commonCorpusRegistration": "pending",
+      "commonCorpusRegistration": "registered-observation-only",
       "native": "unsupported",
       "options": {
         "base": "FormatOptions::default()",
