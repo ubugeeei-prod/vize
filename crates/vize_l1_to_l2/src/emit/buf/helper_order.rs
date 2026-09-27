@@ -3,9 +3,22 @@ use core::cmp::Ordering;
 
 use super::super::helper::Helper;
 use super::Buf;
+#[cfg(test)]
 use super::call_position::helper_call_position;
+use super::call_position::underscore_call_sites;
+use vize_l0::String;
 
 type RankFiveKey = (usize, u8, u8);
+
+/// Per-sort memo: each helper's first alias call position in the
+/// generated module, and each rank-five key, are computed at most once
+/// per [`Buf::ordered_helpers`] instead of once per comparison.
+struct OrderCache {
+    rank_five_keys: [Option<RankFiveKey>; 8],
+    /// Filled by one scan of the module on first use, indexed by
+    /// `Helper::bit().trailing_zeros()`.
+    alias_positions: Option<[Option<usize>; 64]>,
+}
 
 impl Buf {
     pub(super) fn ordered_helpers(&self) -> StdVec<Helper> {
@@ -27,11 +40,14 @@ impl Buf {
         for helper in Helper::ALL {
             push(helper);
         }
-        let mut rank_five_keys = [None; 8];
+        let mut cache = OrderCache {
+            rank_five_keys: [None; 8],
+            alias_positions: None,
+        };
         listed.sort_by(|left, right| {
             left.rank()
                 .cmp(&right.rank())
-                .then_with(|| self.order_same_rank_helper(*left, *right, &mut rank_five_keys))
+                .then_with(|| self.order_same_rank_helper(*left, *right, &mut cache))
         });
         listed
     }
@@ -40,7 +56,7 @@ impl Buf {
         &self,
         left: Helper,
         right: Helper,
-        rank_five_keys: &mut [Option<RankFiveKey>; 8],
+        cache: &mut OrderCache,
     ) -> Ordering {
         // Alias positions scan the generated module. Only ranks that consume
         // them should pay that cost; transform preference settles most ties.
@@ -53,8 +69,8 @@ impl Buf {
                 (Some(_), None) => Ordering::Less,
                 (None, Some(_)) => Ordering::Greater,
                 (None, None) => match (
-                    self.first_alias_position(left),
-                    self.first_alias_position(right),
+                    self.first_alias_position(left, cache),
+                    self.first_alias_position(right, cache),
                 ) {
                     (Some(left_pos), Some(right_pos)) => left_pos.cmp(&right_pos),
                     _ => Ordering::Equal,
@@ -62,14 +78,18 @@ impl Buf {
             },
             5 => {
                 let mut key = |helper| {
-                    let Some(cached) =
-                        rank_five_keys.get_mut(usize::from(rank_five_all_order(helper)))
-                    else {
-                        return self.rank_five_key(helper);
-                    };
-                    *cached.get_or_insert_with(|| self.rank_five_key(helper))
+                    let slot = usize::from(rank_five_all_order(helper));
+                    if let Some(Some(cached)) = cache.rank_five_keys.get(slot) {
+                        return *cached;
+                    }
+                    let key = self.rank_five_key(helper, cache);
+                    if let Some(cached) = cache.rank_five_keys.get_mut(slot) {
+                        *cached = Some(key);
+                    }
+                    key
                 };
-                key(left).cmp(&key(right))
+                let left_key = key(left);
+                left_key.cmp(&key(right))
             }
             10 if self.used & Helper::ResolveDirective.bit() != 0
                 && self.used & Helper::CreateText.bit() != 0
@@ -87,7 +107,43 @@ impl Buf {
             .position(|candidate| candidate.bit() == helper.bit())
     }
 
-    fn first_alias_position(&self, helper: Helper) -> Option<usize> {
+    fn first_alias_position(&self, helper: Helper, cache: &mut OrderCache) -> Option<usize> {
+        let positions = cache
+            .alias_positions
+            .get_or_insert_with(|| self.scan_alias_positions());
+        positions
+            .get(helper.bit().trailing_zeros() as usize)
+            .copied()
+            .flatten()
+    }
+
+    /// Every helper's first alias call position over the hoists, then the
+    /// code, from a single scan.
+    fn scan_alias_positions(&self) -> [Option<usize>; 64] {
+        let mut positions = [None; 64];
+        let mut offset = 0;
+        for text in self
+            .hoists
+            .iter()
+            .map(String::as_str)
+            .chain(core::iter::once(self.code.as_str()))
+        {
+            underscore_call_sites(text, |position, name| {
+                if let Some(helper) = Helper::ALL.iter().find(|helper| helper.alias() == name)
+                    && let Some(slot) = positions.get_mut(helper.bit().trailing_zeros() as usize)
+                    && slot.is_none()
+                {
+                    *slot = Some(offset + position);
+                }
+                false
+            });
+            offset += text.len();
+        }
+        positions
+    }
+
+    #[cfg(test)]
+    fn scan_alias_position(&self, helper: Helper) -> Option<usize> {
         let alias = helper.alias();
         let mut offset = 0;
         for hoist in self.hoists.iter() {
@@ -99,24 +155,28 @@ impl Buf {
         helper_call_position(self.code.as_str(), alias).map(|position| offset + position)
     }
 
-    fn rank_five_key(&self, helper: Helper) -> RankFiveKey {
-        if let Some((position, order)) = self.normalize_props_guard_merge_order(helper) {
+    fn rank_five_key(&self, helper: Helper, cache: &mut OrderCache) -> RankFiveKey {
+        if let Some((position, order)) = self.normalize_props_guard_merge_order(helper, cache) {
             return (position, order, rank_five_all_order(helper));
         }
         let position = self
-            .first_alias_position(helper)
+            .first_alias_position(helper, cache)
             .map(alias_sort_position)
-            .or_else(|| self.virtual_alias_position(helper))
+            .or_else(|| self.virtual_alias_position(helper, cache))
             .unwrap_or_else(|| usize::MAX - 16 + usize::from(rank_five_all_order(helper)));
         (position, 0, rank_five_all_order(helper))
     }
 
-    fn normalize_props_guard_merge_order(&self, helper: Helper) -> Option<(usize, u8)> {
+    fn normalize_props_guard_merge_order(
+        &self,
+        helper: Helper,
+        cache: &mut OrderCache,
+    ) -> Option<(usize, u8)> {
         if !matches!(helper, Helper::GuardReactiveProps | Helper::MergeProps) {
             return None;
         }
-        let normalize_pos = self.first_alias_position(Helper::NormalizeProps)?;
-        let merge_pos = self.first_alias_position(Helper::MergeProps)?;
+        let normalize_pos = self.first_alias_position(Helper::NormalizeProps, cache)?;
+        let merge_pos = self.first_alias_position(Helper::MergeProps, cache)?;
         if normalize_pos >= merge_pos {
             return None;
         }
@@ -124,7 +184,7 @@ impl Buf {
         match helper {
             Helper::GuardReactiveProps
                 if self
-                    .first_alias_position(helper)
+                    .first_alias_position(helper, cache)
                     .is_some_and(|position| position > merge_pos) =>
             {
                 Some((base, 0))
@@ -134,7 +194,7 @@ impl Buf {
         }
     }
 
-    fn virtual_alias_position(&self, helper: Helper) -> Option<usize> {
+    fn virtual_alias_position(&self, helper: Helper, cache: &mut OrderCache) -> Option<usize> {
         let index = self
             .used_order
             .iter()
@@ -144,12 +204,12 @@ impl Buf {
         before
             .iter()
             .rev()
-            .find_map(|candidate| self.first_alias_position(*candidate))
+            .find_map(|candidate| self.first_alias_position(*candidate, cache))
             .map(|position| alias_sort_position(position) + 1)
             .or_else(|| {
                 after
                     .iter()
-                    .find_map(|candidate| self.first_alias_position(*candidate))
+                    .find_map(|candidate| self.first_alias_position(*candidate, cache))
                     .map(|position| alias_sort_position(position).saturating_sub(1))
             })
     }
@@ -185,5 +245,49 @@ fn create_slots_before_v_show(left: Helper, _right: Helper) -> Ordering {
         Ordering::Less
     } else {
         Ordering::Greater
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Buf, Helper};
+
+    #[test]
+    fn one_scan_finds_every_alias_where_the_per_alias_scan_does() {
+        for (hoist, code) in [
+            ("", "_createVNode(a); _openBlock()"),
+            ("_normalizeProps (p)", "x._createVNode(a), _createVNode (b)"),
+            (
+                "'_mergeProps(' /* _toDisplayString( */",
+                "_mergeProps(x) // _openBlock(\n_openBlock()",
+            ),
+            (
+                "`${_toDisplayString(a)}`",
+                "a_createVNode(), $_createBlock(), _createBlockX(), _createBlock\n(x)",
+            ),
+            ("", "\"esc\\\"_renderList(\" _renderList(l)"),
+            (
+                "",
+                "_createElementVNode(\"div\", null, _toDisplayString(_ctx.msg))",
+            ),
+        ] {
+            let mut buf = Buf::new(false);
+            if !hoist.is_empty() {
+                buf.push_hoist(hoist.into());
+            }
+            buf.push(code);
+            let positions = buf.scan_alias_positions();
+            for helper in Helper::ALL {
+                assert_eq!(
+                    positions
+                        .get(helper.bit().trailing_zeros() as usize)
+                        .copied()
+                        .flatten(),
+                    buf.scan_alias_position(helper),
+                    "{} in {hoist:?} + {code:?}",
+                    helper.alias(),
+                );
+            }
+        }
     }
 }
