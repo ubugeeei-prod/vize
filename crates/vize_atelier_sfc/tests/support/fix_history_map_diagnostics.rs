@@ -36,7 +36,8 @@ pub fn observe() -> Result<Value, Box<dyn std::error::Error>> {
     };
     let map_options =
         fixture_options::observe(&parse, &options, &codegen, &CustomElementMatcher::default())?;
-    let descriptor = parse_sfc(COUNTER, parse)?;
+    let descriptor = parse_sfc(COUNTER, parse)
+        .map_err(|error| std::io::Error::other(json!({ "parseError": error }).to_string()))?;
     let map_result = compile_sfc_with_template_syntax_and_codegen_options(
         &descriptor,
         options,
@@ -58,7 +59,8 @@ pub fn observe() -> Result<Value, Box<dyn std::error::Error>> {
         &CodegenOptions::default(),
         &CustomElementMatcher::default(),
     )?;
-    let descriptor = parse_sfc(DIAGNOSTIC, parse)?;
+    let descriptor = parse_sfc(DIAGNOSTIC, parse)
+        .map_err(|error| std::io::Error::other(json!({ "parseError": error }).to_string()))?;
     let setup = descriptor
         .script_setup
         .as_ref()
