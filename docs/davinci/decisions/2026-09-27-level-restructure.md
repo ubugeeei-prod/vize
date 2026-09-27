@@ -254,6 +254,11 @@ pipelines or serialization cost.
   wall-clock envelope runs nightly.
 - **Per-stage budgets ratchet from current measurements.** Today all 102
   `wall_p50_ns` entries in `plan/budgets.toml` are unset.
+- The [instruction-count gate record](./2026-09-27-instruction-counts.md)
+  defines benchmark-window reuse, three identical Actions executions,
+  measured-only instruction ceilings, and bootstrap-before-queue enforcement
+  for [#6868](https://github.com/ubugeeei-prod/vize/issues/6868). The live
+  allocation registry now has 100 rows; its reconciler owns the row count.
 - Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is
   decided after measuring table density and lookup cost
   ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).

@@ -1,0 +1,83 @@
+name: Davinci instruction counts
+
+on:
+  # Bootstrap on the draft implementation PR, then pin the measured artifact
+  # and add merge_group in the same PR before making it ready to merge.
+  pull_request:
+    paths:
+      - .github/workflows/davinci-instruction-counts.yml
+      - tools/benchmarks/crates/davinci_harness/**
+      - tools/benchmarks/scripts/instruction-counts*.mjs
+      - docs/davinci/plan/instruction-budgets.toml
+      - tests/tooling/davinci-instruction-counts.test.mjs
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: instruction-counts-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  instruction-counts:
+    name: Per-stage instruction ceilings
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          run-install: false
+      - name: Install pinned repository Rust
+        run: rustup toolchain install
+      - name: Install Callgrind and matching client request headers
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: instruction-counts-v1
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Test instruction parser and gates
+        run: node --test tests/tooling/davinci-instruction-counts.test.mjs
+      - name: Test default harness and client request windows
+        run: |
+          cargo test --locked -p davinci_harness --lib
+          cargo test --locked -p davinci_harness --lib --features instruction-counts
+      - name: Measure each stage three times without Criterion sampling
+        run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
+      - name: Enforce pinned ceilings
+        if: ${{ hashFiles('docs/davinci/plan/instruction-budgets.toml') != '' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+        run: |
+          set -euo pipefail
+          BASE_ARGS=()
+          if [[ -n "$BASE_SHA" ]]; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            if git cat-file -e "$BASE_SHA:docs/davinci/plan/instruction-budgets.toml" 2>/dev/null; then
+              git show "$BASE_SHA:docs/davinci/plan/instruction-budgets.toml" > "${RUNNER_TEMP}/base-instruction-budgets.toml"
+              BASE_ARGS=(--base-budgets "${RUNNER_TEMP}/base-instruction-budgets.toml")
+            fi
+          fi
+          node tools/benchmarks/scripts/instruction-counts.mjs --check \
+            --measurement "${RUNNER_TEMP}/instruction-counts/measurement.json" "${BASE_ARGS[@]}"
+      - name: Explain unfinished bootstrap
+        if: ${{ hashFiles('docs/davinci/plan/instruction-budgets.toml') == '' }}
+        run: echo 'Bootstrap measurement only. No instruction ceilings are pinned yet. Keep this PR in draft until its measured artifact is committed and the merge queue gate is connected.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: instruction-counts-${{ github.sha }}
+          path: ${{ runner.temp }}/instruction-counts
+          if-no-files-found: warn
+          retention-days: 30

@@ -40,6 +40,9 @@ enum WindowMode {
     Alloc {
         metrics: Option<alloc::AllocMetrics>,
     },
+    Instruction {
+        bench_id: Box<str>,
+    },
 }
 
 /// The measured-section handle passed to a stage iteration closure.
@@ -65,6 +68,15 @@ impl StageWindow {
         }
     }
 
+    fn instruction_probe(bench_id: &str) -> Self {
+        Self {
+            mode: WindowMode::Instruction {
+                bench_id: bench_id.into(),
+            },
+            uses: 0,
+        }
+    }
+
     /// Run the stage under measurement and hand its value back.
     ///
     /// Panics on a second call within the same iteration.
@@ -86,6 +98,7 @@ impl StageWindow {
                 *metrics = measured;
                 value
             }
+            WindowMode::Instruction { bench_id } => crate::instruction::measure(bench_id, stage),
         }
     }
 
@@ -96,7 +109,7 @@ impl StageWindow {
         );
         match self.mode {
             WindowMode::Timing { elapsed } => elapsed,
-            WindowMode::Alloc { .. } => unreachable!("timing pass uses timing windows"),
+            _ => unreachable!("timing pass uses timing windows"),
         }
     }
 
@@ -107,8 +120,16 @@ impl StageWindow {
         );
         match self.mode {
             WindowMode::Alloc { metrics } => metrics,
-            WindowMode::Timing { .. } => unreachable!("alloc pass uses alloc windows"),
+            _ => unreachable!("alloc pass uses alloc windows"),
         }
+    }
+
+    fn finish_instruction(self) {
+        assert_eq!(
+            self.uses, 1,
+            "a stage iteration must call StageWindow::measure exactly once"
+        );
+        assert!(matches!(self.mode, WindowMode::Instruction { .. }));
     }
 }
 
@@ -122,6 +143,14 @@ pub fn bench_stage_with_metrics<T>(
     mut iteration: impl FnMut(&mut StageWindow) -> T,
 ) {
     report::validate_bench_id(bench_id).expect("bench_id must be filename-safe");
+
+    if crate::instruction::requested() {
+        let mut window = StageWindow::instruction_probe(bench_id);
+        core::hint::black_box(iteration(&mut window));
+        window.finish_instruction();
+        crate::instruction::record(bench_id, fixture, "stage-return");
+        return;
+    }
 
     let samples = RefCell::new(Vec::<f64>::new());
     let mut group = criterion.benchmark_group(bench_id);
@@ -205,5 +234,25 @@ mod tests {
     fn unmeasured_iteration_panics_at_finish() {
         let window = StageWindow::timing();
         let _ = window.finish_timing();
+    }
+
+    #[test]
+    #[should_panic(expected = "exactly once")]
+    fn an_instruction_iteration_cannot_publish_an_empty_window() {
+        StageWindow::instruction_probe("test").finish_instruction();
+    }
+
+    #[test]
+    fn instruction_windows_share_the_single_stage_contract() {
+        // The client request protocol is tested with fake clients in
+        // instruction.rs. Here check the same use-count guard before any
+        // real client request can execute.
+        let mut window = StageWindow::instruction_probe("test");
+        window.uses = 1;
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            window.measure(|| panic!("must not execute a second stage"));
+        }));
+        assert!(result.is_err());
+        assert_eq!(window.uses, 2);
     }
 }

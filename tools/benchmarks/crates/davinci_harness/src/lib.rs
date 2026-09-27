@@ -45,6 +45,7 @@
 
 pub mod alloc;
 pub mod fixtures;
+pub mod instruction;
 pub mod report;
 pub mod rss;
 pub mod stage;
@@ -111,6 +112,12 @@ pub fn bench_with_metrics<T>(
 ) {
     report::validate_bench_id(bench_id).expect("bench_id must be filename-safe");
 
+    if instruction::requested() {
+        core::hint::black_box(instruction::measure(bench_id, routine));
+        instruction::record(bench_id, fixture, "routine-return");
+        return;
+    }
+
     let samples = RefCell::new(Vec::<f64>::new());
     let mut group = criterion.benchmark_group(bench_id);
     group.sample_size(SAMPLE_SIZE);
@@ -173,6 +180,7 @@ macro_rules! main {
             $crate::alloc::CountingAllocator::mimalloc();
 
         fn main() {
+            $crate::instruction::initialize();
             $crate::alloc::mark_installed();
             $crate::rss::capture_baseline();
             $($group();)+

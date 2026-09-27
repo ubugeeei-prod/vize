@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Three-run instruction-count measurement",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_commit", "recorded_run", "methodology", "runs"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "source_commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "recorded_run": {
+      "type": "string",
+      "pattern": "^https://github\\.com/[^/]+/[^/]+/actions/runs/[0-9]+$"
+    },
+    "methodology": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allocator",
+        "flags",
+        "libc",
+        "profile",
+        "rustc",
+        "target",
+        "valgrind",
+        "window_protocol"
+      ],
+      "properties": {
+        "allocator": { "const": "counting-mimalloc" },
+        "flags": { "const": "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no" },
+        "libc": { "type": "string", "minLength": 1 },
+        "profile": { "const": "ci-opt" },
+        "rustc": { "type": "string", "minLength": 1 },
+        "target": { "const": "x86_64-unknown-linux-gnu" },
+        "valgrind": { "type": "string", "minLength": 1 },
+        "window_protocol": { "const": "callgrind-client-v1" }
+      }
+    },
+    "runs": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": false,
+        "patternProperties": {
+          "^[A-Za-z0-9._-]+$": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fixture", "fixture_sha256", "instructions", "window"],
+            "properties": {
+              "fixture": { "type": "string", "minLength": 1 },
+              "fixture_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "instructions": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+              "window": { "enum": ["routine-return", "stage-return"] }
+            }
+          }
+        }
+      }
+    }
+  }
+}
