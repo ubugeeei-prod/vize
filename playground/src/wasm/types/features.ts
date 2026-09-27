@@ -97,6 +97,8 @@ export interface LintRule {
 
 // Glyph (Formatter) types
 export interface FormatOptions {
+  /** Explicit Vue version; omitted uses Vue 3. */
+  vueVersion?: string;
   printWidth?: number;
   tabWidth?: number;
   useTabs?: boolean;

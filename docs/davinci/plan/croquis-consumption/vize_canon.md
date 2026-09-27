@@ -10,8 +10,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | product                        | kind  | module              | files | sites |
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                     | type  | `analyzer`          |    42 |   160 |
-| `AnalyzerOptions`              | type  | `analyzer`          |    42 |   156 |
+| `Analyzer`                     | type  | `analyzer`          |    43 |   161 |
+| `AnalyzerOptions`              | type  | `analyzer`          |    43 |   157 |
 | `ComponentUsage`               | type  | `croquis::template` |    20 |    44 |
 | `Croquis`                      | type  | `croquis`           |    92 |   216 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
@@ -102,8 +102,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 
 | product                   | resolved | grep |
 | ------------------------- | -------: | ---: |
-| `Analyzer`                |      160 |  242 |
-| `AnalyzerOptions`         |      156 |  238 |
+| `Analyzer`                |      161 |  243 |
+| `AnalyzerOptions`         |      157 |  239 |
 | `COMPILER_MACRO_NAMES`    |        0 |    1 |
 | `ComponentUsage`          |       44 |   64 |
 | `Croquis`                 |      216 |  321 |
@@ -131,7 +131,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `UndefinedRef`            |        1 |    2 |
 | `VForScopeData`           |        4 |    5 |
 | `VSlotScopeData`          |        4 |    5 |
-| `Croquis.bindings`        |        0 |   23 |
+| `Croquis.bindings`        |        0 |   27 |
 | `Croquis.macros`          |       72 |   73 |
 | `Croquis.scopes`          |       60 |   62 |
 | `Croquis.types`           |        9 |   17 |

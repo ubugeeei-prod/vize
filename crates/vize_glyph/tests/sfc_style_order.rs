@@ -1,5 +1,11 @@
 use vize_glyph::{FormatOptions, format_sfc};
 
+fn snapshot_bytes(name: &str, output: &str) {
+    insta::with_settings!({prepend_module_to_snapshot => false}, {
+        insta::assert_binary_snapshot!(name, output.as_bytes().to_vec());
+    });
+}
+
 #[test]
 fn preserves_authored_style_cascade_order() {
     let plain_first = r#"<style>
@@ -28,6 +34,12 @@ fn preserves_authored_style_cascade_order() {
         (scoped_first, "<style scoped>", "<style>"),
     ] {
         let first = format_sfc(source, &options).unwrap();
+        let name = if first_style == "<style>" {
+            "history_sfc_plain_style_first.txt"
+        } else {
+            "history_sfc_scoped_style_first.txt"
+        };
+        snapshot_bytes(name, &first.code);
         let first_position = first
             .code
             .find(first_style)

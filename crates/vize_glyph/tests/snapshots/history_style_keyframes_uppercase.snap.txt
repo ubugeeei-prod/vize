@@ -1,0 +1,11 @@
+@-moz-keyframes orbit {
+  0% {
+    transform: rotate(0);
+  }
+}
+
+@keyframes orbit {
+  0% {
+    transform: rotate(0);
+  }
+}

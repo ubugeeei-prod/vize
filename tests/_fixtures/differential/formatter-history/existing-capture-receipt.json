@@ -1,0 +1,274 @@
+{
+  "schema": "vize.formatter-history-capture",
+  "version": 1,
+  "issue": 6882,
+  "sourceRevisionAtBuild": "66fab8ced9899b00d7eb49a3b83740f6aa32edab",
+  "formatterSourceTree": "0d5b64d35e7e3019504180646ce784e1beb64ca9",
+  "cargoLockSha256": "be4568371f14f946452111a604efb3d2b6c1ebd10632b1f227f44ae69dca6df9",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)",
+  "buildCommand": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-p",
+    "vize_glyph",
+    "--test",
+    "sfc_opaque_template_language",
+    "--test",
+    "sfc_empty_script_blocks",
+    "--test",
+    "sfc_style_order",
+    "--test",
+    "template_runtime_semantics",
+    "--test",
+    "sfc_block_attributes",
+    "--message-format=json-render-diagnostics"
+  ],
+  "buildEnvironment": {
+    "CARGO_TARGET_DIR": "/tmp/vize-formatter-history-target-20260927",
+    "INSTA_UPDATE": "no"
+  },
+  "artifacts": [
+    {
+      "target": {
+        "kind": ["test"],
+        "crate_types": ["bin"],
+        "name": "sfc_opaque_template_language",
+        "src_path": "/private/tmp/vize-formatter-fix-history-20260927/crates/vize_glyph/tests/sfc_opaque_template_language.rs",
+        "edition": "2024",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": [],
+      "testSource": {
+        "path": "crates/vize_glyph/tests/sfc_opaque_template_language.rs",
+        "sha256": "cc365353f2afedbdc7ce25d44bcc7502d3be466a4374c27209ca3051ecd73d53"
+      },
+      "executable": "/tmp/vize-formatter-history-target-20260927/debug/deps/sfc_opaque_template_language-833a80303d9c250d",
+      "sha256": "5cecec8831df8e7f2dd6a7986784519ff0e69378c88ab4c5666fcf1bc32ce750",
+      "frozenExecutable": "/tmp/vize-formatter-sfc_opaque_template_language-proof-20260927/sfc_opaque_template_language",
+      "replay": {
+        "argv": [
+          "/tmp/vize-formatter-sfc_opaque_template_language-proof-20260927/sfc_opaque_template_language",
+          "--test-threads=1"
+        ],
+        "snapshotUpdates": "disabled",
+        "exitStatus": 0,
+        "stdout": {
+          "path": "/tmp/vize-formatter-sfc_opaque_template_language-proof-20260927/replay.stdout.txt",
+          "sha256": "37be2ee6a44d0cc9efa7ffeacba03314563cda0b9683667ef4681118f7156a65"
+        },
+        "stderr": {
+          "path": "/tmp/vize-formatter-sfc_opaque_template_language-proof-20260927/replay.stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "passedTests": 5,
+        "failedTests": 0
+      }
+    },
+    {
+      "target": {
+        "kind": ["test"],
+        "crate_types": ["bin"],
+        "name": "sfc_empty_script_blocks",
+        "src_path": "/private/tmp/vize-formatter-fix-history-20260927/crates/vize_glyph/tests/sfc_empty_script_blocks.rs",
+        "edition": "2024",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": [],
+      "testSource": {
+        "path": "crates/vize_glyph/tests/sfc_empty_script_blocks.rs",
+        "sha256": "e3684d25aa30afdf0e82c91aa139a6727decc7e7c660204a5db9bcc7b816a4fb"
+      },
+      "executable": "/tmp/vize-formatter-history-target-20260927/debug/deps/sfc_empty_script_blocks-4ec9f67ab521f66e",
+      "sha256": "03b425f2e7a6e00906f449178f61cab1c5ea88f0e866fe05325a4bcb0af37139",
+      "frozenExecutable": "/tmp/vize-formatter-sfc_empty_script_blocks-proof-20260927/sfc_empty_script_blocks",
+      "replay": {
+        "argv": [
+          "/tmp/vize-formatter-sfc_empty_script_blocks-proof-20260927/sfc_empty_script_blocks",
+          "--test-threads=1"
+        ],
+        "snapshotUpdates": "disabled",
+        "exitStatus": 0,
+        "stdout": {
+          "path": "/tmp/vize-formatter-sfc_empty_script_blocks-proof-20260927/replay.stdout.txt",
+          "sha256": "79f46fc384ec9262c78dfb3acba90407bd2782c0ffda25bbe2fa17c2d60265d1"
+        },
+        "stderr": {
+          "path": "/tmp/vize-formatter-sfc_empty_script_blocks-proof-20260927/replay.stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "passedTests": 3,
+        "failedTests": 0
+      }
+    },
+    {
+      "target": {
+        "kind": ["test"],
+        "crate_types": ["bin"],
+        "name": "sfc_style_order",
+        "src_path": "/private/tmp/vize-formatter-fix-history-20260927/crates/vize_glyph/tests/sfc_style_order.rs",
+        "edition": "2024",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": [],
+      "testSource": {
+        "path": "crates/vize_glyph/tests/sfc_style_order.rs",
+        "sha256": "abd9c4fbeb585595b34921cc11e89d03e1ac819181854ae4089a336b83c97cd0"
+      },
+      "executable": "/tmp/vize-formatter-history-target-20260927/debug/deps/sfc_style_order-1485db61a7c49ef6",
+      "sha256": "717380b54403e0a9330fe644a2451c3af9f6b98101c524464fca5ea5bf1b0416",
+      "frozenExecutable": "/tmp/vize-formatter-sfc_style_order-proof-20260927/sfc_style_order",
+      "replay": {
+        "argv": [
+          "/tmp/vize-formatter-sfc_style_order-proof-20260927/sfc_style_order",
+          "--test-threads=1"
+        ],
+        "snapshotUpdates": "disabled",
+        "exitStatus": 0,
+        "stdout": {
+          "path": "/tmp/vize-formatter-sfc_style_order-proof-20260927/replay.stdout.txt",
+          "sha256": "cda0657a5c169965ce5b2700f9850d4053aeceb692708fc4be65ac240c83de58"
+        },
+        "stderr": {
+          "path": "/tmp/vize-formatter-sfc_style_order-proof-20260927/replay.stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "passedTests": 1,
+        "failedTests": 0
+      }
+    },
+    {
+      "target": {
+        "kind": ["test"],
+        "crate_types": ["bin"],
+        "name": "template_runtime_semantics",
+        "src_path": "/private/tmp/vize-formatter-fix-history-20260927/crates/vize_glyph/tests/template_runtime_semantics.rs",
+        "edition": "2024",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": [],
+      "testSource": {
+        "path": "crates/vize_glyph/tests/template_runtime_semantics.rs",
+        "sha256": "a76fe83befcecc19dad3e8d59da3e60eac811bd781c5c8309e02fd76e2e84a04"
+      },
+      "executable": "/tmp/vize-formatter-history-target-20260927/debug/deps/template_runtime_semantics-67c11625d74b303d",
+      "sha256": "2265bb22982374214b46f7bc7e59c21c1889cba67ccb565312900227916ec51a",
+      "frozenExecutable": "/tmp/vize-formatter-template_runtime_semantics-proof-20260927/template_runtime_semantics",
+      "replay": {
+        "argv": [
+          "/tmp/vize-formatter-template_runtime_semantics-proof-20260927/template_runtime_semantics",
+          "--test-threads=1"
+        ],
+        "snapshotUpdates": "disabled",
+        "exitStatus": 0,
+        "stdout": {
+          "path": "/tmp/vize-formatter-template_runtime_semantics-proof-20260927/replay.stdout.txt",
+          "sha256": "d2e7b50cc79a09e5209388da45fceddd19ca03d427ebafe420f567adcce58b14"
+        },
+        "stderr": {
+          "path": "/tmp/vize-formatter-template_runtime_semantics-proof-20260927/replay.stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "passedTests": 7,
+        "failedTests": 0
+      }
+    },
+    {
+      "target": {
+        "kind": ["test"],
+        "crate_types": ["bin"],
+        "name": "sfc_block_attributes",
+        "src_path": "/private/tmp/vize-formatter-fix-history-20260927/crates/vize_glyph/tests/sfc_block_attributes.rs",
+        "edition": "2024",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": [],
+      "testSource": {
+        "path": "crates/vize_glyph/tests/sfc_block_attributes.rs",
+        "sha256": "9653487de0dd89884bf99a7f8acbd56a2f6913df97dcc49854f809a3c38c1e4a"
+      },
+      "executable": "/tmp/vize-formatter-history-target-20260927/debug/deps/sfc_block_attributes-43e7b288cc43c3e5",
+      "sha256": "d735ee2b38024df1d14b78c5099279eaad746f773b196e89c282583e1c9d95f8",
+      "frozenExecutable": "/tmp/vize-formatter-sfc_block_attributes-proof-20260927/sfc_block_attributes",
+      "replay": {
+        "argv": [
+          "/tmp/vize-formatter-sfc_block_attributes-proof-20260927/sfc_block_attributes",
+          "--test-threads=1"
+        ],
+        "snapshotUpdates": "disabled",
+        "exitStatus": 0,
+        "stdout": {
+          "path": "/tmp/vize-formatter-sfc_block_attributes-proof-20260927/replay.stdout.txt",
+          "sha256": "ba5aef0956a4a24688a89c3cd3bae2d2be3f917aee5659db37932bf48303bad6"
+        },
+        "stderr": {
+          "path": "/tmp/vize-formatter-sfc_block_attributes-proof-20260927/replay.stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "passedTests": 1,
+        "failedTests": 0
+      }
+    }
+  ],
+  "cargoLog": {
+    "path": "/tmp/vize-formatter-existing-final-replay.cargo.jsonl",
+    "sha256": "1b0c71568f87521b56090db8a92e3a5a0b2800437b5b2972e45cac16596373cf"
+  },
+  "cargoStderr": {
+    "path": "/tmp/vize-formatter-existing-final-replay.stderr.txt",
+    "sha256": "648bd71c83f4cf49f994c99e1bd2d27d6e6b718f9f18005b9dc67db031a65e6a"
+  },
+  "limitations": [
+    "Existing semantic/fixed-point tests were retained; added binary snapshots compare complete first outputs.",
+    "Build ran from source revision with prepared test modifications present as uncommitted files; test-source hashes bind actual source.",
+    "Raw logs and frozen executables remain local; no Actions artifact is claimed.",
+    "Current observations do not create historical goldens or shared/native acceptance."
+  ]
+}

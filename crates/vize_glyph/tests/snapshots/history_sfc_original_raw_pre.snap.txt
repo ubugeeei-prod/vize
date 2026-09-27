@@ -1,0 +1,7 @@
+<template>
+  <pre>
+line1
+      indented
+   z
+</pre>
+</template>

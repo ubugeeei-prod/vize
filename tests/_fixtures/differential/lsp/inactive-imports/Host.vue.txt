@@ -1,0 +1,16 @@
+<script setup lang="ts">
+/* import Block from './Block.vue' */
+// import Ghost from './Ghost.vue'
+const note = "import Hidden from './Hidden.vue'"
+import {
+  real /* from './CommentOnly.vue' */,
+} from './Multi.vue'
+import Real from './Real.vue'
+export {
+  default as Exported /* from './FakeExport.vue' */,
+} from './Exported.vue'
+</script>
+
+<template>
+  <Real />
+</template>

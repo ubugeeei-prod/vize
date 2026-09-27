@@ -1,0 +1,8 @@
+[
+  "  const absent: __VizeOptionsBinding<typeof __default__, \"absent\"> = undefined as any;",
+  "  var arrow: __VizeOptionsBinding<typeof __default__, \"arrow\"> = undefined as any;",
+  "  const fooBar: __VizeOptionsBinding<typeof __default__, \"fooBar\"> = undefined as any;",
+  "  const literal: __VizeOptionsBinding<typeof __default__, \"literal\"> = undefined as any;",
+  "  const plain: __VizeOptionsBinding<typeof __default__, \"plain\"> = undefined as any;",
+  "  var ratio: __VizeOptionsBinding<typeof __default__, \"ratio\"> = undefined as any;"
+]

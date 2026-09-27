@@ -1,0 +1,15 @@
+<template>
+  <p class="shared">cascade</p>
+</template>
+
+<style scoped>
+.shared {
+  color: blue;
+}
+</style>
+
+<style>
+.shared {
+  color: red;
+}
+</style>

@@ -513,6 +513,8 @@ export declare function flattenDesignTokenCategories(categories: string): string
 
 /** Format options for NAPI. */
 export interface FormatOptionsNapi {
+  /** Explicit Vue version; omitted uses Vue 3. */
+  vueVersion?: string;
   printWidth?: number;
   tabWidth?: number;
   useTabs?: boolean;

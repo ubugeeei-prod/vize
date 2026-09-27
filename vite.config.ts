@@ -46,6 +46,9 @@ const formatterSensitiveContentIgnorePatterns = [
   // `vize_extension_host`'s `contract_surface` test (P6-8).
   "crates/vize_extension_sdk/versions/**",
   "crates/**/tests/fixtures/**",
+  // Registered CLI diagnostics depend on authored source positions and golden bytes.
+  "tests/fixtures/typechecker/options-api-computed-setters/**",
+  "tests/fixtures/typechecker/options-api-writable-computed/**",
   // Formatter input/output witnesses must retain their authored bytes.
   "crates/vize_glyph/tests/style_spec/**",
   "docs/content/**/*.md",

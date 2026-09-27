@@ -1,0 +1,223 @@
+{
+  "schema": "vize.lint-static-class.corrected-capture",
+  "version": 1,
+  "sourceRevision": "700bb8368995873989f0c0f1f33536cd259d1b21",
+  "preparedSourcePatchSha256": "588d2a3f6fec2e2aeaa79bd850c559c07be5e23cfdb8b16272aed0ef148bbdb5",
+  "sourceFilesSha256": "4357c53c0cfae20e44c0da97139def4fc3f3ba9b2c4a4000ea3e7232cea1a959",
+  "sourceFileCount": 5368,
+  "sourceSelection": "All tracked .rs/.toml/.lock and the two compiled input JSON files; excludes runtime-only Insta snapshots. SHA256 over sorted [path,fileSHA256] JSON UTF8 with compact separators.",
+  "rustcVerbose": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: aarch64-apple-darwin\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+  "build": {
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "vize_patina",
+      "--test",
+      "static_class_fix",
+      "--test",
+      "lint_history",
+      "--no-run",
+      "--message-format=json-render-diagnostics"
+    ],
+    "env": {
+      "CARGO_TARGET_DIR": "/tmp/vize-patina-history-target-20260927",
+      "CARGO_INCREMENTAL": "0"
+    },
+    "exitStatus": 0,
+    "finalRefreshSeconds": 2.19,
+    "stdoutSha256": "f4d2d88969d62ce155914d23693f3a351b069d69bd09d6369f8e637c6a963261",
+    "stderrSha256": "21cd5624f0c191c71d3b41fb6b74593c6454545ddd081359ab4dedb364d4558e",
+    "artifacts": [
+      {
+        "target": {
+          "kind": ["test"],
+          "crate_types": ["bin"],
+          "name": "static_class_fix",
+          "src_path": "/private/tmp/vize-lint-history-fixtures-20260927/crates/vize_patina/tests/static_class_fix.rs",
+          "edition": "2024",
+          "doc": false,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        },
+        "features": [],
+        "binary": "/tmp/vize-patina-history-target-20260927/debug/deps/static_class_fix-b92d6e631bcde3fd",
+        "binarySha256": "c7e285f0c8867668b1075d8e5fe8dfc13b9eaf4fe2dffa99399114ecddce2ad2"
+      },
+      {
+        "target": {
+          "kind": ["test"],
+          "crate_types": ["bin"],
+          "name": "lint_history",
+          "src_path": "/private/tmp/vize-lint-history-fixtures-20260927/crates/vize_patina/tests/lint_history.rs",
+          "edition": "2024",
+          "doc": false,
+          "doctest": false,
+          "test": true
+        },
+        "profile": {
+          "opt_level": "0",
+          "debuginfo": 2,
+          "debug_assertions": true,
+          "overflow_checks": true,
+          "test": true
+        },
+        "features": [],
+        "binary": "/tmp/vize-patina-history-target-20260927/debug/deps/lint_history-b5fa76c542d5c3bd",
+        "binarySha256": "0318fe57ce86287a6ebfc4476f473339e4b61199f588a830f951feaa18f841a8"
+      }
+    ]
+  },
+  "executions": [
+    {
+      "target": "static_class_fix",
+      "phase": "capture",
+      "snapshotUpdateMode": "always",
+      "exitStatus": 0,
+      "passedTests": 1,
+      "ignoredTests": 0,
+      "observedCases": 9,
+      "stdoutSha256": "d75632365571a73e38a7495decb090aeccaa0f42362e4da3b6a98194518ee2f0",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "target": "static_class_fix",
+      "phase": "verify",
+      "snapshotUpdateMode": "no",
+      "exitStatus": 0,
+      "passedTests": 1,
+      "ignoredTests": 0,
+      "observedCases": 9,
+      "stdoutSha256": "440065ea2e228b12cb8b3c129dfbb7cef8ca08f5789f4c339af55b0501ab4cf3",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "target": "lint_history",
+      "phase": "capture",
+      "snapshotUpdateMode": "always",
+      "exitStatus": 0,
+      "passedTests": 1,
+      "ignoredTests": 0,
+      "observedCases": 13,
+      "stdoutSha256": "08aeffd782abe0c117228b6a356244ee146af420dd175f128bfd6c6efc645759",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "target": "lint_history",
+      "phase": "verify",
+      "snapshotUpdateMode": "no",
+      "exitStatus": 0,
+      "passedTests": 1,
+      "ignoredTests": 0,
+      "observedCases": 13,
+      "stdoutSha256": "982395bafc9afc55196ebc98d61d6eb9dd40558e37261aa32a769e05f636e5e4",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "target": "original-prefer-static-class-rules",
+      "phase": "verify",
+      "snapshotUpdateMode": "no",
+      "exitStatus": 0,
+      "passedTests": 5,
+      "ignoredTests": 0,
+      "filteredTests": 3023,
+      "stdoutSha256": "1b093ae78fc8c7582cbd189891d2771953c63d6595ab6e09074c4a3391f10dc6",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "regressionCases": [
+    {
+      "id": "short-binding",
+      "sourceSha256": "24094a6f98f19364eeb8ed7acc9f13eb7b575b5939d22b8676c55793a5a78954",
+      "expectedFixedSha256": "a2fe5035bfdbb5c4709d699e738f3c284c0f693014d0005d21ec9d782a4aded8",
+      "snapshot": "crates/vize_patina/tests/snapshots/static_class_fix__short-binding.snap",
+      "snapshotSha256": "02dd85e947c77659e7b9395a9418e6cd11aef03f28546f53e432404415862b17"
+    },
+    {
+      "id": "long-binding",
+      "sourceSha256": "587bf493ccaf6d306ef41285e06246bc6d2566e7518feb761287c4fd9ce965d9",
+      "expectedFixedSha256": "a2fe5035bfdbb5c4709d699e738f3c284c0f693014d0005d21ec9d782a4aded8",
+      "snapshot": "crates/vize_patina/tests/snapshots/static_class_fix__long-binding.snap",
+      "snapshotSha256": "a40bfd007c150e75c396bb730c65c32b8330ddd2f2bdd3f0c8c056515fbe9e34"
+    },
+    {
+      "id": "self-closing",
+      "sourceSha256": "b6d1f73ab09a34e050f46ca976ac794109be728fb1fdc08f5fa95cdc747fc286",
+      "expectedFixedSha256": "2396cc775cd3ec653b76a09a53306303fd4f96365cc3eb94764d479dfb505bf1",
+      "snapshot": "crates/vize_patina/tests/snapshots/static_class_fix__self-closing.snap",
+      "snapshotSha256": "e821bd35794920fd6fa4eb8ef8a6e2c93b565a1df29d6faa8e6e258e92945f45"
+    },
+    {
+      "id": "adjacent-attribute",
+      "sourceSha256": "6d0ea13da9f8fe51c33fef775c6ddf2ec746ad97c6da75e85428ecd5feee9ad7",
+      "expectedFixedSha256": "aa9409858d41cc6d5806a43a9cd140d23054515a66d1fb55cbffb1c90143da7d",
+      "snapshot": "crates/vize_patina/tests/snapshots/static_class_fix__adjacent-attribute.snap",
+      "snapshotSha256": "fd9c46539d09e393bd4913015ea905e7ec67da3d9648764acd026d6f1f26b0a4"
+    },
+    {
+      "id": "outer-single-quote",
+      "sourceSha256": "93c0277d3b377a1f94ee2ea0a539f102a7576e176c0e8220fa199086a4b70bea",
+      "expectedFixedSha256": "10faa086ba46c6d4693fbe7f134e245800811a1498e21a2c01ee7a138a637841",
+      "snapshot": "crates/vize_patina/tests/snapshots/static_class_fix__outer-single-quote.snap",
+      "snapshotSha256": "ee24d4b451deded85240b571ba4d6a1ff4269490bdff4f6c4d632ef6aab533c4"
+    },
+    {
+      "id": "utf8-crlf-sfc",
+      "sourceSha256": "2196f951768ca319cd88d4a75066df66414fdbf404a20d1e218129a9f8394a63",
+      "expectedFixedSha256": "bf67919014517d9a83934ae5d9940c9c5140438fa93838261383ce8ae4d4cc46",
+      "snapshot": "crates/vize_patina/tests/snapshots/static_class_fix__utf8-crlf-sfc.snap",
+      "snapshotSha256": "b6a74437fe49bedc1ffa1260136c54fb73862644668bd8c1809cfed71a672467"
+    },
+    {
+      "id": "existing-static-class",
+      "sourceSha256": "bc0c9b1eaba7a46c01a30d791582d903e3f896b5c1cecfc8313cc003bc22579f",
+      "expectedFixedSha256": "bc0c9b1eaba7a46c01a30d791582d903e3f896b5c1cecfc8313cc003bc22579f",
+      "snapshot": "crates/vize_patina/tests/snapshots/static_class_fix__existing-static-class.snap",
+      "snapshotSha256": "4304344eae456c09e1404f8334691ab65136c9fa8614f81b1dddbd5040e15b91"
+    },
+    {
+      "id": "dynamic-expression",
+      "sourceSha256": "f3959c89264d177463463243d39720fd2dea2039849980479d7d393065428266",
+      "expectedFixedSha256": "f3959c89264d177463463243d39720fd2dea2039849980479d7d393065428266",
+      "snapshot": "crates/vize_patina/tests/snapshots/static_class_fix__dynamic-expression.snap",
+      "snapshotSha256": "1f8538cd7cb91e6e540be365384517f1d510ca4ab8c1d5510705258443cd4903"
+    },
+    {
+      "id": "empty-expression",
+      "sourceSha256": "b1aaa9f5da26d1f4d97b49dc7bf4ccf09be1476e37466b391080ccef92973b61",
+      "expectedFixedSha256": "b1aaa9f5da26d1f4d97b49dc7bf4ccf09be1476e37466b391080ccef92973b61",
+      "snapshot": "crates/vize_patina/tests/snapshots/static_class_fix__empty-expression.snap",
+      "snapshotSha256": "18d585f61e4514996c6280b5d9fb92191a69006480f20f4b28233cd4d28938ba"
+    }
+  ],
+  "historyCurrentSnapshot": {
+    "id": "static-class-utf8-fix-corrected",
+    "path": "crates/vize_patina/tests/snapshots/lint_history__static-class-utf8-fix-corrected.snap",
+    "sha256": "387ae510993056ce19f1aca3c285f6d88a93cfc2a5854e07decbba9344c09b32"
+  },
+  "historicalEvidence": {
+    "originalReceiptSha256": "97fe1dedaab708ca3ff1d439995bff8d77ad274fbf80ebd5a0b0c4a945804dd4",
+    "originalCaseFileSha256": "af6e2923bbe07a2e15041ac81873030684e57e680791db3d5c133843e5fd0c94",
+    "allOriginal13SnapshotHashesMatchReceipt": true,
+    "originalBadSnapshotSha256": "1a045bef701482a8543a5d2737e3bfe86a4f67178ba5aa7e98877c8357071f9a",
+    "originalReceiptRawPath": "docs/davinci/decisions/2026-09-27-lint-history-current-api-receipt.json.txt"
+  },
+  "nativeHandled": 0,
+  "nativeEquivalent": 0,
+  "pairedComparisons": 0,
+  "wholeHistoryRowsCertified": 0,
+  "limitations": [
+    "Local locked source-built current public API oracle; fresh Actions and full merge queue pending.",
+    "Historical bad capture remains immutable and is not accepted as a correct current fix.",
+    "Six corrected offered fixes do not certify every compound historical CSS/Musea/opinionated requirement."
+  ]
+}

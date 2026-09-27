@@ -4,6 +4,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 export const FORMATTER_ARGV = ["fmt", "--no-config", "--write", "App.vue"];
+export const CONFIGURED_FORMATTER_ARGV = [
+  "fmt",
+  "--config",
+  "vize.config.json",
+  "--write",
+  "App.vue",
+];
 export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 function artifact(root, file) {
@@ -64,13 +71,28 @@ export function loadFormatterManifest(manifestPath) {
       );
     }
     assert.equal(fixture.inputs.files.length, 1);
-    assert.equal(fixture.inputs.files[0].path, "App.vue");
-    assert.deepEqual(fixture.inputs.config, []);
+    const entry = fixture.inputs.files[0];
+    assert(["App.vue", "App.vue.txt"].includes(entry.path), "unsupported formatter input");
+    if (entry.path === "App.vue.txt") {
+      assert.equal(entry.kind, "vue");
+      assert.equal(entry.runtimeFileName, "App.vue");
+    }
+    assert(Array.isArray(fixture.inputs.config) && fixture.inputs.config.length <= 1);
     assert(!path.isAbsolute(fixture.inputs.root), "input root must be relative");
     const inputFile = {
-      ...fixture.inputs.files[0],
-      path: path.join(fixture.inputs.root, "App.vue"),
+      ...entry,
+      path: path.join(fixture.inputs.root, entry.path),
     };
+    const config = fixture.inputs.config.map((file) => {
+      assert.equal(file.path, "vize.config.json", "only the explicit JSON config is supported");
+      const bytes = artifact(root, {
+        ...file,
+        path: path.join(fixture.inputs.root, file.path),
+      });
+      const options = JSON.parse(bytes.toString("utf8"));
+      assert(["2", "2.7", "3"].includes(options.vue?.version), "explicit Vue version required");
+      return { path: file.path, sha256: file.sha256, bytes };
+    });
     const expectedFiles = fixture.expectations.legacy.artifacts;
     assert.equal(expectedFiles.length, 1);
     assert(
@@ -84,6 +106,8 @@ export function loadFormatterManifest(manifestPath) {
       ...fixture,
       input: artifact(root, inputFile),
       expected: artifact(root, expectedFiles[0]),
+      config,
+      argv: [...(config.length ? CONFIGURED_FORMATTER_ARGV : FORMATTER_ARGV)],
     };
   });
   return { manifest, cases, manifestSha256: sha256(raw) };

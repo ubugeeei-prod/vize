@@ -1,0 +1,6 @@
+{
+  "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Foo\"), _mergeProps(_mergeProps({ onClick: _ctx.before }, _normalizeProps(_guardReactiveProps(_ctx.props)), { onClick: _ctx.after }), _attrs), null, _parent))\n}\n",
+  "diagnostics": [],
+  "map": null,
+  "preamble": "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { resolveComponent as _resolveComponent, mergeProps as _mergeProps, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps } from \"vue\"\n"
+}

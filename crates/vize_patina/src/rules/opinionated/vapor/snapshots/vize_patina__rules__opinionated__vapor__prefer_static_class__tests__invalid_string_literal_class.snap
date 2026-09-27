@@ -17,7 +17,7 @@ expression: result.diagnostics
                 edits: [
                     TextEdit {
                         start: 5,
-                        end: 29,
+                        end: 28,
                         new_text: "class=\"static-class\"",
                     },
                 ],

@@ -17,10 +17,10 @@
 // totals), so two PRs adding fixtures in different crates never edit the
 // same committed line.
 
-import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import { gitTrackedFiles } from "../../../git-tracked-files.mjs";
 import { repoRoot } from "./paths.mjs";
 
 // The gate itself carries lookalike and boundary fixtures for its unit tests.
@@ -51,10 +51,7 @@ const modifiedOnName = /^(?:@|v-on:)(?!\[)[^\s=./>]+(?:\.[^\s=./>]+)+$/u;
 
 /** Git-tracked carrier files with marked synthetic boundaries removed, in `git ls-files` order. */
 export function trackedNaturalSources() {
-  const tracked = spawnSync("git", ["ls-files", "-z"], { cwd: repoRoot, encoding: "utf8" });
-  if (tracked.status !== 0) throw new Error(`git ls-files failed: ${tracked.stderr}`);
-  return tracked.stdout
-    .split("\0")
+  return gitTrackedFiles(repoRoot)
     .filter(
       (file) =>
         file !== "" && file !== V_ON_GATE && templateCarrierExtensions.has(path.extname(file)),

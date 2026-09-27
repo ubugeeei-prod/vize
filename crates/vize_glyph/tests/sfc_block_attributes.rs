@@ -25,6 +25,12 @@ fn assert_quote_values_preserved(before: &BlockAttrs<'_>, after: &BlockAttrs<'_>
     }
 }
 
+fn snapshot_bytes(name: &str, output: &str) {
+    insta::with_settings!({prepend_module_to_snapshot => false}, {
+        insta::assert_binary_snapshot!(name, output.as_bytes().to_vec());
+    });
+}
+
 #[test]
 fn root_block_attributes_escape_quotes_and_preserve_parse_results() {
     let source = r#"<script data-single="a'b" data-double='a"b' data-both="a'b &quot;c&quot;">
@@ -50,6 +56,7 @@ const setup = 1
     let options = FormatOptions::default();
 
     let first = format_sfc(source, &options).expect("source SFC must format");
+    snapshot_bytes("history_sfc_block_attribute_quotes.txt", &first.code);
     let second = format_sfc(&first.code, &options).expect("formatted SFC must reformat");
 
     assert_eq!(first.code, second.code, "formatting must be idempotent");

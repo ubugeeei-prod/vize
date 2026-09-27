@@ -1,0 +1,113 @@
+{
+  "compileResult": {
+    "Err": {
+      "code": "DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE",
+      "loc": {
+        "end": 23,
+        "end_column": 23,
+        "end_line": 2,
+        "start": 17,
+        "start_column": 17,
+        "start_line": 2,
+        "tag_end": 23,
+        "tag_start": 17
+      },
+      "message": "Default value of prop \"count\" does not match declared type."
+    }
+  },
+  "entrypoint": "compile_sfc",
+  "id": "props-default-type-diagnostic",
+  "locatedContext": {
+    "blockStart": 24,
+    "entrypoint": "validate_script_setup_semantics_located",
+    "scriptSetupContent": "\nconst { count = \"zero\" } = defineProps<{\n  count?: number\n}>()\n",
+    "sfcSource": "<script setup lang=\"ts\">\nconst { count = \"zero\" } = defineProps<{\n  count?: number\n}>()\n</script>\n\n<template>\n  <div>{{ count }}</div>\n</template>"
+  },
+  "locatedResult": {
+    "Err": {
+      "code": "DEFINE_PROPS_DESTRUCTURE_DEFAULT_TYPE",
+      "loc": {
+        "end": 47,
+        "end_column": 23,
+        "end_line": 2,
+        "start": 41,
+        "start_column": 17,
+        "start_line": 2,
+        "tag_end": 47,
+        "tag_start": 41
+      },
+      "message": "Default value of prop \"count\" does not match declared type."
+    }
+  },
+  "options": {
+    "adapterContext": {
+      "codegen": {
+        "binding_metadata": null,
+        "cache_handlers": false,
+        "component_name": null,
+        "filename": "template.vue",
+        "inline": false,
+        "is_ts": false,
+        "mode": "Function",
+        "optimize_imports": false,
+        "prefix_identifiers": false,
+        "runtime_global_name": "Vue",
+        "runtime_module_name": "vue",
+        "scope_id": null,
+        "source_map": false,
+        "ssr": false
+      },
+      "customElements": "default",
+      "experimental": {
+        "selfComponent": false
+      },
+      "scriptOutput": "InlineTemplate",
+      "templateSyntax": "Standard"
+    },
+    "compileOptions": {
+      "parse": {
+        "filename": "",
+        "ignore_empty": false,
+        "pad": "None",
+        "source_map": false,
+        "template_parse_options": null
+      },
+      "scope_id": null,
+      "script": {
+        "define_model": false,
+        "id": "test.vue",
+        "inline_template": false,
+        "is_ts": false,
+        "props_destructure": "False",
+        "reactive_props_destructure": false
+      },
+      "style": {
+        "data_attrs": [],
+        "id": "",
+        "preprocessor_lang": null,
+        "scoped": false,
+        "source_map": false,
+        "trim": false
+      },
+      "template": {
+        "compiler_options": null,
+        "custom_renderer": false,
+        "dialect": "V3",
+        "id": null,
+        "is_prod": false,
+        "is_ts": false,
+        "scoped": false,
+        "ssr": false,
+        "ssr_css_vars": null
+      },
+      "vapor": false
+    },
+    "descriptorParseOptions": {
+      "filename": "",
+      "ignore_empty": false,
+      "pad": "None",
+      "source_map": false,
+      "template_parse_options": null
+    }
+  }
+}

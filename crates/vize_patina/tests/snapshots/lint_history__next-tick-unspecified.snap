@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "next-tick-unspecified",
+    history: "f9fa82f7867e3a9373a8d0ee30162c6947c7c113",
+    source: "<script setup vapor>\nimport { nextTick } from \"vue\"\nawait nextTick()\n</script>\n<template><div /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "script/no-next-tick",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-next-tick",
+                severity: Error,
+                message: "nextTick import is not supported in Vapor-oriented components",
+                start: 30,
+                end: 38,
+                help: Some(
+                    "Remove nextTick() usage and rely on explicit lifecycle boundaries like onMounted() or direct reactive flow instead.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "script/no-next-tick",
+                severity: Error,
+                message: "nextTick() is not supported in Vapor-oriented components",
+                start: 58,
+                end: 66,
+                help: Some(
+                    "Avoid post-render scheduling with nextTick(). Prefer onMounted(), template refs, or a control flow that does not depend on a DOM flush boundary.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 2,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-next-tick",
+                    severity: Error,
+                    message: "nextTick import is not supported in Vapor-oriented components",
+                    start: 30,
+                    end: 38,
+                    help: Some(
+                        "Remove nextTick() usage and rely on explicit lifecycle boundaries like onMounted() or direct reactive flow instead.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "script/no-next-tick",
+                    severity: Error,
+                    message: "nextTick() is not supported in Vapor-oriented components",
+                    start: 58,
+                    end: 66,
+                    help: Some(
+                        "Avoid post-render scheduling with nextTick(). Prefer onMounted(), template refs, or a control flow that does not depend on a DOM flush boundary.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 2,
+            warning_count: 0,
+        },
+    ),
+}

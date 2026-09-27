@@ -217,6 +217,7 @@ if (diagnostic) {
 }
 
 const formatted: FormatResult = formatSfc("<template />", {
+  vueVersion: "2.7",
   attributeGroups: [["id", "class"]],
   maxAttributesPerLine: null,
   printWidth: 80,

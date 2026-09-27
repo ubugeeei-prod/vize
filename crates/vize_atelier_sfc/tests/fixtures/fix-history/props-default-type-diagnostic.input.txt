@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const { count = "zero" } = defineProps<{
+  count?: number
+}>()
+</script>
+
+<template>
+  <div>{{ count }}</div>
+</template>

@@ -1,4 +1,5 @@
 file	spelling
+crates/vize_glyph/tests/fix_history_directive_layout.rs	@click.stop
 crates/vize_glyph/tests/style_spec/S20/input.vue	v-on:click.prevent.stop
 crates/vize_glyph/tests/style_spec/S20/output.vue	@click.prevent.stop
 crates/vize_glyph/tests/style_spec/S23/input.vue	v-on:keyup.custom

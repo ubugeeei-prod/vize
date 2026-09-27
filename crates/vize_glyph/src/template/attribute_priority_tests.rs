@@ -35,6 +35,21 @@ fn test_attribute_priority_order() {
     assert_eq!(attribute_priority(":ref"), attribute_priority("ref"));
     assert_eq!(attribute_priority("v-bind:id"), attribute_priority("id"));
     assert_eq!(attribute_priority("v-bind:ref"), attribute_priority("ref"));
+    // Bound legacy slots keep the same classification as their static forms.
+    // Public sorting additionally respects their dynamic evaluation barriers.
+    assert_eq!(attribute_priority(":slot"), attribute_priority("slot"));
+    assert_eq!(
+        attribute_priority("v-bind:slot"),
+        attribute_priority("slot")
+    );
+    assert_eq!(
+        attribute_priority(":slot-scope"),
+        attribute_priority("slot-scope")
+    );
+    assert_eq!(
+        attribute_priority("v-bind:slot-scope"),
+        attribute_priority("slot-scope")
+    );
     // Events come after attributes, content comes last.
     assert!(attribute_priority("class") < attribute_priority("@click"));
     assert!(attribute_priority("@click") < attribute_priority("v-html"));

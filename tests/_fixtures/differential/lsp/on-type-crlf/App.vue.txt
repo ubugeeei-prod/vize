@@ -1,0 +1,18 @@
+<script setup lang="ts">
+function greet() {
+  const name = "vize";
+  return name;
+  }
+</script>
+
+<template>
+  <p>
+    hello
+  </p>
+</template>
+
+<style scoped>
+.box {
+  color: red;
+  }
+</style>

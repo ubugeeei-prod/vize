@@ -1,0 +1,30 @@
+{
+  "options": {
+    "bindingMetadata": null,
+    "customElements": "default",
+    "customRenderer": false,
+    "entrypoint": "compile_vapor",
+    "experimental": {
+      "componentName": null,
+      "selfComponent": false,
+      "sourceMap": false,
+      "sourceMapFilename": null
+    },
+    "experimentalInTagComments": false,
+    "experimentalPatternedTemplate": false,
+    "inline": false,
+    "prefixIdentifiers": false,
+    "retainedLane": false,
+    "sfcScope": null,
+    "ssr": false,
+    "templateSyntax": "Standard"
+  },
+  "output": {
+    "code": "import { resolveDirective as _resolveDirective, withVaporDirectives as _withVaporDirectives, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const _directive_focus = _resolveDirective(\"focus\")\n  const n0 = t0()\n  _withVaporDirectives(n0, [[_directive_focus, () => (_ctx.handler), () => (_ctx.placement), { \"lazy\": true }]])\n  return n0\n}\n",
+    "errorMessages": [],
+    "map": null,
+    "templates": [
+      "<div></div>"
+    ]
+  }
+}

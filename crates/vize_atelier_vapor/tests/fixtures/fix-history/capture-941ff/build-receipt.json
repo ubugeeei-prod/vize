@@ -1,0 +1,67 @@
+{
+  "schema": "vize.vapor.fix-history-source",
+  "version": 1,
+  "sourceRevision": "941ff5b2d1302b2f953e8996a026ec9cfe69307b",
+  "sourceTree": "03a8f5437c34d03fe3ea249e94194a3a9cbdea35",
+  "trackedDirty": [],
+  "cargoLockSha256": "be4568371f14f946452111a604efb3d2b6c1ebd10632b1f227f44ae69dca6df9",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: aarch64-apple-darwin\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+  "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)\n",
+  "startedAt": "2026-09-27T08:42:09Z",
+  "argv": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "ci",
+    "-p",
+    "vize_atelier_vapor",
+    "--example",
+    "vapor_fixture_observer",
+    "--message-format=json-render-diagnostics"
+  ],
+  "cargoTargetDir": "/tmp/vize-ssr-fix-history-target-20260927",
+  "workspace": "/private/tmp/vize-vapor-fix-history-20260927",
+  "finishedAt": "2026-09-27T08:42:57Z",
+  "status": 0,
+  "buildFinished": {
+    "reason": "build-finished",
+    "success": true
+  },
+  "selectedCargoArtifact": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///private/tmp/vize-vapor-fix-history-20260927/crates/vize_atelier_vapor#0.429.1",
+    "manifest_path": "/private/tmp/vize-vapor-fix-history-20260927/crates/vize_atelier_vapor/Cargo.toml",
+    "target": {
+      "kind": [
+        "example"
+      ],
+      "crate_types": [
+        "bin"
+      ],
+      "name": "vapor_fixture_observer",
+      "src_path": "/private/tmp/vize-vapor-fix-history-20260927/crates/vize_atelier_vapor/examples/vapor_fixture_observer.rs",
+      "edition": "2024",
+      "doc": false,
+      "doctest": false,
+      "test": false
+    },
+    "profile": {
+      "opt_level": "0",
+      "debuginfo": 0,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": false
+    },
+    "features": [],
+    "filenames": [
+      "/tmp/vize-ssr-fix-history-target-20260927/ci/examples/vapor_fixture_observer"
+    ],
+    "executable": "/tmp/vize-ssr-fix-history-target-20260927/ci/examples/vapor_fixture_observer",
+    "fresh": false
+  },
+  "binarySha256": "092af26624bd0a41d224157b45595b8966daa38c13aae5c77ab709fd6798f785",
+  "cargoLogSha256": "60c82ccd62ff299503cc330e6b969acf6d4319060d9167fc7bb4cd6ed6835ecc",
+  "stderrSha256": "df9f1b78a7bf85cc9bfb0240539a4ac03d98f5c92dc2324fa27f40e0cd752680",
+  "scope": "local narrow profile-ci macOS arm64 capture; not Actions or native acceptance"
+}
