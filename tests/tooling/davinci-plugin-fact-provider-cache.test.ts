@@ -100,7 +100,10 @@ test("a corrupted provider table is recomputed before a consumer diagnostic cach
 
 test("canonical provider result identity rejects a legacy digest with unchanged fact bytes", () => {
   const baseline = JSON.parse(
-    readFileSync(path.join(root, "crates/vize_vitrine/tests/fixtures/hash-migration-v1.json"), "utf8"),
+    readFileSync(
+      path.join(root, "crates/vize_vitrine/tests/fixtures/hash-migration-v1.json"),
+      "utf8",
+    ),
   );
   assert.equal(baseline.state, "captured-old-source");
   assert.match(baseline.providerResult, /^s0\.v1:[a-f0-9]{32}$/);

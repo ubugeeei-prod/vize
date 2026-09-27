@@ -87,3 +87,27 @@ count growth. This active documentation file is the explicit exception to the
 245 captured differential archive files and the original TS-43 v1 golden.
 
 Whole #6832 and history/native acceptance remain open.
+
+## Replay on the repaired source graph
+
+The local source follows `e004e3050`. The original source patch retains its
+stable patch id outside the central record
+(`35522410b99f8e3c8cb2e2c18ace1bd81f2908b6`), which retains all earlier
+decision links. Historical capture and header-document correction patches
+replay unchanged. The current capture fixture still has 24 complete digest
+vectors, 11 with real producer identities; source-bound raw receipts and the
+v1 golden stay exact. These historical executions do not certify a new head.
+
+Forty-two existing pure/source/metadata contracts pass. Three native addon
+cache tests were attempted at the composed L2 preparation and refused before
+execution because this clean worktree has no native binding. They are not
+passed or skipped acceptance. The one TypeScript formatting correction adds
+an optional trailing comma and preserves the parsed AST. Cargo formatting,
+Markdown formatting and the actual repository source-growth gate pass.
+Authored-source whitespace passes; twelve immutable raw stdout captures keep
+their original final blank lines, reported by a whole-diff whitespace check.
+
+Native cache/store, CLI, Rust, WASM and exact-head Actions remain required.
+The subsequent current L2 grammar changes its recipe to 3 and selects a
+separate actual historical golden. Decisions and explicit limits are mirrored
+in the [#6832 record](https://github.com/ubugeeei-prod/vize/issues/6832#issuecomment-5854223807).
