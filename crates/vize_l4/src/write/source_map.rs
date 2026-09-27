@@ -33,10 +33,7 @@
 //! [VLQ]: https://en.wikipedia.org/wiki/Variable-length_quantity
 
 use alloc::vec::Vec;
-
-use vize_l0::FxHashMap;
-use vize_l0::String;
-use vize_l0::ToCompactString;
+use vize_l0::{FxHashMap, String, ToCompactString};
 
 /// A recorded mapping anchor, as raw byte offsets.
 ///
