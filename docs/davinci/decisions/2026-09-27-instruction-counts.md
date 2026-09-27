@@ -32,6 +32,12 @@ therefore crosses a non-inlined call boundary after instrumentation starts.
 This ensures even a short routine enters an instrumented block. The fixed
 benchmark wrapper overhead is included in every candidate and ceiling; it
 does not add a production call or stage. Zero-count dumps remain rejected.
+`window_protocol = "callgrind-client-call-boundary-v1"` fixes that protocol
+before baseline pinning. The raw ceiling includes each probe's optimized
+call/return and `black_box` wrapper instructions, including its result ABI;
+it is not a count of product work alone. A product observer can compile to
+zero work while its raw benchmark still counts the wrapper. No overhead is
+subtracted, and no product work is added to make a measurement positive.
 
 The reference build is Rust 1.98.0, Linux x86_64, generic `x86-64` target CPU,
 the `ci-opt` profile (thin LTO, 16 codegen units), and the existing counting

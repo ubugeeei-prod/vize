@@ -32,7 +32,7 @@
         "rustc": { "type": "string", "minLength": 1 },
         "target": { "const": "x86_64-unknown-linux-gnu" },
         "valgrind": { "type": "string", "minLength": 1 },
-        "window_protocol": { "const": "callgrind-client-v1" }
+        "window_protocol": { "const": "callgrind-client-call-boundary-v1" }
       }
     },
     "runs": {

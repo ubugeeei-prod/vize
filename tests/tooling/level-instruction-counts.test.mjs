@@ -36,7 +36,7 @@ const method = {
   rustc: "rustc 1.98.0 (fixture)",
   target: "x86_64-unknown-linux-gnu",
   valgrind: "valgrind-3.22.0",
-  window_protocol: "callgrind-client-v1",
+  window_protocol: "callgrind-client-call-boundary-v1",
 };
 const measurement = () => ({
   schema_version: 1,

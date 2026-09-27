@@ -95,7 +95,7 @@ function collect(out, registry) {
       rustc,
       target: "x86_64-unknown-linux-gnu",
       valgrind,
-      window_protocol: "callgrind-client-v1",
+      window_protocol: "callgrind-client-call-boundary-v1",
     },
     runs: [],
   };

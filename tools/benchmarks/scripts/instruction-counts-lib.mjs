@@ -42,7 +42,11 @@ export function validateMethodology(value) {
   assert.equal(value.target, "x86_64-unknown-linux-gnu", "measurement target must be Linux x86_64");
   assert.equal(value.profile, "ci-opt", "measurement profile must be ci-opt");
   assert.equal(value.allocator, "counting-mimalloc", "measurement allocator changed");
-  assert.equal(value.window_protocol, "callgrind-client-v1", "measurement windows changed");
+  assert.equal(
+    value.window_protocol,
+    "callgrind-client-call-boundary-v1",
+    "measurement windows changed",
+  );
   assert.equal(
     value.flags,
     "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
