@@ -145,7 +145,7 @@ fn malformed_wrong_level_and_elided_l2_display_are_failures() {
         (
             "l3",
             L2_FULL,
-            include_str!("fixtures/dump_cli/wrong-level.stderr"),
+            include_str!("fixtures/dump_cli/wrong-level-v2.stderr"),
         ),
         (
             "l2",
