@@ -3,8 +3,7 @@ run-name: ${{ github.event_name == 'workflow_dispatch' && format('Check full @ {
 on:
   push:
     branches: [main, davinci]
-  pull_request:
-    branches: [main, davinci]
+  pull_request: {}
   merge_group:
     types: [checks_requested]
     branches: [main]
@@ -32,6 +31,11 @@ jobs:
     name: PR source checks
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/pr-source-checks.yml
+
+  instruction-counts:
+    name: Instruction ceilings
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    uses: ./.github/workflows/level-instruction-counts.yml
 
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -71,7 +75,7 @@ jobs:
           run-install: false
       - name: Check Davinci source inventories
         if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}
-        uses: ./.github/actions/check-davinci-inventories
+        uses: ./.github/actions/check-level-inventories
       - uses: ./.github/actions/setup-js-check-runtime
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -403,7 +407,7 @@ jobs:
         run: npm install --global @pkl-community/pkl@0.27.2
       - name: Test
         env: { VIZE_TEST_REQUIRE_TSGO: "1" }
-        run: cargo test --workspace && cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_lowering_corpus -- --nocapture && cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_dom_corpus -- --nocapture && cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_remarks_corpus -- --nocapture && cargo test -p vize_l1_to_l2 --features davinci-differential --test davinci_pug_corpus -- --nocapture && cargo test -p vize_atelier_sfc --features davinci-dom-differential --test davinci_production_reach -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_atelier_ssr --features davinci-differential --test davinci_ssr_corpus -- --nocapture && cargo test -p vize_atelier_jsx --features davinci-differential --lib vdom::l2_differential::l2_vdom_admitted_cases_match_relief_codegen -- --exact && cargo test -p vize --features legacy --test check_nuxt_tsconfig_isolation_cli && cargo test -p vize_atelier_core --features legacy --test davinci_l2_transform_vue2 && cargo test -p vize_vitrine --no-default-features --features wasm && VIZE_DAVINCI_DIFFERENTIAL_CORPUS="$PWD" cargo test -p vize_patina --features davinci-differential --test davinci_markup_differential -- --nocapture
+        uses: ./.github/actions/test-rust-workspace-differential
   coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -640,18 +644,12 @@ jobs:
       - node-engine-compat
       - check-vize-apps
       - pr-source-checks
+      - instruction-counts
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Collect test inventory
-        run: node tools/benchmarks/scripts/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"
-      - name: Upload test inventory
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: test-inventory
-          path: test-inventory.json
-          retention-days: 14
+      - uses: ./.github/actions/report-test-inventory
       # Runs last so the inventory is collected and uploaded either way.
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }

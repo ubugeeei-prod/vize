@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync, unlinkSync, mkdirSync, renameSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+  unlinkSync,
+  mkdirSync,
+  renameSync,
+  readFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import {
   changedPaths,
@@ -42,6 +51,80 @@ void test("package changes run package tests while documentation stays fast", ()
     tooling: false,
     playground: false,
   });
+});
+
+void test("merge groups run every source suite regardless of the changed paths", () => {
+  for (const paths of [
+    [],
+    ["docs/guide/example.md"],
+    ["npm/ui/src/index.ts"],
+    ["crates/vize_l1/src/lib.rs"],
+  ]) {
+    assert.deepEqual(planSourceChecks(paths, "merge_group"), {
+      rust: true,
+      js: true,
+      tooling: true,
+      playground: true,
+    });
+  }
+  assert.deepEqual(planSourceChecks(["README.md"], "pull_request"), {
+    rust: false,
+    js: false,
+    tooling: false,
+    playground: false,
+  });
+});
+
+void test("unknown planning contexts fail rather than selecting a partial suite", () => {
+  for (const event of ["push", "workflow_dispatch", "", null]) {
+    assert.throws(() => planSourceChecks(["README.md"], event), /planning context/);
+  }
+});
+
+void test("the CLI applies merge-group scope to a real docs-only comparison", () => {
+  const cwd = mkdtempSync(join(tmpdir(), "vize-queue-plan-"));
+  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  const script = fileURLToPath(
+    new URL("../../tools/support/compat/github/plan-source-checks.mjs", import.meta.url),
+  );
+  try {
+    git("init", "-q");
+    git("config", "user.name", "CI Test");
+    git("config", "user.email", "ci@example.invalid");
+    writeFileSync(join(cwd, "README.md"), "before\n");
+    git("add", ".");
+    git("commit", "-qm", "add docs");
+    const base = git("rev-parse", "HEAD");
+    writeFileSync(join(cwd, "README.md"), "after\n");
+    git("commit", "-qam", "update docs");
+    const head = git("rev-parse", "HEAD");
+    for (const [context, expected] of [
+      [[], false],
+      [["merge_group"], true],
+    ]) {
+      const output = join(cwd, `output-${String(expected)}`);
+      const run = spawnSync(process.execPath, [script, base, head, ...context], {
+        cwd,
+        encoding: "utf8",
+        env: { ...process.env, GITHUB_OUTPUT: output, GITHUB_STEP_SUMMARY: "" },
+      });
+      assert.equal(run.status, 0, run.stderr);
+      assert.equal(
+        readFileSync(output, "utf8"),
+        ["rust", "js", "tooling", "playground"]
+          .map((lane) => `${lane}=${String(expected)}\n`)
+          .join(""),
+      );
+    }
+    const invalid = spawnSync(process.execPath, [script, base, head, "push"], {
+      cwd,
+      encoding: "utf8",
+    });
+    assert.notEqual(invalid.status, 0);
+    assert.match(invalid.stderr, /invalid source planning context/);
+  } finally {
+    rmSync(cwd, { recursive: true, force: true });
+  }
 });
 
 void test("unknown source directories fail closed", () => {

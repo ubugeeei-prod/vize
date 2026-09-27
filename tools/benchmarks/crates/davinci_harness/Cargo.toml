@@ -10,6 +10,10 @@ publish = false
 autobenches = false
 metadata.vize.stability = "experimental"
 
+[features]
+# Benchmark-only instrumentation; no production crate enables this feature.
+instruction-counts = ["dep:valgrind-requests"]
+
 [dependencies]
 criterion = { workspace = true }
 davinci_test_support = { workspace = true }
@@ -20,6 +24,11 @@ thiserror = { workspace = true }
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 libc = { workspace = true }
+
+[target.'cfg(all(target_os = "linux", target_arch = "x86_64"))'.dependencies]
+valgrind-requests = { version = "=1.2.0", optional = true, default-features = false, features = [
+  "act",
+] }
 
 [dev-dependencies]
 tempfile = { workspace = true }

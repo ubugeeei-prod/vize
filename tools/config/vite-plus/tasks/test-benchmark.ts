@@ -105,11 +105,11 @@ export const testAndBenchmarkTasks = defineTasks({
   test: noCacheTask(localTestCommand),
   "test:testbox": noCacheTask(inTestbox(localTestCommand)),
   "test:rust": task("cargo test --workspace", { input: cacheInputs.rust }),
-  // Use the CI-profile native build instead of the release-profile one.
-  // The release build was ~3m+ on GitHub Actions and was being immediately
-  // overwritten by vite-plugin-vize's pretest hook, which also rebuilds in
-  // dev profile (~1m20s). Building once in the CI profile saves both legs.
-  "test:js": noCacheTask(`${runTask("build:native:test")} && ${jsPackageTestCommand}`),
+  // The Vite package reuses this successful native preparation. Keep the same
+  // package selection, dependency ordering, concurrency, and inherited env.
+  "test:js": noCacheTask(
+    `${runTask("build:native:test")} && ${jsPackageTestCommand.replace("vp run", "node npm/native/scripts/test-preparation.mjs vp run")}`,
+  ),
   "test:scripts": noCacheTask(
     `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 ${toolingTestFiles}`,
   ),
