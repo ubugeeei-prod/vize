@@ -11,7 +11,8 @@ default-filter = '''not ((package(=vize_maestro) & (
 )) | (package(=vize_canon) & binary(=fix_history_diagnostics) & (
   test(=inline_event_assignments_preserve_exact_diagnostics) |
   test(=deferred_template_reads_preserve_script_diagnostics) |
-  test(=required_props_keep_exact_unicode_diagnostics)
+  test(=required_props_keep_exact_unicode_diagnostics) |
+  test(=unicode_reserved_props_preserve_value_diagnostics)
 )))'''
 fail-fast = false
 retries = 0

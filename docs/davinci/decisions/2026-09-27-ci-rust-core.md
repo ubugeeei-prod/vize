@@ -120,3 +120,7 @@ require T1 metadata and complete unfiltered real-TSGO runtime execution.
 The required-props child extends the exact Canon group only with the present
 `required_props_keep_exact_unicode_diagnostics` test. Its complete 24-row fixture
 requires T1 metadata and complete unfiltered real-TSGO runtime execution.
+
+The Unicode child extends the exact Canon group only with the present
+`unicode_reserved_props_preserve_value_diagnostics` test. Its two value-sensitive
+projects require T1 metadata and unchanged full Cargo runtime execution.

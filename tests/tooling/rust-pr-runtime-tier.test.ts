@@ -20,6 +20,7 @@ const canonDeferred = [
     pack: "template-definite-assignment",
   },
   { name: "required_props_keep_exact_unicode_diagnostics", pack: "required-props-edges" },
+  { name: "unicode_reserved_props_preserve_value_diagnostics", pack: "unicode-reserved-props" },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {

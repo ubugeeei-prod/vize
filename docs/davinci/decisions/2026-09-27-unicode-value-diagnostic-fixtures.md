@@ -48,3 +48,11 @@ Actions/full T1 queue proof, common differential execution, native L4 parity,
 end ranges, related information and untouched backend observations remain open.
 The broader historical patch's template-literal/comment paths still need
 separate evidence. Native acceptance is zero and #6879 stays open.
+
+## Exact T0 deferral
+
+Stack this slice on the required-props draft #6940. Extend only the present
+package `vize_canon`, binary `fix_history_diagnostics`, exact test
+`unicode_reserved_props_preserve_value_diagnostics`. Prior Canon/Corsa names remain exact;
+source existence and T1 metadata are checked. Full Cargo T1 stays unchanged.
+Draft Actions and CI parent main/full queue proof remain pending.
