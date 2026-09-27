@@ -38,14 +38,14 @@ for (const { file, job } of callers) {
     assert.notEqual(steps[build]["continue-on-error"], true);
     assert.notEqual(steps[tests]["continue-on-error"], true);
     if (file === "check.yml") {
-      assert.match(
-        steps[tests].run ?? "",
-        /^VIZE_LSP_BIN="\$GITHUB_WORKSPACE\/target\/ci\/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=1 /,
-      );
-    } else {
-      assert.equal(steps[tests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
-      assert.equal(steps[tests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
+      assert.equal(steps[tests].run, "vp run --workspace-root test:scripts");
+      for (const step of steps.slice(0, tests)) {
+        assert.equal(step.env?.VIZE_LSP_BIN, undefined);
+        assert.equal(step.env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, undefined);
+      }
     }
+    assert.equal(steps[tests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
+    assert.equal(steps[tests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
     if (file === "pr-source-checks.yml") {
       const selected = steps.findIndex((step) =>
         /vp run --workspace-root test:scripts:pr/.test(step.run ?? ""),

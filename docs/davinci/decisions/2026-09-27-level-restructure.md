@@ -223,6 +223,8 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 [Full tooling LSP source identity](./2026-09-27-lsp-source-binding.md) binds
 required runtime proof to the receipted current CLI without cached fallback.
+Use test-step environment variables to retain the plain VP command and compose
+with the formatter's always-upload corpus evidence without changing build setup.
 
 [Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base. [Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md) records #6862's runner, doctest, resource and archive identity decisions.
 

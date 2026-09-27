@@ -246,11 +246,9 @@ jobs:
       - uses: ./.github/actions/check-vue-parity
   test-scripts:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
-    # CLI, MoonBit and native artifact fixtures require the full bootstrap.
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }} # CLI, MoonBit and native artifact fixtures require the full bootstrap.
     timeout-minutes: 30
-    env:
-      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+    env: { NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169" }
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -261,8 +259,7 @@ jobs:
       - uses: ./.github/actions/setup-moonbit
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: test-scripts
@@ -277,7 +274,10 @@ jobs:
       - name: Prepare the pinned plugin isolation runtime
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
       - name: Test release scripts
-        run: VIZE_LSP_BIN="$GITHUB_WORKSPACE/target/ci/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=1 vp run --workspace-root test:scripts
+        env:
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
+        run: vp run --workspace-root test:scripts
   editor-extensions:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
