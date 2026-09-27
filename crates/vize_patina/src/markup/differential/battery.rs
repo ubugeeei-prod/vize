@@ -177,7 +177,14 @@ pub const JSX: &[(&str, JsxLang, &str)] = &[
     (
         "conditional",
         JsxLang::Jsx,
-        r#"const C = () => <div>{ok && <p>yes</p>}{ok ? <b>a</b> : <i>b</i>}</div>;"#,
+        r#"const C = () => <div>{!!ok && <p>yes</p>}{ok ? <b>a</b> : <i>b</i>}</div>;"#,
+    ),
+    // `value && <X/>` keeps a falsy value rendered (#6887) through a lexical
+    // value scope the L2 projection does not model yet, so it is refused.
+    (
+        "conditional-value",
+        JsxLang::Jsx,
+        r#"const C2 = () => <div>{count && <p>yes</p>}</div>;"#,
     ),
     (
         "list",
@@ -259,8 +266,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     template_lines: 6213,
     restructured: 0,
     jsx: JsxComparison {
-        roots: 13,
-        refused: 0,
+        roots: 14,
+        refused: 1,
         lines: 118,
     },
 };

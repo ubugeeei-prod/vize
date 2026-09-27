@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { compileFunction } from "node:vm";
 import { transformSync } from "@babel/core";
 import jsx from "@vue/babel-plugin-jsx";
 import { Window } from "happy-dom";
@@ -69,7 +70,7 @@ function executable(code, name, read, rows = []) {
       }),
     ],
   }).code;
-  return new Function("Vue", "SSR", "read", "rows", `${body}\nreturn ${name};`)(
+  return compileFunction(`${body}\nreturn ${name};`, ["Vue", "SSR", "read", "rows"])(
     Vue,
     SSR,
     read,
