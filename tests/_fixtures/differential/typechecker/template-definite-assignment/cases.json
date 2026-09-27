@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "39bf60c0614c888ba82f962b944160ce839cf035",
+  "historicalIssue": 4239,
+  "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "vue3-complete-project",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "vue3-complete-project/tsconfig.json.txt"
+        },
+        {
+          "file": "src/support.ts",
+          "source": "vue3-complete-project/src/support.ts.txt"
+        },
+        {
+          "file": "src/WatchImmediate.vue",
+          "source": "vue3-complete-project/src/WatchImmediate.vue.txt"
+        },
+        {
+          "file": "src/ConditionalAwait.vue",
+          "source": "vue3-complete-project/src/ConditionalAwait.vue.txt"
+        },
+        {
+          "file": "src/ConditionalAssign.vue",
+          "source": "vue3-complete-project/src/ConditionalAssign.vue.txt"
+        },
+        {
+          "file": "src/AsyncCallback.vue",
+          "source": "vue3-complete-project/src/AsyncCallback.vue.txt"
+        },
+        {
+          "file": "src/WatchNonImmediate.vue",
+          "source": "vue3-complete-project/src/WatchNonImmediate.vue.txt"
+        },
+        {
+          "file": "src/EarlyReturn.vue",
+          "source": "vue3-complete-project/src/EarlyReturn.vue.txt"
+        },
+        {
+          "file": "src/NeverAssigned.vue",
+          "source": "vue3-complete-project/src/NeverAssigned.vue.txt"
+        },
+        {
+          "file": "src/DirectInit.vue",
+          "source": "vue3-complete-project/src/DirectInit.vue.txt"
+        },
+        {
+          "file": "src/TopLevelAwaitAssign.vue",
+          "source": "vue3-complete-project/src/TopLevelAwaitAssign.vue.txt"
+        },
+        {
+          "file": "src/Reassignment.vue",
+          "source": "vue3-complete-project/src/Reassignment.vue.txt"
+        },
+        {
+          "file": "src/DefiniteAssertion.vue",
+          "source": "vue3-complete-project/src/DefiniteAssertion.vue.txt"
+        },
+        {
+          "file": "src/ScriptConditional.vue",
+          "source": "vue3-complete-project/src/ScriptConditional.vue.txt"
+        },
+        {
+          "file": "src/ScriptAsyncCallback.vue",
+          "source": "vue3-complete-project/src/ScriptAsyncCallback.vue.txt"
+        },
+        {
+          "file": "src/ScriptNeverAssigned.vue",
+          "source": "vue3-complete-project/src/ScriptNeverAssigned.vue.txt"
+        },
+        {
+          "file": "src/ScriptWatchImmediate.vue",
+          "source": "vue3-complete-project/src/ScriptWatchImmediate.vue.txt"
+        },
+        {
+          "file": "src/TemplateStillChecked.vue",
+          "source": "vue3-complete-project/src/TemplateStillChecked.vue.txt"
+        },
+        {
+          "file": "src/TemplateVForStillChecked.vue",
+          "source": "vue3-complete-project/src/TemplateVForStillChecked.vue.txt"
+        },
+        {
+          "file": "src/OptionsApiConditional.vue",
+          "source": "vue3-complete-project/src/OptionsApiConditional.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/OptionsApiConditional.vue",
+          "line": 11,
+          "column": 19,
+          "severity": 1,
+          "code": 2454,
+          "message": "Variable 'paginator' is used before being assigned."
+        },
+        {
+          "file": "src/ScriptAsyncCallback.vue",
+          "line": 8,
+          "column": 15,
+          "severity": 1,
+          "code": 2454,
+          "message": "Variable 'followedTags' is used before being assigned."
+        },
+        {
+          "file": "src/ScriptConditional.vue",
+          "line": 7,
+          "column": 13,
+          "severity": 1,
+          "code": 2454,
+          "message": "Variable 'paginator' is used before being assigned."
+        },
+        {
+          "file": "src/ScriptNeverAssigned.vue",
+          "line": 4,
+          "column": 13,
+          "severity": 1,
+          "code": 2454,
+          "message": "Variable 'paginator' is used before being assigned."
+        },
+        {
+          "file": "src/ScriptWatchImmediate.vue",
+          "line": 9,
+          "column": 13,
+          "severity": 1,
+          "code": 2454,
+          "message": "Variable 'paginator' is used before being assigned."
+        },
+        {
+          "file": "src/TemplateStillChecked.vue",
+          "line": 10,
+          "column": 21,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'Paginator'."
+        },
+        {
+          "file": "src/TemplateVForStillChecked.vue",
+          "line": 10,
+          "column": 54,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "tsx-deferred-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsx-deferred-template/tsconfig.json.txt"
+        },
+        {
+          "file": "src/support.ts",
+          "source": "tsx-deferred-template/src/support.ts.txt"
+        },
+        {
+          "file": "src/TsxConditional.vue",
+          "source": "tsx-deferred-template/src/TsxConditional.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

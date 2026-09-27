@@ -62,19 +62,41 @@ struct Pack {
 
 #[test]
 fn inline_event_assignments_preserve_exact_diagnostics() {
+    check_pack(
+        "event-handler-narrowing",
+        "613ce3a5a31d22ec0dfd42feab25772e63fc54bf",
+        4996,
+        &[
+            "component-sibling-valid",
+            "native-sibling-valid",
+            "handler-assignment-invalid",
+        ],
+    );
+}
+
+#[test]
+fn deferred_template_reads_preserve_script_diagnostics() {
+    check_pack(
+        "template-definite-assignment",
+        "39bf60c0614c888ba82f962b944160ce839cf035",
+        4239,
+        &["vue3-complete-project", "tsx-deferred-template"],
+    );
+}
+
+fn check_pack(name: &str, regression: &str, historical_issue: u32, case_ids: &[&str]) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let fixtures = root.join("tests/_fixtures/differential/typechecker/event-handler-narrowing");
+    let fixtures = root
+        .join("tests/_fixtures/differential/typechecker")
+        .join(name);
     let pack: Pack = serde_json::from_slice(
         &std::fs::read(fixtures.join("cases.json")).expect("the fixture pack must exist"),
     )
     .expect("the fixture pack must have the expected schema");
     assert_eq!(pack.version, 1);
     assert_eq!(pack.issue, 6879);
-    assert_eq!(pack.historical_issue, 4996);
-    assert_eq!(
-        pack.regression_commit,
-        "613ce3a5a31d22ec0dfd42feab25772e63fc54bf"
-    );
+    assert_eq!(pack.historical_issue, historical_issue);
+    assert_eq!(pack.regression_commit, regression);
     assert_eq!(
         pack.source_revision,
         "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943"
@@ -91,7 +113,14 @@ fn inline_event_assignments_preserve_exact_diagnostics() {
     );
     assert_eq!(pack.diagnostic_contract.native, "unsupported");
     assert_eq!(pack.diagnostic_contract.required_tier, "T1");
-    assert_eq!(pack.cases.len(), 3, "a missing case must not pass");
+    assert_eq!(
+        pack.cases
+            .iter()
+            .map(|case| case.id.as_str())
+            .collect::<Vec<_>>(),
+        case_ids,
+        "missing, duplicated or reordered cases must not pass"
+    );
     let vue = std::fs::canonicalize(root.join("tests/node_modules/vue"))
         .expect("the pinned real Vue package must be installed");
     for case in pack.cases {

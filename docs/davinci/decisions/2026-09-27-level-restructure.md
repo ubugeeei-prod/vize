@@ -132,8 +132,8 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-check) in the companion record.
 
 [Type-checker history slices](./2026-09-27-typechecker-history-slices.md) record
-only focused required T1 diagnostic contracts for #6879; whole-history and
-native admission remain unfinished.
+focused required T1 diagnostics, including definite assignment, for #6879;
+whole-history and native admission remain unfinished.
 
 ## Legacy deletion criteria
 

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { Paginator, flag } from './support'
+let paginator: Paginator
+if (flag) {
+  paginator = new Paginator('a')
+}
+</script>
+
+<template>
+  <div>{{ paginator.nope }}</div>
+</template>
