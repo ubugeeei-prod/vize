@@ -67,3 +67,48 @@ local checks. Further optimization, if needed, requires a separate reviewed chan
 The source candidate is `01dff5012`. Its paired [#6868 issue record](https://github.com/ubugeeei-prod/vize/issues/6868#issuecomment-5856053395)
 states the private/unpushed scope and pending runtime/numeric evidence. The central
 Performance section links this companion.
+
+## First composed measurement and allocation ratchet
+
+The owner published only temporary verification ref
+`verify/native6962-physical-l3-gates-20260927`, source
+`5e40274da99c9a25cd0b6c11649d57debf31ec45`; no new PR was created.
+[Measured run 36320906189](https://github.com/ubugeeei-prod/vize/actions/runs/36320906189)
+failed 13 unchanged instruction ceilings. Patina's two probes now meet the
+original ceilings, but the iteration probe is `149089 > 148047`: 1251 fewer
+instructions than the frozen physical L3 failure, still 1042 over budget.
+Other emitter regressions require their separately reviewed producer repair.
+The raw 100-by-three reports, input identities and failed results are preserved.
+
+[Check 36320903163](https://github.com/ubugeeei-prod/vize/actions/runs/36320903163)
+passed strict Clippy and both nine-test no-std lanes. Its allocation gate
+rejected a measured improvement: allocations `12 -> 11` and Linux peak bytes
+`1511 -> 1499`. The subsequent workspace test step was skipped, so the new
+four Patina and two provenance controls, complete differential corpus and
+small-stack runtime correctness remain unproven. The tooling check also found
+a stale generated linter consumer shard; regenerate it with the official
+inventory command after the final source candidate is composed.
+
+`bench-compare.rs` compares allocation counts and each registered platform's
+peak for exact equality, including improvements. The private downward ratchet
+therefore changes only this probe's allocation count to `11` and measured
+Linux peak to `1499`, plus their existing tooling expectations. It preserves
+wall/report-only policy, equality comparisons and every instruction ceiling.
+The preserved allocation report is artifact `10932132615`; its iteration JSON
+has SHA-256 `b2a561c2d47193eb5909d316114118a7efb935b17f24a36dc6ccbd92aa5a8869`.
+
+The final composed source must confirm those exact Linux results again.
+MacOS remains unmeasured for this candidate: keep its existing `1495` strict
+peak, mark its current-candidate evidence unknown, and obtain actual matching
+MacOS evidence before any later downward update. Do not infer a new platform
+value from Linux, loosen equality into an upper bound, prewarm stack lookup,
+change the measured window, or claim numeric/native acceptance from this draft.
+
+A read-only workflow audit found no current MacOS allocation runner for this
+probe. The allocation gate in `check.yml` is Linux-only. The existing MacOS
+lanes in `davinci-incremental.yml` run artifact/key tests, while
+`native-smoke.yml` and `fresco.yml` build or smoke-test host products; none
+executes `davinci_storage` with its allocation report. Criterion, Check Bench
+and Tool Benchmark use Linux reference runners. A future explicit MacOS
+measurement route must record the exact source, unchanged probe and raw report;
+this private draft neither adds a workflow nor grants MacOS acceptance.
