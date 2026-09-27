@@ -1,0 +1,29 @@
+---
+source: crates/vize_patina/tests/static_class_fix.rs
+expression: "(&case, &initial, &result)"
+---
+(
+    Case {
+        id: "dynamic-expression",
+        entry: "template",
+        source: "<div :class=\"classes\"></div>",
+        fixed: "<div :class=\"classes\"></div>",
+        diagnostics: 0,
+        edit_start: None,
+        edit_end: None,
+        diagnostic_start: None,
+        diagnostic_end: None,
+    },
+    LintResult {
+        filename: "StaticClass.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    LintResult {
+        filename: "StaticClass.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+)

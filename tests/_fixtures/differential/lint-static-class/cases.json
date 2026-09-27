@@ -1,0 +1,101 @@
+[
+  {
+    "id": "short-binding",
+    "entry": "template",
+    "source": "<div :class=\"'static-class'\"></div>",
+    "fixed": "<div class=\"static-class\"></div>",
+    "diagnostics": 1,
+    "edit_start": 5,
+    "edit_end": 28,
+    "diagnostic_start": 6,
+    "diagnostic_end": 28
+  },
+  {
+    "id": "long-binding",
+    "entry": "template",
+    "source": "<div v-bind:class=\"'static-class'\"></div>",
+    "fixed": "<div class=\"static-class\"></div>",
+    "diagnostics": 1,
+    "edit_start": 5,
+    "edit_end": 34,
+    "diagnostic_start": 12,
+    "diagnostic_end": 34
+  },
+  {
+    "id": "self-closing",
+    "entry": "template",
+    "source": "<div :class=\"'stable'\" />",
+    "fixed": "<div class=\"stable\" />",
+    "diagnostics": 1,
+    "edit_start": 5,
+    "edit_end": 22,
+    "diagnostic_start": 6,
+    "diagnostic_end": 22
+  },
+  {
+    "id": "adjacent-attribute",
+    "entry": "template",
+    "source": "<div :class=\"'stable'\" id=\"next\"></div>",
+    "fixed": "<div class=\"stable\" id=\"next\"></div>",
+    "diagnostics": 1,
+    "edit_start": 5,
+    "edit_end": 22,
+    "diagnostic_start": 6,
+    "diagnostic_end": 22
+  },
+  {
+    "id": "outer-single-quote",
+    "entry": "template",
+    "source": "<div :class='`stable`'></div>",
+    "fixed": "<div class=\"stable\"></div>",
+    "diagnostics": 1,
+    "edit_start": 5,
+    "edit_end": 22,
+    "diagnostic_start": 6,
+    "diagnostic_end": 22
+  },
+  {
+    "id": "utf8-crlf-sfc",
+    "entry": "sfc",
+    "source": "<template>\r\n<p>雪🌸</p><div :class=\"'static-class'\"></div>\r\n</template>\r\n",
+    "fixed": "<template>\r\n<p>雪🌸</p><div class=\"static-class\"></div>\r\n</template>\r\n",
+    "diagnostics": 1,
+    "edit_start": 31,
+    "edit_end": 54,
+    "diagnostic_start": 32,
+    "diagnostic_end": 54
+  },
+  {
+    "id": "existing-static-class",
+    "entry": "template",
+    "source": "<div class=\"old\" :class=\"'stable'\"></div>",
+    "fixed": "<div class=\"old\" :class=\"'stable'\"></div>",
+    "diagnostics": 1,
+    "edit_start": null,
+    "edit_end": null,
+    "diagnostic_start": null,
+    "diagnostic_end": null
+  },
+  {
+    "id": "dynamic-expression",
+    "entry": "template",
+    "source": "<div :class=\"classes\"></div>",
+    "fixed": "<div :class=\"classes\"></div>",
+    "diagnostics": 0,
+    "edit_start": null,
+    "edit_end": null,
+    "diagnostic_start": null,
+    "diagnostic_end": null
+  },
+  {
+    "id": "empty-expression",
+    "entry": "template",
+    "source": "<div :class=\"\"></div>",
+    "fixed": "<div :class=\"\"></div>",
+    "diagnostics": 0,
+    "edit_start": null,
+    "edit_end": null,
+    "diagnostic_start": null,
+    "diagnostic_end": null
+  }
+]

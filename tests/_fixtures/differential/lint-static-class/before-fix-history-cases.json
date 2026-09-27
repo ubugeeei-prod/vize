@@ -144,7 +144,7 @@
     "fixes": 0
   },
   {
-    "id": "static-class-utf8-fix-corrected",
+    "id": "static-class-utf8-fix-control",
     "history": "634f636969b451c805ad4874c0567d64c8e8f850",
     "source": "<template>\r\n<p>雪🌸</p><div :class=\"'static-class'\"></div>\r\n</template>\r\n",
     "filename": "History.vue",

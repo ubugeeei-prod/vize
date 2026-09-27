@@ -158,6 +158,8 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
   [Selected current linter history oracles](./2026-09-27-lint-history-current-api.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): complete public API results and actual independent fixes, with whole-history closure and native comparisons still pending.
 
+  [Static-class edit boundaries](./2026-09-27-static-class-fix-boundary.md) record [#6920](https://github.com/ubugeeei-prod/vize/issues/6920): use the end-exclusive binding span; preserve the original bad capture as evidence, not accepted coverage.
+
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.
 
