@@ -44,3 +44,12 @@ own evidence. The production fault is absent from the prepared change.
 Actions/full T1 queue proof, common differential admission, native L4 parity,
 end ranges, related information and raw backend observations remain pending.
 Native acceptance is zero. #6879 remains open.
+
+## Exact T0 deferral
+
+Stack this slice on #6941 after parent review. Extend only the present package
+`vize_canon`, binary `fix_history_diagnostics`, exact test
+`reserved_prop_shapes_preserve_literal_and_member_diagnostics`. Prior Canon/Corsa names
+remain exact; source existence and T1 metadata are checked. Full Cargo T1 is
+unchanged. Latest-head source Actions and exact-child full Check execution are
+required; no queue before parent main/full proof. All native/history gaps stay open.
