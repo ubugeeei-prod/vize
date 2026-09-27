@@ -5,7 +5,7 @@
 use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
 
-use vize_l0::{Box, String, Vec, cstr};
+use vize_l0::{Box, String, Vec};
 use vize_l1::Element;
 
 use vize_l2::expr::{ExprRef, OpaqueReason};
@@ -155,13 +155,19 @@ pub(crate) fn lower_for<'a>(
                     });
                 }
             }
-            cx.record(
-                "lower.for",
-                node,
-                text,
-                cstr!("ui.for source={} value={}", desc(&source), desc(&value)),
-                text_span,
+            let source_description = desc(&source);
+            let value_description = desc(&value);
+            let mut after = String::with_capacity(
+                "ui.for source=".len()
+                    + source_description.len()
+                    + " value=".len()
+                    + value_description.len(),
             );
+            after.push_str("ui.for source=");
+            after.push_str(source_description.as_str());
+            after.push_str(" value=");
+            after.push_str(value_description.as_str());
+            cx.record("lower.for", node, text, after, text_span);
             let binding = ForBinding {
                 source,
                 value,

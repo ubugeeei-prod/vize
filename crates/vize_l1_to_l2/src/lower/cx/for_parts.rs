@@ -1,7 +1,7 @@
 //! `ui.for` fact attachment for the lowering context.
 
 use vize_davinci::id::NodeId;
-use vize_l0::{Span, cstr};
+use vize_l0::{Span, String, cstr};
 
 use super::Cx;
 
@@ -24,18 +24,24 @@ impl Cx<'_> {
                 parts.tag,
             );
             let before = cstr!("scope {} bindings={binding_count}", parts.tag);
-            self.record(
-                "lower.for-fact",
-                node,
-                before.as_str(),
-                cstr!(
-                    "fact value={} key={} index={}",
-                    parts.value.spell(),
-                    parts.key.spell(),
-                    parts.index.spell()
-                ),
-                span,
+            let value = parts.value.spell();
+            let key = parts.key.spell();
+            let index = parts.index.spell();
+            let mut after = String::with_capacity(
+                "fact value=".len()
+                    + value.len()
+                    + " key=".len()
+                    + key.len()
+                    + " index=".len()
+                    + index.len(),
             );
+            after.push_str("fact value=");
+            after.push_str(value);
+            after.push_str(" key=");
+            after.push_str(key);
+            after.push_str(" index=");
+            after.push_str(index);
+            self.record("lower.for-fact", node, before.as_str(), after, span);
             self.for_facts.insert(id, parts);
         }
     }
