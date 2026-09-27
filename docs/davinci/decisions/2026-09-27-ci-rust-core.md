@@ -12,6 +12,10 @@ The strict Rust report accepts success only from every required executing job.
 Install the declared Node runtime before source planning and Rust 1.98.0 only
 when the coarse plan requires Cargo metadata. Restrict documentation exemptions
 to Markdown so a Rust file under docs still receives conservative validation.
+Canonical `vize_l0` through `vize_l4` prefixes, including derive, conversion
+and SSR parts, retain browser validation when crates move from legacy names.
+Keep existing compiler prefixes until those moves complete; renaming a compiler
+crate must not silently remove its playground lane.
 
 For PRs, use the tested merge's first parent only when the full checkout SHA,
 exactly two parents and matching payload head prove the relationship. Read

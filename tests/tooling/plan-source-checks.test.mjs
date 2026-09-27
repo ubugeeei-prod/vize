@@ -170,6 +170,27 @@ void test("compiler, Vite, and playground changes run browser snapshots", () => 
   }
 });
 
+void test("every canonical level and conversion crate retains browser validation after renames", () => {
+  for (const crate of [
+    "vize_l0",
+    "vize_l0_derive",
+    "vize_l1",
+    "vize_l2",
+    "vize_l3",
+    "vize_l4",
+    "vize_l1_to_l2",
+    "vize_l2_to_l3",
+    "vize_l4_ssr",
+  ]) {
+    const path = `crates/${crate}/src/lib.rs`;
+    assert.deepEqual(
+      planSourceChecks([path]),
+      { rust: true, js: true, tooling: false, playground: true },
+      path,
+    );
+  }
+});
+
 void test("deleted and moved source files still select both gates", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-source-checks-"));
   const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
