@@ -93,6 +93,7 @@ and the actual queue remain required before closing the issue.
 
   A missing capability falls back to the opaque path or a diagnostic. There is one dynamic dispatch per file; everything after it is static. Template expressions follow `<script lang>`, and a language mismatch between `<script>` and `<script setup>` is a diagnostic.
 
+- The [markup and container skeleton](./2026-09-28-l1-markup-skeleton.md) records the `Profile`, `Sink`, lex error and directive-hook shapes.
 - Two decisions from the same design comment belong to the next section: the `const` pattern table of `fn` pointers, and parsing each expression once (L4 rewrites from the L2 identifier-resolution table).
 
 [The explicit L1 embed source skeleton](./2026-09-28-l1-embed-source-skeleton.md) records the maintainer's code-first request for #6836; source preparation remains `todo!()`, with typed trees, language resolution and dialect hooks unfinished.
