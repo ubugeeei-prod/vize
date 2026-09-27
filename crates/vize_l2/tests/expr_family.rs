@@ -2,6 +2,7 @@
 //! Vue 2 filters P2-9). Split from `op_family.rs` under the source
 //! budget when `vue.filter` joined the closed set.
 
+use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span, Vec};
 use vize_l2::expr::{ExprRef, ForeignExpr, JsExpr, OpaqueExpr, OpaqueReason, VueFilterExpr};
 
@@ -102,4 +103,63 @@ fn js_expression_admits_trailing_block_comment_trivia_only() {
         .unwrap_err(),
         OpaqueReason::ParseRejected
     );
+}
+
+#[test]
+fn word_safety_keeps_oxc_admission_and_authored_payloads() {
+    let allocator = Allocator::default();
+    for source in [
+        "item", "_", "$", "$event", "x1", "true", "null", "値", r"\u0061",
+    ] {
+        let span = Span::new(7, 7 + source.len() as u32);
+        let js = JsExpr::parse_in(&allocator, source, span).expect("word expression is admitted");
+        assert_eq!(js.source, source);
+        assert_eq!(js.span, span);
+        assert_eq!(js.ast.span(), oxc_span::Span::new(0, source.len() as u32));
+        match (source, js.ast) {
+            ("true", oxc_ast::ast::Expression::BooleanLiteral(literal)) => {
+                assert!(literal.value);
+            }
+            ("null", oxc_ast::ast::Expression::NullLiteral(_)) => {}
+            (name, oxc_ast::ast::Expression::Identifier(identifier))
+                if name != "true" && name != "null" =>
+            {
+                let expected = if name == r"\u0061" { "a" } else { name };
+                assert_eq!(identifier.name.as_str(), expected);
+            }
+            _ => panic!("unexpected OXC AST for {source}: {:?}", js.ast),
+        }
+    }
+    for source in [
+        "",
+        "for",
+        "return",
+        "class",
+        "typeof",
+        "item key",
+        "item; item",
+    ] {
+        assert_eq!(
+            JsExpr::parse_in(&allocator, source, Span::new(0, source.len() as u32)).unwrap_err(),
+            OpaqueReason::ParseRejected,
+        );
+    }
+}
+
+#[test]
+fn guarded_word_suffixes_retain_nesting_refusal_before_oxc() {
+    let allocator = Allocator::default();
+    let depth = vize_l0::expression_guard::MAX_EXPRESSION_NESTING_DEPTH + 1;
+    for source in [
+        format!("word{}x{}", "(".repeat(depth), ")".repeat(depth)),
+        format!("{}x", "!".repeat(depth)),
+        format!("{}x", "typeof ".repeat(depth)),
+        "1".repeat(4097),
+    ] {
+        assert_eq!(
+            JsExpr::parse_in(&allocator, &source, Span::new(7, 7 + source.len() as u32))
+                .unwrap_err(),
+            OpaqueReason::NestingRefused,
+        );
+    }
 }
