@@ -217,6 +217,9 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 [Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records Cargo corpus,
 Moon/benchmark dependencies and the immutable queue source-length base for #6863.
 
+[Inspector comparison transport](./2026-09-27-inspector-compare-transport.md)
+preserves authoritative child failures when Node exits before input delivery.
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work) in the companion record.

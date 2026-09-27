@@ -47,14 +47,11 @@ pub(super) fn run_official_compiler_for_compare(
             std::process::exit(1);
         });
 
-    child
+    let write_result = child
         .stdin
         .take()
-        .and_then(|mut stdin| stdin.write_all(&input_json).ok())
-        .unwrap_or_else(|| {
-            eprintln!("Failed to write inspector compare input to Node.js");
-            std::process::exit(1);
-        });
+        .ok_or_else(|| std::io::Error::other("the Node.js process has no piped stdin"))
+        .and_then(|mut stdin| stdin.write_all(&input_json));
 
     let output = child.wait_with_output().unwrap_or_else(|error| {
         eprintln!("Failed to wait for official compiler process: {error}");
@@ -66,6 +63,11 @@ pub(super) fn run_official_compiler_for_compare(
         eprintln!("{}", compare_error::official_compiler_error_message(stderr));
         std::process::exit(output.status.code().unwrap_or(1));
     }
+
+    write_result.unwrap_or_else(|error| {
+        eprintln!("Failed to write inspector compare input to Node.js: {error}");
+        std::process::exit(1);
+    });
 
     serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
         let stdout = std::str::from_utf8(&output.stdout).unwrap_or("<stdout is not valid UTF-8>");
