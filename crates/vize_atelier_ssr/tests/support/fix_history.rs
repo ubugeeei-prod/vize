@@ -46,11 +46,16 @@ pub const CASES: &[(&str, &str)] = &[
     ),
 ];
 
-pub fn options() -> Result<Value, serde_json::Error> {
+pub fn options() -> Result<Value, Box<dyn std::error::Error>> {
     let options = SsrCompilerOptions::default();
-    assert_eq!(options.dialect, vize_l0::config::VueVersion::V3);
-    assert!(options.binding_metadata.is_none());
-    assert!(options.croquis.is_none());
+    if options.dialect != vize_l0::config::VueVersion::V3
+        || options.binding_metadata.is_some()
+        || options.croquis.is_some()
+    {
+        return Err(
+            "SSR fixture defaults gained dialect, binding metadata or Croquis context".into(),
+        );
+    }
     let SsrCompilerExperimentalOptions {
         component_name,
         self_component,

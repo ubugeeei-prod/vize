@@ -1,0 +1,25 @@
+{
+  "schema": "vize.ssr.fix-history-source",
+  "version": 1,
+  "sourceRevision": "22decfc11405a1137c2594b4d13e43642da8af20",
+  "sourceTree": "15f30a3dbdac25ad215ad251cc1ddbaabf0cb897",
+  "trackedDirty": [],
+  "cargoLockSha256": "be4568371f14f946452111a604efb3d2b6c1ebd10632b1f227f44ae69dca6df9",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: aarch64-apple-darwin\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+  "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)\n",
+  "startedAt": "2026-09-27T08:28:35Z",
+  "argv": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "ci",
+    "-p",
+    "vize_atelier_ssr",
+    "--example",
+    "ssr_fixture_observer",
+    "--message-format=json-render-diagnostics"
+  ],
+  "cargoTargetDir": "/tmp/vize-ssr-fix-history-target-20260927",
+  "workspace": "/private/tmp/vize-ssr-fix-history-20260927"
+}

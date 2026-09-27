@@ -1,0 +1,132 @@
+{
+  "schema": "vize.ssr.fix-history-capture",
+  "version": 1,
+  "capturedSource": "22decfc11405a1137c2594b4d13e43642da8af20",
+  "captureKind": "actual local macOS arm64 profileci output, not GitHub Actions",
+  "cases": 9,
+  "repeatedEqual": true,
+  "nativeAcceptance": 0,
+  "files": [
+    {
+      "path": "capture-22dec/build-receipt.json",
+      "sha256": "2c5c8b3f9fb833238c155ddf3a76f4ae1daae21958ee0c8d0e51d99e96332280"
+    },
+    {
+      "path": "capture-22dec/cargo.jsonl",
+      "sha256": "2de6930b5e08a3a0193af6e97bbd0c546996bdac1cdcc6a3ad8796c5543b378c"
+    },
+    {
+      "path": "capture-22dec/cargo.stderr",
+      "sha256": "b6a0fdb900d8f4427e4831a1912174cb215efe0e685b13a45d937a7f0e0da4d9"
+    },
+    {
+      "path": "capture-22dec/first.process.json",
+      "sha256": "152e525cde09dd211adb506aeb19240e2ab4b4b4625610db22253f83bb14b7b6"
+    },
+    {
+      "path": "capture-22dec/first.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "capture-22dec/first.stdout.json",
+      "sha256": "cc1bf8e3c0ac5bb59996ab78762be97931fa59c5badcf6240a137b36002711f2"
+    },
+    {
+      "path": "capture-22dec/repeat.process.json",
+      "sha256": "468320aba59d5c65f7f2cec569d625799676213d15682a8f52e9053addafb609"
+    },
+    {
+      "path": "capture-22dec/repeat.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "capture-22dec/repeat.stdout.json",
+      "sha256": "cc1bf8e3c0ac5bb59996ab78762be97931fa59c5badcf6240a137b36002711f2"
+    },
+    {
+      "path": "capture-22dec/source.json",
+      "sha256": "a3a31da8d43e58dc002838637091f43e1e55942d1b37df4767a72f603107bea0"
+    },
+    {
+      "path": "event-dynamic-key-boundary.expected.json",
+      "sha256": "c52ae31547ae2111f3f3e8291b1564556a64673794f4e1647e55f4584d8a42fc"
+    },
+    {
+      "path": "event-dynamic-key-boundary.input.txt",
+      "sha256": "93e8d17e5e0b63a1b174ef480167641be952b9f81f34e70df41da213a772c9ea"
+    },
+    {
+      "path": "event-modifiers.expected.json",
+      "sha256": "1f624336d20b2c042fd9a650640006c602e5926012cfde8fa9d665e77b054d84"
+    },
+    {
+      "path": "event-modifiers.input.txt",
+      "sha256": "544664d1221a4191cdd66a7fae26e04ad72cdea2bcef77eb8d87f12fef9bbc45"
+    },
+    {
+      "path": "event-spread-boundary.expected.json",
+      "sha256": "1daadff2bf1eaf350ecbfd861b98343387410248895df24d65799e3d8d2eb41f"
+    },
+    {
+      "path": "event-spread-boundary.input.txt",
+      "sha256": "abfd22b725a4a44f0cb55d1e317a2aafe03088547b856b2cdd3d13dfd812432b"
+    },
+    {
+      "path": "input-provenance.json",
+      "sha256": "ff38b64c77ab8bc8a571212d9e10a87182c8e74b05bbdec685ae4b714c61f3b6"
+    },
+    {
+      "path": "keyed-slot-conditional.expected.json",
+      "sha256": "bf2baedef85d7046c2599c376c423e427aff821e93e0c1d80af02cca5fc3154d"
+    },
+    {
+      "path": "keyed-slot-conditional.input.txt",
+      "sha256": "438e7a5922572dd4b0654d2175473b313efc3d150183d155e6926be60d466002"
+    },
+    {
+      "path": "keyed-slot-fallback.expected.json",
+      "sha256": "17cbb6ceba72f687f3843a67107602d990fd9b381eef3a3400d0b9587004d476"
+    },
+    {
+      "path": "keyed-slot-fallback.input.txt",
+      "sha256": "d3f7c3f893ae91d4b90890f40ec528e2333d978c893f2251858702e7094a5dcc"
+    },
+    {
+      "path": "keyed-slot-single-element.expected.json",
+      "sha256": "9aad83ef69076c5d49298c98f644a0489ee5b16e28094705bb5424471280cf3c"
+    },
+    {
+      "path": "keyed-slot-single-element.input.txt",
+      "sha256": "2e3606284395087c282ed9626ac63668ad332f5fd8d090a8224258d51679e81b"
+    },
+    {
+      "path": "listener-before-model.expected.json",
+      "sha256": "9b0ed6e184d35170e0559f8f67b4bc7e6d5bb568a561b782ec43cfa8d7387225"
+    },
+    {
+      "path": "listener-before-model.input.txt",
+      "sha256": "0dd47074bb0841e70d7c5dc39c14959c3f6c98972e564a526d4e1ed777e31bd7"
+    },
+    {
+      "path": "model-before-listener.expected.json",
+      "sha256": "e00c652ccaadb74494d2171b076983da8e1df816aad511f044232999bd453a2e"
+    },
+    {
+      "path": "model-before-listener.input.txt",
+      "sha256": "b0816a2792924e41d38adf4ba54b7c23976348a51dbb178aa4b459e5ba12610e"
+    },
+    {
+      "path": "options.expected.json",
+      "sha256": "52bbb2f3819cf1428b8a0f8cfde0a0b7845c49b05c1b1199f74ff6d192413ed9"
+    },
+    {
+      "path": "select-model.expected.json",
+      "sha256": "fdb702c6d167b6222bc4e5ffca324c6955f3cdba4e8427aa6ef38f2dcb91de51"
+    },
+    {
+      "path": "select-model.input.txt",
+      "sha256": "e1fd3da2a7931bc8bd6e9dc34093fb05c198f4238e2878e5118a3e145c65b697"
+    }
+  ],
+  "fixCommits": 3
+}

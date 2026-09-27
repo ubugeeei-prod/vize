@@ -109,6 +109,8 @@ See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-em
 
 [SSR and Vapor history witness audit](./2026-09-27-compiler-target-history-audit.md) records 19 SSR and 20 Vapor inspected fixes, original option boundaries and raw byte gaps. Preserve normalized complete Pkl outputs and all shape/runtime checks alongside new raw pins.
 
+[Complete SSR fix-history capture](./2026-09-27-ssr-fix-history-captures.md) records nine repeated outputs for #990/#3701/#2487 with source/executable identity and exact options. The frozen capture source is preserved on its provenance branch; fresh Actions, whole history and native acceptance remain pending.
+
 ## Script side
 
 See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side) in the companion record.
