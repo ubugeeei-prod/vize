@@ -71,21 +71,21 @@ test("Canon LSP client imports L0 storage through the stage alias", () => {
   const workspaceS0 = asRecord(workspaceDependencies.vize_l0);
   const canonS0 = asRecord(canonDependencies.vize_l0);
 
-  assert.equal(workspaceS0.package, "vize_carton");
-  assert.equal(workspaceS0.path, "crates/vize_carton");
+  assert.equal(workspaceS0.package, undefined);
+  assert.equal(workspaceS0.path, "crates/vize_l0");
   assert.equal(canonS0.workspace, true);
   assert.ok(!Object.hasOwn(canonDependencies, "vize_carton"));
 
   const metadata = cargoMetadata();
-  const cartonPackage = metadata.packages.find((pkg) => pkg.name === "vize_carton");
+  const cartonPackage = metadata.packages.find((pkg) => pkg.name === "vize_l0");
   const canonPackage = metadata.packages.find((pkg) => pkg.name === "vize_canon");
   assert.ok(cartonPackage);
   assert.ok(canonPackage);
   const s0Dependency = canonPackage.dependencies.find(
-    (dependency) => dependency.name === "vize_carton" && dependency.rename === "vize_l0",
+    (dependency) => dependency.name === "vize_l0" && dependency.rename === null,
   );
   assert.ok(s0Dependency);
-  assert.equal(s0Dependency.path, path.join(repoRoot, "crates", "vize_carton"));
+  assert.equal(s0Dependency.path, path.join(repoRoot, "crates", "vize_l0"));
   assert.equal(s0Dependency.req, `=${cartonPackage.version}`);
   assert.equal(s0Dependency.kind, null);
   assert.equal(s0Dependency.optional, false);

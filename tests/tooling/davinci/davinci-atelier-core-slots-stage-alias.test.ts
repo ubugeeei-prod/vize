@@ -270,21 +270,21 @@ test("Atelier core migrated compiler slices import L0 storage through the stage 
   const workspaceS0 = asRecord(workspaceDependencies.vize_l0);
   const coreS0 = asRecord(coreDependencies.vize_l0);
 
-  assert.equal(workspaceS0.package, "vize_carton");
-  assert.equal(workspaceS0.path, "crates/vize_carton");
+  assert.equal(workspaceS0.package, undefined);
+  assert.equal(workspaceS0.path, "crates/vize_l0");
   assert.equal(coreS0.workspace, true);
   assert.ok(!Object.hasOwn(coreDependencies, "vize_carton"));
 
   const metadata = cargoMetadata();
-  const cartonPackage = metadata.packages.find((pkg) => pkg.name === "vize_carton");
+  const cartonPackage = metadata.packages.find((pkg) => pkg.name === "vize_l0");
   const corePackage = metadata.packages.find((pkg) => pkg.name === "vize_atelier_core");
   assert.ok(cartonPackage);
   assert.ok(corePackage);
   const s0Dependency = corePackage.dependencies.find(
-    (dependency) => dependency.name === "vize_carton" && dependency.rename === "vize_l0",
+    (dependency) => dependency.name === "vize_l0" && dependency.rename === null,
   );
   assert.ok(s0Dependency);
-  assert.equal(s0Dependency.path, path.join(repoRoot, "crates", "vize_carton"));
+  assert.equal(s0Dependency.path, path.join(repoRoot, "crates", "vize_l0"));
   assert.equal(s0Dependency.req, `=${cartonPackage.version}`);
   assert.equal(s0Dependency.kind, null);
   assert.equal(s0Dependency.optional, false);
