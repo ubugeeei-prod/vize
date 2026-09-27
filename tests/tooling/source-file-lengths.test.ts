@@ -6,6 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { repoRoot } from "./_helpers/moonbit.ts";
+import { resolveSourceLengthBase as resolveBaseRef } from "./support/source-length-base.ts";
 
 const command = path.join(repoRoot, "tools/commands/ci/source-file-lengths.rs");
 
@@ -24,41 +25,9 @@ function runSourceLengthScript(args: string[] = [], cwd = repoRoot) {
   return spawnSync("rust-script", [command, ...args], { cwd, encoding: "utf8" });
 }
 
-function resolveBaseRef(cwd = repoRoot, env: NodeJS.ProcessEnv = process.env): string | undefined {
-  if (env.SOURCE_LENGTH_BASE_REF) {
-    return env.SOURCE_LENGTH_BASE_REF;
-  }
-  if (!env.GITHUB_BASE_REF) {
-    return undefined;
-  }
-
-  assert.ok(env.GITHUB_EVENT_PATH, "GITHUB_EVENT_PATH is required for pull-request source checks");
-  let event: unknown;
-  try {
-    event = JSON.parse(fs.readFileSync(env.GITHUB_EVENT_PATH, "utf8"));
-  } catch (error) {
-    throw new Error(`Failed to read pull-request event ${env.GITHUB_EVENT_PATH}`, {
-      cause: error,
-    });
-  }
-  const baseSha = (event as { pull_request?: { base?: { sha?: unknown } } }).pull_request?.base
-    ?.sha;
-  assert.ok(
-    typeof baseSha === "string" && /^[0-9a-f]{40}$/.test(baseSha),
-    "pull_request.base.sha must be a full lowercase commit SHA",
-  );
-
-  const result = spawnSync("git", ["fetch", "--no-tags", "--depth=1", "origin", baseSha], {
-    cwd,
-    encoding: "utf8",
-  });
-  assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
-  return baseSha;
-}
-
 test("source length script checks the current checkout", () => {
   const args = ["--check", "--max-lines", "350", "--limit", "5"];
-  const baseRef = resolveBaseRef();
+  const baseRef = resolveBaseRef(repoRoot);
   if (baseRef != null) {
     args.push("--base-ref", baseRef);
   }
