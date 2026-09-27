@@ -108,7 +108,7 @@ Tracked in [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and [#6838
 See the [l3 is the decision layer decisions](./2026-09-27-level-restructure-designs.md#l3-is-the-decision-layer) in the companion record.
 
 The [native decision skeleton](../plan/native-decision-skeleton.md) records
-[#6839](https://github.com/ubugeeei-prod/vize/issues/6839)'s 2026-09-28 architecture-first follow-up:
+[#6839's paired decision](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5857255718) records the 2026-09-28 architecture-first follow-up:
 L3 owns L2-node decision types and target policy identities; the borrowed
 L2→L3 producer is an explicit `todo!()`, without a production caller.
 Current analysis, flat-program demand splitting and L4 extraction remain
