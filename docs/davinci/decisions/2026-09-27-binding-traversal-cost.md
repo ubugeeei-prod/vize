@@ -8,11 +8,11 @@ reconciled all 300 client-request totals, 36 zero termination dumps and 36
 allocator setup receipts; fixture hashes, windows and the fixed guest
 environment match the accepted reference. Three ceilings failed:
 
-| Probe | Accepted ceiling | Candidate |
-| --- | ---: | ---: |
-| `s1_to_s2_lower_vfor_three_aliases` | 148047 | 150340 |
-| `patina_jsx_markup_one_root` | 45385 | 45731 |
-| `patina_s2_markup_one_root` | 539107 | 540157 |
+| Probe                               | Accepted ceiling | Candidate |
+| ----------------------------------- | ---------------: | --------: |
+| `s1_to_s2_lower_vfor_three_aliases` |           148047 |    150340 |
+| `patina_jsx_markup_one_root`        |            45385 |     45731 |
+| `patina_s2_markup_one_root`         |           539107 |    540157 |
 
 The Patina increases are concentrated in `walk_items`: +334 of the JSX
 increase of 346, and +811 of the template increase of 1050. Callback counts
