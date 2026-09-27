@@ -148,6 +148,8 @@ target. Real Cargo execution stays in the explicit T1 tooling inventory; T0
 retains the pure contract tests and unknown-file selection remains fail-closed.
 T1/nightly/manual Actions retain the frozen executable, raw Cargo logs, receipt
 and complete API observations as artifacts, including failure observations.
+Both workflow callers share one composite artifact action with unchanged guards
+and upload settings, keeping the existing full workflow within its line budget.
 The source guard also rejects untracked non-test Rust files and Cargo manifests;
 NUL-separated Git paths keep that guard valid for non-ASCII filenames.
 Missing rows, wrong APIs/options, artifact/source mismatch, output drift,
