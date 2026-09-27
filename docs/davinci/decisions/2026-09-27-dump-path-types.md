@@ -83,3 +83,7 @@ producer migration and the real shared CLI/playground production generator
 are still open. The roundtrip-only CLI candidate does not replace the legacy
 optimizer. The existing substrate dissolution remains #6833's separate scope;
 this naming slice does not claim it has completed.
+
+The current stability table names the actual `Dump` derive/trait and L2/L3
+`dump::Page` entrypoints after the alias removals. Product tiers and promises
+are unchanged; historical API names are not presented as current exports.
