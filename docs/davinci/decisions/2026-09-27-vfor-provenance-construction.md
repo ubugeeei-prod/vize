@@ -165,3 +165,37 @@ before one leased verification-ref update and two unchanged Actions dispatches.
 The twelve controls, full differential features, current Linux allocations and
 100-by-three instruction acceptance remain pending on this exact composition.
 The public eight are unchanged and dequeued; no main/queue acceptance is granted.
+
+## Second measured result on actual main
+
+The owner published only the reviewed `56fcfd91a048c7e02693f12fb49f2f920b99920a`
+to the existing temporary ref, with a fresh exact `5e402` lease. Its
+[measured run 36323473099](https://github.com/ubugeeei-prod/vize/actions/runs/36323473099)
+fails seventeen unchanged ceilings. All 100 probes have three equal observations;
+their input identities, windows, protocol and guest context match the preserved
+baseline. Artifact `10933710975` preserves this failed measurement.
+
+The iteration probe is now `147642 <= 148047`, Patina JSX is `43809 <= 45385`,
+and emit p2_11 is `195261 <= 197851`. These individual improvements do not accept
+the complete candidate: Patina S2 is `543205 > 539107`, with parse, DOM and SSR
+probes also exceeding their original ceilings. No retry, raised cap, changed
+fixture or public-eight replay follows from these failures.
+
+[Full Check 36323470941](https://github.com/ubugeeei-prod/vize/actions/runs/36323470941)
+passes Clippy, both no-std lanes and the exact allocation gate. Its nine raw
+reports confirm iteration allocations `11` and Linux peak `1499`, JSX `0` and
+Patina S2 `7`; artifact `10933286266` has SHA-256
+`11701b762be9162dbc5a50557dd600e2e17152d496b291cd7600456ca294ff1b`.
+MacOS current-source evidence remains unknown, with strict `1495` unchanged.
+The primary Rust Test and instrumented source-coverage jobs are still running;
+the twelve new controls and full eleven-feature differential remain pending.
+Strict JavaScript checking fails a Markdown table's formatting in the binding
+cost companion; the mechanical spacing fix is prepared privately without
+changing or restarting the frozen source. Full Check is not accepted.
+
+Exclusive function attribution identifies outlined expression safety fallback
+work and Patina name interning as the next bounded production investigations.
+Any guard integration or single-lookup intern change needs concrete source
+review and complete semantic controls before another measured candidate.
+The original measurements and source refs remain preserved; #6831 and #6832
+remain open, with no numeric, native, queue or main acceptance claimed.
