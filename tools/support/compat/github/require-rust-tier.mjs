@@ -6,6 +6,8 @@ export function requireRustTier(event, runRust, needs) {
   if (!["pull_request", "merge_group"].includes(event))
     throw new Error("Unexpected Rust tier event");
   if (!["true", "false"].includes(runRust)) throw new Error("Missing Rust source plan");
+  if (event === "merge_group" && runRust !== "true")
+    throw new Error("Merge queue must select the complete Rust workspace");
   const required =
     event === "merge_group"
       ? ["merge-rust-source"]

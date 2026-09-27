@@ -12,7 +12,11 @@ export function planSourceChecks(paths, eventName = "pull_request") {
   // Compiler changes can affect the native JS binding and its package tests.
   const result = { rust: false, js: false, tooling: false, playground: false };
   for (const path of paths) {
-    if (/^(docs\/|\.changeset\/)/.test(path) || /(^|\/)README\.md$/.test(path)) continue;
+    if (
+      (/^(docs\/|\.changeset\/)/.test(path) && /\.(md|mdx)$/.test(path)) ||
+      /(^|\/)README\.md$/.test(path)
+    )
+      continue;
     if (
       /^(tests\/tooling\/|tools\/support\/release\/|tools\/commands\/release\/|tools\/moon\/cmd\/release\/|tools\/support\/compat\/github\/|\.github\/workflows\/release[^/]*\.yml$)/.test(
         path,

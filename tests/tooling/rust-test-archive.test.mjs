@@ -83,6 +83,9 @@ void test("Rust tier gate rejects failed, cancelled, absent, and skipped require
     1,
   );
   assert.equal(requireRustTier("pull_request", "false", needs).exitCode, 0);
+  assert.throws(() => requireRustTier("merge_group", "false", needs), {
+    message: "Merge queue must select the complete Rust workspace",
+  });
   assert.throws(() => requireRustTier("pull_request", "", needs), {
     message: "Missing Rust source plan",
   });

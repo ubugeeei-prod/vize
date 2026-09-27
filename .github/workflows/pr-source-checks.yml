@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
+      comparison-base: ${{ steps.comparison.outputs.base }}
       rust: ${{ steps.plan.outputs.rust }}
       rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
@@ -23,23 +24,36 @@ jobs:
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Fetch comparison base
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: false
+          run-install: false
+      - name: Resolve and fetch comparison base
+        id: comparison
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          comparison_base="$(node tools/support/compat/github/comparison-base.mjs)"
+          if [[ ! "$comparison_base" =~ ^0+$ ]]; then
+            git fetch --no-tags --depth=1 origin "$comparison_base"
           fi
       - name: Plan source checks
         id: plan
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
         run: node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
 
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        if: ${{ steps.plan.outputs.rust == 'true' }}
+        with:
+          toolchain: "1.98.0"
       - name: Plan affected Rust crates
         id: rust-plan
+        if: ${{ steps.plan.outputs.rust == 'true' }}
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
         run: node tools/support/compat/github/plan-affected-rust.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$RUNNER_TEMP/rust-plan.json"
 
   pr-rust-source:

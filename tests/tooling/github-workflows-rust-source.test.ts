@@ -37,7 +37,6 @@ const rustWorkflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.
   jobs?: Record<string, Job>;
 };
 
-
 test("PR and merge-group source checks are included in the required report", () => {
   assert.equal(
     workflow.jobs?.["pr-source-checks"]?.if,
@@ -149,4 +148,3 @@ test("untrusted source checks cannot write trusted sticky disks", () => {
     );
   }
 });
-

@@ -207,10 +207,24 @@ void test("deleted and moved source files still select both gates", () => {
     assert.deepEqual(planSourceChecks(movedPaths), {
       rust: true,
       js: true,
-      tooling: false,
-      playground: false,
+      tooling: true,
+      playground: true,
     });
   } finally {
     rmSync(cwd, { recursive: true, force: true });
+  }
+});
+
+void test("only Markdown documentation exemptions can avoid the Rust fallback", () => {
+  for (const file of [
+    "docs/runtime.mjs",
+    "docs/fixture.vue",
+    "docs/contracts.json",
+    ".changeset/check.ts",
+  ]) {
+    assert.equal(planSourceChecks([file]).rust, true, file);
+  }
+  for (const file of ["docs/design.md", "docs/design.mdx", ".changeset/release.md"]) {
+    assert.equal(planSourceChecks([file]).rust, false, file);
   }
 });

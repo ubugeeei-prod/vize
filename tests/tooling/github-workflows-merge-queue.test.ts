@@ -31,6 +31,9 @@ const recipe = parse(
   inputs: Record<string, { default: string }>;
   runs: { using: string; steps: Step[] };
 };
+const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
+  jobs: Record<string, Job>;
+};
 const actionPath = "./.github/actions/test-rust-workspace-differential";
 const lanes = [
   "pr-source-plan",
@@ -86,7 +89,8 @@ test("queue scope reaches the planner and every full source lane remains require
 });
 
 test("queue Rust retains prerequisites and executes the shared feature tail after the workspace", () => {
-  const steps = source.jobs["pr-rust-source"].steps ?? [];
+  assert.equal(source.jobs["pr-rust-source"].uses, "./.github/workflows/pr-rust-checks.yml");
+  const steps = rust.jobs["merge-rust-source"].steps ?? [];
   const pkl = steps.findIndex((step) => step.name === "Install Pkl CLI");
   const workspace = steps.findIndex((step) =>
     /cargo test --workspace(?:;|$)/m.test(step.run ?? ""),
@@ -95,10 +99,7 @@ test("queue Rust retains prerequisites and executes the shared feature tail afte
   const coverage = steps.findIndex((step) => step.name === "Check fixture coverage");
   assert.ok(pkl >= 0 && pkl < workspace && workspace < tail && tail < coverage);
   assert.equal(steps[workspace].env?.VIZE_TEST_REQUIRE_TSGO, "1");
-  assert.equal(
-    steps[tail].if,
-    "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.rust == 'true' }}",
-  );
+  assert.equal(steps[tail].if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
   assert.equal(steps[tail].with?.["workspace-already-tested"], "true");
   assert.notEqual(steps[tail]["continue-on-error"], true);
   const manual = check.jobs["clippy-and-test"].steps?.find((step) => step.name === "Test");

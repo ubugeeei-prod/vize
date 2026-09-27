@@ -320,6 +320,9 @@ for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https
 [Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md)
 records #6862's runner, doctest, resource and archive identity decisions.
 
+[Rust source wiring](./2026-09-27-ci-rust-core.md) preserves full queue
+execution, proves the tested comparison base and records the intermediate scope.
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work)
