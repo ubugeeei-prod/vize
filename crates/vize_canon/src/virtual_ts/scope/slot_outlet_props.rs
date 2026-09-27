@@ -44,7 +44,6 @@ pub(super) struct SlotOutlet {
 pub(super) struct SlotOutletChecks {
     by_scope: FxHashMap<u32, Vec<SlotOutlet>>,
     slots_type: String,
-    static_name_counts: FxHashMap<CompactString, usize>,
     infer: bool,
     merge_payloads: bool,
 }
@@ -70,7 +69,6 @@ impl SlotOutletChecks {
             || (dynamic_names && outlet_count > 1);
         Self {
             by_scope,
-            static_name_counts,
             slots_type: slots_type_ref(summary),
             infer,
             merge_payloads,

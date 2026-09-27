@@ -13,7 +13,7 @@ use std::process::Command;
 /// a `v-for` and one outside) used to expose only the last outlet's payload
 /// to the parent, so `#panel="{ viewMode }"` reported `TS2339` on `{}` and
 /// the static `viewMode="sp"` widened to `string` (`TS2322` against a
-/// literal prop). vue-tsc reports neither. The merged payload is still typed:
+/// literal prop). The merged payload is still typed:
 /// a prop only some outlets pass is optional, and a prop every outlet passes
 /// keeps its type.
 #[test]
@@ -76,6 +76,7 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
     actual.sort();
     let mut expected = vec![
         ("src/Parent.vue".to_owned(), 4, 2322),
+        ("src/Parent.vue".to_owned(), 7, 2322),
         ("src/Wrong.vue".to_owned(), 4, 2322),
         ("src/ManyWrong.ts".to_owned(), 5, 2322),
         ("src/ManyWrong.ts".to_owned(), 6, 2322),

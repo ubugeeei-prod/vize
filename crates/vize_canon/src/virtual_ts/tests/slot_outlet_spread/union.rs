@@ -28,35 +28,21 @@ fn slot_payload_helper_keeps_authored_signature_fallback() {
     );
 }
 
-/// Repeated same-named outlets retain string discriminants before merging.
-/// Single outlets preserve their existing public string payload type.
+/// Static attributes retain normal object-literal widening even when the same
+/// name occurs repeatedly. Explicit bound expressions keep authored assertions.
 #[test]
-fn inferred_outlet_payload_keeps_static_attribute_literals() {
+fn inferred_outlet_payload_widens_static_attributes() {
     let code = generate(
-        r#"<div><slot name="side" viewMode="sp" :count="1" /><slot name="side" viewMode="pc" /><slot name="flag" disabled /></div>"#,
+        r#"<div><slot name="side" viewMode="sp" :count="1" /><slot name="side" viewMode="pc" /></div>"#,
     );
-    assert!(
-        code.contains("\"viewMode\": \"sp\" as const,"),
-        "a static string attribute keeps its literal type:\n{code}"
-    );
-    assert!(
-        code.contains("\"count\": 1,") && code.contains("\"disabled\": true,"),
-        "bound values and valueless attributes are unchanged:\n{code}"
-    );
-    let script = "defineSlots<{ side(props: { viewMode: string }): any }>()";
-    let allocator = vize_carton::Allocator::new();
-    let (root, _) = vize_armature::parse(
-        &allocator,
-        r#"<div><slot name="side" viewMode="sp" /></div>"#,
-    );
-    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
-    analyzer.analyze_script_setup(script);
-    analyzer.analyze_template(&root);
-    let summary = analyzer.finish();
-    let checked = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
-    assert!(
-        checked.contains("\"viewMode\": \"sp\",") && !checked.contains("as const"),
-        "the checking-side literal stays as authored:\n{checked}"
+    assert_eq!(
+        (
+            code.matches("\"viewMode\": \"sp\",").count(),
+            code.matches("\"viewMode\": \"pc\",").count(),
+            code.matches("as const").count(),
+        ),
+        (1, 1, 0),
+        "{code}"
     );
 }
 

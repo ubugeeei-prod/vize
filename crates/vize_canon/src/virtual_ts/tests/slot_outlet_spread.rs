@@ -2,6 +2,7 @@ mod union;
 
 use crate::virtual_ts::generate_virtual_ts;
 
+
 #[test]
 fn infers_the_spread_expression_type() {
     let script = r#"const attrs = { label: 'ok' }

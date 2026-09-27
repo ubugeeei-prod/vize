@@ -28,35 +28,15 @@ impl SlotOutletLiteralEntry<'_> {
     }
 }
 
-/// What the literal is emitted for, which decides how its entries are typed.
-#[derive(Clone, Copy)]
-pub(super) enum SlotOutletLiteralMode<'a> {
-    /// Preserve discriminants across repeated named outlets. A single outlet
-    /// keeps its existing widened string type, including public `$slots`.
-    Infer { preserve_static_literals: bool },
-    /// The argument checked against the declared slot payload type.
-    Check { payload_type: &'a str },
-}
-
 pub(super) fn append_slot_outlet_literal(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
     outlet: &SlotOutlet,
-    mode: SlotOutletLiteralMode<'_>,
+    payload_type: &str,
     template_binding_access: &TemplateBindingAccess,
     source_context: ComponentPropSource<'_>,
     expr_indent: &str,
 ) -> Range<usize> {
-    let payload_type = match mode {
-        SlotOutletLiteralMode::Infer { .. } => "unknown",
-        SlotOutletLiteralMode::Check { payload_type } => payload_type,
-    };
-    let literal_static_values = matches!(
-        mode,
-        SlotOutletLiteralMode::Infer {
-            preserve_static_literals: true
-        }
-    );
     let literal_gen_start = ts.len();
     ts.push_str("{\n");
 
@@ -86,11 +66,6 @@ pub(super) fn append_slot_outlet_literal(
                 let key_gen_end = ts.len();
                 ts.push_str(": ");
                 let value_gen_range = append_prop_value(ts, generated_value.as_str());
-                // Repeated outlets retain each static discriminant before
-                // their payloads are merged. Single outlets keep widening.
-                if literal_static_values && is_static_string_value(prop) {
-                    ts.push_str(" as const");
-                }
                 let entry_gen_end = ts.len();
                 ts.push_str(",\n");
                 mappings.push(VizeMapping {
@@ -131,14 +106,6 @@ pub(super) fn append_slot_outlet_literal(
     literal_gen_start..ts.len()
 }
 
-/// A static attribute with an authored string value: `name="value"`, not a
-/// valueless attribute and not `style`, whose object form has its own shape.
-fn is_static_string_value(prop: &PassedProp) -> bool {
-    !prop.is_dynamic && prop.value.is_some() && prop.name != "style"
-}
-
-/// The key and value spans of one outlet prop, mapped back to the authored
-/// attribute name and value independently.
 fn entry_sub_spans(
     source_context: ComponentPropSource<'_>,
     prop: &PassedProp,
@@ -162,7 +129,6 @@ fn entry_sub_spans(
     sub_spans
 }
 
-/// The authored range of a `v-bind="expression"` spread on an outlet.
 fn spread_expression_source_range(
     source_context: ComponentPropSource<'_>,
     spread: &SpreadProp,
