@@ -69,8 +69,9 @@ external callers remain outside the measured scope until verified.
 - Production provider assembly is NAPI-gated; default tests did not execute it.
   Real addon, compiler output byte parity, TS-42, WASM, full CI and all normal
   TS-43/hash-domain acceptance remain pending. No native acceptance is credited.
-- The existing TS-43 job also runs on PRs with hash-domain/SFC/global targets
-  on its existing Linux/macOS matrix. No new workflow or dependency was added.
+- The existing push/manual TS-43 job includes hash-domain/SFC/global targets
+  on its existing Linux/macOS matrix. It does not start on PRs; PR source checks
+  retain the fast parent CI routing. No new workflow or dependency was added.
 
 Capture source heads stay exact; later data commits are not relabeled as the
 compiled source. Raw archive evidence is not executable source. Source corpus
@@ -111,3 +112,49 @@ Native cache/store, CLI, Rust, WASM and exact-head Actions remain required.
 The subsequent current L2 grammar changes its recipe to 3 and selects a
 separate actual historical golden. Decisions and explicit limits are mirrored
 in the [#6832 record](https://github.com/ubugeeei-prod/vize/issues/6832#issuecomment-5854223807).
+
+## #6946 fast-CI and assertion repair
+
+The published hash preparation inadvertently restored `pull_request` in
+`davinci-incremental.yml` from older source, while its source contract still
+expected the old two-target cargo command. The #6947 tooling failure exposed both
+conflicts, plus the transform migration test's two partial prefix assertions.
+The macOS runner was already identical to the real `ab21c5ceb` parent; there was
+no runner drift to repair.
+
+Repair source `0acf9d9085b6498d42260d5e803b6a03414b7772` is based on published
+hash head `746ec0a171f19eeb55fd670666c130d845b8f5c6`. It removes only the restored
+PR event and retains the intended three added TS-43 targets. A parsed deep
+comparison proves every other parent workflow value exact, including both
+platforms, runner labels, cache steps, permissions, concurrency and TS-42.
+The workflow source contract now requires the exact five-target command.
+
+`tools/support/levels/extend-hash-key-workflow.mjs --apply` replays only that
+known run scalar on the current workflow. It never reads a frozen workflow body.
+`--check` verifies idempotence. The helper refuses stale PR-trigger workflows and
+unknown commands; its laws verify that changed current runners, caches, events
+and unrelated jobs survive the replay unchanged.
+
+The transform migration test now pins the complete observed old key
+`s0.v1:e99ab135a693b1e38e520b7918806d3b` from the unchanged legacy fixture/receipt.
+The current key embeds the compiled `VIZE_PLUGIN_HOST_BUILD_ID`, so it has no
+head-independent golden digest. Instead, its complete parsed identity must equal
+`l0.v2`, and its digest must contain exactly 32 hexadecimal digits that roundtrip
+to canonical lower-case 128-bit text. No public parser or pinned current digest
+is invented; the roundtrip checks formatting only. The behavioral witnesses remain intact:
+old records miss, old records copied to the current path miss, and a current
+record hits through both the cache entry point and a fresh disk read.
+
+Focused local source contracts and replay laws: 11 passed. The transform subtree
+assertion lint passes with zero findings and no allowlist. Cargo/JS/YAML formatting,
+whitespace and source350 checks pass (11,387 files scanned; no new/grown over-limit
+files). The full assertion lint has exactly one
+remaining finding in the separate #6945 L3 dump protocol test; its owner repairs
+that oracle before the stack reruns the full gate. All 41 existing captured key,
+receipt and legacy fixture blobs remain byte exact. No product or full Rust build
+ran for this repair.
+
+After restacking the earliest repairs, rerun the exact-head PR source check and
+TS-43 push/manual job. The actual transform-store test still needs the Vitrine
+test build on Actions; source lint is not runtime cache/native acceptance. This
+preparation is committed without push, PR mutation or issue comments.
