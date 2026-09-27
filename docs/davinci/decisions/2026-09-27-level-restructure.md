@@ -254,6 +254,13 @@ pipelines or serialization cost.
   wall-clock envelope runs nightly.
 - **Per-stage budgets ratchet from current measurements.** Today all 102
   `wall_p50_ns` entries in `plan/budgets.toml` are unset.
+- The [instruction-count gate record](./2026-09-27-instruction-counts.md)
+  defines measured-only ceilings and immutable-base ratchets for #6868.
+  Independent clean Actions builds (run 36307058591, attempts 1 and 2)
+  match all 100 probes in three executions each under the fixed guest method.
+  Required `test-report` aggregates queue measurement and strict ceilings.
+  Separate queue tests and test-inventory collection preserve its check name
+  and satisfy the source-length ratchet. Exact queue verification is pending.
 - Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is
   decided after measuring table density and lookup cost
   ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).
@@ -308,6 +315,8 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 - VRT, tsgo-required tests and ledger checks leave the PR tier.
 - Whole-repo generated ledgers stop being committed.
   [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867.
+- [JS native preparation](./2026-09-27-js-native-preparation.md) keeps package coverage and reuses the root test build ([#6830](https://github.com/ubugeeei-prod/vize/issues/6830)).
+- [UI check tiers](./2026-09-27-ui-check-ci-tiers.md) retain Fresco declarations/types in T0 and require UI acceptance in T1 ([#6864](https://github.com/ubugeeei-prod/vize/issues/6864)).
 
 [Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the
 fail-closed dependency plan and shell-free package execution for #6862.

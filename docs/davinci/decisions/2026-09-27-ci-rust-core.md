@@ -97,3 +97,11 @@ The feature-tail contract compares NUL-delimited arguments recorded by the
 actual fake Cargo subprocess, in execution order, for success and failure.
 It no longer requires one command per YAML line; environment and nonzero
 propagation checks remain unchanged.
+
+Integrate actual main `c6916de9c` at the core head before native stack queueing.
+Retain the instruction-count dependency and main's level inventory action,
+native package preparation and full UI acceptance. Resolve only the obsolete
+source-job declaration in the split workflow test; each stack prefix must
+merge into main without relying on a later member's conflict resolution.
+Preserve the previous successful heads and replay only each descendant's
+reviewed changes before fresh current-head Actions and the atomic queue.

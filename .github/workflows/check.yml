@@ -32,6 +32,11 @@ jobs:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/pr-source-checks.yml
 
+  instruction-counts:
+    name: Instruction ceilings
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    uses: ./.github/workflows/level-instruction-counts.yml
+
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
@@ -70,7 +75,7 @@ jobs:
           run-install: false
       - name: Check Davinci source inventories
         if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}
-        uses: ./.github/actions/check-davinci-inventories
+        uses: ./.github/actions/check-level-inventories
       - uses: ./.github/actions/setup-js-check-runtime
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -639,18 +644,12 @@ jobs:
       - node-engine-compat
       - check-vize-apps
       - pr-source-checks
+      - instruction-counts
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Collect test inventory
-        run: node tools/benchmarks/scripts/test-inventory.mjs --json test-inventory.json --markdown "$GITHUB_STEP_SUMMARY"
-      - name: Upload test inventory
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: test-inventory
-          path: test-inventory.json
-          retention-days: 14
+      - uses: ./.github/actions/report-test-inventory
       # Runs last so the inventory is collected and uploaded either way.
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }

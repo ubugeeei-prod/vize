@@ -60,8 +60,8 @@ export const buildTasks = defineTasks({
   // because `build:ci` regenerates `index.js` / `index.d.ts` and
   // wipes the manual JSON.parse wrappers that the token API depends on.
   // The dev profile shaves ~2 minutes off the release-profile build and
-  // matches the profile that vite-plugin-vize already uses at test time,
-  // so cargo's incremental cache makes the second invocation a no-op.
+  // matches the profile that vite-plugin-vize uses for standalone tests.
+  // test:js reuses this successful build instead of invoking Cargo again.
   "build:native:test": noCacheTask(runPackageScriptDirectly("build:debug", ["./npm/native"])),
   "build:wasm": task(moonScript("build_vitrine_wasm", "nodejs", "npm/builder/vite/wasm")),
   "build:wasm-web": task(moonScript("build_vitrine_wasm", "web", "playground/src/wasm")),

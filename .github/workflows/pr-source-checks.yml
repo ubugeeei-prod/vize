@@ -106,9 +106,12 @@ jobs:
       - name: Test JS packages
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
         run: vp run --workspace-root test:js
-      - name: Check UI package conformance
+      - name: Check Fresco native declarations and consumer types
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types && vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
+        run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types
+      - name: Check UI package conformance in merge queue
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}
+        run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
 
   pr-tooling-scripts:
     name: PR tooling scripts

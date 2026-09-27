@@ -13,7 +13,7 @@ const CORE_PR_JOBS = [
   "node-engine-compat",
   "check-vize-apps",
 ];
-const PR_JOBS = [...CORE_PR_JOBS, "pr-source-checks"];
+const PR_JOBS = [...CORE_PR_JOBS, "pr-source-checks", "instruction-counts"];
 const FULL_SUITE_JOBS = [
   "nix-flake",
   "vue-parity",
@@ -122,9 +122,9 @@ test("source gates cover PRs and merge groups while extra checks require schedul
     inventory.if,
     "${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}",
   );
-  assert.equal(inventory.uses, "./.github/actions/check-davinci-inventories");
+  assert.equal(inventory.uses, "./.github/actions/check-level-inventories");
   const inventoryAction = parse(
-    readRepoFile(".github", "actions", "check-davinci-inventories", "action.yml"),
+    readRepoFile(".github", "actions", "check-level-inventories", "action.yml"),
   ) as {
     runs: { using: string; steps: NonNullable<Job["steps"]> };
   };
