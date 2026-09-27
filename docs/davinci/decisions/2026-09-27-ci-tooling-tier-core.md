@@ -39,3 +39,9 @@ passes 23 workflow, selector,
 receipt, runtime-tier and producer-retry tests, strict checks on the three
 changed test files, actionlint and the source-length ratchet. Latest-head
 Actions and the atomic three-PR merge queue remain required.
+
+Main's #6942 action-directory move is transported in its original separate
+move and caller commits. The action bytes and artifact contract are identical.
+Merge actual main ancestry to retain that level-only path with the full-tier
+guard; merely replaying the move still conflicts at the adjacent guard. Keep
+the instruction-count gate mandatory when its preceding queue reaches main.
