@@ -5,7 +5,7 @@ npm/fresco-native/index.d.ts linguist-generated=true text eol=lf
 
 # Formatter history references compare exact bytes, including CR/LF and final LF.
 tests/_fixtures/differential/formatter-history/** -text
-crates/vize_glyph/tests/snapshots/history_*.snap.txt -text
+crates/vize_glyph/tests/snapshots/history_*.snap.txt -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
 
 # Embedded third-party repositories are fixtures, not part of the project source.
 tests/_fixtures/_git/** linguist-vendored=true

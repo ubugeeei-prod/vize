@@ -14,6 +14,8 @@ fixed-point or substring assertions alone do not establish full output parity.
   returned UTF-8 bytes, including CR/LF and the final newline. No trimming,
   newline normalization, sorting, or production formatter changes are added.
   Git text conversion is disabled for prepared assets and binary references.
+  Binary references retain authored trailing whitespace and raw EOF spaces;
+  Git's whitespace diagnostics are disabled only for those reference bytes.
 - Distinguish public `format_script` and `format_sfc` observations from CLI and
   private helper observations. An internal helper accepting a token sequence
   does not imply that the public CSS parser accepts it.
