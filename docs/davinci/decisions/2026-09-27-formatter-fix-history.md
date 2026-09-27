@@ -140,6 +140,14 @@ Twenty focused tooling checks, sixteen affected public Rust tests and strict
 Clippy passed after the assertion/inventory repair. Golden and receipt bytes
 remain unchanged; the receipts still describe their original capture source.
 
+Existing regression tests now also retain twenty-four complete first outputs
+for opaque Pug/Haml/CRLF/src templates, empty/comment-only scripts, SFC block
+attribute quotes and style order, dynamic attribute barriers and wrapped
+interpolations. Their semantic and fixed-point assertions remain in place.
+Seventeen focused tests passed updates-disabled and frozen executable replay;
+strict Clippy passed. The aggregate receipt binds all five actual executables
+and test-source hashes. Shared registration and Actions remain pending.
+
 - Finish the commit-by-commit audit of all 56 original fix-title commits and
   supplementary behavioral changes; preserve superseded contracts explicitly.
 - Add missing complete public outputs for CSS, opaque templates, script block

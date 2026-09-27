@@ -1,0 +1,4 @@
+<template lang="pug">
+	main
+	  span text
+</template>

@@ -137,6 +137,8 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
   Formatter SFC layout fixtures retain six exact original inputs/defaults and compare full first-pass bytes alongside the existing three-pass fixed-point checks.
   Formatter directive layout fixtures retain six original inputs/options and semantic constraints; complete existing template-literal witnesses are reused without duplicate credit.
 
+  Existing formatter regressions gain twenty-four full byte references while retaining their semantic/fixed-point assertions; opaque CRLF templates and script identity keep exact output bytes. Shared registration remains pending.
+
 - **Linter:** syntax rules on L1, semantic rules on L2 and facts. Diagnostics go through L0, and autofixes are L1 span edits.
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.
