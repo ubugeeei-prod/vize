@@ -50,6 +50,7 @@ harness = false
 
 [[test]]
 name = "davinci_l2_filters"
+path = "tests/l2_filters.rs"
 required-features = ["legacy"]
 
 # The text-family adjacency matrix needs the differential lane's legacy
