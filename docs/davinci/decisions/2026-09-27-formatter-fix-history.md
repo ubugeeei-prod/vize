@@ -43,7 +43,6 @@ The single-pass flag is an internal runtime option, not user configuration.
 Its intermediate output is a current legacy API observation. Future native
 formatting need not adopt that mechanism or add a stabilization stage; product
 compatibility must separately compare the actual CLI check verdict and streams.
-The single-pass flag is an internal runtime option, not user configuration.
 
 The fixture manifest records the input and full-output digests, public API,
 options, original witness and product source pin. The capture receipt records
@@ -55,7 +54,11 @@ At base `9aaa1fe458a09e0d0c6604dc8835ccf7c737d943`, the product source tree
 stayed unchanged. A narrow offline build in an isolated target directory took
 62 seconds. All six tests passed, then passed again against stored snapshots
 with updates disabled; a frozen executable replay also passed all six.
-Actions validation and shared corpus registration remain pending.
+Actions assertion lint rejected duplicated substring assertions alongside the
+complete byte references. Omit only those new duplicates; original semantic
+regressions and all golden bytes remain unchanged. Capture hashes continue to
+bind the original measured test source; latest Actions validates the edited
+test source. Shared corpus registration remains pending.
 
 ## Remaining work
 

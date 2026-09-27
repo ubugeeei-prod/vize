@@ -134,6 +134,8 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
   Legacy internal single-pass outputs remain API observations; native formatting does not inherit that mechanism. Product compatibility separately compares CLI check verdicts and streams.
 
+  Formatter byte snapshots replace duplicated partial checks in new history tests; original semantic regressions and measured golden/capture bytes remain unchanged.
+
 - **Linter:** syntax rules on L1, semantic rules on L2 and facts. Diagnostics go through L0, and autofixes are L1 span edits.
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.

@@ -36,7 +36,6 @@ fn script_zod_reaches_the_pinned_fixed_point() {
     let options = FormatOptions::default();
     let first = format_script(ZOD, &options).unwrap();
     snapshot_bytes("history_script_zod.txt", &first);
-    assert!(first.contains("confirmCode: z.string().regex(/^\\d{6}$/, {"));
     let second = format_script(&first, &options).unwrap();
     let third = format_script(&second, &options).unwrap();
     assert_eq!(first, second);
@@ -61,11 +60,6 @@ fn sfc_zod_reaches_the_pinned_fixed_point() {
     let options = FormatOptions::default();
     let first = format_sfc(SFC_ZOD, &options).unwrap();
     snapshot_bytes("history_sfc_zod.txt", &first.code);
-    assert!(
-        first
-            .code
-            .contains("confirmCode: z.string().regex(/^\\d{6}$/, {")
-    );
     let second = format_sfc(&first.code, &options).unwrap();
     let third = format_sfc(&second.code, &options).unwrap();
     assert_eq!(first.code, second.code);
