@@ -101,7 +101,7 @@ fn assert_report(report: &EquivalenceReport, counts: [u32; 6], snapshot: [[u32; 
     );
     // The snapshot path (P5-5) ran beside the database on every state and
     // matched too; its adoption accounting over the plane is pinned exactly.
-    let joint = |[adopted, computed, cancelled]| JointCounts {
+    let joint = |[adopted, computed, cancelled]: [u32; 3]| JointCounts {
         adopted,
         computed,
         cancelled,
