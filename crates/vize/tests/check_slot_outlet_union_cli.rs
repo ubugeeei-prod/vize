@@ -133,7 +133,7 @@ fn create_cli_project() -> PathBuf {
     let sources = manifest["sources"].as_array().unwrap();
     assert_eq!(
         sources.len(),
-        4,
+        5,
         "the registered regression corpus must not shrink"
     );
     for source in sources {

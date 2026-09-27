@@ -1,5 +1,5 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
-use vize_carton::{FxHashMap, String, append};
+use vize_carton::{CompactString, FxHashMap, String, append};
 
 use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
 
@@ -12,6 +12,7 @@ struct SlotOutletCheckContext<'a> {
     slot_outlets_by_scope: &'a FxHashMap<u32, Vec<SlotOutlet>>,
     template_binding_access: &'a TemplateBindingAccess,
     source_context: ComponentPropSource<'a>,
+    static_name_counts: &'a FxHashMap<CompactString, usize>,
     slots_type_ref: &'a str,
     indent: &'a str,
     infer: bool,
@@ -110,6 +111,7 @@ pub(in crate::virtual_ts::scope) fn generate_scope_slot_outlet_checks(
                 ctx.template_offset,
                 &ctx.summary.scopes,
             ),
+            static_name_counts: &ctx.slot_outlets.static_name_counts,
             slots_type_ref: ctx.slot_outlets.slots_type.as_str(),
             indent,
             infer: ctx.slot_outlets.infer,
@@ -130,6 +132,7 @@ fn generate_slot_outlet_checks(
         slot_outlets_by_scope,
         template_binding_access,
         source_context,
+        static_name_counts,
         slots_type_ref,
         indent,
         infer,
@@ -159,7 +162,12 @@ fn generate_slot_outlet_checks(
                 ts,
                 mappings,
                 outlet,
-                SlotOutletLiteralMode::Infer,
+                SlotOutletLiteralMode::Infer {
+                    preserve_static_literals: !outlet.name_is_dynamic
+                        && static_name_counts
+                            .get(&outlet.name)
+                            .is_some_and(|count| *count > 1),
+                },
                 template_binding_access,
                 source_context,
                 expr_indent.as_str(),

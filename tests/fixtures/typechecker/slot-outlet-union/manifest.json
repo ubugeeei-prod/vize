@@ -6,14 +6,22 @@
     "Layout.vue",
     "Preview.vue",
     "Parent.vue",
-    "Wrong.vue"
+    "Wrong.vue",
+    "Single.vue"
   ],
   "regressions": [
     "same-name-bound-and-bare",
     "same-name-static-discriminant",
     "same-name-cross-scope",
+    "single-outlet-string-widening",
     "wrong-forwarded-payload"
   ],
   "legacyRunner": "crates/vize/tests/check_slot_outlet_union_cli.rs",
-  "nativeComparison": "not-implemented"
+  "nativeComparison": "not-implemented",
+  "pendingTypeScriptProbes": [
+    {
+      "source": "seventeen-overloads.ts",
+      "reason": "Sixteen-signature extraction discards earlier payloads; correct unbounded carrier design remains required."
+    }
+  ]
 }

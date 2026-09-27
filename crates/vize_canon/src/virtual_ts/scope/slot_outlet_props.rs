@@ -44,15 +44,29 @@ pub(super) struct SlotOutlet {
 pub(super) struct SlotOutletChecks {
     by_scope: FxHashMap<u32, Vec<SlotOutlet>>,
     slots_type: String,
+    static_name_counts: FxHashMap<CompactString, usize>,
     infer: bool,
 }
 
 impl SlotOutletChecks {
     pub(super) fn collect(summary: &Croquis, root: Option<&RootNode<'_>>) -> Self {
+        let by_scope = collect::collect_slot_outlets_by_scope(summary, root);
+        let infer = summary.macros.define_slots().is_none();
+        let mut static_name_counts = FxHashMap::default();
+        if infer {
+            for outlet in by_scope
+                .values()
+                .flatten()
+                .filter(|outlet| !outlet.name_is_dynamic)
+            {
+                *static_name_counts.entry(outlet.name.clone()).or_insert(0) += 1;
+            }
+        }
         Self {
-            by_scope: collect::collect_slot_outlets_by_scope(summary, root),
+            by_scope,
+            static_name_counts,
             slots_type: slots_type_ref(summary),
-            infer: summary.macros.define_slots().is_none(),
+            infer,
         }
     }
 

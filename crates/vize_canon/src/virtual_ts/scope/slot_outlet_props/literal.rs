@@ -31,9 +31,9 @@ impl SlotOutletLiteralEntry<'_> {
 /// What the literal is emitted for, which decides how its entries are typed.
 #[derive(Clone, Copy)]
 pub(super) enum SlotOutletLiteralMode<'a> {
-    /// The payload a slots type is inferred from: nothing constrains it, so a
-    /// static string attribute keeps its literal type.
-    Infer,
+    /// Preserve discriminants across repeated named outlets. A single outlet
+    /// keeps its existing widened string type, including public `$slots`.
+    Infer { preserve_static_literals: bool },
     /// The argument checked against the declared slot payload type.
     Check { payload_type: &'a str },
 }
@@ -48,10 +48,15 @@ pub(super) fn append_slot_outlet_literal(
     expr_indent: &str,
 ) -> Range<usize> {
     let payload_type = match mode {
-        SlotOutletLiteralMode::Infer => "unknown",
+        SlotOutletLiteralMode::Infer { .. } => "unknown",
         SlotOutletLiteralMode::Check { payload_type } => payload_type,
     };
-    let literal_static_values = matches!(mode, SlotOutletLiteralMode::Infer);
+    let literal_static_values = matches!(
+        mode,
+        SlotOutletLiteralMode::Infer {
+            preserve_static_literals: true
+        }
+    );
     let literal_gen_start = ts.len();
     ts.push_str("{\n");
 
@@ -81,10 +86,8 @@ pub(super) fn append_slot_outlet_literal(
                 let key_gen_end = ts.len();
                 ts.push_str(": ");
                 let value_gen_range = append_prop_value(ts, generated_value.as_str());
-                // An inferred payload is a plain object literal, which widens
-                // `viewMode="sp"` to `string`; the parent then cannot pass it
-                // on to a `'pc' | 'sp'` prop. Keep the authored literal type,
-                // as the runtime value is exactly that string.
+                // Repeated outlets retain each static discriminant before
+                // their payloads are merged. Single outlets keep widening.
                 if literal_static_values && is_static_string_value(prop) {
                     ts.push_str(" as const");
                 }

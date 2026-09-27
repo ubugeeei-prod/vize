@@ -338,3 +338,11 @@ The [first formatter path](./2026-09-27-differential-formatter.md) records the
 two exact regression fixtures, source-build receipt, raw comparison, deliberate
 corpus membership and remaining product/T1/T2 work. Native formatter is
 unsupported; this first legacy path receives zero native acceptance credit.
+
+## Canon slot outlet regression preparation
+
+[#6922](https://github.com/ubugeeei-prod/vize/pull/6922) preserves single-outlet
+string widening while retaining discriminants for repeated static names.
+The [repair decision and corpus](./2026-09-27-canon-slot-outlet-union.md) record
+move-only test organization, pending Actions, absent native comparison and the
+proven seventeen-overload truncation that still needs a correct carrier design.

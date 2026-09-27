@@ -33,13 +33,12 @@ fn slot_payload_helper_collects_every_overload() {
     }
 }
 
-/// An inferred outlet payload keeps a static string attribute as its literal
-/// type, as the runtime value is exactly that string; the checking-side
-/// literal is contextually typed and stays as authored.
+/// Repeated same-named outlets retain string discriminants before merging.
+/// Single outlets preserve their existing public string payload type.
 #[test]
 fn inferred_outlet_payload_keeps_static_attribute_literals() {
     let code = generate(
-        r#"<div><slot name="side" viewMode="sp" :count="1" /><slot name="flag" disabled /></div>"#,
+        r#"<div><slot name="side" viewMode="sp" :count="1" /><slot name="side" viewMode="pc" /><slot name="flag" disabled /></div>"#,
     );
     assert!(
         code.contains("\"viewMode\": \"sp\" as const,"),
@@ -63,5 +62,14 @@ fn inferred_outlet_payload_keeps_static_attribute_literals() {
     assert!(
         checked.contains("\"viewMode\": \"sp\",") && !checked.contains("as const"),
         "the checking-side literal stays as authored:\n{checked}"
+    );
+}
+
+#[test]
+fn single_outlet_payload_preserves_string_widening() {
+    let code = generate(r#"<slot name="single" viewMode="sp" :count="1" />"#);
+    assert!(
+        code.contains("\"viewMode\": \"sp\",") && !code.contains("as const"),
+        "one outlet must retain its public string payload type:\n{code}"
     );
 }
