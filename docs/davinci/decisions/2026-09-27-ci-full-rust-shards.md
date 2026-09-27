@@ -31,7 +31,11 @@ Each full builder and worker requires real TSGO, 100 Nuxt configuration
 iterations, and the existing Node/JS/Pkl runtime preparation. The archive
 receipt binds source commit/tree, absolute workspace root, platform/architecture,
 Rust and nextest versions, Cargo profile, runtime flags and archive SHA-256.
-A PR archive with disabled TSGO cannot satisfy a full worker receipt. Workers
+A PR archive with disabled TSGO cannot satisfy a full worker receipt.
+Runtime selection exports only the enabled role's flag: full workers never
+set `VIZE_TEST_DISABLE_TSGO`, including to an empty string. Existing Rust
+helpers treat any presence as an explicit opt-out. Receipts bind real presence
+and absence and reject an empty opt-out flag. Workers
 restore `target/tmp` and extract to that checked workspace to retain baked paths.
 Extension-host guest builds remain serialized within each isolated worker.
 

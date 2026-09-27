@@ -86,7 +86,7 @@ exit "$FAKE_CARGO_EXIT"
   writeFileSync(join(bin, "rustc"), "#!/bin/sh\nprintf 'rustc 1.98.0 (phase-test fixture)\\n'\n", {
     mode: 0o755,
   });
-  const env = {
+  const env: Record<string, string | undefined> = {
     ...process.env,
     PATH: `${bin}:${process.env.PATH ?? ""}`,
     RUNNER_TEMP: temporary,
@@ -100,8 +100,9 @@ exit "$FAKE_CARGO_EXIT"
     SOURCE_SHA: sha,
     CACHE_NAMESPACE: "phase-test-cache",
     VIZE_NUXT_CONFIG_ITERATIONS: "100",
-    VIZE_TEST_DISABLE_TSGO: "",
   };
+  delete env.VIZE_TEST_DISABLE_TSGO;
+  delete env.VIZE_TEST_REQUIRE_TSGO;
   const execute = (step: Step, exit = 0, timingHtml = "present") =>
     spawnSync("/bin/bash", ["--noprofile", "--norc", "-eo", "pipefail", "-c", step.run!], {
       cwd,

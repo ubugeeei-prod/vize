@@ -62,6 +62,16 @@ void test("Rust archives reject different source, baked paths, runner, nextest, 
       {},
       {
         VIZE_TEST_REQUIRE_TSGO: "1",
+        VIZE_TEST_DISABLE_TSGO: "",
+        VIZE_NUXT_CONFIG_ITERATIONS: "100",
+      },
+      {
+        VIZE_TEST_REQUIRE_TSGO: "",
+        VIZE_TEST_DISABLE_TSGO: "1",
+        VIZE_NUXT_CONFIG_ITERATIONS: "100",
+      },
+      {
+        VIZE_TEST_REQUIRE_TSGO: "1",
         VIZE_TEST_DISABLE_TSGO: "1",
         VIZE_NUXT_CONFIG_ITERATIONS: "100",
       },

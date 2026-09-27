@@ -15,7 +15,7 @@ const deferred = [
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
-  jobs: Record<string, { steps: Step[] }>;
+  jobs: Record<string, { steps: Step[]; env: Record<string, string> }>;
 };
 
 test("only the three audited real-TSGO cases leave the PR default filter", () => {
@@ -52,62 +52,85 @@ test("only the three audited real-TSGO cases leave the PR default filter", () =>
   );
 });
 
-test("the actual shard shell restores Cargo's temporary directory before archived execution", () => {
-  const cwd = mkdtempSync(join(tmpdir(), "vize-shard-prepare-"));
-  try {
-    const bin = join(cwd, "bin");
-    mkdirSync(bin);
-    const argv = join(cwd, "argv.json");
-    writeFileSync(
-      join(bin, "cargo"),
-      `#!/bin/sh
-exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||process.env.VIZE_TEST_DISABLE_TSGO!==""||process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(92);if(!args.includes("--extract-overwrite"))process.exit(91);fs.writeFileSync("target/tmp/observation","writable");fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
+for (const [event, profile] of [
+  ["merge_group", "full"],
+  ["pull_request", "pr"],
+]) {
+  test(`${profile} shard shell restores Cargo paths with the exclusive runtime flag`, () => {
+    const cwd = mkdtempSync(join(tmpdir(), "vize-shard-prepare-"));
+    try {
+      const bin = join(cwd, "bin");
+      mkdirSync(bin);
+      const argv = join(cwd, "argv.json");
+      writeFileSync(
+        join(bin, "cargo"),
+        `#!/bin/sh
+exec "$NODE" -e 'const fs=require("node:fs");const args=process.argv.slice(1);if(process.env.NEXTEST_PROFILE==="full"?(process.env.VIZE_TEST_REQUIRE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_DISABLE_TSGO")):(process.env.VIZE_TEST_DISABLE_TSGO!=="1"||Object.hasOwn(process.env,"VIZE_TEST_REQUIRE_TSGO")))process.exit(92);if(process.env.VIZE_NUXT_CONFIG_ITERATIONS!=="100")process.exit(93);if(!args.includes("--extract-overwrite"))process.exit(91);fs.writeFileSync("target/tmp/observation","writable");fs.mkdirSync("target/nextest/"+process.env.NEXTEST_PROFILE,{recursive:true});fs.writeFileSync(process.env.ARGV,JSON.stringify(args));' -- "$@"
 `,
-      { mode: 0o755 },
-    );
-    const step = workflow.jobs["pr-rust-shard"].steps.find(
-      (candidate) => candidate.name === "Run Rust test shard without rebuilding",
-    );
-    assert.ok(step?.run);
-    const result = spawnSync(
-      "/bin/bash",
-      ["--noprofile", "--norc", "-eo", "pipefail", "-c", step.run],
-      {
-        cwd,
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          NODE: process.execPath,
-          PATH: `${bin}:${process.env.PATH ?? ""}`,
-          GITHUB_WORKSPACE: cwd,
-          SHARD: "2",
-          NEXTEST_PROFILE: "full",
-          VIZE_TEST_REQUIRE_TSGO: "1",
-          VIZE_TEST_DISABLE_TSGO: "",
-          VIZE_NUXT_CONFIG_ITERATIONS: "100",
-          ARGV: argv,
+        { mode: 0o755 },
+      );
+      const step = workflow.jobs["pr-rust-shard"].steps.find(
+        (candidate) => candidate.name === "Run Rust test shard without rebuilding",
+      );
+      assert.ok(step?.run);
+      const runtime = workflow.jobs["pr-rust-shard"].steps.find(
+        (candidate) => candidate.name === "Select Rust runtime envelope",
+      );
+      assert.ok(runtime?.run);
+      assert.equal(
+        Object.hasOwn(workflow.jobs["pr-rust-shard"].env, "VIZE_TEST_DISABLE_TSGO"),
+        false,
+      );
+      const environment: Record<string, string | undefined> = {
+        ...process.env,
+        NODE: process.execPath,
+        PATH: `${bin}:${process.env.PATH ?? ""}`,
+        GITHUB_WORKSPACE: cwd,
+        GITHUB_ENV: join(cwd, "github-env"),
+        GITHUB_EVENT_NAME: event,
+        SHARD: "2",
+        NEXTEST_PROFILE: profile,
+        VIZE_NUXT_CONFIG_ITERATIONS: "100",
+        ARGV: argv,
+      };
+      delete environment.VIZE_TEST_DISABLE_TSGO;
+      delete environment.VIZE_TEST_REQUIRE_TSGO;
+      const result = spawnSync(
+        "/bin/bash",
+        [
+          "--noprofile",
+          "--norc",
+          "-eo",
+          "pipefail",
+          "-c",
+          `${runtime.run}\nset -a\nsource "$GITHUB_ENV"\nset +a\n${step.run}`,
+        ],
+        {
+          cwd,
+          encoding: "utf8",
+          env: environment,
         },
-      },
-    );
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(readFileSync(join(cwd, "target/tmp/observation"), "utf8"), "writable");
-    assert.deepEqual(JSON.parse(readFileSync(argv, "utf8")), [
-      "nextest",
-      "run",
-      "--archive-file",
-      ".artifacts/rust-test-archive/tests.tar.zst",
-      "--extract-to",
-      cwd,
-      "--extract-overwrite",
-      "--workspace-remap",
-      cwd,
-      "--profile",
-      "full",
-      "--partition",
-      "hash:2/4",
-      "--no-tests=pass",
-    ]);
-  } finally {
-    rmSync(cwd, { recursive: true, force: true });
-  }
-});
+      );
+      assert.equal(result.status, 0, result.stderr);
+      assert.equal(readFileSync(join(cwd, "target/tmp/observation"), "utf8"), "writable");
+      assert.deepEqual(JSON.parse(readFileSync(argv, "utf8")), [
+        "nextest",
+        "run",
+        "--archive-file",
+        ".artifacts/rust-test-archive/tests.tar.zst",
+        "--extract-to",
+        cwd,
+        "--extract-overwrite",
+        "--workspace-remap",
+        cwd,
+        "--profile",
+        profile,
+        "--partition",
+        "hash:2/4",
+        "--no-tests=pass",
+      ]);
+    } finally {
+      rmSync(cwd, { recursive: true, force: true });
+    }
+  });
+}

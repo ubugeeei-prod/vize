@@ -23,17 +23,24 @@ export async function createArchiveReceipt(
   archive,
   { cwd, nextestVersion, rustcVersion, env = process.env },
 ) {
-  const requireTsgo = env.VIZE_TEST_REQUIRE_TSGO || "";
-  const disableTsgo = env.VIZE_TEST_DISABLE_TSGO || "";
+  const requireTsgo = Object.hasOwn(env, "VIZE_TEST_REQUIRE_TSGO")
+    ? env.VIZE_TEST_REQUIRE_TSGO
+    : null;
+  const disableTsgo = Object.hasOwn(env, "VIZE_TEST_DISABLE_TSGO")
+    ? env.VIZE_TEST_DISABLE_TSGO
+    : null;
   if (
     !rustcVersion?.startsWith("rustc 1.98.0 ") ||
     !nextestVersion?.includes("0.9.146") ||
-    !((requireTsgo === "1" && disableTsgo === "") || (requireTsgo === "" && disableTsgo === "1")) ||
+    !(
+      (requireTsgo === "1" && disableTsgo === null) ||
+      (requireTsgo === null && disableTsgo === "1")
+    ) ||
     env.VIZE_NUXT_CONFIG_ITERATIONS !== "100"
   )
     throw new Error("Rust archive requires the pinned CI toolchain and TSGO runtime envelope");
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     ...checkout(cwd),
     platform: process.platform,
     arch: process.arch,
