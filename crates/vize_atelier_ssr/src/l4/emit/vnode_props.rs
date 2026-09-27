@@ -117,7 +117,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             out.push_str(", () => ");
             out.push_str(&fallback);
         }
-        out.push(')');
+        self.ctx
+            .finish_vnode_slot_outlet(&mut out, !slot.fallback.ops.is_empty());
         self.close(
             Kind::CloseSlot,
             |source| matches!(source, Source::Slot(closed) if core::ptr::eq(*closed, slot)),

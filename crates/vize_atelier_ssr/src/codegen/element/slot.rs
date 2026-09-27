@@ -71,7 +71,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     /// Keep the VNode fallback's noSlotted argument aligned with the SSR branch.
-    pub(super) fn finish_vnode_slot_outlet(&self, out: &mut String, has_fallback: bool) {
+    pub(crate) fn finish_vnode_slot_outlet(&self, out: &mut String, has_fallback: bool) {
         if !self.slotted {
             if !has_fallback {
                 out.push_str(", undefined");
