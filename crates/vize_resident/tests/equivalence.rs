@@ -49,6 +49,19 @@ fn vue_files(dir: &Path, out: &mut Vec<PathBuf>) {
 }
 
 fn run_plane() -> EquivalenceReport {
+    run_plane_where(|_| true)
+}
+
+fn critical_css_fixture(name: &str) -> bool {
+    matches!(
+        name,
+        "nuxt-critical-css-build/app/app.vue"
+            | "nuxt-critical-css-build/app/layouts/default.vue"
+            | "nuxt-critical-css-build/app/pages/index.vue"
+    )
+}
+
+fn run_plane_where(keep: impl Fn(&str) -> bool) -> EquivalenceReport {
     let root = repo().join("tests/_fixtures/_projects");
     let mut files = Vec::new();
     vue_files(&root, &mut files);
@@ -56,11 +69,14 @@ fn run_plane() -> EquivalenceReport {
     let scripts = scripts();
     let mut report = EquivalenceReport::default();
     for path in files {
-        let text = std::fs::read_to_string(&path).expect("fixture text");
         let name = path
             .strip_prefix(&root)
             .expect("under root")
             .to_string_lossy();
+        if !keep(&name) {
+            continue;
+        }
+        let text = std::fs::read_to_string(&path).expect("fixture text");
         report.check_file(&name, &text, &scripts);
     }
     report
@@ -73,6 +89,12 @@ fn incremental_equals_clean_on_every_committed_project_fixture() {
 
     let report = run_plane();
     println!("{}", report.summary());
+    println!("full-plane={report:?}");
+    println!(
+        "old-plane={:?}",
+        run_plane_where(|name| !critical_css_fixture(name))
+    );
+    println!("new-plane={:?}", run_plane_where(critical_css_fixture));
     assert_eq!(report.mismatches, []);
     assert_eq!(report.verdict(), Ok(()));
     assert_eq!(
@@ -108,6 +130,7 @@ fn incremental_equals_clean_on_every_committed_project_fixture() {
 fn the_seeded_stale_cache_is_caught() {
     let report = run_plane();
     println!("{}", report.summary());
+    println!("seeded-mismatches={}", report.mismatches.len());
     // Only length-preserving edits slip past the weakened equality; each one
     // leaves the stale block's L0 key (and every artifact behind it) served —
     // by the database (353 states) and by the snapshot tree, whose block
