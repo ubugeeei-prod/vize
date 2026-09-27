@@ -2,6 +2,7 @@
 """Follow current Dump law links without rewriting historical record evidence."""
 import argparse
 from pathlib import Path
+import re
 import subprocess
 
 EDITS = {
@@ -23,6 +24,15 @@ def rewrite(name, source):
     return source
 
 
+def canonical(source):
+    # Markdown table padding and separator widths are formatter layout only.
+    def cell(value):
+        value = value.strip()
+        return re.sub('-+', '-', value) if re.fullmatch(':?-+:?', value) else value
+    return [tuple(cell(value) for value in line.split('|')) if line.startswith('|')
+            else line for line in source.splitlines()]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--verify', action='store_true')
@@ -35,9 +45,9 @@ def main():
         expected = rewrite(name, source)
         path = repo / name
         if args.verify:
-            assert path.read_text() == expected, name
+            assert canonical(path.read_text()) == canonical(expected), name
         else:
-            assert path.read_text() in (source, expected), name
+            assert canonical(path.read_text()) in (canonical(source), canonical(expected)), name
             path.write_text(expected)
     print('two current references follow repro_dump; historical evidence unchanged')
 

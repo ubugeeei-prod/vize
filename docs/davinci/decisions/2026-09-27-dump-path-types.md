@@ -99,3 +99,8 @@ still pointing at the moved `repro_folio.rs`. The bounded
 reference to `repro_dump.rs`. Completed report counts, PRs, link labels and
 archived records remain byte exact. The existing current-link contract is
 rerun; Actions and queue acceptance remain required at the new head.
+
+Replay verification compares exact Markdown cells while ignoring only table
+padding and separator width introduced by the formatter. Other lines and all
+cell contents remain exact. Later layers pass their own `--base-ref`; this
+check never restores an earlier live ledger over newly moved law targets.
