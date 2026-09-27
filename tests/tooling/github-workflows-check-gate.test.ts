@@ -110,17 +110,17 @@ test("source gates cover PRs and merge groups while extra checks require schedul
   const checkSteps = workflow.jobs?.["check-js"]?.steps ?? [];
   assert.equal(
     checkSteps.find((step) => step.name === "Check fast JS/TS")?.if,
-    "${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}",
+    "${{ github.event_name == 'pull_request' || github.event_name == 'push' }}",
   );
   assert.equal(
     checkSteps.find((step) => step.name === "Check JS/TS")?.if,
-    "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
   );
   const inventory = checkSteps.find((step) => step.name === "Check Davinci source inventories");
   assert.ok(inventory);
   assert.equal(
     inventory.if,
-    "${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}",
+    "${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
   );
   assert.equal(inventory.uses, "./.github/actions/check-level-inventories");
   const inventoryAction = parse(
