@@ -232,6 +232,9 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 [Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records Cargo corpus,
 Moon/benchmark dependencies and the immutable queue source-length base for #6863.
 
+[Full tooling LSP source identity](./2026-09-27-lsp-source-binding.md) binds
+required runtime proof to the receipted current CLI without cached fallback.
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work) in the companion record.

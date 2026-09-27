@@ -4,7 +4,12 @@ import { parse } from "yaml";
 
 import { readRepoFile } from "./support/github-workflows.ts";
 
-type Step = { name?: string; run?: string; "continue-on-error"?: boolean };
+type Step = {
+  name?: string;
+  run?: string;
+  env?: Record<string, string>;
+  "continue-on-error"?: boolean;
+};
 type Workflow = { jobs: Record<string, { steps?: Step[] }> };
 const callers = [
   { file: "pr-source-checks.yml", job: "pr-tooling-scripts" },
@@ -19,7 +24,7 @@ for (const { file, job } of callers) {
       /cargo build --profile ci -p vize/.test(step.run ?? ""),
     );
     const tests = steps.findIndex((step) =>
-      /vp run --workspace-root test:scripts/.test(step.run ?? ""),
+      /(?:^| )vp run --workspace-root test:scripts$/.test(step.run ?? ""),
     );
     assert.ok(build >= 0 && tests > build);
     assert.match(
@@ -28,6 +33,15 @@ for (const { file, job } of callers) {
     );
     assert.notEqual(steps[build]["continue-on-error"], true);
     assert.notEqual(steps[tests]["continue-on-error"], true);
+    if (file === "check.yml") {
+      assert.match(
+        steps[tests].run ?? "",
+        /^VIZE_LSP_BIN="\$GITHUB_WORKSPACE\/target\/ci\/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=1 /,
+      );
+    } else {
+      assert.equal(steps[tests].env?.VIZE_LSP_BIN, "${{ github.workspace }}/target/ci/vize");
+      assert.equal(steps[tests].env?.VIZE_LSP_REQUIRE_SOURCE_BUILD, "1");
+    }
     if (file === "pr-source-checks.yml") {
       const selected = steps.findIndex((step) =>
         /vp run --workspace-root test:scripts:pr/.test(step.run ?? ""),

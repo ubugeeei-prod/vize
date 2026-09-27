@@ -180,6 +180,9 @@ jobs:
         run: vp run --workspace-root test:scripts:pr
       - name: Test tooling scripts
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        env:
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
         run: vp run --workspace-root test:scripts
 
   pr-playground-test:

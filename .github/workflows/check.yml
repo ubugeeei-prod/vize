@@ -277,7 +277,7 @@ jobs:
       - name: Prepare the pinned plugin isolation runtime
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
       - name: Test release scripts
-        run: vp run --workspace-root test:scripts
+        run: VIZE_LSP_BIN="$GITHUB_WORKSPACE/target/ci/vize" VIZE_LSP_REQUIRE_SOURCE_BUILD=1 vp run --workspace-root test:scripts
   editor-extensions:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
