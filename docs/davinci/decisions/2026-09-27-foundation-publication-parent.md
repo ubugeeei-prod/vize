@@ -22,3 +22,15 @@ TODO: record fresh composed source proofs below. The parent owns publication,
 exact-head Actions and actual merge-queue proof. A prepared or draft layer is
 not a successful CI-first main merge. #6831 retains three legacy exceptions;
 #6832 retains its later naming and shared-production-generator work.
+
+## Final CI-source replay
+
+The final #6919 source is `c643b5e0ae4113b085ca49b0976eff7ee1024d30`,
+including full Rust tier transport. The existing eight foundation/naming
+layers replay privately on that source; publication waits for its actual main
+merge. The newer parent retains every current decision and SSR compatibility
+record. The physical L3 central paragraph joins three existing line breaks,
+without changing any word or link, so the same record stays at 350 lines
+rather than crossing the source cap from 343 to 353. The source-cap check and
+formatter validate the composed record. Earlier hashes/proofs above remain
+about their original parents; no new-head Actions or queue proof is inferred.
