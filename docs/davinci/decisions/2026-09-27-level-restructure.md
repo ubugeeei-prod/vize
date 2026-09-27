@@ -259,6 +259,9 @@ pipelines or serialization cost.
   measured-only instruction ceilings, and bootstrap-before-queue enforcement
   for [#6868](https://github.com/ubugeeei-prod/vize/issues/6868). The live
   allocation registry now has 100 rows; its reconciler owns the row count.
+  The 100-row measured registry is pinned from Actions run 36304969684,
+  and the required `test-report` aggregates the reusable queue gate. Every
+  queue run measures three identical executions and applies strict ceilings.
 - Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is
   decided after measuring table density and lookup cost
   ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).

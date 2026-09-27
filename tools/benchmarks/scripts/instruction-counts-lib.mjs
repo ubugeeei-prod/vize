@@ -198,6 +198,10 @@ export function validateBudgets(value, registry) {
     "instruction budgets",
   );
   const { instruction, ...metadata } = value;
+  assert.ok(
+    instruction && typeof instruction === "object" && Object.keys(instruction).length > 0,
+    "instruction budgets must contain measured rows",
+  );
   // Reuse the same strict metadata, row and provenance validators.
   validateMeasurement({ ...metadata, runs: [instruction, instruction, instruction] }, registry);
   return value;

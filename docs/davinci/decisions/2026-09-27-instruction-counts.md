@@ -128,3 +128,34 @@ provides the client requests without introducing another benchmark runner.
 
 Unfinished until an actual Actions baseline and strict required merge-queue
 enforcement are verified. Wall-clock and resource budgets stay nightly.
+
+The [reference run 36304969684](https://github.com/ubugeeei-prod/vize/actions/runs/36304969684)
+verified all 100 probes identically in three executions with the fixed
+allocator protocol. Independent artifact inspection reconciled all 300
+named dumps, 36 zero-count termination dumps, and 36 successful allocator
+setups with the report and candidate registry. Raw logs report mimalloc
+v3.3.2 and the actual 128 MiB reservation. The measured TOML is pinned
+without a margin: source `f5d4f29b72bb21b9e567477149ee40cbe0bdb9f7`, artifact
+`10926957194`, artifact digest
+`23364ef28ee1125be1f5a1e141835a3574014ea7eceb315511c4460800d34906`, and TOML
+SHA-256 `b86442507bc16b5f2acf260d291c1de39c911e735d5bb1d2b7db891fa1698607`.
+The source is the tested PR merge commit, whose second parent is branch head
+`5ac03e84188ff9b329398bd6ff88b2ef1fbbd4f3`. Later runs measure their current
+source against this historical measured reference; provenance does not
+require candidate and baseline source hashes to match.
+
+The required `Check` workflow now calls the instruction workflow and includes
+its result in `test-report`. Every call validates the complete pinned
+registry and ratchets against the exact fetched event base commit. If the
+base has no registry during initial introduction, only the above exact
+reviewed TOML hash is accepted. Missing or empty registries always fail.
+Every merge-group call performs the three-run collection and unconditional
+ceiling comparison. Unrelated PR calls check the registry and ratchet without
+compiling the benchmark suites; the path-selected standalone PR trigger
+measures gate changes before queue entry. Reusable workflows retain the
+caller workflow name, as specified by the
+[GitHub reusable-workflow context](https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations#github-context),
+which distinguishes that standalone measurement from
+the fast `Check` PR call. Queue measurement is selected directly by the
+merge-group event and cannot take the PR path. Required queue verification
+is still unfinished until that exact final revision runs in the queue.

@@ -33,6 +33,11 @@ jobs:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/pr-source-checks.yml
 
+  instruction-counts:
+    name: Instruction ceilings
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+    uses: ./.github/workflows/level-instruction-counts.yml
+
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
@@ -640,6 +645,7 @@ jobs:
       - node-engine-compat
       - check-vize-apps
       - pr-source-checks
+      - instruction-counts
     permissions:
       contents: read
     steps:

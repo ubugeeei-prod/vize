@@ -1,8 +1,8 @@
 name: Davinci instruction counts
 
 on:
-  # Bootstrap on the draft implementation PR, then pin the measured artifact
-  # and add merge_group in the same PR before making it ready to merge.
+  # The required Check aggregate calls this workflow for every PR and queue.
+  # This path-selected trigger also measures gate changes before queue entry.
   pull_request:
     paths:
       - .github/workflows/level-instruction-counts.yml
@@ -11,12 +11,13 @@ on:
       - docs/davinci/plan/instruction-budgets.toml
       - tests/tooling/level-instruction-counts.test.mjs
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
-  group: instruction-counts-${{ github.event.pull_request.number || github.sha }}
+  group: instruction-counts-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 env:
@@ -28,6 +29,10 @@ jobs:
     name: Per-stage instruction ceilings
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
+    env:
+      # Reusable workflows retain the caller's workflow name. Other PRs check
+      # registry/ratchet only; every merge group measures and enforces ceilings.
+      MEASURE: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || github.workflow == 'Davinci instruction counts' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -37,45 +42,62 @@ jobs:
           node-version-file: package.json
           run-install: false
       - name: Install pinned repository Rust
+        if: env.MEASURE == 'true'
         run: rustup toolchain install 1.98.0 --profile minimal
       - name: Install Callgrind and matching client request headers
+        if: env.MEASURE == 'true'
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: env.MEASURE == 'true'
         with:
           wild-version: "0.9.0"
       - uses: ./.github/actions/setup-rust-sticky-cache
+        if: env.MEASURE == 'true'
         with:
           key: instruction-counts-v1
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Test instruction parser and gates
         run: node --test tests/tooling/level-instruction-counts.test.mjs
-      - name: Test default harness and client request windows
-        run: |
-          cargo test --locked -p davinci_harness --lib
-          cargo test --locked -p davinci_harness --lib --features instruction-counts
-      - name: Measure each stage three times without Criterion sampling
-        run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
-      - name: Enforce pinned ceilings
-        if: ${{ hashFiles('docs/davinci/plan/instruction-budgets.toml') != '' }}
+      - name: Verify pinned registry and immutable base ratchet
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
         run: |
           set -euo pipefail
+          if [[ -z "$BASE_SHA" ]]; then
+            BASE_SHA=$(git ls-remote origin refs/heads/main | cut -f1)
+          fi
+          [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          git fetch --no-tags --depth=1 origin "$BASE_SHA"
           BASE_ARGS=()
-          if [[ -n "$BASE_SHA" ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
-            if git cat-file -e "$BASE_SHA:docs/davinci/plan/instruction-budgets.toml" 2>/dev/null; then
-              git show "$BASE_SHA:docs/davinci/plan/instruction-budgets.toml" > "${RUNNER_TEMP}/base-instruction-budgets.toml"
-              BASE_ARGS=(--base-budgets "${RUNNER_TEMP}/base-instruction-budgets.toml")
-            fi
+          if git cat-file -e "$BASE_SHA:docs/davinci/plan/instruction-budgets.toml" 2>/dev/null; then
+            git show "$BASE_SHA:docs/davinci/plan/instruction-budgets.toml" > "${RUNNER_TEMP}/base-instruction-budgets.toml"
+            BASE_ARGS=(--base-budgets "${RUNNER_TEMP}/base-instruction-budgets.toml")
+          else
+            # First introduction only: require the exact independently reviewed
+            # 100-row artifact. Later bases contain a registry and must ratchet.
+            echo 'b86442507bc16b5f2acf260d291c1de39c911e735d5bb1d2b7db891fa1698607  docs/davinci/plan/instruction-budgets.toml' | sha256sum --check --strict
+          fi
+          node tools/benchmarks/scripts/instruction-counts.mjs --verify-budgets "${BASE_ARGS[@]}"
+      - name: Test default harness and client request windows
+        if: env.MEASURE == 'true'
+        run: |
+          cargo test --locked -p davinci_harness --lib
+          cargo test --locked -p davinci_harness --lib --features instruction-counts
+      - name: Measure each stage three times without Criterion sampling
+        if: env.MEASURE == 'true'
+        run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
+      - name: Enforce pinned ceilings
+        if: env.MEASURE == 'true'
+        run: |
+          set -euo pipefail
+          BASE_ARGS=()
+          if [[ -f "${RUNNER_TEMP}/base-instruction-budgets.toml" ]]; then
+            BASE_ARGS=(--base-budgets "${RUNNER_TEMP}/base-instruction-budgets.toml")
           fi
           node tools/benchmarks/scripts/instruction-counts.mjs --check \
             --measurement "${RUNNER_TEMP}/instruction-counts/measurement.json" "${BASE_ARGS[@]}"
-      - name: Explain unfinished bootstrap
-        if: ${{ hashFiles('docs/davinci/plan/instruction-budgets.toml') == '' }}
-        run: echo 'Bootstrap measurement only. No instruction ceilings are pinned yet. Keep this PR in draft until its measured artifact is committed and the merge queue gate is connected.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ always() }}
+        if: ${{ always() && env.MEASURE == 'true' }}
         with:
           name: instruction-counts-${{ github.sha }}
           path: ${{ runner.temp }}/instruction-counts

@@ -150,6 +150,10 @@ void test("ceilings enforce instruction regressions and permit improvements", ()
 });
 
 void test("ratchet rejects increased or removed ceilings, including a freshly edited baseline", () => {
+  assert.throws(
+    () => validateBudgets({ ...budgets(), instruction: {} }, new Set()),
+    /measured rows/,
+  );
   const lowered = budgets();
   lowered.instruction.parse_small.instructions = 99;
   ratchetBudgets(lowered, budgets());

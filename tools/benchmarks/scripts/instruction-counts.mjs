@@ -224,12 +224,15 @@ function collect(out, registry) {
 
 try {
   const args = process.argv.slice(2);
-  const modes = args.filter((arg) => ["--collect", "--check", "--baseline"].includes(arg));
-  assert.equal(modes.length, 1, "select exactly one --collect/--check/--baseline");
+  const modes = args.filter((arg) =>
+    ["--collect", "--check", "--baseline", "--verify-budgets"].includes(arg),
+  );
+  assert.equal(modes.length, 1, "select exactly one --collect/--check/--baseline/--verify-budgets");
   const allowed = new Set([
     "--collect",
     "--check",
     "--baseline",
+    "--verify-budgets",
     "--out",
     "--measurement",
     "--budgets",
@@ -238,13 +241,22 @@ try {
   ]);
   for (let index = 0; index < args.length; index += 1) {
     assert.ok(allowed.has(args[index]), `unknown option ${args[index]}`);
-    if (!["--collect", "--check", "--baseline"].includes(args[index])) index += 1;
+    if (!["--collect", "--check", "--baseline", "--verify-budgets"].includes(args[index]))
+      index += 1;
   }
   const registry = loadRegistry(
     flag(args, "--registry", path.join(root, "docs/davinci/plan/budgets.toml")),
   );
   if (modes[0] === "--collect") {
     collect(flag(args, "--out", path.join(root, "target/instruction-counts")), registry);
+  } else if (modes[0] === "--verify-budgets") {
+    const budgets = loadBudgets(
+      flag(args, "--budgets", path.join(root, "docs/davinci/plan/instruction-budgets.toml")),
+      registry,
+    );
+    const base = flag(args, "--base-budgets");
+    if (base) ratchetBudgets(budgets, loadBudgets(base));
+    console.log(`instruction-counts: ${registry.size} pinned ceilings and ratchet verified`);
   } else {
     const report = validateMeasurement(
       readJson(

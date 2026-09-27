@@ -20,7 +20,7 @@ const SOURCE_PR_JOBS = [
   "pr-tooling-scripts",
   "pr-playground-test",
 ];
-const PR_JOBS = [...CORE_PR_JOBS, "pr-source-checks"];
+const PR_JOBS = [...CORE_PR_JOBS, "pr-source-checks", "instruction-counts"];
 const FULL_SUITE_JOBS = [
   "nix-flake",
   "vue-parity",
@@ -37,6 +37,7 @@ const FULL_SUITE_JOBS = [
 ];
 
 type Job = {
+  env?: Record<string, string>;
   if?: string;
   needs?: string[] | string;
   steps?: Array<{
@@ -58,6 +59,45 @@ const sourceWorkflow = parse(readRepoFile(".github", "workflows", "pr-source-che
   on?: Record<string, unknown>;
   jobs?: Record<string, Job>;
 };
+const instructionWorkflow = parse(
+  readRepoFile(".github", "workflows", "level-instruction-counts.yml"),
+) as {
+  name: string;
+  on?: Record<string, unknown>;
+  jobs?: Record<string, Job>;
+};
+
+test("merge queue instruction ceilings are enforced through the required aggregate", () => {
+  const caller = workflow.jobs?.["instruction-counts"];
+  assert.equal(caller?.uses, "./.github/workflows/level-instruction-counts.yml");
+  assert.equal(
+    caller?.if,
+    "${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}",
+  );
+  assert.ok(Object.hasOwn(instructionWorkflow.on ?? {}, "workflow_call"));
+  const gate = instructionWorkflow.jobs?.["instruction-counts"];
+  assert.equal(gate?.if, undefined);
+  assert.equal(
+    gate?.env?.MEASURE,
+    "${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || github.workflow == 'Davinci instruction counts' }}",
+  );
+  assert.equal(instructionWorkflow.name, "Davinci instruction counts");
+  const verify = gate?.steps?.find(
+    (step) => step.name === "Verify pinned registry and immutable base ratchet",
+  );
+  assert.equal(verify?.if, undefined, "a missing or invalid registry must fail every call");
+  assert.match(verify?.run ?? "", /--verify-budgets/);
+  assert.match(verify?.run ?? "", /sha256sum --check --strict/);
+  for (const name of [
+    "Measure each stage three times without Criterion sampling",
+    "Enforce pinned ceilings",
+  ]) {
+    const step = gate?.steps?.find((candidate) => candidate.name === name);
+    assert.ok(step);
+    assert.equal(step.if, "env.MEASURE == 'true'");
+    assert.doesNotMatch(step.run ?? "", /hashFiles|continue-on-error/);
+  }
+});
 
 function needs(results: Record<string, string> = {}): Record<string, { result: string }> {
   return Object.fromEntries(PR_JOBS.map((job) => [job, { result: results[job] ?? "success" }]));
@@ -291,6 +331,9 @@ test("report fails closed when any PR check fails or skips", () => {
     const decision = aggregateNeedsResults(needs({ "check-js": result }));
     assert.equal(decision.exitCode, 1);
     assert.match(decision.message, new RegExp(`check-js: ${result}`));
+    const instructionDecision = aggregateNeedsResults(needs({ "instruction-counts": result }));
+    assert.equal(instructionDecision.exitCode, 1);
+    assert.match(instructionDecision.message, new RegExp(`instruction-counts: ${result}`));
     const sourceDecision = aggregateNeedsResults(needs({ "pr-source-checks": result }));
     assert.equal(sourceDecision.exitCode, 1);
     assert.match(sourceDecision.message, new RegExp(`pr-source-checks: ${result}`));
