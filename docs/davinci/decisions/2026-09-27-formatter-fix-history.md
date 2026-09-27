@@ -40,6 +40,10 @@ The four authored inputs are copied byte-for-byte from the existing regression
 tests. Default cases retain three real formatting passes; check cases retain
 the intermediate-versus-canonical distinction and actual change verdicts.
 The single-pass flag is an internal runtime option, not user configuration.
+Its intermediate output is a current legacy API observation. Future native
+formatting need not adopt that mechanism or add a stabilization stage; product
+compatibility must separately compare the actual CLI check verdict and streams.
+The single-pass flag is an internal runtime option, not user configuration.
 
 The fixture manifest records the input and full-output digests, public API,
 options, original witness and product source pin. The capture receipt records
