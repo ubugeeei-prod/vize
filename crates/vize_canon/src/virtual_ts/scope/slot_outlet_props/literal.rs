@@ -134,6 +134,8 @@ fn is_static_string_value(prop: &PassedProp) -> bool {
     !prop.is_dynamic && prop.value.is_some() && prop.name != "style"
 }
 
+/// The key and value spans of one outlet prop, mapped back to the authored
+/// attribute name and value independently.
 fn entry_sub_spans(
     source_context: ComponentPropSource<'_>,
     prop: &PassedProp,
@@ -157,6 +159,7 @@ fn entry_sub_spans(
     sub_spans
 }
 
+/// The authored range of a `v-bind="expression"` spread on an outlet.
 fn spread_expression_source_range(
     source_context: ComponentPropSource<'_>,
     spread: &SpreadProp,

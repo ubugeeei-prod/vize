@@ -21,7 +21,7 @@ fn slot_payload_helper_collects_every_overload() {
         r#"<child><template #panel="{ viewMode }"><preview :viewMode="viewMode" /></template></child>"#,
     );
     for alias in [
-        "type __VizeSlotPayloadOf<__F> = __F extends { (props: infer __A, ...args: any[]): any;",
+        "type __VizeSlotPayloadOf<__F> = __F extends { (props: infer __A0, ...args: any[]): any;",
         "type __VizeSlotPayloadUnify<__P> = __VizeIsAny<__P> extends true ? __P : [__P] extends [__VizeSlotPayloadIntersection<__P>] ? __P : __VizeSlotPayloadMerge<__P>;",
         "__VizeSlotPayloadUnify<__VizeSlotPayloadOf<NonNullable<__S[__K]>>>",
     ] {

@@ -21,6 +21,9 @@ struct PayloadType {
     text: String,
 }
 
+/// Declare the outlet helper aliases a component references: the static and
+/// dynamic payload resolvers, and the spread helper, each only when an outlet
+/// needs it.
 pub(super) fn emit_slot_outlet_helpers(
     ts: &mut String,
     slot_outlets_by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
@@ -114,6 +117,9 @@ pub(in crate::virtual_ts::scope) fn generate_scope_slot_outlet_checks(
     );
 }
 
+/// Emit the outlets of one scope: the inferred payload variables when the
+/// component declares no slots, or the checked outlet calls against the
+/// declared slots type otherwise.
 fn generate_slot_outlet_checks(
     ts: &mut String,
     mappings: &mut Vec<VizeMapping>,
@@ -220,6 +226,7 @@ fn generate_slot_outlet_checks(
     }
 }
 
+/// The declared payload type an outlet literal is checked against.
 fn outlet_payload_type(outlet: &SlotOutlet, slots_type_ref: &str) -> PayloadType {
     if outlet.name_is_dynamic {
         return PayloadType {

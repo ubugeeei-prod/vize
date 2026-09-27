@@ -19,13 +19,19 @@ type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (pr
 /// per outlet, which TypeScript reads as an overloaded function: `infer` on
 /// it sees only the last overload, so the payload depended on template order
 /// and a bare `<slot name="x" />` erased every prop. `__VizeSlotPayloadOf`
-/// collects the parameter of every overload instead (the last six, which
-/// covers any real template; a signature without a props parameter counts as
-/// `{}`), and `__VizeSlotPayloadUnify` folds a union of
+/// collects the parameter of every overload instead, and
+/// `__VizeSlotPayloadUnify` folds a union of
 /// payloads into what the slot function can receive at runtime: the props
 /// every outlet passes keep their unioned type, props only some outlets pass
 /// (or declare optional) become optional. A single payload, and an `any`
 /// payload, pass through unchanged.
+///
+/// TypeScript cannot infer over an unbounded overload list, so the pattern
+/// names sixteen signatures: a slot function with fewer overloads matches
+/// them repeatedly (the union removes the duplicates), and one with more
+/// contributes its last sixteen. Sixteen `<slot>` outlets of one name is far
+/// beyond any authored template; a signature without a props parameter
+/// counts as `{}`.
 ///
 /// An untyped host (an unresolved tag, an `any` component) yields an *error
 /// type* rather than a declared `any`. Both leave the payload unchecked, but
@@ -36,7 +42,7 @@ type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (pr
 /// checks rely on conditional types an error type would collapse.
 const SLOT_PAYLOAD_HELPER: &str = "// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.\ntype __VizeSilentAny = {}[\"__vizeSilentAny\"];\n\
 type __VizeSlotPayloadParam<__A> = __VizeIsAny<__A> extends true ? __A : unknown extends __A ? {} : __A;\n\
-type __VizeSlotPayloadOf<__F> = __F extends { (props: infer __A, ...args: any[]): any; (props: infer __B, ...args: any[]): any; (props: infer __C, ...args: any[]): any; (props: infer __D, ...args: any[]): any; (props: infer __E, ...args: any[]): any; (props: infer __G, ...args: any[]): any } ? __VizeSlotPayloadParam<__A> | __VizeSlotPayloadParam<__B> | __VizeSlotPayloadParam<__C> | __VizeSlotPayloadParam<__D> | __VizeSlotPayloadParam<__E> | __VizeSlotPayloadParam<__G> : never;\n\
+type __VizeSlotPayloadOf<__F> = __F extends { (props: infer __A0, ...args: any[]): any; (props: infer __A1, ...args: any[]): any; (props: infer __A2, ...args: any[]): any; (props: infer __A3, ...args: any[]): any; (props: infer __A4, ...args: any[]): any; (props: infer __A5, ...args: any[]): any; (props: infer __A6, ...args: any[]): any; (props: infer __A7, ...args: any[]): any; (props: infer __A8, ...args: any[]): any; (props: infer __A9, ...args: any[]): any; (props: infer __A10, ...args: any[]): any; (props: infer __A11, ...args: any[]): any; (props: infer __A12, ...args: any[]): any; (props: infer __A13, ...args: any[]): any; (props: infer __A14, ...args: any[]): any; (props: infer __A15, ...args: any[]): any } ? __VizeSlotPayloadParam<__A0> | __VizeSlotPayloadParam<__A1> | __VizeSlotPayloadParam<__A2> | __VizeSlotPayloadParam<__A3> | __VizeSlotPayloadParam<__A4> | __VizeSlotPayloadParam<__A5> | __VizeSlotPayloadParam<__A6> | __VizeSlotPayloadParam<__A7> | __VizeSlotPayloadParam<__A8> | __VizeSlotPayloadParam<__A9> | __VizeSlotPayloadParam<__A10> | __VizeSlotPayloadParam<__A11> | __VizeSlotPayloadParam<__A12> | __VizeSlotPayloadParam<__A13> | __VizeSlotPayloadParam<__A14> | __VizeSlotPayloadParam<__A15> : never;\n\
 type __VizeSlotPayloadKeys<__U> = __U extends any ? keyof __U : never;\n\
 type __VizeSlotPayloadOptionalKeys<__U> = __U extends any ? { [__K in keyof __U]-?: {} extends Pick<__U, __K> ? __K : never }[keyof __U] : never;\n\
 type __VizeSlotPayloadRequiredKeys<__U> = Exclude<keyof __U, __VizeSlotPayloadOptionalKeys<__U>>;\n\

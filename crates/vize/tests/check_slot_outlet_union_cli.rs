@@ -23,6 +23,7 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
     };
     let project_root = create_cli_project();
     if !project_root.join("node_modules/vue").exists() {
+        eprintln!("skipping: the workspace has no node_modules/vue for the fixture project");
         let _ = std::fs::remove_dir_all(&project_root);
         return;
     }
