@@ -111,7 +111,9 @@ void test("the CLI applies merge-group scope to a real docs-only comparison", ()
       assert.equal(run.status, 0, run.stderr);
       assert.equal(
         readFileSync(output, "utf8"),
-        ["rust", "js", "tooling", "playground"].map((lane) => `${lane}=${String(expected)}\n`).join(""),
+        ["rust", "js", "tooling", "playground"]
+          .map((lane) => `${lane}=${String(expected)}\n`)
+          .join(""),
       );
     }
     const invalid = spawnSync(process.execPath, [script, base, head, "push"], {
