@@ -71,6 +71,26 @@ later runs. This dated source proof remains evidence for its exact head; every
 later transport or merged head still requires its own Actions checks. It does
 not establish complete wire/state coverage, native L4 parity or #6883 closure.
 
+## CRLF on-type formatting installment
+
+Fix `4d04bc3e53acfddf835f2db70e613abe85ce8df4` made CRLF line endings
+independent of the formatter's LF output when pairing on-type lines. Its exact
+original Rust `SOURCE` literal and LF-to-CRLF transform produce the 211-byte
+`on-type-crlf/App.vue.txt` input, containing 18 CRLF pairs. The source bytes and
+complete response contracts have committed SHA256 values.
+The exact input path disables Git newline conversion and recognizes CR at the
+end of each line; other repository files keep their existing attributes.
+
+A production stdio fixture now checks the original script indent deletion and
+the existing LF regression's CSS, already-indented and out-of-range controls on
+that same CRLF document. The four complete `TextEdit[]`/null responses retain
+authored line/character positions, edit order, empty text and absent extra fields.
+The helper also requires the entry URI's exact version-1 diagnostics publication.
+All three on-type tests passed against the same pinned historical f59 artifact,
+with zero failures/skips/cancellations. Fresh-source Actions and full-wire/shared
+runner registration remain pending. This closes only the selected CRLF public
+response witness gap; it does not establish whole-fix or whole-history coverage.
+
 ## Reuse and remaining work
 
 The first LF/CRLF observer pack (`1da2c5282a66693354c11929b5efab151140ee5e`)

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/on-type-crlf",
+  "provenance": {
+    "fixCommit": "4d04bc3e53acfddf835f2db70e613abe85ce8df4",
+    "witnessPath": "crates/vize_maestro/src/server/format/on_type/tests.rs",
+    "witnessTest": "a_crlf_document_is_re_indented_like_an_lf_one",
+    "inputOrigin": "exact SOURCE literal and LF-to-CRLF transform from the original fix test",
+    "contractOrigin": "original CRLF script edit plus complete CSS, no-op and out-of-range controls from the existing LF stdio regression"
+  },
+  "input": {
+    "source": "App.vue.txt",
+    "runtimePath": "App.vue",
+    "sha256": "6cb908dd3f570e647113f3e905b8d3da379003d3e6547e042681fd777d8d9487"
+  },
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "c2703660482913a0dcd93873a656a9a45ac74268af78dca61bb11b977e786468"
+  },
+  "method": "textDocument/onTypeFormatting",
+  "options": {
+    "tabSize": 2,
+    "insertSpaces": true
+  },
+  "documentVersion": 1,
+  "scope": "legacy selected response contracts; no native adapter or acceptance credit"
+}

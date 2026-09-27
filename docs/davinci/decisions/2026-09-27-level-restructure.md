@@ -177,7 +177,7 @@ See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-ch
 
 See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria)
 in the companion record and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-history.md)
-for the pinned review ledger, complete document-link response contract and
+for the pinned review ledger, complete document-link and CRLF on-type response contracts and
 unfinished history obligations in #6883.
 The same installment preserves dated source-runtime receipts separately from
 historical binary evidence; later heads still require their own Actions proof.
