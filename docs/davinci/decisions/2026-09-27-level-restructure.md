@@ -320,3 +320,7 @@ records [#6880](https://github.com/ubugeeei-prod/vize/issues/6880): two immutabl
 complete SFC Result fixtures, SSR snapshot normalization limits and the next
 target-specific capture gaps. Whole-history coverage and native acceptance
 remain unfinished; fresh Actions execution is required before merge.
+
+The same compiler record adds the measured complete diagnostic Result for
+#1416 and separates eight fix-linked profiles from two feature controls in
+the earlier ten-profile archive. Feature controls receive no fix-history credit.

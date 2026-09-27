@@ -65,3 +65,21 @@ those partial witnesses. Review DOM, Vapor, JSX, parser and semantic fix
 histories separately; no unreviewed fix is marked covered. Keep #6880 open
 until the required target-specific history fixtures and Actions execution
 are complete. Native acceptance remains zero.
+
+## Complete diagnostic successor
+
+A third fixture pins the complete public `Ok` result for fix
+`336622af2aea3f9bce3e7c297e3b4307bd7445ff` (#1416). An invalid template
+expression still produces its actual module plus one `TEMPLATE_ERROR`; the
+fixture preserves the entire message and all eight block-location fields.
+Input/options, raw observation and expected Result are immutable copies of
+the source `292a5d3c80285f5dc6c66fa166f245728ea27548` measured archive, with
+their own provenance file. The existing partial diagnostic witness remains.
+Hashes, exact authored input equality, raw Result equality, formatting and
+source lengths pass. Product execution still requires fresh Actions.
+
+Direct commit-subject inspection also separates fixture profiles from fix
+coverage: the earlier structured source-map profile originates in `feat`
+#6365, and the definePage macro-artifact profile originates in `feat` #209.
+The ten prepared profiles link eight fix commits and two feature commits;
+feature controls do not count against the compiler fix-history obligation.
