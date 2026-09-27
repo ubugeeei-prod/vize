@@ -22,6 +22,8 @@ bytes is bitwise OR and subtraction, so syntax alone cannot choose the dialect.
   Keep asset names as authored and format the JS base/argument payloads.
   Restore base parentheses if the JS printer exposes a nested bitwise pipe.
   Refused or malformed payloads remain authored text instead of guessed JS OR.
+  Unicode filter asset names use this authored-preserve fallback; they are not
+  credited as formatter-aware or native-equivalent coverage.
 - Keep the scanner local to the legacy formatter. Add no L2 dependency, product
   stage, serialized intermediate representation or new project model.
 - Register three exact byte references: Vue 2 with Unicode/CRLF and chained
