@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { rustCachePolicy } from "../../.github/actions/setup-rust-sticky-cache/cache-policy.mjs";
 import { cacheFixture, executeCacheAction } from "./support/rust-cache-fixture.mjs";
 
-test("PR numbers, queue SHAs and nondefault dispatches do not create provider keys", () => {
+await test("PR numbers, queue SHAs and nondefault dispatches do not create provider keys", () => {
   cacheFixture((fixture) => {
     for (let index = 1; index <= 256; index++) {
       for (const [event, ref] of [
@@ -23,7 +23,7 @@ test("PR numbers, queue SHAs and nondefault dispatches do not create provider ke
   });
 });
 
-test("a separate benchmark target follows its own lock and falls back to the root toolchain", () => {
+await test("a separate benchmark target follows its own lock and falls back to the root toolchain", () => {
   cacheFixture((fixture) => {
     const base = join(fixture.cwd, "base");
     mkdirSync(base);
@@ -47,7 +47,7 @@ test("a separate benchmark target follows its own lock and falls back to the roo
   });
 });
 
-test("only the actual default-branch trusted checkout can write existing stable disks", () => {
+await test("only the actual default-branch trusted checkout can write existing stable disks", () => {
   cacheFixture((fixture) => {
     for (const event of ["push", "schedule", "workflow_dispatch"]) {
       const context = fixture.context(event);
@@ -72,7 +72,7 @@ test("only the actual default-branch trusted checkout can write existing stable 
   });
 });
 
-test("lock, toolchain, runner and role separate compatible Actions seeds", () => {
+await test("lock, toolchain, runner and role separate compatible Actions seeds", () => {
   cacheFixture((fixture) => {
     const context = fixture.context();
     const first = rustCachePolicy(context, { cwd: fixture.cwd });
@@ -102,7 +102,7 @@ test("lock, toolchain, runner and role separate compatible Actions seeds", () =>
   });
 });
 
-test("actual backend children miss safely for many PRs, queues and nondefault dispatches", () => {
+await test("actual backend children miss safely for many PRs, queues and nondefault dispatches", () => {
   for (let index = 1; index <= 8; index++) {
     for (const [event, ref] of [
       ["pull_request", `refs/pull/${6900 + index}/merge`],
@@ -132,7 +132,7 @@ test("actual backend children miss safely for many PRs, queues and nondefault di
   }
 });
 
-test("untrusted default-branch event types never register a cache save", () => {
+await test("untrusted default-branch event types never register a cache save", () => {
   for (const event of ["pull_request_target", "workflow_run", "repository_dispatch"]) {
     cacheFixture((fixture) => {
       const result = executeCacheAction(fixture, fixture.context(event), { hit: true });
@@ -147,7 +147,7 @@ test("untrusted default-branch event types never register a cache save", () => {
   }
 });
 
-test("a trusted GitHub-hosted miss seeds Actions without mounting a provider", () => {
+await test("a trusted GitHub-hosted miss seeds Actions without mounting a provider", () => {
   cacheFixture((fixture) => {
     const context = { ...fixture.context(), runnerEnvironment: "github-hosted" };
     const result = executeCacheAction(fixture, context);
@@ -162,7 +162,7 @@ test("a trusted GitHub-hosted miss seeds Actions without mounting a provider", (
   });
 });
 
-test("a trusted seed includes the fresh artifact and is saved before unmount", () => {
+await test("a trusted seed includes the fresh artifact and is saved before unmount", () => {
   cacheFixture((fixture) => {
     const result = executeCacheAction(fixture, fixture.context());
     assert.equal(result.status, 0);
@@ -181,7 +181,7 @@ test("a trusted seed includes the fresh artifact and is saved before unmount", (
   });
 });
 
-test("a compatible prior target lookup saves the new exact seed without restoring over its clone", () => {
+await test("a compatible prior target lookup saves the new exact seed without restoring over its clone", () => {
   cacheFixture((fixture) => {
     const result = executeCacheAction(fixture, fixture.context(), { hit: "partial" });
     assert.equal(result.status, 0);
@@ -196,7 +196,7 @@ test("a compatible prior target lookup saves the new exact seed without restorin
   });
 });
 
-test("actual mount probes preserve sticky clones and restore only failed paths", () => {
+await test("actual mount probes preserve sticky clones and restore only failed paths", () => {
   for (const failures of [[], ["target"], ["registry", "git", "target", "secondary"]]) {
     cacheFixture((fixture) => {
       const context = {
@@ -216,7 +216,7 @@ test("actual mount probes preserve sticky clones and restore only failed paths",
   }
 });
 
-test("Actions hits still compile current input instead of accepting the restored artifact", () => {
+await test("Actions hits still compile current input instead of accepting the restored artifact", () => {
   cacheFixture((fixture) => {
     const source = "changed input after cached compilation\n";
     writeFileSync(join(fixture.cwd, "source.txt"), source);
@@ -233,7 +233,7 @@ test("Actions hits still compile current input instead of accepting the restored
   });
 });
 
-test("manual dispatch validates the checked-out commit and actual default branch", () => {
+await test("manual dispatch validates the checked-out commit and actual default branch", () => {
   cacheFixture((fixture) => {
     const context = fixture.context("workflow_dispatch", "refs/heads/main");
     context.event.repository.default_branch = "trunk";
@@ -261,7 +261,7 @@ test("manual dispatch validates the checked-out commit and actual default branch
   });
 });
 
-test("unknown or malformed events stop before any provider or cache child", () => {
+await test("unknown or malformed events stop before any provider or cache child", () => {
   for (const change of [
     { eventName: "invented" },
     { event: null },
@@ -290,7 +290,7 @@ test("unknown or malformed events stop before any provider or cache child", () =
     });
 });
 
-test("target metadata cannot alias or escape the checkout", () => {
+await test("target metadata cannot alias or escape the checkout", () => {
   cacheFixture((fixture) => {
     for (const change of [
       { targetPath: "../outside" },

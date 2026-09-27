@@ -58,6 +58,10 @@ deletion or billing configuration changes are part of this preparation.
   build/test workflow commands stay unchanged. Fakes do not execute the real
   suites or prove live cache service
   permissions, transfer time, retained entries or actual Actions post behavior.
+- First source Check 36324834109 performed three ordinary Actions cache misses
+  and continued into lint, which rejected 14 unawaited Node test registrations.
+  Explicit top-level awaits retain all 27 focused tests. Fresh Actions lint
+  confirmation remains required; this is not trusted seed or restore-hit proof.
 
 TODO: verify a trusted default-branch seed followed by a PR restore
 and all fresh runtime/source reports. No CI p50/p90 or wall-time gain is claimed.
