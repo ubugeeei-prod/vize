@@ -53,3 +53,11 @@ and explicitly declared. Full #3581 bundled-commit admission, Actions/T1 queue
 verification, shared differential execution and native L4 parity remain open.
 Native acceptance is zero. This fixture does not constrain future generated
 TypeScript text independently of the diagnostic contract. #6879 stays open.
+
+## Exact T0 deferral
+
+Stack this slice on the definite-assignment draft #6939. Extend only the present
+package `vize_canon`, binary `fix_history_diagnostics`, exact test
+`required_props_keep_exact_unicode_diagnostics`. Prior Canon/Corsa names remain exact;
+source existence and T1 metadata are checked. Full Cargo T1 stays unchanged.
+Draft Actions and CI parent main/full queue proof remain pending.

@@ -10,7 +10,8 @@ default-filter = '''not ((package(=vize_maestro) & (
   test(=ide::rename::corsa_session_tests::direct_first::direct_first_renames_survive_twenty_session_shutdown_overlap)
 )) | (package(=vize_canon) & binary(=fix_history_diagnostics) & (
   test(=inline_event_assignments_preserve_exact_diagnostics) |
-  test(=deferred_template_reads_preserve_script_diagnostics)
+  test(=deferred_template_reads_preserve_script_diagnostics) |
+  test(=required_props_keep_exact_unicode_diagnostics)
 )))'''
 fail-fast = false
 retries = 0
