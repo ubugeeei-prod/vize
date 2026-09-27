@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "ref-string-typed",
+    history: "cba6fd5bbb7519696059416fd77aa1ba3192cba3",
+    source: "<script setup lang=\"ts\">\nconst text = \"ref<HTMLInputElement | null>(null)\"\n</script>\n<template><div ref=\"text\" /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "script/prefer-use-template-ref",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

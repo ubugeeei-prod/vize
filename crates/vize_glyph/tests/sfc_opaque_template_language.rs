@@ -15,6 +15,12 @@ fn assert_fixed_point(source: &str, options: &FormatOptions) -> String {
     first.into()
 }
 
+fn snapshot_bytes(name: &str, output: &str) {
+    insta::with_settings!({prepend_module_to_snapshot => false}, {
+        insta::assert_binary_snapshot!(name, output.as_bytes().to_vec());
+    });
+}
+
 #[test]
 fn pug_keeps_relative_program_indentation_and_verbatim_content() {
     let source = r#"<template lang="pug">
@@ -28,6 +34,7 @@ main
 </template>
 "#;
     let output = assert_fixed_point(source, &FormatOptions::default());
+    snapshot_bytes("history_sfc_pug.txt", &output);
     assert!(output.contains(
         r#"<template lang="pug">
   main
@@ -45,6 +52,7 @@ main
 fn every_non_html_language_uses_the_opaque_strategy() {
     let source = "<template lang=\"haml\">\n%main\n  %span= message\n</template>\n";
     let output = assert_fixed_point(source, &FormatOptions::default());
+    snapshot_bytes("history_sfc_haml.txt", &output);
     assert!(output.contains("  %main\n    %span= message\n"));
 }
 
@@ -52,6 +60,7 @@ fn every_non_html_language_uses_the_opaque_strategy() {
 fn explicit_html_still_uses_the_native_template_formatter() {
     let source = "<template lang=\"html\"><div   :title=\"message\">{{message}}</div></template>\n";
     let output = assert_fixed_point(source, &FormatOptions::default());
+    snapshot_bytes("history_sfc_explicit_html.txt", &output);
     assert!(output.contains("<div :title=\"message\">"), "{output}");
     assert!(output.contains("{{ message }}"), "{output}");
     assert!(!output.contains("<div   :title"), "{output}");
@@ -66,6 +75,7 @@ fn opaque_templates_honor_crlf_and_tab_outer_indentation() {
     };
     let source = "<template lang=\"pug\">\r\n  main\r\n    span text\r\n\r\n</template>\r\n";
     let output = assert_fixed_point(source, &options);
+    snapshot_bytes("history_sfc_opaque_crlf_tabs.txt", &output);
     assert!(output.contains("<template lang=\"pug\">\r\n\tmain\r\n\t  span text\r\n</template>"));
     assert!(!output.replace("\r\n", "").contains('\n'));
 }
@@ -73,11 +83,18 @@ fn opaque_templates_honor_crlf_and_tab_outer_indentation() {
 #[test]
 fn opaque_template_src_and_empty_blocks_keep_their_identity() {
     let options = FormatOptions::default();
-    for source in [
-        "<template lang=\"pug\" src=\"./App.pug\"></template>\n",
-        "<template lang=\"pug\">\n\n</template>\n",
+    for (name, source) in [
+        (
+            "history_sfc_opaque_src.txt",
+            "<template lang=\"pug\" src=\"./App.pug\"></template>\n",
+        ),
+        (
+            "history_sfc_opaque_empty.txt",
+            "<template lang=\"pug\">\n\n</template>\n",
+        ),
     ] {
         let output = assert_fixed_point(source, &options);
+        snapshot_bytes(name, &output);
         assert!(output.contains("<template lang=\"pug\""));
     }
     let external = assert_fixed_point(

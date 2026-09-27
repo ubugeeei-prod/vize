@@ -1,0 +1,72 @@
+{
+  "schema": "vize.sfc.map-diagnostic-history-capture",
+  "version": 1,
+  "capturedSource": "72293b11bc2a4b3d0f3671626af0c67bf5ebfec5",
+  "cases": 2,
+  "fixCommits": 2,
+  "repeatedEqual": true,
+  "nativeAcceptance": 0,
+  "captureKind": "actual local macOS arm64 profile-ci output, not Actions",
+  "files": [
+    {
+      "path": "counter-source-map.expected.json",
+      "sha256": "6067bb06a08d17300d6bd794405a6eca585af8728b66177fe97e98aada2a02d8"
+    },
+    {
+      "path": "counter-source-map.input.txt",
+      "sha256": "10f1b81837df4d7bcd48f4084a4741b879f7a43338124f1ec272b2b5962e3844"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/build-receipt.json",
+      "sha256": "09c31c38f0b3b97112d1ae3a670b2703c995b621b375e03783a2e053293e5e3f"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/cargo.jsonl",
+      "sha256": "8753dccea538e6e827fbd6012be8f911e8d64df9ca55ae5ca9f6007a8857b4dc"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/cargo.stderr",
+      "sha256": "d0125bd585331dde4e86f52490fc304a4cdc8e8e4b88ddcb327f1aa744914af0"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/first.process.json",
+      "sha256": "88e728276511ad0d9366cce52ad3eac9b14f6d13481a2e1382fa091015355925"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/first.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/first.stdout.json",
+      "sha256": "1d098ac0678e69b723ebb4c1f61672d1e3f3df96b5c39fad6f767349ba8bfe40"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/repeat.process.json",
+      "sha256": "a26e32fb62519931ccfe49c9cdde872095922bca18a5efc8c28dc238f3e01ee9"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/repeat.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/repeat.stdout.json",
+      "sha256": "1d098ac0678e69b723ebb4c1f61672d1e3f3df96b5c39fad6f767349ba8bfe40"
+    },
+    {
+      "path": "map-diagnostic-capture-72293/source.json",
+      "sha256": "aeb33322234dbacc8b3af4e3dc5eccb4b5d33127c5ac6698bad50af1b21e9765"
+    },
+    {
+      "path": "map-diagnostic-input-provenance.json",
+      "sha256": "f9e3bfbcdd8970f502f49106bc2547634856f52359c7a619163665bab32c8cf5"
+    },
+    {
+      "path": "props-default-type-diagnostic.expected.json",
+      "sha256": "e2f45f683cb507267b8740dad7667294d9b87b9a7bf36cf6e7d81c87f4b68fce"
+    },
+    {
+      "path": "props-default-type-diagnostic.input.txt",
+      "sha256": "fc237444a2cde6b1c12ef4c01cb356332a328bb23de8895bd4b5796539044638"
+    }
+  ]
+}

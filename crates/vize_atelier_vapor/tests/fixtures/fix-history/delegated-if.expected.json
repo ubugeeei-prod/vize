@@ -1,0 +1,30 @@
+{
+  "options": {
+    "bindingMetadata": null,
+    "customElements": "default",
+    "customRenderer": false,
+    "entrypoint": "compile_vapor",
+    "experimental": {
+      "componentName": null,
+      "selfComponent": false,
+      "sourceMap": false,
+      "sourceMapFilename": null
+    },
+    "experimentalInTagComments": false,
+    "experimentalPatternedTemplate": false,
+    "inline": false,
+    "prefixIdentifiers": true,
+    "retainedLane": false,
+    "sfcScope": null,
+    "ssr": false,
+    "templateSyntax": "Standard"
+  },
+  "output": {
+    "code": "import { createInvoker as _createInvoker, delegateEvents as _delegateEvents, createIf as _createIf, template as _template } from 'vue';\nconst t0 = _template(\"<button>save</button>\", true)\n_delegateEvents(\"click\")\n\nexport function render(_ctx) {\n  const n0 = _createIf(() => (_ctx.ready), () => {\n    const n2 = t0()\n    n2.$evtclick = _createInvoker(e => _ctx.save(e))\n    return n2\n  })\n  return n0\n}\n",
+    "errorMessages": [],
+    "map": null,
+    "templates": [
+      "<button>save</button>"
+    ]
+  }
+}

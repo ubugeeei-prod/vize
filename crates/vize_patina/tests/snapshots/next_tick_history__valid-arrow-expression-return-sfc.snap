@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/next_tick_history.rs
+expression: first_bytes
+---
+Case {
+    id: "valid-arrow-expression-return-sfc",
+    history: "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    source: "<template><p>雪😀</p></template>\r\n<script lang=\"ts\">\r\nimport { nextTick as vueNextTick } from 'vue';\nexport const useTick = () => { const nextTick = () => vueNextTick(); return { nextTick }; };\r\n</script>\r\n",
+    filename: "next-tick-valid-arrow-expression-return.vue",
+    entry: "sfc",
+    rule: "script/valid-next-tick",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "next-tick-valid-arrow-expression-return.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "next-tick-valid-arrow-expression-return.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

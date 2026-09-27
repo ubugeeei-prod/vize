@@ -52,7 +52,7 @@ use self::imports::{
 };
 pub use self::legacy_vue2::generate_virtual_ts_with_offsets_legacy_vue2;
 use self::macro_anchors::emit_setup_scope_macro_anchors;
-use self::options_api::{find_default_export_targets, generate_options_api_variables};
+use self::options_api::{analyze_options_api_script, generate_options_api_variables};
 use self::options_api_bridge::generate_options_api_bridge;
 use self::options_api_props_identifiers::PropsConstAssertions;
 use self::options_api_support::find_options_api_props;
@@ -160,35 +160,34 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let script_blocks = ScriptBlockScopes::collect(summary, script_content, has_script_setup);
     let setup_type_exports = SetupTypeExportsPlan::new(summary, script_content, &script_blocks);
 
-    // Classify the main `<script>` default export in one parse. A plain
-    // `export default { ... }` (Options API shape) gets wrapped with Vue's
-    // `defineComponent` so `this` inside computed/methods is typed by Vue's
-    // options machinery; a class default export (class-component shape) keeps
-    // its decorators on a standalone class declaration plus a
-    // `const __default__ =` alias (a bare `const __default__ = class {}`
-    // rewrite would move the decorators onto a class expression — TS1206).
-    // Script setup virtual TS is never touched: in setup-only SFCs no rewrite
-    // target exists, so the lookup is skipped entirely.
-    let default_export_targets = if !has_script_setup || has_plain_script_scope {
+    // Share the default-export parse with Options API facts. Plain objects keep
+    // Vue's `this` typing; classes keep decorators; setup-only skips rewrites.
+    let classify_default_export = !has_script_setup || has_plain_script_scope;
+    let collect_options_facts =
+        options_api && has_template_scope && check_options.check_template_bindings;
+    let options_script = if classify_default_export || collect_options_facts {
         profile!(
             "canon.virtual_ts.find_default_export_targets",
             script_content
-                .map(find_default_export_targets)
+                .map(|script| analyze_options_api_script(
+                    script,
+                    classify_default_export,
+                    collect_options_facts
+                ))
                 .unwrap_or_default()
         )
     } else {
         Default::default()
     };
-    let default_export_object = default_export_targets.object;
-    let default_export_class = default_export_targets.class;
-    let default_export_expr = default_export_targets.expr;
+    let default_export_object = options_script.default_export.object;
+    let default_export_class = options_script.default_export.class;
+    let default_export_expr = options_script.default_export.expr;
     if default_export_object.is_some() {
         ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
     let module_plan = script_content
         .map(script_module::collect_script_module_plan)
         .unwrap_or_default();
-    // Collect sorted module spans once for linear script-body emission.
     let mut module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
         let module_spans = module_plan.module_spans(summary, &namespace_hoist);
         script_blocks.module_spans(summary, script_content, module_spans)
@@ -676,6 +675,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                         summary,
                         options,
                         script_content,
+                        &options_script,
                         &mut mappings,
                         &script_source_offset
                     ))

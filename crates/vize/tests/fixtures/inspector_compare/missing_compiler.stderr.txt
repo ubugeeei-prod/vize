@@ -1,0 +1,2 @@
+--format compare currently requires Vue 3 `@vue/compiler-sfc` / `vue/compiler-sfc`.
+  Vue 2 / Nuxt 2 projects are not supported by compare yet; use `--format json` or `--format agent` for inspector payloads without running the official compiler.

@@ -54,6 +54,7 @@ mod options;
 mod script;
 mod style;
 mod template;
+mod vue_version;
 
 pub use error::*;
 pub use formatter::*;
@@ -61,6 +62,7 @@ pub use json::{format_json_source as format_json, format_jsonc_source as format_
 pub use options::*;
 pub use vize_l0::Allocator;
 use vize_l0::String;
+pub use vue_version::*;
 
 /// Format a Vue SFC source string
 ///

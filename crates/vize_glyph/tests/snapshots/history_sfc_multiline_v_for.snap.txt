@@ -1,0 +1,10 @@
+<template>
+  <template
+    v-for="(engineId, engineIndex) in sortedEngineInfos.map(
+      (engineInfo) => engineInfo.uuid,
+    )"
+    :key="engineIndex"
+  >
+    <span>{{ engineId }}</span>
+  </template>
+</template>

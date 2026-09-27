@@ -1,0 +1,196 @@
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling siphasher v1.0.3
+   Compiling cfg-if v1.0.4
+   Compiling zmij v1.0.21
+   Compiling memchr v2.8.3
+   Compiling fastrand v2.4.1
+   Compiling autocfg v1.5.0
+   Compiling thiserror v2.0.20
+   Compiling itoa v1.0.18
+   Compiling allocator-api2 v0.2.21
+   Compiling phf_shared v0.14.0
+   Compiling rustversion v1.0.22
+   Compiling num-traits v0.2.19
+   Compiling rustc-hash v2.1.3
+   Compiling owo-colors v4.3.0
+   Compiling hashbrown v0.17.1
+   Compiling str_indices v0.4.4
+   Compiling libc v0.2.189
+   Compiling unicode-width v0.2.2
+   Compiling shlex v1.3.0
+   Compiling smawk v0.3.2
+   Compiling unicode-linebreak v0.1.5
+   Compiling find-msvc-tools v0.1.9
+   Compiling static_assertions v1.1.0
+   Compiling cc v1.2.62
+   Compiling textwrap v0.16.2
+   Compiling unicode-segmentation v1.13.3
+   Compiling phf_generator v0.14.0
+   Compiling phf v0.14.0
+   Compiling oxc_estree v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling serde_json v1.0.149
+   Compiling dragonbox_ecma v0.1.12
+   Compiling cow-utils v0.1.3
+   Compiling unicode-id-start v1.4.0
+   Compiling nonmax v0.5.5
+   Compiling phf_shared v0.13.1
+   Compiling object v0.39.1
+   Compiling phf_generator v0.13.1
+   Compiling bitflags v2.13.1
+   Compiling syn v2.0.117
+   Compiling syn v3.0.5
+   Compiling percent-encoding v2.3.2
+   Compiling once_cell v1.21.4
+   Compiling serde_bytes v0.11.19
+   Compiling stacker v0.1.25
+   Compiling byteorder v1.5.0
+   Compiling simdutf8 v0.1.5
+   Compiling either v1.15.0
+   Compiling xxhash-rust v0.8.18
+   Compiling castaway v0.2.4
+   Compiling crossbeam-utils v0.8.21
+   Compiling rmp v0.8.15
+   Compiling num-integer v0.1.46
+   Compiling which v8.0.5
+   Compiling num-bigint v0.5.1
+   Compiling phf_codegen v0.13.1
+   Compiling phf v0.13.1
+   Compiling seq-macro v0.3.6
+   Compiling itertools v0.15.0
+   Compiling self_cell v1.2.2
+   Compiling serde_derive v1.0.228
+   Compiling thiserror-impl v2.0.20
+   Compiling oxc-miette-derive v3.0.1
+   Compiling oxc_ast_macros v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling phf_macros v0.14.0
+   Compiling phf_macros v0.13.1
+   Compiling pklrust-derive v0.9.0
+   Compiling vize_davinci_derive v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_davinci_derive)
+   Compiling aho-corasick v1.1.4
+   Compiling equivalent v1.0.2
+   Compiling adler2 v2.0.1
+   Compiling pastey v0.1.1
+   Compiling regex-syntax v0.8.11
+   Compiling indexmap v2.14.0
+   Compiling miniz_oxide v0.9.1
+   Compiling outref v0.5.2
+   Compiling parking_lot_core v0.9.12
+   Compiling vsimd v0.8.0
+   Compiling oxc_sourcemap v8.1.2
+   Compiling json-escape-simd v3.0.2
+   Compiling base64-simd v0.8.0
+   Compiling scopeguard v1.2.0
+   Compiling oxc-miette v3.0.1
+   Compiling cobs v0.3.0
+   Compiling lock_api v0.4.14
+   Compiling memoffset v0.9.1
+   Compiling ar_archive_writer v0.5.3
+   Compiling regex-automata v0.4.18
+   Compiling base64 v0.23.0
+   Compiling hmac-sha1-compact v1.1.7
+   Compiling hashbrown v0.14.5
+   Compiling crossbeam-epoch v0.9.20
+   Compiling zerocopy v0.8.48
+   Compiling zerocopy-derive v0.8.48
+   Compiling thin-vec v0.2.20
+   Compiling psm v0.1.31
+   Compiling index_vec v0.1.4
+   Compiling typenum v1.20.0
+   Compiling rayon-core v1.13.0
+   Compiling htmlize v1.1.0
+   Compiling alloca v0.4.0
+   Compiling libmimalloc-sys v0.1.49
+   Compiling oxc_diagnostics v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling regex v1.13.1
+   Compiling hybrid-array v0.4.10
+   Compiling smallvec v1.15.2
+   Compiling compact_str v0.10.0
+   Compiling oxc_index v5.0.0
+   Compiling ropey v1.6.1
+   Compiling rmp-serde v1.3.1
+   Compiling rmpv v1.3.1
+   Compiling postcard v1.1.3
+   Compiling oxc-browserslist v3.0.12
+   Compiling dashmap v6.2.1
+   Compiling oxc_data_structures v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling pklrust v0.9.0
+   Compiling oxc_allocator v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling crossbeam-deque v0.8.6
+   Compiling rustix v1.1.4
+   Compiling ciborium-io v0.2.2
+   Compiling clap_lex v1.1.0
+   Compiling getrandom v0.3.4
+   Compiling anstyle v1.0.14
+   Compiling oxc_str v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling plotters-backend v0.3.7
+   Compiling oxc_span v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling clap_builder v4.6.6
+   Compiling crypto-common v0.2.1
+   Compiling plotters-svg v0.3.7
+   Compiling block-buffer v0.12.0
+   Compiling errno v0.3.14
+   Compiling itertools v0.13.0
+   Compiling const-oid v0.10.2
+   Compiling winnow v1.0.1
+   Compiling same-file v1.0.6
+   Compiling cast v0.3.0
+   Compiling walkdir v2.5.0
+   Compiling clap v4.6.6
+   Compiling digest v0.11.2
+   Compiling criterion-plot v0.8.2
+   Compiling toml_parser v1.1.3+spec-1.1.0
+   Compiling plotters v0.3.7
+   Compiling rayon v1.12.0
+   Compiling tinytemplate v1.2.1
+   Compiling cpufeatures v0.3.0
+   Compiling oxc_syntax v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling oxc_regular_expression v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling page_size v0.6.0
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling serde_spanned v1.1.1
+   Compiling anes v0.1.6
+   Compiling oorandom v11.1.5
+   Compiling regex-lite v0.1.9
+   Compiling toml_writer v1.1.2+spec-1.1.0
+   Compiling vize_carton v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_carton)
+   Compiling oxc_compat v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling tempfile v3.27.0
+   Compiling oxc_ast v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling toml_edit v0.25.11+spec-1.1.0
+   Compiling sha2 v0.11.0
+   Compiling console v0.16.3
+   Compiling similar v2.7.0
+   Compiling mimalloc v0.1.52
+   Compiling half v2.7.1
+   Compiling insta v1.48.0
+   Compiling ciborium-ll v0.2.2
+   Compiling ciborium v0.2.2
+   Compiling criterion v0.8.2
+   Compiling vize_davinci v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_davinci)
+   Compiling davinci_test_support v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/tests/davinci_test_support)
+   Compiling davinci_harness v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/tools/benchmarks/crates/davinci_harness)
+   Compiling oxc_ecmascript v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling oxc_ast_visit v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling vize_impeto v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_impeto)
+   Compiling oxc_parser v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling oxc_semantic v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling vize_relief v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_relief)
+   Compiling oxc_traverse v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling oxc_codegen v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling vize_armature v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_armature)
+   Compiling vize_l2 v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_l2)
+   Compiling vize_croquis v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_croquis)
+   Compiling vize_l1 v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_l1)
+   Compiling vize_l2_to_l3 v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_l2_to_l3)
+   Compiling oxc_transformer v0.142.0 (https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1f)
+   Compiling vize_l1_to_l2 v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_l1_to_l2)
+   Compiling vize_atelier_core v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_atelier_core)
+   Compiling vize_atelier_vapor v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_atelier_vapor)
+   Compiling vize_atelier_dom v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_atelier_dom)
+   Compiling vize_atelier_ssr v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_atelier_ssr)
+   Compiling vize_atelier_sfc v0.429.1 (/private/tmp/vize-ssr-fix-history-20260927/crates/vize_atelier_sfc)
+    Finished `ci` profile [unoptimized] target(s) in 30.47s

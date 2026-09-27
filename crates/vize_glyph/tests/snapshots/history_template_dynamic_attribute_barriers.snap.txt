@@ -1,0 +1,10 @@
+<Widget
+  :z="first()"
+  :a="second()"
+  :getter="observed"
+  :assigned="value = next"
+  :updated="count++"
+  v-model="model"
+  @z="onZ()"
+  @a="onA()"
+/>

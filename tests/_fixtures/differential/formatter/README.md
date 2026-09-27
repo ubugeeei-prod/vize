@@ -56,3 +56,20 @@ for actual commands, source identity, log hashes and old-byte proofs.
 This branch's fresh source-built CLI Actions gate remains pending. Candidate
 CLI capture passed separately and never creates a CI-profile receipt for the
 downloaded Release artifact. Native formatter acceptance remains zero.
+
+## Versioned filter regressions (#6845)
+
+Three additional cases select Vue 2, Vue 2.7 and Vue 3 through a pinned
+`vize.config.json`. Their physical inputs are `App.vue.txt` with explicit Vue
+kind/runtime metadata; the runner writes real `App.vue` inputs in its temporary
+workspace and executes `fmt --config vize.config.json --write App.vue` for all
+three passes. The new references were verified through the public Rust API;
+source-built CLI capture remains pending and is recorded separately from the
+two candidate captures above. Five cases are now planned; native formatter is
+unsupported for all five, with no paired or native-equivalent credit.
+
+The Vue 2 CRLF case retains an independently reproduced preexisting `CRCRLF`
+layout ending. It proves exact output and filter preservation without claiming
+canonical newline output. The separate repair remains a recorded TODO in the
+[filter decision](../../../../docs/davinci/decisions/2026-09-27-glyph-vue2-filters.md).
+Global corpus membership and the two old `.vue` inputs remain unchanged.

@@ -1,0 +1,12 @@
+import { z } from "zod"
+
+const schema = z.object({
+  confirmCode: z
+    .string()
+    .regex(/^\d{6}$/, {
+      message: t("form.validation.exactDigits", {
+        target: t("form.field.confirmCode.label"),
+        digits: 6,
+      }),
+    }),
+})

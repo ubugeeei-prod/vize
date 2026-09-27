@@ -45,16 +45,33 @@ fn script_bodies(source: &str) -> Vec<&str> {
     bodies
 }
 
+fn snapshot_bytes(name: &str, output: &str) {
+    insta::with_settings!({prepend_module_to_snapshot => false}, {
+        insta::assert_binary_snapshot!(name, output.as_bytes().to_vec());
+    });
+}
+
 #[test]
 fn empty_statement_only_blocks_keep_a_canonical_statement() {
-    for source in [
+    for (index, source) in [
         "<script setup>\n;\n</script>\n",
         "<script setup lang=\"ts\">\n; ; ;\n</script>\n",
         "<script>\n;\n</script>\n",
         "<script lang=\"ts\">\n;\n;\n</script>\n",
         "<script>\n;\n</script>\n<script setup lang=\"ts\">\n;;\n</script>\n",
-    ] {
+    ]
+    .into_iter()
+    .enumerate()
+    {
         let output = canonical(source);
+        let names = [
+            "history_sfc_empty_setup_js.txt",
+            "history_sfc_empty_setup_ts.txt",
+            "history_sfc_empty_classic_js.txt",
+            "history_sfc_empty_classic_ts.txt",
+            "history_sfc_empty_both.txt",
+        ];
+        snapshot_bytes(names[index], &output.code);
         let bodies = script_bodies(output.code.as_str());
         assert!(!bodies.is_empty(), "fixture must retain a script block");
         assert!(
@@ -67,7 +84,7 @@ fn empty_statement_only_blocks_keep_a_canonical_statement() {
 
 #[test]
 fn comments_and_directives_keep_script_blocks_nonempty() {
-    for (source, marker) in [
+    for (index, (source, marker)) in [
         (
             "<script setup>\n; // keep line\n;\n</script>\n",
             "// keep line",
@@ -77,8 +94,17 @@ fn comments_and_directives_keep_script_blocks_nonempty() {
             "/* keep block */",
         ),
         ("<script>\n\"use strict\"; ;\n</script>\n", "\"use strict\""),
-    ] {
+    ]
+    .into_iter()
+    .enumerate()
+    {
         let output = canonical(source);
+        let names = [
+            "history_sfc_line_comment_script.txt",
+            "history_sfc_block_comment_script.txt",
+            "history_sfc_directive_script.txt",
+        ];
+        snapshot_bytes(names[index], &output.code);
         assert!(
             output.code.contains(marker),
             "script marker disappeared:\n{}",
@@ -97,6 +123,7 @@ fn comments_and_directives_keep_script_blocks_nonempty() {
 #[test]
 fn standalone_script_cleanup_still_removes_empty_statements() {
     let output = format_script("; ; ;", &FormatOptions::default()).expect("standalone format");
+    snapshot_bytes("history_script_empty_statements.txt", &output);
     assert!(
         output.trim().is_empty(),
         "standalone cleanup changed: {output}"

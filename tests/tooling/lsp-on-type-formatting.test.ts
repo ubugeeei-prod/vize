@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { isDiagnosticsForUri } from "./support/lsp/assertions.ts";
-import { testOutputRoot } from "./support/lsp/paths.ts";
+import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
 /**
@@ -83,6 +84,7 @@ async function withDocument(
     ask: (line: number, character: number, ch: string) => Promise<TextEdit[] | null>,
     askWholeDocument: () => Promise<TextEdit[] | null>,
   ) => Promise<void>,
+  source = SOURCE,
 ): Promise<void> {
   const testRootDir = path.join(testOutputRoot, "lsp-on-type-formatting");
   fs.mkdirSync(testRootDir, { recursive: true });
@@ -99,12 +101,13 @@ async function withDocument(
 
     const filePath = path.join(workspaceDir, "App.vue");
     const uri = pathToFileURL(filePath).href;
-    fs.writeFileSync(filePath, SOURCE, "utf8");
+    fs.writeFileSync(filePath, source, "utf8");
     session.notify("textDocument/didOpen", {
-      textDocument: { uri, languageId: "vue", version: 1, text: SOURCE },
+      textDocument: { uri, languageId: "vue", version: 1, text: source },
     });
-    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
-      isDiagnosticsForUri(params, uri),
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, uri) && params.version === 1,
     );
 
     const options = { tabSize: 2, insertSpaces: true };
@@ -165,4 +168,40 @@ test("onTypeFormatting refuses a line the document does not have", async () => {
   await withDocument(async (ask) => {
     assert.equal(await ask(900, 0, "}"), null);
   });
+});
+
+test("onTypeFormatting preserves complete CRLF fix-history edit responses", async () => {
+  const fixtureDir = path.join(root, "tests/_fixtures/differential/lsp/on-type-crlf");
+  const fixture = JSON.parse(fs.readFileSync(path.join(fixtureDir, "case.json"), "utf8")) as {
+    input: { source: string; sha256: string; runtimePath: string };
+    expected: { source: string; sha256: string };
+    method: string;
+    documentVersion: number;
+    options: { tabSize: number; insertSpaces: boolean };
+  };
+  assert.equal(fixture.input.runtimePath, "App.vue");
+  assert.equal(fixture.method, "textDocument/onTypeFormatting");
+  assert.equal(fixture.documentVersion, 1);
+  assert.deepEqual(fixture.options, { tabSize: 2, insertSpaces: true });
+  const checkedBytes = (reference: { source: string; sha256: string }): Buffer => {
+    const bytes = fs.readFileSync(path.join(fixtureDir, reference.source));
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), reference.sha256);
+    return bytes;
+  };
+  const source = checkedBytes(fixture.input).toString("utf8");
+  const responses = JSON.parse(checkedBytes(fixture.expected).toString("utf8")) as Array<{
+    position: { line: number; character: number };
+    ch: string;
+    result: TextEdit[] | null;
+  }>;
+  assert.ok(Array.isArray(responses), "CRLF response fixture must be an array");
+  assert.equal(responses.length, 4, "CRLF fixture must exercise both edits, the no-op and null");
+  await withDocument(async (ask) => {
+    for (const response of responses) {
+      assert.deepEqual(
+        await ask(response.position.line, response.position.character, response.ch),
+        response.result,
+      );
+    }
+  }, source);
 });

@@ -1,0 +1,1 @@
+<Comp slot-scope="scope" class="box"></Comp>

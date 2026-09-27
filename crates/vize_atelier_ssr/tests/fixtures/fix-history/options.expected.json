@@ -1,0 +1,26 @@
+{
+  "bindingMetadata": null,
+  "croquis": null,
+  "customElements": "default",
+  "dialect": "V3",
+  "entrypoint": "compile_ssr",
+  "experimental": {
+    "componentName": null,
+    "selfComponent": false,
+    "sourceMap": false,
+    "sourceMapFilename": null
+  },
+  "publicOptions": {
+    "comments": false,
+    "componentName": null,
+    "customRenderer": false,
+    "experimentalInTagComments": false,
+    "experimentalPatternedTemplate": false,
+    "inline": false,
+    "isTs": false,
+    "scopeId": null,
+    "ssrCssVars": null
+  },
+  "rawTemplateSlotted": true,
+  "templateSyntax": "Standard"
+}

@@ -1,0 +1,81 @@
+{
+  "schema": "vize.formatter-history-capture",
+  "version": 1,
+  "issue": 6882,
+  "sourceRevisionAtBuild": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+  "formatterSourceTree": "4ec0547a8667f3a94a8e2a9a8344c70c7ae80980",
+  "testSource": {
+    "path": "crates/vize_glyph/tests/fix_history_script.rs",
+    "sha256": "97e94a89cc57b009077299a37ee4ed296df0a91e45de484be0dca196aa215a6d"
+  },
+  "cargoLockSha256": "be4568371f14f946452111a604efb3d2b6c1ebd10632b1f227f44ae69dca6df9",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)",
+  "buildCommand": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-p",
+    "vize_glyph",
+    "--test",
+    "fix_history_script",
+    "--message-format=json-render-diagnostics"
+  ],
+  "buildEnvironment": {
+    "CARGO_TARGET_DIR": "/tmp/vize-formatter-history-target-20260927",
+    "INSTA_UPDATE": "no"
+  },
+  "artifact": {
+    "target": {
+      "kind": ["test"],
+      "crate_types": ["bin"],
+      "name": "fix_history_script",
+      "src_path": "/private/tmp/vize-formatter-fix-history-20260927/crates/vize_glyph/tests/fix_history_script.rs",
+      "edition": "2024",
+      "doc": false,
+      "doctest": false,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "features": [],
+    "executable": "/tmp/vize-formatter-history-target-20260927/debug/deps/fix_history_script-b2aabc108643f06c",
+    "sha256": "04bfbe8fb6d393c8a88d9ff6103b68fc86451bddb05d9b58c4ce03805a977de2",
+    "frozenExecutable": "/tmp/vize-formatter-script-proof-20260927/fix_history_script"
+  },
+  "cargoLog": {
+    "path": "/tmp/vize-formatter-script-replay.cargo.jsonl",
+    "sha256": "50d58068e7b1cf80ef6952552c7b196e3a8bad483650c3c0318826449cf642d4"
+  },
+  "cargoStderr": {
+    "path": "/tmp/vize-formatter-script-replay.stderr.txt",
+    "sha256": "dab261c6409c519c0706ca1fb879747882f26e2423ebef43e81522254e506218"
+  },
+  "replay": {
+    "argv": ["/tmp/vize-formatter-script-proof-20260927/fix_history_script", "--test-threads=1"],
+    "snapshotUpdates": "disabled",
+    "exitStatus": 0,
+    "stdout": {
+      "path": "/tmp/vize-formatter-script-proof-20260927/replay.stdout.txt",
+      "sha256": "122e2b3d8cc382c26613e79f73ff04fdc6d95a724a88e3d8caf82abcfa8e08aa"
+    },
+    "stderr": {
+      "path": "/tmp/vize-formatter-script-proof-20260927/replay.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "passedTests": 6,
+    "failedTests": 0
+  },
+  "limitations": [
+    "Build ran from base revision with the new test and fixtures present as uncommitted files; the test source hash binds the actual prepared source.",
+    "Raw logs and frozen executable are retained locally at the stated paths; no Actions artifact is claimed.",
+    "Current-output observations do not create historical complete goldens or native acceptance.",
+    "Shared corpus registration and all 56 fixes remain pending."
+  ]
+}

@@ -12,6 +12,7 @@ mod attributes;
 mod directives;
 mod formatter;
 pub(crate) mod helpers;
+mod vue_filters;
 
 /// Native HTML elements whose authored text is whitespace-significant.
 ///
@@ -36,6 +37,14 @@ pub fn format_template_content(
     source: &str,
     options: &FormatOptions,
 ) -> Result<String, FormatError> {
+    format_template_content_with_vue_version(source, options, crate::VueVersion::V3)
+}
+
+pub(crate) fn format_template_content_with_vue_version(
+    source: &str,
+    options: &FormatOptions,
+    vue_version: crate::VueVersion,
+) -> Result<String, FormatError> {
     let bytes = source.as_bytes();
 
     // Fast path: all whitespace
@@ -43,7 +52,7 @@ pub fn format_template_content(
         return Ok(String::default());
     }
 
-    let formatter = TemplateFormatter::new(options);
+    let formatter = TemplateFormatter::new(options, vue_version);
     formatter.format(bytes)
 }
 

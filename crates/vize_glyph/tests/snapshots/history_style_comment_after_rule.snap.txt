@@ -1,0 +1,5 @@
+/* NOTE: Avoid using kebab-case for better readability. */
+.foo {
+  color: red;
+}
+/* trailing note */

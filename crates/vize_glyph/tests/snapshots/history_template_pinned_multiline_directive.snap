@@ -1,0 +1,6 @@
+---
+source: crates/vize_glyph/tests/fix_history_directive_layout.rs
+expression: output.as_bytes().to_vec()
+extension: txt
+snapshot_kind: binary
+---

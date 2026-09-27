@@ -1,0 +1,7 @@
+<script setup>
+const foo = () => {}
+</script>
+
+<template>
+  <div>{{ foo( }}</div>
+</template>

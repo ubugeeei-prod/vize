@@ -1,0 +1,87 @@
+[
+  {
+    "id": "original-line-columns",
+    "history": [
+      "3a87d25f029f731be72705a19787743a996640eb",
+      "08eb760bae05426251031bd9b6523edae23e7b2f"
+    ],
+    "files": [
+      {
+        "filename": "Component.vue",
+        "source": "<script setup lang=\"ts\">\nconst items = [1]\n</script>\n\n<template>\n  <div v-for=\"item in items\">{{ item }}</div>\n</template>\n",
+        "rule": "vue/require-v-for-key",
+        "diagnostics": 1
+      }
+    ],
+    "sources": [
+      0
+    ]
+  },
+  {
+    "id": "unicode-crlf-columns",
+    "history": [
+      "3a87d25f029f731be72705a19787743a996640eb",
+      "08eb760bae05426251031bd9b6523edae23e7b2f"
+    ],
+    "files": [
+      {
+        "filename": "雪🌸.vue",
+        "source": "<template>\r\n  <p>前🌸</p><div title=\"café\" v-html=\"content\"></div>\r\n</template>\r\n",
+        "rule": "vue/no-v-html",
+        "diagnostics": 1
+      }
+    ],
+    "sources": [
+      0
+    ]
+  },
+  {
+    "id": "source-map-order-and-missing",
+    "history": [
+      "3a87d25f029f731be72705a19787743a996640eb",
+      "08eb760bae05426251031bd9b6523edae23e7b2f"
+    ],
+    "files": [
+      {
+        "filename": "Missing.vue",
+        "source": "<template>\n  <div v-html=\"content\"></div>\n</template>\n",
+        "rule": "vue/no-v-html",
+        "diagnostics": 1
+      },
+      {
+        "filename": "Provided.vue",
+        "source": "<template>\r\n  <p>é🌸</p><div v-html=\"content\"></div>\r\n</template>\r\n",
+        "rule": "vue/no-v-html",
+        "diagnostics": 1
+      },
+      {
+        "filename": "Other.vue",
+        "source": "<template>\n<div v-html=\"other\"></div>\n</template>\n",
+        "rule": "vue/no-v-html",
+        "diagnostics": 1
+      }
+    ],
+    "sources": [
+      2,
+      1
+    ]
+  },
+  {
+    "id": "no-findings-output-control",
+    "history": [
+      "3a87d25f029f731be72705a19787743a996640eb",
+      "08eb760bae05426251031bd9b6523edae23e7b2f"
+    ],
+    "files": [
+      {
+        "filename": "Clean.vue",
+        "source": "<template>\r\n  <div>雪🌸</div>\r\n</template>\r\n",
+        "rule": "vue/no-v-html",
+        "diagnostics": 0
+      }
+    ],
+    "sources": [
+      0
+    ]
+  }
+]

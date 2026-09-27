@@ -1,0 +1,1 @@
+<div v-for="(value, key, idx) in obj" :key="idx">{{ key }}: {{ value }}: {{ idx }}</div>

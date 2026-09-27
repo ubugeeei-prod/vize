@@ -23,6 +23,12 @@ fn assert_fixed_point(source: &str, expected: &str) {
     );
 }
 
+fn snapshot_bytes(name: &str, output: &str) {
+    insta::with_settings!({prepend_module_to_snapshot => false}, {
+        insta::assert_binary_snapshot!(name, output.as_bytes().to_vec());
+    });
+}
+
 #[test]
 fn text_and_interpolation_boundaries_do_not_gain_runtime_whitespace() {
     assert_fixed_point("<p>Hello</p>", "<p>Hello</p>");
@@ -54,6 +60,10 @@ fn dynamic_attribute_groups_remain_as_authored() {
         r#"v-model="model" @z="onZ()" @a="onA()" />"#,
     );
     let formatted = format(source);
+    snapshot_bytes(
+        "history_template_dynamic_attribute_barriers.txt",
+        &formatted,
+    );
     assert_eq!(format(&formatted), formatted);
     let names = [
         ":z=",
@@ -154,6 +164,7 @@ fn wrapped_interpolations_stay_adjacent_to_their_element_boundary() {
     };
     let source = "<p>{{ veryLongFunctionName(firstArgument, secondArgument) }}</p>";
     let first = format_template(source, &options).unwrap();
+    snapshot_bytes("history_template_wrapped.txt", &first);
     let second = format_template(&first, &options).unwrap();
     assert_eq!(first, second);
     assert!(first.starts_with("<p>{{\n"), "{first}");
@@ -161,6 +172,7 @@ fn wrapped_interpolations_stay_adjacent_to_their_element_boundary() {
 
     let compact = "<p>A{{ veryLongFunctionName(firstArgument, secondArgument) }}B</p>";
     let first = format_template(compact, &options).unwrap();
+    snapshot_bytes("history_template_wrapped_compact.txt", &first);
     let second = format_template(&first, &options).unwrap();
     assert_eq!(first, second);
     assert!(first.starts_with("<p>A{{\n"), "{first}");
@@ -168,6 +180,7 @@ fn wrapped_interpolations_stay_adjacent_to_their_element_boundary() {
 
     let spaced = "<p>A {{ veryLongFunctionName(firstArgument, secondArgument) }} B</p>";
     let first = format_template(spaced, &options).unwrap();
+    snapshot_bytes("history_template_wrapped_spaced.txt", &first);
     let second = format_template(&first, &options).unwrap();
     assert_eq!(first, second);
     assert!(first.starts_with("<p>A {{\n"), "{first}");
@@ -178,6 +191,7 @@ fn wrapped_interpolations_stay_adjacent_to_their_element_boundary() {
         "result.fields[0]?.table : fallback }} ({{ result.rows.length }})</a>",
     );
     let first = format_template(mixed, &options).unwrap();
+    snapshot_bytes("history_template_wrapped_mixed.txt", &first);
     let second = format_template(&first, &options).unwrap();
     assert_eq!(first, second);
     assert!(first.starts_with("<a>{{\n"), "{first}");
@@ -191,6 +205,7 @@ fn wrapped_interpolations_stay_adjacent_to_their_element_boundary() {
         "result.fields[0]?.tableAlias ?? result.fields[0]?.table : fallback }})</a>",
     );
     let first = format_template(reversed, &options).unwrap();
+    snapshot_bytes("history_template_wrapped_reversed.txt", &first);
     let second = format_template(&first, &options).unwrap();
     assert_eq!(first, second);
     assert!(

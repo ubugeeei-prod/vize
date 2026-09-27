@@ -58,6 +58,12 @@ function referenceReport() {
     rows: loaded.cases.map((fixture) => ({
       id: fixture.id,
       legacy: {
+        ...(fixture.config.length
+          ? {
+              argv: [...fixture.argv],
+              config: fixture.config.map(({ path, sha256 }) => ({ path, sha256 })),
+            }
+          : {}),
         state: "completed",
         verdict: "matched-reference",
         passes: [1, 2, 3].map((pass) =>
@@ -74,11 +80,11 @@ function referenceReport() {
       comparison: { state: "not-compared", reason: "native formatter adapter unavailable" },
     })),
     summary: {
-      plannedCases: 2,
-      legacyMatches: 2,
+      plannedCases: loaded.cases.length,
+      legacyMatches: loaded.cases.length,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 2,
+      nativeUnsupported: loaded.cases.length,
       pairedComparisons: 0,
       nativeHandled: 0,
       nativeEquivalent: 0,
@@ -86,10 +92,10 @@ function referenceReport() {
   };
 }
 
-void test("formatter differential manifest preserves two authored inputs and candidate-captured references", () => {
-  assert.equal(loaded.cases.length, 2);
+void test("formatter differential manifest preserves captured baselines and versioned regression inputs", () => {
+  assert.equal(loaded.cases.length, 5);
   for (const fixture of loaded.cases) {
-    assert.equal(fixture.expectations.legacy.state, "captured");
+    assert.equal(fixture.expectations.legacy.state, fixture.config.length ? "pending" : "captured");
     assert.equal(fixture.adapters.native, null);
     assert.equal(fixture.input.at(-1), 10);
     assert.equal(fixture.expected.at(-1), 10);
@@ -116,6 +122,8 @@ void test("formatter differential immutable input, output and configuration corr
     "sfc-split-v-pre-indentation/reference.expected.txt",
     "format-options-reference.json",
     "capture/report.json",
+    "sfc-vue2-filter-chain-crlf/vize.config.json",
+    "sfc-vue2-filter-chain-crlf/App.vue.txt",
   ]) {
     withCopy((dir) => {
       fs.appendFileSync(path.join(dir, relative), "corrupted");
@@ -124,6 +132,45 @@ void test("formatter differential immutable input, output and configuration corr
         /SHA256 mismatch/,
       );
     });
+  }
+});
+
+void test("configured formatter cases reject implicit versions, config paths and forged invocation evidence", () => {
+  for (const mutate of [
+    (fixture) => {
+      fixture.inputs.config[0].path = "../vize.config.json";
+    },
+    (fixture) => {
+      fixture.inputs.files[0].runtimeFileName = "Other.vue";
+    },
+    (fixture) => {
+      fixture.inputs.config.push(fixture.inputs.config[0]);
+    },
+  ]) {
+    withCopy((dir) => {
+      const file = path.join(dir, "manifest.json");
+      const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+      mutate(manifest.cases.find((fixture) => fixture.inputs.config.length));
+      fs.writeFileSync(file, JSON.stringify(manifest));
+      assert.throws(() => loadFormatterManifest(file));
+    });
+  }
+  withCopy((dir) => {
+    const file = path.join(dir, "manifest.json");
+    const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+    const fixture = manifest.cases.find((fixture) => fixture.inputs.config.length);
+    const config = path.join(dir, fixture.inputs.root, "vize.config.json");
+    const bytes = Buffer.from('{"vue":{"version":"unknown"}}');
+    fs.writeFileSync(config, bytes);
+    fixture.inputs.config[0].sha256 = sha256(bytes);
+    fs.writeFileSync(file, JSON.stringify(manifest));
+    assert.throws(() => loadFormatterManifest(file), /explicit Vue version/);
+  });
+  for (const field of ["argv", "config"]) {
+    const report = referenceReport();
+    const index = loaded.cases.findIndex((fixture) => fixture.config.length);
+    report.rows[index].legacy[field].pop();
+    assert.throws(() => validateFormatterReport(loaded, report, unitBuild));
   }
 });
 
@@ -150,11 +197,11 @@ void test("formatter differential missing executable fails all planned cases wit
   });
   assert.equal(report.binary, null);
   assert.deepEqual(report.summary, {
-    plannedCases: 2,
+    plannedCases: loaded.cases.length,
     legacyMatches: 0,
-    legacyFailures: 2,
+    legacyFailures: loaded.cases.length,
     baselineDrift: 0,
-    nativeUnsupported: 2,
+    nativeUnsupported: loaded.cases.length,
     pairedComparisons: 0,
     nativeHandled: 0,
     nativeEquivalent: 0,
@@ -165,7 +212,7 @@ void test("formatter differential missing executable fails all planned cases wit
     sourceRevision: loaded.manifest.baseRevision,
     binaryPath: "vize",
   });
-  assert.equal(relative.summary.legacyFailures, 2);
+  assert.equal(relative.summary.legacyFailures, loaded.cases.length);
   assert.match(relative.rows[0].legacy.error, /absolute path/);
 });
 
@@ -242,7 +289,7 @@ void test("formatter differential keeps failed attempt input/output bytes and ra
     passes: [attempt],
     error: "formatter exited 2",
   };
-  report.summary.legacyMatches = 1;
+  report.summary.legacyMatches = loaded.cases.length - 1;
   report.summary.legacyFailures = 1;
   validateFormatterReport(loaded, report, unitBuild);
 });

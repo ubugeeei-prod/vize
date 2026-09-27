@@ -218,6 +218,357 @@
           "operations": []
         }
       ]
+    },
+    {
+      "id": "formatter/sfc/vue2-filter-chain-crlf",
+      "state": "active",
+      "targets": ["fmt"],
+      "inputs": {
+        "root": "sfc-vue2-filter-chain-crlf",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "d27f1f42906aa1f0b932869033439def190603ca03ee95f542de8c158b94d024",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "dfe6614e0c2f9712e22bd69f16a2391b89682f9ec59350c27765611c35df9c6f",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [6845, 6882],
+        "commits": [
+          {
+            "sha": "07ac185bac5ce8b6a99191be10c24a1dac854a78",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/directives.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 6845,
+            "path": "crates/vize_glyph/tests/vue2_filters.rs",
+            "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/vue2_filters.rs",
+          "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point",
+          "executor": "rust-test",
+          "asserts": ["full-output-bytes", "idempotence", "FormatResult.changed"],
+          "limitations": [
+            "Public API byte oracle executed with an independently compiled Glyph rlib; actual source-built CLI execution and transport remain pending Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue2-sfc", "html-template"],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-vue2-filter-chain-crlf/reference.expected.txt",
+              "sha256": "efcf8db57763299b6b43f3403606dab1a3895ee837064ef4307a4f5e6c57908b",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 6845,
+                "path": "crates/vize_glyph/tests/vue2_filters.rs",
+                "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point",
+                "assertion": "assert_eq!(first.code.as_bytes(), expected); exact second and third bytes plus changed=false"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "public-api-verified; source-built CLI pending"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "formatter/sfc/vue2-7-filter-chain",
+      "state": "active",
+      "targets": ["fmt"],
+      "inputs": {
+        "root": "sfc-vue2-7-filter-chain",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "d5ea284d477d846848e95a3f9004b5cfe5ed69791ee95b470ec07733056bfa51",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "50ae173e0295f822424d3333722c9afc08d885ceff18c936f17cf5e40f5b4445",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [6845, 6882],
+        "commits": [
+          {
+            "sha": "07ac185bac5ce8b6a99191be10c24a1dac854a78",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/directives.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 6845,
+            "path": "crates/vize_glyph/tests/vue2_filters.rs",
+            "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/vue2_filters.rs",
+          "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point",
+          "executor": "rust-test",
+          "asserts": ["full-output-bytes", "idempotence", "FormatResult.changed"],
+          "limitations": [
+            "Public API byte oracle executed with an independently compiled Glyph rlib; actual source-built CLI execution and transport remain pending Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue2.7-sfc", "html-template"],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-vue2-7-filter-chain/reference.expected.txt",
+              "sha256": "ff753c2f36cd70f12c52b92a7e890aa7f6cc0026ea33466c83dc054e004888d8",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 6845,
+                "path": "crates/vize_glyph/tests/vue2_filters.rs",
+                "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point",
+                "assertion": "assert_eq!(first.code.as_bytes(), expected); exact second and third bytes plus changed=false"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "public-api-verified; source-built CLI pending"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
+      "id": "formatter/sfc/vue3-bitwise-or",
+      "state": "active",
+      "targets": ["fmt"],
+      "inputs": {
+        "root": "sfc-vue3-bitwise-or",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "5e06faf70c0e2154979f2e650ea4821c61d2c666968703af14551cefe36f3ed8",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": [
+          {
+            "path": "vize.config.json",
+            "sha256": "62eb601bf81800462e717cb05f449b4104dfe402db4c12f97477f3745a69f51a",
+            "role": "project-vue-version-and-formatter-options"
+          }
+        ]
+      },
+      "provenance": {
+        "issues": [6845, 6882],
+        "commits": [
+          {
+            "sha": "07ac185bac5ce8b6a99191be10c24a1dac854a78",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/directives.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "issue-authored-regression",
+            "issue": 6845,
+            "path": "crates/vize_glyph/tests/vue2_filters.rs",
+            "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/vue2_filters.rs",
+          "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point",
+          "executor": "rust-test",
+          "asserts": ["full-output-bytes", "idempotence", "FormatResult.changed"],
+          "limitations": [
+            "Public API byte oracle executed with an independently compiled Glyph rlib; actual source-built CLI execution and transport remain pending Actions."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": ["vue3-sfc", "html-template"],
+            "selector": "vize.config.json:vue.version"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built CI CLI with explicit pinned JSON project config; branch Actions execution remains pending.",
+          "native": "No verified native formatter adapter at this base; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "pending",
+          "artifacts": [
+            {
+              "path": "sfc-vue3-bitwise-or/reference.expected.txt",
+              "sha256": "6c1a6ea191f7df70cf062e1d611ec183c6585b5b61e622cdae96e81fde0a57ed",
+              "role": "issue-authored-regression-reference",
+              "provenance": {
+                "issue": 6845,
+                "path": "crates/vize_glyph/tests/vue2_filters.rs",
+                "symbol": "configured_sfc_filter_corpus_preserves_every_byte_and_reaches_a_fixed_point",
+                "assertion": "assert_eq!(first.code.as_bytes(), expected); exact second and third bytes plus changed=false"
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured-FormatResult.changed; public Rust witness covers this field"
+          ],
+          "referenceState": "public-api-verified; source-built CLI pending"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": ["full-output-bytes", "idempotence"],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
     }
   ],
   "adapterOptions": {
