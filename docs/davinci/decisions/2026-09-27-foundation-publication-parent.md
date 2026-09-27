@@ -74,3 +74,20 @@ eight members, obtain fresh exact-head Actions, verify the native main base
 and full queue, then verify all eight actual merges. #6831's legacy
 exceptions and #6832's later complete producer/consumer naming stay open.
 The later private naming composition is separate from this transport.
+
+## Actual CI4 main binding
+
+All four CI parents actually merged at `2026-09-27T11:37:59Z`. Their final
+main is `42014675678684165b8cd4bb992bb9db747e74ee`, with tree
+`35052b6809bc9b14b089021f95737956444c3371`, exactly the frozen `19e` source.
+The existing eight replay coherently from that canonical main. Every one of
+the 54 prepared commit trees, including each of the eight layer prefixes, is
+identical after binding. Each main-bound prefix independently passes
+source350, workflow contracts, formatting, authored whitespace and main
+merge-tree preflight. The separate moves and exact output/oracle repairs
+remain in their approved layers.
+
+TODO: verify the existing eight remote leases and native main base, publish
+only those heads, obtain fresh functional Actions and the protected full
+queue, and verify actual merges. Source preparation and the CI parents'
+accepted queue do not substitute for these eight layers' own acceptance.
