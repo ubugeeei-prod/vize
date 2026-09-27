@@ -78,3 +78,7 @@ asserted. Native acceptance stays zero, and no shared compiler adapter or
 whole-history/dialect certification is added. The issue's historical 609-fix
 denominator remains unreconciled. These nine cases protect three concrete
 fixes without closing #6880. Vapor exact-output captures remain next work.
+
+Publication also regenerates the single SSR consumer-migration shard for its
+new test helper reference. This observational inventory adds no product route
+or native acceptance; all measured archive bytes remain unchanged.
