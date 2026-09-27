@@ -13,7 +13,7 @@ use super::{
         ParsedAttribute, render_attribute, should_use_multiline_attrs, sort_attributes,
         write_rendered_attributes,
     },
-    directives::normalize_attribute,
+    directives::normalize_attribute_with_vue_version,
     helpers::{
         byte_at, find_bytes, is_tag_name_char, is_void_element_str, is_whitespace,
         parse_closing_tag, sub_slice,
@@ -25,24 +25,27 @@ mod suppression;
 mod text;
 mod whitespace_significant;
 
-use interpolation::format_interpolation_expression;
+#[cfg(test)]
 pub(crate) use interpolation::format_interpolations;
 use interpolation::parse_interpolation_range;
+use interpolation::{format_interpolation_expression, format_interpolations_with_vue_version};
 use suppression::{LineJoiner, TextRun};
 use whitespace_significant::is_whitespace_significant_element;
 
 /// High-performance template formatter.
 pub(crate) struct TemplateFormatter<'a> {
     options: &'a FormatOptions,
+    vue_version: crate::VueVersion,
     indent: &'static [u8],
     newline: &'static [u8],
 }
 
 impl<'a> TemplateFormatter<'a> {
     #[inline]
-    pub(crate) fn new(options: &'a FormatOptions) -> Self {
+    pub(crate) fn new(options: &'a FormatOptions, vue_version: crate::VueVersion) -> Self {
         Self {
             options,
+            vue_version,
             indent: options.indent_bytes(),
             newline: options.newline_bytes(),
         }
@@ -490,7 +493,7 @@ impl<'a> TemplateFormatter<'a> {
 
         // Normalize directives and determine priority
         let (name, value, priority, indent_multiline_value) =
-            normalize_attribute(&raw_name, value, self.options);
+            normalize_attribute_with_vue_version(&raw_name, value, self.options, self.vue_version);
 
         (
             Some(ParsedAttribute {

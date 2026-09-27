@@ -5,6 +5,7 @@ pub(super) fn format(
     block: &vize_atelier_sfc::SfcCustomBlock<'_>,
     options: &FormatOptions,
     source: &str,
+    vue_version: crate::VueVersion,
 ) -> Result<(), FormatError> {
     let opening_tag = super::opening_tag::raw_templated_opening_tag(source, &block.loc);
     if let Some(opening_tag) = &opening_tag {
@@ -24,7 +25,7 @@ pub(super) fn format(
         opening_tag.as_ref(),
     );
     if block.block_type.as_ref() == "art" {
-        write_art_content(output, content, options)?;
+        write_art_content(output, content, options, vue_version)?;
     } else {
         output.extend_from_slice(content.trim().as_bytes());
         output.extend_from_slice(options.newline_bytes());
@@ -40,6 +41,7 @@ fn write_art_content(
     output: &mut Vec<u8>,
     content: &str,
     options: &FormatOptions,
+    vue_version: crate::VueVersion,
 ) -> Result<(), FormatError> {
     let trimmed = content.trim();
     if trimmed.is_empty() {
@@ -53,7 +55,7 @@ fn write_art_content(
     for line in trimmed.lines() {
         if line.trim().is_empty() {
             if !chunk_lines.is_empty() {
-                write_art_chunk(output, &chunk_lines, options)?;
+                write_art_chunk(output, &chunk_lines, options, vue_version)?;
                 chunk_lines.clear();
                 wrote_chunk = true;
             }
@@ -78,7 +80,7 @@ fn write_art_content(
                 output.extend_from_slice(options.newline_bytes());
             }
         }
-        write_art_chunk(output, &chunk_lines, options)?;
+        write_art_chunk(output, &chunk_lines, options, vue_version)?;
     }
     Ok(())
 }
@@ -87,9 +89,14 @@ fn write_art_chunk(
     output: &mut Vec<u8>,
     lines: &[&str],
     options: &FormatOptions,
+    vue_version: crate::VueVersion,
 ) -> Result<(), FormatError> {
     let chunk = lines.join("\n");
-    let formatted = crate::template::format_template_content(chunk.trim(), options)?;
+    let formatted = crate::template::format_template_content_with_vue_version(
+        chunk.trim(),
+        options,
+        vue_version,
+    )?;
     let trimmed = formatted.trim_end_matches('\n').trim_end_matches('\r');
     super::template_indent::write_indented_template(
         output,

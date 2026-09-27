@@ -9,7 +9,9 @@ use vize_l0::{String, ToCompactString, cstr};
 use super::helpers::template_literal_state_after_line_from;
 
 mod normalize;
+#[cfg(test)]
 pub(crate) use normalize::normalize_attribute;
+pub(crate) use normalize::normalize_attribute_with_vue_version;
 
 /// Determine if an attribute's value should be formatted as a JS expression.
 pub(crate) fn should_format_expression(name: &str) -> bool {
@@ -31,6 +33,7 @@ pub(super) fn format_directive_value(
     name: &str,
     value: &str,
     options: &FormatOptions,
+    vue_version: crate::VueVersion,
 ) -> (String, bool) {
     let trimmed = value.trim();
     if trimmed.is_empty() {
@@ -52,6 +55,15 @@ pub(super) fn format_directive_value(
 
     let decoded = decode_expression_attribute_entities(trimmed);
     let expression = decoded.as_deref().unwrap_or(trimmed);
+
+    // Vue 2 filters apply to interpolations and bound values, never events.
+    if (name.starts_with(':') || name.starts_with("v-bind"))
+        && let Some(formatted) =
+            super::vue_filters::format_filter_expression(expression, options, vue_version, true)
+    {
+        let multiline = formatted.contains('\n');
+        return (formatted, multiline);
+    }
 
     // Try to format as JS expression via oxc_formatter
     match script::format_js_expression_in_attribute(expression, options) {

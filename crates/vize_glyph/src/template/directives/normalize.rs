@@ -6,10 +6,20 @@ use crate::options::FormatOptions;
 use vize_l0::{String, ToCompactString, cstr};
 
 /// Normalize directive shorthands and assign sort priority.
+#[cfg(test)]
 pub(crate) fn normalize_attribute(
     name: &str,
     value: Option<String>,
     options: &FormatOptions,
+) -> (String, Option<String>, u8, bool) {
+    normalize_attribute_with_vue_version(name, value, options, crate::VueVersion::V3)
+}
+
+pub(crate) fn normalize_attribute_with_vue_version(
+    name: &str,
+    value: Option<String>,
+    options: &FormatOptions,
+    vue_version: crate::VueVersion,
 ) -> (String, Option<String>, u8, bool) {
     // Normalize directive shorthands (only if enabled)
     let normalized_name: String = if options.normalize_directive_shorthands {
@@ -30,7 +40,8 @@ pub(crate) fn normalize_attribute(
     let mut indent_multiline_value = false;
     let formatted_value = value.map(|v| {
         if should_format_expression(&normalized_name) {
-            let (formatted, should_indent) = format_directive_value(&normalized_name, &v, options);
+            let (formatted, should_indent) =
+                format_directive_value(&normalized_name, &v, options, vue_version);
             indent_multiline_value = should_indent;
             formatted
         } else {

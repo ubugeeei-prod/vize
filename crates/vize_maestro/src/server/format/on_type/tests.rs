@@ -37,6 +37,7 @@ fn edits_at(source: &str, line: u32) -> Option<Vec<TextEdit>> {
         "/App.vue",
         Position::new(line, 0),
         &vize_glyph::FormatOptions::default(),
+        vize_glyph::VueVersion::V3,
     )
 }
 

@@ -1,0 +1,8 @@
+{
+  "vue": {
+    "version": "2"
+  },
+  "formatter": {
+    "endOfLine": "crlf"
+  }
+}

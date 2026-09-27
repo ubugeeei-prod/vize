@@ -4,15 +4,18 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { loadFormatterManifest } from "../differential/manifest.mjs";
 import { runFormatterPack } from "../differential/formatter.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-void test("source-built formatter matches both exact references and reaches a fixed point", (t) => {
+void test("source-built formatter matches every exact reference and reaches a fixed point", (t) => {
   const revision = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
   assert.equal(revision.status, 0, revision.stderr);
+  const manifestPath = path.join(root, "tests/_fixtures/differential/formatter/manifest.json");
+  const count = loadFormatterManifest(manifestPath).cases.length;
   const report = runFormatterPack({
-    manifestPath: path.join(root, "tests/_fixtures/differential/formatter/manifest.json"),
+    manifestPath,
     binaryPath: path.join(root, "target/ci", process.platform === "win32" ? "vize.exe" : "vize"),
     sourceRevision: revision.stdout.trim(),
     repoRoot: root,
@@ -24,11 +27,11 @@ void test("source-built formatter matches both exact references and reaches a fi
   assert.deepEqual(
     report.summary,
     {
-      plannedCases: 2,
-      legacyMatches: 2,
+      plannedCases: count,
+      legacyMatches: count,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: 2,
+      nativeUnsupported: count,
       pairedComparisons: 0,
       nativeHandled: 0,
       nativeEquivalent: 0,

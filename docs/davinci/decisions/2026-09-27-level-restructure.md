@@ -129,6 +129,8 @@ See the [script side decisions](./2026-09-27-level-restructure-designs.md#script
 
 See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks) in the companion record.
 
+[Legacy formatter Vue 2 filters](./2026-09-27-glyph-vue2-filters.md) records [#6845](https://github.com/ubugeeei-prod/vize/issues/6845), explicit version selection and the native FilterChain follow-up in #6836.
+
 ## JSX semantics
 
 See the [JSX semantics decisions](./2026-09-27-level-restructure-designs.md#jsx-semantics) in the companion record.

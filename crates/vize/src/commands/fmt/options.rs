@@ -2,10 +2,11 @@
 
 use super::{FmtArgs, FormatOptions};
 use crate::config;
+use vize_glyph::VueVersion;
 
 /// Build format options: config file as base, CLI flags override.
 #[inline]
-pub(super) fn build_format_options(args: &FmtArgs) -> FormatOptions {
+pub(super) fn build_format_options(args: &FmtArgs) -> (FormatOptions, VueVersion) {
     // Load config file as base (zero-cost if no file exists)
     let cfg = if args.no_config {
         config::VizeConfig::default()
@@ -43,5 +44,5 @@ pub(super) fn build_format_options(args: &FmtArgs) -> FormatOptions {
         opts.normalize_directive_shorthands = v;
     }
     opts.skip_script_stabilization = !args.write;
-    opts
+    (opts, cfg.vue_version.unwrap_or_default())
 }

@@ -160,7 +160,16 @@ pub(super) fn parse_interpolation_range(
 }
 
 /// Format interpolations in text content: `{{expr}}` -> `{{ expr }}`.
+#[cfg(test)]
 pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> String {
+    format_interpolations_with_vue_version(text, options, crate::VueVersion::V3)
+}
+
+pub(super) fn format_interpolations_with_vue_version(
+    text: &str,
+    options: &FormatOptions,
+    vue_version: crate::VueVersion,
+) -> String {
     let bytes = text.as_bytes();
     let len = bytes.len();
 
@@ -199,7 +208,7 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
 
             if depth == 0 {
                 let expr = text.get(expr_start..expr_end).unwrap_or_default();
-                let formatted_expr = format_interpolation_expression(expr, options);
+                let formatted_expr = format_interpolation_expression(expr, options, vue_version);
                 result.push_str("{{ ");
                 result.push_str(&formatted_expr);
                 result.push_str(" }}");
@@ -224,6 +233,15 @@ pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> Stri
     result
 }
 
-pub(super) fn format_interpolation_expression(expr: &str, options: &FormatOptions) -> String {
+pub(super) fn format_interpolation_expression(
+    expr: &str,
+    options: &FormatOptions,
+    vue_version: crate::VueVersion,
+) -> String {
+    if let Some(formatted) =
+        crate::template::vue_filters::format_filter_expression(expr, options, vue_version, false)
+    {
+        return formatted;
+    }
     script::format_js_expression(expr, options).unwrap_or_else(|| expr.trim().to_compact_string())
 }

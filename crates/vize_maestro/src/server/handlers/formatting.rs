@@ -25,7 +25,11 @@ pub(super) async fn formatting(
     #[cfg(feature = "glyph")]
     {
         let options = server.state.get_format_options();
-        return Ok(super::super::format::format_document(&_content, &options));
+        return Ok(super::super::format::format_document(
+            &_content,
+            &options,
+            server.state.type_checker_vue_version(),
+        ));
     }
     #[cfg(not(feature = "glyph"))]
     Ok(None)
@@ -55,7 +59,11 @@ pub(super) async fn range_formatting(
         let options = server.state.get_format_options();
         let path = uri.path();
         return Ok(super::super::format::format_range(
-            &_content, path, _range, &options,
+            &_content,
+            path,
+            _range,
+            &options,
+            server.state.type_checker_vue_version(),
         ));
     }
     #[cfg(not(feature = "glyph"))]
@@ -86,7 +94,11 @@ pub(super) async fn on_type_formatting(
         let position = params.text_document_position.position;
         let path = uri.path();
         return Ok(super::super::format::format_on_type(
-            &_content, path, position, &options,
+            &_content,
+            path,
+            position,
+            &options,
+            server.state.type_checker_vue_version(),
         ));
     }
     #[cfg(not(feature = "glyph"))]

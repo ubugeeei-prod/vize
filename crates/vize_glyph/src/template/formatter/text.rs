@@ -4,7 +4,7 @@
 //! layout whitespace cannot become a Vue runtime text node.
 
 use super::{
-    TemplateFormatter, format_interpolation_expression, format_interpolations,
+    TemplateFormatter, format_interpolation_expression, format_interpolations_with_vue_version,
     suppression::{ChunkJoin, LineJoiner, TextRun},
 };
 use vize_l0::String;
@@ -22,7 +22,8 @@ impl TemplateFormatter<'_> {
         if text.is_empty() {
             return;
         }
-        let formatted = format_interpolations(text.as_str(), self.options);
+        let formatted =
+            format_interpolations_with_vue_version(text.as_str(), self.options, self.vue_version);
         let start = text.start();
         let end = text.end();
         text.clear();
@@ -169,7 +170,7 @@ impl TemplateFormatter<'_> {
     ) {
         output.extend_from_slice(b"{{");
         output.extend_from_slice(self.newline);
-        let formatted_expr = format_interpolation_expression(expr, self.options);
+        let formatted_expr = format_interpolation_expression(expr, self.options, self.vue_version);
         output.extend_from_slice(
             self.render_interpolation_expr_lines(&formatted_expr, depth)
                 .as_bytes(),

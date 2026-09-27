@@ -8,8 +8,8 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 use vize_glyph::{
-    Allocator, FormatOptions, FormatResult, format_script_with_source_type,
-    format_sfc_with_allocator,
+    Allocator, FormatOptions, FormatResult, VueVersion, format_script_with_source_type,
+    format_sfc_with_allocator_and_vue_version,
 };
 use vize_l0::source_io as fs;
 use vize_l0::{cstr, profile, profiler::global_profiler};
@@ -109,7 +109,7 @@ pub fn run(args: FmtArgs) {
         eprintln!("\x1b[31mError:\x1b[0m {}", error);
         std::process::exit(2);
     }
-    let options = build_format_options(&args);
+    let (options, vue_version) = build_format_options(&args);
     let (ignore_set, patterns) = (load_fmt_ignore_set(&args), entries::resolve_patterns(&args));
 
     let collect_start = Instant::now();
@@ -149,6 +149,7 @@ pub fn run(args: FmtArgs) {
             match process_file(
                 path,
                 &options,
+                vue_version,
                 allocator,
                 args.check,
                 args.write,
@@ -337,6 +338,7 @@ pub fn run(args: FmtArgs) {
 fn process_file(
     path: &PathBuf,
     options: &FormatOptions,
+    vue_version: VueVersion,
     allocator: &Allocator,
     check: bool,
     write: bool,
@@ -359,7 +361,7 @@ fn process_file(
         .unwrap_or(Duration::ZERO);
 
     let format_start = profile.then(Instant::now);
-    let result = format_file_source(path, &source, options, allocator)
+    let result = format_file_source(path, &source, options, allocator, vue_version)
         .map_err(|e| vize_l0::cstr!("Format error: {}", e))?;
     let format_time = format_start
         .map(|start| start.elapsed())
@@ -425,6 +427,7 @@ fn format_file_source(
     source: &str,
     options: &FormatOptions,
     allocator: &Allocator,
+    vue_version: VueVersion,
 ) -> Result<FormatResult, vize_glyph::FormatError> {
     if let Some(source_type) = script_source_type_for_path(path) {
         let code = profile!(
@@ -442,7 +445,7 @@ fn format_file_source(
     }
     profile!(
         "cli.fmt.file.format_sfc",
-        format_sfc_with_allocator(source, options, allocator)
+        format_sfc_with_allocator_and_vue_version(source, options, allocator, vue_version)
     )
 }
 
@@ -482,6 +485,7 @@ mod tests {
             "const Component=({label}:{label:string})=><button>{label}</button>",
             &options,
             &allocator,
+            super::VueVersion::V3,
         )
         .unwrap();
 
