@@ -13,12 +13,12 @@ mod tests;
 
 use alloc::vec::Vec as StdVec;
 use vize_davinci::id::NodeId;
-use vize_impeto::lattice::{
+use vize_l0::{Span, String};
+use vize_l2::op::{Attribute, BindingOp, OnOp};
+use vize_l3::lattice::{
     BindingFact, BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
     ReactivityClass, Verdict, evaluate_binding,
 };
-use vize_l0::{Span, String};
-use vize_l2::op::{Attribute, BindingOp, OnOp};
 
 use super::options::BindingKind;
 use super::props::{

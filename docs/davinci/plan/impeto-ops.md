@@ -100,7 +100,7 @@ read it.
 P3-10 keeps the choice of where an op's work runs as an overlay on the graph,
 `Program::placements`, never as a rewrite of ops, regions, edges, effect
 scopes, or operands. An op without a record runs `inline`, its canonical shape.
-`vize_impeto::placement::annotate` records the other shapes; every recorded
+`vize_l3::placement::annotate` records the other shapes; every recorded
 alternative preserves meaning, so choosing among them is a cost question only.
 
 | placement | legal when                                                                                                                                                                                                   | update-model effect                                                          |
@@ -126,7 +126,7 @@ the semantic argument until extraction output reaches a backend under TS-28.
 
 ## Try-Measure-Commit Extraction
 
-`vize_impeto::extract::extract` chooses among recorded alternatives, starting
+`vize_l3::extract::extract` chooses among recorded alternatives, starting
 from the all-inline plan. For each candidate in record order it performs the
 placement on a trial plan, simplifies locally (a hoist removes its subtree's
 effect units, a group merges its unit into the leader's and unions their keys,
@@ -148,10 +148,10 @@ spends one unit of the component's candidate budget; a candidate blocked by the
 committed plan (`subsumed`, `not-contiguous`) or reached after the budget is
 spent (`budget-exhausted`) is recorded as missed without measuring. Tiers are
 the `[optimization]` rows of `budgets.toml`, synced field for field by
-`crates/vize_impeto/tests/optimization_budgets.rs`.
+`crates/vize_l3/tests/optimization_budgets.rs`.
 
 The pass writes only `PlacementRecord::chosen` and is described as
-`Preserved::ALL`. `vize_impeto::optimize::OPTIMIZE` is the `s3` pipeline
+`Preserved::ALL`. `vize_l3::optimize::OPTIMIZE` is the `s3` pipeline
 `annotate-placements` then `extract-placements`; run through the pass manager,
 each decision becomes one `s3.extract-placements` remark (registered in
 `remarks-format.md`), and `PartitionFacts::stale` stays `None`. Under the

@@ -1,10 +1,10 @@
 use serde_json::json;
 use vize_davinci::folio::value::FolioValue;
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
-use vize_impeto::op::{OpId, Phase, Program, RegionId};
-use vize_impeto::operand::{Operand, OperandRole, OperandValue, ValueKind};
-use vize_impeto::values_folio::{FolioOperand, L3ValuesFolio, OperandRow};
 use vize_l0::{Allocator, Span, String, cstr};
+use vize_l3::op::{OpId, Phase, Program, RegionId};
+use vize_l3::operand::{Operand, OperandRole, OperandValue, ValueKind};
+use vize_l3::values_folio::{FolioOperand, L3ValuesFolio, OperandRow};
 
 fn parse_row(json: &str, line: usize) -> Result<FolioOperand, FolioError> {
     FolioOperand::parse_value(&cstr!("operand={json}"), line)

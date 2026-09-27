@@ -11,7 +11,7 @@
 
 use std::path::Path;
 
-use vize_impeto::extract::{Metric, OptTier, OptimizationBudget, TiePolicy};
+use vize_l3::extract::{Metric, OptTier, OptimizationBudget, TiePolicy};
 
 fn budgets() -> toml::Value {
     let repo = Path::new(env!("CARGO_MANIFEST_DIR"))

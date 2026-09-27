@@ -1,4 +1,4 @@
-//! Catalog of L3 verifier codes (`vize_impeto::verify::ViolationCode`).
+//! Catalog of L3 verifier codes (`vize_l3::verify::ViolationCode`).
 //!
 //! Each code has `s3/<code>.message` and `s3/<code>.help` in en, ja and
 //! zh. The verifier still prints its call-site message; these entries name

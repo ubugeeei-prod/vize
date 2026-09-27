@@ -16,11 +16,11 @@
 use std::path::Path;
 
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_impeto::lattice::{
+use vize_l0::{Allocator, Span};
+use vize_l3::lattice::{
     BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind, ReactivityClass,
     ReactivityFolio, Verdict, evaluate,
 };
-use vize_l0::{Allocator, Span};
 
 const EFFECTS: [EffectKind; 8] = [
     EffectKind::Freeze,

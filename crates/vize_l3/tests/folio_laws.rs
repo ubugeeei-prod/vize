@@ -1,9 +1,9 @@
 use vize_davinci::folio::{Folio, FolioMode};
-use vize_impeto::folio::L3Folio;
-use vize_impeto::op::{
+use vize_l0::{Allocator, Span};
+use vize_l3::folio::L3Folio;
+use vize_l3::op::{
     EdgeKind, EffectId, EffectScope, Op, OpId, OpKind, Phase, Program, Region, RegionId, StateEdge,
 };
-use vize_l0::{Allocator, Span};
 
 const CANONICAL: &str = "\
 [s3-folio]

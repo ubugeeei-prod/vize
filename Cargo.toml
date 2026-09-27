@@ -23,7 +23,7 @@ members = [
   "crates/vize_davinci",
   "crates/vize_davinci_derive",
   "crates/vize_l2",
-  "crates/vize_impeto",
+  "crates/vize_l3",
   "crates/vize_l1_to_l2",
   "crates/vize_l2_to_l3",
   "crates/vize_l1",
@@ -85,15 +85,13 @@ vize_extension_sdk = { path = "crates/vize_extension_sdk" }
 # dependency graph from crates.io.
 vize_davinci = { path = "crates/vize_davinci", version = "=0.429.1" }
 vize_davinci_derive = { path = "crates/vize_davinci_derive", version = "=0.429.1" }
-vize_impeto = { path = "crates/vize_impeto", version = "=0.429.1" }
 
-# Davinci stage aliases. These are the preferred implementation names for new
-# code; L0 still aliases the published Carton package until a compatibility
-# change can move it to a physical stage name.
+# Level dependencies use physical L1/L2/L3 and conversion package identities.
+# L0 still aliases the published Carton package until its storage carve-out.
 vize_l0 = { package = "vize_carton", path = "crates/vize_carton", version = "=0.429.1" }
 vize_l1 = { path = "crates/vize_l1", version = "=0.429.1" }
 vize_l2 = { path = "crates/vize_l2", version = "=0.429.1" }
-vize_l3 = { package = "vize_impeto", path = "crates/vize_impeto", version = "=0.429.1" }
+vize_l3 = { path = "crates/vize_l3", version = "=0.429.1" }
 vize_l1_to_l2 = { path = "crates/vize_l1_to_l2", version = "=0.429.1" }
 vize_l2_to_l3 = { path = "crates/vize_l2_to_l3", version = "=0.429.1" }
 

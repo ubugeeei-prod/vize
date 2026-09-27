@@ -1,4 +1,4 @@
-use vize_impeto::op::{EdgeKind, OpKind, Phase};
+use vize_l3::op::{EdgeKind, OpKind, Phase};
 
 #[test]
 fn op_kind_mnemonics_are_the_vapor_generalization_set() {

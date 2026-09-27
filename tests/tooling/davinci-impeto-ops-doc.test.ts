@@ -11,7 +11,7 @@ function readRepoFile(...segments: string[]): string {
 }
 
 function rustMnemonics(): string[] {
-  const rust = readRepoFile("crates", "vize_impeto", "src", "op", "kind.rs");
+  const rust = readRepoFile("crates", "vize_l3", "src", "op", "kind.rs");
   return [
     ...new Set(
       [...rust.matchAll(/Self::[A-Za-z]+ => "(impeto\.[^"]+)"/gu)].map((match) => match[1]),
@@ -79,7 +79,7 @@ test("P3-5 Impeto op reference records the executable Lean trace labels", () => 
 
 test("P3-5 Impeto op reference is cross-linked from Folio docs and rustdoc", () => {
   const folio = readRepoFile("docs/davinci", "plan", "folio-format-impeto.md");
-  const lib = readRepoFile("crates", "vize_impeto", "src", "lib.rs");
+  const lib = readRepoFile("crates", "vize_l3", "src", "lib.rs");
   const phase = readRepoFile("docs/davinci", "plan", "phase-3.md");
 
   assert.match(folio, /\[`impeto-ops\.md`\]\(\.\/impeto-ops\.md\)/u);

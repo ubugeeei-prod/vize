@@ -1,6 +1,6 @@
-# vize_impeto
+# vize_l3
 
-`vize_impeto` is Davinci's L3 reactivity IR. It records backend-oriented UI
+`vize_l3` is Davinci's L3 reactivity IR. It records backend-oriented UI
 work as flat, id-addressed operations with explicit state and effect edges.
 
 `Program::operands` retains value payloads beside the compact graph. Operands

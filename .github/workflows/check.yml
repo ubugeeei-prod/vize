@@ -396,7 +396,7 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports && cargo clippy -p vize_maestro --tests -- -D warnings && rust-script tools/commands/ci/github/check-maestro-feature-contract.rs && rust-script tools/commands/ci/check-workspace-lints.rs --check
       - name: Davinci no_std stage-library portability lanes (TS-24)
-        run: cargo build -p vize_davinci -p vize_l1 -p vize_l2 -p vize_impeto -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_davinci -p vize_l1 -p vize_l2 -p vize_impeto -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features
+        run: cargo build -p vize_davinci -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 && cargo build -p vize_davinci -p vize_l1 -p vize_l2 -p vize_l3 -p vize_l1_to_l2 -p vize_l2_to_l3 --lib --target wasm32-wasip2 --no-default-features
       - name: Davinci allocation gate
         run: cargo bench -p vize_l1_to_l2 --bench davinci_storage -- --quick && cargo bench -p vize_patina --bench davinci_markup -- --quick && rust-script tools/commands/davinci/bench-compare.rs --bench s1_to_s2_lower_vfor_three_aliases --bench s1_to_s2_emit_von_two_per_bucket --bench s1_to_s2_emit_p2_11_dom_surface --bench s1_to_s2_pass_template_complexity --bench patina_jsx_markup_one_root --bench patina_s2_markup_one_root && cargo bench -p vize_musea --bench davinci_art -- --quick && rust-script tools/commands/davinci/bench-compare.rs --bench musea_parse_art_define_art --bench musea_parse_art_legacy_attrs --bench musea_parse_art_inline
       - name: Upload Davinci allocation bench reports

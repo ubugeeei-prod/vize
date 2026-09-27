@@ -74,7 +74,7 @@ function assertLeanWorkflow(workflow: Workflow): void {
       ["tests/formal/impeto", "lake exe impetoRef --check-lattice-fixtures"],
       ["tests/formal/impeto", "lake exe impetoRef --check-schedule-fixtures"],
       ["tests/formal/impeto", "lake exe impetoRef --check-folios"],
-      [".", "cargo test -p vize_impeto --test lattice_reference_fixture"],
+      [".", "cargo test -p vize_l3 --test lattice_reference_fixture"],
       [".", "cargo test -p vize_l2_to_l3 --test lean_reference_fixture"],
       [".", "cargo test -p vize_atelier_vapor --test davinci_l3_compiled_trace"],
       [".", "cargo test -p vize_atelier_vapor --test davinci_mounted_behavior"],
@@ -210,7 +210,7 @@ test("P3-15 theorems are audited and the lattice differential is wired", () => {
     readRepoFile("crates", "vize_l2_to_l3", "tests", "lean_reference_fixture.rs"),
     /^    mod schedule;$/mu,
   );
-  const bridge = readRepoFile("crates", "vize_impeto", "tests", "lattice_reference_fixture.rs");
+  const bridge = readRepoFile("crates", "vize_l3", "tests", "lattice_reference_fixture.rs");
   assert.match(bridge, /tests\/formal\/impeto\/fixtures\/reactivity-lattice\.folio/u);
   assert.match(bridge, /ReactivityFolio::of\(&facts\)\.print_to_string\(FolioMode::Full\)/u);
 });

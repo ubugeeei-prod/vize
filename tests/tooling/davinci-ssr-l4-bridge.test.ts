@@ -18,7 +18,7 @@ test("Davinci SSR compile path imports the L4 string-plan bridge", () => {
     ["vize_l1_to_l2", null],
     ["vize_l2", null],
     ["vize_l2_to_l3", null],
-    ["vize_impeto", "vize_l3"],
+    ["vize_l3", null],
   ] as const) {
     const dep = dependency(metadata, "vize_atelier_ssr", dependencyName, null);
     assert.equal(dep.rename, rename);

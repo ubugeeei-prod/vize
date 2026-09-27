@@ -39,8 +39,34 @@ parent's PR-base handling and merge-group suites; only the declaration gate
 and required aggregate dependency are added semantically. Existing comments
 were shortened by the original patch.
 
-TODO: replay the physical L3 and stage-path layers in separate move-only and
-reference commits; record their patch identities, metadata and inventory
-checks here. Publish only after the CI priority is resolved, mirror decisions
-on the owning issues, and validate fresh exact-head Actions and merge-group
-results. Three legacy exceptions remain, so #6831 and #6832 stay open.
+## Physical L3 layer
+
+The package move retains 56 R100 paths in a move-only commit. The generated
+consumption shard move retains one R100 path in its own commit. Reference,
+manifest, immutable published-semver baseline and shard-identity edits follow
+separately. All six replayed patches have identical full stable patch ids:
+
+| Original     | Replay      | Stable patch id                            |
+| ------------ | ----------- | ------------------------------------------ |
+| `c5cf11dd9`  | `15e0abcba` | `d39a2272e29030aa9c941ad95b8261fecbb582a1` |
+| `7c00920e5`  | `5519e31d2` | `109c975611e30e3a060ee7b5de5e8f506f041979` |
+| `574a9da415` | `37e087927` | `6a738da5b30bcd980875122a706257fcd31f286c` |
+| `7fee1759f`  | `7a4ef2e24` | `7401c993b3d4683fb9a345c1f36458b5f5333636` |
+| `1d08c324`   | `57c2e868d` | `b20dd7da2e458c5048aba18a07bba52d2a302176` |
+| `aa0b3de2`   | `c86bedb52` | `4996fee917e880dbee57f5a650297ef728477188` |
+
+The stability table correction `aa0b3de2` is included in this layer. Its later
+copy `cabf4a7a` has the same stable patch id
+`4996fee917e880dbee57f5a650297ef728477188`; the stage layer must not apply it
+twice. No original worktree or commit was changed.
+
+Existing metadata, dependency, workflow, stability, module and storage
+contracts passed all 73 tests. Croquis consumption (32 files), consumer
+migration (19 files), rule parity and storage summary checks passed without
+regeneration. No derived cross-count change was necessary. The central record
+retains current CI, Nuxt and SSR decisions and is 347 lines at this layer.
+
+TODO: replay stage paths after this layer, publish only after the CI priority
+is resolved, mirror decisions on the owning issues, and validate fresh
+exact-head Actions and merge-group results. Three legacy exceptions remain;
+#6831 and #6832 stay open. No full local production build ran.

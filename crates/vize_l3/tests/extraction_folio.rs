@@ -1,12 +1,12 @@
 //! TS-16 laws for the L3 extraction page.
 
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
-use vize_impeto::extract::{
+use vize_l0::{Span, String, cstr};
+use vize_l3::extract::{
     Decision, DecisionKind, Delta, FolioDecision, L3ExtractionFolio, Metric, Reason,
 };
-use vize_impeto::op::OpId;
-use vize_impeto::placement::Placement;
-use vize_l0::{Span, String, cstr};
+use vize_l3::op::OpId;
+use vize_l3::placement::Placement;
 
 const CANONICAL: &str = "\
 [s3-extraction-folio]

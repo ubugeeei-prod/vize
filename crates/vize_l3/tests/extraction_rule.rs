@@ -1,6 +1,6 @@
 //! The pinned multi-metric commit rule, judged directly.
 
-use vize_impeto::extract::{
+use vize_l3::extract::{
     Metric, Metrics, OptTier, OptimizationBudget, Rejection, TiePolicy, epsilon_pct, judge,
 };
 

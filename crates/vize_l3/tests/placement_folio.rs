@@ -1,11 +1,11 @@
 //! TS-16 laws for the L3 placement page.
 
 use vize_davinci::folio::{Folio, FolioError, FolioMode};
-use vize_impeto::op::OpId;
-use vize_impeto::placement::{
+use vize_l0::cstr;
+use vize_l3::op::OpId;
+use vize_l3::placement::{
     FolioPlacement, L3PlacementFolio, Placement, PlacementRecord, PlacementSet,
 };
-use vize_l0::cstr;
 
 const CANONICAL: &str = "\
 [s3-placement-folio]

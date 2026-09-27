@@ -35,6 +35,11 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 - Product crates with art names (croquis, patina, glyph, maestro, canon, carton, …) keep their names. `docs/davinci/` keeps its name as the program name.
 - The migration does not freeze other work. Move-only commits keep git rename detection working for in-flight fixes, renames are scripted (on a conflict, re-run the script on `main`), and PRs stay small.
 
+## Physical L3 package slice
+
+The first #6832 slice moves `crates/vize_impeto` to `crates/vize_l3`, then changes package/dependency identities. Runtime behavior stays unchanged. First-name semver uses the verified `vize_impeto@0.429.0` archive and Git parent.
+Remaining naming and CLI work keeps #6832 open. See the [complete slice decision](./2026-09-27-level-restructure-order.md#physical-l3-package-slice).
+
 ## `vize_davinci` is deleted
 
 Tracked in [#6833](https://github.com/ubugeeei-prod/vize/issues/6833) and [#6834](https://github.com/ubugeeei-prod/vize/issues/6834).
