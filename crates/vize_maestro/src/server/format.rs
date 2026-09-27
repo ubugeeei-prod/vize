@@ -25,10 +25,16 @@ use tower_lsp::lsp_types::{Position, Range, TextEdit};
 pub(crate) fn format_document(
     content: &str,
     options: &vize_glyph::FormatOptions,
+    vue_version: vize_glyph::VueVersion,
 ) -> Option<Vec<TextEdit>> {
     let allocator = vize_glyph::Allocator::with_capacity(content.len());
 
-    let formatted = match vize_glyph::format_sfc_with_allocator(content, options, &allocator) {
+    let formatted = match vize_glyph::format_sfc_with_allocator_and_vue_version(
+        content,
+        options,
+        &allocator,
+        vue_version,
+    ) {
         Ok(result) => result,
         Err(_) => return None,
     };
@@ -89,13 +95,13 @@ mod tests {
         let source = "<template>\n<div>hello</div>\n</template>\n";
         let options = vize_glyph::FormatOptions::default();
 
-        let result = format_document(source, &options);
+        let result = format_document(source, &options, vize_glyph::VueVersion::V3);
         assert!(result.is_some());
         let edits = result.unwrap();
         assert!(!edits.is_empty(), "expected edits on first format");
 
         let formatted = &edits[0].new_text;
-        let result2 = format_document(formatted, &options);
+        let result2 = format_document(formatted, &options, vize_glyph::VueVersion::V3);
         assert!(result2.is_some());
         let edits2 = result2.unwrap();
         assert!(
@@ -108,7 +114,7 @@ mod tests {
     fn format_document_returns_edit_for_unformatted() {
         let source = "<template>\n<div>hello</div>\n</template>\n";
         let options = vize_glyph::FormatOptions::default();
-        let result = format_document(source, &options);
+        let result = format_document(source, &options, vize_glyph::VueVersion::V3);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -126,7 +132,7 @@ mod tests {
             semi: false,
             ..Default::default()
         };
-        let result = format_document(source, &options);
+        let result = format_document(source, &options, vize_glyph::VueVersion::V3);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -138,7 +144,7 @@ mod tests {
     fn format_document_edit_covers_full_range() {
         let source = "<template>\n<div   class=\"a\"   id=\"b\" >\nhello\n</div>\n</template>\n";
         let options = vize_glyph::FormatOptions::default();
-        let result = format_document(source, &options);
+        let result = format_document(source, &options, vize_glyph::VueVersion::V3);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -152,7 +158,7 @@ mod tests {
     fn format_document_edit_uses_real_eof_for_trailing_newline() {
         let source = "<template>\n<div>hello</div>\n</template>\n";
         let options = vize_glyph::FormatOptions::default();
-        let result = format_document(source, &options);
+        let result = format_document(source, &options, vize_glyph::VueVersion::V3);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -164,7 +170,7 @@ mod tests {
     fn format_document_edit_uses_utf16_columns() {
         let source = "<template><div>😀</div></template>";
         let options = vize_glyph::FormatOptions::default();
-        let result = format_document(source, &options);
+        let result = format_document(source, &options, vize_glyph::VueVersion::V3);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -179,7 +185,7 @@ mod tests {
             single_quote: true,
             ..Default::default()
         };
-        let result = format_document(source, &options);
+        let result = format_document(source, &options, vize_glyph::VueVersion::V3);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {
@@ -202,7 +208,7 @@ mod tests {
         assert!(options.single_quote);
 
         let source = "<script>\nconst x = \"hello\";\n</script>\n";
-        let result = format_document(source, &options);
+        let result = format_document(source, &options, vize_glyph::VueVersion::V3);
         assert!(result.is_some());
         let edits = result.unwrap();
         if !edits.is_empty() {

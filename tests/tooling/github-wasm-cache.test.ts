@@ -5,9 +5,9 @@
 // whole-directory cache once restored a pre-#6290 `wasm-transform.ts` onto the
 // #6290 merge, dropping the Spolvero feed on main.
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { gitTrackedFiles } from "../../tools/support/git-tracked-files.mjs";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; with?: Record<string, string> };
@@ -21,12 +21,6 @@ const CACHES = [
 /** Every cached path is a directory's wasm-bindgen output glob. */
 const OUTPUT_GLOB = /^(?:npm\/wasm|playground\/src\/wasm)\/vize_vitrine\*$/;
 
-function trackedFiles(): string[] {
-  const listed = spawnSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8" });
-  assert.equal(listed.status, 0, listed.stderr);
-  return listed.stdout.split("\0").filter(Boolean);
-}
-
 function wasmCacheStep(workflow: string, job: string): Step {
   const parsed = parse(readRepoFile(".github", "workflows", workflow)) as Workflow;
   const step = parsed.jobs?.[job]?.steps?.find(
@@ -37,7 +31,7 @@ function wasmCacheStep(workflow: string, job: string): Step {
 }
 
 test("WASM caches never cover tracked files", () => {
-  const tracked = trackedFiles();
+  const tracked = gitTrackedFiles(root);
   for (const { workflow, job } of CACHES) {
     const paths = (wasmCacheStep(workflow, job).with?.path ?? "")
       .split("\n")

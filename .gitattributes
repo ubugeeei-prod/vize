@@ -13,3 +13,9 @@ tests/_fixtures/_git/** linguist-vendored=true
 # Preserve the pinned upstream source bytes, including existing trailing spaces.
 tests/_fixtures/pattern-reference/upstream/** linguist-vendored whitespace=-blank-at-eol
 tests/_fixtures/vue-language-tools/upstream/** linguist-vendored whitespace=-blank-at-eol
+
+# Keep the authored CRLF response fixture byte-exact across Git checkouts.
+tests/_fixtures/differential/lsp/on-type-crlf/App.vue.txt -text whitespace=cr-at-eol
+
+# Immutable formatter regressions include literal CRLF/CRCRLF output bytes.
+tests/_fixtures/differential/formatter/sfc-vue*/** -text whitespace=-blank-at-eol

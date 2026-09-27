@@ -246,8 +246,7 @@ jobs:
       - uses: ./.github/actions/check-vue-parity
   test-scripts:
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
-    # CLI, MoonBit and native artifact fixtures require the full bootstrap.
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }} # CLI, MoonBit and native artifact fixtures require the full bootstrap.
     timeout-minutes: 30
     env: { NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169" }
     steps:
@@ -262,19 +261,20 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: test-scripts
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+        with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - uses: ./.github/actions/setup-rust-script
       - name: Hydrate CLI diagnostic fixture and install JS dependencies
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
       - name: Build vize CLI
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json
       - name: Install vize CLI
         run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       - name: Prepare the pinned plugin isolation runtime
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
       - name: Test release scripts
+        env:
+          VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
+          VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
         run: vp run --workspace-root test:scripts
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence
         if: ${{ always() }}

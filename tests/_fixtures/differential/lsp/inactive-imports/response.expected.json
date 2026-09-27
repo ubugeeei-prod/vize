@@ -1,0 +1,41 @@
+[
+  {
+    "range": {
+      "start": {
+        "line": 6,
+        "character": 7
+      },
+      "end": {
+        "line": 6,
+        "character": 20
+      }
+    },
+    "target": "${workspace}/Multi.vue"
+  },
+  {
+    "range": {
+      "start": {
+        "line": 7,
+        "character": 17
+      },
+      "end": {
+        "line": 7,
+        "character": 29
+      }
+    },
+    "target": "${workspace}/Real.vue"
+  },
+  {
+    "range": {
+      "start": {
+        "line": 10,
+        "character": 7
+      },
+      "end": {
+        "line": 10,
+        "character": 23
+      }
+    },
+    "target": "${workspace}/Exported.vue"
+  }
+]

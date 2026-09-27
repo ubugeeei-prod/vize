@@ -1,0 +1,122 @@
+[
+  {
+    "id": "valid-arrow-expression-return-script",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "import { nextTick as vueNextTick } from 'vue';\nexport const useTick = () => { const nextTick = () => vueNextTick(); return { nextTick }; };",
+    "filename": "next-tick-valid-arrow-expression-return.ts",
+    "entry": "script",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "valid-arrow-expression-return-sfc",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "<template><p>雪😀</p></template>\r\n<script lang=\"ts\">\r\nimport { nextTick as vueNextTick } from 'vue';\nexport const useTick = () => { const nextTick = () => vueNextTick(); return { nextTick }; };\r\n</script>\r\n",
+    "filename": "next-tick-valid-arrow-expression-return.vue",
+    "entry": "sfc",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "valid-parenthesized-arrow-expression-return-script",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "import { nextTick } from 'vue'; const tick = () => (nextTick());",
+    "filename": "next-tick-valid-parenthesized-arrow-expression-return.ts",
+    "entry": "script",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "valid-parenthesized-arrow-expression-return-sfc",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "<template><p>雪😀</p></template>\r\n<script lang=\"ts\">\r\nimport { nextTick } from 'vue'; const tick = () => (nextTick());\r\n</script>\r\n",
+    "filename": "next-tick-valid-parenthesized-arrow-expression-return.vue",
+    "entry": "sfc",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 0,
+    "fixes": 0
+  },
+  {
+    "id": "invalid-arrow-block-bare-call-script",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "import { nextTick } from 'vue'; const tick = () => { nextTick(); };",
+    "filename": "next-tick-invalid-arrow-block-bare-call.ts",
+    "entry": "script",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 0
+  },
+  {
+    "id": "invalid-arrow-block-bare-call-sfc",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "<template><p>雪😀</p></template>\r\n<script lang=\"ts\">\r\nimport { nextTick } from 'vue'; const tick = () => { nextTick(); };\r\n</script>\r\n",
+    "filename": "next-tick-invalid-arrow-block-bare-call.vue",
+    "entry": "sfc",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 0
+  },
+  {
+    "id": "invalid-arrow-expression-void-call-script",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "import { nextTick } from 'vue'; const tick = () => void nextTick();",
+    "filename": "next-tick-invalid-arrow-expression-void-call.ts",
+    "entry": "script",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 0
+  },
+  {
+    "id": "invalid-arrow-expression-void-call-sfc",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "<template><p>雪😀</p></template>\r\n<script lang=\"ts\">\r\nimport { nextTick } from 'vue'; const tick = () => void nextTick();\r\n</script>\r\n",
+    "filename": "next-tick-invalid-arrow-expression-void-call.vue",
+    "entry": "sfc",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 0
+  },
+  {
+    "id": "nested-arrow-restores-statement-context-script",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "import { nextTick } from 'vue'; const tick = () => { const inner = () => nextTick(); nextTick(); return inner; };",
+    "filename": "next-tick-nested-arrow-restores-statement-context.ts",
+    "entry": "script",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 0
+  },
+  {
+    "id": "nested-arrow-restores-statement-context-sfc",
+    "history": "c7c1d7c968a8528a945a57693ce092fd3872fd4d",
+    "source": "<template><p>雪😀</p></template>\r\n<script lang=\"ts\">\r\nimport { nextTick } from 'vue'; const tick = () => { const inner = () => nextTick(); nextTick(); return inner; };\r\n</script>\r\n",
+    "filename": "next-tick-nested-arrow-restores-statement-context.vue",
+    "entry": "sfc",
+    "rule": "script/valid-next-tick",
+    "vue_version": null,
+    "vapor": null,
+    "diagnostics": 1,
+    "fixes": 0
+  }
+]

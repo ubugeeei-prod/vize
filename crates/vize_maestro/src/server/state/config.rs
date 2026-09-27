@@ -121,8 +121,8 @@ impl ServerState {
         *self.type_checker_jsx_typecheck.read()
     }
 
-    /// Effective Vue language version used by every native type-check surface.
-    #[cfg(feature = "native")]
+    /// Effective project Vue version used by type checking and formatting.
+    #[cfg(any(feature = "native", feature = "glyph"))]
     pub(crate) fn type_checker_vue_version(&self) -> vize_l0::config::VueVersion {
         *self.type_checker_vue_version.read()
     }
