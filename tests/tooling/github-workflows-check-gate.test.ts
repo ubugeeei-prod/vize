@@ -79,9 +79,9 @@ test("merge queue instruction ceilings are enforced through the required aggrega
   assert.equal(gate?.if, undefined);
   assert.equal(
     gate?.env?.MEASURE,
-    "${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || github.workflow == 'Davinci instruction counts' }}",
+    "${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}",
   );
-  assert.equal(instructionWorkflow.name, "Davinci instruction counts");
+  assert.equal(instructionWorkflow.name, "Level instruction counts");
   const verify = gate?.steps?.find(
     (step) => step.name === "Verify pinned registry and immutable base ratchet",
   );

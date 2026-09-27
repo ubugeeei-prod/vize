@@ -159,3 +159,42 @@ which distinguishes that standalone measurement from
 the fast `Check` PR call. Queue measurement is selected directly by the
 merge-group event and cannot take the PR path. Required queue verification
 is still unfinished until that exact final revision runs in the queue.
+
+Cross-job verification [run 36305573043](https://github.com/ubugeeei-prod/vize/actions/runs/36305573043)
+then rejected thirteen ceiling comparisons, despite all three executions
+within the new job agreeing. The compiler source, base commit, physical
+runner, CPU model, and glibc version were unchanged. Exclusive function
+comparison attributed the complete differences to `__memcmp_avx2_movbe`
+and `__memcpy_avx_unaligned_erms`, whose paths depend on input addresses and
+page boundaries across builds. For example, DOM code generation differed
+by 737 instructions entirely within the library comparison routine. The
+above draft registry is therefore an unaccepted bootstrap reference, not
+a proven queue baseline. No ceiling was increased to hide this result.
+
+Before final pinning, `libc_dispatch` records a fixed `GLIBC_TUNABLES` hardware
+capability mask disabling AVX, AVX2, AVX512, ERMS, FSRM, SSSE3, and SSE4 paths
+and the corresponding glibc preferred-dispatch flags. This keeps the
+baseline SSE2 library implementation. The dump parser rejects actual
+hardware-specific libc routine names, so requesting an environment variable
+without changing dispatch cannot publish a baseline. Per-suite binary
+digests are diagnostic artifact provenance; they do not require future
+candidate binaries to equal historical binaries. The libc mask follows the
+[GNU C Library hardware-capability tunables](https://sourceware.org/glibc/manual/latest/html_node/Hardware-Capability-Tunables.html)
+and its [2.39 comparison selector](https://raw.githubusercontent.com/bminor/glibc/release/2.39/master/sysdeps/x86_64/multiarch/ifunc-memcmp.h).
+Final pinning now requires matching counts in at least two separate Actions
+job builds with the same compiler source, in addition to three identical
+executions within each job. The draft remains blocked until that proof and
+the exact queue enforcement pass.
+
+`fixture_digest = "input-identity-v2"` preserves input identity across
+structural moves. Direct fixture files hash their exact bytes independently
+of their paths. The four level storage probes hash their exact template
+constants or included dashboard bytes, independently of the benchmark
+target, function, module and type names. Other synthetic probes retain a
+generator-source fingerprint and included fixture bytes, with include paths
+normalized. The driver accepts exactly one side of the bijective
+`davinci_storage` to `l1_to_l2_storage` target/source move, preserving all
+benchmark ids, windows and numeric ceilings. A fixture label or path may
+change only while its input digest remains identical; changed input bytes
+still fail. Counter/span/timing identity renames are a separate registry and
+cannot reset these instruction budgets.

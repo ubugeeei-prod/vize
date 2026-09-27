@@ -8,7 +8,9 @@ export const ID = /^[A-Za-z0-9._-]+$/;
 export const METHODOLOGY_KEYS = [
   "allocator",
   "flags",
+  "fixture_digest",
   "libc",
+  "libc_dispatch",
   "profile",
   "rustc",
   "target",
@@ -17,6 +19,8 @@ export const METHODOLOGY_KEYS = [
 ];
 export const BENCH_KEYS = ["fixture", "fixture_sha256", "instructions", "window"];
 export const ALLOCATOR_PROTOCOL = "counting-mimalloc-reserve128m-preinit64m-purgeoff-v1";
+export const LIBC_DISPATCH =
+  "glibc.cpu.hwcaps=-AVX,-AVX2,-AVX512F,-AVX512VL,-AVX512BW,-AVX_Fast_Unaligned_Load,-ERMS,-FSRM,-Prefer_ERMS,-Prefer_FSRM,-SSSE3,-SSE4_1,-SSE4_2";
 const HASH = /^[a-f0-9]{64}$/;
 
 function fields(value, keys, where) {
@@ -43,6 +47,8 @@ export function validateMethodology(value) {
   assert.equal(value.target, "x86_64-unknown-linux-gnu", "measurement target must be Linux x86_64");
   assert.equal(value.profile, "ci-opt", "measurement profile must be ci-opt");
   assert.equal(value.allocator, ALLOCATOR_PROTOCOL, "measurement allocator changed");
+  assert.equal(value.fixture_digest, "input-identity-v2", "measurement input digest changed");
+  assert.equal(value.libc_dispatch, LIBC_DISPATCH, "measurement libc dispatch changed");
   assert.equal(
     value.window_protocol,
     "callgrind-client-call-boundary-v1",
@@ -102,6 +108,11 @@ export function reconcile(actual, expected, where) {
 // The named client dump is mandatory; process-termination dumps are ignored
 // only if they contain exactly zero collected instructions.
 export function parseCallgrind(text) {
+  assert.doesNotMatch(
+    text,
+    /(?:c?fn=).*__(?:memcmp|memcpy|memmove|mempcpy|memchr|memrchr|strlen|strnlen|strcmp|strncmp)_(?:avx|evex|ssse3|sse4|erms)/,
+    "Callgrind: address-sensitive hardware-dispatched libc routine",
+  );
   const one = (key) => {
     const matches = [...text.matchAll(new RegExp(`^${key}:\\s*(.*)$`, "gm"))];
     assert.equal(matches.length, 1, `Callgrind: expected exactly one ${key} header`);
@@ -146,13 +157,37 @@ export function fixtureDigest(root, fixture, source) {
   assert.ok(file.startsWith(`${root}${path.sep}`), "fixture escapes workspace");
   const direct = fs.existsSync(file);
   const content = fs.readFileSync(direct ? file : source);
-  const hash = createHash("sha256").update(fixture).update("\0").update(content);
+  if (direct) return createHash("sha256").update(content).digest("hex");
+  // These four level probes have exact input constants, independent of the
+  // bench target, function, module, type and fixture-file names. Preserve the
+  // same ids and numeric ceilings across the ordered structural rename.
+  const levelInputs = {
+    "synthetic:v-for-three-aliases": "VFOR_THREE_ALIASES",
+    "synthetic:v-on-two-option-event-key-modifiers": "VON_TWO_PER_BUCKET",
+    "synthetic:p2-11-dom-surface": "P2_11_DOM_SURFACE",
+    "fixture:complexity/dashboard.vue": "COMPLEXITY_DASHBOARD",
+  };
+  if (Object.hasOwn(levelInputs, fixture)) {
+    const name = levelInputs[fixture];
+    const declaration = content
+      .toString()
+      .match(
+        new RegExp(`const ${name}: &str =\\s*(r#"([\\s\\S]*?)"#|include_str!\\("([^"]+)"\\));`),
+      );
+    assert.ok(declaration, `${fixture}: exact level input constant missing`);
+    const input =
+      declaration[3] === undefined
+        ? Buffer.from(declaration[2])
+        : fs.readFileSync(path.resolve(path.dirname(source), declaration[3]));
+    return createHash("sha256").update(input).digest("hex");
+  }
+  const normalized = content
+    .toString()
+    .replace(/include_str!\("[^"]+"\)/g, 'include_str!("<input-bytes>")');
+  const hash = createHash("sha256").update(fixture).update("\0").update(normalized);
   if (!direct) {
     for (const [, include] of content.toString().matchAll(/include_str!\("([^"]+)"\)/g)) {
-      hash
-        .update("\0")
-        .update(include)
-        .update(fs.readFileSync(path.resolve(path.dirname(source), include)));
+      hash.update("\0").update(fs.readFileSync(path.resolve(path.dirname(source), include)));
     }
   }
   return hash.digest("hex");
@@ -226,7 +261,7 @@ export function checkMeasurement(report, budget) {
   for (const [id, row] of Object.entries(report.runs[0])) {
     const limit = budget.instruction[id];
     assert.ok(limit, `missing instruction budget ${id}`);
-    for (const key of ["fixture", "fixture_sha256", "window"]) {
+    for (const key of ["fixture_sha256", "window"]) {
       assert.equal(row[key], limit[key], `${id}: measurement identity changed (${key})`);
     }
     if (row.instructions > limit.instructions) {

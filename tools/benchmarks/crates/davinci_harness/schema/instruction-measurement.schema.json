@@ -17,7 +17,9 @@
       "required": [
         "allocator",
         "flags",
+        "fixture_digest",
         "libc",
+        "libc_dispatch",
         "profile",
         "rustc",
         "target",
@@ -27,7 +29,11 @@
       "properties": {
         "allocator": { "const": "counting-mimalloc-reserve128m-preinit64m-purgeoff-v1" },
         "flags": { "const": "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no" },
+        "fixture_digest": { "const": "input-identity-v2" },
         "libc": { "type": "string", "minLength": 1 },
+        "libc_dispatch": {
+          "const": "glibc.cpu.hwcaps=-AVX,-AVX2,-AVX512F,-AVX512VL,-AVX512BW,-AVX_Fast_Unaligned_Load,-ERMS,-FSRM,-Prefer_ERMS,-Prefer_FSRM,-SSSE3,-SSE4_1,-SSE4_2"
+        },
         "profile": { "const": "ci-opt" },
         "rustc": { "type": "string", "minLength": 1 },
         "target": { "const": "x86_64-unknown-linux-gnu" },

@@ -1,4 +1,4 @@
-name: Davinci instruction counts
+name: Level instruction counts
 
 on:
   # The required Check aggregate calls this workflow for every PR and queue.
@@ -32,7 +32,7 @@ jobs:
     env:
       # Reusable workflows retain the caller's workflow name. Other PRs check
       # registry/ratchet only; every merge group measures and enforces ceilings.
-      MEASURE: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || github.workflow == 'Davinci instruction counts' }}
+      MEASURE: ${{ github.event_name == 'merge_group' || github.event_name == 'workflow_dispatch' || github.workflow == 'Level instruction counts' }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -58,6 +58,14 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Test instruction parser and gates
         run: node --test tests/tooling/level-instruction-counts.test.mjs
+      - name: Test default harness and client request windows
+        if: env.MEASURE == 'true'
+        run: |
+          cargo test --locked -p davinci_harness --lib
+          cargo test --locked -p davinci_harness --lib --features instruction-counts
+      - name: Measure each stage three times without Criterion sampling
+        if: env.MEASURE == 'true'
+        run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
       - name: Verify pinned registry and immutable base ratchet
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
@@ -78,14 +86,6 @@ jobs:
             echo 'b86442507bc16b5f2acf260d291c1de39c911e735d5bb1d2b7db891fa1698607  docs/davinci/plan/instruction-budgets.toml' | sha256sum --check --strict
           fi
           node tools/benchmarks/scripts/instruction-counts.mjs --verify-budgets "${BASE_ARGS[@]}"
-      - name: Test default harness and client request windows
-        if: env.MEASURE == 'true'
-        run: |
-          cargo test --locked -p davinci_harness --lib
-          cargo test --locked -p davinci_harness --lib --features instruction-counts
-      - name: Measure each stage three times without Criterion sampling
-        if: env.MEASURE == 'true'
-        run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
       - name: Enforce pinned ceilings
         if: env.MEASURE == 'true'
         run: |

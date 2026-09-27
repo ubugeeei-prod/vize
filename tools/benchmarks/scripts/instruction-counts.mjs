@@ -18,6 +18,7 @@ import {
   validateMeasurement,
   validateAllocatorSetup,
   ALLOCATOR_PROTOCOL,
+  LIBC_DISPATCH,
 } from "./instruction-counts-lib.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -31,10 +32,19 @@ const suites = [
   ["vize_atelier_ssr", "davinci"],
   ["vize_davinci", "davinci"],
   ["vize_davinci", "davinci_fact"],
-  ["vize_l1_to_l2", "davinci_storage"],
+  ["vize_l1_to_l2", "l1_to_l2_storage"],
   ["vize_patina", "davinci_markup"],
   ["vize_musea", "davinci_art"],
-];
+].map(([pkg, bench]) => {
+  // Target rename is bijective: probe ids, exact input bytes, windows and caps
+  // stay fixed. Support either side until the move-only rename merges.
+  if (pkg !== "vize_l1_to_l2") return [pkg, bench];
+  const matches = [bench, "davinci_storage"].filter((name) =>
+    fs.existsSync(path.join(root, "crates", pkg, "benches", `${name}.rs`)),
+  );
+  assert.equal(matches.length, 1, "level storage target rename must be bijective");
+  return [pkg, matches[0]];
+});
 
 function command(executable, args, options = {}) {
   const child = spawnSync(executable, args, {
@@ -92,7 +102,9 @@ function collect(out, registry) {
     methodology: {
       allocator: ALLOCATOR_PROTOCOL,
       flags: "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
+      fixture_digest: "input-identity-v2",
       libc: command("getconf", ["GNU_LIBC_VERSION"]),
+      libc_dispatch: LIBC_DISPATCH,
       profile: "ci-opt",
       rustc,
       target: "x86_64-unknown-linux-gnu",
@@ -138,6 +150,14 @@ function collect(out, registry) {
     assert.equal(matches.length, 1, `missing or duplicate build artifact ${pkg}/${bench}`);
     return { pkg, bench, source, executable: matches[0].executable };
   });
+  writeJson(
+    path.join(out, "binaries.json"),
+    binaries.map(({ pkg, bench, executable }) => ({
+      pkg,
+      bench,
+      sha256: command("sha256sum", [executable]).split(" ")[0],
+    })),
+  );
   const measureEnv = Object.fromEntries(
     Object.entries(process.env).filter(([key]) => !key.toUpperCase().startsWith("MIMALLOC_")),
   );
@@ -146,6 +166,7 @@ function collect(out, registry) {
     MIMALLOC_RESERVE_OS_MEMORY: "128MiB",
     MIMALLOC_PURGE_DELAY: "-1",
     MIMALLOC_VERBOSE: "1",
+    GLIBC_TUNABLES: LIBC_DISPATCH,
   });
   for (let run = 1; run <= 3; run += 1) {
     const rows = {};

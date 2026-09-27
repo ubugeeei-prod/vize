@@ -20,6 +20,7 @@ import {
   BENCH_KEYS,
   validateAllocatorSetup,
   ALLOCATOR_PROTOCOL,
+  LIBC_DISPATCH,
 } from "../../tools/benchmarks/scripts/instruction-counts-lib.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -33,7 +34,9 @@ const row = (instructions, window = "routine-return") => ({
 const method = {
   allocator: ALLOCATOR_PROTOCOL,
   flags: "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
+  fixture_digest: "input-identity-v2",
   libc: "glibc 2.39",
+  libc_dispatch: LIBC_DISPATCH,
   profile: "ci-opt",
   rustc: "rustc 1.98.0 (fixture)",
   target: "x86_64-unknown-linux-gnu",
@@ -71,6 +74,14 @@ void test("Callgrind parser uses exclusive totals, preserving named stage identi
   }
   assert.throws(() => parseCallgrind(dump("Client Request: ../escape")), /invalid named dump/);
   assert.throws(() => parseCallgrind(dump("Periodic dump")), /unexpected trigger/);
+  assert.throws(
+    () => parseCallgrind(dump().replace("fn=caller", "fn=(1) __memcmp_avx2_movbe")),
+    /hardware-dispatched/,
+  );
+  assert.deepEqual(parseCallgrind(dump().replace("fn=caller", "fn=(1) __memcmp_sse2")), {
+    bench_id: "parse_small",
+    instructions: 100,
+  });
 });
 
 void test("named dump identities cannot disappear, duplicate, or introduce unregistered stages", () => {
@@ -205,9 +216,41 @@ void test("synthetic fixture digests also track included source fixtures", () =>
     fs.writeFileSync(source, 'include_str!("fixture.vue");');
     fs.writeFileSync(path.join(temporary, "fixture.vue"), "<div/>");
     const before = fixtureDigest(temporary, "synthetic:div", source);
+    fs.renameSync(path.join(temporary, "fixture.vue"), path.join(temporary, "renamed.vue"));
+    fs.writeFileSync(source, 'include_str!("renamed.vue");');
+    assert.equal(fixtureDigest(temporary, "synthetic:div", source), before);
+    fs.renameSync(path.join(temporary, "renamed.vue"), path.join(temporary, "fixture.vue"));
+    fs.writeFileSync(source, 'include_str!("fixture.vue");');
     fs.writeFileSync(path.join(temporary, "fixture.vue"), "<span/>");
     assert.notEqual(fixtureDigest(temporary, "synthetic:div", source), before);
     assert.throws(() => fixtureDigest(temporary, "../escape", source), /escapes workspace/);
+  } finally {
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+void test("level target, function and fixture path renames preserve exact input identity and caps", () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "level-input-rename-"));
+  try {
+    const source = path.join(temporary, "davinci_storage.rs");
+    fs.writeFileSync(
+      source,
+      'const VFOR_THREE_ALIASES: &str = r#"<li/>"#;\nfn davinci_storage() {}',
+    );
+    const before = fixtureDigest(temporary, "synthetic:v-for-three-aliases", source);
+    const renamed = path.join(temporary, "l1_to_l2_storage.rs");
+    fs.renameSync(source, renamed);
+    fs.writeFileSync(
+      renamed,
+      'const VFOR_THREE_ALIASES: &str = r#"<li/>"#;\nfn l1_to_l2_storage() {}',
+    );
+    assert.equal(fixtureDigest(temporary, "synthetic:v-for-three-aliases", renamed), before);
+    fs.writeFileSync(renamed, 'const VFOR_THREE_ALIASES: &str = r#"<span/>"#;');
+    assert.notEqual(fixtureDigest(temporary, "synthetic:v-for-three-aliases", renamed), before);
+    const report = measurement();
+    for (const run of report.runs) run.parse_small.fixture = "renamed-input-path";
+    checkMeasurement(report, budgets());
+    assert.deepEqual(budgets().instruction.parse_small.instructions, 100);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });
   }
