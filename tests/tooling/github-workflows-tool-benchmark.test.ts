@@ -106,7 +106,8 @@ test("tool benchmark workflow produces docs artifacts, PR comments, and conventi
   ].sort();
   assert.deepEqual(stagedSnapshotFiles(step.run, expectedFiles), expectedFiles);
   assert.match(commitJob, /git commit -m "docs: update blacksmith benchmark snapshot"/);
-  assert.match(commitJob, /git push origin HEAD:\$\{\{\s*github\.ref_name\s*\}\}/);
+  assert.match(commitJob, /VIZE_BENCH_REF: \$\{\{\s*github\.ref_name\s*\}\}/);
+  assert.match(commitJob, /git push origin "HEAD:refs\/heads\/\$VIZE_BENCH_REF"/);
   assert.doesNotMatch(commitJob, /codex/i);
 });
 

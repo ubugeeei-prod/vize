@@ -52,7 +52,7 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
-      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
 
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
@@ -88,6 +88,8 @@ jobs:
         run: node tools/benchmarks/scripts/generate.mjs "$VIZE_CHECK_BENCH_FILE_COUNT"
 
       - name: Run the fail-closed check benchmark gate
+        env:
+          VIZE_BENCH_REF: ${{ github.ref_name }}
         run: |
           node tools/benchmarks/scripts/check-gate.mjs \
             --input tools/benchmarks/scripts/__in__ \
@@ -98,7 +100,7 @@ jobs:
             --require-vue-tsc \
             --runner-label "blacksmith-32vcpu-ubuntu-2404" \
             --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \
-            --ref "${{ github.ref_name }}" \
+            --ref "$VIZE_BENCH_REF" \
             --repository "${{ github.repository }}" \
             --out check-gate-summary.md \
             --json check-gate-results.json

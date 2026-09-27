@@ -133,7 +133,7 @@ jobs:
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
-      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
 
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
@@ -176,6 +176,8 @@ jobs:
         run: node tools/benchmarks/scripts/generate.mjs "$VIZE_TOOL_BENCH_FILE_COUNT"
 
       - name: Compare Vize with existing tools
+        env:
+          VIZE_BENCH_REF: ${{ github.ref_name }}
         run: |
           # Restore benchmark metadata label with:
           node tools/benchmarks/scripts/compare-tools.mjs \
@@ -190,7 +192,7 @@ jobs:
             --large-blocks "$VIZE_TOOL_BENCH_LARGE_BLOCKS" \
             --runner-label "blacksmith-32vcpu-ubuntu-2404" \
             --commit "${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}" \
-            --ref "${{ github.ref_name }}" \
+            --ref "$VIZE_BENCH_REF" \
             --repository "${{ github.repository }}" \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --out tool-benchmark-summary.md \
@@ -275,6 +277,8 @@ jobs:
           path: tool-benchmark-artifact
 
       - name: Commit benchmark snapshot
+        env:
+          VIZE_BENCH_REF: ${{ github.ref_name }}
         run: |
           node tools/benchmarks/scripts/publish-snapshot.mjs --json tool-benchmark-artifact/tool-benchmark-results.json
           node tools/benchmarks/scripts/publish-snapshot.mjs --check
@@ -287,5 +291,5 @@ jobs:
             echo "No benchmark snapshot changes to commit."
           else
             git commit -m "docs: update blacksmith benchmark snapshot"
-            git push origin HEAD:${{ github.ref_name }}
+            git push origin "HEAD:refs/heads/$VIZE_BENCH_REF"
           fi
