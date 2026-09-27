@@ -17,9 +17,17 @@ This is one observed run; it does not establish a median or a speedup.
 - Keep the root task's native preparation and the existing single package
   test group, including all 16 packages, dependency ordering, concurrency
   limit of one, package pretests, and inherited environment.
-- Set `VIZE_TEST_NATIVE_PREPARED=1` on that group only after
-  `build:native:test` succeeds. The Vite test runner uses `test:prepared`
-  after the root preparation instead of invoking the native builder again.
+- Wrap that exact group with `npm/native/scripts/test-preparation.mjs` only
+  after `build:native:test` succeeds. The wrapper creates an exclusive
+  receipt for the current checkout HEAD/tree, tracked working diff and addon
+  SHA-256. It binds a live owner PID to a unique argument in that process's
+  command line, preventing a reused PID from validating a stale receipt.
+  The wrapper removes its receipt in `finally`; dead or invalid receipts
+  cannot enable reuse and are reclaimed on the next managed invocation.
+- The Vite runner uses `test:prepared` during this managed scope. A filtered
+  environment variable cannot signal reuse: the first Actions run still
+  compiled twice because the root enables package script caching and that
+  filters undeclared environment variables. Keep this cache policy intact.
 - Standalone Vite `test` still prepares the native addon before running the
   same two test suites. `test:prepared` requires exactly one local addon and
   loads it directly before either suite; it cannot use an installed platform
@@ -30,10 +38,12 @@ This is one observed run; it does not establish a median or a speedup.
 ## Validation and remaining evidence
 
 The focused tests run the old and new root commands through the real Vite+
-runner with fixture packages. They compare package ordering and inherited
-environment, verify successful preparation precedes every package test, and
+runner with fixture packages and the root's script/task caching enabled.
+They compare package ordering and inherited environment, verify successful
+preparation precedes every package test, and
 verify failed preparation prevents all package tests. They also check local
-addon prerequisites and that build or test failures stay failures.
+addon prerequisites, owner identity, source/addon drift, stale receipts,
+cleanup on failure, and that build or test failures stay failures.
 
 The PR's Actions JS job must show only the root dev-profile native build
 during the package test step. Record its timings before making a performance

@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+  appendFileSync,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -12,6 +21,22 @@ import { runInPackages, runTask } from "../../tools/config/vite-plus/task-comman
 import { testAndBenchmarkTasks } from "../../tools/config/vite-plus/tasks/test-benchmark.ts";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+const helper = "npm/native/scripts/test-preparation.mjs";
+
+function stageNative(fixture) {
+  mkdirSync(join(fixture, "npm/native/scripts"), { recursive: true });
+  copyFileSync(join(root, helper), join(fixture, helper));
+  writeFileSync(join(fixture, "npm/native/vize-vitrine.fixture.node"), "fixture addon");
+}
+
+function commitFixture(fixture) {
+  const git = (...args) => execFileSync("git", args, { cwd: fixture, stdio: "ignore" });
+  git("init", "-q");
+  git("config", "user.name", "CI Fixture");
+  git("config", "user.email", "ci@example.invalid");
+  git("add", ".");
+  git("commit", "-qm", "fixture");
+}
 
 void test("standalone Vite tests build first; prepared tests reuse the same native build", () => {
   const manifest = JSON.parse(readFileSync(join(root, "npm/builder/vite/package.json"), "utf8"));
@@ -21,14 +46,16 @@ void test("standalone Vite tests build first; prepared tests reuse the same nati
   );
   for (const prepared of [false, true]) {
     const calls = [];
-    const status = runViteTests(prepared, (command, args, options) => {
-      calls.push({ command, args });
-      assert.equal(options.env, process.env);
-      assert.equal(options.cwd, join(root, "npm/builder/vite"));
-      assert.equal(options.stdio, "inherit");
-      return { status: 0 };
-    });
-    assert.equal(status, 0);
+    assert.equal(
+      runViteTests(prepared, (command, args, options) => {
+        calls.push({ command, args });
+        assert.equal(options.env, process.env);
+        assert.equal(options.cwd, join(root, "npm/builder/vite"));
+        assert.equal(options.stdio, "inherit");
+        return { status: 0 };
+      }),
+      0,
+    );
     assert.deepEqual(calls, [
       ...(prepared ? [] : [{ command: "pnpm", args: ["--dir", "../../native", "build:debug"] }]),
       { command: "pnpm", args: ["run", "test:prepared"] },
@@ -71,15 +98,65 @@ void test("prepared tests require one loadable local addon without platform pack
   }
 });
 
-void test("root JS task preserves selection and ordering and only marks successful preparation", () => {
+void test("receipts reject source/addon drift and another process identity and clean up on failure", () => {
+  const fixture = mkdtempSync(join(tmpdir(), "vize-native-owner-"));
+  const receipt = join(fixture, "npm/native/.artifacts/native/js-test-preparation.json");
+  try {
+    stageNative(fixture);
+    writeFileSync(join(fixture, "package.json"), '{"type":"module"}\n');
+    writeFileSync(join(fixture, "tracked-source"), "source\n");
+    writeFileSync(
+      join(fixture, "probe.mjs"),
+      `
+import assert from 'node:assert/strict'; import fs from 'node:fs';
+import {nativePreparationIsActive,withPreparedNative} from './${helper}';
+const dir=${JSON.stringify(join(fixture, "npm/native"))}; const file=${JSON.stringify(receipt)};
+const original=JSON.parse(fs.readFileSync(file,'utf8')); const active=()=>nativePreparationIsActive(dir);
+assert.equal(active(),true);
+for(const field of ['head','tree','workingDiff','sha256','ownerArgument']) {
+  fs.writeFileSync(file,JSON.stringify({...original,[field]:'different'})); assert.equal(active(),false);
+}
+fs.writeFileSync(file,JSON.stringify({...original,ownerPid:process.pid})); assert.equal(active(),false);
+fs.writeFileSync(file,JSON.stringify(original));
+assert.throws(()=>withPreparedNative(dir,original.ownerArgument,'unused',[]),/already active/);
+fs.appendFileSync('tracked-source','changed'); assert.equal(active(),false);
+assert.throws(()=>withPreparedNative(dir,original.ownerArgument,'unused',[]),/already active/);
+fs.writeFileSync('tracked-source','source\\n'); assert.equal(active(),true);
+process.exit(7);
+`,
+    );
+    commitFixture(fixture);
+    const run = () =>
+      spawnSync(process.execPath, [helper, process.execPath, "probe.mjs"], {
+        cwd: fixture,
+        encoding: "utf8",
+      });
+    const first = run();
+    assert.equal(first.status, 7, `${first.stdout}\n${first.stderr}`);
+    assert.equal(existsSync(receipt), false);
+    mkdirSync(dirname(receipt), { recursive: true });
+    writeFileSync(receipt, JSON.stringify({ schemaVersion: 1, ownerPid: 2147483647 }));
+    const stale = run();
+    assert.equal(stale.status, 7, `${stale.stdout}\n${stale.stderr}`);
+    assert.equal(existsSync(receipt), false);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+void test("cached root JS tasks preserve selection/order/environment and require successful preparation", () => {
   const before = `${runTask("build:native:test")} && ${runInPackages("test", testedPackages, { concurrencyLimit: 1 })}`;
   const after = testAndBenchmarkTasks["test:js"].command;
-  assert.equal(after.replace("VIZE_TEST_NATIVE_PREPARED=1 ", ""), before);
+  assert.equal(after.replace(`node ${helper} vp run`, "vp run"), before);
   const fixture = mkdtempSync(join(tmpdir(), "vize-prepared-root-"));
   const events = join(fixture, "events.jsonl");
   const vp = process.env.VIZE_VP_BIN ?? join(root, "node_modules/.bin/vp");
   try {
-    writeFileSync(join(fixture, "package.json"), JSON.stringify({ name: "prepared-root" }));
+    stageNative(fixture);
+    writeFileSync(
+      join(fixture, "package.json"),
+      JSON.stringify({ name: "prepared-root", type: "module" }),
+    );
     writeFileSync(join(fixture, "pnpm-workspace.yaml"), "packages:\n  - npm/**\n");
     writeFileSync(
       join(fixture, "prepare.mjs"),
@@ -92,16 +169,30 @@ void test("root JS task preserves selection and ordering and only marks successf
         join(pkgDir, "package.json"),
         JSON.stringify({ name: `prepared-${index}`, scripts: { test: "node probe.mjs" } }),
       );
+      writeFileSync(join(pkgDir, "vite.config.mjs"), "export default {};\n");
+      const imports =
+        pkg === "./npm/builder/vite"
+          ? `import {nativePreparationIsActive} from '../../native/scripts/test-preparation.mjs';`
+          : "";
+      const prepared =
+        pkg === "./npm/builder/vite"
+          ? `nativePreparationIsActive(${JSON.stringify(join(fixture, "npm/native"))})`
+          : "null";
       writeFileSync(
         join(pkgDir, "probe.mjs"),
-        `import fs from 'node:fs'; fs.appendFileSync(${JSON.stringify(events)}, JSON.stringify({package:${JSON.stringify(pkg)},prepared:process.env.VIZE_TEST_NATIVE_PREPARED ?? null,env:process.env.VIZE_PREPARED_OTHER})+'\\n');\n`,
+        `${imports} import fs from 'node:fs'; fs.appendFileSync(${JSON.stringify(events)}, JSON.stringify({package:${JSON.stringify(pkg)},prepared:${prepared},env:process.env.VIZE_PREPARED_OTHER})+'\\n');\n`,
       );
     }
+    commitFixture(fixture);
+    let invocation = 0;
     const run = (command, preparationExit = 0) => {
+      invocation += 1;
       rmSync(events, { force: true });
+      for (const pkg of testedPackages)
+        appendFileSync(join(fixture, pkg, "probe.mjs"), `// invocation ${invocation}\n`);
       writeFileSync(
         join(fixture, "vite.config.mjs"),
-        `export default { run: { tasks: { 'build:native:test': { command:'node prepare.mjs',cache:false },'test:js':{command:${JSON.stringify(command)},cache:false} } } };\n`,
+        `export default { run: { cache:{scripts:true,tasks:true}, tasks: { 'build:native:test': { command:'node prepare.mjs',cache:false },'test:js':{command:${JSON.stringify(command)},cache:false} } } };\n`,
       );
       const result = spawnSync(vp, ["run", "--workspace-root", "test:js"], {
         cwd: fixture,
@@ -111,21 +202,29 @@ void test("root JS task preserves selection and ordering and only marks successf
           PATH: `${dirname(vp)}:${process.env.PATH}`,
           VIZE_PREPARE_EXIT: String(preparationExit),
           VIZE_PREPARED_OTHER: "same-environment",
-          VIZE_TEST_NATIVE_PREPARED: "",
         },
       });
+      if (preparationExit === 0)
+        assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
       return { result, records: readFileSync(events, "utf8").trim().split("\n").map(JSON.parse) };
     };
     const baseline = run(before);
     const prepared = run(after);
-    for (const { result, records } of [baseline, prepared]) {
-      assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    for (const { records } of [baseline, prepared]) {
       assert.deepEqual(records[0], { prepare: true });
       assert.equal(records.length, testedPackages.length + 1);
     }
     assert.deepEqual(
       prepared.records.slice(1),
-      baseline.records.slice(1).map((record) => ({ ...record, prepared: "1" })),
+      baseline.records
+        .slice(1)
+        .map((record) =>
+          record.package === "./npm/builder/vite" ? { ...record, prepared: true } : record,
+        ),
+    );
+    assert.equal(
+      existsSync(join(fixture, "npm/native/.artifacts/native/js-test-preparation.json")),
+      false,
     );
     const failed = run(after, 7);
     assert.notEqual(failed.result.status, 0);

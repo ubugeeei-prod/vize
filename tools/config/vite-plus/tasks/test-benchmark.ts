@@ -108,7 +108,7 @@ export const testAndBenchmarkTasks = defineTasks({
   // The Vite package reuses this successful native preparation. Keep the same
   // package selection, dependency ordering, concurrency, and inherited env.
   "test:js": noCacheTask(
-    `${runTask("build:native:test")} && VIZE_TEST_NATIVE_PREPARED=1 ${jsPackageTestCommand}`,
+    `${runTask("build:native:test")} && ${jsPackageTestCommand.replace("vp run", "node npm/native/scripts/test-preparation.mjs vp run")}`,
   ),
   "test:scripts": noCacheTask(
     `${runTask("build:native:test")} && rust-script tools/commands/ci/verify-tool-layout.rs && VIZE_TEST_REQUIRE_TSGO=1 node --test --test-concurrency=1 ${toolingTestFiles}`,

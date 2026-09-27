@@ -3,6 +3,7 @@ import { readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { nativePreparationIsActive } from "../../../native/scripts/test-preparation.mjs";
 
 const packageDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
@@ -35,7 +36,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (args.length === 1 && args[0] === "--require-prepared") {
     requirePreparedNative(resolve(packageDir, "../../native"));
   } else if (args.length === 0) {
-    process.exitCode = runViteTests(process.env.VIZE_TEST_NATIVE_PREPARED === "1");
+    const prepared = nativePreparationIsActive(resolve(packageDir, "../../native"));
+    if (prepared) console.log("Vite tests reuse the active root native preparation.");
+    process.exitCode = runViteTests(prepared);
   } else {
     throw new Error("usage: run-tests.mjs [--require-prepared]");
   }
