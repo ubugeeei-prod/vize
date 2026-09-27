@@ -13,7 +13,12 @@ const CORE_PR_JOBS = [
   "node-engine-compat",
   "check-vize-apps",
 ];
-const PR_JOBS = [...CORE_PR_JOBS, "pr-source-checks", "instruction-counts", "level-dependency-direction"];
+const PR_JOBS = [
+  ...CORE_PR_JOBS,
+  "pr-source-checks",
+  "instruction-counts",
+  "level-dependency-direction",
+];
 const FULL_SUITE_JOBS = [
   "nix-flake",
   "vue-parity",
