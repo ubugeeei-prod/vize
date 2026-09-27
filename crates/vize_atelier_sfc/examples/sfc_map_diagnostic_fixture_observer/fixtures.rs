@@ -8,14 +8,14 @@ use vize_atelier_sfc::{
     validate_script_setup_semantics_located,
 };
 
-use super::fix_history_map_diagnostic_options as fixture_options;
+use super::fixture_options;
 
 const COUNTER_ID: &str = "counter-source-map";
 const DIAGNOSTIC_ID: &str = "props-default-type-diagnostic";
 pub const CASE_IDS: &[&str] = &[COUNTER_ID, DIAGNOSTIC_ID];
-const COUNTER: &str = include_str!("../fixtures/fix-history/counter-source-map.input.txt");
+const COUNTER: &str = include_str!("../../tests/fixtures/fix-history/counter-source-map.input.txt");
 const DIAGNOSTIC: &str =
-    include_str!("../fixtures/fix-history/props-default-type-diagnostic.input.txt");
+    include_str!("../../tests/fixtures/fix-history/props-default-type-diagnostic.input.txt");
 
 #[derive(Debug)]
 struct ParseFailure(SfcError);

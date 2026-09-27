@@ -29,9 +29,50 @@ macro artifacts, Result variants and array order. It uses `.input.txt` sources
 outside the global authored Vue corpus, changes no product behavior/dependency,
 and keeps every existing live-lane, segment and editor witness.
 
-TODO: commit the observer source cleanly, make a narrow locked profile-ci build
-on this agent's exclusive existing target, bind the selected executable to its
-source SHA, capture/repeat actual output, then freeze it without normalizing or
-editing golden bytes. Populated map and diagnostic evidence, regression test,
-strict Clippy and fresh Actions are not yet measured. Whole-history coverage
-and native compiler acceptance remain unfinished; do not close #6880.
+## Actual complete output capture
+
+Tracked-clean source `72293b11bc2a4b3d0f3671626af0c67bf5ebfec5` was built with
+`cargo build --locked --profile ci -p vize_atelier_sfc --example
+sfc_map_diagnostic_fixture_observer --message-format=json-render-diagnostics`
+on this agent's existing exclusive target. The actual narrow build succeeded
+in 1.95 seconds. Its selected example artifact was copied off target and hashed:
+`41d2cc09f6277366b7073a018deb88d852ddc39444a45e1932e415314c778098`.
+
+The receipt binds committed clean source/tree, toolchain, lock hash, argv,
+selected Cargo artifact, successful process and raw build-log hashes. Complete
+raw stdout/stderr/process records from two actual executions are retained and
+repeat byte-equally. No reference comes from an intended build, stale target
+binary, substring, Insta normalization or source projection. An earlier failed
+compile of preparation source `c70e63a2d` is retained externally and receives no
+execution credit.
+
+Counter's complete Ok has a populated map from the current structured map
+implementation. The count mismatch's complete compiler Err includes all eight
+location fields with byte span 17..23; the additional located-validator Err
+includes all eight fields with document byte span 41..47. Both keep the full
+message/code and separate contexts. Both report line 2/columns 17..23 here,
+but their offsets belong to different source coordinate systems. The captured
+values, not these summaries, are the expectations.
+
+The ordinary integration test compares the entire observation, including
+options, both Result variants, map values, diagnostics, bindings, macro
+artifacts, arrays and every generated string byte. Exact case count/order guards
+prevent missing cases. The fifteen-file hash index preserves source inputs,
+provenance, raw build/process captures and convenient per-case views. JSON
+object-key order alone is immaterial; all string bytes, scalar/null variants
+and array order remain exact. Existing authored witnesses stay unchanged.
+
+Observer/test wiring uses ordinary module discovery. The observer entry moves
+in a move-only commit; small test-only helper copies have identical logic after
+module and fixture-path adjustments. This avoids new dependency crates or
+path-attribute bypasses. Strict Clippy passes the final example/test with warnings
+denied, and the complete-result test passes after those wiring/lint changes.
+Captured stdout and archival Cargo JSONL/receipts are never reformatted or
+regenerated to satisfy lint. The original capture source is historical local
+measurement identity, separate from fresh final-source execution.
+
+This is two inputs and two genuine fixes, with three public Result observations.
+Across the existing compiler cohorts, that prepares 23 inputs linked to 15
+concrete fixes, without pretending that the issue's 609-fix snapshot denominator
+has been reconciled. Fresh Actions, parent main/full queue proof, whole-history
+coverage and native compiler acceptance remain TODO. Do not close #6880.
