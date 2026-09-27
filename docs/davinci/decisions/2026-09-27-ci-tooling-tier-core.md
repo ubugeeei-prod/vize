@@ -27,3 +27,15 @@ pass with no skips or cancellations. Root `vp check` passes on all nine changed
 JS/TS/MJS files with zero warnings or errors. Both changed workflows pass
 actionlint; the 350-line growth ratchet passes against Rust parent `016ba456f`.
 Fresh Actions runs and full merge-group validation remain required.
+
+After #6901 merged at `dd047952c`, this child is transported onto the full
+workspace shard layer `aed02f464` above repaired core `138c62019`. Preserve
+main's existing inventory composite and generated-ledger upload while applying
+the merge-group/schedule/dispatch guard; do not restore standalone summary
+commands. The full profile remains unfiltered with required TSGO and all
+differential recipes. Its receipt rejects even an empty runtime opt-out; the
+full shard environment omits that variable completely. Transport verification
+passes 23 workflow, selector,
+receipt, runtime-tier and producer-retry tests, strict checks on the three
+changed test files, actionlint and the source-length ratchet. Latest-head
+Actions and the atomic three-PR merge queue remain required.
