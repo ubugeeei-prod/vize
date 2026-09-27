@@ -15,6 +15,12 @@ additionally trim every line and remove blank lines before snapshotting.
 body comparisons. None of those assertions alone is a fixed raw module-byte
 reference. Keep every shape/runtime witness while adding raw output pins.
 
+Vapor Pkl v-for/v-slot cases also have complete expected code in
+`tests/expected/vapor/{v-for,v-slot}.snap`. The test runner's `compare_output`
+normalizes CRLF, indentation, blank lines, semicolons, quotes, import groups,
+helper ordering and multiline/default-required forms. These are complete
+normalized output references; their raw module bytes remain unpinned.
+
 Native/retained equality compares two current implementations. It catches
 divergence but cannot protect a fixed historical output if both change. Runtime
 traces protect behavior; they do not pin compiler output bytes.
@@ -57,7 +63,7 @@ default custom-element/experimental options. Variants are stated explicitly.
 
 | Fix family and commits                                                             | Existing input/witness                                                                                                                                  | Preserved coverage and missing pin                                                                                                                                   |
 | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Destructured aliases, keys, object index: `6812891dd`, `0de7787ae`, `0895f6324`    | `src/tests.rs::test_compile_v_for_destructured_aliases_resolve_source_paths`; `tests/fixtures/vapor/v-for.pkl` destructured-key and object-index inputs | Parser/substrings and authored inputs; add each complete raw code result                                                                                             |
+| Destructured aliases, keys, object index: `6812891dd`, `0de7787ae`, `0895f6324`    | `src/tests.rs::test_compile_v_for_destructured_aliases_resolve_source_paths`; `tests/fixtures/vapor/v-for.pkl` destructured-key and object-index inputs | Parser/substrings and complete normalized Pkl outputs; add each complete raw code result                                                                             |
 | Named/nested/bare slot outlets: `b7a657e12`, `d90df360f`, `e42bcb923`, `93da7a4d4` | Named fallback, nested outlet, bare/named/props outlet tests in `src/tests.rs` and `src/tests_slot_outlets.rs`; `v-slot.pkl`                            | Normalized snapshots and module syntax; preserve imports/indentation/blank lines in new raw references                                                               |
 | Directives/once/memo: `faa404cc0`, `866be7b96`                                     | `v-focus:[placement].lazy`, `v-cloak`, `v-once`, `v-memo="[]"` in `src/tests.rs`                                                                        | Normalized code and exact unsupported-memo diagnostics; add supported raw code results                                                                               |
 | Delegated events: `3b0400f76`                                                      | `tests/nested_delegate_events.rs` if/loop/slot fallback inputs, prefix=true                                                                             | Exact extracted `_delegateEvents` lines and mounted acceptance; add imports and every other module byte                                                              |

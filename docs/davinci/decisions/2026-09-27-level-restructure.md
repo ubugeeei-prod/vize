@@ -105,19 +105,9 @@ See the [l3 is the decision layer decisions](./2026-09-27-level-restructure-desi
 
 See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-emission) in the companion record.
 
-[Compiler fix-history byte references](./2026-09-27-compiler-fix-history-pins.md)
-records [#6880](https://github.com/ubugeeei-prod/vize/issues/6880): two immutable
-complete SFC Result fixtures, SSR snapshot normalization limits and the next
-target-specific capture gaps. Whole-history coverage and native acceptance
-remain unfinished; fresh Actions execution is required before merge.
+[Compiler fix-history byte references](./2026-09-27-compiler-fix-history-pins.md) records [#6880](https://github.com/ubugeeei-prod/vize/issues/6880): three immutable complete SFC Results, including #1416 diagnostics. The earlier ten-profile archive has eight fixes and two feature controls; whole history/native acceptance remain unfinished and fresh Actions are required.
 
-The same compiler record adds the measured complete diagnostic Result for
-#1416 and separates eight fix-linked profiles from two feature controls in
-the earlier ten-profile archive. Feature controls receive no fix-history credit.
-
-[SSR and Vapor history witness audit](./2026-09-27-compiler-target-history-audit.md)
-records 19 SSR and 20 Vapor inspected fixes, exact-output gaps and original
-option boundaries. Preserve shape/runtime checks alongside future raw byte pins.
+[SSR and Vapor history witness audit](./2026-09-27-compiler-target-history-audit.md) records 19 SSR and 20 Vapor inspected fixes, original option boundaries and raw byte gaps. Preserve normalized complete Pkl outputs and all shape/runtime checks alongside new raw pins.
 
 ## Script side
 
