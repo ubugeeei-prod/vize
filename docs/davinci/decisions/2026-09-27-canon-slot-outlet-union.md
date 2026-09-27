@@ -118,3 +118,12 @@ adds only observation metadata/docs to this historical `ba94ed9` source, with
 production, registered inputs and oracle payloads unchanged. Final combined-head
 PR/queue checks and actual merge remain required; no cross-head full-green,
 native acceptance or whole fix-history completion credit is claimed.
+
+The first combined-source PR run at `b81e9c7`,
+[Check 36325563004](https://github.com/ubugeeei-prod/vize/actions/runs/36325563004),
+failed only the committed Croquis consumption shard's four stale count rows.
+Running its existing source generator corrected the merged Analyzer and
+AnalyzerOptions counts; no production, registered input, diagnostic oracle or
+snapshot bytes changed. T0 Rust, JS and browser checks passed, while T1 semantic
+execution remains deferred. The refreshed source still requires fresh PR
+checks, the mandatory full queue and actual merge.
