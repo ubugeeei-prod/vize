@@ -8,3 +8,4 @@
 | [Definite assignment](./2026-09-27-template-definite-assignment-fixtures.md) | 18 original SFCs and one TSX SFC; all seven diagnostics and an empty project       | Whole bundled patch, full-range and native equivalence              |
 | [Required props](./2026-09-27-required-props-diagnostic-fixtures.md)         | All 24 original identities, full messages/order; actual astral-prefix UTF16 column | Whole bundled patch, full-range and native equivalence              |
 | [Unicode values](./2026-09-27-unicode-value-diagnostic-fixtures.md)          | Japanese/emoji literal diagnostics; production byte-corruption fault fails         | Broader template/comment paths, full-range and native equivalence   |
+| [Reserved expressions](./2026-09-27-reserved-expression-diagnostics.md) | Shorthand, keys, members and literal boundaries; production shorthand fault fails | Broader scanner inputs, full-range and native equivalence |

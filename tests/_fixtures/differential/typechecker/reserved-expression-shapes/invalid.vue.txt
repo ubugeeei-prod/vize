@@ -1,0 +1,13 @@
+<script setup lang="ts">
+defineProps<{ static: boolean; class: boolean; default: string }>();
+const item = { default: "member" } as const;
+const count = 1;
+const check = (value: {
+  static: boolean; class: boolean; named: boolean; key: true;
+  member: "member"; literal: "static"; template: "class";
+  regex: boolean; ordinary: number;
+}) => value.static;
+</script>
+<template>
+  <button :disabled="static">{{ check({ static, class, named: default, key: true, member: item.default, literal: 'static', template: `class`, regex: /static/.test(default), ordinary: count }) }}</button>
+</template>

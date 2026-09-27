@@ -104,6 +104,16 @@ fn unicode_reserved_props_preserve_value_diagnostics() {
     );
 }
 
+#[test]
+fn reserved_prop_shapes_preserve_literal_and_member_diagnostics() {
+    check_pack(
+        "reserved-expression-shapes",
+        "27ae56ea668fc6c94653894ec29d75f8339a04c7",
+        Some(923),
+        &["valid-expression-shapes", "invalid-expression-shapes"],
+    );
+}
+
 fn check_pack(name: &str, regression: &str, historical_issue: Option<u32>, case_ids: &[&str]) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let fixtures = root
