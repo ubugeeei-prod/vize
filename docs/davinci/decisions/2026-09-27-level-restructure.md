@@ -309,6 +309,7 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 - Whole-repo generated ledgers stop being committed.
   [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867.
 - [JS native preparation](./2026-09-27-js-native-preparation.md) keeps package coverage and reuses the root test build ([#6830](https://github.com/ubugeeei-prod/vize/issues/6830)).
+- [UI check tiers](./2026-09-27-ui-check-ci-tiers.md) retain Fresco declarations/types in T0 and require UI acceptance in T1 ([#6864](https://github.com/ubugeeei-prod/vize/issues/6864)).
 
 [Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the
 fail-closed dependency plan and shell-free package execution for #6862.
