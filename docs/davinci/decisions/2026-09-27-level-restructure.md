@@ -308,6 +308,9 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 - VRT, tsgo-required tests and ledger checks leave the PR tier.
 - Whole-repo generated ledgers stop being committed.
 
+[Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the
+fail-closed dependency plan and shell-free package execution for #6862.
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work)
