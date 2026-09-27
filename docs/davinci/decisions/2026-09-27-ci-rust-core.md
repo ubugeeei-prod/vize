@@ -39,3 +39,23 @@ archive, timing and workflow tests pass with no skips or cancellations. Root
 Both changed workflows pass actionlint, and the 350-line growth ratchet passes
 against `8ae28f16c`. Fresh PR Actions and actual archive/shard execution remain
 required before merging.
+
+The first real archive run `36305270275` transferred and verified every shard,
+then exposed two preparation/tier issues. Restore Cargo's empty `target/tmp`
+before extraction, using `--extract-overwrite` for the verified archive so the
+baked `CARGO_TARGET_TMPDIR` remains writable in the identical workspace.
+An actual pinned nextest smoke reproduced the missing-directory failure after
+cold archive transfer, then passed all four selected tests with this command.
+
+Exactly three `vize_maestro` runtime cases require real TSGO and are deferred
+from `profile.pr` by full exact names, preserving all other tests in the module:
+
+- `ide::rename::corsa_session_tests::concurrent_real_corsa_rename_sessions_are_isolated`
+- `ide::rename::corsa_session_tests::direct_first::dependency_change_rearms_the_shared_editor_transport_once`
+- `ide::rename::corsa_session_tests::direct_first::direct_first_renames_survive_twenty_session_shutdown_overlap`
+
+These three tests remain unchanged and mandatory in the complete T1 Cargo
+workspace lane with required TSGO. They provide no native acceptance credit
+until that full lane executes successfully. Pinned nextest list JSON on the
+smoke retained both future same-module unit cases: full seven tests, PR four,
+and exactly these three exclusions. Fresh four-shard Actions proof is required.

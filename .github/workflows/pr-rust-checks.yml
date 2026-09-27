@@ -187,7 +187,11 @@ jobs:
         # Baked env! paths still occur in tests. Extract to the original workspace
         # (checked by the receipt), preserving target/ci and CARGO_BIN_EXE paths.
         # Empty partitions are valid for packages with fewer than four tests.
-        run: cargo nextest run --archive-file .artifacts/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --workspace-remap "$GITHUB_WORKSPACE" --profile pr --partition "hash:$SHARD/4" --no-tests=pass
+        run: |
+          # Cargo creates this baked CARGO_TARGET_TMPDIR even when it is empty.
+          # Archive transfer preserves files, so restore the directory here.
+          mkdir -p target/tmp
+          cargo nextest run --archive-file .artifacts/rust-test-archive/tests.tar.zst --extract-to "$GITHUB_WORKSPACE" --extract-overwrite --workspace-remap "$GITHUB_WORKSPACE" --profile pr --partition "hash:$SHARD/4" --no-tests=pass
       - name: Upload Rust shard results
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
