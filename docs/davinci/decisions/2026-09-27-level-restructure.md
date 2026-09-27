@@ -40,6 +40,8 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 The first #6832 slice moves `crates/vize_impeto` to `crates/vize_l3`, then changes package/dependency identities. Runtime behavior stays unchanged. First-name semver uses the verified `vize_impeto@0.429.0` archive and Git parent.
 Remaining naming and CLI work keeps #6832 open. See the [stage path/type slice](./2026-09-27-stage-path-types.md), [conversion registry slice](./2026-09-27-conversion-registry.md), [Dump path/type slice and live-link repair](./2026-09-27-dump-path-types.md), [CLI roundtrip slice](./2026-09-27-dump-cli-roundtrip.md), [L3 dump protocol slice](./2026-09-27-l3-dump-protocol.md), [hash-domain slice](./2026-09-27-hash-domains.md), [L2 dump protocol slice](./2026-09-27-l2-dump-protocol.md), and the [complete slice decision](./2026-09-27-level-restructure-order.md#physical-l3-package-slice).
 
+The [publication-parent record](./2026-09-27-foundation-publication-parent.md) keeps immutable transport proofs and the remaining actual-main/queue TODO.
+
 ## `vize_davinci` is deleted
 
 Tracked in [#6833](https://github.com/ubugeeei-prod/vize/issues/6833) and [#6834](https://github.com/ubugeeei-prod/vize/issues/6834).
