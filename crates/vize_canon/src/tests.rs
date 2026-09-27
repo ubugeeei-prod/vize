@@ -1,5 +1,7 @@
 //! Snapshot tests for vize_canon.
 
+mod slot_scope;
+
 #[cfg(test)]
 #[expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 mod virtual_ts_tests {
@@ -8,7 +10,7 @@ mod virtual_ts_tests {
     /// Generate virtual TypeScript from SFC using canon's type_check_sfc.
     /// This uses croquis scope analysis to generate proper JavaScript scoping
     /// (for-of loops, closures, IIFEs) instead of declare statements.
-    fn generate_virtual_ts_from_sfc(source: &str) -> vize_carton::String {
+    pub(super) fn generate_virtual_ts_from_sfc(source: &str) -> vize_carton::String {
         let options = SfcTypeCheckOptions::new("test.vue").with_virtual_ts();
         let result = type_check_sfc(source, &options);
         result.virtual_ts.unwrap_or_default()
@@ -271,36 +273,6 @@ const items = ref(['a', 'b', 'c'])
             "<template #default> slot props must not fall back to any:\n{virtual_ts}"
         );
         insta::assert_snapshot!("virtual_ts_scoped_slots", virtual_ts);
-    }
-
-    /// A dynamic slot name (`v-slot:[slot]`) selects the declared payloads
-    /// of every slot the name can resolve to, through the overload-aware
-    /// payload alias, and never becomes a static slot key.
-    #[test]
-    fn virtual_ts_dynamic_component_v_slot_uses_slot_prop_union() {
-        let source = r#"<script setup lang="ts">
-import MyList from './MyList.vue'
-
-const slot = 'items'
-const items = ['a', 'b']
-</script>
-
-<template>
-  <MyList :items="items" v-slot:[slot]="{ item }">{{ item }}</MyList>
-</template>"#;
-
-        let virtual_ts = generate_virtual_ts_from_sfc(source);
-
-        assert!(
-            virtual_ts.contains(
-                "[__K in keyof __S & __N]-?: __VizeSlotPayloadUnify<__VizeSlotPayloadOf<NonNullable<__S[__K]>>>"
-            ),
-            "dynamic slot names should select matching declared slot props:\n{virtual_ts}"
-        );
-        assert!(
-            !virtual_ts.contains(r#"__S extends { "slot"?: (props: infer __P"#),
-            "dynamic slot expression must not be injected as a static slot key:\n{virtual_ts}"
-        );
     }
 
     #[test]
