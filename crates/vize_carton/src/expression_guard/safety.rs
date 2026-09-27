@@ -5,6 +5,7 @@ use super::{
 };
 
 /// Returns whether an expression can be handed to OXC's recursive parser safely.
+#[inline]
 pub fn expression_is_safe_to_parse(content: &str) -> bool {
     // One ASCII identifier-shaped token cannot contain recursive parser syntax.
     // Keywords still pass through OXC's expression admission rule.
