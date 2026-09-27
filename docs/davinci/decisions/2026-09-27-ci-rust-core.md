@@ -78,3 +78,17 @@ This changes selection only, with no product output or pipeline stage change.
 Restack on parent `afde2f3c2` after preserving successful complete PR proofs for
 `806cb00f3` and `123484db5`. Drop merged selector snapshots, preserve every
 decision and capture link, and retain the parent's queue replay deduplication.
+
+After #6901's actual queue merge `dd047952c`, preserve main's inventory
+composite while transporting core, unfiltered T1 shards and tooling in order.
+Keep the preceding successful PR heads and complete queue evidence intact.
+
+#6933's failed-only retry exposed an archive name based on the consumer's
+`run_attempt`, although the successful producer remained in attempt 1. Name
+both upload and download by exact `run_id` and immutable `github.sha` instead.
+A completed full rerun overwrites that same artifact; mutually exclusive T0/T1
+builders remain the sole producer. Use no wildcard or latest-artifact fallback.
+Keep receipt source SHA/tree, absolute workspace, runner, nextest and content
+hash validation before extraction. Executable temporary-Git/FS tests retain an
+attempt-1 producer, retry only its attempt-2 consumer, replace a completed full
+rerun, and reject another run, source revision or corrupted archive.

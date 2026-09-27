@@ -143,8 +143,9 @@ jobs:
         run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo test @packages@ --profile ci --doc
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: rust-test-archive-${{ github.run_id }}-${{ github.run_attempt }}
+          name: rust-test-archive-${{ github.run_id }}-${{ github.sha }}
           path: target/rust-test-archive/
+          overwrite: true
           if-no-files-found: error
           compression-level: 0
           retention-days: 1
@@ -179,7 +180,7 @@ jobs:
         run: npm install --global @pkl-community/pkl@0.27.2
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: rust-test-archive-${{ github.run_id }}-${{ github.run_attempt }}
+          name: rust-test-archive-${{ github.run_id }}-${{ github.sha }}
           path: .artifacts/rust-test-archive
       - name: Verify Rust archive identity
         run: node tools/support/compat/github/rust-test-archive.mjs verify .artifacts/rust-test-archive/tests.tar.zst .artifacts/rust-test-archive/receipt.json
