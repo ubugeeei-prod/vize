@@ -18,6 +18,19 @@ id=0 kind=l3.set-text region=0 effect=- span=0:1
 
 ";
 
+// The canonical printer omits the empty edge and effect sections in GRAPH.
+const CANONICAL_GRAPH: &str = "\
+[l3-dump-v2]
+phase=built
+
+[l3-dump-v2.regions]
+id=0 parent=- owner=- span=0:1
+
+[l3-dump-v2.ops]
+id=0 kind=l3.set-text region=0 effect=- span=0:1
+
+";
+
 #[test]
 fn canonical_graph_protocol_roundtrips_without_changing_rows() {
     let graph = Page::parse(GRAPH).expect("canonical graph parses");
@@ -25,7 +38,7 @@ fn canonical_graph_protocol_roundtrips_without_changing_rows() {
     assert_eq!(graph.ops[0].kind, OpKind::SetText);
     let printed = graph.print_to_string(Mode::Full);
     assert_eq!(Page::parse(printed.as_str()).unwrap(), graph);
-    assert!(printed.as_str().starts_with("[l3-dump-v2]\n"));
+    assert_eq!(printed.as_str(), CANONICAL_GRAPH);
 }
 
 #[test]

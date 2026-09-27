@@ -65,6 +65,37 @@ OPCODES = ('set-prop', 'set-dynamic-props', 'set-text', 'set-event', 'set-html',
            'for', 'create-component', 'slot-outlet', 'get-text-child', 'child-ref',
            'next-ref', 'missing')
 
+ASSERTION_BASE = 'ab21c5cebd8b0038e5eaab80649c7c81deb81b62'
+ASSERTION_PATH = 'crates/vize_l3/tests/dump_protocol.rs'
+ASSERTION_OLD = '    assert!(printed.as_str().starts_with("[l3-dump-v2]\\n"));'
+ASSERTION_NEW = '    assert_eq!(printed.as_str(), CANONICAL_GRAPH);'
+ASSERTION_ANCHOR = '#[test]\nfn canonical_graph_protocol_roundtrips_without_changing_rows() {'
+CANONICAL_ORACLE = r'''// The canonical printer omits the empty edge and effect sections in GRAPH.
+const CANONICAL_GRAPH: &str = "\
+[l3-dump-v2]
+phase=built
+
+[l3-dump-v2.regions]
+id=0 parent=- owner=- span=0:1
+
+[l3-dump-v2.ops]
+id=0 kind=l3.set-text region=0 effect=- span=0:1
+
+";
+
+'''
+
+
+def assertion_expected(repo):
+    before = subprocess.check_output([
+        'git', '-C', str(repo), 'show', ASSERTION_BASE + ':' + ASSERTION_PATH], text=True)
+    assert before.count(ASSERTION_OLD) == before.count(ASSERTION_ANCHOR) == 1
+    expected = before.replace(ASSERTION_ANCHOR, CANONICAL_ORACLE + ASSERTION_ANCHOR)
+    expected = expected.replace(ASSERTION_OLD, ASSERTION_NEW)
+    restored = expected.replace(ASSERTION_NEW, ASSERTION_OLD).replace(CANONICAL_ORACLE, '', 1)
+    assert restored == before, 'protocol assertion replay must retain all other source bytes'
+    return before, expected
+
 
 def transform(source):
     source = re.sub(r'\bimpeto\.(' + '|'.join(sorted(OPCODES, key=len, reverse=True)) + r')\b',
@@ -85,11 +116,21 @@ def main():
     parser.add_argument("--verify", action="store_true")
     parser.add_argument("--node", default="node")
     parser.add_argument("--base-ref", default=BASE)
+    parser.add_argument("--assertions-only", action="store_true",
+                        help="replay only the exact protocol assertion repair from its published parent")
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[3]
     changed = []
     prepared = []
-    for name in PATHS:
+    assertion_before, assertion_after = assertion_expected(repo)
+    assertion_file = repo / ASSERTION_PATH
+    assertion_actual = assertion_file.read_text()
+    if args.verify:
+        assert assertion_actual == assertion_after, ASSERTION_PATH
+    else:
+        assert assertion_actual in {assertion_before, assertion_after}, ASSERTION_PATH
+        prepared.append((assertion_file, assertion_after))
+    for name in (() if args.assertions_only else PATHS):
         before = subprocess.check_output(["git", "-C", str(repo), "show", args.base_ref + ":" + name], text=True)
         expected = transform(before)
         if expected == before:
@@ -115,7 +156,7 @@ def main():
         changed.append(name)
     for path, expected in prepared:
         path.write_text(expected)
-    print(json.dumps({"base": args.base_ref, "files": len(changed), "rawTransformInverseByteEqual": True, "currentEqualsFormattedTransform": True, "layoutOnlyFormattingFiles": sorted(FORMATTED), "verified": args.verify, "paths": changed}))
+    print(json.dumps({"base": args.base_ref, "files": len(changed), "rawTransformInverseByteEqual": True, "currentEqualsFormattedTransform": True, "layoutOnlyFormattingFiles": sorted(FORMATTED) if not args.assertions_only else [], "verified": args.verify, "paths": changed, "exactProtocolAssertion": True, "assertionBase": ASSERTION_BASE, "assertionsOnly": args.assertions_only}))
 
 if __name__ == "__main__":
     main()

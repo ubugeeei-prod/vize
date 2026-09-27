@@ -42,3 +42,37 @@ new CLI, Rust, Lean, WASM or Actions execution is claimed.
 
 The decisions and remaining coupling are mirrored in the
 [#6832 record](https://github.com/ubugeeei-prod/vize/issues/6832#issuecomment-5854177277).
+
+## Published protocol assertion repair
+
+The published graph slice in [#6945](https://github.com/ubugeeei-prod/vize/pull/6945)
+contributes one assertion-lint failure observed in the descendant #6947 Actions
+tooling job: `dump_protocol.rs:28` compares only the `[l3-dump-v2]` prefix.
+The repair compares the entire normalized printed graph with an explicit
+`CANONICAL_GRAPH` constant while retaining the structural roundtrip and every
+old-header/unknown-opcode rejection control. No allowlist entry is added.
+
+The original input `GRAPH` remains byte exact. It includes empty edge/effect
+sections that the derived printer omits; it is accepted input rather than
+the normalized full-output oracle. Source review of Page field declaration
+order, Region/Op value printers and `PagePrinter::list` establishes the exact
+expected rows and blank lines without changing the printer or protocol.
+
+The existing wire replay script also preflights the bounded assertion repair
+against published parent `ab21c5ceb`. It proves the source inverse before any
+write and supports `--assertions-only --verify` independently of the earlier
+38-consumer wire migration. Parent owns the central record/issue update and
+publication. TODO: rerun the Rust protocol test and required Actions gates at
+the restacked immutable head; source/lint evidence is not Rust execution.
+
+Preparation verification passes all eight protocol/assertion-lint Node
+contracts, including the actual standalone Rust assertion linter over this
+published-parent tree and its bad-fixture/expiry/path controls. The invocation
+adds `/Users/ubugeeei/.cargo/bin` and `/opt/homebrew/bin` to PATH so spawned
+`rust-script` and Node resolve. The linter allowlist stays byte exact.
+The bounded assertion replay and repeated replay pass; the full wire verifier
+also passes all 38 consumers with `--base-ref 5bdaa46ec` and explicit Node.
+Standalone Rust formatting, documentation formatting, whitespace and the
+350-line source policy pass. No full Rust product build or new Actions run is
+claimed. The descendant log's two Vitrine cache-prefix findings belong to
+its later hash-domain layer and are absent from this parent tree.
