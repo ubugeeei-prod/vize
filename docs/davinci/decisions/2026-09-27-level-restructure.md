@@ -311,6 +311,10 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 [Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the
 fail-closed dependency plan and shell-free package execution for #6862.
 
+[Tooling input selection](./2026-09-27-tooling-input-selection.md) records the
+shared task inputs, explicit T1 runtime inventory and conservative T0 fallback
+for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864).
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work)
