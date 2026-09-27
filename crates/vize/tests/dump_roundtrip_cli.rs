@@ -17,65 +17,28 @@ use vize_l3::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
 
 const L2_FULL: &str = include_str!("../../vize_l2/tests/fixtures/reference.folio");
 
+// Complete bodies captured from the actual source-built CLI. The only transport
+// mapping is the one authored temporary input path; all error text stays exact.
+fn expected_path_error(template: &str, path: &Path) -> Vec<u8> {
+    assert_eq!(template.matches("@INPUT_PATH@").count(), 1);
+    template
+        .replace("@INPUT_PATH@", path.to_str().unwrap())
+        .into_bytes()
+}
+
 fn invoke(args: &[&str]) -> Output {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
-    command.args(args);
-    observe(&mut command, None)
+    Command::new(env!("CARGO_BIN_EXE_vize"))
+        .args(args)
+        .output()
+        .unwrap()
 }
 
 fn roundtrip(level: &str, path: &Path) -> Output {
-    let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
-    command
+    Command::new(env!("CARGO_BIN_EXE_vize"))
         .args(["dump", "--level", level, "--roundtrip"])
-        .arg(path);
-    observe(&mut command, Some(path))
-}
-
-// Temporary probe: the existing eight tests and assertions are unchanged.
-// JSON arrays retain stdout/stderr/input bytes without decoding or trimming.
-fn observe(command: &mut Command, input_path: Option<&Path>) -> Output {
-    use std::{io::Write, sync::Mutex};
-
-    static WRITER: Mutex<()> = Mutex::new(());
-    let output = command.output().unwrap();
-    if let Some(path) = std::env::var_os("VIZE_DUMP_CLI_CAPTURE") {
-        let input = input_path.map(fs::read);
-        let argv: Vec<_> = std::iter::once(command.get_program())
-            .chain(command.get_args())
-            .map(|arg| arg.to_str().unwrap())
-            .collect();
-        #[cfg(unix)]
-        let signal = {
-            use std::os::unix::process::ExitStatusExt;
-            output.status.signal()
-        };
-        #[cfg(not(unix))]
-        let signal: Option<i32> = None;
-        let record = serde_json::json!({
-            "schema": "vize.dump-cli-observation",
-            "version": 1,
-            "test": std::thread::current().name(),
-            "argv": argv,
-            "cwd": std::env::current_dir().unwrap(),
-            "inputPath": input_path,
-            "inputBytes": input.as_ref().and_then(|result| result.as_ref().ok()),
-            "inputReadError": input.as_ref().and_then(|result| result.as_ref().err()).map(ToString::to_string),
-            "exitCode": output.status.code(),
-            "signal": signal,
-            "stdout": output.stdout,
-            "stderr": output.stderr,
-        });
-        let mut bytes = serde_json::to_vec(&record).unwrap();
-        bytes.push(b'\n');
-        let _guard = WRITER.lock().unwrap();
-        let mut file = fs::OpenOptions::new()
-            .create(true)
-            .append(true)
-            .open(path)
-            .unwrap();
-        file.write_all(&bytes).unwrap();
-    }
-    output
+        .arg(path)
+        .output()
+        .unwrap()
 }
 
 fn assert_success(level: &str, bytes: &[u8]) {
@@ -173,20 +136,28 @@ fn malformed_wrong_level_and_elided_l2_display_are_failures() {
     let display = L2Page::parse(L2_FULL)
         .unwrap()
         .print_to_string(DumpMode::Display);
-    for (level, input) in [
-        ("l2", "not a dump"),
-        ("l3", L2_FULL),
-        ("l2", display.as_str()),
+    for (level, input, expected) in [
+        (
+            "l2",
+            "not a dump",
+            include_str!("fixtures/dump_cli/malformed.stderr"),
+        ),
+        (
+            "l3",
+            L2_FULL,
+            include_str!("fixtures/dump_cli/wrong-level.stderr"),
+        ),
+        (
+            "l2",
+            display.as_str(),
+            include_str!("fixtures/dump_cli/elided.stderr"),
+        ),
     ] {
         fs::write(&path, input).unwrap();
         let output = roundtrip(level, &path);
         assert_eq!(output.status.code(), Some(1));
         assert_eq!(output.stdout, b"");
-        assert!(
-            core::str::from_utf8(&output.stderr)
-                .unwrap()
-                .contains("dump: ")
-        );
+        assert_eq!(output.stderr, expected_path_error(expected, &path));
         assert_eq!(fs::read(&path).unwrap(), input.as_bytes());
     }
 }
@@ -195,46 +166,67 @@ fn malformed_wrong_level_and_elided_l2_display_are_failures() {
 fn unreadable_and_non_utf8_files_fail_without_success_output() {
     let temp = tempfile::tempdir().unwrap();
     let path = temp.path().join("input.dump");
-    for bytes in [None, Some([0xff])] {
+    for (bytes, expected) in [
+        (None, include_str!("fixtures/dump_cli/missing-file.stderr")),
+        (
+            Some([0xff]),
+            include_str!("fixtures/dump_cli/non-utf8.stderr"),
+        ),
+    ] {
         if let Some(bytes) = bytes {
             fs::write(&path, bytes).unwrap();
         }
         let output = roundtrip("l1", &path);
         assert_eq!(output.status.code(), Some(1));
         assert_eq!(output.stdout, b"");
-        assert!(
-            core::str::from_utf8(&output.stderr)
-                .unwrap()
-                .starts_with("dump: cannot read ")
-        );
+        assert_eq!(output.stderr, expected_path_error(expected, &path));
     }
 }
 
 #[test]
 fn only_implemented_levels_and_options_are_accepted() {
-    for args in [
-        vec!["dump"],
-        vec!["dump", "--roundtrip", "missing"],
-        vec!["dump", "--level", "l1"],
-        vec!["dump", "--level", "l0", "--roundtrip", "missing"],
-        vec!["dump", "--level", "l4", "--roundtrip", "missing"],
-        vec![
-            "dump",
-            "--level",
-            "l2",
-            "--roundtrip",
-            "missing",
-            "--pipeline",
-            "l2()",
-        ],
-        vec!["dump", "--all-levels", "--json"],
+    for (args, expected) in [
+        (
+            vec!["dump"],
+            include_bytes!("fixtures/dump_cli/required-both.stderr").as_slice(),
+        ),
+        (
+            vec!["dump", "--roundtrip", "missing"],
+            include_bytes!("fixtures/dump_cli/required-level.stderr").as_slice(),
+        ),
+        (
+            vec!["dump", "--level", "l1"],
+            include_bytes!("fixtures/dump_cli/required-roundtrip.stderr").as_slice(),
+        ),
+        (
+            vec!["dump", "--level", "l0", "--roundtrip", "missing"],
+            include_bytes!("fixtures/dump_cli/l0.stderr").as_slice(),
+        ),
+        (
+            vec!["dump", "--level", "l4", "--roundtrip", "missing"],
+            include_bytes!("fixtures/dump_cli/l4.stderr").as_slice(),
+        ),
+        (
+            vec![
+                "dump",
+                "--level",
+                "l2",
+                "--roundtrip",
+                "missing",
+                "--pipeline",
+                "l2()",
+            ],
+            include_bytes!("fixtures/dump_cli/pipeline.stderr").as_slice(),
+        ),
+        (
+            vec!["dump", "--all-levels", "--json"],
+            include_bytes!("fixtures/dump_cli/all-levels.stderr").as_slice(),
+        ),
     ] {
         let output = invoke(&args);
         assert_eq!(output.status.code(), Some(2), "{:?}", output);
         assert_eq!(output.stdout, b"");
-        let stderr = core::str::from_utf8(&output.stderr).unwrap();
-        assert!(stderr.contains("error:"));
-        assert!(!stderr.contains("cannot read"));
+        assert_eq!(output.stderr, expected);
     }
 }
 
@@ -243,10 +235,8 @@ fn help_describes_roundtrip_only_and_exits_zero() {
     let output = invoke(&["dump", "--help"]);
     assert_eq!(output.status.code(), Some(0));
     assert_eq!(output.stderr, b"");
-    let help = core::str::from_utf8(&output.stdout).unwrap();
-    assert!(help.contains("--roundtrip <FILE>"));
-    assert!(help.contains("--level <LEVEL>"));
-    assert!(help.contains("l1, l2, l3"));
-    assert!(!help.contains("--pipeline"));
-    assert!(!help.contains("--all-levels"));
+    assert_eq!(
+        output.stdout,
+        include_bytes!("fixtures/dump_cli/help.stdout")
+    );
 }

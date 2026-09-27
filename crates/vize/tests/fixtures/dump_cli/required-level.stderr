@@ -1,0 +1,6 @@
+error: the following required arguments were not provided:
+  --level <LEVEL>
+
+Usage: vize dump --level <LEVEL> --roundtrip <FILE>
+
+For more information, try '--help'.

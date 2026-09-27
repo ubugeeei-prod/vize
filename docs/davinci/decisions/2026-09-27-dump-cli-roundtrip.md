@@ -37,6 +37,27 @@ Full canonical bytes, rather than claiming to detect that origin.
 Source-built CLI fixtures and the renamed library/binary compile gates must
 pass. Fresh source CI remains mandatory; local formatting and pure
 metadata/source checks are separate evidence.
+
+## Exact CLI output oracles
+
+The original CLI slice is preserved as `355731309e4057f209e5ad29b7a7c5d22fe6dfe7`.
+Its clean replay is `b699c44faaccc08c229d107e3b355314f8cdf90d`. A temporary
+test-only probe at `526d013d0cdd6e88a5d673555c45ec0738bd8148` ran the unchanged
+eight tests and retained all 20 actual invocations, inputs, output bytes and exits.
+The selected default-feature Darwin ARM CLI had SHA256
+`b2e11ebf9096d92be167d7a7ef48d10029e9f0b0a7e38540fa505a9d307365b6`.
+
+Thirteen complete observed output bodies replace nine substring assertions.
+Five error bodies map only their one owned temporary input path to the next
+run's path. Messages, spaces, newlines, byte counts and exit codes stay exact.
+The probe is removed. Its raw JSONL and source/build/execution receipts remain
+separate from the final oracles in the local CLI replay evidence archive.
+
+Actual `vize --help` and the existing unit's `write_long_help` have different
+option layouts. Their captures stay separate. Only the actual unit's failing
+`.snap.new` updates its snapshot; CLI help is never reformatted into that oracle.
+Fresh composed Actions and other platform output checks remain required.
+
 The existing optimizer debug binary stays available. Its Croquis, budget,
 remarks and pipeline migration, shared production capture and playground
 generator remain unfinished. #6832 stays open; #6833 remains blocked until
