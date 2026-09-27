@@ -102,7 +102,7 @@ void test("the CLI applies merge-group scope to a real docs-only comparison", ()
       [[], false],
       [["merge_group"], true],
     ]) {
-      const output = join(cwd, `output-${expected}`);
+      const output = join(cwd, `output-${String(expected)}`);
       const run = spawnSync(process.execPath, [script, base, head, ...context], {
         cwd,
         encoding: "utf8",
@@ -111,7 +111,7 @@ void test("the CLI applies merge-group scope to a real docs-only comparison", ()
       assert.equal(run.status, 0, run.stderr);
       assert.equal(
         readFileSync(output, "utf8"),
-        ["rust", "js", "tooling", "playground"].map((lane) => `${lane}=${expected}\n`).join(""),
+        ["rust", "js", "tooling", "playground"].map((lane) => `${lane}=${String(expected)}\n`).join(""),
       );
     }
     const invalid = spawnSync(process.execPath, [script, base, head, "push"], {
