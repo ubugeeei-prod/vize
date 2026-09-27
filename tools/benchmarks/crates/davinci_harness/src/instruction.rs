@@ -62,6 +62,10 @@ pub fn initialize() {
         let buffer = Vec::<u8>::with_capacity(PREINITIALIZED_BYTES);
         assert_eq!(buffer.capacity(), PREINITIALIZED_BYTES);
         drop(core::hint::black_box(buffer));
+        // `stacker` finds this thread's stack limit on first use by parsing
+        // `/proc/self/maps`, so that one-time probe costs whatever the process
+        // memory map happens to be. Take it here, before any window.
+        core::hint::black_box(stacker::remaining_stack());
         eprintln!(
             "VIZE_INSTRUCTION_ALLOCATOR {}",
             serde_json::json!({"preinitialized_bytes": PREINITIALIZED_BYTES})
