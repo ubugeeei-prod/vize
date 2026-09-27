@@ -1,7 +1,7 @@
 """Explicit nominal API map for the mechanical dump migration."""
 import re
 
-BASE = '1831d54dcf739f78afac96e06eb62159f44bbb4b'
+BASE = '9eeea29b1a021f0f9852ebb4fcf835338ae8fcdd'
 SPECIAL = {
     'Folio': 'Dump', 'FolioMode': 'DumpMode', 'FolioError': 'DumpError',
     'FolioValue': 'DumpValue', 'FolioDump': 'Collector', 'DumpPage': 'CollectedPage',
