@@ -234,7 +234,10 @@ The toolchain aims to be extremely fast. The layering must not add pipelines or 
 - **Regressions are stopped in the merge queue** with instruction-count measurements per stage ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868)). The wall-clock envelope runs nightly.
 - **Per-stage budgets ratchet from current measurements.** Today all 102 `wall_p50_ns` entries in `plan/budgets.toml` are unset.
 - The [instruction-count gate record](./2026-09-27-instruction-counts.md) defines measured-only ceilings and immutable-base ratchets for #6868. Independent clean Actions builds (run 36307058591, attempts 1 and 2) match all 100 probes in three executions each under the fixed guest method. Required `test-report` aggregates queue measurement and strict ceilings. Separate queue tests and test-inventory collection preserve its check name and satisfy the source-length ratchet. Exact queue verification is pending.
-- Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is decided after measuring table density and lookup cost ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).
+- **`SideTable` stays `FxHashMap`** ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869), measured 2026-09-28).
+  - Density over the repo's 1,419 `.vue` templates (18,283 L2 ops): `static_facts` holds 0.33 facts per op. Every other table holds under 0.05, and `if_facts`/`model_faults` under 0.001.
+  - A lookup costs about 2.9 ns hashed and 1.4 ns in a dense `Vec`. The DOM emitter's static-fact reads would save well under 1% of a compile.
+  - No table meets the densification trigger in `side_table.rs` (majority occupancy). Re-measure if a table's occupancy passes one half.
 
 ## Toolchain practice
 
