@@ -271,3 +271,32 @@ and exact allocations remain pending until Full Check. No measured result alone
 accepts those semantic requirements. MacOS stays unknown with strict `1495`
 preserved. Existing first-member coordination and the held seven are separate;
 no public restack or native acceptance follows.
+
+## Third actual measured result
+
+The reviewed frozen source `444ff3460aec443bbe9e83f700e3c142d5e7c1f0`, tree
+`d4aa1e0a2711fa2a403a2d0f179a5c70c0aa4532`, was published with the exact
+fresh `56fc` lease only to the existing temporary verification ref.
+[Measured run 36326522402](https://github.com/ubugeeei-prod/vize/actions/runs/36326522402),
+attempt one, job `108640237391`, actually fails seventeen unchanged ceilings.
+Independent raw 100-by-three verification accepts equal observations, exact
+inputs, windows, method, eight guest variables and the immutable-base ratchet.
+Artifact `10934182096` has SHA-256
+`992ad0cf1ef7b323e30f9ee4d496a23341ce734ec7ff0ef98055e6b63ac7c052`.
+Ceilings retain SHA-256
+`17c3947044c033d03b0a86d13b2c3fa6dc2d1e90cb2222033921f649e97a826f`.
+
+V-for `147554 <= 148047`, Patina JSX `43798 <= 45385`, p2_11
+`192179 <= 197851` and deep DOM compilation meet their original ceilings.
+The complete source remains rejected: parse-medium `245614 > 243340`, Patina
+S2 `542626 > 539107` and two-per-bucket v-on emission `46310 > 46119`,
+with fourteen other parse, transform, DOM, Vapor and SSR failures preserved.
+Full Check was not dispatched. All seventeen authored controls, unchanged
+feature recipes and exact allocations on this source remain unknown; previous
+`56fc` runtime evidence does not transfer. MacOS strict `1495` stays unknown.
+
+TODO: attribute this exact failure and concretely review bounded production
+work reductions before any further source/ref update. No numeric retry, cap
+increase, changed fixture, public tail replay or native credit is granted.
+The original source and raw failures remain preserved. This later private
+fact-only record changes no measured producer or remote verification head.

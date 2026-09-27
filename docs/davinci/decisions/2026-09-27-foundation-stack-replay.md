@@ -103,3 +103,36 @@ actual merges. Their current failure artifacts and authored source remain
 preserved; private future naming is separate. Three normal legacy exceptions
 remain, so #6831 and #6832 stay open. No numeric, native or main credit is
 granted by coordination alone.
+
+## Actual independent first-member merge
+
+The reviewed graph split is complete. [#6905](https://github.com/ubugeeei-prod/vize/pull/6905)
+actually merged at `2026-09-27T14:33:05Z`, retaining authored source
+`a722f0be290c0d76feb6012bc1608b1561cbdf46`. Its actual queue candidate and main
+are `7553eca45a4ed6baec08da23a2b237d800e90ef8`, tree
+`45c49999d0a16ba195deac90d90bff67b6b60972`, parent actual `ae3c16b`.
+The thirteen owned paths add no Rust product or benchmark change.
+
+Fresh [queue Check 36325334512](https://github.com/ubugeeei-prod/vize/actions/runs/36325334512)
+passes the full required suites and measured 100 targets in three equal
+executions each, under the unchanged ceilings and guest method. Instruction
+artifact `10933549361` has SHA-256
+`0fe8b545caacc3b9b03511933304bc682b808eddeef7686f96393c8fe1216e5e`.
+This is new candidate evidence, distinct from historical `5d44` acceptance.
+The source-bound tooling CLI records 5246 passes, zero failures/cancellations
+and twelve existing skips. Named LSP document-link and CRLF formatting controls
+pass; this does not establish whole LSP history coverage or native facts.
+
+[Post-main Check 36326323322](https://github.com/ubugeeei-prod/vize/actions/runs/36326323322)
+and all six same-head workflows succeed. The gate reports six roots, three
+existing legacy entries, five derived witnesses, no unlisted or stale entries.
+Physical L4 and resolved external transitive closure remain unavailable.
+The immutable final evidence bundle's receipt SHA-256 is
+`7c3c426c3b7f0723f0ec13da5ad6d8abf75088e00061068a5898d82841d33a3b`.
+
+The seven unchanged original source heads now form native stack `6971`, in
+#6906 -> #6907 -> #6943 -> #6944 -> #6945 -> #6946 -> #6947 order, with
+verified main base, all off queue and no auto-merge requests. Their production
+performance repair, fresh source checks, full measured queue and actual main
+merges remain TODO. No tail performance or native acceptance follows from the
+first member's merge; #6831, #6832 and #6826 remain open with no closing refs.

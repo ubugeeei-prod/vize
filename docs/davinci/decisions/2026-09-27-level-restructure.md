@@ -63,8 +63,9 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 - A `cargo metadata` gate enforces the rule. It starts with a shrinking allowlist and later covers product crates too.
 - The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate)
   records shrinking #6831 permissions, enforcement and remaining scope.
-  Its test-only #6905 is coordinated independently while the remaining seven
-  existing members repair measured production regressions before merging.
+  Its test-only #6905 actually merged as `7553eca` with fresh full queue and
+  measured 100-by-three acceptance; native stack `6971` retains the seven
+  original members off queue pending real production repair and actual merges.
 
 ## L1: what the text _is_
 
@@ -234,6 +235,7 @@ The toolchain aims to be extremely fast. The layering must not add pipelines or 
 - [Binding traversal cost](./2026-09-27-binding-traversal-cost.md) records the #6868 protected numeric failures and bounded static-item optimization; Linux proof remains pending.
 - The private [newline prefix append](./2026-09-27-newline-prefix.md) combines the newline and first chunk after the next 17-ceiling failure; whole output/state and fixed caps remain required, with savings unverified.
 - The reviewed [expression safety dispatch hint](./2026-09-27-expression-safety-inline.md) and [single-lookup fact interning](./2026-09-27-patina-facts-entry.md) join that next private candidate on actual main `ae3c16b`; measure unchanged ceilings first, then require fresh Full Check for all seventeen controls, feature recipes and allocations after all 100 targets pass. Logical overflow rejection does not establish unchanged Entry reserve costs.
+- The same [private measurement record](./2026-09-27-vfor-provenance-construction.md#third-actual-measured-result) preserves frozen `444ff346`'s actual seventeen unchanged ceiling failures. No Full Check followed; all seventeen controls, feature recipes and allocations on that source remain unknown. Reviewed source attribution and bounded work reductions precede another candidate.
 - Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is decided after measuring table density and lookup cost ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).
 
 ## Toolchain practice
