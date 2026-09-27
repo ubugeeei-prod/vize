@@ -113,7 +113,7 @@ See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-em
 
 [Complete Vapor fix-history capture](./2026-09-27-vapor-fix-history-captures.md) records nine repeated complete results for seven fixes with exact options and source/executable identity. Its frozen source is preserved on a provenance branch; whole history, native acceptance and fresh Actions remain pending. Publication uses ordinary test/example modules and the generated Vapor consumer shard.
 
-[SFC map and diagnostic history references](./2026-09-27-sfc-map-diagnostic-history.md) records two original #3604/#750 inputs and three repeated source/executable-bound Results, with a populated map and distinct relative/document diagnostic locations. The complete test and strict Clippy pass locally; fresh Actions, whole history and native acceptance remain TODO.
+[SFC map and diagnostic history references](./2026-09-27-sfc-map-diagnostic-history.md) records two original #3604/#750 inputs and three repeated source/executable-bound Results, with a populated map and distinct relative/document diagnostic locations. The complete test and strict Clippy pass locally; fresh Actions, whole history and native acceptance remain TODO. Its reviewed frozen source is preserved on a provenance branch, and the bounded SFC consumer shard records the new helper references.
 
 ## Script side
 

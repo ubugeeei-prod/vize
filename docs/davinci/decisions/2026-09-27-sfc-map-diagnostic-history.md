@@ -54,6 +54,13 @@ message/code and separate contexts. Both report line 2/columns 17..23 here,
 but their offsets belong to different source coordinate systems. The captured
 values, not these summaries, are the expectations.
 
+The frozen reviewed source remains reachable at
+[`provenance/sfc-map-diagnostic-history-capture-72293b11b`](https://github.com/ubugeeei-prod/vize/tree/provenance/sfc-map-diagnostic-history-capture-72293b11b).
+Publication preserves every indexed archival byte and regenerates only the
+bounded SFC consumer shard for the new helpers. This provenance reference
+preserves historical local measurement identity; current-head Actions are
+a separate prerequisite.
+
 The ordinary integration test compares the entire observation, including
 options, both Result variants, map values, diagnostics, bindings, macro
 artifacts, arrays and every generated string byte. Exact case count/order guards
