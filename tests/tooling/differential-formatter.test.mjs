@@ -86,7 +86,7 @@ function referenceReport() {
   };
 }
 
-test("formatter differential manifest preserves two authored inputs and candidate-captured references", () => {
+void test("formatter differential manifest preserves two authored inputs and candidate-captured references", () => {
   assert.equal(loaded.cases.length, 2);
   for (const fixture of loaded.cases) {
     assert.equal(fixture.expectations.legacy.state, "captured");
@@ -100,7 +100,7 @@ test("formatter differential manifest preserves two authored inputs and candidat
   );
 });
 
-test("formatter differential comparison preserves every output byte and Unicode offset", () => {
+void test("formatter differential comparison preserves every output byte and Unicode offset", () => {
   const expected = Buffer.from("あ\n");
   assert.deepEqual(compareBytes(expected, Buffer.from("あ\n")), { state: "equal" });
   for (const actual of ["あ", "あ\r\n", "あ \n", "い\n"]) {
@@ -110,7 +110,7 @@ test("formatter differential comparison preserves every output byte and Unicode 
   assert.throws(() => compareBytes("あ", expected), /raw buffers/);
 });
 
-test("formatter differential immutable input, output and configuration corruption fails", () => {
+void test("formatter differential immutable input, output and configuration corruption fails", () => {
   for (const relative of [
     "sfc-split-v-pre-indentation/App.vue",
     "sfc-split-v-pre-indentation/reference.expected.txt",
@@ -127,7 +127,7 @@ test("formatter differential immutable input, output and configuration corruptio
   }
 });
 
-test("formatter differential rejects changed adapter options and duplicate planned identities", () => {
+void test("formatter differential rejects changed adapter options and duplicate planned identities", () => {
   for (const change of [
     (manifest) => manifest.adapterOptions.argv.pop(),
     (manifest) => manifest.cases.push(manifest.cases[0]),
@@ -142,7 +142,7 @@ test("formatter differential rejects changed adapter options and duplicate plann
   }
 });
 
-test("formatter differential missing executable fails all planned cases without fallback", () => {
+void test("formatter differential missing executable fails all planned cases without fallback", () => {
   const report = runFormatterPack({
     manifestPath,
     sourceRevision: loaded.manifest.baseRevision,
@@ -169,7 +169,7 @@ test("formatter differential missing executable fails all planned cases without 
   assert.match(relative.rows[0].legacy.error, /absolute path/);
 });
 
-test("formatter differential process failures and signals are failures", () => {
+void test("formatter differential process failures and signals are failures", () => {
   assert.throws(
     () => assertProcessSucceeded({ status: 2, signal: null, stderr: Buffer.from("failed") }),
     /exited 2/,
@@ -178,7 +178,7 @@ test("formatter differential process failures and signals are failures", () => {
   assert.throws(() => assertProcessSucceeded({ error: new Error("timed out") }), /timed out/);
 });
 
-test("formatter differential accounting rejects omitted, duplicate and unplanned result rows", () => {
+void test("formatter differential accounting rejects omitted, duplicate and unplanned result rows", () => {
   validateFormatterReport(loaded, referenceReport(), unitBuild);
   for (const mutate of [
     (report) => report.rows.pop(),
@@ -204,7 +204,7 @@ test("formatter differential accounting rejects omitted, duplicate and unplanned
   }
 });
 
-test("formatter differential report cannot forge byte equality by changing the digest", () => {
+void test("formatter differential report cannot forge byte equality by changing the digest", () => {
   const report = referenceReport();
   const pass = report.rows[0].legacy.passes[0];
   const output = Buffer.from(pass.outputBase64, "base64");
@@ -217,7 +217,7 @@ test("formatter differential report cannot forge byte equality by changing the d
   );
 });
 
-test("formatter differential keeps failed attempt input/output bytes and raw process evidence", () => {
+void test("formatter differential keeps failed attempt input/output bytes and raw process evidence", () => {
   const fixture = loaded.cases[0];
   const attempt = formatterAttempt(
     1,
@@ -247,7 +247,7 @@ test("formatter differential keeps failed attempt input/output bytes and raw pro
   validateFormatterReport(loaded, report, unitBuild);
 });
 
-test("formatter differential rejects broken pass input linkage even with updated hashes", () => {
+void test("formatter differential rejects broken pass input linkage even with updated hashes", () => {
   const report = referenceReport();
   const pass = report.rows[0].legacy.passes[1];
   const bytes = Buffer.from(pass.inputBase64, "base64");
@@ -257,7 +257,7 @@ test("formatter differential rejects broken pass input linkage even with updated
   assert.throws(() => validateFormatterReport(loaded, report, unitBuild), /previous output/);
 });
 
-test("formatter differential rejects stale source/build and forged executable identity", () => {
+void test("formatter differential rejects stale source/build and forged executable identity", () => {
   const receipt = referenceReport().buildReceipt;
   validateBuildReceipt(receipt, unitBuild);
   for (const field of ["sourceRevision", "binaryPath", "binarySha256", "cliVersion", "recipe"]) {

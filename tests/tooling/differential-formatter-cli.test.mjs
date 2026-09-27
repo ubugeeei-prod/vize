@@ -8,7 +8,7 @@ import { runFormatterPack } from "../differential/formatter.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-test("source-built formatter matches both exact references and reaches a fixed point", (t) => {
+void test("source-built formatter matches both exact references and reaches a fixed point", (t) => {
   const revision = spawnSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" });
   assert.equal(revision.status, 0, revision.stderr);
   const report = runFormatterPack({
