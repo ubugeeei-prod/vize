@@ -33,35 +33,19 @@ fn slot_payload_helper_collects_every_overload() {
     }
 }
 
-/// An inferred outlet payload keeps a static string attribute as its literal
-/// type, as the runtime value is exactly that string; the checking-side
-/// literal is contextually typed and stays as authored.
+/// An inferred outlet payload types a static string attribute as the plain
+/// object literal does, `string`: vue-tsc exposes `<slot str="str" />` as
+/// `{ str: string }`, so keeping the literal would diverge from it.
 #[test]
-fn inferred_outlet_payload_keeps_static_attribute_literals() {
-    let code = generate(
-        r#"<div><slot name="side" viewMode="sp" :count="1" /><slot name="flag" disabled /></div>"#,
-    );
-    assert!(
-        code.contains("\"viewMode\": \"sp\" as const,"),
-        "a static string attribute keeps its literal type:\n{code}"
-    );
-    assert!(
-        code.contains("\"count\": 1,") && code.contains("\"disabled\": true,"),
-        "bound values and valueless attributes are unchanged:\n{code}"
-    );
-    let script = "defineSlots<{ side(props: { viewMode: string }): any }>()";
-    let allocator = vize_carton::Allocator::new();
-    let (root, _) = vize_armature::parse(
-        &allocator,
-        r#"<div><slot name="side" viewMode="sp" /></div>"#,
-    );
-    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
-    analyzer.analyze_script_setup(script);
-    analyzer.analyze_template(&root);
-    let summary = analyzer.finish();
-    let checked = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
-    assert!(
-        checked.contains("\"viewMode\": \"sp\",") && !checked.contains("as const"),
-        "the checking-side literal stays as authored:\n{checked}"
+fn inferred_outlet_payload_widens_static_attributes() {
+    let code = generate(r#"<div><slot name="side" viewMode="sp" :count="1" /></div>"#);
+    assert_eq!(
+        (
+            code.matches("\"viewMode\": \"sp\",").count(),
+            code.matches("\"count\": 1,").count(),
+            code.matches("as const").count(),
+        ),
+        (1, 1, 0),
+        "{code}"
     );
 }

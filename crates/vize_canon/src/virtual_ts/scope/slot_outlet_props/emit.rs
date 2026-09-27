@@ -6,7 +6,7 @@ use crate::virtual_ts::{expressions::ComponentPropSource, types::VizeMapping};
 use super::super::context::ScopeGenContext;
 use super::super::vif_guard::append_ignored_vif_guard_open;
 use super::SlotOutlet;
-use super::literal::{SlotOutletLiteralMode, append_slot_outlet_literal};
+use super::literal::append_slot_outlet_literal;
 
 struct SlotOutletCheckContext<'a> {
     slot_outlets_by_scope: &'a FxHashMap<u32, Vec<SlotOutlet>>,
@@ -159,7 +159,7 @@ fn generate_slot_outlet_checks(
                 ts,
                 mappings,
                 outlet,
-                SlotOutletLiteralMode::Infer,
+                "unknown",
                 template_binding_access,
                 source_context,
                 expr_indent.as_str(),
@@ -205,9 +205,7 @@ fn generate_slot_outlet_checks(
             ts,
             mappings,
             outlet,
-            SlotOutletLiteralMode::Check {
-                payload_type: payload_type.text.as_str(),
-            },
+            payload_type.text.as_str(),
             template_binding_access,
             source_context,
             expr_indent.as_str(),

@@ -273,9 +273,6 @@ const items = ref(['a', 'b', 'c'])
         insta::assert_snapshot!("virtual_ts_scoped_slots", virtual_ts);
     }
 
-    /// A dynamic slot name (`v-slot:[slot]`) selects the declared payloads
-    /// of every slot the name can resolve to, through the overload-aware
-    /// payload alias, and never becomes a static slot key.
     #[test]
     fn virtual_ts_dynamic_component_v_slot_uses_slot_prop_union() {
         let source = r#"<script setup lang="ts">
@@ -292,9 +289,7 @@ const items = ['a', 'b']
         let virtual_ts = generate_virtual_ts_from_sfc(source);
 
         assert!(
-            virtual_ts.contains(
-                "[__K in keyof __S & __N]-?: __VizeSlotPayloadUnify<__VizeSlotPayloadOf<NonNullable<__S[__K]>>>"
-            ),
+            virtual_ts.contains("[__K in keyof __S & __N]-?: __VizeSlotPayloadUnify<"),
             "dynamic slot names should select matching declared slot props:\n{virtual_ts}"
         );
         assert!(

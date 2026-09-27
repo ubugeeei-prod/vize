@@ -11,11 +11,10 @@ use std::process::Command;
 /// A child that renders the same named slot from several `<slot>` outlets
 /// (one bound, one bare; one bound, one with a static attribute; one inside
 /// a `v-for` and one outside) used to expose only the last outlet's payload
-/// to the parent, so `#panel="{ viewMode }"` reported `TS2339` on `{}` and
-/// the static `viewMode="sp"` widened to `string` (`TS2322` against a
-/// literal prop). vue-tsc reports neither. The merged payload is still typed:
-/// a prop only some outlets pass is optional, and a prop every outlet passes
-/// keeps its type.
+/// to the parent, so `#panel="{ viewMode }"` reported `TS2339` on `{}`.
+/// The merged payload is still typed: a prop only some outlets pass is
+/// optional, a prop every outlet passes keeps the union of their types, and
+/// a static attribute is a `string`, as vue-tsc types it.
 #[test]
 fn check_same_named_slot_outlets_merge_their_payloads() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
@@ -59,10 +58,11 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
         })
         .collect::<Vec<_>>();
 
-    // `Parent.vue`: `side` and `item` are passed by every outlet (a literal on
-    // one of them, one outlet inside a `v-for`) and satisfy a required
-    // `'pc' | 'sp'` prop; `panel` is passed by one outlet only, so it is
-    // optional and the same required prop reports it. `Wrong.vue` forwards a
+    // `Parent.vue`: `item` is passed by every outlet (one inside a `v-for`)
+    // and satisfies a required `'pc' | 'sp'` prop; `panel` is passed by one
+    // outlet only, so it is optional and the same required prop reports it;
+    // `side` is a static `viewMode="sp"` on one outlet, a `string`, which
+    // the literal prop reports too. `Wrong.vue` forwards a
     // merged payload into a `number` prop: the merge must still type the
     // payload, not erase it to `any`.
     let mut expected = vec![
@@ -70,6 +70,11 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
             "src/Parent.vue",
             "[TS2322]",
             "'undefined' is not assignable",
+        ),
+        (
+            "src/Parent.vue",
+            "[TS2322]",
+            "Type 'string' is not assignable",
         ),
         (
             "src/Wrong.vue",
