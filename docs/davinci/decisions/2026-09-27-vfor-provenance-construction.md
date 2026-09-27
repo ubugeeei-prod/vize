@@ -335,10 +335,10 @@ owned temporary ref. Dispatch unchanged measured workflow once first; preserve
 any failure without a Full Check wave. Only all-100 success permits one unchanged
 Full Check for the twenty-seven controls, full feature scope and allocations.
 
-The next verification now imports exact actual main
+The next verification now retains exact actual main
 `754c0acd2c9246a534ad43f22cfc7dd5b6960e1a` once, retaining original authors
 and failed-source ancestry. This preserves the subsequently merged cache,
 Canon and Slot source/oracles/matrices before any numeric or full validation.
 Every foreign source blob must equal that main outside the narrowly reviewed
 owned ranges; exact helpers, source selection and measurement contract remain
-required. Integration and final-tree proof precede the authorized ref update.
+required. Merge `d56fbdb89` retains both parents; final proof precedes the ref update.

@@ -39,6 +39,8 @@ parent's PR-base handling and merge-group suites; only the declaration gate
 and required aggregate dependency are added semantically. Existing comments
 were shortened by the original patch.
 
+## Historical first-member replay TODO
+
 TODO: replay the physical L3 and stage-path layers in separate move-only and
 reference commits; record their patch identities, metadata and inventory
 checks here. Publish only after the CI priority is resolved, mirror decisions
