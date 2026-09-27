@@ -47,9 +47,29 @@ replay passed against the historical f59 release Actions artifact:
 - Node v24.14.0; one selected runtime test passed, then the whole document-link
   file passed eight tests, with zero failures/skips/cancellations.
 
-This old binary validation is separate from a future fresh-source Actions run.
-No build of this fixture branch, full raw-wire archive, shared-runner adapter,
-native L4 result or whole-fix coverage has been established here.
+This historical binary run did not build the fixture branch. Full raw-wire
+archives, a shared-runner adapter, native L4 results and whole-fix coverage remain
+unestablished by this selected response slice.
+
+### Dated fresh-source proof
+
+The [full Check run 36308258992](https://github.com/ubugeeei-prod/vize/actions/runs/36308258992)
+succeeded at source `777cba6625df4293cc12e8e018131cdc49df8d2f`.
+Its [actual tooling runtime](https://github.com/ubugeeei-prod/vize/actions/runs/36308258992/job/108589036435)
+records the exact source checkout, a successful CI-profile CLI build, creation
+of `target/ci/vize.differential-build.json` and execution with the required
+receipted source CLI. The launcher checks the receipt against the source and
+binary before starting the LSP; cached debug fallback cannot satisfy this lane.
+The named complete inactive-import response test passed. The tooling suite
+reported 5,163 passes, zero failures/cancellations and 12 unrelated skips; all
+18 actual full workflow jobs passed.
+
+The receipt JSON was not retained separately by that dated run. No binary hash
+is inferred from its build log or from the historical f59 artifact. The separate
+source-binding receipt logger retains the existing public identity JSON for
+later runs. This dated source proof remains evidence for its exact head; every
+later transport or merged head still requires its own Actions checks. It does
+not establish complete wire/state coverage, native L4 parity or #6883 closure.
 
 ## Reuse and remaining work
 
