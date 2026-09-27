@@ -31,3 +31,10 @@ All five Node test workers receive both binding variables and execute the fresh
 receipted fixture binary. Removing its receipt makes every worker fail despite
 a runnable older debug binary. The source-built fixture dispatches still need
 their own exact-head runtime proof; this route check supplies no product credit.
+
+After CI PRs #6918, #6958, #6919 and #6925 actually merged at 11:37:59 UTC,
+replay the reviewed binding and receipt logger onto main
+`42014675678684165b8cd4bb992bb9db747e74ee`. Preserve the actual full-tier guards,
+instruction gate and shared inventory composite. The earlier #6938 Check
+`36308131243` at `b4671e34a` is historical; require new-head Actions and fresh
+full fixture dispatches with the printed receipt before claiming acceptance.
