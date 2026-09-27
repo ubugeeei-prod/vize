@@ -3,7 +3,7 @@ import { appendFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { changedPaths } from "./plan-source-checks.mjs";
+import { changedPaths, isRustDocumentationInput } from "./plan-source-checks.mjs";
 
 const packageName = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 const contexts = new Set(["pull_request", "merge_group"]);
@@ -98,7 +98,12 @@ export function planAffectedRust(metadata, paths, eventName = "pull_request") {
     }
     // Only documentation file extensions are exempt: a script or fixture
     // moved under docs must still fail closed.
-    if (/^(docs\/|\.changeset\/)/.test(path) && /\.(md|mdx)$/.test(path)) continue;
+    if (
+      /^(docs\/|\.changeset\/)/.test(path) &&
+      /\.(md|mdx)$/.test(path) &&
+      !isRustDocumentationInput(path)
+    )
+      continue;
     if (path === "README.md" || path === "AGENTS.md") continue;
     full = true;
     reasons.add(`shared or unknown input: ${path}`);

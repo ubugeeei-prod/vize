@@ -59,3 +59,12 @@ workspace lane with required TSGO. They provide no native acceptance credit
 until that full lane executes successfully. Pinned nextest list JSON on the
 smoke retained both future same-module unit cases: full seven tests, PR four,
 and exactly these three exclusions. Fresh four-shard Actions proof is required.
+
+Authored `docs/davinci/plan/**` is a shared Rust input before any Markdown
+exemption in both planners. Compiler CFG thresholds compile
+`complexity-metrics.md`; Rust tests compile `key-manifests.md` and
+`fact-alpha-schemas.md`; resident and compiler gates consume `budgets.toml`.
+Schema, source-map and reach budgets there are runtime test inputs as well.
+Keep the entire directory conservative for Rust, JS, tooling and playground
+validation so a new contract or renamed dependency cannot become prose-only.
+Source-witness tests confirm the actual include paths and both planner results.
