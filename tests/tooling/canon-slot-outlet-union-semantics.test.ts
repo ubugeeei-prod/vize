@@ -119,8 +119,8 @@ test("generated slot payloads keep seventeen and eighteen outlets without losing
     const diagnosticOrder = (left: object, right: object) =>
       JSON.stringify(left).localeCompare(JSON.stringify(right));
     assert.deepEqual(
-      observed.filter((d: { file: string }) => d.file.endsWith(".ts")).sort(diagnosticOrder),
-      [...oracle.diagnostics].sort(diagnosticOrder),
+      observed.sort(diagnosticOrder),
+      [...oracle.cliDiagnostics].sort(diagnosticOrder),
     );
 
     // Compile the actual source-built CLI's virtual documents with TypeScript,
@@ -166,8 +166,10 @@ test("generated slot payloads keep seventeen and eighteen outlets without losing
     };
     host.readFile = (file: string) => virtual.get(path.resolve(file)) ?? readFile(file);
     host.fileExists = (file: string) => virtual.has(path.resolve(file)) || fileExists(file);
+    const helpers = path.join(directory, "__vize_helpers.d.ts");
+    assert.ok(fs.existsSync(helpers), "actual CLI must save the shared ambient helpers");
     const program = ts.createProgram(
-      names.map((name) => path.join(directory, "src", name)),
+      [helpers, ...names.map((name) => path.join(directory, "src", name))],
       options,
       host,
     );
@@ -188,6 +190,10 @@ test("generated slot payloads keep seventeen and eighteen outlets without losing
           };
         });
     });
+    console.log(
+      "VIZE_SLOT_TYPESCRIPT_OBSERVATION",
+      JSON.stringify({ build, typescript: ts.version, diagnostics: owned }),
+    );
     assert.deepEqual(owned.sort(diagnosticOrder), [...oracle.diagnostics].sort(diagnosticOrder));
   } catch (error) {
     if (rawObservation !== undefined)

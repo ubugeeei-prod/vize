@@ -40,7 +40,10 @@ typechecker fixture history [#6879](https://github.com/ubugeeei-prod/vize/issues
 - The new T1 tooling test validates the existing source-build receipt against the
   exact HEAD, binary digest, version and CI recipe. It compiles the actual CLI's
   virtual documents with TypeScript and pins complete normalized diagnostic
-  file/line/column/code/message records for all eight added negative controls.
+  file/line/column/code/message records for all eleven CLI diagnostics, including
+  the three original Vue records. An independent eight-record TypeScript oracle
+  checks the actual virtual documents plus saved ambient helpers; both engines
+  retain their exact literal-union display order.
   Its explicit runtime catalog entry defers T0 and preserves required full T1.
 - Required Rust CLI runs must find real Vue (root/tests/playground/examples/Nuxt
   plus its `@vue` namespace); missing Vue fails when TSGO is required. Only an
@@ -51,6 +54,16 @@ typechecker fixture history [#6879](https://github.com/ubugeeei-prod/vize/issues
   and reject every wrong first/last value, bad discriminant and optional boolean.
   These are semantic prototypes using emitted helper bytes, not a fresh binary
   run. The full added diagnostic oracle records its observed scope honestly.
+- Actual ci-recipe CLI execution at `adc0be82a512b872c290873dfd665461dc2f2091`
+  in [full Actions run 36316835669](https://github.com/ubugeeei-prod/vize/actions/runs/36316835669)
+  validated the source receipt, binary digest and version. It reported exactly
+  eleven diagnostics, matching independent Rust coverage execution. All three
+  original Vue records are now pinned in both Rust and Node CLI checks.
+  Pinned TypeScript 6.0.3 executed those actual emitted virtual documents and
+  ambient helpers locally: all eight complete added records matched. Go prints
+  literal unions in lexical order; TypeScript retains source order, so their
+  exact oracles are separate. The existing failed full run exposed this oracle
+  distinction; it does not establish a passing final head.
 - Fresh Actions must validate actual source-built CLI/TSGO execution, the three
   original Vue diagnostics' complete position/message/code, generated TS,
   snapshots and the full queue. Capture raw observations under
@@ -59,7 +72,9 @@ typechecker fixture history [#6879](https://github.com/ubugeeei-prod/vize/issues
   `VIZE_SLOT_CLI_OBSERVATION` Actions log before checking any oracle or count.
   A failed parse or assertion additionally logs raw stdout/stderr as base64 under
   `VIZE_SLOT_CLI_RAW`; no assertion or receipt check is relaxed. Finish the original three complete
-  Vue oracle records from that observation before merge. Native typechecker
+  Vue oracle records are pinned from that observation. Fresh final Actions
+  must execute the full virtual-document check and all Rust snapshots before
+  queue entry. Native typechecker
   comparison is unavailable; no native acceptance is claimed. No local Cargo
   build is run under the disk constraint. Issue evidence accompanies publication.
 
@@ -83,4 +98,5 @@ original diagnostic parity credit. A script-setup equivalent reports the side
 is a separate observation. The unchanged original four inputs remain registered
 in the required source-built CLI oracle. The CLI's expected three original
 identities include `Parent.vue` lines 4 and 7 and `Wrong.vue` line 4; their full
-records must come from fresh candidate Actions, rather than guessed messages.
+records were captured from the actual source-built candidate Actions described
+above, rather than guessed messages. Fresh final checks remain required.

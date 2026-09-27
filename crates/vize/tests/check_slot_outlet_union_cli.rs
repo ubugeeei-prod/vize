@@ -87,21 +87,18 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
     assert_eq!(actual, expected, "stdout:\n{stdout}\nstderr:\n{stderr}");
     let mut complete = diagnostics
         .iter()
-        .filter_map(|diagnostic| {
+        .map(|diagnostic| {
             let (file, diagnostic) = diagnostic.split_once(": error:").unwrap();
-            if !file.ends_with(".ts") {
-                return None;
-            }
             let (location, diagnostic) = diagnostic.split_once(" [TS").unwrap();
             let (line, column) = location.split_once(':').unwrap();
             let (code, message) = diagnostic.split_once("] ").unwrap();
-            Some((
+            (
                 file.replace('\\', "/"),
                 line.parse::<u32>().unwrap(),
                 column.parse::<u32>().unwrap(),
                 code.parse::<u32>().unwrap(),
                 message.to_owned(),
-            ))
+            )
         })
         .collect::<Vec<_>>();
     complete.sort();
@@ -113,7 +110,7 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
         .unwrap(),
     )
     .unwrap();
-    let mut expected_complete = oracle["diagnostics"]
+    let mut expected_complete = oracle["cliDiagnostics"]
         .as_array()
         .unwrap()
         .iter()

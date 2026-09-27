@@ -16,15 +16,21 @@ static kind to be exactly `string` (rejecting `any`) and accepts an arbitrary
 string payload. Together with the original bad forwarded props, the CLI must report
 exactly eleven diagnostics and exit 1.
 
-`typescript-oracle.json` pins all eight added negative diagnostics, including
-complete message and column. Its current observation is TypeScript 6.0.3 on
-emitted-helper bytes with fixture carrier fragments; it does not pretend that a
-private candidate CLI has been built. The T1 tooling test validates the exact
-source-build receipt, checks actual CLI diagnostics, then compiles its actual
-virtual documents using TypeScript and compares those complete records. It
-writes raw candidate observations to `target/differential/slot-outlet-union.json`.
-The three original Vue diagnostic identities are pinned; their complete records
-must be captured and pinned from fresh Actions before merge.
+`typescript-oracle.json` pins separate complete vectors: all eleven CLI diagnostics
+and all eight TypeScript negative controls. Both Rust and Node check every CLI
+file/line/column/code/message, including the three original Vue records. The
+Node test also compiles actual CLI virtual documents plus saved ambient helpers
+with pinned TypeScript. Go renders literal unions in lexical order; TypeScript
+retains source order, so the exact vectors remain distinct.
+
+The original records were captured from source-built full Actions run
+36316835669 at `adc0be82a512b872c290873dfd665461dc2f2091`, with validated
+ci-recipe binary/source/version receipt and independently matching coverage
+execution. TypeScript 6.0.3 executed those emitted bytes locally and matched all
+eight records. The old failed run exposed the oracle display-order difference;
+fresh Actions on the final pinned head must pass the Node/Rust checks and full
+queue. Raw candidate observations are written to
+`target/differential/slot-outlet-union.json` and logged before oracle assertions.
 
 There is no native typechecker adapter or native parity claim. External authored
 slot overloads retain the main-line last-signature fallback, while generated
