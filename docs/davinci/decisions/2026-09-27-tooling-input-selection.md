@@ -42,9 +42,9 @@ submodules or plugin isolation runtime.
 Selector tests cover unrelated source changes, shared and transitive imports,
 deleted inputs, dynamic imports, unknown paths, full T1 restoration, preserving
 pure helper tests and rejecting duplicate or unrecognized execution plans.
-The current inventory is 605 files including the selector test; the issue's
-577 count predates additional tests. A single L1 source edit selects 453 T0
-files, with 105 real runtime scenarios deferred to T1. A plan edit selects 460.
+At the initial selector baseline (`2b9947139`), the inventory was 605 files including the selector test; the issue's
+577 count predates additional tests. A single L1 source edit selected 453 T0
+files, with 105 real runtime scenarios deferred to T1. A plan edit selected 460.
 These are selection counts, not measured runtime improvements.
 
 CI must measure the resulting T0 duration before claiming the p50/p90 target.
