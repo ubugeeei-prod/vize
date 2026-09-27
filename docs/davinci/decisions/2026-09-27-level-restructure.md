@@ -314,3 +314,9 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 in the companion record.
 
 [Nuxt critical CSS module identity](./2026-09-27-nuxt-critical-css.md) records [#6897](https://github.com/ubugeeei-prod/vize/issues/6897); compiler migration and SSR slot scope remain separate.
+
+[Compiler fix-history byte references](./2026-09-27-compiler-fix-history-pins.md)
+records [#6880](https://github.com/ubugeeei-prod/vize/issues/6880): two immutable
+complete SFC Result fixtures, SSR snapshot normalization limits and the next
+target-specific capture gaps. Whole-history coverage and native acceptance
+remain unfinished; fresh Actions execution is required before merge.
