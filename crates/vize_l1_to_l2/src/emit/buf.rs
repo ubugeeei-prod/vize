@@ -59,9 +59,17 @@ impl Buf {
     }
 
     pub(super) fn newline(&mut self) {
+        const INDENT_CHUNK: &str = "                                ";
+        const CHUNK_LEVELS: u32 = 16;
         self.code.push('\n');
-        for _ in 0..self.indent {
-            self.code.push_str("  ");
+        for _ in 0..self.indent / CHUNK_LEVELS {
+            self.push(INDENT_CHUNK);
+        }
+        let remaining = self.indent % CHUNK_LEVELS;
+        if remaining != 0
+            && let Some(spaces) = INDENT_CHUNK.get(..remaining as usize * 2)
+        {
+            self.push(spaces);
         }
     }
 
@@ -277,6 +285,9 @@ impl Buf {
         self.push_hoist(object)
     }
 }
+
+#[cfg(test)]
+mod indentation_tests;
 
 #[cfg(test)]
 mod tests;

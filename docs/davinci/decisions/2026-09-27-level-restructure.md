@@ -271,3 +271,4 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 - **Full queue Rust execution (#6830, #6861):** reuse one bound workspace archive and four unfiltered workers; keep required TSGO, doctests and all 11 feature recipes. Runtime evidence and acceptance conditions are in [the full Rust shard decision](./2026-09-27-ci-full-rust-shards.md).
 
 - [Binding traversal cost](./2026-09-27-binding-traversal-cost.md) records the #6868 protected numeric failures and bounded static-item optimization; Linux proof remains pending.
+- [Indentation append cost](./2026-09-27-indentation-chunks.md) records the failed composed measurement and bounded chunking candidate; complete runtime proof remains pending.
