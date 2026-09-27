@@ -137,7 +137,7 @@ export function inspectLevelDependencies(metadata, policy) {
   }
   requireEvidence(roots.size > 0, "no level roots found in workspace metadata");
   const witnesses = [];
-  for (const root of [...roots].sort()) {
+  for (const root of [...roots].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))) {
     const seen = new Set([root]),
       queue = [{ name: root, path: [root] }];
     for (let index = 0; index < queue.length; index += 1) {
@@ -180,11 +180,13 @@ export function inspectLevelDependencies(metadata, policy) {
   );
   const rootDeclarations = [...roots].flatMap((root) => edges.get(root));
   return {
-    roots: [...roots].sort().map((name) => ({
-      name,
-      id: byName.get(name).id,
-      manifest: path.relative(metadata.workspace_root, byName.get(name).manifest_path),
-    })),
+    roots: [...roots]
+      .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+      .map((name) => ({
+        name,
+        id: byName.get(name).id,
+        manifest: path.relative(metadata.workspace_root, byName.get(name).manifest_path),
+      })),
     aliases: Object.fromEntries([...aliases].sort(([a], [b]) => a.localeCompare(b))),
     exceptions: policy.entries.length,
     witnesses,
@@ -194,7 +196,7 @@ export function inspectLevelDependencies(metadata, policy) {
       .length,
     buildEdges: rootDeclarations
       .filter((edge) => edge.kind === "build")
-      .map(({ destination, ...edge }) => edge),
+      .map(({ destination: _destination, ...edge }) => edge),
     unknown: [
       "external resolved transitive closure is not enumerated by --no-deps",
       ...(!byName.has("vize_l4")

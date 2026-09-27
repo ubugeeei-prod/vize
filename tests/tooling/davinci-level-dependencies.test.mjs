@@ -16,7 +16,7 @@ import {
 
 import { fixture, rejectsPath } from "./support/level-dependencies.mjs";
 
-test("three actual entries produce five witnesses and include both alias owners", () => {
+void test("three actual entries produce five witnesses and include both alias owners", () => {
   const value = fixture(),
     report = value.report();
   assertDependencyReport(report);
@@ -32,7 +32,7 @@ test("three actual entries produce five witnesses and include both alias owners"
 });
 
 for (const owner of ["vize_carton", "vize_impeto"]) {
-  test("legacy normal dependency of alias owner " + owner + " is rejected", () => {
+  void test("legacy normal dependency of alias owner " + owner + " is rejected", () => {
     rejectsPath(
       ({ add }) => add(owner, "vize_relief"),
       ({ root, edge }) => root === owner && edge.from === owner,
@@ -40,7 +40,7 @@ for (const owner of ["vize_carton", "vize_impeto"]) {
   });
 }
 
-test("canonical L3 package replaces its old alias owner without expanding debt", () => {
+void test("canonical L3 package replaces its old alias owner without expanding debt", () => {
   const value = fixture(),
     old = value.pkg("vize_impeto");
   old.name = "vize_l3";
@@ -54,7 +54,7 @@ test("canonical L3 package replaces its old alias owner without expanding debt",
   assert.equal(report.exceptions, 3);
 });
 
-test("renaming an existing legacy import does not reuse its exception", () => {
+void test("renaming an existing legacy import does not reuse its exception", () => {
   rejectsPath(
     ({ pkg }) => {
       pkg("vize_l1").dependencies.find((entry) => entry.name === "vize_armature").rename = "lexer";
@@ -63,13 +63,13 @@ test("renaming an existing legacy import does not reuse its exception", () => {
   );
 });
 
-test("renaming a legacy package to a level alias cannot hide its identity", () => {
+void test("renaming a legacy package to a level alias cannot hide its identity", () => {
   const value = fixture();
   value.add("helper", "vize_armature", { rename: "vize_l4" });
   assert.throws(value.report, /level alias hides a legacy/u);
 });
 
-test("a registry declaration cannot reuse a measured workspace exception", () => {
+void test("a registry declaration cannot reuse a measured workspace exception", () => {
   rejectsPath(
     ({ pkg }) => {
       delete pkg("vize_l1").dependencies.find((entry) => entry.name === "vize_armature").path;
@@ -78,26 +78,26 @@ test("a registry declaration cannot reuse a measured workspace exception", () =>
   );
 });
 
-test("invalid or missing comparison-base evidence fails", () => {
+void test("invalid or missing comparison-base evidence fails", () => {
   assert.throws(() => readBaseAllowlist(repoRoot, "main"), /full comparison base/u);
   assert.throws(() => readBaseAllowlist(repoRoot, "0".repeat(40)));
 });
 
-test("target-specific normal dependencies are checked even on another host", () => {
+void test("target-specific normal dependencies are checked even on another host", () => {
   rejectsPath(
     ({ add }) => add("vize_l2", "vize_relief", { target: "cfg(windows)" }),
     ({ edge }) => edge.target === "cfg(windows)",
   );
 });
 
-test("inactive optional normal dependencies remain prohibited", () => {
+void test("inactive optional normal dependencies remain prohibited", () => {
   rejectsPath(
     ({ add }) => add("vize_l2", "vize_croquis", { optional: true }),
     ({ edge }) => edge.to === "vize_croquis" && edge.optional,
   );
 });
 
-test("a newly introduced level root cannot inherit a known legacy exception", () => {
+void test("a newly introduced level root cannot inherit a known legacy exception", () => {
   const value = fixture();
   value.metadata.packages.push({
     id: "vize_l4@1",
@@ -118,7 +118,7 @@ test("a newly introduced level root cannot inherit a known legacy exception", ()
   assert.throws(() => assertDependencyReport(report), /new level-to-legacy/u);
 });
 
-test("a non-level helper cannot launder a new legacy entry", () => {
+void test("a non-level helper cannot launder a new legacy entry", () => {
   rejectsPath(
     ({ add }) => {
       add("vize_l2", "helper");
@@ -129,14 +129,14 @@ test("a non-level helper cannot launder a new legacy entry", () => {
   );
 });
 
-test("a new root reaching an existing L1 entry is rejected", () => {
+void test("a new root reaching an existing L1 entry is rejected", () => {
   rejectsPath(
     ({ add }) => add("vize_l2", "vize_l1"),
     ({ root, edge }) => root === "vize_l2" && edge.from === "vize_l1",
   );
 });
 
-test("dev oracle edges are excluded at every hop; build kind remains separate", () => {
+void test("dev oracle edges are excluded at every hop; build kind remains separate", () => {
   const value = fixture();
   value.add("vize_l2", "helper");
   value.add("helper", "vize_relief", { kind: "dev" });
@@ -151,7 +151,7 @@ test("dev oracle edges are excluded at every hop; build kind remains separate", 
   );
 });
 
-test("a normal edge is not excused by an additional dev edge", () => {
+void test("a normal edge is not excused by an additional dev edge", () => {
   rejectsPath(
     ({ add }) => {
       add("vize_l2", "vize_relief", { kind: "dev" });
@@ -161,7 +161,7 @@ test("a normal edge is not excused by an additional dev edge", () => {
   );
 });
 
-test("deleting an allowlist entry cannot hide a remaining dependency", () => {
+void test("deleting an allowlist entry cannot hide a remaining dependency", () => {
   rejectsPath(
     ({ policy }) => {
       policy.entries = policy.entries.filter((entry) => entry.to !== "vize_armature");
@@ -170,7 +170,7 @@ test("deleting an allowlist entry cannot hide a remaining dependency", () => {
   );
 });
 
-test("unused exception entries must be removed with their dependencies", () => {
+void test("unused exception entries must be removed with their dependencies", () => {
   const value = fixture();
   value.pkg("vize_l1").dependencies = value
     .pkg("vize_l1")
@@ -185,7 +185,7 @@ test("unused exception entries must be removed with their dependencies", () => {
   assert.equal(report.witnesses.length, 3);
 });
 
-test("unused root reachability must shrink without adding derived exceptions", () => {
+void test("unused root reachability must shrink without adding derived exceptions", () => {
   const value = fixture();
   value.pkg("vize_l1_to_l2").dependencies = value
     .pkg("vize_l1_to_l2")
@@ -220,7 +220,7 @@ for (const [name, change] of [
     },
   ],
 ]) {
-  test("ratchet rejects an added or changed " + name, () => {
+  void test("ratchet rejects an added or changed " + name, () => {
     const value = fixture(),
       old = structuredClone(value.policy);
     change(value.policy);
@@ -228,7 +228,7 @@ for (const [name, change] of [
   });
 }
 
-test("malformed, duplicate and untracked allowlist entries fail", () => {
+void test("malformed, duplicate and untracked allowlist entries fail", () => {
   for (const change of [
     (policy) => {
       delete policy.entries;
@@ -253,7 +253,7 @@ test("malformed, duplicate and untracked allowlist entries fail", () => {
   }
 });
 
-test("missing and ambiguous metadata identity fail instead of passing", () => {
+void test("missing and ambiguous metadata identity fail instead of passing", () => {
   for (const change of [
     ({ metadata }) => {
       delete metadata.workspace_members;
@@ -283,7 +283,7 @@ test("missing and ambiguous metadata identity fail instead of passing", () => {
   }
 });
 
-test("the real workspace metadata has no new or stale legacy permissions", () => {
+void test("the real workspace metadata has no new or stale legacy permissions", () => {
   const policy = validateAllowlist(
     JSON.parse(readFileSync(path.join(repoRoot, policyPath), "utf8")),
   );
