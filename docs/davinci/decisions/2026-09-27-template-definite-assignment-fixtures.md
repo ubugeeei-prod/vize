@@ -61,5 +61,5 @@ still need their own diagnostic evidence. #6879 remains open.
 Stack this slice on #6935. Extend only the present package `vize_canon`, binary
 `fix_history_diagnostics`, exact test `deferred_template_reads_preserve_script_diagnostics`.
 The prior event name and three Corsa names stay exact. Source existence and T1
-metadata are checked by tooling; full Cargo T1 remains unchanged. Draft Actions
+metadata are checked by tooling; full unfiltered real-TSGO T1 remains unchanged. Draft Actions
 and CI parent main/full queue proof remain pending.
