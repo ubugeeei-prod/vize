@@ -1,0 +1,3 @@
+function getSlotPosition(slotName: string): { style: { left: string, top: string, width: string, height: string }, inPortal: boolean } | null {
+  return null
+}
