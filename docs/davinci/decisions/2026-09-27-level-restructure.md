@@ -56,15 +56,8 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 - Level crates never take normal dependencies on legacy crates: `vize_armature`, `vize_relief`, `vize_atelier_*`, `vize_croquis`, `vize_croquis_cf`. Legacy may depend on levels. Dev-dependencies used as differential oracles are fine.
 - **Croquis counts as legacy.** Script analysis is rebuilt natively in the levels ([#6844](https://github.com/ubugeeei-prod/vize/issues/6844)). No adapter presents legacy output as Davinci facts.
 - A `cargo metadata` gate enforces the rule. It starts with a shrinking allowlist and later covers product crates too.
-- The initial #6831 gate scopes physical level/conversion packages and the
-  owners of production aliases (L0/Carton and L3/Impeto today). It reports three
-  existing normal legacy entry edges and five derived root-to-entry paths.
-  Entries and their supported root sets only shrink; target, optional and
-  rename variants are distinct. Dev oracle and build kinds are kept separate.
-- The declaration gate runs on every PR, merge group, push and full check,
-  including docs-only allowlist changes. Additions, stale permissions and
-  missing identities fail. Physical L4 and external resolved closure remain
-  unproved; #6831 stays open until the allowlist is empty and enforcing.
+- The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate)
+  records shrinking #6831 permissions, enforcement and remaining scope.
 
 ## L1: what the text _is_
 
