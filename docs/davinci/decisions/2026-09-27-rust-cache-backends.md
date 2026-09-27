@@ -1,8 +1,8 @@
 # Rust cache backends
 
-Private preparation for [#6830](https://github.com/ubugeeei-prod/vize/issues/6830).
-Publication, actual trusted Actions seeding and later source/queue cache hits
-remain pending. The same issue comment is drafted below for paired publication.
+Reviewed candidate for [#6830](https://github.com/ubugeeei-prod/vize/issues/6830).
+Actual trusted Actions seeding, later source/queue cache hits and fresh runtime
+reports remain pending. The paired issue comment is drafted below.
 
 ## Decision
 
@@ -59,8 +59,7 @@ deletion or billing configuration changes are part of this preparation.
   suites or prove live cache service
   permissions, transfer time, retained entries or actual Actions post behavior.
 
-TODO: after the existing merge backlog and source review, publish the paired
-issue comment; verify a trusted default-branch seed followed by a PR restore
+TODO: verify a trusted default-branch seed followed by a PR restore
 and all fresh runtime/source reports. No CI p50/p90 or wall-time gain is claimed.
 Actions cache's restoration scope and eviction apply independently of the
 provider disk limit; initial cache misses still build and test normally.
@@ -73,14 +72,20 @@ this slice does not alias target roles or add a build job. Full Check's legacy
 Rust recipe uses the dev profile while PR/queue archives use the ci profile, so
 a mounted target alone does not establish a warm archive build.
 
+The primary target key uses repository lock/toolchain inputs. The standalone
+`tests/fuzz/target` workspace has its own manifest and generates an untracked
+lockfile, so those standalone inputs are not fully represented by this key.
+The unchanged Cargo commands still resolve and validate the current inputs;
+a restored target does not substitute for a fresh build.
+
 ## Issue #6830 comment draft
 
-The private cache preparation bounds future provider names by routing PRs,
+The reviewed cache candidate bounds future provider names by routing PRs,
 merge groups and nondefault branches to restore-only Actions cache. Only an exact trusted
 default-branch checkout writes existing stable Blacksmith keys, and those
 clones seed Actions without a second restore into their mounted paths. Failed
 mounts fall back per path. All validation remains required; external cleanup
 is unnecessary for the new policy. The source record is
-`docs/davinci/decisions/2026-09-27-rust-cache-backends.md`. Publication and actual
+`docs/davinci/decisions/2026-09-27-rust-cache-backends.md`. Actual
 seed/restore/runtime proof remain unfinished; this does not close the CI issue
 or establish the three/six-minute target.
