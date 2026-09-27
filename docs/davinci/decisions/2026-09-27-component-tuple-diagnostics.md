@@ -54,7 +54,7 @@ observations. Strict Clippy with warnings denied and targeted formatting passed.
 The runtime test is unconditional. Its exact package `vize_canon`, binary
 `fix_history_diagnostics` and test
 `component_event_tuples_preserve_all_argument_diagnostics` can leave T0 only
-when present at that child head; full unfiltered required real-TSGO T1 is unchanged.
+when present at that child head; full unfiltered required real-TSGO T1 retains every workspace case.
 Parent review approved the bounded slice for a stacked draft. Compound/superseded
 contracts, Vue 2, runtime/generic/model/fallthrough emit variants, common
 admission, Actions/full T1 proof, native L4, end/related/raw fields and complete
@@ -65,6 +65,6 @@ history remain open. Native acceptance is zero and #6879 stays open.
 Stack this slice on #6953 after parent review. Extend only the present package
 `vize_canon`, binary `fix_history_diagnostics`, exact test
 `component_event_tuples_preserve_all_argument_diagnostics`. Prior Canon/Corsa names remain
-exact; source existence and T1 metadata are checked. Full Cargo T1 is unchanged.
+exact; source existence and T1 metadata are checked. full unfiltered required real-TSGO T1 retains every workspace case.
 Latest-head source Actions and exact-child full Check execution are required;
 no queue before CI parent main/full proof. All native/history gaps stay open.

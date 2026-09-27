@@ -10,3 +10,6 @@
 | [Unicode values](./2026-09-27-unicode-value-diagnostic-fixtures.md)          | Japanese/emoji literal diagnostics; production byte-corruption fault fails               | Broader template/comment paths, full-range and native equivalence   |
 | [Reserved expressions](./2026-09-27-reserved-expression-diagnostics.md)      | Shorthand, keys, members and literal boundaries; production shorthand fault fails        | Broader scanner inputs, full-range and native equivalence           |
 | [Component tuples](./2026-09-27-component-tuple-diagnostics.md)              | Original arity inputs, second-argument/context controls; production tuple collapse fails | Compound/retired emit variants, full-range and native equivalence   |
+
+The central record links this companion to keep the 350-line ratchet while
+retaining every prior contract row and link. Full T1 selects all workspace cases.

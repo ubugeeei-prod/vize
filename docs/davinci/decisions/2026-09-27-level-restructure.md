@@ -133,7 +133,7 @@ See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-ch
 
 [Type-checker history slices](./2026-09-27-typechecker-history-slices.md) record
 focused required T1 diagnostics, including component tuples, for #6879;
-whole-history and native admission remain unfinished.
+whole-history and native admission remain unfinished; the companion preserves every row.
 
 ## Legacy deletion criteria
 

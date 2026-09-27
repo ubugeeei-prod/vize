@@ -20,7 +20,7 @@ list, with all available public fields and returned order.
 
 Both projects are required T1 fixtures. Their ordinary test body always
 executes the unchanged production checker; exact-name T0 nextest deferral must
-be paired with required full T1 Cargo execution. The existing runtime fixture
+be paired with required full unfiltered required real-TSGO T1. The existing runtime fixture
 packs and their numeric historical issue metadata remain compatible with the
 nullable historical-issue field.
 
@@ -54,5 +54,5 @@ separate evidence. Native acceptance is zero and #6879 stays open.
 Stack this slice on the required-props draft #6940. Extend only the present
 package `vize_canon`, binary `fix_history_diagnostics`, exact test
 `unicode_reserved_props_preserve_value_diagnostics`. Prior Canon/Corsa names remain exact;
-source existence and T1 metadata are checked. Full Cargo T1 stays unchanged.
+source existence and T1 metadata are checked. full unfiltered required real-TSGO T1 retains every workspace case.
 Draft Actions and CI parent main/full queue proof remain pending.

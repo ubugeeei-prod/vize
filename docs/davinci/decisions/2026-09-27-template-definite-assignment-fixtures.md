@@ -9,7 +9,7 @@ Register two required T1 fixture projects using the same exact batch diagnostic
 contract as the [event-handler slice](./2026-09-27-typechecker-fix-history.md).
 The ordinary Rust integration test always calls the actual production checker;
 the T0 nextest profile must explicitly defer its exact test name, while full
-T1 Cargo runs it with the installed runtime. No test-body early return or
+full unfiltered required real-TSGO T1 runs it with the installed runtime. No test-body early return or
 runtime-absence success is added.
 
 The first project contains the exact 18 authored SFCs and `support.ts` from

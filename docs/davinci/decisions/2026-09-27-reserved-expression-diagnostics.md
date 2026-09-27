@@ -24,7 +24,7 @@ line 12, authored UTF16 column 56, severity 1, complete message
 
 Both projects declare required T1 execution. The ordinary test always runs;
 T0 deferral must use only its exact package, binary and test name when present
-at that PR head. Full T1 Cargo execution remains required.
+at that PR head. full unfiltered required real-TSGO T1 remains required.
 
 ## Verification and remaining work
 
@@ -50,6 +50,6 @@ Native acceptance is zero. #6879 remains open.
 Stack this slice on #6941 after parent review. Extend only the present package
 `vize_canon`, binary `fix_history_diagnostics`, exact test
 `reserved_prop_shapes_preserve_literal_and_member_diagnostics`. Prior Canon/Corsa names
-remain exact; source existence and T1 metadata are checked. Full Cargo T1 is
+remain exact; source existence and T1 metadata are checked. full unfiltered required real-TSGO T1 is
 unchanged. Latest-head source Actions and exact-child full Check execution are
 required; no queue before parent main/full proof. All native/history gaps stay open.
