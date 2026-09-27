@@ -1,6 +1,14 @@
 import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 
+// These authored plans are compiled or read by Rust tests and compiler gates.
+// Keep the whole directory conservative as new contracts are added.
+export function isSharedRustInput(path) {
+  return (
+    path.startsWith("docs/davinci/plan/") || path === "npm/cli/schemas/vize.config.schema.json"
+  );
+}
+
 export function planSourceChecks(paths, eventName = "pull_request") {
   if (!["pull_request", "merge_group"].includes(eventName)) {
     throw new Error("expected pull_request or merge_group source planning context");
@@ -12,7 +20,15 @@ export function planSourceChecks(paths, eventName = "pull_request") {
   // Compiler changes can affect the native JS binding and its package tests.
   const result = { rust: false, js: false, tooling: false, playground: false };
   for (const path of paths) {
-    if (/^(docs\/|\.changeset\/)/.test(path) || /(^|\/)README\.md$/.test(path)) continue;
+    if (isSharedRustInput(path)) {
+      result.rust = result.js = result.tooling = result.playground = true;
+      continue;
+    }
+    if (
+      (/^(docs\/|\.changeset\/)/.test(path) && /\.(md|mdx)$/.test(path)) ||
+      /(^|\/)README\.md$/.test(path)
+    )
+      continue;
     if (
       /^(tests\/tooling\/|tools\/support\/release\/|tools\/commands\/release\/|tools\/moon\/cmd\/release\/|tools\/support\/compat\/github\/|\.github\/workflows\/release[^/]*\.yml$)/.test(
         path,
@@ -29,7 +45,7 @@ export function planSourceChecks(paths, eventName = "pull_request") {
       result.rust = true;
       result.js = true;
       if (
-        /^(crates\/vize_(atelier|s[12]|davinci|impeto|armature)|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
+        /^(crates\/vize_(atelier|s[12]|l[0-4]|davinci|impeto|armature)|Cargo\.(toml|lock)$|rust-toolchain\.toml$)/.test(
           path,
         )
       ) {

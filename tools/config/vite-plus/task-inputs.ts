@@ -155,6 +155,33 @@ export const cacheInputs = {
   toolingPlans: ["docs/**", "tests/tooling/**"],
   toolingLedgers: ["docs/**", "tests/**", "tools/support/compat/fixtures/**"],
   toolingFixtureUnits: ["tools/support/compat/fixtures/**", "tests/_fixtures/**", "npm/**"],
+  // Rust corpus subprocesses compile workspace dependencies and consume the
+  // hydrated shards/harness. Plan docs include compile-time threshold inputs.
+  toolingRustCorpus: [
+    ".cargo/**",
+    ".github/**",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "crates/**",
+    "tests/**",
+    "tools/benchmarks/**",
+    "docs/davinci/plan/**",
+    "npm/**",
+  ],
+  // This command builds the Moon module only; it does not execute its tools.
+  toolingMoonBuild: [".github/**", ".moonbit-version", "tools/moon/**", "tools/nix/moonbit.nix"],
+  // Standalone rust-script dependencies are in the script header, not crates/.
+  toolingBenchCompare: [
+    ".cargo/**",
+    ".github/**",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "tools/commands/davinci/bench-compare.rs",
+    "tools/support/**",
+    "tests/_fixtures/davinci-bench-compare/**",
+  ],
   rust: [
     "package.json",
     ...taskConfigInputs,

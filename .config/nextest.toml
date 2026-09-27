@@ -1,0 +1,45 @@
+# CI uses the same pinned nextest on the archive builder and every shard.
+nextest-version = "0.9.146"
+
+[profile.pr]
+# These three real-TSGO runtime cases remain mandatory in the full Cargo T1
+# lane. Exact names keep future unit tests in this module in the PR tier.
+default-filter = '''not (package(=vize_maestro) & (
+  test(=ide::rename::corsa_session_tests::concurrent_real_corsa_rename_sessions_are_isolated) |
+  test(=ide::rename::corsa_session_tests::direct_first::dependency_change_rearms_the_shared_editor_transport_once) |
+  test(=ide::rename::corsa_session_tests::direct_first::direct_first_renames_survive_twenty_session_shutdown_overlap)
+))'''
+fail-fast = false
+retries = 0
+test-threads = 16
+slow-timeout = "60s"
+
+[profile.pr.junit]
+path = "junit.xml"
+store-success-output = false
+store-failure-output = true
+
+[test-groups]
+# Guest builders share target/contract-guests. Their OnceLocks are process-local,
+# so nextest must limit the guest builds across test processes on each runner.
+contract-guests = { max-threads = 1 }
+
+[[profile.pr.overrides]]
+filter = 'package(=vize_extension_host)'
+test-group = "contract-guests"
+
+# Full T1 has no default-filter: every ordinary workspace case remains selected.
+[profile.full]
+fail-fast = false
+retries = 0
+test-threads = 16
+slow-timeout = "60s"
+
+[profile.full.junit]
+path = "junit.xml"
+store-success-output = false
+store-failure-output = true
+
+[[profile.full.overrides]]
+filter = 'package(=vize_extension_host)'
+test-group = "contract-guests"

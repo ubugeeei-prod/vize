@@ -74,16 +74,16 @@ jobs:
           cache: true
           run-install: false
       - name: Check Davinci source inventories
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}
+        if: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         uses: ./.github/actions/check-level-inventories
       - uses: ./.github/actions/setup-js-check-runtime
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check JS/TS
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'merge_group' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
         run: vp run --filter './npm/native' build:debug && vp run --workspace-root check:ci
       - name: Check fast JS/TS
-        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
         run: vp run --workspace-root check:repo
   semver-checks:
     name: cargo-semver-checks (${{ matrix.crate }})

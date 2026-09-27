@@ -16,115 +16,61 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
+      comparison-base: ${{ steps.comparison.outputs.base }}
       rust: ${{ steps.plan.outputs.rust }}
+      rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
-      tooling: ${{ steps.plan.outputs.tooling }}
+      tooling: ${{ steps.tooling-plan.outputs.tooling }}
       playground: ${{ steps.plan.outputs.playground }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Fetch comparison base
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: false
+          run-install: false
+      - name: Resolve and fetch comparison base
+        id: comparison
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then
-            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+          comparison_base="$(node tools/support/compat/github/comparison-base.mjs)"
+          if [[ ! "$comparison_base" =~ ^0+$ ]]; then
+            git fetch --no-tags --depth=1 origin "$comparison_base"
           fi
       - name: Plan source checks
         id: plan
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
         run: node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        if: ${{ steps.plan.outputs.rust == 'true' }}
+        with:
+          toolchain: "1.98.0"
+      - name: Plan affected Rust crates
+        id: rust-plan
+        if: ${{ steps.plan.outputs.rust == 'true' }}
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+        run: node tools/support/compat/github/plan-affected-rust.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$RUNNER_TEMP/rust-plan.json"
+
+      - name: Plan tooling test inputs
+        id: tooling-plan
+        env:
+          BASE_SHA: ${{ steps.comparison.outputs.base }}
+          TOOLING_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
+        run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json" --github-output
 
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: ${{ github.event_name == 'merge_group' && 45 || 35 }}
-    env:
-      CARGO_BUILD_JOBS: "12"
-      RUST_TEST_THREADS: "4"
-      VIZE_NUXT_CONFIG_ITERATIONS: "100"
-    steps:
-      - name: Explain documentation-only skip
-        if: ${{ needs.pr-source-plan.outputs.rust != 'true' }}
-        run: echo 'Rust Clippy and tests skipped because this PR changes no Rust or unknown source paths.' >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-        with:
-          components: clippy
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-        with:
-          wild-version: "0.9.0"
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-        with:
-          node-version-file: "package.json"
-          cache: true
-          run-install: true
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-        with:
-          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
-          key: clippy-test
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - uses: ./.github/actions/setup-rust-script
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-      - name: Clippy
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-        run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
-      - name: Install Pkl CLI
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-        run: npm install --global @pkl-community/pkl@0.27.2
-      - name: Build Rust workspace tests
-        id: rust-test-build
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-        env: { VIZE_TEST_REQUIRE_TSGO: "1" }
-        run: |
-          timing_dir="$RUNNER_TEMP/rust-test-timings"
-          mkdir -p "$timing_dir"
-          rm -f target/cargo-timings/cargo-timing.html
-          touch "$timing_dir/build-started"
-          phase_started=$SECONDS
-          if cargo test --workspace --no-run --timings; then phase_exit=0; else phase_exit=$?; fi
-          printf '{"phase":"build","elapsed_seconds":%d,"exit_code":%d}\n' "$((SECONDS - phase_started))" "$phase_exit" > "$timing_dir/build.json"
-          exit "$phase_exit"
-      - name: Run Rust workspace tests
-        id: rust-test-run
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-        env: { VIZE_TEST_REQUIRE_TSGO: "1" }
-        run: |
-          phase_started=$SECONDS
-          if cargo test --workspace; then phase_exit=0; else phase_exit=$?; fi
-          printf '{"phase":"execution-and-doctests","elapsed_seconds":%d,"exit_code":%d}\n' "$((SECONDS - phase_started))" "$phase_exit" > "$RUNNER_TEMP/rust-test-timings/run.json"
-          exit "$phase_exit"
-      - name: Test merge queue differential corpora
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.rust == 'true' }}
-        uses: ./.github/actions/test-rust-workspace-differential
-        with:
-          workspace-already-tested: "true"
-      - name: Check fixture coverage
-        if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
-        run: rust-script tools/commands/ci/github/write-coverage-summary.rs
-      - name: Summarize Rust test timing evidence
-        if: ${{ always() && needs.pr-source-plan.outputs.rust == 'true' }}
-        env:
-          BUILD_OUTCOME: ${{ steps.rust-test-build.outcome }}
-          RUN_OUTCOME: ${{ steps.rust-test-run.outcome }}
-          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.event.merge_group.head_sha }}
-          CACHE_NAMESPACE: ${{ github.repository }}-${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}clippy-test-target-${{ runner.os }}-${{ runner.arch }}
-        run: node tools/support/compat/github/rust-test-timings.mjs
-      - name: Upload Rust test timing evidence
-        if: ${{ always() && needs.pr-source-plan.outputs.rust == 'true' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: rust-test-timings-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
-          path: ${{ runner.temp }}/rust-test-timings/
-          if-no-files-found: error
-          retention-days: 14
+    uses: ./.github/workflows/pr-rust-checks.yml
+    with:
+      run-rust: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
+      rust-plan: ${{ needs.pr-source-plan.outputs.rust-plan }}
 
   pr-js-packages:
     name: PR JS package build and tests
@@ -211,6 +157,13 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - uses: ./.github/actions/setup-rust-script
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+      - name: Regenerate PR tooling plan
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        env:
+          BASE_SHA: ${{ needs.pr-source-plan.outputs.comparison-base }}
+        run: |
+          if [[ ! "$BASE_SHA" =~ ^0+$ ]]; then git fetch --no-tags --depth=1 origin "$BASE_SHA"; fi
+          node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier pr --output "$RUNNER_TEMP/tooling-plan.json"
       - name: Install fixture and JS dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
@@ -220,8 +173,13 @@ jobs:
       - name: Prepare the pinned plugin isolation runtime
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         run: vp exec node tools/support/compat/davinci/plugin-sandbox-image.mjs
+      - name: Test selected PR tooling scripts
+        if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        env:
+          VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
+        run: vp run --workspace-root test:scripts:pr
       - name: Test tooling scripts
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
         run: vp run --workspace-root test:scripts
 
   pr-playground-test:
@@ -298,12 +256,12 @@ jobs:
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
         run: vp run --filter './playground' test:browser
       - name: Run VRT
-        if: ${{ env.RUN_PLAYGROUND == 'true' }}
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' }}
         run: vp run --filter './playground' test:vrt
         continue-on-error: true
         id: vrt
       - name: Upload VRT report
-        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-playground-vrt-report
@@ -311,14 +269,14 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
       - name: Upload VRT diff artifacts
-        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-vrt-diff
           path: playground/e2e/vrt/test-results/
           retention-days: 7
       - name: Fail if VRT failed
-        if: ${{ env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
+        if: ${{ github.event_name == 'merge_group' && env.RUN_PLAYGROUND == 'true' && steps.vrt.outcome == 'failure' }}
         run: exit 1
 
   source-report:
