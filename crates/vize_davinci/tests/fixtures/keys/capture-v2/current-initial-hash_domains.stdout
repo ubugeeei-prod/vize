@@ -1,0 +1,11 @@
+
+running 1 test
+test observe_pending_hash_domain_vectors ... FAILED
+
+failures:
+
+failures:
+    observe_pending_hash_domain_vectors
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+

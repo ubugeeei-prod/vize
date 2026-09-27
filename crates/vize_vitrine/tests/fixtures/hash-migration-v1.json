@@ -1,13 +1,19 @@
 {
-  "state": "pending-actual-old-source-capture",
-  "sourceRevision": null,
+  "state": "captured-old-source",
+  "sourceRevision": "7298647ee8164adf6a9b6c128167cd060f18b77f",
   "buildStamp": "hash-migration-control",
-  "diagnostic": null,
-  "provider": null,
-  "providerResult": null,
-  "output": null,
-  "transform": null,
-  "providerValues": null,
+  "diagnostic": "s0.v1:fae95018d4407e71658e7bfae6462692",
+  "provider": "s0.v1:599021f015a56fa001b300e6ce7125a9",
+  "providerResult": "s0.v1:ed1d83b12494c48eb8730794c9492b38",
+  "output": "s0.v1:ad58e73fb7a33b3b2b6f7f30d6ab91ff",
+  "transform": "s0.v1:e99ab135a693b1e38e520b7918806d3b",
+  "providerValues": {
+    "tokens/colors": [[0, "red"]]
+  },
   "productionBaseRevision": "3bf16a50e0e8ad9aa5e6cafb2151e5340bc5e3c4",
-  "captureReceipt": null
+  "captureReceipt": {
+    "path": "crates/vize_davinci/tests/fixtures/keys/capture-v2/receipt.json",
+    "sha256": "d5c6553cac4348910bb7de07d26848cad6deed2346ab7ba4396d11884ac5903d"
+  },
+  "transformBuildStamp": "7298647ee8164adf6a9b6c128167cd060f18b77f:f2a06b7a91f26135ab4851fa046c2d26e3593918cd3fde4af0699af607189d10"
 }

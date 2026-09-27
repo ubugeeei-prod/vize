@@ -46,31 +46,35 @@ the complete Result object while silently removing fields is not a parity claim.
 The new public ABI regression uses the real Node addon; all other unknown or
 external callers remain outside the measured scope until verified.
 
-## Witnesses and pending capture
+## Actual captures and pending acceptance
 
-- Existing TS-43 `base.keys` is archived unchanged as `base-v1.keys`; SHA-256
+- The original TS-43 seven keys remain byte exact in `base-v1.keys`; SHA-256
   `25c449cf36249bf7fabc8de9c2cf41ce3a491463a5d23b336cbdcc81b874ec5a`.
-- Current seven keys stay pending until actual frozen source execution.
-- `hash_domains` pins fixed preimages for all four domains, all six SFC and
-  three global facets, and isolated domain/stage/recipe negatives. Every
-  expected digest is null until actual producer capture and independent
-  one-shot XXH3 verification. Normal tests fail closed while capture is pending.
-- Four real store tests and a real native provider/consumer cache test use
-  an old-source key fixture whose fields are also pending actual capture.
-  Ignored observation tests print actual values only when explicitly invoked;
-  they are not acceptance gates and do not turn missing references into pass.
-- Production provider dependency assembly is exercised in its NAPI-gated child
-  test; default Rust tests do not imply this NAPI-only path executed.
-- Existing TS-42, TS-43, actual plugin/transform/output snapshots, native addon
-  contracts, workspace differentials and WASM gates remain required.
-  The existing TS-43 job now runs on PRs and includes the four-domain target
-  plus SFC/global summary tests on its existing Linux/macOS matrix.
+  Actual source `de5e656` generated seven current keys, SHA-256
+  `3d1676cdf640de111723e5a3b3fbd546c42ecee9e9392ee363a13a42320466a4`.
+- `hash_domains` captured 24 fixed preimages/digests: 11 real producers and
+  13 isolated domain/stage/recipe negatives with no production result.
+  A separate direct one-shot call to the existing XXH3 primitive verified all
+  24 under the same installed Rust 1.98.0. This is not a second hash algorithm.
+- Old probe `7298647` keeps production identity `3bf16a5` and captured five
+  actual keys and provider values from four exact observers. Its real compiled
+  transform build stamp differs from the three explicitly controlled helpers.
+- The selected dev/default gates passed: key units 6, manifests 5, SFC 7,
+  global 2. The initial reused library mismatch was refused and preserved;
+  an authorized Davinci-only package clean and identical-source build resolved it.
+  The initial one-shot compiler mismatch and exact-toolchain retry remain raw.
+- `capture-v2/receipt.json` links actual source/binary/input/profile/commands,
+  process status and unchanged raw outputs. Activated fixture tests and four
+  real persistent-store migration tests require a subsequent source build.
+- Production provider assembly is NAPI-gated; default tests did not execute it.
+  Real addon, compiler output byte parity, TS-42, WASM, full CI and all normal
+  TS-43/hash-domain acceptance remain pending. No native acceptance is credited.
+- The existing TS-43 job also runs on PRs with hash-domain/SFC/global targets
+  on its existing Linux/macOS matrix. No new workflow or dependency was added.
 
-No actual Cargo, ABI, compiler output, WASM, vector or Actions pass is recorded
-by this source preparation. Capture receipts must bind immutable source/binary,
-inputs, profile/build stamps, commands, raw outputs and exact exit status.
-Old archives and source corpus membership remain unchanged; metadata and
-historical `.keys` files do not add product inputs.
+Capture source heads stay exact; later data commits are not relabeled as the
+compiled source. Raw archive evidence is not executable source. Source corpus
+membership and historical references remain unchanged.
 
 ## Source budget and record exception
 
