@@ -120,6 +120,17 @@ complete first output. Input hashes were checked against the original source.
 Six tests passed capture, updates-disabled/frozen replay and strict Clippy.
 Shared registration and Actions remain pending.
 
+## Directive layout slice
+
+`fix_history_directive_layout.rs` copies six original inputs and option sets
+for multiline/verbatim directive values, v-for collections, blank lines and
+leading comments, quote/number policy across SFC blocks and pinned suppression
+lines. The complete first output and three real calls retain every original
+semantic constraint. Six decoded input hashes matched their original tests.
+Six tests passed capture, updates-disabled/frozen replay and strict Clippy.
+The already complete two-arm template literal witness is not duplicated.
+Shared registration and Actions remain pending.
+
 ## Remaining work
 
 - Finish the commit-by-commit audit of all 56 original fix-title commits and
