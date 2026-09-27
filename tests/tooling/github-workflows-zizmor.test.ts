@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { Script } from "node:vm";
 import { parse } from "yaml";
 
 import { readRepoFile } from "./support/github-workflows.ts";
@@ -113,7 +114,8 @@ test("zizmor plans with read-only API calls and no candidate checkout", () => {
 test("a failed or incomplete audit plan cannot skip the scanner", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "zizmor.yml"));
   const condition = workflow.jobs.zizmor.if.slice(3, -2).trim();
-  const evaluate = new Function("needs", "cancelled", `return ${condition}`);
+  const evaluate = (needs: object, cancelled: () => boolean) =>
+    new Script(condition).runInNewContext({ needs, cancelled });
   for (const [result, audit, expected] of [
     ["success", "false", false],
     ["success", "true", true],
