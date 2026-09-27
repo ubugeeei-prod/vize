@@ -110,6 +110,16 @@ strict Clippy. These broaden the public output evidence while keeping existing
 helper tests. Shared registration, Actions and full-history acceptance remain
 pending.
 
+## SFC layout slice
+
+`fix_history_sfc_layout.rs` copies six original whole-SFC input strings exactly:
+literal multiline attributes, multiline comments/pre openings, wrapped
+interpolations, trailing text and text between interpolations. Defaults and
+three-pass fixed-point checks are unchanged; binary snapshots add the missing
+complete first output. Input hashes were checked against the original source.
+Six tests passed capture, updates-disabled/frozen replay and strict Clippy.
+Shared registration and Actions remain pending.
+
 ## Remaining work
 
 - Finish the commit-by-commit audit of all 56 original fix-title commits and
