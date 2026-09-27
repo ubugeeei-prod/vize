@@ -70,3 +70,36 @@ TODO: replay stage paths after this layer, publish only after the CI priority
 is resolved, mirror decisions on the owning issues, and validate fresh
 exact-head Actions and merge-group results. Three legacy exceptions remain;
 #6831 and #6832 stay open. No full local production build ran.
+
+## Independent dependency-gate coordination
+
+The root reviewed a metadata-only split of the existing eight: #6905 becomes
+a standalone main-base PR; the seven existing #6906 -> #6907 -> #6943 ->
+#6944 -> #6945 -> #6946 -> #6947 members retain their order in a main-base
+native stack. All are positively verified off queue with unchanged source
+heads before this graph operation. This adds no PR, member or source edit.
+
+The #6905 source head is `a722f0be290c0d76feb6012bc1608b1561cbdf46`.
+Its thirteen owned paths contain dependency policy, workflow contracts, tests
+and documentation, with no Rust product, Cargo, benchmark, harness or protocol
+change. Current actual main is `f67358d0c283f6211e52080f455285fdb62c95f1`.
+The root reviewed the generated gate-only transport tree `d146`; publication
+and fresh exact-source acceptance are still pending. Check remains 690 lines.
+
+The original actual queue candidate
+`5d44add8574cd2ff496258052e51454325d0e1e9` on main `30c5af85` passed
+[full Check 36319176710](https://github.com/ubugeeei-prod/vize/actions/runs/36319176710),
+including measured instruction job `108619572354`. Its raw artifact
+`10932275565` has SHA-256
+`b3f600fa12bae3788be25db5d1083af7344665469c7af4f10a11a89872d5f944`.
+The latest original-head required source contexts also pass. These historical
+receipts do not accept a new source or queue candidate on advancing main.
+
+TODO: perform the reviewed graph split with exact remote-head leases and
+off-queue checks; independently transport, validate and actually merge #6905
+through the protected queue. The remaining seven require concretely reviewed
+production repairs and fresh full measured queue acceptance before their
+actual merges. Their current failure artifacts and authored source remain
+preserved; private future naming is separate. Three normal legacy exceptions
+remain, so #6831 and #6832 stay open. No numeric, native or main credit is
+granted by coordination alone.

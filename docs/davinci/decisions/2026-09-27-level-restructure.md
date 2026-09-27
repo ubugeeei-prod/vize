@@ -63,6 +63,8 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 - A `cargo metadata` gate enforces the rule. It starts with a shrinking allowlist and later covers product crates too.
 - The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate)
   records shrinking #6831 permissions, enforcement and remaining scope.
+  Its test-only #6905 is coordinated independently while the remaining seven
+  existing members repair measured production regressions before merging.
 
 ## L1: what the text _is_
 
@@ -223,7 +225,7 @@ The toolchain aims to be extremely fast. The layering must not add pipelines or 
 - **Regressions are stopped in the merge queue** with instruction-count measurements per stage ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868)). The wall-clock envelope runs nightly.
 - **Per-stage budgets ratchet from current measurements.** Today all 102 `wall_p50_ns` entries in `plan/budgets.toml` are unset.
 - The [instruction-count gate record](./2026-09-27-instruction-counts.md) defines measured-only ceilings and immutable-base ratchets for #6868. Independent clean Actions builds (run 36307058591, attempts 1 and 2) match all 100 probes in three executions each under the fixed guest method. Required `test-report` aggregates queue measurement and strict ceilings. Separate queue tests and test-inventory collection preserve its check name and satisfy the source-length ratchet. Exact queue verification is pending.
-- The private [fixed v-for provenance candidate](./2026-09-27-vfor-provenance-construction.md) preserves complete bytes and stack safety. Its first measurement failed 13 instruction ceilings, with the iteration 1042 over; six new controls passed separately in instrumented workspace tests. The reviewed [ASCII word safety path](./2026-09-27-ascii-expression-safety.md) retains OXC admission. The private verification inherits actual merged main `c681035`: iteration `147642 <= 148047` and Linux allocations `11/1499` pass, but seventeen unchanged instruction ceilings fail. Final twelve-control/differential execution remains pending; MacOS is unknown ([#6868 source record](https://github.com/ubugeeei-prod/vize/issues/6868#issuecomment-5856053395)).
+- The private [fixed v-for provenance candidate](./2026-09-27-vfor-provenance-construction.md) preserves complete bytes and stack safety. Its first measurement failed 13 instruction ceilings, with the iteration 1042 over; six new controls passed separately in instrumented workspace tests. The reviewed [ASCII word safety path](./2026-09-27-ascii-expression-safety.md) retains OXC admission. The private verification inherits actual merged main `c681035`: iteration `147642 <= 148047`, Linux allocations `11/1499` and all twelve controls in instrumented workspace tests pass, but seventeen unchanged instruction ceilings fail. Full feature differential execution remains pending; MacOS is unknown ([#6868 source record](https://github.com/ubugeeei-prod/vize/issues/6868#issuecomment-5856053395)).
 - [Indentation append cost](./2026-09-27-indentation-chunks.md) records the failed composed measurement and bounded chunking candidate; complete runtime proof remains pending.
 - Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is decided after measuring table density and lookup cost ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).
 

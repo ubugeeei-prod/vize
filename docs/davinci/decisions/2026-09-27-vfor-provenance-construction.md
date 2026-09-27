@@ -199,3 +199,12 @@ Any guard integration or single-lookup intern change needs concrete source
 review and complete semantic controls before another measured candidate.
 The original measurements and source refs remain preserved; #6831 and #6832
 remain open, with no numeric, native, queue or main acceptance claimed.
+
+The same frozen source's instrumented Source coverage job `108631662393` later
+completed successfully. Its raw `cargo llvm-cov --workspace` log explicitly
+executes each of the twelve named controls successfully, plus
+`stress_deep_lowers_and_tears_down_on_a_small_stack`. The log's SHA-256 is
+`3b9b0c45b86a8a8501e581c8e942b18e1930351447776e7b70c732848c676af9`.
+This is actual typed default-workspace evidence for the added controls, not
+eleven-feature differential acceptance. The primary Rust Test remains running;
+the failed instruction ceilings and Markdown formatting failure remain intact.
