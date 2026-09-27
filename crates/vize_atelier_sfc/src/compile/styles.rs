@@ -12,6 +12,18 @@ pub(super) struct CompiledStyles {
     pub(super) css_modules: Vec<CssModuleMapping>,
 }
 
+/// Match Vue's SFC slotted-style detection, including the legacy function form.
+pub(super) fn scope_flags(styles: &[SfcStyleBlock]) -> (bool, bool, bool) {
+    (
+        !styles.is_empty(),
+        styles.iter().any(|style| style.scoped),
+        styles.iter().any(|style| {
+            style.scoped
+                && (style.content.contains(":slotted(") || style.content.contains("::v-slotted("))
+        }),
+    )
+}
+
 impl CompiledStyles {
     /// Production script and SSR values use the same hashed names as CSS.
     pub(super) fn with_css_var_names(

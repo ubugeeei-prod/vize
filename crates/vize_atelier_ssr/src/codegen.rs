@@ -45,6 +45,8 @@ pub struct SsrCodegenContext<'a> {
     pub(crate) component_name: Option<String>,
     /// Whether the reserved `<Self>` tag resolves to the current component.
     pub(crate) experimental_self_component: bool,
+    /// Whether slot outlets contribute this component's own slotted scope ID.
+    pub(crate) slotted: bool,
     /// The structured emission document: generated code plus, when a Source
     /// Map v3 document is requested, the links from its bytes to the template.
     pub(crate) out: EmitDocument,
@@ -103,6 +105,7 @@ impl<'a> SsrCodegenContext<'a> {
             options,
             component_name,
             experimental_self_component: experimental_options.self_component,
+            slotted: experimental_options.slotted.unwrap_or(true),
             source,
             out: EmitDocument::with_capacity(1024, experimental_options.source_map),
             indent_level: 0,

@@ -45,7 +45,7 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826)
 
 - Davinci has no external users yet, so its crates, APIs, dump formats,
   serialized strings and feature names change without a compatibility
-  period. Legacy products keep strict output compatibility.
+  period. Legacy products keep strict output compatibility; the [#6898 SSR slot scope correction](./2026-09-27-ssr-slot-scope.md) adds its own regression corpus.
 - Product crates with art names (croquis, patina, glyph, maestro, canon,
   carton, …) keep their names. `docs/davinci/` keeps its name as the program
   name.

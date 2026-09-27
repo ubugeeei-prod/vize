@@ -47,7 +47,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `SfcError`                                |    21 |    60 |
 | `SfcParseOptions`                         |    17 |   119 |
 | `SfcScriptBlock`                          |     2 |     2 |
-| `SfcStyleBlock`                           |     5 |     7 |
+| `SfcStyleBlock`                           |     5 |     8 |
 | `SfcTemplateBlock`                        |     6 |     7 |
 | `TypeDeclaration`                         |     1 |     3 |
 | `TypeDeclarationKind`                     |     1 |     2 |

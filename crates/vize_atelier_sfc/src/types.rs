@@ -148,6 +148,9 @@ pub struct TemplateCompileOptions {
     /// Scoped
     pub scoped: bool,
 
+    /// Whether the SFC's own scoped styles use :slotted().
+    pub slotted: Option<bool>,
+
     /// Is prod mode
     pub is_prod: bool,
 

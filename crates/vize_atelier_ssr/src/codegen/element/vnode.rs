@@ -525,7 +525,7 @@ impl<'a> SsrCodegenContext<'a> {
             out.push_str(", () => ");
             out.push_str(&self.vnode_children_expression(&el.children));
         }
-        out.push(')');
+        self.finish_vnode_slot_outlet(&mut out, !el.children.is_empty());
         out
     }
 

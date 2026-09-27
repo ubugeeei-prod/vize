@@ -1,0 +1,21 @@
+import { ssrRenderComponent as _ssrRenderComponent, ssrRenderSlot as _ssrRenderSlot } from "@vue/server-renderer"
+import { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, renderSlot as _renderSlot, mergeProps as _mergeProps, withCtx as _withCtx } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Forwarder"), _mergeProps({ "data-v-layout": "" }, _attrs), {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _ssrRenderSlot(_ctx.$slots, "default", {}, () => {
+          _push(`<b data-v-layout>fallback</b>`)
+        }, _push, _parent, _scopeId)
+      } else {
+        return [_renderSlot(_ctx.$slots, "default", {}, () => [_createElementVNode("b", { "data-v-layout": "" }, "fallback")], true)]
+      }
+    }),
+    _: 3 /* FORWARDED */
+  }, _parent))
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

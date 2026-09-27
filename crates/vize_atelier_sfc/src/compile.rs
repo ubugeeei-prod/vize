@@ -81,8 +81,8 @@ fn compile_sfc_inner(
     };
     let source_filename = options.script.id.as_deref().unwrap_or(filename);
 
-    let has_styles = !descriptor.styles.is_empty();
-    let has_scoped = descriptor.styles.iter().any(|s| s.scoped);
+    let (has_styles, has_scoped, slotted) = styles::scope_flags(&descriptor.styles);
+    options.template.slotted = Some(slotted);
     // Use externally-provided scope ID if available, otherwise generate from filename.
     // The external scope ID ensures consistency with JS-side SHA-256 generation.
     // Template/script-only SFCs do not need the hash.

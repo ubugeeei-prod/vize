@@ -52,10 +52,12 @@ impl<'a> SsrCodegenContext<'a> {
         self.push(")\n");
     }
 
-    /// A scoped outlet contributes its own slotted ID; only a slot callback
-    /// receives `_scopeId` from the renderer and can forward it.
+    /// A :slotted() outlet contributes its own slotted ID; only a slot callback
+    /// receives `_scopeId` from the renderer and can forward it regardless.
     pub(crate) fn push_slot_scope_id(&mut self) {
-        if let Some(scope_id) = self.options.scope_id.as_deref() {
+        if self.slotted
+            && let Some(scope_id) = self.options.scope_id.as_deref()
+        {
             let mut slotted_id = String::from(scope_id);
             slotted_id.push_str("-s");
             self.push(", ");
@@ -66,6 +68,17 @@ impl<'a> SsrCodegenContext<'a> {
         } else if self.with_slot_scope_id {
             self.push(", _scopeId");
         }
+    }
+
+    /// Keep the VNode fallback's noSlotted argument aligned with the SSR branch.
+    pub(super) fn finish_vnode_slot_outlet(&self, out: &mut String, has_fallback: bool) {
+        if !self.slotted {
+            if !has_fallback {
+                out.push_str(", undefined");
+            }
+            out.push_str(", true");
+        }
+        out.push(')');
     }
 
     pub(super) fn build_slot_outlet_props(&mut self, el: &ElementNode) -> String {

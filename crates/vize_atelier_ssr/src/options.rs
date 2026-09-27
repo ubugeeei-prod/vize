@@ -104,6 +104,9 @@ mod tests {
 /// so existing Rust struct literals remain source-compatible.
 #[derive(Debug, Clone, Default)]
 pub struct SsrCompilerExperimentalOptions {
+    /// Whether slot outlets add their own scoped-style suffix. Unset matches
+    /// Vue's direct template compiler default (true); SFCs supply style metadata.
+    pub slotted: Option<bool>,
     /// Current SFC component name for self-reference resolution.
     pub component_name: Option<String>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.

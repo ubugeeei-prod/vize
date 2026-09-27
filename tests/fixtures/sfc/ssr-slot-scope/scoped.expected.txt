@@ -1,0 +1,12 @@
+import { ssrRenderSlot as _ssrRenderSlot, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+import { mergeProps as _mergeProps } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: "layout" }, _attrs))} data-v-layout>`)
+  _ssrRenderSlot(_ctx.$slots, "default", {}, null, _push, _parent)
+  _push(`</div>`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main
