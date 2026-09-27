@@ -233,6 +233,7 @@ The toolchain aims to be extremely fast. The layering must not add pipelines or 
 - [Indentation append cost](./2026-09-27-indentation-chunks.md) records the failed composed measurement and bounded chunking candidate; complete runtime proof remains pending.
 - [Binding traversal cost](./2026-09-27-binding-traversal-cost.md) records the #6868 protected numeric failures and bounded static-item optimization; Linux proof remains pending.
 - The private [newline prefix append](./2026-09-27-newline-prefix.md) combines the newline and first chunk after the next 17-ceiling failure; whole output/state and fixed caps remain required, with savings unverified.
+- The reviewed [expression safety dispatch hint](./2026-09-27-expression-safety-inline.md) and [single-lookup fact interning](./2026-09-27-patina-facts-entry.md) join that next private candidate on actual main `ae3c16b`; all seventeen controls, full feature recipes, allocations and unchanged instruction ceilings require fresh Actions. Logical overflow rejection does not establish unchanged Entry reserve costs.
 - Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is decided after measuring table density and lookup cost ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).
 
 ## Toolchain practice

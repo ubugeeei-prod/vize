@@ -221,3 +221,42 @@ The raw Rust log has SHA-256
 `707e1a2bf1a33223c4dbf49dc48a7810de0ff4170fe6e85126f4cf03cb1cedb6`.
 Full Check still fails Markdown formatting, and the seventeen instruction
 ceilings still fail. No public replay, new dispatch or native acceptance follows.
+
+## Reviewed third private composition
+
+The root concretely reviewed three bounded production edits: one ordinary
+`#[inline]` on the unchanged extracted safety predicate, single Entry lookup
+in `Facts::intern`, and a combined newline/first-indent prefix through the
+existing buffer push operation. Their linked companion records preserve the
+exact attribution and semantic scope. No unrelated source relocation, forced
+inline, benchmark edit or raised ceiling joins the composition.
+
+The Entry change keeps the existing standard FxHashMap, hasher and exact keys;
+five complete logical-state controls cover all 146 committed identities,
+namespace/case/order, the 256 limit and exact overflow defects/member bits.
+Vacant Entry may reserve before overflow rejection. No logical insertion
+occurs, but unchanged allocation/capacity cost is not established by that claim.
+The previous twelve controls passed only on frozen `56fc`; all seventeen and
+the unchanged feature recipes require fresh execution on this next source.
+
+After composing the three reviewed edits, the owner author-preservingly merged
+exact actual main `ae3c16b3b94354e623b5221100bb90cf3a710571` once as
+`2a0c59b1b5e6cab042cbc6055ec470dcbe47a0b2`, retaining both parents and the
+original source/failure ancestry. This freezes the next verification parent;
+later main advances are not chased. The only conflict was central-record EOF:
+main's complete Options API computed pointer stays, while the existing binding
+cost bullet moves verbatim into Performance. Main production has no conflict.
+
+Official consumer regeneration changes just the linter loader import line
+`3 -> 5` for the Entry import. Its nineteen-file check and the unchanged
+twenty-four-file v-on check pass; storage and measured-v-on fixtures need no
+new row change. Thirty existing inventory/budget tests pass with zero skipped
+under pinned Node24.14.0. Source-length comparison against this actual main
+passes; the existing main words and destinations remain in order.
+
+TODO: review the complete producer/source-preservation packet before one fresh
+leased temporary-ref update and the two unchanged Actions workflows. Actual
+seventeen-control correctness, complete recipe scope, exact allocations and
+all 100-by-three original ceilings remain pending for this source. MacOS stays
+unknown with strict `1495` preserved. Existing first-member coordination and
+the held seven are separate; no public restack or native acceptance follows.
