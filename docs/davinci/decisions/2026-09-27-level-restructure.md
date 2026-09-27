@@ -95,6 +95,8 @@ and the actual queue remain required before closing the issue.
 
 - Two decisions from the same design comment belong to the next section: the `const` pattern table of `fn` pointers, and parsing each expression once (L4 rewrites from the L2 identifier-resolution table).
 
+[The explicit L1 embed source skeleton](./2026-09-28-l1-embed-source-skeleton.md) records the maintainer's code-first request for #6836; source preparation remains `todo!()`, with typed trees, language resolution and dialect hooks unfinished.
+
 ## L1→L2 and L2
 
 Tracked in [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and [#6838](https://github.com/ubugeeei-prod/vize/issues/6838).
