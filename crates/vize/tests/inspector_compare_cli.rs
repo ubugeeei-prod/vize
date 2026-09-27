@@ -53,7 +53,7 @@ fn compare_with_closed_node_stdin(script: &str) -> std::process::Output {
     let project = tempfile::tempdir().unwrap();
     let source = format!(
         "{}\n<!--{}-->\n",
-        include_str!("fixtures/inspector_compare/early_exit.vue"),
+        include_str!("fixtures/inspector_compare/early_exit.vue.txt"),
         "x".repeat(2 * 1024 * 1024)
     );
     fs::write(project.path().join("App.vue"), source).unwrap();
