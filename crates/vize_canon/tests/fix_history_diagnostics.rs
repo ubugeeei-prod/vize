@@ -114,6 +114,24 @@ fn reserved_prop_shapes_preserve_literal_and_member_diagnostics() {
     );
 }
 
+#[test]
+fn component_event_tuples_preserve_all_argument_diagnostics() {
+    check_pack(
+        "component-event-tuples",
+        "e65154535ad5fb8645330848ea61f3fa8a65575b",
+        Some(3085),
+        &[
+            "unresolved-valid",
+            "resolved-valid",
+            "inline-tuple-valid",
+            "resolved-first-invalid",
+            "native-extra-required-invalid",
+            "resolved-second-invalid",
+            "inline-second-invalid",
+        ],
+    );
+}
+
 fn check_pack(name: &str, regression: &str, historical_issue: Option<u32>, case_ids: &[&str]) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let fixtures = root

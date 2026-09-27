@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Test from './Test.vue'
+function handleTest(value1: string, value2: number) {
+  void value1
+  void value2
+}
+</script>
+<template><Test @test="handleTest" /><Test @test="(value1, value2) => handleTest(value1, value2)" /></template>
