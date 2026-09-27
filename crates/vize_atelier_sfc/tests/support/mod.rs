@@ -1,5 +1,7 @@
-// Each integration target uses its own subset of shared test helpers.
-#[allow(dead_code)]
+#![expect(
+    dead_code,
+    reason = "independent integration targets use different shared support helpers"
+)]
+
 pub mod css_fuzz_boundary;
-#[allow(dead_code)]
 pub mod fix_history_options;
