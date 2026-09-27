@@ -126,123 +126,20 @@ fn create_cli_project() -> PathBuf {
 }"#,
     )
     .unwrap();
-    std::fs::write(
-        project_root.join("src/Layout.vue"),
-        r#"<template>
-  <div>
-    <template v-if="isPC">
-      <slot name="panel" :viewMode="viewMode" />
-      <slot name="side" :viewMode="viewMode" />
-    </template>
-    <template v-else>
-      <slot name="panel" />
-      <slot name="side" viewMode="sp" />
-    </template>
-    <ul>
-      <li v-for="entry in entries" :key="entry">
-        <slot name="item" :viewMode="viewMode" :entry="entry" />
-      </li>
-    </ul>
-    <slot name="item" :viewMode="viewMode" />
-  </div>
-</template>
-
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
-
-export default defineComponent({
-  name: 'Layout',
-  props: {
-    viewMode: { type: String as PropType<'pc' | 'sp'>, required: true },
-    entries: { type: Array as PropType<string[]>, default: () => [] },
-  },
-  computed: {
-    isPC(): boolean {
-      return this.viewMode === 'pc'
-    },
-  },
-})
-</script>
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        project_root.join("src/Preview.vue"),
-        r#"<template>
-  <div>{{ viewMode }}</div>
-</template>
-
-<script lang="ts">
-import { defineComponent, PropType } from 'vue'
-
-export default defineComponent({
-  name: 'Preview',
-  props: { viewMode: { type: String as PropType<'pc' | 'sp'>, required: true } },
-})
-</script>
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        project_root.join("src/Parent.vue"),
-        r#"<template>
-  <Layout :viewMode="mode">
-    <template #panel="{ viewMode }">
-      <Preview :viewMode="viewMode" />
-    </template>
-    <template #side="{ viewMode }">
-      <Preview :viewMode="viewMode" />
-    </template>
-    <template #item="{ viewMode, entry }">
-      <Preview :viewMode="viewMode" />
-      {{ entry?.toUpperCase() }}
-    </template>
-  </Layout>
-</template>
-
-<script lang="ts">
-import { defineComponent } from 'vue'
-import Layout from './Layout.vue'
-import Preview from './Preview.vue'
-
-export default defineComponent({
-  name: 'Parent',
-  components: { Layout, Preview },
-  data() {
-    return { mode: 'pc' as 'pc' | 'sp' }
-  },
-})
-</script>
-"#,
-    )
-    .unwrap();
-    std::fs::write(
-        project_root.join("src/Wrong.vue"),
-        r#"<template>
-  <Layout viewMode="pc">
-    <template #side="{ viewMode }">
-      <Counter :count="viewMode" />
-    </template>
-  </Layout>
-</template>
-
-<script lang="ts">
-import { defineComponent } from 'vue'
-import Layout from './Layout.vue'
-
-const Counter = defineComponent({
-  name: 'Counter',
-  props: { count: { type: Number, required: true } },
-})
-
-export default defineComponent({
-  name: 'Wrong',
-  components: { Layout, Counter },
-})
-</script>
-"#,
-    )
-    .unwrap();
+    let fixture_root = workspace_root().join("tests/fixtures/typechecker/slot-outlet-union");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(fixture_root.join("manifest.json")).unwrap())
+            .unwrap();
+    let sources = manifest["sources"].as_array().unwrap();
+    assert_eq!(
+        sources.len(),
+        4,
+        "the registered regression corpus must not shrink"
+    );
+    for source in sources {
+        let name = source.as_str().unwrap();
+        std::fs::copy(fixture_root.join(name), project_root.join("src").join(name)).unwrap();
+    }
     project_root
 }
 

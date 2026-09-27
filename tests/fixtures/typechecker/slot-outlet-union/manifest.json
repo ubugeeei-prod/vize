@@ -1,0 +1,19 @@
+{
+  "schema": "vize.typechecker.regressionCorpus",
+  "version": 1,
+  "pullRequest": 6922,
+  "sources": [
+    "Layout.vue",
+    "Preview.vue",
+    "Parent.vue",
+    "Wrong.vue"
+  ],
+  "regressions": [
+    "same-name-bound-and-bare",
+    "same-name-static-discriminant",
+    "same-name-cross-scope",
+    "wrong-forwarded-payload"
+  ],
+  "legacyRunner": "crates/vize/tests/check_slot_outlet_union_cli.rs",
+  "nativeComparison": "not-implemented"
+}
