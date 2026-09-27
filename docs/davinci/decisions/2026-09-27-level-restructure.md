@@ -341,9 +341,10 @@ unsupported; this first legacy path receives zero native acceptance credit.
 
 ## Canon slot outlet regression preparation
 
-[#6922](https://github.com/ubugeeei-prod/vize/pull/6922) preserves single-outlet
-string widening while retaining discriminants for repeated static names.
+[#6922](https://github.com/ubugeeei-prod/vize/pull/6922) preserves static string widening for all outlets.
+Explicit bound literal discriminants remain typed across seventeen/eighteen outlets;
+owner history through `38abc3820` remains actual ancestry.
 The [repair decision and corpus](./2026-09-27-canon-slot-outlet-union.md) record
-move-only test organization, direct payload unions without an inferred-outlet
-signature bound, preserved external authored fallback, complete added diagnostic
-oracles and required fresh Actions. Native comparison remains unavailable.
+move-only organization, direct payload unions without an inferred signature bound,
+preserved external fallback, complete added diagnostic oracles and installed Vue
+reference limits. Source-built CLI Actions remain required; native comparison is unavailable.

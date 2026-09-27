@@ -8,14 +8,10 @@ mod corsa_requirement;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// A child that renders the same named slot from several `<slot>` outlets
-/// (one bound, one bare; one bound, one with a static attribute; one inside
-/// a `v-for` and one outside) used to expose only the last outlet's payload
-/// to the parent, so `#panel="{ viewMode }"` reported `TS2339` on `{}` and
-/// the static `viewMode="sp"` widened to `string` (`TS2322` against a
-/// literal prop). The merged payload is still typed:
-/// a prop only some outlets pass is optional, and a prop every outlet passes
-/// keeps its type.
+/// Same-name outlets merge all payloads instead of exposing only the last one.
+/// Missing keys remain optional and shared keys remain typed. Static string
+/// attributes keep object-literal widening; explicit bound assertions preserve
+/// their authored literals. The corpus also checks seventeen/eighteen outlets.
 #[test]
 fn check_same_named_slot_outlets_merge_their_payloads() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
@@ -178,7 +174,7 @@ fn create_cli_project() -> PathBuf {
     let sources = manifest["sources"].as_array().unwrap();
     assert_eq!(
         sources.len(),
-        12,
+        14,
         "the registered regression corpus must not shrink"
     );
     for source in sources {

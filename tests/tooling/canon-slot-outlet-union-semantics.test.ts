@@ -16,6 +16,7 @@ const expected: Array<[string, number, number]> = [
   ["src/ManyWrong.ts", 7, 2322], ["src/ManyWrong.ts", 8, 2322],
   ["src/ManyWrong.ts", 9, 2322], ["src/ManyWrong.ts", 10, 2322],
   ["src/OptionalControl.ts", 6, 2322], ["src/Parent.vue", 4, 2322],
+  ["src/Parent.vue", 7, 2322],
   ["src/SingleControl.ts", 4, 2322], ["src/Wrong.vue", 4, 2322],
 ];
 const order = (left: unknown[], right: unknown[]) =>
@@ -26,7 +27,7 @@ test("generated slot payloads keep seventeen and eighteen outlets without losing
   try {
     fs.mkdirSync(path.join(directory, "src"));
     const manifest = JSON.parse(fs.readFileSync(path.join(corpus, "manifest.json"), "utf8"));
-    assert.equal(manifest.sources.length, 12);
+    assert.equal(manifest.sources.length, 14);
     for (const file of manifest.sources) {
       fs.copyFileSync(path.join(corpus, file), path.join(directory, "src", file));
     }
@@ -82,7 +83,7 @@ test("generated slot payloads keep seventeen and eighteen outlets without losing
     }
     assert.ok(virtual.has(path.join(directory, "src/Many17.vue.ts")));
     assert.ok(virtual.has(path.join(directory, "src/Many18.vue.ts")));
-    const names = ["ManyControl.ts", "ManyWrong.ts", "OptionalControl.ts", "SingleControl.ts"];
+    const names = ["ManyControl.ts", "ManyWrong.ts", "OptionalControl.ts", "SingleControl.ts", "StaticRepeatControl.ts"];
     const options = { strict: true, noEmit: true, target: ts.ScriptTarget.ES2022,
       module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler,
       skipLibCheck: true, types: [] };

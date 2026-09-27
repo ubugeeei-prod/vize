@@ -1,7 +1,7 @@
 {
   "schema": "vize.typechecker.slotOutletOracle",
   "version": 1,
-  "observedWith": "TypeScript 6.0.3 on emitted-helper bytes with fixture carrier fragments",
+  "observedWith": "TypeScript 6.0.3 on emitted-helper bytes and authored explicit-bound fixture carrier fragments",
   "fullSourceBuiltGenerationVerified": false,
   "diagnostics": [
     {
