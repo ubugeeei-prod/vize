@@ -61,3 +61,30 @@ checks likewise do not establish Rust, CLI, browser, Lean or native passes.
 
 The central restructuring decision stays unchanged in this bounded slice.
 This change alone does not close #6832 or the compiler fix-history gate.
+
+## Current repaired-graph preparation
+
+The current source follows the repaired foundation, Dump and CLI source, L3
+graph grammar and actual historical hash-v2 captures. The original L2
+production/codec patch is preserved. Its sole conflict is the CLI test's
+substring expectation versus the earlier complete-output oracle. The current
+test uses a separate mechanically authored malformed-v2 expectation with only
+the header changed; the original thirteen captured bodies stay byte exact.
+This new expectation is not a fresh observed CLI receipt.
+
+`rename-l2-current-headers.py --base-ref cc794f7c5 --verify` replays 63 bounded
+current consumer paths and proves inverse byte identity before two ordinary
+Rust format changes. It preflights every path before writing, supports named
+test destinations after their separate moves and rejects unrelated edits.
+Codec construction, published-contract adaptation and new negative tests are
+authored changes outside that mechanical header proof.
+
+Existing 42 source/metadata contracts pass; three native cache tests fail to
+load the absent clean-worktree binding before execution. Cargo formatting,
+locked metadata, authored whitespace and the actual repository source-growth
+gate pass. Source-built current/historical codecs, extension refusals, actual
+CLI and fresh Actions remain required. Recipe3's original historical capture
+is reused explicitly; its six L0/L1 rows equal the preceding current golden.
+
+The same decisions and remaining work are mirrored in the
+[#6832 record](https://github.com/ubugeeei-prod/vize/issues/6832#issuecomment-5854245989).
