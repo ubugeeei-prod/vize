@@ -138,6 +138,8 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
   Formatter slot/root/raw-close fixtures retain public dynamic barriers and final-CR/LF behavior, with bound-slot helper classification checked separately; shared corpus registration remains pending. The glyph import inventory row travels with that fixture slice.
 
+  Formatter raw/entity fixtures preserve deleted authored inputs and reuse duplicate witnesses. Legacy internal check-mode intermediate output does not prescribe a native pipeline stage; compare CLI verdict/streams separately.
+
 - **Linter:** syntax rules on L1, semantic rules on L2 and facts. Diagnostics go through L0, and autofixes are L1 span edits.
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.

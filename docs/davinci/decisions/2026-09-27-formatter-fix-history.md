@@ -96,6 +96,20 @@ replay and strict Clippy. No production formatter algorithm changed. Keep the
 glyph import inventory row in this same slice so each stacked head validates.
 Shared registration and Actions remain pending.
 
+## Deleted raw inputs and entity branches
+
+`fix_history_template_older.rs` retains the exact pre/textarea/v-pre inputs
+whose partial tests were deleted by a later interpolation fix. Twenty full
+public byte references also cover raw comments/EOF, recognized and unknown
+directive entities, an escaped backtick through indented SFC formatting, and
+wbr/uppercase component names. The `&quot;` input is identical to the preceding
+quote fixture; reuse that witness without duplicate fixture credit.
+
+Five tests passed capture, updates-disabled and frozen executable replay, and
+strict Clippy. These broaden the public output evidence while keeping existing
+helper tests. Shared registration, Actions and full-history acceptance remain
+pending.
+
 ## Remaining work
 
 - Finish the commit-by-commit audit of all 56 original fix-title commits and

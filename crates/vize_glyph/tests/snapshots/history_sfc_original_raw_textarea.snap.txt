@@ -1,0 +1,6 @@
+<template>
+  <textarea>
+A
+   B
+</textarea>
+</template>
