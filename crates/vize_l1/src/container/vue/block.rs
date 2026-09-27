@@ -3,9 +3,9 @@ mod end;
 mod literals;
 mod regex;
 
+use alloc::borrow::Cow;
 use memchr::{memchr, memchr_iter, memmem};
-use std::borrow::Cow;
-use vize_carton::{FxHashMap, String, cstr};
+use vize_l0::{FxHashMap, String, cstr};
 
 use compat::{can_start_string_literal, is_void_block};
 use end::find_block_end;
@@ -17,19 +17,31 @@ pub(super) const TAG_TEMPLATE: &[u8] = b"template";
 const TAG_SCRIPT: &[u8] = b"script";
 const TAG_STYLE: &[u8] = b"style";
 
-pub(super) type BlockAttrs<'a> = FxHashMap<Cow<'a, str>, Cow<'a, str>>;
-pub(super) type BlockParseOutput<'a> = (
-    &'a [u8],       // tag name as bytes
-    BlockAttrs<'a>, // attrs with borrowed strings
-    Cow<'a, str>,   // content as borrowed string
-    usize,          // content start
-    usize,          // content end
-    usize,          // end position
-    usize,          // content end line
-    usize,          // content end column
+/// Receives a block's open-tag attributes in source order.
+///
+/// `span` covers the whole attribute (name through closing quote).
+pub trait AttrSink<'a> {
+    fn attr(&mut self, name: Cow<'a, str>, value: Cow<'a, str>, span: (usize, usize));
+}
+
+/// The legacy descriptor's map: a later duplicate replaces an earlier one.
+impl<'a> AttrSink<'a> for FxHashMap<Cow<'a, str>, Cow<'a, str>> {
+    fn attr(&mut self, name: Cow<'a, str>, value: Cow<'a, str>, _span: (usize, usize)) {
+        self.insert(name, value);
+    }
+}
+
+pub type BlockParseOutput<'a> = (
+    &'a [u8],     // tag name as bytes
+    Cow<'a, str>, // content as borrowed string
+    usize,        // content start
+    usize,        // content end
+    usize,        // end position
+    usize,        // content end line
+    usize,        // content end column
 );
-pub(super) type BlockParseError = (&'static str, String);
-pub(super) type BlockParseResult<'a> = Result<Option<BlockParseOutput<'a>>, BlockParseError>;
+pub type BlockParseError = (&'static str, String);
+pub type BlockParseResult<'a> = Result<Option<BlockParseOutput<'a>>, BlockParseError>;
 
 pub(super) struct BlockEndSearch<'a> {
     pub(super) bytes: &'a [u8],
@@ -40,12 +52,11 @@ pub(super) struct BlockEndSearch<'a> {
     pub(super) start_line: usize,
     pub(super) start_column: usize,
     pub(super) initial_last_newline: usize,
-    pub(super) attrs: BlockAttrs<'a>,
 }
 
 /// Build a uniform `(code, message)` error for any malformed block.
 pub(super) fn build_malformed_error(tag_name: &[u8], reason: &str) -> BlockParseError {
-    let tag_str = std::str::from_utf8(tag_name).unwrap_or("unknown");
+    let tag_str = core::str::from_utf8(tag_name).unwrap_or("unknown");
     (
         "MALFORMED_BLOCK",
         cstr!("Malformed <{tag_str}> block: {reason}."),
@@ -54,7 +65,7 @@ pub(super) fn build_malformed_error(tag_name: &[u8], reason: &str) -> BlockParse
 
 /// Fast tag name comparison using byte slices
 #[inline(always)]
-pub(super) fn tag_name_eq(name: &[u8], expected: &[u8]) -> bool {
+pub fn tag_name_eq(name: &[u8], expected: &[u8]) -> bool {
     name.len() == expected.len() && name.eq_ignore_ascii_case(expected)
 }
 
@@ -156,12 +167,13 @@ pub(super) fn find_closing_tag_end(
 /// - `Ok(Some(...))` — successfully parsed block.
 /// - `Ok(None)` — no SFC block starts at this position.
 /// - `Err(...)` — a block starts here but is incomplete or malformed.
-pub(super) fn parse_block_fast<'a>(
+pub fn parse_block_fast<'a>(
     bytes: &'a [u8],
     source: &'a str,
     start: usize,
     start_line: usize,
     start_column: usize,
+    attrs: &mut impl AttrSink<'a>,
 ) -> BlockParseResult<'a> {
     // This parser intentionally works on byte slices and returns borrowed `Cow`
     // values. SFC parsing sits on every compile/lint/check path, so avoiding
@@ -188,7 +200,6 @@ pub(super) fn parse_block_fast<'a>(
     let tag_name = source.as_bytes().get(tag_start..pos).unwrap_or_default();
 
     // Parse attributes with zero-copy
-    let mut attrs: BlockAttrs<'a> = FxHashMap::default();
 
     while bytes.get(pos).is_some_and(|&b| b != b'>') {
         // Skip whitespace
@@ -276,7 +287,7 @@ pub(super) fn parse_block_fast<'a>(
         };
 
         if !attr_name.is_empty() {
-            attrs.insert(attr_name, attr_value);
+            attrs.attr(attr_name, attr_value, (attr_start, pos));
         }
     }
 
@@ -302,7 +313,6 @@ pub(super) fn parse_block_fast<'a>(
         );
         return Ok(Some((
             tag_name,
-            attrs,
             Cow::Borrowed(""),
             pos,
             pos,
@@ -332,7 +342,6 @@ pub(super) fn parse_block_fast<'a>(
     if is_void_block(tag_name) {
         return Ok(Some((
             tag_name,
-            attrs,
             Cow::Borrowed(""),
             content_start,
             content_start,
@@ -357,7 +366,6 @@ pub(super) fn parse_block_fast<'a>(
             start_line: content_start_line,
             start_column: content_start_column,
             initial_last_newline: content_start,
-            attrs,
         });
     }
 
@@ -371,7 +379,6 @@ pub(super) fn parse_block_fast<'a>(
             start_line: content_start_line,
             start_column: content_start_column,
             initial_last_newline: content_start,
-            attrs,
         });
     }
 
@@ -386,7 +393,6 @@ pub(super) fn parse_block_fast<'a>(
             start_line: content_start_line,
             start_column: content_start_column,
             initial_last_newline: content_start,
-            attrs,
         });
     }
 
@@ -492,7 +498,6 @@ pub(super) fn parse_block_fast<'a>(
             let content = Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
             return Ok(Some((
                 tag_name,
-                attrs,
                 content,
                 content_start,
                 content_end,

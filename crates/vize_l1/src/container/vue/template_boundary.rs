@@ -4,9 +4,6 @@ mod fast_path;
 mod interpolation;
 mod tags;
 
-#[cfg(test)]
-mod tests;
-
 use self::tags::{
     find_opening_tag_end, find_raw_text_element_end, is_opening_tag_named, raw_text_tag_name,
 };
@@ -15,8 +12,8 @@ use super::block::{
     BlockEndSearch, BlockParseResult, TAG_TEMPLATE, advance_line, build_malformed_error,
     find_closing_tag_end,
 };
+use alloc::borrow::Cow;
 use memchr::{memchr2, memmem};
-use std::borrow::Cow;
 
 /// Failed JS-aware interpolation scans tolerated per template block before the
 /// boundary scanner bounds every later scan to
@@ -48,7 +45,6 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
         start_line,
         start_column,
         initial_last_newline,
-        attrs,
     } = search;
     let len = bytes.len();
     let mut line = start_line;
@@ -78,7 +74,6 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
         let content = Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
         return Ok(Some((
             tag_name,
-            attrs,
             content,
             content_start,
             content_end,
@@ -231,7 +226,6 @@ pub(super) fn find_template_block_end<'a>(search: BlockEndSearch<'a>) -> BlockPa
                     Cow::Borrowed(source.get(content_start..content_end).unwrap_or_default());
                 return Ok(Some((
                     tag_name,
-                    attrs,
                     content,
                     content_start,
                     content_end,

@@ -4,8 +4,9 @@ use crate::sfc::types::{
 };
 use memchr::{memchr, memchr_iter, memmem::Finder};
 use std::borrow::Cow;
+use vize_carton::FxHashMap;
 
-use super::block::{parse_block_fast, tag_name_eq};
+use vize_l1::container::vue::{parse_block_fast, tag_name_eq};
 
 // Tag name bytes for fast comparison
 const TAG_TEMPLATE: &[u8] = b"template";
@@ -129,11 +130,11 @@ fn split_sfc<'a>(
         }
 
         // Parse block starting at '<'
-        match parse_block_fast(bytes, source, pos, line, column) {
+        let mut attrs = FxHashMap::default();
+        match parse_block_fast(bytes, source, pos, line, column, &mut attrs) {
             Ok(Some(block_result)) => {
                 let (
                     tag_name,
-                    attrs,
                     content,
                     content_start,
                     content_end,

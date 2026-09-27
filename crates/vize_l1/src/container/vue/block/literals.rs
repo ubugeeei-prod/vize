@@ -5,7 +5,7 @@ use super::compat::can_start_string_literal;
 use super::{advance_line, skip_regex_literal};
 use memchr::{memchr, memmem};
 
-pub(in crate::sfc::parse) fn can_start_regex_literal(prev_significant_char: u8) -> bool {
+pub(in crate::container::vue) fn can_start_regex_literal(prev_significant_char: u8) -> bool {
     matches!(
         prev_significant_char,
         b'=' | b'('
@@ -29,7 +29,7 @@ pub(in crate::sfc::parse) fn can_start_regex_literal(prev_significant_char: u8) 
     )
 }
 
-pub(in crate::sfc::parse) fn skip_script_string_literal(
+pub(in crate::container::vue) fn skip_script_string_literal(
     bytes: &[u8],
     mut pos: usize,
     len: usize,

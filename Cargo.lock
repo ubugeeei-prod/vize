@@ -4545,6 +4545,7 @@ dependencies = [
  "vize_atelier_sfc",
  "vize_carton",
  "vize_davinci",
+ "vize_l1",
  "vize_l3",
  "vize_relief",
 ]
@@ -4757,6 +4758,7 @@ name = "vize_l1"
 version = "0.429.1"
 dependencies = [
  "davinci_test_support",
+ "memchr",
  "vize_armature",
  "vize_carton",
  "vize_relief",
