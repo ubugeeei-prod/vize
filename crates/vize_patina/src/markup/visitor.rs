@@ -23,17 +23,23 @@ use vize_relief::{ElementNode, TemplateChildNode};
 /// template visitor so the adapter's overhead stays visible in benchmarks.
 pub struct MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R: ?Sized> {
     rule: &'rule R,
+    /// The rule's name, read once: every hook re-stamps it on the context.
+    name: &'static str,
     ctx: &'ctx mut MarkupContext<'mc, 'a>,
 }
 
 impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R> {
     pub(super) fn new(rule: &'rule R, ctx: &'ctx mut MarkupContext<'mc, 'a>) -> Self {
-        Self { rule, ctx }
+        Self {
+            rule,
+            name: rule.name(),
+            ctx,
+        }
     }
 
     #[inline]
     fn set_rule(&mut self) {
-        self.ctx.lint.current_rule = self.rule.name();
+        self.ctx.lint.current_rule = self.name;
     }
 
     pub(super) fn run(&mut self, document: &MarkupDocument<'a>) {
@@ -165,11 +171,11 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
         self.rule.enter_attributes(self.ctx, &element);
 
         element.walk_bindings(&mut |binding| {
-            self.ctx.lint.current_rule = self.rule.name();
+            self.ctx.lint.current_rule = self.name;
             self.rule.enter_binding(self.ctx, &element, &binding);
         });
         element.walk_directives(&mut |directive| {
-            self.ctx.lint.current_rule = self.rule.name();
+            self.ctx.lint.current_rule = self.name;
             self.rule.enter_directive(self.ctx, &element, &directive);
         });
 
