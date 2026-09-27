@@ -26,3 +26,10 @@ bytes, actual exit status and empty stdout.
 Normal compiler output and supported legacy behavior remain unchanged. This
 repairs failure reporting and process cleanup; it does not implement Vue 2
 comparison, a native compiler path or any level migration.
+
+After CI PRs #6918, #6958, #6919 and #6925 actually merged at 11:37:59 UTC,
+replay this reviewed repair onto main `42014675678684165b8cd4bb992bb9db747e74ee`.
+Its production, executable tests and corpus bytes remain identical to the
+successful #6955 source Check `36309886477` at `0b2e5fe13`; that older proof is
+historical. Require the new published head's Actions and full merge-queue
+proof before accepting this transport into main.
