@@ -255,8 +255,19 @@ under pinned Node24.14.0. Source-length comparison against this actual main
 passes; the existing main words and destinations remain in order.
 
 TODO: review the complete producer/source-preservation packet before one fresh
-leased temporary-ref update and the two unchanged Actions workflows. Actual
-seventeen-control correctness, complete recipe scope, exact allocations and
-all 100-by-three original ceilings remain pending for this source. MacOS stays
-unknown with strict `1495` preserved. Existing first-member coordination and
-the held seven are separate; no public restack or native acceptance follows.
+leased temporary-ref update. Dispatch the unchanged measured instruction
+workflow first. Only after all 100 targets pass their original ceilings in
+three executions, dispatch unchanged Full Check once for all seventeen controls,
+exact allocations, metadata and the complete feature recipe scope. If numeric
+ceilings fail, preserve and attribute that source's artifacts before another
+reviewed repair; do not occupy another full-validation wave for a rejected
+numeric candidate. This coordination changes no workflow, benchmark method,
+fixture, window or ceiling and cancels no existing run.
+
+The instruction workflow compiles the actual producers and executes its existing
+two harness-library suites; that does not execute the five new Patina controls.
+Their typed runtime, the previous twelve on this new source, full feature scope
+and exact allocations remain pending until Full Check. No measured result alone
+accepts those semantic requirements. MacOS stays unknown with strict `1495`
+preserved. Existing first-member coordination and the held seven are separate;
+no public restack or native acceptance follows.
