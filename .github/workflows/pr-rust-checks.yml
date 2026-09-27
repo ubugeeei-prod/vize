@@ -57,6 +57,9 @@ jobs:
       - name: Clippy
         if: ${{ inputs.run-rust }}
         run: cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports
+      - name: Skeleton todo ratchet
+        if: ${{ inputs.run-rust }}
+        run: rustc --edition 2024 tools/commands/ci/check-skeleton-todos.rs -o "$RUNNER_TEMP/check-skeleton-todos" && "$RUNNER_TEMP/check-skeleton-todos" --check
       - name: Install Pkl CLI
         if: ${{ inputs.run-rust }}
         run: npm install --global @pkl-community/pkl@0.27.2
@@ -163,6 +166,8 @@ jobs:
         run: node -e 'require("node:fs").writeFileSync(process.env.RUNNER_TEMP + "/rust-plan.json", process.env.RUST_PLAN_JSON)'
       - name: Clippy affected crates
         run: node tools/support/compat/github/run-affected-rust.mjs "$RUNNER_TEMP/rust-plan.json" cargo clippy @packages@ --profile ci -- -D warnings -D clippy::wildcard_imports
+      - name: Skeleton todo ratchet
+        run: rustc --edition 2024 tools/commands/ci/check-skeleton-todos.rs -o "$RUNNER_TEMP/check-skeleton-todos" && "$RUNNER_TEMP/check-skeleton-todos" --check
       - name: Build and archive affected Rust tests once
         run: |
           mkdir -p target/rust-test-archive

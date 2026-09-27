@@ -152,3 +152,21 @@ test("untrusted source checks cannot write trusted sticky disks", () => {
     );
   }
 });
+
+test("PR and merge-queue Rust jobs run the skeleton todo ratchet", () => {
+  const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
+    jobs: Record<string, Job>;
+  };
+  const ratchetJobs = Object.entries(workflow.jobs)
+    .filter(([, job]) =>
+      (job.steps ?? []).some((step) =>
+        /check-skeleton-todos\.rs -o "\$RUNNER_TEMP\/check-skeleton-todos" && "\$RUNNER_TEMP\/check-skeleton-todos" --check/u.test(
+          step.run ?? "",
+        ),
+      ),
+    )
+    .map(([name, job]) => [name, job.if]);
+  assert.equal(ratchetJobs.length, 2, JSON.stringify(ratchetJobs));
+  assert.ok(ratchetJobs.some(([, condition]) => /pull_request/u.test(condition ?? "")));
+  assert.ok(ratchetJobs.some(([, condition]) => /merge_group/u.test(condition ?? "")));
+});
