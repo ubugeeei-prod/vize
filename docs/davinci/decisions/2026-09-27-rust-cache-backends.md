@@ -135,6 +135,27 @@ registry/Git and direct target receipts remain valid; nested target and later
 untrusted restoration are unfinished. No provider names or test commands
 change, and no three/six-minute timing claim is made.
 
+## Oversized target save eligibility
+
+The reviewed follow-up makes trusted `coverage-source` and `clippy-test`
+targets use the pinned restore-only action instead of registering a save post.
+Full Check 36327090288 rejected their 41,705,863,669-byte and
+27,734,456,109-byte uploads at the 25 GB entry limit after successful tests.
+Their target posts took 886.677 and 670.762 seconds. Omitting these impossible
+uploads keeps registry/Git saves and the fixed provider mounts/posts intact.
+A mounted target uses lookup-only; failed mounts and GitHub-hosted jobs can
+restore an existing compatible target. Misses still run the same full commands.
+Primary and secondary roles decide independently. Every untrusted checkout
+remains restore-only, and no workflow, profile, key, role alias, artifact or
+test command changes. Local subprocess controls preserve physical artifacts,
+fresh rebuilding, save/unmount order, and malformed-event/path rejection.
+They do not prove live post omission or a controlled wall-time gain.
+All 38 policy/backend/nested/large-target/workflow controls pass with no
+failures, skips or cancellations. Scoped strict checks and the source cap pass.
+TODO: verify source/queue Actions and actual full-run target post omission.
+Entries for other roles may need later evidence; none are omitted
+based only on an assumed size.
+
 ## Issue #6830 comment draft
 
 The reviewed cache candidate bounds future provider names by routing PRs,

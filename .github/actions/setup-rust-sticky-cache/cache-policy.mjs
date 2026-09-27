@@ -18,6 +18,8 @@ const knownEvents = new Set([
   "repository_dispatch",
 ]);
 const trustedEvents = new Set(["push", "schedule", "workflow_dispatch"]);
+// Actual trusted uploads exceeded the backend's 25 GB entry limit.
+const restoreOnlyTargetRoles = new Set(["coverage-source", "clippy-test"]);
 const fullSha = /^[0-9a-f]{40}$/;
 const token = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -96,6 +98,7 @@ export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } =
     "target-key": `${target}${checkoutSha}`,
     "target-restore": target,
     "target-path": primaryPath,
+    "target-save": String(trusted && !restoreOnlyTargetRoles.has(role)),
     "sticky-registry-key": `${repository}-cargo-registry-${suffix}`,
     "sticky-git-key": `${repository}-cargo-git-${suffix}`,
     "sticky-target-key": `${repository}-${role}-target-${suffix}`,
@@ -120,6 +123,7 @@ export function rustCachePolicy(context, { cwd = sourceRoot, workspace = cwd } =
     output["secondary-key"] = `${secondary}${checkoutSha}`;
     output["secondary-restore"] = secondary;
     output["secondary-path"] = secondaryPath;
+    output["secondary-save"] = String(trusted && !restoreOnlyTargetRoles.has(secondaryRole));
     output["sticky-secondary-key"] = `${repository}-${secondaryRole}-target-${secondarySuffix}`;
   } else if (context.secondaryRole || context.secondarySuffix) {
     throw new Error("Secondary cache metadata requires a target path");

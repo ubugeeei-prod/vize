@@ -102,7 +102,7 @@ runs:
         key: ${{ steps.cache-policy.outputs.git-key }}
         lookup-only: ${{ steps.cache-mounts.outputs.git == 'true' }}
     - name: Cache Rust target or seed it from the trusted sticky clone
-      if: ${{ steps.cache-policy.outputs.trusted == 'true' }}
+      if: ${{ steps.cache-policy.outputs.target-save == 'true' }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         # Nested post steps retain inputs, but not this action's step outputs.
@@ -112,7 +112,7 @@ runs:
         restore-keys: ${{ steps.cache-policy.outputs.target-restore }}
         lookup-only: ${{ steps.cache-mounts.outputs.target == 'true' }}
     - name: Cache the secondary Rust target or seed its trusted clone
-      if: ${{ steps.cache-policy.outputs.trusted == 'true' && steps.cache-policy.outputs.secondary == 'true' }}
+      if: ${{ steps.cache-policy.outputs.secondary-save == 'true' && steps.cache-policy.outputs.secondary == 'true' }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.secondary-target-path }}
@@ -132,17 +132,19 @@ runs:
       with:
         path: ~/.cargo/git
         key: ${{ steps.cache-policy.outputs.git-key }}
-    - name: Restore a trusted Rust target for an untrusted checkout
-      if: ${{ steps.cache-policy.outputs.trusted == 'false' }}
+    - name: Restore a Rust target without registering a save
+      if: ${{ steps.cache-policy.outputs.target-save == 'false' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.target-path }}
         key: ${{ steps.cache-policy.outputs.target-key }}
         restore-keys: ${{ steps.cache-policy.outputs.target-restore }}
-    - name: Restore a trusted secondary target for an untrusted checkout
-      if: ${{ steps.cache-policy.outputs.trusted == 'false' && steps.cache-policy.outputs.secondary == 'true' }}
+        lookup-only: ${{ steps.cache-mounts.outputs.target == 'true' }}
+    - name: Restore a secondary target without registering a save
+      if: ${{ steps.cache-policy.outputs.secondary-save == 'false' && steps.cache-policy.outputs.secondary == 'true' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.secondary-target-path }}
         key: ${{ steps.cache-policy.outputs.secondary-key }}
         restore-keys: ${{ steps.cache-policy.outputs.secondary-restore }}
+        lookup-only: ${{ steps.cache-mounts.outputs.secondary == 'true' }}
