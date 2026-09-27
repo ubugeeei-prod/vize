@@ -7,7 +7,9 @@
 
 use super::TemplateFormatter;
 use crate::template::helpers::byte_at;
-use vize_l0::String;
+use crate::template::helpers::sub_slice;
+use crate::{options::FormatOptions, script};
+use vize_l0::{String, ToCompactString};
 
 impl TemplateFormatter<'_> {
     /// Render the lines of a formatted interpolation expression at `depth + 1`,
@@ -155,4 +157,73 @@ pub(super) fn parse_interpolation_range(
     }
 
     None
+}
+
+/// Format interpolations in text content: `{{expr}}` -> `{{ expr }}`.
+pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> String {
+    let bytes = text.as_bytes();
+    let len = bytes.len();
+
+    // Fast path: no `{` at all means no interpolations and no special bytes,
+    // so the text is returned verbatim with a single allocation.
+    let Some(first_brace) = memchr::memchr(b'{', bytes) else {
+        return text.to_compact_string();
+    };
+
+    let mut result = String::with_capacity(len + 16);
+    // Everything before the first `{` is ordinary text; copy it in one shot.
+    result.push_str(text.get(..first_brace).unwrap_or_default());
+    let mut pos = first_brace;
+
+    while pos < len {
+        if pos + 1 < len && byte_at(bytes, pos) == b'{' && byte_at(bytes, pos + 1) == b'{' {
+            // Find closing }}
+            let expr_start = pos + 2;
+            let mut depth = 1;
+            let mut expr_end = expr_start;
+
+            while expr_end + 1 < len {
+                if byte_at(bytes, expr_end) == b'{' && byte_at(bytes, expr_end + 1) == b'{' {
+                    depth += 1;
+                    expr_end += 2;
+                } else if byte_at(bytes, expr_end) == b'}' && byte_at(bytes, expr_end + 1) == b'}' {
+                    depth -= 1;
+                    if depth == 0 {
+                        break;
+                    }
+                    expr_end += 2;
+                } else {
+                    expr_end += 1;
+                }
+            }
+
+            if depth == 0 {
+                let expr = text.get(expr_start..expr_end).unwrap_or_default();
+                let formatted_expr = format_interpolation_expression(expr, options);
+                result.push_str("{{ ");
+                result.push_str(&formatted_expr);
+                result.push_str(" }}");
+                pos = expr_end + 2;
+            } else {
+                // Unclosed interpolation -- keep as-is
+                result.push('{');
+                pos += 1;
+            }
+        } else {
+            // Ordinary text. Copy the run up to (but not including) the next
+            // `{` in a single push instead of char-by-char. A lone `{` (one
+            // not starting a `{{`) is emitted and stepped over individually,
+            // exactly as before.
+            let rest = sub_slice(bytes, pos + 1..);
+            let next = memchr::memchr(b'{', rest).map_or(len, |off| pos + 1 + off);
+            result.push_str(text.get(pos..next).unwrap_or_default());
+            pos = next;
+        }
+    }
+
+    result
+}
+
+pub(super) fn format_interpolation_expression(expr: &str, options: &FormatOptions) -> String {
+    script::format_js_expression(expr, options).unwrap_or_else(|| expr.trim().to_compact_string())
 }
