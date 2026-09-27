@@ -1,0 +1,30 @@
+{
+  "options": {
+    "bindingMetadata": null,
+    "customElements": "default",
+    "customRenderer": false,
+    "entrypoint": "compile_vapor",
+    "experimental": {
+      "componentName": null,
+      "selfComponent": false,
+      "sourceMap": false,
+      "sourceMapFilename": null
+    },
+    "experimentalInTagComments": false,
+    "experimentalPatternedTemplate": false,
+    "inline": false,
+    "prefixIdentifiers": true,
+    "retainedLane": false,
+    "sfcScope": null,
+    "ssr": false,
+    "templateSyntax": "Standard"
+  },
+  "output": {
+    "code": "import { createSlot as _createSlot, createInvoker as _createInvoker, delegateEvents as _delegateEvents, template as _template } from 'vue';\nconst t0 = _template(\"<button>save</button>\")\n_delegateEvents(\"click\")\n\nexport function render(_ctx) {\n  const n0 = _createSlot(\"body\", null, () => {\n    const n1 = t0()\n    n1.$evtclick = _createInvoker(e => _ctx.save(e))\n    return n1\n  })\n  return n0\n}\n",
+    "errorMessages": [],
+    "map": null,
+    "templates": [
+      "<button>save</button>"
+    ]
+  }
+}

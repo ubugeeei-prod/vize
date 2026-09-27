@@ -111,6 +111,8 @@ See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-em
 
 [Complete SSR fix-history capture](./2026-09-27-ssr-fix-history-captures.md) records nine repeated outputs for #990/#3701/#2487 with source/executable identity and exact options. The frozen capture source is preserved on its provenance branch; fresh Actions, whole history and native acceptance remain pending. The SSR consumer shard is regenerated for the new test helper.
 
+[Complete Vapor fix-history capture](./2026-09-27-vapor-fix-history-captures.md) records nine repeated complete results for seven fixes with exact options and source/executable identity. Its frozen source is preserved on a provenance branch; whole history, native acceptance and fresh Actions remain pending.
+
 ## Script side
 
 See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side) in the companion record.

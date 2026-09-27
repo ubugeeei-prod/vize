@@ -1,0 +1,128 @@
+{
+  "schema": "vize.vapor.fix-history-capture",
+  "version": 1,
+  "capturedSource": "941ff5b2d1302b2f953e8996a026ec9cfe69307b",
+  "captureKind": "actual local macOS arm64 profile-ci output, not Actions",
+  "cases": 9,
+  "fixCommits": 7,
+  "repeatedEqual": true,
+  "nativeAcceptance": 0,
+  "files": [
+    {
+      "path": "capture-941ff/build-receipt.json",
+      "sha256": "885630c5619e451673d95a3ce3380089f3f188b672131fe91b99e924d82c6b05"
+    },
+    {
+      "path": "capture-941ff/cargo.jsonl",
+      "sha256": "60c82ccd62ff299503cc330e6b969acf6d4319060d9167fc7bb4cd6ed6835ecc"
+    },
+    {
+      "path": "capture-941ff/cargo.stderr",
+      "sha256": "df9f1b78a7bf85cc9bfb0240539a4ac03d98f5c92dc2324fa27f40e0cd752680"
+    },
+    {
+      "path": "capture-941ff/first.process.json",
+      "sha256": "e34d8bd68491ad712a72e7d018a35fe36ce606ba8d6e219b27d5f067e4b8d162"
+    },
+    {
+      "path": "capture-941ff/first.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "capture-941ff/first.stdout.json",
+      "sha256": "d7ac64d55c6645751bd4cc73931562d8909e730d8e52e985900782ae8255b589"
+    },
+    {
+      "path": "capture-941ff/repeat.process.json",
+      "sha256": "10bc1a6af845dd79140e71cf077af86edcf6d41e3bf952bc13d5d110977f2781"
+    },
+    {
+      "path": "capture-941ff/repeat.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "capture-941ff/repeat.stdout.json",
+      "sha256": "d7ac64d55c6645751bd4cc73931562d8909e730d8e52e985900782ae8255b589"
+    },
+    {
+      "path": "capture-941ff/source.json",
+      "sha256": "0e6a090d5fe1b7317c173298d3563236ff34a797ced0184f4e8f278246970f94"
+    },
+    {
+      "path": "delegated-if.expected.json",
+      "sha256": "d3b52e952ecdbc03ad987bafaa66aab9cc9107fd90786e930168cc85aa182743"
+    },
+    {
+      "path": "delegated-if.input.txt",
+      "sha256": "940ff95e6427c2b4864ae72ad4206cf7c9a78b1ffe530f758a4ba2c0bff99c32"
+    },
+    {
+      "path": "delegated-loop.expected.json",
+      "sha256": "99672fe215377e9bc9a517ee19ad8f9100024ff7eba8e5b409d89ede5568e4c0"
+    },
+    {
+      "path": "delegated-loop.input.txt",
+      "sha256": "8c38c3154bb88ead7c693cc8ae641fcf565b89565b57584f2240c9b80258043d"
+    },
+    {
+      "path": "delegated-slot-fallback.expected.json",
+      "sha256": "29a873465db0c4133766f3fd155f6659ea5c1d113024e6867d006a1bfb20e035"
+    },
+    {
+      "path": "delegated-slot-fallback.input.txt",
+      "sha256": "383fac49c1f85677353bec9cf31a5fa0abc845d212d06e9dbd2a311e41a7b2d9"
+    },
+    {
+      "path": "destructured-aliases.expected.json",
+      "sha256": "784604995b6f2d78bd93ad58fa0e42eb138a425f8d28189a6d686ad2e0d44fa0"
+    },
+    {
+      "path": "destructured-aliases.input.txt",
+      "sha256": "f66fcf0b02b4467c2329aaf561b96ef8c74ce4965ccb7c9c3793655aa973f476"
+    },
+    {
+      "path": "destructured-key.expected.json",
+      "sha256": "2cb93ec4697025c9107851eafcd69faeba3639af17c1d9eeb3d495c28dfa062c"
+    },
+    {
+      "path": "destructured-key.input.txt",
+      "sha256": "065f0cd957b569c0efc5b9bc513cf68ad81ae1028c83a1672d0559fbf91f29ed"
+    },
+    {
+      "path": "directive-dynamic-argument.expected.json",
+      "sha256": "e4ac99439ac2a28e45098a628d074a97684f1540e3e1c41da49df7a4e24e6fde"
+    },
+    {
+      "path": "directive-dynamic-argument.input.txt",
+      "sha256": "54ce78d2e6b88f345dbf6d8cb0e8f26d8a80babc303389851b0cd927196bfd5f"
+    },
+    {
+      "path": "input-provenance.json",
+      "sha256": "2bd4316241e20b495350183277a9293287b7c5df43597b97fc7c2325b0f7f948"
+    },
+    {
+      "path": "named-slot-fallback.expected.json",
+      "sha256": "2d267cfd9518c9c8cc48ec19f800c8f22d90abcc48fe4be5844481662a831b17"
+    },
+    {
+      "path": "named-slot-fallback.input.txt",
+      "sha256": "d3f773adac1f9ebb6aff90d3a20367b5bcce5c999707ffc27dbdcbed3341ed04"
+    },
+    {
+      "path": "nested-slot-outlet.expected.json",
+      "sha256": "84fec570457e360aeb2aab3c774a637513edc9b65f1a48f4de9055843c9ae834"
+    },
+    {
+      "path": "nested-slot-outlet.input.txt",
+      "sha256": "6d0c0be026025ec67a3279d502dba3a5773b368dafe3140eee413cfed2c9fc80"
+    },
+    {
+      "path": "object-index.expected.json",
+      "sha256": "fa21067c54f1e0ed1e8a53dd9ff89639baf4e1636cf94dddc21a38a0b9a881ac"
+    },
+    {
+      "path": "object-index.input.txt",
+      "sha256": "685e4faa1b8a7a3fc7f2e143a44ec34d2fc1336db7536272b4ae7f5ae91ac97a"
+    }
+  ]
+}
