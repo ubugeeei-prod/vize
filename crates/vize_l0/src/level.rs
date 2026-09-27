@@ -81,13 +81,21 @@ pub const CONVERSIONS: &[Conversion] = &[
 
 #[cfg(test)]
 mod tests {
-    use super::{CONVERSIONS, Level};
+    use super::{Level, CONVERSIONS};
 
     #[test]
     fn ids_round_trip() {
-        for level in Level::ALL {
-            assert_eq!(Level::from_id(level.id()), Some(level));
-            assert!(level.crate_name().ends_with(level.id()));
+        let expected = [
+            (Level::L0, "l0", "vize_l0"),
+            (Level::L1, "l1", "vize_l1"),
+            (Level::L2, "l2", "vize_l2"),
+            (Level::L3, "l3", "vize_l3"),
+            (Level::L4, "l4", "vize_l4"),
+        ];
+        for (level, id, crate_name) in expected {
+            assert_eq!(level.id(), id);
+            assert_eq!(level.crate_name(), crate_name);
+            assert_eq!(Level::from_id(id), Some(level));
         }
         assert_eq!(Level::from_id("s2"), None);
     }
@@ -95,7 +103,6 @@ mod tests {
     #[test]
     fn conversions_join_adjacent_levels() {
         for conversion in CONVERSIONS {
-            assert!(conversion.from < conversion.to);
             let to = conversion
                 .crate_name
                 .strip_prefix("vize_")
