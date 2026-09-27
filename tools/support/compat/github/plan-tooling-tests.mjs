@@ -26,7 +26,7 @@ export function toolingTestFiles(cwd = root) {
         .filter((name) => /\.test\.(?:ts|mjs)$/.test(name))
         .map((name) => `${directory}/${name}`),
     )
-    .sort();
+    .sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
 }
 
 // Add every literal local import, including transitive helpers, to the input

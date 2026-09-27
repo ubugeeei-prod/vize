@@ -30,7 +30,7 @@ function fixture() {
   return { cwd, write, cleanup: () => rmSync(cwd, { recursive: true, force: true }) };
 }
 
-test("unrelated source edits omit audited plan contracts but keep broad runtime checks", () => {
+void test("unrelated source edits omit audited plan contracts but keep broad runtime checks", () => {
   const f = fixture();
   try {
     assert.deepEqual(planToolingTests(["crates/vize_l1/src/lib.rs"], { cwd: f.cwd }).tests, [
@@ -43,7 +43,7 @@ test("unrelated source edits omit audited plan contracts but keep broad runtime 
   }
 });
 
-test("transitive imports and deleted inputs select the contract", () => {
+void test("transitive imports and deleted inputs select the contract", () => {
   const f = fixture();
   try {
     for (const path of ["tools/plan-input.mjs", "tests/tooling/support/plan.ts"]) {
@@ -64,7 +64,7 @@ test("transitive imports and deleted inputs select the contract", () => {
   }
 });
 
-test("unknown, dynamic, and shared dependency inputs restore the broad PR suite", () => {
+void test("unknown, dynamic, and shared dependency inputs restore the broad PR suite", () => {
   const f = fixture();
   try {
     for (const paths of [
@@ -82,7 +82,7 @@ test("unknown, dynamic, and shared dependency inputs restore the broad PR suite"
   }
 });
 
-test("merge planning restores every scenario, including directly changed deferred files", () => {
+void test("merge planning restores every scenario, including directly changed deferred files", () => {
   const f = fixture();
   try {
     const paths = ["tests/tooling/lsp-smoke.test.ts"];
@@ -97,7 +97,7 @@ test("merge planning restores every scenario, including directly changed deferre
   }
 });
 
-test("pure typecheck and LSP helper contracts remain in T0; explicit runtime inventory exists", () => {
+void test("pure typecheck and LSP helper contracts remain in T0; explicit runtime inventory exists", () => {
   const files = toolingTestFiles();
   for (const file of mergeOnlyToolingTests) assert.ok(files.includes(file), file);
   const plan = planToolingTests(["pnpm-lock.yaml"]);
@@ -108,7 +108,7 @@ test("pure typecheck and LSP helper contracts remain in T0; explicit runtime inv
   assert.ok(!plan.tests.includes("tests/tooling/typecheck-baseline-project.test.ts"));
 });
 
-test("the runner keeps shared fixtures serial and rejects unrecognized or duplicate plans", () => {
+void test("the runner keeps shared fixtures serial and rejects unrecognized or duplicate plans", () => {
   const available = ["tests/tooling/example.test.ts"];
   const plan = { version: 1, tier: "pr", tests: available };
   assert.deepEqual(toolingTestCommand(plan, available), [
