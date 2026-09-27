@@ -80,7 +80,7 @@ pub(crate) fn generate_scope_closures(
     } else {
         SlotOutletChecks::default()
     };
-    slot_outlets.emit_helpers(ts, summary);
+    slot_outlets.emit_helpers(ts);
     let skipped_expression_ranges =
         profile!("canon.virtual_ts.component_prop_expression_ranges", {
             collect_component_prop_expression_ranges(summary, &options, &slot_outlets)

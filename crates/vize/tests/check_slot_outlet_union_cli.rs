@@ -9,11 +9,13 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// A child that renders the same named slot from several `<slot>` outlets
-/// (one bound, one bare; one bound, one with a static attribute) used to
-/// expose only the last outlet's payload to the parent, so
-/// `#panel="{ viewMode }"` reported `TS2339` on `{}` and the static
-/// `viewMode="sp"` widened to `string` (`TS2322` against a literal prop).
-/// vue-tsc reports neither.
+/// (one bound, one bare; one bound, one with a static attribute; one inside
+/// a `v-for` and one outside) used to expose only the last outlet's payload
+/// to the parent, so `#panel="{ viewMode }"` reported `TS2339` on `{}` and
+/// the static `viewMode="sp"` widened to `string` (`TS2322` against a
+/// literal prop). vue-tsc reports neither. The merged payload is still typed:
+/// a prop only some outlets pass is optional, and a prop every outlet passes
+/// keeps its type.
 #[test]
 fn check_same_named_slot_outlets_merge_their_payloads() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
@@ -41,20 +43,55 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
         .as_array()
         .into_iter()
         .flatten()
-        .flat_map(|file| file["diagnostics"].as_array().cloned().unwrap_or_default())
-        .filter_map(|diagnostic| diagnostic.as_str().map(str::to_owned))
+        .flat_map(|file| {
+            let name = file["file"].as_str().unwrap_or_default().to_owned();
+            file["diagnostics"]
+                .as_array()
+                .cloned()
+                .unwrap_or_default()
+                .into_iter()
+                .filter_map(move |diagnostic| {
+                    diagnostic
+                        .as_str()
+                        .map(|diagnostic| format!("{name}: {diagnostic}"))
+                })
+        })
         .collect::<Vec<_>>();
 
-    // `Wrong.vue` passes the merged payload where only a number is accepted:
-    // the merge must still type the payload, not erase it to `any`.
-    assert_eq!(
-        diagnostics.len(),
-        1,
-        "only the deliberate misuse may be reported; got {diagnostics:?}\nstdout:\n{stdout}\nstderr:\n{stderr}"
-    );
+    // `Parent.vue`: `side` and `item` are passed by every outlet (a literal on
+    // one of them, one outlet inside a `v-for`) and satisfy a required
+    // `'pc' | 'sp'` prop; `panel` is passed by one outlet only, so it is
+    // optional and the same required prop reports it. `Wrong.vue` forwards a
+    // merged payload into a `number` prop: the merge must still type the
+    // payload, not erase it to `any`.
+    let mut expected = vec![
+        (
+            "src/Parent.vue",
+            "[TS2322]",
+            "'undefined' is not assignable",
+        ),
+        (
+            "src/Wrong.vue",
+            "[TS2322]",
+            "not assignable to type 'number'",
+        ),
+    ];
+    for diagnostic in &diagnostics {
+        let index = expected
+            .iter()
+            .position(|(file, code, text)| {
+                diagnostic.contains(file) && diagnostic.contains(code) && diagnostic.contains(text)
+            })
+            .unwrap_or_else(|| {
+                panic!(
+                    "unexpected diagnostic {diagnostic:?}; got {diagnostics:?}\nstdout:\n{stdout}\nstderr:\n{stderr}"
+                )
+            });
+        expected.remove(index);
+    }
     assert!(
-        diagnostics[0].contains("Wrong.vue") && diagnostics[0].contains("[TS2322]"),
-        "the merged payload must keep its type; got {diagnostics:?}\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        expected.is_empty(),
+        "missing diagnostics {expected:?}; got {diagnostics:?}\nstdout:\n{stdout}\nstderr:\n{stderr}"
     );
     assert!(
         output.status.code() == Some(1),
@@ -64,6 +101,8 @@ fn check_same_named_slot_outlets_merge_their_payloads() {
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+/// A throwaway project under `target/` with the fixture components and a
+/// symlink to the workspace `node_modules` (for `vue`).
 fn create_cli_project() -> PathBuf {
     let project_root = workspace_root()
         .join("target")
@@ -98,6 +137,12 @@ fn create_cli_project() -> PathBuf {
       <slot name="panel" />
       <slot name="side" viewMode="sp" />
     </template>
+    <ul>
+      <li v-for="entry in entries" :key="entry">
+        <slot name="item" :viewMode="viewMode" :entry="entry" />
+      </li>
+    </ul>
+    <slot name="item" :viewMode="viewMode" />
   </div>
 </template>
 
@@ -106,7 +151,10 @@ import { defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'Layout',
-  props: { viewMode: String as PropType<'pc' | 'sp'> },
+  props: {
+    viewMode: { type: String as PropType<'pc' | 'sp'>, required: true },
+    entries: { type: Array as PropType<string[]>, default: () => [] },
+  },
   computed: {
     isPC(): boolean {
       return this.viewMode === 'pc'
@@ -128,7 +176,7 @@ import { defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'Preview',
-  props: { viewMode: String as PropType<'pc' | 'sp'> },
+  props: { viewMode: { type: String as PropType<'pc' | 'sp'>, required: true } },
 })
 </script>
 "#,
@@ -143,6 +191,10 @@ export default defineComponent({
     </template>
     <template #side="{ viewMode }">
       <Preview :viewMode="viewMode" />
+    </template>
+    <template #item="{ viewMode, entry }">
+      <Preview :viewMode="viewMode" />
+      {{ entry?.toUpperCase() }}
     </template>
   </Layout>
 </template>
@@ -193,6 +245,7 @@ export default defineComponent({
     project_root
 }
 
+/// The repository root, two levels above this crate.
 fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
@@ -201,6 +254,8 @@ fn workspace_root() -> PathBuf {
         .to_path_buf()
 }
 
+/// Expose the workspace `node_modules` to the fixture project so `vue`
+/// resolves without an install.
 fn link_workspace_node_modules(project_root: &Path) {
     let source = workspace_root().join("node_modules");
     if source.exists() {
@@ -208,10 +263,13 @@ fn link_workspace_node_modules(project_root: &Path) {
     }
 }
 
+/// The Corsa binary to check with: `CORSA_PATH` when set, else the workspace
+/// `tsgo` shim. Returned absolute, as the CLI runs from the fixture project.
 fn resolve_test_corsa_path() -> Option<String> {
     if let Some(path) = std::env::var_os("CORSA_PATH") {
         let path = PathBuf::from(path);
         if path.exists() {
+            let path = path.canonicalize().unwrap_or(path);
             return Some(path.display().to_string());
         }
     }
@@ -222,6 +280,7 @@ fn resolve_test_corsa_path() -> Option<String> {
         .map(|candidate| candidate.display().to_string())
 }
 
+/// Create a directory symlink on either platform.
 fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
     #[cfg(unix)]
     {

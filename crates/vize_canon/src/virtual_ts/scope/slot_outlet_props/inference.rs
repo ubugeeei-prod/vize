@@ -1,6 +1,6 @@
 //! Export slot payloads from the lexical scopes that infer their types.
 
-use vize_carton::{CompactString, String, append, cstr};
+use vize_carton::{String, append, cstr};
 use vize_croquis::{Croquis, ScopeId, ScopeKind};
 use vize_relief::{RootNode, TemplateChildNode};
 
@@ -33,73 +33,6 @@ fn boundary(summary: &Croquis, mut id: ScopeId) -> Option<ScopeId> {
             return Some(id);
         }
         id = scope.parent()?;
-    }
-}
-
-/// One entry of an inferred slots type: a dynamic-name outlet stands alone,
-/// while every static outlet of one name shares a single entry.
-enum OutletEntry {
-    Dynamic(u32),
-    Static {
-        name: CompactString,
-        starts: Vec<u32>,
-    },
-}
-
-impl SlotOutletChecks {
-    /// The outlets whose payloads the scope at `scope_id` returns, in source
-    /// order, with same-named static outlets merged into one entry.
-    ///
-    /// Emitting one `{ name?: (props) => any }` per outlet intersects same-named
-    /// entries into an overloaded slot function, and the parent's payload
-    /// inference then reads only the last overload: which outlet it was
-    /// depended on template order, and a bare `<slot name="x" />` after a
-    /// bound one erased every prop the parent destructures.
-    fn outlet_entries(&self, summary: &Croquis, scope_id: Option<ScopeId>) -> Vec<OutletEntry> {
-        let mut outlets: Vec<_> = self.by_scope.values().flatten().collect();
-        outlets.sort_by_key(|outlet| outlet.start);
-        let mut entries: Vec<OutletEntry> = Vec::new();
-        for outlet in outlets {
-            if boundary(summary, ScopeId::new(outlet.scope_id)) != scope_id {
-                continue;
-            }
-            if outlet.name_is_dynamic {
-                entries.push(OutletEntry::Dynamic(outlet.start));
-                continue;
-            }
-            let existing = entries.iter_mut().find_map(|entry| match entry {
-                OutletEntry::Static { name, starts } if *name == outlet.name => Some(starts),
-                _ => None,
-            });
-            match existing {
-                Some(starts) => starts.push(outlet.start),
-                None => entries.push(OutletEntry::Static {
-                    name: outlet.name.clone(),
-                    starts: vec![outlet.start],
-                }),
-            }
-        }
-        entries
-    }
-
-    /// Whether any inferred slots type merges same-named outlets, which is when
-    /// `__VizeSlotOutletUnion` is referenced and must be declared.
-    pub(super) fn merges_static_outlets(&self, summary: &Croquis) -> bool {
-        if !self.infers_slots() {
-            return false;
-        }
-        let mut boundaries: Vec<Option<ScopeId>> = self
-            .by_scope
-            .keys()
-            .map(|scope| boundary(summary, ScopeId::new(*scope)))
-            .collect();
-        boundaries.sort_unstable();
-        boundaries.dedup();
-        boundaries.into_iter().any(|scope_id| {
-            self.outlet_entries(summary, scope_id).iter().any(
-                |entry| matches!(entry, OutletEntry::Static { starts, .. } if starts.len() > 1),
-            )
-        })
     }
 }
 
@@ -181,36 +114,28 @@ impl SlotOutletChecks {
 
     fn result_type(&self, summary: &Croquis, scope_id: Option<ScopeId>) -> String {
         let mut types = Vec::new();
-        for entry in self.outlet_entries(summary, scope_id) {
+        let mut outlets: Vec<_> = self.by_scope.values().flatten().collect();
+        outlets.sort_by_key(|outlet| outlet.start);
+        for outlet in outlets {
+            if boundary(summary, ScopeId::new(outlet.scope_id)) != scope_id {
+                continue;
+            }
             let mut slot = String::default();
-            match entry {
-                OutletEntry::Dynamic(start) => {
-                    append!(
-                        slot,
-                        "{{ [K in NonNullable<typeof __vize_slot_name_{start}>]?: (props: typeof __vize_slot_payload_{start}) => any }}"
-                    );
-                }
-                OutletEntry::Static { name, starts } => {
-                    slot.push_str("{ ");
-                    push_ts_string_literal(&mut slot, name.as_str());
-                    slot.push_str("?: (props: ");
-                    if let [start] = starts.as_slice() {
-                        append!(slot, "typeof __vize_slot_payload_{start}");
-                    } else {
-                        // Every outlet of the name can render the slot, so its
-                        // payload is what all of them agree on plus what only
-                        // some of them pass, the latter optional.
-                        slot.push_str("__VizeSlotOutletUnion<");
-                        for (index, start) in starts.iter().enumerate() {
-                            if index > 0 {
-                                slot.push_str(" | ");
-                            }
-                            append!(slot, "typeof __vize_slot_payload_{start}");
-                        }
-                        slot.push('>');
-                    }
-                    slot.push_str(") => any }");
-                }
+            if outlet.name_is_dynamic {
+                append!(
+                    slot,
+                    "{{ [K in NonNullable<typeof __vize_slot_name_{}>]?: (props: typeof __vize_slot_payload_{}) => any }}",
+                    outlet.start,
+                    outlet.start
+                );
+            } else {
+                slot.push_str("{ ");
+                push_ts_string_literal(&mut slot, outlet.name.as_str());
+                append!(
+                    slot,
+                    "?: (props: typeof __vize_slot_payload_{}) => any }}",
+                    outlet.start
+                );
             }
             types.push(slot);
         }

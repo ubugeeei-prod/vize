@@ -102,7 +102,16 @@ type __VizeNativeSlotsFactory<C> = C extends new (...args: any[]) => any ? typeo
 type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (props: any) => any : C extends { __vizeResolveSlots?: infer F } ? F extends (...args: any[]) => any ? (component: C) => F : __VizeNativeSlotsFactory<C> : __VizeNativeSlotsFactory<C>;
 // @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
 type __VizeSilentAny = {}["__vizeSilentAny"];
-type __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
+type __VizeSlotPayloadParam<__A> = __VizeIsAny<__A> extends true ? __A : unknown extends __A ? {} : __A;
+type __VizeSlotPayloadOf<__F> = __F extends { (props: infer __A, ...args: any[]): any; (props: infer __B, ...args: any[]): any; (props: infer __C, ...args: any[]): any; (props: infer __D, ...args: any[]): any; (props: infer __E, ...args: any[]): any; (props: infer __G, ...args: any[]): any } ? __VizeSlotPayloadParam<__A> | __VizeSlotPayloadParam<__B> | __VizeSlotPayloadParam<__C> | __VizeSlotPayloadParam<__D> | __VizeSlotPayloadParam<__E> | __VizeSlotPayloadParam<__G> : never;
+type __VizeSlotPayloadKeys<__U> = __U extends any ? keyof __U : never;
+type __VizeSlotPayloadOptionalKeys<__U> = __U extends any ? { [__K in keyof __U]-?: {} extends Pick<__U, __K> ? __K : never }[keyof __U] : never;
+type __VizeSlotPayloadRequiredKeys<__U> = Exclude<keyof __U, __VizeSlotPayloadOptionalKeys<__U>>;
+type __VizeSlotPayloadValue<__U, __K extends PropertyKey> = __U extends any ? (__K extends keyof __U ? __U[__K] : never) : never;
+type __VizeSlotPayloadMerge<__U> = { [__K in __VizeSlotPayloadRequiredKeys<__U>]: __VizeSlotPayloadValue<__U, __K> } & { [__K in Exclude<__VizeSlotPayloadKeys<__U>, __VizeSlotPayloadRequiredKeys<__U>>]?: __VizeSlotPayloadValue<__U, __K> };
+type __VizeSlotPayloadIntersection<__U> = (__U extends any ? (member: __U) => void : never) extends (member: infer __I) => void ? __I : never;
+type __VizeSlotPayloadUnify<__P> = __VizeIsAny<__P> extends true ? __P : [__P] extends [__VizeSlotPayloadIntersection<__P>] ? __P : __VizeSlotPayloadMerge<__P>;
+type __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : { [__K in keyof __S & __N]-?: __VizeSlotPayloadUnify<__VizeSlotPayloadOf<NonNullable<__S[__K]>>> }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;
 import TrendChart from './TrendChart.vue'
 
 // ========== Exported Types ==========
@@ -134,7 +143,7 @@ function __setup() {
     class?: string
   }>()
   
-  // @vize-map: 16033:16078 -> 0:78
+  // @vize-map: 17590:17635 -> 0:78
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {

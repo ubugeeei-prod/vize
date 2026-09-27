@@ -56,8 +56,8 @@ impl SlotOutletChecks {
         }
     }
 
-    pub(super) fn emit_helpers(&self, ts: &mut String, summary: &Croquis) {
-        emit::emit_slot_outlet_helpers(ts, &self.by_scope, self.merges_static_outlets(summary));
+    pub(super) fn emit_helpers(&self, ts: &mut String) {
+        emit::emit_slot_outlet_helpers(ts, &self.by_scope);
         if self.infer
             && self
                 .by_scope

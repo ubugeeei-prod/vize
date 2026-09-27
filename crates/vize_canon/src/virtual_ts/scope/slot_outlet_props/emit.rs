@@ -24,7 +24,6 @@ struct PayloadType {
 pub(super) fn emit_slot_outlet_helpers(
     ts: &mut String,
     slot_outlets_by_scope: &FxHashMap<u32, Vec<SlotOutlet>>,
-    needs_union: bool,
 ) {
     let mut needs_static = false;
     let mut needs_dynamic = false;
@@ -42,7 +41,7 @@ pub(super) fn emit_slot_outlet_helpers(
             needs_static = true;
         }
     }
-    if !needs_static && !needs_dynamic && !needs_spread && !needs_union {
+    if !needs_static && !needs_dynamic && !needs_spread {
         return;
     }
 
@@ -70,20 +69,6 @@ pub(super) fn emit_slot_outlet_helpers(
         );
         ts.push_str(
             "  type __VizeAnySlotOutletPayload<__S> = [__VizeAnySlotOutletArgs<__S>] extends [[]] ? unknown : __VizeAnySlotOutletArgs<__S>[0];\n",
-        );
-    }
-    if needs_union {
-        // The payload a slot rendered by several same-named outlets receives:
-        // the props every outlet passes, plus the props only some pass as
-        // optional. The key alias keeps the mapped types from distributing
-        // over the payload union member by member.
-        ts.push_str("  type __VizeSlotOutletCommonKeys<__U> = keyof __U;\n");
-        ts.push_str("  type __VizeSlotOutletAnyKeys<__U> = __U extends any ? keyof __U : never;\n");
-        ts.push_str(
-            "  type __VizeSlotOutletUnionValue<__U, __K extends PropertyKey> = __U extends any ? (__K extends keyof __U ? __U[__K] : never) : never;\n",
-        );
-        ts.push_str(
-            "  type __VizeSlotOutletUnion<__U> = { [__K in __VizeSlotOutletCommonKeys<__U>]: __VizeSlotOutletUnionValue<__U, __K> } & { [__K in Exclude<__VizeSlotOutletAnyKeys<__U>, __VizeSlotOutletCommonKeys<__U>>]?: __VizeSlotOutletUnionValue<__U, __K> };\n",
         );
     }
     if needs_spread {

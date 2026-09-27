@@ -1,6 +1,6 @@
 use crate::virtual_ts::generate_virtual_ts;
 
-/// Generate the virtual TS of a component without a script block.
+/// The virtual TS of a component without a script block.
 fn generate(template: &str) -> vize_carton::String {
     let allocator = vize_carton::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
@@ -10,68 +10,58 @@ fn generate(template: &str) -> vize_carton::String {
     generate_virtual_ts(&summary, None, Some(&root), 0).code
 }
 
-/// A slot rendered by several same-named outlets is one entry whose payload
-/// merges every outlet, in place of one entry per outlet: those intersected
-/// into an overloaded slot function whose parameter the parent inferred from
-/// the last outlet only, so `#panel="{ viewMode }"` became `{}` when a bare
-/// `<slot name="panel" />` followed the bound one.
+/// A parent's slot payload is resolved through the overload-aware helper, so a
+/// child that renders one named slot from several `<slot>` outlets (an
+/// intersection of one function per outlet) contributes every outlet's
+/// payload, not only the last overload's. The helper is declared exactly once,
+/// next to the payload alias that references it.
 #[test]
-fn same_named_outlets_share_one_merged_entry() {
+fn slot_payload_helper_collects_every_overload() {
     let code = generate(
-        r#"<div>
-  <template v-if="isPC">
-    <slot name="panel" :viewMode="viewMode" />
-    <slot name="side" viewMode="sp" />
-  </template>
-  <template v-else>
-    <slot name="panel" />
-    <slot name="side" :viewMode="viewMode" />
-  </template>
-  <slot name="footer" />
-</div>"#,
+        r#"<child><template #panel="{ viewMode }"><preview :viewMode="viewMode" /></template></child>"#,
     );
+    for alias in [
+        "type __VizeSlotPayloadOf<__F> = __F extends { (props: infer __A, ...args: any[]): any;",
+        "type __VizeSlotPayloadUnify<__P> = __VizeIsAny<__P> extends true ? __P : [__P] extends [__VizeSlotPayloadIntersection<__P>] ? __P : __VizeSlotPayloadMerge<__P>;",
+        "__VizeSlotPayloadUnify<__VizeSlotPayloadOf<NonNullable<__S[__K]>>>",
+    ] {
+        assert_eq!(
+            code.matches(alias).count(),
+            1,
+            "the slot payload helper must be declared once and used by the payload alias:\n{code}"
+        );
+    }
+}
 
-    assert_eq!(
-        code.matches("\"panel\"?:").count(),
-        1,
-        "same-named outlets must produce a single slots entry:\n{code}"
-    );
-    assert!(
-        code.contains("\"panel\"?: (props: __VizeSlotOutletUnion<typeof __vize_slot_payload_"),
-        "the merged entry must take the payload union:\n{code}"
-    );
-    assert_eq!(
-        code.matches("__VizeSlotOutletUnion<typeof __vize_slot_payload_")
-            .count(),
-        2,
-        "both duplicated names merge, the unique one does not:\n{code}"
-    );
-    assert!(
-        code.contains("\"footer\"?: (props: typeof __vize_slot_payload_"),
-        "a single outlet keeps its plain payload type:\n{code}"
-    );
-    assert_eq!(
-        code.matches("type __VizeSlotOutletUnion<__U> =").count(),
-        1,
-        "the union helper is declared once:\n{code}"
+/// An inferred outlet payload keeps a static string attribute as its literal
+/// type, as the runtime value is exactly that string; the checking-side
+/// literal is contextually typed and stays as authored.
+#[test]
+fn inferred_outlet_payload_keeps_static_attribute_literals() {
+    let code = generate(
+        r#"<div><slot name="side" viewMode="sp" :count="1" /><slot name="flag" disabled /></div>"#,
     );
     assert!(
         code.contains("\"viewMode\": \"sp\" as const,"),
-        "a static outlet attribute keeps its literal type in the inferred payload:\n{code}"
-    );
-}
-
-/// The helper is dead code for a template whose outlet names are unique, and
-/// `noUnusedLocals` consumers would report it.
-#[test]
-fn unique_outlets_do_not_declare_the_union_helper() {
-    let code = generate(r#"<div><slot name="panel" :viewMode="viewMode" /><slot /></div>"#);
-    assert!(
-        !code.contains("__VizeSlotOutletUnion"),
-        "no merged entry, no helper:\n{code}"
+        "a static string attribute keeps its literal type:\n{code}"
     );
     assert!(
-        code.contains("\"panel\"?: (props: typeof __vize_slot_payload_"),
-        "{code}"
+        code.contains("\"count\": 1,") && code.contains("\"disabled\": true,"),
+        "bound values and valueless attributes are unchanged:\n{code}"
+    );
+    let script = "defineSlots<{ side(props: { viewMode: string }): any }>()";
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(
+        &allocator,
+        r#"<div><slot name="side" viewMode="sp" /></div>"#,
+    );
+    let mut analyzer = vize_croquis::Analyzer::with_options(vize_croquis::AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+    let checked = generate_virtual_ts(&summary, Some(script), Some(&root), 0).code;
+    assert!(
+        checked.contains("\"viewMode\": \"sp\",") && !checked.contains("as const"),
+        "the checking-side literal stays as authored:\n{checked}"
     );
 }
