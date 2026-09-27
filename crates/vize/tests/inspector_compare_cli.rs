@@ -76,6 +76,11 @@ fn inspector_compare_retains_missing_module_diagnostic_after_broken_pipe() {
          echo \"Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/node_modules/vue/compiler-sfc'\" >&2\n\
          exit 17",
     );
+    assert_eq!(
+        output.stderr.as_slice(),
+        include_bytes!("fixtures/inspector_compare/missing_compiler.stderr.txt")
+    );
+    assert!(output.stdout.is_empty());
     let stderr = String::from_utf8(output.stderr).unwrap();
     assert_eq!(output.status.code(), Some(17), "{stderr}");
     assert!(stderr.contains("currently requires Vue 3"), "{stderr}");
@@ -93,6 +98,11 @@ fn inspector_compare_retains_missing_module_diagnostic_after_broken_pipe() {
 fn inspector_compare_retains_child_failure_status_and_stderr_after_broken_pipe() {
     let output =
         compare_with_closed_node_stdin("echo 'authoritative compiler failure' >&2\nexit 23");
+    assert_eq!(
+        output.stderr.as_slice(),
+        include_bytes!("fixtures/inspector_compare/compiler_failure.stderr.txt")
+    );
+    assert!(output.stdout.is_empty());
     let stderr = String::from_utf8(output.stderr).unwrap();
     assert_eq!(output.status.code(), Some(23), "{stderr}");
     assert!(

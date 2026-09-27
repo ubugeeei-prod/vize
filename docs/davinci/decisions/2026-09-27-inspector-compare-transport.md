@@ -17,8 +17,11 @@ pipe capacity: missing compiler status 17, generic compiler status 23 and a
 successful child with undelivered input. Keep the original small missing-module
 fixture and every assertion. These fixtures exercise the source CLI and shell
 process, with no retry, sleep, skip or relaxed assertion.
-The CLI regression corpus adds `fixtures/inspector_compare/early_exit.vue`;
-tests expand its comment payload at runtime instead of committing megabytes.
+The CLI regression corpus adds `fixtures/inspector_compare/early_exit.vue.txt`,
+mapped to the actual temporary `App.vue` without changing authored Vue census
+membership. Tests expand its comment payload at runtime instead of committing
+megabytes. Missing-module and generic failure fixtures pin complete stderr
+bytes, actual exit status and empty stdout.
 
 Normal compiler output and supported legacy behavior remain unchanged. This
 repairs failure reporting and process cleanup; it does not implement Vue 2

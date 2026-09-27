@@ -5,7 +5,7 @@ use std::{
 
 use super::{
     InspectorArgs, OFFICIAL_COMPILER_NODE_SCRIPT, OfficialCompareInput, OfficialCompareInputFile,
-    OfficialCompareOutput, VizeCompilerRun, compare_error, dev_module_root,
+    OfficialCompareOutput, VizeCompilerRun, compare_error, curator_inspector, dev_module_root,
 };
 
 pub(super) fn run_official_compiler_for_compare(
