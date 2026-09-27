@@ -251,6 +251,11 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 [Tooling input selection](./2026-09-27-tooling-input-selection.md) records the shared task inputs, explicit T1 runtime inventory and conservative T0 fallback for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864).
 
+[Full tooling LSP source identity](./2026-09-27-lsp-source-binding.md) binds
+required runtime proof to the receipted current CLI without cached fallback.
+Use test-step environment variables to retain the plain VP command and compose
+with the formatter's always-upload corpus evidence without changing build setup.
+
 [Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base. [Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md) records #6862's runner, doctest, resource and archive identity decisions.
 
 [Rust source wiring](./2026-09-27-ci-rust-core.md) preserves full queue execution, proves the tested comparison base and records the intermediate scope.
