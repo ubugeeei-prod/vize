@@ -50,7 +50,11 @@ typechecker fixture history [#6879](https://github.com/ubugeeei-prod/vize/issues
 - Fresh Actions must validate actual source-built CLI/TSGO execution, the three
   original Vue diagnostics' complete position/message/code, generated TS,
   snapshots and the full queue. Capture raw observations under
-  `target/differential/slot-outlet-union.json`; finish the original three complete
+  `target/differential/slot-outlet-union.json`. The T1 test also writes exact build
+  identity, process status and the full normalized diagnostic vector to the
+  `VIZE_SLOT_CLI_OBSERVATION` Actions log before checking any oracle or count.
+  A failed parse or assertion additionally logs raw stdout/stderr as base64 under
+  `VIZE_SLOT_CLI_RAW`; no assertion or receipt check is relaxed. Finish the original three complete
   Vue oracle records from that observation before merge. Native typechecker
   comparison is unavailable; no native acceptance is claimed. No local Cargo
   build is run under the disk constraint. Issue evidence accompanies publication.
