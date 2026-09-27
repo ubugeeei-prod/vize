@@ -27,3 +27,18 @@ concern-page headers, feed negotiation, cache hash domains and the shared actual
 production-stage generator remain outstanding. #6832 stays open; Stage1 does
 not begin. No extra compiler stage, serialization between levels, or budget
 relaxation is introduced.
+
+## Current source replay evidence
+
+The prepared source follows clean parent `5bdaa46ec`. All 43-file migration
+hunks outside the central record have the same stable patch id as the
+original (`4e856be2ebd1a1eb7e9e7375f3aed6e863e9c26a`); the central record
+retains registry, Dump and CLI decisions. The script accepts this parent via
+`--base-ref` and verifies all 38 transformed consumers, including inverse
+byte identity and layout-only formatting. Forty-two existing Node contracts
+pass at this composition, alongside Cargo format, whitespace and changed
+350-line caps. The historical diagnostic fixture is reused explicitly; no
+new CLI, Rust, Lean, WASM or Actions execution is claimed.
+
+The decisions and remaining coupling are mirrored in the
+[#6832 record](https://github.com/ubugeeei-prod/vize/issues/6832#issuecomment-5854177277).
