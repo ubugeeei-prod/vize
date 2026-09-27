@@ -23,7 +23,12 @@ export function requirePreparedNative(nativeDir, loadBinding = require) {
 }
 
 export function runViteTests(prepared, run = spawnSync) {
-  const options = { cwd: packageDir, env: process.env, stdio: "inherit" };
+  const options = {
+    cwd: packageDir,
+    env: process.env,
+    stdio: "inherit",
+    shell: process.platform === "win32",
+  };
   if (!prepared) {
     const build = run("pnpm", ["--dir", "../../native", "build:debug"], options);
     if (build.status !== 0) return build.status ?? 1;

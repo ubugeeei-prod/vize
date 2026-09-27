@@ -80,6 +80,13 @@ export function nativePreparationIsActive(directory) {
 export function withPreparedNative(directory, ownerArgument, command, args, run = spawnSync) {
   const file = receiptPath(directory);
   const owner = { ownerPid: process.pid, ownerArgument };
+  // The fixed root package command is a .cmd shim on Windows.
+  const options = {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: "inherit",
+    shell: process.platform === "win32" && command === "vp",
+  };
   if (!ownerIsAlive(owner)) {
     if (existsSync(file)) {
       try {
@@ -99,9 +106,7 @@ export function withPreparedNative(directory, ownerArgument, command, args, run 
     console.log(
       "Native reuse is unavailable: running the original package tests with standalone Vite preparation.",
     );
-    return (
-      run(command, args, { cwd: process.cwd(), env: process.env, stdio: "inherit" }).status ?? 1
-    );
+    return run(command, args, options).status ?? 1;
   }
   const receipt = {
     schemaVersion: 1,
@@ -122,9 +127,7 @@ export function withPreparedNative(directory, ownerArgument, command, args, run 
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, `${JSON.stringify(receipt)}\n`, { flag: "wx" });
   try {
-    return (
-      run(command, args, { cwd: process.cwd(), env: process.env, stdio: "inherit" }).status ?? 1
-    );
+    return run(command, args, options).status ?? 1;
   } finally {
     if (existsSync(file) && JSON.parse(readFileSync(file, "utf8")).id === receipt.id) rmSync(file);
   }

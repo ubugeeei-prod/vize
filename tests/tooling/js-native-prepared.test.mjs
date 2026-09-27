@@ -52,6 +52,7 @@ void test("standalone Vite tests build first; prepared tests reuse the same nati
         assert.equal(options.env, process.env);
         assert.equal(options.cwd, join(root, "npm/builder/vite"));
         assert.equal(options.stdio, "inherit");
+        assert.equal(options.shell, process.platform === "win32");
         return { status: 0 };
       }),
       0,
@@ -154,6 +155,27 @@ process.exit(7);
     assert.equal(fallback.status, 4, `${fallback.stdout}\n${fallback.stderr}`);
     assert.match(fallback.stdout, /Native reuse is unavailable/);
     assert.equal(existsSync(receipt), false);
+    writeFileSync(
+      join(fixture, "windows.mjs"),
+      `
+import assert from 'node:assert/strict';
+import {withPreparedNative} from './${helper}';
+import {runViteTests} from ${JSON.stringify(join(root, "npm/builder/vite/scripts/run-tests.mjs"))};
+Object.defineProperty(process,'platform',{value:'win32'});
+let calls=0;
+const packageRun=(command,args,options)=>{
+  assert.ok(command==='vp'||command==='pnpm'); assert.equal(options.shell,true);
+  assert.equal(options.env,process.env); calls++; return {status:0};
+};
+assert.equal(withPreparedNative(${JSON.stringify(join(fixture, "npm/native"))},'--native-test-owner=00000000-0000-0000-0000-000000000000','vp',['run','test'],packageRun),0);
+assert.equal(runViteTests(false,packageRun),0); assert.equal(calls,3);
+`,
+    );
+    const windows = spawnSync(process.execPath, ["windows.mjs"], {
+      cwd: fixture,
+      encoding: "utf8",
+    });
+    assert.equal(windows.status, 0, `${windows.stdout}\n${windows.stderr}`);
   } finally {
     rmSync(fixture, { recursive: true, force: true });
   }
