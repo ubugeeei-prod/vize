@@ -84,6 +84,16 @@ fn deferred_template_reads_preserve_script_diagnostics() {
     );
 }
 
+#[test]
+fn required_props_keep_exact_unicode_diagnostics() {
+    check_pack(
+        "required-props-edges",
+        "f3a26b0e30c98b135a9e897c3584526eb0a2b96d",
+        3581,
+        &["complete-attribute-boundaries"],
+    );
+}
+
 fn check_pack(name: &str, regression: &str, historical_issue: u32, case_ids: &[&str]) {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let fixtures = root
@@ -161,6 +171,15 @@ fn check_pack(name: &str, regression: &str, historical_issue: u32, case_ids: &[&
                 message: String::from(diagnostic.message.as_str()),
             })
             .collect();
+        if let Some(capture) = std::env::var_os("VIZE_TEST_FIX_HISTORY_CAPTURE_DIR") {
+            let directory = PathBuf::from(capture).join(name);
+            std::fs::create_dir_all(&directory).expect("capture directory must be created");
+            std::fs::write(
+                directory.join(&case.id).with_extension("json"),
+                serde_json::to_vec_pretty(&actual).expect("actual diagnostics must serialize"),
+            )
+            .expect("actual diagnostic capture must write");
+        }
         assert_eq!(
             actual, case.diagnostics,
             "complete diagnostic list for {}",
