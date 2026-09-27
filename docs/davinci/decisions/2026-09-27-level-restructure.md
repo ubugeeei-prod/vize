@@ -15,7 +15,7 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826)
 (products), [#6828](https://github.com/ubugeeei-prod/vize/issues/6828)
 (legacy deletion), [#6829](https://github.com/ubugeeei-prod/vize/issues/6829)
 (multi-framework), [#6830](https://github.com/ubugeeei-prod/vize/issues/6830)
-(CI).
+(CI). [SSR option compatibility](./2026-09-27-ssr-source-compatibility.md).
 
 ## Levels and naming
 

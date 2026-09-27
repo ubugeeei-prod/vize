@@ -61,6 +61,8 @@ pub(crate) struct TemplateBlockCompileContext<'a> {
     /// module-level static vnodes must carry the `data-v-*` attribute so scoped
     /// CSS selectors continue to match them in client builds.
     pub(crate) has_scoped: bool,
+    /// Whether this SFC owns a scoped :slotted() style.
+    pub(crate) slotted: bool,
     pub(crate) is_ts: bool,
     pub(crate) inline: bool,
     pub(crate) component_name: Option<&'a str>,
@@ -83,6 +85,7 @@ pub(crate) fn compile_template_block(
         scope_id,
         apply_scope_id,
         has_scoped,
+        slotted,
         is_ts,
         inline,
         component_name,
@@ -120,19 +123,19 @@ pub(crate) fn compile_template_block(
         let ssr_experimental_options = vize_atelier_ssr::SsrCompilerExperimentalOptions {
             component_name: component_name.map(|name| name.to_compact_string()),
             self_component: experimental_self_component,
-            slotted: options.slotted,
             ..vize_atelier_ssr::SsrCompilerExperimentalOptions::default()
         };
 
         let (_, errors, result) = profile!(
             "atelier.sfc.template.ssr",
-            vize_atelier_ssr::compile_ssr_with_custom_elements_template_syntax_and_experimental_options(
+            vize_atelier_ssr::compile_ssr_with_sfc_slotted_context(
                 allocator,
                 &template.content,
                 ssr_opts,
                 template_syntax,
                 custom_elements.clone(),
                 ssr_experimental_options,
+                slotted,
             )
         );
 

@@ -73,16 +73,13 @@ fn compile_sfc_inner(
     let mut code = String::default();
     let mut css = None;
     let macro_artifacts = extract_descriptor_macro_artifacts(descriptor);
-
     let filename = if options.parse.filename.is_empty() {
         options.script.id.as_deref().unwrap_or("anonymous.vue")
     } else {
         options.parse.filename.as_str()
     };
     let source_filename = options.script.id.as_deref().unwrap_or(filename);
-
     let (has_styles, has_scoped, slotted) = styles::scope_flags(&descriptor.styles);
-    options.template.slotted = Some(slotted);
     // Use externally-provided scope ID if available, otherwise generate from filename.
     // The external scope ID ensures consistency with JS-side SHA-256 generation.
     // Template/script-only SFCs do not need the hash.
@@ -106,7 +103,6 @@ fn compile_sfc_inner(
             None,
         );
     }
-
     let compiled_styles = profile!(
         "atelier.sfc.styles",
         compile_styles(&descriptor.styles, &scope_id, &options.style, &mut warnings)
@@ -120,7 +116,6 @@ fn compile_sfc_inner(
     if !compiled_styles.css.is_empty() {
         css = Some(compiled_styles.css.clone());
     }
-
     let vapor_requested = options.vapor
         || descriptor
             .script_setup
@@ -179,6 +174,7 @@ fn compile_sfc_inner(
                 component_name: &component_name,
                 scope_id: &scope_id,
                 has_scoped,
+                slotted,
                 is_vapor,
                 template_is_ts,
                 experimental_self_component: experimental_options.self_component,
@@ -240,6 +236,7 @@ fn compile_sfc_inner(
                             scope_id: &scope_id,
                             apply_scope_id: has_scoped,
                             has_scoped,
+                            slotted,
                             is_ts: template_is_ts,
                             inline: false,
                             component_name: Some(&component_name),
@@ -277,6 +274,7 @@ fn compile_sfc_inner(
                             scope_id: &scope_id,
                             apply_scope_id: has_scoped,
                             has_scoped,
+                            slotted,
                             is_ts: template_is_ts,
                             inline: false,
                             component_name: Some(&component_name),
@@ -581,6 +579,7 @@ fn compile_sfc_inner(
                         scope_id: &scope_id,
                         apply_scope_id: has_scoped,
                         has_scoped,
+                        slotted,
                         is_ts: template_is_ts,
                         inline: false,
                         component_name: Some(&component_name),
@@ -617,6 +616,7 @@ fn compile_sfc_inner(
                         scope_id: &scope_id,
                         apply_scope_id: has_scoped,
                         has_scoped,
+                        slotted,
                         is_ts: template_is_ts,
                         inline: !script_output.separates_template(),
                         component_name: Some(&component_name),

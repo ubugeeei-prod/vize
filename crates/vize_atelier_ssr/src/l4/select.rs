@@ -28,6 +28,7 @@ pub(super) fn select_from_l2<'a, 'e>(
     artifact: &L2Artifact<'_, 'a>,
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
+    slotted: bool,
     admit: impl FnOnce() -> Result<TransformExpressions<'e>, LegacyReason>,
 ) -> SsrL4Selection {
     let s3 = vize_l2_to_l3::lower(allocator, artifact.root);
@@ -77,6 +78,7 @@ pub(super) fn select_from_l2<'a, 'e>(
         artifact.source,
         experimental.clone(),
     );
+    ctx.slotted = slotted;
     // The L2 program covers the whole template source, which starts at 0.
     ctx.begin_render(0);
     match emit::emit_plan(&mut ctx, &lowered.plan, &artifact.facts, &mut exprs) {

@@ -89,6 +89,7 @@ fn assert_parity(
             TemplateSyntaxMode::Standard,
             CustomElementMatcher::default(),
             experimental.clone(),
+            true,
             lane,
         );
         (std::format!("{errors:?}"), result)
@@ -121,6 +122,7 @@ fn selection(
             experimental,
             template_syntax: TemplateSyntaxMode::Standard,
             has_custom_elements: false,
+            slotted: true,
         },
     )
 }

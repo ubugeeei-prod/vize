@@ -54,6 +54,7 @@ pub fn compare_ssr_lanes(
                 experimental,
                 template_syntax: TemplateSyntaxMode::Standard,
                 has_custom_elements: false,
+                slotted: true,
             },
         );
         production::lane_label(&selection)
@@ -67,6 +68,7 @@ pub fn compare_ssr_lanes(
             TemplateSyntaxMode::Standard,
             CustomElementMatcher::default(),
             experimental.clone(),
+            true,
             lane,
         );
         SsrLaneOutput { errors, result }

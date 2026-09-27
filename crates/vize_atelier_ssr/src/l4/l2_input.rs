@@ -57,7 +57,7 @@ pub(super) fn select_l2_lane<'a>(
         diagnostics: 0,
     };
     let experimental = SsrCompilerExperimentalOptions::default();
-    select_from_l2(allocator, &artifact, options, &experimental, || {
+    select_from_l2(allocator, &artifact, options, &experimental, true, || {
         if options.croquis.is_some() || options.binding_metadata.is_some() || options.inline {
             return Err(LegacyReason::Options);
         }

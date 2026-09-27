@@ -3,7 +3,6 @@
 //!
 //! Split out of `lib.rs` so that module stays inside the per-file
 //! source-length budget.
-
 use super::{
     SfcCompileOptions, SfcScriptOutputMode, compile_sfc, compile_sfc_for_adapter, parse_sfc,
 };
@@ -191,6 +190,7 @@ const isRootSelected = ref(false)
             scope_id: "",
             apply_scope_id: false,
             has_scoped: false,
+            slotted: true,
             is_ts: true,
             inline: true,
             component_name: None,

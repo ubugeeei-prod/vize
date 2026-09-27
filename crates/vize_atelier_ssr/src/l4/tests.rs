@@ -17,6 +17,7 @@ fn select(source: &str, options: &SsrCompilerOptions) -> SsrL4Selection {
             experimental: &experimental,
             template_syntax: TemplateSyntaxMode::Standard,
             has_custom_elements: false,
+            slotted: true,
         },
     )
 }
@@ -148,6 +149,7 @@ fn a_projectable_croquis_summary_matches_the_walker() {
             TemplateSyntaxMode::Standard,
             CustomElementMatcher::default(),
             SsrCompilerExperimentalOptions::default(),
+            true,
             lane,
         );
         (format!("{errors:?}"), result.code)

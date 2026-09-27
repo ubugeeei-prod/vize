@@ -28,6 +28,7 @@ use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 pub(crate) struct SsrL4Request<'o> {
     pub(crate) options: &'o SsrCompilerOptions,
     pub(crate) experimental: &'o SsrCompilerExperimentalOptions,
+    pub(crate) slotted: bool,
     pub(crate) template_syntax: TemplateSyntaxMode,
     pub(crate) has_custom_elements: bool,
 }
@@ -202,6 +203,7 @@ fn lower_and_emit(
         &artifact,
         request.options,
         request.experimental,
+        request.slotted,
         || {
             if let Some(summary) = request.options.croquis.as_deref()
                 && !croquis::projectable(summary, request.options.binding_metadata.as_ref())

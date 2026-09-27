@@ -107,7 +107,7 @@ impl<'a> SsrCodegenContext<'a> {
             options,
             component_name,
             experimental_self_component: experimental_options.self_component,
-            slotted: experimental_options.slotted.unwrap_or(true),
+            slotted: true,
             source,
             out: EmitDocument::with_capacity(1024, experimental_options.source_map),
             indent_level: 0,

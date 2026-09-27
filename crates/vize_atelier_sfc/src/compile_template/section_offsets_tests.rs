@@ -68,6 +68,7 @@ fn test_slice_template_parts_matches_line_scanner() {
                     scope_id: "abc123",
                     apply_scope_id: false,
                     has_scoped: true,
+                    slotted: true,
                     is_ts: false,
                     inline,
                     component_name: Some("TestComp"),

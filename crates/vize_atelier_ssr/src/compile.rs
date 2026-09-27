@@ -33,6 +33,7 @@ pub fn compile_ssr_with_options<'a>(
         TemplateSyntaxMode::Standard,
         CustomElementMatcher::default(),
         SsrCompilerExperimentalOptions::default(),
+        true,
     )
 }
 
@@ -50,6 +51,7 @@ pub fn compile_ssr_with_vue_parser_quirks<'a>(
         TemplateSyntaxMode::Quirks,
         CustomElementMatcher::default(),
         SsrCompilerExperimentalOptions::default(),
+        true,
     )
 }
 
@@ -68,6 +70,7 @@ pub fn compile_ssr_with_template_syntax<'a>(
         template_syntax,
         CustomElementMatcher::default(),
         SsrCompilerExperimentalOptions::default(),
+        true,
     )
 }
 
@@ -87,6 +90,7 @@ pub fn compile_ssr_with_custom_elements_and_template_syntax<'a>(
         template_syntax,
         custom_elements,
         SsrCompilerExperimentalOptions::default(),
+        true,
     )
 }
 
@@ -108,6 +112,7 @@ pub fn compile_ssr_with_custom_elements_template_syntax_and_experimental_options
         template_syntax,
         custom_elements,
         experimental_options,
+        true,
     )
 }
 
@@ -128,6 +133,30 @@ pub fn compile_ssr_with_template_syntax_and_experimental_options<'a>(
         template_syntax,
         CustomElementMatcher::default(),
         experimental_options,
+        true,
+    )
+}
+
+/// Compile an SFC template with its own scoped slotted-style metadata.
+/// Existing direct-template entries retain Vue's default slotted behavior.
+#[doc(hidden)]
+pub fn compile_ssr_with_sfc_slotted_context<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    options: SsrCompilerOptions,
+    template_syntax: TemplateSyntaxMode,
+    custom_elements: CustomElementMatcher,
+    experimental_options: SsrCompilerExperimentalOptions,
+    slotted: bool,
+) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
+    compile_ssr_inner(
+        allocator,
+        source,
+        options,
+        template_syntax,
+        custom_elements,
+        experimental_options,
+        slotted,
     )
 }
 
@@ -138,6 +167,7 @@ fn compile_ssr_inner<'a>(
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
     experimental_options: SsrCompilerExperimentalOptions,
+    slotted: bool,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     #[cfg(feature = "davinci-differential")]
     let lane = crate::differential::production_lane();
@@ -150,6 +180,7 @@ fn compile_ssr_inner<'a>(
         template_syntax,
         custom_elements,
         experimental_options,
+        slotted,
         lane,
     )
 }
@@ -163,6 +194,10 @@ pub(crate) enum SsrLane {
     LegacyOnly,
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "private SFC metadata is separate from public options"
+)]
 pub(crate) fn compile_ssr_on_lane<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -170,6 +205,7 @@ pub(crate) fn compile_ssr_on_lane<'a>(
     template_syntax: TemplateSyntaxMode,
     custom_elements: CustomElementMatcher,
     experimental_options: SsrCompilerExperimentalOptions,
+    slotted: bool,
     lane: SsrLane,
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
@@ -204,6 +240,7 @@ pub(crate) fn compile_ssr_on_lane<'a>(
             &SsrL4Request {
                 options: &options,
                 experimental: &experimental_options,
+                slotted,
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
             },
@@ -240,12 +277,13 @@ pub(crate) fn compile_ssr_on_lane<'a>(
                     CompilerError::with_message(ErrorCode::ExtendPoint, diagnostic, None)
                 }));
             }
-            let codegen_ctx = SsrCodegenContext::new_with_experimental_options(
+            let mut codegen_ctx = SsrCodegenContext::new_with_experimental_options(
                 allocator,
                 &codegen_options,
                 source,
                 experimental_options,
             );
+            codegen_ctx.slotted = slotted;
             profile!("atelier.ssr.template.codegen", codegen_ctx.generate(&root))
         }
     };
