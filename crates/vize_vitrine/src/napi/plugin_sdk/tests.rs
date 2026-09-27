@@ -179,7 +179,7 @@ fn the_content_key_covers_the_plugin_code_version_and_file() {
     let base = spec(None, &demands);
     let key = content_key(TODOS, "Todos.vue", &base);
     assert_eq!(key.len(), 38);
-    assert_eq!(&key[..6], "s0.v1:");
+    assert_eq!(&key[..6], "l0.v2:");
     assert_eq!(content_key(TODOS, "Todos.vue", &base), key);
     let variants = [
         content_key(TODOS, "Other.vue", &base),

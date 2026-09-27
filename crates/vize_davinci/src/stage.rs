@@ -1,8 +1,8 @@
 //! Canonical Davinci stage names and their current crate spellings.
 //!
-//! Human-facing implementation names use `l0` through `l4`. Serialized
-//! artifact identifiers retain `s0` through `s4` so existing keys and wire
-//! documents keep their byte identity.
+//! Implementation names and artifact-key v2 use logical `l0` through `l4`.
+//! Pipeline selectors retain their separate `s0` through `s4` mapping;
+//! Emit/l4 does not imply a physical L4 crate.
 
 /// The stage a Davinci diagnostic came from.
 ///
@@ -36,16 +36,16 @@ impl Stage {
         }
     }
 
-    /// Stable schema identifier used in serialized artifacts and key hashes.
+    /// Canonical logical identifier used in artifact-key v2 hashes and Display.
     #[inline]
     #[must_use]
     pub const fn wire_id(self) -> &'static str {
         match self {
-            Stage::Source => "s0",
-            Stage::Surface => "s1",
-            Stage::Semantic => "s2",
-            Stage::Lowered => "s3",
-            Stage::Emit => "s4",
+            Stage::Source => "l0",
+            Stage::Surface => "l1",
+            Stage::Semantic => "l2",
+            Stage::Lowered => "l3",
+            Stage::Emit => "l4",
         }
     }
 
@@ -219,12 +219,12 @@ mod tests {
     }
 
     #[test]
-    fn wire_stage_identifiers_remain_s0_to_s4() {
-        assert_eq!(Stage::Source.wire_id(), "s0");
-        assert_eq!(Stage::Surface.wire_id(), "s1");
-        assert_eq!(Stage::Semantic.wire_id(), "s2");
-        assert_eq!(Stage::Lowered.wire_id(), "s3");
-        assert_eq!(Stage::Emit.wire_id(), "s4");
+    fn artifact_key_wire_identifiers_are_canonical_l0_to_l4() {
+        assert_eq!(Stage::Source.wire_id(), "l0");
+        assert_eq!(Stage::Surface.wire_id(), "l1");
+        assert_eq!(Stage::Semantic.wire_id(), "l2");
+        assert_eq!(Stage::Lowered.wire_id(), "l3");
+        assert_eq!(Stage::Emit.wire_id(), "l4");
     }
 
     #[test]

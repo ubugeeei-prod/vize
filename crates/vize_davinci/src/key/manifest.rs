@@ -122,9 +122,9 @@ impl CachedArtifact {
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
-            Self::SourceBlock => "s0.source-block",
-            Self::SurfacePage => "s1.surface-page",
-            Self::SemanticPage => "s2.page",
+            Self::SourceBlock => "l0.source-block",
+            Self::SurfacePage => "l1.surface-page",
+            Self::SemanticPage => "l2.page",
             Self::VirtualTsProjection => "projection.virtual-ts",
             Self::CorsaSession => "corsa.session",
             Self::PluginResult => "plugin.result",

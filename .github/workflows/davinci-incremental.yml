@@ -28,6 +28,25 @@ on:
       - "Cargo.lock"
       - "docs/davinci/plan/key-manifests.md"
       - ".github/workflows/davinci-incremental.yml"
+  pull_request:
+    branches: [main, davinci]
+    paths:
+      - "crates/vize_carton/src/hash.rs"
+      - "crates/vize_davinci/**"
+      - "crates/vize_l1/**"
+      - "crates/vize_l2/**"
+      - "crates/vize_l1_to_l2/**"
+      - "crates/vize_resident/**"
+      - "crates/vize_croquis/src/sfc/**"
+      - "crates/vize_croquis/src/croquis/alpha*"
+      - "crates/vize_croquis/src/croquis/alpha/**"
+      - "crates/vize_maestro/src/ide/completion/template/component_*"
+      - "crates/vize_maestro/src/ide/completion/template/component_interface/**"
+      - "tools/commands/davinci/incremental-equivalence*"
+      - "tools/commands/davinci/incremental-equivalence/**"
+      - "Cargo.lock"
+      - "docs/davinci/plan/key-manifests.md"
+      - ".github/workflows/davinci-incremental.yml"
   workflow_dispatch:
 
 concurrency:
@@ -74,7 +93,7 @@ jobs:
           shared-key: davinci-incremental-${{ matrix.platform.target }}
           cache-workspace-crates: "true"
       - name: Print and compare the TS-43 golden keys
-        run: cargo test -p vize_davinci --test artifact_keys --test key_manifests -- --nocapture
+        run: cargo test -p vize_davinci --test artifact_keys --test key_manifests --test hash_domains --test sfc_summary --test global_summary -- --nocapture
 
   incremental-equivalence:
     name: Incremental ≡ clean (TS-42)

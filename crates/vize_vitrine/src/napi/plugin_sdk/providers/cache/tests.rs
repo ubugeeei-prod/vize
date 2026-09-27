@@ -94,3 +94,85 @@ fn disk_paths_never_include_plugin_paths_or_arbitrary_key_tails() {
         Some(dir.path())
     );
 }
+
+fn migration_key() -> String {
+    use super::super::super::batch::PluginSpec;
+    super::super::super::plugin_cache::content_key_for_build(
+        "<template>é</template>\n",
+        "Migration.vue",
+        &PluginSpec {
+            name: "hash-migration-provider",
+            version: "1",
+            fingerprint: "fixed-code",
+            visit: None,
+            demands: &[],
+        },
+        &[],
+        "hash-migration-control",
+    )
+    .unwrap()
+}
+
+#[test]
+fn old_provider_keys_and_result_fingerprints_cannot_be_reused() {
+    let dir = tempfile::tempdir().unwrap();
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/tests/fixtures/hash-migration-v1.json"
+    )))
+    .unwrap();
+    assert_eq!(fixture["state"], "captured-old-source");
+    let old = fixture["provider"]
+        .as_str()
+        .expect("actual old provider key");
+    let old_result = fixture["providerResult"]
+        .as_str()
+        .expect("actual old result key");
+    let current = migration_key();
+    let (groups, output) = output();
+    assert!(old.starts_with("s0.v1:"));
+    assert!(current.starts_with("l0.v2:"));
+    assert_ne!(output.result_key, old_result);
+    let old_output = ProviderOutput {
+        values: output.values.clone(),
+        result_key: old_result.to_owned(),
+    };
+    ProviderCache::default().put(old, &old_output, Some(dir.path()));
+    assert!(
+        ProviderCache::default()
+            .get(&current, "tokens", &groups, Some(dir.path()))
+            .is_none()
+    );
+    std::fs::copy(
+        path(dir.path(), old).unwrap(),
+        path(dir.path(), &current).unwrap(),
+    )
+    .unwrap();
+    assert!(
+        ProviderCache::default()
+            .get(&current, "tokens", &groups, Some(dir.path()))
+            .is_none()
+    );
+    // A transplanted matching record key must still reject the old result digest.
+    ProviderCache::default().put(&current, &old_output, Some(dir.path()));
+    assert!(
+        ProviderCache::default()
+            .get(&current, "tokens", &groups, Some(dir.path()))
+            .is_none()
+    );
+    ProviderCache::default().put(&current, &output, Some(dir.path()));
+    let hit = ProviderCache::default()
+        .get(&current, "tokens", &groups, Some(dir.path()))
+        .unwrap();
+    assert_eq!(hit.values, output.values);
+    assert_eq!(hit.result_key, output.result_key);
+}
+
+#[test]
+#[ignore = "explicit old/current producer observation; not acceptance"]
+fn observe_provider_migration_keys() {
+    println!(
+        "HASH_CACHE_OBSERVATION {}",
+        serde_json::json!({"provider":migration_key(),"providerResult":output().1.result_key,"providerValues":output().1.values})
+    );
+}

@@ -249,3 +249,6 @@ impl ProviderHost {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod migration;

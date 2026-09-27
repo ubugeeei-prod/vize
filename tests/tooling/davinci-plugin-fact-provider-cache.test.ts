@@ -97,3 +97,43 @@ test("a corrupted provider table is recomputed before a consumer diagnostic cach
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("canonical provider result identity rejects a legacy digest with unchanged fact bytes", () => {
+  const baseline = JSON.parse(
+    readFileSync(path.join(root, "crates/vize_vitrine/tests/fixtures/hash-migration-v1.json"), "utf8"),
+  );
+  assert.equal(baseline.state, "captured-old-source");
+  assert.match(baseline.providerResult, /^s0\.v1:[a-f0-9]{32}$/);
+  const dir = mkdtempSync(path.join(tmpdir(), "vize-fact-provider-hash-migration-"));
+  try {
+    const first = run(dir, "red");
+    assert.match(first.provider.contentKey, /^l0\.v2:[a-f0-9]{32}$/);
+    assert.match(first.rule.contentKey, /^l0\.v2:[a-f0-9]{32}$/);
+    const file = readdirSync(dir).find((name) => name.startsWith("plugin-facts-"));
+    assert.ok(file);
+    const at = path.join(dir, file);
+    const entry = JSON.parse(readFileSync(at, "utf8"));
+    assert.deepEqual(entry.values, baseline.providerValues);
+    assert.notEqual(entry.result_key, baseline.providerResult);
+    const currentResult = entry.result_key;
+    entry.result_key = baseline.providerResult;
+    writeFileSync(at, JSON.stringify(entry));
+    const recovered = run(dir, "red");
+    assert.equal(recovered.calls, 2);
+    assert.equal(recovered.provider.cached, false);
+    assert.equal(recovered.rule.cached, true);
+    assert.equal(recovered.provider.contentKey, first.provider.contentKey);
+    assert.equal(recovered.rule.contentKey, first.rule.contentKey);
+    assert.deepEqual(recovered.diagnostics, first.diagnostics);
+    const rewritten = JSON.parse(readFileSync(at, "utf8"));
+    assert.deepEqual(rewritten.values, entry.values);
+    assert.equal(rewritten.result_key, currentResult);
+    const freshProcess = run(dir, "red");
+    assert.equal(freshProcess.calls, 0);
+    assert.equal(freshProcess.provider.cached, true);
+    assert.equal(freshProcess.rule.cached, true);
+    assert.deepEqual(freshProcess.diagnostics, first.diagnostics);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

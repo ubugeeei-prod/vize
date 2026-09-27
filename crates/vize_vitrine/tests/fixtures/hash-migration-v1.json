@@ -1,0 +1,13 @@
+{
+  "state": "pending-actual-old-source-capture",
+  "sourceRevision": null,
+  "buildStamp": "hash-migration-control",
+  "diagnostic": null,
+  "provider": null,
+  "providerResult": null,
+  "output": null,
+  "transform": null,
+  "providerValues": null,
+  "productionBaseRevision": "3bf16a50e0e8ad9aa5e6cafb2151e5340bc5e3c4",
+  "captureReceipt": null
+}

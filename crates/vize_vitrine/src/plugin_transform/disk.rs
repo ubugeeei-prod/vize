@@ -104,3 +104,62 @@ mod tests {
         assert_eq!(get(dir.path(), "key1"), None);
     }
 }
+
+#[cfg(test)]
+mod migration {
+    use super::super::{cache, schema::Identity};
+    use super::*;
+
+    fn current_key() -> String {
+        cache::key(
+            "<button class=\"legacy\">é</button>",
+            "Migration.vue",
+            "fixed-batch",
+            &Identity {
+                name: "hash-migration-transform".into(),
+                version: "1".into(),
+                fingerprint: "fixed-code".into(),
+                cache_inputs: Some(Vec::new()),
+            },
+            "fixed-config",
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn old_transform_records_miss_even_at_the_current_key_path() {
+        let dir = tempfile::tempdir().unwrap();
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/tests/fixtures/hash-migration-v1.json"
+        )))
+        .unwrap();
+        assert_eq!(fixture["state"], "captured-old-source");
+        let old = fixture["transform"]
+            .as_str()
+            .expect("actual old transform key");
+        let current = current_key();
+        assert!(old.starts_with("s0.v1:"));
+        assert!(current.starts_with("l0.v2:"));
+        let reply = Reply {
+            schema: 1,
+            edits: Vec::new(),
+        };
+        put(dir.path(), old, &reply);
+        assert_eq!(cache::get(&current, Some(dir.path())), None);
+        std::fs::copy(path(dir.path(), old), path(dir.path(), &current)).unwrap();
+        assert_eq!(cache::get(&current, Some(dir.path())), None);
+        put(dir.path(), &current, &reply);
+        assert_eq!(cache::get(&current, Some(dir.path())), Some(reply.clone()));
+        assert_eq!(get(dir.path(), &current), Some(reply));
+    }
+
+    #[test]
+    #[ignore = "explicit old/current producer observation; not acceptance"]
+    fn observe_transform_migration_key() {
+        println!(
+            "HASH_CACHE_OBSERVATION {}",
+            serde_json::json!({"transform":current_key()})
+        );
+    }
+}

@@ -55,7 +55,7 @@ impl fmt::Debug for Fingerprint {
 }
 
 /// Domain tag, distinct from artifact keys and manifest folds.
-const DOMAIN: &[u8] = b"vize.davinci.sfc-summary\0";
+const DOMAIN: &[u8] = b"vize.sfc-summary.v2\0";
 
 fn fingerprint(facet: Facet, name: &str, contract: &str) -> Fingerprint {
     digest(DOMAIN, facet.group(), facet.schema(), name, contract)

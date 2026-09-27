@@ -12,7 +12,7 @@ use vize_l0::String;
 use super::{Fingerprint, digest};
 use crate::fact::ids::{COMPONENT_USAGES, PROVIDE_INJECT};
 
-const DOMAIN: &[u8] = b"vize.davinci.global-summary\0";
+const DOMAIN: &[u8] = b"vize.global-summary.v2\0";
 
 const _: () = {
     assert!(COMPONENT_USAGES.index() == 4);

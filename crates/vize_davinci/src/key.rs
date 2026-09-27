@@ -54,13 +54,13 @@ pub use sink::KeySink;
 pub mod schema {
     /// L0 source block: block kind, header attributes as a sorted set, and
     /// the content bytes, each length-prefixed.
-    pub const SOURCE_BLOCK: u32 = 1;
+    pub const SOURCE_BLOCK: u32 = 2;
     /// L1 surface page: the lossless render, one length-prefixed piece per
     /// token slice (`leading`, then `text`), in canonical token order.
-    pub const L1_SURFACE: u32 = 1;
+    pub const L1_SURFACE: u32 = 2;
     /// L2 page: the Disegno folio `Full` form with every span rebased to
     /// the block start.
-    pub const L2_PAGE: u32 = 1;
+    pub const L2_PAGE: u32 = 2;
 }
 
 /// A stage artifact with a content key.
@@ -84,7 +84,7 @@ pub trait KeyedArtifact {
 ///
 /// Equal keys mean equal canonical pages (up to the 128-bit collision
 /// bound) under the same stage and recipe version. Keys are plain data:
-/// `Copy`, totally ordered, and printed as `s2.v1:<32 hex digits>`.
+/// `Copy`, totally ordered, and printed as `l2.v2:<32 hex digits>`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ArtifactKey {
     stage: Stage,

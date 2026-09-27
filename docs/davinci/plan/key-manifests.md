@@ -50,9 +50,9 @@
 
 | Artifact                | Content key stages | Ambient inputs                                                                                                                               | Consumer                |
 | ----------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
-| `s0.source-block`       | `l0`               | `toolchain-version`                                                                                                                          | resident tier (P5-4a)   |
-| `s1.surface-page`       | `l1`               | `toolchain-version`, `feature-flags`                                                                                                         | resident tier (P5-4a)   |
-| `s2.page`               | `l2`               | `project-config`, `toolchain-version`, `feature-flags`                                                                                       | resident tier (P5-4a)   |
+| `l0.source-block`       | `l0`               | `toolchain-version`                                                                                                                          | resident tier (P5-4a)   |
+| `l1.surface-page`       | `l1`               | `toolchain-version`, `feature-flags`                                                                                                         | resident tier (P5-4a)   |
+| `l2.page`               | `l2`               | `project-config`, `toolchain-version`, `feature-flags`                                                                                       | resident tier (P5-4a)   |
 | `projection.virtual-ts` | `l0`, `l2`         | `tsconfig-content`, `project-config`, `toolchain-version`, `feature-flags`                                                                   | projection reuse (P5-7) |
 | `corsa.session`         | none               | `project-identity`, `tsconfig-content`, `toolchain-version`, `corsa-version`, `feature-flags`, `platform`                                    | Corsa sessions (P5-8)   |
 | `plugin.result`         | `l0`               | `toolchain-version`, `feature-flags`, `plugin-identity`, `plugin-version`, `plugin-code`, `plugin-visits`, `plugin-demands`, `plugin-inputs` | JS plugin host (P5-13)  |
@@ -61,12 +61,12 @@
 
 ## Why each row reads what it reads
 
-- **`s0.source-block`** — the SFC split is a pure function of the file bytes
+- **`l0.source-block`** — the SFC split is a pure function of the file bytes
   and the splitter; only the toolchain can change it.
-- **`s1.surface-page`** — the lossless parse depends on the parser (toolchain)
+- **`l1.surface-page`** — the lossless parse depends on the parser (toolchain)
   and its switches (`SurfaceParseOptions`, a feature flag). It is
   platform-independent: TS-43 checks equal keys on Linux and macOS.
-- **`s2.page`** — the lowering also reads the project's Vue line
+- **`l2.page`** — the lowering also reads the project's Vue line
   (`LegacyCaps::for_version`), which is Vize configuration.
 - **`projection.virtual-ts`** — the virtual TypeScript a block projects to
   depends on the tsconfig (module and JSX settings) and the Vize config on top
