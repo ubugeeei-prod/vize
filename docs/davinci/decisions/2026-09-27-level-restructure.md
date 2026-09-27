@@ -324,3 +324,7 @@ remain unfinished; fresh Actions execution is required before merge.
 The same compiler record adds the measured complete diagnostic Result for
 #1416 and separates eight fix-linked profiles from two feature controls in
 the earlier ten-profile archive. Feature controls receive no fix-history credit.
+
+[SSR and Vapor history witness audit](./2026-09-27-compiler-target-history-audit.md)
+records 19 SSR and 20 Vapor inspected fixes, exact-output gaps and original
+option boundaries. Preserve shape/runtime checks alongside future raw byte pins.
