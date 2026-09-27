@@ -87,6 +87,16 @@ tracks a separate behavior-fix
 change needs its own corpus fixture and a reviewed valid post-fix contract;
 this preparation changes no production code.
 
+## Existing inventory shard
+
+The first source-built Actions run executed all 13 cases successfully, but
+the required tooling check detected a stale consumer migration surface
+shard. Regenerate the existing `linter/vize_patina.tsv` with the official
+Rust command: one test/dev L0 import row is added for `lint_history.rs`.
+The complete 19-file artifact check passes. Preserve this bounded shard
+while the separate CI work removes whole-repository ledgers and moves
+ledger checks from T0; it grants no product or native acceptance.
+
 ## Remaining work
 
 - Account for every actual historical behavior requirement, including
