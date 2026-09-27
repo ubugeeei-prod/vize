@@ -1,6 +1,6 @@
 // Runtime scenarios are retained in the full T1 suite. This is an explicit
-// inventory of tests using the real tsgo requirement or LspSession launch
-// capability, not a filename-prefix exclusion. Pure helper gates remain in T0.
+// inventory of real tsgo/LSP scenarios and source-built corpus execution,
+// not a filename-prefix exclusion. Pure helper gates remain in T0.
 export const mergeOnlyToolingTests = [
   "tests/tooling/canon-external-contracts.test.ts",
   "tests/tooling/canon-functional-slot-contracts.test.ts",
@@ -18,6 +18,7 @@ export const mergeOnlyToolingTests = [
   "tests/tooling/cli-check-diagnostics.test.ts",
   "tests/tooling/cli-check-json-shape.test.ts",
   "tests/tooling/cli-check-sub-package-dependency.test.ts",
+  "tests/tooling/differential-formatter-api-execution.test.mjs",
   "tests/tooling/lsp-alias-barrel-definition.test.ts",
   "tests/tooling/lsp-aliased-dependency-revalidation.test.ts",
   "tests/tooling/lsp-authored-script-diagnostics.test.ts",

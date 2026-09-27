@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -9,6 +10,8 @@ import {
   validateFormatterApiReport,
 } from "../differential/formatter-api.mjs";
 import { sha256 } from "../differential/manifest.mjs";
+import { observerSourceIdentity, OBSERVER_SOURCE } from "../differential/formatter-api-build.mjs";
+import { planToolingTests } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const manifestPath = path.join(
@@ -156,5 +159,57 @@ void test("API result validator requires complete bytes, actual pass chains and 
     const report = syntheticReport(loaded);
     mutate(report);
     assert.throws(() => validateFormatterApiReport(loaded, report, {}));
+  }
+});
+
+void test("source identity rejects untracked production Rust while keeping isolated test fixtures separate", (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "formatter-api-source-"));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  for (const [file, content] of [
+    ["Cargo.lock", "fixture lock\n"],
+    ["crates/vize_glyph/src/lib.rs", "// synthetic source identity fixture\n"],
+    [OBSERVER_SOURCE, "// synthetic observer identity fixture\n"],
+  ]) {
+    fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+    fs.writeFileSync(path.join(dir, file), content);
+  }
+  for (const argv of [
+    ["init", "--quiet"],
+    ["add", "."],
+    [
+      "-c",
+      "user.name=Fixture",
+      "-c",
+      "user.email=fixture@example.invalid",
+      "commit",
+      "--quiet",
+      "-m",
+      "fixture",
+    ],
+  ]) {
+    const result = spawnSync("git", argv, { cwd: dir, encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+  }
+  const identity = observerSourceIdentity(dir);
+  const fixture = path.join(dir, "crates/vize_glyph/tests/fixture.rs");
+  fs.mkdirSync(path.dirname(fixture), { recursive: true });
+  fs.writeFileSync(fixture, "// isolated test fixture\n");
+  assert.deepEqual(observerSourceIdentity(dir), identity);
+  const untracked = path.join(dir, "crates/vize_glyph/src/未登録.rs");
+  fs.writeFileSync(untracked, "// not a tracked source\n");
+  assert.throws(() => observerSourceIdentity(dir), /untracked Rust product sources/);
+  fs.rmSync(untracked);
+  assert.deepEqual(observerSourceIdentity(dir), identity);
+});
+
+void test("real Cargo/API execution remains in T1 while contract and unknown input checks stay in T0", () => {
+  const execution = "tests/tooling/differential-formatter-api-execution.test.mjs";
+  const contract = "tests/tooling/differential-formatter-api.test.mjs";
+  for (const paths of [[execution], ["unclassified/new-input.txt"], ["pnpm-lock.yaml"]]) {
+    const pr = planToolingTests(paths, { cwd: root });
+    assert(!pr.tests.includes(execution));
+    assert(pr.tests.includes(contract));
+    const merge = planToolingTests(paths, { tier: "merge", cwd: root });
+    assert(merge.tests.includes(execution) && merge.tests.includes(contract));
   }
 });

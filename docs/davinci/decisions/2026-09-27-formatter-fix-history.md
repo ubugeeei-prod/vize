@@ -144,7 +144,13 @@ checkout, records Cargo's selected artifact/profile/features, freezes its
 executable, probes complete actual options and compares raw stdout/stderr.
 SFC changed verdicts are retained separately from formatted bytes. CI uses its
 existing `ci` profile and target cache; local capture uses an isolated `dev`
-target. Missing rows, wrong APIs/options, artifact/source mismatch, output drift,
+target. Real Cargo execution stays in the explicit T1 tooling inventory; T0
+retains the pure contract tests and unknown-file selection remains fail-closed.
+T1/nightly/manual Actions retain the frozen executable, raw Cargo logs, receipt
+and complete API observations as artifacts, including failure observations.
+The source guard also rejects untracked non-test Rust files and Cargo manifests;
+NUL-separated Git paths keep that guard valid for non-ASCII filenames.
+Missing rows, wrong APIs/options, artifact/source mismatch, output drift,
 broken pass chains and invented native credit fail closed.
 
 One actual six-case local execution and three adversarial validator tests

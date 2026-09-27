@@ -29,16 +29,32 @@ function git(root, args) {
 }
 
 export function observerSourceIdentity(repoRoot) {
+  const untrackedSources = git(repoRoot, [
+    "ls-files",
+    "--others",
+    "--exclude-standard",
+    "-z",
+    "--",
+    "crates",
+  ])
+    .split("\0")
+    .filter((file) => file && !file.includes("/tests/") && /(?:\.rs|Cargo\.toml)$/.test(file));
+  assert.equal(
+    untrackedSources.length,
+    0,
+    "untracked Rust product sources cannot enter a source-built observation",
+  );
   const productionChanges = git(repoRoot, [
     "diff",
     "--name-only",
+    "-z",
     "HEAD",
     "--",
     "Cargo.lock",
     "Cargo.toml",
     "crates",
   ])
-    .split("\n")
+    .split("\0")
     .filter((file) => file && !file.includes("/tests/") && file !== OBSERVER_SOURCE);
   assert.equal(
     productionChanges.length,
@@ -53,6 +69,12 @@ export function observerSourceIdentity(repoRoot) {
   };
 }
 
+function toolchainVersion(program, root) {
+  const result = spawnSync(program, ["--version"], { cwd: root, encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout.trim();
+}
+
 export function validateObserverReceipt(receipt, repoRoot, binaryPath) {
   assert.equal(receipt.schema, "vize.formatter-api-build");
   assert.equal(receipt.version, 1);
@@ -65,6 +87,10 @@ export function validateObserverReceipt(receipt, repoRoot, binaryPath) {
   assert.equal(receipt.artifact.profile.test, false);
   assert.deepEqual(receipt.artifact.features, []);
   assert.equal(receipt.exitStatus, 0);
+  assert.deepEqual(receipt.toolchain, {
+    rustc: toolchainVersion("rustc", repoRoot),
+    cargo: toolchainVersion("cargo", repoRoot),
+  });
   assert.equal(receipt.options.length, 2);
   for (const [index, observation] of receipt.options.entries()) {
     assert.deepEqual(observation.argv, ["--defaults", ...(index ? ["--legacy-single-pass"] : [])]);
@@ -150,6 +176,10 @@ export function buildFormatterObserver({
     command: ["cargo", ...argv],
     profileName: profile,
     offline,
+    toolchain: {
+      rustc: toolchainVersion("rustc", repoRoot),
+      cargo: toolchainVersion("cargo", repoRoot),
+    },
     options,
     exitStatus: result.status,
     artifact: {

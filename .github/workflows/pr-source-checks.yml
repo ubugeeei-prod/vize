@@ -181,6 +181,13 @@ jobs:
       - name: Test tooling scripts
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
         run: vp run --workspace-root test:scripts
+      - name: Retain public formatter API corpus evidence
+        if: ${{ always() && github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: formatter-api-corpus-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/differential/formatter-api/
+          if-no-files-found: warn
 
   pr-playground-test:
     name: PR playground browser tests
