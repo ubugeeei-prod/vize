@@ -5,11 +5,11 @@ on:
   # and add merge_group in the same PR before making it ready to merge.
   pull_request:
     paths:
-      - .github/workflows/davinci-instruction-counts.yml
+      - .github/workflows/level-instruction-counts.yml
       - tools/benchmarks/crates/davinci_harness/**
       - tools/benchmarks/scripts/instruction-counts*.mjs
       - docs/davinci/plan/instruction-budgets.toml
-      - tests/tooling/davinci-instruction-counts.test.mjs
+      - tests/tooling/level-instruction-counts.test.mjs
   workflow_dispatch:
 
 permissions:
@@ -37,7 +37,7 @@ jobs:
           node-version-file: package.json
           run-install: false
       - name: Install pinned repository Rust
-        run: rustup toolchain install
+        run: rustup toolchain install 1.98.0 --profile minimal
       - name: Install Callgrind and matching client request headers
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
@@ -48,7 +48,7 @@ jobs:
           key: instruction-counts-v1
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Test instruction parser and gates
-        run: node --test tests/tooling/davinci-instruction-counts.test.mjs
+        run: node --test tests/tooling/level-instruction-counts.test.mjs
       - name: Test default harness and client request windows
         run: |
           cargo test --locked -p davinci_harness --lib

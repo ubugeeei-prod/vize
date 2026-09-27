@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
 import {
   baselineToml,
   checkMeasurement,
@@ -69,8 +70,17 @@ function collect(out, registry) {
   assert.equal(process.env.GITHUB_ACTIONS, "true", "baseline collection requires GitHub Actions");
   assert.ok(!fs.existsSync(out), `refusing to reuse measurement output directory ${out}`);
   fs.mkdirSync(out, { recursive: true });
-  const rustc = command("rustc", ["--version"]);
-  assert.ok(rustc.startsWith("rustc 1.98.0 "), "use rust-toolchain.toml's pinned Rust 1.98.0");
+  const toolchain = parseTomlLite(fs.readFileSync(path.join(root, "rust-toolchain.toml"), "utf8"))
+    .toolchain.channel;
+  assert.ok(
+    /^\d+\.\d+\.\d+$/.test(toolchain),
+    "repository Rust toolchain must be an exact version",
+  );
+  const rustc = command("rustc", [`+${toolchain}`, "--version"]);
+  assert.ok(
+    rustc.startsWith(`rustc ${toolchain} `),
+    "measurement must use the repository's pinned Rust",
+  );
   const valgrind = command("valgrind", ["--version"]);
   assert.equal(valgrind, "valgrind-3.22.0", "use the pinned Ubuntu 24.04 Valgrind version");
   const report = {
@@ -97,6 +107,7 @@ function collect(out, registry) {
   // One optimized Cargo build, then three fresh executions of every suite.
   // Never run Cargo or Criterion sampling inside Valgrind.
   const cargoArgs = [
+    `+${toolchain}`,
     "bench",
     "--locked",
     "--no-run",

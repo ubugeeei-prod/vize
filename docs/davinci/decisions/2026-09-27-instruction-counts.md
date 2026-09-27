@@ -6,6 +6,14 @@ confined to the benchmark harness, with an optional Linux x86_64 dependency
 on `valgrind-requests`. It adds no production pass, pipeline stage,
 serialization, or normal dependency to a level crate.
 
+New workflow and test filenames use `level-instruction-counts`. The harness,
+benchmark targets, fixture paths, and registered ids retain their existing
+names because this gate measures the pre-migration routines and must reconcile
+with their normative allocation registry. Those references do not introduce
+new product crate, module, type, or serialized benchmark identities. Their
+eventual renames belong to the ordered level migration, with measurements
+preserved across that move.
+
 The feature bypasses Criterion sampling. Each routine runs once per fresh
 suite process. Callgrind starts with instrumentation off. The harness starts
 instrumentation immediately before the routine and stops immediately after
