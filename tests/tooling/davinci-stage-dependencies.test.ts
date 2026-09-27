@@ -16,20 +16,20 @@ import {
 } from "./support/davinci-stage-dependencies.ts";
 
 const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>([
-  ["vize_davinci", [["vize_carton", "vize_l0"]]],
-  ["vize_l1", [["vize_carton", "vize_l0"]]],
-  ["vize_l2", [["vize_carton", "vize_l0"]]],
+  ["vize_davinci", [["vize_l0", null]]],
+  ["vize_l1", [["vize_l0", null]]],
+  ["vize_l2", [["vize_l0", null]]],
   [
     "vize_impeto",
     [
-      ["vize_carton", "vize_l0"],
+      ["vize_l0", null],
       ["vize_davinci", null],
     ],
   ],
   [
     "vize_l1_to_l2",
     [
-      ["vize_carton", "vize_l0"],
+      ["vize_l0", null],
       ["vize_l1", null],
       ["vize_impeto", null],
       ["vize_l2", null],
@@ -38,7 +38,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
   [
     "vize_l2_to_l3",
     [
-      ["vize_carton", "vize_l0"],
+      ["vize_l0", null],
       ["vize_l2", null],
       ["vize_impeto", "vize_l3"],
     ],
@@ -46,6 +46,7 @@ const aliases = new Map<string, ReadonlyArray<readonly [string, string | null]>>
 ]);
 
 const publishedDavinciStages = new Set([
+  "vize_l0",
   "vize_davinci_derive",
   "vize_davinci",
   "vize_l1",
@@ -75,6 +76,7 @@ test("Davinci crates import retained packages through stage aliases", () => {
 test("Davinci stage dependencies are one-way and acyclic", () => {
   const tiers = new Map<string, number>([
     ["vize_carton", 0],
+    ["vize_l0", 0.5],
     ["vize_davinci", 1],
     ["vize_l1", 1],
     ["vize_l2", 2],
@@ -84,12 +86,13 @@ test("Davinci stage dependencies are one-way and acyclic", () => {
   ]);
   const expectedEdges = new Map<string, string[]>([
     ["vize_carton", []],
-    ["vize_davinci", ["vize_carton"]],
-    ["vize_l1", ["vize_carton"]],
-    ["vize_l2", ["vize_carton", "vize_davinci"]],
-    ["vize_impeto", ["vize_carton", "vize_davinci"]],
-    ["vize_l1_to_l2", ["vize_carton", "vize_davinci", "vize_impeto", "vize_l1", "vize_l2"]],
-    ["vize_l2_to_l3", ["vize_carton", "vize_davinci", "vize_impeto", "vize_l2"]],
+    ["vize_l0", ["vize_carton"]],
+    ["vize_davinci", ["vize_l0"]],
+    ["vize_l1", ["vize_l0"]],
+    ["vize_l2", ["vize_davinci", "vize_l0"]],
+    ["vize_impeto", ["vize_davinci", "vize_l0"]],
+    ["vize_l1_to_l2", ["vize_davinci", "vize_impeto", "vize_l0", "vize_l1", "vize_l2"]],
+    ["vize_l2_to_l3", ["vize_davinci", "vize_impeto", "vize_l0", "vize_l2"]],
   ]);
 
   for (const [packageName, packageTier] of tiers) {
@@ -137,7 +140,7 @@ test("Davinci fuzz harness imports stage packages through aliases", () => {
   const manifest = readRepoFile("tests", "fuzz", "Cargo.toml");
   assert.match(
     manifest,
-    /^vize_l0 = \{ package = "vize_carton", path = "\.\.\/\.\.\/crates\/vize_carton" \}$/m,
+    /^vize_l0 = \{ path = "\.\.\/\.\.\/crates\/vize_l0" \}$/m,
   );
   assert.match(manifest, /^vize_l1_to_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l1_to_l2" \}$/m);
   assert.match(manifest, /^vize_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l2" \}$/m);

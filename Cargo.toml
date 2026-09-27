@@ -92,7 +92,7 @@ vize_impeto = { path = "crates/vize_impeto", version = "=0.429.1" }
 # Davinci stage aliases. These are the preferred implementation names for new
 # code; L0 still aliases the published Carton package until a compatibility
 # change can move it to a physical stage name.
-vize_l0 = { package = "vize_carton", path = "crates/vize_carton", version = "=0.429.1" }
+vize_l0 = { path = "crates/vize_l0", version = "=0.429.1" }
 vize_l1 = { path = "crates/vize_l1", version = "=0.429.1" }
 vize_l2 = { path = "crates/vize_l2", version = "=0.429.1" }
 vize_l3 = { package = "vize_impeto", path = "crates/vize_impeto", version = "=0.429.1" }

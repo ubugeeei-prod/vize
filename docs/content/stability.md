@@ -113,6 +113,7 @@ details are not compatibility surfaces.
 | `vize_l1`            | Experimental          | Lossless Vue-template tooling authors     | `vize_l1::{parse, SurfaceTree}`                  | No minimum; note breaks when practical |
 | `vize_l1_to_l2`      | Experimental          | Vue lowering and compiler backend authors | `vize_l1_to_l2::{lower, emit_dom}`               | No minimum; note breaks when practical |
 | `vize_l2`            | Experimental          | Dialect-neutral compiler IR authors       | `vize_l2::{op, verify, L2Folio}`                 | No minimum; note breaks when practical |
+| `vize_l0`            | Experimental          | Davinci level and pass authors            | `vize_l0::{id::NodeId, side_table::SideTable}`   | No minimum; note breaks when practical |
 | `vize_l2_to_l3`      | Experimental          | Impeto lowering and backend authors       | `vize_l2_to_l3::{lower, PartitionFacts}`         | No minimum; note breaks when practical |
 
 <!-- rust-crate-support:end -->

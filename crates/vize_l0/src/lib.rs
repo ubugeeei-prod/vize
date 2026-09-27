@@ -10,7 +10,10 @@
 //! one arena and dense `u32` ids, and nothing is serialized between levels.
 //! Dumps exist for `vize dump` and observers only.
 //!
-//! - [`span`], [`source`], [`arena`] — source text, byte spans and storage.
+//! - Source text, byte spans, the arena and compact storage are re-exported
+//!   from `vize_carton` (`Span`, `Allocator`, `String`, `FxHashMap`,
+//!   `line_index`, …) until #6834 moves them here. The neutral extension wire
+//!   arrives the same way (#6976).
 //! - [`id`] — [`NodeId`](id::NodeId) and [`AnalysisId`](id::AnalysisId).
 //! - [`side_table`] — analysis results stored beside a tree, keyed by id.
 //! - [`key`] — span-relative content keys for cached artifacts.
@@ -20,21 +23,22 @@
 //! - [`pass`] — the pass manager and its observers (remarks, fusion, timing).
 //! - [`fact`] — fact groups and the fact manager.
 //! - [`level`] — the level registry: L0–L4 and the conversions between them.
-//! - [`extension`] — placeholder for the neutral extension wire.
 
 #![no_std]
 
 extern crate alloc;
 
-pub mod arena;
+// Moved modules keep their `vize_l0::` paths (e.g. `vize_l0::FxHashMap`).
+extern crate self as vize_l0;
+
+// The storage foundation still lives in carton (#6834).
+pub use vize_carton::*;
+
 pub mod diag;
 pub mod dump;
-pub mod extension;
 pub mod fact;
 pub mod id;
 pub mod key;
 pub mod level;
 pub mod pass;
 pub mod side_table;
-pub mod source;
-pub mod span;

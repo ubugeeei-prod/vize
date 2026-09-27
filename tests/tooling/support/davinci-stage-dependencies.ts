@@ -111,17 +111,13 @@ export function assertL0AliasConsumer(options: {
   assert.ok(
     dependencies.some(
       (dependency) =>
-        dependency.kind === null &&
-        dependency.name === "vize_carton" &&
-        dependency.rename === "vize_l0",
+        dependency.kind === null && dependency.name === "vize_l0" && dependency.rename === null,
     ),
-    `${packageName} must import vize_carton as vize_l0 for L0 storage`,
+    `${packageName} must import L0 storage through vize_l0`,
   );
   assert.ok(
-    dependencies.every(
-      (dependency) => dependency.name !== "vize_carton" || dependency.rename === "vize_l0",
-    ),
-    `${packageName} must not depend on vize_carton through its physical name`,
+    dependencies.every((dependency) => dependency.name !== "vize_carton"),
+    `${packageName} must not depend on vize_carton directly`,
   );
 
   const offenders = [];
