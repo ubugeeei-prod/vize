@@ -35,6 +35,17 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 - Product crates with art names (croquis, patina, glyph, maestro, canon, carton, …) keep their names. `docs/davinci/` keeps its name as the program name.
 - The migration does not freeze other work. Move-only commits keep git rename detection working for in-flight fixes, renames are scripted (on a conflict, re-run the script on `main`), and PRs stay small.
 
+## Skeleton-first (2026-09-28)
+
+Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubugeeei-prod/vize/issues/6826#issuecomment-5857956448)).
+
+- **The whole L0–L4 picture is laid down as a compiling skeleton first.** Unimplemented bodies are `todo!()` inside modules that start with `#![expect(clippy::todo, reason = "skeleton: #NNNN")]`; the workspace still denies `clippy::todo` and `#[allow]` everywhere else. Skeleton code is not reachable from any product path.
+- **A CI ratchet counts those expectations per crate.** `tools/commands/ci/check-skeleton-todos.rs --check` (clippy job and `check:rust`) compares them with `tools/config/skeleton-todos.toml`; counts only go down, and a PR that fills a module lowers its line (`--write`).
+- **Priority:** L0 (`vize_l0`, [#6833](https://github.com/ubugeeei-prod/vize/issues/6833)), the L1 lexer (`vize_l1::markup`), L4 (`vize_l4`).
+- **`vize_l0` starts as its own package with no dependents.** Its modules are `id`, `side_table`, `key`, `dump` (trait, values, runtime), `diag` (diagnostic, witness), `pass` (manager; remarks, fusion and timing observers), `fact`, `level` (L0–L4 and the `vize_l1_to_l2`/`vize_l2_to_l3` conversions), `span`, `source`, `arena` and a doc-only `extension` placeholder (the neutral wire stays in `vize_carton::extension` per [#6976](https://github.com/ubugeeei-prod/vize/pull/6976) and moves with [#6834](https://github.com/ubugeeei-prod/vize/issues/6834)). It is `publish = false` until it replaces the `vize_l0` workspace alias, which still points at `vize_carton` until #6834.
+- **"Lightweight Davinci" means runtime cost and process weight.** Runtime: instruction counts, zero-cost unobserved paths, no reparses or serialization between levels ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868), [#6869](https://github.com/ubugeeei-prod/vize/issues/6869)). Process: no committed whole-repo ledgers, shorter PR-tier CI, short PR bodies and issue comments, no hash- or evidence-heavy verifiers where a normal test does.
+- **The dump/naming stack #6906 → #6907 → #6943 → #6944 → #6945 → #6946 → #6947 is collapsed into one PR** on `main`; the seven PRs are closed in its favour.
+
 ## `vize_davinci` is deleted
 
 Tracked in [#6833](https://github.com/ubugeeei-prod/vize/issues/6833) and [#6834](https://github.com/ubugeeei-prod/vize/issues/6834).

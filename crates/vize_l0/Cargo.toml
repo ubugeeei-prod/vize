@@ -1,0 +1,17 @@
+[package]
+name = "vize_l0"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "L0 - the Davinci foundation level: ids, side tables, keys, dumps, diagnostics, passes and facts"
+metadata.vize.stability = "experimental"
+readme = "README.md"
+# Skeleton (#6833): nothing depends on this package yet, and it is not
+# published until it replaces the `vize_l0` workspace alias of `vize_carton`
+# (#6834).
+publish = false
+
+[lints]
+workspace = true

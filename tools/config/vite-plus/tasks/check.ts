@@ -37,6 +37,7 @@ const directPackageCheckCommand = runPackageScriptDirectly("check", directCheckP
 const rustClippyCommand = [
   "cargo clippy --workspace -- -D warnings -D clippy::wildcard_imports",
   rustTool("ci/check-workspace-lints", "--check"),
+  rustTool("ci/check-skeleton-todos", "--check"),
 ].join(" && ");
 const strictRepoCheckCommand = rustTool("ci/check-warning-budget", "--", localVp, "check");
 const ciVizeAppCheckCommand = [

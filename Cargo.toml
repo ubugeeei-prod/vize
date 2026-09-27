@@ -28,6 +28,7 @@ members = [
   "crates/vize_l2_to_l3",
   "crates/vize_l1",
   "crates/vize_l4",
+  "crates/vize_l0",
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",

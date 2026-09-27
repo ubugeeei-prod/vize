@@ -127,6 +127,11 @@ the list of crates that have not joined yet from growing back.
 - **Reasoned suppressions.** Use `#[expect(lint, reason = "…")]` instead of `#[allow]`: a stale
   expectation fails the build, and each one records why it exists. When a lint only fires under
   some `cfg`, gate the expectation with `cfg_attr`.
+- **Skeleton `todo!()`.** Davinci level skeletons may leave bodies as `todo!()` inside a module
+  that starts with `#![expect(clippy::todo, reason = "skeleton: #NNNN")]`, and only where no
+  product path reaches them. `tools/commands/ci/check-skeleton-todos.rs --check` compares the
+  per-crate count with `tools/config/skeleton-todos.toml`; counts only go down (`--write` lowers
+  the baseline after you fill a module).
 
 ### Snapshot assertions in test targets
 
