@@ -41,7 +41,19 @@ Private source review and paired issue comment precede publication. Existing
 fixtures, current main's merged fixes and the separate private naming/performance
 work are preserved. No issue is closed by these skeleton declarations.
 
-Local verification: project Rust formatting, both decision-page formatting and
+Initial local verification: project Rust formatting, both decision-page formatting and
 whitespace checks pass. Every changed/new file is below 350 lines. No Cargo,
 compiler, Clippy or product-runtime execution ran locally; actual Actions
-compile/tests and the protected merge queue are pending publication.
+compile/tests initially awaited publication; the protected merge queue remains
+pending.
+
+At exact head `2f2b147250345c501c16c6010991463ecb2f904b`,
+[Actions36329738100](https://github.com/ubugeeei-prod/vize/actions/runs/36329738100)
+passes the Rust build/doctests, four Rust shards, JS and WASM/browser lanes.
+Tooling reports 4,648 passes, one failure and twelve skips: the Croquis matrix
+requires a new L1 shard because the new L0 `Span` name matches its naive grep
+lane five times. Actual resolved Croquis sites and imports remain absent.
+The unchanged generator produces only that new tracked shard (`Span`: resolved0,
+grep5); its exact check passes all33 files. No source name, dependency, gate or
+native numerator changes. The initial failure is retained; fresh exact-head
+Actions and measured full queue acceptance are still required.
