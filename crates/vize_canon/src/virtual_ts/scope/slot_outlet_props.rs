@@ -45,19 +45,41 @@ pub(super) struct SlotOutletChecks {
     by_scope: FxHashMap<u32, Vec<SlotOutlet>>,
     slots_type: String,
     infer: bool,
+    merge_payloads: bool,
 }
 
 impl SlotOutletChecks {
     pub(super) fn collect(summary: &Croquis, root: Option<&RootNode<'_>>) -> Self {
+        let by_scope = collect::collect_slot_outlets_by_scope(summary, root);
+        let infer = summary.macros.define_slots().is_none();
+        let mut static_name_counts = FxHashMap::default();
+        let mut dynamic_names = false;
+        let mut outlet_count = 0;
+        if infer {
+            for outlet in by_scope.values().flatten() {
+                outlet_count += 1;
+                if outlet.name_is_dynamic {
+                    dynamic_names = true;
+                } else {
+                    *static_name_counts.entry(outlet.name.clone()).or_insert(0) += 1;
+                }
+            }
+        }
+        let merge_payloads = static_name_counts.values().any(|count| *count > 1)
+            || (dynamic_names && outlet_count > 1);
         Self {
-            by_scope: collect::collect_slot_outlets_by_scope(summary, root),
+            by_scope,
             slots_type: slots_type_ref(summary),
-            infer: summary.macros.define_slots().is_none(),
+            infer,
+            merge_payloads,
         }
     }
 
     pub(super) fn emit_helpers(&self, ts: &mut String) {
         emit::emit_slot_outlet_helpers(ts, &self.by_scope);
+        if self.infers_slots() && self.merge_payloads {
+            inference::emit_inferred_slot_helpers(ts);
+        }
         if self.infer
             && self
                 .by_scope

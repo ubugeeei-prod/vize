@@ -292,3 +292,6 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 
 [Options API computed regressions](./2026-09-27-options-computed-regressions.md)
 record #6921 owner history, shared parse facts, setter guards and registered typechecker fixtures for #6879.
+
+[Canon slot outlet regression preparation](./2026-09-27-canon-slot-outlet-union.md)
+records #6922 owner history, unbounded inferred payloads, string widening and required full diagnostic proof.
