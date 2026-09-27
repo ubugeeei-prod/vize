@@ -28,6 +28,11 @@ macro_rules! fixture {
 
 const CASES: &[(&str, &str, &str)] = &[
     (
+        "forwarded-fallback-attrs",
+        fixture!("forwarded-fallback-attrs.vue"),
+        fixture!("forwarded-fallback-attrs.expected.txt"),
+    ),
+    (
         "forwarded-fallback-plain",
         fixture!("forwarded-fallback-plain.vue"),
         fixture!("forwarded-fallback.expected.txt"),
@@ -122,7 +127,9 @@ fn own_slotted_styles_preserve_complete_modules_and_raw_vue_html() {
             let (result, scoped) = compile(source, "Layout.vue", "layout");
             assert_eq!(result.code.as_str(), *expected, "whole module: {name}");
             json!({ "name": name, "source": source, "code": result.code,
-            "hasScoped": scoped, "compileResult": result })
+            "hasScoped": scoped, "compileResult": result,
+            "incomingScope": matches!(*name, "forwarded-fallback-plain"
+                | "forwarded-fallback-slotted" | "forwarded-fallback-attrs") })
         })
         .collect::<Vec<_>>();
     let input = json!({ "check": true, "pageSource": fixture!("page.vue"),

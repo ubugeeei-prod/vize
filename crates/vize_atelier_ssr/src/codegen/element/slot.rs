@@ -5,8 +5,8 @@ use super::props::{
     static_slot_outlet_prop_key, transform_slot_outlet_bound_prop_key,
 };
 use super::{
-    ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext, String,
-    ToCompactString, VNodePropEntry,
+    ComponentSlotChildren, ElementNode, ExpressionNode, PropNode, RuntimeHelper, SsrCodegenContext,
+    String, TemplateChildNode, ToCompactString, VNodePropEntry,
 };
 
 impl<'a> SsrCodegenContext<'a> {
@@ -79,6 +79,26 @@ impl<'a> SsrCodegenContext<'a> {
             out.push_str(", true");
         }
         out.push(')');
+    }
+
+    /// The real VNode already carries its creating component's scope ID.
+    pub(crate) fn vnode_element_scope_id(&self) -> Option<&'a str> {
+        if self.vnode_slot_fallback {
+            None
+        } else {
+            self.options.scope_id.as_deref()
+        }
+    }
+
+    pub(super) fn vnode_slot_fallback_expression(
+        &mut self,
+        children: &[TemplateChildNode<'a>],
+    ) -> String {
+        let previous = std::mem::replace(&mut self.vnode_slot_fallback, true);
+        let output =
+            self.vnode_component_slot_children_expression(&ComponentSlotChildren::Slice(children));
+        self.vnode_slot_fallback = previous;
+        output
     }
 
     pub(super) fn build_slot_outlet_props(&mut self, el: &ElementNode) -> String {

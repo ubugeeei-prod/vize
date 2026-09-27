@@ -6,10 +6,10 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
     default: _withCtx((_, _push, _parent, _scopeId) => {
       if (_push) {
         _ssrRenderSlot(_ctx.$slots, "default", {}, () => {
-          _push(`<b data-v-layout>fallback</b>`)
+          _push(`<b data-keep="authored" data-v-layout><i class="inner" data-v-layout>fallback</i></b>`)
         }, _push, _parent, _scopeId)
       } else {
-        return [_renderSlot(_ctx.$slots, "default", {}, () => [_createElementVNode("b", null, "fallback")], true)]
+        return [_renderSlot(_ctx.$slots, "default", {}, () => [_createElementVNode("b", { "data-keep": "authored" }, [_createElementVNode("i", { class: "inner" }, "fallback")])], true)]
       }
     }),
     _: 3 /* FORWARDED */

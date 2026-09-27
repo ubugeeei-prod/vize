@@ -39,8 +39,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         attached: &Attached<'_, '_>,
         key: Option<&str>,
     ) -> Result<String> {
-        let options = self.ctx.options;
-        let scope_id = options.scope_id.as_deref();
+        let scope_id = self.ctx.vnode_element_scope_id();
         if attached.is_empty() && key.is_none() {
             return Ok(match scope_id {
                 Some(scope_id) => {
@@ -113,7 +112,10 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let props = self.slot_props(attached)?;
         let mut out = cstr!("_renderSlot(_ctx.$slots, {name}, {props}");
         if !slot.fallback.ops.is_empty() {
-            let fallback = super::vnode::array(&self.vnode_region()?);
+            let previous = core::mem::replace(&mut self.ctx.vnode_slot_fallback, true);
+            let fallback = self.vnode_region();
+            self.ctx.vnode_slot_fallback = previous;
+            let fallback = super::vnode::array(&fallback?);
             out.push_str(", () => ");
             out.push_str(&fallback);
         }

@@ -523,7 +523,7 @@ impl<'a> SsrCodegenContext<'a> {
         // `<slot>{{ label }}</slot>` label in the vnode branch.
         if !el.children.is_empty() {
             out.push_str(", () => ");
-            out.push_str(&self.vnode_children_expression(&el.children));
+            out.push_str(&self.vnode_slot_fallback_expression(&el.children));
         }
         self.finish_vnode_slot_outlet(&mut out, !el.children.is_empty());
         out
@@ -670,7 +670,7 @@ impl<'a> SsrCodegenContext<'a> {
 
     fn build_plain_vnode_props_with_key(&mut self, el: &ElementNode, key: Option<&str>) -> String {
         if el.props.is_empty() && key.is_none() {
-            if let Some(scope_id) = self.options.scope_id.as_deref() {
+            if let Some(scope_id) = self.vnode_element_scope_id() {
                 return component_props_object(&[component_prop_entry(scope_id, "\"\"", false)]);
             }
             return "null".to_compact_string();
@@ -723,7 +723,7 @@ impl<'a> SsrCodegenContext<'a> {
             }
         }
 
-        if let Some(scope_id) = self.options.scope_id.as_deref() {
+        if let Some(scope_id) = self.vnode_element_scope_id() {
             entries.push(component_prop_entry(scope_id, "\"\"", false));
         }
 

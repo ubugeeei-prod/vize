@@ -9,7 +9,7 @@ function ssrRender(_ctx, _push, _parent, _attrs) {
           _push(`<b data-v-layout>fallback</b>`)
         }, _push, _parent, "data-v-layout-s" + _scopeId)
       } else {
-        return [_renderSlot(_ctx.$slots, "default", {}, () => [_createElementVNode("b", { "data-v-layout": "" }, "fallback")])]
+        return [_renderSlot(_ctx.$slots, "default", {}, () => [_createElementVNode("b", null, "fallback")])]
       }
     }),
     _: 3 /* FORWARDED */

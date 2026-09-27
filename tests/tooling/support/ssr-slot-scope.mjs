@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
-import Forwarder from "../../fixtures/sfc/ssr-slot-scope/forwarder.mjs";
+import Forwarder, { scopedForwarder } from "../../fixtures/sfc/ssr-slot-scope/forwarder.mjs";
 
 const oracle =
   process.env.VIZE_SLOT_SCOPE_ORACLE ??
@@ -17,6 +17,11 @@ const vue = require("vue");
 const compiler = require("vue/compiler-sfc");
 const server = require("vue/server-renderer");
 assert.match(vue.version, /^3\.5\./, "the slot scope oracle is Vue 3.5");
+const incomingScopeExpectations = JSON.parse(
+  fs.readFileSync(
+    new URL("../../fixtures/sfc/ssr-slot-scope/incoming.expected.json", import.meta.url),
+  ),
+);
 
 export async function observeSlotScopes(input) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-slot-scope-"));
@@ -62,12 +67,14 @@ export async function observeSlotScopes(input) {
 
   async function render(layout, page, slotMode) {
     const warnings = [];
-    layout.components = { Forwarder };
+    layout.components = {
+      Forwarder: slotMode === "incoming-empty" ? scopedForwarder(vue.renderSlot) : Forwarder,
+    };
     const app = vue.createSSRApp({
       render: () =>
         vue.h(layout, null, {
           default: () =>
-            slotMode === "empty"
+            slotMode === "empty" || slotMode === "incoming-empty"
               ? []
               : slotMode === "direct"
                 ? [
@@ -93,8 +100,13 @@ export async function observeSlotScopes(input) {
       const vueLayout = await load(reference.code, `stock-${index}`, scopeId, true);
       const currentLayout = await load(fixture.code, `current-${index}`, scopeId, false);
       const modes = [];
-      for (const slotMode of ["page", "direct", "empty"]) {
+      const slotModes = ["page", "direct", "empty"];
+      if (fixture.incomingScope) slotModes.push("incoming-empty");
+      for (const slotMode of slotModes) {
         const expected = await render(vueLayout, vuePage, slotMode);
+        if (slotMode === "incoming-empty") {
+          assert.deepEqual(expected, incomingScopeExpectations[fixture.name]);
+        }
         const current = await render(currentLayout, currentPage, slotMode);
         modes.push({
           slotMode,

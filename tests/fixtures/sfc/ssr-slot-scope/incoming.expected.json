@@ -1,0 +1,14 @@
+{
+  "forwarded-fallback-attrs": {
+    "html": "<!--[--><!--[--><b data-keep=\"authored\" data-v-layout data-v-forwarder-s><i class=\"inner\" data-v-layout data-v-forwarder-s>fallback</i></b><!--]--><!--]-->",
+    "warnings": []
+  },
+  "forwarded-fallback-plain": {
+    "html": "<!--[--><!--[--><b data-v-layout data-v-forwarder-s>fallback</b><!--]--><!--]-->",
+    "warnings": []
+  },
+  "forwarded-fallback-slotted": {
+    "html": "<!--[--><!--[--><b data-v-layout data-v-forwarder-s data-v-layout-s>fallback</b><!--]--><!--]-->",
+    "warnings": []
+  }
+}
