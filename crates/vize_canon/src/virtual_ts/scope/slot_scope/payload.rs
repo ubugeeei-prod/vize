@@ -14,25 +14,6 @@ type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (pr
 /// can select any string slot; a literal union cannot acquire unrelated slots.
 /// Optional slot provisioning must not add `undefined` to the payload itself.
 ///
-/// A slot the child renders from several `<slot>` outlets (in either template
-/// branch, inside and outside a `v-for`) is an intersection of one function
-/// per outlet, which TypeScript reads as an overloaded function: `infer` on
-/// it sees only the last overload, so the payload depended on template order
-/// and a bare `<slot name="x" />` erased every prop. `__VizeSlotPayloadOf`
-/// collects the parameter of every overload instead, and
-/// `__VizeSlotPayloadUnify` folds a union of
-/// payloads into what the slot function can receive at runtime: the props
-/// every outlet passes keep their unioned type, props only some outlets pass
-/// (or declare optional) become optional. A single payload, and an `any`
-/// payload, pass through unchanged.
-///
-/// TypeScript cannot infer over an unbounded overload list, so the pattern
-/// names sixteen signatures: a slot function with fewer overloads matches
-/// them repeatedly (the union removes the duplicates), and one with more
-/// contributes its last sixteen. Sixteen `<slot>` outlets of one name is far
-/// beyond any authored template; a signature without a props parameter
-/// counts as `{}`.
-///
 /// An untyped host (an unresolved tag, an `any` component) yields an *error
 /// type* rather than a declared `any`. Both leave the payload unchecked, but
 /// TypeScript never reports on values derived from an error type, where a
@@ -40,17 +21,7 @@ type __VizeSlotsFactory<C> = __VizeIsAny<C> extends true ? (component: C) => (pr
 /// unknown tag through a missing registry key, so its payloads are silent in
 /// exactly this way. The component itself stays `any`: listener and prop
 /// checks rely on conditional types an error type would collapse.
-const SLOT_PAYLOAD_HELPER: &str = "// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.\ntype __VizeSilentAny = {}[\"__vizeSilentAny\"];\n\
-type __VizeSlotPayloadParam<__A> = __VizeIsAny<__A> extends true ? __A : unknown extends __A ? {} : __A;\n\
-type __VizeSlotPayloadOf<__F> = __F extends { (props: infer __A0, ...args: any[]): any; (props: infer __A1, ...args: any[]): any; (props: infer __A2, ...args: any[]): any; (props: infer __A3, ...args: any[]): any; (props: infer __A4, ...args: any[]): any; (props: infer __A5, ...args: any[]): any; (props: infer __A6, ...args: any[]): any; (props: infer __A7, ...args: any[]): any; (props: infer __A8, ...args: any[]): any; (props: infer __A9, ...args: any[]): any; (props: infer __A10, ...args: any[]): any; (props: infer __A11, ...args: any[]): any; (props: infer __A12, ...args: any[]): any; (props: infer __A13, ...args: any[]): any; (props: infer __A14, ...args: any[]): any; (props: infer __A15, ...args: any[]): any } ? __VizeSlotPayloadParam<__A0> | __VizeSlotPayloadParam<__A1> | __VizeSlotPayloadParam<__A2> | __VizeSlotPayloadParam<__A3> | __VizeSlotPayloadParam<__A4> | __VizeSlotPayloadParam<__A5> | __VizeSlotPayloadParam<__A6> | __VizeSlotPayloadParam<__A7> | __VizeSlotPayloadParam<__A8> | __VizeSlotPayloadParam<__A9> | __VizeSlotPayloadParam<__A10> | __VizeSlotPayloadParam<__A11> | __VizeSlotPayloadParam<__A12> | __VizeSlotPayloadParam<__A13> | __VizeSlotPayloadParam<__A14> | __VizeSlotPayloadParam<__A15> : never;\n\
-type __VizeSlotPayloadKeys<__U> = __U extends any ? keyof __U : never;\n\
-type __VizeSlotPayloadOptionalKeys<__U> = __U extends any ? { [__K in keyof __U]-?: {} extends Pick<__U, __K> ? __K : never }[keyof __U] : never;\n\
-type __VizeSlotPayloadRequiredKeys<__U> = Exclude<keyof __U, __VizeSlotPayloadOptionalKeys<__U>>;\n\
-type __VizeSlotPayloadValue<__U, __K extends PropertyKey> = __U extends any ? (__K extends keyof __U ? __U[__K] : never) : never;\n\
-type __VizeSlotPayloadMerge<__U> = { [__K in __VizeSlotPayloadRequiredKeys<__U>]: __VizeSlotPayloadValue<__U, __K> } & { [__K in Exclude<__VizeSlotPayloadKeys<__U>, __VizeSlotPayloadRequiredKeys<__U>>]?: __VizeSlotPayloadValue<__U, __K> };\n\
-type __VizeSlotPayloadIntersection<__U> = (__U extends any ? (member: __U) => void : never) extends (member: infer __I) => void ? __I : never;\n\
-type __VizeSlotPayloadUnify<__P> = __VizeIsAny<__P> extends true ? __P : [__P] extends [__VizeSlotPayloadIntersection<__P>] ? __P : __VizeSlotPayloadMerge<__P>;\n\
-type __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : { [__K in keyof __S & __N]-?: __VizeSlotPayloadUnify<__VizeSlotPayloadOf<NonNullable<__S[__K]>>> }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\n";
+const SLOT_PAYLOAD_HELPER: &str = "// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.\ntype __VizeSilentAny = {}[\"__vizeSilentAny\"];\ntype __VizeSlotPayload<__S, __N> = __VizeIsAny<__S> extends true ? __VizeSilentAny : { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\n";
 
 /// Emit helpers only when a component owns an authored slot scope. Keeping
 /// unused aliases out also preserves `noUnusedLocals` declaration consumers.

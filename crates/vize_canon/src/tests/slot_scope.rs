@@ -20,7 +20,7 @@ const items = ['a', 'b']
 
     assert!(
         virtual_ts.contains(
-            "[__K in keyof __S & __N]-?: __VizeSlotPayloadUnify<__VizeSlotPayloadOf<NonNullable<__S[__K]>>>"
+            "[__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never"
         ),
         "dynamic slot names should select matching declared slot props:\n{virtual_ts}"
     );

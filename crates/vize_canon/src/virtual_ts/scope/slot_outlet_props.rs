@@ -46,6 +46,7 @@ pub(super) struct SlotOutletChecks {
     slots_type: String,
     static_name_counts: FxHashMap<CompactString, usize>,
     infer: bool,
+    merge_payloads: bool,
 }
 
 impl SlotOutletChecks {
@@ -53,25 +54,34 @@ impl SlotOutletChecks {
         let by_scope = collect::collect_slot_outlets_by_scope(summary, root);
         let infer = summary.macros.define_slots().is_none();
         let mut static_name_counts = FxHashMap::default();
+        let mut dynamic_names = false;
+        let mut outlet_count = 0;
         if infer {
-            for outlet in by_scope
-                .values()
-                .flatten()
-                .filter(|outlet| !outlet.name_is_dynamic)
-            {
-                *static_name_counts.entry(outlet.name.clone()).or_insert(0) += 1;
+            for outlet in by_scope.values().flatten() {
+                outlet_count += 1;
+                if outlet.name_is_dynamic {
+                    dynamic_names = true;
+                } else {
+                    *static_name_counts.entry(outlet.name.clone()).or_insert(0) += 1;
+                }
             }
         }
+        let merge_payloads = static_name_counts.values().any(|count| *count > 1)
+            || (dynamic_names && outlet_count > 1);
         Self {
             by_scope,
             static_name_counts,
             slots_type: slots_type_ref(summary),
             infer,
+            merge_payloads,
         }
     }
 
     pub(super) fn emit_helpers(&self, ts: &mut String) {
         emit::emit_slot_outlet_helpers(ts, &self.by_scope);
+        if self.infers_slots() && self.merge_payloads {
+            inference::emit_inferred_slot_helpers(ts);
+        }
         if self.infer
             && self
                 .by_scope

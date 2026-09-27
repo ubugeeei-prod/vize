@@ -10,27 +10,22 @@ fn generate(template: &str) -> vize_carton::String {
     generate_virtual_ts(&summary, None, Some(&root), 0).code
 }
 
-/// A parent's slot payload is resolved through the overload-aware helper, so a
-/// child that renders one named slot from several `<slot>` outlets (an
-/// intersection of one function per outlet) contributes every outlet's
-/// payload, not only the last overload's. The helper is declared exactly once,
-/// next to the payload alias that references it.
+/// External authored slot functions retain the existing main-line inference:
+/// their last signature supplies the payload. Generated inferred outlets have
+/// already been merged into one signature before this boundary.
 #[test]
-fn slot_payload_helper_collects_every_overload() {
+fn slot_payload_helper_keeps_authored_signature_fallback() {
     let code = generate(
         r#"<child><template #panel="{ viewMode }"><preview :viewMode="viewMode" /></template></child>"#,
     );
-    for alias in [
-        "type __VizeSlotPayloadOf<__F> = __F extends { (props: infer __A0, ...args: any[]): any;",
-        "type __VizeSlotPayloadUnify<__P> = __VizeIsAny<__P> extends true ? __P : [__P] extends [__VizeSlotPayloadIntersection<__P>] ? __P : __VizeSlotPayloadMerge<__P>;",
-        "__VizeSlotPayloadUnify<__VizeSlotPayloadOf<NonNullable<__S[__K]>>>",
-    ] {
-        assert_eq!(
-            code.matches(alias).count(),
-            1,
-            "the slot payload helper must be declared once and used by the payload alias:\n{code}"
-        );
-    }
+    assert_eq!(
+        code.matches(
+            "NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never"
+        )
+        .count(),
+        1,
+        "authored slot inference must keep its existing fallback:\n{code}"
+    );
 }
 
 /// Repeated same-named outlets retain string discriminants before merging.
