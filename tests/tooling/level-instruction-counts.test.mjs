@@ -18,6 +18,8 @@ import {
   validateMeasurement,
   METHODOLOGY_KEYS,
   BENCH_KEYS,
+  validateAllocatorSetup,
+  ALLOCATOR_PROTOCOL,
 } from "../../tools/benchmarks/scripts/instruction-counts-lib.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -29,7 +31,7 @@ const row = (instructions, window = "routine-return") => ({
   window,
 });
 const method = {
-  allocator: "counting-mimalloc",
+  allocator: ALLOCATOR_PROTOCOL,
   flags: "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
   libc: "glibc 2.39",
   profile: "ci-opt",
@@ -57,7 +59,7 @@ const dump = (trigger = "Client Request: parse_small", events = "Ir", total = "1
   `desc: Trigger: ${trigger}\npositions: line\nevents: ${events}\nsummary: ${total}\n` +
   `fn=caller\n1 40\ncfn=callee\ncalls=1 1\n1 60\nfn=callee\n1 60\ntotals: ${total}\n`;
 
-test("Callgrind parser uses exclusive totals, preserving named stage identity", () => {
+void test("Callgrind parser uses exclusive totals, preserving named stage identity", () => {
   assert.deepEqual(parseCallgrind(dump()), { bench_id: "parse_small", instructions: 100 });
   assert.equal(parseCallgrind(dump("Program termination", "Ir", "0")), null);
   assert.throws(() => parseCallgrind(dump("Program termination")), /leaked/);
@@ -71,7 +73,7 @@ test("Callgrind parser uses exclusive totals, preserving named stage identity", 
   assert.throws(() => parseCallgrind(dump("Periodic dump")), /unexpected trigger/);
 });
 
-test("named dump identities cannot disappear, duplicate, or introduce unregistered stages", () => {
+void test("named dump identities cannot disappear, duplicate, or introduce unregistered stages", () => {
   const line = `VIZE_INSTRUCTION_BENCH ${JSON.stringify({ bench_id: "parse_small", fixture: "small.vue", window: "routine-return" })}`;
   assert.equal(parseIdentities(`ordinary stderr\n${line}`).size, 1);
   assert.throws(() => parseIdentities(`${line}\n${line}`), /duplicate identity/);
@@ -83,7 +85,7 @@ test("named dump identities cannot disappear, duplicate, or introduce unregister
   assert.throws(() => reconcile(new Set(["parse_small"]), registry, "fixture"), /transform_small/);
 });
 
-test("only three identical complete measurements can produce a baseline", () => {
+void test("only three identical complete measurements can produce a baseline", () => {
   assert.equal(validateMeasurement(measurement(), registry).runs.length, 3);
   const unstable = measurement();
   unstable.runs[2].transform_small.instructions += 1;
@@ -101,7 +103,7 @@ test("only three identical complete measurements can produce a baseline", () => 
   }
 });
 
-test("provenance, fixture identity, stage window, and methodology fail closed", () => {
+void test("provenance, fixture identity, stage window, and methodology fail closed", () => {
   for (const mutate of [
     (r) => {
       r.source_commit = "main";
@@ -137,7 +139,7 @@ test("provenance, fixture identity, stage window, and methodology fail closed", 
   assert.throws(() => checkMeasurement(fixture, budgets()), /identity changed/);
 });
 
-test("ceilings enforce instruction regressions and permit improvements", () => {
+void test("ceilings enforce instruction regressions and permit improvements", () => {
   checkMeasurement(measurement(), budgets());
   const improvement = measurement();
   improvement.runs[0].parse_small.instructions = 99;
@@ -147,7 +149,7 @@ test("ceilings enforce instruction regressions and permit improvements", () => {
   assert.throws(() => checkMeasurement(regression, budgets()), /transform_small: 201 > 200/);
 });
 
-test("ratchet rejects increased or removed ceilings, including a freshly edited baseline", () => {
+void test("ratchet rejects increased or removed ceilings, including a freshly edited baseline", () => {
   const lowered = budgets();
   lowered.instruction.parse_small.instructions = 99;
   ratchetBudgets(lowered, budgets());
@@ -159,7 +161,7 @@ test("ratchet rejects increased or removed ceilings, including a freshly edited 
   assert.throws(() => ratchetBudgets(removed, budgets()), /dropped: parse_small/);
 });
 
-test("measured TOML round-trips strictly and CLI refuses a missing baseline", () => {
+void test("measured TOML round-trips strictly and CLI refuses a missing baseline", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "instruction-budget-test-"));
   try {
     const baseline = path.join(temporary, "budgets.toml");
@@ -192,7 +194,7 @@ test("measured TOML round-trips strictly and CLI refuses a missing baseline", ()
   }
 });
 
-test("synthetic fixture digests also track included source fixtures", () => {
+void test("synthetic fixture digests also track included source fixtures", () => {
   const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "instruction-identity-test-"));
   try {
     const source = path.join(temporary, "bench.rs");
@@ -207,7 +209,7 @@ test("synthetic fixture digests also track included source fixtures", () => {
   }
 });
 
-test("the independent JSON schema preserves the gate's strict field contract", () => {
+void test("the independent JSON schema preserves the gate's strict field contract", () => {
   const schema = JSON.parse(
     fs.readFileSync(
       path.join(
@@ -225,4 +227,29 @@ test("the independent JSON schema preserves the gate's strict field contract", (
   assert.equal(bench.properties.instructions.maximum, Number.MAX_SAFE_INTEGER);
   assert.equal(schema.properties.runs.minItems, 3);
   assert.equal(schema.properties.runs.maxItems, 3);
+});
+
+void test("allocator setup requires actual reservation and exactly one completed preinitialization", () => {
+  const log =
+    "mimalloc: option 'reserve_os_memory': 131072 KiB\n" +
+    "mimalloc: option 'purge_delay': -1 \n" +
+    "mimalloc: reserved 131072 KiB memory\n" +
+    'VIZE_INSTRUCTION_ALLOCATOR {"preinitialized_bytes":67108864}\n';
+  validateAllocatorSetup(log);
+  assert.throws(
+    () => validateAllocatorSetup(log.replace("reserved 131072", "failed to reserve 131072")),
+    /reservation did not succeed/,
+  );
+  assert.throws(() => validateAllocatorSetup(log.replace("67108864", "1")));
+  assert.throws(
+    () =>
+      validateAllocatorSetup(
+        log + 'VIZE_INSTRUCTION_ALLOCATOR {"preinitialized_bytes":67108864}\n',
+      ),
+    /one allocator/,
+  );
+  assert.throws(
+    () => validateAllocatorSetup(log.replace("purge_delay': -1", "purge_delay': 1000")),
+    /purge option changed/,
+  );
 });

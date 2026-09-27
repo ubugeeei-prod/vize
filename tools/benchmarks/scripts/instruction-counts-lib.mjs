@@ -16,6 +16,7 @@ export const METHODOLOGY_KEYS = [
   "window_protocol",
 ];
 export const BENCH_KEYS = ["fixture", "fixture_sha256", "instructions", "window"];
+export const ALLOCATOR_PROTOCOL = "counting-mimalloc-reserve128m-preinit64m-purgeoff-v1";
 const HASH = /^[a-f0-9]{64}$/;
 
 function fields(value, keys, where) {
@@ -41,7 +42,7 @@ export function validateMethodology(value) {
   }
   assert.equal(value.target, "x86_64-unknown-linux-gnu", "measurement target must be Linux x86_64");
   assert.equal(value.profile, "ci-opt", "measurement profile must be ci-opt");
-  assert.equal(value.allocator, "counting-mimalloc", "measurement allocator changed");
+  assert.equal(value.allocator, ALLOCATOR_PROTOCOL, "measurement allocator changed");
   assert.equal(
     value.window_protocol,
     "callgrind-client-call-boundary-v1",
@@ -52,6 +53,22 @@ export function validateMethodology(value) {
     "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
     "measurement flags changed",
   );
+}
+
+// Check the allocator's runtime output, not merely the requested environment.
+// The harness emits its marker only after the allocator-only range is dropped
+// outside every Callgrind window. Reservation failure cannot publish a baseline.
+export function validateAllocatorSetup(stderr) {
+  assert.match(
+    stderr,
+    /option 'reserve_os_memory': 131072 KiB/,
+    "allocator reservation option missing",
+  );
+  assert.match(stderr, /option 'purge_delay': -1\s/, "allocator purge option changed");
+  assert.match(stderr, /reserved 131072 KiB memory/, "allocator reservation did not succeed");
+  const markers = [...stderr.matchAll(/^VIZE_INSTRUCTION_ALLOCATOR (.+)$/gm)];
+  assert.equal(markers.length, 1, "expected one allocator preinitialization marker");
+  assert.deepEqual(JSON.parse(markers[0][1]), { preinitialized_bytes: 67108864 });
 }
 
 export function validateBench(value, id) {

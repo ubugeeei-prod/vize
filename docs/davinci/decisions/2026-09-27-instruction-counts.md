@@ -46,6 +46,30 @@ simulation are disabled. Reports name the exact Rust/Valgrind/glibc versions,
 source commit, workflow run, fixture digest and window kind. CPU, package and
 kernel details are retained in a separate environment artifact for diagnosis.
 
+The next Linux [run 36304195926](https://github.com/ubugeeei-prod/vize/actions/runs/36304195926)
+completed all 100 probes in all three executions, with 98 identical. The
+stress-interpolation analysis and large Vapor compilation differed by 457
+instructions. Comparing exclusive per-function costs attributed the complete
+delta to mimalloc's lazy page-map submap allocation and its OS allocation
+calls; compiler-stage costs matched. Randomized allocator address placement
+can move this initialization between probes. The validator rejected the run
+and emitted no candidate budgets.
+
+The allocator protocol is therefore explicitly
+`counting-mimalloc-reserve128m-preinit64m-purgeoff-v1`: reserve 128 MiB at
+process startup, allocate and drop a 64 MiB byte-buffer capacity in harness
+initialization before any measurement, and disable time-based purging. The
+large allocator-only allocation registers its address range with the lazy
+page map. No product routine is executed as warmup. The counting allocator
+and measured stage work are unchanged. The driver clears inherited mimalloc
+options, requests verbose runtime diagnostics, and requires the allocator's
+actual 131072 KiB reservation and option values plus the completed harness
+preinitialization marker in each process's raw log. Failure of that setup
+fails collection. Identical counts in three executions remain mandatory;
+these settings alone are not proof of stability. The pinned allocator
+source is [libmimalloc-sys 0.1.49](https://docs.rs/crate/libmimalloc-sys/0.1.49/source/c_src/mimalloc/v3/src/),
+specifically `init.c`, `arena.c`, and `page-map.c`.
+
 The initial measurement must include all currently registered allocation
 benchmarks. The issue's original 102-row count was a snapshot; the current
 registry has 100 rows. Registry reconciliation owns the count and catches

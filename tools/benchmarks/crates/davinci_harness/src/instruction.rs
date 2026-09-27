@@ -53,6 +53,19 @@ pub fn initialize() {
             valgrind_requests::valgrind::running_on_valgrind() > 0,
             "instruction measurements must run under Valgrind"
         );
+        // Reserve is configured before process startup by the driver. Register
+        // this allocator-only range before any window so its lazy page-map
+        // submaps do not move between product probes with randomized addresses.
+        // No product routine is run as warmup, and the allocation is dropped
+        // while instrumentation is still off.
+        const PREINITIALIZED_BYTES: usize = 64 * 1024 * 1024;
+        let buffer = Vec::<u8>::with_capacity(PREINITIALIZED_BYTES);
+        assert_eq!(buffer.capacity(), PREINITIALIZED_BYTES);
+        drop(core::hint::black_box(buffer));
+        eprintln!(
+            "VIZE_INSTRUCTION_ALLOCATOR {}",
+            serde_json::json!({"preinitialized_bytes": PREINITIALIZED_BYTES})
+        );
     }
     #[cfg(not(all(
         feature = "instruction-counts",
@@ -122,7 +135,11 @@ fn measure_with<T, C: Client>(client: &C, id: &CStr, routine: impl FnOnce() -> T
 // instrumented block. This fixed benchmark-only overhead is in every budget.
 #[cfg(any(
     test,
-    all(feature = "instruction-counts", target_os = "linux", target_arch = "x86_64")
+    all(
+        feature = "instruction-counts",
+        target_os = "linux",
+        target_arch = "x86_64"
+    )
 ))]
 #[inline(never)]
 fn run_once<T>(routine: impl FnOnce() -> T) -> T {

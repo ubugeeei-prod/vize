@@ -16,6 +16,8 @@ import {
   ratchetBudgets,
   reconcile,
   validateMeasurement,
+  validateAllocatorSetup,
+  ALLOCATOR_PROTOCOL,
 } from "./instruction-counts-lib.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -88,7 +90,7 @@ function collect(out, registry) {
     source_commit: command("git", ["rev-parse", "HEAD"]),
     recorded_run: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
     methodology: {
-      allocator: "counting-mimalloc",
+      allocator: ALLOCATOR_PROTOCOL,
       flags: "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
       libc: command("getconf", ["GNU_LIBC_VERSION"]),
       profile: "ci-opt",
@@ -136,6 +138,15 @@ function collect(out, registry) {
     assert.equal(matches.length, 1, `missing or duplicate build artifact ${pkg}/${bench}`);
     return { pkg, bench, source, executable: matches[0].executable };
   });
+  const measureEnv = Object.fromEntries(
+    Object.entries(process.env).filter(([key]) => !key.toUpperCase().startsWith("MIMALLOC_")),
+  );
+  Object.assign(measureEnv, {
+    VIZE_INSTRUCTION_COUNTS: "1",
+    MIMALLOC_RESERVE_OS_MEMORY: "128MiB",
+    MIMALLOC_PURGE_DELAY: "-1",
+    MIMALLOC_VERBOSE: "1",
+  });
   for (let run = 1; run <= 3; run += 1) {
     const rows = {};
     const runDir = path.join(out, `run-${run}`);
@@ -157,7 +168,7 @@ function collect(out, registry) {
           cwd: root,
           encoding: "utf8",
           maxBuffer: 64 * 1024 * 1024,
-          env: { ...process.env, VIZE_INSTRUCTION_COUNTS: "1" },
+          env: measureEnv,
         },
       );
       fs.writeFileSync(`${prefix}.stderr`, measured.stderr ?? "");
@@ -167,6 +178,7 @@ function collect(out, registry) {
         0,
         `Valgrind failed ${suite.pkg}/${suite.bench}: ${measured.stderr}`,
       );
+      validateAllocatorSetup(measured.stderr);
       const identities = parseIdentities(measured.stderr);
       const dumps = new Map();
       for (const file of fs
