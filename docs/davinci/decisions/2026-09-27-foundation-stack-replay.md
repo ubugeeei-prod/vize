@@ -66,7 +66,40 @@ migration (19 files), rule parity and storage summary checks passed without
 regeneration. No derived cross-count change was necessary. The central record
 retains current CI, Nuxt and SSR decisions and is 347 lines at this layer.
 
-TODO: replay stage paths after this layer, publish only after the CI priority
-is resolved, mirror decisions on the owning issues, and validate fresh
-exact-head Actions and merge-group results. Three legacy exceptions remain;
-#6831 and #6832 stay open. No full local production build ran.
+## Stage path layer
+
+The stage move has 130 R100 paths in its own move-only commit. References,
+authored playground import and guarded Rust test registration follow in
+separate commits. The four patches preserve their full stable patch ids:
+
+| Original    | Replay      | Stable patch id                            |
+| ----------- | ----------- | ------------------------------------------ |
+| `26c0ae4dd` | `ccf970179` | `bcdfccea2de28de32cc21cb4f03deecd54af772e` |
+| `985a9a81c` | `cc5c908e7` | `210773f81ddfc4ef9b932292393330d61f4e29be` |
+| `9eeea29b1` | `4f40c0741` | `ecc24ddc91212d231b9aa51009afd24bf748618c` |
+| `9a0d6219`  | `f8292e382` | `085277b3ee7ff5ca50ee5e824c9f343e7ffa6882` |
+
+Existing dependency, stage, workflow, stability, module and storage suites
+passed all 73 tests on this layer. The rename driver's verify mode reports
+zero remaining reference rewrites. All four inventory checks passed without
+regeneration. Actual locked/offline metadata resolves 38 workspace packages
+and 782 targets; the current main adds three regression targets compared
+with the old stack's 779. The single `davinci_l2_filters` target still binds
+`tests/l2_filters.rs` behind the original `legacy` feature; no duplicate
+unguarded `l2_filters` target is registered. An initial manual probe guessed
+the wrong feature; the corrected probe compares the original manifest.
+
+The final tree differs from original #6907 only by the repaired CI/main
+changes and this proof. All such non-overlap files match the current CI
+parent byte-for-byte. Parent/child overlap is limited to the Check workflow
+and central record. Parsed Check YAML equals the exact three-way semantic
+composition of old CI `de61316b9`, original #6907 `9a0d6219` and repaired CI
+`1065e2dcc`; stacked-PR handling, full merge-group suites and required gates
+are preserved. Central decision details moved verbatim to this companion;
+current main's Nuxt, SSR and CI records remain intact.
+
+TODO: publish the three layers after CI priority is resolved, mirror their
+decisions on #6831/#6832 and validate fresh exact-head Actions and actual
+merge-group results. No local full production build, browser/WASM run or
+new native acceptance is claimed. Three legacy exceptions remain. Naming,
+serialized vocabulary, CLI dump and the later restructure stay unfinished.
