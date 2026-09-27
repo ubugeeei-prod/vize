@@ -16,9 +16,21 @@ retained: policy changes request every selected source lane as well as the
 unconditional dependency gate. The old docs-only test expectation changes
 accordingly. Four comment lines in the Check workflow are removed or condensed
 to offset the four declaration-gate lines under the source350 growth ratchet.
-Other workflow semantics retain the new parent's exact parsed values.
+Other workflow semantics retain the new parent's exact parsed values, apart
+from the portability command's physical `vize_l3` package spelling.
 
-TODO: record fresh composed source proofs below. The parent owns publication,
+Fresh composition evidence: 95 existing dependency, package identity, workflow,
+module, storage and stability controls pass (94 in the initial composed run,
+then the corrected policy expectation and five aggregate controls pass).
+Actual locked/offline metadata resolves 38 workspace packages and 782 targets;
+all Vize package versions remain `0.429.1`. Cargo formatting, the source350
+growth ratchet, whitespace and all four inventories pass without regeneration.
+The path driver verifies zero pending rewrites. Parsed Check YAML equals the
+CI parent plus the declaration gate, aggregate dependency and physical L3
+portability spelling. The package, shard and stage moves remain 56, one and
+130 R100 paths in separate move-only commits.
+
+TODO: the parent owns publication,
 exact-head Actions and actual merge-queue proof. A prepared or draft layer is
 not a successful CI-first main merge. #6831 retains three legacy exceptions;
 #6832 retains its later naming and shared-production-generator work.
