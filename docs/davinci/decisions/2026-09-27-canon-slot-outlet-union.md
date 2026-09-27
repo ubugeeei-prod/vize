@@ -30,6 +30,10 @@ typechecker fixture history [#6879](https://github.com/ubugeeei-prod/vize/issues
   main source again. No new snapshot hashes are invented. Fresh Rust snapshot
   execution remains required in Actions.
 - Test registration moves remain separate commits; source budgets are unchanged.
+- The registered CLI corpus retains authored bytes and diagnostic positions.
+  Its exact directory joins the existing formatter-sensitive fixture policy
+  after fresh source Actions reported ten formatting-only failures. Lint,
+  assertion and source-length policies remain fully enforced.
   The [registered CLI corpus](../../../tests/fixtures/typechecker/slot-outlet-union/README.md)
   preserves the original four inputs byte-exactly and adds seventeen/eighteen
   positive controls, first/last negative controls, optional-key, single and strict repeated-static string checks.
