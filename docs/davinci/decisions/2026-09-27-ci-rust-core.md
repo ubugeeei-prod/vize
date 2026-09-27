@@ -119,4 +119,4 @@ require T1 metadata and complete unfiltered real-TSGO runtime execution.
 
 The required-props child extends the exact Canon group only with the present
 `required_props_keep_exact_unicode_diagnostics` test. Its complete 24-row fixture
-requires T1 metadata and unchanged full Cargo runtime execution.
+requires T1 metadata and complete unfiltered real-TSGO runtime execution.
