@@ -36,9 +36,13 @@ production fact adoption, change compatibility waivers or complete a product
 migration. The generated artifact always describes its own validated checkout;
 dated counts in records remain dated evidence.
 
-The `check-davinci-inventories` composite action keeps all source witness
+The `check-level-inventories` composite action keeps all source witness
 commands in the owning Check job, generates and checks the bundle, and uploads
 it even when a later inventory command fails. The inventory step retains its
 current pull-request, push and merge-group condition. Moving generation to the
 full merge-queue, nightly and release tiers is tracked separately in #6864;
 this artifact change does not remove current PR inventory coverage.
+
+The inventory action directory is `check-level-inventories`, following the
+level-only naming rule. The move is isolated from its caller updates. Existing
+check display names and artifact paths retain their published contract.

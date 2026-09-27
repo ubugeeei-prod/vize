@@ -76,7 +76,7 @@ jobs:
           run-install: false
       - name: Check Davinci source inventories
         if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group' }}
-        uses: ./.github/actions/check-davinci-inventories
+        uses: ./.github/actions/check-level-inventories
       - uses: ./.github/actions/setup-js-check-runtime
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
