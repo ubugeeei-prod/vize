@@ -81,7 +81,7 @@ pub const CONVERSIONS: &[Conversion] = &[
 
 #[cfg(test)]
 mod tests {
-    use super::{Level, CONVERSIONS};
+    use super::{CONVERSIONS, Level};
 
     #[test]
     fn ids_round_trip() {
