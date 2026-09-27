@@ -74,10 +74,10 @@ separate commits. The four patches preserve their full stable patch ids:
 
 | Original    | Replay      | Stable patch id                            |
 | ----------- | ----------- | ------------------------------------------ |
-| `26c0ae4dd` | `ccf970179` | `bcdfccea2de28de32cc21cb4f03deecd54af772e` |
-| `985a9a81c` | `cc5c908e7` | `210773f81ddfc4ef9b932292393330d61f4e29be` |
-| `9eeea29b1` | `4f40c0741` | `ecc24ddc91212d231b9aa51009afd24bf748618c` |
-| `9a0d6219`  | `f8292e382` | `085277b3ee7ff5ca50ee5e824c9f343e7ffa6882` |
+| `26c0ae4dd` | `11eb7d5c7` | `bcdfccea2de28de32cc21cb4f03deecd54af772e` |
+| `985a9a81c` | `6edd18882` | `210773f81ddfc4ef9b932292393330d61f4e29be` |
+| `9eeea29b1` | `e27928f33` | `ecc24ddc91212d231b9aa51009afd24bf748618c` |
+| `9a0d6219`  | `081120632` | `085277b3ee7ff5ca50ee5e824c9f343e7ffa6882` |
 
 Existing dependency, stage, workflow, stability, module and storage suites
 passed all 73 tests on this layer. The rename driver's verify mode reports
@@ -89,9 +89,9 @@ with the old stack's 779. The single `davinci_l2_filters` target still binds
 unguarded `l2_filters` target is registered. An initial manual probe guessed
 the wrong feature; the corrected probe compares the original manifest.
 
-The final tree differs from original #6907 only by the repaired CI/main
-changes and this proof. All such non-overlap files match the current CI
-parent byte-for-byte. Parent/child overlap is limited to the Check workflow
+Apart from the stability-table formatting described below, the final tree
+differs from original #6907 only by repaired CI/main changes and this proof.
+All other non-overlap files match the current CI parent byte-for-byte. Parent/child overlap is limited to the Check workflow
 and central record. Parsed Check YAML equals the exact three-way semantic
 composition of old CI `de61316b9`, original #6907 `9a0d6219` and repaired CI
 `1065e2dcc`; stacked-PR handling, full merge-group suites and required gates
@@ -101,7 +101,8 @@ current main's Nuxt, SSR and CI records remain intact.
 Final formatting found Markdown column alignment left by the shorter L3
 name in the original stability correction. Formatting changes table padding
 and separator widths only; parsed table cells and every other line remain
-identical. Cargo formatting passed. Changed-file formatting covers 113 files,
+identical. The style correction is on the physical-L3 layer so its standalone PR can
+pass formatting. Cargo formatting passed. Changed-file formatting covers 113 files,
 and source line/whitespace ratchets remain enforced.
 
 TODO: publish the three layers after CI priority is resolved, mirror their
