@@ -26,13 +26,18 @@ fn compile(source: &str, compat: JsxCompatMode) -> (vize_l0::String, Vec<String>
 }
 
 #[test]
-fn spread_children_expand_only_in_babel_vdom_compatibility_mode() {
+fn spread_children_expand_in_native_and_babel_vdom_modes() {
     let source = "const A = () => <div>{...items}</div>;";
     let (native, native_diagnostics) = compile(source, JsxCompatMode::Native);
     let (babel, babel_diagnostics) = compile(source, JsxCompatMode::Babel);
 
-    assert_eq!(native_diagnostics.len(), 1, "{native_diagnostics:?}");
-    assert!(native.contains("_toDisplayString(items)"), "{native}");
+    // Native output spreads into a BAIL Fragment block (#6888).
+    assert!(native_diagnostics.is_empty(), "{native_diagnostics:?}");
+    assert!(
+        native.contains("(_openBlock(), _createBlock(_Fragment, null, [...items], -2 /* BAIL */))"),
+        "{native}"
+    );
+    assert!(!native.contains("toDisplayString"), "{native}");
 
     assert!(babel_diagnostics.is_empty(), "{babel_diagnostics:?}");
     assert!(babel.contains("[\n    ...items\n  ]"), "{babel}");

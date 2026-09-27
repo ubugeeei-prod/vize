@@ -32,3 +32,9 @@ earlier fixes.
   `node_modules` [#6683](https://github.com/ubugeeei-prod/vize/issues/6683).
 
 Thank you for the concrete reproductions that made these regressions actionable.
+
+## JSX spread children
+
+Native JSX `<div>{...items}</div>` spreads the items into the children, as
+`@vue/babel-plugin-jsx` does, instead of rendering `toDisplayString(items)`.
+VDOM output supports it. Vapor and SSR report it as unsupported.

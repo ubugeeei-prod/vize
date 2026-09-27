@@ -14,6 +14,7 @@ mod element;
 mod expr;
 mod name;
 mod slot;
+mod spread;
 mod style;
 mod text;
 mod v_custom;

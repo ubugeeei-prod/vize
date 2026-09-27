@@ -50,6 +50,7 @@ pub mod vdom;
 mod analyze;
 mod finder;
 mod forwarded_slots;
+mod spread_children;
 mod tooling_recovery;
 pub use tooling_recovery::lower_source_for_typecheck;
 

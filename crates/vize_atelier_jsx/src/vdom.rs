@@ -218,6 +218,7 @@ pub(crate) fn compile_root_to_vdom<'a>(
         Some(source),
     );
     diagnostics.extend(errors.iter().map(compiler_error_to_diagnostic));
+    let has_spread_children = crate::spread_children::has_spread_children(&root);
 
     let codegen_opts = CodegenOptions {
         mode: CodegenMode::Module,
@@ -243,6 +244,9 @@ pub(crate) fn compile_root_to_vdom<'a>(
         Some(source),
     );
     let mut preamble = result.preamble;
+    if has_spread_children {
+        crate::spread_children::import_spread_helpers(&mut preamble);
+    }
     if let Some(helper) = compat.transform_on_helper
         && result.code.contains(helper)
     {
