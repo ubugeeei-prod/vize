@@ -338,3 +338,5 @@ history/native acceptance remain pending; original behavior witnesses stay.
 records nine actual repeated full public outputs for seven fixes, including
 ordered templates and exact options. Existing normalized Pkl comparisons and
 runtime checks stay; fresh Actions and full history/native acceptance are pending.
+
+[SFC map and diagnostic history references](./2026-09-27-sfc-map-diagnostic-history.md) prepares two original inputs for #3604/#750, with separate compiler-relative and document-relative diagnostic routes. Actual source-bound capture, tests and fresh Actions remain TODO; no history/native closure is claimed.
