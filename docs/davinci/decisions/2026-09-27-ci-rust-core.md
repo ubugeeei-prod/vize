@@ -92,3 +92,8 @@ Keep receipt source SHA/tree, absolute workspace, runner, nextest and content
 hash validation before extraction. Executable temporary-Git/FS tests retain an
 attempt-1 producer, retry only its attempt-2 consumer, replace a completed full
 rerun, and reject another run, source revision or corrupted archive.
+
+The feature-tail contract compares NUL-delimited arguments recorded by the
+actual fake Cargo subprocess, in execution order, for success and failure.
+It no longer requires one command per YAML line; environment and nonzero
+propagation checks remain unchanged.

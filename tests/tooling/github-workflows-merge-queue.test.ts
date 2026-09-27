@@ -109,7 +109,6 @@ test("queue Rust retains prerequisites and executes the shared feature tail afte
   assert.equal(recipe.runs.using, "composite");
   assert.equal(recipe.runs.steps[0].if, "${{ inputs.workspace-already-tested != 'true' }}");
   assert.equal(recipe.runs.steps[0].run, "cargo test --workspace");
-  assert.deepEqual(recipe.runs.steps[1].run?.trim().split("\n"), tailCommands);
   for (const step of recipe.runs.steps) {
     assert.equal(step.env?.VIZE_TEST_REQUIRE_TSGO, "1");
     assert.notEqual(step["continue-on-error"], true);
@@ -136,9 +135,10 @@ test("the shared bash recipe stops at a failed feature command (simulated cargo)
   const cwd = mkdtempSync(join(tmpdir(), "vize-queue-recipe-"));
   try {
     const log = join(cwd, "commands.log");
+    const argvLog = join(cwd, "arguments.log");
     writeFileSync(
       join(cwd, "cargo"),
-      '#!/bin/sh\nprintf "%s|%s|%s\\n" "$*" "$VIZE_TEST_REQUIRE_TSGO" "${VIZE_DAVINCI_DIFFERENTIAL_CORPUS-}" >> "$VIZE_GATE_TEST_LOG"\ncase "$*" in *"$VIZE_GATE_TEST_FAIL"*) exit 42;; esac\n',
+      '#!/bin/sh\nprintf "%s|%s|%s\\n" "$*" "$VIZE_TEST_REQUIRE_TSGO" "${VIZE_DAVINCI_DIFFERENTIAL_CORPUS-}" >> "$VIZE_GATE_TEST_LOG"\nprintf "%s\\0" "$@" >> "$VIZE_GATE_TEST_ARGV_LOG"\nprintf "\\n" >> "$VIZE_GATE_TEST_ARGV_LOG"\ncase "$*" in *"$VIZE_GATE_TEST_FAIL"*) exit 42;; esac\n',
       { mode: 0o755 },
     );
     for (const [failure, count, status] of [
@@ -146,6 +146,7 @@ test("the shared bash recipe stops at a failed feature command (simulated cargo)
       ["no-such-command", 11, 0],
     ] as const) {
       writeFileSync(log, "");
+      writeFileSync(argvLog, "");
       const run = spawnSync(
         "/bin/bash",
         ["--noprofile", "--norc", "-eo", "pipefail", "-c", recipe.runs.steps[1].run!],
@@ -156,6 +157,7 @@ test("the shared bash recipe stops at a failed feature command (simulated cargo)
             PATH: cwd,
             VIZE_TEST_REQUIRE_TSGO: "1",
             VIZE_GATE_TEST_LOG: log,
+            VIZE_GATE_TEST_ARGV_LOG: argvLog,
             VIZE_GATE_TEST_FAIL: failure,
           },
         },
@@ -163,6 +165,14 @@ test("the shared bash recipe stops at a failed feature command (simulated cargo)
       assert.equal(run.status, status, run.stderr);
       const lines = readFileSync(log, "utf8").trim().split("\n");
       assert.equal(lines.length, count);
+      const actualArguments = readFileSync(argvLog, "utf8")
+        .trimEnd()
+        .split("\n")
+        .map((line) => line.split("\0").slice(0, -1));
+      const expectedArguments = tailCommands
+        .slice(0, count)
+        .map((command) => command.slice(command.indexOf("cargo ") + 6).split(" "));
+      assert.deepEqual(actualArguments, expectedArguments);
       assert.ok(lines.every((line) => line.includes("|1|")));
       if (status === 0) {
         assert.ok(lines[5].endsWith(`|${root}`));
