@@ -43,6 +43,14 @@ rule: neither diagnostic type would be owned by the remaining contract crate.
 Their actual relocation must move or replace the conversion boundary in the
 same change. This does not establish a permanent mixed-ownership contract.
 
+## Feature gate
+
+`extension` is an opt-in `vize_carton` feature, enabled only by the contract
+crate. Per-stage instruction ceilings forbid any increase, and the ungated
+module shifted legacy parse and compile counts by up to 0.8% in the merge
+queue (code layout, not new work). Compiler-only graphs, including the
+benchmark harness, therefore build the same L0 source as before.
+
 ## Remaining code work
 
 - L1 owns surface-tree acceptance; L1→L2 owns Vue input acceptance and producer

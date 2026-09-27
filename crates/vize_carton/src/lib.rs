@@ -52,6 +52,7 @@ pub mod dialect;
 pub mod directive;
 pub mod dom_tag_config;
 pub mod expression_guard;
+#[cfg(feature = "extension")]
 pub mod extension;
 pub mod flags;
 pub mod general;

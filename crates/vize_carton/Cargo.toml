@@ -35,6 +35,9 @@ which = { workspace = true }
 
 [features]
 default = []
+# External extension wire records and negotiation. Kept out of the default
+# graph so compiler-only consumers build the same code as before.
+extension = []
 
 [dev-dependencies]
 davinci_test_support.workspace = true

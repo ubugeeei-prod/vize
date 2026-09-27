@@ -12,7 +12,7 @@ metadata.vize.stability = "experimental"
 [dependencies]
 serde = { workspace = true }
 vize_davinci = { workspace = true }
-vize_l0 = { workspace = true }
+vize_l0 = { workspace = true, features = ["extension"] }
 vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
