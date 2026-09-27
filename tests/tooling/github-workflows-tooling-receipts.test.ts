@@ -31,6 +31,10 @@ for (const { file, job } of callers) {
       steps[build].run ?? "",
       /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.mjs/,
     );
+    assert.match(
+      steps[build].run ?? "",
+      /build-receipt\.mjs && cat target\/ci\/vize\.differential-build\.json/,
+    );
     assert.notEqual(steps[build]["continue-on-error"], true);
     assert.notEqual(steps[tests]["continue-on-error"], true);
     if (file === "check.yml") {

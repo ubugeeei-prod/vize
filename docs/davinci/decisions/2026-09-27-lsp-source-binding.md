@@ -16,6 +16,11 @@ pipeline stage or second build. Executable temporary-Git tests include both a
 runnable old debug binary and a fresh CI binary, then mutate the bound binary,
 receipt and source revision to verify rejection before any fallback.
 
+Print that existing public receipt immediately after its successful creation
+so completed Actions logs retain the exact source revision, binary path, hash
+and workspace version. Retain no inferred hash from earlier unlogged runs;
+this adds neither a second receipt nor another workflow or build stage.
+
 This closes an evidence identity gap, not a native product acceptance gap.
 Full runtime fixture Actions must still execute with the bound current binary;
 PR T0 deferrals, unhydrated corpus limitations and required T1 work remain.
