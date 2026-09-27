@@ -304,7 +304,7 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 | T3 release     | release           | —                        | everything, semver checks, release preflight                                                                                |
 
 - zizmor runs only for external contributors, releases and PRs that touch
-  `.github/**`.
+  `.github/**`. [Audit selection](./2026-09-27-ci-security-selection.md) records #6866.
 - VRT, tsgo-required tests and ledger checks leave the PR tier.
 - Whole-repo generated ledgers stop being committed.
 
