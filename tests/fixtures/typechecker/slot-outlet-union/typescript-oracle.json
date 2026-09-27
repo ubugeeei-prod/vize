@@ -62,14 +62,14 @@
     }
   ],
   "cliObservedWith": {
-    "runId": 36316835669,
-    "jobId": 108613020336,
-    "sourceRevision": "adc0be82a512b872c290873dfd665461dc2f2091",
+    "runId": 36317762656,
+    "jobId": 108615603051,
+    "sourceRevision": "ba94ed918b01801a2fd06f6cfe26c961d44a2456",
     "binaryPath": "target/ci/vize",
     "binarySha256": "79fa219ebac3abea60d4fc73e23904a0bea37a1ed86ce8840a7279b930711a0d",
     "cliVersion": "vize 0.429.1",
     "status": 1,
-    "scope": "validated actual ci-recipe source-built CLI; whole11 vector independently matches source-coverage CLI execution"
+    "scope": "passing full tooling Actions: validated ci-recipe receipt and exact whole11 CLI vector"
   },
   "cliDiagnostics": [
     {
@@ -150,5 +150,15 @@
       "message": "Type 'string' is not assignable to type 'number'."
     }
   ],
-  "actionsVirtualDocumentCheckVerified": false
+  "actionsVirtualDocumentCheckVerified": true,
+  "actionsVirtualDocumentObservation": {
+    "runId": 36317762656,
+    "jobId": 108615603051,
+    "typescript": "6.0.3",
+    "sourceRevision": "ba94ed918b01801a2fd06f6cfe26c961d44a2456",
+    "binaryPath": "target/ci/vize",
+    "binarySha256": "79fa219ebac3abea60d4fc73e23904a0bea37a1ed86ce8840a7279b930711a0d",
+    "cliVersion": "vize 0.429.1",
+    "scope": "passing full tooling Actions: actual virtual documents plus exact saved ambient helpers; whole8 semantic vector checked"
+  }
 }
