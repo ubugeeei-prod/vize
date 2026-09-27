@@ -76,3 +76,11 @@ Standalone Rust formatting, documentation formatting, whitespace and the
 350-line source policy pass. No full Rust product build or new Actions run is
 claimed. The descendant log's two Vitrine cache-prefix findings belong to
 its later hash-domain layer and are absent from this parent tree.
+
+Cross-layer replay tooling note: prepending `/opt/homebrew/bin` selects its
+old `rustfmt 1.5.1-nightly`, which changes token order and fails the strict
+formal source check before any current path-map comparison. The preserved
+formal proof passes with explicit `--node` and `--rustfmt` paths targeting
+Node 25.8.1 and the project toolchain's `rustfmt 1.9.0-stable`
+(`88d9e12ae1`, 2026-08-18). Pin those tools when diagnosing later composition;
+do not relax the token or frozen-byte invariants to accept a formatter mismatch.
