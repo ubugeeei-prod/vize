@@ -160,6 +160,8 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
   [Static-class edit boundaries](./2026-09-27-static-class-fix-boundary.md) record [#6920](https://github.com/ubugeeei-prod/vize/issues/6920): use the end-exclusive binding span; preserve the original bad capture as evidence, not accepted coverage.
 
+  [#6881](https://github.com/ubugeeei-prod/vize/issues/6881) queue validation exposed a 1,053,102-byte tracked filename stream exceeding Node's default 1 MiB buffer. The v-on and WASM-cache inspections share an 8 MiB bounded Git reader that rejects child errors and nonzero exits, preserves NUL-delimited filenames, and checks a real index above 1 MiB plus overflow and command failure. All historical captures and assertions remain unchanged; the remaining three PRs still require fresh source and full queue checks before actual merge.
+
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.
 
