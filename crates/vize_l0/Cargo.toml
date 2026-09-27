@@ -14,5 +14,10 @@ readme = "README.md"
 # public API so every `vize_l0::` path keeps resolving.
 vize_carton = { workspace = true }
 
+[features]
+default = []
+# The neutral extension wire (#6976), still owned by carton.
+extension = ["vize_carton/extension"]
+
 [lints]
 workspace = true
