@@ -186,8 +186,8 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-check) in the companion record.
 
 [Type-checker history slices](./2026-09-27-typechecker-history-slices.md) record
-focused required T1 diagnostics, including Unicode values, for #6879;
-whole-history and native admission remain unfinished.
+focused required T1 diagnostics, including component tuples, for #6879;
+whole-history and native admission remain unfinished; the companion preserves every row.
 
 ## Legacy deletion criteria
 
@@ -295,6 +295,8 @@ with the formatter's always-upload corpus evidence without changing build setup.
 [Heavy tooling inputs](./2026-09-27-heavy-tooling-inputs.md) records Cargo corpus,
 Moon/benchmark dependencies and the immutable queue source-length base for #6863.
 
+[Rust cache backends](./2026-09-27-rust-cache-backends.md) records the reviewed bounded provider namespaces and trusted Actions seed candidate for #6830; actual seed/restore/runtime proof remains pending.
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work) in the companion record.
@@ -305,3 +307,6 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 
 [Options API computed regressions](./2026-09-27-options-computed-regressions.md)
 record #6921 owner history, shared parse facts, setter guards and registered typechecker fixtures for #6879.
+
+[Canon slot outlet regression preparation](./2026-09-27-canon-slot-outlet-union.md)
+records #6922 owner history, unbounded inferred payloads, string widening and required full diagnostic proof.

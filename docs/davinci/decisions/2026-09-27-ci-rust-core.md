@@ -124,3 +124,11 @@ requires T1 metadata and complete unfiltered real-TSGO runtime execution.
 The Unicode child extends the exact Canon group only with the present
 `unicode_reserved_props_preserve_value_diagnostics` test. Its two value-sensitive
 projects require T1 metadata and complete unfiltered real-TSGO runtime execution.
+
+The reserved-expression child extends the exact Canon group only with the
+present `reserved_prop_shapes_preserve_literal_and_member_diagnostics` test.
+Both projects require T1 metadata and complete unfiltered real-TSGO runtime execution.
+
+The tuple child extends the exact Canon group only with the present
+`component_event_tuples_preserve_all_argument_diagnostics` test. All seven projects
+require T1 metadata and complete unfiltered real-TSGO runtime execution.

@@ -1,3 +1,5 @@
+mod union;
+
 use crate::virtual_ts::generate_virtual_ts;
 
 #[test]

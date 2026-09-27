@@ -10,7 +10,7 @@ seven original inputs of `attribute_only_required_props_edges.rs`. The fixture
 uses real Vue 3.6.0-beta.10 and TypeScript 7.0.2. Its metadata declares required
 T1 execution; the ordinary test body always executes the checker. The exact
 runtime test name must be deferred by T0 nextest selection and required by full
-T1 Cargo execution.
+full unfiltered required real-TSGO T1.
 
 The original assertion kept 24 file/code/start identities, then checked only
 message substrings. The actual capture matches all 24 original identities and
@@ -59,5 +59,5 @@ TypeScript text independently of the diagnostic contract. #6879 stays open.
 Stack this slice on the definite-assignment draft #6939. Extend only the present
 package `vize_canon`, binary `fix_history_diagnostics`, exact test
 `required_props_keep_exact_unicode_diagnostics`. Prior Canon/Corsa names remain exact;
-source existence and T1 metadata are checked. Full Cargo T1 stays unchanged.
+source existence and T1 metadata are checked. full unfiltered required real-TSGO T1 retains every workspace case.
 Draft Actions and CI parent main/full queue proof remain pending.

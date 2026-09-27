@@ -7,6 +7,25 @@ use vize_relief::{RootNode, TemplateChildNode};
 use super::SlotOutletChecks;
 use crate::virtual_ts::helpers::push_ts_string_literal;
 
+/// Merge the directly generated slot maps before exporting them. Each slot
+/// keeps one call signature, whose payload contains every contributing outlet.
+/// Lexical child scopes return the same carrier, so no overload sampling or
+/// arbitrary signature bound is needed at the parent component boundary.
+const INFERRED_SLOT_HELPERS: &str = r#"  type __VizeInferredSlotKeys<U> = U extends any ? keyof U : never;
+  type __VizeInferredSlotOptionalKeys<U> = U extends any ? { [K in keyof U]-?: {} extends Pick<U, K> ? K : never }[keyof U] : never;
+  type __VizeInferredSlotRequiredKeys<U> = Exclude<keyof U, __VizeInferredSlotOptionalKeys<U>>;
+  type __VizeInferredSlotValue<U, K extends PropertyKey> = U extends any ? (K extends keyof U ? U[K] : never) : never;
+  type __VizeInferredSlotMerge<U> = { [K in __VizeInferredSlotRequiredKeys<U>]: __VizeInferredSlotValue<U, K> } & { [K in Exclude<__VizeInferredSlotKeys<U>, __VizeInferredSlotRequiredKeys<U>>]?: __VizeInferredSlotValue<U, K> };
+  type __VizeInferredSlotIntersection<U> = (U extends any ? (member: U) => void : never) extends (member: infer I) => void ? I : never;
+  type __VizeInferredSlotUnify<P> = __VizeIsAny<P> extends true ? P : [P] extends [__VizeInferredSlotIntersection<P>] ? P : __VizeInferredSlotMerge<P>;
+  type __VizeInferredSlotPayload<S, K extends PropertyKey> = S extends any ? K extends keyof S ? NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never : never : never;
+  type __VizeInferredSlots<S> = [__VizeInferredSlotKeys<S>] extends [never] ? {} : __VizeInferredSlotIntersection<{ [K in __VizeInferredSlotKeys<S>]: { [N in K]?: (props: __VizeInferredSlotUnify<__VizeInferredSlotPayload<S, K>>) => any } }[__VizeInferredSlotKeys<S>]>;
+"#;
+
+pub(super) fn emit_inferred_slot_helpers(ts: &mut String) {
+    ts.push_str(INFERRED_SLOT_HELPERS);
+}
+
 pub(crate) fn has_inferred_slots(summary: &Croquis, root: Option<&RootNode<'_>>) -> bool {
     summary.macros.define_slots().is_none()
         && root.is_some_and(|root| has_outlet(root.children.as_slice()))
@@ -155,6 +174,8 @@ impl SlotOutletChecks {
         }
         if types.is_empty() {
             String::from("{}")
+        } else if self.merge_payloads {
+            cstr!("__VizeInferredSlots<{}>", types.join(" | "))
         } else {
             types.join(" & ").into()
         }

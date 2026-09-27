@@ -1,0 +1,36 @@
+{
+  "schema": "vize.typechecker.regressionCorpus",
+  "version": 1,
+  "pullRequest": 6922,
+  "sources": [
+    "Layout.vue",
+    "Preview.vue",
+    "Parent.vue",
+    "Wrong.vue",
+    "Single.vue",
+    "Many17.vue",
+    "Many18.vue",
+    "ManyControl.ts",
+    "ManyWrong.ts",
+    "Optional.vue",
+    "OptionalControl.ts",
+    "SingleControl.ts",
+    "StaticRepeat.vue",
+    "StaticRepeatControl.ts"
+  ],
+  "regressions": [
+    "same-name-bound-and-bare",
+    "same-name-static-string-widening",
+    "same-name-cross-scope",
+    "single-outlet-string-widening",
+    "wrong-forwarded-payload",
+    "seventeen-first-and-last",
+    "eighteen-first-and-last",
+    "wrong-first-and-last-payload",
+    "common-optional-key",
+    "external-authored-overload-main-fallback",
+    "same-name-explicit-bound-discriminants"
+  ],
+  "legacyRunner": "crates/vize/tests/check_slot_outlet_union_cli.rs",
+  "nativeComparison": "not-implemented"
+}

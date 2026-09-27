@@ -39,6 +39,12 @@ parent's PR-base handling and merge-group suites; only the declaration gate
 and required aggregate dependency are added semantically. Existing comments
 were shortened by the original patch.
 
+TODO: replay the physical L3 and stage-path layers in separate move-only and
+reference commits; record their patch identities, metadata and inventory
+checks here. Publish only after the CI priority is resolved, mirror decisions
+on the owning issues, and validate fresh exact-head Actions and merge-group
+results. Three legacy exceptions remain, so #6831 and #6832 stay open.
+
 ## Physical L3 layer
 
 The package move retains 56 R100 paths in a move-only commit. The generated

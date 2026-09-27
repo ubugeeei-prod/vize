@@ -20,7 +20,14 @@ preserved. The runtime-props helper's existing separate parse is outside this
 small change. Joint-result tests cover export spans, repeated/exported mixin
 precedence, unresolved extends, independent rewrite/binding gates and export
 whitespace/comment controls that keep computed analysis unconditional. Source
-compilation and exact diagnostic execution remain pending existing PR Actions.
+compilation and exact diagnostic execution passed in
+[full Actions 36317760385](https://github.com/ubugeeei-prod/vize/actions/runs/36317760385)
+at `412eed857634d9fabc071894c3e0029aeecf7a92`. With `VIZE_TEST_REQUIRE_TSGO=1`,
+the actual CLI ran in 0.54 seconds and matched its entire readonly diagnostic
+oracle. Joint facts, setter corpus and lexical guards passed; Canon reported
+1,525 passed, zero failed and zero ignored. This confirms that immutable source;
+the final combined-head queue and actual merge remain separate requirements,
+with zero native or whole fix-history completion credit.
 The owner's later `5e0048c0` computed/prop-collision fix is preserved in a
 separate private compatibility commit: its resolution body and regression test
 remain byte-exact, with only the duplicate parse entry replaced by shared inputs.
@@ -81,3 +88,37 @@ HoistedSetter also executes an `if (true)` nested var declaration. Precise
 next-line lint annotations explain those control inputs without changing any
 root lint rule. Their source digests are refreshed; all complete binding vectors
 and the author’s WrappedOptions/WritableComputed inputs remain unchanged.
+
+The computed candidate `0ad34a3cb6c9cfe1c3f775d07fad2aecff47a5a9`
+ran the complete selected Rust, tooling, JS and browser suites, but
+[its instruction gate](https://github.com/ubugeeei-prod/vize/actions/runs/36323000948)
+failed while fetching immutable base `7b5898587ff35432d7aef29393add1df58423e92`
+before the budget comparison. The single failed-only retry repeated the remote
+missing-tree error. A
+[preceding report job](https://github.com/ubugeeei-prod/vize/actions/runs/36322984712/job/108632909447)
+also failed through canonical HTTPS and native `/usr/bin/git` 2.55 on a
+GitHub-hosted runner, so the incident cannot be attributed exclusively to the
+observed Blacksmith Git wrapper/proxy. The distinct
+[top-candidate full run](https://github.com/ubugeeei-prod/vize/actions/runs/36322785645)
+succeeded; the failed predecessor report does not negate that execution. No
+source or gate workaround was made.
+The queue subsequently generated `ae3c16b3b94354e623b5221100bb90cf3a710571`
+on actual main `f67358d0c283f6211e52080f455285fdb62c95f1`. Its
+[instruction job](https://github.com/ubugeeei-prod/vize/actions/runs/36323991262/job/108633098165)
+fetched that exact base, verified all 100 pinned budgets and their ratchet,
+measured all 100 cases three times with identical counts, and passed every
+ceiling. A separate disposable native-Git fetch verified the older base and
+budget bytes; this proves that transport worked at that later observation,
+without turning either failed instruction attempt into a passed gate.
+
+The recovered candidate's [full Check](https://github.com/ubugeeei-prod/vize/actions/runs/36323991262)
+and [Nuxt run](https://github.com/ubugeeei-prod/vize/actions/runs/36323990924)
+succeeded. Its four disjoint workers executed all 12,808 runnable workspace
+identities exactly once; the 31 ignored tests remained excluded. Mandatory
+source-built computed CLI execution passed in 0.975 seconds, and full tooling
+reported 5,231 total, 5,219 passed, zero failed and 12 explicit skips. Rust,
+PR-source and required test reports succeeded. PR #6921 actually merged at
+2026-09-27T14:10:08Z with main exactly `ae3c16b3b94354e623b5221100bb90cf3a710571`.
+This is completed queue/main proof for computed, with zero native or whole
+fix-history completion credit. The later combined slot source still requires
+its own fresh PR/full-queue validation and actual merge.

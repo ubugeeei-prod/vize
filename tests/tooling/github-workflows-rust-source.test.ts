@@ -118,7 +118,7 @@ test("untrusted source checks cannot write trusted sticky disks", () => {
     readRepoFile(".github", "actions", "setup-rust-sticky-cache", "action.yml"),
   ) as {
     inputs?: Record<string, { default?: string }>;
-    runs?: { steps?: Array<{ uses?: string; with?: Record<string, string> }> };
+    runs?: { steps?: Array<{ if?: string; uses?: string; with?: Record<string, string> }> };
   };
   assert.equal(action.inputs?.["cache-key-prefix"]?.default, "");
   const prefix =
@@ -146,7 +146,8 @@ test("untrusted source checks cannot write trusted sticky disks", () => {
   assert.equal(mounts?.length, 4, "registry, git, primary, and secondary disks need isolation");
   for (const mount of mounts ?? []) {
     assert.ok(
-      mount.with?.key?.startsWith("${{ github.repository }}-${{ inputs.cache-key-prefix }}"),
+      mount.with?.key?.startsWith("${{ steps.cache-policy.outputs.sticky-") &&
+        mount.if?.includes("steps.cache-policy.outputs.sticky == 'true'"),
       `shared cache key: ${mount.with?.key}`,
     );
   }

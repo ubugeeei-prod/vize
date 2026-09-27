@@ -49,6 +49,7 @@ const formatterSensitiveContentIgnorePatterns = [
   // Registered CLI diagnostics depend on authored source positions and golden bytes.
   "tests/fixtures/typechecker/options-api-computed-setters/**",
   "tests/fixtures/typechecker/options-api-writable-computed/**",
+  "tests/fixtures/typechecker/slot-outlet-union/**",
   // Formatter input/output witnesses must retain their authored bytes.
   "crates/vize_glyph/tests/style_spec/**",
   "docs/content/**/*.md",
