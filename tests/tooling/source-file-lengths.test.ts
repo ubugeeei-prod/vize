@@ -50,7 +50,7 @@ test("source length comparison keeps the event base when the branch advances", (
   fs.mkdirSync(checkout);
   runGit(remote, ["init", "--bare", "-q"]);
   runGit(publisher, ["init", "-q", "--initial-branch=main"]);
-  writeLines(path.join(publisher, "large.ts"), 351);
+  writeLines(path.join(publisher, "large.ts"), 346);
   runGit(publisher, ["add", "large.ts"]);
   runGit(publisher, [
     "-c",
@@ -65,7 +65,7 @@ test("source length comparison keeps the event base when the branch advances", (
   runGit(publisher, ["remote", "add", "origin", remote]);
   runGit(publisher, ["push", "-q", "-u", "origin", "main"]);
 
-  writeLines(path.join(publisher, "large.ts"), 352);
+  writeLines(path.join(publisher, "large.ts"), 353);
   runGit(publisher, ["add", "large.ts"]);
   runGit(publisher, [
     "-c",
@@ -81,16 +81,34 @@ test("source length comparison keeps the event base when the branch advances", (
 
   runGit(checkout, ["init", "-q"]);
   runGit(checkout, ["remote", "add", "origin", remote]);
-  fs.writeFileSync(eventPath, JSON.stringify({ pull_request: { base: { sha: eventBaseSha } } }));
+  runGit(checkout, ["fetch", "-q", "origin", "main"]);
+  runGit(checkout, ["checkout", "-q", "--detach", "FETCH_HEAD"]);
 
-  const resolved = resolveBaseRef(checkout, {
-    GITHUB_BASE_REF: "main",
-    GITHUB_EVENT_PATH: eventPath,
-  });
-  assert.ok(resolved);
-  assert.equal(resolved, eventBaseSha);
-  assert.equal(runGit(checkout, ["rev-parse", resolved]), eventBaseSha);
-  assert.notEqual(resolved, advancedSha);
+  for (const kind of ["pull_request", "merge_group"]) {
+    fs.writeFileSync(
+      eventPath,
+      JSON.stringify(
+        kind === "merge_group"
+          ? { merge_group: { base_sha: eventBaseSha } }
+          : { pull_request: { base: { sha: eventBaseSha } } },
+      ),
+    );
+    const resolved = resolveBaseRef(checkout, {
+      GITHUB_EVENT_NAME: kind,
+      GITHUB_BASE_REF: kind === "pull_request" ? "main" : "",
+      GITHUB_EVENT_PATH: eventPath,
+    });
+    assert.ok(resolved);
+    assert.equal(resolved, eventBaseSha);
+    assert.equal(runGit(checkout, ["rev-parse", resolved]), eventBaseSha);
+    assert.notEqual(resolved, advancedSha);
+    const result = runSourceLengthScript(["--check", "--base-ref", resolved], checkout);
+    assert.equal(result.status, 1, `${kind}: ${result.stderr}\n${result.stdout}`);
+    assert.match(result.stdout, /crossed limit/);
+  }
+  const incorrectBase = runSourceLengthScript(["--check", "--base-ref", advancedSha], checkout);
+  assert.equal(incorrectBase.status, 0, incorrectBase.stdout);
+  fs.rmSync(root, { recursive: true, force: true });
 });
 
 test("source length comparison preserves an explicit local base override", () => {
@@ -110,6 +128,44 @@ test("source length comparison rejects malformed pull-request metadata", () => {
       }),
     /pull_request\.base\.sha must be a full lowercase commit SHA/,
   );
+});
+
+test("source length comparison fails closed for malformed merge-group events", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-source-length-queue-event-"));
+  const eventPath = path.join(root, "event.json");
+  const env = {
+    GITHUB_EVENT_NAME: "merge_group",
+    GITHUB_BASE_REF: "",
+    GITHUB_EVENT_PATH: eventPath,
+  };
+  try {
+    for (const payload of [{}, { merge_group: {} }, { merge_group: { base_sha: "main" } }]) {
+      fs.writeFileSync(eventPath, JSON.stringify(payload));
+      assert.throws(
+        () => resolveBaseRef(root, env),
+        /merge_group\.base_sha must be a full lowercase commit SHA/,
+      );
+    }
+    fs.writeFileSync(eventPath, "null");
+    assert.throws(() => resolveBaseRef(root, env), /merge_group event must be an object/);
+    fs.writeFileSync(eventPath, "{");
+    assert.throws(() => resolveBaseRef(root, env), /Failed to read merge_group event/);
+    runGit(root, ["init", "-q"]);
+    runGit(root, ["remote", "add", "origin", path.join(root, "missing-remote.git")]);
+    fs.writeFileSync(eventPath, JSON.stringify({ merge_group: { base_sha: "a".repeat(40) } }));
+    assert.throws(() => resolveBaseRef(root, env), /missing-remote\.git/);
+    assert.throws(
+      () => resolveBaseRef(root, { GITHUB_EVENT_NAME: "merge_group" }),
+      /GITHUB_EVENT_PATH is required/,
+    );
+    assert.equal(
+      resolveBaseRef(root, { ...env, SOURCE_LENGTH_BASE_REF: "local-base" }),
+      "local-base",
+    );
+    assert.equal(resolveBaseRef(root, {}), undefined);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("source length script rejects grown over-limit files", () => {

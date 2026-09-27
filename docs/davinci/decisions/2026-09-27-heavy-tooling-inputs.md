@@ -68,3 +68,24 @@ omit all five if a tooling plan is requested. Native package build remains.
 TODO: measure the resulting exact-head Actions durations after integration and
 expand the catalog only after auditing each test's subprocess/read dependencies.
 The T0 p50 ≤ 3-minute / p90 ≤ 6-minute target remains unproven.
+
+## Queue source-length comparison base
+
+The source-length gate previously returned no comparison base when
+`GITHUB_BASE_REF` was empty. Merge-group events have that empty variable, so
+`--check` completed an inventory without enforcing the growth ratchet. The
+gate now fetches and compares the immutable `merge_group.base_sha` from the
+event. PR checks retain `pull_request.base.sha`; an explicit local
+`SOURCE_LENGTH_BASE_REF` retains precedence. Scheduled/local inventory checks
+without a PR or merge-group event retain their existing behavior.
+
+Missing event paths, unreadable JSON, malformed commit SHAs and failed fetches
+fail the test instead of falling back to inventory-only success. Base resolution
+is a small shared test helper; the Rust checker and 350-line limit are unchanged.
+
+A real temporary Git remote advances `main` from a 346-line file to 353 lines.
+Both PR and merge-group event checks fetch the earlier SHA and execute the Rust
+checker, which rejects the growth. Comparing to the newer branch tip would pass.
+Additional tests cover invalid queue metadata, failed fetches and override
+precedence. This proves enforcement locally; fresh exact-head Actions and the
+actual merge-group result remain required before claiming queue validation.
