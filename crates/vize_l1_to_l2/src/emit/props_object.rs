@@ -114,9 +114,10 @@ pub(super) fn emit_props_object(
         i = 1;
     }
     let mut emitted_merged = StdVec::new();
-    for piece in visible.iter() {
+    let event_keys = super::props_object_merge::EventKeys::of(&visible, event_key_plain_element);
+    for (index, piece) in visible.iter().enumerate() {
         if let Some(key) = super::props_object_merge::event_key(piece, event_key_plain_element)
-            && super::props_object_merge::count(&visible, key.as_str(), event_key_plain_element) > 1
+            && event_keys.is_shared(&visible, index, key.as_str(), event_key_plain_element)
         {
             if emitted_merged.contains(&key) {
                 continue;
