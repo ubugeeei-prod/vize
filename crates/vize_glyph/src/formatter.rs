@@ -11,6 +11,7 @@ mod style_block;
 mod template_block;
 mod template_indent;
 
+use crate::VueVersion;
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use std::borrow::Cow;
@@ -33,6 +34,7 @@ pub struct FormatResult {
 pub struct GlyphFormatter<'a> {
     options: &'a FormatOptions,
     allocator: &'a Allocator,
+    vue_version: VueVersion,
 }
 
 enum Block<'b> {
@@ -57,7 +59,20 @@ impl<'a> GlyphFormatter<'a> {
     /// Create a new formatter with the given options and allocator
     #[inline]
     pub fn new(options: &'a FormatOptions, allocator: &'a Allocator) -> Self {
-        Self { options, allocator }
+        Self::new_with_vue_version(options, allocator, VueVersion::V3)
+    }
+
+    /// Create a formatter using the project's explicit Vue version.
+    pub fn new_with_vue_version(
+        options: &'a FormatOptions,
+        allocator: &'a Allocator,
+        vue_version: VueVersion,
+    ) -> Self {
+        Self {
+            options,
+            allocator,
+            vue_version,
+        }
     }
 
     /// Format a Vue SFC source string
@@ -175,13 +190,18 @@ impl<'a> GlyphFormatter<'a> {
                     template,
                     self.options,
                     source,
+                    self.vue_version,
                 )?,
                 Block::Style(style) => {
                     style_block::write_style_block(&mut output, style, self.options, source)?
                 }
-                Block::Custom(block) => {
-                    custom_block::format(&mut output, block, self.options, source)?
-                }
+                Block::Custom(block) => custom_block::format(
+                    &mut output,
+                    block,
+                    self.options,
+                    source,
+                    self.vue_version,
+                )?,
             }
         }
 

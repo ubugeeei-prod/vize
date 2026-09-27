@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { Paginator } from './support'
+let paginator: Paginator
+const key = paginator.key
+</script>
+
+<template>
+  <div>{{ key }}</div>
+</template>

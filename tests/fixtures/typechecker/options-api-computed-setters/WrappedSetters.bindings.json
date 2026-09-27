@@ -1,0 +1,7 @@
+[
+  "  const builtinUndefined: __VizeOptionsBinding<typeof __default__, \"builtinUndefined\"> = undefined as any;",
+  "  var wrappedArrow: __VizeOptionsBinding<typeof __default__, \"wrappedArrow\"> = undefined as any;",
+  "  const wrappedNull: __VizeOptionsBinding<typeof __default__, \"wrappedNull\"> = undefined as any;",
+  "  const wrappedString: __VizeOptionsBinding<typeof __default__, \"wrappedString\"> = undefined as any;",
+  "  const wrappedUndefined: __VizeOptionsBinding<typeof __default__, \"wrappedUndefined\"> = undefined as any;"
+]

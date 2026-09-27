@@ -7,12 +7,14 @@
 
 use napi::bindgen_prelude::{Error, Result, Status};
 use napi_derive::napi;
-use vize_glyph::{Allocator, FormatOptions, format_sfc_with_allocator};
+use vize_glyph::{Allocator, FormatOptions, VueVersion, format_sfc_with_allocator_and_vue_version};
 
 /// Format options for NAPI.
 #[napi(object)]
 #[derive(Default)]
 pub struct FormatOptionsNapi {
+    /// Explicit Vue version; omitted uses Vue 3.
+    pub vue_version: Option<String>,
     pub print_width: Option<u32>,
     pub tab_width: Option<u8>,
     pub use_tabs: Option<bool>,
@@ -71,10 +73,21 @@ pub fn format_sfc_napi(
     source: String,
     options: Option<FormatOptionsNapi>,
 ) -> Result<FormatResultNapi> {
-    let options = apply_options(options.unwrap_or_default());
+    let options = options.unwrap_or_default();
+    let vue_version = options
+        .vue_version
+        .as_deref()
+        .map(|version| {
+            VueVersion::from_config_str(version)
+                .map_err(|error| Error::new(Status::InvalidArg, error.to_string()))
+        })
+        .transpose()?
+        .unwrap_or_default();
+    let options = apply_options(options);
     let allocator = Allocator::with_capacity(source.len() * 2);
-    let result = format_sfc_with_allocator(&source, &options, &allocator)
-        .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
+    let result =
+        format_sfc_with_allocator_and_vue_version(&source, &options, &allocator, vue_version)
+            .map_err(|error| Error::new(Status::GenericFailure, error.to_string()))?;
 
     Ok(FormatResultNapi {
         code: result.code.into(),

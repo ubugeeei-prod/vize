@@ -1,0 +1,73 @@
+---
+source: crates/vize_patina/tests/report_history.rs
+expression: bytes
+---
+Case {
+    id: "original-line-columns",
+    history: [
+        "3a87d25f029f731be72705a19787743a996640eb",
+        "08eb760bae05426251031bd9b6523edae23e7b2f",
+    ],
+    files: [
+        File {
+            filename: "Component.vue",
+            source: "<script setup lang=\"ts\">\nconst items = [1]\n</script>\n\n<template>\n  <div v-for=\"item in items\">{{ item }}</div>\n</template>\n",
+            rule: "vue/require-v-for-key",
+            diagnostics: 1,
+        },
+    ],
+    sources: [
+        0,
+    ],
+}
+Report {
+    results: [
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-v-for-key",
+                    severity: Error,
+                    message: "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
+                    start: 72,
+                    end: 93,
+                    help: Some(
+                        "**Why:** The `:key` attribute helps Vue's virtual DOM efficiently track and update list items.\n\n**Fix:** Add a unique identifier as the key:\n```vue\n<li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n</li>\n```\n\n**Best practices:**\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ],
+    unchanged_requeries: [
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-v-for-key",
+                    severity: Error,
+                    message: "Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
+                    start: 72,
+                    end: 93,
+                    help: Some(
+                        "**Why:** The `:key` attribute helps Vue's virtual DOM efficiently track and update list items.\n\n**Fix:** Add a unique identifier as the key:\n```vue\n<li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n</li>\n```\n\n**Best practices:**\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ],
+    formatted_messages: [
+        [
+            "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <div>",
+        ],
+    ],
+    json: "[\n  {\n    \"file\": \"Component.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"vue/require-v-for-key\",\n        \"ruleDocsPath\": \"docs/content/rules/vue.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <div>\",\n        \"line\": 6,\n        \"column\": 8,\n        \"endLine\": 6,\n        \"endColumn\": 29,\n        \"help\": \"Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\\nFix: Add a unique identifier as the key:\\n  <li v-for=\\\"item in items\\\" :key=\\\"item.id\\\">\\n  {{ item.name }}\\n  </li>\\nBest practices:\\n- Use unique, stable identifiers (like database IDs)\\n- Avoid using array index as key when list order may change\\n- Keys must be primitive values (string or number)\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+    text: "\n  \u{1b}[38;2;225;80;80;1m×\u{1b}[0m \u{1b}[38;2;225;80;80;1m[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <div>\u{1b}[0m\n   ╭─[\u{1b}[38;2;92;157;255;1mComponent.vue\u{1b}[0m:6:8]\n \u{1b}[2m5\u{1b}[0m │ <template>\n \u{1b}[2m6\u{1b}[0m │   <div v-for=\"item in items\">{{ item }}</div>\n   · \u{1b}[38;2;246;87;248m       ─────────────────────\u{1b}[0m\n \u{1b}[2m7\u{1b}[0m │ </template>\n   ╰────\n\u{1b}[38;2;106;159;181m  help: \u{1b}[0mWhy: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\n        Fix: Add a unique identifier as the key:\n          <li v-for=\"item in items\" :key=\"item.id\">\n          {{ item.name }}\n          </li>\n        Best practices:\n        - Use unique, stable identifiers (like database IDs)\n        - Avoid using array index as key when list order may change\n        - Keys must be primitive values (string or number)\n        Reference: docs/content/rules/vue.md\n\n",
+}

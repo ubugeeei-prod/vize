@@ -105,3 +105,22 @@ source-job declaration in the split workflow test; each stack prefix must
 merge into main without relying on a later member's conflict resolution.
 Preserve the previous successful heads and replay only each descendant's
 reviewed changes before fresh current-head Actions and the atomic queue.
+
+The first #6879 child adds exactly `vize_canon / fix_history_diagnostics /
+inline_event_assignments_preserve_exact_diagnostics` to the T0 deferral after that test
+exists. Its fixture declares required T1 execution; the body unconditionally
+runs the production checker. Source and metadata assertions reject nonexistent
+names. The full required real-TSGO T1 profile selects every workspace case, including
+all three Corsa tests, without a default-filter.
+
+The next #6879 child extends that exact Canon group only with the present
+`deferred_template_reads_preserve_script_diagnostics` test. Its two projects also
+require T1 metadata and complete unfiltered real-TSGO runtime execution.
+
+The required-props child extends the exact Canon group only with the present
+`required_props_keep_exact_unicode_diagnostics` test. Its complete 24-row fixture
+requires T1 metadata and complete unfiltered real-TSGO runtime execution.
+
+The Unicode child extends the exact Canon group only with the present
+`unicode_reserved_props_preserve_value_diagnostics` test. Its two value-sensitive
+projects require T1 metadata and complete unfiltered real-TSGO runtime execution.

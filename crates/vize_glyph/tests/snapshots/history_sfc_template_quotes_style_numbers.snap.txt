@@ -1,0 +1,14 @@
+<script setup>
+const label = "sample";
+</script>
+
+<template>
+  <div :class="{ 'is-active': active }" @click="() => emit('change', 'x')">sample</div>
+</template>
+
+<style scoped>
+.sample {
+  opacity: 0.5;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>

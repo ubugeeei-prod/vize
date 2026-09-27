@@ -1,0 +1,35 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "next-tick-disabled",
+    history: "f9fa82f7867e3a9373a8d0ee30162c6947c7c113",
+    source: "<script setup vapor>\nimport { nextTick } from \"vue\"\nawait nextTick()\n</script>\n<template><div /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "script/no-next-tick",
+    vue_version: None,
+    vapor: Some(
+        false,
+    ),
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

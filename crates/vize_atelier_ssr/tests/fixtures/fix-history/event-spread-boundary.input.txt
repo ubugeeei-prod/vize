@@ -1,0 +1,1 @@
+<Foo @click="before" v-bind="props" @click.stop="after" />

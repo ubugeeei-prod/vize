@@ -1,0 +1,28 @@
+{
+  "schema": "vize.typechecker.regression-fixture",
+  "version": 1,
+  "id": "typechecker/options-api-writable-computed",
+  "origin": {
+    "pullRequest": 6921,
+    "issue": 6879,
+    "fixCommit": "5b1f69412759f093dcd37e60274cd9e5502ab1ea"
+  },
+  "inputs": [
+    "WritableComputed.vue"
+  ],
+  "expectedDiagnostics": "expected-diagnostics.json",
+  "witness": {
+    "path": "crates/vize/tests/check_options_api_writable_computed_cli.rs",
+    "symbol": "check_options_api_writable_computed_assignment_passes",
+    "executor": "source-built-rust-cli-test",
+    "typeScriptRequirement": "required_or_skip; T1 VIZE_TEST_REQUIRE_TSGO=1, missing Vue is a mandatory failure"
+  },
+  "normalization": "CLI severity:one-based-line:one-based-column [TS-code] full message; no partial matching",
+  "nativeComparisons": 0,
+  "sha256": {
+    "WritableComputed.vue": "b0319d95447ce258d3c363db25c44ebc812e3616b2cbb82aa430f106a92025f9",
+    "expected-diagnostics.json": "8be5a273da314283ffe85fd4e3abb3038ae16fd20892bd6af65369e9f8e9f3b9",
+    "tsconfig.json": "e9e112b331d5eace62f75421ecc52d79c5d900aaa15ad41d8f18ce744d3d34c0"
+  },
+  "config": "tsconfig.json"
+}

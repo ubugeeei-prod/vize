@@ -1,0 +1,25 @@
+{
+  "schema": "vize.vapor.fix-history-source",
+  "version": 1,
+  "sourceRevision": "941ff5b2d1302b2f953e8996a026ec9cfe69307b",
+  "sourceTree": "03a8f5437c34d03fe3ea249e94194a3a9cbdea35",
+  "trackedDirty": [],
+  "cargoLockSha256": "be4568371f14f946452111a604efb3d2b6c1ebd10632b1f227f44ae69dca6df9",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: aarch64-apple-darwin\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+  "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)\n",
+  "startedAt": "2026-09-27T08:42:09Z",
+  "argv": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "ci",
+    "-p",
+    "vize_atelier_vapor",
+    "--example",
+    "vapor_fixture_observer",
+    "--message-format=json-render-diagnostics"
+  ],
+  "cargoTargetDir": "/tmp/vize-ssr-fix-history-target-20260927",
+  "workspace": "/private/tmp/vize-vapor-fix-history-20260927"
+}

@@ -51,6 +51,7 @@ fn edits(source: &str, range: Range) -> Option<Vec<TextEdit>> {
         "/App.vue",
         range,
         &vize_glyph::FormatOptions::default(),
+        vize_glyph::VueVersion::V3,
     )
 }
 

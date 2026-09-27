@@ -79,6 +79,13 @@ export function validateFormatterReport(loaded, report, expectedBuild) {
     assert.equal(row.comparison.state, "not-compared");
     assert.equal(row.comparison.reason, "native formatter adapter unavailable");
     assert(["completed", "failed"].includes(row.legacy.state));
+    if (fixture.config.length) {
+      assert.deepEqual(row.legacy.argv, fixture.argv, "configured invocation is required");
+      assert.deepEqual(
+        row.legacy.config,
+        fixture.config.map(({ path, sha256 }) => ({ path, sha256 })),
+      );
+    }
     assert(Array.isArray(row.legacy.passes) && row.legacy.passes.length <= 3);
     let previous = fixture.input;
     for (const [index, observation] of row.legacy.passes.entries()) {
@@ -191,15 +198,22 @@ export function runFormatterPack({ manifestPath, binaryPath, sourceRevision, rep
       native: { state: "unsupported", reason: fixture.adapters.reasons.native },
       comparison: { state: "not-compared", reason: "native formatter adapter unavailable" },
     };
+    if (fixture.config.length) {
+      row.legacy.argv = [...fixture.argv];
+      row.legacy.config = fixture.config.map(({ path, sha256 }) => ({ path, sha256 }));
+    }
     let workspace;
     try {
       if (binaryFailure) throw new Error(binaryFailure);
       workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-differential-formatter-"));
       const entry = path.join(workspace, "App.vue");
       fs.writeFileSync(entry, fixture.input);
+      for (const file of fixture.config) {
+        fs.writeFileSync(path.join(workspace, file.path), file.bytes);
+      }
       for (let pass = 1; pass <= 3; pass += 1) {
         const input = fs.readFileSync(entry);
-        const result = spawnSync(binaryPath, FORMATTER_ARGV, {
+        const result = spawnSync(binaryPath, fixture.argv, {
           cwd: workspace,
           timeout: 30_000,
           maxBuffer: 4 * 1024 * 1024,

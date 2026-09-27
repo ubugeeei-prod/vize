@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ default: boolean; static: boolean }>();
+const exactJapanese = (value: "日本語") => value;
+const exactEmoji = (value: "😊") => value;
+</script>
+<template>
+  <button :key="exactJapanese(default ? '日本語' : '日本語')" :ref="exactEmoji(static ? '😊' : '😊')" />
+</template>

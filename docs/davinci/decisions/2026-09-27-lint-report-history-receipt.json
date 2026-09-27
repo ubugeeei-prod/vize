@@ -1,0 +1,115 @@
+{
+  "schema": "vize.lint-history.report-capture",
+  "version": 1,
+  "sourceRevision": "d7a9b74bf90b77cc93cd7096105fcf1a2e76b56c",
+  "buildInputSelection": "git ls-files -- crates Cargo.toml Cargo.lock rust-toolchain.toml .cargo tools/benchmarks/crates tests/davinci_test_support, including staged test/input and before staging new report snapshots; each path NUL SHA256 NUL in git path order",
+  "buildInputFiles": 7092,
+  "buildInputTreeSha256": "a811d7ce43895bf330ef61d00c871f8edcc91b8e0e1375456553a0e46ffd6580",
+  "preparedRustPatchSha256": "b60b1198557bf757d3a13d0dea0ef09cdb3983d3677c2969229d1774c35db070",
+  "testSourceSha256": "8a37ad2141371aa001d74cc99957dbd3c0f47a78d051d9618ac8ae24ac2e1e62",
+  "caseFileSha256": "c10833e985b26e524cc9a0d0e469c3e651850fbe9dd6293d8f2854e692ef5622",
+  "rustcVerbose": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: aarch64-apple-darwin\nrelease: 1.98.0\nLLVM version: 22.1.8\n",
+  "build": {
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "vize_patina",
+      "--test",
+      "report_history",
+      "--no-run",
+      "--message-format=json-render-diagnostics"
+    ],
+    "env": {
+      "CARGO_TARGET_DIR": "/tmp/vize-patina-history-target-20260927",
+      "CARGO_INCREMENTAL": "0"
+    },
+    "exitStatus": 0,
+    "elapsedSeconds": 14.4,
+    "stdoutSha256": "e163dc968f141bedc888b10efc79b6ba776dc1377364b1535279addfd57a0b87",
+    "stderrSha256": "a829373c4a7adf3b06d72d162bae5eae6731aa8e07c2105aa0275e5f7a934eaa",
+    "target": {
+      "kind": ["test"],
+      "crate_types": ["bin"],
+      "name": "report_history",
+      "src_path": "/private/tmp/vize-lint-report-history-6881-20260927/crates/vize_patina/tests/report_history.rs",
+      "edition": "2024",
+      "doc": false,
+      "doctest": false,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "features": []
+  },
+  "binary": {
+    "path": "/tmp/vize-patina-history-target-20260927/debug/deps/report_history-1cfaf08ab47e69b6",
+    "sha256": "266c24f88b5d77ccd82d4cb5683eadcf8b268d549b598089fade063c67830123"
+  },
+  "executions": [
+    {
+      "phase": "capture",
+      "argv": [
+        "/tmp/vize-patina-history-target-20260927/debug/deps/report_history-1cfaf08ab47e69b6",
+        "--nocapture"
+      ],
+      "snapshotUpdateMode": "always",
+      "exitStatus": 0,
+      "passedTests": 1,
+      "ignoredTests": 0,
+      "observedCases": 4,
+      "observedFiles": 6,
+      "elapsedSeconds": 2.07,
+      "stdoutSha256": "261c6f558b67fa644269e3963351b7653d8bae2e27beb768a5f5a6ac0d829149",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "phase": "verify",
+      "argv": [
+        "/tmp/vize-patina-history-target-20260927/debug/deps/report_history-1cfaf08ab47e69b6",
+        "--nocapture"
+      ],
+      "snapshotUpdateMode": "no",
+      "exitStatus": 0,
+      "passedTests": 1,
+      "ignoredTests": 0,
+      "observedCases": 4,
+      "observedFiles": 6,
+      "elapsedSeconds": 0.229,
+      "stdoutSha256": "05fe0d3ed16619b98cb37d9911e36a1d0a202b30a579ef2c351dfa31205ccef7",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "oracleArtifacts": [
+    {
+      "path": "crates/vize_patina/tests/snapshots/report_history__no-findings-output-control.snap",
+      "sha256": "bfc58cb55f077bbd5d63af6aefe1ebd914036c8b7df186844e14d16249d55376"
+    },
+    {
+      "path": "crates/vize_patina/tests/snapshots/report_history__original-line-columns.snap",
+      "sha256": "13b8c0d62001408d40f3b1b879d1f32e8965a12c7dddc830491d2fd4127c4067"
+    },
+    {
+      "path": "crates/vize_patina/tests/snapshots/report_history__source-map-order-and-missing.snap",
+      "sha256": "7c57c37c78a6010db15fb882dbf0c5926e4ff74a845d39a76f58bc29f8fb967e"
+    },
+    {
+      "path": "crates/vize_patina/tests/snapshots/report_history__unicode-crlf-columns.snap",
+      "sha256": "3c66954ca7ad3698fd357394ca099fd195f1d86463967689d41c6b9723544c2d"
+    }
+  ],
+  "claims": {
+    "scope": "actual current public lint_sfc, formatted_message and format_results Json/Text observations only",
+    "wholeHistoricalCommitsAccepted": 0,
+    "nativeCasesHandled": 0,
+    "sharedDifferentialRegistration": "pending #6891",
+    "actionsSourceBuild": "not run for this capture"
+  }
+}

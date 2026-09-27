@@ -1,0 +1,1 @@
+<button v-for="item in items" :key="item" @click="save">{{ item }}</button>

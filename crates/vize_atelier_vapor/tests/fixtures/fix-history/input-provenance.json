@@ -1,0 +1,77 @@
+{
+  "sourceRevision": "12f59ba2a0223a06cfbdb9da26e5704b9c43c63e",
+  "cases": [
+    {
+      "id": "destructured-aliases",
+      "sourcePath": "crates/vize_atelier_vapor/src/tests.rs",
+      "symbol": "test_compile_v_for_destructured_aliases_resolve_source_paths",
+      "prefixIdentifiers": false,
+      "fixCommit": "6812891ddaaf2404e71589d5cc57859646de5973",
+      "inputSha256": "f66fcf0b02b4467c2329aaf561b96ef8c74ce4965ccb7c9c3793655aa973f476"
+    },
+    {
+      "id": "named-slot-fallback",
+      "sourcePath": "crates/vize_atelier_vapor/src/tests.rs",
+      "symbol": "test_compile_slot_outlet_preserves_static_name_props_and_fallback",
+      "prefixIdentifiers": false,
+      "fixCommit": "b7a657e126cc4c0cef92630f9c5626f3569616e2",
+      "inputSha256": "d3f773adac1f9ebb6aff90d3a20367b5bcce5c999707ffc27dbdcbed3341ed04"
+    },
+    {
+      "id": "nested-slot-outlet",
+      "sourcePath": "crates/vize_atelier_vapor/src/tests.rs",
+      "symbol": "test_compile_nested_slot_outlet_child",
+      "prefixIdentifiers": false,
+      "fixCommit": "d90df360f333eda938117bc46a271788720d0c81",
+      "inputSha256": "6d0c0be026025ec67a3279d502dba3a5773b368dafe3140eee413cfed2c9fc80"
+    },
+    {
+      "id": "directive-dynamic-argument",
+      "sourcePath": "crates/vize_atelier_vapor/src/tests.rs",
+      "symbol": "test_compile_custom_directive_preserves_payloads",
+      "prefixIdentifiers": false,
+      "fixCommit": "faa404cc05004560db04dc088cd9cbcb13a3b999",
+      "inputSha256": "54ce78d2e6b88f345dbf6d8cb0e8f26d8a80babc303389851b0cd927196bfd5f"
+    },
+    {
+      "id": "destructured-key",
+      "sourcePath": "tests/fixtures/vapor/v-for.pkl",
+      "symbol": "v-for destructure",
+      "prefixIdentifiers": false,
+      "fixCommit": "0de7787aeac48a931e15bc590a3e3b803286dcb8",
+      "inputSha256": "065f0cd957b569c0efc5b9bc513cf68ad81ae1028c83a1672d0559fbf91f29ed"
+    },
+    {
+      "id": "object-index",
+      "sourcePath": "tests/fixtures/vapor/v-for.pkl",
+      "symbol": "v-for object with index",
+      "prefixIdentifiers": false,
+      "fixCommit": "0895f6324800ac945aaba3c375ef0dc239458f60",
+      "inputSha256": "685e4faa1b8a7a3fc7f2e143a44ec34d2fc1336db7536272b4ae7f5ae91ac97a"
+    },
+    {
+      "id": "delegated-if",
+      "sourcePath": "crates/vize_atelier_vapor/tests/nested_delegate_events.rs",
+      "symbol": "delegated_events_are_registered_from_every_nested_emitted_block",
+      "prefixIdentifiers": true,
+      "fixCommit": "3b0400f76165e2bafa3f4b61e728cc7ae9769bc8",
+      "inputSha256": "940ff95e6427c2b4864ae72ad4206cf7c9a78b1ffe530f758a4ba2c0bff99c32"
+    },
+    {
+      "id": "delegated-loop",
+      "sourcePath": "crates/vize_atelier_vapor/tests/nested_delegate_events.rs",
+      "symbol": "delegated_events_are_registered_from_every_nested_emitted_block",
+      "prefixIdentifiers": true,
+      "fixCommit": "3b0400f76165e2bafa3f4b61e728cc7ae9769bc8",
+      "inputSha256": "8c38c3154bb88ead7c693cc8ae641fcf565b89565b57584f2240c9b80258043d"
+    },
+    {
+      "id": "delegated-slot-fallback",
+      "sourcePath": "crates/vize_atelier_vapor/tests/nested_delegate_events.rs",
+      "symbol": "delegated_events_are_registered_from_every_nested_emitted_block",
+      "prefixIdentifiers": true,
+      "fixCommit": "3b0400f76165e2bafa3f4b61e728cc7ae9769bc8",
+      "inputSha256": "383fac49c1f85677353bec9cf31a5fa0abc845d212d06e9dbd2a311e41a7b2d9"
+    }
+  ]
+}

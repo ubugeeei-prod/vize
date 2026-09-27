@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { fetchTags, flag } from './support'
+let followedTags: string[]
+if (flag) {
+  followedTags = await fetchTags()
+}
+</script>
+
+<template>
+  <div v-for="tag in followedTags" :key="tag">{{ tag.nope }}</div>
+</template>

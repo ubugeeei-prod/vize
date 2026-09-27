@@ -1,0 +1,9 @@
+
+<script setup lang="ts">
+import { render } from "./lib";
+import { ref } from "vue";
+const props = defineProps<{ text: string }>();
+const html = ref("");
+html.value = render(props.text);
+</script>
+<template><div v-html="html" /></template>

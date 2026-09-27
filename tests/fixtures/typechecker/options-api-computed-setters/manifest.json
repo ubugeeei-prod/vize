@@ -1,0 +1,46 @@
+{
+  "schema": "vize.typechecker.regression-fixture",
+  "version": 1,
+  "id": "typechecker/options-api-computed-setters",
+  "origin": {
+    "pullRequest": 6921,
+    "issue": 6879,
+    "fixCommit": "13a694c190909567ac5b565db0820cd56c244741"
+  },
+  "cases": [
+    {
+      "input": "WrappedOptions.vue",
+      "expectedBindings": "WrappedOptions.bindings.json"
+    },
+    {
+      "input": "WrappedSetters.vue",
+      "expectedBindings": "WrappedSetters.bindings.json"
+    },
+    {
+      "input": "ShadowedSetter.vue",
+      "expectedBindings": "ShadowedSetter.bindings.json"
+    },
+    {
+      "input": "HoistedSetter.vue",
+      "expectedBindings": "HoistedSetter.bindings.json"
+    }
+  ],
+  "witness": {
+    "path": "crates/vize_canon/src/virtual_ts/tests/options_api_instance/writable_computed/setter_fixtures.rs",
+    "symbol": "computed_setter_corpus_preserves_complete_binding_vectors",
+    "executor": "source-built-rust-virtual-ts-unit"
+  },
+  "normalization": "complete Options API binding-declaration vector in emission order; no partial matching",
+  "diagnostics": "No CLI diagnostic oracle is guessed. Fresh source-built Actions must execute the binding oracle; current runtime execution is pending.",
+  "nativeComparisons": 0,
+  "sha256": {
+    "HoistedSetter.bindings.json": "4ab67756da604036243cf252460ba658351e2dfb9f70526ffc93f2cbaf58417a",
+    "HoistedSetter.vue": "935577a92a0266d3359413cbc30f2a063d2acd101e54ef2b950a08dad9f1bbf5",
+    "ShadowedSetter.bindings.json": "3ad03aa6f1fcad902076bb86f241c6d7eebf488be3acfa9a641728d457d0b695",
+    "ShadowedSetter.vue": "78788fc1f642ec0877d63ad0a6d5ab055a7579259391c4d35589caad0d878fb2",
+    "WrappedOptions.bindings.json": "2842bd0654342a543de8f995b6514d8b32092922ea85cddb708f49f3b183dc6e",
+    "WrappedOptions.vue": "7d8899b9d65ddcc22694ebef43f7f5339374708c5ff5373734061d1ef9d5559d",
+    "WrappedSetters.bindings.json": "6e1b8fd7f89892ad7be34fa85819f75c8b9896a7cd2dd00cbf5e089782eac149",
+    "WrappedSetters.vue": "827d9fa9def0a185a945a4aab9887c1f419ad4cf7648e907c2bc9835f6054ac7"
+  }
+}

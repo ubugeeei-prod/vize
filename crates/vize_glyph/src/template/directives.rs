@@ -6,55 +6,12 @@
 use crate::{options::FormatOptions, script};
 use vize_l0::{String, ToCompactString, cstr};
 
-use super::attributes::attribute_priority;
 use super::helpers::template_literal_state_after_line_from;
 
-/// Normalize directive shorthands and assign sort priority.
-pub(crate) fn normalize_attribute(
-    name: &str,
-    value: Option<String>,
-    options: &FormatOptions,
-) -> (String, Option<String>, u8, bool) {
-    // Normalize directive shorthands (only if enabled)
-    let normalized_name: String = if options.normalize_directive_shorthands {
-        if let Some(rest) = name.strip_prefix("v-bind:") {
-            cstr!(":{rest}")
-        } else if let Some(rest) = name.strip_prefix("v-on:") {
-            cstr!("@{rest}")
-        } else if let Some(rest) = name.strip_prefix("v-slot:") {
-            cstr!("#{rest}")
-        } else {
-            name.to_compact_string()
-        }
-    } else {
-        name.to_compact_string()
-    };
-
-    // Format JS expressions in directive values
-    let mut indent_multiline_value = false;
-    let formatted_value = value.map(|v| {
-        if should_format_expression(&normalized_name) {
-            let (formatted, should_indent) = format_directive_value(&normalized_name, &v, options);
-            indent_multiline_value = should_indent;
-            formatted
-        } else {
-            v
-        }
-    });
-
-    let priority = if let Some(ref groups) = options.attribute_groups {
-        custom_attribute_priority(&normalized_name, groups)
-    } else {
-        attribute_priority(&normalized_name)
-    };
-
-    (
-        normalized_name,
-        formatted_value,
-        priority,
-        indent_multiline_value,
-    )
-}
+mod normalize;
+#[cfg(test)]
+pub(crate) use normalize::normalize_attribute;
+pub(crate) use normalize::normalize_attribute_with_vue_version;
 
 /// Determine if an attribute's value should be formatted as a JS expression.
 pub(crate) fn should_format_expression(name: &str) -> bool {
@@ -72,7 +29,12 @@ pub(crate) fn should_format_expression(name: &str) -> bool {
 }
 
 /// Format a directive value expression.
-fn format_directive_value(name: &str, value: &str, options: &FormatOptions) -> (String, bool) {
+pub(super) fn format_directive_value(
+    name: &str,
+    value: &str,
+    options: &FormatOptions,
+    vue_version: crate::VueVersion,
+) -> (String, bool) {
     let trimmed = value.trim();
     if trimmed.is_empty() {
         return (value.to_compact_string(), false);
@@ -93,6 +55,15 @@ fn format_directive_value(name: &str, value: &str, options: &FormatOptions) -> (
 
     let decoded = decode_expression_attribute_entities(trimmed);
     let expression = decoded.as_deref().unwrap_or(trimmed);
+
+    // Vue 2 filters apply to interpolations and bound values, never events.
+    if (name.starts_with(':') || name.starts_with("v-bind"))
+        && let Some(formatted) =
+            super::vue_filters::format_filter_expression(expression, options, vue_version, true)
+    {
+        let multiline = formatted.contains('\n');
+        return (formatted, multiline);
+    }
 
     // Try to format as JS expression via oxc_formatter
     match script::format_js_expression_in_attribute(expression, options) {

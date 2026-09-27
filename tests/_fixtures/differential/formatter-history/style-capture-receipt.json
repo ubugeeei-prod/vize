@@ -1,0 +1,61 @@
+{
+  "schema": "vize.formatter-history-capture",
+  "version": 1,
+  "issue": 6882,
+  "sourceRevisionAtBuild": "0445aded572c3cd9b429c130e87e87327fae1514",
+  "formatterSourceReference": "4ec0547a8667f3a94a8e2a9a8344c70c7ae80980",
+  "testSource": {
+    "path": "crates/vize_glyph/tests/fix_history_style.rs",
+    "sha256": "3725aab431b1b95aab1e9fa81e51b397285b88e75593c6d85d114180a3633263"
+  },
+  "cargoLockSha256": "be4568371f14f946452111a604efb3d2b6c1ebd10632b1f227f44ae69dca6df9",
+  "rustc": "rustc 1.98.0 (88d9e12ae 2026-08-18)",
+  "cargo": "cargo 1.98.0 (797e8a9bc 2026-08-05)",
+  "artifact": {
+    "target": {
+      "kind": ["test"],
+      "crate_types": ["bin"],
+      "name": "fix_history_style",
+      "src_path": "/private/tmp/vize-formatter-fix-history-20260927/crates/vize_glyph/tests/fix_history_style.rs",
+      "edition": "2024",
+      "doc": false,
+      "doctest": false,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "0",
+      "debuginfo": 2,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": true
+    },
+    "features": [],
+    "executable": "/tmp/vize-formatter-history-target-20260927/debug/deps/fix_history_style-c21fcf4ae67c96fb",
+    "sha256": "d9ff691256ddc5bf92c0d531e9b2a5e914fe7d83b9b657b1b5296e99142c8580",
+    "frozenExecutable": "/tmp/vize-formatter-fix_history_style-proof-20260927/fix_history_style"
+  },
+  "cargoLog": {
+    "path": "/tmp/vize-formatter-followup-replay.cargo.jsonl",
+    "sha256": "96ef88cb50545706ab5c520421a204b70f500ddc2349fde9affe07b0fa487621"
+  },
+  "cargoStderr": {
+    "path": "/tmp/vize-formatter-followup-replay.stderr.txt",
+    "sha256": "15fae17fc7c08edd30ff6d3cb99c7ccdd2daa4888ebe060b371ad95f410db0b7"
+  },
+  "replay": {
+    "argv": [
+      "/tmp/vize-formatter-fix_history_style-proof-20260927/fix_history_style",
+      "--test-threads=1"
+    ],
+    "snapshotUpdates": "disabled",
+    "exitStatus": 0,
+    "stdoutSha256": "ace9a86ec4d9aacd97e4e590241ea6d82606017036fa6a685f547f642dec76b8",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limitations": [
+    "The new test was uncommitted during capture; its content hash binds actual prepared source.",
+    "Raw logs and frozen executable remain locally at the recorded paths; Actions validation is pending.",
+    "Input source and snapshots need shared differential corpus registration before historical acceptance.",
+    "Native formatter acceptance remains zero."
+  ]
+}

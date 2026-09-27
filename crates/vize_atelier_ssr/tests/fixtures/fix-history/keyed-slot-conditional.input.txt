@@ -1,0 +1,6 @@
+<Comp>
+  <template v-for="item in items" :key="item.id">
+    <span v-if="item.visible">{{ item.label }}</span>
+    <span v-else>hidden</span>
+  </template>
+</Comp>

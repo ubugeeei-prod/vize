@@ -1,0 +1,6 @@
+export class Paginator {
+  constructor(public readonly key: string) {}
+  reload(): void {}
+}
+export declare function fetchTags(): Promise<string[]>;
+export declare const flag: boolean;

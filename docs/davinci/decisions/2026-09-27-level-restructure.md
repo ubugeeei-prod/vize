@@ -61,6 +61,10 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 
 Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and [#6837](https://github.com/ubugeeei-prod/vize/issues/6837). The detailed design is in the [#6836 design comment](https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929).
 
+[Authored formatter tag forms](./2026-09-27-formatter-tag-forms.md) records
+#6846's resolution-free audit and public byte corpus; source-built Actions
+and the actual queue remain required before closing the issue.
+
 - **Boundary rule:** L1 is what the text _is_ (the concrete syntax of every grammar, lossless). L2 is what it _does_.
 - **Markup** is a grammar × profile matrix:
   - Grammars: Vue now; Svelte, Angular and others later.
@@ -105,6 +109,18 @@ See the [l3 is the decision layer decisions](./2026-09-27-level-restructure-desi
 
 See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-emission) in the companion record.
 
+[Compiler fix-history byte references](./2026-09-27-compiler-fix-history-pins.md) records [#6880](https://github.com/ubugeeei-prod/vize/issues/6880): three immutable complete SFC Results, including #1416 diagnostics. The earlier ten-profile archive has eight fixes and two feature controls; whole history/native acceptance remain unfinished and fresh Actions are required. Publication uses ordinary shared test modules, a documented unused-helper expectation verified by strict Clippy, and a generated SFC consumer shard after Actions found policy drift.
+
+[SSR and Vapor history witness audit](./2026-09-27-compiler-target-history-audit.md) records 19 SSR and 20 Vapor inspected fixes, original option boundaries and raw byte gaps. Preserve normalized complete Pkl outputs and all shape/runtime checks alongside new raw pins.
+
+[Complete SSR fix-history capture](./2026-09-27-ssr-fix-history-captures.md) records nine repeated outputs for #990/#3701/#2487 with source/executable identity and exact options. The frozen capture source is preserved on its provenance branch; fresh Actions, whole history and native acceptance remain pending. The SSR consumer shard is regenerated for the new test helper.
+
+[Complete Vapor fix-history capture](./2026-09-27-vapor-fix-history-captures.md) records nine repeated complete results for seven fixes with exact options and source/executable identity. Its frozen source is preserved on a provenance branch; whole history, native acceptance and fresh Actions remain pending. Publication uses ordinary test/example modules and the generated Vapor consumer shard.
+
+[SFC map and diagnostic history references](./2026-09-27-sfc-map-diagnostic-history.md) records two original #3604/#750 inputs and three repeated source/executable-bound Results, with a populated map and distinct relative/document diagnostic locations. The complete test and strict Clippy pass locally; fresh Actions, whole history and native acceptance remain TODO. Its reviewed frozen source is preserved on a provenance branch, and the bounded SFC consumer shard records the new helper references.
+
+[Existing compiler stack acceptance](./2026-09-27-sfc-map-diagnostic-history.md#existing-stack-merge-acceptance) records actual CI4 main, the sole inspector binding, fresh exact-head checks and native queue/actual-merge requirements for the existing five PRs; 23 compiler inputs and 15 fix links leave whole history/native acceptance unfinished.
+
 ## Script side
 
 See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side) in the companion record.
@@ -112,6 +128,8 @@ See the [script side decisions](./2026-09-27-level-restructure-designs.md#script
 ## Dialects, languages, frameworks
 
 See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks) in the companion record.
+
+[Legacy formatter Vue 2 filters](./2026-09-27-glyph-vue2-filters.md) records [#6845](https://github.com/ubugeeei-prod/vize/issues/6845), explicit version selection and the native FilterChain follow-up in #6836.
 
 ## JSX semantics
 
@@ -123,7 +141,33 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
 - One parse per file. Every product consumes the same artifacts.
 - **Formatter:** L1 only. A rewrite whose safety depends on L2 facts (for example component-dependent self-closing) is a linter autofix instead.
+
+  [Formatter fix-history output fixtures](./2026-09-27-formatter-fix-history.md) records [#6882](https://github.com/ubugeeei-prod/vize/issues/6882); public script and CSS byte fixtures retain the actual invalid-CSS error separately. Full-history audit and shared corpus registration remain pending.
+  Formatter history asset and binary-reference bytes disable Git text conversion, including on CRLF checkouts. Binary references retain authored trailing whitespace and EOF spaces.
+  Legacy internal single-pass outputs remain API observations; native formatting does not inherit that mechanism. Product compatibility separately compares CLI check verdicts and streams.
+  Formatter byte snapshots replace duplicated partial checks in new history tests; original semantic regressions and measured golden/capture bytes remain unchanged.
+  Formatter slot/root/raw-close fixtures retain public dynamic barriers and final-CR/LF behavior, with bound-slot helper classification checked separately; shared corpus registration remains pending. The glyph import inventory row travels with that fixture slice.
+  Formatter raw/entity fixtures preserve deleted authored inputs and reuse duplicate witnesses. Legacy internal check-mode intermediate output does not prescribe a native pipeline stage; compare CLI verdict/streams separately.
+  Formatter SFC layout fixtures retain six exact original inputs/defaults and compare full first-pass bytes alongside the existing three-pass fixed-point checks.
+  Formatter directive layout fixtures retain six original inputs/options and semantic constraints; complete existing template-literal witnesses are reused without duplicate credit.
+
+  Existing formatter regressions gain twenty-four full byte references while retaining their semantic/fixed-point assertions; opaque CRLF templates and script identity keep exact output bytes. Shared registration remains pending.
+  The shared public formatter API observer builds in T1 from the actual checkout, rejects untracked Rust product sources, retains receipt/stream artifacts through one shared composite upload action, counts four default byte/fixed-point cases and two legacy internal observations separately, and keeps native credit zero; other history and CLI checks remain pending.
+
 - **Linter:** syntax rules on L1, semantic rules on L2 and facts. Diagnostics go through L0, and autofixes are L1 span edits.
+
+  [#6881 linter history inventory](./2026-09-27-linter-history-inventory.md) pins full Git history and candidate snapshot blobs; enumeration never counts as fixture coverage or native acceptance.
+
+  [Selected current linter history oracles](./2026-09-27-lint-history-current-api.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): complete public API results and actual independent fixes, with whole-history closure and native comparisons still pending.
+
+  [Static-class edit boundaries](./2026-09-27-static-class-fix-boundary.md) record [#6920](https://github.com/ubugeeei-prod/vize/issues/6920): use the end-exclusive binding span; preserve the original bad capture as evidence, not accepted coverage.
+
+  [#6881](https://github.com/ubugeeei-prod/vize/issues/6881) queue validation exposed a 1,053,102-byte tracked filename stream exceeding Node's default 1 MiB buffer. The v-on and WASM-cache inspections share an 8 MiB bounded Git reader that rejects child errors and nonzero exits, preserves NUL-delimited filenames, and checks a real index above 1 MiB plus overflow and command failure. All historical captures and assertions remain unchanged; the remaining three PRs still require fresh source and full queue checks before actual merge.
+
+  [Actual historical linter reports](./2026-09-27-lint-report-history.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): complete JSON/Text bytes and unchanged requery controls, with the existing linter witness shard refreshed; full history and native proof remain open.
+
+  [NextTick arrow history oracles](./2026-09-27-next-tick-history.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): ten exact private source/public API observations, including Unicode/CRLF SFC framing, complete diagnostics and unchanged requery, with one linter witness row refreshed; full history and native proof remain open.
+
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.
 
@@ -131,9 +175,18 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
 See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-check) in the companion record.
 
+[Type-checker history slices](./2026-09-27-typechecker-history-slices.md) record
+focused required T1 diagnostics, including Unicode values, for #6879;
+whole-history and native admission remain unfinished.
+
 ## Legacy deletion criteria
 
-See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria) in the companion record.
+See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria)
+in the companion record and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-history.md)
+for the pinned review ledger, complete document-link and CRLF on-type response contracts and
+unfinished history obligations in #6883.
+The same installment preserves dated source-runtime receipts separately from
+historical binary evidence; later heads still require their own Actions proof.
 
 ## Multi-framework
 
@@ -185,6 +238,9 @@ Vize follows language-toolchain practice, not compiler-only practice. It stays l
 - **The formatter keeps its Doc IR separate from its printer** ([#6875](https://github.com/ubugeeei-prod/vize/issues/6875)).
 - **Edits have one representation.** Diagnostic fixes, code actions and lint autofixes are all L1 span edits tagged with a document version ([#6876](https://github.com/ubugeeei-prod/vize/issues/6876)).
 
+[Inspector comparison transport](./2026-09-27-inspector-compare-transport.md)
+preserves authoritative child failures when Node exits before input delivery.
+
 ## CI tiers
 
 Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861](https://github.com/ubugeeei-prod/vize/issues/6861)–[#6867](https://github.com/ubugeeei-prod/vize/issues/6867). [First-publish control repair](./2026-09-27-sdk-bootstrap-control.md) is tracked in [#6895](https://github.com/ubugeeei-prod/vize/issues/6895).
@@ -206,6 +262,11 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 [Tooling input selection](./2026-09-27-tooling-input-selection.md) records the shared task inputs, explicit T1 runtime inventory and conservative T0 fallback for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864).
 
+[Full tooling LSP source identity](./2026-09-27-lsp-source-binding.md) binds
+required runtime proof to the receipted current CLI without cached fallback.
+Use test-step environment variables to retain the plain VP command and compose
+with the formatter's always-upload corpus evidence without changing build setup.
+
 [Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base. [Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md) records #6862's runner, doctest, resource and archive identity decisions.
 
 [Rust source wiring](./2026-09-27-ci-rust-core.md) preserves full queue execution, proves the tested comparison base and records the intermediate scope.
@@ -224,6 +285,9 @@ See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-
 [Nuxt critical CSS module identity](./2026-09-27-nuxt-critical-css.md) records [#6897](https://github.com/ubugeeei-prod/vize/issues/6897); compiler migration and SSR slot scope remain separate.
 
 - **Full queue Rust execution (#6830, #6861):** reuse one bound workspace archive and four unfiltered workers; keep required TSGO, doctests and all 11 feature recipes. Runtime evidence and acceptance conditions are in [the full Rust shard decision](./2026-09-27-ci-full-rust-shards.md).
+
+[Options API computed regressions](./2026-09-27-options-computed-regressions.md)
+record #6921 owner history, shared parse facts, setter guards and registered typechecker fixtures for #6879.
 
 [Canon slot outlet regression preparation](./2026-09-27-canon-slot-outlet-union.md)
 records #6922 owner history, unbounded inferred payloads, string widening and required full diagnostic proof.

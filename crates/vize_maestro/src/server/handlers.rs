@@ -1,5 +1,7 @@
 //! LSP protocol handler implementations.
 
+mod formatting;
+
 use tower_lsp::{
     LanguageServer,
     jsonrpc::Result,
@@ -540,29 +542,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
-        if !self.state.lsp_features().formatting {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document.uri;
-
-        // Standalone (petite-vue) HTML documents are not SFCs: running the SFC
-        // formatter over them corrupts the file. Skip until a dedicated HTML
-        // formatter lands (#1393).
-        if crate::utils::is_standalone_html_path(uri.path()) {
-            return Ok(None);
-        }
-
-        let Some(_content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        #[cfg(feature = "glyph")]
-        {
-            let options = self.state.get_format_options();
-            return Ok(super::format::format_document(&_content, &options));
-        }
-        #[cfg(not(feature = "glyph"))]
-        Ok(None)
+        formatting::formatting(self, params).await
     }
 
     /// Format only the SFC blocks the selection touches — see
@@ -571,31 +551,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentRangeFormattingParams,
     ) -> Result<Option<Vec<TextEdit>>> {
-        if !self.state.lsp_features().formatting {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document.uri;
-        let _range = params.range;
-
-        // See `formatting`: standalone HTML must not go through the SFC formatter.
-        if crate::utils::is_standalone_html_path(uri.path()) {
-            return Ok(None);
-        }
-
-        let Some(_content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        #[cfg(feature = "glyph")]
-        {
-            let options = self.state.get_format_options();
-            let path = uri.path();
-            return Ok(super::format::format_range(
-                &_content, path, _range, &options,
-            ));
-        }
-        #[cfg(not(feature = "glyph"))]
-        Ok(None)
+        formatting::range_formatting(self, params).await
     }
 
     /// Re-indent the line being typed on — see `server::format::on_type` for
@@ -604,31 +560,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentOnTypeFormattingParams,
     ) -> Result<Option<Vec<TextEdit>>> {
-        if !self.state.lsp_features().formatting {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document_position.text_document.uri;
-
-        // See `formatting`: standalone HTML must not go through the SFC formatter.
-        if crate::utils::is_standalone_html_path(uri.path()) {
-            return Ok(None);
-        }
-
-        let Some(_content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        #[cfg(feature = "glyph")]
-        {
-            let options = self.state.get_format_options();
-            let position = params.text_document_position.position;
-            let path = uri.path();
-            return Ok(super::format::format_on_type(
-                &_content, path, position, &options,
-            ));
-        }
-        #[cfg(not(feature = "glyph"))]
-        Ok(None)
+        formatting::on_type_formatting(self, params).await
     }
 }
 

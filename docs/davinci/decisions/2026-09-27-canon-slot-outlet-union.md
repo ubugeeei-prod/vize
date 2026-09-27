@@ -108,5 +108,13 @@ at `ba94ed918b01801a2fd06f6cfe26c961d44a2456` passed the source receipt,
 all eleven exact CLI records and all eight exact TypeScript 6.0.3 records using
 the actual virtual documents and saved ambient helpers. The dedicated case ran
 1005.9 ms. The same binary digest `79fa219ebac3abea60d4fc73e23904a0bea37a1ed86ce8840a7279b930711a0d`
-was bound to this fresh source receipt. Rust/snapshots and final PR/queue checks
-remain separate required confirmations; no cross-head full-green claim is made.
+was bound to this fresh source receipt. The mandatory Rust job also succeeded
+with `VIZE_TEST_REQUIRE_TSGO=1`: the actual CLI ran in 0.54 seconds and checked
+all eleven complete diagnostic records and exit status. Canon reported 1,517
+passed, zero failed and zero ignored; all four restored snapshots and all
+eleven feature recipes executed successfully. The full run had eighteen
+successful jobs and five intentional scheduled-only skips. Published `abbc723`
+adds only observation metadata/docs to this historical `ba94ed9` source, with
+production, registered inputs and oracle payloads unchanged. Final combined-head
+PR/queue checks and actual merge remain required; no cross-head full-green,
+native acceptance or whole fix-history completion credit is claimed.

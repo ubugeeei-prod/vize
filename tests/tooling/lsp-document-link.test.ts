@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
 import { isDiagnosticsForUri, offsetToPosition } from "./support/lsp/assertions.ts";
-import { testOutputRoot } from "./support/lsp/paths.ts";
+import { root, testOutputRoot } from "./support/lsp/paths.ts";
 import { LspSession } from "./support/lsp/session.ts";
 
 type DocumentLink = {
@@ -145,46 +146,37 @@ const _x = ref(0)
 });
 
 test("vize lsp documentLink handles multiline imports and ignores inactive specifiers", async () => {
+  const fixtureDir = path.join(root, "tests/_fixtures/differential/lsp/inactive-imports");
+  const fixture = JSON.parse(fs.readFileSync(path.join(fixtureDir, "case.json"), "utf8")) as {
+    files: Array<{ runtimePath: string; source: string; sha256: string }>;
+    initializationOptions: { editor: boolean; lint: boolean; typecheck: boolean };
+    entry: string;
+    documentVersion: number;
+    method: string;
+    expected: { source: string; sha256: string };
+  };
+  const checkedBytes = (reference: { source: string; sha256: string }): Buffer => {
+    const bytes = fs.readFileSync(path.join(fixtureDir, reference.source));
+    assert.equal(createHash("sha256").update(bytes).digest("hex"), reference.sha256);
+    return bytes;
+  };
+  const expected = JSON.parse(checkedBytes(fixture.expected).toString("utf8")) as DocumentLink[];
+  assert.ok(Array.isArray(expected), "inactive-import response fixture must be an array");
+  assert.equal(expected.length, 3, "inactive-import fixture must retain all three active links");
   const testRootDir = path.join(testOutputRoot, "lsp-document-link-script-comments");
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
   const session = new LspSession();
 
   try {
-    await session.initialize(workspaceDir, {
-      editor: true,
-      lint: false,
-      typecheck: false,
-    });
+    await session.initialize(workspaceDir, fixture.initializationOptions);
 
-    for (const fileName of ["Multi.vue", "Real.vue", "Exported.vue"]) {
-      fs.writeFileSync(
-        path.join(workspaceDir, fileName),
-        `<script setup lang="ts"></script>
-<template><span /></template>
-`,
-        "utf8",
-      );
+    for (const file of fixture.files) {
+      fs.writeFileSync(path.join(workspaceDir, file.runtimePath), checkedBytes(file));
     }
 
-    const source = `<script setup lang="ts">
-/* import Block from './Block.vue' */
-// import Ghost from './Ghost.vue'
-const note = "import Hidden from './Hidden.vue'"
-import {
-  real /* from './CommentOnly.vue' */,
-} from './Multi.vue'
-import Real from './Real.vue'
-export {
-  default as Exported /* from './FakeExport.vue' */,
-} from './Exported.vue'
-</script>
-
-<template>
-  <Real />
-</template>
-`;
-    const filePath = path.join(workspaceDir, "Host.vue");
+    const filePath = path.join(workspaceDir, fixture.entry);
+    const source = fs.readFileSync(filePath, "utf8");
     const uri = pathToFileURL(filePath).href;
     fs.writeFileSync(filePath, source, "utf8");
 
@@ -192,24 +184,29 @@ export {
       textDocument: {
         uri,
         languageId: "vue",
-        version: 1,
+        version: fixture.documentVersion,
         text: source,
       },
     });
 
-    await session.waitForNotification("textDocument/publishDiagnostics", (params) =>
-      isDiagnosticsForUri(params, uri),
+    await session.waitForNotification(
+      "textDocument/publishDiagnostics",
+      (params) => isDiagnosticsForUri(params, uri) && params.version === fixture.documentVersion,
     );
 
-    const links = (await session.request("textDocument/documentLink", {
+    const links = await session.request(fixture.method, {
       textDocument: { uri },
-    })) as DocumentLink[] | null;
+    });
+    assert.ok(Array.isArray(links), "documentLink must return the complete link array");
+    assert.equal(links.length, 3, "documentLink must preserve all three active links");
 
-    assert.ok(Array.isArray(links), JSON.stringify(links));
-    assert.deepEqual(links.map(basenameForTarget), ["Multi.vue", "Real.vue", "Exported.vue"]);
+    const workspaceUri = pathToFileURL(fs.realpathSync(workspaceDir)).href;
     assert.deepEqual(
-      links.map((link) => textAtLinkRange(source, link)),
-      ["'./Multi.vue'", "'./Real.vue'", "'./Exported.vue'"],
+      links,
+      expected.map((link) => ({
+        ...link,
+        target: link.target?.replace("${workspace}", workspaceUri),
+      })),
     );
   } finally {
     await session.shutdown();

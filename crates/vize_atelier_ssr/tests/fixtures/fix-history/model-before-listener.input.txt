@@ -1,0 +1,1 @@
+<Foo v-model="value" @update:modelValue="onUpdate" />

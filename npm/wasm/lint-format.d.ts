@@ -61,6 +61,8 @@ export interface LintResult {
 
 /** Options for formatting a Vue SFC. */
 export interface FormatOptions {
+  /** Explicit Vue version; omitted uses Vue 3. */
+  vueVersion?: string;
   printWidth?: number;
   tabWidth?: number;
   useTabs?: boolean;

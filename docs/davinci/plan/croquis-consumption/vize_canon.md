@@ -131,7 +131,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): every 
 | `UndefinedRef`            |        1 |    2 |
 | `VForScopeData`           |        4 |    5 |
 | `VSlotScopeData`          |        4 |    5 |
-| `Croquis.bindings`        |        0 |   23 |
+| `Croquis.bindings`        |        0 |   27 |
 | `Croquis.macros`          |       72 |   73 |
 | `Croquis.scopes`          |       60 |   62 |
 | `Croquis.types`           |        9 |   17 |
