@@ -8,7 +8,7 @@
 )]
 
 use serde::Deserialize;
-use vize_l0::{config::VueVersion, String};
+use vize_l0::{String, config::VueVersion};
 use vize_patina::{HelpLevel, LintPreset, LintResult, Linter, Locale};
 
 #[derive(Debug, Deserialize)]
