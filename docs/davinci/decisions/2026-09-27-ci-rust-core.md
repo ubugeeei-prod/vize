@@ -110,4 +110,5 @@ The first #6879 child adds exactly `vize_canon / fix_history_diagnostics /
 inline_event_assignments_preserve_exact_diagnostics` to the T0 deferral after that test
 exists. Its fixture declares required T1 execution; the body unconditionally
 runs the production checker. Source and metadata assertions reject nonexistent
-names. The full Cargo T1 lane and all three Corsa tests remain unchanged.
+names. The full required real-TSGO T1 profile selects every workspace case, including
+all three Corsa tests, without a default-filter.

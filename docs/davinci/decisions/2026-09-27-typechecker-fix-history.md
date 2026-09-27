@@ -41,7 +41,7 @@ This is a batch start-position contract. The public batch diagnostic type has
 no end range, related-information payload, or raw backend response. The pack
 records those missing fields explicitly and declares `requiredTier: T1`.
 The unchanged test bodies always execute the production checker. T0 nextest
-must exclude this exact binary and test name; the full T1 Cargo lane must run
+must exclude this exact binary and test name; the unfiltered full required T1 profile must run
 it with its real runtime. This is explicit tier selection, with no early return
 or successful runtime-absence bypass in the fixture test.
 It claims no complete LSP capture,
@@ -81,5 +81,5 @@ This child defers only package `vize_canon`, test binary
 `fix_history_diagnostics`, exact test
 `inline_event_assignments_preserve_exact_diagnostics`. Tooling checks its source existence
 and required T1 fixture metadata. The three existing Corsa deferrals stay exact;
-full Cargo T1 remains unchanged and must execute real TSGO. Draft PR Actions
+full required T1 remains complete and must execute real TSGO. Draft PR Actions
 and parent main/queue proof are pending; this decision admits no native credit.
