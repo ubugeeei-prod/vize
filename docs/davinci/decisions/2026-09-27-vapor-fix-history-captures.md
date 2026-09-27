@@ -77,3 +77,11 @@ Native acceptance remains zero; shared compiler adapter registration and full
 history/target/dialect review remain unfinished. Continue raw hydration,
 KeepAlive and structural-slot captures while preserving their runtime traces.
 #6880 stays open, with its historical 609-fix denominator unreconciled.
+
+Publication uses ordinary module discovery for both the integration target and
+Cargo's automatically discovered example directory. A separate test-only copy
+of the observer helper has identical logic after input include-path adjustment;
+this avoids a new dependency crate or path-attribute bypass. The example entry
+moves in a move-only commit, then wiring changes follow. The generator updates
+only the Vapor consumer shard. Archive bytes and all 29 indexed hashes remain
+unchanged; fresh latest-head Actions validate the adjusted source.

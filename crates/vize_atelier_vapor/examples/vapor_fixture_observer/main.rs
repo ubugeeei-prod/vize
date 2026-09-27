@@ -2,7 +2,6 @@
 
 use serde_json::json;
 
-#[path = "../tests/support/fix_history.rs"]
 mod fixtures;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

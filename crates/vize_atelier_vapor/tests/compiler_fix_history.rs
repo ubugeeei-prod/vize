@@ -2,8 +2,8 @@
 
 use serde_json::Value;
 
-#[path = "support/fix_history.rs"]
-mod fixtures;
+mod support;
+use support::fix_history as fixtures;
 
 const EXPECTED: &str = include_str!("fixtures/fix-history/capture-941ff/first.stdout.json");
 
