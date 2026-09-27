@@ -78,6 +78,21 @@ replay. Strict Clippy also passed. The receipt binds the actual test source,
 executable, toolchain and local logs. These are prepared public observations;
 shared registration, Actions and native acceptance remain pending.
 
+## Slot, root-tag and raw-close slice
+
+`fix_history_template_gaps.rs` adds thirteen full public byte references for
+static/bound legacy slots, templated template/style/custom roots, incomplete
+raw closes and unavoidable inner directive quotes. Preserve actual dynamic
+evaluation barriers; helper classification is tested separately for bound
+slot/slot-scope names. Three focused priority tests passed.
+
+The public template API removes trailing CR/LF even from raw fragments. The
+incomplete-close fixtures retain that existing contract and preserve every
+other tail byte; they do not invent a closing delimiter or infer helper output.
+Four public tests passed capture, updates-disabled replay, frozen executable
+replay and strict Clippy. No production formatter algorithm changed. Shared
+registration and Actions remain pending.
+
 ## Remaining work
 
 - Finish the commit-by-commit audit of all 56 original fix-title commits and
