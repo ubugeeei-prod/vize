@@ -126,29 +126,32 @@ it never sums inclusive call-edge costs.
 [valgrind-requests](https://docs.rs/valgrind-requests/1.2.0/valgrind_requests/)
 provides the client requests without introducing another benchmark runner.
 
-Unfinished until an actual Actions baseline and strict required merge-queue
-enforcement are verified. Wall-clock and resource budgets stay nightly.
+The initial Actions baseline is proven by the two controlled-context builds
+recorded below. Strict required merge-queue enforcement remains unfinished
+until the exact final revision passes in the queue. Wall-clock and resource
+budgets stay nightly.
 
 The [reference run 36304969684](https://github.com/ubugeeei-prod/vize/actions/runs/36304969684)
 verified all 100 probes identically in three executions with the fixed
 allocator protocol. Independent artifact inspection reconciled all 300
 named dumps, 36 zero-count termination dumps, and 36 successful allocator
 setups with the report and candidate registry. Raw logs report mimalloc
-v3.3.2 and the actual 128 MiB reservation. The measured TOML is pinned
+v3.3.2 and the actual 128 MiB reservation. Its draft TOML was recorded
 without a margin: source `f5d4f29b72bb21b9e567477149ee40cbe0bdb9f7`, artifact
 `10926957194`, artifact digest
 `23364ef28ee1125be1f5a1e141835a3574014ea7eceb315511c4460800d34906`, and TOML
 SHA-256 `b86442507bc16b5f2acf260d291c1de39c911e735d5bb1d2b7db891fa1698607`.
 The source is the tested PR merge commit, whose second parent is branch head
-`5ac03e84188ff9b329398bd6ff88b2ef1fbbd4f3`. Later runs measure their current
-source against this historical measured reference; provenance does not
-require candidate and baseline source hashes to match.
+`5ac03e84188ff9b329398bd6ff88b2ef1fbbd4f3`. This unmerged AVX draft was later
+rejected by cross-job verification and was never an accepted main baseline.
+Its raw artifacts remain audit evidence rather than current ceilings.
 
 The required `Check` workflow now calls the instruction workflow and includes
 its result in `test-report`. Every call validates the complete pinned
 registry and ratchets against the exact fetched event base commit. If the
-base has no registry during initial introduction, only the above exact
-reviewed TOML hash is accepted. Missing or empty registries always fail.
+base has no registry during initial introduction, only the exact reviewed
+controlled-context TOML hash below is accepted. Missing or empty registries
+always fail.
 Every merge-group call performs the three-run collection and unconditional
 ceiling comparison. Unrelated PR calls check the registry and ratchet without
 compiling the benchmark suites; the path-selected standalone PR trigger
@@ -181,10 +184,10 @@ digests are diagnostic artifact provenance; they do not require future
 candidate binaries to equal historical binaries. The libc mask follows the
 [GNU C Library hardware-capability tunables](https://sourceware.org/glibc/manual/latest/html_node/Hardware-Capability-Tunables.html)
 and its [2.39 comparison selector](https://raw.githubusercontent.com/bminor/glibc/release/2.39/master/sysdeps/x86_64/multiarch/ifunc-memcmp.h).
-Final pinning now requires matching counts in at least two separate Actions
+Final pinning requires matching counts in at least two separate Actions
 job builds with the same compiler source, in addition to three identical
-executions within each job. The draft remains blocked until that proof and
-the exact queue enforcement pass.
+executions within each job. That baseline proof is recorded below; exact
+queue enforcement is still awaiting the final queue run.
 
 The first fixed-dispatch [run 36306175372](https://github.com/ubugeeei-prod/vize/actions/runs/36306175372)
 collected all 100 probes identically across three executions. Independent
@@ -234,3 +237,45 @@ benchmark ids, windows and numeric ceilings. A fixture label or path may
 change only while its input digest remains identical; changed input bytes
 still fail. Counter/span/timing identity renames are a separate registry and
 cannot reset these instruction budgets.
+
+The initial fixed-method registry is now proven by
+[run 36307058591](https://github.com/ubugeeei-prod/vize/actions/runs/36307058591),
+attempts 1 and 2, at tested source
+`b79010ff63b21612ab1dcc927a221f4000a65fe5` (branch head
+`dac002ef7b549309bea7e5a7faad50ffddf536ce`). Separate jobs `108585661390`
+and `108586063584` each rebuilt all twelve benchmark binaries (`fresh = false`)
+and collected all 100 probes identically in three executions. Independent
+raw inspection reconciled 300 named dumps, 36 zero termination dumps and
+36 actual allocator setups per job. All 100 identities and counts agree
+across jobs; binary byte digests also agree. Actual dumps use the baseline
+SSE2 libc routines and `memcpy@GLIBC_2.2.5`, while the logs prove mimalloc
+v3.3.2's successful 128 MiB reservation and completed 64 MiB setup outside
+each measured window. Both guests have the exact fixed environment and
+per-suite argument paths recorded in the artifacts.
+
+Both candidate TOMLs are byte-identical SHA-256
+`17c3947044c033d03b0a86d13b2c3fa6dc2d1e90cb2222033921f649e97a826f`.
+The raw artifact identities are attempt 1 `10927931577`, digest
+`837aafaae76bd414c96249b56da09e6bd2f986cb28118700e53bf0dba39ee5cd`,
+and attempt 2 `10928056386`, digest
+`1369fde2d20d518e9e940fd787aea186ac68250f352fc2b2c541a738487ee7e1`.
+The first artifact was preserved locally before rerunning, since Actions
+artifact listings after a rerun may only retain the latest attempt.
+Their reports, raw logs and dumps are retained alongside the rejected AVX
+reference for review. The final fixed-method counts are 56 higher, 35 lower
+and nine equal to that rejected reference, with the largest difference
+`+42,806` in `atelier_vapor_generate_stress-wide`. These are methodology
+differences, not an upward ratchet of an accepted main registry: main has
+no instruction registry yet. This initializes the first proven registry,
+without margins or tolerances. Once introduced, immutable-base comparison
+forbids any ceiling increase, removed identity, empty registry, changed
+methodology or changed input bytes.
+
+The routine queue gate may reuse the benchmark cache after this clean-build
+proof; only bootstrap's forced rebuild is removed. Fixed guest context,
+allocator setup, libc dispatch, exact input bytes, three-run equality and
+strict ceilings remain mandatory. Future candidate binaries and source
+hashes may differ from this historical proof: their provenance is retained
+per run, while their measured counts must meet the pinned ceilings. Exact
+final PR and required merge-queue verification remain unfinished until
+those runs succeed.

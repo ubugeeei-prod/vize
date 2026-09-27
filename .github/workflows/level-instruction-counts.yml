@@ -65,9 +65,6 @@ jobs:
           cargo test --locked -p davinci_harness --lib --features instruction-counts
       - name: Measure each stage three times without Criterion sampling
         if: env.MEASURE == 'true'
-        env:
-          # Bootstrap proof: rebuild benchmark binaries in independent jobs.
-          VIZE_INSTRUCTION_REBUILD: "1"
         run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
       - name: Verify pinned registry and immutable base ratchet
         env:
@@ -86,7 +83,7 @@ jobs:
           else
             # First introduction only: require the exact independently reviewed
             # 100-row artifact. Later bases contain a registry and must ratchet.
-            echo 'b86442507bc16b5f2acf260d291c1de39c911e735d5bb1d2b7db891fa1698607  docs/davinci/plan/instruction-budgets.toml' | sha256sum --check --strict
+            echo '17c3947044c033d03b0a86d13b2c3fa6dc2d1e90cb2222033921f649e97a826f  docs/davinci/plan/instruction-budgets.toml' | sha256sum --check --strict
           fi
           node tools/benchmarks/scripts/instruction-counts.mjs --verify-budgets "${BASE_ARGS[@]}"
       - name: Enforce pinned ceilings
