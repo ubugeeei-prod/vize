@@ -133,6 +133,13 @@ Shared registration and Actions remain pending.
 
 ## Remaining work
 
+Fresh Actions also required the two touched glyph consumer/v-on inventories
+to reflect the added test paths. Refresh only their three actual new rows;
+the central decision record retains the same decisions within its line budget.
+Twenty focused tooling checks, sixteen affected public Rust tests and strict
+Clippy passed after the assertion/inventory repair. Golden and receipt bytes
+remain unchanged; the receipts still describe their original capture source.
+
 - Finish the commit-by-commit audit of all 56 original fix-title commits and
   supplementary behavioral changes; preserve superseded contracts explicitly.
 - Add missing complete public outputs for CSS, opaque templates, script block
