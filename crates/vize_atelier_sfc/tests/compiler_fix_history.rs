@@ -28,8 +28,7 @@ const IMPORT_EXPECTED: &str =
     include_str!("fixtures/fix-history/dual-script-inline-type-only-imports.expected.json");
 
 #[test]
-fn separate_template_render_collision_keeps_complete_module_result()
--> Result<(), Box<dyn std::error::Error>> {
+fn separate_template_render_collision_keeps_complete_module_result() {
     let descriptor_options = SfcParseOptions::default();
     let options = SfcCompileOptions {
         parse: SfcParseOptions {
@@ -41,13 +40,14 @@ fn separate_template_render_collision_keeps_complete_module_result()
     let codegen = CodegenOptions::default();
     let custom_elements = CustomElementMatcher::default();
     fixture_options::validate(
-        &serde_json::from_str(RENDER_OPTIONS)?,
+        &serde_json::from_str(RENDER_OPTIONS).expect("valid immutable option reference"),
         &descriptor_options,
         &options,
         &codegen,
         &custom_elements,
-    )?;
-    let descriptor = parse_sfc(RENDER_SOURCE, descriptor_options)?;
+    )
+    .expect("authored options must match their reference");
+    let descriptor = parse_sfc(RENDER_SOURCE, descriptor_options).expect("parse authored SFC");
     let actual = compile_sfc_for_adapter_with_experimental_options(
         &descriptor,
         options,
@@ -58,30 +58,29 @@ fn separate_template_render_collision_keeps_complete_module_result()
         SfcCompileExperimentalOptions::default(),
     );
     assert_eq!(
-        serde_json::to_value(actual)?,
-        serde_json::from_str::<Value>(RENDER_EXPECTED)?,
+        serde_json::to_value(actual).expect("serialize complete public Result"),
+        serde_json::from_str::<Value>(RENDER_EXPECTED).expect("valid immutable Result reference"),
         "complete SFC result changed for fix fe724476c"
     );
-    Ok(())
 }
 
 #[test]
-fn dual_script_type_imports_keep_complete_module_result() -> Result<(), Box<dyn std::error::Error>>
-{
+fn dual_script_type_imports_keep_complete_module_result() {
     let descriptor_options = SfcParseOptions::default();
     let options = SfcCompileOptions::default();
     fixture_options::validate(
-        &serde_json::from_str(IMPORT_OPTIONS)?,
+        &serde_json::from_str(IMPORT_OPTIONS).expect("valid immutable option reference"),
         &descriptor_options,
         &options,
         &CodegenOptions::default(),
         &CustomElementMatcher::default(),
-    )?;
-    let descriptor = parse_sfc(IMPORT_SOURCE, descriptor_options)?;
+    )
+    .expect("authored options must match their reference");
+    let descriptor = parse_sfc(IMPORT_SOURCE, descriptor_options).expect("parse authored SFC");
     assert_eq!(
-        serde_json::to_value(compile_sfc(&descriptor, options))?,
-        serde_json::from_str::<Value>(IMPORT_EXPECTED)?,
+        serde_json::to_value(compile_sfc(&descriptor, options))
+            .expect("serialize complete public Result"),
+        serde_json::from_str::<Value>(IMPORT_EXPECTED).expect("valid immutable Result reference"),
         "complete SFC result changed for fix 92adfb692"
     );
-    Ok(())
 }

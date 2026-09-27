@@ -15,21 +15,22 @@ const EXPECTED: &str =
     include_str!("fixtures/fix-history/invalid-template-expression-diagnostic.expected.json");
 
 #[test]
-fn invalid_template_expression_keeps_complete_result() -> Result<(), Box<dyn std::error::Error>> {
+fn invalid_template_expression_keeps_complete_result() {
     let descriptor_options = SfcParseOptions::default();
     let options = SfcCompileOptions::default();
     fixture_options::validate(
-        &serde_json::from_str(OPTIONS)?,
+        &serde_json::from_str(OPTIONS).expect("valid immutable option reference"),
         &descriptor_options,
         &options,
         &CodegenOptions::default(),
         &CustomElementMatcher::default(),
-    )?;
-    let descriptor = parse_sfc(SOURCE, descriptor_options)?;
+    )
+    .expect("authored options must match their reference");
+    let descriptor = parse_sfc(SOURCE, descriptor_options).expect("parse authored SFC");
     assert_eq!(
-        serde_json::to_value(compile_sfc(&descriptor, options))?,
-        serde_json::from_str::<Value>(EXPECTED)?,
+        serde_json::to_value(compile_sfc(&descriptor, options))
+            .expect("serialize complete public Result"),
+        serde_json::from_str::<Value>(EXPECTED).expect("valid immutable Result reference"),
         "complete diagnostic Result changed for fix 336622af2"
     );
-    Ok(())
 }
