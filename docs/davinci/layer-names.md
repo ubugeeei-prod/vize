@@ -38,8 +38,9 @@ publication must use the exact validated release candidate.
 The source API rename is intentional for the
 `0.429` minor release; renaming a package does not redirect an old dependency.
 
-The first-release registry semver gate uses the exact published `0.428.1` source
-archive of the previous package as its baseline. Repository comparisons use the
+The first-release registry semver gate uses each rename's exact published source
+archive as its baseline: `0.428.1` for the four S-named packages above, and
+`vize_impeto@0.429.0` for the physical L3 package rename. Repository comparisons use the
 actual base Git tree. Only the selected Cargo package/library identity is mapped
 to the current name; a base workspace keeps its old dependency key and path with
 an explicit package identity link. Versions, dependency aliases and Rust source

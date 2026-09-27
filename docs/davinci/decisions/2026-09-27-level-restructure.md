@@ -37,14 +37,11 @@ Tracking issues: [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (res
 
 ## Physical L3 package slice
 
-The first #6832 slice moves `crates/vize_impeto` to `crates/vize_l3` in a
-move-only commit and changes package/dependency identities in the next commit.
-The existing L3 op types, dump grammar, wire strings, differential features,
-conversion registry and CLI pipeline remain unchanged. Historical release and
-measurement records retain their actual package names. Remaining type/string
-renames and `vize dump` wiring keep #6832 open. First-name semver checks use the
-actual preceding `vize_impeto` archive and Git parent; publication of `vize_l3`
-requires its own first-publication and trusted-publisher verification.
+The first #6832 slice moves `crates/vize_impeto` to `crates/vize_l3`, then
+changes package/dependency identities. Runtime behavior stays unchanged.
+First-name semver uses the verified `vize_impeto@0.429.0` archive and Git parent.
+Remaining naming and CLI work keeps #6832 open. See the
+[complete slice decision](./2026-09-27-level-restructure-order.md#physical-l3-package-slice).
 
 ## `vize_davinci` is deleted
 
