@@ -18,18 +18,18 @@ const TEMPLATE: &str = "\n  <div>{{ msg }}</div>\n";
 /// byte, after the two transform passes the artifact selects (`hoist-static`
 /// and `template-complexity` are fact-producing analyses, so the tree they
 /// leave is the lowering's).
-const L2_PAGE: &str = "[disegno]
+const L2_PAGE: &str = "[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @3:23
   ui.interpolation js(\"msg\" @11:14) @8:17
 
 ";
 
-const L2_PROVENANCE_PAGE: &str = r#"[s2-provenance-folio]
+const L2_PROVENANCE_PAGE: &str = r#"[l2-provenance-dump-v2]
 
-[s2-provenance-folio.records]
+[l2-provenance-dump-v2.records]
 rule=condense.drop-whitespace node=- before="\n  " after="" @0:3
 rule=lower.element node=0 before="<div>" after="ui.element div" @3:23
 rule=lower.interpolation node=1 before=" msg " after="ui.interpolation js" @8:17

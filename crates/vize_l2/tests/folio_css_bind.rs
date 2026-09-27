@@ -12,10 +12,10 @@ use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCssBindOp};
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=3
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element style @0:50
   vue.css-bind value=js(\"color\" @8:13) @0:15
   vue.css-bind value=opaque(parse-rejected \"%\" @20:21) @16:30

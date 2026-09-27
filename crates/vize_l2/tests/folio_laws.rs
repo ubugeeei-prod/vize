@@ -18,10 +18,10 @@ const CANONICAL: &str = include_str!("fixtures/reference.folio");
 
 /// `Display` output for the same tree: every span elided, nothing else.
 const DISPLAY: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=13
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element form
   attr method=\"post\"
   ui.model read=js(\"draft.note\") write=js(\"draft.note\")
@@ -218,10 +218,10 @@ fn unsafe_modifier_names_round_trip_through_canonical_brackets() {
         })],
     };
     let canonical = "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @92:290
   vue.directive \"if*\\\"props\" mods=[\"showLineNumbers\\\"\",\"with,comma\"] @97:125
 
@@ -259,10 +259,10 @@ fn an_empty_tree_prints_the_header_only() {
     let empty = Page::default();
     assert_eq!(
         empty.print_to_string(DumpMode::Full).as_str(),
-        "[disegno]\nops=0\n\n"
+        "[l2-dump-v2]\nops=0\n\n"
     );
     assert_eq!(
-        Page::parse("[disegno]\nops=0\n\n").expect("empty page parses"),
+        Page::parse("[l2-dump-v2]\nops=0\n\n").expect("empty page parses"),
         empty
     );
 }
@@ -272,10 +272,10 @@ fn non_canonical_input_is_normalized_by_the_first_print() {
     // A stale count, blank-line separators, and a zero-padded span offset:
     // parse accepts all of it and the first print is canonical.
     let scrambled = "\
-[disegno]
+[l2-dump-v2]
 ops=999
 
-[disegno.ops]
+[l2-dump-v2.ops]
 
 ui.element form @0:007
 
@@ -287,10 +287,10 @@ ui.component Chrome @121:130
     assert_eq!(
         value.print_to_string(DumpMode::Full).as_str(),
         "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element form @0:7
   attr method=\"post\" @5:20
 ui.component Chrome @121:130
@@ -323,10 +323,10 @@ fn every_opaque_reason_spelling_round_trips() {
             .collect(),
     };
     let canonical = "\
-[disegno]
+[l2-dump-v2]
 ops=5
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.interpolation opaque(for-value \"x\" @1:2) @0:3
 ui.interpolation opaque(multi-statement \"x\" @1:2) @0:3
 ui.interpolation opaque(nesting-refused \"x\" @1:2) @0:3

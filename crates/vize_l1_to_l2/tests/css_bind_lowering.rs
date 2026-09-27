@@ -25,10 +25,10 @@ fn two_calls_round_trip_on_the_carrier() {
     assert_eq!(
         value.print_to_string(DumpMode::Full).as_str(),
         "\
-[disegno]
+[l2-dump-v2]
 ops=3
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element style @0:61
   vue.css-bind value=js(\"color\" @21:26) @14:27
   vue.css-bind value=js(\"bgColor\" @49:56) @41:58
@@ -44,10 +44,10 @@ fn block_start_produces_file_absolute_spans() {
     assert_eq!(
         shifted.print_to_string(DumpMode::Full).as_str(),
         "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element style @90:120
   vue.css-bind value=js(\"color\" @111:116) @104:117
 
@@ -190,10 +190,10 @@ fn quoted_expressions_keep_inner_parentheses() {
     assert_eq!(
         folio(css, 0).print_to_string(DumpMode::Full).as_str(),
         "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element style @0:58
   vue.css-bind value=js(\"parentBg ?? 'var(--bg)'\" @30:53) @22:55
 

@@ -21,10 +21,10 @@ use vize_l2::verify::{Rigor, Violation, verify};
 const SOURCE: &str = include_str!("fixtures/css_bind.vue");
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=4
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element p @11:41
   attr class=\"foo\" @14:25
   ui.interpolation js(\"color\" @29:34) @26:37

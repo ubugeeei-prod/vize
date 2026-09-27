@@ -11,10 +11,10 @@ fn v_html_lowers_to_the_raw_html_dialect_op() {
     let art = artifact(r#"<p v-html="raw">x</p>"#);
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element p @0:21\n\
          \x20 vue.html value=js(\"raw\" @11:14) @3:15\n\
          \x20 ui.text \"x\" @16:17\n\
@@ -33,10 +33,10 @@ fn value_less_v_html_still_lowers_so_dom_emit_can_match_undefined() {
         assert_eq!(
             art.folio,
             cstr!(
-                "[disegno]\n\
+                "[l2-dump-v2]\n\
                  ops=3\n\
                  \n\
-                 [disegno.ops]\n\
+                 [l2-dump-v2.ops]\n\
                  ui.element p @0:{element_end}\n\
                  \x20 vue.html @3:{attr_end}\n\
                  \x20 ui.text \"x\" @{text_start}:{}\n\
@@ -57,10 +57,10 @@ fn v_html_with_argument_or_modifier_still_defers() {
         let art = artifact(src);
         assert_eq!(
             art.folio,
-            "[disegno]\n\
+            "[l2-dump-v2]\n\
              ops=2\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.element p @0:25\n\
              \x20 ui.text \"x\" @20:21\n\
              \n"
@@ -82,10 +82,10 @@ fn v_html_on_a_slot_outlet_lowers_as_a_slot_prop_binding() {
     let art = artifact(r#"<slot v-html="raw"></slot>"#);
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.slot name=\"default\" @0:26\n\
          \x20 vue.html value=js(\"raw\" @14:17) @6:18\n\
          \n"

@@ -4,9 +4,9 @@ import { folioLines, folioTokens } from "./folioLines";
 
 // Byte-for-byte what the compiler prints for `<div :class="cls">{{ msg }}</div>`
 // with a trailing comment (see the Rust `spolvero_ladder` pins).
-const PAGE = `[s2-provenance-folio]
+const PAGE = `[l2-provenance-dump-v2]
 
-[s2-provenance-folio.records]
+[l2-provenance-dump-v2.records]
 rule=lower.element node=0 before="<div :class=\\"cls\\">" after="ui.element div" @3:36
 rule=lower.bind node=1 before=":class=\\"cls\\"" after="ui.bind \\"class\\"" @8:20
 rule=drop.comment node=- before="<!-- a\\nb -->" after="" @36:49
@@ -79,10 +79,10 @@ describe("parseProvenance", () => {
   });
 
   it("numbers L2 op lines by page order, the ids records name", () => {
-    const s2 = `[disegno]
+    const s2 = `[l2-dump-v2]
 ops=3
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @3:36
   ui.bind name="class" value=js("cls" @16:19) @8:20
     attr element-kind="input" @8:20

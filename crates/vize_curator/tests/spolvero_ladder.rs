@@ -18,10 +18,10 @@ use vize_curator::inspector::{StagePage, ladder_pages, spolvero_value};
 
 const TEMPLATE: &str = "\n  <div :class=\"cls\">{{ msg }}</div>\n  <Comp v-model=\"x\"><template #a>hi</template></Comp>\n";
 
-const L2_PAGE: &str = r#"[disegno]
+const L2_PAGE: &str = r#"[l2-dump-v2]
 ops=8
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @3:36
   ui.bind name="class" value=js("cls" @16:19) @8:20
   ui.interpolation js("msg" @24:27) @21:30
@@ -48,9 +48,9 @@ walk=2 pass=template-complexity kind=optional fusability=fusable
 
 ";
 
-const L2_PROVENANCE_PAGE: &str = r##"[s2-provenance-folio]
+const L2_PROVENANCE_PAGE: &str = r##"[l2-provenance-dump-v2]
 
-[s2-provenance-folio.records]
+[l2-provenance-dump-v2.records]
 rule=condense.drop-whitespace node=- before="\n  " after="" @0:3
 rule=lower.element node=0 before="<div :class=\"cls\">" after="ui.element div" @3:36
 rule=lower.bind node=1 before=":class=\"cls\"" after="ui.bind \"class\"" @8:20
@@ -259,7 +259,7 @@ fn a_malformed_template_still_climbs_every_rung() {
     // L3 graph over whatever L2 kept. The L1 page is still the authored bytes.
     let template = "\n<div class=\"open>{{ msg }\n";
     let pages = ladder_pages("src/Broken.vue", template);
-    let s2 = "[disegno]\nops=1\n\n[disegno.ops]\nui.element div @1:27\n  attr class=\"open>{{ msg }\\n\" @6:27\n\n";
+    let s2 = "[l2-dump-v2]\nops=1\n\n[l2-dump-v2.ops]\nui.element div @1:27\n  attr class=\"open>{{ msg }\\n\" @6:27\n\n";
     assert_eq!(
         pages
             .iter()
@@ -278,7 +278,7 @@ fn a_malformed_template_still_climbs_every_rung() {
             (
                 "s2-provenance",
                 "transform",
-                "[s2-provenance-folio]\n\n[s2-provenance-folio.records]\nrule=condense.drop-whitespace node=- before=\"\\n\" after=\"\" @0:1\nrule=lower.element node=0 before=\"<div class=\\\"open>{{ msg }\\n\" after=\"ui.element div\" @1:27\nrule=pass.hoist-static.fact node=0 before=\"ui.element\" after=\"level=fully-static props=true nested=false native=true\" @1:27\n\n",
+                "[l2-provenance-dump-v2]\n\n[l2-provenance-dump-v2.records]\nrule=condense.drop-whitespace node=- before=\"\\n\" after=\"\" @0:1\nrule=lower.element node=0 before=\"<div class=\\\"open>{{ msg }\\n\" after=\"ui.element div\" @1:27\nrule=pass.hoist-static.fact node=0 before=\"ui.element\" after=\"level=fully-static props=true nested=false native=true\" @1:27\n\n",
             ),
             (
                 "s3",

@@ -16,7 +16,7 @@ use vize_extension_host::{SurfacePage, negotiate};
 use vize_extension_sdk::pages::{l1, l2};
 use vize_extension_sdk::types::Span;
 use vize_l0::{Allocator, String};
-use vize_l2::dump::Page as L2Page;
+use vize_l2::dump::historical::v1::Page as HistoricalL2Page;
 
 fn token(token: &PageToken) -> l1::Token {
     l1::Token {
@@ -137,12 +137,12 @@ fn the_sdk_l2_writer_prints_canonical_disegno_pages() {
         "[disegno]\nops=3\n\n[disegno.ops]\nui.element section @0:52\n  attr hidden @9:15\n  \
          attr title=\"a \\\"q\\\"\\\\\\n\\t\\r\" @16:30\n  ui.text \"héllo 👋\" @31:42\nui.text \"\" @52:52\n\n"
     );
-    let parsed = L2Page::parse(&text).expect("the page parses");
+    let parsed = HistoricalL2Page::parse(&text).expect("the historical page parses");
     assert_eq!(full_text(&parsed).as_str(), text);
     let empty = l2::SemanticPage::default().text();
     assert_eq!(empty, "[disegno]\nops=0\n\n");
     assert_eq!(
-        full_text(&L2Page::parse(&empty).expect("parses")).as_str(),
+        full_text(&HistoricalL2Page::parse(&empty).expect("parses")).as_str(),
         empty
     );
 }

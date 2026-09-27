@@ -1,7 +1,7 @@
 use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l2::dump::Page as L2Page;
 
-const EMPTY: &str = "[disegno]\nops=0\n\n";
+const EMPTY: &str = "[l2-dump-v2]\nops=0\n\n";
 
 #[test]
 fn l2_folio_is_the_physical_stage_name() {

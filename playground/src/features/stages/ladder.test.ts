@@ -4,10 +4,10 @@ import { buildLadder } from "./ladder";
 
 // The feed `analyzeSfc` returns for `<div>{{ msg }}</div>`, byte-for-byte as
 // the Rust `wasm::tests_spolvero` pin states it.
-const L2 = `[disegno]
+const L2 = `[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @3:23
   ui.interpolation js("msg" @11:14) @8:17
 
@@ -150,7 +150,7 @@ describe("buildLadder", () => {
       path: "Component.vue",
       stage: "s2-provenance",
       pass: "transform",
-      text: "[s2-provenance-folio]\n\n[s2-provenance-folio.records]\n\n",
+      text: "[l2-provenance-dump-v2]\n\n[l2-provenance-dump-v2.records]\n\n",
     };
     const ladder = buildLadder(feed([provenance]));
     const s2 = ladder.rungs[1];

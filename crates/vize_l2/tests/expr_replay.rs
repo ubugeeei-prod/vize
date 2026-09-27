@@ -55,10 +55,10 @@ fn arena_built<'a>(allocator: &'a Allocator) -> ArenaVec<'a, Op<'a>> {
 /// The canonical page the replay tree prints - pinned so the test cannot
 /// silently degenerate into comparing two empty artifacts.
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.interpolation js(\"items.filter(Boolean).length\" @2:30) @0:32
 ui.interpolation opaque(multi-statement \"a++; b++\" @36:44) @34:46
 

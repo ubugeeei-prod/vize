@@ -13,10 +13,10 @@ use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueMemoOp, VueOnceOp};
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=4
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @0:50
   vue.once @0:7
   vue.memo value=js(\"[id]\" @16:20) @8:21

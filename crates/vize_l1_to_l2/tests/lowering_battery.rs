@@ -91,10 +91,10 @@ fn a_source_block_lowering_keeps_file_absolute_spans() {
     assert_eq!(
         folio.print_to_string(DumpMode::Full).as_str(),
         "\
-[disegno]
+[l2-dump-v2]
 ops=3
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @18:36
   ui.element span @23:30
     ui.text \"x\" @29:30

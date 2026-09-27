@@ -9,10 +9,10 @@ fn bare_v_cloak_lowers_to_the_cloak_dialect_op() {
     let art = artifact("<p v-cloak>x</p>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element p @0:16\n\
          \x20 vue.cloak @3:10\n\
          \x20 ui.text \"x\" @11:12\n\
@@ -35,10 +35,10 @@ fn v_cloak_with_value_argument_or_modifier_lowers_to_the_same_marker() {
         assert_eq!(
             art.folio,
             cstr!(
-                "[disegno]\n\
+                "[l2-dump-v2]\n\
                  ops=3\n\
                  \n\
-                 [disegno.ops]\n\
+                 [l2-dump-v2.ops]\n\
                  ui.element p @0:{element_end}\n\
                  \x20 vue.cloak @3:{attr_end}\n\
                  \x20 ui.text \"x\" @{text_start}:{text_end}\n\
@@ -54,10 +54,10 @@ fn v_cloak_on_a_slot_outlet_lowers_as_an_inert_slot_binding() {
     let art = artifact("<slot v-cloak></slot>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.slot name=\"default\" @0:21\n\
          \x20 vue.cloak @6:13\n\
          \n"

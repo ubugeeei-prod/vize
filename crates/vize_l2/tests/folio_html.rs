@@ -11,20 +11,20 @@ use vize_l2::expr::{ExprRef, JsExpr};
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueHtmlOp};
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @0:24
   vue.html value=js(\"raw\" @13:16) @5:17
 
 ";
 
 const VALUE_LESS: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @0:16
   vue.html @5:11
 

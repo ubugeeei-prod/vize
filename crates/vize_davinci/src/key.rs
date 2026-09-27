@@ -60,7 +60,7 @@ pub mod schema {
     pub const L1_SURFACE: u32 = 2;
     /// L2 page: the Disegno folio `Full` form with every span rebased to
     /// the block start.
-    pub const L2_PAGE: u32 = 2;
+    pub const L2_PAGE: u32 = 3;
 }
 
 /// A stage artifact with a content key.

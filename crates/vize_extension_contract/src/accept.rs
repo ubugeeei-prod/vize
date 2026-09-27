@@ -15,6 +15,7 @@ use vize_davinci::diagnostic as davinci;
 use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::String;
 use vize_l2::dump::Page as L2Page;
+use vize_l2::dump::historical::v1::Page as HistoricalL2Page;
 
 use crate::contract::{L1_PAGE_SCHEMA, L2_PAGE_SCHEMA, LoweredBlock, Page, SourceBlock, Span};
 use crate::surface_page::{SurfacePage, TileError};
@@ -90,7 +91,8 @@ impl fmt::Display for AcceptError {
 /// The first check the answer fails, as an [`AcceptError`].
 pub fn accept(block: &SourceBlock, lowered: LoweredBlock) -> Result<Accepted, AcceptError> {
     let surface: SurfacePage = read_page("s1-page", L1_PAGE_SCHEMA, &lowered.surface)?;
-    let semantic: L2Page = read_page("s2-page", L2_PAGE_SCHEMA, &lowered.semantic)?;
+    let semantic =
+        read_page::<HistoricalL2Page>("s2-page", L2_PAGE_SCHEMA, &lowered.semantic)?.into_current();
     surface
         .check_tiles(&block.source)
         .map_err(AcceptError::Tiles)?;

@@ -1,5 +1,5 @@
 //! The provenance page: every lowering and pass decision as a derived,
-//! round-trippable folio page (`[s2-provenance-folio]`).
+//! round-trippable dump page (`[l2-provenance-dump-v2]`).
 //!
 //! [`ProvenanceRecord`]s are what answers "why does the output contain
 //! this?" (`devtool.md`, Provenance): which rule fired, on which authored
@@ -29,7 +29,7 @@ use crate::provenance::ProvenanceRecord;
 
 /// Owned page of provenance records, in decision order.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Dump)]
-#[dump(name = "s2-provenance-folio")]
+#[dump(name = "l2-provenance-dump-v2")]
 pub struct Page {
     /// One record per lowering or pass decision.
     pub records: Vec<Record>,

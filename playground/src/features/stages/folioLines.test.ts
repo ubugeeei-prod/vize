@@ -4,10 +4,10 @@ import { folioLines, folioTokens, lineSpan, linesCovering, surfaceTokens } from 
 // Page texts as the compiler prints them (pinned byte-for-byte by the Rust
 // TS-52 `spolvero_ladder` suite for this template).
 const TEMPLATE = '\n  <div :class="cls">{{ msg }}</div>\n';
-const L2 = `[disegno]
+const L2 = `[l2-dump-v2]
 ops=3
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @3:36
   ui.bind name="class" value=js("cls" @16:19) @8:20
   ui.interpolation js("msg" @24:27) @21:30
@@ -88,7 +88,7 @@ describe("spans", () => {
       start: 8,
       end: 20,
     });
-    expect(lineSpan("disegno", "[disegno.ops]")).toBeNull();
+    expect(lineSpan("disegno", "[l2-dump-v2.ops]")).toBeNull();
     expect(lineSpan("impeto", "id=1 parent=0 owner=0 span=21:30")).toEqual({ start: 21, end: 30 });
     expect(lineSpan("partition", "op=0 kind=static span=3:36")).toEqual({ start: 3, end: 36 });
     expect(lineSpan("values", 'operand=[1,"value",0,null,null,"js","cls","",16,19]')).toEqual({

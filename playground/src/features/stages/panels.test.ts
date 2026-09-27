@@ -142,7 +142,7 @@ describe("FolioDiffView", () => {
         before: "Lowered",
         after: "v-slot",
         diff: {
-          lines: [{ kind: "same", leftLine: 1, rightLine: 1, text: "[disegno]" }],
+          lines: [{ kind: "same", leftLine: 1, rightLine: 1, text: "[l2-dump-v2]" }],
           stats: { additions: 0, removals: 0, unchanged: 1 },
         },
       },

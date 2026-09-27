@@ -6,10 +6,10 @@ use vize_l2::dump::Page as L2Page;
 #[test]
 fn model_names_round_trip_on_the_model_line() {
     let canonical = "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.component Field @0:32
   ui.model name=js(\"field\" @16:21) read=js(\"msg\" @24:27) write=js(\"msg\" @24:27) @5:28
 

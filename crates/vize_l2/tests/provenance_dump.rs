@@ -1,4 +1,4 @@
-//! TS-16 laws for the provenance page (`[s2-provenance-folio]`): canonical
+//! TS-16 laws for the provenance page (`[l2-provenance-dump-v2]`): canonical
 //! text is a print/parse fixed point (escapes included), structural
 //! round-trip holds for produced and dropped records, and malformed lines
 //! are refused with their line number.
@@ -7,9 +7,9 @@ use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{Span, String, cstr};
 use vize_l2::dump::provenance::{Page as ProvenancePage, Record as DumpProvenance};
 
-const CANONICAL: &str = r#"[s2-provenance-folio]
+const CANONICAL: &str = r#"[l2-provenance-dump-v2]
 
-[s2-provenance-folio.records]
+[l2-provenance-dump-v2.records]
 rule=lower.element node=0 before="<p class=\"x\">" after="ui.element p" @3:18
 rule=drop.comment node=- before="<!-- a\nb -->" after="" @18:31
 rule=pass.hoist-static.fact node=0 before="<p>" after="fact level=not-static" @3:18
@@ -75,8 +75,9 @@ fn structural_round_trip_keeps_quotes_backslashes_and_tabs() {
 
 #[test]
 fn malformed_records_are_refused_with_their_line() {
-    let page =
-        |line: &str| cstr!("[s2-provenance-folio]\n\n[s2-provenance-folio.records]\n{line}\n\n");
+    let page = |line: &str| {
+        cstr!("[l2-provenance-dump-v2]\n\n[l2-provenance-dump-v2.records]\n{line}\n\n")
+    };
     let cases = [
         ("node=0 before=\"\" after=\"\" @0:1", "expected `rule=`"),
         (

@@ -9,10 +9,10 @@ use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l2::dump::Page as L2Page;
 
 const SLOT_MODEL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.slot name=\"head\" @21:40
   ui.model read=js(\"value\" @22:27) write=js(\"value = $event\" @30:44) @21:40
     attr element-kind=\"slot\" @22:33

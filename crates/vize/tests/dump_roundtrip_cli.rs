@@ -140,7 +140,7 @@ fn malformed_wrong_level_and_elided_l2_display_are_failures() {
         (
             "l2",
             "not a dump",
-            include_str!("fixtures/dump_cli/malformed.stderr"),
+            include_str!("fixtures/dump_cli/malformed-v2.stderr"),
         ),
         (
             "l3",

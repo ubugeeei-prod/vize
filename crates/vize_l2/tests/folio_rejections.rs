@@ -9,32 +9,40 @@ use vize_davinci::dump::{Dump, Error as DumpError};
 use vize_l0::String;
 use vize_l2::dump::Page as L2Page;
 
-/// Valid page prefix: `[disegno]` header, `ops=0`, blank, `[disegno.ops]`.
-const P: &str = "[disegno]\nops=0\n\n[disegno.ops]\n";
+/// Valid page prefix: `[l2-dump-v2]` header, `ops=0`, blank, `[l2-dump-v2.ops]`.
+const P: &str = "[l2-dump-v2]\nops=0\n\n[l2-dump-v2.ops]\n";
 
 /// `(input, expected 1-based line, expected message)`.
 const REJECTIONS: &[(&str, usize, &str)] = &[
     // -- sections and header ------------------------------------------------
     (
-        "x\n[disegno]\nops=0\n",
+        "x\n[l2-dump-v2]\nops=0\n",
         1,
-        "content before the [disegno] header",
+        "content before the [l2-dump-v2] header",
     ),
-    ("[disegno.ops]\n", 1, "first section must be [disegno]"),
-    ("[frame]\n", 1, "first section must be [disegno]"),
     (
-        "[disegno]\nops=0\n[disegno]\n",
-        3,
-        "duplicate section [disegno]",
+        "[l2-dump-v2.ops]\n",
+        1,
+        "first section must be [l2-dump-v2]",
     ),
-    ("[disegno]\nops=0\n[frame]\n", 3, "unknown section [frame]"),
-    ("", 0, "missing [disegno] header"),
-    ("\n\n", 0, "missing [disegno] header"),
-    ("[disegno]\nops\n", 2, "field line is missing `=`"),
-    ("[disegno]\ncount=1\n", 2, "unknown field `count`"),
-    ("[disegno]\nops=0\nops=1\n", 3, "duplicate field `ops`"),
-    ("[disegno]\nops=x7\n", 2, "invalid integer `x7`"),
-    ("[disegno]\n", 0, "missing field `ops`"),
+    ("[frame]\n", 1, "first section must be [l2-dump-v2]"),
+    (
+        "[l2-dump-v2]\nops=0\n[l2-dump-v2]\n",
+        3,
+        "duplicate section [l2-dump-v2]",
+    ),
+    (
+        "[l2-dump-v2]\nops=0\n[frame]\n",
+        3,
+        "unknown section [frame]",
+    ),
+    ("", 0, "missing [l2-dump-v2] header"),
+    ("\n\n", 0, "missing [l2-dump-v2] header"),
+    ("[l2-dump-v2]\nops\n", 2, "field line is missing `=`"),
+    ("[l2-dump-v2]\ncount=1\n", 2, "unknown field `count`"),
+    ("[l2-dump-v2]\nops=0\nops=1\n", 3, "duplicate field `ops`"),
+    ("[l2-dump-v2]\nops=x7\n", 2, "invalid integer `x7`"),
+    ("[l2-dump-v2]\n", 0, "missing field `ops`"),
 ];
 
 /// Ops-section rejections; every input is `P` plus the listed body.

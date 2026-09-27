@@ -93,7 +93,7 @@ describe("PassTimeline", () => {
 describe("FolioView", () => {
   const lines = folioLines(
     "disegno",
-    '[disegno]\nops=2\n\n[disegno.ops]\nui.element div @3:23\n  ui.interpolation js("msg" @11:14) @8:17\n\n',
+    '[l2-dump-v2]\nops=2\n\n[l2-dump-v2.ops]\nui.element div @3:23\n  ui.interpolation js("msg" @11:14) @8:17\n\n',
   );
 
   it("renders tokens and links only lines that carry a span", async () => {
@@ -102,10 +102,10 @@ describe("FolioView", () => {
     });
     const rows = wrapper.findAll(".davinci-line");
     expect(rows.map((row) => row.find(".davinci-code").text())).toEqual([
-      "[disegno]",
+      "[l2-dump-v2]",
       "ops=2",
       "",
-      "[disegno.ops]",
+      "[l2-dump-v2.ops]",
       "ui.element div @3:23",
       'ui.interpolation js("msg" @11:14) @8:17',
       "",

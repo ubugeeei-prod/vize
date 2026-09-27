@@ -66,7 +66,7 @@ fn event_for(pipeline: &Pipeline, pass_index: usize) -> PassEvent<'_> {
 /// canonically invalid.
 #[cfg(debug_assertions)]
 fn empty_if_page() -> L2Page {
-    L2Page::parse("[disegno]\nops=1\n\n[disegno.ops]\nui.if @0:10\n\n")
+    L2Page::parse("[l2-dump-v2]\nops=1\n\n[l2-dump-v2.ops]\nui.if @0:10\n\n")
         .expect("the page is grammar-valid")
 }
 
@@ -176,7 +176,7 @@ fn check_table_panics_with_the_exact_report_on_a_dangling_id() {
     let pipeline = Pipeline::new("s2", &[DIAGNOSE]);
     let event = event_for(&pipeline, 0);
     let folio = L2Page::parse(
-        "[disegno]\nops=2\n\n[disegno.ops]\nui.element div @0:10\n  ui.text \"x\" @2:8\n\n",
+        "[l2-dump-v2]\nops=2\n\n[l2-dump-v2.ops]\nui.element div @0:10\n  ui.text \"x\" @2:8\n\n",
     )
     .expect("the page is grammar-valid");
     let mut table = SideTable::new();

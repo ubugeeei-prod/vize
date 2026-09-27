@@ -15,10 +15,10 @@ use vize_l2::expr::{ExprRef, JsExpr, VueFilterExpr};
 use vize_l2::op::{BindingOp, ComponentOp, InterpolationOp, Op, Region, VueSlotScopeOp, VueSyncOp};
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=4
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.component Card @0:40
   vue.sync name=\"title\" mods=\"camel\" value=js(\"heading\" @10:17) @0:18
   vue.slot-scope name=\"header\" params=js(\"props\" @20:25) @19:26

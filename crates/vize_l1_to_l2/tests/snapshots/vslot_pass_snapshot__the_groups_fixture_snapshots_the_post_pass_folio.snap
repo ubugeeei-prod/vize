@@ -2,10 +2,10 @@
 source: crates/vize_l1_to_l2/tests/vslot_pass_snapshot.rs
 expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
 ---
-[disegno]
+[l2-dump-v2]
 ops=20
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.component Card @0:170
   ui.element template @9:72
     ui.slot-content name="head" params=js("{ icon, title }" @26:41) @19:42

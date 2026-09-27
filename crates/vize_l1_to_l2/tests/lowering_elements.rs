@@ -15,10 +15,10 @@ fn a_non_native_tag_lowers_as_a_component() {
     let art = artifact("<MyComp>text</MyComp>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component MyComp @0:21\n\
          \x20 ui.text \"text\" @8:12\n\
          \n"
@@ -30,10 +30,10 @@ fn the_svg_namespace_is_entered_by_tag_and_inherited() {
     let art = artifact("<svg><path/></svg>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element svg ns=svg @0:18\n\
          \x20 ui.element path ns=svg @5:12\n\
          \n"
@@ -45,10 +45,10 @@ fn a_bare_svg_tag_enters_the_svg_namespace() {
     let art = artifact("<feImage />");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=1\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element feImage ns=svg @0:11\n\
          \n"
     );
@@ -62,10 +62,10 @@ fn v_model_lowers_to_the_contract_with_synthesized_attributes() {
     let art = artifact("<input v-model.lazy.trim=\"msg\">");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element input @0:31\n\
          \x20 ui.model read=js(\"msg\" @26:29) write=js(\"msg\" @26:29) @7:30\n\
          \x20   attr element-kind=\"input\" @7:30\n\
@@ -81,10 +81,10 @@ fn a_custom_directive_rides_through_as_the_dialect_op() {
     let art = artifact("<div v-pin:top.stop=\"v\"></div>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element div @0:30\n\
          \x20 vue.directive \"pin\" arg=\"top\" mods=\"stop\" value=js(\"v\" @21:22) @5:23\n\
          \n"
@@ -96,10 +96,10 @@ fn a_slot_outlet_owns_its_fallback_and_normalizes_the_implicit_name() {
     let named = artifact("<slot name=\"s\"><span>f</span></slot>");
     assert_eq!(
         named.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.slot name=\"s\" @0:36\n\
          \x20 ui.element span @15:29\n\
          \x20   ui.text \"f\" @21:22\n\
@@ -109,10 +109,10 @@ fn a_slot_outlet_owns_its_fallback_and_normalizes_the_implicit_name() {
     let implicit = artifact("<slot></slot>");
     assert_eq!(
         implicit.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=1\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.slot name=\"default\" @0:13\n\
          \n"
     );
@@ -120,10 +120,10 @@ fn a_slot_outlet_owns_its_fallback_and_normalizes_the_implicit_name() {
     let dynamic = artifact("<slot :name=\"n\"></slot>");
     assert_eq!(
         dynamic.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=1\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.slot name=js(\"n\" @13:14) @0:23\n\
          \n"
     );
@@ -137,10 +137,10 @@ fn one_way_bindings_lower_to_the_normalized_ops() {
     let art = artifact("<li v-for=\"(item, i) in items\" :key=\"item.id\">{{ item.name }}</li>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=4\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.for source=js(\"items\" @24:29) value=js(\"item\" @12:16) key=js(\"i\" @18:19) @0:66\n\
          \x20 ui.element li @0:66\n\
          \x20   ui.bind name=\"key\" value=js(\"item.id\" @37:44) @31:45\n\
@@ -152,10 +152,10 @@ fn one_way_bindings_lower_to_the_normalized_ops() {
     let on = artifact("<button @click.stop.prevent=\"go()\" v-on=\"handlers\">x</button>");
     assert_eq!(
         on.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=4\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element button @0:61\n\
          \x20 ui.on name=\"click\" mods=\"stop,prevent\" handler=js(\"go()\" @29:33) @8:34\n\
          \x20 ui.on handler=js(\"handlers\" @41:49) @35:50\n\
@@ -174,10 +174,10 @@ fn the_parser_shorthands_are_mirrored_at_lowering() {
     let art = artifact("<a :model-value .innerHTML=\"h\"></a>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element a @0:35\n\
          \x20 ui.bind name=\"model-value\" value=js(\"modelValue\" @4:15) @3:15\n\
          \x20 ui.bind name=\"innerHTML\" mods=\"prop\" value=js(\"h\" @28:29) @16:30\n\
@@ -191,10 +191,10 @@ fn v_once_lowers_to_the_dialect_flag() {
     let art = artifact("<div v-once>x</div>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element div @0:19\n\
          \x20 vue.once @5:11\n\
          \x20 ui.text \"x\" @12:13\n\
@@ -208,10 +208,10 @@ fn v_memo_lowers_to_the_dialect_op_with_the_expression() {
     let art = artifact(r#"<p v-memo="[id]">x</p>"#);
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element p @0:22\n\
          \x20 vue.memo value=js(\"[id]\" @11:15) @3:16\n\
          \x20 ui.text \"x\" @17:18\n\
@@ -225,10 +225,10 @@ fn v_memo_may_carry_an_opaque_expression() {
     let art = artifact(r#"<p v-memo="%">x</p>"#);
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element p @0:19\n\
          \x20 vue.memo value=opaque(parse-rejected \"%\" @11:12) @3:13\n\
          \x20 ui.text \"x\" @14:15\n\
@@ -242,10 +242,10 @@ fn v_show_lowers_to_the_dialect_op() {
     let art = artifact(r#"<p v-show="open">x</p>"#);
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element p @0:22\n\
          \x20 vue.show value=js(\"open\" @11:15) @3:16\n\
          \x20 ui.text \"x\" @17:18\n\
@@ -265,10 +265,10 @@ fn ill_formed_v_once_spellings_still_defer() {
         assert_eq!(
             art.folio,
             cstr!(
-                "[disegno]\n\
+                "[l2-dump-v2]\n\
                  ops=2\n\
                  \n\
-                 [disegno.ops]\n\
+                 [l2-dump-v2.ops]\n\
                  ui.element div @0:{element_end}\n\
                  \x20 ui.text \"y\" @{text_start}:{}\n\
                  \n",
@@ -297,10 +297,10 @@ fn v_pre_freezes_its_subtree_and_leaves_no_diagnostic() {
     let art = artifact("<p v-pre :x=\"1\">{{ y }}</p>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element p @0:27\n\
          \x20 attr :x=\"1\" @9:15\n\
          \x20 ui.text \"{{ y }}\" @16:23\n\
@@ -326,10 +326,10 @@ fn a_missing_end_tag_hole_becomes_a_surface_diagnostic() {
     let art = artifact("<div><span>x</div>");
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element div @0:18\n\
          \x20 ui.element span @5:12\n\
          \x20   ui.text \"x\" @11:12\n\

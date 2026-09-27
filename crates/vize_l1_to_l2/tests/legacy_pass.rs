@@ -22,10 +22,10 @@ fn vue3_model_free_legacy_spellings_skip_the_model_pass() {
     with_transformed(source, |lowered, folio, _, budget| {
         assert_eq!(
             folio.print_to_string(DumpMode::Full).as_str(),
-            "[disegno]\n\
+            "[l2-dump-v2]\n\
              ops=2\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:29\n\
              \x20 ui.bind name=\"title\" mods=\"sync\" value=js(\"heading\" @19:26) @6:27\n\
              \n"
@@ -48,10 +48,10 @@ fn vue2_expands_sync_into_bind_plus_update_listener() {
     with_transformed_caps(source, vue2(), |lowered, folio, _, budget| {
         assert_eq!(
             folio.print_to_string(DumpMode::Full).as_str(),
-            "[disegno]\n\
+            "[l2-dump-v2]\n\
              ops=3\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:29\n\
              \x20 ui.bind name=\"title\" value=js(\"heading\" @19:26) @6:27\n\
              \x20 ui.on name=\"update:title\" handler=js(\"$event => ((heading) = $event)\" @6:27) @6:27\n\
@@ -73,10 +73,10 @@ fn vue2_keeps_camel_on_the_bind() {
     with_transformed_caps(source, vue2(), |_, folio, _, _| {
         assert_eq!(
             folio.print_to_string(DumpMode::Full).as_str(),
-            "[disegno]\n\
+            "[l2-dump-v2]\n\
              ops=3\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:35\n\
              \x20 ui.bind name=\"title\" mods=\"camel\" value=js(\"heading\" @25:32) @6:33\n\
              \x20 ui.on name=\"update:title\" handler=js(\"$event => ((heading) = $event)\" @6:33) @6:33\n\
@@ -92,10 +92,10 @@ fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
     with_transformed_caps(source, vue2(), |_, folio, facts, _| {
         assert_eq!(
             folio.print_to_string(DumpMode::Full).as_str(),
-            "[disegno]\n\
+            "[l2-dump-v2]\n\
              ops=1\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.interpolation js(\"_filter_cap(msg)\" @2:11) @0:13\n\
              \n"
         );
@@ -118,10 +118,10 @@ fn vue2_rewrites_a_filter_with_args() {
     with_transformed_caps(source, vue2(), |_, folio, facts, _| {
         assert_eq!(
             folio.print_to_string(DumpMode::Full).as_str(),
-            "[disegno]\n\
+            "[l2-dump-v2]\n\
              ops=1\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.interpolation js(\"_filter_f(a,b)\" @2:10) @0:12\n\
              \n"
         );
@@ -144,10 +144,10 @@ fn vue2_converts_slot_scope_into_slot_content() {
     with_transformed_caps(source, vue2(), |_, folio, facts, _| {
         assert_eq!(
             folio.print_to_string(DumpMode::Full).as_str(),
-            "[disegno]\n\
+            "[l2-dump-v2]\n\
              ops=4\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:54\n\
              \x20 ui.element template @6:47\n\
              \x20   ui.slot-content params=js(\"props\" @28:33) @16:34\n\
@@ -165,10 +165,10 @@ fn vue2_strips_native_and_rewrites_keycodes() {
     with_transformed_caps(source, vue2(), |_, folio, _, _| {
         assert_eq!(
             folio.print_to_string(DumpMode::Full).as_str(),
-            "[disegno]\n\
+            "[l2-dump-v2]\n\
              ops=3\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:39\n\
              \x20 ui.on name=\"click\" @6:19\n\
              \x20 ui.on name=\"keyup\" mods=\"enter\" handler=js(\"onKey\" @31:36) @20:37\n\
@@ -184,10 +184,10 @@ fn vue3_leaves_native_and_keycodes() {
     with_transformed(source, |_, folio, _, _| {
         assert_eq!(
             folio.print_to_string(DumpMode::Full).as_str(),
-            "[disegno]\n\
+            "[l2-dump-v2]\n\
              ops=3\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:39\n\
              \x20 ui.on name=\"click\" mods=\"native\" @6:19\n\
              \x20 ui.on name=\"keyup\" mods=\"13\" handler=js(\"onKey\" @31:36) @20:37\n\

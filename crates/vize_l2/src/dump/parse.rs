@@ -1,4 +1,4 @@
-//! Parser for the disegno folio text format.
+//! Parser for the selected current or explicit historical L2 dump grammar.
 //!
 //! Accepts canonical output byte-for-byte and is lenient exactly where the
 //! printer normalizes: blank-line placement (separators vanish), the
@@ -20,6 +20,7 @@ use vize_davinci::dump::Error as DumpError;
 use vize_l0::cstr;
 
 use crate::dump::Page;
+use crate::dump::codec::Grammar;
 use crate::dump::owned::{Binding, Op};
 
 mod binding_line;
@@ -53,6 +54,7 @@ enum Section {
 }
 
 struct Parser {
+    grammar: Grammar,
     root: Vec<Op>,
     stack: Vec<Frame>,
     section: Section,
@@ -61,20 +63,40 @@ struct Parser {
 }
 
 pub(super) fn parse(input: &str) -> Result<Page, DumpError> {
-    let mut parser = Parser {
-        root: Vec::new(),
-        stack: Vec::new(),
-        section: Section::BeforeHeader,
-        seen_ops_section: false,
-        seen_ops_field: false,
-    };
-    for (idx, line) in input.split('\n').enumerate() {
-        parser.line(line, idx + 1)?;
-    }
-    parser.finish()
+    Parser::current_v2().read(input)
+}
+
+pub(super) fn parse_historical_v1(input: &str) -> Result<Page, DumpError> {
+    Parser::historical_v1().read(input)
 }
 
 impl Parser {
+    fn current_v2() -> Self {
+        Self::new(Grammar::CurrentV2)
+    }
+
+    fn historical_v1() -> Self {
+        Self::new(Grammar::HistoricalV1)
+    }
+
+    fn new(grammar: Grammar) -> Self {
+        Self {
+            grammar,
+            root: Vec::new(),
+            stack: Vec::new(),
+            section: Section::BeforeHeader,
+            seen_ops_section: false,
+            seen_ops_field: false,
+        }
+    }
+
+    fn read(mut self, input: &str) -> Result<Page, DumpError> {
+        for (idx, line) in input.split('\n').enumerate() {
+            self.line(line, idx + 1)?;
+        }
+        self.finish()
+    }
+
     fn line(&mut self, line: &str, line_no: usize) -> Result<(), DumpError> {
         if let Some(name) = line.strip_prefix('[').and_then(|r| r.strip_suffix(']')) {
             return self.enter(name, line_no);
@@ -84,7 +106,8 @@ impl Parser {
         }
         match self.section {
             Section::BeforeHeader => {
-                Err(err(line_no, cstr!("content before the [disegno] header")))
+                let header = self.grammar.header();
+                Err(err(line_no, cstr!("content before the [{header}] header")))
             }
             Section::Header => self.field_line(line, line_no),
             Section::Ops => self.ops_line(line, line_no),
@@ -92,18 +115,20 @@ impl Parser {
     }
 
     fn enter(&mut self, name: &str, line_no: usize) -> Result<(), DumpError> {
+        let header = self.grammar.header();
+        let ops_header = self.grammar.ops_header();
         if self.section == Section::BeforeHeader {
-            if name == "disegno" {
+            if name == header {
                 self.section = Section::Header;
                 return Ok(());
             }
-            return Err(err(line_no, cstr!("first section must be [disegno]")));
+            return Err(err(line_no, cstr!("first section must be [{header}]")));
         }
         match name {
-            "disegno" => Err(err(line_no, cstr!("duplicate section [disegno]"))),
-            "disegno.ops" => {
+            name if name == header => Err(err(line_no, cstr!("duplicate section [{header}]"))),
+            name if name == ops_header => {
                 if self.seen_ops_section {
-                    return Err(err(line_no, cstr!("duplicate section [disegno.ops]")));
+                    return Err(err(line_no, cstr!("duplicate section [{ops_header}]")));
                 }
                 self.seen_ops_section = true;
                 self.section = Section::Ops;
@@ -242,7 +267,8 @@ impl Parser {
 
     fn finish(mut self) -> Result<Page, DumpError> {
         if self.section == Section::BeforeHeader {
-            return Err(err(0, cstr!("missing [disegno] header")));
+            let header = self.grammar.header();
+            return Err(err(0, cstr!("missing [{header}] header")));
         }
         if !self.seen_ops_field {
             return Err(err(0, cstr!("missing field `ops`")));

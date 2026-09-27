@@ -2,10 +2,10 @@
 source: crates/vize_l1_to_l2/tests/cfg_pass_snapshot.rs
 expression: "folio.print_to_string(FolioMode::Full).as_str()"
 ---
-[disegno]
+[l2-dump-v2]
 ops=28
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element main @0:616
   ui.if @9:127
     branch js("ready && !failed" @18:34) @9:45

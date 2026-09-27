@@ -32,6 +32,8 @@ use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_davinci::key::{KeySink, KeyedArtifact, schema};
 use vize_davinci::stage::Stage;
 
+mod codec;
+pub mod historical;
 mod owned;
 mod parse;
 mod print;
@@ -49,7 +51,6 @@ pub use crate::dump::provenance::{Page as ProvenancePage, Record as DumpProvenan
 /// The root region's ops, in document order. Everything else - the `ops=`
 /// count, section headers, indentation - is the printer's derived
 /// statement about this tree.
-#[doc(alias = "DisegnoFolio")]
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Page {
     /// The root region's ops.
@@ -58,7 +59,7 @@ pub struct Page {
 
 impl Dump for Page {
     fn print<W: core::fmt::Write>(&self, w: &mut W, mode: DumpMode) -> core::fmt::Result {
-        print::print(self, w, print::Style::folio(mode))
+        print::print(self, w, print::Style::current(mode))
     }
 
     fn parse(input: &str) -> Result<Self, DumpError> {

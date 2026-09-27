@@ -4,7 +4,7 @@
 //! it: L0 for every block, the L1 surface page and the L2 page for the
 //! template. Three properties, all by exact equality:
 //!
-//! 1. **Golden keys, two platforms.** `fixtures/keys/base.keys` is the full
+//! 1. **Golden keys, two platforms.** `fixtures/keys/base-l2-recipe3.keys` is the full
 //!    key listing of `fixtures/keys/base.vue`. The Linux and macOS lanes of
 //!    `.github/workflows/davinci-incremental.yml` both print the listing and
 //!    compare it with the golden, so a platform-dependent byte anywhere in a
@@ -185,7 +185,8 @@ fn template_first(base: &str) -> String {
 fn base_keys_equal_the_committed_golden() {
     let keys = listing(&keys_of(&base()));
     println!("TS-43 keys for fixtures/keys/base.vue:\n{keys}");
-    let golden = fixture("base.keys");
+    // Keep the source-bound version2 capture immutable after the L2 recipe change.
+    let golden = fixture("base-l2-recipe3.keys");
     if std::env::var_os("UPDATE_KEY_GOLDENS").is_some() {
         std::fs::write(&golden, keys.as_bytes()).expect("write golden");
     }

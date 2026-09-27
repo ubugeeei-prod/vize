@@ -45,10 +45,10 @@ fn style_blocks_without_css_binds_do_not_append_a_carrier() {
     assert_eq!(
         folio.print_to_string(DumpMode::Full).as_str(),
         "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element p @10:19
   ui.text \"hi\" @13:15
 

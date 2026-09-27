@@ -10,10 +10,10 @@ use vize_l2::dump::{
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCloakOp};
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @0:20
   vue.cloak @5:12
 

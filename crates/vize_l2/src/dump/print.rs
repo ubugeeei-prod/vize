@@ -12,6 +12,7 @@ use core::fmt::{Result, Write};
 use vize_l0::{Span, ensure_sufficient_stack};
 
 use crate::dump::Page;
+use crate::dump::codec::Grammar;
 use crate::dump::owned::{Attribute, Binding, Expr, Name, Op};
 use crate::op::Namespace;
 use vize_davinci::dump::Mode as DumpMode;
@@ -21,19 +22,33 @@ mod binding;
 
 use binding::{print_attribute, print_binding};
 
-/// How a page prints: the folio mode, plus the offset spans are rebased
+/// How a page prints: its grammar and mode, plus the offset spans are rebased
 /// to. The public [`Dump`](vize_davinci::dump::Dump) print always uses
 /// base `0` (spans verbatim); only the P5-1a key feed passes a block start.
 #[derive(Debug, Clone, Copy)]
 pub(super) struct Style {
     mode: DumpMode,
     base: u32,
+    grammar: Grammar,
 }
 
 impl Style {
-    /// The folio print: spans verbatim.
-    pub(super) const fn folio(mode: DumpMode) -> Self {
-        Self { mode, base: 0 }
+    /// The current dump: spans verbatim.
+    pub(super) const fn current(mode: DumpMode) -> Self {
+        Self {
+            mode,
+            base: 0,
+            grammar: Grammar::CurrentV2,
+        }
+    }
+
+    /// The explicitly historical published wire: spans verbatim.
+    pub(super) const fn historical_v1(mode: DumpMode) -> Self {
+        Self {
+            mode,
+            base: 0,
+            grammar: Grammar::HistoricalV1,
+        }
     }
 
     /// The key feed: the `Full` form with spans rebased to `block_start`.
@@ -41,20 +56,21 @@ impl Style {
         Self {
             mode: DumpMode::Full,
             base: block_start,
+            grammar: Grammar::CurrentV2,
         }
     }
 }
 
-pub(super) fn print<W: Write>(folio: &Page, w: &mut W, mode: Style) -> Result {
-    writeln!(w, "[disegno]")?;
-    writeln!(w, "ops={}", folio.op_count())?;
+pub(super) fn print<W: Write>(page: &Page, w: &mut W, mode: Style) -> Result {
+    writeln!(w, "[{}]", mode.grammar.header())?;
+    writeln!(w, "ops={}", page.op_count())?;
     writeln!(w)?;
 
-    if folio.ops.is_empty() {
+    if page.ops.is_empty() {
         return Ok(());
     }
-    writeln!(w, "[disegno.ops]")?;
-    for op in &folio.ops {
+    writeln!(w, "[{}]", mode.grammar.ops_header())?;
+    for op in &page.ops {
         print_op(w, op, 0, mode)?;
     }
     writeln!(w)
