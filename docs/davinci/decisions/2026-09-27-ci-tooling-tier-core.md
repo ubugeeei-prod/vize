@@ -45,3 +45,12 @@ move and caller commits. The action bytes and artifact contract are identical.
 Merge actual main ancestry to retain that level-only path with the full-tier
 guard; merely replaying the move still conflicts at the adjacent guard. Keep
 the instruction-count gate mandatory when its preceding queue reaches main.
+
+The final transport also merges actual instruction-gate main `7dda2e9a6` and
+keeps that job mandatory alongside split Rust source tests. Its inherited
+workflow security repair uses reachable, equivalent Rust action pins and
+quoted benchmark environment arguments; the full online audit must pass.
+Central-record formatting joins 130 prose soft wraps, leaving 221 lines.
+The exact 2,239-token sequence, all 66 Markdown destinations, 20 headings,
+88 list markers/indents, 16 table rows, nine quotes and 62 paragraph breaks
+are preserved, with idempotence and formatter checks. No decision is removed.
