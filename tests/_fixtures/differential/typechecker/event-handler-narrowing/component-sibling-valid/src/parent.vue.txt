@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Child from "./child.vue";
+
+const DIALOG_STATE = { CLOSED: "closed", OPENED_A: "a", OPENED_BULK: "bulk" } as const;
+type DialogState = (typeof DIALOG_STATE)[keyof typeof DIALOG_STATE];
+const dialogState = ref<DialogState>(DIALOG_STATE.CLOSED);
+</script>
+
+<template>
+  <div>
+    <Child
+      :is-opened-dialogs="dialogState !== DIALOG_STATE.CLOSED"
+      @edit-contents:csv="dialogState = DIALOG_STATE.OPENED_A"
+      @bulk-create-contents="dialogState = DIALOG_STATE.OPENED_BULK"
+    />
+    <Child :model-value="dialogState === DIALOG_STATE.OPENED_A" />
+  </div>
+</template>

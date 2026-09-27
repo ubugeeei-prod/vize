@@ -1,0 +1,12 @@
+<script setup lang="tsx">
+import { Paginator, flag } from './support'
+const icon = () => <span class="icon" />
+let paginator: Paginator
+if (flag) {
+  paginator = new Paginator('a')
+}
+</script>
+
+<template>
+  <div>{{ paginator.key }}<component :is="icon" /></div>
+</template>

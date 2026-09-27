@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ modelValue?: boolean; isOpenedDialogs?: boolean }>();
+defineEmits<{ "bulk-create-contents": []; "edit-contents:csv": [] }>();
+</script>
+<template><div /></template>

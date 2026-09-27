@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { Paginator, flag } from './support'
+let paginator: Paginator
+function init() {
+  if (!flag) return
+  paginator = new Paginator('a')
+}
+init()
+</script>
+
+<template>
+  <div>{{ paginator.key }}</div>
+</template>

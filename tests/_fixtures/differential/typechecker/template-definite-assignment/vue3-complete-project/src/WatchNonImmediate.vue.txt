@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { Paginator } from './support'
+const tab = ref('list')
+let paginator: Paginator
+watch(tab, (newTab) => {
+  paginator = new Paginator(newTab)
+})
+</script>
+
+<template>
+  <div>{{ paginator.key }}</div>
+</template>
