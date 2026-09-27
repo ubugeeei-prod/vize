@@ -311,6 +311,8 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and
 [Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the
 fail-closed dependency plan and shell-free package execution for #6862.
 
+[Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base.
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work)
