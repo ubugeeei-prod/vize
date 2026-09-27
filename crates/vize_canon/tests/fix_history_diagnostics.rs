@@ -37,6 +37,8 @@ struct Case {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Contract {
+    #[serde(rename = "requiredTier")]
+    required_tier: String,
     #[serde(rename = "positionBase")]
     position_base: u32,
     positions: String,
@@ -88,6 +90,7 @@ fn inline_event_assignments_preserve_exact_diagnostics() {
         ["end", "relatedInformation", "raw backend diagnostics"]
     );
     assert_eq!(pack.diagnostic_contract.native, "unsupported");
+    assert_eq!(pack.diagnostic_contract.required_tier, "T1");
     assert_eq!(pack.cases.len(), 3, "a missing case must not pass");
     let vue = std::fs::canonicalize(root.join("tests/node_modules/vue"))
         .expect("the pinned real Vue package must be installed");

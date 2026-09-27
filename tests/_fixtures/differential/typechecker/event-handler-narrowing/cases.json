@@ -5,6 +5,7 @@
   "historicalIssue": 4996,
   "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
   "diagnosticContract": {
+    "requiredTier": "T1",
     "positionBase": 1,
     "positions": "authored UTF16 start",
     "comparison": "all production diagnostics in returned order",

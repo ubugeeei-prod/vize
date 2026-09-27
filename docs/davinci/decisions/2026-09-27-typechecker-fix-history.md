@@ -39,7 +39,12 @@ standalone Vue application into repository-wide fixture discovery.
 
 This is a batch start-position contract. The public batch diagnostic type has
 no end range, related-information payload, or raw backend response. The pack
-records those missing fields explicitly. It claims no complete LSP capture,
+records those missing fields explicitly and declares `requiredTier: T1`.
+The unchanged test bodies always execute the production checker. T0 nextest
+must exclude this exact binary and test name; the full T1 Cargo lane must run
+it with its real runtime. This is explicit tier selection, with no early return
+or successful runtime-absence bypass in the fixture test.
+It claims no complete LSP capture,
 historical backend-payload parity, common differential execution, native adapter,
 or native acceptance. The prepared complete observer archives remain separate
 work and must be reviewed and freshly verified before admission.
