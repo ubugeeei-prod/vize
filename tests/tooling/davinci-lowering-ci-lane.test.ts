@@ -19,6 +19,12 @@ const patinaMarkupDifferentialCommand =
 test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", () => {
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const clippyJob = workflowJobBody(workflow, "clippy-and-test");
+  const recipe = readRepoFile(
+    ".github",
+    "actions",
+    "test-rust-workspace-differential",
+    "action.yml",
+  );
   const testReportJob = workflowJobBody(workflow, "test-report");
   const manifest = readRepoFile("crates", "vize_l1_to_l2", "Cargo.toml");
   const suites = readRepoFile("docs/davinci", "plan", "test-suites.md");
@@ -44,17 +50,18 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     "clippy-and-test must run on scheduled and manual Check",
   );
   assert.doesNotMatch(testReportJob, /- clippy-and-test\b/);
-  assert.match(clippyJob, /run: cargo test --workspace && /);
+  assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
+  assert.match(recipe, /run: cargo test --workspace/);
   assert.ok(
-    clippyJob.includes(s1ToL2LoweringCorpusCommand),
+    recipe.includes(s1ToL2LoweringCorpusCommand),
     "the feature-gated lowering corpus entry must run explicitly after cargo test --workspace",
   );
   assert.ok(
-    clippyJob.includes(s1ToL2DomCorpusCommand),
+    recipe.includes(s1ToL2DomCorpusCommand),
     "the feature-gated DOM corpus entry must run explicitly after cargo test --workspace",
   );
   assert.ok(
-    clippyJob.includes(s1ToL2PugCorpusCommand),
+    recipe.includes(s1ToL2PugCorpusCommand),
     "the feature-gated pug corpus entry (P4-12c baseline scope) must run in full Check",
   );
   assert.match(
@@ -62,7 +69,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     /^\[\[test\]\]\nname = "davinci_ssr_corpus"\nrequired-features = \["davinci-differential"\]$/m,
   );
   assert.ok(
-    clippyJob.includes(ssrL4CorpusCommand),
+    recipe.includes(ssrL4CorpusCommand),
     "the feature-gated SSR L4 corpus gate must sweep the checkout after cargo test --workspace",
   );
   assert.match(
@@ -70,7 +77,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     /^davinci-differential = \[\]$/m,
   );
   assert.ok(
-    clippyJob.includes(jsxL2VdomParityCommand),
+    recipe.includes(jsxL2VdomParityCommand),
     "the feature-gated JSX L2 VDOM parity entry must run explicitly after cargo test --workspace",
   );
   assert.match(
@@ -78,7 +85,7 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
     /^\[\[test\]\]\nname = "davinci_markup_differential"\nrequired-features = \["davinci-differential"\]$/m,
   );
   assert.ok(
-    clippyJob.includes(patinaMarkupDifferentialCommand),
+    recipe.includes(patinaMarkupDifferentialCommand),
     "the P4-7a markup facade lane must sweep the checkout's own .vue shard after cargo test --workspace",
   );
 });

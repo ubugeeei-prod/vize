@@ -33,14 +33,14 @@ jobs:
         id: plan
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
-        run: node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA"
+        run: node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
 
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 35
+    timeout-minutes: ${{ github.event_name == 'merge_group' && 45 || 35 }}
     env:
       CARGO_BUILD_JOBS: "12"
       RUST_TEST_THREADS: "4"
@@ -101,6 +101,11 @@ jobs:
           if cargo test --workspace; then phase_exit=0; else phase_exit=$?; fi
           printf '{"phase":"execution-and-doctests","elapsed_seconds":%d,"exit_code":%d}\n' "$((SECONDS - phase_started))" "$phase_exit" > "$RUNNER_TEMP/rust-test-timings/run.json"
           exit "$phase_exit"
+      - name: Test merge queue differential corpora
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.rust == 'true' }}
+        uses: ./.github/actions/test-rust-workspace-differential
+        with:
+          workspace-already-tested: "true"
       - name: Check fixture coverage
         if: ${{ needs.pr-source-plan.outputs.rust == 'true' }}
         run: rust-script tools/commands/ci/github/write-coverage-summary.rs
@@ -162,9 +167,12 @@ jobs:
       - name: Test JS packages
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
         run: vp run --workspace-root test:js
-      - name: Check UI package conformance
+      - name: Check Fresco native declarations and consumer types
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types && vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
+        run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types
+      - name: Check UI package conformance in merge queue
+        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}
+        run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
 
   pr-tooling-scripts:
     name: PR tooling scripts
