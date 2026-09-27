@@ -8,6 +8,9 @@
 use super::{MAX_EXPRESSION_NESTING_DEPTH, scan};
 
 pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
+    if content.len() <= MAX_EXPRESSION_NESTING_DEPTH {
+        return false;
+    }
     let bytes = content.as_bytes();
     let mut can_start_operand = true;
     let mut delimiters = Vec::new();
@@ -156,3 +159,7 @@ fn increment_prefix_operator_run(run: &mut usize) -> bool {
 fn is_prefix_keyword(identifier: &[u8]) -> bool {
     matches!(identifier, b"await" | b"delete" | b"typeof" | b"void")
 }
+
+#[cfg(test)]
+#[path = "operators_tests.rs"]
+mod tests;
