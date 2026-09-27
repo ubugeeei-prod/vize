@@ -54,7 +54,7 @@ test("GitHub workflows use the current cache action", () => {
   }
 });
 
-test("Rust sticky cache skips Blacksmith disks on GitHub-hosted runners", () => {
+test("Rust sticky mounts require the backend policy before every provider call", () => {
   const action = parse(
     readRepoFile(".github", "actions", "setup-rust-sticky-cache", "action.yml"),
   ) as {
@@ -70,8 +70,8 @@ test("Rust sticky cache skips Blacksmith disks on GitHub-hosted runners", () => 
   for (const mount of mounts) {
     const guard =
       mount.name === "Mount secondary Rust target sticky disk"
-        ? "${{ runner.environment != 'github-hosted' && inputs.secondary-target-path != '' }}"
-        : "${{ runner.environment != 'github-hosted' }}";
+        ? "${{ steps.cache-policy.outputs.sticky == 'true' && steps.cache-policy.outputs.secondary == 'true' }}"
+        : "${{ steps.cache-policy.outputs.sticky == 'true' }}";
     assert.equal(mount.if, guard, `unguarded sticky disk mount: ${mount.name}`);
   }
   assert.ok(
@@ -79,12 +79,10 @@ test("Rust sticky cache skips Blacksmith disks on GitHub-hosted runners", () => 
     "the optional secondary mount must keep both guards",
   );
 
-  // Found by what it reports, not by its condition: keying off the condition
-  // alone would keep passing once the notice is deleted and any other
-  // hosted-only step remains.
-  const notice = steps.find((step) => step.run?.includes("skipping Blacksmith sticky disks"));
-  assert.ok(notice, "hosted runners must report why sticky disks were skipped");
-  assert.equal(notice.if, "${{ runner.environment == 'github-hosted' }}");
+  const policy = steps.findIndex(
+    (step) => step.run === 'node "$GITHUB_ACTION_PATH/cache-policy.mjs"',
+  );
+  assert.ok(policy >= 0 && steps.indexOf(mounts[0]) > policy, "policy must precede mounts");
 });
 
 test("GitHub workflows declare the expected cross-platform runner matrix", () => {
@@ -286,7 +284,7 @@ test("Blacksmith Rust CI uses sticky disks for Cargo and target caches", () => {
   assert.match(action, /uses:\s*useblacksmith\/stickydisk@[0-9a-f]{40}\s*# v1/);
   assert.match(action, /path:\s*~\/\.cargo\/registry/);
   assert.match(action, /path:\s*~\/\.cargo\/git/);
-  assert.match(action, /path:\s*\$\{\{\s*inputs\.target-path\s*\}\}/);
+  assert.match(action, /path:\s*\$\{\{\s*steps\.cache-policy\.outputs\.target-path\s*\}\}/);
   assert.match(action, /secondary-target-path/);
 
   for (const workflowName of [
