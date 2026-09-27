@@ -18,18 +18,64 @@ use vize_l3::op::{Op, OpId, OpKind, Phase, Program, Region, RegionId};
 const L2_FULL: &str = include_str!("../../vize_l2/tests/fixtures/reference.folio");
 
 fn invoke(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_vize"))
-        .args(args)
-        .output()
-        .unwrap()
+    let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+    command.args(args);
+    observe(&mut command, None)
 }
 
 fn roundtrip(level: &str, path: &Path) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_vize"))
+    let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+    command
         .args(["dump", "--level", level, "--roundtrip"])
-        .arg(path)
-        .output()
-        .unwrap()
+        .arg(path);
+    observe(&mut command, Some(path))
+}
+
+// Temporary probe: the existing eight tests and assertions are unchanged.
+// JSON arrays retain stdout/stderr/input bytes without decoding or trimming.
+fn observe(command: &mut Command, input_path: Option<&Path>) -> Output {
+    use std::{io::Write, sync::Mutex};
+
+    static WRITER: Mutex<()> = Mutex::new(());
+    let output = command.output().unwrap();
+    if let Some(path) = std::env::var_os("VIZE_DUMP_CLI_CAPTURE") {
+        let input = input_path.map(fs::read);
+        let argv: Vec<_> = std::iter::once(command.get_program())
+            .chain(command.get_args())
+            .map(|arg| arg.to_str().unwrap())
+            .collect();
+        #[cfg(unix)]
+        let signal = {
+            use std::os::unix::process::ExitStatusExt;
+            output.status.signal()
+        };
+        #[cfg(not(unix))]
+        let signal: Option<i32> = None;
+        let record = serde_json::json!({
+            "schema": "vize.dump-cli-observation",
+            "version": 1,
+            "test": std::thread::current().name(),
+            "argv": argv,
+            "cwd": std::env::current_dir().unwrap(),
+            "inputPath": input_path,
+            "inputBytes": input.as_ref().and_then(|result| result.as_ref().ok()),
+            "inputReadError": input.as_ref().and_then(|result| result.as_ref().err()).map(ToString::to_string),
+            "exitCode": output.status.code(),
+            "signal": signal,
+            "stdout": output.stdout,
+            "stderr": output.stderr,
+        });
+        let mut bytes = serde_json::to_vec(&record).unwrap();
+        bytes.push(b'\n');
+        let _guard = WRITER.lock().unwrap();
+        let mut file = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)
+            .unwrap();
+        file.write_all(&bytes).unwrap();
+    }
+    output
 }
 
 fn assert_success(level: &str, bytes: &[u8]) {
