@@ -1,6 +1,6 @@
 # Fixed v-for provenance construction (#6868)
 
-This is a private, unpushed source candidate based on
+The initial private source candidate was based on
 `b3e3f944a11d2f28cfc928eac980503fae866e7f`, which includes the separately
 reviewed Patina empty-binding optimization. It changes only fixed provenance
 construction in L1-to-L2 lowering. It does not add the proposed ASCII expression
@@ -83,9 +83,12 @@ The raw 100-by-three reports, input identities and failed results are preserved.
 [Check 36320903163](https://github.com/ubugeeei-prod/vize/actions/runs/36320903163)
 passed strict Clippy and both nine-test no-std lanes. Its allocation gate
 rejected a measured improvement: allocations `12 -> 11` and Linux peak bytes
-`1511 -> 1499`. The subsequent workspace test step was skipped, so the new
-four Patina and two provenance controls, complete differential corpus and
-small-stack runtime correctness remain unproven. The tooling check also found
+`1511 -> 1499`. The subsequent primary workspace test step was skipped. Its independent
+Source coverage job `108624411411` later passed `cargo llvm-cov --workspace`
+and explicitly executed all four new Patina and two new provenance controls
+successfully on exact `5e402`. This instrumented runtime evidence does not
+provide the unrun eleven-feature differential corpus or numeric acceptance.
+The tooling check also found
 a stale generated linter consumer shard; regenerate it with the official
 inventory command after the final source candidate is composed.
 
@@ -112,3 +115,29 @@ executes `davinci_storage` with its allocation report. Criterion, Check Bench
 and Tool Benchmark use Linux reference runners. A future explicit MacOS
 measurement route must record the exact source, unchanged probe and raw report;
 this private draft neither adds a workflow nor grants MacOS acceptance.
+
+## Reviewed private composition and source inventories
+
+The next private composition retains the reviewed fixed provenance edits and
+adds the reviewed [constant indentation chunks](./2026-09-27-indentation-chunks.md)
+and [complete ASCII word safety path](./2026-09-27-ascii-expression-safety.md).
+The original expression predicate is extracted before its bounded optimization;
+OXC admission, its scanner/operator fallback and stack protection stay intact.
+All twelve new named controls require actual execution on this final source:
+four Patina, two provenance, two indentation and four expression guard/admission.
+The earlier six-control result does not accept these added changes.
+
+The official Rust commands `consumer-migration-surfaces.rs --write` and
+`v-on-corpus.rs --write` update only the linter consumer shard and Patina v-on
+shard. Their matching `--check` commands pass. The new test module shifts three
+existing import-line references by one and adds two test/dev import rows;
+its authored `@click.stop` adds one natural corpus occurrence. These are source
+inventory observations, not runtime captures or instruction baseline changes.
+
+The storage policy has no write generator: its existing `scanStorage` reports
+`lower/cx/for_parts.rs` L0 String direct/bound counts `1/1`, and
+`lower/forop.rs` bound uses `7 -> 8` with other counts unchanged. Only these two
+reviewed rows are updated; no allocation-Vec category, opaque/std allowance or
+storage rule changes. Existing source inventory tests verify the resulting
+artifacts and measured-v-on evidence. Final-source Actions and unchanged queue
+ceilings remain pending; no public-eight replay follows from local metadata.
