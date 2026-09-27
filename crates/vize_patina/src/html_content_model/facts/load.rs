@@ -1,9 +1,14 @@
 //! Parsing the committed fact table into [`Facts`].
 
+use std::collections::hash_map::Entry;
+
 use vize_l0::{FxHashMap, String, cstr};
 
 use super::{Attr, Cond, ElemId, Facts, Members, Ns};
 use crate::html_content_model::rows::ROWS;
+
+#[cfg(test)]
+mod tests;
 
 impl Facts {
     /// Parse a fact table, skipping malformed, unknown or duplicate rows. The
@@ -135,18 +140,20 @@ impl Facts {
     /// The id of `(ns, local)`, allocating one; `None` once the universe
     /// outgrows the 256-bit set width.
     fn intern(&mut self, ns: Ns, local: &'static str) -> Option<ElemId> {
-        if let Some(id) = self.ids.get(&(ns, local)) {
-            return Some(*id);
+        match self.ids.entry((ns, local)) {
+            Entry::Occupied(entry) => Some(*entry.get()),
+            Entry::Vacant(entry) => {
+                let id = ElemId::try_from(self.names.len())
+                    .ok()
+                    .filter(|id| *id < 256)?;
+                self.names.push((ns, local));
+                entry.insert(id);
+                if local.bytes().any(|byte| byte.is_ascii_uppercase()) {
+                    self.cased.push((ns, local, id));
+                }
+                Some(id)
+            }
         }
-        let id = ElemId::try_from(self.names.len())
-            .ok()
-            .filter(|id| *id < 256)?;
-        self.names.push((ns, local));
-        self.ids.insert((ns, local), id);
-        if local.bytes().any(|byte| byte.is_ascii_uppercase()) {
-            self.cased.push((ns, local, id));
-        }
-        Some(id)
     }
 }
 
