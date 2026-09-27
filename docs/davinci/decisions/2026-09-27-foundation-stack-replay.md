@@ -3,6 +3,8 @@
 Issues: [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and
 [#6832](https://github.com/ubugeeei-prod/vize/issues/6832). Preparation only;
 publication and fresh Actions are controlled separately.
+The [publication parent](./2026-09-27-foundation-publication-parent.md) records
+the subsequent replay onto the selected CI tiers without rewriting this receipt.
 
 CI parent: `1065e2dcc3592a025bfbc7689b80d88dd9c97a34`. This parent retains
 current main changes and validates PRs against stacked base branches. Foundation
