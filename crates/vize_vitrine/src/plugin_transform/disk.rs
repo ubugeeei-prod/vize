@@ -139,8 +139,12 @@ mod migration {
             .as_str()
             .expect("actual old transform key");
         let current = current_key();
-        assert!(old.starts_with("s0.v1:"));
-        assert!(current.starts_with("l0.v2:"));
+        assert_eq!(old, "s0.v1:e99ab135a693b1e38e520b7918806d3b");
+        let (identity, digest) = current.split_once(':').expect("complete current key");
+        assert_eq!(identity, "l0.v2");
+        assert_eq!(digest.len(), 32);
+        let parsed_digest = u128::from_str_radix(digest, 16).expect("128-bit key digest");
+        assert_eq!(digest, format!("{parsed_digest:032x}"));
         let reply = Reply {
             schema: 1,
             edits: Vec::new(),

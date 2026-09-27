@@ -28,25 +28,6 @@ on:
       - "Cargo.lock"
       - "docs/davinci/plan/key-manifests.md"
       - ".github/workflows/davinci-incremental.yml"
-  pull_request:
-    branches: [main, davinci]
-    paths:
-      - "crates/vize_carton/src/hash.rs"
-      - "crates/vize_davinci/**"
-      - "crates/vize_l1/**"
-      - "crates/vize_l2/**"
-      - "crates/vize_l1_to_l2/**"
-      - "crates/vize_resident/**"
-      - "crates/vize_croquis/src/sfc/**"
-      - "crates/vize_croquis/src/croquis/alpha*"
-      - "crates/vize_croquis/src/croquis/alpha/**"
-      - "crates/vize_maestro/src/ide/completion/template/component_*"
-      - "crates/vize_maestro/src/ide/completion/template/component_interface/**"
-      - "tools/commands/davinci/incremental-equivalence*"
-      - "tools/commands/davinci/incremental-equivalence/**"
-      - "Cargo.lock"
-      - "docs/davinci/plan/key-manifests.md"
-      - ".github/workflows/davinci-incremental.yml"
   workflow_dispatch:
 
 concurrency:
