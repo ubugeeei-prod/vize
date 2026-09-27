@@ -165,7 +165,7 @@ atelier_ssr_codegen_stress-wide = { wall_p50_ns = 0, allocs = 42, rss_peak_bytes
 atelier_ssr_codegen_stress-interp = { wall_p50_ns = 0, allocs = 1022, rss_peak_bytes = 0, wall_tolerance = 0.10 }
 atelier_ssr_compile_small = { wall_p50_ns = 0, allocs = 60, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_ssr_compile_medium = { wall_p50_ns = 0, allocs = 1030, rss_peak_bytes = 0, wall_tolerance = 0.05 }
-atelier_ssr_compile_large = { wall_p50_ns = 0, allocs = 983, rss_peak_bytes = 0, wall_tolerance = 0.05 }
+atelier_ssr_compile_large = { wall_p50_ns = 0, allocs = 973, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_ssr_compile_stress-deep = { wall_p50_ns = 0, allocs = 369, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_ssr_compile_stress-wide = { wall_p50_ns = 0, allocs = 405, rss_peak_bytes = 0, wall_tolerance = 0.05 }
 atelier_ssr_compile_stress-interp = { wall_p50_ns = 0, allocs = 2637, rss_peak_bytes = 0, wall_tolerance = 0.05 }
