@@ -3,8 +3,7 @@ run-name: ${{ github.event_name == 'workflow_dispatch' && format('Check full @ {
 on:
   push:
     branches: [main, davinci]
-  pull_request:
-    branches: [main, davinci]
+  pull_request: {}
   merge_group:
     types: [checks_requested]
     branches: [main]
