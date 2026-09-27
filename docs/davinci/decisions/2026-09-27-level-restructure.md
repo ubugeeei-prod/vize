@@ -164,6 +164,8 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
   [Actual historical linter reports](./2026-09-27-lint-report-history.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): complete JSON/Text bytes and unchanged requery controls, with the existing linter witness shard refreshed; full history and native proof remain open.
 
+  [NextTick arrow history oracles](./2026-09-27-next-tick-history.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): ten exact private source/public API observations, including Unicode/CRLF SFC framing, complete diagnostics and unchanged requery, with one linter witness row refreshed; full history and native proof remain open.
+
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.
 
