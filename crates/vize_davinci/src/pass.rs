@@ -54,7 +54,7 @@ pub mod fusion;
 pub mod kind;
 pub mod observer;
 pub mod pipeline;
-pub mod preserved;
+pub use vize_l0::pass::preserved;
 
 pub use canonical::{Canonical, Raw};
 pub use fusion::{FusionGroup, Pipeline};

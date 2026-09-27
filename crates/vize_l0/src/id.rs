@@ -7,6 +7,10 @@
 use core::fmt;
 use core::num::NonZeroU32;
 
+/// Analysis identities live beside the preserved sets the pass manager
+/// intersects; they are ids all the same.
+pub use crate::pass::preserved::AnalysisId;
+
 /// A stage-local node identity.
 ///
 /// # Why `NonZeroU32` rather than a reserved sentinel

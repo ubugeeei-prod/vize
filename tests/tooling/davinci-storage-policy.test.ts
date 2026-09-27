@@ -15,6 +15,7 @@ import { hasStorage, scanStorage, storageKinds, type FileStorage } from "./davin
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const libraryRoots = [
+  "crates/vize_l0/src",
   "crates/vize_davinci/src",
   "crates/vize_l1/src",
   "crates/vize_l2/src",
@@ -40,6 +41,7 @@ function isDavinciOptHostEdge(relative: string): boolean {
 }
 
 function scopeFor(file: string): StorageScope {
+  if (file.startsWith("crates/vize_l0/")) return "infra";
   if (file.startsWith("crates/vize_davinci/")) return "infra";
   if (file.startsWith("crates/vize_l1/")) return "l1";
   if (file.startsWith("crates/vize_l2/")) return "l2";
@@ -129,7 +131,7 @@ test("production inventory excludes cfg(test) size evidence", () => {
     directPaths: 0,
     boundUses: 0,
   });
-  assert.deepEqual(byFile.get("crates/vize_davinci/src/side_table.rs")?.storage.allocVec, {
+  assert.deepEqual(byFile.get("crates/vize_l0/src/side_table.rs")?.storage.allocVec, {
     directPaths: 1,
     boundUses: 2,
   });

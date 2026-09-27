@@ -1,44 +1,14 @@
 //! The pass manager: pipelines as const data, fused into single walks.
 #![expect(clippy::todo, reason = "skeleton: #6833")]
 
-use crate::id::AnalysisId;
 use crate::level::Level;
 
 pub mod observer;
+pub mod preserved;
+
+pub use preserved::{AnalysisId, MAX_ANALYSES, Preserved};
 
 use observer::PassObserver;
-
-/// How many analyses one [`Preserved`] set tracks.
-pub const MAX_ANALYSES: u8 = 64;
-
-/// The analyses a pass leaves valid.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-pub struct Preserved(u64);
-
-impl Preserved {
-    /// Preserves nothing.
-    pub const NOTHING: Self = Self(0);
-
-    /// This set plus `analysis`.
-    #[must_use]
-    pub const fn with(self, analysis: AnalysisId) -> Self {
-        let _ = analysis;
-        todo!()
-    }
-
-    /// True when `analysis` stays valid.
-    #[must_use]
-    pub const fn preserves(self, analysis: AnalysisId) -> bool {
-        let _ = analysis;
-        todo!()
-    }
-
-    /// What both sets preserve.
-    #[must_use]
-    pub const fn intersect(self, other: Self) -> Self {
-        Self(self.0 & other.0)
-    }
-}
 
 /// A pass's static description.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -78,10 +78,7 @@ test("the no_std claim stays on all six stage libraries and excludes the std L0 
   }
 
   const workspace = readRepoFile("Cargo.toml");
-  assert.match(
-    workspace,
-    /^vize_l0 = \{ path = "crates\/vize_l0", version = "=[^"]+" \}$/m,
-  );
+  assert.match(workspace, /^vize_l0 = \{ path = "crates\/vize_l0", version = "=[^"]+" \}$/m);
   const carton = readRepoFile("crates", "vize_carton", "src", "lib.rs");
   assert.doesNotMatch(carton, /^#!\[no_std\]$/m, "L0 is the accepted std host foundation");
 

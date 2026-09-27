@@ -138,10 +138,7 @@ test("Davinci stage crates are publishable with registry-resolvable dependencies
 
 test("Davinci fuzz harness imports stage packages through aliases", () => {
   const manifest = readRepoFile("tests", "fuzz", "Cargo.toml");
-  assert.match(
-    manifest,
-    /^vize_l0 = \{ path = "\.\.\/\.\.\/crates\/vize_l0" \}$/m,
-  );
+  assert.match(manifest, /^vize_l0 = \{ path = "\.\.\/\.\.\/crates\/vize_l0" \}$/m);
   assert.match(manifest, /^vize_l1_to_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l1_to_l2" \}$/m);
   assert.match(manifest, /^vize_l2 = \{ path = "\.\.\/\.\.\/crates\/vize_l2" \}$/m);
   assert.match(manifest, /^vize_l2_to_l3 = \{ path = "\.\.\/\.\.\/crates\/vize_l2_to_l3" \}$/m);
