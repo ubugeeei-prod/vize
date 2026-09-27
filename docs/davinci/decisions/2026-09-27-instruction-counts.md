@@ -186,6 +186,24 @@ job builds with the same compiler source, in addition to three identical
 executions within each job. The draft remains blocked until that proof and
 the exact queue enforcement pass.
 
+The first fixed-dispatch [run 36306175372](https://github.com/ubugeeei-prod/vize/actions/runs/36306175372)
+collected all 100 probes identically across three executions. Independent
+inspection matched 300 named dumps, 36 zero termination dumps and 36
+allocator setups, and confirmed SSE2 comparison/string/search functions
+and the baseline `memcpy@GLIBC_2.2.5` implementation. Its verification then
+correctly rejected the old draft registry's obsolete methodology. The
+existing draft ceilings remain unchanged pending final initialization
+review. Counts from differing libc methodologies are not comparable as
+product regressions; 56 were higher, 35 lower and nine equal to the rejected
+AVX draft reference. No tolerance or upward ratchet was applied.
+
+Bootstrap cross-job proof now requests a fresh benchmark build by clearing
+only the harness's `ci-opt` artifacts, retaining unrelated dependencies in
+the sticky cache. All twelve Cargo benchmark artifacts must report
+`fresh = false`; their byte digests and freshness flags are retained. This
+distinguishes independent builds from repeated execution of the same cached
+binary. It does not change the compiler source or measured window.
+
 `fixture_digest = "input-identity-v2"` preserves input identity across
 structural moves. Direct fixture files hash their exact bytes independently
 of their paths. The four level storage probes hash their exact template

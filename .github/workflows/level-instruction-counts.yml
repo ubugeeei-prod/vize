@@ -65,6 +65,9 @@ jobs:
           cargo test --locked -p davinci_harness --lib --features instruction-counts
       - name: Measure each stage three times without Criterion sampling
         if: env.MEASURE == 'true'
+        env:
+          # Bootstrap proof: rebuild benchmark binaries in independent jobs.
+          VIZE_INSTRUCTION_REBUILD: "1"
         run: node tools/benchmarks/scripts/instruction-counts.mjs --collect --out "${RUNNER_TEMP}/instruction-counts"
       - name: Verify pinned registry and immutable base ratchet
         env:

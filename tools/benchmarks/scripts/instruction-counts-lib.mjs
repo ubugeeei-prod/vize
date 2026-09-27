@@ -110,7 +110,7 @@ export function reconcile(actual, expected, where) {
 export function parseCallgrind(text) {
   assert.doesNotMatch(
     text,
-    /(?:c?fn=).*__(?:memcmp|memcpy|memmove|mempcpy|memchr|memrchr|strlen|strnlen|strcmp|strncmp)_(?:avx|evex|ssse3|sse4|erms)/,
+    /(?:c?fn=).*__(?:memcmp|memcpy|memmove|mempcpy|memchr|memrchr|strlen|strnlen|strcmp|strncmp)_(?:avx|evex|ssse3|sse4|erms|sse2_\w*erms)/,
     "Callgrind: address-sensitive hardware-dispatched libc routine",
   );
   const one = (key) => {

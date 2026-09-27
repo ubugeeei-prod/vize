@@ -134,6 +134,13 @@ function collect(out, registry) {
   for (const pkg of new Set(suites.map(([pkg]) => pkg))) cargoArgs.push("-p", pkg);
   for (const bench of new Set(suites.map(([, bench]) => bench))) cargoArgs.push("--bench", bench);
   const buildEnv = { ...process.env, RUSTFLAGS: "-C target-cpu=x86-64" };
+  const freshBuild = process.env.VIZE_INSTRUCTION_REBUILD === "1";
+  if (freshBuild) {
+    // Bootstrap cross-job proof must not reuse the same benchmark binaries.
+    // Clear only the harness package; Cargo rebuilds its benchmark dependents
+    // while retaining unrelated optimized dependencies in the sticky cache.
+    command("cargo", [`+${toolchain}`, "clean", "--profile", "ci-opt", "-p", "davinci_harness"]);
+  }
   const build = command("cargo", cargoArgs, { env: buildEnv });
   const artifacts = build
     .split("\n")
@@ -148,13 +155,17 @@ function collect(out, registry) {
     const source = path.join(root, directory, pkg, "benches", `${bench}.rs`);
     const matches = artifacts.filter((row) => path.resolve(row.target.src_path) === source);
     assert.equal(matches.length, 1, `missing or duplicate build artifact ${pkg}/${bench}`);
-    return { pkg, bench, source, executable: matches[0].executable };
+    const artifact = matches[0];
+    if (freshBuild)
+      assert.equal(artifact.fresh, false, `${pkg}/${bench}: benchmark binary was reused`);
+    return { pkg, bench, source, executable: artifact.executable, fresh: artifact.fresh };
   });
   writeJson(
     path.join(out, "binaries.json"),
-    binaries.map(({ pkg, bench, executable }) => ({
+    binaries.map(({ pkg, bench, executable, fresh }) => ({
       pkg,
       bench,
+      fresh,
       sha256: command("sha256sum", [executable]).split(" ")[0],
     })),
   );
