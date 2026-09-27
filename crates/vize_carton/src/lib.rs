@@ -52,6 +52,7 @@ pub mod dialect;
 pub mod directive;
 pub mod dom_tag_config;
 pub mod expression_guard;
+pub mod extension;
 pub mod flags;
 pub mod general;
 pub mod hash;

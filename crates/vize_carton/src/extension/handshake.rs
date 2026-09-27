@@ -13,9 +13,9 @@
 
 use core::fmt;
 
-use vize_l0::String;
+use crate::String;
 
-use crate::contract::{Capability, LANG_FEATURE_PREFIX, PROTOCOL_VERSION, REQUIRED_FEATURES};
+use super::wire::{Capability, LANG_FEATURE_PREFIX, PROTOCOL_VERSION, REQUIRED_FEATURES};
 
 /// Why a capability offer was refused.
 #[derive(Debug, Clone, PartialEq, Eq)]

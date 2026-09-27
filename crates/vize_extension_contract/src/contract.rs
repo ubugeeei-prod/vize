@@ -6,13 +6,18 @@
 //! these types with exhaustive struct literals, so a WIT change that this
 //! mirror does not follow stops the `extension-host` build.
 
-use core::fmt;
-
 use serde::{Deserialize, Serialize};
 use vize_davinci::diagnostic as davinci;
 use vize_davinci::diagnostic::Exemption;
 use vize_l0::{String, cstr};
 use vize_l1_to_l2::exemptions;
+
+pub use vize_l0::extension::wire::{
+    Capability, GuestError, GuestLimits, L1_PAGE_FEATURE, L1_PAGE_SCHEMA, L2_PAGE_FEATURE,
+    L2_PAGE_SCHEMA, LANG_FEATURE_PREFIX, PACKAGE, PROTOCOL_VERSION, Page, PartKind,
+    REQUIRED_FEATURES, S1_PAGE_FEATURE, S1_PAGE_SCHEMA, S2_PAGE_FEATURE, S2_PAGE_SCHEMA, Severity,
+    SourceBlock, Span, Stage,
+};
 
 /// An error a guest reports without a witness the host can re-check against
 /// its fact base, or under an exemption the host does not declare: exempt
@@ -33,82 +38,6 @@ fn declared_exemption(name: &str) -> Option<&'static Exemption> {
     ]
     .into_iter()
     .find(|exemption| exemption.producer() == producer && exemption.code() == code)
-}
-
-/// The WIT package this host implements.
-pub const PACKAGE: &str = "vize:contracts@0.1.3";
-/// The integer protocol version this host speaks.
-pub const PROTOCOL_VERSION: u32 = 1;
-/// The L1 page schema version this host reads and writes.
-pub const L1_PAGE_SCHEMA: u32 = 1;
-/// The L2 page schema version this host reads and writes.
-pub const L2_PAGE_SCHEMA: u32 = 1;
-/// The feature naming the L1 page schema a guest writes.
-pub const L1_PAGE_FEATURE: &str = "s1-page@1";
-/// The feature naming the L2 page schema a guest writes.
-pub const L2_PAGE_FEATURE: &str = "s2-page@1";
-/// Compatibility names for the original contract constants.
-pub use self::{
-    L1_PAGE_FEATURE as S1_PAGE_FEATURE, L1_PAGE_SCHEMA as S1_PAGE_SCHEMA,
-    L2_PAGE_FEATURE as S2_PAGE_FEATURE, L2_PAGE_SCHEMA as S2_PAGE_SCHEMA,
-};
-/// Features the input-dialect world requires, sorted.
-pub const REQUIRED_FEATURES: &[&str] = &[L1_PAGE_FEATURE, L2_PAGE_FEATURE];
-/// Prefix of the optional features declaring a `lang` value a guest lowers.
-pub const LANG_FEATURE_PREFIX: &str = "lang:";
-
-/// `handshake.capability`: what a guest offers.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub struct Capability {
-    pub protocol_version: u32,
-    pub features: Vec<String>,
-}
-
-/// `types.span`: file-absolute UTF-8 byte offsets.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Span {
-    pub start: u32,
-    pub end: u32,
-}
-
-/// `types.page`: one folio page in `Full` mode.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub struct Page {
-    pub schema_version: u32,
-    pub text: String,
-}
-
-/// `types.severity`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum Severity {
-    Error,
-    Warning,
-    Info,
-    Hint,
-}
-
-/// `types.stage`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum Stage {
-    Source,
-    Surface,
-    Semantic,
-    Lowered,
-    Emit,
-}
-
-/// `types.part-kind`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum PartKind {
-    Primary,
-    Secondary,
-    Help,
-    Suggestion,
 }
 
 /// `types.diagnostic-part`.
@@ -137,81 +66,12 @@ pub struct Diagnostic {
     pub witness: Option<Witness>,
 }
 
-/// `input-lowering.source-block`: one block, whole.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SourceBlock {
-    pub source: String,
-    pub base: u32,
-    pub lang: Option<String>,
-}
-
 /// `input-lowering.lowered-block`: everything one block lowers to.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LoweredBlock {
     pub surface: Page,
     pub semantic: Page,
     pub diagnostics: Vec<Diagnostic>,
-}
-
-/// Why a call into a guest returned no value. Distinct from a contract
-/// refusal: the guest never answered.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum GuestError {
-    /// The guest could not be loaded or instantiated.
-    Instantiate(String),
-    /// The guest trapped during the call.
-    Trap(String),
-    /// The transport to an out-of-process guest failed.
-    Transport(String),
-    /// The call used up the guest's per-call fuel budget and was stopped.
-    OutOfFuel { budget: u64 },
-    /// The guest tried to grow its memory past its limit.
-    MemoryLimit { limit: u64 },
-}
-
-/// Per-guest resource limits a wasmtime host enforces in both hosting modes.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub struct GuestLimits {
-    /// Fuel (roughly, executed wasm instructions) granted to each call.
-    pub fuel_per_call: u64,
-    /// The largest linear memory the guest may grow to, in bytes.
-    pub max_memory_bytes: u64,
-}
-
-impl Default for GuestLimits {
-    /// One billion units of fuel per call and 128 MiB of memory: far above
-    /// what lowering one block needs, low enough that a runaway guest is
-    /// stopped in about a second.
-    fn default() -> Self {
-        Self {
-            fuel_per_call: 1_000_000_000,
-            max_memory_bytes: 128 * 1024 * 1024,
-        }
-    }
-}
-
-impl fmt::Display for GuestError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Instantiate(message) => write!(f, "guest instantiation failed: {message}"),
-            Self::Trap(message) => write!(f, "guest trapped: {message}"),
-            Self::Transport(message) => write!(f, "guest transport failed: {message}"),
-            Self::OutOfFuel { budget } => {
-                write!(
-                    f,
-                    "guest stopped: it used up its fuel budget of {budget} per call"
-                )
-            }
-            Self::MemoryLimit { limit } => {
-                write!(
-                    f,
-                    "guest stopped: it tried to grow its memory past {limit} bytes"
-                )
-            }
-        }
-    }
 }
 
 /// One input-dialect guest, whatever hosts it: compiled in (the first-party
@@ -230,21 +90,6 @@ impl<G: InputDialectGuest + ?Sized> InputDialectGuest for Box<G> {
 
     fn lower_block(&mut self, block: &SourceBlock) -> Result<LoweredBlock, GuestError> {
         (**self).lower_block(block)
-    }
-}
-
-impl From<vize_l0::Span> for Span {
-    fn from(span: vize_l0::Span) -> Self {
-        Self {
-            start: span.start,
-            end: span.end,
-        }
-    }
-}
-
-impl From<Span> for vize_l0::Span {
-    fn from(span: Span) -> Self {
-        vize_l0::Span::new(span.start, span.end)
     }
 }
 
