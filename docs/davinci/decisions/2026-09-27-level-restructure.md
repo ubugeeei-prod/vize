@@ -226,6 +226,12 @@ The toolchain aims to be extremely fast. The layering must not add pipelines or 
 
 ## Toolchain practice
 
+[External report attribution](../../../CONTRIBUTING.md#fix-requests) prioritizes reports
+through regression, verified co-authors, actual CI/merge and public release verification.
+[Release acknowledgements](../../../.github/release-notes/drop-in-scope.md#reporter-acknowledgements)
+credit nine reports already shipped in v0.429.1 without rewriting fix/tag history;
+the four documented workspace-only experiments remain unpublished.
+
 Vize follows language-toolchain practice, not compiler-only practice. It stays lightweight and fast. It avoids the heaviness of rust-analyzer-style designs: fine-grained per-node queries, per-node reference-counted trees and whole-workspace resident state.
 
 - **Two tiers stay as they are.** Long-lived processes (LSP, check server, watch modes) use the salsa-based resident tier. The one-shot CLI uses the fused non-salsa pipeline.

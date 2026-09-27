@@ -161,6 +161,19 @@ Security reports should follow
 [`SECURITY.md`](https://github.com/ubugeeei-prod/vize/blob/main/SECURITY.md) instead of the public
 fix templates.
 
+Prioritize reproducible reports from external users ahead of roadmap work. Carry
+each report through a minimized regression fixture, a reviewed fix, successful
+GitHub Actions checks, actual merge queue completion, and verified publication.
+A merged PR alone does not complete a report; verify the published package or
+release artifact against the reproduction before closing it.
+
+Credit the reporter's reproduction or investigation with a `Co-authored-by`
+trailer in the fix commit and preserve it in the squash commit. Verify the
+reporter's public GitHub identity; use a publicly supplied email or the verified
+`ID+LOGIN@users.noreply.github.com` address, never a guessed private email. Keep
+report links and acknowledgements in the release notes. Add missing historical
+credit in a new attribution change without rewriting published fixes or tags.
+
 ## Code of Conduct and Governance
 
 By participating, you agree to abide by the
