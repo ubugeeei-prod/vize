@@ -315,6 +315,8 @@ fail-closed dependency plan and shell-free package execution for #6862.
 shared task inputs, explicit T1 runtime inventory and conservative T0 fallback
 for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864).
 
+[Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base.
+
 ## Order of work
 
 See the [order of work decisions](./2026-09-27-level-restructure-order.md#order-of-work)
