@@ -4,6 +4,7 @@
 //! share one guard through the existing re-export shim.
 
 mod operators;
+mod safety;
 pub mod scan;
 
 use scan::{
@@ -12,6 +13,7 @@ use scan::{
     speculative_type_angle_open_kind, starts_valid_identifier_escape,
 };
 
+pub use safety::expression_is_safe_to_parse;
 pub use scan::is_expression_trailing_trivia;
 
 /// Maximum expression nesting depth accepted before parsing.
@@ -339,17 +341,6 @@ pub fn expression_nesting_depth(content: &str) -> usize {
 /// Returns whether parentheses, brackets, and braces are correctly paired.
 pub fn expression_has_balanced_delimiters(content: &str) -> bool {
     analyze_expression_nesting(content).delimiters_balanced
-}
-
-/// Returns whether an expression can be handed to OXC's recursive parser safely.
-pub fn expression_is_safe_to_parse(content: &str) -> bool {
-    let analysis = analyze_expression_nesting(content);
-    analysis.delimiters_balanced
-        && analysis.max_depth <= MAX_EXPRESSION_NESTING_DEPTH
-        && analysis.cumulative_speculative_type_angle_depth <= MAX_EXPRESSION_NESTING_DEPTH
-        && !analysis.excessive_speculative_type_angle_opens
-        && !analysis.oversized_numeric_token
-        && !operators::has_excessive_prefix_operator_run(content)
 }
 
 /// Returns true if `content` exceeds [`MAX_EXPRESSION_NESTING_DEPTH`].
