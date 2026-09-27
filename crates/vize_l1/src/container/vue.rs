@@ -5,6 +5,7 @@
 //! skipping comments, raw-text elements and interpolations. The legacy SFC
 //! descriptor (`vize_croquis`) is built from [`parse_block_fast`].
 
+mod attrs;
 mod block;
 mod template_boundary;
 
