@@ -131,4 +131,4 @@ Both projects require T1 metadata and complete unfiltered real-TSGO runtime exec
 
 The tuple child extends the exact Canon group only with the present
 `component_event_tuples_preserve_all_argument_diagnostics` test. All seven projects
-require T1 metadata and unchanged full Cargo runtime execution.
+require T1 metadata and complete unfiltered real-TSGO runtime execution.
