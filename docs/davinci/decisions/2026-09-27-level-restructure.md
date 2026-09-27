@@ -168,7 +168,7 @@ See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructu
 ## JSX semantics
 
 See the [JSX semantics decisions](./2026-09-27-level-restructure-designs.md#jsx-semantics) in the companion record
-and the [falsy-child fix](./2026-09-27-jsx-falsy-and.md).
+and the [falsy-child fix and oracle review](./2026-09-27-jsx-falsy-and.md).
 
 ## Products on the levels
 

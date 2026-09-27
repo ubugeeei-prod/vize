@@ -50,6 +50,13 @@ observations, including one initial read, reactive updates, warning-free
 hydration and keyed DOM retention. The artifact digest and producer recipe
 are retained in the fixture; comment-bearing raw HTML is a separate facet.
 
+The data-driven Babel oracle also stores the `children/logical_and` case.
+Its reviewed once-value/falsy-text snapshot correction is isolated from the
+spread-child BAIL correction. The downstream spread producer passed all 100
+unchanged Babel inputs with those two reviewed sections; this parent's own
+fresh source-head Actions remain pending. The fixed Rust code and the complete
+24-facet corpus above are unchanged by the additional snapshot correction.
+
 This is a legacy correction, not a Davinci native acceptance claim. The L2
 projection refuses a synthetic lexical scope instead of treating it as ui.for;
 the existing default VDOM/SSR selection then uses the scope-capable legacy
