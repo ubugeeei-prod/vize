@@ -653,7 +653,7 @@ fn test_vue2_migration_line_break_after_interpolation() {
         let TemplateChildNode::Text(text) = &p.children[1] else {
             panic!("expected text after interpolation");
         };
-        text.content.to_string()
+        text.content.to_owned()
     };
     assert_eq!(text_after_interpolation(&default), " ");
     assert_eq!(text_after_interpolation(&legacy), "\n");
