@@ -300,3 +300,45 @@ work reductions before any further source/ref update. No numeric retry, cap
 increase, changed fixture, public tail replay or native credit is granted.
 The original source and raw failures remain preserved. This later private
 fact-only record changes no measured producer or remote verification head.
+
+## Reviewed fourth private composition
+
+The root concretely approved two further work reductions on frozen `444`:
+the [short prefix-operator bound](./2026-09-27-short-prefix-operator-guard.md)
+and [first-row fact capacity](./2026-09-27-patina-facts-first-row-capacity.md).
+For at most 31 UTF-8 bytes, the original prefix run cannot exceed its existing
+31 limit; only that predicate skips work. Longer fallback, complete balancing,
+numeric limits, OXC admission and stack safety retain their original bodies.
+The table estimate counts first-four-column-row direct member tokens once,
+excludes text/category references and caps at 256. Malformed rows do not seed;
+zero-direct-token rows reserve zero. Original streaming members, keys, IDs,
+case order, rows, children and defect order stay unchanged.
+
+The Facts ID and children maps are private. Production accesses them by key;
+there is no production map-order iteration or serialization consumer in the
+read source scope. Public universe/name and case fallback iterate the names
+and cased vectors in their preserved insertion order. Map iteration/capacity
+identity is not promised, and duplicate/invalid tokens may overreserve.
+Prescan work and actual allocation/instruction savings remain unmeasured.
+
+The previous seventeen controls stay intact. Six new complete prefix/safety
+controls and four new complete table-state/defect controls bring the pending
+set to twenty-seven; no new control has runtime acceptance on this composition.
+The unchanged full legacy/linter/DOM differential recipe scope and exact
+allocation gates are required after all 100 unchanged numeric targets pass.
+MacOS strict `1495` stays unknown. The parallel empty dynamic-props allocation
+candidate is not included; no public tail head changes.
+
+TODO: complete official inventories and exact-source/foreign-main/raw-method
+proof, then root final-tree review before one fresh `444` lease update of the
+owned temporary ref. Dispatch unchanged measured workflow once first; preserve
+any failure without a Full Check wave. Only all-100 success permits one unchanged
+Full Check for the twenty-seven controls, full feature scope and allocations.
+
+The next verification now imports exact actual main
+`754c0acd2c9246a534ad43f22cfc7dd5b6960e1a` once, retaining original authors
+and failed-source ancestry. This preserves the subsequently merged cache,
+Canon and Slot source/oracles/matrices before any numeric or full validation.
+Every foreign source blob must equal that main outside the narrowly reviewed
+owned ranges; exact helpers, source selection and measurement contract remain
+required. Integration and final-tree proof precede the authorized ref update.
