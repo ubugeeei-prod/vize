@@ -6,6 +6,17 @@ See the [measurement protocol](./2026-09-27-ci-measurements.md). Validate
 normal automatic CI artifacts before closing the issue; #6865 and #6868
 remain separate requirements before declaring full T1 coverage.
 
+Execute the actual workflow phase shell against a fake Cargo executable in
+focused tests. Check exact build/run arguments, required TSGO environment,
+fresh HTML collection, receipt fields and propagation of nonzero Cargo status.
+Follow the reusable Rust caller so extraction preserves this executable proof.
+
+Check run `36302890896` for #6899 passed at its exact head. Artifact
+`10925414722` records the matching PR head `ddc5e5bf3` and tested synthetic
+merge `474386f`. Compilation took 183 seconds and execution plus doctests
+took 1119 seconds, both with exit code zero; the complete Rust job took
+23 minutes 32 seconds. These observations establish a baseline, not a speedup.
+
 ## Shared differential fixtures
 
 Tracked in [#6891](https://github.com/ubugeeei-prod/vize/issues/6891).
