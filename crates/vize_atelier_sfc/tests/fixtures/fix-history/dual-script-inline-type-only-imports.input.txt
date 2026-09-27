@@ -1,0 +1,13 @@
+<script lang="ts">
+import { type Foo } from './types-only'
+import { type Bar, runtimeValue } from './mixed'
+import {} from './empty-import'
+import './side-effect'
+const make = (): Foo => ({ id: runtimeValue })
+</script>
+
+<script setup lang="ts">
+const value = make()
+</script>
+
+<template>{{ value.id }}</template>

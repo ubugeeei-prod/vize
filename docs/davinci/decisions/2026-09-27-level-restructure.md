@@ -105,6 +105,12 @@ See the [l3 is the decision layer decisions](./2026-09-27-level-restructure-desi
 
 See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-emission) in the companion record.
 
+[Compiler fix-history byte references](./2026-09-27-compiler-fix-history-pins.md)
+records [#6880](https://github.com/ubugeeei-prod/vize/issues/6880): two immutable
+complete SFC Result fixtures, SSR snapshot normalization limits and the next
+target-specific capture gaps. Whole-history coverage and native acceptance
+remain unfinished; fresh Actions execution is required before merge.
+
 ## Script side
 
 See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side) in the companion record.
