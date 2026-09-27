@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "regressionCommit": "613ce3a5a31d22ec0dfd42feab25772e63fc54bf",
+  "historicalIssue": 4996,
+  "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
+  "diagnosticContract": {
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": ["end", "relatedInformation", "raw backend diagnostics"],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "component-sibling-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "component-sibling-valid/tsconfig.json.txt"
+        },
+        {
+          "file": "src/parent.vue",
+          "source": "component-sibling-valid/src/parent.vue.txt"
+        },
+        {
+          "file": "src/child.vue",
+          "source": "component-sibling-valid/src/child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "native-sibling-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "native-sibling-valid/tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "native-sibling-valid/src/App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "handler-assignment-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "handler-assignment-invalid/tsconfig.json.txt"
+        },
+        {
+          "file": "src/parent.vue",
+          "source": "handler-assignment-invalid/src/parent.vue.txt"
+        },
+        {
+          "file": "src/child.vue",
+          "source": "handler-assignment-invalid/src/child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/parent.vue",
+          "line": 7,
+          "column": 33,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"nope\"' is not assignable to type '\"a\" | \"b\"'."
+        }
+      ]
+    }
+  ]
+}
