@@ -79,10 +79,33 @@ export function nativePreparationIsActive(directory) {
 
 export function withPreparedNative(directory, ownerArgument, command, args, run = spawnSync) {
   const file = receiptPath(directory);
+  const owner = { ownerPid: process.pid, ownerArgument };
+  if (!ownerIsAlive(owner)) {
+    if (existsSync(file)) {
+      try {
+        const existing = JSON.parse(readFileSync(file, "utf8"));
+        if (Number.isInteger(existing.ownerPid) && existing.ownerPid > 0) {
+          process.kill(existing.ownerPid, 0);
+          throw new Error("Cannot inspect an existing live native preparation owner");
+        }
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === "Cannot inspect an existing live native preparation owner"
+        )
+          throw error;
+      }
+    }
+    console.log(
+      "Native reuse is unavailable: running the original package tests with standalone Vite preparation.",
+    );
+    return (
+      run(command, args, { cwd: process.cwd(), env: process.env, stdio: "inherit" }).status ?? 1
+    );
+  }
   const receipt = {
     schemaVersion: 1,
-    ownerPid: process.pid,
-    ownerArgument,
+    ...owner,
     id: randomUUID(),
     nativeDir: realpathSync(directory),
     ...sourceIdentity(directory),

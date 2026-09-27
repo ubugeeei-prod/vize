@@ -24,6 +24,10 @@ This is one observed run; it does not establish a median or a speedup.
   command line, preventing a reused PID from validating a stale receipt.
   The wrapper removes its receipt in `finally`; dead or invalid receipts
   cannot enable reuse and are reclaimed on the next managed invocation.
+- Linux/macOS process inspection verifies this owner. If command-line
+  inspection is unavailable, the wrapper records that reuse is unavailable
+  and runs the original group, including Vite's ordinary native build. It
+  never skips tests or accepts an unverifiable receipt.
 - The Vite runner uses `test:prepared` during this managed scope. A filtered
   environment variable cannot signal reuse: the first Actions run still
   compiled twice because the root enables package script caching and that

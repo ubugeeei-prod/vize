@@ -118,9 +118,9 @@ for(const field of ['head','tree','workingDiff','sha256','ownerArgument']) {
 }
 fs.writeFileSync(file,JSON.stringify({...original,ownerPid:process.pid})); assert.equal(active(),false);
 fs.writeFileSync(file,JSON.stringify(original));
-assert.throws(()=>withPreparedNative(dir,original.ownerArgument,'unused',[]),/already active/);
+assert.throws(()=>withPreparedNative(dir,original.ownerArgument,'unused',[]),/owner|already active/);
 fs.appendFileSync('tracked-source','changed'); assert.equal(active(),false);
-assert.throws(()=>withPreparedNative(dir,original.ownerArgument,'unused',[]),/already active/);
+assert.throws(()=>withPreparedNative(dir,original.ownerArgument,'unused',[]),/owner|already active/);
 fs.writeFileSync('tracked-source','source\\n'); assert.equal(active(),true);
 process.exit(7);
 `,
@@ -138,6 +138,21 @@ process.exit(7);
     writeFileSync(receipt, JSON.stringify({ schemaVersion: 1, ownerPid: 2147483647 }));
     const stale = run();
     assert.equal(stale.status, 7, `${stale.stdout}\n${stale.stderr}`);
+    assert.equal(existsSync(receipt), false);
+    const bin = join(fixture, "bin");
+    mkdirSync(bin);
+    writeFileSync(join(bin, "ps"), `#!${process.execPath}\nprocess.exit(1);\n`, { mode: 0o755 });
+    writeFileSync(
+      join(fixture, "fallback.mjs"),
+      `import assert from 'node:assert/strict'; import fs from 'node:fs'; assert.equal(fs.existsSync(${JSON.stringify(receipt)}),false); process.exit(4);\n`,
+    );
+    const fallback = spawnSync(process.execPath, [helper, process.execPath, "fallback.mjs"], {
+      cwd: fixture,
+      encoding: "utf8",
+      env: { ...process.env, PATH: `${bin}:${process.env.PATH}` },
+    });
+    assert.equal(fallback.status, 4, `${fallback.stdout}\n${fallback.stderr}`);
+    assert.match(fallback.stdout, /Native reuse is unavailable/);
     assert.equal(existsSync(receipt), false);
   } finally {
     rmSync(fixture, { recursive: true, force: true });
