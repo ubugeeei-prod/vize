@@ -9,6 +9,7 @@ export const METHODOLOGY_KEYS = [
   "allocator",
   "flags",
   "fixture_digest",
+  "guest_context",
   "libc",
   "libc_dispatch",
   "profile",
@@ -21,6 +22,16 @@ export const BENCH_KEYS = ["fixture", "fixture_sha256", "instructions", "window"
 export const ALLOCATOR_PROTOCOL = "counting-mimalloc-reserve128m-preinit64m-purgeoff-v1";
 export const LIBC_DISPATCH =
   "glibc.cpu.hwcaps=-AVX,-AVX2,-AVX512F,-AVX512VL,-AVX512BW,-AVX_Fast_Unaligned_Load,-ERMS,-FSRM,-Prefer_ERMS,-Prefer_FSRM,-SSSE3,-SSE4_1,-SSE4_2";
+export const GUEST_ENVIRONMENT = Object.freeze({
+  PATH: "/usr/bin:/bin",
+  LANG: "C",
+  LC_ALL: "C",
+  VIZE_INSTRUCTION_COUNTS: "1",
+  MIMALLOC_RESERVE_OS_MEMORY: "128MiB",
+  MIMALLOC_PURGE_DELAY: "-1",
+  MIMALLOC_VERBOSE: "1",
+  GLIBC_TUNABLES: LIBC_DISPATCH,
+});
 const HASH = /^[a-f0-9]{64}$/;
 
 function fields(value, keys, where) {
@@ -48,6 +59,11 @@ export function validateMethodology(value) {
   assert.equal(value.profile, "ci-opt", "measurement profile must be ci-opt");
   assert.equal(value.allocator, ALLOCATOR_PROTOCOL, "measurement allocator changed");
   assert.equal(value.fixture_digest, "input-identity-v2", "measurement input digest changed");
+  assert.equal(
+    value.guest_context,
+    "fixed-env-fixed-argv0-v1",
+    "measurement guest context changed",
+  );
   assert.equal(value.libc_dispatch, LIBC_DISPATCH, "measurement libc dispatch changed");
   assert.equal(
     value.window_protocol,

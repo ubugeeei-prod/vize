@@ -19,6 +19,7 @@ import {
   validateAllocatorSetup,
   ALLOCATOR_PROTOCOL,
   LIBC_DISPATCH,
+  GUEST_ENVIRONMENT,
 } from "./instruction-counts-lib.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -103,6 +104,7 @@ function collect(out, registry) {
       allocator: ALLOCATOR_PROTOCOL,
       flags: "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
       fixture_digest: "input-identity-v2",
+      guest_context: "fixed-env-fixed-argv0-v1",
       libc: command("getconf", ["GNU_LIBC_VERSION"]),
       libc_dispatch: LIBC_DISPATCH,
       profile: "ci-opt",
@@ -117,6 +119,7 @@ function collect(out, registry) {
     run_attempt: Number(process.env.GITHUB_RUN_ATTEMPT),
     workflow: process.env.GITHUB_WORKFLOW,
     job: process.env.GITHUB_JOB,
+    guest_environment: GUEST_ENVIRONMENT,
     uname: command("uname", ["-a"]),
     cpu: fs.readFileSync("/proc/cpuinfo", "utf8"),
     dpkg: command("dpkg-query", ["-W", "valgrind", "libc6"]),
@@ -172,21 +175,23 @@ function collect(out, registry) {
       sha256: command("sha256sum", [executable]).split(" ")[0],
     })),
   );
-  const measureEnv = Object.fromEntries(
-    Object.entries(process.env).filter(([key]) => !key.toUpperCase().startsWith("MIMALLOC_")),
-  );
-  Object.assign(measureEnv, {
-    VIZE_INSTRUCTION_COUNTS: "1",
-    MIMALLOC_RESERVE_OS_MEMORY: "128MiB",
-    MIMALLOC_PURGE_DELAY: "-1",
-    MIMALLOC_VERBOSE: "1",
-    GLIBC_TUNABLES: LIBC_DISPATCH,
+  // Variable CI environment lengths change guest stack addresses. libc copy
+  // routines branch on address aliasing even with the same binary and bytes.
+  // Keep both environment and argv0 fixed, including across target renames.
+  // Links stay outside the uploaded artifact so binaries do not bloat it.
+  const probeDir = path.join(path.dirname(out), "instruction-probes");
+  assert.ok(!fs.existsSync(probeDir), `refusing to reuse guest executable directory ${probeDir}`);
+  fs.mkdirSync(probeDir);
+  const probes = binaries.map((suite, index) => {
+    const executable = path.join(probeDir, `probe-${String(index).padStart(2, "0")}`);
+    fs.symlinkSync(suite.executable, executable);
+    return { ...suite, executable };
   });
   for (let run = 1; run <= 3; run += 1) {
     const rows = {};
     const runDir = path.join(out, `run-${run}`);
     fs.mkdirSync(runDir);
-    for (const suite of binaries) {
+    for (const suite of probes) {
       const prefix = path.join(runDir, `${suite.pkg}-${suite.bench}.callgrind`);
       const measured = spawnSync(
         "valgrind",
@@ -203,7 +208,7 @@ function collect(out, registry) {
           cwd: root,
           encoding: "utf8",
           maxBuffer: 64 * 1024 * 1024,
-          env: measureEnv,
+          env: GUEST_ENVIRONMENT,
         },
       );
       fs.writeFileSync(`${prefix}.stderr`, measured.stderr ?? "");

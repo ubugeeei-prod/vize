@@ -204,6 +204,24 @@ the sticky cache. All twelve Cargo benchmark artifacts must report
 distinguishes independent builds from repeated execution of the same cached
 binary. It does not change the compiler source or measured window.
 
+The first clean [run 36306498343](https://github.com/ubugeeei-prod/vize/actions/runs/36306498343)
+rebuilt all twelve benchmark artifacts and produced the same binary byte
+digests as the preceding fixed-dispatch run. Nevertheless, 23 counts differed
+by two to twelve instructions, wholly within `memcpy@GLIBC_2.2.5`; compiler
+function costs still matched. The baseline SSE2 copy implementation also
+[branches on address aliasing](https://raw.githubusercontent.com/bminor/glibc/release/2.39/master/sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S).
+The inherited variable CI environment can move stack input addresses, so
+the next controlled protocol removes that possible source of drift.
+
+`guest_context = "fixed-env-fixed-argv0-v1"` selects a fixed minimal guest
+environment (locale, system PATH, allocator options and libc mask only) and
+fixed per-suite executable symlink paths. Host GitHub provenance remains in
+the report and environment artifact. The links live outside the uploaded
+artifact so binary files do not enlarge it. Target moves keep the same
+guest argument path. No product input is padded, no product work is added,
+and no memory cost is subtracted. Cross-job equality remains the criterion;
+controlling the guest context is not itself proof that counts are stable.
+
 `fixture_digest = "input-identity-v2"` preserves input identity across
 structural moves. Direct fixture files hash their exact bytes independently
 of their paths. The four level storage probes hash their exact template

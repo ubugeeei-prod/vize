@@ -21,6 +21,7 @@ import {
   validateAllocatorSetup,
   ALLOCATOR_PROTOCOL,
   LIBC_DISPATCH,
+  GUEST_ENVIRONMENT,
 } from "../../tools/benchmarks/scripts/instruction-counts-lib.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -35,6 +36,7 @@ const method = {
   allocator: ALLOCATOR_PROTOCOL,
   flags: "target-cpu=x86-64;instr-atstart=no;cache-sim=no;branch-sim=no",
   fixture_digest: "input-identity-v2",
+  guest_context: "fixed-env-fixed-argv0-v1",
   libc: "glibc 2.39",
   libc_dispatch: LIBC_DISPATCH,
   profile: "ci-opt",
@@ -299,4 +301,20 @@ void test("allocator setup requires actual reservation and exactly one completed
     () => validateAllocatorSetup(log.replace("purge_delay': -1", "purge_delay': 1000")),
     /purge option changed/,
   );
+});
+
+void test("guest environment has no inherited variable CI context", () => {
+  assert.equal(Object.isFrozen(GUEST_ENVIRONMENT), true);
+  assert.deepEqual(Object.keys(GUEST_ENVIRONMENT).sort(), [
+    "GLIBC_TUNABLES",
+    "LANG",
+    "LC_ALL",
+    "MIMALLOC_PURGE_DELAY",
+    "MIMALLOC_RESERVE_OS_MEMORY",
+    "MIMALLOC_VERBOSE",
+    "PATH",
+    "VIZE_INSTRUCTION_COUNTS",
+  ]);
+  assert.equal(GUEST_ENVIRONMENT.GLIBC_TUNABLES, LIBC_DISPATCH);
+  assert.equal(GUEST_ENVIRONMENT.LC_ALL, "C");
 });
