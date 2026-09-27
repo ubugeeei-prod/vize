@@ -53,7 +53,8 @@ Actions proof must identify its own head and executable.
 TODO: register these exact inputs and oracles with shared #6891; retain raw
 legacy observation identities; review every independent requirement and
 supersession in these compound historical commits; verify source-built
-Actions and merge queue runs. The complete #6881 history still includes
-258 fix-title candidates, non-fix behavior changes and merge resolutions.
+Actions and merge queue runs. The broad inventory pinned at `b4f25fb6511075aa531be80d645bb0db8cc151e0`
+has 258 fix-title candidates, alongside non-fix behavior changes and
+merge resolutions; it remains separate from this later capture parent.
 No whole historical commit is accepted by this selected pack. Native
 handling and native comparison counts remain zero; #6881 stays open.
