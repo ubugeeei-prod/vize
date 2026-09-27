@@ -1,0 +1,45 @@
+---
+source: crates/vize_patina/tests/report_history.rs
+expression: bytes
+---
+Case {
+    id: "no-findings-output-control",
+    history: [
+        "3a87d25f029f731be72705a19787743a996640eb",
+        "08eb760bae05426251031bd9b6523edae23e7b2f",
+    ],
+    files: [
+        File {
+            filename: "Clean.vue",
+            source: "<template>\r\n  <div>雪🌸</div>\r\n</template>\r\n",
+            rule: "vue/no-v-html",
+            diagnostics: 0,
+        },
+    ],
+    sources: [
+        0,
+    ],
+}
+Report {
+    results: [
+        LintResult {
+            filename: "Clean.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ],
+    unchanged_requeries: [
+        LintResult {
+            filename: "Clean.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ],
+    formatted_messages: [
+        [],
+    ],
+    json: "[\n  {\n    \"file\": \"Clean.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+    text: "",
+}

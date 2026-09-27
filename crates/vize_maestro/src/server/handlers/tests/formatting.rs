@@ -97,6 +97,58 @@ fn sfc_formatting_still_runs() {
     );
 }
 
+#[cfg(feature = "glyph")]
+#[test]
+fn vue2_project_formatting_preserves_filter_names_for_document_range_and_on_type() {
+    for version in ["2", "2.7"] {
+        let source = "<template>\n<p>{{message|format-date('en')}}</p>\n</template>\n";
+        let expected = "<template>\n  <p>{{ message | format-date(\"en\") }}</p>\n</template>\n";
+        let uri = Url::parse("file:///App.vue").unwrap();
+        let service = server_with(&uri, source, "vue");
+        let server = service.inner();
+        let project = tempfile::tempdir().unwrap();
+        std::fs::write(project.path().join("vize.config.json"),
+            serde_json::json!({"vue": {"version": version}, "languageServer": {"formatting": true}}).to_string()).unwrap();
+        server.state.load_workspace_config(project.path());
+
+        let edits = futures::executor::block_on(server.formatting(formatting_params(uri.clone())))
+            .unwrap()
+            .unwrap();
+        assert_eq!(edits.len(), 1);
+        assert_eq!(edits[0].new_text.as_bytes(), expected.as_bytes());
+        let mut params = range_params(uri.clone());
+        params.range = Range::new(Position::new(1, 0), Position::new(1, 35));
+        let edits = futures::executor::block_on(server.range_formatting(params))
+            .unwrap()
+            .unwrap();
+        assert_eq!(edits.len(), 1);
+        assert_eq!(
+            edits[0].new_text.as_str(),
+            "\n  <p>{{ message | format-date(\"en\") }}</p>\n"
+        );
+
+        // The chain is already canonical; on-type changes only its indentation.
+        server.state.documents.open(
+            uri.clone(),
+            expected.replace("  <p>", "<p>"),
+            2,
+            "vue".to_string(),
+        );
+        let mut params = on_type_params(uri);
+        params.text_document_position.position = Position::new(1, 0);
+        let edits = futures::executor::block_on(server.on_type_formatting(params))
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            edits,
+            vec![TextEdit {
+                range: Range::new(Position::new(1, 0), Position::new(1, 0)),
+                new_text: "  ".to_string()
+            }]
+        );
+    }
+}
+
 #[test]
 fn formatting_handlers_are_gated_off_by_default() {
     // `formatting` is opt-in, so a server that was never told to format must

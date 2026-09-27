@@ -4,7 +4,7 @@
 //! template formatting pipeline, including tag parsing, attribute layout,
 //! and interpolation formatting.
 
-use crate::{error::FormatError, options::FormatOptions, script};
+use crate::{error::FormatError, options::FormatOptions};
 use memchr::memchr3;
 use vize_l0::{String, ToCompactString};
 
@@ -13,7 +13,7 @@ use super::{
         ParsedAttribute, render_attribute, should_use_multiline_attrs, sort_attributes,
         write_rendered_attributes,
     },
-    directives::normalize_attribute,
+    directives::normalize_attribute_with_vue_version,
     helpers::{
         byte_at, find_bytes, is_tag_name_char, is_void_element_str, is_whitespace,
         parse_closing_tag, sub_slice,
@@ -25,22 +25,27 @@ mod suppression;
 mod text;
 mod whitespace_significant;
 
+#[cfg(test)]
+pub(crate) use interpolation::format_interpolations;
 use interpolation::parse_interpolation_range;
+use interpolation::{format_interpolation_expression, format_interpolations_with_vue_version};
 use suppression::{LineJoiner, TextRun};
 use whitespace_significant::is_whitespace_significant_element;
 
 /// High-performance template formatter.
 pub(crate) struct TemplateFormatter<'a> {
     options: &'a FormatOptions,
+    vue_version: crate::VueVersion,
     indent: &'static [u8],
     newline: &'static [u8],
 }
 
 impl<'a> TemplateFormatter<'a> {
     #[inline]
-    pub(crate) fn new(options: &'a FormatOptions) -> Self {
+    pub(crate) fn new(options: &'a FormatOptions, vue_version: crate::VueVersion) -> Self {
         Self {
             options,
+            vue_version,
             indent: options.indent_bytes(),
             newline: options.newline_bytes(),
         }
@@ -488,7 +493,7 @@ impl<'a> TemplateFormatter<'a> {
 
         // Normalize directives and determine priority
         let (name, value, priority, indent_multiline_value) =
-            normalize_attribute(&raw_name, value, self.options);
+            normalize_attribute_with_vue_version(&raw_name, value, self.options, self.vue_version);
 
         (
             Some(ParsedAttribute {
@@ -501,73 +506,4 @@ impl<'a> TemplateFormatter<'a> {
             pos,
         )
     }
-}
-
-/// Format interpolations in text content: `{{expr}}` -> `{{ expr }}`.
-pub(crate) fn format_interpolations(text: &str, options: &FormatOptions) -> String {
-    let bytes = text.as_bytes();
-    let len = bytes.len();
-
-    // Fast path: no `{` at all means no interpolations and no special bytes,
-    // so the text is returned verbatim with a single allocation.
-    let Some(first_brace) = memchr::memchr(b'{', bytes) else {
-        return text.to_compact_string();
-    };
-
-    let mut result = String::with_capacity(len + 16);
-    // Everything before the first `{` is ordinary text; copy it in one shot.
-    result.push_str(text.get(..first_brace).unwrap_or_default());
-    let mut pos = first_brace;
-
-    while pos < len {
-        if pos + 1 < len && byte_at(bytes, pos) == b'{' && byte_at(bytes, pos + 1) == b'{' {
-            // Find closing }}
-            let expr_start = pos + 2;
-            let mut depth = 1;
-            let mut expr_end = expr_start;
-
-            while expr_end + 1 < len {
-                if byte_at(bytes, expr_end) == b'{' && byte_at(bytes, expr_end + 1) == b'{' {
-                    depth += 1;
-                    expr_end += 2;
-                } else if byte_at(bytes, expr_end) == b'}' && byte_at(bytes, expr_end + 1) == b'}' {
-                    depth -= 1;
-                    if depth == 0 {
-                        break;
-                    }
-                    expr_end += 2;
-                } else {
-                    expr_end += 1;
-                }
-            }
-
-            if depth == 0 {
-                let expr = text.get(expr_start..expr_end).unwrap_or_default();
-                let formatted_expr = format_interpolation_expression(expr, options);
-                result.push_str("{{ ");
-                result.push_str(&formatted_expr);
-                result.push_str(" }}");
-                pos = expr_end + 2;
-            } else {
-                // Unclosed interpolation -- keep as-is
-                result.push('{');
-                pos += 1;
-            }
-        } else {
-            // Ordinary text. Copy the run up to (but not including) the next
-            // `{` in a single push instead of char-by-char. A lone `{` (one
-            // not starting a `{{`) is emitted and stepped over individually,
-            // exactly as before.
-            let rest = sub_slice(bytes, pos + 1..);
-            let next = memchr::memchr(b'{', rest).map_or(len, |off| pos + 1 + off);
-            result.push_str(text.get(pos..next).unwrap_or_default());
-            pos = next;
-        }
-    }
-
-    result
-}
-
-fn format_interpolation_expression(expr: &str, options: &FormatOptions) -> String {
-    script::format_js_expression(expr, options).unwrap_or_else(|| expr.trim().to_compact_string())
 }

@@ -136,6 +136,8 @@ See the [script side decisions](./2026-09-27-level-restructure-designs.md#script
 
 See the [dialects, languages, frameworks decisions](./2026-09-27-level-restructure-designs.md#dialects-languages-frameworks) in the companion record.
 
+[Legacy formatter Vue 2 filters](./2026-09-27-glyph-vue2-filters.md) records [#6845](https://github.com/ubugeeei-prod/vize/issues/6845), explicit version selection and the native FilterChain follow-up in #6836.
+
 ## JSX semantics
 
 See the [JSX semantics decisions](./2026-09-27-level-restructure-designs.md#jsx-semantics) in the companion record.
@@ -165,6 +167,14 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
   [Selected current linter history oracles](./2026-09-27-lint-history-current-api.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): complete public API results and actual independent fixes, with whole-history closure and native comparisons still pending.
 
+  [Static-class edit boundaries](./2026-09-27-static-class-fix-boundary.md) record [#6920](https://github.com/ubugeeei-prod/vize/issues/6920): use the end-exclusive binding span; preserve the original bad capture as evidence, not accepted coverage.
+
+  [#6881](https://github.com/ubugeeei-prod/vize/issues/6881) queue validation exposed a 1,053,102-byte tracked filename stream exceeding Node's default 1 MiB buffer. The v-on and WASM-cache inspections share an 8 MiB bounded Git reader that rejects child errors and nonzero exits, preserves NUL-delimited filenames, and checks a real index above 1 MiB plus overflow and command failure. All historical captures and assertions remain unchanged; the remaining three PRs still require fresh source and full queue checks before actual merge.
+
+  [Actual historical linter reports](./2026-09-27-lint-report-history.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): complete JSON/Text bytes and unchanged requery controls, with the existing linter witness shard refreshed; full history and native proof remain open.
+
+  [NextTick arrow history oracles](./2026-09-27-next-tick-history.md) record [#6881](https://github.com/ubugeeei-prod/vize/issues/6881): ten exact private source/public API observations, including Unicode/CRLF SFC framing, complete diagnostics and unchanged requery, with one linter witness row refreshed; full history and native proof remain open.
+
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.
 
@@ -174,7 +184,12 @@ See the [type check decisions](./2026-09-27-level-restructure-designs.md#type-ch
 
 ## Legacy deletion criteria
 
-See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria) in the companion record.
+See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria)
+in the companion record and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-history.md)
+for the pinned review ledger, complete document-link and CRLF on-type response contracts and
+unfinished history obligations in #6883.
+The same installment preserves dated source-runtime receipts separately from
+historical binary evidence; later heads still require their own Actions proof.
 
 ## Multi-framework
 
@@ -251,6 +266,11 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 [Affected Rust selection](./2026-09-27-affected-rust-ci.md) records the fail-closed dependency plan and shell-free package execution for #6862.
 
 [Tooling input selection](./2026-09-27-tooling-input-selection.md) records the shared task inputs, explicit T1 runtime inventory and conservative T0 fallback for [#6863](https://github.com/ubugeeei-prod/vize/issues/6863) and [#6864](https://github.com/ubugeeei-prod/vize/issues/6864).
+
+[Full tooling LSP source identity](./2026-09-27-lsp-source-binding.md) binds
+required runtime proof to the receipted current CLI without cached fallback.
+Use test-step environment variables to retain the plain VP command and compose
+with the formatter's always-upload corpus evidence without changing build setup.
 
 [Stacked PR checks](./2026-09-27-stacked-pr-checks.md) run on every PR base. [Rust PR archive and shard execution](./2026-09-27-rust-nextest-shards.md) records #6862's runner, doctest, resource and archive identity decisions.
 

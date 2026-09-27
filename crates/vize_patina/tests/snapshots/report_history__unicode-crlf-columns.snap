@@ -1,0 +1,73 @@
+---
+source: crates/vize_patina/tests/report_history.rs
+expression: bytes
+---
+Case {
+    id: "unicode-crlf-columns",
+    history: [
+        "3a87d25f029f731be72705a19787743a996640eb",
+        "08eb760bae05426251031bd9b6523edae23e7b2f",
+    ],
+    files: [
+        File {
+            filename: "雪🌸.vue",
+            source: "<template>\r\n  <p>前🌸</p><div title=\"café\" v-html=\"content\"></div>\r\n</template>\r\n",
+            rule: "vue/no-v-html",
+            diagnostics: 1,
+        },
+    ],
+    sources: [
+        0,
+    ],
+}
+Report {
+    results: [
+        LintResult {
+            filename: "雪🌸.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-v-html",
+                    severity: Warning,
+                    message: "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+                    start: 47,
+                    end: 63,
+                    help: Some(
+                        "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ],
+    unchanged_requeries: [
+        LintResult {
+            filename: "雪🌸.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-v-html",
+                    severity: Warning,
+                    message: "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+                    start: 47,
+                    end: 63,
+                    help: Some(
+                        "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ],
+    formatted_messages: [
+        [
+            "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        ],
+    ],
+    json: "[\n  {\n    \"file\": \"雪🌸.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"vue/no-v-html\",\n        \"ruleDocsPath\": \"docs/content/rules/vue.md\",\n        \"severity\": 1,\n        \"message\": \"[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content\",\n        \"line\": 2,\n        \"column\": 30,\n        \"endLine\": 2,\n        \"endColumn\": 46,\n        \"help\": \"Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\\nAlternatives:\\n1. Use text interpolation (auto-escaped):\\n  <p>{{ userContent }}</p>\\n2. Use a sanitization library:\\n  import DOMPurify from 'dompurify'\\n  const safeHtml = DOMPurify.sanitize(userInput)\\n3. Use a markdown renderer with XSS protection\\nIf you must use v-html:\\n- Never use with user-provided content\\n- Only use with trusted, static content\"\n      }\n    ],\n    \"errorCount\": 0,\n    \"warningCount\": 1\n  }\n]",
+    text: "\n  \u{1b}[38;2;244;191;117;1m⚠\u{1b}[0m \u{1b}[38;2;244;191;117;1m[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content\u{1b}[0m\n   ╭─[\u{1b}[38;2;92;157;255;1m雪🌸.vue\u{1b}[0m:2:36]\n \u{1b}[2m1\u{1b}[0m │ <template>\n \u{1b}[2m2\u{1b}[0m │   <p>前🌸</p><div title=\"café\" v-html=\"content\"></div>\n   · \u{1b}[38;2;246;87;248m                               ────────────────\u{1b}[0m\n \u{1b}[2m3\u{1b}[0m │ </template>\n   ╰────\n\u{1b}[38;2;106;159;181m  help: \u{1b}[0mSecurity Risk: v-html renders raw HTML and can execute malicious scripts from user input.\n        Alternatives:\n        1. Use text interpolation (auto-escaped):\n          <p>{{ userContent }}</p>\n        2. Use a sanitization library:\n          import DOMPurify from 'dompurify'\n          const safeHtml = DOMPurify.sanitize(userInput)\n        3. Use a markdown renderer with XSS protection\n        If you must use v-html:\n        - Never use with user-provided content\n        - Only use with trusted, static content\n        Reference: docs/content/rules/vue.md\n\n",
+}

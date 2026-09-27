@@ -54,11 +54,18 @@ pub(crate) fn format_on_type(
     filename: &str,
     position: Position,
     options: &vize_glyph::FormatOptions,
+    vue_version: vize_glyph::VueVersion,
 ) -> Option<Vec<TextEdit>> {
     let line_start = position_to_offset(content, position.line, 0)?;
 
     let allocator = vize_glyph::Allocator::with_capacity(content.len());
-    let formatted = vize_glyph::format_sfc_with_allocator(content, options, &allocator).ok()?;
+    let formatted = vize_glyph::format_sfc_with_allocator_and_vue_version(
+        content,
+        options,
+        &allocator,
+        vue_version,
+    )
+    .ok()?;
     if !formatted.changed {
         return Some(Vec::new());
     }

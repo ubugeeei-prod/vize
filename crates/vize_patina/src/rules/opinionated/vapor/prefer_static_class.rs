@@ -185,7 +185,7 @@ fn report_static_class(
     replacement.push('"');
     let fix = Fix::new(
         "Replace with static class attribute",
-        TextEdit::replace(binding_start, binding_end + 1, replacement),
+        TextEdit::replace(binding_start, binding_end, replacement),
     );
     ctx.report(
         crate::diagnostic::LintDiagnostic::warn(META.name, message, argument_start, binding_end)

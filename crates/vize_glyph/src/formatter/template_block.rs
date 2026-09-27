@@ -15,6 +15,7 @@ pub(super) fn write_template_block(
     block: &vize_atelier_sfc::SfcTemplateBlock<'_>,
     options: &FormatOptions,
     source: &str,
+    vue_version: crate::VueVersion,
 ) -> Result<(), FormatError> {
     // The HTML template formatter owns HTML syntax only. Feeding Pug,
     // Haml, Markdown, or another preprocessor language through it turns
@@ -32,7 +33,7 @@ pub(super) fn write_template_block(
         opening_tag.as_ref(),
     );
     let formatted_content = native_html
-        .then(|| template::format_template_content(content, options))
+        .then(|| template::format_template_content_with_vue_version(content, options, vue_version))
         .transpose()?;
 
     if let Some(opening_tag) = &opening_tag {
