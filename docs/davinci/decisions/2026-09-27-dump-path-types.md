@@ -87,3 +87,6 @@ this naming slice does not claim it has completed.
 The current stability table names the actual `Dump` derive/trait and L2/L3
 `dump::Page` entrypoints after the alias removals. Product tiers and promises
 are unchanged; historical API names are not presented as current exports.
+
+The prepared decisions and explicit remaining scope are mirrored in the
+[#6832 issue record](https://github.com/ubugeeei-prod/vize/issues/6832#issuecomment-5854097689).
