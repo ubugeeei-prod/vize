@@ -113,6 +113,8 @@ See the [l4: emission decisions](./2026-09-27-level-restructure-designs.md#l4-em
 
 [Complete Vapor fix-history capture](./2026-09-27-vapor-fix-history-captures.md) records nine repeated complete results for seven fixes with exact options and source/executable identity. Its frozen source is preserved on a provenance branch; whole history, native acceptance and fresh Actions remain pending. Publication uses ordinary test/example modules and the generated Vapor consumer shard.
 
+[SFC map and diagnostic history references](./2026-09-27-sfc-map-diagnostic-history.md) prepares two original inputs for #3604/#750, with separate compiler-relative and document-relative diagnostic routes. Actual source-bound capture, tests and fresh Actions remain TODO; no history/native closure is claimed.
+
 ## Script side
 
 See the [script side decisions](./2026-09-27-level-restructure-designs.md#script-side) in the companion record.
