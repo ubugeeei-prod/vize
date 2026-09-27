@@ -46,6 +46,20 @@ render the SSR component with Vue, and verify source-relative module registratio
 Existing #6825 checks still require exact delivered scoped CSS, now accepting
 inline or linked delivery. CSS URI snapshots change only the required encoding.
 
+The first Linux Actions run at `a7cf6c508` exposed a separate build-order case:
+Nuxt loads an emitted inline CSS entry before its SFC while both compilation
+caches are empty. Resolving the source metadata already succeeds, but the style
+loader had only read caches and returned `null`. Compile the actual source on
+demand using the requested environment's existing options and cache. The
+regression uses the emitted relative `app/app.vue.__vize_style_0.css` ID, starts
+with empty caches, and checks exact scoped CSS and reuse by the subsequent SFC.
+The existing SFC admission check still excludes cold host-owned sources, and
+existing cached fallbacks retain their previous behavior. The real SSR unit
+test declares Vue via the existing `vue-stable` catalog (3.5.35); its runtime is
+separate from the pinned Nuxt fixture's Vue 3.5.43.
+Keep the original failing run/artifacts as evidence; its PASS is not inferred
+from prior cached-runtime runs.
+
 ## Remaining gates
 
 Local source-built JavaScript and cached public native runtime reproduced the

@@ -33,7 +33,7 @@ import {
 } from "../transform.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
-import { normalizeStyleVirtualId } from "./load-style.ts";
+import { getCompiledStyleSource, normalizeStyleVirtualId } from "./load-style.ts";
 
 export { normalizeVueServerRendererImport };
 
@@ -208,9 +208,7 @@ export function loadHook(
       styleRequest.path;
     const lang = styleRequest.styleLang ?? null;
     const scoped = styleRequest.styleScoped ?? null;
-    const fallbackCompiled = loadOptions?.ssr
-      ? (state.ssrCache.get(realPath) ?? state.cache.get(realPath))
-      : (state.cache.get(realPath) ?? state.ssrCache.get(realPath));
+    const fallbackCompiled = getCompiledStyleSource(state, realPath, !!loadOptions?.ssr);
     const blockIndex = styleRequest.styleIndex ?? -1;
 
     if (

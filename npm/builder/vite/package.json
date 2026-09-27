@@ -71,7 +71,8 @@
     "@types/node": "catalog:typescript",
     "typescript": "catalog:typescript",
     "vite": "catalog:vite-stack",
-    "vite-plus": "^0.2.3"
+    "vite-plus": "^0.2.3",
+    "vue": "catalog:vue-stable"
   },
   "peerDependencies": {
     "vite": "^7.3.0 || ^8.0.0",

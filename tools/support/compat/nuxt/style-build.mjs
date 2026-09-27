@@ -143,7 +143,7 @@ try {
         2,
       ) + "\n",
     );
-    console.log(`SSR and linked CSS agree exactly: p[${paragraph[1]}]{color:red}`);
+    console.log(`SSR and delivered scoped CSS agree exactly: p[${paragraph[1]}]{color:red}`);
   } finally {
     server.kill("SIGTERM");
     await exited;

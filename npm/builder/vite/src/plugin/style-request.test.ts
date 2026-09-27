@@ -38,6 +38,57 @@ function createState(root: string): VizePluginState {
   };
 }
 
+void test("Nuxt emitted CSS entry loads before its SFC with both build caches empty", async () => {
+  const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "vize-nuxt-style-entry-"));
+  try {
+    const filename = path.join(root, "app/app.vue");
+    fs.mkdirSync(path.dirname(filename));
+    fs.copyFileSync(
+      new URL(
+        "../../../../../tests/_fixtures/_projects/nuxt-scoped-style-build/app/app.vue",
+        import.meta.url,
+      ),
+      filename,
+    );
+    const state = createState(root);
+    const emitted = `app/app.vue.__vize_style_0.css?vue=&type=style&index=0&scoped=data-v-4fa942af&lang=css&vize-file=${encodeURIComponent(filename).replaceAll(".", "%2E")}&inline&used`;
+    const resolved = await resolveIdHook({ resolve: async () => null }, state, emitted, undefined, {
+      ssr: true,
+    });
+    assert.equal(resolved, `${root}/${emitted}`);
+    assert.equal(state.cache.size + state.ssrCache.size, 0);
+    const style = loadHook(state, resolved as string, { ssr: true });
+    assert.deepEqual(style, { code: "p[data-v-4fa942af]{color: red;}", map: null });
+    const compiled = state.ssrCache.get(filename);
+    assert.ok(compiled);
+    assert.equal(state.cache.size, 0);
+    assert.deepEqual(loadHook(state, resolved as string, { ssr: true }), style);
+    assert.equal(state.ssrCache.get(filename), compiled);
+    const component = loadHook(state, `${filename}?vue&vize`, { ssr: true });
+    assert.ok(component && typeof component === "object");
+    assert.equal(state.ssrCache.get(filename), compiled);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+void test("cold style entries leave excluded SFCs to their owning compiler", async () => {
+  const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "vize-excluded-style-"));
+  try {
+    const filename = path.join(root, "Excluded.vue");
+    fs.writeFileSync(filename, "<template><div></template><style>p { color: red; }</style>");
+    const state = createState(root);
+    state.filter = () => false;
+    const id = `${filename}.__vize_style_0.css?vue=&type=style&index=0&lang=css&vize-file=${encodeURIComponent(filename).replaceAll(".", "%2E")}&inline&used`;
+    for (const ssr of [false, true]) {
+      assert.equal(loadHook(state, id, { ssr }), null);
+      assert.equal(state.cache.size + state.ssrCache.size, 0);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 void test("Nuxt repeated inline style resolution loads the original scoped SFC blocks", async () => {
   const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "vize-nuxt-style-"));
   try {
