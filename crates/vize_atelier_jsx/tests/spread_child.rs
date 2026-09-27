@@ -144,7 +144,20 @@ fn vapor_and_ssr_report_the_spread_instead_of_emitting_client_blocks() {
         .map(|d| d.message.as_str())
         .collect();
     assert_eq!(messages, [message]);
-    assert!(!vapor.components[0].code.contains("BAIL"));
+    assert_eq!(
+        vapor.components[0].code.as_str(),
+        concat!(
+            "import { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\n",
+            "const t0 = _template(\"<div> </div>\", true)\n",
+            "\n",
+            "export function render(_ctx) {\n",
+            "  const n0 = t0()\n",
+            "  const x0 = _txt(n0)\n",
+            "  _renderEffect(() => _setText(x0, _toDisplayString(items)))\n",
+            "  return n0\n",
+            "}\n",
+        )
+    );
 
     let allocator = Allocator::new();
     let ssr = compile_to_ssr(
@@ -155,7 +168,16 @@ fn vapor_and_ssr_report_the_spread_instead_of_emitting_client_blocks() {
     );
     let messages: Vec<_> = ssr.diagnostics.iter().map(|d| d.message.as_str()).collect();
     assert_eq!(messages, [message]);
-    assert!(ssr.components[0].code.contains("_ssrInterpolate(items)"));
+    assert_eq!(
+        ssr.components[0].code.as_str(),
+        concat!(
+            "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n",
+            "\n",
+            "function ssrRender(_ctx, _push, _parent, _attrs) {\n",
+            "  _push(`<div${_ssrRenderAttrs(_attrs)}>${_ssrInterpolate(items)}</div>`)\n",
+            "}\n",
+        )
+    );
 }
 
 #[test]
