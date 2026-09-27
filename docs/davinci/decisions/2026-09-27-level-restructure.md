@@ -265,6 +265,10 @@ pipelines or serialization cost.
   aggregates the reusable queue gate. Every queue run measures three identical
   executions and applies strict ceilings. The exact final queue verification
   remains unfinished until the PR enters and passes the queue.
+  Queue assertions use a separate level-named test to satisfy the source-length
+  ratchet. Integration follows the CI inventory extraction in
+  [#6917](https://github.com/ubugeeei-prod/vize/pull/6917), keeping the existing
+  required `test-report` job name and final dependency check.
 - Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is
   decided after measuring table density and lookup cost
   ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).

@@ -10,6 +10,7 @@ on:
       - tools/benchmarks/scripts/instruction-counts*.mjs
       - docs/davinci/plan/instruction-budgets.toml
       - tests/tooling/level-instruction-counts.test.mjs
+      - tests/tooling/level-instruction-workflow.test.ts
   workflow_dispatch:
   workflow_call:
 
