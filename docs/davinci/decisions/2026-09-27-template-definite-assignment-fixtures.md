@@ -55,3 +55,11 @@ acceptance is zero. The history ledger records this bounded local start-only
 contract without claiming the whole #4239 patch is admitted. The separate
 plain-script/no-shadow, Vue 2.7 and other constructor/generated-code contracts
 still need their own diagnostic evidence. #6879 remains open.
+
+## Exact T0 deferral
+
+Stack this slice on #6935. Extend only the present package `vize_canon`, binary
+`fix_history_diagnostics`, exact test `deferred_template_reads_preserve_script_diagnostics`.
+The prior event name and three Corsa names stay exact. Source existence and T1
+metadata are checked by tooling; full Cargo T1 remains unchanged. Draft Actions
+and CI parent main/full queue proof remain pending.

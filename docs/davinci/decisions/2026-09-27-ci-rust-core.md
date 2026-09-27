@@ -112,3 +112,7 @@ exists. Its fixture declares required T1 execution; the body unconditionally
 runs the production checker. Source and metadata assertions reject nonexistent
 names. The full required real-TSGO T1 profile selects every workspace case, including
 all three Corsa tests, without a default-filter.
+
+The next #6879 child extends that exact Canon group only with the present
+`deferred_template_reads_preserve_script_diagnostics` test. Its two projects also
+require T1 metadata and unchanged full Cargo runtime execution.

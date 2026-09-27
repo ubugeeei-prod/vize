@@ -15,6 +15,10 @@ const corsaDeferred = [
 ];
 const canonDeferred = [
   { name: "inline_event_assignments_preserve_exact_diagnostics", pack: "event-handler-narrowing" },
+  {
+    name: "deferred_template_reads_preserve_script_diagnostics",
+    pack: "template-definite-assignment",
+  },
 ];
 type Step = { name?: string; run?: string };
 const workflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
