@@ -141,3 +141,27 @@ reviewed rows are updated; no allocation-Vec category, opaque/std allowance or
 storage rule changes. Existing source inventory tests verify the resulting
 artifacts and measured-v-on evidence. Final-source Actions and unchanged queue
 ceilings remain pending; no public-eight replay follows from local metadata.
+
+## Actual merged global-fix parent
+
+All seven existing global/linter/LSP/Vue changes actually merged at
+`2026-09-27T13:33:22Z`. Their frozen main receipt is
+`c681035734fa84c223ee77395ea26bdd07297fb2`, tree
+`fd9c7c5952df569fdf1b8017deb5a930d6bcae1f`. The owner merged that exact main
+into private `850c72326a3723fa22dcaf46918632056b3be788`, preserving both
+parents in merge `b7b98c197cc95234dc3107431af2e21203466bd7`.
+No unrelated advancing source is chased before this verification.
+
+The shared Git tracked-file helper, its nine-control test and its two original
+consumers are byte-identical to actual main; no duplicate buffer fix is added.
+Main's source-selection/LSP build workflow is inherited. The only Check workflow
+deltas are the already reviewed dependency-direction job/required need, physical
+L3 portability package identity and existing comment line compensation.
+Check remains 690 lines; the central record is 294, retains all main and owned
+pointers, and needs no global reflow. Official consumer/v-on checks and thirty
+existing inventory/budget controls pass under pinned Node24.14.0 after the merge.
+All original main words/links and the approved producer semantics are checked
+before one leased verification-ref update and two unchanged Actions dispatches.
+The twelve controls, full differential features, current Linux allocations and
+100-by-three instruction acceptance remain pending on this exact composition.
+The public eight are unchanged and dequeued; no main/queue acceptance is granted.
