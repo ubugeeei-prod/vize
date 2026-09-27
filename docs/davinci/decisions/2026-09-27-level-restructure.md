@@ -113,6 +113,11 @@ L3 owns L2-node decision types and target policy identities; the borrowed
 L2→L3 producer is an explicit `todo!()`, without a production caller.
 Current analysis, flat-program demand splitting and L4 extraction remain
 unfinished; no product coverage or performance acceptance is claimed.
+The first source Actions run typechecked the skeleton and passed all four
+Rust test workers; tooling had 4,648 passes, 12 skips and one missing storage
+inventory row. The reviewed new row records one owned `Vec<NodeId>` import
+and one bound use; all prior inventory rows, runtime budgets and gates stay
+unchanged. The fresh source and merge-queue checks remain required.
 
 ## L4: emission
 
