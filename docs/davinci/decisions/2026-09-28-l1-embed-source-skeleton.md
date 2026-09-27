@@ -6,6 +6,9 @@ The maintainer explicitly requested actual code skeletons with `todo!()`
 before the full native implementation. This is a bounded preparation under
 that instruction; #6835/#6841 prerequisites and #6836 remain open.
 
+Source commit `dbe99ed817d879c3fb7a4ee112f6ae8fefe0c1c3` pairs this decision
+with the [same scope and TODOs on #6836](https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5857215803).
+
 The change starts on actual main
 `754c0acd2c9246a534ad43f22cfc7dd5b6960e1a`. It adds `vize_l1::embed` with
 independent `Shape`/`Lang`/`Grammar` records and borrowed `Embed`/`EmbedSource`
