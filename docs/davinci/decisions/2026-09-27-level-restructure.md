@@ -56,6 +56,8 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 - Level crates never take normal dependencies on legacy crates: `vize_armature`, `vize_relief`, `vize_atelier_*`, `vize_croquis`, `vize_croquis_cf`. Legacy may depend on levels. Dev-dependencies used as differential oracles are fine.
 - **Croquis counts as legacy.** Script analysis is rebuilt natively in the levels ([#6844](https://github.com/ubugeeei-prod/vize/issues/6844)). No adapter presents legacy output as Davinci facts.
 - A `cargo metadata` gate enforces the rule. It starts with a shrinking allowlist and later covers product crates too.
+- The [declaration ratchet](./2026-09-27-foundation-stack-replay.md#dependency-gate)
+  records shrinking #6831 permissions, enforcement and remaining scope.
 
 ## L1: what the text _is_
 

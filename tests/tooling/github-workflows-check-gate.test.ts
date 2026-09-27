@@ -13,7 +13,12 @@ const CORE_PR_JOBS = [
   "node-engine-compat",
   "check-vize-apps",
 ];
-const PR_JOBS = [...CORE_PR_JOBS, "pr-source-checks", "instruction-counts"];
+const PR_JOBS = [
+  ...CORE_PR_JOBS,
+  "pr-source-checks",
+  "instruction-counts",
+  "level-dependency-direction",
+];
 const FULL_SUITE_JOBS = [
   "nix-flake",
   "vue-parity",
@@ -195,7 +200,18 @@ test("report fails closed when any PR check fails or skips", () => {
     const sourceDecision = aggregateNeedsResults(needs({ "pr-source-checks": result }));
     assert.equal(sourceDecision.exitCode, 1);
     assert.match(sourceDecision.message, new RegExp(`pr-source-checks: ${result}`));
+    const dependencyDecision = aggregateNeedsResults(
+      needs({ "level-dependency-direction": result }),
+    );
+    assert.equal(dependencyDecision.exitCode, 1);
+    assert.match(dependencyDecision.message, new RegExp(`level-dependency-direction: ${result}`));
   }
+  const missingResult = needs();
+  missingResult["level-dependency-direction"] = {} as { result: string };
+  assert.throws(
+    () => aggregateNeedsResults(missingResult),
+    /level-dependency-direction reported no result/,
+  );
   assert.throws(() => aggregateNeedsResults({}), /needs context is empty/);
 });
 
