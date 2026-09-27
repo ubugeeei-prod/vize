@@ -1,0 +1,27 @@
+# L4 — emission (codename Stesura).
+#
+# One crate for every emission target: the append-only writer, expression
+# rewriting from the L2 resolution table, the runtime helper vocabulary,
+# SFC module assembly and the DOM / SSR / Vapor / type-check targets.
+# Design: https://github.com/ubugeeei-prod/vize/issues/6840#issuecomment-5847908963
+#
+# Level crates never depend on legacy crates; legacy codegen depends on this
+# crate instead. Until a product selects it, nothing outside tests uses it.
+[package]
+name = "vize_l4"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "L4 - the Davinci emission level (codename Stesura): writer, expression rewriting, module assembly and targets"
+metadata.vize.stability = "experimental"
+publish = false
+
+[dependencies]
+vize_l0 = { workspace = true }
+vize_l2 = { workspace = true }
+vize_l3 = { workspace = true }
+
+[lints]
+workspace = true

@@ -4,16 +4,16 @@ Davinci uses **L0–L4** for its numbered layers. The previous S0–S4 spellings
 remain in historical implementation and measurement records, and in specific
 versioned wire identities described below.
 
-| Layer | Role                                  | Current Rust dependency | Cargo package            |
-| ----- | ------------------------------------- | ----------------------- | ------------------------ |
-| L0    | Source text, spans, arena and storage | `vize_l0`               | `vize_carton`            |
-| L1    | Lossless surface trees                | `vize_l1`               | `vize_l1`                |
-| L2    | Semantic UI IR                        | `vize_l2`               | `vize_l2`                |
-| L3    | Reactivity and backend scheduling     | `vize_l3`               | `vize_impeto`            |
-| L4    | Emission documents                    | Atelier targets         | Existing target packages |
+| Layer | Role                                  | Current Rust dependency | Cargo package           |
+| ----- | ------------------------------------- | ----------------------- | ----------------------- |
+| L0    | Source text, spans, arena and storage | `vize_l0`               | `vize_carton`           |
+| L1    | Lossless surface trees                | `vize_l1`               | `vize_l1`               |
+| L2    | Semantic UI IR                        | `vize_l2`               | `vize_l2`               |
+| L3    | Reactivity and backend scheduling     | `vize_l3`               | `vize_impeto`           |
+| L4    | Emission documents                    | `vize_l4` (skeleton)    | `vize_l4` (unpublished) |
 
-The conversion packages are `vize_l1_to_l2` and `vize_l2_to_l3`. There is no
-separate `vize_l4` package. Carton and Impeto keep their published package names;
+The conversion packages are `vize_l1_to_l2` and `vize_l2_to_l3`. `vize_l4` is a
+skeleton (#6840); products still emit through the Atelier targets. Carton and Impeto keep their published package names;
 the workspace imports them through the L0 and L3 dependency aliases.
 
 ## Rust package migration

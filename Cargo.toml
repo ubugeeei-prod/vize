@@ -27,6 +27,7 @@ members = [
   "crates/vize_l1_to_l2",
   "crates/vize_l2_to_l3",
   "crates/vize_l1",
+  "crates/vize_l4",
   "crates/vize_fresco",
   "crates/vize_marquette",
   "crates/vize_doctor",
@@ -96,6 +97,7 @@ vize_l2 = { path = "crates/vize_l2", version = "=0.429.1" }
 vize_l3 = { package = "vize_impeto", path = "crates/vize_impeto", version = "=0.429.1" }
 vize_l1_to_l2 = { path = "crates/vize_l1_to_l2", version = "=0.429.1" }
 vize_l2_to_l3 = { path = "crates/vize_l2_to_l3", version = "=0.429.1" }
+vize_l4 = { path = "crates/vize_l4", version = "=0.429.1" }
 
 # OXC dependencies (pinned to a specific upstream revision for reproducibility)
 oxc_parser = { version = "=0.142.0", git = "https://github.com/oxc-project/oxc", rev = "fc702c1fa9f0412d06ec6908b58cd395b826cf7f" }

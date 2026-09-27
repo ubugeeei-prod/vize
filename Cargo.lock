@@ -4827,6 +4827,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "vize_l4"
+version = "0.429.1"
+dependencies = [
+ "vize_carton",
+ "vize_impeto",
+ "vize_l2",
+]
+
+[[package]]
 name = "vize_maestro"
 version = "0.429.1"
 dependencies = [
