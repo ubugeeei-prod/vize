@@ -1,44 +1,41 @@
-use vize_relief::ErrorCode;
-
-use crate::char_codes::AMP;
-use crate::tokenizer::sequences::Sequence;
-
-use super::{
-    Tokenizer,
-    char_codes::{
-        AT, COLON, DASH, DOT, DOUBLE_QUOTE, EQ, EXCLAMATION_MARK, GRAVE_ACCENT, GT, LEFT_SQUARE,
-        LOWER_V, LT, NUMBER, QUESTION_MARK, SINGLE_QUOTE, SLASH,
-    },
-    types::{Callbacks, QuoteType, State, is_end_of_tag_section, is_tag_start_char, is_whitespace},
-};
-
-use super::entity_decode::try_decode_entity;
 use htmlize::Context;
 
-impl<'a, C: Callbacks> Tokenizer<'a, C> {
+use super::{
+    Lexer,
+    char_codes::{
+        AMP, AT, COLON, DASH, DOT, DOUBLE_QUOTE, EQ, EXCLAMATION_MARK, GRAVE_ACCENT, GT,
+        LEFT_SQUARE, LOWER_V, LT, NUMBER, QUESTION_MARK, SINGLE_QUOTE, SLASH,
+    },
+    sequences::Sequence,
+    types::{State, is_end_of_tag_section, is_tag_start_char, is_whitespace},
+};
+use crate::markup::entity::decode::try_decode_entity;
+use crate::markup::profile::Profile;
+use crate::markup::token::{LexErrorCode, LexMode, QuoteType, Sink};
+
+impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     pub(super) fn cleanup(&mut self) {
         let has_section = self.section_start < self.index;
 
         match self.state {
             State::Text if has_section => {
-                self.callbacks.on_text(self.section_start, self.index);
+                self.sink.on_text(self.section_start, self.index);
             }
             State::InRCDATA if has_section => {
-                self.callbacks.on_text(self.section_start, self.index);
+                self.sink.on_text(self.section_start, self.index);
             }
             State::Interpolation | State::InterpolationClose if has_section => {
-                self.callbacks
-                    .on_error(ErrorCode::MissingInterpolationEnd, self.index);
+                self.sink
+                    .on_error(LexErrorCode::MissingInterpolationEnd, self.index);
                 let start = self.section_start.saturating_sub(self.delimiter_open.len());
-                self.callbacks.on_text(start, self.index);
+                self.sink.on_text(start, self.index);
             }
             State::BeforeTagName if has_section => {
-                self.callbacks
-                    .on_error(ErrorCode::EofBeforeTagName, self.index);
-                self.callbacks.on_text(self.section_start, self.index);
+                self.sink
+                    .on_error(LexErrorCode::EofBeforeTagName, self.index);
+                self.sink.on_text(self.section_start, self.index);
             }
             State::InTagName
-            | State::InSFCRootTagName
             | State::BeforeSpecialS
             | State::BeforeSpecialT
             | State::SpecialStartSequence
@@ -57,7 +54,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             | State::InAttrValueDq
             | State::InAttrValueSq
             | State::InAttrValueNq => {
-                self.callbacks.on_error(ErrorCode::EofInTag, self.index);
+                self.sink.on_error(LexErrorCode::EofInTag, self.index);
                 self.recover_incomplete_tag_at_eof();
             }
             _ => {}
@@ -65,20 +62,20 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
         if self.state == State::InCommentLike {
             let code = match self.current_sequence {
-                Some(Sequence::CdataEnd) => ErrorCode::EofInCdata,
-                _ => ErrorCode::EofInComment,
+                Some(Sequence::CdataEnd) => LexErrorCode::EofInCdata,
+                _ => LexErrorCode::EofInComment,
             };
             let error_index = match self.current_sequence {
                 Some(Sequence::CdataEnd) => self.section_start.saturating_sub(9),
                 _ => self.section_start.saturating_sub(4),
             };
-            self.callbacks.on_error(code, error_index);
+            self.sink.on_error(code, error_index);
             match self.current_sequence {
                 Some(Sequence::CdataEnd) => {
-                    self.callbacks.on_cdata(self.section_start, self.index);
+                    self.sink.on_cdata(self.section_start, self.index);
                 }
                 _ => {
-                    self.callbacks.on_comment(self.section_start, self.index);
+                    self.sink.on_comment(self.section_start, self.index);
                 }
             }
         }
@@ -89,82 +86,78 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
         match self.state {
             State::InTagName
-            | State::InSFCRootTagName
             | State::BeforeSpecialS
             | State::BeforeSpecialT
             | State::SpecialStartSequence => {
-                self.callbacks
-                    .on_open_tag_name(self.section_start, self.index);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_open_tag_name(self.section_start, self.index);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::BeforeAttrName => {
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InTagComment => {
                 self.recover_in_tag_comment_at_eof(inferred_tag_end);
             }
             State::InAttrName => {
-                self.callbacks
-                    .on_attrib_name(self.section_start, self.index);
-                self.callbacks.on_attrib_name_end(self.index);
-                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_attrib_name(self.section_start, self.index);
+                self.sink.on_attrib_name_end(self.index);
+                self.sink.on_attrib_end(QuoteType::NoValue, self.index);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InDirName => {
-                self.callbacks.on_dir_name(self.section_start, self.index);
-                self.callbacks.on_attrib_name_end(self.index);
-                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_dir_name(self.section_start, self.index);
+                self.sink.on_attrib_name_end(self.index);
+                self.sink.on_attrib_end(QuoteType::NoValue, self.index);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InDirArg => {
                 if self.section_start < self.index {
-                    self.callbacks.on_dir_arg(self.section_start, self.index);
+                    self.sink.on_dir_arg(self.section_start, self.index);
                 }
-                self.callbacks.on_attrib_name_end(self.index);
-                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_attrib_name_end(self.index);
+                self.sink.on_attrib_end(QuoteType::NoValue, self.index);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InDirDynamicArg => {
-                self.callbacks
-                    .on_error(ErrorCode::MissingDynamicDirectiveArgumentEnd, self.index);
+                self.sink
+                    .on_error(LexErrorCode::MissingDynamicDirectiveArgumentEnd, self.index);
                 if self.section_start < self.index {
-                    self.callbacks.on_dir_arg(self.section_start, self.index);
+                    self.sink.on_dir_arg(self.section_start, self.index);
                 }
-                self.callbacks.on_attrib_name_end(self.index);
-                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_attrib_name_end(self.index);
+                self.sink.on_attrib_end(QuoteType::NoValue, self.index);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InDirModifier => {
-                self.callbacks
-                    .on_dir_modifier(self.section_start, self.index);
-                self.callbacks.on_attrib_name_end(self.index);
-                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_dir_modifier(self.section_start, self.index);
+                self.sink.on_attrib_name_end(self.index);
+                self.sink.on_attrib_end(QuoteType::NoValue, self.index);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::AfterAttrName => {
-                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_attrib_end(QuoteType::NoValue, self.index);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::BeforeAttrValue => {
-                self.callbacks
-                    .on_error(ErrorCode::MissingAttributeValue, self.index);
-                self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink
+                    .on_error(LexErrorCode::MissingAttributeValue, self.index);
+                self.sink.on_attrib_end(QuoteType::NoValue, self.index);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InAttrValueDq => {
                 self.emit_unclosed_attr_value(QuoteType::Double);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InAttrValueSq => {
                 self.emit_unclosed_attr_value(QuoteType::Single);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InAttrValueNq => {
                 self.emit_unclosed_attr_value(QuoteType::Unquoted);
-                self.callbacks.on_open_tag_end(inferred_tag_end);
+                self.sink.on_open_tag_end(inferred_tag_end);
             }
             State::InClosingTagName if self.section_start < self.index => {
-                self.callbacks.on_close_tag(self.section_start, self.index);
+                self.sink.on_close_tag(self.section_start, self.index);
             }
             State::InClosingTagName | State::BeforeClosingTagName | State::AfterClosingTagName => {}
             _ => {}
@@ -176,22 +169,21 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     fn emit_unclosed_attr_value(&mut self, quote: QuoteType) {
         if self.section_start < self.index {
-            self.callbacks
-                .on_attrib_data(self.section_start, self.index);
+            self.sink.on_attrib_data(self.section_start, self.index);
         }
-        self.callbacks.on_attrib_end(quote, self.index);
+        self.sink.on_attrib_end(quote, self.index);
     }
 
     pub(super) fn state_text(&mut self, c: u8) {
         if c == LT {
             if self.index > self.section_start {
-                self.callbacks.on_text(self.section_start, self.index);
+                self.sink.on_text(self.section_start, self.index);
             }
             self.state = State::BeforeTagName;
             self.section_start = self.index;
         } else if c == AMP {
             self.start_entity();
-        } else if !self.callbacks.is_in_v_pre() && self.at_opening_delimiter(c) {
+        } else if self.sink.mode() == LexMode::Normal && self.at_opening_delimiter(c) {
             self.state = State::InterpolationOpen;
             self.delimiter_index = 0;
             self.state_interpolation_open(c);
@@ -204,7 +196,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             if self.delimiter_index == self.delimiter_open.len() {
                 let start = self.index + 1 - self.delimiter_open.len();
                 if start > self.section_start {
-                    self.callbacks.on_text(self.section_start, start);
+                    self.sink.on_text(self.section_start, start);
                 }
                 self.section_start = self.index + 1;
                 self.state = State::Interpolation;
@@ -248,16 +240,14 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                     // emit a raw-HTML interpolation. This branch only runs behind
                     // `triple_mustache`, so the default path is untouched.
                     self.in_raw_interpolation = false;
-                    self.callbacks
-                        .on_raw_interpolation(self.section_start, expr_end);
+                    self.sink.on_raw_interpolation(self.section_start, expr_end);
                     let consumed_brace = self.input.get(self.index + 1) == Some(&b'}');
                     self.section_start = self.index + 1 + usize::from(consumed_brace);
                     if consumed_brace {
                         self.index += 1;
                     }
                 } else {
-                    self.callbacks
-                        .on_interpolation(self.section_start, expr_end);
+                    self.sink.on_interpolation(self.section_start, expr_end);
                     self.section_start = self.index + 1;
                 }
                 if self.in_rcdata {
@@ -277,8 +267,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state = State::BeforeDeclaration;
             self.section_start = self.index + 1;
         } else if c == QUESTION_MARK {
-            self.callbacks.on_error(
-                ErrorCode::UnexpectedQuestionMarkInsteadOfTagName,
+            self.sink.on_error(
+                LexErrorCode::UnexpectedQuestionMarkInsteadOfTagName,
                 self.index,
             );
             self.state = State::InProcessingInstruction;
@@ -302,8 +292,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn state_in_tag_name(&mut self, c: u8) {
         if is_end_of_tag_section(c) {
-            self.callbacks
-                .on_open_tag_name(self.section_start, self.index);
+            self.sink.on_open_tag_name(self.section_start, self.index);
             self.section_start = self.index;
             self.state = State::BeforeAttrName;
             self.state_before_attr_name(c);
@@ -312,14 +301,14 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn state_in_self_closing_tag(&mut self, c: u8) {
         if c == GT {
-            self.callbacks.on_self_closing_tag(self.index);
+            self.sink.on_self_closing_tag(self.index);
             self.current_sequence = None;
             self.sequence_index = 0;
             self.state = State::Text;
             self.section_start = self.index + 1;
         } else if !is_whitespace(c) {
-            self.callbacks
-                .on_error(ErrorCode::UnexpectedSolidusInTag, self.section_start);
+            self.sink
+                .on_error(LexErrorCode::UnexpectedSolidusInTag, self.section_start);
             self.state = State::BeforeAttrName;
             self.state_before_attr_name(c);
         }
@@ -328,13 +317,13 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub(super) fn state_before_closing_tag_name(&mut self, c: u8) {
         if is_whitespace(c) {
         } else if c == GT {
-            self.callbacks
-                .on_error(ErrorCode::MissingEndTagName, self.index);
+            self.sink
+                .on_error(LexErrorCode::MissingEndTagName, self.index);
             self.state = State::Text;
             self.section_start = self.index + 1;
         } else if !is_tag_start_char(c) {
-            self.callbacks
-                .on_error(ErrorCode::InvalidFirstCharacterOfTagName, self.index);
+            self.sink
+                .on_error(LexErrorCode::InvalidFirstCharacterOfTagName, self.index);
             self.state = State::InClosingTagName;
             self.section_start = self.index;
         } else {
@@ -345,7 +334,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn state_in_closing_tag_name(&mut self, c: u8) {
         if c == GT || is_whitespace(c) {
-            self.callbacks.on_close_tag(self.section_start, self.index);
+            self.sink.on_close_tag(self.section_start, self.index);
             self.section_start = self.index + 1;
             self.state = if c == GT {
                 State::Text
@@ -360,18 +349,18 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state = State::Text;
             self.section_start = self.index + 1;
         } else if c == SLASH {
-            self.callbacks
-                .on_error(ErrorCode::EndTagWithTrailingSolidus, self.index);
+            self.sink
+                .on_error(LexErrorCode::EndTagWithTrailingSolidus, self.index);
         } else if !is_whitespace(c) {
-            self.callbacks
-                .on_error(ErrorCode::EndTagWithAttributes, self.index);
+            self.sink
+                .on_error(LexErrorCode::EndTagWithAttributes, self.index);
         }
     }
 
     pub(super) fn state_before_attr_name(&mut self, c: u8) {
         if c == GT {
             self.after_quoted_attr_value = false;
-            self.callbacks.on_open_tag_end(self.index);
+            self.sink.on_open_tag_end(self.index);
             if self.in_rcdata {
                 self.state = State::InRCDATA;
             } else {
@@ -386,14 +375,14 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.after_quoted_attr_value = false;
         } else if c == EQ {
             self.after_quoted_attr_value = false;
-            self.callbacks.on_error(
-                ErrorCode::UnexpectedEqualsSignBeforeAttributeName,
+            self.sink.on_error(
+                LexErrorCode::UnexpectedEqualsSignBeforeAttributeName,
                 self.index,
             );
         } else if !is_whitespace(c) {
             if self.after_quoted_attr_value {
-                self.callbacks
-                    .on_error(ErrorCode::MissingWhitespaceBetweenAttributes, self.index);
+                self.sink
+                    .on_error(LexErrorCode::MissingWhitespaceBetweenAttributes, self.index);
             }
             self.after_quoted_attr_value = false;
             self.handle_attr_start(c);
@@ -401,7 +390,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     }
 
     pub(super) fn handle_attr_start(&mut self, c: u8) {
-        if self.callbacks.is_in_v_pre() {
+        if self.sink.mode() == LexMode::Verbatim {
             self.state = State::InAttrName;
             self.section_start = self.index;
             return;
@@ -410,7 +399,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state = State::InDirName;
             self.section_start = self.index;
         } else if c == DOT || c == COLON || c == AT || c == NUMBER {
-            self.callbacks.on_dir_name(self.index, self.index + 1);
+            self.sink.on_dir_name(self.index, self.index + 1);
             self.state = State::InDirArg;
             self.section_start = self.index + 1;
         } else {
@@ -421,18 +410,16 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn state_in_attr_name(&mut self, c: u8) {
         if c == EQ || is_end_of_tag_section(c) {
-            self.callbacks
-                .on_attrib_name(self.section_start, self.index);
-            self.callbacks.on_attrib_name_end(self.index);
+            self.sink.on_attrib_name(self.section_start, self.index);
+            self.sink.on_attrib_name_end(self.index);
             self.section_start = self.index;
             self.state = State::AfterAttrName;
             self.state_after_attr_name(c);
         } else if c == DOUBLE_QUOTE || c == SINGLE_QUOTE {
-            self.callbacks
-                .on_error(ErrorCode::UnexpectedCharacterInAttributeName, self.index);
-            self.callbacks
-                .on_attrib_name(self.section_start, self.index);
-            self.callbacks.on_attrib_name_end(self.index);
+            self.sink
+                .on_error(LexErrorCode::UnexpectedCharacterInAttributeName, self.index);
+            self.sink.on_attrib_name(self.section_start, self.index);
+            self.sink.on_attrib_name_end(self.index);
             self.section_start = self.index + 1;
             self.state = if c == DOUBLE_QUOTE {
                 State::InAttrValueDq
@@ -440,28 +427,28 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 State::InAttrValueSq
             };
         } else if c == LT {
-            self.callbacks
-                .on_error(ErrorCode::UnexpectedCharacterInAttributeName, self.index);
+            self.sink
+                .on_error(LexErrorCode::UnexpectedCharacterInAttributeName, self.index);
         }
     }
 
     pub(super) fn state_in_dir_name(&mut self, c: u8) {
         if c == EQ || is_end_of_tag_section(c) {
-            self.callbacks.on_dir_name(self.section_start, self.index);
-            self.callbacks.on_attrib_name_end(self.index);
+            self.sink.on_dir_name(self.section_start, self.index);
+            self.sink.on_attrib_name_end(self.index);
             self.section_start = self.index;
             self.state = State::AfterAttrName;
             self.state_after_attr_name(c);
         } else if c == COLON {
-            self.callbacks.on_dir_name(self.section_start, self.index);
+            self.sink.on_dir_name(self.section_start, self.index);
             self.state = State::InDirArg;
             self.section_start = self.index + 1;
         } else if c == DOT {
-            self.callbacks.on_dir_name(self.section_start, self.index);
+            self.sink.on_dir_name(self.section_start, self.index);
             self.state = State::InDirModifier;
             self.section_start = self.index + 1;
         } else if c == LEFT_SQUARE {
-            self.callbacks.on_dir_name(self.section_start, self.index);
+            self.sink.on_dir_name(self.section_start, self.index);
             self.state = State::InDirDynamicArg;
             self.section_start = self.index + 1;
         }
@@ -470,21 +457,21 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub(super) fn state_in_dir_arg(&mut self, c: u8) {
         if c == EQ || is_end_of_tag_section(c) {
             if self.section_start < self.index {
-                self.callbacks.on_dir_arg(self.section_start, self.index);
+                self.sink.on_dir_arg(self.section_start, self.index);
             }
-            self.callbacks.on_attrib_name_end(self.index);
+            self.sink.on_attrib_name_end(self.index);
             self.section_start = self.index;
             self.state = State::AfterAttrName;
             self.state_after_attr_name(c);
         } else if c == LEFT_SQUARE {
             if self.section_start < self.index {
-                self.callbacks.on_dir_arg(self.section_start, self.index);
+                self.sink.on_dir_arg(self.section_start, self.index);
             }
             self.state = State::InDirDynamicArg;
             self.section_start = self.index + 1;
         } else if c == DOT {
             if self.section_start < self.index {
-                self.callbacks.on_dir_arg(self.section_start, self.index);
+                self.sink.on_dir_arg(self.section_start, self.index);
             }
             self.state = State::InDirModifier;
             self.section_start = self.index + 1;
@@ -493,15 +480,13 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn state_in_dir_modifier(&mut self, c: u8) {
         if c == EQ || is_end_of_tag_section(c) {
-            self.callbacks
-                .on_dir_modifier(self.section_start, self.index);
-            self.callbacks.on_attrib_name_end(self.index);
+            self.sink.on_dir_modifier(self.section_start, self.index);
+            self.sink.on_attrib_name_end(self.index);
             self.section_start = self.index;
             self.state = State::AfterAttrName;
             self.state_after_attr_name(c);
         } else if c == DOT {
-            self.callbacks
-                .on_dir_modifier(self.section_start, self.index);
+            self.sink.on_dir_modifier(self.section_start, self.index);
             self.section_start = self.index + 1;
         }
     }
@@ -510,11 +495,11 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         if c == EQ {
             self.state = State::BeforeAttrValue;
         } else if c == SLASH || c == GT {
-            self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+            self.sink.on_attrib_end(QuoteType::NoValue, self.index);
             self.state = State::BeforeAttrName;
             self.state_before_attr_name(c);
         } else if !is_whitespace(c) {
-            self.callbacks.on_attrib_end(QuoteType::NoValue, self.index);
+            self.sink.on_attrib_end(QuoteType::NoValue, self.index);
             self.handle_attr_start(c);
         }
     }
@@ -527,15 +512,14 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             self.state = State::InAttrValueSq;
             self.section_start = self.index + 1;
         } else if c == EQ {
-            self.callbacks.on_error(
-                ErrorCode::UnexpectedEqualsSignBeforeAttributeName,
+            self.sink.on_error(
+                LexErrorCode::UnexpectedEqualsSignBeforeAttributeName,
                 self.index,
             );
         } else if c == GT {
-            self.callbacks
-                .on_error(ErrorCode::MissingAttributeValue, self.index);
-            self.callbacks
-                .on_attrib_end(QuoteType::Unquoted, self.index);
+            self.sink
+                .on_error(LexErrorCode::MissingAttributeValue, self.index);
+            self.sink.on_attrib_end(QuoteType::Unquoted, self.index);
             self.state = State::BeforeAttrName;
             self.state_before_attr_name(c);
         } else if !is_whitespace(c) {
@@ -568,8 +552,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         } else if c == AMP {
             self.start_entity();
         } else if matches!(c, DOUBLE_QUOTE | SINGLE_QUOTE | LT | EQ | GRAVE_ACCENT) {
-            self.callbacks.on_error(
-                ErrorCode::UnexpectedCharacterInUnquotedAttributeValue,
+            self.sink.on_error(
+                LexErrorCode::UnexpectedCharacterInUnquotedAttributeValue,
                 self.index,
             );
         }
@@ -581,10 +565,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn emit_attr_value(&mut self, quote: QuoteType) {
         if self.section_start < self.index {
-            self.callbacks
-                .on_attrib_data(self.section_start, self.index);
+            self.sink.on_attrib_data(self.section_start, self.index);
         }
-        self.callbacks.on_attrib_end(quote, self.index);
+        self.sink.on_attrib_end(quote, self.index);
         self.section_start = self.index + 1;
         self.state = State::BeforeAttrName;
         self.after_quoted_attr_value = matches!(quote, QuoteType::Double | QuoteType::Single);
@@ -603,9 +586,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             // declaration) is expected; skip it silently rather than reporting
             // a spurious recoverable error. SFC `<template>` mode keeps the
             // original behavior so existing output stays byte-identical.
-            if !self.tolerate_declarations {
-                self.callbacks.on_error(
-                    ErrorCode::IncorrectlyOpenedComment,
+            if !P::TOLERATE_DECLARATIONS {
+                self.sink.on_error(
+                    LexErrorCode::IncorrectlyOpenedComment,
                     self.section_start.saturating_sub(2),
                 );
             }
@@ -622,7 +605,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
 
     pub(super) fn state_in_processing_instruction(&mut self, c: u8) {
         if c == GT {
-            self.callbacks
+            self.sink
                 .on_processing_instruction(self.section_start, self.index);
             self.state = State::Text;
             self.section_start = self.index + 1;
@@ -657,20 +640,12 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
         }
     }
 
-    pub(super) fn state_in_special_comment(&mut self, c: u8) {
-        if c == GT {
-            self.callbacks.on_comment(self.section_start, self.index);
-            self.state = State::Text;
-            self.section_start = self.index + 1;
-        }
-    }
-
     #[inline]
     fn finish_comment_like(&mut self, closing: Sequence) {
         let end = self.index.saturating_sub(2);
         match closing {
-            Sequence::CdataEnd => self.callbacks.on_cdata(self.section_start, end),
-            _ => self.callbacks.on_comment(self.section_start, end),
+            Sequence::CdataEnd => self.sink.on_cdata(self.section_start, end),
+            _ => self.sink.on_comment(self.section_start, end),
         }
         self.sequence_index = 0;
         self.current_sequence = None;
@@ -695,10 +670,9 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             && c == GT
             && self.index.saturating_sub(self.section_start) < 2
         {
-            self.callbacks
-                .on_error(ErrorCode::AbruptClosingOfEmptyComment, self.index);
-            self.callbacks
-                .on_comment(self.section_start, self.section_start);
+            self.sink
+                .on_error(LexErrorCode::AbruptClosingOfEmptyComment, self.index);
+            self.sink.on_comment(self.section_start, self.section_start);
             self.sequence_index = 0;
             self.current_sequence = None;
             self.section_start = self.index + 1;
@@ -712,8 +686,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             if sequence == Sequence::CommentEnd
                 && self.input.get(self.index..self.index + 4) == Some(b"<!--")
             {
-                self.callbacks
-                    .on_error(ErrorCode::NestedComment, self.index);
+                self.sink.on_error(LexErrorCode::NestedComment, self.index);
             } else if sequence != Sequence::CommentEnd
                 && self.fast_forward_to(sequence.first_byte())
             {
@@ -723,8 +696,8 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             && self.sequence_index == 2
             && c == EXCLAMATION_MARK
         {
-            self.callbacks
-                .on_error(ErrorCode::IncorrectlyClosedComment, self.index);
+            self.sink
+                .on_error(LexErrorCode::IncorrectlyClosedComment, self.index);
         } else if sequence_bytes.get(self.sequence_index - 1) != Some(&c) {
             // Allow long sequences, eg. --->, ]]]>
             self.sequence_index = 0;
@@ -809,7 +782,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
                 if self.section_start < end_of_text {
                     let actual_index = self.index;
                     self.index = end_of_text;
-                    self.callbacks.on_text(self.section_start, end_of_text);
+                    self.sink.on_text(self.section_start, end_of_text);
                     self.index = actual_index;
                 }
                 self.section_start = end_of_text + 2; // Skip over the `</`
@@ -828,7 +801,7 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
             if matches!(sequence, Sequence::TitleEnd | Sequence::TextareaEnd) {
                 if c == AMP {
                     self.start_entity();
-                } else if !self.callbacks.is_in_v_pre() && self.at_opening_delimiter(c) {
+                } else if self.sink.mode() == LexMode::Normal && self.at_opening_delimiter(c) {
                     self.state = State::InterpolationOpen;
                     self.delimiter_index = 0;
                     self.state_interpolation_open(c);
@@ -870,32 +843,21 @@ impl<'a, C: Callbacks> Tokenizer<'a, C> {
     pub(super) fn emit_entity_char(&mut self, ch: char, consumed: usize) {
         if self.base_state != State::Text && self.base_state != State::InRCDATA {
             if self.section_start < self.entity_start {
-                self.callbacks
+                self.sink
                     .on_attrib_data(self.section_start, self.entity_start);
             }
             self.section_start = self.entity_start + consumed;
             self.index = self.section_start - 1;
-            self.callbacks
+            self.sink
                 .on_attrib_entity(ch, self.entity_start, self.section_start);
         } else {
             if self.section_start < self.entity_start {
-                self.callbacks
-                    .on_text(self.section_start, self.entity_start);
+                self.sink.on_text(self.section_start, self.entity_start);
             }
             self.section_start = self.entity_start + consumed;
             self.index = self.section_start - 1;
-            self.callbacks
+            self.sink
                 .on_text_entity(ch, self.entity_start, self.section_start);
-        }
-    }
-
-    pub(super) fn state_in_sfc_root_tag_name(&mut self, c: u8) {
-        if is_end_of_tag_section(c) {
-            self.callbacks
-                .on_open_tag_name(self.section_start, self.index);
-            self.section_start = self.index;
-            self.state = State::BeforeAttrName;
-            self.state_before_attr_name(c);
         }
     }
 }

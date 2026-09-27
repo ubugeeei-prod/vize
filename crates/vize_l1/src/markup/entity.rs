@@ -5,7 +5,7 @@
 //! [`needs_decoding`] before building a decode map, so entity-free input
 //! (almost all of it) pays one byte scan and nothing else.
 
-#![expect(clippy::todo, reason = "skeleton: #6835")]
+pub(crate) mod decode;
 
 /// Where a character reference appears; attribute values follow the WHATWG
 /// legacy rule for unterminated named references.
@@ -27,11 +27,14 @@ pub fn needs_decoding(bytes: &[u8]) -> bool {
 /// (`&`, name or number, optional `;`), or `None` when `input` does not
 /// start with a valid reference and the `&` is literal text.
 ///
-/// # Panics
-///
-/// Always, until the decoder moves here from `vize_armature` (#6835).
-pub fn decode_one(_input: &[u8], _context: EntityContext) -> Option<(char, usize)> {
-    todo!("#6835: move entity decoding into vize_l1::markup::entity")
+/// Rules follow WHATWG (`htmlize`'s entity table).
+#[inline]
+pub fn decode_one(input: &[u8], context: EntityContext) -> Option<(char, usize)> {
+    let context = match context {
+        EntityContext::Text => htmlize::Context::General,
+        EntityContext::Attribute => htmlize::Context::Attribute,
+    };
+    decode::try_decode_entity(input, context)
 }
 
 #[cfg(test)]

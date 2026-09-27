@@ -1,16 +1,17 @@
 //! Lexical boundaries for bracketed directive arguments, without reparsing JS.
 
 use vize_l0::SmallVec;
-use vize_relief::ErrorCode;
 
-use super::{Callbacks, State, Tokenizer, types::is_end_of_tag_section};
+use super::{Lexer, State, types::is_end_of_tag_section};
+use crate::markup::profile::Profile;
+use crate::markup::token::{LexErrorCode, Sink};
 
-impl<C: Callbacks> Tokenizer<'_, C> {
+impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     pub(super) fn state_in_dir_dynamic_arg(&mut self, _c: u8) {
         let (end, closed) = scan_argument(self.input, self.index);
         self.index = end;
         if closed {
-            self.callbacks.on_dir_arg(self.section_start, end);
+            self.sink.on_dir_arg(self.section_start, end);
             self.state = State::InDirArg;
             self.section_start = end + 1;
         } else if end == self.input.len() {
@@ -18,12 +19,12 @@ impl<C: Callbacks> Tokenizer<'_, C> {
             // emits both the incomplete argument and the unterminated-tag error.
             self.index = end.saturating_sub(1);
         } else {
-            self.callbacks
-                .on_error(ErrorCode::MissingDynamicDirectiveArgumentEnd, end);
+            self.sink
+                .on_error(LexErrorCode::MissingDynamicDirectiveArgumentEnd, end);
             if self.section_start < end {
-                self.callbacks.on_dir_arg(self.section_start, end);
+                self.sink.on_dir_arg(self.section_start, end);
             }
-            self.callbacks.on_attrib_name_end(end);
+            self.sink.on_attrib_name_end(end);
             self.section_start = end;
             self.state = State::AfterAttrName;
             if let Some(&c) = self.input.get(end) {

@@ -1,10 +1,9 @@
 //! Tokenizer callback implementation for the parser.
 //!
 //! Contains the `ParserCallbacks` struct that bridges the tokenizer
-//! with the parser by implementing the `Callbacks` trait.
+//! with the parser by implementing the lexer's `Sink` trait.
 
-use crate::tokenizer::{Callbacks, QuoteType};
-use vize_relief::errors::ErrorCode;
+use crate::tokenizer::{LexErrorCode, LexMode, QuoteType, Sink};
 
 use super::Parser;
 
@@ -28,7 +27,7 @@ pub(super) fn parse_directive_name(raw: &str) -> &str {
     raw
 }
 
-/// Wrapper struct for implementing Callbacks
+/// Wrapper struct for implementing `Sink`
 pub(super) struct ParserCallbacks<'a, 'p> {
     pub(super) parser: &'p mut Parser<'a>,
 }
@@ -36,7 +35,7 @@ pub(super) struct ParserCallbacks<'a, 'p> {
 /// Every callback except the two text ones freezes the buffered text run
 /// first: a run is only ever extended by consecutive text callbacks, so this
 /// boundary is exactly where a node's `content` must stop being stale.
-impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
+impl<'a, 'p> Sink for ParserCallbacks<'a, 'p> {
     fn on_text(&mut self, start: usize, end: usize) {
         self.parser.on_text_impl(start, end);
     }
@@ -142,12 +141,16 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
         // End of input
     }
 
-    fn on_error(&mut self, code: ErrorCode, index: usize) {
+    fn on_error(&mut self, code: LexErrorCode, index: usize) {
         self.parser.flush_pending_text();
-        self.parser.on_error_impl(code, index);
+        self.parser.on_error_impl(code.into(), index);
     }
 
-    fn is_in_v_pre(&self) -> bool {
-        self.parser.in_v_pre
+    fn mode(&self) -> LexMode {
+        if self.parser.in_v_pre {
+            LexMode::Verbatim
+        } else {
+            LexMode::Normal
+        }
     }
 }

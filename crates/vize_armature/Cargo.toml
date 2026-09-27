@@ -17,6 +17,7 @@ legacy = ["vize_relief/_legacy"]
 
 [dependencies]
 vize_l0 = { workspace = true }
+vize_l1 = { workspace = true }
 vize_relief = { workspace = true }
 
 compact_str = { workspace = true }
@@ -27,7 +28,6 @@ oxc_span = { workspace = true }
 oxc_syntax = { workspace = true, features = ["to_js_string"] }
 serde = { workspace = true }
 thiserror = { workspace = true }
-htmlize = { workspace = true }
 
 [dev-dependencies]
 insta = { workspace = true }

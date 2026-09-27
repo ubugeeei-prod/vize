@@ -1,6 +1,6 @@
 //! Attributes and their values: the in-tag half of the builder.
 
-use vize_armature::tokenizer::QuoteType;
+use crate::markup::QuoteType;
 
 use super::Builder;
 use crate::event::{Event, EventKind};

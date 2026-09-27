@@ -11,8 +11,8 @@
 //! is a dialect syntax hook ([`directive::DirectiveSyntax`]), like an MLIR
 //! custom assembly format.
 //!
-//! Status: skeleton. The tokenizer still lives in `vize_armature` and moves
-//! here under #6835; nothing in a product path calls this module yet.
+//! The lexer is the one Vue template tokenizer: `vize_armature` and the L1
+//! surface tree both drive it. The directive hook is still a skeleton.
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
 
 pub mod directive;

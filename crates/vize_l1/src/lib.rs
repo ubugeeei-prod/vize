@@ -12,12 +12,9 @@
 //! (`render(tree) == source`, the SwiftSyntax import recorded in
 //! `docs/davinci/prior-art-toolchains.md`).
 //!
-//! The tree is *emitted by `vize_armature`* in the P2-7 contract's sense:
-//! armature's tokenizer drives construction (one shared lexer, no private
-//! re-scan), while the tree types live here so the experimental L1 surface
-//! never enters a published crate's release graph. See the P2-7 record for
-//! why the alternative shapes (a module inside `vize_armature`, a layer over
-//! the `vize_relief` AST) were not taken.
+//! The tree is built from the [`markup`] lexer's events — the same lexer
+//! `vize_armature` drives for the legacy AST (one shared lexer, no private
+//! re-scan). L1 owns the lexer and depends on no legacy crate (#6835).
 //!
 //! # The hole policy (single, documented — L1→L2 consumers read this)
 //!

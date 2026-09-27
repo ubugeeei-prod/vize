@@ -21,7 +21,23 @@ Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835),
 - `vize_l1::container` holds `ContainerFormat` and the lossless block records;
   `container::vue` is the first format.
 
-TODO: move the armature tokenizer and entity decoder into `markup` and invert
-the dependency (#6835), implement `VueDirectives` (#6836) and the SFC split
-(#6837). Unfinished bodies are `todo!()` under module-level expectations; no
-product path reaches them.
+## Tokenizer move (#6835)
+
+- The armature tokenizer now lives in `vize_l1::markup::lex` as
+  `Lexer<P, S>`; entity decoding lives in `markup::entity`. `vize_armature`
+  and `vize_relief` depend on `vize_l1`; `vize_l1` has no legacy dependency,
+  and its two allowlist entries are removed.
+- `LexErrorCode` owns its messages. Relief converts with
+  `From<LexErrorCode> for ErrorCode`, and a relief test pins that both
+  messages stay identical, so legacy output is unchanged.
+- Armature's document mode instantiates `Lexer<Document, _>`; the SFC path
+  instantiates `Lexer<Component, _>`. Vue 1 `{{{` is the plain
+  `LexOptions::raw_interpolation` switch.
+- The never-entered `InSFCRootTagName` and `InSpecialComment` states are
+  deleted.
+- Armature's public `Tokenizer`/`Callbacks` API is replaced by re-exports of
+  the L1 names; the next release needs the matching version bump.
+
+TODO: implement `VueDirectives` (#6836) and the SFC split (#6837). The
+`v-pre` switch is still answered by armature's parser; the L1 surface tree
+does not use it yet.

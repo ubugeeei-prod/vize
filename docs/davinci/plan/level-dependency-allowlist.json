@@ -2,28 +2,5 @@
   "schema": "vize.level-dependency-allowlist",
   "version": 1,
   "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
-  "entries": [
-    {
-      "from": "vize_l1",
-      "to": "vize_armature",
-      "rename": null,
-      "target": null,
-      "optional": false,
-      "roots": ["vize_l1", "vize_l1_to_l2"],
-      "issue": 6835,
-      "reason": "Move tokenizer callbacks and QuoteType into L1 markup.",
-      "workspace": true
-    },
-    {
-      "from": "vize_l1",
-      "to": "vize_relief",
-      "rename": null,
-      "target": null,
-      "optional": false,
-      "roots": ["vize_l1", "vize_l1_to_l2"],
-      "issue": 6835,
-      "reason": "Move Namespace and decide the ErrorCode home.",
-      "workspace": true
-    }
-  ]
+  "entries": []
 }

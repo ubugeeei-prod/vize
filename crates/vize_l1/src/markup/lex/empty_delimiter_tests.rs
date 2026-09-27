@@ -1,14 +1,15 @@
 use super::{
-    Tokenizer,
-    tests::{TestCallbacks, TokenEvent},
+    Delimiters, LexOptions,
+    tests::{TestCallbacks, TokenEvent, lex_with},
 };
-use vize_relief::ErrorCode;
+use crate::markup::token::LexErrorCode;
 
 fn tokenize(input: &str, open: &[u8], close: &[u8]) -> TestCallbacks {
-    let callbacks = TestCallbacks::default();
-    let mut tokenizer = Tokenizer::with_delimiters(input, callbacks, open, close);
-    tokenizer.tokenize();
-    tokenizer.callbacks
+    let options = LexOptions {
+        delimiters: Delimiters { open, close },
+        ..LexOptions::default()
+    };
+    lex_with(input, options)
 }
 
 #[test]
@@ -32,7 +33,7 @@ fn empty_closing_delimiter_reports_unfinished_interpolation() {
     assert!(
         callbacks
             .errors
-            .contains(&(ErrorCode::MissingInterpolationEnd, 9))
+            .contains(&(LexErrorCode::MissingInterpolationEnd, 9))
     );
     assert!(callbacks.events.contains(&TokenEvent::Text(0, 9)));
     assert!(

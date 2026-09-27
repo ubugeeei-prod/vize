@@ -1,10 +1,9 @@
 //! Rebase decoded pattern spans through the same entity decoder as HTML attributes.
 
 use super::{MatchArm, MatchPattern, PatternKind, PatternSyntaxError, parse_match_pattern};
-use crate::tokenizer::entity_decode::try_decode_entity;
-use htmlize::Context;
 use oxc_span::Span;
 use vize_l0::String;
+use vize_l1::markup::entity::{EntityContext, decode_one};
 
 struct Attribute {
     text: String,
@@ -19,7 +18,7 @@ impl Attribute {
         while let Some(rest) = source.get(at..)
             && let Some(first) = rest.chars().next()
         {
-            let (ch, len) = try_decode_entity(rest.as_bytes(), Context::Attribute)
+            let (ch, len) = decode_one(rest.as_bytes(), EntityContext::Attribute)
                 .unwrap_or((first, first.len_utf8()));
             text.push(ch);
             offsets.extend(std::iter::repeat_n(at as u32, ch.len_utf8() - 1));

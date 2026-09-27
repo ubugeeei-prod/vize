@@ -1,8 +1,8 @@
 //! Decode at most one HTML entity from the start of a byte slice (`&name;`, `&#...;`, …).
 //! Rules align with `htmlize::unescape_bytes_in` (WHATWG), using the same `ENTITIES` map.
 
-use std::cmp::min;
-use std::num::IntErrorKind;
+use core::cmp::min;
+use core::num::IntErrorKind;
 
 use htmlize::{Context, ENTITIES, ENTITY_MAX_LENGTH, ENTITY_MIN_LENGTH};
 
@@ -21,7 +21,7 @@ pub(crate) fn try_decode_entity(input: &[u8], context: Context) -> Option<(char,
 }
 
 fn first_scalar(expansion: &[u8]) -> Option<char> {
-    std::str::from_utf8(expansion).ok()?.chars().next()
+    core::str::from_utf8(expansion).ok()?.chars().next()
 }
 
 fn decode_named_entity(input: &[u8], context: Context) -> Option<(char, usize)> {
@@ -80,7 +80,7 @@ fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
             if hex.is_empty() {
                 return None;
             }
-            u32::from_str_radix(std::str::from_utf8(hex).ok()?, 16)
+            u32::from_str_radix(core::str::from_utf8(hex).ok()?, 16)
         }
         Some(c) if c.is_ascii_digit() => {
             let start = pos;
@@ -91,7 +91,7 @@ fn decode_numeric_entity(input: &[u8]) -> Option<(char, usize)> {
             if dec.is_empty() {
                 return None;
             }
-            std::str::from_utf8(dec).ok()?.parse::<u32>()
+            core::str::from_utf8(dec).ok()?.parse::<u32>()
         }
         _ => return None,
     };

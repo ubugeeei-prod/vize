@@ -15,11 +15,11 @@
 
 use davinci_test_support::surface_fixture as common;
 use vize_l0::{Allocator, String};
+use vize_l1::markup::LexErrorCode;
 use vize_l1::{
     ElementClose, HoleCounts, SurfaceChild, SurfaceParseOptions, SurfaceTree, check_fidelity,
     hole_counts, parse, parse_with_options, render,
 };
-use vize_relief::ErrorCode;
 
 fn rendered(tree: &SurfaceTree<'_>) -> String {
     let mut out = String::default();
@@ -83,7 +83,7 @@ fn eof_in_tag_holes_are_typed() {
     assert!(element.open.gt.is_missing());
     assert!(matches!(element.close, ElementClose::Missing));
     assert_eq!(errors.len(), 1);
-    assert!(matches!(errors[0].code, ErrorCode::EofInTag));
+    assert!(matches!(errors[0].code, LexErrorCode::EofInTag));
 }
 
 #[test]
@@ -306,7 +306,10 @@ fn in_tag_junk_rides_in_leading_under_a_diagnostic() {
     assert!(element.open.slash.is_none());
     assert_eq!(element.open.attrs[0].name.leading, " / ");
     assert_eq!(errors.len(), 1);
-    assert!(matches!(errors[0].code, ErrorCode::UnexpectedSolidusInTag));
+    assert!(matches!(
+        errors[0].code,
+        LexErrorCode::UnexpectedSolidusInTag
+    ));
 }
 
 #[test]

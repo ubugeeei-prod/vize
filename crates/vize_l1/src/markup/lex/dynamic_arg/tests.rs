@@ -1,10 +1,10 @@
 use super::super::{
-    Tokenizer,
-    tests::{TestCallbacks, TokenEvent},
+    LexOptions,
+    tests::{TokenEvent, lex_with},
 };
 use super::scan_argument;
-use vize_l0::cstr;
-use vize_relief::ErrorCode;
+use crate::markup::token::LexErrorCode;
+use vize_l0::{SmallVec, cstr};
 
 #[test]
 fn emits_one_complete_argument_and_preserves_modifiers() {
@@ -20,11 +20,9 @@ fn emits_one_complete_argument_and_preserves_modifiers() {
         "`escaped\\`][${keys[index]}`",
     ] {
         let source = cstr!("<Child v-model:[{argument}].trim=\"value\"/>");
-        let mut tokenizer = Tokenizer::new(&source, TestCallbacks::default());
-        tokenizer.tokenize();
-        assert!(tokenizer.callbacks.errors.is_empty(), "{source}");
-        let args: Vec<_> = tokenizer
-            .callbacks
+        let tokenizer = lex_with(&source, LexOptions::default());
+        assert!(tokenizer.errors.is_empty(), "{source}");
+        let args: SmallVec<[&str; 2]> = tokenizer
             .events
             .iter()
             .filter_map(|event| match event {
@@ -32,8 +30,8 @@ fn emits_one_complete_argument_and_preserves_modifiers() {
                 _ => None,
             })
             .collect();
-        assert_eq!(args, [argument], "{source}");
-        assert!(tokenizer.callbacks.events.iter().any(|event| matches!(
+        assert_eq!(args.as_slice(), [argument], "{source}");
+        assert!(tokenizer.events.iter().any(|event| matches!(
             event, TokenEvent::DirModifier(start, end) if &source[*start..*end] == "trim"
         )));
     }
@@ -50,19 +48,16 @@ fn boundaries_and_unterminated_literals_recover_without_swallowing_markup() {
             "keys['escaped\\",
         ] {
             let source = cstr!("<Child :[{argument}{suffix}");
-            let mut tokenizer = Tokenizer::new(&source, TestCallbacks::default());
-            tokenizer.tokenize();
+            let tokenizer = lex_with(&source, LexOptions::default());
             let boundary = "<Child :[".len() + argument.len();
             assert!(
                 tokenizer
-                    .callbacks
                     .errors
-                    .contains(&(ErrorCode::MissingDynamicDirectiveArgumentEnd, boundary)),
+                    .contains(&(LexErrorCode::MissingDynamicDirectiveArgumentEnd, boundary)),
                 "{source}: {:?}",
-                tokenizer.callbacks.errors
+                tokenizer.errors
             );
-            let args: Vec<_> = tokenizer
-                .callbacks
+            let args: SmallVec<[&str; 2]> = tokenizer
                 .events
                 .iter()
                 .filter_map(|event| match event {
@@ -70,7 +65,7 @@ fn boundaries_and_unterminated_literals_recover_without_swallowing_markup() {
                     _ => None,
                 })
                 .collect();
-            assert_eq!(args, [argument], "{source}");
+            assert_eq!(args.as_slice(), [argument], "{source}");
         }
     }
 }

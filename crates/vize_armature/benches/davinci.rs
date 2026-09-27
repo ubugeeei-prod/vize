@@ -17,14 +17,14 @@
 
 use criterion::{Criterion, criterion_group};
 use davinci_harness::fixtures::{LADDER, template_block};
-use vize_armature::{Callbacks, ErrorCode, Parser, QuoteType, Tokenizer};
+use vize_armature::{Component, LexErrorCode, LexOptions, Lexer, Parser, QuoteType, Sink};
 use vize_l0::{Allocator, cstr};
 
 /// No-op tokenizer sink: every callback discards its span, so the measured
 /// cost is the tokenizer state machine alone.
 struct NoopCallbacks;
 
-impl Callbacks for NoopCallbacks {
+impl Sink for NoopCallbacks {
     fn on_text(&mut self, _start: usize, _end: usize) {}
     fn on_text_entity(&mut self, _char: char, _start: usize, _end: usize) {}
     fn on_interpolation(&mut self, _start: usize, _end: usize) {}
@@ -44,7 +44,7 @@ impl Callbacks for NoopCallbacks {
     fn on_cdata(&mut self, _start: usize, _end: usize) {}
     fn on_processing_instruction(&mut self, _start: usize, _end: usize) {}
     fn on_end(&mut self) {}
-    fn on_error(&mut self, _code: ErrorCode, _index: usize) {}
+    fn on_error(&mut self, _code: LexErrorCode, _index: usize) {}
 }
 
 fn davinci(criterion: &mut Criterion) {
@@ -54,8 +54,7 @@ fn davinci(criterion: &mut Criterion) {
 
         let tokenize_id = cstr!("armature_tokenize_{}", fixture.name);
         davinci_harness::bench_with_metrics(criterion, &tokenize_id, fixture.relative_path, || {
-            let mut tokenizer = Tokenizer::new(template, NoopCallbacks);
-            tokenizer.tokenize();
+            Lexer::<Component, _>::new(template, NoopCallbacks, LexOptions::default()).run();
         });
 
         let parse_id = cstr!("armature_parse_{}", fixture.name);

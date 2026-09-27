@@ -275,7 +275,7 @@ pub fn surface_artifact(source: &BlockSource) -> Option<SurfaceArtifact> {
         findings: errors
             .iter()
             .map(|error| SurfaceFinding {
-                code: error.code,
+                code: error.code.into(),
                 offset: error.offset,
             })
             .collect(),

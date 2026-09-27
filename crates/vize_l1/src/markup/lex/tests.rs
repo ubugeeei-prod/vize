@@ -1,8 +1,11 @@
+use vize_l0::SmallVec;
+
 use super::{
-    Tokenizer,
-    types::{Callbacks, QuoteType, is_end_of_tag_section, is_tag_start_char, is_whitespace},
+    LexOptions, Lexer,
+    types::{is_end_of_tag_section, is_tag_start_char, is_whitespace},
 };
-use vize_relief::ErrorCode;
+use crate::markup::profile::Component;
+use crate::markup::token::{LexErrorCode, QuoteType, Sink};
 
 // ========================================================================
 // Test callback infrastructure
@@ -13,7 +16,6 @@ pub(super) enum TokenEvent {
     Text(usize, usize),
     TextEntity(char, usize, usize),
     Interpolation(usize, usize),
-    #[cfg(feature = "legacy")]
     RawInterpolation(usize, usize),
     OpenTagName(usize, usize),
     OpenTagEnd(usize),
@@ -33,11 +35,11 @@ pub(super) enum TokenEvent {
 
 #[derive(Debug, Default)]
 pub(super) struct TestCallbacks {
-    pub(super) events: Vec<TokenEvent>,
-    pub(super) errors: Vec<(ErrorCode, usize)>,
+    pub(super) events: SmallVec<[TokenEvent; 16]>,
+    pub(super) errors: SmallVec<[(LexErrorCode, usize); 4]>,
 }
 
-impl Callbacks for TestCallbacks {
+impl Sink for TestCallbacks {
     fn on_text(&mut self, start: usize, end: usize) {
         self.events.push(TokenEvent::Text(start, end));
     }
@@ -47,7 +49,6 @@ impl Callbacks for TestCallbacks {
     fn on_interpolation(&mut self, start: usize, end: usize) {
         self.events.push(TokenEvent::Interpolation(start, end));
     }
-    #[cfg(feature = "legacy")]
     fn on_raw_interpolation(&mut self, start: usize, end: usize) {
         self.events.push(TokenEvent::RawInterpolation(start, end));
     }
@@ -95,16 +96,19 @@ impl Callbacks for TestCallbacks {
     fn on_end(&mut self) {
         self.events.push(TokenEvent::End);
     }
-    fn on_error(&mut self, code: ErrorCode, index: usize) {
+    fn on_error(&mut self, code: LexErrorCode, index: usize) {
         self.errors.push((code, index));
     }
 }
 
+pub(super) fn lex_with(input: &str, options: LexOptions<'_>) -> TestCallbacks {
+    let mut lexer = Lexer::<Component, _>::new(input, TestCallbacks::default(), options);
+    lexer.run();
+    lexer.into_sink()
+}
+
 fn tokenize(input: &str) -> TestCallbacks {
-    let cb = TestCallbacks::default();
-    let mut tok = Tokenizer::new(input, cb);
-    tok.tokenize();
-    tok.callbacks
+    lex_with(input, LexOptions::default())
 }
 
 // ========================================================================
@@ -334,7 +338,7 @@ fn test_comment_abrupt_empty_close_reports_error() {
     let cb = tokenize("<!-->");
     assert!(
         cb.errors
-            .contains(&(ErrorCode::AbruptClosingOfEmptyComment, 4))
+            .contains(&(LexErrorCode::AbruptClosingOfEmptyComment, 4))
     );
     assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
 }
@@ -344,7 +348,7 @@ fn test_comment_abrupt_empty_close_after_dash_reports_error() {
     let cb = tokenize("<!--->");
     assert!(
         cb.errors
-            .contains(&(ErrorCode::AbruptClosingOfEmptyComment, 5))
+            .contains(&(LexErrorCode::AbruptClosingOfEmptyComment, 5))
     );
     assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
 }
@@ -409,7 +413,7 @@ fn test_comment_nested_opener_reports_error_and_closes_at_first_end() {
     assert!(
         cb.errors
             .iter()
-            .any(|(code, _)| *code == ErrorCode::NestedComment)
+            .any(|(code, _)| *code == LexErrorCode::NestedComment)
     );
     assert!(cb.events.contains(&TokenEvent::Comment(4, 17)));
     assert!(cb.events.contains(&TokenEvent::Text(20, 24)));
@@ -425,7 +429,7 @@ fn test_error_eof_in_tag() {
     assert!(
         cb.errors
             .iter()
-            .any(|(code, _)| *code == ErrorCode::EofInTag)
+            .any(|(code, _)| *code == LexErrorCode::EofInTag)
     );
 }
 
@@ -435,7 +439,7 @@ fn test_error_eof_in_comment() {
     assert!(
         cb.errors
             .iter()
-            .any(|(code, _)| *code == ErrorCode::EofInComment)
+            .any(|(code, _)| *code == LexErrorCode::EofInComment)
     );
 }
 
@@ -445,7 +449,7 @@ fn test_error_eof_in_empty_comment() {
     assert!(
         cb.errors
             .iter()
-            .any(|(code, _)| *code == ErrorCode::EofInComment)
+            .any(|(code, _)| *code == LexErrorCode::EofInComment)
     );
     assert!(cb.events.contains(&TokenEvent::Comment(4, 4)));
 }
@@ -456,7 +460,7 @@ fn test_error_eof_in_empty_cdata() {
     assert!(
         cb.errors
             .iter()
-            .any(|(code, _)| *code == ErrorCode::EofInCdata)
+            .any(|(code, _)| *code == LexErrorCode::EofInCdata)
     );
     assert!(cb.events.contains(&TokenEvent::Cdata(9, 9)));
 }
@@ -467,7 +471,7 @@ fn test_error_processing_instruction_reports_question_mark() {
     assert!(
         cb.errors
             .iter()
-            .any(|(code, _)| *code == ErrorCode::UnexpectedQuestionMarkInsteadOfTagName)
+            .any(|(code, _)| *code == LexErrorCode::UnexpectedQuestionMarkInsteadOfTagName)
     );
     assert!(cb.events.contains(&TokenEvent::OpenTagName(22, 25)));
 }
@@ -478,7 +482,7 @@ fn test_error_unexpected_solidus_before_attribute() {
     assert!(
         cb.errors
             .iter()
-            .any(|(code, _)| *code == ErrorCode::UnexpectedSolidusInTag)
+            .any(|(code, _)| *code == LexErrorCode::UnexpectedSolidusInTag)
     );
     assert!(cb.events.contains(&TokenEvent::AttribName(7, 9)));
     assert!(cb.events.contains(&TokenEvent::AttribData(10, 13)));
@@ -754,7 +758,7 @@ fn test_script_pseudo_close_kept_as_text_until_real_close() {
 
 // ===== Vue 1.x triple-mustache raw-HTML interpolation =====
 
-/// Without `set_triple_mustache`, `{{{ x }}}` tokenizes exactly as today: a
+/// Without `raw_interpolation`, `{{{ x }}}` tokenizes exactly as today: a
 /// `{{ … }}` interpolation whose expression keeps the leading `{`, plus a
 /// trailing `}` text node. This is the zero-cost default path.
 #[test]
@@ -765,9 +769,7 @@ fn triple_mustache_default_is_braced_interpolation_plus_text() {
     // Expression span is `{ x ` -> [2, 6); trailing `}` text is [8, 9).
     assert!(cb.events.contains(&TokenEvent::Interpolation(2, 6)));
     assert!(cb.events.contains(&TokenEvent::Text(8, 9)));
-    // With no capability set, the raw-interpolation callback never fires; the
-    // `RawInterpolation` event variant only exists behind `legacy`.
-    #[cfg(feature = "legacy")]
+    // With no capability set, the raw-interpolation callback never fires.
     assert!(
         !cb.events
             .iter()
@@ -776,16 +778,14 @@ fn triple_mustache_default_is_braced_interpolation_plus_text() {
     );
 }
 
-#[cfg(feature = "legacy")]
 fn tokenize_triple(input: &str) -> TestCallbacks {
-    let cb = TestCallbacks::default();
-    let mut tok = Tokenizer::new(input, cb);
-    tok.set_triple_mustache(true);
-    tok.tokenize();
-    tok.callbacks
+    let options = LexOptions {
+        raw_interpolation: true,
+        ..LexOptions::default()
+    };
+    lex_with(input, options)
 }
 
-#[cfg(feature = "legacy")]
 #[test]
 fn triple_mustache_with_capability_emits_raw_interpolation() {
     // "{{{ x }}}": the expression span is ` x ` -> [3, 6); both extra braces
@@ -800,7 +800,6 @@ fn triple_mustache_with_capability_emits_raw_interpolation() {
     );
 }
 
-#[cfg(feature = "legacy")]
 #[test]
 fn double_mustache_with_capability_is_unchanged() {
     // A plain `{{ x }}` is still an ordinary (escaped) interpolation even when
@@ -816,7 +815,6 @@ fn double_mustache_with_capability_is_unchanged() {
     );
 }
 
-#[cfg(feature = "legacy")]
 #[test]
 fn triple_mustache_adjacent_and_mixed_with_text() {
     let cb = tokenize_triple("a {{{ x }}} b");
