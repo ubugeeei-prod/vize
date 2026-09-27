@@ -333,3 +333,8 @@ option boundaries. Preserve shape/runtime checks alongside future raw byte pins.
 records nine actual repeated full outputs for #990, #3701 and #2487, with
 source/executable identity and exact options. Fresh Actions and complete
 history/native acceptance remain pending; original behavior witnesses stay.
+
+[Complete Vapor fix-history capture](./2026-09-27-vapor-fix-history-captures.md)
+records nine actual repeated full public outputs for seven fixes, including
+ordered templates and exact options. Existing normalized Pkl comparisons and
+runtime checks stay; fresh Actions and full history/native acceptance are pending.
