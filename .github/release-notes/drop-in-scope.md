@@ -11,7 +11,7 @@ See [Drop-in Scope](https://vizejs.dev/guide/vite-plugin#drop-in-scope) and
 
 ## Reporter acknowledgements
 
-These nine reports were fixed and shipped in
+All nine fixes are included in
 [v0.429.1](https://github.com/ubugeeei-prod/vize/releases/tag/v0.429.1), whose
 [tag commit](https://github.com/ubugeeei-prod/vize/commit/9aaa1fe458a09e0d0c6604dc8835ccf7c737d943)
 contains all nine fixes. This release adds explicit reporter credit for those
