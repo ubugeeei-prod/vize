@@ -61,6 +61,10 @@ Tracked in [#6831](https://github.com/ubugeeei-prod/vize/issues/6831) and [#6851
 
 Tracked in [#6835](https://github.com/ubugeeei-prod/vize/issues/6835), [#6836](https://github.com/ubugeeei-prod/vize/issues/6836) and [#6837](https://github.com/ubugeeei-prod/vize/issues/6837). The detailed design is in the [#6836 design comment](https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929).
 
+[Authored formatter tag forms](./2026-09-27-formatter-tag-forms.md) records
+#6846's resolution-free audit and public byte corpus; source-built Actions
+and the actual queue remain required before closing the issue.
+
 - **Boundary rule:** L1 is what the text _is_ (the concrete syntax of every grammar, lossless). L2 is what it _does_.
 - **Markup** is a grammar × profile matrix:
   - Grammars: Vue now; Svelte, Angular and others later.
