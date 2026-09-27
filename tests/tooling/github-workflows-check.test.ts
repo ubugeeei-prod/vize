@@ -119,11 +119,13 @@ test("check workflow gates PRs and merge groups, and comments on PRs", () => {
     assert.match(reportJob, new RegExp(`- ${jobName}\\b`));
   }
 
+  assert.match(reportJob, /uses:\s*\.\/\.github\/actions\/report-test-inventory/);
+  const inventoryAction = readRepoFile(".github", "actions", "report-test-inventory", "action.yml");
   assert.match(
-    reportJob,
+    inventoryAction,
     /node tools\/benchmarks\/scripts\/test-inventory\.mjs --json test-inventory\.json --markdown "\$GITHUB_STEP_SUMMARY"/,
   );
-  assert.match(reportJob, /name:\s*test-inventory/);
+  assert.match(inventoryAction, /name:\s*test-inventory/);
 
   assert.match(
     commentJob,

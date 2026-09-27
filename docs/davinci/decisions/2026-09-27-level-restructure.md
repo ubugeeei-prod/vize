@@ -255,22 +255,12 @@ pipelines or serialization cost.
 - **Per-stage budgets ratchet from current measurements.** Today all 102
   `wall_p50_ns` entries in `plan/budgets.toml` are unset.
 - The [instruction-count gate record](./2026-09-27-instruction-counts.md)
-  defines benchmark-window reuse, three identical Actions executions,
-  measured-only instruction ceilings, and bootstrap-before-queue enforcement
-  for [#6868](https://github.com/ubugeeei-prod/vize/issues/6868). The live
-  allocation registry now has 100 rows; its reconciler owns the row count.
-  The initial 100-row measured registry is pinned from independent clean
-  builds in Actions run 36307058591, attempts 1 and 2: all three executions
-  in each job and all 100 counts across jobs agree. The required `test-report`
-  aggregates the reusable queue gate. Every queue run measures three identical
-  executions and applies strict ceilings. The exact final queue verification
-  remains unfinished until the PR enters and passes the queue.
-  Queue assertions use a separate level-named test to satisfy the source-length
-  ratchet. Integration follows the merged CI source-inventory extraction in
-  [#6917](https://github.com/ubugeeei-prod/vize/pull/6917). The distinct test
-  inventory collection/upload also uses a composite action, keeping the
-  required `test-report` job name and final dependency check unchanged while
-  shrinking Check against its actual event base.
+  defines measured-only ceilings and immutable-base ratchets for #6868.
+  Independent clean Actions builds (run 36307058591, attempts 1 and 2)
+  match all 100 probes in three executions each under the fixed guest method.
+  Required `test-report` aggregates queue measurement and strict ceilings.
+  Separate queue tests and test-inventory collection preserve its check name
+  and satisfy the source-length ratchet. Exact queue verification is pending.
 - Whether `SideTable` changes from `FxHashMap` to dense `Vec` storage is
   decided after measuring table density and lookup cost
   ([#6869](https://github.com/ubugeeei-prod/vize/issues/6869)).
