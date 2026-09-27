@@ -196,11 +196,8 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 | T2 nightly     | schedule          | —                        | E2E, real-project matrix, fuzz, miri, benchmarks, editor conformance, resource budgets                                                                                             |
 | T3 release     | release           | —                        | everything, semver checks, release preflight                                                                                                                                       |
 
-- zizmor runs only for external contributors, releases and PRs that touch
-  `.github/**`. [Audit selection](./2026-09-27-ci-security-selection.md) and
-  [inherited finding repair](./2026-09-27-workflow-security-refresh.md) record #6866.
-- VRT, tsgo-required tests and ledger checks leave the PR tier.
-  [Inventory tier implementation](./2026-09-27-ci-tier-inventories.md) records #6864.
+- zizmor runs only for external contributors, releases and PRs that touch `.github/**`. [Audit selection](./2026-09-27-ci-security-selection.md) and [inherited finding repair](./2026-09-27-workflow-security-refresh.md) record #6866.
+- VRT, tsgo-required tests and ledger checks leave the PR tier. [Inventory tier implementation](./2026-09-27-ci-tier-inventories.md) records #6864.
 - Whole-repo generated ledgers stop being committed. [Artifact generation](./2026-09-27-generated-ledgers.md) records #6867.
 - [JS native preparation](./2026-09-27-js-native-preparation.md) keeps package coverage and reuses the root test build ([#6830](https://github.com/ubugeeei-prod/vize/issues/6830)).
 - [UI check tiers](./2026-09-27-ui-check-ci-tiers.md) retain Fresco declarations/types in T0 and require UI acceptance in T1 ([#6864](https://github.com/ubugeeei-prod/vize/issues/6864)).
@@ -215,8 +212,7 @@ Tracked in [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) and [#6861
 
 [CI baseline decisions](./2026-09-27-ci-baseline-decisions.md) preserve the Rust timings, first formatter path and stack replay evidence.
 
-[Tooling tier wiring](./2026-09-27-ci-tooling-tier-core.md) records the shared
-comparison base, queue-only VRT and preserved complete tooling task.
+[Tooling tier wiring](./2026-09-27-ci-tooling-tier-core.md) records the shared comparison base, queue-only VRT and preserved complete tooling task.
 
 ## Order of work
 

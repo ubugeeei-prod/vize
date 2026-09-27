@@ -54,3 +54,20 @@ Central-record formatting joins 130 prose soft wraps, leaving 221 lines.
 The exact 2,239-token sequence, all 66 Markdown destinations, 20 headings,
 88 list markers/indents, 16 table rows, nine quotes and 62 paragraph breaks
 are preserved, with idempotence and formatter checks. No decision is removed.
+
+## Current main integration
+
+The preceding transport evidence remains preserved. For the current four-PR
+stack, core `b6535c909` integrates actual main `c6916de9c`, including both JS
+preparation and UI acceptance changes, before full shard head `d62b9efbf`.
+Replay this child's inventory/tooling and reviewed security changes without
+duplicating the already inherited main move or instruction gate. Every prefix
+must merge cleanly into actual main before the atomic stack can be queued.
+
+Join the parent's neutral soft wraps before adding decisions so every commit
+stays within 350 lines. That step preserves all 2,245 tokens and 67 destinations
+while reducing 348 lines to 221. The final central record has 223 lines after
+the reviewed additions; its last four joins preserve all 2,269 tokens, 70
+destinations and Markdown structure. Both new main JS decision links remain.
+Fresh current-head reports and all four actual main merges are required;
+earlier successful heads are evidence, not substitutes for those checks.
