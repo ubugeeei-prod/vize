@@ -22,7 +22,7 @@ fn builds_inspector_payload_json_and_url() {
 
     // The `spolvero` member (P2-18) rides in the payload as an embedded
     // JSON value, so its keys serialize alphabetically here; the canonical
-    // byte form stays `SpolveroFeed::to_json`, pinned in
+    // byte form stays `StageFeed::to_json`, pinned in
     // `tests/spolvero_payload.rs`.
     assert_eq!(
         json.as_str(),

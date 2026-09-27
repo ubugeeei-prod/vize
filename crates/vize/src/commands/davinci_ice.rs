@@ -5,7 +5,7 @@
 //! and writes a reproducer** - it never degrades to possibly-wrong output
 //! (charter #26 forbids auto-fallback outright), and it never takes the rest
 //! of the batch down with it. The reproducer is a `repro.folio`
-//! ([`ReproFolio`]): pipeline string, replay config, the recorded failure,
+//! ([`ReproPage`]): pipeline string, replay config, the recorded failure,
 //! and the last-good stage dump - which, until P2-12b routes the compile
 //! path through the pass manager, is the authored source itself
 //! (`artifact-stage=source`).
@@ -34,8 +34,8 @@
 use std::path::{Path, PathBuf};
 use std::sync::Once;
 
-use vize_davinci::folio::repro::{ReproFolio, failure_text};
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::repro::{Page as ReproPage, failure_text};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::legacy_plan;
 use vize_davinci::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassFailure, PassKind, Pipeline, Preserved,
@@ -266,7 +266,7 @@ pub(crate) fn source_repro(
     inject: Option<&Injection>,
     failure: &IceFailure,
     source: String,
-) -> ReproFolio {
+) -> ReproPage {
     let mut config: FxHashMap<String, String> = FxHashMap::default();
     config.insert(String::from(CONFIG_MODE), String::from(mode));
     if let Some(injection) = inject {
@@ -275,7 +275,7 @@ pub(crate) fn source_repro(
             config.insert(String::from(replay::CONFIG_INJECT_WHEN), tag.clone());
         }
     }
-    let mut folio = ReproFolio {
+    let mut folio = ReproPage {
         pipeline: String::from(plan_str),
         failed_stage: failure.stage.clone(),
         failed_pass: failure.pass.clone(),
@@ -294,11 +294,11 @@ pub(crate) fn source_repro(
 /// # Errors
 ///
 /// Returns a formatted message naming the path that failed.
-pub(crate) fn write_repro(dir: &Path, stem: &str, folio: &ReproFolio) -> Result<PathBuf, String> {
+pub(crate) fn write_repro(dir: &Path, stem: &str, folio: &ReproPage) -> Result<PathBuf, String> {
     std::fs::create_dir_all(dir)
         .map_err(|error| cstr!("cannot create {}: {error}", dir.display()))?;
     let path = dir.join(cstr!("{stem}.repro.folio").as_str());
-    std::fs::write(&path, folio.print_to_string(FolioMode::Full).as_bytes())
+    std::fs::write(&path, folio.print_to_string(DumpMode::Full).as_bytes())
         .map_err(|error| cstr!("cannot write {}: {error}", path.display()))?;
     Ok(path)
 }

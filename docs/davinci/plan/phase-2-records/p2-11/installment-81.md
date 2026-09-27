@@ -11,7 +11,7 @@ ordering and `v-for` child hoists.
 
 The durable witnesses are:
 
-- [`davinci_s2_v_pre.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_v_pre.rs)
+- [`davinci_s2_v_pre.rs`](../../../../../crates/vize_atelier_dom/tests/l2_v_pre.rs)
   - pins inert text inside `v-pre`.
 - [`lowering_elements.rs`](../../../../../crates/vize_l1_to_l2/tests/lowering_elements.rs)
   - covers namespace and template-if lowering.

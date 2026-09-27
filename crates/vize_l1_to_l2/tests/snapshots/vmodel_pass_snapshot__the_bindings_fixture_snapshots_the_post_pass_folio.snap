@@ -2,10 +2,10 @@
 source: crates/vize_l1_to_l2/tests/vmodel_pass_snapshot.rs
 expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
 ---
-[disegno]
+[l2-dump-v2]
 ops=18
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element form @0:325
   ui.bind name="action" value=js("act" @15:18) @6:19
   ui.on name="submit" mods="prevent" handler=js("save()" @37:43) @20:44

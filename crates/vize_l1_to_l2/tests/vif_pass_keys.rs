@@ -16,19 +16,21 @@ mod support;
 use vize_davinci::id::NodeId;
 use vize_l0::Span;
 use vize_l1_to_l2::pass::{BranchKey, BranchKeyKind, vif};
-use vize_l2::folio::{DisegnoFolio, FolioAttribute, FolioElement, FolioOp};
+use vize_l2::dump::{
+    Attribute as DumpAttribute, Element as DumpElement, Op as DumpOp, Page as L2Page,
+};
 
 use support::{assert_transformed_sound, with_transformed};
 
 /// The single root element of branch `index` of the `chain`-th root op
 /// (the `vif_pass.rs` helper, repeated test-file-locally like the span
 /// helper below).
-fn branch_root(folio: &DisegnoFolio, chain: usize, index: usize) -> &FolioElement {
-    let FolioOp::If(if_op) = &folio.ops[chain] else {
+fn branch_root(folio: &L2Page, chain: usize, index: usize) -> &DumpElement {
+    let DumpOp::If(if_op) = &folio.ops[chain] else {
         panic!("root op {chain} is not ui.if");
     };
     match &if_op.branches[index].ops[..] {
-        [FolioOp::Element(element)] => element,
+        [DumpOp::Element(element)] => element,
         other => panic!("branch root is not one element: {other:?}"),
     }
 }
@@ -163,7 +165,7 @@ fn the_first_key_spelling_in_authored_order_wins() {
         );
         assert_eq!(
             branch_root(folio, 0, 0).attributes,
-            vec![FolioAttribute {
+            vec![DumpAttribute {
                 name: "key".into(),
                 value: Some("s".into()),
                 span: span_of(source, r#"key="s""#, 0),
@@ -188,10 +190,10 @@ fn a_slot_outlet_branch_key_extracts_from_the_outlet_surface() {
                 .kind,
             BranchKeyKind::Static(Some("s".into()))
         );
-        let FolioOp::If(if_op) = &folio.ops[0] else {
+        let DumpOp::If(if_op) = &folio.ops[0] else {
             panic!("root is ui.if");
         };
-        let [FolioOp::Slot(outlet)] = &if_op.branches[0].ops[..] else {
+        let [DumpOp::Slot(outlet)] = &if_op.branches[0].ops[..] else {
             panic!("branch root is the outlet");
         };
         assert_eq!(outlet.attributes, vec![], "the key left the surface");

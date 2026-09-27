@@ -11,7 +11,7 @@ component static-props hoist decision treats `class` as an inline-only key.
 
 The durable witnesses are:
 
-- [`davinci_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_hoist_order.rs)
+- [`davinci_s2_hoist_order.rs`](../../../../../crates/vize_atelier_dom/tests/l2_hoist_order.rs)
   - compares the reduced static class-array component case byte-for-byte
     against the shipped DOM lane.
 - [`props_static.rs`](../../../../../crates/vize_l1_to_l2/src/emit/props_static.rs)

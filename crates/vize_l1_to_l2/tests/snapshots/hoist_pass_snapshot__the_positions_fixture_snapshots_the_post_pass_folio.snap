@@ -2,10 +2,10 @@
 source: crates/vize_l1_to_l2/tests/hoist_pass_snapshot.rs
 expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
 ---
-[disegno]
+[l2-dump-v2]
 ops=18
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element article @0:235
   vue.directive "custom" value=js("cfg" @19:22) @9:23
   ui.element header @27:58

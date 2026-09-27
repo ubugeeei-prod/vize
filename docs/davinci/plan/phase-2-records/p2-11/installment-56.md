@@ -11,7 +11,7 @@ unsupported buckets.
 
 The durable witnesses are:
 
-- [`davinci_s2_expression_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_expression_residuals.rs)
+- [`davinci_s2_expression_residuals.rs`](../../../../../crates/vize_atelier_dom/tests/l2_expression_residuals.rs)
   - records the DOM byte witness for line-comment expression cases.
 - [`js.rs`](../../../../../crates/vize_l1_to_l2/src/emit/js.rs)
   - owns the emitted JS expression rendering.

@@ -11,7 +11,7 @@
 //! [`PassEvent::is_group_entry`](super::PassEvent::is_group_entry), never per
 //! pass, which is the whole reason the event carries its group.
 
-use crate::folio::Folio;
+use crate::dump::Dump;
 
 use super::{AnalysisEvent, FailEvent, PassEvent, PassObserver, Pipeline};
 
@@ -21,7 +21,7 @@ use super::{AnalysisEvent, FailEvent, PassEvent, PassObserver, Pipeline};
 /// counts print and parse under the TS-16 round-trip laws like any other
 /// stage artifact - which is what lets `davinci-opt` treat the budget dump
 /// as a stage (`--stage budget-observer`).
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Folio)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Dump)]
 pub struct BudgetObserver {
     /// Traversals of the tree: one per fusion group entered.
     pub walks: u32,

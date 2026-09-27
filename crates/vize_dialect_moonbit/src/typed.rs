@@ -4,8 +4,8 @@
 mod emit;
 mod validate;
 
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::fact::{AlphaDocument, ExpressionFact, ExpressionFacts, FactTable};
-use vize_davinci::folio::{Folio, FolioMode};
 use vize_extension_contract::contract::{
     Capability, Diagnostic, GuestError, Page, Severity, Stage,
 };
@@ -161,11 +161,11 @@ impl<H: MooncHost> TypedExpressionGuest for MoonBitTypedGuest<H> {
         Ok(Analysis {
             facts: Page {
                 schema_version: 1,
-                text: AlphaDocument::export(&facts).print_to_string(FolioMode::Full),
+                text: AlphaDocument::export(&facts).print_to_string(DumpMode::Full),
             },
             projection: Page {
                 schema_version: 1,
-                text: page.print_to_string(FolioMode::Full),
+                text: page.print_to_string(DumpMode::Full),
             },
             diagnostics,
         })

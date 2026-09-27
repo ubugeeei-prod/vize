@@ -15,7 +15,7 @@ use vize_davinci::id::NodeId;
 use vize_l0::{Span, String};
 use vize_l1_to_l2::lower::{TextPart, rebuild_source};
 use vize_l1_to_l2::pass::TextFacts;
-use vize_l2::folio::{FolioExpr, FolioOp};
+use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp};
 
 use support::{assert_transformed_sound, with_transformed};
 
@@ -37,18 +37,18 @@ fn a_mixed_run_merges_into_one_compound_with_recorded_parts() {
     let source = "<p>Hi {{ name }}! You have {{ n }} new  mails.</p>";
     with_transformed(source, |lowered, folio, facts, _| {
         // The tree: one element, one compound interpolation child.
-        let FolioOp::Element(p) = &folio.ops[0] else {
+        let DumpOp::Element(p) = &folio.ops[0] else {
             panic!("root is not the element: {:?}", folio.ops);
         };
         assert_eq!(p.children.len(), 1, "the run merged into one op");
-        let FolioOp::Interpolation(compound) = &p.children[0] else {
+        let DumpOp::Interpolation(compound) = &p.children[0] else {
             panic!("the merged op is not an interpolation: {:?}", p.children);
         };
         // The opaque payload: reason compound, the canonical rebuild
         // (internal whitespace condensed, delimiters normalized).
         assert_eq!(
             compound.expression,
-            FolioExpr::Opaque {
+            DumpExpr::Opaque {
                 reason: vize_l2::expr::OpaqueReason::Compound,
                 source: "Hi {{ name }}! You have {{ n }} new mails.".into(),
                 span: Span::new(3, 46),
@@ -135,12 +135,12 @@ fn lone_nodes_never_compound() {
     with_transformed(source, |lowered, folio, facts, _| {
         assert!(facts.text_facts.is_empty());
         assert!(lowered.texts.is_empty());
-        let FolioOp::Element(p) = &folio.ops[0] else {
+        let DumpOp::Element(p) = &folio.ops[0] else {
             panic!("no p element");
         };
         assert!(
-            matches!(&p.children[..], [FolioOp::Interpolation(node)]
-                if matches!(&node.expression, FolioExpr::Js { source, .. } if source == "a")),
+            matches!(&p.children[..], [DumpOp::Interpolation(node)]
+                if matches!(&node.expression, DumpExpr::Js { source, .. } if source == "a")),
             "a lone interpolation keeps its retained expression: {:?}",
             p.children
         );
@@ -160,14 +160,14 @@ fn a_dropped_comment_is_not_a_run_boundary() {
     // compiled form; this pins the op the lowering mints.
     let source = "<p>a<!--c-->b {{ x }}</p>";
     with_transformed(source, |_, folio, facts, _| {
-        let FolioOp::Element(p) = &folio.ops[0] else {
+        let DumpOp::Element(p) = &folio.ops[0] else {
             panic!("no p element");
         };
         assert_eq!(p.children.len(), 1, "one unit: {:?}", p.children);
         assert!(matches!(
             &p.children[0],
-            FolioOp::Interpolation(node)
-                if matches!(&node.expression, FolioExpr::Opaque { source, .. }
+            DumpOp::Interpolation(node)
+                if matches!(&node.expression, DumpExpr::Opaque { source, .. }
                     if source == "ab {{ x }}")
         ));
         assert_eq!(facts.text_facts.len(), 1);
@@ -184,11 +184,11 @@ fn comment_free_neighbours_drive_the_remove_rule() {
     // `comments: false`.
     let source = "<p>a<!--c-->\n<!--d-->b</p>";
     with_transformed(source, |_, folio, _, _| {
-        let FolioOp::Element(p) = &folio.ops[0] else {
+        let DumpOp::Element(p) = &folio.ops[0] else {
             panic!("no p element");
         };
         assert_eq!(p.children.len(), 1, "one unit: {:?}", p.children);
-        assert!(matches!(&p.children[0], FolioOp::Text(text) if text.content == "a b"));
+        assert!(matches!(&p.children[0], DumpOp::Text(text) if text.content == "a b"));
     });
     assert_transformed_sound(source, "comment-remove");
 }
@@ -204,8 +204,8 @@ fn whitespace_condenses_by_the_armature_rules() {
             .ops
             .iter()
             .map(|op| match op {
-                FolioOp::Element(element) => vize_l0::cstr!("el:{}", element.tag),
-                FolioOp::Text(text) => vize_l0::cstr!("text:{:?}", text.content.as_str()),
+                DumpOp::Element(element) => vize_l0::cstr!("el:{}", element.tag),
+                DumpOp::Text(text) => vize_l0::cstr!("text:{:?}", text.content.as_str()),
                 other => vize_l0::cstr!("{other:?}"),
             })
             .collect();
@@ -219,10 +219,10 @@ fn whitespace_condenses_by_the_armature_rules() {
                 String::from("el:b"),
             ]
         );
-        let FolioOp::Element(b) = &folio.ops[4] else {
+        let DumpOp::Element(b) = &folio.ops[4] else {
             panic!("no b element");
         };
-        assert!(matches!(&b.children[..], [FolioOp::Text(text)] if text.content == "x y"));
+        assert!(matches!(&b.children[..], [DumpOp::Text(text)] if text.content == "x y"));
     });
     assert_transformed_sound(source, "condense-rules");
 }
@@ -235,20 +235,20 @@ fn pre_subtrees_keep_their_bytes_and_rawtext_condenses() {
     // grouping never checked pre), with the parts uncondensed.
     let source = "<pre>  a   {{ x }}  b </pre><textarea> c   d </textarea>";
     with_transformed(source, |_, folio, facts, _| {
-        let FolioOp::Element(pre) = &folio.ops[0] else {
+        let DumpOp::Element(pre) = &folio.ops[0] else {
             panic!("no pre element");
         };
         assert!(matches!(
             &pre.children[..],
-            [FolioOp::Interpolation(node)]
-                if matches!(&node.expression, FolioExpr::Opaque { source, .. }
+            [DumpOp::Interpolation(node)]
+                if matches!(&node.expression, DumpExpr::Opaque { source, .. }
                     if source == "  a   {{ x }}  b ")
         ));
         assert_eq!(facts.text_facts.len(), 1);
-        let FolioOp::Element(textarea) = &folio.ops[1] else {
+        let DumpOp::Element(textarea) = &folio.ops[1] else {
             panic!("no textarea element: {:?}", folio.ops);
         };
-        assert!(matches!(&textarea.children[..], [FolioOp::Text(text)] if text.content == " c d "));
+        assert!(matches!(&textarea.children[..], [DumpOp::Text(text)] if text.content == " c d "));
     });
     assert_transformed_sound(source, "pre-rawtext");
 }
@@ -258,7 +258,7 @@ fn rawtext_whitespace_only_subtrees_drop_like_the_shipped_dom_lane() {
     let source = "<textarea>\n</textarea><iframe>\n</iframe><noscript>\n</noscript><pre>\n</pre>";
     with_transformed(source, |_, folio, _, _| {
         for (index, tag) in ["textarea", "iframe", "noscript"].into_iter().enumerate() {
-            let FolioOp::Element(element) = &folio.ops[index] else {
+            let DumpOp::Element(element) = &folio.ops[index] else {
                 panic!("no {tag} element: {:?}", folio.ops);
             };
             assert_eq!(element.tag, tag);
@@ -268,11 +268,11 @@ fn rawtext_whitespace_only_subtrees_drop_like_the_shipped_dom_lane() {
                 element.children
             );
         }
-        let FolioOp::Element(pre) = &folio.ops[3] else {
+        let DumpOp::Element(pre) = &folio.ops[3] else {
             panic!("no pre element: {:?}", folio.ops);
         };
         assert_eq!(pre.tag, "pre");
-        assert!(matches!(&pre.children[..], [FolioOp::Text(text)] if text.content == "\n"));
+        assert!(matches!(&pre.children[..], [DumpOp::Text(text)] if text.content == "\n"));
     });
     assert_transformed_sound(source, "rawtext-empty-whitespace");
 }

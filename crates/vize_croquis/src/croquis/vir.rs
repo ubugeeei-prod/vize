@@ -5,7 +5,7 @@
 //!
 //! VIR is absorbed into Davinci as the **croquis folio**: the parsing
 //! side and the format contract live in
-//! `vize_davinci::folio::croquis` (see
+//! `vize_davinci::dump::croquis` (see
 //! `docs/davinci/plan/folio-format.md`). Changes here must keep the folio
 //! round-trip green (`cargo test -p vize_davinci --test croquis_folio`).
 
@@ -26,7 +26,7 @@ impl Croquis {
     ///
     /// **VIR is the croquis folio.** The format contract (grammar,
     /// normalization, round-trip laws) lives in
-    /// `vize_davinci::folio::croquis::CroquisFolio` and is documented in
+    /// `vize_davinci::dump::croquis::Page` and is documented in
     /// `docs/davinci/plan/folio-format.md`; `davinci-opt --roundtrip`
     /// verifies canonical dumps. This renderer stays the producing side and
     /// must not drift from the folio parser - the fixture harness in

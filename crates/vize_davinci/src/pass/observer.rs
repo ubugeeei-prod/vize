@@ -36,12 +36,12 @@
 //! observer of its own.
 
 pub mod budget;
-pub mod folio;
+pub mod dump;
 pub mod remark;
 pub mod timing;
 
+pub use crate::pass::observer::dump::DumpObserver;
 pub use budget::BudgetObserver;
-pub use folio::FolioObserver;
 pub use remark::{
     NoRemarks, PassRemarks, RecordedArg, RecordedRemark, Remark, RemarkArg, RemarkArgValue,
     RemarkCollector, RemarkCounter, RemarkKind, RemarkSink, RemarkValue,

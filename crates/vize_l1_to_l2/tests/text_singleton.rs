@@ -3,7 +3,7 @@
 mod support;
 
 use vize_l0::Span;
-use vize_l2::folio::{FolioExpr, FolioOp};
+use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp};
 
 use support::{assert_transformed_sound, with_transformed};
 
@@ -21,10 +21,10 @@ fn final_text_keeps_condensing_provenance_and_authored_spans() {
         with_transformed(source, |lowered, folio, facts, _| {
             let start = source.find(raw).unwrap() as u32;
             let span = Span::new(start, start + raw.len() as u32);
-            let FolioOp::Element(element) = &folio.ops[0] else {
+            let DumpOp::Element(element) = &folio.ops[0] else {
                 panic!("expected an element");
             };
-            assert!(matches!(element.children.last(), Some(FolioOp::Text(text))
+            assert!(matches!(element.children.last(), Some(DumpOp::Text(text))
                 if text.content == rendered && text.span == span));
             assert!(lowered.texts.is_empty());
             assert!(facts.text_facts.is_empty());
@@ -51,15 +51,15 @@ fn final_text_keeps_condensing_provenance_and_authored_spans() {
 fn final_interpolation_keeps_its_retained_expression_and_authored_span() {
     let source = "<p><i/>{{ 日本語 + 1 }}</p>";
     with_transformed(source, |lowered, folio, facts, _| {
-        let FolioOp::Element(element) = &folio.ops[0] else {
+        let DumpOp::Element(element) = &folio.ops[0] else {
             panic!("expected an element");
         };
-        let Some(FolioOp::Interpolation(interpolation)) = element.children.last() else {
+        let Some(DumpOp::Interpolation(interpolation)) = element.children.last() else {
             panic!("expected a final interpolation");
         };
         assert_eq!(interpolation.span, Span::new(7, 26));
         assert!(matches!(&interpolation.expression,
-            FolioExpr::Js { source, span, .. }
+            DumpExpr::Js { source, span, .. }
                 if source == "日本語 + 1" && *span == Span::new(10, 23)));
         assert!(lowered.texts.is_empty());
         assert!(facts.text_facts.is_empty());

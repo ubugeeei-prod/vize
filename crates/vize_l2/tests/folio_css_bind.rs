@@ -2,41 +2,42 @@
 //! binding. Split from `folio_laws.rs` so the Vue 3 family pin stays
 //! inside the source budget.
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, String, Vec as ArenaVec};
-use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
-use vize_l2::folio::{
-    DisegnoFolio, FolioBinding, FolioElement, FolioExpr, FolioOp, FolioVueCssBind,
+use vize_l2::dump::{
+    Binding as DumpBinding, Element as DumpElement, Expr as DumpExpr, Op as DumpOp, Page as L2Page,
+    VueCssBind as DumpVueCssBind,
 };
+use vize_l2::expr::{ExprRef, JsExpr, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{BindingOp, ElementOp, Namespace, Op, Region, VueCssBindOp};
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=3
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element style @0:50
   vue.css-bind value=js(\"color\" @8:13) @0:15
   vue.css-bind value=opaque(parse-rejected \"%\" @20:21) @16:30
 
 ";
 
-fn hand_built() -> DisegnoFolio {
-    DisegnoFolio {
-        ops: vec![FolioOp::Element(FolioElement {
+fn hand_built() -> L2Page {
+    L2Page {
+        ops: vec![DumpOp::Element(DumpElement {
             tag: String::from("style"),
             namespace: Namespace::Html,
             attributes: vec![],
             bindings: vec![
-                FolioBinding::VueCssBind(FolioVueCssBind {
-                    value: FolioExpr::Js {
+                DumpBinding::VueCssBind(DumpVueCssBind {
+                    value: DumpExpr::Js {
                         source: String::from("color"),
                         span: Span::new(8, 13),
                     },
                     span: Span::new(0, 15),
                 }),
-                FolioBinding::VueCssBind(FolioVueCssBind {
-                    value: FolioExpr::Opaque {
+                DumpBinding::VueCssBind(DumpVueCssBind {
+                    value: DumpExpr::Opaque {
                         reason: OpaqueReason::ParseRejected,
                         source: String::from("%"),
                         span: Span::new(20, 21),
@@ -54,9 +55,9 @@ fn hand_built() -> DisegnoFolio {
 fn the_css_bind_op_round_trips() {
     let value = hand_built();
     assert_eq!(value.op_count(), 3);
-    assert_eq!(value.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    assert_eq!(value.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
-        DisegnoFolio::parse(CANONICAL).expect("canonical text parses"),
+        L2Page::parse(CANONICAL).expect("canonical text parses"),
         value
     );
 }
@@ -107,9 +108,7 @@ fn an_arena_tree_mirrors_the_css_bind_op() {
         &allocator,
     );
     assert_eq!(
-        DisegnoFolio::of(&ops)
-            .print_to_string(FolioMode::Full)
-            .as_str(),
+        L2Page::of(&ops).print_to_string(DumpMode::Full).as_str(),
         CANONICAL
     );
 }

@@ -10,21 +10,21 @@
 mod support;
 
 use support::assert_authored_artifact;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, SourceBlock, SourceRoot};
 use vize_l1::parse;
 use vize_l1_to_l2::lower_source_block;
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 use vize_l2::op::Op;
 use vize_l2::verify::{Rigor, Violation, verify};
 
 const SOURCE: &str = include_str!("fixtures/css_bind.vue");
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=4
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element p @11:41
   attr class=\"foo\" @14:25
   ui.interpolation js(\"color\" @29:34) @26:37
@@ -55,9 +55,9 @@ fn the_sfc_fixture_folio_pins_template_and_css_bind() {
     let (tree, errors) = parse(&allocator, template);
     let mut lowered = lower_source_block(&allocator, &tree, &errors, template_block);
     lowered.push_style_block_in(&allocator, css_block);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
-    assert_eq!(folio.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    assert_eq!(folio.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(verify(&folio, Rigor::Raw), Vec::<Violation>::new());
     let provenance: Vec<(&str, u32, u32, &str)> = lowered
         .provenance
@@ -101,7 +101,7 @@ fn unicode_prefix_does_not_shift_authored_spans() {
     let mut lowered = lower_source_block(&allocator, &tree, &errors, template_block);
     lowered.push_style_block_in(&allocator, css_block);
 
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
     assert_eq!(verify(&folio, Rigor::Raw), Vec::<Violation>::new());
     assert_authored_artifact(source, &lowered);
     assert!(lowered.root.ops.iter().any(|op| match op {

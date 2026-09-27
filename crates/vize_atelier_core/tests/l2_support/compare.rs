@@ -13,7 +13,7 @@ use vize_l0::Allocator;
 use vize_l0::config::VueVersion;
 use vize_l1_to_l2::LegacyCaps;
 use vize_l1_to_l2::pass::run_transform;
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 
 use super::{
     Counters, checks, hoist, hoist_old, l2_lane, old_lane, slots, slots_old, surface_check,
@@ -140,7 +140,7 @@ pub fn compare_with(name: &str, source: &str, counters: &mut Counters, dialect: 
         return;
     }
     let facts = run_transform(&mut lowered, &mut NoObserver);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
     let s2 = l2_lane::collect(
         &folio,
         &l2_lane::Tables {

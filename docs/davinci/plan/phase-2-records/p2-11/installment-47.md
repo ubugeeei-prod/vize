@@ -15,7 +15,7 @@ The durable witnesses are:
   - pins the handler body forms directly at the S2 emitter boundary.
 - [`on_body.rs`](../../../../../crates/vize_l1_to_l2/src/emit/on_body.rs)
   - centralizes the handler body rendering rules.
-- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_slots.rs)
+- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/l2_slots.rs)
   - keeps slot-facing handler cases byte-identical to the shipped lane.
 
 This installment does not tick P2-11. Handler-body residuals close here; the

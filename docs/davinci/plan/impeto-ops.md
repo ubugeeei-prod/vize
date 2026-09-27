@@ -38,24 +38,24 @@ for fact/schedule edges that are not DOM order.
 
 ## Operation Semantics
 
-| mnemonic                   | source meaning                                                       | VDOM trace            | Vapor trace            | notes                                                                                          |
-| -------------------------- | -------------------------------------------------------------------- | --------------------- | ---------------------- | ---------------------------------------------------------------------------------------------- |
-| `impeto.set-prop`          | Assign one named property, attribute, model channel, or sync target. | `patch-prop`          | `assign-prop`          | Usually dynamic; `v-model` and `vue.sync` lower here until a later pass specializes them.      |
-| `impeto.set-dynamic-props` | Assign an object-shaped property bag or other dynamic prop group.    | `patch-dynamic-props` | `assign-dynamic-props` | Covers argument-less `v-bind` and CSS-bind carrier facts in the first lowering slice.          |
-| `impeto.set-text`          | Set literal text, interpolation text, or `v-text` output.            | `set-text`            | `text-effect`          | Literal L2 text can stay effectless; interpolation and `v-text` are dynamic.                   |
-| `impeto.set-event`         | Attach an event listener and its modifiers/options.                  | `patch-event`         | `listen`               | The op records listener placement; later passes may split handler shape decisions into facts.  |
-| `impeto.set-html`          | Assign trusted raw HTML from `v-html`.                               | `set-html`            | `html-effect`          | Always a dynamic sink unless a future verifier proves a static authored value.                 |
-| `impeto.set-template-ref`  | Publish a template ref binding for backend materialization.          | `set-template-ref`    | `template-ref`         | Reserved in the op family before the lowering path starts emitting it directly.                |
-| `impeto.insert-node`       | Materialize a host node in the current region.                       | `create-element`      | `create-node`          | Used for elements and comments in the first L2 to L3 lowering slice.                           |
-| `impeto.prepend-node`      | Materialize a host node before the current insertion point.          | `prepend-node`        | `prepend-node`         | Reserved for anchor-sensitive insertion decisions.                                             |
-| `impeto.directive`         | Apply a Vue runtime directive or directive-like marker.              | `apply-directive`     | `directive-effect`     | Covers generic directives plus `v-once`, `v-memo`, `v-show`, and `v-cloak` in the first slice. |
-| `impeto.if`                | Select one conditional child region.                                 | `branch`              | `conditional-effect`   | Owns one region per branch; dynamic partition propagates into branch children.                 |
-| `impeto.for`               | Iterate a child region for a source collection.                      | `iterate`             | `list-effect`          | Owns the repeated region; keyed and unkeyed update laws are P3-11 work.                        |
-| `impeto.create-component`  | Create a component boundary and pass its props, events, and slots.   | `create-component`    | `component-effect`     | Component children inherit dynamic partition in the first lowering slice.                      |
-| `impeto.slot-outlet`       | Render or describe a slot outlet/scope bridge.                       | `render-slot`         | `slot-effect`          | Used for L2 slots and slot-scope binding records.                                              |
-| `impeto.get-text-child`    | Resolve an existing text child reference.                            | `get-text-child`      | `get-text-child`       | Structural reference op; it should not invent dynamic work by itself.                          |
-| `impeto.child-ref`         | Resolve the first child anchor/reference for a region owner.         | `child-ref`           | `child-ref`            | Structural reference op used by backend scheduling and insertion.                              |
-| `impeto.next-ref`          | Resolve the next sibling anchor/reference.                           | `next-ref`            | `next-ref`             | Structural reference op used when stable insertion points matter.                              |
+| mnemonic               | source meaning                                                       | VDOM trace            | Vapor trace            | notes                                                                                          |
+| ---------------------- | -------------------------------------------------------------------- | --------------------- | ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `l3.set-prop`          | Assign one named property, attribute, model channel, or sync target. | `patch-prop`          | `assign-prop`          | Usually dynamic; `v-model` and `vue.sync` lower here until a later pass specializes them.      |
+| `l3.set-dynamic-props` | Assign an object-shaped property bag or other dynamic prop group.    | `patch-dynamic-props` | `assign-dynamic-props` | Covers argument-less `v-bind` and CSS-bind carrier facts in the first lowering slice.          |
+| `l3.set-text`          | Set literal text, interpolation text, or `v-text` output.            | `set-text`            | `text-effect`          | Literal L2 text can stay effectless; interpolation and `v-text` are dynamic.                   |
+| `l3.set-event`         | Attach an event listener and its modifiers/options.                  | `patch-event`         | `listen`               | The op records listener placement; later passes may split handler shape decisions into facts.  |
+| `l3.set-html`          | Assign trusted raw HTML from `v-html`.                               | `set-html`            | `html-effect`          | Always a dynamic sink unless a future verifier proves a static authored value.                 |
+| `l3.set-template-ref`  | Publish a template ref binding for backend materialization.          | `set-template-ref`    | `template-ref`         | Reserved in the op family before the lowering path starts emitting it directly.                |
+| `l3.insert-node`       | Materialize a host node in the current region.                       | `create-element`      | `create-node`          | Used for elements and comments in the first L2 to L3 lowering slice.                           |
+| `l3.prepend-node`      | Materialize a host node before the current insertion point.          | `prepend-node`        | `prepend-node`         | Reserved for anchor-sensitive insertion decisions.                                             |
+| `l3.directive`         | Apply a Vue runtime directive or directive-like marker.              | `apply-directive`     | `directive-effect`     | Covers generic directives plus `v-once`, `v-memo`, `v-show`, and `v-cloak` in the first slice. |
+| `l3.if`                | Select one conditional child region.                                 | `branch`              | `conditional-effect`   | Owns one region per branch; dynamic partition propagates into branch children.                 |
+| `l3.for`               | Iterate a child region for a source collection.                      | `iterate`             | `list-effect`          | Owns the repeated region; keyed and unkeyed update laws are P3-11 work.                        |
+| `l3.create-component`  | Create a component boundary and pass its props, events, and slots.   | `create-component`    | `component-effect`     | Component children inherit dynamic partition in the first lowering slice.                      |
+| `l3.slot-outlet`       | Render or describe a slot outlet/scope bridge.                       | `render-slot`         | `slot-effect`          | Used for L2 slots and slot-scope binding records.                                              |
+| `l3.get-text-child`    | Resolve an existing text child reference.                            | `get-text-child`      | `get-text-child`       | Structural reference op; it should not invent dynamic work by itself.                          |
+| `l3.child-ref`         | Resolve the first child anchor/reference for a region owner.         | `child-ref`           | `child-ref`            | Structural reference op used by backend scheduling and insertion.                              |
+| `l3.next-ref`          | Resolve the next sibling anchor/reference.                           | `next-ref`            | `next-ref`             | Structural reference op used when stable insertion points matter.                              |
 
 The VDOM and Vapor labels above are intentionally small observations, not code
 generation byte strings. They are the trace vocabulary used by the first Lean
@@ -69,25 +69,25 @@ order: owner op, attached bindings, then owned child regions. Every lowered op
 also receives a partition fact beside the program, so SSR and later thin paths
 can read canonical partition decisions without traversing L3 ops.
 
-| L2 form                                                        | Impeto op                  |
-| -------------------------------------------------------------- | -------------------------- |
-| Element                                                        | `impeto.insert-node`       |
-| Component                                                      | `impeto.create-component`  |
-| Text                                                           | `impeto.set-text`          |
-| Interpolation                                                  | `impeto.set-text`          |
-| Comment                                                        | `impeto.insert-node`       |
-| If                                                             | `impeto.if`                |
-| For                                                            | `impeto.for`               |
-| Slot                                                           | `impeto.slot-outlet`       |
-| Named `v-bind`                                                 | `impeto.set-prop`          |
-| Argument-less `v-bind`                                         | `impeto.set-dynamic-props` |
-| `v-on`                                                         | `impeto.set-event`         |
-| `v-model` / `vue.sync`                                         | `impeto.set-prop`          |
-| Slot content/scope binding                                     | `impeto.slot-outlet`       |
-| Generic directive / `v-once` / `v-memo` / `v-show` / `v-cloak` | `impeto.directive`         |
-| CSS bind carrier                                               | `impeto.set-dynamic-props` |
-| `v-html`                                                       | `impeto.set-html`          |
-| `v-text`                                                       | `impeto.set-text`          |
+| L2 form                                                        | Impeto op              |
+| -------------------------------------------------------------- | ---------------------- |
+| Element                                                        | `l3.insert-node`       |
+| Component                                                      | `l3.create-component`  |
+| Text                                                           | `l3.set-text`          |
+| Interpolation                                                  | `l3.set-text`          |
+| Comment                                                        | `l3.insert-node`       |
+| If                                                             | `l3.if`                |
+| For                                                            | `l3.for`               |
+| Slot                                                           | `l3.slot-outlet`       |
+| Named `v-bind`                                                 | `l3.set-prop`          |
+| Argument-less `v-bind`                                         | `l3.set-dynamic-props` |
+| `v-on`                                                         | `l3.set-event`         |
+| `v-model` / `vue.sync`                                         | `l3.set-prop`          |
+| Slot content/scope binding                                     | `l3.slot-outlet`       |
+| Generic directive / `v-once` / `v-memo` / `v-show` / `v-cloak` | `l3.directive`         |
+| CSS bind carrier                                               | `l3.set-dynamic-props` |
+| `v-html`                                                       | `l3.set-html`          |
+| `v-text`                                                       | `l3.set-text`          |
 
 Dynamic partition creates an effect scope and an `effect-order` edge from the
 previous dynamic op. Static partition leaves the op effectless. This is only the
@@ -100,7 +100,7 @@ read it.
 P3-10 keeps the choice of where an op's work runs as an overlay on the graph,
 `Program::placements`, never as a rewrite of ops, regions, edges, effect
 scopes, or operands. An op without a record runs `inline`, its canonical shape.
-`vize_impeto::placement::annotate` records the other shapes; every recorded
+`vize_l3::placement::annotate` records the other shapes; every recorded
 alternative preserves meaning, so choosing among them is a cost question only.
 
 | placement | legal when                                                                                                                                                                                                   | update-model effect                                                          |
@@ -126,7 +126,7 @@ the semantic argument until extraction output reaches a backend under TS-28.
 
 ## Try-Measure-Commit Extraction
 
-`vize_impeto::extract::extract` chooses among recorded alternatives, starting
+`vize_l3::extract::extract` chooses among recorded alternatives, starting
 from the all-inline plan. For each candidate in record order it performs the
 placement on a trial plan, simplifies locally (a hoist removes its subtree's
 effect units, a group merges its unit into the leader's and unions their keys,
@@ -148,10 +148,10 @@ spends one unit of the component's candidate budget; a candidate blocked by the
 committed plan (`subsumed`, `not-contiguous`) or reached after the budget is
 spent (`budget-exhausted`) is recorded as missed without measuring. Tiers are
 the `[optimization]` rows of `budgets.toml`, synced field for field by
-`crates/vize_impeto/tests/optimization_budgets.rs`.
+`crates/vize_l3/tests/optimization_budgets.rs`.
 
 The pass writes only `PlacementRecord::chosen` and is described as
-`Preserved::ALL`. `vize_impeto::optimize::OPTIMIZE` is the `s3` pipeline
+`Preserved::ALL`. `vize_l3::optimize::OPTIMIZE` is the `s3` pipeline
 `annotate-placements` then `extract-placements`; run through the pass manager,
 each decision becomes one `s3.extract-placements` remark (registered in
 `remarks-format.md`), and `PartitionFacts::stale` stays `None`. Under the

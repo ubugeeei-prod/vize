@@ -2,7 +2,7 @@
 //! page files and the `--timing-json` profile export - and the P3-13
 //! `--remarks` document.
 //!
-//! IO lives here and only here - the library half ([`FolioDump`], the timing
+//! IO lives here and only here - the library half ([`Collector`], the timing
 //! observer) is `no_std + alloc` and produces data, and this module turns it
 //! into files. The timing export reuses `vize_l0::profiler`'s P0-11
 //! export wholesale (`export_report` + `to_json`), so there is exactly one
@@ -10,9 +10,9 @@
 
 use std::path::Path;
 
-use vize_davinci::folio::dump::FolioDump;
-use vize_davinci::folio::feed::{SpolveroFeed, SpolveroRemark};
-use vize_davinci::folio::remarks::RemarkLog;
+use vize_davinci::dump::collector::Collector;
+use vize_davinci::dump::feed::{StageFeed, StageRemark};
+use vize_davinci::dump::remarks::RemarkLog;
 use vize_l0::profiler::{ProfileExportBudget, ProfileExportOptions, global_profiler};
 use vize_l0::{String, cstr};
 
@@ -22,8 +22,8 @@ const FEED_FILE: &str = "spolvero.json";
 
 /// Write every collected page into `dir`, creating it first, plus the
 /// directory's Spolvero feed (`spolvero.json`, P2-18): the same pages as
-/// one schema-versioned JSON document, `SpolveroFeed::of_dump` over the
-/// same [`FolioDump`] - the directory and the feed cannot disagree.
+/// one schema-versioned JSON document, `StageFeed::of_dump` over the
+/// same [`Collector`] - the directory and the feed cannot disagree.
 ///
 /// The directory is created even when the dump is empty (a fully hash-gated
 /// run over no-op passes), and the feed is written even then, with zero
@@ -35,7 +35,7 @@ const FEED_FILE: &str = "spolvero.json";
 ///
 /// Returns a formatted message naming the path that could not be created or
 /// written.
-pub fn write_dump(dir: &Path, dump: &FolioDump, log: &RemarkLog) -> Result<(), String> {
+pub fn write_dump(dir: &Path, dump: &Collector, log: &RemarkLog) -> Result<(), String> {
     std::fs::create_dir_all(dir)
         .map_err(|error| cstr!("--folio-dir: cannot create {}: {error}", dir.display()))?;
     for page in &dump.pages {
@@ -44,11 +44,11 @@ pub fn write_dump(dir: &Path, dump: &FolioDump, log: &RemarkLog) -> Result<(), S
             .map_err(|error| cstr!("--folio-dir: cannot write {}: {error}", path.display()))?;
     }
     let feed_path = dir.join(FEED_FILE);
-    let mut feed = SpolveroFeed::of_dump("davinci-opt", dump);
+    let mut feed = StageFeed::of_dump("davinci-opt", dump);
     feed.remarks = log
         .remarks
         .iter()
-        .map(|remark| SpolveroRemark {
+        .map(|remark| StageRemark {
             path: None,
             remark: remark.clone(),
         })

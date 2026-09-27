@@ -16,8 +16,8 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_folio_snapshot;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::assert_dump_snapshot;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::pass::vslot::{SlotCarrier, SlotName, SlotParams};
 use vize_l2::scope::ScopeOrigin;
 
@@ -38,7 +38,7 @@ fn the_groups_fixture_snapshots_the_post_pass_folio() {
     let source = fixture("groups.vue");
     with_transformed(&source, |lowered, folio, facts, budget| {
         // The oracle: the full normalized folio after the pipeline ran.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
 
         // Supplements: the planned walk accounting through the budget
         // observer's own derived page. Slot carriers are what this
@@ -46,7 +46,7 @@ fn the_groups_fixture_snapshots_the_post_pass_folio() {
         // no model the plan is two walks (the fused analysis group is
         // the second, holding two passes).
         assert_eq!(
-            budget.print_to_string(FolioMode::Full).as_str(),
+            budget.print_to_string(DumpMode::Full).as_str(),
             "[budget-observer]\nwalks=2\npasses=3\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // Three components grouped in document order: Card (pattern
@@ -106,7 +106,7 @@ fn the_invalid_fixture_snapshots_the_post_pass_folio() {
     with_transformed(&source, |lowered, folio, facts, _| {
         // The tree survives every error untouched (kept fragments, not
         // rollback), the four diagnostics ride the unified channel.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
         let messages: Vec<&str> = lowered
             .diagnostics
             .iter()

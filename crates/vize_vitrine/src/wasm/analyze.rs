@@ -10,9 +10,9 @@ use super::source_offsets::{ScriptOffsetMapper, to_sfc_utf16_range};
 mod bindings;
 mod entry;
 mod input;
-mod spolvero;
+mod stages;
 pub use entry::analyze_sfc_wasm;
-pub(crate) use spolvero::HostClock;
+pub(crate) use stages::HostClock;
 
 /// The `analyzeSfc` result as a plain `serde_json::Value` - the whole
 /// analysis short of the FFI conversion, so native tests can pin the
@@ -234,7 +234,7 @@ pub(super) fn analyze_sfc_json_with_clock(
         })
         .map(|template| vize_curator::inspector::template_remarks(filename, &template.content))
         .unwrap_or_default();
-    let (spolvero, spolvero_profile) = spolvero::spolvero_members(
+    let (spolvero, spolvero_profile) = stages::spolvero_members(
         filename,
         descriptor
             .template

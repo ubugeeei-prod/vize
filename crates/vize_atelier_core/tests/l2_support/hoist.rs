@@ -51,7 +51,7 @@ use vize_atelier_core::TemplateChildNode;
 use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
 use vize_l1_to_l2::pass::{StaticFacts, StaticLevel};
-use vize_l2::folio::FolioOp;
+use vize_l2::dump::Op as DumpOp;
 
 use super::hoist_old::Decision;
 use super::hoist_walk::{structural, walk_level};
@@ -141,7 +141,7 @@ pub fn walk_for_body(
     source: &str,
     old1: &[TemplateChildNode<'_>],
     old2: &[TemplateChildNode<'_>],
-    s2: &[FolioOp],
+    s2: &[DumpOp],
     mode: Mode,
     suppressed: bool,
     next: &mut u32,
@@ -213,7 +213,7 @@ pub fn check(
     source: &str,
     old1: &[TemplateChildNode<'_>],
     old2: &[TemplateChildNode<'_>],
-    s2: &[FolioOp],
+    s2: &[DumpOp],
     facts: &SideTable<StaticFacts>,
     counters: &mut HoistCounters,
 ) {
@@ -239,28 +239,28 @@ pub fn check(
 /// The L2 tree's shape projection — the pairing contract's L2 half
 /// (byte-compared against [`super::hoist_old::shape_of`] before any
 /// walk; a mismatch is `tree_templates`).
-pub fn shape_of_l2(ops: &[FolioOp], out: &mut vize_l0::String) {
+pub fn shape_of_l2(ops: &[DumpOp], out: &mut vize_l0::String) {
     for op in ops {
         match op {
-            FolioOp::Element(element) => {
+            DumpOp::Element(element) => {
                 out.push('e');
                 out.push('(');
                 shape_of_l2(&element.children, out);
                 out.push(')');
             }
-            FolioOp::Component(component) => {
+            DumpOp::Component(component) => {
                 out.push('c');
                 out.push('(');
                 shape_of_l2(&component.children, out);
                 out.push(')');
             }
-            FolioOp::Slot(slot) => {
+            DumpOp::Slot(slot) => {
                 out.push('s');
                 out.push('(');
                 shape_of_l2(&slot.fallback, out);
                 out.push(')');
             }
-            FolioOp::If(if_op) => {
+            DumpOp::If(if_op) => {
                 out.push('i');
                 for branch in if_op.branches.iter() {
                     out.push('[');
@@ -268,13 +268,13 @@ pub fn shape_of_l2(ops: &[FolioOp], out: &mut vize_l0::String) {
                     out.push(']');
                 }
             }
-            FolioOp::For(for_op) => {
+            DumpOp::For(for_op) => {
                 out.push('f');
                 out.push('(');
                 shape_of_l2(&for_op.ops, out);
                 out.push(')');
             }
-            FolioOp::Text(_) | FolioOp::Interpolation(_) | FolioOp::Comment(_) => {}
+            DumpOp::Text(_) | DumpOp::Interpolation(_) | DumpOp::Comment(_) => {}
         }
     }
 }

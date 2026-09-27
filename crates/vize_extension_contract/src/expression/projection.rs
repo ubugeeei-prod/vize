@@ -23,7 +23,7 @@
 
 use core::fmt::{Result as FmtResult, Write};
 
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::{String, cstr};
 
 /// `ProjectionSpanKind`, in row order of the enum.
@@ -79,8 +79,8 @@ pub struct ProjectionPage {
     pub text: String,
 }
 
-impl Folio for ProjectionPage {
-    fn print<W: Write>(&self, w: &mut W, _mode: FolioMode) -> FmtResult {
+impl Dump for ProjectionPage {
+    fn print<W: Write>(&self, w: &mut W, _mode: DumpMode) -> FmtResult {
         writeln!(w, "[projection]\nrows={}\n", self.rows.len())?;
         if !self.rows.is_empty() {
             writeln!(w, "[projection.rows]")?;
@@ -107,8 +107,8 @@ impl Folio for ProjectionPage {
         write!(w, "[projection.text]\n{}", self.text)
     }
 
-    fn parse(input: &str) -> Result<Self, FolioError> {
-        let err = |line: usize, message: String| FolioError::new(line, message);
+    fn parse(input: &str) -> Result<Self, DumpError> {
+        let err = |line: usize, message: String| DumpError::new(line, message);
         let Some((head, text)) = input.split_once("[projection.text]\n") else {
             return Err(err(0, cstr!("missing section [projection.text]")));
         };
@@ -167,8 +167,8 @@ fn write_features<W: Write>(w: &mut W, bits: u8) -> FmtResult {
     }
 }
 
-fn range(text: &str, no: usize) -> Result<Range, FolioError> {
-    let bad = || FolioError::new(no, cstr!("invalid range `{text}`"));
+fn range(text: &str, no: usize) -> Result<Range, DumpError> {
+    let bad = || DumpError::new(no, cstr!("invalid range `{text}`"));
     let (start, end) = text.split_once(':').ok_or_else(bad)?;
     let (start, end) = (
         start.parse().map_err(|_| bad())?,
@@ -180,20 +180,20 @@ fn range(text: &str, no: usize) -> Result<Range, FolioError> {
     Ok(Range { start, end })
 }
 
-fn ranges(text: &str, no: usize) -> Result<[Range; 2], FolioError> {
+fn ranges(text: &str, no: usize) -> Result<[Range; 2], DumpError> {
     let mut parts = text.split(' ');
     let generated = range(parts.next().unwrap_or(""), no)?;
     let authored = range(parts.next().unwrap_or(""), no)?;
     if parts.next().is_some() {
-        return Err(FolioError::new(no, cstr!("a sub-span is two ranges")));
+        return Err(DumpError::new(no, cstr!("a sub-span is two ranges")));
     }
     Ok([generated, authored])
 }
 
-fn row(text: &str, no: usize) -> Result<ProjectionRow, FolioError> {
+fn row(text: &str, no: usize) -> Result<ProjectionRow, DumpError> {
     let fields: Vec<&str> = text.split(' ').collect();
     let [generated, authored, kind, features] = fields.as_slice() else {
-        return Err(FolioError::new(
+        return Err(DumpError::new(
             no,
             cstr!("a row is `gen src kind features`"),
         ));
@@ -201,7 +201,7 @@ fn row(text: &str, no: usize) -> Result<ProjectionRow, FolioError> {
     let kind = KINDS
         .iter()
         .position(|known| known == kind)
-        .ok_or_else(|| FolioError::new(no, cstr!("unknown kind `{kind}`")))?;
+        .ok_or_else(|| DumpError::new(no, cstr!("unknown kind `{kind}`")))?;
     let features = match *features {
         "all" => u8::MAX,
         "none" => 0,
@@ -209,8 +209,8 @@ fn row(text: &str, no: usize) -> Result<ProjectionRow, FolioError> {
             let bit = FEATURES
                 .iter()
                 .position(|known| *known == name)
-                .ok_or_else(|| FolioError::new(no, cstr!("unknown feature `{name}`")))?;
-            Ok::<u8, FolioError>(bits | 1 << bit)
+                .ok_or_else(|| DumpError::new(no, cstr!("unknown feature `{name}`")))?;
+            Ok::<u8, DumpError>(bits | 1 << bit)
         })?,
     };
     Ok(ProjectionRow {

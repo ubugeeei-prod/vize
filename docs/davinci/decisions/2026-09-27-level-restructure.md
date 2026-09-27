@@ -46,6 +46,10 @@ Decided by the maintainer on 2026-09-28 ([#6826 comment](https://github.com/ubug
 - **"Lightweight Davinci" means runtime cost and process weight.** Runtime: instruction counts, zero-cost unobserved paths, no reparses or serialization between levels ([#6868](https://github.com/ubugeeei-prod/vize/issues/6868), [#6869](https://github.com/ubugeeei-prod/vize/issues/6869)). Process: no committed whole-repo ledgers, shorter PR-tier CI, short PR bodies and issue comments, no hash- or evidence-heavy verifiers where a normal test does.
 - **The dump/naming stack #6906 → #6907 → #6943 → #6944 → #6945 → #6946 → #6947 is collapsed into one PR** on `main`; the seven PRs are closed in its favour.
 
+## Level dump naming
+
+The L3 package identity, stage feed types, level dump API, versioned dump protocols and `vize dump --roundtrip` are recorded in [level dump naming](./2026-09-28-level-dump-naming.md).
+
 ## `vize_davinci` is deleted
 
 Tracked in [#6833](https://github.com/ubugeeei-prod/vize/issues/6833) and [#6834](https://github.com/ubugeeei-prod/vize/issues/6834).

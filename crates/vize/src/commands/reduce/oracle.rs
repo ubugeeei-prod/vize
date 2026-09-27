@@ -12,8 +12,8 @@
 use std::process::{Command, Stdio};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_davinci::folio::repro::ReproFolio;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::repro::Page as ReproPage;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::{BudgetObserver, Pair, RemarkCollector, RemarkKind};
 use vize_davinci::stage::pipeline_wire_id;
 use vize_l0::{Allocator, String, cstr};
@@ -26,7 +26,7 @@ pub(crate) enum Check {
     /// The repro, with the candidate as its artifact, replays to exactly
     /// the recorded failure (stage, pass and reason byte-equal).
     Reproduces {
-        repro: ReproFolio,
+        repro: ReproPage,
         failure: IceFailure,
     },
     /// Compiling the candidate panics (any internal compiler error).
@@ -74,7 +74,7 @@ fn l2_run(source: &str) -> Option<L2Run> {
     let _facts = vize_l1_to_l2::pass::run_transform(&mut lowered, &mut observers);
     let Pair(budget, remarks) = observers;
     Some(L2Run {
-        folio: vize_l2::folio::L2Folio::of(&lowered.root.ops).print_to_string(FolioMode::Full),
+        folio: vize_l2::dump::Page::of(&lowered.root.ops).print_to_string(DumpMode::Full),
         remarks: remarks.finish(),
         diagnostics: lowered
             .diagnostics

@@ -3,7 +3,7 @@
 //! Every Rust-lowered reference template is lowered, mutated by a named
 //! ordering scenario and checked by the TS-27 validator. The committed
 //! `schedule-contract.txt` records the exact violation codes. The Lean
-//! reference re-applies the same scenarios to the committed graph Folios and
+//! reference re-applies the same scenarios to the committed graph Dumps and
 //! recomputes the codes with its independent model of the validator's edge
 //! contract, whose acceptance is proved to order every state edge.
 

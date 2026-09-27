@@ -12,8 +12,8 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_folio_snapshot;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::assert_dump_snapshot;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::pass::{StaticFacts, StaticLevel};
 
 use support::{assert_transformed_sound, with_transformed};
@@ -43,7 +43,7 @@ fn the_levels_fixture_snapshots_the_post_pass_folio() {
         // The oracle: the full normalized folio after the pipeline ran
         // — byte-identical to the pre-pass folio, because the analysis
         // mutates nothing.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
 
         // Supplements: one walk. The fixture builds none of the
         // structural families and no model, and text facts are
@@ -51,7 +51,7 @@ fn the_levels_fixture_snapshots_the_post_pass_folio() {
         // group (`hoist-static` + `template-complexity`: two passes, one
         // walk).
         assert_eq!(
-            budget.print_to_string(FolioMode::Full).as_str(),
+            budget.print_to_string(DumpMode::Full).as_str(),
             "[budget-observer]\nwalks=1\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // The lattice, row by row: the section is dynamic (its children
@@ -90,7 +90,7 @@ fn the_levels_fixture_snapshots_the_post_pass_folio() {
 fn the_positions_fixture_snapshots_the_post_pass_folio() {
     let source = fixture("positions.vue");
     with_transformed(&source, |_, folio, facts, _| {
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
 
         // The owner census: article, header, em, the branch p, the
         // iterated li and its u, Card and its carrier template with the

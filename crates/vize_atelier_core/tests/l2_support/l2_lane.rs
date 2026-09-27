@@ -10,7 +10,7 @@ use vize_davinci::id::NodeId;
 use vize_davinci::side_table::SideTable;
 use vize_l0::String;
 use vize_l1_to_l2::pass::{BranchKeyKind, IfFacts, ModelFacts, SlotFacts, TextFacts};
-use vize_l2::folio::{DisegnoFolio, FolioExpr, FolioOp};
+use vize_l2::dump::{Expr as DumpExpr, Op as DumpOp, Page as L2Page};
 
 use super::slots::{POutlet, PUnit, has_slot_content, l2_outlet, l2_slot_active, l2_unit};
 use super::surface::PSurface;
@@ -95,7 +95,7 @@ pub struct Tables<'t> {
 
 /// Collect every chain, for, slot unit, outlet, text unit and owner
 /// surface in `folio`, outer before nested, document order.
-pub fn collect(folio: &DisegnoFolio, tables: &Tables<'_>) -> L2Projection {
+pub fn collect(folio: &L2Page, tables: &Tables<'_>) -> L2Projection {
     let mut out = L2Projection {
         chains: Vec::new(),
         fors: Vec::new(),
@@ -131,7 +131,7 @@ struct WalkState {
 }
 
 fn walk(
-    ops: &[FolioOp],
+    ops: &[DumpOp],
     tables: &Tables<'_>,
     state: WalkState,
     next: &mut u32,
@@ -144,7 +144,7 @@ fn walk(
             None
         };
         match op {
-            FolioOp::Element(element) => {
+            DumpOp::Element(element) => {
                 if element.tag.as_str().eq_ignore_ascii_case("table") {
                     out.has_table = true;
                 }
@@ -177,7 +177,7 @@ fn walk(
                 };
                 walk(&element.children, tables, child_state, next, out);
             }
-            FolioOp::Component(component) => {
+            DumpOp::Component(component) => {
                 let owner_index = *next;
                 let id = NodeId::from_index(owner_index);
                 *next += 1 + u32::try_from(component.bindings.len()).expect("binding count fits");
@@ -204,7 +204,7 @@ fn walk(
                 };
                 walk(&component.children, tables, child_state, next, out);
             }
-            FolioOp::Text(text) => {
+            DumpOp::Text(text) => {
                 *next += 1;
                 if state.rawtext_depth > 0 {
                     out.text_rawtext_excluded += 1;
@@ -218,7 +218,7 @@ fn walk(
                     });
                 }
             }
-            FolioOp::Interpolation(interpolation) => {
+            DumpOp::Interpolation(interpolation) => {
                 let id = NodeId::from_index(*next);
                 *next += 1;
                 if state.rawtext_depth > 0 {
@@ -247,8 +247,8 @@ fn walk(
                     },
                 });
             }
-            FolioOp::Comment(_) => *next += 1,
-            FolioOp::If(if_op) => {
+            DumpOp::Comment(_) => *next += 1,
+            DumpOp::If(if_op) => {
                 let id = NodeId::from_index(*next).expect("page-order ids fit");
                 *next += 1;
                 let fact = tables.if_facts.get(id);
@@ -293,7 +293,7 @@ fn walk(
                     walk(&branch.ops, tables, branch_state, next, out);
                 }
             }
-            FolioOp::For(for_op) => {
+            DumpOp::For(for_op) => {
                 *next += 1;
                 out.fors.push(L2For {
                     source: expr_text(&for_op.binding.source),
@@ -308,7 +308,7 @@ fn walk(
                 };
                 walk(&for_op.ops, tables, region_state, next, out);
             }
-            FolioOp::Slot(slot) => {
+            DumpOp::Slot(slot) => {
                 let owner_index = *next;
                 *next += 1 + u32::try_from(slot.bindings.len()).expect("binding count fits");
                 out.outlets.push(l2_outlet(&slot.name));
@@ -335,16 +335,16 @@ fn walk(
 
 /// An alias position's text: `None` when unauthored (absent position or
 /// the zero-width hole).
-fn alias_text(expr: Option<&FolioExpr>) -> Option<String> {
+fn alias_text(expr: Option<&DumpExpr>) -> Option<String> {
     let text = expr_text(expr?);
     if text.is_empty() { None } else { Some(text) }
 }
 
-fn expr_text(expr: &FolioExpr) -> String {
+fn expr_text(expr: &DumpExpr) -> String {
     match expr {
-        FolioExpr::Js { source, .. }
-        | FolioExpr::Foreign { source, .. }
-        | FolioExpr::Opaque { source, .. }
-        | FolioExpr::Filter { source, .. } => String::from(source.trim()),
+        DumpExpr::Js { source, .. }
+        | DumpExpr::Foreign { source, .. }
+        | DumpExpr::Opaque { source, .. }
+        | DumpExpr::Filter { source, .. } => String::from(source.trim()),
     }
 }

@@ -7,7 +7,7 @@ const publishedDavinciStages = new Set([
   "vize_davinci",
   "vize_l1",
   "vize_l2",
-  "vize_impeto",
+  "vize_l3",
   "vize_l1_to_l2",
   "vize_l2_to_l3",
 ]);
@@ -130,13 +130,6 @@ test("Vapor production selects only published stages for the L3 bridge", () => {
 
   assert.deepEqual(stageEdges, [
     {
-      name: "vize_impeto",
-      req: versionRequirement("vize_impeto"),
-      rename: "vize_l3",
-      optional: false,
-      features: [],
-    },
-    {
       name: "vize_l1",
       req: versionRequirement("vize_l1"),
       rename: null,
@@ -161,6 +154,13 @@ test("Vapor production selects only published stages for the L3 bridge", () => {
     {
       name: "vize_l2_to_l3",
       req: versionRequirement("vize_l2_to_l3"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
+    {
+      name: "vize_l3",
+      req: versionRequirement("vize_l3"),
       rename: null,
       optional: false,
       features: [],
@@ -194,13 +194,6 @@ test("SSR production selects only published stages for the L4 bridge", () => {
       features: [],
     },
     {
-      name: "vize_impeto",
-      req: versionRequirement("vize_impeto"),
-      rename: "vize_l3",
-      optional: false,
-      features: [],
-    },
-    {
       name: "vize_l1",
       req: versionRequirement("vize_l1"),
       rename: null,
@@ -224,6 +217,13 @@ test("SSR production selects only published stages for the L4 bridge", () => {
     {
       name: "vize_l2_to_l3",
       req: versionRequirement("vize_l2_to_l3"),
+      rename: null,
+      optional: false,
+      features: [],
+    },
+    {
+      name: "vize_l3",
+      req: versionRequirement("vize_l3"),
       rename: null,
       optional: false,
       features: [],

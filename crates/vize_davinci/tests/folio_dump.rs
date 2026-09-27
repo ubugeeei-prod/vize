@@ -1,9 +1,9 @@
-//! `FolioDump` behavior: page naming, and the `--folio-after-change` hash
+//! `Collector` behavior: page naming, and the `--folio-after-change` hash
 //! gate (P2-13).
 
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::folio::dump::FolioDump;
+use vize_davinci::dump::collector::Collector;
 use vize_davinci::pass::{Fusability, PassDesc, PassEvent, PassKind, Pipeline, Preserved};
 
 const ALPHA: PassDesc = PassDesc::new(
@@ -33,7 +33,7 @@ fn event(pass_index: usize) -> PassEvent<'static> {
 
 #[test]
 fn ungated_dumps_emit_a_page_per_pass_in_emission_order() {
-    let mut dump = FolioDump::new(false);
+    let mut dump = Collector::new(false);
     dump.seed("artifact v1\n");
     dump.after_pass(&event(0), "artifact v1\n");
     dump.after_pass(&event(1), "artifact v1\n");
@@ -45,7 +45,7 @@ fn ungated_dumps_emit_a_page_per_pass_in_emission_order() {
 
 #[test]
 fn the_gate_emits_nothing_when_no_pass_changes_the_artifact() {
-    let mut dump = FolioDump::new(true);
+    let mut dump = Collector::new(true);
     dump.seed("artifact v1\n");
     dump.after_pass(&event(0), "artifact v1\n");
     dump.after_pass(&event(1), "artifact v1\n");
@@ -54,7 +54,7 @@ fn the_gate_emits_nothing_when_no_pass_changes_the_artifact() {
 
 #[test]
 fn the_gate_emits_exactly_the_changing_passes() {
-    let mut dump = FolioDump::new(true);
+    let mut dump = Collector::new(true);
     dump.seed("artifact v1\n");
     dump.after_pass(&event(0), "artifact v1\n");
     dump.after_pass(&event(1), "artifact v2\n");
@@ -65,7 +65,7 @@ fn the_gate_emits_exactly_the_changing_passes() {
 
 #[test]
 fn an_unseeded_gated_dump_emits_its_first_page_unconditionally() {
-    let mut dump = FolioDump::new(true);
+    let mut dump = Collector::new(true);
     dump.after_pass(&event(0), "artifact v1\n");
     dump.after_pass(&event(1), "artifact v1\n");
     let names: Vec<&str> = dump.pages.iter().map(|page| page.name.as_str()).collect();

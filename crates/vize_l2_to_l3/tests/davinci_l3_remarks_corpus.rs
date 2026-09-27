@@ -16,10 +16,10 @@
 use std::path::{Path, PathBuf};
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
-use vize_davinci::folio::remarks::corpus::{CorpusRemark, RemarkCorpus};
-use vize_davinci::folio::remarks::diff::{ChangeKind, RemarkChange, diff_corpus};
-use vize_davinci::folio::remarks::entry_line;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::remarks::corpus::{CorpusRemark, RemarkCorpus};
+use vize_davinci::dump::remarks::diff::{ChangeKind, RemarkChange, diff_corpus};
+use vize_davinci::dump::remarks::entry_line;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::{RemarkCollector, RemarkKind};
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l3::extract::OptTier;
@@ -182,7 +182,7 @@ fn l3_extraction_remarks_match_the_committed_baseline() {
         current.explained = committed.explained;
         std::fs::write(
             &baseline_path,
-            current.print_to_string(FolioMode::Full).as_bytes(),
+            current.print_to_string(DumpMode::Full).as_bytes(),
         )
         .expect("baseline writes");
         return;
@@ -214,7 +214,7 @@ fn l3_extraction_remarks_match_the_committed_baseline() {
     );
     current.explained = committed.explained;
     assert_eq!(
-        current.print_to_string(FolioMode::Full).as_str(),
+        current.print_to_string(DumpMode::Full).as_str(),
         committed_text.as_str(),
         "the baseline is not in canonical form; re-bless with {UPDATE_ENV}=1"
     );

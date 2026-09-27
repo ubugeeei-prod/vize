@@ -20,7 +20,7 @@ key available for historical census output.
 
 The durable witnesses are:
 
-- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_slots.rs)
+- [`davinci_s2_slots.rs`](../../../../../crates/vize_atelier_dom/tests/l2_slots.rs)
   — `bare_template_default` compares the S2 DOM lane against the shipped lane
   byte-for-byte.
 - [`emit_slots.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_slots.rs)

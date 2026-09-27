@@ -5,11 +5,11 @@
 )]
 
 use std::path::Path;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::Allocator;
-use vize_l3::folio::L3Folio;
+use vize_l3::dump::Page as L3Page;
 use vize_l3::trace::{TraceBackend, backend_trace_text, reference_trace_text};
-use vize_l3::values_folio::L3ValuesFolio;
+use vize_l3::values_dump::Page as ValuesPage;
 use vize_l3::verify::verify;
 
 #[test]
@@ -28,14 +28,14 @@ fn loop_reference_graph_and_values_are_rust_lowered() {
         for (extension, actual) in [
             (
                 "s3.folio",
-                L3Folio::of(&lowered.program)
-                    .print_to_string(FolioMode::Full)
+                L3Page::of(&lowered.program)
+                    .print_to_string(DumpMode::Full)
                     .to_string(),
             ),
             (
                 "values.folio",
-                L3ValuesFolio::of(&lowered.program)
-                    .print_to_string(FolioMode::Full)
+                ValuesPage::of(&lowered.program)
+                    .print_to_string(DumpMode::Full)
                     .to_string(),
             ),
             ("trace", reference_trace_text(&lowered.program).to_string()),

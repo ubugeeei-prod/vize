@@ -2,10 +2,10 @@
 source: crates/vize_l1_to_l2/tests/cfg_pass_snapshot.rs
 expression: "folio.print_to_string(FolioMode::Full).as_str()"
 ---
-[disegno]
+[l2-dump-v2]
 ops=31
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element section @0:760
   attr class="dashboard" @9:26
   ui.element header @30:176

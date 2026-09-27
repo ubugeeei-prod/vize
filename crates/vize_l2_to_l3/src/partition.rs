@@ -1,9 +1,9 @@
 use vize_l0::{Allocator, Span, Vec};
 use vize_l3::op::{OpId, Program};
 
-mod folio;
+pub mod dump;
 
-pub use folio::{FolioPartitionFact, L3PartitionFolio};
+pub use crate::partition::dump::{Fact as DumpPartitionFact, Page as PartitionPage};
 
 /// Static or dynamic partition assigned to one canonical L3 op.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -17,7 +17,7 @@ pub enum PartitionKind {
 }
 
 impl PartitionKind {
-    /// Stable spelling used by records and the [`L3PartitionFolio`] page.
+    /// Stable spelling used by records and the [`PartitionPage`] page.
     #[must_use]
     pub const fn as_str(self) -> &'static str {
         match self {

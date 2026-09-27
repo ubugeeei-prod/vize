@@ -22,7 +22,7 @@ use vize_extension_host::vue::VueDialect;
 use vize_extension_host::{LoweredBlock, Session, SourceBlock, SurfacePage};
 use vize_l0::{Allocator, SourceRoot, String};
 use vize_l1_to_l2::lower_source_block;
-use vize_l2::folio::L2Folio;
+use vize_l2::dump::Page as L2Page;
 
 use support::{BLESS_ENV, CASES, golden_texts};
 
@@ -78,7 +78,7 @@ fn assert_lossless(source: &str, base: u32, context: &str) {
     );
     assert_eq!(
         accepted.semantic,
-        L2Folio::of(&lowered.root.ops),
+        L2Page::of(&lowered.root.ops),
         "s2 page: {context}"
     );
     assert_eq!(

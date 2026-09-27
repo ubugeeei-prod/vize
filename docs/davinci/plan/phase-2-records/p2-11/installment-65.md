@@ -11,7 +11,7 @@ where the component call would otherwise look patchless.
 
 The durable witnesses are:
 
-- [`davinci_s2_dirs.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_dirs.rs)
+- [`davinci_s2_dirs.rs`](../../../../../crates/vize_atelier_dom/tests/l2_dirs.rs)
   - compares reduced dynamic-component directive cases byte-for-byte against
     the shipped DOM lane.
 - [`emit_dirs.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_dirs.rs)

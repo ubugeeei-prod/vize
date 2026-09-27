@@ -1,8 +1,8 @@
 //! The `Reactivity` fact group (P4-3d).
 //!
 //! Each `ReactiveKind` source becomes one row of the P3-2 lattice in
-//! `vize_impeto`: this module maps the kind onto a [`SourceKind`], and
-//! [`evaluate_binding`](vize_impeto::lattice::evaluate_binding) is the only
+//! `vize_l3`: this module maps the kind onto a [`SourceKind`], and
+//! [`evaluate_binding`](vize_l3::lattice::evaluate_binding) is the only
 //! classifier. Losses are copied in tracker order so a reader can leave
 //! `Croquis.reactivity` without moving a diagnostic.
 
@@ -13,7 +13,7 @@ use vize_davinci::fact::{
     Demand, FactConsumer, FactGroup, FactProducer, FactTable, FactTableBuilder, FactView, ids,
 };
 use vize_davinci::pass::AnalysisId;
-use vize_impeto::lattice::{
+use vize_l3::lattice::{
     BindingId, EffectSet, ReactivityClass, SourceKind, Verdict, evaluate_binding,
 };
 
@@ -203,7 +203,7 @@ mod tests {
     use crate::drawer::{Drawer, DrawerOptions};
     use crate::facts::{CroquisFacts, Demand, FactConsumer, FactGroup};
     use crate::reactivity::ReactiveKind;
-    use vize_impeto::lattice::{ReactivityClass, SourceKind, Verdict};
+    use vize_l3::lattice::{ReactivityClass, SourceKind, Verdict};
 
     struct Reader;
     impl FactConsumer for Reader {

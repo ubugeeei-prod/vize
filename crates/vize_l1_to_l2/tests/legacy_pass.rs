@@ -8,7 +8,7 @@ use support::{
     assert_transformed_sound, assert_transformed_sound_caps, with_transformed,
     with_transformed_caps,
 };
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::config::VueVersion;
 use vize_l1_to_l2::LegacyCaps;
 
@@ -21,11 +21,11 @@ fn vue3_model_free_legacy_spellings_skip_the_model_pass() {
     let source = r#"<Comp :title.sync="heading"/>"#;
     with_transformed(source, |lowered, folio, _, budget| {
         assert_eq!(
-            folio.print_to_string(FolioMode::Full).as_str(),
-            "[disegno]\n\
+            folio.print_to_string(DumpMode::Full).as_str(),
+            "[l2-dump-v2]\n\
              ops=2\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:29\n\
              \x20 ui.bind name=\"title\" mods=\"sync\" value=js(\"heading\" @19:26) @6:27\n\
              \n"
@@ -35,7 +35,7 @@ fn vue3_model_free_legacy_spellings_skip_the_model_pass() {
         // `.sync` spelling lowers to no `ui.model`, so the model pass is
         // not. Two walks: slot, then the fused analysis pair.
         assert_eq!(
-            Folio::print_to_string(budget, FolioMode::Full).as_str(),
+            Dump::print_to_string(budget, DumpMode::Full).as_str(),
             "[budget-observer]\nwalks=2\npasses=3\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
     });
@@ -47,11 +47,11 @@ fn vue2_expands_sync_into_bind_plus_update_listener() {
     let source = r#"<Comp :title.sync="heading"/>"#;
     with_transformed_caps(source, vue2(), |lowered, folio, _, budget| {
         assert_eq!(
-            folio.print_to_string(FolioMode::Full).as_str(),
-            "[disegno]\n\
+            folio.print_to_string(DumpMode::Full).as_str(),
+            "[l2-dump-v2]\n\
              ops=3\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:29\n\
              \x20 ui.bind name=\"title\" value=js(\"heading\" @19:26) @6:27\n\
              \x20 ui.on name=\"update:title\" handler=js(\"$event => ((heading) = $event)\" @6:27) @6:27\n\
@@ -59,7 +59,7 @@ fn vue2_expands_sync_into_bind_plus_update_listener() {
         );
         // The Vue 2 sugar pass leads the same slot + fused-analysis walks.
         assert_eq!(
-            Folio::print_to_string(budget, FolioMode::Full).as_str(),
+            Dump::print_to_string(budget, DumpMode::Full).as_str(),
             "[budget-observer]\nwalks=3\npasses=4\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         assert_eq!(u64::from(lowered.op_count), folio.op_count());
@@ -72,11 +72,11 @@ fn vue2_keeps_camel_on_the_bind() {
     let source = r#"<Comp :title.sync.camel="heading"/>"#;
     with_transformed_caps(source, vue2(), |_, folio, _, _| {
         assert_eq!(
-            folio.print_to_string(FolioMode::Full).as_str(),
-            "[disegno]\n\
+            folio.print_to_string(DumpMode::Full).as_str(),
+            "[l2-dump-v2]\n\
              ops=3\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:35\n\
              \x20 ui.bind name=\"title\" mods=\"camel\" value=js(\"heading\" @25:32) @6:33\n\
              \x20 ui.on name=\"update:title\" handler=js(\"$event => ((heading) = $event)\" @6:33) @6:33\n\
@@ -91,11 +91,11 @@ fn vue2_rewrites_a_pipe_filter_to_the_asset_call() {
     let source = "{{msg | cap}}";
     with_transformed_caps(source, vue2(), |_, folio, facts, _| {
         assert_eq!(
-            folio.print_to_string(FolioMode::Full).as_str(),
-            "[disegno]\n\
+            folio.print_to_string(DumpMode::Full).as_str(),
+            "[l2-dump-v2]\n\
              ops=1\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.interpolation js(\"_filter_cap(msg)\" @2:11) @0:13\n\
              \n"
         );
@@ -117,11 +117,11 @@ fn vue2_rewrites_a_filter_with_args() {
     let source = "{{a | f(b)}}";
     with_transformed_caps(source, vue2(), |_, folio, facts, _| {
         assert_eq!(
-            folio.print_to_string(FolioMode::Full).as_str(),
-            "[disegno]\n\
+            folio.print_to_string(DumpMode::Full).as_str(),
+            "[l2-dump-v2]\n\
              ops=1\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.interpolation js(\"_filter_f(a,b)\" @2:10) @0:12\n\
              \n"
         );
@@ -143,11 +143,11 @@ fn vue2_converts_slot_scope_into_slot_content() {
     let source = r#"<Comp><template slot-scope="props">x</template></Comp>"#;
     with_transformed_caps(source, vue2(), |_, folio, facts, _| {
         assert_eq!(
-            folio.print_to_string(FolioMode::Full).as_str(),
-            "[disegno]\n\
+            folio.print_to_string(DumpMode::Full).as_str(),
+            "[l2-dump-v2]\n\
              ops=4\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:54\n\
              \x20 ui.element template @6:47\n\
              \x20   ui.slot-content params=js(\"props\" @28:33) @16:34\n\
@@ -164,11 +164,11 @@ fn vue2_strips_native_and_rewrites_keycodes() {
     let source = r#"<Comp @click.native @keyup.13="onKey"/>"#;
     with_transformed_caps(source, vue2(), |_, folio, _, _| {
         assert_eq!(
-            folio.print_to_string(FolioMode::Full).as_str(),
-            "[disegno]\n\
+            folio.print_to_string(DumpMode::Full).as_str(),
+            "[l2-dump-v2]\n\
              ops=3\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:39\n\
              \x20 ui.on name=\"click\" @6:19\n\
              \x20 ui.on name=\"keyup\" mods=\"enter\" handler=js(\"onKey\" @31:36) @20:37\n\
@@ -183,11 +183,11 @@ fn vue3_leaves_native_and_keycodes() {
     let source = r#"<Comp @click.native @keyup.13="onKey"/>"#;
     with_transformed(source, |_, folio, _, _| {
         assert_eq!(
-            folio.print_to_string(FolioMode::Full).as_str(),
-            "[disegno]\n\
+            folio.print_to_string(DumpMode::Full).as_str(),
+            "[l2-dump-v2]\n\
              ops=3\n\
              \n\
-             [disegno.ops]\n\
+             [l2-dump-v2.ops]\n\
              ui.component Comp @0:39\n\
              \x20 ui.on name=\"click\" mods=\"native\" @6:19\n\
              \x20 ui.on name=\"keyup\" mods=\"13\" handler=js(\"onKey\" @31:36) @20:37\n\

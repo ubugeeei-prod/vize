@@ -26,27 +26,36 @@ use toml_edit::{DocumentMut, value};
 #[path = "../../../support/release/semver_git_baseline.rs"]
 mod git_baseline;
 
-const OLD_VERSION: &str = "0.428.1";
-const RENAMES: &[(&str, &str, &str)] = &[
+const RENAMES: &[(&str, &str, &str, &str)] = &[
     (
         "vize_l1",
         "vize_s1",
+        "0.428.1",
         "f28076ad1b5a7adbe4439a57e158a99584dcd4e0d980e0f8b70c8650ce5e243b",
     ),
     (
         "vize_l2",
         "vize_s2",
+        "0.428.1",
         "5fc5c0a5d6f0118ab070c76963a8be9e17e14ff5895f727d8fe0b9c428e3c18a",
     ),
     (
         "vize_l1_to_l2",
         "vize_s1_to_s2",
+        "0.428.1",
         "92e2f8378bb827ae67f6471e08a6ac8aef40e6dfacdab5044449b1637031d241",
     ),
     (
         "vize_l2_to_l3",
         "vize_s2_to_s3",
+        "0.428.1",
         "02aa69e3f234592083045ad076cf33f681c84505ccc571da452f6bcaf4227f45",
+    ),
+    (
+        "vize_l3",
+        "vize_impeto",
+        "0.429.0",
+        "d51929bec2e0ece251a468179854df74184b46126d764fb6a606a3579934badf",
     ),
 ];
 
@@ -68,7 +77,9 @@ fn run() -> Result<(), String> {
     if base.len() > 1 {
         return Err("expected at most one actual base revision".into());
     }
-    let Some((_, old_name, checksum)) = RENAMES.iter().find(|(name, _, _)| name == package) else {
+    let Some((_, old_name, old_version, checksum)) =
+        RENAMES.iter().find(|(name, _, _, _)| name == package)
+    else {
         return Ok(()); // Existing names keep cargo-semver-checks' registry baseline.
     };
     let current_manifest =
@@ -120,14 +131,14 @@ fn run() -> Result<(), String> {
     if status != 200 && status != 404 {
         return Err(format!("registry index returned HTTP {status}"));
     }
-    if version < Version::parse(OLD_VERSION).unwrap() {
+    if version < Version::parse(old_version).unwrap() {
         return Err(format!(
-            "current version predates the immutable {OLD_VERSION} baseline"
+            "current version predates the immutable {old_version} baseline"
         ));
     }
     let archive = destination.join("baseline.crate");
     let status = download(
-        &format!("https://static.crates.io/crates/{old_name}/{old_name}-{OLD_VERSION}.crate"),
+        &format!("https://static.crates.io/crates/{old_name}/{old_name}-{old_version}.crate"),
         &archive,
     )?;
     if status != 200 {
@@ -144,13 +155,16 @@ fn run() -> Result<(), String> {
     if !result.success() {
         return Err("cannot extract immutable published archive".into());
     }
-    let root = destination.join(format!("{old_name}-{OLD_VERSION}"));
+    let root = destination.join(format!("{old_name}-{old_version}"));
     let manifest_path = root.join("Cargo.toml");
     let source = fs::read_to_string(&manifest_path).map_err(|e| e.to_string())?;
-    fs::write(&manifest_path, adapt_manifest(&source, old_name, package)?)
-        .map_err(|e| e.to_string())?;
+    fs::write(
+        &manifest_path,
+        adapt_manifest(&source, old_name, package, old_version)?,
+    )
+    .map_err(|e| e.to_string())?;
     eprintln!(
-        "SemVer baseline: {old_name}@{OLD_VERSION}, SHA256 {checksum}; package/lib name -> {package}, source and version unchanged"
+        "SemVer baseline: {old_name}@{old_version}, SHA256 {checksum}; package/lib name -> {package}, source and version unchanged"
     );
     println!("{}", root.display());
     Ok(())
@@ -216,12 +230,17 @@ fn verify_checksum(bytes: &[u8], expected: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn adapt_manifest(source: &str, old_name: &str, new_name: &str) -> Result<String, String> {
+fn adapt_manifest(
+    source: &str,
+    old_name: &str,
+    new_name: &str,
+    old_version: &str,
+) -> Result<String, String> {
     let mut manifest: DocumentMut = source
         .parse()
         .map_err(|e: toml_edit::TomlError| e.to_string())?;
     if manifest["package"]["name"].as_str() != Some(old_name)
-        || manifest["package"]["version"].as_str() != Some(OLD_VERSION)
+        || manifest["package"]["version"].as_str() != Some(old_version)
         || manifest["lib"]["name"].as_str() != Some(old_name)
     {
         return Err("immutable baseline package/lib/version identity mismatch".into());
@@ -238,17 +257,35 @@ mod tests {
     #[test]
     fn published_identity_adapter_keeps_version_source_path_and_dependency_aliases() {
         let source = "[package]\nname = \"vize_s1_to_s2\"\nversion = \"0.428.1\"\n[lib]\nname = \"vize_s1_to_s2\"\npath = \"src/lib.rs\"\n[dependencies.vize_s0]\npackage = \"vize_carton\"\nversion = \"=0.428.1\"\n";
-        let adapted = adapt_manifest(source, "vize_s1_to_s2", "vize_l1_to_l2").unwrap();
+        let adapted = adapt_manifest(source, "vize_s1_to_s2", "vize_l1_to_l2", "0.428.1").unwrap();
         assert_eq!(adapted.replace("vize_l1_to_l2", "vize_s1_to_s2"), source);
         assert!(
             adapt_manifest(
                 &source.replace("0.428.1", "0.429.0"),
                 "vize_s1_to_s2",
-                "vize_l1_to_l2"
+                "vize_l1_to_l2",
+                "0.428.1"
             )
             .is_err()
         );
-        assert!(adapt_manifest(source, "other", "vize_l1_to_l2").is_err());
+        assert!(adapt_manifest(source, "other", "vize_l1_to_l2", "0.428.1").is_err());
+    }
+
+    #[test]
+    fn l3_archive_keeps_its_own_version_and_rejects_the_older_stage_baseline() {
+        let source = "[package]\nname = \"vize_impeto\"\nversion = \"0.429.0\"\n[lib]\nname = \"vize_impeto\"\npath = \"src/lib.rs\"\n[dependencies.vize_l0]\npackage = \"vize_carton\"\nversion = \"=0.429.0\"\n";
+        let adapted = adapt_manifest(source, "vize_impeto", "vize_l3", "0.429.0").unwrap();
+        assert_eq!(adapted.replace("vize_l3", "vize_impeto"), source);
+        assert!(adapt_manifest(source, "vize_impeto", "vize_l3", "0.428.1").is_err());
+        assert!(
+            RENAMES[..4]
+                .iter()
+                .all(|(_, _, version, _)| *version == "0.428.1")
+        );
+        assert_eq!(
+            (RENAMES[4].0, RENAMES[4].1, RENAMES[4].2),
+            ("vize_l3", "vize_impeto", "0.429.0")
+        );
     }
 
     #[test]
@@ -292,7 +329,7 @@ mod tests {
 
     #[test]
     fn corrupted_archive_cannot_be_used_as_baseline() {
-        assert!(verify_checksum(b"changed API", RENAMES[2].2).is_err());
+        assert!(verify_checksum(b"changed API", RENAMES[2].3).is_err());
         assert!(
             verify_checksum(
                 b"",

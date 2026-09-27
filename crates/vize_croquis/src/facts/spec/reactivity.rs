@@ -1,16 +1,16 @@
 //! TS-34 spec for the reactivity lattice's join.
 //!
 //! The floors, the rank join and the provide/inject cap are data here.
-//! Production is [`evaluate_binding`](vize_impeto::lattice::evaluate_binding).
+//! Production is [`evaluate_binding`](vize_l3::lattice::evaluate_binding).
 //! A kind's effects and verdict are a second table; the constructor in
-//! `vize_impeto` is not called to build it.
+//! `vize_l3` is not called to build it.
 
 use super::agreement::Agreement;
 use crate::Croquis;
 use crate::facts::{reactivity_losses, reactivity_sources};
 use crate::reactivity::ReactiveKind;
 use vize_carton::{CompactString, Span, cstr};
-use vize_impeto::lattice::{
+use vize_l3::lattice::{
     BindingFact, BindingId, BindingInput, BindingOrigin, EffectKind, EffectSet, EscapeKind,
     ReactivityClass, SourceKind, Verdict, evaluate_binding,
 };

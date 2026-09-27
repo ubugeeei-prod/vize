@@ -1,0 +1,10 @@
+
+running 5 tests
+test a_content_key_folds_only_into_its_own_artifact ... ok
+test a_manifest_with_a_missing_or_extra_input_cannot_key ... ok
+test nothing_but_a_declared_value_changes_the_key ... ok
+test every_declared_input_changes_every_artifacts_key ... ok
+test the_manifest_doc_lists_every_input_and_every_artifact_exactly ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

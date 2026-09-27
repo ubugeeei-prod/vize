@@ -3,8 +3,8 @@
 
 use std::path::{Path, PathBuf};
 
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::fact::{AlphaDocument, ExpressionFact, ExpressionFacts, FactTable};
-use vize_davinci::folio::{Folio, FolioMode};
 use vize_extension_host::Span;
 use vize_extension_host::expression::{
     Binding, Expression, ExpressionBatch, ProjectionPage, ProjectionRow, Range,
@@ -91,9 +91,9 @@ pub fn projection() -> ProjectionPage {
 }
 
 /// A page's canonical text.
-pub fn text<T: Folio>(page: &T) -> String {
+pub fn text<T: Dump>(page: &T) -> String {
     let mut out = String::default();
-    page.print(&mut out, FolioMode::Full)
+    page.print(&mut out, DumpMode::Full)
         .expect("printing into a String cannot fail");
     out
 }

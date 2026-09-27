@@ -1,7 +1,7 @@
-[disegno]
+[l2-dump-v2]
 ops=1
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.if @0:15
   branch @0:15
 

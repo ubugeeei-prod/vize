@@ -13,9 +13,9 @@
 
 use std::path::PathBuf;
 
-use vize_davinci::folio::Folio;
+use vize_davinci::dump::Dump;
 use vize_l0::cstr;
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 use vize_l2::verify::{Rigor, verify};
 
 /// Every committed invalid page. Grows only deliberately.
@@ -73,7 +73,7 @@ fn every_invalid_page_is_rejected_with_its_exact_committed_diagnostic() {
             .to_str()
             .expect("fixture names are UTF-8");
         let text = std::fs::read_to_string(&page).expect("committed fixture reads");
-        let folio = DisegnoFolio::parse(&text)
+        let folio = L2Page::parse(&text)
             .unwrap_or_else(|error| panic!("{name} must be grammar-valid: {error:?}"));
         let rendered = render(&verify(&folio, Rigor::Canonical));
         let expected = std::fs::read_to_string(page.with_extension("expected"))
@@ -94,10 +94,10 @@ fn every_invalid_page_is_committed_in_canonical_spelling() {
             .to_str()
             .expect("fixture names are UTF-8");
         let text = std::fs::read_to_string(&page).expect("committed fixture reads");
-        let folio = DisegnoFolio::parse(&text).expect("grammar-valid fixture parses");
+        let folio = L2Page::parse(&text).expect("grammar-valid fixture parses");
         let mut printed = vize_l0::String::default();
         folio
-            .print(&mut printed, vize_davinci::folio::FolioMode::Full)
+            .print(&mut printed, vize_davinci::dump::Mode::Full)
             .expect("printing into a string cannot fail");
         assert_eq!(printed.as_str(), text.as_str(), "{name}");
     }
@@ -108,7 +108,7 @@ fn canonical_only_pages_hold_every_structural_invariant_at_raw_rigor() {
     let dir = invalid_dir();
     for name in CANONICAL_ONLY {
         let text = std::fs::read_to_string(dir.join(name)).expect("committed fixture reads");
-        let folio = DisegnoFolio::parse(&text).expect("grammar-valid fixture parses");
+        let folio = L2Page::parse(&text).expect("grammar-valid fixture parses");
         assert_eq!(verify(&folio, Rigor::Raw), vec![], "{name}");
     }
 }
@@ -120,7 +120,7 @@ fn the_committed_reference_page_verifies_clean_at_both_rigors() {
         .join("fixtures")
         .join("reference.folio");
     let text = std::fs::read_to_string(reference).expect("committed reference page reads");
-    let folio = DisegnoFolio::parse(&text).expect("the reference page parses");
+    let folio = L2Page::parse(&text).expect("the reference page parses");
     assert_eq!(verify(&folio, Rigor::Raw), vec![]);
     assert_eq!(verify(&folio, Rigor::Canonical), vec![]);
 }

@@ -12,8 +12,8 @@ mod support;
 
 use std::path::{Path, PathBuf};
 
-use vize_davinci::assert_folio_snapshot;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::assert_dump_snapshot;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l1_to_l2::pass::{BranchKeyKind, vif};
 
 use support::{assert_transformed_sound, with_transformed};
@@ -37,7 +37,7 @@ fn the_chain_fixture_snapshots_the_post_pass_folio() {
         // surface; the iterated `img` keeps its `key` (the branch root
         // is the `ui.for`); the unwrapped template branch never had a
         // carrier op for the wrapper's attributes.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
 
         // Supplements: the planned walk accounting through the budget
         // observer's own derived page. The fixture builds `ui.if` ops and
@@ -45,7 +45,7 @@ fn the_chain_fixture_snapshots_the_post_pass_folio() {
         // `v-if` facts are lowering-published, so the plan is only the
         // fused analysis group (two passes, one walk).
         assert_eq!(
-            budget.print_to_string(FolioMode::Full).as_str(),
+            budget.print_to_string(DumpMode::Full).as_str(),
             "[budget-observer]\nwalks=1\npasses=2\nanalyses=0\npipelines=1\nfailures=0\n\n"
         );
         // One fact entry (the chain's `ui.if`), keys on branches 0 and 2.
@@ -76,7 +76,7 @@ fn the_collision_fixture_snapshots_the_post_pass_folio() {
     with_transformed(&source, |lowered, folio, _, _| {
         // The folio is clean - all three keys extracted - while the
         // duplicate-key errors ride the diagnostics channel.
-        assert_folio_snapshot!(*folio);
+        assert_dump_snapshot!(*folio);
         assert_eq!(lowered.diagnostics.len(), 2);
         for diagnostic in &lowered.diagnostics {
             assert_eq!(diagnostic.message.as_str(), vif::SAME_KEY_MESSAGE);

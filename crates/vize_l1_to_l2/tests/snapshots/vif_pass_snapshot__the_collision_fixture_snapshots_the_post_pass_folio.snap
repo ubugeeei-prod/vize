@@ -2,10 +2,10 @@
 source: crates/vize_l1_to_l2/tests/vif_pass_snapshot.rs
 expression: "$crate :: folio :: Folio ::\nprint_to_string(& *folio, $crate :: folio :: FolioMode :: Full,)"
 ---
-[disegno]
+[l2-dump-v2]
 ops=7
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.if @0:99
   branch js("a" @9:10) @0:31
     ui.element p @0:31

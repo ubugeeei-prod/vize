@@ -16,9 +16,9 @@ use super::{ArtifactKey, rebase};
 use crate::stage::Stage;
 
 /// The domain tag every artifact content key hash starts with.
-const DOMAIN: &[u8] = b"vize.davinci.artifact-key\0";
+const DOMAIN: &[u8] = b"vize.artifact-key.v2\0";
 /// The domain tag every manifest-folded key hash starts with (P5-1b).
-pub(super) const MANIFEST_DOMAIN: &[u8] = b"vize.davinci.key-manifest\0";
+pub(super) const MANIFEST_DOMAIN: &[u8] = b"vize.key-manifest.v2\0";
 
 /// Field tags: a span inside its block, and one reaching outside it.
 const SPAN_RELATIVE: u8 = 0;

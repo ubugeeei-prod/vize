@@ -25,13 +25,13 @@
 mod support;
 
 use vize_davinci::diagnostic::Diagnostic;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::BudgetObserver;
 use vize_l0::Allocator;
 use vize_l1::parse;
 use vize_l1_to_l2::pass::{L2Facts, run_transform};
 use vize_l1_to_l2::{LegacyCaps, LoweringFeatures, OpFamily, lower, lower_with_caps};
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 
 /// Controls whose absent families the planner is supposed to save walks on.
 ///
@@ -200,13 +200,13 @@ struct Products {
 }
 
 fn products(
-    folio: &DisegnoFolio,
+    folio: &L2Page,
     diagnostics: &[Diagnostic],
     provenance: usize,
     facts: &L2Facts,
 ) -> Products {
     Products {
-        folio: folio.print_to_string(FolioMode::Full).as_str().to_owned(),
+        folio: folio.print_to_string(DumpMode::Full).as_str().to_owned(),
         diagnostics: diagnostics
             .iter()
             .map(|diagnostic| format!("{diagnostic:?}"))
@@ -241,7 +241,7 @@ fn run(source: &str, force_every_pass: bool) -> (Products, u32) {
     }
     let mut budget = BudgetObserver::new();
     let facts = run_transform(&mut lowered, &mut budget);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
     let provenance = lowered.provenance.len();
     (
         products(&folio, &lowered.diagnostics, provenance, &facts),

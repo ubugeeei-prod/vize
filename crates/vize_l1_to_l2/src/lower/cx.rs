@@ -9,14 +9,14 @@
 //! references against exactly that numbering). [`Cx::mint_op`] therefore
 //! runs in **print order** during the walk: an op's id is minted when its
 //! line is decided, bindings as they attach, children after. The pinned
-//! law is `Cx::op_count == L2Folio::of(root).op_count()`, tested per
+//! law is `Cx::op_count == L2Page::of(root).op_count()`, tested per
 //! fixture.
 //!
 //! Exhaustion is a diagnostic, not a panic (the `NodeId::from_index`
 //! contract): past `u32::MAX - 1` ops the context reports once and stops
 //! minting; side tables simply stop gaining keys while the op tree stays
 //! total.
-//! [`L2Folio`]: vize_l2::folio::L2Folio
+//! [`L2Page`]: vize_l2::dump::Page
 
 use alloc::vec::Vec;
 

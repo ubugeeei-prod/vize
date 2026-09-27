@@ -20,10 +20,10 @@ fn vue3_leaves_sync_as_a_bind_modifier() {
     let art = artifact(source);
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:29\n\
          \x20 ui.bind name=\"title\" mods=\"sync\" value=js(\"heading\" @19:26) @6:27\n\
          \n"
@@ -37,10 +37,10 @@ fn vue2_admits_sync_as_the_dialect_op() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:29\n\
          \x20 vue.sync name=\"title\" value=js(\"heading\" @19:26) @6:27\n\
          \n"
@@ -54,10 +54,10 @@ fn vue2_keeps_non_sync_bind_modifiers_on_the_dialect_op() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:35\n\
          \x20 vue.sync name=\"title\" mods=\"camel\" value=js(\"heading\" @25:32) @6:33\n\
          \n"
@@ -71,10 +71,10 @@ fn vue2_leaves_dynamic_sync_as_bind() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:29\n\
          \x20 ui.bind name=js(\"foo\" @8:11) mods=\"sync\" value=js(\"heading\" @19:26) @6:27\n\
          \n"
@@ -88,10 +88,10 @@ fn vue3_reads_a_pipe_as_js() {
     let art = artifact(source);
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=1\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.interpolation js(\"msg | cap\" @2:11) @0:13\n\
          \n"
     );
@@ -104,10 +104,10 @@ fn vue2_admits_a_pipe_as_the_filter_expression() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=1\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.interpolation vue.filter(\"msg | cap\" @2:11) @0:13\n\
          \n"
     );
@@ -120,10 +120,10 @@ fn vue3_leaves_slot_scope_as_an_attribute() {
     let art = artifact(source);
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:54\n\
          \x20 ui.element template @6:47\n\
          \x20   attr slot-scope=\"props\" @16:34\n\
@@ -139,10 +139,10 @@ fn vue2_admits_slot_scope_as_the_dialect_op() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=4\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:54\n\
          \x20 ui.element template @6:47\n\
          \x20   vue.slot-scope params=js(\"props\" @28:33) @16:34\n\
@@ -159,10 +159,10 @@ fn vue2_consumes_the_companion_slot_attribute() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=4\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:68\n\
          \x20 ui.element template @6:61\n\
          \x20   vue.slot-scope name=\"header\" params=js(\"props\" @42:47) @30:48\n\
@@ -178,10 +178,10 @@ fn vue2_leaves_slot_scope_when_v_slot_is_already_authored() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=4\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:68\n\
          \x20 ui.element template @6:61\n\
          \x20   attr slot-scope=\"props\" @30:48\n\
@@ -198,10 +198,10 @@ fn vue1_admits_filters_but_not_sync() {
     let sync = artifact_caps(r#"<Comp :title.sync="heading"/>"#, caps);
     assert_eq!(
         sync.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:29\n\
          \x20 ui.bind name=\"title\" mods=\"sync\" value=js(\"heading\" @19:26) @6:27\n\
          \n"
@@ -209,10 +209,10 @@ fn vue1_admits_filters_but_not_sync() {
     let filter = artifact_caps("{{msg | cap}}", caps);
     assert_eq!(
         filter.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=1\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.interpolation vue.filter(\"msg | cap\" @2:11) @0:13\n\
          \n"
     );
@@ -225,10 +225,10 @@ fn vue2_admits_a_pipe_on_a_bind_value() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element div @0:27\n\
          \x20 ui.bind name=\"id\" value=vue.filter(\"raw | formatId\" @10:24) @5:25\n\
          \n"
@@ -242,10 +242,10 @@ fn vue2_reads_an_event_handler_pipe_as_js() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element div @0:28\n\
          \x20 ui.on name=\"click\" handler=js(\"left | right\" @13:25) @5:26\n\
          \n"
@@ -259,10 +259,10 @@ fn vue2_scope_on_template_is_the_dialect_op() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=4\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.component Comp @0:49\n\
          \x20 ui.element template @6:42\n\
          \x20   vue.slot-scope params=js(\"props\" @23:28) @16:29\n\
@@ -278,10 +278,10 @@ fn vue2_scope_on_a_div_stays_an_attribute() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=2\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element div @0:26\n\
          \x20 attr scope=\"props\" @5:18\n\
          \x20 ui.text \"x\" @19:20\n\
@@ -296,10 +296,10 @@ fn vue2_slot_scope_on_a_div_is_the_dialect_op() {
     let art = artifact_caps(source, vue2());
     assert_eq!(
         art.folio,
-        "[disegno]\n\
+        "[l2-dump-v2]\n\
          ops=3\n\
          \n\
-         [disegno.ops]\n\
+         [l2-dump-v2.ops]\n\
          ui.element div @0:31\n\
          \x20 vue.slot-scope params=js(\"props\" @17:22) @5:23\n\
          \x20 ui.text \"x\" @24:25\n\

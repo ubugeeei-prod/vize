@@ -3,7 +3,7 @@
 // print lands on the authored source the editor highlights.
 import { beforeAll, describe, expect, it } from "vite-plus/test";
 import { loadWasm, type WasmModule } from "../src/wasm";
-import { negotiateSpolveroFeed } from "../src/wasm/types/spolvero";
+import { negotiateSpolveroFeed } from "../src/wasm/types/stages";
 import {
   LADDER_STEP_KEY,
   ladderStepTimings,
@@ -12,12 +12,12 @@ import {
   type ProfileExport,
 } from "../src/wasm/types/profile";
 import { DAVINCI_PRESET } from "../src/shared/presets/davinci";
-import { buildLadder, type StageLadder } from "../src/features/davinci/ladder";
-import { folioLines } from "../src/features/davinci/folioLines";
-import { parseProvenance, recordsForNode } from "../src/features/davinci/provenance";
-import { remarksAt, summarizeRemarks } from "../src/features/davinci/remarks";
-import { templateBytesToSfcRange, templateStartInSfc } from "../src/features/davinci/offsets";
-import { flameGraph } from "../src/features/davinci/flame";
+import { buildLadder, type StageLadder } from "../src/features/stages/ladder";
+import { folioLines } from "../src/features/stages/folioLines";
+import { parseProvenance, recordsForNode } from "../src/features/stages/provenance";
+import { remarksAt, summarizeRemarks } from "../src/features/stages/remarks";
+import { templateBytesToSfcRange, templateStartInSfc } from "../src/features/stages/offsets";
+import { flameGraph } from "../src/features/stages/flame";
 
 const FILENAME = "Component.vue";
 let wasm: WasmModule;
@@ -92,7 +92,7 @@ describe("Davinci stage ladder from the real compiler", () => {
     );
     expect(authored("l2/lower", 'ui.on name="keyup"')).toBe('@keyup.enter="add"');
     expect(authored("l2/lower", 'js("todo.text"')).toBe("{{ todo.text }}");
-    expect(authored("l3/lower", "kind=impeto.for")).toMatch(/^<TodoItem v-for="todo in todos"/);
+    expect(authored("l3/lower", "kind=l3.for")).toMatch(/^<TodoItem v-for="todo in todos"/);
     expect(authored("l3-partition/lower", "op=17 ")).toBe("<footer>{{ remaining }} left</footer>");
     expect(authored("l3-values/lower", '"model-read",3')).toBe("draft");
   });

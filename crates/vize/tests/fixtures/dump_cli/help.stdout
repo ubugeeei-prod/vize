@@ -1,0 +1,8 @@
+Validate L1 source fidelity or a canonical L2/L3 Full dump
+
+Usage: vize dump --level <LEVEL> --roundtrip <FILE>
+
+Options:
+      --level <LEVEL>     L1 Vue-template source fidelity, or L2/L3 canonical Full dump bytes [possible values: l1, l2, l3]
+      --roundtrip <FILE>  Read FILE and require byte identity after the selected level's roundtrip
+  -h, --help              Print help

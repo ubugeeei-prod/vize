@@ -15,11 +15,11 @@ mod support;
 use davinci_test_support::surface_fixture as battery;
 use support::{assert_authored_artifact, assert_sound, with_lowered};
 use vize_davinci::diagnostic::{Diagnostic, Stage};
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::parse;
 use vize_l1_to_l2::exemptions;
-use vize_l2::folio::DisegnoFolio;
+use vize_l2::dump::Page as L2Page;
 use vize_l2::verify::{Rigor, Violation, verify};
 
 #[test]
@@ -83,18 +83,18 @@ fn a_source_block_lowering_keeps_file_absolute_spans() {
     let allocator = Allocator::new();
     let (tree, errors) = parse(&allocator, template);
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
 
     assert_authored_artifact(source, &lowered);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());
     assert_eq!(verify(&folio, Rigor::Canonical), Vec::<Violation>::new());
     assert_eq!(
-        folio.print_to_string(FolioMode::Full).as_str(),
+        folio.print_to_string(DumpMode::Full).as_str(),
         "\
-[disegno]
+[l2-dump-v2]
 ops=3
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element div @18:36
   ui.element span @23:30
     ui.text \"x\" @29:30
@@ -130,7 +130,7 @@ fn source_block_tokenizer_errors_are_file_absolute() {
     assert_eq!(errors[0].code.message(), "Unexpected solidus in tag.");
 
     let lowered = vize_l1_to_l2::lower_source_block(&allocator, &tree, &errors, block);
-    let folio = DisegnoFolio::of(&lowered.root.ops);
+    let folio = L2Page::of(&lowered.root.ops);
 
     assert_authored_artifact(source, &lowered);
     assert_eq!(u64::from(lowered.op_count), folio.op_count());

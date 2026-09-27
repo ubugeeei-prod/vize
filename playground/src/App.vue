@@ -10,7 +10,7 @@ import CroquisPlayground from "./features/croquis/CroquisPlayground.vue";
 import CrossFilePlayground from "./features/cross-file/CrossFilePlayground.vue";
 import TypeCheckPlayground from "./features/canon/TypeCheckPlayground.vue";
 import InspectorPlayground from "./features/inspector/InspectorPlayground.vue";
-import DavinciPlayground from "./features/davinci/DavinciPlayground.vue";
+import DavinciPlayground from "./features/stages/DavinciPlayground.vue";
 import { getPlaygroundEnvironmentInfo } from "./utils/environment";
 import { useClipboard } from "./utils/useClipboard";
 

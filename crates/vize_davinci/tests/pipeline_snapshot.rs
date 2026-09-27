@@ -7,7 +7,7 @@
 //! fixture: what is established here is the *shape* every later pass test
 //! reuses - parse the stage artifact, run a classified plan through
 //! `run_pipeline` under the budget observer, snapshot the artifact with
-//! `assert_folio_snapshot!` (the printer), and pin the walk accounting as
+//! `assert_dump_snapshot!` (the printer), and pin the walk accounting as
 //! the structural supplement. The binary-level twin drives the same fixture
 //! through `davinci-opt --pipeline` on stdin.
 
@@ -15,8 +15,9 @@ use std::io::Write as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use vize_davinci::assert_folio_snapshot;
-use vize_davinci::folio::{Folio, FolioMode, croquis::CroquisFolio};
+use vize_davinci::assert_dump_snapshot;
+use vize_davinci::dump::croquis::Page as CroquisPage;
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_davinci::pass::{
     BudgetObserver, Fusability, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,
 };
@@ -55,19 +56,19 @@ fn fixture() -> PathBuf {
 #[test]
 fn a_pipeline_run_snapshots_the_full_normalized_folio() {
     let text = std::fs::read_to_string(fixture()).expect("committed folio reads");
-    let folio = CroquisFolio::parse(&text).expect("committed folio parses");
+    let folio = CroquisPage::parse(&text).expect("committed folio parses");
 
     let mut budget = BudgetObserver::new();
     run_pipeline(&PLAN, &mut budget, |_event| Ok(())).expect("a no-op pass body cannot fail");
 
     // The oracle: the full normalized folio after the pipeline ran.
-    assert_folio_snapshot!(folio);
+    assert_dump_snapshot!(folio);
 
     // Structural supplements: the plan's walk accounting, pinned through
     // the budget observer's own derived folio page so the run's counts are
     // themselves a TS-16 artifact.
     assert_eq!(
-        budget.print_to_string(FolioMode::Full).as_str(),
+        budget.print_to_string(DumpMode::Full).as_str(),
         "[budget-observer]\nwalks=2\npasses=3\nanalyses=0\npipelines=1\nfailures=0\n\n"
     );
 }

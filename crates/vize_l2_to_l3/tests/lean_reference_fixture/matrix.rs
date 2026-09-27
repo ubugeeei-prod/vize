@@ -4,7 +4,7 @@
 //! arrays, objects and ranges), item bodies (non-linear text, per-item
 //! conditional toggles, disabled/click buttons) and wrappers (open, or a
 //! `v-if` guard that recreates the list). Each case is lowered here; its
-//! authored template/scenario and exact graph/value Folios are committed as
+//! authored template/scenario and exact graph/value Dumps are committed as
 //! JSON lines. The Lean reference computes the expected observations and both
 //! mounted runtimes must reproduce them. Regenerate with
 //! `VIZE_UPDATE_IVM_MATRIX=1`, then `lake exe impetoRef --write-ivm-matrix`.
@@ -17,10 +17,10 @@
 
 use serde_json::{Value, json};
 use std::path::Path;
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::Allocator;
-use vize_l3::folio::L3Folio;
-use vize_l3::values_folio::L3ValuesFolio;
+use vize_l3::dump::Page as L3Page;
+use vize_l3::values_dump::Page as ValuesPage;
 use vize_l3::verify::verify;
 
 struct Source {
@@ -171,11 +171,11 @@ fn lowered(source: &str) -> (String, String) {
     let lowered = vize_l2_to_l3::lower(&allocator, &s2.root);
     assert_eq!(verify(&lowered.program), [], "{source}");
     (
-        L3Folio::of(&lowered.program)
-            .print_to_string(FolioMode::Full)
+        L3Page::of(&lowered.program)
+            .print_to_string(DumpMode::Full)
             .to_string(),
-        L3ValuesFolio::of(&lowered.program)
-            .print_to_string(FolioMode::Full)
+        ValuesPage::of(&lowered.program)
+            .print_to_string(DumpMode::Full)
             .to_string(),
     )
 }

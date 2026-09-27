@@ -1,7 +1,7 @@
-[disegno]
+[l2-dump-v2]
 ops=2
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.element input @0:20
   vue.directive "focus" @25:30
 

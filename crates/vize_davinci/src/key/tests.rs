@@ -64,7 +64,7 @@ fn keys_print_stage_version_and_the_full_digest() {
     let mut printed = Line::new();
     write!(printed, "{key}").expect("line write");
     let mut expected = Line::new();
-    expected.write_str("s2.v7:").expect("line write");
+    expected.write_str("l2.v7:").expect("line write");
     for byte in key.hash() {
         write!(expected, "{byte:02x}").expect("line write");
     }

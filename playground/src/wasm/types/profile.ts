@@ -3,7 +3,7 @@
 // timings in this shape under `spolveroProfile`; like the feed, it is
 // negotiated on `schema_version` before any span is read.
 
-import { layerId } from "./spolvero";
+import { layerId } from "./stages";
 
 export const PROFILE_EXPORT_SCHEMA_VERSION = 1;
 

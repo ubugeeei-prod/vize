@@ -10,7 +10,7 @@
 //!
 //! [`SurfacePage::check_tiles`]: super::SurfacePage::check_tiles
 
-use vize_davinci::folio::FolioError;
+use vize_davinci::dump::Error as DumpError;
 use vize_l0::{String, cstr};
 
 use super::{
@@ -29,11 +29,11 @@ struct Cursor<'a> {
     at: usize,
 }
 
-fn err(line: usize, message: String) -> FolioError {
-    FolioError::new(line, message)
+fn err(line: usize, message: String) -> DumpError {
+    DumpError::new(line, message)
 }
 
-pub(super) fn parse(input: &str) -> Result<SurfacePage, FolioError> {
+pub(super) fn parse(input: &str) -> Result<SurfacePage, DumpError> {
     let mut section = "";
     let mut seen_bytes = false;
     let mut seen_tree = false;
@@ -120,11 +120,11 @@ impl Cursor<'_> {
         (line.depth == depth).then(|| line.text.split(' ').next().unwrap_or(""))
     }
 
-    fn eof(role: &str) -> FolioError {
+    fn eof(role: &str) -> DumpError {
         err(0, cstr!("unexpected end of input: expected `{role}`"))
     }
 
-    fn children(&mut self, depth: usize) -> Result<Vec<PageNode>, FolioError> {
+    fn children(&mut self, depth: usize) -> Result<Vec<PageNode>, DumpError> {
         let mut nodes = Vec::new();
         while let Some(word) = self.peek(depth) {
             if !NODE_WORDS.contains(&word) {
@@ -135,7 +135,7 @@ impl Cursor<'_> {
         Ok(nodes)
     }
 
-    fn node(&mut self, depth: usize) -> Result<PageNode, FolioError> {
+    fn node(&mut self, depth: usize) -> Result<PageNode, DumpError> {
         let line = self.lines.get(self.at).ok_or_else(|| Self::eof("node"))?;
         let (no, text) = (line.no, line.text);
         match text {
@@ -167,7 +167,7 @@ impl Cursor<'_> {
         Ok(leaf(token))
     }
 
-    fn token(&mut self, depth: usize, role: &str) -> Result<PageToken, FolioError> {
+    fn token(&mut self, depth: usize, role: &str) -> Result<PageToken, DumpError> {
         let Some(line) = self.lines.get(self.at) else {
             return Err(Self::eof(role));
         };
@@ -180,14 +180,14 @@ impl Cursor<'_> {
         Ok(token)
     }
 
-    fn optional(&mut self, depth: usize, role: &str) -> Result<Option<PageToken>, FolioError> {
+    fn optional(&mut self, depth: usize, role: &str) -> Result<Option<PageToken>, DumpError> {
         if self.peek(depth) == Some(role) {
             return self.token(depth, role).map(Some);
         }
         Ok(None)
     }
 
-    fn element(&mut self, depth: usize) -> Result<PageElement, FolioError> {
+    fn element(&mut self, depth: usize) -> Result<PageElement, DumpError> {
         let lt_name = self.token(depth, "lt-name")?;
         let mut attrs = Vec::new();
         while self.peek(depth) == Some("attr")
@@ -230,7 +230,7 @@ impl Cursor<'_> {
         })
     }
 
-    fn attribute(&mut self, depth: usize) -> Result<PageAttribute, FolioError> {
+    fn attribute(&mut self, depth: usize) -> Result<PageAttribute, DumpError> {
         let name = self.token(depth, "name")?;
         let eq = self.optional(depth, "eq")?;
         let open_quote = self.optional(depth, "open-quote")?;
@@ -249,14 +249,14 @@ impl Cursor<'_> {
     }
 }
 
-fn parse_token(no: usize, rest: &str) -> Result<PageToken, FolioError> {
+fn parse_token(no: usize, rest: &str) -> Result<PageToken, DumpError> {
     let (offsets, missing) = match rest.split_once(' ') {
         None => (rest, false),
         Some((offsets, "missing")) => (offsets, true),
         Some((_, other)) => return Err(err(no, cstr!("unknown token flag `{other}`"))),
     };
     let mut parts = offsets.split(':');
-    let mut next = || -> Result<u32, FolioError> {
+    let mut next = || -> Result<u32, DumpError> {
         let part = parts.next().unwrap_or("");
         part.parse::<u32>()
             .map_err(|_| err(no, cstr!("invalid offset `{part}` in `{offsets}`")))

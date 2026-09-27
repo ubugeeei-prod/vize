@@ -15,7 +15,7 @@ The durable witnesses are:
 - [`emit_merge.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_merge.rs)
   - exact pins that object `v-bind` modifiers preserve the same spread
     expression and merge shape as the modifier-free source.
-- [`davinci_s2_bind_modifiers.rs`](../../../../../crates/vize_atelier_dom/tests/davinci_l2_bind_modifiers.rs)
+- [`davinci_s2_bind_modifiers.rs`](../../../../../crates/vize_atelier_dom/tests/l2_bind_modifiers.rs)
   - S2-vs-shipped byte fixtures for lone and merged object `v-bind`
     modifiers.
 - [`emit_unsupported_census.rs`](../../../../../crates/vize_l1_to_l2/tests/emit_unsupported_census.rs)

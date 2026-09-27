@@ -21,7 +21,7 @@ use core::marker::PhantomData;
 use vize_l0::{String, cstr};
 
 use super::{FactGroup, FactTable};
-use crate::folio::{Folio, FolioError, FolioMode};
+use crate::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use crate::pass::AnalysisId;
 
 /// A fact group with an exported α form.
@@ -31,7 +31,7 @@ pub trait AlphaExport: FactGroup {
     const ALPHA_SCHEMA: u16;
     /// The owned α page. `'static` is the P1-11 arena/cache contract: an α
     /// value never borrows an arena or a source.
-    type Alpha: Folio + PartialEq + Send + Sync + 'static;
+    type Alpha: Dump + PartialEq + Send + Sync + 'static;
 
     /// Export the β table as its α page.
     fn export(table: &FactTable<Self>) -> Self::Alpha;
@@ -111,8 +111,8 @@ impl<G: AlphaExport> AlphaDocument<G> {
 
 const HEADER_LINES: usize = 4;
 
-impl<G: AlphaExport> Folio for AlphaDocument<G> {
-    fn print<W: fmt::Write>(&self, w: &mut W, mode: FolioMode) -> fmt::Result {
+impl<G: AlphaExport> Dump for AlphaDocument<G> {
+    fn print<W: fmt::Write>(&self, w: &mut W, mode: DumpMode) -> fmt::Result {
         writeln!(w, "[fact-alpha]")?;
         writeln!(w, "group={}", G::NAME)?;
         writeln!(w, "schema_version={}", G::ALPHA_SCHEMA)?;
@@ -120,15 +120,15 @@ impl<G: AlphaExport> Folio for AlphaDocument<G> {
         self.alpha.print(w, mode)
     }
 
-    fn parse(input: &str) -> Result<Self, FolioError> {
+    fn parse(input: &str) -> Result<Self, DumpError> {
         let mut lines = input.splitn(HEADER_LINES + 1, '\n');
         let mut expect = |line: usize, expected: &str| match lines.next() {
             Some(found) if found == expected => Ok(()),
-            Some(found) => Err(FolioError::new(
+            Some(found) => Err(DumpError::new(
                 line,
                 cstr!("expected `{expected}`, found `{found}`"),
             )),
-            None => Err(FolioError::new(0, String::from("truncated α header"))),
+            None => Err(DumpError::new(0, String::from("truncated α header"))),
         };
         expect(1, "[fact-alpha]")?;
         expect(2, cstr!("group={}", G::NAME).as_str())?;
@@ -141,7 +141,7 @@ impl<G: AlphaExport> Folio for AlphaDocument<G> {
             } else {
                 error.line + HEADER_LINES
             };
-            FolioError::new(line, error.message)
+            DumpError::new(line, error.message)
         })?;
         Ok(Self {
             alpha,

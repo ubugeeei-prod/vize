@@ -274,3 +274,6 @@ pub fn cache() -> &'static Mutex<PluginCache> {
     static CACHE: OnceLock<Mutex<PluginCache>> = OnceLock::new();
     CACHE.get_or_init(Mutex::default)
 }
+
+#[cfg(test)]
+mod migration;

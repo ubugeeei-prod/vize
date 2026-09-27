@@ -3,7 +3,7 @@
 use super::parse_script_setup;
 use crate::facts::reactivity_sources;
 use crate::{Drawer, DrawerOptions};
-use vize_impeto::lattice::{ReactivityClass, Verdict};
+use vize_l3::lattice::{ReactivityClass, Verdict};
 
 #[test]
 fn aliases_resolve_after_all_declarations_with_exact_utf8_spans() {

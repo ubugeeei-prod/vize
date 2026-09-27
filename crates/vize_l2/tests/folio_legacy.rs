@@ -4,20 +4,21 @@
 //! Vue 3 family pin and this file stays inside the source budget.
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
-use vize_davinci::folio::{Folio, FolioMode};
+use vize_davinci::dump::{Dump, Mode as DumpMode};
 use vize_l0::{Allocator, Box, Span, String, Vec as ArenaVec};
-use vize_l2::expr::{ExprRef, JsExpr, VueFilterExpr};
-use vize_l2::folio::{
-    DisegnoFolio, FolioBinding, FolioComponent, FolioExpr, FolioInterpolation, FolioOp,
-    FolioVueSlotScope, FolioVueSync,
+use vize_l2::dump::{
+    Binding as DumpBinding, Component as DumpComponent, Expr as DumpExpr,
+    Interpolation as DumpInterpolation, Op as DumpOp, Page as L2Page,
+    VueSlotScope as DumpVueSlotScope, VueSync as DumpVueSync,
 };
+use vize_l2::expr::{ExprRef, JsExpr, VueFilterExpr};
 use vize_l2::op::{BindingOp, ComponentOp, InterpolationOp, Op, Region, VueSlotScopeOp, VueSyncOp};
 
 const CANONICAL: &str = "\
-[disegno]
+[l2-dump-v2]
 ops=4
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.component Card @0:40
   vue.sync name=\"title\" mods=\"camel\" value=js(\"heading\" @10:17) @0:18
   vue.slot-scope name=\"header\" params=js(\"props\" @20:25) @19:26
@@ -25,33 +26,33 @@ ui.component Card @0:40
 
 ";
 
-fn js(source: &str, start: u32, end: u32) -> FolioExpr {
-    FolioExpr::Js {
+fn js(source: &str, start: u32, end: u32) -> DumpExpr {
+    DumpExpr::Js {
         source: String::from(source),
         span: Span::new(start, end),
     }
 }
 
-fn hand_built() -> DisegnoFolio {
-    DisegnoFolio {
-        ops: vec![FolioOp::Component(FolioComponent {
+fn hand_built() -> L2Page {
+    L2Page {
+        ops: vec![DumpOp::Component(DumpComponent {
             name: String::from("Card"),
             attributes: vec![],
             bindings: vec![
-                FolioBinding::VueSync(FolioVueSync {
+                DumpBinding::VueSync(DumpVueSync {
                     name: String::from("title"),
                     modifiers: vec![String::from("camel")],
                     value: js("heading", 10, 17),
                     span: Span::new(0, 18),
                 }),
-                FolioBinding::VueSlotScope(FolioVueSlotScope {
+                DumpBinding::VueSlotScope(DumpVueSlotScope {
                     name: Some(String::from("header")),
                     params: Some(js("props", 20, 25)),
                     span: Span::new(19, 26),
                 }),
             ],
-            children: vec![FolioOp::Interpolation(FolioInterpolation {
-                expression: FolioExpr::Filter {
+            children: vec![DumpOp::Interpolation(DumpInterpolation {
+                expression: DumpExpr::Filter {
                     source: String::from("msg | cap"),
                     span: Span::new(28, 37),
                 },
@@ -70,9 +71,9 @@ fn arena_js<'a>(allocator: &'a Allocator, source: &'a str, start: u32, end: u32)
 fn the_legacy_dialect_ops_round_trip() {
     let value = hand_built();
     assert_eq!(value.op_count(), 4);
-    assert_eq!(value.print_to_string(FolioMode::Full).as_str(), CANONICAL);
+    assert_eq!(value.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(
-        DisegnoFolio::parse(CANONICAL).expect("canonical text parses"),
+        L2Page::parse(CANONICAL).expect("canonical text parses"),
         value
     );
 }
@@ -130,10 +131,7 @@ fn an_arena_tree_mirrors_the_legacy_dialect_ops() {
         ))],
         &allocator,
     );
-    let mirrored = DisegnoFolio::of(&ops);
-    assert_eq!(
-        mirrored.print_to_string(FolioMode::Full).as_str(),
-        CANONICAL
-    );
+    let mirrored = L2Page::of(&ops);
+    assert_eq!(mirrored.print_to_string(DumpMode::Full).as_str(), CANONICAL);
     assert_eq!(mirrored, hand_built());
 }

@@ -1,7 +1,7 @@
-[disegno]
+[l2-dump-v2]
 ops=1
 
-[disegno.ops]
+[l2-dump-v2.ops]
 ui.if @0:45
   branch js("x" @1:2) @0:15
   branch @15:30

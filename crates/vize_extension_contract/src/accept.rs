@@ -12,9 +12,10 @@
 use core::fmt;
 
 use vize_davinci::diagnostic as davinci;
-use vize_davinci::folio::{Folio, FolioError, FolioMode};
+use vize_davinci::dump::{Dump, Error as DumpError, Mode as DumpMode};
 use vize_l0::String;
-use vize_l2::folio::L2Folio;
+use vize_l2::dump::Page as L2Page;
+use vize_l2::dump::historical::v1::Page as HistoricalL2Page;
 
 use crate::contract::{L1_PAGE_SCHEMA, L2_PAGE_SCHEMA, LoweredBlock, Page, SourceBlock, Span};
 use crate::surface_page::{SurfacePage, TileError};
@@ -27,7 +28,7 @@ pub struct Accepted {
     /// The parsed L1 page; it tiles the block source.
     pub surface: SurfacePage,
     /// The parsed L2 page.
-    pub semantic: L2Folio,
+    pub semantic: L2Page,
     /// The diagnostics in the in-tree channel's type.
     pub diagnostics: Vec<davinci::Diagnostic>,
 }
@@ -44,7 +45,7 @@ pub enum AcceptError {
     /// A page does not parse.
     Parse {
         page: &'static str,
-        error: FolioError,
+        error: DumpError,
     },
     /// A page parses but is not in canonical form; `at` is the first byte
     /// where its text and the canonical reprint differ.
@@ -90,7 +91,8 @@ impl fmt::Display for AcceptError {
 /// The first check the answer fails, as an [`AcceptError`].
 pub fn accept(block: &SourceBlock, lowered: LoweredBlock) -> Result<Accepted, AcceptError> {
     let surface: SurfacePage = read_page("s1-page", L1_PAGE_SCHEMA, &lowered.surface)?;
-    let semantic: L2Folio = read_page("s2-page", L2_PAGE_SCHEMA, &lowered.semantic)?;
+    let semantic =
+        read_page::<HistoricalL2Page>("s2-page", L2_PAGE_SCHEMA, &lowered.semantic)?.into_current();
     surface
         .check_tiles(&block.source)
         .map_err(AcceptError::Tiles)?;
@@ -126,7 +128,7 @@ pub fn accept(block: &SourceBlock, lowered: LoweredBlock) -> Result<Accepted, Ac
 
 /// Parse a versioned page and require its exact canonical spelling.
 #[doc(hidden)]
-pub fn read_page<T: Folio>(name: &'static str, reads: u32, page: &Page) -> Result<T, AcceptError> {
+pub fn read_page<T: Dump>(name: &'static str, reads: u32, page: &Page) -> Result<T, AcceptError> {
     if page.schema_version != reads {
         return Err(AcceptError::UnreadableSchema {
             page: name,
@@ -149,10 +151,10 @@ pub fn read_page<T: Folio>(name: &'static str, reads: u32, page: &Page) -> Resul
 
 /// A page's canonical `Full` text.
 #[must_use]
-pub fn full_text<T: Folio>(page: &T) -> String {
+pub fn full_text<T: Dump>(page: &T) -> String {
     let mut out = String::default();
     // Writing into a `String` never fails, and `print` only propagates the
     // writer's errors, so the result carries no information here.
-    let _ = page.print(&mut out, FolioMode::Full);
+    let _ = page.print(&mut out, DumpMode::Full);
     out
 }
