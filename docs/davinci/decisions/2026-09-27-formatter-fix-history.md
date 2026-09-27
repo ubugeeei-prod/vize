@@ -91,6 +91,6 @@ shared registration, Actions and native acceptance remain pending.
 - Verify full Actions checks and the merge-queue corpus before closing #6882
   or replacing the legacy formatter path.
 
-These six prepared comparisons receive no shared corpus or native acceptance
+Prepared comparisons receive no shared corpus or native acceptance
 credit yet. Native formatter support is unavailable; handled, equivalent and
 paired native comparisons remain zero. #6882 remains open.

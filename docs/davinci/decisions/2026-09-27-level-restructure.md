@@ -128,7 +128,7 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 - One parse per file. Every product consumes the same artifacts.
 - **Formatter:** L1 only. A rewrite whose safety depends on L2 facts (for example component-dependent self-closing) is a linter autofix instead.
 
-  [Formatter fix-history output fixtures](./2026-09-27-formatter-fix-history.md) records [#6882](https://github.com/ubugeeei-prod/vize/issues/6882); six script byte comparisons are prepared, with full-history audit and shared corpus registration still pending.
+  [Formatter fix-history output fixtures](./2026-09-27-formatter-fix-history.md) records [#6882](https://github.com/ubugeeei-prod/vize/issues/6882); public script and CSS byte fixtures retain the actual invalid-CSS error separately. Full-history audit and shared corpus registration remain pending.
 
   Formatter history asset and binary-reference bytes disable Git text conversion, including on CRLF checkouts.
 
