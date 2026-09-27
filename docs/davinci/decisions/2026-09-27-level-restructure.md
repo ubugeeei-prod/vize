@@ -130,6 +130,8 @@ Tracked in [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) and [#6845
 
   [Formatter fix-history output fixtures](./2026-09-27-formatter-fix-history.md) records [#6882](https://github.com/ubugeeei-prod/vize/issues/6882); six script byte comparisons are prepared, with full-history audit and shared corpus registration still pending.
 
+  Formatter history asset and binary-reference bytes disable Git text conversion, including on CRLF checkouts.
+
 - **Linter:** syntax rules on L1, semantic rules on L2 and facts. Diagnostics go through L0, and autofixes are L1 span edits.
 - **Type checker:** the virtual-TS projection is an L4 target mapped back through `EmitDocument` links.
 - **LSP:** holds level artifacts incrementally and never parses by itself.

@@ -13,6 +13,7 @@ fixed-point or substring assertions alone do not establish full output parity.
 - Use Insta's binary snapshots for new output references. Compare the exact
   returned UTF-8 bytes, including CR/LF and the final newline. No trimming,
   newline normalization, sorting, or production formatter changes are added.
+  Git text conversion is disabled for prepared assets and binary references.
 - Distinguish public `format_script` and `format_sfc` observations from CLI and
   private helper observations. An internal helper accepting a token sequence
   does not imply that the public CSS parser accepts it.
