@@ -59,13 +59,18 @@ impl Buf {
     }
 
     pub(super) fn newline(&mut self) {
+        const NEWLINE_CHUNK: &str = "\n                                ";
         const INDENT_CHUNK: &str = "                                ";
         const CHUNK_LEVELS: u32 = 16;
-        self.code.push('\n');
-        for _ in 0..self.indent / CHUNK_LEVELS {
+        let first = self.indent.min(CHUNK_LEVELS);
+        if let Some(prefix) = NEWLINE_CHUNK.get(..1 + first as usize * 2) {
+            self.push(prefix);
+        }
+        let rest = self.indent - first;
+        for _ in 0..rest / CHUNK_LEVELS {
             self.push(INDENT_CHUNK);
         }
-        let remaining = self.indent % CHUNK_LEVELS;
+        let remaining = rest % CHUNK_LEVELS;
         if remaining != 0
             && let Some(spaces) = INDENT_CHUNK.get(..remaining as usize * 2)
         {
