@@ -43,6 +43,22 @@ replay. Existing Check, Zizmor, Nuxt and title workflow PR branch filters accept
 only main/davinci, so stacked branches need deliberate CI triggering and base
 management. No automatic rebasing behavior was verified by this replay.
 
+## Replay after the first queue merges
+
+#6899 and #6900 merged through the main queue. Replay #6901 on main
+`3bc2416ad`, preserving both merged input selectors and the complete
+feature-corpus queue recipe. The open layers were unstacked from #6902 to
+retarget its next layer after a documentation conflict prevented automatic
+retargeting. The two merged members remain as historical stack entries.
+
+The Check/title-policy trigger repair in #6910 has the same stable patch ID
+(`b40d5af24e8269d70fdb43503f378df69e4fe916`) as the repair already in #6901;
+the parity assertion is also identical. Close #6910 as superseded by #6901
+and validate the combined head once. This records deduplication, not a passed
+new head or completed T1 gate. Restack dependent CI and foundation layers on
+the verified parent; every new head still requires fresh Actions and queue
+validation before merge.
+
 ## Focused verification
 
 - 37 planner, workflow, receipt, queue and corpus-gate tests pass with no

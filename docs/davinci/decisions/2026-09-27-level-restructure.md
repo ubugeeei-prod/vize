@@ -341,4 +341,5 @@ corpus membership and remaining product/T1/T2 work. Native formatter is
 unsupported; this first legacy path receives zero native acceptance credit.
 
 [CI stack replay after publication](./2026-09-27-ci-stack-resume.md) records
-the main replay, preserved corpus rows and remaining exact-head CI evidence.
+the main replay, preserved corpus rows, #6910 deduplication after the first
+queue merges, and remaining exact-head CI evidence.
