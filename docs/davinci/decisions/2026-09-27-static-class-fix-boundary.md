@@ -57,3 +57,13 @@ actual build/execution logs. No cold/full-workspace local suite was run.
 Before merge, run a fresh Actions build and the full
 merge queue, including the markup differential feature lane. No native linter
 adapter, additional pipeline stage, dependency or serialization is introduced.
+
+## Existing inventory shard
+
+The first source-built Actions run passed the public nine-case regression
+and the corrected 13-case history test. Required tooling then detected the
+new test import in the existing linter migration surface shard. The official
+generator adds one `test/dev` L0 row for `static_class_fix.rs`; all 19
+existing artifact files pass its byte-exact check. This bounded shard
+refresh follows the observer parent without changing its raw capture
+identities. Separate whole-repository ledger and T0 cleanup remains pending.
