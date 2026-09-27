@@ -15,6 +15,10 @@ use std::ffi::CStr;
 use std::ffi::CString;
 
 /// Whether the caller selected instruction measurements.
+#[expect(
+    clippy::panic,
+    reason = "benchmark tooling rejects an invalid measurement mode"
+)]
 pub fn requested() -> bool {
     match std::env::var("VIZE_INSTRUCTION_COUNTS") {
         Err(std::env::VarError::NotPresent) => false,
@@ -24,6 +28,17 @@ pub fn requested() -> bool {
 }
 
 /// Reject a requested measurement without real instrumentation.
+#[cfg_attr(
+    not(all(
+        feature = "instruction-counts",
+        target_os = "linux",
+        target_arch = "x86_64"
+    )),
+    expect(
+        clippy::panic,
+        reason = "benchmark tooling fails unsupported measurement configurations"
+    )
+)]
 pub fn initialize() {
     if !requested() {
         return;
@@ -96,10 +111,22 @@ impl<C: Client> Drop for Window<'_, C> {
 fn measure_with<T, C: Client>(client: &C, id: &CStr, routine: impl FnOnce() -> T) -> T {
     client.start();
     let window = Window(client);
-    let value = core::hint::black_box(routine());
+    let value = run_once(routine);
     drop(window);
     client.dump(id);
     value
+}
+
+// Starting instrumentation does not rewrite the basic block already running.
+// A real call boundary makes even a constant-folded routine enter a newly
+// instrumented block. This fixed benchmark-only overhead is in every budget.
+#[cfg(any(
+    test,
+    all(feature = "instruction-counts", target_os = "linux", target_arch = "x86_64")
+))]
+#[inline(never)]
+fn run_once<T>(routine: impl FnOnce() -> T) -> T {
+    core::hint::black_box(routine())
 }
 
 #[cfg(all(
@@ -127,6 +154,17 @@ impl Client for Callgrind {
 }
 
 /// Run exactly one routine between client start/stop requests.
+#[cfg_attr(
+    not(all(
+        feature = "instruction-counts",
+        target_os = "linux",
+        target_arch = "x86_64"
+    )),
+    expect(
+        clippy::panic,
+        reason = "benchmark tooling cannot silently skip unsupported measurement windows"
+    )
+)]
 pub fn measure<T>(bench_id: &str, routine: impl FnOnce() -> T) -> T {
     let id = CString::new(bench_id).expect("validated bench ids contain no NUL");
     #[cfg(all(

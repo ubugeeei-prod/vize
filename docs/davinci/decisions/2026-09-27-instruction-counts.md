@@ -24,6 +24,15 @@ Named client dumps reset their counters. The reconciler rejects duplicate,
 missing and unregistered dumps, nonzero process-termination totals, invalid
 numbers, and any event set other than `Ir`.
 
+The first Linux bootstrap [run 36303887819](https://github.com/ubugeeei-prod/vize/actions/runs/36303887819)
+passed default/feature harness tests and collected 87 probes, but the two
+constant-folded observer routines produced zero-count dumps: start and stop
+remained in the same already-translated basic block. The measured routine
+therefore crosses a non-inlined call boundary after instrumentation starts.
+This ensures even a short routine enters an instrumented block. The fixed
+benchmark wrapper overhead is included in every candidate and ceiling; it
+does not add a production call or stage. Zero-count dumps remain rejected.
+
 The reference build is Rust 1.98.0, Linux x86_64, generic `x86-64` target CPU,
 the `ci-opt` profile (thin LTO, 16 codegen units), and the existing counting
 allocator over mimalloc. Valgrind is Ubuntu 24.04's 3.22.0. Cache and branch
