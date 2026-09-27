@@ -114,6 +114,9 @@ function collect(out, registry) {
     runs: [],
   };
   writeJson(path.join(out, "environment.json"), {
+    run_attempt: Number(process.env.GITHUB_RUN_ATTEMPT),
+    workflow: process.env.GITHUB_WORKFLOW,
+    job: process.env.GITHUB_JOB,
     uname: command("uname", ["-a"]),
     cpu: fs.readFileSync("/proc/cpuinfo", "utf8"),
     dpkg: command("dpkg-query", ["-W", "valgrind", "libc6"]),
